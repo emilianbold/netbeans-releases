@@ -22,6 +22,8 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.openide.src.ClassElement;
+import org.openide.src.SourceException;
 
 /** WebServicesSupport should be used to manipulate a projects representation
  *  of a web service implementation.
@@ -76,8 +78,8 @@ public final class WebServicesSupport {
     
     // Delegated methods from WebServicesSupportImpl
     
-    public void addServiceImpl(String serviceName, FileObject configFile) {
-        impl.addServiceImpl(serviceName, configFile);
+    public void addServiceImpl(String serviceName, FileObject configFile, boolean fromWSDL) {
+        impl.addServiceImpl(serviceName, configFile, fromWSDL);
     }
     
     public void addServiceEntriesToDD(String serviceName, String serviceEndpointInterface, String servantClassName){
@@ -100,8 +102,12 @@ public final class WebServicesSupport {
         return impl.getImplementationBean(linkName);
     }
     
-    public void removeServiceEntry(String serviceName, String linkName) {
-        impl.removeServiceEntry(serviceName, linkName);
+    public void removeServiceEntry(String linkName) {
+        impl.removeServiceEntry(linkName);
+    }
+    
+    public void removeProjectEntries(String serviceName){
+        impl.removeProjectEntries(serviceName);
     }
     
     public AntProjectHelper getAntProjectHelper() {
@@ -115,9 +121,13 @@ public final class WebServicesSupport {
     public void addServiceImplLinkEntry(ServiceImplBean serviceImplBean, String wsName) {
         impl.addServiceImplLinkEntry(serviceImplBean, wsName);
     }
-  
+    
     public ReferenceHelper getReferenceHelper(){
         return impl.getReferenceHelper();
+    }
+    
+    public void addInfrastructure(ClassElement clazz) throws SourceException {
+        impl.addInfrastructure(clazz);
     }
     
 /* !! What to put here?
