@@ -734,7 +734,7 @@ final class XMLSettingsSupport {
                 reader.setContentHandler(this);
                 reader.setErrorHandler(this);
                 reader.setEntityResolver(this);
-                reader.parse(new org.xml.sax.InputSource(in));
+                reader.parse(new org.xml.sax.InputSource(new BufferedInputStream(in)));
             } catch (XMLSettingsSupport.StopSAXException ex) {
                 // Ok, header is read
             } catch (SAXException ex) {

@@ -13,9 +13,9 @@
 
 package org.netbeans.core.xml;
 
-import org.openide.util.WeakListeners;
 import java.io.IOException;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedInputStream;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -372,7 +372,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                 reader.setContentHandler(this);
                 reader.setEntityResolver(this);
                 InputSource is = new InputSource(src.getURL().toExternalForm());
-                is.setByteStream(src.getInputStream());
+                is.setByteStream(new BufferedInputStream(src.getInputStream()));
                 try {
                     reader.setFeature("http://xml.org/sax/features/validation", false);  //NOI18N
                 } catch (SAXException sex) {
