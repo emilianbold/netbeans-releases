@@ -144,10 +144,10 @@ int WINAPI
         if (ffh != INVALID_HANDLE_VALUE) {
             FindClose(ffh);
             sprintf(dirs, "%s\\%s;%s\\%s;%s\\%s",
-                    topdir, "\\ide4", topdir, "\\nb4.0", topdir, "\\extra");
+                    topdir, "\\nb4.0", topdir, "\\ide4", topdir, "\\extra");
         } else {
             sprintf(dirs, "%s\\%s;%s\\%s",
-                    topdir, "\\ide4", topdir, "\\nb4.0");
+                    topdir, "\\nb4.0", topdir, "\\ide4" );
         }
     }
     sprintf(nbexec, "%s\\platform4\\launcher\\nbexec.exe", topdir);
