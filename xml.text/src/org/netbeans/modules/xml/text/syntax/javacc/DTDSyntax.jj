@@ -302,7 +302,7 @@ TOKEN_MGR_DECLS:
 <*>
 TOKEN: 
 {
-  <CRLF: "\n" >
+  <CRLF: (" " | "\t" | "\n")+ >   /** Understand as white-space. */
 | /** global text matches all but following chars. 
 
   ("<" | ">" | "'" | "\"" | "&" | "%"| ";" | "[" | "]" | "=" | "/" | "!" | "?")+
@@ -310,8 +310,6 @@ TOKEN:
   <#TEXT: (~[" ", "\t", "\n", "<", ">", "'", "\"", "&", "%", ";", "[", "]" , "=" , "/" , "!" , "?"])+>
 |
   <#CONTENT: (~["\n","<",">","&"])+>
-| /** global white space. */
-  <#WS: (" " | "\t")+>
 }
 
 /** Initial state could be a switch allowing then guess 
@@ -324,7 +322,7 @@ TOKEN:
 | <PI_START: "<?"> : IN_PI
 | <TEXT_IN_DEFAULT: "<">  //just being written
 | <COND_END_IN_DEFAULT: "]]>"> //little bit tricky - what it would be else?
-| <ERR_IN_DEFAULT: (~["\n", "]", "<", "&", "%"])+ >
+| <ERR_IN_DEFAULT: (~["\n", "]", "<", "&", "%", " ", "\t"])+ >
 }
 
 
