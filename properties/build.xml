@@ -18,30 +18,46 @@ Microsystems, Inc. All Rights Reserved.
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
+  <property name="javadoc.private" value="false"/>
+  <property name="docs.location.jdk"
+            value="http://java.sun.com/j2se/1.4.2/docs/api"/>
+  <property name="docs.location.openide"
+            value="http://www.netbeans.org/download/dev/javadoc/OpenAPIs"/>
+  <property name="docs.location.openide-deprecated"
+            value="http://www.netbeans.org/download/dev/javadoc/DeprecatedAPIs"/>
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
 
-  <target name="compile">
+  <target name="init">
+    <path id="properties-nosyntax-cp">
+      <pathelement location="../openide/openide-13javac-workaround.jar"/>
+      <pathelement location="../openide/netbeans/lib/openide.jar"/>
+      <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
+    </path>
+    <path id="properties-syntax-cp">
+      <pathelement location="../openide/openide-13javac-workaround.jar"/>
+      <pathelement location="../openide/netbeans/lib/openide.jar"/>
+      <pathelement location="../editor/netbeans/modules/ext/nb-editor.jar"/>
+      <pathelement location="../editor/netbeans/modules/editor.jar"/>
+      <!-- src must be on classpath, otherwise AspectJ compiler (ajc) wouldn't compile -->
+      <pathelement location="src" />
+    </path>
+    <path id="properties-cp">
+      <path refid="properties-nosyntax-cp"/>
+      <path refid="properties-syntax-cp"/>
+    </path>
+  </target>
+
+  <target name="compile" depends="init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <exclude name="org/netbeans/modules/properties/syntax/"/>
-      <classpath>
-        <pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-        <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-      </classpath>
+      <classpath refid="properties-nosyntax-cp"/>
     </javac>
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <include name="org/netbeans/modules/properties/syntax/"/>
-      <classpath>
-        <pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-        <pathelement location="../editor/netbeans/modules/ext/nb-editor.jar"/>
-        <pathelement location="../editor/netbeans/modules/editor.jar"/>
-        <!-- src must be on classpath, otherwise AspectJ compiler (ajc) wouldn't compile -->
-        <pathelement location="src" />
-      </classpath>
+      <classpath refid="properties-syntax-cp"/>
     </javac>
   </target>
 
@@ -99,13 +115,13 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="Info"/>
   </target>
 
-  <target name="javadoc" description="Build properties module API documentation.">
+  <target name="javadoc" depends="init" description="Build properties module API documentation.">
     <tstamp/>
     <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
     <echo message="Build properties module API documentation..."/>
     <mkdir dir="javadoc"/>
     <javadoc destdir="javadoc"
-             packagenames="org.netbeans.modules.properties"
+             packagenames="org.netbeans.modules.properties,org.netbeans.modules.properties.syntax"
              doctitle="NetBeans properties module APIs"
              windowtitle="NetBeans properties module APIs"
              bottom="${apis-footer}"
@@ -114,16 +130,16 @@ Microsystems, Inc. All Rights Reserved.
              author="false"
              version="false"
              maxmemory="384m"
+             additionalparam="-breakiterator"
+             private="${javadoc.private}"
     >
       <sourcepath>
         <pathelement location="src"/>
       </sourcepath>
-      <classpath>
-        <pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
-      </classpath>
+      <classpath refid="properties-cp"/>
+      <link href="${docs.location.jdk}"/>
+      <link href="${docs.location.openide}"/>
+      <link href="${docs.location.openide-deprecated}"/>
     </javadoc>    
   </target>
 
