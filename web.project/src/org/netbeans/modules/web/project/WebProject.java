@@ -50,6 +50,7 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
@@ -59,8 +60,10 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.web.api.webmodule.SourcesGroupTypes;
 
 /**
  * Represents one plain Web project.
@@ -71,14 +74,16 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
     private static final Icon WEB_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif")); // NOI18N
     
     private final AntProjectHelper helper;
+    private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
     private final ProjectWebModule webModule;
     private FileObject libFolder = null;
     
-    WebProject(AntProjectHelper helper) throws IOException {
+    WebProject(final AntProjectHelper helper) throws IOException {
         this.helper = helper;
+        eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux);
         genFilesHelper = new GeneratedFilesHelper(helper);
@@ -95,6 +100,15 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         return "WebProject[" + getProjectDirectory() + "]"; // NOI18N
     }
     
+    private PropertyEvaluator createEvaluator() {
+        // XXX might need to use a custom evaluator to handle active platform substitutions... TBD
+        return helper.getStandardPropertyEvaluator();
+    }
+    
+    PropertyEvaluator evaluator() {
+        return eval;
+    }
+    
     public Lookup getLookup() {
         return lookup;
     }
@@ -105,6 +119,23 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             "${src.dir}/*.java" // NOI18N
         }, new String[] {
             "${build.classes.dir}/*.class" // NOI18N
+        });
+        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
+        String webModuleLabel = org.openide.util.NbBundle.getMessage(WebCustomizerProvider.class, "LBL_Node_WebModule"); //NOI18N
+        String webPagesLabel = org.openide.util.NbBundle.getMessage(WebCustomizerProvider.class, "LBL_Node_DocBase"); //NOI18N
+        String srcJavaLabel = org.openide.util.NbBundle.getMessage(WebCustomizerProvider.class, "LBL_Node_Sources"); //NOI18N
+        
+        sourcesHelper.addPrincipalSourceRoot("${"+WebProjectProperties.SOURCE_ROOT+"}", webModuleLabel, /*XXX*/null, null);
+        sourcesHelper.addPrincipalSourceRoot("${"+WebProjectProperties.SRC_DIR+"}", srcJavaLabel, /*XXX*/null, null);
+        sourcesHelper.addPrincipalSourceRoot("${"+WebProjectProperties.WEB_DOCBASE_DIR+"}", webPagesLabel, /*XXX*/null, null);
+        
+        sourcesHelper.addTypedSourceRoot("${"+WebProjectProperties.SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/null, null);
+        sourcesHelper.addTypedSourceRoot("${"+WebProjectProperties.WEB_DOCBASE_DIR+"}", SourcesGroupTypes.TYPE_DOC_ROOT, webPagesLabel, /*XXX*/null, null);
+        sourcesHelper.addTypedSourceRoot("${"+WebProjectProperties.WEB_DOCBASE_DIR+"}/WEB-INF", SourcesGroupTypes.TYPE_WEB_INF, /*XXX I18N*/ "WEB-INF", /*XXX*/null, null);
+        ProjectManager.mutex().postWriteRequest(new Runnable() {
+            public void run() {
+                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+            }
         });
         return Lookups.fixed(new Object[] {
             new Info(),
@@ -122,7 +153,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
             fileBuilt,
-            new WebSources(helper)
+            sourcesHelper.createSources()
         });
     }
 
@@ -277,14 +308,6 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         
         protected void projectOpened() {
             try {
-                //Check if external source root needs to be registered
-                String externalRoot = helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.SOURCE_ROOT);
-                if (externalRoot != null && !(externalRoot.equals ("") || externalRoot.equals ("."))) { //NOI18N
-                    FileObject root [] = FileUtil.fromFile (FileUtil.normalizeFile (new java.io.File (externalRoot)));
-                    if (root != null && root.length == 1) {
-                        FileOwnerQuery.markExternalOwner (root [0], WebProject.this, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-                    }
-                }
                 //Check libraries and add them to classpath automatically
                 String libFolderName = helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.LIBRARIES_DIR);
                 WebProjectProperties wpp = new WebProjectProperties (WebProject.this, helper, refHelper);
