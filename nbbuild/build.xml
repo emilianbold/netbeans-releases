@@ -60,7 +60,7 @@ ToDo:
         <include name="xml/external/resolver*.jar"/>
       </fileset>
     </path>
-    <javac srcdir="antsrc" destdir="antsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
+    <javac srcdir="antsrc" destdir="antsrc" deprecation="true" debug="${build.compiler.debug}" source="1.4">
       <classpath refid="bootstrap-cp"/>
     </javac>
     <jar jarfile="nbantext.jar" basedir="antsrc">
