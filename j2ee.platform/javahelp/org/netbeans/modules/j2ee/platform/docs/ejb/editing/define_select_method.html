@@ -25,17 +25,17 @@
   of beans, a select method can also return the value of a field.</p>
 <p><b>To define a select method for an entity bean:</b></p>
 <ol>
-  <li>In the Projects window, expand the Configuration Files node for your EJB 
-    module project.</li>
-  <li>Double-click <tt>ejb-jar.xml</tt>. The graphical editor opens in the Details 
-    view.</li>
-  <li>Expand the entity bean's node and the CMP Finders and Selects node. The 
-    table lists all of the existing CMP finder methods and select methods.</li>
-  <li>Click Add or Edit to make changes to the list finder methods and select 
-    methods.</li>
+  <li>In the Projects window, expand the Enterprise JavaBeans node. </li>
+  <li>Right-click enterprise bean's node and choose Add <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Add 
+    Select Method. 
+    <p> You can also open the bean class and right-click anywhere inside the body 
+      of the class and choose Enterprise JavaBeans (EJB) <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Add 
+      Select Method. This command is only enabled when you click within the body 
+      of the class (after the class declaration). 
+  </li>
   <li>In the Add New Select Method dialog box, define the method signature: 
     <ol>
-      <li type="a"> Add text to the base <tt>ejbSelect</tt> name of the method.</li>
+      <li type="a"> Add text to the base <tt>ejbSelectBy</tt> name of the method.</li>
       <li>Choose the method's return type from the combo box: 
         <ul>
           <li>If the method returns the value of a CMP field, choose the appropriate 
@@ -49,14 +49,25 @@
           </li>
         </ul>
       </li>
-      <li>Specify any parameters that the method needs.</li>
-      <li>Add any additional exceptions to throw.</li>
       <li>Enter the EJB QL statement that the method will use to find the data 
         that it is to return.</li>
+      <li>Specify any parameters that the method needs.</li>
     </ol>
   </li>
-  <li>Click OK to create the method.</li>
-  <li>The IDE adds the method signature to the bean class.</li>
+  <li>Click OK to create the method. 
+    <p> The IDE adds the method signature to the bean class and registers the 
+      select method to the EJB module's deployment descriptor.
+  </li>
+</ol>
+<p><b>To view or edit an existing select method:</b></p>
+<ol>
+  <li>In the Projects window, expand the Configuration Files node for your EJB 
+    module project.</li>
+  <li>Double-click <tt>ejb-jar.xml</tt>. The graphical editor opens in the Details 
+    view.</li>
+  <li>Expand the header for the entity bean node and the CMP Selects header. The 
+    table lists all of the existing CMP select methods.</li>
+  <li>Click Add or Edit to make changes to the list of methods.</li>
 </ol>
 <table border="0">
   <tr><th colspan="2" align="left" ><a name="seealso">See Also</a></th>

@@ -28,24 +28,26 @@
   <param name="textFontSize" value="medium"><param name="textFontWeight" value="bold">
   <param name="textFontStyle" value="italic"><param name="textColor" value="blue">
   </object>&nbsp;that uniquely identifies records in the database. </p>
-<p>If you use the <a href="">Entity Bean wizard</a> to create the bean, you can 
-  have the wizard create the CMP fields for you from an existing database or database 
-  schema. You can also create new CMP fields and edit the existing CMP fields 
-  for any existing entity bean.</p>
-<p>When you add a new CMP field to an entity bean, the IDE does all of the following:</p>
+<p>If you use the CMP Entity EJB wizard to create the bean, you can have the wizard 
+  create the CMP fields for you from an existing database or database schema. 
+  You can also create new CMP fields and edit the existing CMP fields for any 
+  existing entity bean.</p>
+<p>When you add a new CMP field to an entity bean, the IDE does the following:</p>
 <ul>
-  <li>Adds the ... method to the bean class and the ... to the ...</li>
+  <li>Adds the get and set methods for the field to the bean class.</li>
   <li>Registers the CMP field in the deployment descriptor.</li>
 </ul>
 <p><b>To define a CMP field for an existing entity bean:</b></p>
 <ol>
-  <li>In the Projects window, expand the Configuration Files node for your EJB 
-    module project.</li>
-  <li>Double-click <tt>ejb-jar.xml</tt>. The graphical editor opens in the Details 
-    view.</li>
-  <li>Expand the entity bean header and the CMP fields header. The table lists 
-    all of the existing CMP fields.</li>
-  <li>Click Add or Edit to make changes to the list of CMP fields.</li>
+  <li>In the Projects window, expand the Enterprise JavaBeans node. </li>
+  <li>Right-click enterprise bean's node and choose Add <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Add 
+    CMP Field. 
+    <p> You can also open the bean class and right-click anywhere inside the body 
+      of the class and choose Enterprise JavaBeans (EJB) <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Add 
+      CMP Field. This command is only enabled when you click within the body of 
+      the class (after the class declaration). 
+  </li>
+  <li>Enter the name and type of the CMP field and click OK.</li>
 </ol>
 <table border="0">
   <tr>

@@ -13,43 +13,87 @@
 <h2>Building an EJB Module</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>In general, you build an EJB module project just as you would build any other 
-  project. The main difference is whether you want to package the JAR files on 
-  the project's classpath with the EJB module JAR file. </p>
-<p>If you are deploying the EJB module as a stand-alone module, you generally 
-  want to package the necessary JAR files with the EJB module JAR file. If, on 
-  the other hand, the module is part of a J2EE application, you should package 
-  all of the necessary JAR files as part of the J2EE application and not as part 
-  of the individual modules.</p>
-<p>The IDE automatically detects whether an EJB project is part of a J2EE application 
-  and sets whether to package the JAR files on the classpath accordingly. The 
-  IDE does not package API libraries like the Servlet API in your EJB module JAR 
-  file. You can adjust which JAR files are packaged with your EJB module in the 
-  EJB module project's Project Properties dialog box.</p>
+  project. The main difference is whether the EJB module is built individually 
+  or as part of an enterprise application. If you build an EJB module individually, 
+  the IDE packages the necessary JAR files with the EJB module JAR file. If, on 
+  the other hand, you build the EJB module as part of a J2EE application, the 
+  IDE packages all of the necessary JAR files as part of the J2EE application 
+  and not as part of the individual modules.</p>
 <table border="0" >
   <tr valign="top"> 
     <td><img src="../../images/tip.gif" alt="tip" ></td>
-    <td>How do you remove JAR files from a J2EE application if you're planning 
-      on making them available to all applications and modules deployed on the 
-      server?</td>
+    <td>The information in this page only applies to <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+        <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/csh/glossary_standard.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="400,220">
+        <param name="text" value="standard projects">
+        <param name="textFontSize" value="small">
+        <param name="textFontFamily" value="SansSerif">
+        <param name="textFontStyle" value="italic">
+        <param name="textFontWeight" value="bold">
+        <param name="textColor" value="blue">
+      </object>. <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+        <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/csh/glossary_freeform.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="400,220">
+        <param name="text" value="Free-form projects">
+        <param name="textFontSize" value="small">
+        <param name="textFontFamily" value="SansSerif">
+        <param name="textFontStyle" value="italic">
+        <param name="textFontWeight" value="bold">
+        <param name="textColor" value="blue">
+      </object> are built according to the instructions in your project's Ant 
+      script.</td>
   </tr>
 </table>
-<p><b>To build an EJB module, do one of the following:</b></p>
+<p><b>To build an EJB module individually:</b></p>
 <ul>
-  <li>If the EJB module is part of a J2EE application, make sure the J2EE application 
-    is set as the main project and choose Build <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Build 
+  <li>Right-click the EJB module project in the Projects window and choose Build 
+    Project. Or, if the EJB module project is the main project, choose Build <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Build 
     Main Project (F11).</li>
-  <li>If the project is a stand-alone EJB module, or if you want to build the 
-    EJB module without building the other modules in the J2EE application, right-click 
-    the project's node in the Projects window and choose Build Project.</li>
 </ul>
-<p><b>To define which JAR files are packaged with the EJB module JAR file:</b></p>
+<p>When you build a project individually, the IDE does the following:</p>
+<ul>
+  <li>Compiles the classes to the project's <tt>build/jar</tt> folder.</li>
+  <li>Places any JAR files that are one your project's classpath and are scheduled 
+    for inclusion in deployment into the <tt>build/jar</tt> folder.</li>
+  <li>Builds the EJB module's JAR file to the EJB module's <tt>dist</tt> folder. 
+    The JAR file includes any classpath items scheduled for inclusion in deployment.</li>
+</ul>
+<p><b>To build an EJB module as part of an enterprise application:</b></p>
 <ol>
-  <li>In the Projects window, right-click the project's node and choose Properties.</li>
-  <li>Click Compiling Sources in the left panel of the Project Properties dialog 
-    box.</li>
-  <li>In the Compilation Classpath list, select the checkbox for each classpath 
-    item that you want to package with the EJB module JAR file.</li>
+  <li>In the Projects window, expand the enterprise application's J2EE Modules 
+    node and make sure that the EJB module is listed. If you have not added the 
+    EJB module to the enterprise application, right-click the J2EE Modules node, 
+    choose Add J2EE Module, and select the EJB module.</li>
+  <li>Right-click the enterprise application project and choose Build Project. 
+    Or, if the enterprise application project is the main project, choose Build 
+    <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Build 
+    Main Project (F11).</li>
 </ol>
+<p>When you build an EJB module as part of an enterprise application, the IDE 
+  does the following:</p>
+<ul>
+  <li>Compiles the classes to the project's <tt>build/jar</tt> folder.</li>
+  <li>Places any JAR files that are one your project's classpath and are scheduled 
+    for inclusion in deployment into the enterprise project's <tt>build</tt> folder.</li>
+  <li>Builds the EJB module's JAR file to the EJB module project's <tt>dist</tt> 
+    folder and to the enterprise application project's <tt>build</tt> folder. 
+    The EJB modue JAR file does not contain any of the classpath elements. </li>
+  <li>Builds the enterprise application EAR file to the enterprise application 
+    project's <tt>dist</tt> folder.</li>
+</ul>
+<table border="0" >
+  <tr valign="top"> 
+    <td><img src="../../images/tip.gif" alt="tip" ></td>
+    <td> You can mark a classpath item for inclusion in deployment in the EJB 
+      module's Project Properties dialog box. Right-click the module's Libraries 
+      node and choose Properties, then select the checkbox for each classpath 
+      item you want to include in deployment.</td>
+  </tr>
+</table>
 <table border="0">
   <tr>
     <th colspan="2" align="left" ><a name="seealso">See Also</a></th>

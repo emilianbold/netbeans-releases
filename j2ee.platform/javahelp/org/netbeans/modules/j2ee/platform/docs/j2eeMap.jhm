@@ -160,7 +160,6 @@
     <mapID target="define_business_method" url="ejb/editing/define_business_method.html" />
     <mapID target="define_cmp_field" url="ejb/editing/define_cmp_field.html" />
     <mapID target="define_finder_method" url="ejb/editing/define_finder_method.html" />
-    <mapID target="define_primary_key_field" url="ejb/editing/define_primary_key_field.html" />
     <mapID target="define_select_method" url="ejb/editing/define_select_method.html" />
     <mapID target="call_ejb" url="ejb/editing/call_ejb.html" />
 
@@ -168,6 +167,8 @@
 
     <mapID target="build_ejb" url="ejb/deploy/build_ejb.html" />
     <mapID target="deploy_ejb" url="ejb/deploy/deploy_ejb.html" />
+
+    <mapID target="config_ejb_about" url="ejb/configuring/config_ejb_about.html" />
 
     <!-- EJB Module from Existing Sources Project Wizard dialog box csh -->
 

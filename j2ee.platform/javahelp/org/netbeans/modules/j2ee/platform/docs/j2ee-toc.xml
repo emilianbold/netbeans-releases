@@ -191,7 +191,6 @@
             <tocitem text="About Entity Beans" target="about_entity_beans" />
             <tocitem text="About Session Beans" target="about_session_beans" />
             <tocitem text="About Message-Driven Beans" target="about_msg_driven_beans" />
-            <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
         </tocitem>
         <tocitem text="Creating and Editing Enterprise Beans" >
             <tocitem text="Creating an EJB Module Project" target="create_ejb_project" />
@@ -201,15 +200,13 @@
             <tocitem text="Adding EJB QL to a Finder or Select Method" target="add_ejbql" />
             <tocitem text="Defining a Select Method" target="define_select_method" />
             <tocitem text="Defining a CMP Field" target="define_cmp_field" />
-            <tocitem text="Defining a Primary Key Field" target="define_primary_key_field" />
             <tocitem text="Calling an Enterprise Bean" target="call_ejb" />
             <tocitem text="Refactoring an Enterprise Bean" target="tbd" />
         </tocitem>
         <tocitem text="Configuring EJB Modules" >
-            <tocitem text="About Configuring EJB Modules" target="tbd" />
-            <tocitem text="Editing an EJB Module's General Deployment Descriptor" target="tbd" />
+            <tocitem text="About Configuring EJB Modules" target="config_ejb_about" />
+            <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
             <tocitem text="Defining an EJB Module's Server-Specific Deploymnet Descriptor" target="tbd" />
-            <tocitem text="Adding an EJB Module to a J2EE Application" target="add_ejb_to_j2ee_app" />
             <tocitem text="Adding an External Enterprise Bean to an EJB Module" target="tbd" />
             <tocitem text="Creating a Container-Managed Relationship in an EJB Module" target="tbd" /> 
         </tocitem>

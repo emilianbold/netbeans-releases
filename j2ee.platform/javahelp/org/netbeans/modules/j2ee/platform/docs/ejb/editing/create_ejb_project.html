@@ -23,9 +23,7 @@
   module's deployment descriptors. </p>
 <p>You can create an EJB module by doing any of the following:</p>
 <ul>
-  <li>Creating a Populated Enterprise Application project. This project template 
-    creates a complete enterprise application with an empty Web module project 
-    and an empty EJB module project.</li>
+  <li>Creating a new Enterprise Application project with an empty EJB module project.</li>
   <li>Create an empty EJB module project. You can manually add the EJB module 
     to an enterprise application or deploy it as a stand-alone EJB module.</li>
   <li>Import existing enterprise bean code into a standard project. A standard 
@@ -38,6 +36,15 @@
       Sources projects, the module can have any folder structure. 
   </li>
 </ul>
+<table border="0" >
+  <tr valign="top"> 
+    <td><img src="../../images/tip.gif" alt="tip" ></td>
+    <td>The IDE only supports J2EE 1.4 EJB modules and automatically updates all 
+      J2EE 1.3 EJB modules to J2EE 1.4. The J2EE 1.4 specification is fully backwards-compatible, 
+      so upgrading the specification level does not change the behaviour of your 
+      code.</td>
+  </tr>
+</table>
 <p><b>To create an EJB module project:</b></p>
 <ol>
   <li>Choose File <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;New 
@@ -47,8 +54,8 @@
   <li>Follow the steps in the rest of the wizard. For more information, see the 
     following topics:</li>
   <ul>
-    <li><a href="../../enterprise/csh/CompleteEarProjectWizardIterator.html">Populated 
-      Enterprise Application Wizard</a></li>
+    <li><a href="../../enterprise/csh/CompleteEarProjectWizardIterator.html">Enterprise 
+      Application Wizard</a></li>
     <li><a href="../../enterprise/csh/ImportBlueprintEarWizardIterator.html">Existing 
       Blueprints Application Wizard</a></li>
     <li><a href="../csh/ejb_new_wizard.html">Enterprise JavaBeans Module Wizard</a></li>
