@@ -506,11 +506,11 @@ public class MetaComponentCreator {
             }
         }
 
-        addVisualComponent(newMetaComp, targetComp, constraints);
-
         // for some components, we initialize their properties with some
         // non-default values e.g. a label on buttons, checkboxes
         defaultComponentInit(newMetaComp);
+
+        addVisualComponent(newMetaComp, targetComp, constraints);
 
         return newMetaComp;
     }
@@ -887,7 +887,45 @@ public class MetaComponentCreator {
         String varName = radComp.getName();
         String propName = null;
         Object propValue = null;
-        if (comp instanceof Button) {
+
+        if (comp instanceof AbstractButton) { // JButton, JToggleButton, JCheckBox, JRadioButton
+            if ("".equals(((AbstractButton)comp).getText())) { // NOI18N
+                propName = "text"; // NOI18N
+                propValue = varName;
+            }
+        }
+        else if (comp instanceof JLabel) {
+            if ("".equals(((JLabel)comp).getText())) { // NOI18N
+                propName = "text"; // NOI18N
+                propValue = varName;
+            }
+        }
+        else if (comp instanceof JTable) {
+            javax.swing.table.TableModel tm = ((JTable)comp).getModel();
+            if (tm == null
+                || (tm instanceof javax.swing.table.DefaultTableModel
+                    && tm.getRowCount() == 0 && tm.getColumnCount() == 0))
+            {
+                propValue =
+                    new org.netbeans.beaninfo.editors.TableModelEditor.NbTableModel(
+                        new javax.swing.table.DefaultTableModel(
+                            new String[] {
+                                "Title 1", "Title 2", "Title 3", "Title 4" }, // NOI18N
+                            4));
+                propName = "model"; // NOI18N
+            }
+        }
+        else if ((comp instanceof JTextField) &&(!(comp instanceof JPasswordField))) { // JTextField and not JPasswordField
+            if ("".equals(((JTextField)comp).getText())) { // NOI18N
+                propName = "text"; // NOI18N
+                propValue = varName;
+            }
+        }
+        else if (comp instanceof JInternalFrame) {
+            propName = "visible"; // NOI18N
+            propValue = new Boolean(true);
+        }
+        else if (comp instanceof Button) {
             if ("".equals(((Button)comp).getLabel())) { // NOI18N
                 propName = "label"; // NOI18N
                 propValue = varName;
@@ -911,46 +949,14 @@ public class MetaComponentCreator {
                 propValue = varName;
             }
         }
-        else if (comp instanceof AbstractButton) { // JButton, JToggleButton, JCheckBox, JRadioButton
-            if ("".equals(((AbstractButton)comp).getText())) { // NOI18N
-                propName = "text"; // NOI18N
-                propValue = varName;
-            }
-        }
-        else if (comp instanceof JLabel) {
-            if ("".equals(((JLabel)comp).getText())) { // NOI18N
-                propName = "text"; // NOI18N
-                propValue = varName;
-            }
-        }
-        else if (comp instanceof JTable) {
-            javax.swing.table.TableModel tm =((JTable)comp).getModel();
-            if ((tm == null) ||((tm instanceof javax.swing.table.DefaultTableModel) &&
-                                (tm.getRowCount() == 0) &&(tm.getColumnCount() == 0)))
-            {
-                propValue = new org.netbeans.beaninfo.editors.TableModelEditor.NbTableModel(new javax.swing.table.DefaultTableModel(
-                    new String[] {"Title 1", "Title 2", "Title 3", "Title 4"}, // NOI18N
-                    4
-                    ));
-                propName = "model"; // NOI18N
-            }
-        }
-        else if ((comp instanceof JTextField) &&(!(comp instanceof JPasswordField))) { // JTextField and not JPasswordField
-            if ("".equals(((JTextField)comp).getText())) { // NOI18N
-                propName = "text"; // NOI18N
-                propValue = varName;
-            }
-        }
-        else if (comp instanceof JInternalFrame) {
-            propName = "visible"; // NOI18N
-            propValue = new Boolean(true);
-        }
 
         if (propName != null) {
             RADProperty prop = radComp.getPropertyByName(propName);
             if (prop != null) {
                 try {
+                    prop.setChangeFiring(false);
                     prop.setValue(propValue);
+                    prop.setChangeFiring(true);
                 }
                 catch (Exception e) {} // never mind, ignore
             }
@@ -963,27 +969,7 @@ public class MetaComponentCreator {
         String propName = null;
         Object propValue = null;
 
-        if (comp instanceof MenuItem) {
-            if ("".equals(((MenuItem)comp).getLabel())) { // NOI18N
-                String value = "{0}"; // NOI18N
-                propName = "label"; // NOI18N
-                if (comp instanceof PopupMenu) {
-                    value = FormEditor.getFormBundle().getString("FMT_LAB_PopupMenu");
-                }
-                else if (comp instanceof Menu) {
-                    value = FormEditor.getFormBundle().getString("FMT_LAB_Menu");
-                }
-                else if (comp instanceof CheckboxMenuItem) {
-                    value = FormEditor.getFormBundle().getString("FMT_LAB_CheckboxMenuItem");
-                }
-                else {
-                    value = FormEditor.getFormBundle().getString("FMT_LAB_MenuItem");
-                }
-
-                propValue = MessageFormat.format(value, new Object[] { varName });
-            }
-        }
-        else if (comp instanceof JMenuItem) {
+        if (comp instanceof JMenuItem) {
             if ("".equals(((JMenuItem)comp).getText())) { // NOI18N
                 String value = "{0}"; // NOI18N
                 propName = "text"; // NOI18N
@@ -1003,11 +989,34 @@ public class MetaComponentCreator {
                 propValue = MessageFormat.format(value, new Object[] { varName });
             }
         }
+        else if (comp instanceof MenuItem) {
+            if ("".equals(((MenuItem)comp).getLabel())) { // NOI18N
+                String value = "{0}"; // NOI18N
+                propName = "label"; // NOI18N
+                if (comp instanceof PopupMenu) {
+                    value = FormEditor.getFormBundle().getString("FMT_LAB_PopupMenu");
+                }
+                else if (comp instanceof Menu) {
+                    value = FormEditor.getFormBundle().getString("FMT_LAB_Menu");
+                }
+                else if (comp instanceof CheckboxMenuItem) {
+                    value = FormEditor.getFormBundle().getString("FMT_LAB_CheckboxMenuItem");
+                }
+                else {
+                    value = FormEditor.getFormBundle().getString("FMT_LAB_MenuItem");
+                }
+
+                propValue = MessageFormat.format(value, new Object[] { varName });
+            }
+        }
+
         if (propName != null) {
             RADProperty prop = menuComp.getPropertyByName(propName);
             if (prop != null) {
                 try {
+                    prop.setChangeFiring(false);
                     prop.setValue(propValue);
+                    prop.setChangeFiring(true);
                 }
                 catch (Exception e) {} // never mind, ignore
             }
