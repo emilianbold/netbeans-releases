@@ -57,6 +57,9 @@ public class NbServletsInterceptor extends BaseInterceptor {
         
 	sw=addServlet( ctx, "JavadocServlet", "org.netbeans.modules.httpserver.JavadocServlet");
 	ctx.addServletMapping(op.getJavadocBaseURL() + "*", "JavadocServlet");
+        
+	sw=addServlet( ctx, "WrapperServlet", "org.netbeans.modules.httpserver.WrapperServlet");
+	ctx.addServletMapping(op.getWrapperBaseURL () + "*", "WrapperServlet");
     }
     
     public void contextInit(Context ctx) throws TomcatException {

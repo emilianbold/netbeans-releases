@@ -71,6 +71,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     public static final String PROP_REPOSITORY_BASEURL = "repositoryBaseURL"; // NOI18N
     public static final String PROP_CLASSPATH_BASEURL  = "classpathBaseURL"; // NOI18N
     public static final String PROP_JAVADOC_BASEURL    = "javadocBaseURL"; // NOI18N
+           static final String PROP_WRAPPER_BASEURL    = "wrapperBaseURL"; // NOI18N
     public static final String PROP_RUNNING            = "running"; // NOI18N
     public static final String PROP_GRANTED_ADDRESSES  = "grantedAddresses"; // NOI18N
 
@@ -87,7 +88,11 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     /** mapping of classpath to URL */
     private static String classpathBaseURL = "/classpath/"; // NOI18N
 
+    /** mapping of javadoc to URL */
     private static String javadocBaseURL = "/javadoc/"; // NOI18N
+    
+    /** mapping of wrapper to URL */
+    private static String wrapperBaseURL = "/resource/"; // NOI18N
     
     /** addresses which have been granted access to the web server */
     private static String grantedAddresses = ""; // NOI18N
@@ -325,6 +330,32 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
         catch (org.openide.filesystems.FileStateInvalidException ex) {
             throw new MalformedURLException ();
         }
+    }
+
+    // NOT publicly available
+    
+    /** getter for classpath base */
+    String getWrapperBaseURL() {
+        return wrapperBaseURL;
+    }
+
+    /** setter for classpath base */
+    void setWrapperBaseURL(String wrapperBaseURL) {
+        // canonical form starts and ends with a /
+        String oldURL;
+        String newURL = getCanonicalRelativeURL(wrapperBaseURL);
+
+        // check if any change is taking place
+        if (this.wrapperBaseURL.equals(newURL))
+            return;
+
+        // implement the change
+        synchronized (HttpServerSettings.OPTIONS) {
+            oldURL = this.wrapperBaseURL;
+            this.wrapperBaseURL = newURL;
+            restartIfNecessary(false);
+        }
+        firePropertyChange(PROP_WRAPPER_BASEURL, oldURL, this.wrapperBaseURL);
     }
 
     /** Getter for grantedAddresses property */
