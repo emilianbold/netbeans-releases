@@ -24,7 +24,7 @@
 <h3>Properties Section</h3>
 <ul>
   <li><b>Server Port.</b> The number of the TCP/IP port that the server listens 
-    on. The URL for a web module that is deployed on the server is derived from 
+    on. The URL for a web application that is deployed on the server is derived from 
     the host's URL and the server port, such as <tt>http://localhost:8086</tt>.</li>
   <li><b>Admin Port.</b> The number of the TCP/IP port that the server's administrative 
     server listens to.</li>
@@ -42,7 +42,7 @@
   <li><b>Home Directory.</b> The home directory for the server on your local system. 
     This property is set when you add a Tomcat server to the Server Registry. 
     This location is where Tomcat expects to find its own binaries and any libraries 
-    that are used by web modules but which are not part of Tomcat itself.</li>
+    that are used by web applications but which are not part of Tomcat itself.</li>
   <li><b>Base Directory.</b> The base directory for the Tomcat server. You can 
     set this property when you add a Tomcat server to the Server Registry. If 
     you set a base directory, then that is where the Tomcat configuration files 
@@ -50,13 +50,16 @@
     more than one user to use the same server. If no base directory is specified, 
     then the configuration files reside in the home directory.</li>
   <li><b>Enable HTTP Monitor.</b> Select this checkbox to enable the HTTP Monitor 
-    for web modules executing on the server. When enabling the monitor, you must 
+    for web applications executing on the server. When enabling the monitor, you must 
     restart the server in order for the change to take affect. The HTTP Monitor 
-    is useful for debugging web modules. If you are using the server for production 
+    is useful for debugging web applications. If you are using the server for production 
     purposes only, you may want to clear the checkbox to reduce its impact on 
     the server's performance. When you clear the checkbox, the IDE removes the 
     HTTP monitor's declaration from the server. However the monitor's libraries 
     remain deployed to the server.</li>
+  <li><b>Open Context Log on Run.</b> Select this checkbox to enable the context
+    log to be opened while the web application is being deployed. You can watch
+    the stack trace as it builds.</li>
   </li>
   When you disable the HTTP Monitor, you do not need to restart the server for 
   the change to take affect. 

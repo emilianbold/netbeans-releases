@@ -25,7 +25,7 @@ The Tomcat Plugin is an IDE module that handles integration with Tomcat
 <p>A Tomcat server is bundled with the IDE and is pre-configured to work with 
   the plugin. The Tomcat server implements the JavaServer Pages 2.0 and Servlet 
   2.4 specifications and includes many features that are useful in the deployment 
-  of web modules.</p>
+  of web applications.</p>
 <p>You can also configure the Tomcat plugin to integrate with other supported 
   Tomcat servers. See <a href="tomcat_addinstall.html">Adding a Tomcat Server</a>.</p>
 <p>To see the Tomcat servers that the Tomcat Plugin manages, expand Server Registry 
@@ -44,7 +44,7 @@ The Tomcat Plugin is an IDE module that handles integration with Tomcat
 <table cellpadding="3" cellspacing="0" border="0">
   <tr valign="top"> 
     <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
-    <td> You can also configure the IDE to deploy web modules to other installations 
+    <td> You can also configure the IDE to deploy web applications to other installations 
       of Tomcat. See <a href="tomcat_addinstall.html">Adding 
       a Tomcat Installation</a> for more information. </td>
   </tr>
@@ -56,14 +56,14 @@ The Tomcat Plugin is an IDE module that handles integration with Tomcat
   To see the exact locations of the home and base directories, right-click the 
   server's node in the Runtime tab and choose Properties from the contextual menu. 
 </p>
-<p>Shared libraries that are used by web modules must be added to the home directory. 
+<p>Shared libraries that are used by web applications must be added to the home directory. 
   Do not add shared libraries to the base directory.</p>
 <table>
   <tr> 
     <td valign="top"><img src="../images/warn.gif" width="16" height="16"></td>
     <td valign=top align=left> <p>Developers using a common IDE installation need 
         to exercise caution when adding shared libraries to the home directory. 
-        Libraries stored in the home directory are shared by all web modules that 
+        Libraries stored in the home directory are shared by all web applications that 
         are deployed on the server, so the potential for version conflicts exists.</p></td>
   </tr>
 </table>

@@ -15,47 +15,46 @@
 </head>
 <body>
 
-<h2>Tomcat Web Modules Node</h2>
+<h2>Tomcat Web Applications Node</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-<p>The web modules node <img src="../images/mfolder.gif">&nbsp;lists 
-  the web module contexts that have been deployed to the server. It appears 
+<p>The web applications node <img src="../images/mfolder.gif">&nbsp;lists 
+  the web application contexts that have been deployed to the server. It appears 
   under the server's instance in the Runtime window. </p>
-<p>The IDE adds a web module's context node <img src="../images/webmodule.gif">&nbsp;
-the first time you execute the web module 
+<p>The IDE adds a web application's context node <img src="../images/webmodule.gif">&nbsp;
+the first time you execute the web application 
   from the IDE.</p>
-<p>When the server receives a HTTP request, the server selects the web module 
+<p>When the server receives a HTTP request, the server selects the web application 
   for processing the request by matching the longest possible prefix of the Request 
   URI against all of the defined context paths.</p>
 <h3>Working With This Node</h3>
-<p>If you right-click the web module node and display the contextual menu, you 
+<p>If you right-click the web application node and display the contextual menu, you 
   can choose Refresh to bring the contents of the node up-to-date.</p>
-<h3>Working With the Web Module's Context Nodes </h3>
-<p>If you right-click one of the web module's context nodes and display the contextual 
+<h3>Working With the Web Application's Context Nodes </h3>
+<p>If you right-click one of the web application's context nodes and display the contextual 
   menu, you see a list of menu items that enable you to work with the context. 
   The following list describes these menu items and provides links to topics that 
   explain more.</p>
 <ul>
-  <li><b>Start.</b> Restarts a stopped web module.</li>
-  <li><b>Stop.</b> Disables the web module so that no one can run the module. 
-    You can use this action to prevent others from using the module while fixing 
-    or modifying the module. If someone tries to run a stopped web module, the 
-    server returns HTTP Status 503, which indicates that the application is not 
-    currently available.</li>
-  <li><b>Open in Browser.</b> Opens the selected web module's URL in the IDE's
+  <li><b>Start.</b> Restarts a stopped web application.</li>
+  <li><b>Stop.</b> Disables the web application so that no one can run it. You 
+    can use this action to prevent others from using the web application while 
+    fixing or modifying it. If someone tries to run a stopped web application, 
+    the server returns HTTP Status 503, which indicates that the application is 
+    not currently available.</li>
+  <li><b>Open in Browser.</b> Opens the selected web application's URL in the IDE's
     default browser. This item is enabled when the server is running.</li>
   <li><b>View Context Log.</b> Displays the context log file. The server does not need to be 
     running for this item to be enabled, but the context must have a logger defined 
-    in the <tt>context.xml</tt> file. For example, when you create a web module,
+    in the <tt>context.xml</tt> file. For example, when you create a web application,
     the NetBeans IDE creates a <tt>context.xml</tt> file that includes a logger element:
     <pre><tt>      &lt;Context path="/MyApp"&gt;
          &lt;Logger className="org.apache.catalina.logger.FileLogger" 
          prefix="MyApp" suffix=".log" timestamp="true"/&gt;
       &lt;/Context&gt;    </pre></tt></li>
-  <li><a href="tomcat_context_delete.html"><b>Undeploy.</b></a> Removes the web 
-    module's context from the server. The IDE 
-    will recreate the context if the web module is subsequently executed from 
+  <li><a href="tomcat_context_delete.html"><b>Undeploy.</b></a> Removes the web application's context from the server. The IDE 
+    will recreate the context if the web application is subsequently executed from 
     the IDE.</li>
 </ul>
 <table>
@@ -64,7 +63,7 @@ the first time you execute the web module
   </tr>
   <tr> 
     <td width="23"></td>
-    <td><a href="tomcat_context_add.html">Setting a Web Module 
+    <td><a href="tomcat_context_add.html">Setting a Web Application 
       Context for the Tomcat Server</a><br>
   </tr>
 </table>
