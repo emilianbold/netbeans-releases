@@ -66,7 +66,7 @@ for more information.
 See <a href="http://debuggercore.netbeans.org/docs/api/ProgrammersGuide.html">Programmers Guide</a>.
 List of APIs:
 <ul>
-<li><api name="DebuggerCoreUI-SPI" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20Core%20UI%20SPI/index.html" group="java"/></li>
+<li><api name="DebuggerCoreUI-SPI" type="export" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20Core%20UI%20SPI/index.html" group="java"/></li>
 
 <li><api name="Meta-inf-debuggerorg.netbeans.spi.debugger.ui.BreakpointType" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>New Breakpoint Dialog loads all breakpoint type definitions.</li>
 <li><api name="Meta-inf-debuggerorg.netbeans.spi.debugger.ui.AttachType" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Attach to ... Dialog loads all attach type definitions.</li>
