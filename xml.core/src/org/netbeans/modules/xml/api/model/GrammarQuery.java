@@ -35,10 +35,10 @@ import org.w3c.dom.NodeList;
  * <p>
  * Every option represents DOM <code>Node</code> that can have children. These children
  * represents mandatory content for given option. Providing them is optional.
- * On the other hand <code>EMPTY<code> elements may not provide any children.
+ * On the other hand <code>EMPTY</code> elements may not provide any children.
  *
  * <h3>Context Representation</h3>
- * Query context is represented by a readonly DOM1 model Core and XML modules
+ * Query context is represented by a read-only DOM1 model Core and XML modules
  * (it may be replaced with DOM2).
  * 
  * <h3>Implementation Note:</h3>
@@ -65,7 +65,7 @@ public interface GrammarQuery {
      * @time Performs fast up to 300 ms.
      * @stereotype query
      * @param ctx represents virtual element Node that has to be replaced, its own attributes does not name sense, it can be used just as the navigation start point.
-     * @return enumeration of <code>GrammarResult</code>s (ELEMENT_NODEs) that can be queried on name, and attributes
+     * @return enumeration of <code>GrammarResult</code>s (ELEMENT_NODEs) that can be queried on name, and attributes.
      *         Every list member represents one possibility.  
      */
     Enumeration queryElements(HintContext ctx);

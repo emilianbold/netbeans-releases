@@ -30,7 +30,7 @@ public interface HintContext extends Node {
     
     /**
      * Property representing text that already forms context Node.
-     * E.g. for <sample>&lt;elem<blink>|<blink>ent attr="dsD"></sample>
+     * E.g. for <sample>&lt;elem<blink>|</blink>ent attr="dsD"></sample>
      * it will return <sample>"elem"</sample> string.
      * @return String representing prefix as entered by user
      * that can be used for refining results 
