@@ -43,7 +43,12 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <!-- <testbag testattribs="code,empty" executor="code" name="testbag_empty" resultsprocessor="unit"/> -->
+    <!-- If you want to use this testbag you *must* provide xtest.includes property, -->
+    <!-- (either on cmd line or in the script) to explicitly define which test       -->
+    <!-- you want to run. This will run *only* tests from unit/src folder !!!        -->
+    <testbag testattribs="code,empty" executor="code" name="testbag_empty" resultsprocessor="unit">
+        <testset dir="unit/src"/>
+    </testbag>
 
     <executor name="ide" antfile="build.xml" target="runidetest"/>
     <executor name="code" antfile="build.xml" target="runcodetest"/>
