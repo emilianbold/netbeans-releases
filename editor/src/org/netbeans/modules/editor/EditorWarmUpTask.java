@@ -21,8 +21,6 @@ import java.io.File;
 import java.util.Enumeration;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
@@ -67,19 +65,19 @@ public class EditorWarmUpTask implements Runnable{
     private static final int VIEW_HIERARCHY_CREATION_COUNT = 1;
     
     /**
-     * Width of an artificial frame used to hold the editor pane.
+     * Width of buffered image area.
      */
-    private static final int FRAME_WIDTH = 600;
+    private static final int IMAGE_WIDTH = 600;
     
     /**
-     * Height of an artificial frame used to hold the editor pane.
+     * Height of buffered image area.
      */
-    private static final int FRAME_HEIGHT = 400;
+    private static final int IMAGE_HEIGHT = 400;
     
     /**
-     * Number of scrolls to be simulated.
+     * Number of paints to be simulated.
      */
-    private static final int SCROLL_COUNT = 30;
+    private static final int PAINT_COUNT = 30;
     
 
     private static final boolean debug
@@ -130,22 +128,15 @@ public class EditorWarmUpTask implements Runnable{
         }
 
         // Work with artificial frame that will host an editor pane
-        JFrame frame = new JFrame();
         JEditorPane pane = new JEditorPane();
-        JComponent extComponent = null;
         pane.setEditorKit(javaKit);
 
         // Obtain extended component (with editor's toolbar and scrollpane)
         EditorUI editorUI = Utilities.getEditorUI(pane);
         if (editorUI != null) {
-            extComponent = editorUI.getExtComponent();
+            // Make sure extended component necessary classes get loaded
+            editorUI.getExtComponent();
         }
-
-        if (extComponent == null) {
-            extComponent = new JScrollPane(pane);
-        }
-
-        frame.getContentPane().add(extComponent);
 
         // Have two documents - one empty and another one filled with many lines
         Document emptyDoc = javaKit.createDefaultDocument();
@@ -210,35 +201,26 @@ public class EditorWarmUpTask implements Runnable{
                         int pos = pane.viewToModel(point);
                     }
 
+                    // Create buffered image for painting simulation
+                    BufferedImage bImage = new BufferedImage(
+                        IMAGE_WIDTH, IMAGE_HEIGHT, BufferedImage.TYPE_INT_RGB);
+                    Graphics bGraphics = bImage.getGraphics();
+                    bGraphics.setClip(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+                    
+                    int rootViewWidth = (int)rootView.getPreferredSpan(View.X_AXIS);
+                    int rootViewHeight = (int)rootView.getPreferredSpan(View.Y_AXIS);
+                    Rectangle alloc = new Rectangle(0, 0, rootViewWidth, rootViewHeight);
+                    
+                    // Paint into buffered image
+                    for (int i = PAINT_COUNT - 1; i >= 0; i--) {
+                        rootView.paint(bGraphics, alloc);
+                    }
+
                 } finally {
                     lockView.unlock();
                 }
             } finally {
                 doc.readUnlock();
-            }
-
-            // Pack the frame and then set target size and validate
-            frame.pack();
-            frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
-            frame.validate();
-
-            // Create buffered image for painting simulation
-            BufferedImage bImage = new BufferedImage(
-                FRAME_WIDTH, FRAME_HEIGHT, BufferedImage.TYPE_INT_RGB);
-            Graphics bGraphics = bImage.getGraphics();
-            bGraphics.setClip(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
-
-            frame.paint(bGraphics);
-
-            // Scroll through the document and do the paints into buffered image
-            if (pane.getParent() instanceof JViewport) {
-                JViewport viewport = (JViewport)pane.getParent();
-                for (int i = 0; i < SCROLL_COUNT; i++) {
-                    int y = (i * pane.getHeight()) / SCROLL_COUNT;
-                    viewport.setViewPosition(new Point(0,y));
-                    // cliping area should be retained in the graphics
-                    frame.paint(bGraphics);
-                }
             }
 
         } catch (BadLocationException e) {
