@@ -1082,22 +1082,25 @@
    <mapID target="rmi_registrybrowser_starting" url="rmi/registrybrowser/rmi_registrybrowser_starting.html" />
    <mapID target="rmi_registrybrowser_viewing" url="rmi/registrybrowser/rmi_registrybrowser_viewing.html" />	
    <mapID target="rmi_registrybrowser_using" url="rmi/registrybrowser/rmi_registrybrowser_using.html" />	
-   <mapID target="rmi_settings_intro" url="rmi/settings/rmi_settings.html" />
+
+   <mapID target="rmi_settings_intro" url="rmi/settings/custom_rmi.html" />
+   <mapID target="rmi_settings_mod" url="rmi/settings/rmi_settings.html" />
+   <mapID target="rmi_settings_activ" url="rmi/settings/activation_props.html" />
+   <mapID target="rmi_settings_regis" url="rmi/settings/registry_props.html" />
    <mapID target="rmi_settings_executionnode" url="rmi/settings/rmi_settings_executionnode.html" />	
    <mapID target="rmi_settings_debuggernode" url="rmi/settings/rmi_settings_debuggernode.html" />	
    <mapID target="rmi_settings_compilernode" url="rmi/settings/rmi_settings_compilernode.html" />
+
    <mapID target="rmi_activatebrowser" url="rmi/activatebrowser/rmi_activatebrowser.html" />
    <mapID target="rmi_activate_starting" url="rmi/activatebrowser/rmi_activatebrowser_starting.html" />	
+   <mapID target="rmi_activ_instance" url="rmi/activatebrowser/addingbrowserinstance.html" />	
+   <mapID target="rmi_activ_group" url="rmi/activatebrowser/addingactgroup.html" />	
    <mapID target="rmi_activate_usingsystem" url="rmi/activatebrowser/rmi_activatebrowser_usingsystem.html" />	
    <mapID target="rmi_activate_usinggroup" url="rmi/activatebrowser/rmi_activatebrowser_usinggroup.html" />	
    <mapID target="rmi_activate_usingobject" url="rmi/activatebrowser/rmi_activatebrowser_usingobject.html" />
 
    <mapID target="org.netbeans.modules.rmi.RMIStubCompilerType" url="rmi/settings/rmi_settings_compilernode.html" />
-   <mapID target="org.netbeans.modules.rmi.wizard.RMIWizardFinish" url="rmi/rmi_wizard.html" /> 	
-   <mapID target="org.netbeans.modules.rmi.wizard.RMIWizard" url="rmi/rmi_wizard.html#targetlocation" /> 	
-   <mapID target="org.netbeans.modules.rmi.wizard.RMIWizard2" url="rmi/rmi_wizard.html#remoteinterface" /> 	
-   <mapID target="org.netbeans.modules.rmi.wizard.RMIWizard4" url="rmi/rmi_wizard.html#remotemethod" /> 	
-   <mapID target="org.netbeans.modules.rmi.wizard.RMIWizard3" url="rmi/rmi_wizard.html#remoteimplementation" /> 	
+   <mapID target="rmi_fig" url="rmi/concepts/RMIfig.html" />	
   
    <!-- From JNDI module. -->
    
