@@ -676,8 +676,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                     return null;
                 }
             });
-            if (EjbJarLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
-//            if (EjbJarPhysicalViewProvider.hasBrokenLinks(updateHelper, refHelper)) {   //XXX Don't konw if it needs to use updateHelper
+            EjbJarLogicalViewProvider physicalViewProvider = (EjbJarLogicalViewProvider)
+                EjbJarProject.this.getLookup().lookup (EjbJarLogicalViewProvider.class);
+            if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
                 BrokenReferencesSupport.showAlert();
             }
         }

@@ -25,6 +25,7 @@ import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.ejbjarproject.SourceRoots;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.LogicalViewChildren;
 
 import org.openide.nodes.*;
@@ -122,15 +123,29 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
     // Private innerclasses ----------------------------------------------------
    
     private static final String[] BREAKABLE_PROPERTIES = new String[] {
-        EjbJarProjectProperties.JAVAC_CLASSPATH,  
+        EjbJarProjectProperties.JAVAC_CLASSPATH,
         EjbJarProjectProperties.DEBUG_CLASSPATH,
-        EjbJarProjectProperties.SRC_DIR,
+        EjbJarProjectProperties.RUN_TEST_CLASSPATH, 
+        EjbJarProjectProperties.DEBUG_TEST_CLASSPATH, 
+        EjbJarProjectProperties.JAVAC_TEST_CLASSPATH,
     };
 
-    public static boolean hasBrokenLinks(AntProjectHelper helper, ReferenceHelper resolver) {
-        return BrokenReferencesSupport.isBroken(helper, resolver, BREAKABLE_PROPERTIES, 
+    public boolean hasBrokenLinks() {
+        return BrokenReferencesSupport.isBroken(helper, resolver, getBreakableProperties(), 
             new String[] {EjbJarProjectProperties.JAVA_PLATFORM});
     }
+    
+    private String[] getBreakableProperties() {
+        SourceRoots roots = this.project.getSourceRoots();
+        String[] srcRootProps = roots.getRootProperties();
+        roots = this.project.getTestSourceRoots();
+        String[] testRootProps = roots.getRootProperties();
+        String[] result = new String [BREAKABLE_PROPERTIES.length + srcRootProps.length + testRootProps.length];
+        System.arraycopy(BREAKABLE_PROPERTIES, 0, result, 0, BREAKABLE_PROPERTIES.length);
+        System.arraycopy(srcRootProps, 0, result, BREAKABLE_PROPERTIES.length, srcRootProps.length);
+        System.arraycopy(testRootProps, 0, result, BREAKABLE_PROPERTIES.length + srcRootProps.length, testRootProps.length);
+        return result;
+    }        
 
     /** Filter node containin additional features for the J2SE physical
      */
@@ -145,7 +160,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             super( new LogicalViewChildren( project, updateHelper, evaluator, resolver ), createLookup( project ) ); 
             setIconBase( "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon" ); // NOI18N
             setName( ProjectUtils.getInformation( project ).getDisplayName() );            
-            if (hasBrokenLinks(helper, resolver)) {
+            if (hasBrokenLinks()) {
                 broken = true;
                 brokenLinksAction = new BrokenLinksAction();
             }
@@ -240,8 +255,8 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             }
 
             public void actionPerformed(ActionEvent e) {
-                BrokenReferencesSupport.showCustomizer(helper, resolver, BREAKABLE_PROPERTIES, new String[]{EjbJarProjectProperties.JAVA_PLATFORM});
-                if (!hasBrokenLinks(helper, resolver)) {
+                BrokenReferencesSupport.showCustomizer(helper, resolver, getBreakableProperties(), new String[]{EjbJarProjectProperties.JAVA_PLATFORM});
+                if (!hasBrokenLinks()) {
                     disable();
                 }
             }
@@ -251,7 +266,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                     disable();
                     return;
                 }
-                broken = hasBrokenLinks(helper, resolver);
+                broken = hasBrokenLinks();
                 if (!broken) {
                     disable();
                 }
