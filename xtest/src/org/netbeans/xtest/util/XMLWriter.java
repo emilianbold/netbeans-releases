@@ -7,13 +7,8 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * XMLWriter.java
- *
- * Created on March 29, 2001, 7:44 PM
  */
 
 package org.netbeans.xtest.util;
@@ -24,9 +19,8 @@ import java.text.*;
 import org.w3c.dom.*;
 
 /**
- *
+ * Serializes DOM trees.
  * @author  vs124454
- * @version 
  */
 public class XMLWriter {
 
@@ -140,7 +134,17 @@ public class XMLWriter {
             
             if (child.getNodeType() == Node.CDATA_SECTION_NODE) {
                 printer.print("<![CDATA[");
-                printer.printUnformatted(child.getNodeValue());
+                String s = child.getNodeValue();
+                // Caution - the string might contain "]]>". Can happen if you do e.g.:
+                // assertEquals(Arrays.asList(new Object[] {Arrays.asList(new Object[0])}), null);
+                // which would print the bogus XML:
+                // <![CDATA[junit.framework.AssertionFailedError: expected:<[[]]> but was:<null>
+                //         at Whatever.java:123
+                // ]]>
+                // Cf.: http://www.w3.org/TR/REC-xml#sec-cdata-sect
+                // Of course using a real XML serializer (as e.g. XMLUtil.write) does this for you.
+                s = s.replaceAll("]]>", "]]]]><![CDATA[>");
+                printer.printUnformatted(s);
                 printer.printUnformatted("]]>");
                 printer.newLine();
             }
