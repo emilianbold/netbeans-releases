@@ -661,9 +661,19 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
     /////////////////////////////
     // Registry notifications
-    static void notifyRegistryTopComponentActivated(TopComponent tc) {
+    static void notifyRegistryTopComponentActivated(final TopComponent tc) {
         ((RegistryImpl)getDefault().getRegistry()).topComponentActivated(tc);
-        WindowManagerImpl.getInstance().activateComponent(tc);
+        
+        // #37457 It is needed to ensure the activation calls are in AWT thread.
+        if(SwingUtilities.isEventDispatchThread()) {
+            WindowManagerImpl.getInstance().activateComponent(tc);
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    WindowManagerImpl.getInstance().activateComponent(tc);
+                }
+            });
+        }
     }
     
     private static void notifyRegistryTopComponentOpened(TopComponent tc) {
