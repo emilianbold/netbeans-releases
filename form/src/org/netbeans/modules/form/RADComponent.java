@@ -60,6 +60,7 @@ public class RADComponent {
   private HashMap auxValues;
   private HashMap changedPropertyValues;
   private HashMap valuesCache;
+  private HashMap nameToProperty;
   private Map defaultPropertyValues;
 
   private FormManager formManager;
@@ -99,6 +100,8 @@ public class RADComponent {
     beanInstance = BeanSupport.createBeanInstance (beanClass);
     beanInfo = BeanSupport.createBeanInfo (beanClass);
     
+    nameToProperty = new HashMap ();
+
     beanProperties = createBeanProperties ();
     beanExpertProperties = createBeanExpertProperties ();
 
@@ -273,6 +276,10 @@ public class RADComponent {
     return np;
   }
 
+  Node.Property getPropertyByName (String name) {
+    return (Node.Property) nameToProperty.get (name);
+  }
+  
   private Node.Property createProperty (final PropertyDescriptor desc) {
     Node.Property prop;
     if (desc instanceof IndexedPropertyDescriptor) {
@@ -402,6 +409,8 @@ public class RADComponent {
       prop.setDisplayName (desc.getDisplayName ());
       prop.setShortDescription (desc.getShortDescription ());
     }
+
+    nameToProperty.put (desc.getName (), prop);
     return prop;
   }
 
@@ -641,6 +650,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  10   Gandalf   1.9         5/14/99  Ian Formanek    
  *  9    Gandalf   1.8         5/14/99  Ian Formanek    
  *  8    Gandalf   1.7         5/12/99  Ian Formanek    
  *  7    Gandalf   1.6         5/11/99  Ian Formanek    Build 318 version

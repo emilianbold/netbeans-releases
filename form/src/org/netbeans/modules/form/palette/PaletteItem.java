@@ -16,6 +16,7 @@ package com.netbeans.developer.modules.loaders.form.palette;
 import com.netbeans.ide.cookies.InstanceCookie;
 import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
 import com.netbeans.developerx.loaders.form.formeditor.border.DesignBorder;
+import com.netbeans.developerx.loaders.form.formeditor.border.BorderInfo;
 
 import java.lang.ref.WeakReference;
 
@@ -80,21 +81,30 @@ public class PaletteItem implements java.io.Serializable {
     return beanClass;
   }
 
+  public DesignBorder createBorder () throws InstantiationException, IllegalAccessException {
+    return new DesignBorder ((BorderInfo)createInstance ());
+  }
+  
   public boolean isBorder () {
-    return DesignBorder.class.isAssignableFrom(beanClass);
+    return BorderInfo.class.isAssignableFrom (beanClass);
   }
 
   public boolean isVisual () {
-    return java.awt.Component.class.isAssignableFrom(beanClass);
+    return java.awt.Component.class.isAssignableFrom (beanClass);
   }
 
   public boolean isDesignLayout () {
-    return DesignLayout.class.isAssignableFrom(beanClass);
+    return DesignLayout.class.isAssignableFrom (beanClass);
+  }
+
+  public boolean isContainer () {
+    return java.awt.Container.class.isAssignableFrom (beanClass);
   }
 }
 
 /*
  * Log
+ *  3    Gandalf   1.2         5/14/99  Ian Formanek    
  *  2    Gandalf   1.1         5/14/99  Ian Formanek    
  *  1    Gandalf   1.0         4/26/99  Ian Formanek    
  * $

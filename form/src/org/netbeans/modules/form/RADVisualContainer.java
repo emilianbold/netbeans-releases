@@ -13,7 +13,8 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import com.netbeans.developerx.loaders.form.formeditor.layouts.*;
+import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
+import com.netbeans.developerx.loaders.form.formeditor.layouts.support.DesignSupportLayout;
 
 import java.awt.Container;
 
@@ -24,11 +25,54 @@ import java.awt.Container;
 public class RADVisualContainer extends RADVisualComponent implements ComponentContainer {
   private RADVisualComponent[] subComponents;
   private DesignLayout designLayout;
+  private DesignLayout previousDesignLayout;
 
   /** @return The JavaBean visual container represented by this RADVisualComponent */
   public Container getContainer () {
     return (Container)getComponentInstance ();
   }
+
+// -----------------------------------------------------------------------------
+// Layout Manager management
+
+  public DesignLayout getPreviousDesignLayout () {
+    return previousDesignLayout;
+  }
+  
+  public DesignLayout getDesignLayout () {
+    return designLayout;
+  }
+  
+  public void setDesignLayout (DesignLayout layout) {
+    if (designLayout instanceof DesignSupportLayout) {
+      throw new InternalError ("Cannot change a design layout on this container");
+    }
+    if (designLayout != null) {
+      if (layout.getClass().equals (designLayout.getClass())) return;
+      designLayout.setRADContainer (null);
+    }
+    if (layout == null) return;
+
+    previousDesignLayout = designLayout;
+    designLayout = layout;
+    designLayout.setRADContainer (this);
+
+    RADVisualComponent[] children = getSubComponents ();
+    for (int i = 0; i < children.length; i++) {
+      designLayout.addComponent (children[i]);
+    } 
+    
+    getContainer ().validate();
+    getContainer ().repaint();
+
+  }
+
+  public String getContainerGenName () {
+    return getName () + ".";
+  }
+
+// -----------------------------------------------------------------------------
+// Subcomponents management
 
   public RADComponent[] getSubBeans () {
     return subComponents;
@@ -46,25 +90,20 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     }
   }
 
-  public DesignLayout getDesignLayout () {
-    return designLayout;
-  }
-  
-  public void setDesignLayout (DesignLayout layout) {
-    if (designLayout != null) {
-      designLayout.setRADContainer (null);
-    }
-    designLayout = layout;
-    designLayout.setRADContainer (this);
+  public void add (RADVisualComponent comp) {
+    RADVisualComponent[] newComponents = new RADVisualComponent [subComponents.length + 1];
+    System.arraycopy (subComponents, 0, newComponents, 0, subComponents.length);
+    newComponents[newComponents.length - 1] = comp;
+    comp.initParent (this);
+    subComponents = newComponents;
+    getNodeReference ().getChildren ().add (new com.netbeans.ide.nodes.Node[] { new RADComponentNode (comp) });
   }
 
-  public String getContainerGenName () {
-    return getName () + ".";
-  }
 }
 
 /*
  * Log
+ *  8    Gandalf   1.7         5/14/99  Ian Formanek    
  *  7    Gandalf   1.6         5/12/99  Ian Formanek    Removed debug print
  *  6    Gandalf   1.5         5/12/99  Ian Formanek    
  *  5    Gandalf   1.4         5/11/99  Ian Formanek    Build 318 version

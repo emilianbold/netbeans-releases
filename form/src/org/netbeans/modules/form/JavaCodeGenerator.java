@@ -90,7 +90,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     variablesSection = s.findSimpleSection (SECTION_VARIABLES); // [PENDING]
 
     if ((initComponentsSection == null) || (variablesSection == null)) {
-      System.out.println("ERROR: Cannot initialize guarded sections... code generation will not work.");
+      System.out.println("ERROR: Cannot initialize guarded sections... code generation is disabled.");
       errorInitializing = true;
     }
 
@@ -220,6 +220,10 @@ public class JavaCodeGenerator extends CodeGenerator {
   private void generatePropertySetter (RADComponent comp, PropertyDescriptor desc, Object value, StringBuffer text, String indent) {
     Method writeMethod = desc.getWriteMethod ();
     String indentToUse = indent;
+    PropertyEditor ed = BeanSupport.getPropertyEditor (desc);
+    if (ed == null) { // cannot generate without property editor
+      return;
+    }
     
     // if the setter throws checked exceptions, we must generate try/catch block around it.
     Class[] exceptions = writeMethod.getExceptionTypes ();
@@ -236,7 +240,6 @@ public class JavaCodeGenerator extends CodeGenerator {
 
     // null values are generated separately, as most property editors cannot cope with nulls
     if (value != null) {
-      PropertyEditor ed = BeanSupport.getPropertyEditor (desc);
       ed.setValue (value);
       text.append (ed.getJavaInitializationString ());
     } else {
@@ -679,6 +682,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  10   Gandalf   1.9         5/14/99  Ian Formanek    
  *  9    Gandalf   1.8         5/14/99  Ian Formanek    
  *  8    Gandalf   1.7         5/12/99  Ian Formanek    
  *  7    Gandalf   1.6         5/11/99  Ian Formanek    Build 318 version

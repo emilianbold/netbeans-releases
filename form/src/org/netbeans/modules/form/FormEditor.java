@@ -169,63 +169,77 @@ final public class FormEditor extends Object {
   }
 
   public static void defaultComponentInit (RADVisualComponent radComp) {
+    System.out.println("Default Component Init: "+radComp.getName ());
     Component comp = radComp.getComponent ();
     String varName = comp.getName ();
     String propName = null;
+    Object propValue = null;
     if (comp instanceof Button) {
       if ("".equals (((Button)comp).getLabel ())) {
-        ((Button)comp).setLabel (varName);
         propName = "label";
+        propValue = varName;
       }
     }
     else if (comp instanceof Checkbox) {
       if ("".equals (((Checkbox)comp).getLabel ())) {
-        ((Checkbox)comp).setLabel (varName);
         propName = "label";
+        propValue = varName;
       }
     }
     else if (comp instanceof Label) {
       if ("".equals (((Label)comp).getText ())) {
-        ((Label)comp).setText (varName);
         propName = "text";
+        propValue = varName;
       }
     }
     else if (comp instanceof TextField) {
       if ("".equals (((TextField)comp).getText ())) {
-        ((TextField)comp).setText (varName);
         propName = "text";
+        propValue = varName;
       }
     }
     else if (comp instanceof AbstractButton) { // JButton, JToggleButton, JCheckBox, JRadioButton
       if ("".equals (((AbstractButton)comp).getText ())) {
-        ((AbstractButton)comp).setText (varName);
         propName = "text";
+        propValue = varName;
       }
     }
     else if (comp instanceof JLabel) {
       if ("".equals (((JLabel)comp).getText ())) {
-        ((JLabel)comp).setText (varName);
         propName = "text";
+        propValue = varName;
       }
     }
-    else if (comp instanceof JTable) {
+/*    else if (comp instanceof JTable) {
       javax.swing.table.TableModel tm = ((JTable)comp).getModel ();
       if ((tm == null) || ((tm instanceof javax.swing.table.DefaultTableModel) &&
           (tm.getRowCount () == 0) && (tm.getColumnCount () == 0))) 
       {
-        ((JTable)comp).setModel (
+        value = 
           new javax.swing.table.DefaultTableModel (
             new String[] {"Title 1", "Title 2", "Title 3", "Title 4"},
             4
           )
-        );
         propName = "model";
       }      
-    }
+    } */
     else if ((comp instanceof JTextField) && (!(comp instanceof JPasswordField))) { // JTextField and not JPasswordField
       if ("".equals (((JTextField)comp).getText ())) {
-        ((JTextField)comp).setText (varName);
         propName = "text";
+        propValue = varName;
+      }
+    }
+
+    if (propName != null) {
+      Node.Property prop = radComp.getPropertyByName (propName);
+      if (prop != null) {
+        try {
+          prop.setValue (propValue);
+        } catch (IllegalAccessException e) {
+          // never mind, ignore
+        } catch (java.lang.reflect.InvocationTargetException e) {
+          // never mind, ignore
+        }
       }
     }
     /*
@@ -503,6 +517,7 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  9    Gandalf   1.8         5/14/99  Ian Formanek    
  *  8    Gandalf   1.7         5/14/99  Ian Formanek    
  *  7    Gandalf   1.6         5/12/99  Ian Formanek    
  *  6    Gandalf   1.5         5/4/99   Ian Formanek    Package change

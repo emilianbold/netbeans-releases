@@ -47,6 +47,11 @@ public class FormEditorModule implements ModuleInstall {
 
   /** Module installed again. */
   public void restored () {
+/*    String[] paths = java.beans.PropertyEditorManager.getEditorSearchPath ();
+    String[] newPaths = new String[paths.length+1];
+    System.arraycopy (paths, 0, newPaths, 0, paths.length);
+    newPaths[newPaths.length - 1] = "com.netbeans.developer.explorer.propertysheet.editors";
+    java.beans.PropertyEditorManager.setEditorSearchPath (newPaths); */
 //    System.out.println("FormEditorModule: restored");
   }
 
@@ -308,6 +313,7 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  16   Gandalf   1.15        5/14/99  Ian Formanek    
  *  15   Gandalf   1.14        5/14/99  Ian Formanek    
  *  14   Gandalf   1.13        5/11/99  Ian Formanek    Build 318 version
  *  13   Gandalf   1.12        5/4/99   Ian Formanek    Icons again
