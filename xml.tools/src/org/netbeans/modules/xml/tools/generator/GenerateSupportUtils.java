@@ -43,30 +43,6 @@ public class GenerateSupportUtils {
     }
 
 
-    /**
-     * Try to perform default action on specified file object.
-     */
-    public static void performDefaultAction (FileObject fo) {
-        if (fo == null) {
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("FileObject can not be null.", new IllegalArgumentException());  // NOI18N
-            return;            
-        }
-
-        try {
-            DataObject obj = DataObject.find (fo);
-            Node node = obj.getNodeDelegate();
-            SystemAction action = node.getDefaultAction();
-        
-            if (action != null) {
-                TopManager.getDefault().getActionManager().invokeAction
-                    (action, new ActionEvent (node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-            }
-        } catch (DataObjectNotFoundException e) {
-            // Data Object not found -- strange, but OK -> DO NOTHING
-        }
-    }
-
-
     /*
      * Generate default java header.
      * @param primFile a model used for generated code or null

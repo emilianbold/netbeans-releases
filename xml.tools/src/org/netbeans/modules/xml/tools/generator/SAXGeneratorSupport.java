@@ -36,6 +36,7 @@ import org.openide.xml.*;
 
 import org.netbeans.modules.xml.core.DTDDataObject;
 import org.netbeans.modules.xml.tools.lib.GuiUtil;
+import org.netbeans.modules.xml.tools.lib.FileUtilities;
 import org.netbeans.tax.*;
 
 /**
@@ -241,13 +242,13 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             
             // prepare source elements and dataobjects
             
-            DataObject stubDataObject = createDataObject(folder, model.getStub(), JAVA_EXT, true);
+            DataObject stubDataObject = FileUtilities.createDataObject(folder, model.getStub(), JAVA_EXT, true);
             SourceElement stubSrc = openSource(stubDataObject);
 
-            DataObject interfaceImplDataObject = createDataObject( folder, model.getHandlerImpl(), JAVA_EXT, false);
+            DataObject interfaceImplDataObject = FileUtilities.createDataObject( folder, model.getHandlerImpl(), JAVA_EXT, false);
             SourceElement interfaceImplSrc = openSource(interfaceImplDataObject);
             
-            DataObject interfaceDataObject = createDataObject( folder, model.getHandler(), JAVA_EXT, true);
+            DataObject interfaceDataObject = FileUtilities.createDataObject( folder, model.getHandler(), JAVA_EXT, true);
             SourceElement interfaceSrc = openSource(interfaceDataObject);
 
             DataObject parsletsDataObject = null;
@@ -258,10 +259,10 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             
             if (model.hasParslets()) {
 
-                parsletsImplDataObject = createDataObject( folder, model.getParsletImpl(), JAVA_EXT, false);
+                parsletsImplDataObject = FileUtilities.createDataObject( folder, model.getParsletImpl(), JAVA_EXT, false);
                 parsletsImplSrc = openSource(parsletsImplDataObject);
                 
-                parsletsDataObject = createDataObject( folder, model.getParslet(), JAVA_EXT, true);
+                parsletsDataObject = FileUtilities.createDataObject( folder, model.getParslet(), JAVA_EXT, true);
                 parsletsSrc = openSource(parsletsDataObject);
                 
             }
@@ -293,7 +294,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             String settings = "<!-- failed -->"; // NOI18N
             
             if (model.getBindings() != null) {
-                settingsDataObject = createDataObject(folder, model.getBindings(), "xml", true); // NOI18N
+                settingsDataObject = FileUtilities.createDataObject(folder, model.getBindings(), "xml", true); // NOI18N
                 settings = SAXBindingsGenerator.toXML(model);
             }
             
@@ -319,9 +320,9 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             GuiUtil.setStatusText(Util.THIS.getString("MSG_sax_progress_3"));
 
             if (model.hasParslets()) {
-                GenerateSupportUtils.performDefaultAction (folder.getFileObject(model.getParsletImpl(), JAVA_EXT));
+                GuiUtil.performDefaultAction (folder.getFileObject(model.getParsletImpl(), JAVA_EXT));
             }
-            GenerateSupportUtils.performDefaultAction (folder.getFileObject(model.getHandlerImpl(), JAVA_EXT));
+            GuiUtil.performDefaultAction (folder.getFileObject(model.getHandlerImpl(), JAVA_EXT));
 
         } catch (FileStateInvalidException e) {
             String msg = Util.THIS.getString("MSG_wizard_fail", e);
@@ -387,61 +388,6 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
         
     }
     
-    /*
-     * Prepare a new java cookies source creating file header that cannot be set via src API.
-     *
-     * @return DataObject or null if the DataObject exist and should not be overwritten
-     */
-    private DataObject createDataObject(final FileObject folder, final String name, final String ext, final boolean overwrite) throws IOException {
-
-        FileObject file = folder.getFileObject(name, ext);
-        
-        if (file == null) {  // new one
-            
-            file = folder.createData(name, ext);
-            return DataObject.find(file);
-            
-        } else if ( file.isVirtual() || overwrite) {
-            // isVirtual:
-            //     FileObject represents virtual file (not available),
-            //     so it is important to delete such virtual file
-            //     and create real one.
-            // overwrite:
-            //     make backup of original file
-                        
-            FileSystem fs = folder.getFileSystem();
-            final FileObject tempFile = file;
-
-            fs.runAtomicAction (new FileSystem.AtomicAction () {
-                public void run () throws IOException {
-
-                    if ( (overwrite == true ) &&
-                         (tempFile.isVirtual() == false) ) {
-                        // Make copy of original not virtual file
-
-                        for (int i = 1; true; i++) {
-                            if (tempFile.existsExt (ext + i) == false) {
-                                tempFile.copy (folder, name, ext + i);
-                                break;
-                            }
-                        }
-                    }
-                    
-                    tempFile.delete();
-                    folder.createData (name, ext);                    
-                }
-            });
-
-            file = folder.getFileObject (name, ext);
-
-            return DataObject.find (file);
-            
-        } else {
-            return null;
-        }
-        
-    }
-
     /*
      * Prepend to document file header and save it.
      */

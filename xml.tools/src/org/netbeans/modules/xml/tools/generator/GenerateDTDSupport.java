@@ -110,7 +110,7 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
             }
 	    trySetDocumentType (name);
 
-            GenerateSupportUtils.performDefaultAction (generFile);
+            GuiUtil.performDefaultAction (generFile);
 
         } catch (UserCancelException e) {
 //          } catch (FileStateInvalidException e) {
