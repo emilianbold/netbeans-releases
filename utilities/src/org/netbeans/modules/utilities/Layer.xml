@@ -177,9 +177,11 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-search-ObjectTypeType.settings" url="../search/ObjectTypeType.settings"/>
             <file name="org-netbeans-modules-search-ObjectNameType.settings" url="../search/ObjectNameType.settings"/>
 
+            <!-- Defines default order of search types -->
             <attr name="org-netbeans-modules-search-FullTextType.settings/org-netbeans-modules-search-ObjectNameType.settings" boolValue="true"/>
             <attr name="org-netbeans-modules-search-ObjectNameType.settings/org-netbeans-modules-search-ObjectTypeType.settings" boolValue="true"/>
             <attr name="org-netbeans-modules-search-ObjectTypeType.settings/org-netbeans-modules-search-ModificationDateType.settings" boolValue="true"/>
+            <attr name="org-netbeans-modules-search-ModificationDateType.settings/org-netbeans-modules-vcscore-search-VcsSearchType.settings" boolValue="true"/>
         </folder>
     </folder>
     

@@ -32,18 +32,11 @@ public class Installer extends ModuleInstall {
     private static SearchHook hook;
 
 
-    // NOTE: It would be nice in installed method will be needed to set initial order of
-    // search types. Then it will be possible to manage the order by user
-    // in Project Settings... . Now there is always fixed order made by
-    // SearchPanel.SearchPanelComparator.
-    // !!! But all the above will probably be needless when UI of search will change.
-
     /** Restores module. Overrides superclass method. 
      * Hooks <code>SearchPerformer</code> on <code>FindAction</code>. */
     public void restored () {
         hook = new SearchHook(SearchPerformer.getDefault());
         hook.hook();
-        // NOTE listen on new project?
     }
 
     /** Unistalls module. Overrides superclass method.

@@ -23,7 +23,9 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -71,7 +73,7 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
     private int returnStatus = RET_CANCEL;
 
     /** Ordered list of <code>SearchTypePanel</code>'s. */
-    private Set orderedSearchTypePanels;
+    private List orderedSearchTypePanels;
 
     /** Whether some criterion is customized. */
     private boolean customized = false;
@@ -79,7 +81,7 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
     
     /** Creates new form SearchPanel */
     public SearchPanel(List searchTypeList) {
-        orderedSearchTypePanels = new TreeSet(new SearchTypePanelComparator());
+        orderedSearchTypePanels = new ArrayList(searchTypeList.size());
 
         // Default values of criterions.
         Iterator it = searchTypeList.iterator();
@@ -274,70 +276,5 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
         
         return searchTypePanel != null ? searchTypePanel.getComponent() : null;
     }
-
-    
-    /** Comparator which compares the criterion panels showing as tabs in search dialog in this order
-     * <p>1st <code>FullTextType</code>
-     * <p>2nd <code>ObjectNameType</code>
-     * <p>3rd <code>ObjectTypeType</code>
-     * <p>4th <code>ModificationDateType</code>
-     * <p>rest custom criterion's ordered according their names.
-     */
-    private static class SearchTypePanelComparator implements Comparator {
-
-        /** Implements <code>Comparator</code> interface method. */
-        public int compare(Object obj1, Object obj2) {
-            if(obj1 == obj2)
-                return 0;
-            
-            if(obj1 == null)
-                return 1;
-            
-            if(obj2 == null)
-                return -1;
-            
-            // Has to be criterion panel type.
-            SearchTypePanel cm1 = (SearchTypePanel)obj1;
-            SearchTypePanel cm2 = (SearchTypePanel)obj2;
-
-            if(cm1.equals(cm2))
-                return 0;
-            
-            if(cm1.getSearchType().getClass().equals(FullTextType.class))
-                return -1;
-            
-            if(cm2.getSearchType().getClass().equals(FullTextType.class))
-                return 1;
-            
-            if(cm1.getSearchType().getClass().equals(ObjectNameType.class))
-                return -1;
-            
-            if(cm2.getSearchType().getClass().equals(ObjectNameType.class))
-                return 1;
-
-            if(cm1.getSearchType().getClass().equals(ObjectTypeType.class))
-                return -1;
-
-            if(cm2.getSearchType().getClass().equals(ObjectTypeType.class))
-                return 1;
-            
-            if(cm1.getSearchType().getClass().equals(ModificationDateType.class))
-                return -1;
-
-            if(cm2.getSearchType().getClass().equals(ModificationDateType.class))
-                return 1;
-
-            return cm1.getName().compareTo(cm2.getName());
-        }
-        
-        /** Implements <code>Comparator</code> interface method. */
-        public boolean equals(java.lang.Object obj) {
-            if(this == obj)
-                return true;
-            else
-                return false;
-        }
-        
-    } // End of SearchTypePanelComparator class.
     
 }
