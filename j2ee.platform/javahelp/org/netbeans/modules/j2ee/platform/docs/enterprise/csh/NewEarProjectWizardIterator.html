@@ -5,13 +5,13 @@
 -->
 <html>
 <head>
-<title>New Empty Enterprise Application Wizard: Name and Location</title>
+<title>New Enterprise Application Wizard: Name and Location</title>
 <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2>New Empty Enterprise Application Wizard: Name and Location</h2>
+<h2>New Enterprise Application Wizard: Name and Location</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
-<p>The New Empty Enterprise Application wizard creates a new <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+<p>The New Enterprise Application wizard creates a new <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
     <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/csh/glossary_standard.html">
     <param name="viewerActivator" value="javax.help.LinkLabel">
     <param name="viewerStyle" value="javax.help.Popup">
@@ -22,24 +22,32 @@
     <param name="textFontStyle" value="italic">
     <param name="textFontWeight" value="bold">
     <param name="textColor" value="blue">
-  </object>&nbsp; containing an empty enterprise application. You open the New Empty Enterprise Application 
+  </object>&nbsp; containing an empty enterprise application. You open the New Enterprise Application 
   wizard by opening the <a href="nbdocs:/org/netbeans/modules/usersguide/project/csh/proj_wiz.html">New Project wizard</a> and selecting 
-  the Empty Enterprise Application template from the Enterprise category. 
+  the Enterprise Application template from the Enterprise category. 
 <p>In the Name and Location page, you have to set the following properties:
 <ul>
   <li><b>Project Name. </b>Specifies the display name of the project. This name 
     is also used to create the project folder.</li>
-    <li><b>Project Location. </b>Specifies the folder where you want to
+    <li><b>Project Location. </b>Specifies the parent directory of the folder where you want to
     store the project metadata and source code.</li>
-  <li><b>Server.</b> Specifies the web application's server. Note that J2EE applications cannot
-  be deployed to the Tomcat web server.</li>
-  <li><b>J2EE Specification Level.</b> Specifies the J2EE level against which your enterprise
-  application will run.</li>
-  <li><b>Create Ejb Module.</b> Sets whether an EJB module is created, and its name. By default, it is created and named
-   <tt><i>project-name</i>-ejb</tt>.</li>
-   <li><b>Create Web Application Module.</b> Sets whether a web application module is created, and its name.
-   By default, it is created and named
-   <tt><i>project-name</i>-war</tt>.</li>
+    <li><b>Project Folder. </b>Concatenates the project location and project name settings to
+    identify the project folder.</li>
+    <li><b>Server.</b> Specifies the server where you want the enterprise application to be deployed. 
+    Only servers that are <a href="../../../server/server_register.html">registered</a> with the IDE 
+    are available to be selected here. The bundled Tomcat Web Server is registered by default. 
+    Note that you cannot deploy J2EE applications and JSR-109 web service clients to the Tomcat Web Server.</li>
+  <li><b>J2EE Version.</b> Specifies the J2EE level against which you want to develop your enterprise
+   application. You can deploy your application to an implementation that supports that specification level
+   or a higher specification level.</li>
+   <li><b>Create Ejb Module.</b> Sets whether an EJB module is created as a submodule of the enterprise application,
+   and its name. By default, it is created and named <tt><i>project-name</i>-EJBModule</tt>. If you do
+   not let the IDE create the EJB module together with the enterprise application, you can 
+   <a href="../ejb/general/create_ejb_project.html">Create an EJB Module Project</a> later.</li>
+  <li><b>Create Web Application Module.</b> Sets whether a web application module is created as a submodule of the 
+  enterprise application, and its name. By default, it is created and named <tt><i>project-name</i>-WebModule</tt>.
+  If you do not let the IDE create the EJB module together with the enterprise application, you can 
+  <a href="../web/create/about/create_webapps_proj.html">Create a Web Module Project</a> later.</li>
   <li><b>Set as Main Project.</b> Sets the newly created project as the <a href="../general/ent_app_build.html">main 
     project</a>.</li>
 </ul>
