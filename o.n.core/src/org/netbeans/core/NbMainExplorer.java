@@ -46,8 +46,6 @@ import org.openide.windows.Workspace;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 
-import com.netbeans.developer.impl.output.OutputTab;
-
 /** Default explorer which contains toolbar with cut/copy/paste,
 * switchable property sheet and menu view actions in the toolbar.
 *
@@ -681,6 +679,7 @@ implements ItemListener, Runnable {
 
 /*
 * Log
+*  35   Gandalf   1.34        8/29/99  Ian Formanek    Removed obsoleted import
 *  34   Gandalf   1.33        8/20/99  Ian Formanek    Reverted last 2 changes
 *  33   Gandalf   1.32        8/20/99  Ian Formanek    Fixed bug with explorer 
 *       when starting clean IDE
