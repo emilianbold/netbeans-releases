@@ -21,7 +21,12 @@ Microsystems, Inc. All Rights Reserved.
   <property name="preparse.files" location="../../java/storagebuilder/preparse-files.txt"/>
   <property name="nb.dir" location="../../nbbuild/netbeans" />
 
+<!-- this dependency is for localised installers only 
   <target name="init" depends="set-buildnumber, set-installer.basename, copy-localized-data" unless="inited">
+-->
+
+<!-- english only installers don't call copy-localized-data target -->
+  <target name="init" depends="set-buildnumber, set-installer.basename" unless="inited">
     <property name="inited" value="true" />
   </target>
   
