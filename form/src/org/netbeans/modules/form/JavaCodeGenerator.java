@@ -1399,7 +1399,7 @@ class JavaCodeGenerator extends CodeGenerator {
                         Event event = (Event) eventList.get(i);
                         String[] paramNames = generateListenerMethodHeader(
                                    null, event.getListenerMethod(), codeWriter);
-                        generateEventHandlerCalls(event, paramNames, codeWriter);
+                        generateEventHandlerCalls(event, paramNames, codeWriter, true);
                         generateListenerMethodFooter(codeWriter);
                     }
                 }
@@ -1420,7 +1420,7 @@ class JavaCodeGenerator extends CodeGenerator {
                         String[] paramNames =
                             generateListenerMethodHeader(null, m, codeWriter);
                         if (event != null)
-                            generateEventHandlerCalls(event, paramNames, codeWriter);
+                            generateEventHandlerCalls(event, paramNames, codeWriter, true);
                         generateListenerMethodFooter(codeWriter);
                     }
                 }
@@ -1446,16 +1446,11 @@ class JavaCodeGenerator extends CodeGenerator {
     private void addVariables(Writer variablesWriter)
         throws IOException
     {
-        Iterator it = formModel.getCodeStructure().getVariablesIterator(
-                                                   CodeVariable.FIELD,
-                                                   CodeVariable.SCOPE_MASK,
-                                                   null);
+        Iterator it = getSortedVariables(CodeVariable.FIELD,
+                                         CodeVariable.SCOPE_MASK);
 
         while (it.hasNext()) {
             CodeVariable var = (CodeVariable) it.next();
-
-            if (var.getDeclaredType() == org.netbeans.modules.form.Separator.class)
-                continue; // treat AWT Separator specially - it is not a component
 
             if ((var.getType() & CodeVariable.FINAL) == CodeVariable.FINAL) {
                 // final field variable - add also creation assignment
@@ -1480,10 +1475,9 @@ class JavaCodeGenerator extends CodeGenerator {
     private boolean addLocalVariables(Writer initCodeWriter)
         throws IOException
     {
-        Iterator it = formModel.getCodeStructure().getVariablesIterator(
+        Iterator it = getSortedVariables(
             CodeVariable.LOCAL | CodeVariable.EXPLICIT_DECLARATION,
-            CodeVariable.SCOPE_MASK | CodeVariable.DECLARATION_MASK,
-            null);
+            CodeVariable.SCOPE_MASK | CodeVariable.DECLARATION_MASK);
 
         boolean anyVariable = false;
         while (it.hasNext()) {
@@ -1495,6 +1489,26 @@ class JavaCodeGenerator extends CodeGenerator {
         }
 
         return anyVariable;
+    }
+
+    private Iterator getSortedVariables(int type, int typeMask) {
+        Collection allVariables = formModel.getCodeStructure().getAllVariables();
+        java.util.List variables = new ArrayList(allVariables.size());
+        Iterator it = allVariables.iterator();
+        while (it.hasNext()) {
+            CodeVariable var = (CodeVariable) it.next();
+            if (var.getDeclaredType() == org.netbeans.modules.form.Separator.class)
+                continue; // treat AWT Separator specially - it is not a component
+            if ((var.getType() &  typeMask) == (type & typeMask))
+                variables.add(var);
+        }
+        Collections.sort(variables, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                return ((CodeVariable)o1).getName().compareTo(
+                        ((CodeVariable)o2).getName());
+            }
+        });
+        return variables.iterator();
     }
 
     private String getComponentParameterString(RADComponent component,
@@ -1656,13 +1670,13 @@ class JavaCodeGenerator extends CodeGenerator {
                         codeWriter.write(getComponentParameterString(
                                              event.getComponent(), false));
                         codeWriter.write(") {\n"); // NOI18N
-                        generateEventHandlerCalls(event, paramNames, codeWriter);
+                        generateEventHandlerCalls(event, paramNames, codeWriter, false);
                         codeWriter.write("}\n"); // NOI18N
                     }
                     else { // the listener method returns something
                         if (k > 0)
                             codeWriter.write("else {\n"); // NOI8N
-                        generateEventHandlerCalls(event, paramNames, codeWriter);
+                        generateEventHandlerCalls(event, paramNames, codeWriter, false);
                         if (k > 0)
                             codeWriter.write("}\n"); // NOI18N
                     }
@@ -2118,11 +2132,11 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private void generateEventHandlerCalls(Event event,
                                            String[] paramNames,
-                                           Writer codeWriter)
+                                           Writer codeWriter,
+                                           boolean useShortNameIfPossible)
         throws IOException
     {
-        String mainClassRef = formEditorSupport.getFormDataObject().getName()
-                              + ".this."; // NOI18N
+        String mainClassRef = null;
 
         String[] handlers = event.getEventHandlers();
         for (int i=0; i < handlers.length; i++) {
@@ -2130,7 +2144,16 @@ class JavaCodeGenerator extends CodeGenerator {
                     && event.getListenerMethod().getReturnType() != Void.TYPE)
                 codeWriter.write("return "); // NOI18N
 
-            codeWriter.write(mainClassRef);
+            // with anonymous innerclasses, try to avoid generating full names
+            // (for the reason some old forms might be used as innerclasses)
+            if (!useShortNameIfPossible
+                || event.getListenerMethod().getName().equals(handlers[i]))
+            {
+                if (mainClassRef == null)
+                    mainClassRef = formEditorSupport.getFormDataObject().getName()
+                                   + ".this."; // NOI18N
+                codeWriter.write(mainClassRef);
+            }
             codeWriter.write(handlers[i]);
             codeWriter.write("("); // NOI18N
 
