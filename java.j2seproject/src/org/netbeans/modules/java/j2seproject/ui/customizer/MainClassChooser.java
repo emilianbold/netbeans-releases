@@ -13,16 +13,10 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
-import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
@@ -31,21 +25,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.openide.awt.Mnemonics;
-
 import org.openide.awt.MouseUtils;
-import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.src.ClassElement;
-import org.openide.src.SourceElement;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-
-
 
 /** Browses and allows to choose a project's main class.
  *
