@@ -35,6 +35,8 @@ public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCu
         
         textArea.setEditable(editable);
         textArea.setText (s);
+        textArea.setWrapStyleWord( true );
+        textArea.setLineWrap( true );
         setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(12, 12, 0, 11)));
         setPreferredSize (new java.awt.Dimension(500, 300));
         
