@@ -25,6 +25,7 @@ import javax.swing.table.TableCellEditor;
  * @author pfiala
  */
 class SelectMethodsTableModel extends QueryMethodsTableModel {
+
     protected static final String[] COLUMN_NAMES = {Utils.getBundleMessage("LBL_Method"),
                                                     Utils.getBundleMessage("LBL_ReturnType"),
                                                     Utils.getBundleMessage("LBL_Query"),

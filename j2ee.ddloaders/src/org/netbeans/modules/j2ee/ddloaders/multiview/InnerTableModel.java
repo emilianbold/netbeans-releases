@@ -20,6 +20,7 @@ import javax.swing.table.TableCellEditor;
  * @author pfiala
  */
 public abstract class InnerTableModel extends AbstractTableModel {
+
     protected final String[] columnNames;
     private int[] columnWidths;
 
@@ -54,5 +55,9 @@ public abstract class InnerTableModel extends AbstractTableModel {
 
     public int getDefaultColumnWidth(int i) {
         return columnWidths[i];
+    }
+
+    public void dataFileChanged() {
+        fireTableDataChanged();
     }
 }

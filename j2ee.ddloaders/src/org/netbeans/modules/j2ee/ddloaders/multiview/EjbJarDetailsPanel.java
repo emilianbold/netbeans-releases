@@ -26,10 +26,12 @@ import java.awt.event.ActionListener;
  * @author pfiala
  */
 class EjbJarDetailsPanel extends EjbDetailForm {
+
     private final EjbJar ejbJar;
     private EjbJarMultiViewDataObject dataObject;
 
     private class LargeIconEditorModel extends TextItemEditorModel {
+
         public LargeIconEditorModel(XmlMultiViewDataObject dataObject) {
             super(dataObject);
         }
@@ -44,6 +46,7 @@ class EjbJarDetailsPanel extends EjbDetailForm {
     }
 
     private class SmallIconEditorModel extends TextItemEditorModel {
+
         public SmallIconEditorModel(XmlMultiViewDataObject dataObject) {
             super(dataObject);
         }
@@ -62,6 +65,7 @@ class EjbJarDetailsPanel extends EjbDetailForm {
     }
 
     private class DescriptionEditorModel extends TextItemEditorModel {
+
         public DescriptionEditorModel(XmlMultiViewDataObject dataObject) {
             super(dataObject);
         }
@@ -80,6 +84,7 @@ class EjbJarDetailsPanel extends EjbDetailForm {
     }
 
     private class DisplayNameEditorModel extends TextItemEditorModel {
+
         public DisplayNameEditorModel(XmlMultiViewDataObject dataObject) {
             super(dataObject);
         }

@@ -69,6 +69,7 @@ import java.util.Vector;
 public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         implements DDChangeListener, EjbJarProxy.OutputProvider, FileChangeListener, ChangeListener,
         PropertyChangeListener {
+
     private EjbJar ejbJar;
     private FileObject srcRoots[];
     protected final static RequestProcessor RP = new RequestProcessor("XML Parsing");   // NOI18N

@@ -21,6 +21,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  * @author pfiala
  */
 public class MdbImplementationPanel extends MdbImplementationForm {
+
     /**
      * Creates new form MdbImplementationForm
      *

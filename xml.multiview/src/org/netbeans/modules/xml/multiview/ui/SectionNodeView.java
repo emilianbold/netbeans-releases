@@ -15,13 +15,13 @@ package org.netbeans.modules.xml.multiview.ui;
 
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.Utils;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
-import javax.swing.*;
-import java.awt.*;
 import java.util.HashMap;
 
 /**
@@ -35,6 +35,17 @@ public class SectionNodeView extends SectionView {
     public SectionNodeView(DataObject dataObject) {
         super();
         this.dataObject = dataObject;
+        dataObject.getPrimaryFile().addFileChangeListener(new FileChangeAdapter() {
+            public void fileChanged(FileEvent fe) {
+                dataFileChanged();
+            }
+        });
+    }
+
+    public void dataFileChanged() {
+        if(rootNode != null) {
+            rootNode.dataFileChanged();
+        }
     }
 
     public void setRootNode(SectionNode rootNode) {

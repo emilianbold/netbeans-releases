@@ -33,7 +33,6 @@ class CmpFieldsNode extends SectionNode {
         final FileObject ejbJarFile = getSectionNodeView().getDataObject().getPrimaryFile();
         final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(),
                 new CmpFieldsTableModel(ejbJarFile, entity));
-        innerTablePanel.getEditButton().setVisible(false);
         return innerTablePanel;
 
     }

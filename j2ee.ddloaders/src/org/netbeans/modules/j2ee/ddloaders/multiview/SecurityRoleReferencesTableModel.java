@@ -20,6 +20,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
  * @author pfiala
  */
 class SecurityRoleReferencesTableModel extends InnerTableModel {
+
     private EntityAndSession ejb;
     private static final String[] COLUMN_NAMES = {Utils.getBundleMessage("LBL_ReferenceName"),
                                                   Utils.getBundleMessage("LBL_LinkedRole"),

@@ -39,15 +39,6 @@ public class SectionNodePanel extends SectionPanel {
         } else if(node.isExpanded()) {
             setExpandedViewMode();
         }
-
-        node.getSectionNodeView().getDataObject().getPrimaryFile().addFileChangeListener(new FileChangeAdapter() {
-            public void fileChanged(FileEvent fe) {
-                SectionInnerPanel innerPanel = getInnerPanel();
-                if(innerPanel != null) {
-                    innerPanel.dataFileChanged();
-                }
-            }
-        });
     }
 
     /**
@@ -112,5 +103,12 @@ public class SectionNodePanel extends SectionPanel {
         if (getInnerPanel() == null) {
             super.open();
         }
+    }
+
+    public void dataFileChanged() {
+        SectionInnerPanel innerPanel = getInnerPanel();
+        if(innerPanel != null) {
+            innerPanel.dataFileChanged();
+        }        
     }
 }

@@ -22,6 +22,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  * @author pfiala
  */
 public class EntityOverviewNode extends SectionNode {
+
     public EntityOverviewNode(SectionNodeView sectionNodeView, Entity entity) {
         super(sectionNodeView, entity, Utils.getBundleMessage("LBL_Overview"), Utils.ICON_BASE_MISC_NODE);
     }

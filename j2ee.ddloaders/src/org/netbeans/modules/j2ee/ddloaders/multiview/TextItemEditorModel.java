@@ -20,6 +20,7 @@ import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
  * @author pfiala
  */
 public abstract class TextItemEditorModel extends ItemEditorHelper.ItemEditorModel {
+
     XmlMultiViewDataObject dataObject;
     String origValue;
 

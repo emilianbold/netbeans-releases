@@ -22,12 +22,14 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
  * @author pfiala
  */
 public class RelationshipHelper {
+
     private static final String MULTIPLICITY_MANY = "Many";
     private static final String MULTIPLICITY_ONE = "One";
 
     private final EjbRelation relation;
 
     public static class RelationshipRoleHelper {
+
         private final EjbRelationshipRole role;
 
         public RelationshipRoleHelper(EjbRelationshipRole role) {

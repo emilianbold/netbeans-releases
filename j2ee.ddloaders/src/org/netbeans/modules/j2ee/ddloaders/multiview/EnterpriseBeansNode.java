@@ -25,6 +25,7 @@ import java.util.Comparator;
  * @author pfiala
  */
 public class EnterpriseBeansNode extends SectionNode {
+
     public EnterpriseBeansNode(SectionNodeView sectionNodeView, EnterpriseBeans enterpriseBeans) {
         super(sectionNodeView, enterpriseBeans, Utils.getBundleMessage("LBL_EnterpriseBeans"),
                 Utils.ICON_BASE_ENTERPRISE_JAVA_BEANS_NODE);

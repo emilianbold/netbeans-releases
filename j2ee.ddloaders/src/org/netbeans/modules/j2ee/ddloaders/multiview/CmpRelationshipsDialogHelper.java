@@ -49,6 +49,7 @@ class CmpRelationshipsDialogHelper {
     private RelationshipDialogActionListener listener;
 
     private class FormRoleHelper {
+
         private boolean lastGetter = true;
         private boolean lastSetter = true;
 

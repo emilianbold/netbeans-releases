@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EjbImplementationAndInterfacesForm;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
@@ -37,6 +36,7 @@ import java.awt.event.FocusListener;
  * @author pfiala
  */
 public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInterfacesForm {
+
     private EntityAndSession ejb;
     private NonEditableDocument beanClassDocument = new NonEditableDocument() {
         protected String retrieveText() {
@@ -86,9 +86,10 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
             public void focusGained(FocusEvent e) {
                 Component component = e.getComponent();
                 if (component instanceof JTextField) {
-                    className = ((JTextField) component).getText();
-                    moveClassButton.setEnabled(true);
-                    renameClassButton.setEnabled(true);
+                    className = ((JTextField) component).getText().trim();
+                    boolean enabled = className.length() > 0;
+                    moveClassButton.setEnabled(enabled);
+                    renameClassButton.setEnabled(enabled);
                 } else {
                     boolean isRefactorButton = component == moveClassButton || component == renameClassButton;
                     if (moveClassButton.isEnabled()) {
@@ -104,10 +105,6 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
 
         moveClassButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-//                EjbJarMultiViewDataObject ejbJarDataObject = (EjbJarMultiViewDataObject) ((SectionNodeView) getSectionView()).getDataObject();
-//                SourceGroup[] sourceGroups = ejbJarDataObject.getSourceGroups();
-//                FileObject ejbJarFile = ejbJarDataObject.getPrimaryFile();
-//                new MoveClassAction().activateMoveClassUI(ejbJarFile, className, sourceGroups[0]);
                 Utils.activateMoveClassUI(className);
                 moveClassButton.setEnabled(false);
                 renameClassButton.setEnabled(false);
@@ -115,7 +112,6 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         });
         renameClassButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-//                new RenameClassAction().renameClass(className);
                 Utils.activateRenameClassUI(className);
                 moveClassButton.setEnabled(false);
                 renameClassButton.setEnabled(false);
@@ -129,6 +125,7 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
                 } else {
                     addInterfaces(true);
                 }
+                ((SectionNodeView) getSectionView()).dataFileChanged();
             }
         });
 
@@ -139,6 +136,7 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
                 } else {
                     addInterfaces(false);
                 }
+                ((SectionNodeView) getSectionView()).dataFileChanged();
             }
         });
     }
@@ -165,17 +163,29 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
     private void removeInterfaces(boolean local) {
         String componentInterface = local ? ejb.getLocal() : ejb.getRemote();
         String homeInterface = local ? ejb.getLocalHome() : ejb.getHome();
-        String msg = Utils.getBundleMessage("MSG_RemoveInterfaces", componentInterface, homeInterface);
+        SectionNodeView sectionNodeView = (SectionNodeView) getSectionView();
+        FileObject ejbJarFile = sectionNodeView.getDataObject().getPrimaryFile();
+        ClassElement beanClass = Utils.getBeanClass(ejbJarFile, ejb);
+        String businessInterface = Utils.getBusinessInterface(componentInterface, ejbJarFile, beanClass);
+        String msg;
+        if (businessInterface == null) {
+            msg = Utils.getBundleMessage("MSG_RemoveInterfaces", homeInterface, componentInterface);
+        } else {
+            msg =
+                    Utils.getBundleMessage("MSG_RemoveInterfaces2", homeInterface, componentInterface,
+                            businessInterface);
+        }
         String interfaceType = Utils.getBundleMessage(local ? "TXT_Local" : "TXT_Remote");
         String title = Utils.getBundleMessage("LBL_RemoveInterfaces", interfaceType);
         NotifyDescriptor descriptor = new NotifyDescriptor(msg, title, NotifyDescriptor.YES_NO_OPTION,
                 NotifyDescriptor.WARNING_MESSAGE, null, null);
         DialogDisplayer.getDefault().notify(descriptor);
         if (NotifyDescriptor.YES_OPTION == descriptor.getValue()) {
-            SectionNodeView sectionNodeView = (SectionNodeView) getSectionView();
-            FileObject ejbJarFile = sectionNodeView.getDataObject().getPrimaryFile();
-            ClassElement beanClass = Utils.getBeanClass(ejbJarFile, ejb);
             try {
+                if (businessInterface != null) {
+                    Utils.removeInterface(beanClass, businessInterface);
+                    Utils.removeClassFile(ejbJarFile, businessInterface);
+                }
                 Utils.removeInterface(beanClass, componentInterface);
                 Utils.removeClassFile(ejbJarFile, componentInterface);
                 Utils.removeInterface(beanClass, homeInterface);

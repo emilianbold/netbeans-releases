@@ -20,6 +20,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EnvEntry;
  * @author pfiala
  */
 class EnvironmentEntriesTableModel extends InnerTableModel {
+
     private Ejb ejb;
     private static final String[] COLUMN_NAMES = {Utils.getBundleMessage("LBL_EntryName"),
                                                   Utils.getBundleMessage("LBL_EntryType"),

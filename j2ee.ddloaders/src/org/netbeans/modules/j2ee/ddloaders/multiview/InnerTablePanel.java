@@ -16,6 +16,7 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.ui.DefaultTablePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 import javax.swing.*;
@@ -111,7 +112,7 @@ public class InnerTablePanel extends SectionInnerPanel {
         }
     }
 
-    public InnerTablePanel(SectionNodeView sectionNodeView, final AbstractTableModel model) {
+    public InnerTablePanel(SectionNodeView sectionNodeView, final InnerTableModel model) {
         super(sectionNodeView);
         this.dataObject = (XmlMultiViewDataObject) sectionNodeView.getDataObject();
         tablePanel = new TablePanel(model);
@@ -199,10 +200,18 @@ public class InnerTablePanel extends SectionInnerPanel {
         table.setPreferredSize(null);
         size.height = table.getPreferredSize().height;
         table.setPreferredSize(size);
-        Utils.scrollToVisible(InnerTablePanel.this);
+        Container parent = getParent();
+        if (parent instanceof SectionNodePanel) {
+            SectionNodePanel sectionNodePanel = ((SectionNodePanel) parent);
+            if (sectionNodePanel.isActive()) {
+                Utils.scrollToVisible(sectionNodePanel);
+            }
+        }
+
     }
 
     public void dataFileChanged() {
+        ((InnerTableModel) getTable().getModel()).dataFileChanged();
         adjustHeight();
     }
 

@@ -25,6 +25,7 @@ import java.util.Map;
  * @author pfiala
  */
 class CmpRelationshipsTableModel extends InnerTableModel {
+
     private EjbJar ejbJar;
     private final Map relationshipsHelperMap = new HashMap();
     private static final String[] COLUMN_NAMES = {Utils.getBundleMessage("LBL_RelationshipName"),
@@ -52,6 +53,11 @@ class CmpRelationshipsTableModel extends InnerTableModel {
         Relationships relationships = ejbJar.getSingleRelationships();
         relationships.removeEjbRelation(relationships.getEjbRelation(row));
         fireTableRowsDeleted(row, row);
+    }
+
+    public void dataFileChanged() {
+        relationshipsHelperMap.clear();
+        super.dataFileChanged();
     }
 
     public int getRowCount() {

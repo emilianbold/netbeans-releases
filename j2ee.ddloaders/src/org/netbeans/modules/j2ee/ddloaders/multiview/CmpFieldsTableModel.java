@@ -23,6 +23,7 @@ import java.util.HashMap;
  * @author pfiala
  */
 class CmpFieldsTableModel extends InnerTableModel {
+
     private final FileObject ejbJarFile;
     private Entity entity;
     private HashMap cmpFieldHelperMap = new HashMap();
@@ -43,8 +44,9 @@ class CmpFieldsTableModel extends InnerTableModel {
 
     public int addRow() {
         new EntityHelper(ejbJarFile, entity).addCmpField();
-        fireTableDataChanged();
-        return getRowCount() - 1;
+        int row = getRowCount() - 1;
+        fireTableRowsInserted(row, row);
+        return row;
     }
 
     public void removeRow(int row) {
@@ -52,6 +54,11 @@ class CmpFieldsTableModel extends InnerTableModel {
         if (getCmpFieldHelper(cmpField).deleteCmpField()) {
             fireTableRowsDeleted(row, row);
         }
+    }
+
+    public void dataFileChanged() {
+        cmpFieldHelperMap.clear();
+        super.dataFileChanged();
     }
 
     public int getRowCount() {
@@ -80,6 +87,36 @@ class CmpFieldsTableModel extends InnerTableModel {
         return null;
     }
 
+    public void setValueAt(Object value, int rowIndex, int columnIndex) {
+        CmpField field = entity.getCmpField(rowIndex);
+        CmpFieldHelper helper = getCmpFieldHelper(field);
+        switch (columnIndex) {
+            case 0:
+                helper.setFieldName((String) value);
+                break;
+            case 1:
+                helper.setType((String) value);
+                break;
+            case 2:
+                helper.setLocalGetter(((Boolean) value).booleanValue());
+                break;
+            case 3:
+                helper.setLocalSetter(((Boolean) value).booleanValue());
+                break;
+            case 4:
+                helper.setRemoteGetter(((Boolean) value).booleanValue());
+                break;
+            case 5:
+                helper.setRemoteSetter(((Boolean) value).booleanValue());
+                break;
+            case 6:
+                field.setDescription((String) value);
+                entity.setCmpField(rowIndex, field);
+                break;
+        }
+        fireTableRowsUpdated(rowIndex, rowIndex);
+    }
+
     private CmpFieldHelper getCmpFieldHelper(CmpField field) {
         CmpFieldHelper cmpFieldHelper = (CmpFieldHelper) cmpFieldHelperMap.get(field);
         if (cmpFieldHelper == null) {
@@ -90,7 +127,7 @@ class CmpFieldsTableModel extends InnerTableModel {
     }
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return false;
+        return true;
     }
 
     public Class getColumnClass(int columnIndex) {

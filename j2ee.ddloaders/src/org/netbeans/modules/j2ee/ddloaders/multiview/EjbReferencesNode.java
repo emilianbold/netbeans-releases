@@ -30,6 +30,7 @@ import java.util.Set;
  * @author pfiala
  */
 public class EjbReferencesNode extends SectionNode {
+
     public EjbReferencesNode(SectionNodeView sectionNodeView, Ejb ejb) {
         super(sectionNodeView, ejb, Utils.getBundleMessage("LBL_EjbReferences"), Utils.ICON_BASE_MISC_NODE);
     }

@@ -20,6 +20,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.ResourceEnvRef;
  * @author pfiala
  */
 class ResourceEnvironmentReferencesTableModel extends InnerTableModel {
+
     private Ejb ejb;
     private static final String[] COLUMN_NAMES = {Utils.getBundleMessage("LBL_Name"),
                                                   Utils.getBundleMessage("LBL_ResourceType"),

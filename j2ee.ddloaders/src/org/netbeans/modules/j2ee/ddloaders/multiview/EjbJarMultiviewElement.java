@@ -26,6 +26,7 @@ import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
  * @author pfiala
  */
 public abstract class EjbJarMultiviewElement extends ToolBarMultiViewElement {
+
     private PanelView view;
     protected ToolBarDesignEditor comp;
     protected EjbJarMultiViewDataObject dataObject;

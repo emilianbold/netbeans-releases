@@ -131,7 +131,7 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
         tree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent e) {
                 FileObject fileObject = bf.getSelectedFileObject();
-                options[0].setEnabled(fileObject!= null && !fileObject.isFolder());
+                options[0].setEnabled(fileObject != null && !fileObject.isFolder());
             }
         });
 

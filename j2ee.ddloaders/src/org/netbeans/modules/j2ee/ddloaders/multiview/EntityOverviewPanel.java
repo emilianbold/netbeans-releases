@@ -19,6 +19,7 @@ import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EntityOverviewForm;
 import org.netbeans.modules.xml.multiview.ItemComboBoxHelper;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.netbeans.modules.xml.tools.generator.ValidatingTextField;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -28,6 +29,7 @@ import java.awt.event.ActionListener;
  * @author pfiala
  */
 public class EntityOverviewPanel extends EntityOverviewForm {
+
     private EjbJarMultiViewDataObject dataObject;
     private static final String COMPOUND = "compound"; //NOI18N
 
@@ -91,6 +93,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
             for (int i = 0; i < cmpFields.length; i++) {
                 CmpField cmpField = cmpFields[i];
                 primaryKeyFieldComboBox.addItem(cmpField.getFieldName());
+                primaryKeyFieldComboBox.setEditor(new ValidatingTextField());
             }
             new ItemComboBoxHelper(primaryKeyFieldComboBox, dataObject) {
 
@@ -104,11 +107,15 @@ public class EntityOverviewPanel extends EntityOverviewForm {
             };
             primaryKeyFieldComboBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    if (primaryKeyFieldComboBox.getSelectedIndex() == 0) {
+                    int selectedIndex = primaryKeyFieldComboBox.getSelectedIndex();
+                    if (selectedIndex == 0) {
                         primaryKeyClassComboBox.setEnabled(true);
                         primaryKeyClassComboBox.setSelectedItem(entity.getPrimKeyClass());
                     } else {
                         primaryKeyClassComboBox.setEnabled(false);
+                        CmpField cmpField = entity.getCmpField(selectedIndex - 1);
+                        CmpFieldHelper helper = new CmpFieldHelper(dataObject.getPrimaryFile(), entity, cmpField);
+                        entity.setPrimKeyClass(helper.getType());
                     }
                     primaryKeyClassComboBox.setSelectedItem(entity.getPrimKeyClass());
                     dataObject.modelUpdatedFromUI();

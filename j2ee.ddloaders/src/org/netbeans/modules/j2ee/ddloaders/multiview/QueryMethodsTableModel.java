@@ -27,6 +27,7 @@ import java.util.List;
  * @author pfiala
  */
 public abstract class QueryMethodsTableModel extends InnerTableModel {
+
     protected final FileObject ejbJarFile;
     protected final Entity entity;
     private List queries;
@@ -53,6 +54,11 @@ public abstract class QueryMethodsTableModel extends InnerTableModel {
         // TODO: implement Method removal
         initMethods();
         fireTableRowsDeleted(-1, -1);
+    }
+
+    public void dataFileChanged() {
+        queryMethodHelperMap.clear();
+        super.dataFileChanged();
     }
 
     public int getRowCount() {

@@ -21,6 +21,7 @@ import org.openide.filesystems.FileObject;
  * @author pfiala
  */
 class FinderMethodsTableModel extends QueryMethodsTableModel {
+
     protected static final String[] COLUMN_NAMES = {Utils.getBundleMessage("LBL_Method"),
                                                     Utils.getBundleMessage("LBL_ReturnsCollection"),
                                                     Utils.getBundleMessage("LBL_ResultInterface"),

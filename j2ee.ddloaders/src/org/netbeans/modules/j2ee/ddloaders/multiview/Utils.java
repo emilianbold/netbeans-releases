@@ -31,6 +31,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.session.SessionGenerat
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.CMPFieldNode;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.EntityNode;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
+import org.netbeans.modules.java.JavaDataObject;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.refactoring.ui.MoveClassUI;
 import org.netbeans.modules.refactoring.ui.RefactoringPanel;
@@ -40,6 +41,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.src.ClassElement;
 import org.openide.src.Identifier;
 import org.openide.src.MethodElement;
@@ -49,9 +52,11 @@ import org.openide.src.Type;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
+import javax.jmi.reflect.RefObject;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
@@ -60,6 +65,7 @@ import java.util.StringTokenizer;
  * @author pfiala
  */
 public class Utils {
+
     public static final String ICON_BASE_DD_VALID =
             "org/netbeans/modules/j2ee/ddloaders/resources/DDValidIcon"; // NOI18N
     public static final String ICON_BASE_DD_INVALID =
@@ -134,6 +140,10 @@ public class Utils {
         return NbBundle.getMessage(Utils.class, messageId, param1, param2);
     }
 
+    public static String getBundleMessage(String messageId, Object param1, Object param2, Object param3) {
+        return NbBundle.getMessage(Utils.class, messageId, param1, param2, param3);
+    }
+
     public static boolean isJavaIdentifier(String id) {
         return Utilities.isJavaIdentifier(id);
     }
@@ -161,16 +171,21 @@ public class Utils {
         return true;
     }
 
-    public static void removeInterface(ClassElement beanClass, String interfaceName) {
-        Identifier[] interfaces = beanClass.getInterfaces();
+    public static void removeInterface(ClassElement classElement, String interfaceName) {
+        Identifier[] interfaces = classElement.getInterfaces();
         for (int i = 0; i < interfaces.length; i++) {
             if (interfaceName.equals(interfaces[i].getFullName())) {
-                try {
-                    beanClass.removeInterface(Identifier.create(interfaceName));
-                } catch (SourceException ex) {
-                    Utils.notifyError(ex);
-                }
+                Identifier identifier = Identifier.create(interfaceName);
+                removeInterface(classElement, identifier);
             }
+        }
+    }
+
+    public static void removeInterface(ClassElement classElement, Identifier identifier) {
+        try {
+            classElement.removeInterface(identifier);
+        } catch (SourceException ex) {
+            Utils.notifyError(ex);
         }
     }
 
@@ -178,7 +193,10 @@ public class Utils {
         FileObject sourceFile = getSourceFile(ejbJarFile, className);
         if (sourceFile != null) {
             try {
-                sourceFile.delete();
+                DataObject dataObject = JavaDataObject.find(sourceFile);
+                dataObject.delete();
+            } catch (DataObjectNotFoundException e) {
+                notifyError(e);
             } catch (IOException e) {
                 notifyError(e);
             }
@@ -304,6 +322,60 @@ public class Utils {
         }
     }
 
+    public static void addBusinessMethod(ClassElement interfaceElement, MethodElement method, boolean remote) {
+        if (interfaceElement == null || method == null) {
+            return;
+        }
+        MethodElement businessMethod = getBusinessMethod(interfaceElement, method);
+        if (businessMethod != null) {
+            return;
+        }
+        MethodParameter[] parameters = method.getParameters();
+        Type[] paramTypes = new Type[parameters.length];
+        for (int i = 0; i < parameters.length; i++) {
+            paramTypes[i] = parameters[i].getType();
+        }
+        try {
+            method.setModifiers(0);
+            if (remote) {
+                addExceptionIfNecessary(method, RemoteException.class.getName());
+            }
+            interfaceElement.addMethod(method);
+        } catch (SourceException e) {
+            Utils.notifyError(e);
+        }
+    }
+
+    private static void addExceptionIfNecessary(MethodElement me, String exceptionName) throws SourceException {
+        Identifier[] exceptions = me.getExceptions();
+        boolean containsException = false;
+        for (int i = 0; i < exceptions.length; i++) {
+            String curExName = exceptions[i].getFullName();
+            containsException |= exceptionName.equals(curExName);
+        }
+        if (!containsException) {
+            Identifier[] newEx = new Identifier[exceptions.length + 1];
+            System.arraycopy(exceptions, 0, newEx, 0, exceptions.length);
+            newEx[newEx.length - 1] = Identifier.create(exceptionName);
+            me.setExceptions(newEx);
+        }
+    }
+
+    public static void removeBusinessMethod(ClassElement interfaceElement, MethodElement method) {
+        if (interfaceElement == null || method == null) {
+            return;
+        }
+        MethodElement businessMethod = getBusinessMethod(interfaceElement, method);
+        if (businessMethod == null) {
+            return;
+        }
+        try {
+            interfaceElement.removeMethod(businessMethod);
+        } catch (SourceException e) {
+            Utils.notifyError(e);
+        }
+    }
+
     public static MethodElement getSetterMethod(ClassElement beanClass, String fieldName, MethodElement getterMethod) {
         return getterMethod == null ?
                 null : EntityMethodController.getSetterMethod(beanClass, fieldName, getterMethod);
@@ -313,7 +385,7 @@ public class Utils {
         return EntityMethodController.getGetterMethod(beanClass, fieldName);
     }
 
-    protected static ClassElement getBusinessInterface(String compInterfaceName, FileObject ejbJarFile,
+    protected static ClassElement getBusinessInterfaceClass(String compInterfaceName, FileObject ejbJarFile,
             ClassElement beanClass) {
         ClassElement compInterface = getClassElement(ejbJarFile, compInterfaceName);
         if (compInterface == null) {
@@ -329,8 +401,29 @@ public class Utils {
             return compInterface;
         }
 
-        ClassElement business = getClassElement(ejbJarFile, compInterfaces.get(0).toString());
+        String className = compInterfaces.get(0).toString();
+
+        ClassElement business = getClassElement(ejbJarFile, className);
         return business == null ? compInterface : business;
+    }
+
+    public static String getBusinessInterface(String compInterfaceName, FileObject ejbJarFile,
+            ClassElement beanClass) {
+        ClassElement compInterface = getClassElement(ejbJarFile, compInterfaceName);
+        if (compInterface == null) {
+            return null;
+        }
+        // get method interfaces
+        java.util.List compInterfaces = new LinkedList(Arrays.asList(compInterface.getInterfaces()));
+
+        // look for common candidates
+        compInterfaces.retainAll(Arrays.asList(beanClass.getInterfaces()));
+
+        if (compInterfaces.isEmpty()) {
+            return null;
+        }
+
+        return compInterfaces.get(0).toString();
     }
 
     public static ClassElement getClassElement(FileObject ejbJarFile, String className) {
@@ -342,15 +435,47 @@ public class Utils {
         return classElement;
     }
 
-    private static JavaClass resolveJavaClass(String fullClassName) {
+    public static JavaClass resolveJavaClass(String fullClassName) {
         return (JavaClass) JavaModel.getDefaultExtent().getType().resolve(fullClassName);
     }
 
     public static void activateRenameClassUI(String fullClassName) {
-        new RefactoringPanel(new RenameRefactoringUI(resolveJavaClass(fullClassName)));
+        JavaClass jmiObject = resolveJavaClass(fullClassName);
+        activateRenameRefactoringUI(jmiObject);
     }
 
     public static void activateMoveClassUI(String fullClassName) {
-        new RefactoringPanel(new MoveClassUI(resolveJavaClass(fullClassName)));
+        JavaClass sourceClass = resolveJavaClass(fullClassName);
+        activateMoveClassUI(sourceClass);
+    }
+
+    public static void activateMoveClassUI(JavaClass sourceClass) {
+        new RefactoringPanel(new MoveClassUI(sourceClass));
+    }
+
+    public static void activateRenameRefactoringUI(RefObject jmiObject) {
+        new RefactoringPanel(new RenameRefactoringUI(jmiObject));
+    }
+
+    public static String getMethodName(String fieldName, boolean get) {
+        return EntityMethodController.getMethodName(fieldName, get);
+    }
+
+    public static void renameMethod(MethodElement method, Identifier identifier) {
+        if (method != null) {
+            try {
+                method.setName(identifier);
+            } catch (SourceException e) {
+                notifyError(e);
+            }
+        }
+    }
+
+    public static void removeMethod(ClassElement classElement, MethodElement method) {
+        try {
+            classElement.removeMethod(method);
+        } catch (SourceException e) {
+            Utils.notifyError(e);
+        }
     }
 }

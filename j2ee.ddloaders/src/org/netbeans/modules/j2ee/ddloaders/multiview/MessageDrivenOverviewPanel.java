@@ -30,6 +30,7 @@ import javax.swing.*;
  * @author pfiala
  */
 public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
+
     private ActivationConfig config;
     private static final String PROPERTY_MESSAGE_SELECTOR = "messageSelector";  //NOI18N
     private static final String PROPERTY_ACKNOWLEDGE_NAME = "acknowledgeMode";  //NOI18N
@@ -209,6 +210,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
     }
 
     private class DurabilityComboBoxHelper extends ItemComboBoxHelper {
+
         public DurabilityComboBoxHelper(JComboBox durabilityComboBox, EjbJarMultiViewDataObject dataObject) {
             super(durabilityComboBox, dataObject);
         }

@@ -22,6 +22,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  * @author pfiala
  */
 public class BeanDetailNode extends SectionNode {
+
     public BeanDetailNode(SectionNodeView sectionNodeView, Ejb ejb) {
         super(sectionNodeView, ejb, Utils.getBundleMessage("LBL_BeanDetails"), Utils.ICON_BASE_MISC_NODE);
     }

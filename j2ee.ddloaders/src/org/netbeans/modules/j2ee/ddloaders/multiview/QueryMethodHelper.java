@@ -26,6 +26,7 @@ import org.openide.src.Type;
  * @author pfiala
  */
 public class QueryMethodHelper {
+
     private ClassElement beanClass;
     private Entity entity;
     private FileObject ejbJarFile;

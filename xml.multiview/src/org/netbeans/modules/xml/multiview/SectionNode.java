@@ -20,12 +20,10 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
 
-import java.util.List;
-import java.util.LinkedList;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author pfiala
@@ -55,7 +53,7 @@ public class SectionNode extends AbstractNode {
      * @param title
      */
     protected SectionNode(SectionNodeView sectionNodeView, Children children, Object key, String title,
-            String iconBase) {
+                          String iconBase) {
         super(children);
         this.sectionNodeView = sectionNodeView;
         this.key = key;
@@ -75,7 +73,7 @@ public class SectionNode extends AbstractNode {
 
     public void addChild(SectionNode node) {
         allChildren.add(node);
-        if(!(node instanceof SectionInnerNode)) {
+        if (!(node instanceof SectionInnerNode)) {
             getChildren().add(new Node[]{node});
         }
     }
@@ -141,5 +139,21 @@ public class SectionNode extends AbstractNode {
 
     public int hashCode() {
         return key.hashCode();
+    }
+
+    public void dataFileChanged() {
+        if (sectionPanel != null) {
+            sectionPanel.dataFileChanged();
+        }
+        Children children = getChildren();
+        if (children != null) {
+            Node[] nodes = children.getNodes();
+            for (int i = 0; i < nodes.length; i++) {
+                Node node = nodes[i];
+                if (node instanceof SectionNode) {
+                    ((SectionNode) node).dataFileChanged();
+                }
+            }
+        }
     }
 }

@@ -22,6 +22,7 @@ import org.openide.util.NbBundle;
  * @author pfiala
  */
 class EjbReferencesTableModel extends InnerTableModel {
+
     Ejb ejb;
     private static final String[] COLUMN_NAMES = {
         NbBundle.getBundle(EjbReferencesTableModel.class).getString("LBL_ReferenceName"),

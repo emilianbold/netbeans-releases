@@ -26,18 +26,19 @@ import org.openide.src.ClassElement;
  * @author pfiala
  */
 public class EntityHelper {
+
     protected ClassElement beanClass;
     protected Entity entity;
     protected FileObject ejbJarFile;
-    protected ClassElement localInterface;
-    protected ClassElement remoteInterface;
+    protected ClassElement localBusinessInterface;
+    protected ClassElement remoteBusinessInterface;
 
     public EntityHelper(FileObject ejbJarFile, Entity entity) {
         this.entity = entity;
         this.ejbJarFile = ejbJarFile;
         beanClass = org.netbeans.modules.j2ee.ddloaders.multiview.Utils.getBeanClass(this.ejbJarFile, this.entity);
-        localInterface = Utils.getBusinessInterface(entity.getLocal(), ejbJarFile, beanClass);
-        remoteInterface = Utils.getBusinessInterface(entity.getRemote(), ejbJarFile, beanClass);
+        localBusinessInterface = Utils.getBusinessInterfaceClass(entity.getLocal(), ejbJarFile, beanClass);
+        remoteBusinessInterface = Utils.getBusinessInterfaceClass(entity.getRemote(), ejbJarFile, beanClass);
     }
 
     public void addCmpField() {
