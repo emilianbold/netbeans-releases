@@ -42,8 +42,6 @@ public class TestCreator extends java.lang.Object {
     static private final String JUNIT_SUPER_CLASS_NAME                = "TestCase";
     static private final String JUNIT_FRAMEWORK_PACKAGE_NAME    = "junit.framework";    
     
-    static private final String forbiddenMethods[]               = {"main", "suite", "run", "runBare", "setUp", "tearDown"};
-    
     static private final String GENERATED_SUITE_BLOCK_START                = "--JUNIT:";
     static private final String GENERATED_SUITE_BLOCK_END                  = ":JUNIT--";    
     private static final String METHOD_NAME_SETUP = "setUp";            //NOI18N
@@ -623,23 +621,18 @@ public class TestCreator extends java.lang.Object {
     }
 
 
-    static private boolean isForbidden(String name) {
-        for (int i = 0; i < forbiddenMethods.length; i++) {            
-            if (forbiddenMethods[i].equals(name)) 
-              return true;            
-        }
-        return false;
-    }
-
-
 
     static private boolean isMethodAcceptable(Method m) {
-        if ((m.getModifiers() & Modifier.PRIVATE) == 0 &&
-            ((m.getModifiers() & cfg_MethodsFilter) != 0 ||
-            ((m.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED)) == 0 && cfg_MethodsFilterPackage))) {
-            return !isForbidden(m.getName()); // && (m.getModifiers() & Modifier.ABSTRACT) == 0;
-        }
-        return false;
+        return (
+                (m.getModifiers() & Modifier.PRIVATE) == 0 &&
+                (
+                 (m.getModifiers() & cfg_MethodsFilter) != 0 ||
+                 (
+                  (m.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED)) == 0 
+                  && cfg_MethodsFilterPackage
+                  )
+                 )
+                );
     }
 
 
