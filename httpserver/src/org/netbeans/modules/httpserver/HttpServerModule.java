@@ -119,7 +119,6 @@ System.out.println("class : " + ((obj == null) ? "null" : obj.getClass().getName
                 server = buildServer();
                 server.start();
                 HttpServerSettings.OPTIONS.runSuccess();
-Thread.dumpStack();
                 // this is not a debug message, this is a server startup message
                 if (HttpServerSettings.OPTIONS.isStartStopMessages())
                   System.out.println(java.text.MessageFormat.format(NbBundle.getBundle(HttpServerModule.class).
@@ -224,6 +223,7 @@ e.printStackTrace();
 
 /*
  * Log
+ *  26   Gandalf   1.25        10/6/99  Petr Jiricka    Removed debug DumpStack
  *  25   Gandalf   1.24        10/5/99  Petr Jiricka    
  *  24   Gandalf   1.23        10/1/99  Petr Hrebejk    org.openide.modules.ModuleInstall
  *        changed to class + some methods added
