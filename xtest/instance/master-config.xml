@@ -53,23 +53,16 @@ Microsystems, Inc. All Rights Reserved.
   <!-- VALIDATION -->
   
   <!-- QA functional tests for Netbeans -->
-  <!-- Obsolete, needs update -->
   <config name="qa-functional-nb">
-      <module name="beans"  	testtypes="qa-func"        attributes="validation"/>
-      <testtype name="qa-functional" attributes="validation"
-                modules="ant,clazz,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,openide,properties,ide,vcscore,vcsgeneric"/>
-      <testtype name="qa-functional" attributes="validation"
-                modules="xml,xml/catalog,xml/core,xml/text-edit,xml/tools,xml/tax/lib,xml/tree-edit"/>
-      <module name="qa"       	testtypes="serialization"  attributes="validation"/>
-      <module name="debuggercore" testtypes="qa-functional" attributes="validation"/>
-      <module name="debuggerjpda" testtypes="qa-unit" attributes="full"/>
-
-      <!-- no longer in validation suite
-      <module name="corba"   	testtypes="qa-functional"  attributes="validation"/>   -->
-      <!-- no longer in validation suite
-      <module name="projects" 	testtypes="qa-functional"  attributes="validation,jdk14"/>  -->
-      <!-- it freezes
-      module name="autoupdate" testtypes="gui"  	   attributes="validation"/ -->
+        <module name="ide" testtypes="qa-functional" attributes="validation"/>
+        <module name="java" testtypes="qa-functional" attributes="validation"/>
+        <module name="openide" testtypes="qa-functional" attributes="validation"/>
+        <module name="refactoring" testtypes="qa-functional" attributes="validation"/>
+        <module name="web" testtypes="qa-functional" attributes="validation"/>
+        <module name="form" testtypes="qa-functional" attributes="validation"/>
+        <module name="java/project" testtypes="qa-functional" attributes="validation"/>
+        <module name="editor" testtypes="qa-functional" attributes="validation"/>
+        <module name="properties" testtypes="qa-functional" attributes="validation"/>
   </config>
 
   <!-- PERFORMANCE -->
