@@ -27,7 +27,10 @@ import javax.swing.*;
  * @author  Pavel Buzek
  */
 
-public class CursorEditor extends PropertyEditorSupport  implements EnhancedPropertyEditor, org.openide.explorer.propertysheet.editors.XMLPropertyEditor {
+public class CursorEditor extends PropertyEditorSupport  implements 
+                                                         EnhancedPropertyEditor, 
+                                                         org.openide.explorer.propertysheet.editors.XMLPropertyEditor, 
+                                                         org.netbeans.modules.form.NamedPropertyEditor {
 
     private static HashMap CURSOR_TYPES = new HashMap();
     private static HashMap CURSOR_CONSTANTS = new HashMap();
@@ -207,4 +210,13 @@ public class CursorEditor extends PropertyEditorSupport  implements EnhancedProp
         return el;
     }
 
+    
+    // ------------------------------------------
+    // NamedPropertyEditor implementation
+
+    /** @return display name of the property editor */
+    public String getDisplayName() {
+        return org.openide.util.NbBundle.getBundle(CursorEditor.class).getString("CTL_CursorEditor_DisplayName");
+    }
+    
 }

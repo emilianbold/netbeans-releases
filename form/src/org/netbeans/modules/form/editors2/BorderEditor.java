@@ -49,7 +49,8 @@ import org.netbeans.modules.form.palette.*;
  * @author Petr Hamernik
  */
 public final class BorderEditor extends PropertyEditorSupport
-                                implements FormAwareEditor, XMLPropertyEditor {
+                                implements FormAwareEditor, XMLPropertyEditor,
+                                           org.netbeans.modules.form.NamedPropertyEditor {
 
     /** Icon bases for unknown border node. */
     private static final String UNKNOWN_BORDER_BASE = "org/netbeans/modules/form/editors2/unknownBorder"; // NOI18N
@@ -175,6 +176,16 @@ public final class BorderEditor extends PropertyEditorSupport
         }
         return bPanel;
     }
+    
+    
+    // ------------------------------------------
+    // NamedPropertyEditor implementation
+
+    /** @return display name of the property editor */
+    public String getDisplayName() {
+        return bundle.getString("CTL_BorderEditor_DisplayName");
+    }
+    
 
     // --------------------------
     // innerclasses
@@ -495,7 +506,7 @@ public final class BorderEditor extends PropertyEditorSupport
         if ((value instanceof DesignBorder || value instanceof Border)
                  && borderSupport != null) {
             org.w3c.dom.Node storedNode = null;
-//            borderSupport = ((DesignBorder)value).getBorderSupport();
+            borderSupport = ((DesignBorder)value).getBorderSupport();
             BorderInfo bInfo = borderSupport.getBorderInfo();
 
             if (bInfo != null) {
