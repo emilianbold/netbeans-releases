@@ -56,7 +56,7 @@ public class ElementLook extends Look implements EventListener {
         try {
             Element parent = (Element)evt.getCurrentTarget();
             System.err.println("ElementLook: event on " + parent.getTagName() + ": " + evt + "; co=" + getChildObjects(parent, null));//XXX
-            fireChange(parent, Look.GET_CHILD_OBJECTS);
+            fireChange(parent, Look.GET_CHILD_OBJECTS | Look.GET_DISPLAY_NAME);
         } catch (RuntimeException e) {
             e.printStackTrace();
         }
@@ -67,7 +67,33 @@ public class ElementLook extends Look implements EventListener {
     }
     
     public String getDisplayName(Object o, Lookup env) {
-        return "<" + ((Element)o).getTagName() + ">";
+        return fullText((Element)o);
+    }
+    
+    private static String fullText(Element el) {
+        // NOI18N thruout...
+        StringBuffer buf = new StringBuffer();
+        buf.append('<');
+        buf.append(el.getNodeName());
+        NamedNodeMap attrs = el.getAttributes();
+        int len = attrs.getLength();
+        for (int i = 0; i < len; i++) {
+            Attr attr = (Attr)attrs.item(i);
+            buf.append(' ');
+            buf.append(attr.getName());
+            buf.append('=');
+            buf.append('"');
+            // Note: no attempt at escaping vals, etc.
+            buf.append(attr.getValue());
+            buf.append('"');
+        }
+        if (el.getChildNodes().getLength() > len) {
+            // Have some children other than attributes.
+            buf.append('>');
+        } else {
+            buf.append("/>"); // NOI18N
+        }
+        return buf.toString();
     }
     
     public boolean isLeaf(Object o, Lookup env) {
