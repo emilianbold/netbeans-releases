@@ -25,8 +25,6 @@ import org.netbeans.modules.ant.freeform.Util;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 
-// XXX: validate that entered target really exists in the Ant script, etc.
-
 /**
  * @author  David Konecny
  */
