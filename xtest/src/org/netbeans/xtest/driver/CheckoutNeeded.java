@@ -132,6 +132,7 @@ public class CheckoutNeeded extends Task {
           String instance = getProject().getProperty(InstancePropertiesParser.INSTANCE + postfix);
           String cvs_root = getProject().getProperty(InstancePropertiesParser.CVS_ROOT + postfix);
           String cvs_workdir = getProject().getProperty(InstancePropertiesParser.CVS_WORKDIR + postfix);
+          String master_config = getProject().getProperty(InstancePropertiesParser.MASTER_CONFIG + postfix);
           if (testroot==null) testroot = "";
           else 
               if (!testroot.endsWith("/"))
@@ -142,11 +143,13 @@ public class CheckoutNeeded extends Task {
           if (cvs_workdir == null) throw new BuildException("Property '"+InstancePropertiesParser.CVS_WORKDIR+postfix+"' is not set.");
           
           String instance_dir = cvs_workdir + File.separator + instance.replace('/',File.separatorChar);
+          if (master_config == null) master_config = instance_dir + File.separator + "master-config.xml";
+          
           if (getProject().getProperty(instance+".branch") == null) 
               getProject().setProperty(instance+".branch",cvs_root);
           checkout(instance);
           
-          readMasterConfig(modules_set,new File(instance_dir,"master-config.xml"),config,testroot);
+          readMasterConfig(modules_set,new File(master_config),config,testroot);
           log("Master config read: "+modules_set);
           Iterator mod = modules_set.iterator();
           while (mod.hasNext()) {
@@ -210,7 +213,7 @@ public class CheckoutNeeded extends Task {
         if (!found) throw new BuildException("Configuration '"+config+"' was not found in "+file.getAbsolutePath(), location);
         Node modules_attrib = node.getAttributes().getNamedItem( "modules" );
         if (modules_attrib != null) {
-            fillHashSet(set,prefix + modules_attrib.getNodeValue());
+            fillHashSet(set,prefix,modules_attrib.getNodeValue());
         }
         NodeList nl2 = node.getChildNodes();
         Node node2 = null;
@@ -220,13 +223,17 @@ public class CheckoutNeeded extends Task {
             if (module_name.equals("module")) {
                 set.add(prefix + node2.getAttributes().getNamedItem( "name" ).getNodeValue());
             }
+            if (module_name.equals("testtype")) {
+                fillHashSet(set,prefix,node2.getAttributes().getNamedItem( "modules" ).getNodeValue());
+            }
+
         }
     }
     
-    private void fillHashSet(HashSet set, String list) {
+    private void fillHashSet(HashSet set, String prefix, String list) {
        StringTokenizer tokens = new StringTokenizer(list,",");
        while (tokens.hasMoreTokens()) 
-           set.add(tokens.nextToken());
+           set.add(prefix + tokens.nextToken());
     }
 
 }
