@@ -361,6 +361,7 @@ Microsystems, Inc. All Rights Reserved.
                deprecation="${build.compiler.deprecation}"
                debug="${build.compiler.debug}">
             <classpath>
+	        <pathelement location="../openide-13javac-workaround.jar"/>
                 <pathelement location="../src"/>
                 <pathelement path="${junit.path}"/>
 		<pathelement path="${xerces.path}"/>
@@ -370,6 +371,7 @@ Microsystems, Inc. All Rights Reserved.
                deprecation="${build.compiler.deprecation}"
                debug="${build.compiler.debug}">
             <classpath>
+	        <pathelement location="../openide-13javac-workaround.jar"/>
                 <pathelement location="../src"/>
                 <pathelement path="${junit.path}"/>
 		<pathelement path="${xerces.path}"/>
