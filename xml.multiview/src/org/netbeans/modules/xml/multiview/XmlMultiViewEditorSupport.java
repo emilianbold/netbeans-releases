@@ -132,6 +132,14 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
             }
         });
     }
+    /** Resolving problems when editor was modified and closed
+     *  (issue 57483)
+     */
+    protected void notifyClosed() {
+        xmlTC = null;
+        mvtc = null;
+        super.notifyClosed();
+    }
     
     org.netbeans.core.api.multiview.MultiViewPerspective getSelectedPerspective() {
         if (mvtc!=null) return MultiViews.findMultiViewHandler(mvtc).getSelectedPerspective();

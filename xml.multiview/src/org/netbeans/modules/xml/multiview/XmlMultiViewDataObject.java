@@ -103,6 +103,8 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
      */
     protected void reloadModelFromFileObject() throws java.io.IOException {
         editor.openDocument();
+        // need to synchronize model with document (issue 57483)
+        documentUpdated();
     }
 
 
