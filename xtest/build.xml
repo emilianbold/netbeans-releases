@@ -15,7 +15,6 @@ Microsystems, Inc. All Rights Reserved.
 <project name="xtest_master" default="netbeans" basedir=".">
 
     <!-- Properties -->
-    <property name="buildnumber" value="000"/>
     <property name="netbeans.home" location="../nbbuild/netbeans"/>
     <property name="netbeans.test.home" value="${netbeans.home}"/>
 
@@ -25,7 +24,6 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.config" value="default"/>
     <property name="xtest.uploaddir" location="results"/>
     <property name="xtest.distdir" location="dist"/>
-    <property name="xtest.distname" value="nb-xtest-${buildnumber}"/>
     <property name="xtest.basedir" location=".."/>
     <property name="xtest.mail.all" value=""/>
     <property name="xtest.mail.failed" value=""/>
@@ -40,6 +38,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="init" depends="bootstrap">
+        <tstamp/>
+        <property name="buildnumber" value="${DSTAMP}-${TSTAMP}"/>
+        <property name="xtest.distname" value="nb-xtest-${buildnumber}"/>
+
         <taskdef name="nbtaskdef" classname="org.netbeans.xtest.NbMultiTaskDef" classpath="lib/xtest.jar"/>
 
         <nbtaskdef classpath="lib/xtest.jar">
@@ -65,9 +67,10 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Helper targets, called by executor -->
     <!-- ================================== -->
 
-    <!-- build test distribution helper, called by executor -->
-    <target name="build-test-distribution"
-            description="Build test of module and upload results to the test distribution directory.">
+    <!-- =========================================================================== -->
+    <!-- build test distribution helper, called by executor                          -->
+    <!-- Build test of module and upload results to the test distribution directory. -->
+    <target name="build-test-distribution">
         <echo message="Building ${xtest.testtype} test of ${xtest.module}..."/>
 
         <mkdir dir="${xtest.distdir}/${xtest.module}/test/${xtest.testtype}"/>
@@ -80,16 +83,18 @@ Microsystems, Inc. All Rights Reserved.
                 toDir="${xtest.distdir}/${xtest.module}/test/${xtest.testtype}"/>
     </target>
 
-    <!-- build test helper, called by executor -->
-    <target name="build-test"
-            description="Build test of module in its default directory.">
+    <!-- ============================================== -->
+    <!-- build test helper, called by executor          -->
+    <!-- Build test of module in its default directory. -->
+    <target name="build-test">
         <echo message="Building ${xtest.testtype} test of ${xtest.module}..."/>
         <ant dir="../${xtest.module}/test/${xtest.testtype}" target="build"/>
     </target>
 
-    <!-- run test helper, called by executor -->
-    <target name="run-test" depends="clean-up-ide"
-            description="Run test of module nad upload results.">
+    <!-- ====================================== -->
+    <!-- run test helper, called by executor    -->
+    <!-- Run test of module nad upload results. -->
+    <target name="run-test" depends="clean-up-ide">
         <echo message="Running ${xtest.testtype} test of ${xtest.module}..."/>
         <ant dir="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}" target="test">
             <property name="xtest.results" 
@@ -102,9 +107,10 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
     </target>
 
-    <!-- create new fresh IDE installation -->
-    <target name="clean-up-ide" if="xtest.clean-up-ide"
-            description="Brings IDE to state before fisrt start. It removes IDE configuration, use carefully!">
+    <!-- ==================================================================================== -->
+    <!-- create new fresh IDE installation                                                    -->
+    <!-- Brings IDE to state before fisrt start. It removes IDE configuration, use carefully! -->
+    <target name="clean-up-ide" if="xtest.clean-up-ide">
         <delete>
             <fileset dir="${netbeans.test.home}">
                 <include name="system/project.last"/>
@@ -117,9 +123,10 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${xtest.userdir}"/>
     </target>
 
+    <!-- ============================================= -->
     <!-- clean test results helper, called by executor -->
-    <target name="clean-test-results"
-            description="Clean up test results of module.">
+    <!-- Clean up test results of module.              -->
+    <target name="clean-test-results">
         <echo message="Cleaning results of ${xtest.module} ${xtest.testtype} test..."/>
         <ant dir="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}" target="clean_results">
             <property name="xtest.results" 
@@ -127,9 +134,10 @@ Microsystems, Inc. All Rights Reserved.
         </ant>
     </target>
 
+    <!-- =========================================== -->
     <!-- clean test build helper, called by executor -->
-    <target name="clean-test-build"
-            description="Clean up build of module test.">
+    <!-- Clean up build of module test.              -->
+    <target name="clean-test-build">
         <echo message="Cleaning build of ${xtest.module} ${xtest.testtype} test..."/>
         <ant dir="../${xtest.module}/test/${xtest.testtype}" target="clean_build"/>
     </target>
@@ -139,9 +147,10 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Main executor, calls helper targets -->
     <!-- =================================== -->
 
-    <!-- main executor -->
-    <target name="executor"
-            description="Iterate through all modules and tests defined by selected configuration and call specified target.">
+    <!-- ================================================================================================== -->
+    <!-- main executor                                                                                      -->
+    <!-- Iterate through all modules and tests defined by selected configuration and call specified target. -->
+    <target name="executor">
         <xtest  targetname="${target.name}"
                 targetParamModule="xtest.module"
                 targetParamTesttype="xtest.testtype"
@@ -155,6 +164,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Entry points, call executor -->
     <!-- =========================== -->
 
+    <!-- ================================== -->
     <!-- main entrypoint for building tests -->
     <target name="build" depends="init"
             description="Build all tests of all modules according selected configuration.">
@@ -163,14 +173,17 @@ Microsystems, Inc. All Rights Reserved.
         </antcall>
     </target>
 
+    <!-- ============================================== -->
     <!-- main entrypoint for building test distribution -->
     <target name="build-distribution" depends="init"
             description="Build all tests of all modules to distribution directory and ZIP it.">
+
+        <delete dir="${xtest.distdir}"/>
+        <delete file="${xtest.distname}.zip"/>
+
         <antcall target="executor">
             <param name="target.name" value="build-test-distribution"/>
         </antcall>
-
-        <delete file="${xtest.distname}.zip"/>
 
         <!-- zip task not well suited to making final build, as it does not set +x bits -->
         <!-- so on Unix try to use native ZIP first -->
@@ -183,8 +196,9 @@ Microsystems, Inc. All Rights Reserved.
         <zip zipfile="${xtest.distname}.zip" basedir="${xtest.distdir}"/>
     </target>
 
-    <target name="test-runner" depends="init, clean-results, clean-uploaded-results"
-            description="Run all tests of all modules and create summary of results.">
+    <!-- =========================================================== -->
+    <!-- Run all tests of all modules and create summary of results. -->
+    <target name="test-runner" depends="init, clean-results, clean-uploaded-results">
         <antcall target="executor">
             <param name="target.name" value="run-test"/>
         </antcall>
@@ -202,6 +216,7 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="xslt/stylesheet.css" todir="${xtest.uploaddir}"/>
     </target>
 
+    <!-- ================================= -->
     <!-- main entrypoint for running tests -->
     <target name="test" depends="test-runner, mail"
             description="Run tests and mail summary of results."/>
@@ -225,10 +240,15 @@ Microsystems, Inc. All Rights Reserved.
               files="${xtest.uploaddir}/summary.txt" mailhost="sunpraha.czech.sun.com"/>
     </target>
 
-    <!-- default target builds and runs tests -->
-    <target name="netbeans" depends="build, test"/>
+    <!-- ===================================== -->
+    <!-- default target, builds and runs tests -->
+    <target name="netbeans" depends="build, test"
+            description="Build and run tests."/>
 
+    <!-- ================ -->
     <!-- Cleaning targets -->
+    <!-- ================ -->
+
     <target name="clean-distribution"
             description="Delete distribution directory.">
         <echo message="Cleaning tests distribution..."/>
@@ -272,6 +292,7 @@ Microsystems, Inc. All Rights Reserved.
         </antcall>
     </target>
 
+    <!-- ================================== -->
     <!-- main entrypoint for cleaning tests -->
     <target name="clean" depends="clean-build, clean-results" 
             description="Clean up built tests, test results and distribution."/>
