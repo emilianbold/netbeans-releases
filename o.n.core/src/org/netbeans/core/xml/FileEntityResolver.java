@@ -441,11 +441,12 @@ public class FileEntityResolver extends EntityCatalog implements Environment.Pro
         public void propertyChange(java.beans.PropertyChangeEvent ev) {
             String name = ev.getPropertyName();
             
-            if (DataObject.PROP_COOKIE == name) {
-                update ();
-            }
-            
-            if (DataObject.PROP_VALID == name) {
+            if (
+                DataObject.PROP_COOKIE == name ||
+                DataObject.PROP_NAME == name ||
+                DataObject.PROP_VALID == name ||
+                DataObject.PROP_PRIMARY_FILE == name
+            ) {
                 update ();
             }
         }
