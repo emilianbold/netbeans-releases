@@ -946,6 +946,10 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                     FileObject webBuildBase = getWebModule().getContentDirectory();
                     if (webBuildBase != null) {
                         // project was built
+                        if (FileUtil.isParentOf(docBase, webBuildBase) || FileUtil.isParentOf(webBuildBase, docBase)) {
+                            //cannot copy into self
+                            return;
+                        }
                         FileObject destFile = ensureDestinationFileExists(webBuildBase, path, fo.isFolder());
                         if (!fo.isFolder()) {
                             InputStream is = null;
