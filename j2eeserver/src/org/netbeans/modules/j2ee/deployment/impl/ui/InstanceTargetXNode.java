@@ -64,7 +64,8 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
     }
     
     public String getName() {
-        return instanceProperties.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+        String name = instanceProperties.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+        return name == null ? "" : name; // NOI18N
     }
     
     public void setName(String name) {
