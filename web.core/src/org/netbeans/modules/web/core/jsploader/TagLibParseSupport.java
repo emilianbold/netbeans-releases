@@ -80,6 +80,10 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
      * pane is opened for a JSP corresponding to this support. 
      */
     private Object parseResultSuccessfulRefStrongReference = null;
+
+    //this field is used to try to catch the situation when someone calls the parser
+    //before editor support is initialized - causing #49300
+    private boolean wasAnEditorPaneChangeEvent = false;
     
     /** Creates new TagLibParseSupport 
      * @param jspFile the resource to parse
@@ -151,6 +155,11 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
     }
 
     private Task parseObject(int priority) {
+        //debug #49300: print out current stacktrace when the editor support is not initialized yet
+        if(!wasAnEditorPaneChangeEvent) 
+            ErrorManager.getDefault().annotate(new IllegalStateException(), 
+            "The TagLibParseSupport.parseObject() is called before editor supoort is created!"); //NOI18N
+        
         synchronized (parseResultLock) {
             RequestProcessor.Task t = parsingTask;
 
@@ -170,6 +179,9 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
     
     //used for notifying the parsing thread (to start the parsing)
     void setEditorOpened(boolean state) {
+        //mark that the an editor pane open event was fired
+        wasAnEditorPaneChangeEvent = true;
+        
         opened = state;
         if(opened) {
             synchronized (openedLock) {
