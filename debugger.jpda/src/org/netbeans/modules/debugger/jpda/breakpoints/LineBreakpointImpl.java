@@ -31,6 +31,7 @@ import java.util.List;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 
 import org.netbeans.modules.debugger.jpda.SourcePath;
@@ -57,9 +58,10 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     public LineBreakpointImpl (
         LineBreakpoint breakpoint, 
         JPDADebuggerImpl debugger,
+        Session session,
         SourcePath sourcePath
     ) {
-        super (breakpoint, debugger);
+        super (breakpoint, debugger, session);
         this.breakpoint = breakpoint;
         this.sourcePath = sourcePath;
         lineNumber = breakpoint.getLineNumber ();

@@ -24,6 +24,7 @@ import com.sun.jdi.request.ThreadStartRequest;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
@@ -46,8 +47,8 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
 
     // init ....................................................................
     
-    public ThreadBreakpointImpl (ThreadBreakpoint presenter, JPDADebuggerImpl session) {
-        super (presenter, session);
+    public ThreadBreakpointImpl (ThreadBreakpoint presenter, JPDADebuggerImpl debugger, Session session) {
+        super (presenter, debugger, session);
         breakpoint = presenter;
         set ();
     }

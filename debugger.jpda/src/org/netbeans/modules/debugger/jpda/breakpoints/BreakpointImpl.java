@@ -32,6 +32,8 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.Expression;
@@ -50,13 +52,15 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
 
     private JPDADebuggerImpl    debugger;
     private JPDABreakpoint      breakpoint;
+    private final Session       session;
     private Expression          compiledCondition;
     private List                requests = new ArrayList ();
 
 
-    protected BreakpointImpl (JPDABreakpoint p, JPDADebuggerImpl debugger) {
+    protected BreakpointImpl (JPDABreakpoint p, JPDADebuggerImpl debugger, Session session) {
         this.debugger = debugger;
         breakpoint = p;
+        this.session = session;
     }
 
     /**
@@ -174,8 +178,10 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                 value
             );
         }
-        if (!resume)
+        if (!resume) {
+            DebuggerManager.getDebuggerManager().setCurrentSession(session);
             getDebugger ().setStoppedState (thread);
+        }
         return resume; 
     }
 

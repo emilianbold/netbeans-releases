@@ -24,6 +24,7 @@ import com.sun.jdi.request.ClassUnloadRequest;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -45,9 +46,10 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
     
     public ClassBreakpointImpl (
         ClassLoadUnloadBreakpoint breakpoint, 
-        JPDADebuggerImpl debugger
+        JPDADebuggerImpl debugger,
+        Session session
     ) {
-        super (breakpoint, debugger);
+        super (breakpoint, debugger, session);
         this.breakpoint = breakpoint;
         set ();
     }

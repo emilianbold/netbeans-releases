@@ -26,6 +26,7 @@ import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
 
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 
@@ -41,8 +42,8 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
     private ExceptionBreakpoint breakpoint;
     
     
-    public ExceptionBreakpointImpl (ExceptionBreakpoint breakpoint, JPDADebuggerImpl debugger) {
-        super (breakpoint, debugger);
+    public ExceptionBreakpointImpl (ExceptionBreakpoint breakpoint, JPDADebuggerImpl debugger, Session session) {
+        super (breakpoint, debugger, session);
         this.breakpoint = breakpoint;
         set ();
     }

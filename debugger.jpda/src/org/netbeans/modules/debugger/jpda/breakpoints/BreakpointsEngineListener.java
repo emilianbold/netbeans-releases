@@ -59,13 +59,15 @@ implements PropertyChangeListener, DebuggerManagerListener {
     private JPDADebuggerImpl        debugger;
     private SourcePath           engineContext;
     private boolean                 started = false;
-    
-    
+    private Session                 session;
+
+
     public BreakpointsEngineListener (ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.lookupFirst 
             (null, JPDADebugger.class);
         engineContext = (SourcePath) lookupProvider.
             lookupFirst (null, SourcePath.class);
+        session = (Session) lookupProvider.lookupFirst(null, Session.class);
         debugger.addPropertyChangeListener (
             JPDADebugger.PROP_STATE,
             this
@@ -167,6 +169,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
                 new LineBreakpointImpl (
                     (LineBreakpoint) b,
                     debugger,
+                    session,
                     engineContext
                 )
             );
@@ -176,7 +179,8 @@ implements PropertyChangeListener, DebuggerManagerListener {
                 b,
                 new ExceptionBreakpointImpl (
                     (ExceptionBreakpoint) b,
-                    debugger
+                    debugger,
+                    session
                 )
             );
         } else
@@ -185,7 +189,8 @@ implements PropertyChangeListener, DebuggerManagerListener {
                 b,
                 new MethodBreakpointImpl (
                     (MethodBreakpoint) b,
-                    debugger
+                    debugger,
+                    session
                 )
             );
         } else
@@ -194,7 +199,8 @@ implements PropertyChangeListener, DebuggerManagerListener {
                 b,
                 new FieldBreakpointImpl (
                     (FieldBreakpoint) b,
-                    debugger
+                    debugger,
+                    session
                 )
             );
         } else
@@ -203,7 +209,8 @@ implements PropertyChangeListener, DebuggerManagerListener {
                 b,
                 new ThreadBreakpointImpl (
                     (ThreadBreakpoint) b,
-                    debugger
+                    debugger,
+                    session
                 )
             );
         } else
@@ -212,7 +219,8 @@ implements PropertyChangeListener, DebuggerManagerListener {
                 b,
                 new ClassBreakpointImpl (
                     (ClassLoadUnloadBreakpoint) b,
-                    debugger
+                    debugger,
+                    session
                 )
             );
         }

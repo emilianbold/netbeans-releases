@@ -30,6 +30,7 @@ import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 
@@ -45,8 +46,8 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
     private FieldBreakpoint breakpoint;
     
     
-    public FieldBreakpointImpl (FieldBreakpoint breakpoint, JPDADebuggerImpl debugger) {
-        super (breakpoint, debugger);
+    public FieldBreakpointImpl (FieldBreakpoint breakpoint, JPDADebuggerImpl debugger, Session session) {
+        super (breakpoint, debugger, session);
         this.breakpoint = breakpoint;
         set ();
     }

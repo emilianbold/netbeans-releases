@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 
@@ -44,9 +45,10 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
 
     public ClassBasedBreakpoint (
         JPDABreakpoint breakpoint, 
-        JPDADebuggerImpl debugger
+        JPDADebuggerImpl debugger,
+        Session session
     ) {
-        super (breakpoint, debugger);
+        super (breakpoint, debugger, session);
     }
     
     protected void setClassRequests (

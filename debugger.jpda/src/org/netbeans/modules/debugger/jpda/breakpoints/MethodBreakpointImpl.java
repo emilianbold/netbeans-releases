@@ -27,6 +27,7 @@ import com.sun.jdi.request.MethodExitRequest;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -46,8 +47,8 @@ public class MethodBreakpointImpl extends BreakpointImpl implements Executor {
     private MethodBreakpoint breakpoint;
     
     
-    public MethodBreakpointImpl (MethodBreakpoint breakpoint, JPDADebuggerImpl debugger) {
-        super (breakpoint, debugger);
+    public MethodBreakpointImpl (MethodBreakpoint breakpoint, JPDADebuggerImpl debugger, Session session) {
+        super (breakpoint, debugger, session);
         this.breakpoint = breakpoint;
         set ();
     }
