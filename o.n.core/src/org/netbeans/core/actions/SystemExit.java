@@ -17,12 +17,13 @@ import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /** SystemExit action.
 * @author   Ian Formanek
 * @version  0.14, Feb 13, 1998
 */
-public class SystemExit extends CallableSystemAction {
+public class SystemExit extends CallableSystemAction implements Runnable {
     /** generated Serialized Version UID */
     static final long serialVersionUID = 5198683109749927396L;
 
@@ -51,9 +52,13 @@ public class SystemExit extends CallableSystemAction {
     }
 
     public void performAction() {
-        org.openide.TopManager.getDefault().exit();
+        // The exit is scheduled out of the actions reqeust processor
+        // in order not to kill itself when killing the running actions
+        RequestProcessor.getDefault().post(this);
     }
 
-
-
+    /* Performs the exit (by calling TopManager).*/
+    public void run() {
+        org.openide.TopManager.getDefault().exit();
+    }
 }
