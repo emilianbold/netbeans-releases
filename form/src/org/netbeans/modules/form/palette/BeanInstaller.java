@@ -27,6 +27,7 @@ import javax.swing.event.*;
 import javax.swing.border.*;
 
 import org.openide.*;
+import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
@@ -97,13 +98,26 @@ public final class BeanInstaller extends Object {
           String pal = selectPaletteCategory();
           if (pal != null) {
             finishInstall(jar, sel.getSelectedBeans(), pal);
-  /*        TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                                                                      "Changes in the component palette will only take effect after Netbeans Developer have been restarted",
-                                                                      NotifyDescriptor.INFORMATION_MESSAGE)
-          ); */
           }
         }
       }
+    }
+  }
+
+  /** Open the palette category selector and if user confirms some category, installs specified beans into it.
+  */
+  public static void installBeans(InstanceCookie[] cookies) {
+    String pal = selectPaletteCategory();
+
+    if (pal == null) return; // installation cancelled
+
+    ArrayList list = new ArrayList (cookies.length);
+    for (int i = 0; i < cookies.length; i++) {
+      list.add (cookies[i]);
+    }
+
+    if (pal != null) {
+      finishInstall(null, list, pal);
     }
   }
 
@@ -146,22 +160,29 @@ public final class BeanInstaller extends Object {
   }
   
   /** Finishing the instalation of the java beans.
-  * @param jar JarFileSystem - the source of JBs
+  * @param jar JarFileSystem - the source of JBs to be mounted, or null if not necessary
   * @param list Collection of FileObjects - selected JBs
   * @param pal palettecategory where to place beans.
   */
   private static void finishInstall(JarFileSystem jar, final Collection list, String pal) {
     boolean alreadyInstalled = false;
-    Repository rep = TopManager.getDefault().getRepository();
-    JarFileSystem jar2 = (JarFileSystem) rep.findFileSystem(jar.getSystemName());
-    if (jar2 != null) {
-      alreadyInstalled = true;
-      jar = jar2;
+    if (jar != null) {
+      Repository rep = TopManager.getDefault().getRepository();
+      JarFileSystem jar2 = (JarFileSystem) rep.findFileSystem(jar.getSystemName());
+      if (jar2 != null) {
+        alreadyInstalled = true;
+        jar = jar2;
+      }
+          
+      if (!alreadyInstalled) {
+        jar.setHidden(true);
+        rep.addFileSystem(jar);
+      }
+  
     }
-        
-    if (!alreadyInstalled) {
-      jar.setHidden(true);
-      rep.addFileSystem(jar);
+
+    if (pal == null) {
+      pal = "Beans"; // defaul palette category
     }
 
     FileObject root = TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot();
@@ -170,9 +191,6 @@ public final class BeanInstaller extends Object {
       return;
     }
 
-    if (pal == null) {
-      pal = "Beans"; // defaul palette category
-    }
     FileObject category = paletteFolder.getFileObject(pal);
     if (category == null) {
       try {
@@ -193,9 +211,14 @@ public final class BeanInstaller extends Object {
           LinkedList paletteNodes = new LinkedList();
 
           while (it.hasNext()) {
-            FileObject fo = (FileObject) it.next();
-            String name = fo.getPackageName('.');
-            createInstance(category, name, null);
+            Object obj = it.next();
+            String name = null;
+            if (obj instanceof FileObject) {
+              name = ((FileObject)obj).getPackageName('.');
+            } else if (obj instanceof InstanceCookie) {
+              name = ((InstanceCookie)obj).instanceName ();
+            } 
+            if (name != null) createInstance(category, name, null);
           }
 //            progress.setLabel(MessageFormat.format(progressLabel, new Object[] { fo.getName() }));
 //            progress.inc();
@@ -586,6 +609,7 @@ public final class BeanInstaller extends Object {
 
 /*
  * Log
+ *  12   Gandalf   1.11        7/18/99  Ian Formanek    InstallToPaletteAction
  *  11   Gandalf   1.10        7/8/99   Jesse Glick     Context help.
  *  10   Gandalf   1.9         6/22/99  Ian Formanek    Fixed bug 2004 - The 
  *       dialog for selecting JavaBean isn't dialog commonly used in IDE but 

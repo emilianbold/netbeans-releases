@@ -16,3 +16,6 @@ OpenIDE-Module-Class: Option
 Name: com/netbeans/developer/modules/loaders/form/palette/PaletteNode.class
 OpenIDE-Module-Class: Node
 Type: Session
+
+Name: com/netbeans/developer/modules/loaders/form/actions/InstallToPaletteAction.class
+OpenIDE-Module-Class: Action
