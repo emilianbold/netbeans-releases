@@ -13,9 +13,7 @@
 
 package org.netbeans.performance.platform;
 
-import org.openide.utildata.UtilClass;
 import org.netbeans.performance.Benchmark;
-import java.util.ResourceBundle;
 
 /**
  * The Benchmark measuring how long would it take to construct an instance
