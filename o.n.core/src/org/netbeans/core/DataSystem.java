@@ -32,9 +32,6 @@ import com.netbeans.ide.util.actions.SystemAction;
 
 /** Data system encapsulates logical structure of more file systems.
 * It also allows filtering of content of DataFolders
-* <P>
-* The resulting hierarchy is then presented as BeanContext (or DataFolder)
-* so it can be browsed by forthcomming Glasgow Explorer.
 *
 * @author Jaroslav Tulach, Petr Hamernik
 */
@@ -74,13 +71,8 @@ final class DataSystem extends AbstractNode {
     preinitialize (filter);
     initialize();
     setIconBase ("/com/netbeans/developer/impl/resources/repository");
-    RequestProcessor.postRequest (new Runnable () {
-      public void run () {
-        setDisplayName (
-          NbBundle.getBundle (this).getString ("dataSystemName")
-        );
-      }
-    });
+    setName (NbBundle.getBundle (this).getString ("dataSystemName"));
+    setShortDescription (NbBundle.getBundle (DataSystem.this).getString ("CTL_Repository_Hint"));
   }
 
   /** Constructor. Uses default file system pool.
@@ -169,14 +161,14 @@ final class DataSystem extends AbstractNode {
     Sheet.Set ss = s.get (Sheet.PROPERTIES);
     ss.put (
       new PropertySupport.ReadWrite (
-        DataSystem.this.PROP_DISPLAY_NAME,
+        DataSystem.this.PROP_NAME,
         String.class,
         NbBundle.getBundle(this).getString("PROP_DS_Name"),
         NbBundle.getBundle(this).getString("HINT_DS_Name")
       ) {
 
         public Object getValue() {
-          return DataSystem.this.getDisplayName();
+          return DataSystem.this.getName();
         }
 
         public void setValue(Object val) {
@@ -190,10 +182,10 @@ final class DataSystem extends AbstractNode {
 
   /** renames this node */
   void renameRepository(String name) {
-    String old = getDisplayName();
-    setDisplayName(name);
+    String old = getName();
+    setName(name);
     if (old.equals(name)) return;
-    firePropertyChange(DataSystem.this.PROP_DISPLAY_NAME, old, name);
+    firePropertyChange(DataSystem.this.PROP_NAME, old, name);
   }
 
   /** writes this node to ObjectOutputStream and its display name
@@ -201,7 +193,6 @@ final class DataSystem extends AbstractNode {
   public Handle getHandle() {
     return new DSHandle(filter);
   }
-
 
 
   /** Creates data folder that will represent the file system.
@@ -420,6 +411,8 @@ final class DataSystem extends AbstractNode {
 
 /*
  * Log
+ *  7    Gandalf   1.6         3/17/99  Ian Formanek    Short Description, 
+ *       cleaned up displayName -> Name
  *  6    Gandalf   1.5         2/11/99  Ian Formanek    Renamed FileSystemPool 
  *       -> Repository
  *  5    Gandalf   1.4         1/7/99   Jan Jancura     
