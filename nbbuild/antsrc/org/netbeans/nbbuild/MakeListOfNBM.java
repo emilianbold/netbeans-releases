@@ -89,7 +89,7 @@ public class MakeListOfNBM extends Task {
                 UpdateTracking.Version version = track.addNewModuleVersion( codename, versionSpecNum );
                 
                 DirectoryScanner ds = fs.getDirectoryScanner( this.getProject() );
-		String excludes[]={"Info/info.xml", "main/**"};
+		String excludes[]={"Info/info.xml", "main/**", "netbeans/update_tracking/**"};
 		ds.setExcludes( excludes );
                 ds.scan();
  
