@@ -119,10 +119,6 @@ public class DataFolderEditor extends PropertyEditorSupport {
     }
 
     private static String getString (String s) {
-        try {
-            return org.openide.util.NbBundle.getBundle (DataFolderEditor.class).getString (s);
-        } catch (Exception x) {
-            return "Missing resource "+s;
-        }
+        return org.openide.util.NbBundle.getBundle (DataFolderEditor.class).getString (s);
     }
 }
