@@ -7,27 +7,20 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.db.explorer.nodes;
 
-import org.openide.nodes.Children;
-import java.io.IOException;
-import java.util.*;
-import java.text.MessageFormat;
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.modules.db.*;
-import org.netbeans.modules.db.explorer.*;
-import org.netbeans.modules.db.explorer.infos.*;
-import org.openide.util.datatransfer.PasteType;
-import java.awt.datatransfer.Transferable;
-import org.openide.nodes.NodeTransfer;
-import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
-import org.openide.nodes.*;
+
+import org.netbeans.lib.ddl.CommandNotSupportedException;
+import org.netbeans.lib.ddl.impl.RenameColumn;
+import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.modules.db.explorer.DatabaseTypePropertySupport;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
 public class ColumnNode extends LeafNode {
     protected PropertySupport createPropertySupport(String name, Class type, String displayName, String shortDescription, DatabaseNodeInfo rep, boolean writable, boolean expert) {
@@ -60,4 +53,9 @@ public class ColumnNode extends LeafNode {
         return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_Column"); //NOI18N
     }
 
+    public boolean canDestroy() {
+        //WORKAROUND: IBM DB2 doesn't support delete column command
+        String drv = getInfo().getDriver().toLowerCase();
+        return !drv.startsWith("com.ibm.db2.jdbc");
+    }
 }
