@@ -435,11 +435,13 @@ the Options window:-->
 <!-- csh page for Form Editor property Variables Modifier (also for the Java module's "Modifiers" property) :-->
 <mapID target="org.openide.explorer.propertysheet.editors.ModifierEditor" url="gui/gui_modifiers.html" /> 
 
-<!--TODO - map these 4 to appropriate form topics or have removed-->
+<!--TODO - map these 6 to appropriate form topics or have removed-->
 <mapID target="gui.modes" url="pending.html" />
 <mapID target="gui.components.inplace-editing" url="pending.html" />
 <mapID target="gui.components.designing" url="pending.html" />
 <mapID target="gui.formeditor" url="pending.html" />
+<mapID target="gui.options.component-palette" url="pending.html" />
+<mapID target="gui.components.palette" url="pending.html" />
 
 <mapID target="gui.source.modifying.property" url="gui/gui_modifysource.html" />
 
@@ -505,7 +507,8 @@ the Options window:-->
     <mapID target="org.netbeans.core.output.OutputTab" url="pending.html" />
 
     
-  <!--Remove ID:-->
+  <!--Remove ID; issue 54895:-->
+   <mapID target="org.netbeans.modules.image.ImageViewer" url="pending.html" /> 
 
    <!-- QUESTION - reclaim these IDs? they are currently overridden by gui.connecting.code:-->
    <mapID target="org.netbeans.modules.form.ConnectionWizard1" url="pending.html" />
