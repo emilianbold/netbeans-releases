@@ -298,13 +298,6 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
     </locjar>
     
-    <!-- It also needs regexp.jar: -->
-    <copy todir="standalone">
-      <fileset dir="../core/external">
-        <include name="regexp*.jar"/>
-      </fileset>
-    </copy>
-    
   </target>
 
   <target name="release">
@@ -564,7 +557,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks">
       <classpath>
         <pathelement location="../nbbuild/nbantext.jar"/>
-        <fileset dir="../core/external">
+        <fileset dir="../libs/external">
           <include name="regexp*.jar"/>
         </fileset>
       </classpath>

@@ -201,7 +201,7 @@ cause it to fail.
         <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks">
             <classpath>
                 <pathelement location="../nbantext.jar"/>
-                <fileset dir="../../core/external">
+                <fileset dir="../../libs/external">
                     <include name="regexp*.jar"/>
                 </fileset>
             </classpath>

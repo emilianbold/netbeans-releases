@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="ant/docs" default="netbeans" basedir=".">
@@ -74,7 +74,7 @@ Microsystems, Inc. All Rights Reserved.
         <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets">
             <classpath>
                 <pathelement location="../../nbbuild/nbantext.jar"/>
-                <fileset dir="../../core/external">
+                <fileset dir="../../libs/external">
                     <include name="regexp*.jar"/>
                 </fileset>
                 <fileset dir="../../nbbuild/external">

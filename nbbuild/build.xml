@@ -57,7 +57,7 @@ ToDo:
         <!-- XML Serializer: -->
         <include name="libs/external/xerces*.jar"/>
         <!-- Needed for CheckLinks: -->
-        <include name="core/external/regexp*.jar"/>
+        <include name="libs/external/regexp*.jar"/>
         <!-- For JavaHelp indexing: -->
         <include name="nbbuild/external/jhall*.jar"/>
         <!-- For XMLValidate Ant task: -->
@@ -711,6 +711,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../libs/xerces" target="netbeans"/>
   </target>
   
+  <target name="all-libs/regexp" depends="init">
+      <echo message="Building module libs/regexp..."/>
+      <ant dir="../libs/regexp" target="netbeans"/>
+  </target>
+  
   <target name="all-libs/j2eeeditor" depends="init">
       <echo message="Building module libs/j2eeeditor..."/>
       <ant dir="../libs/j2eeeditor" target="netbeans"/>
@@ -804,7 +809,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <!-- #27098: MakeParserDB requires several modules to have been successfully built. -->
   <!-- Target all/mmm should depend on makeparserdb-modules if mmm/build.xml uses <makeparserdb>. -->
-  <target name="makeparserdb-modules" depends="all-openide,all-openide/loaders,all-openide/execution,all-openide/io,all-core,all-classfile,all-java/api,all-java/srcmodel,all-java,all-editor,all-debuggercore/oldapi,all-openide/compiler,all-core/execution,all-core/compiler,all-core/output,all-core/term"/>
+  <target name="makeparserdb-modules" depends="all-openide,all-openide/loaders,all-openide/execution,all-openide/io,all-core,all-classfile,all-java/api,all-java/srcmodel,all-java,all-editor,all-debuggercore/oldapi,all-openide/compiler,all-libs/regexp,all-core/execution,all-core/compiler,all-core/output,all-core/term"/>
   
   <!-- build NBMs for selected modules -->
   <target name="build-nbms" depends="init">

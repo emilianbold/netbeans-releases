@@ -21,10 +21,6 @@ Microsystems, Inc. All Rights Reserved.
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" location="../nbbuild/standard-nbm-license.txt"/>
 
-  <target name="init">
-    <ant dir="external" target="unscramble"/>
-  </target>
-
   <target name="compile" depends="boot">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
@@ -32,15 +28,12 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
         <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/> <!-- XXX remove soon -->
         <pathelement location="netbeans/lib/ext/boot.jar"/>
-        <fileset dir="external">
-          <include name="regexp*.jar"/>
-        </fileset>
       </classpath>
     </javac>
   </target>
 
   <!-- XXX move to bootstrap/build.xml -->  
-  <target name="boot" depends="init">
+  <target name="boot">
     <javac srcdir="bootstrap/src" destdir="bootstrap/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}"/>
     <mkdir dir="netbeans/lib/ext" />
     <jar jarfile="netbeans/lib/ext/boot.jar"
@@ -68,12 +61,6 @@ Microsystems, Inc. All Rights Reserved.
     <copy todir="netbeans" includeEmptyDirs="false">
       <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
     </copy>
-    <mkdir dir="netbeans/lib/ext"/>
-    <copy todir="netbeans/lib/ext">
-      <fileset dir="external">
-        <include name="regexp*.jar"/>
-      </fileset>
-    </copy>
     <fixcrlf srcdir="netbeans/bin" eol="crlf">
       <include name="**/*.bat"/>
       <include name="**/*.cmd"/>
@@ -92,12 +79,7 @@ Microsystems, Inc. All Rights Reserved.
              module="netbeans/lib/core.jar"
 	     homepage="http://core.${homepage.base}/"
 	     distribution="http://${dist.base}/core.nbm">
-      <license name="core-license.txt">
-        <text>For the NetBeans core code itself:</text>
-        <file location="${license.file}"/>
-        <text>For the Regexp software product included with the NetBeans core:</text>
-        <file location="../nbbuild/external/apache-license.txt"/>
-      </license>
+      <license file="${license.file}"/>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>

@@ -23,6 +23,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.MatchingTask;
 
+// XXX use java.util.regex.* instead
 import org.apache.regexp.*;
 import org.apache.tools.ant.types.Mapper;
 

@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../core/netbeans/lib/core.jar"/>
         <pathelement location="../core/javahelp/netbeans/modules/autoload/javahelp-api.jar"/>
         <pathelement location="../properties/netbeans/modules/properties.jar"/>
-        <fileset dir="../core/external">
+        <fileset dir="../libs/external">
           <include name="regexp*.jar" />
         </fileset>
      </classpath>
@@ -147,7 +147,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../form/netbeans/modules/ext/AbsoluteLayout.jar"/>
         <pathelement location="../java/netbeans/modules/java.jar"/>
 -->
-        <fileset dir="../core/external">
+        <fileset dir="../libs/external">
           <include name="regexp*.jar" />
         </fileset>
       </classpath>

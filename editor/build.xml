@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
         <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
         <pathelement location="../debuggercore/oldapi/netbeans/modules/autoload/openide-debugger.jar"/>
-        <fileset dir="../core/external">
+        <fileset dir="../libs/external">
           <include name="regexp*.jar"/>
         </fileset>
       </classpath>
@@ -134,7 +134,7 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-        <fileset dir="../core/external">
+        <fileset dir="../libs/external">
           <include name="regexp*.jar"/>
         </fileset>
       </classpath>

@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/>
         <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
         <pathelement location="../core/javahelp/netbeans/modules/autoload/javahelp-api.jar"/>
-	<fileset dir="../core/external">
+	<fileset dir="../libs/external">
 	    <include name="regexp*.jar"/>
 	</fileset>
         <pathelement location="../java/netbeans/modules/java.jar"/>
