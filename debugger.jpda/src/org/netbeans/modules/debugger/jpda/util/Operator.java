@@ -153,6 +153,7 @@ public class Operator {
 
 /*
  * Log
+ *  12   Jaga      1.9.3.1     3/2/00   Jan Jancura     
  *  11   Jaga      1.9.3.0     2/25/00  Daniel Prusa    post 1.0 changes
  *  10   Gandalf   1.9         1/14/00  Daniel Prusa    NOI18N
  *  9    Gandalf   1.8         1/13/00  Daniel Prusa    NOI18N
