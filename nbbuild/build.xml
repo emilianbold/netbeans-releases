@@ -32,8 +32,6 @@ ToDo:
   <!-- Now read the standard properties file. -->
   <property file="build.properties"/>
 
-  <property name="build.sysclasspath" value="ignore"/>
-
   <!-- To make people happy who want to do `ant clean all': -->
   <target name="all" depends="build,commit-validation" description="Build the IDE and run basic validation tests."/>
 
