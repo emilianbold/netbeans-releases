@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,6 +28,7 @@ import org.openide.util.*;
 import org.openide.ErrorManager;
 
 import org.netbeans.core.modules.ManifestSection;
+import org.netbeans.core.ui.MouseCursorUtils;
 
 
 /** Holds list of all actions added by modules.
@@ -43,7 +44,7 @@ public class ModuleActions extends ActionManager
     /** array of all actions added by modules */
     private static SystemAction[] array;
     /** of (ModuleItem, List (ManifestSection.ActionSection)) */
-    private static HashMap map = new HashMap (7);
+    private static Map map = new HashMap (7);
     /** current module */
     private static Object module;
 
@@ -91,9 +92,11 @@ public class ModuleActions extends ActionManager
                         //System.err.println ("invokeAction -> run: " + a);
                               
                         try {
+                            MouseCursorUtils.showWaitCursor();
                             addRunningAction(a, e);
                             a.actionPerformed (e);
                         } finally {
+                            MouseCursorUtils.hideWaitCursor();
                             removeRunningAction(e);
                             firePropertyChange(PROP_RUNNING_ACTIONS, null, null);
                         }
@@ -104,7 +107,8 @@ public class ModuleActions extends ActionManager
             };
         rp.post (r);
     }
-
+    
+    
     /** Listens on change of modules and if changed,
     * fires change to all listeners.
     */
@@ -236,5 +240,6 @@ public class ModuleActions extends ActionManager
 
         return (SystemAction[])arr.toArray (new SystemAction[arr.size ()]);
     }
+    
 }
 
