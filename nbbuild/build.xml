@@ -2391,7 +2391,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../db/model" target="netbeans"/>
   </target>
   
-  <target name="all-j2ee/ddapi" depends="init , all-web/ddapi, all-j2ee/utilities">
+  <target name="all-j2ee/ddapi" depends="init , all-web/ddapi">
     <echo message="Building module j2ee/ddapi.."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -2401,7 +2401,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../j2ee/ddapi" target="netbeans"/>
   </target>
 
-  <target name="all-j2ee/ejbapi" depends="init,  all-web/ddapi, all-j2ee/utilities">
+  <target name="all-j2ee/ejbapi" depends="init,  all-web/ddapi, all-j2ee/ddapi">
     <echo message="Building module j2ee/ejbapi.."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -2447,7 +2447,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </antcall>
   <ant dir="../j2ee/debug" target="netbeans"/>
 </target>
-  <target name="all-j2ee/utilities" depends="init,all-j2eeserver, all-web/webapi">
+  <target name="all-j2ee/utilities" depends="init,all-j2eeserver, all-web/webapi, all-j2ee/ejbapi">
     <echo message="Building module j2ee/utilities.."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">

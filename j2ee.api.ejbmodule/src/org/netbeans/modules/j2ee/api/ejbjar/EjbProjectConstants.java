@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.j2ee.api.ejbjar;
 
-import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
 /** Constants useful for ejb projects.
  *
  * @author Chris Webster
@@ -26,12 +25,12 @@ public class EjbProjectConstants {
     /**
      * Constant representing the ejb jar artifact
      */
-    public static final String ARTIFACT_TYPE_EJBJAR = J2eeProjectConstants.ARTIFACT_TYPE_J2EE_ARCHIVE; //NOI18N
+    public static final String ARTIFACT_TYPE_EJBJAR = "j2ee_ear_archive"; //NOI18N
 
     /**
      * Constant representing an ejb jar artifact to be packaged as a part of an ear archive.
      */
-    public static final String ARTIFACT_TYPE_EJBJAR_EAR_ARCHIVE = J2eeProjectConstants.ARTIFACT_TYPE_J2EE_EAR_ARCHIVE;
+    public static final String ARTIFACT_TYPE_EJBJAR_EAR_ARCHIVE = "j2ee_ear_archive"; //NOI18N
     
     /**
      * Standard command for redeploying an ejb module project.

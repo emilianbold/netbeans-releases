@@ -42,6 +42,7 @@ import org.netbeans.api.project.Project;
 //import org.netbeans.api.project.libraries.LibraryManager;
 //import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 //import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 //import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -74,7 +75,6 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 //import org.w3c.dom.NodeList;
 //import org.w3c.dom.Text;
 
-import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import java.util.Arrays;
@@ -1399,7 +1399,7 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
             for (int i = 0; i < moduleProjects.length; i++) {
                 AntArtifact artifacts[] = AntArtifactQuery.findArtifactsByType( 
                     moduleProjects[i], 
-                    J2eeProjectConstants.ARTIFACT_TYPE_J2EE_EAR_ARCHIVE ); //the artifact type is the some for both ejb and war projects
+                    EjbProjectConstants.ARTIFACT_TYPE_EJBJAR_EAR_ARCHIVE ); //the artifact type is the some for both ejb and war projects
                 if (null != artifacts)
                     artifactList.addAll(Arrays.asList(artifacts));
                 
