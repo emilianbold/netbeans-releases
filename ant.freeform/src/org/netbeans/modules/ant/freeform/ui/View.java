@@ -169,7 +169,7 @@ public final class View implements LogicalViewProvider {
         }
         
         public Image getIcon(int type) {
-            return Utilities.loadImage("org/netbeans/modules/ant/freeform/resources/AntIcon.gif", true); // NOI18N
+            return Utilities.loadImage("org/netbeans/modules/ant/freeform/resources/freeform-project.png", true); // NOI18N
         }
         
         public Image getOpenedIcon(int type) {

@@ -98,7 +98,7 @@ public final class FreeformProject implements Project {
         }
         
         public Icon getIcon() {
-            return new ImageIcon(Utilities.loadImage("org/netbeans/modules/ant/freeform/resources/AntIcon.gif", true)); // NOI18N
+            return new ImageIcon(Utilities.loadImage("org/netbeans/modules/ant/freeform/resources/freeform-project.png", true)); // NOI18N
         }
         
         public Project getProject() {

@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.ant.freeform.ui.NewJ2SEFreeformProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ant.freeform.resources.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/ant/freeform/resources/AntIcon.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/ant/freeform/resources/freeform-project.png"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ant/freeform/resources/j2sefreeform.html"/>
                 </file>
             </folder>
@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.ant.freeform.ui.NewWebFreeformProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ant.freeform.resources.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/ant/freeform/resources/AntIcon.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/ant/freeform/resources/freeform-project.png"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ant/freeform/resources/webfreeform.html"/>
                 </file>
             </folder>
