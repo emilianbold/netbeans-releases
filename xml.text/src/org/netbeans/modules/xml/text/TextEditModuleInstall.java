@@ -71,7 +71,6 @@ public class TextEditModuleInstall extends ModuleInstall {
         Settings.addInitializer (new XMLSettingsInitializer());
 
         // editor options
-        
         PrintSettings ps = (PrintSettings)PrintSettings.findObject (PrintSettings.class, true);
         ps.addOption ((XMLPrintOptions)XMLPrintOptions.findObject(XMLPrintOptions.class, true));
         ps.addOption ((DTDPrintOptions)DTDPrintOptions.findObject(DTDPrintOptions.class, true));
@@ -80,9 +79,7 @@ public class TextEditModuleInstall extends ModuleInstall {
     /**
      */
     public void uninstalledTextEditor () {
-
         // remove options
-        
         PrintSettings ps = (PrintSettings) PrintSettings.findObject (PrintSettings.class, true);
         
         SystemOption opt = (SystemOption) SystemOption.findObject (XMLPrintOptions.class, false);
@@ -93,9 +90,8 @@ public class TextEditModuleInstall extends ModuleInstall {
         if (opt != null)
 	    ps.removeOption (opt);
         
-        Settings.removeInitializer(XMLSettingsInitializer.NAME);
-                
+        //??? layer based defaults does not work
+        Settings.removeInitializer (XMLSettingsInitializer.NAME);                
     }
     
 }
-

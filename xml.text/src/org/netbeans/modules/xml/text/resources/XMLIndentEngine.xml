@@ -1,5 +1,4 @@
-<?xml version="1.0"?>
-
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -13,7 +12,8 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN"
+                          "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
 
 <settings version="1.0">
     <module name="org.netbeans.modules.xml.text"/>

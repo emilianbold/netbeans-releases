@@ -12,9 +12,10 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd" [
-  <!ENTITY dtd-editor SYSTEM "DTDEditor.ent">
-  <!ENTITY xml-editor SYSTEM "XMLEditor.ent">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN"
+                            "http://www.netbeans.org/dtds/filesystem-1_0.dtd" [
+    <!ENTITY dtd-editor SYSTEM "DTDEditor.ent">
+    <!ENTITY xml-editor SYSTEM "XMLEditor.ent">
 ]>
 
 <filesystem>
@@ -30,30 +31,29 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-xml-text-completion-ReloadActionPerformer.instance">
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.core.actions.XMLUpdateDocumentAction$Performer" />
             </file>
-        </folder>        
+        </folder> <!-- Hidden -->
     </folder> <!-- Services -->
 
     <folder name="Editors">
+
         <folder name="text">
             <folder name="xml">
                 &xml-editor;
-            </folder>
-        </folder>
+            </folder> <!-- xml -->
 
-        <folder name="application">
-            <folder name="xml-dtd">
-                &dtd-editor;
-            </folder>
-        </folder>        
-
-        <folder name="text">
             <folder name="xml-external-parsed-entity">
 <!-- It reuses kit only                &xml-editor;-->
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.text.syntax.XMLKit"/>
                 </file>
-            </folder>
-        </folder>
-    </folder>
+            </folder> <!-- xml-external-parsed-entity -->
+        </folder> <!-- text -->
+
+        <folder name="application">
+            <folder name="xml-dtd">
+                &dtd-editor;
+            </folder> <!-- xml-dtd -->
+        </folder> <!-- application -->
+    </folder> <!-- Editors -->
 
 </filesystem>
