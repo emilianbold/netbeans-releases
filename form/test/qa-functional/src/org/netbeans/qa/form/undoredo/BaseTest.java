@@ -32,6 +32,7 @@ import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.JToggleButtonOperator;
 
 public class BaseTest extends JellyTestCase {
     
@@ -66,7 +67,7 @@ public class BaseTest extends JellyTestCase {
     //select tab in PropertySheet
     public void selectTab(PropertySheetOperator pso, String name){
         sleep(1000);
-        ComponentSearcher searcher = new ComponentSearcher((Container)pso.getSource());
+       /* ComponentSearcher searcher = new ComponentSearcher((Container)pso.getSource());
         javax.swing.JTabbedPane tPane= JTabbedPaneOperator.findJTabbedPane((Container)pso.getSource(), searcher.getTrueChooser(""));
         JTabbedPaneOperator tPaneOperator = new JTabbedPaneOperator(tPane);
         if(tPaneOperator.getTabCount() == -1)return;
@@ -75,21 +76,23 @@ public class BaseTest extends JellyTestCase {
                 tPaneOperator.setSelectedIndex(i);
                 return;
             }
-        }
+        }*/
+        JToggleButtonOperator tbo = new JToggleButtonOperator(pso, name);
+        tbo.push();
     }
-      
+    
     public void testScenario() {
         Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
-        fileName = "clear_JFrame";        
-
+        fileName = "clear_JFrame";
+        
         log("Open clear form");
         String packageName = "data";
-        FormNode node = new FormNode("src|data|clear_JFrame"); 
+        FormNode node = new FormNode("src|data|clear_JFrame");
         node.open();
         editor = new EditorOperator("clear_JFrame");
         //ewo = new EditorWindowOperator();
         //editor = ewo.getEditor("clear_JFrame");
-
+        
         formDesigner = new FormDesignerOperator(fileName);
         palette = new ComponentPaletteOperator();
         inspector = new ComponentInspectorOperator();
@@ -101,7 +104,7 @@ public class BaseTest extends JellyTestCase {
         
         //change properties (color)
         inspector.selectComponent("[JFrame]|JPanel1 [JPanel]");
-        selectTab(pso, "Properties");
+        selectTab(pso, "Basic Properties");
         
         new ColorProperty(pso, "background").setRGBValue(202,234,223);
         inspector.selectComponent("[JFrame]|JPanel2 [JPanel]");
@@ -119,7 +122,7 @@ public class BaseTest extends JellyTestCase {
         
         // change properties
         inspector.selectComponent("[JFrame]|JPanel2 [JPanel]|jButton1 [JButton]");
-  
+        
         new Property(pso, "text").setValue("<html><font color='red' size='+3'>QA</font> test");
         
         // change order
@@ -151,9 +154,9 @@ public class BaseTest extends JellyTestCase {
         Property prop = new Property(pso, "actionPerformed");
         prop.setValue("myAction");
         formDesigner = new FormDesignerOperator(fileName);
-        selectTab(pso, "Properties");
+        selectTab(pso, "Basic Properties");
         
-       
+        
         
         //2x
         for (int i=0;i<2;i++) {
@@ -326,7 +329,7 @@ public class BaseTest extends JellyTestCase {
     public static junit.framework.Test suite() {
         return new NbTestSuite(BaseTest.class);
     }
-
+    
     
 }
 
