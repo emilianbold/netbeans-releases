@@ -12,8 +12,10 @@
  */
 
 package org.netbeans.modules.html;
+import java.io.IOException;
 
 import org.openide.*;
+import org.openide.actions.OpenAction;
 import org.openide.actions.ViewAction;
 import org.openide.filesystems.*;
 import org.openide.text.EditorSupport;
@@ -32,6 +34,11 @@ public class HtmlDataObject extends MultiDataObject {
         "/org/netbeans/modules/html/htmlObject"; // NOI18N
 
     static final long serialVersionUID =8354927561693097159L;
+    
+    // public static final String PROP_FOR_EDIT = "forEdit";   // NOI18N
+    
+    // boolean forEdit = false;
+    
     /** New instance.
     * @param pf primary file object for this data object
     * @param loader the data loader creating it
@@ -47,9 +54,8 @@ public class HtmlDataObject extends MultiDataObject {
     }
 
     protected org.openide.nodes.Node createNodeDelegate () {
-        DataNode n = new DataNode (this, Children.LEAF);
+        DataNode n = new HtmlDataNode (this, Children.LEAF);
         n.setIconBase (HTML_ICON_BASE);
-        n.setDefaultAction (SystemAction.get (ViewAction.class));
         return n;
     }
 
@@ -57,15 +63,28 @@ public class HtmlDataObject extends MultiDataObject {
         return new HelpCtx (HtmlLoader.class.getName () + ".Obj"); // NOI18N
     }
 
+    /*
+    public boolean isForEdit () {
+        Object o = getPrimaryFile ().getAttribute (PROP_FOR_EDIT);
+        boolean ret = false;
+        if (o instanceof Boolean)
+            ret = ((Boolean) o).booleanValue ();
+        return ret;
+    }
+    
+    public void setForEdit (boolean isForEdit) throws IOException {
+        FileObject fo = getPrimaryFile ();
+
+        boolean oldVal = false;
+        Object o = fo.getAttribute (HtmlDataObject.PROP_FOR_EDIT);
+        if ((o instanceof Boolean) && ((Boolean)o).booleanValue ())
+            oldVal = true;
+        if (oldVal == isForEdit)
+            return;
+
+        fo.setAttribute(HtmlDataObject.PROP_FOR_EDIT, (isForEdit ? new Boolean (true) : null));
+        // firePropertyChange(DataObject.PROP_TEMPLATE, new Boolean(!newTempl), new Boolean(newTempl));
+    }
+     */
 }
 
-/*
- * Log
- *  4    Gandalf   1.3         1/13/00  Ian Formanek    NOI18N
- *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  2    Gandalf   1.1         8/9/99   Ian Formanek    Generated Serial Version
- *       UID
- *  1    Gandalf   1.0         8/9/99   Ian Formanek    
- * $
- */
