@@ -162,18 +162,14 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="UI">
       <folder name="Services">
-        <folder name="IDEConfiguration">
-            <folder name="System">
-                <file name="org-netbeans-modules-javadoc-settings-DocumentationSettings.shadow">
+        <folder name="CodeDocumentation">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
+
+            <file name="org-netbeans-modules-javadoc-settings-DocumentationSettings.shadow">
 <![CDATA[Services/org-netbeans-modules-javadoc-settings-DocumentationSettings.settings
 SystemFileSystem
 ]]>
-                </file>
-            </folder>  <!-- System -->
-        </folder>  <!-- IDEConfiguration -->
-
-        <folder name="CodeDocumentation">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
+            </file>
 
             <file name="JavadocType.shadow">
               <![CDATA[Services/JavadocType
