@@ -482,6 +482,7 @@ final class XMLSettingsSupport {
                             ErrorManager.WARNING, ex
                         );
                     } finally {
+                        chaos = null; // don't keep the info twice
                         try {
                             baos.close();
                         } catch (IOException ex) {
@@ -723,6 +724,7 @@ final class XMLSettingsSupport {
                 emgr.annotate(ioe, "Source: " + source); // NOI18N
                 throw ioe;
             } finally {
+                stack = null;
                 try {
                     if (in != null) {
                         in.close();
@@ -753,6 +755,8 @@ final class XMLSettingsSupport {
                     emgr.annotate (ioe, ex.getException());
                 }
                 throw ioe;
+            } finally {
+                stack = null;
             }
         }
     }

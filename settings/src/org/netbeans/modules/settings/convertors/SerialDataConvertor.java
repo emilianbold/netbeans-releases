@@ -298,6 +298,13 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         /** created instance   */
         private SoftReference inst;
         
+        /* Lifecycle of SettingsRecognizer:
+         * Initially: settings = null
+         * Parsed header: settings created, light object (no byte[], no char[])
+         * Full parsing: Create char[], convert it to byte[] and release char[]
+         *   create instance, throw away settings
+         *
+         */
         /** holder of parsed settings  */
         private XMLSettingsSupport.SettingsRecognizer settings = null;
         
@@ -371,6 +378,14 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
                     Class instanceType = instanceClass ();
                     return type.isAssignableFrom (instanceType);
                 }
+                
+                // check existing instance first:
+                Object inst = getCachedInstance();
+                if (inst != null) {
+                    return type.isInstance(inst);
+                }
+                
+                // check the settings cache/file
                 return getSettings(true).getInstanceOf().contains(type.getName());
             } catch (ClassNotFoundException ex) {
                 err.annotate(ex, getDataObject().getPrimaryFile().toString());
@@ -411,6 +426,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         
         private void setCachedInstance(Object o) {
             inst = new SoftReference(o);
+            settings = null; // clear reference to settings
         }
         // called by InstanceDataObject to set new object
         public void setInstance(Object inst, boolean save) throws IOException {
