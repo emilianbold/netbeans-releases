@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
      version of this DTD. Attribute is used to perform simple versioning
      without the need to use time-consuming xml validation using this DTD.
 -->
-<!ELEMENT windowmanager (main_window?, screen?, ui-mode, active) >
+<!ELEMENT windowmanager (main-window?, screen?, ui-mode, active) >
 <!ATTLIST windowmanager
     version CDATA #IMPLIED
 >
