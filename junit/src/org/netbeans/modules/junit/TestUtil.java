@@ -41,7 +41,10 @@ class TestUtil extends Object {
         return foSourceFile.getPackageName('/') + CLS_FULL_SUFFIX;
     }
     static public String getTestClassName(FileObject foSourceFile) {
-        return foSourceFile.getName() + CLS_SUFFIX;
+        return getTestClassName(foSourceFile.getName());
+    }
+    static public String getTestClassName(String sourceClassName) {
+        return sourceClassName + CLS_SUFFIX;
     }
     
     static public String getTestSuitFullName(FileObject foPackage) {
@@ -143,6 +146,15 @@ class TestUtil extends Object {
             }
         };
         TopManager.getDefault().getExecutionEngine ().execute(className,runTestTask,null);
+    }
+    
+    static boolean isSupportedFileSystem(FileSystem fileSystem) {
+        FileSystemCapability capability = fileSystem.getCapability();
+        
+        return (fileSystem.isValid() && 
+                !fileSystem.isDefault() &&
+                !fileSystem.isReadOnly() &&
+                !capability.capableOf(capability.DOC));
     }
 }
     
