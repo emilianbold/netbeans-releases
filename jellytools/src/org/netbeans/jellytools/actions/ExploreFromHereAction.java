@@ -26,6 +26,6 @@ public class ExploreFromHereAction extends Action {
 
     /** creates new ExploreFromHereAction instance */    
     public ExploreFromHereAction() {
-        super(explorerMenu, explorerPopup, "org.openide.actions.OpenLocalExplorerAction", null);//explorerShortcut);
+        super(explorerMenu, explorerPopup, "org.openide.actions.OpenLocalExplorerAction");//explorerShortcut);
     }
 }

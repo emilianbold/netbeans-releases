@@ -25,6 +25,6 @@ public class OptionsViewAction extends Action {
 
     /** creates new instance */    
     public OptionsViewAction() {
-        super(menu, null, "org.netbeans.core.actions.OptionsAction", null);
+        super(menu, null, "org.netbeans.core.actions.OptionsAction");
     }
 }
