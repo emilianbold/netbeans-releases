@@ -136,13 +136,13 @@ public class Installer extends ModuleInstall {
       
       // OpenFile:
       Utilities2.createAction (OpenFileAction.class,
-        DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().menus (), "File"),
-        "ShowBrowserAction", true, false, false, false);
+        DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().menus (), "File"), /* NO I18N */
+        "ShowBrowserAction", true, false, false, false); /* NO I18N */
       Utilities2.createAction (OpenFileAction.class,
-        DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().toolbars (), "System"),
-        "ShowBrowserAction", true, false, false, false);
+        DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().toolbars (), "System"), /* NO I18N */
+        "ShowBrowserAction", true, false, false, false); /* NO I18N */
       Utilities2.createAction (OpenFileAction.class,
-        DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "System"));
+        DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "System")); /* NO I18N */
 
     } catch (Exception e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) { /* NO I18N */
@@ -158,9 +158,9 @@ public class Installer extends ModuleInstall {
       Utilities2.removeAction (BookmarksAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); /* NO I18N */
       Utilities2.removeAction (BookmarksAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders().menus (), "Help")); /* NO I18N */
       // OpenFile:
-      Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().menus (), "File"));
-      Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().toolbars (), "System"));
-      Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "System"));
+      Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().menus (), "File")); /* NO I18N */
+      Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().toolbars (), "System")); /* NO I18N */
+      Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "System")); /* NO I18N */
     } catch (Exception e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) { /* NO I18N */
         e.printStackTrace ();
@@ -172,6 +172,7 @@ public class Installer extends ModuleInstall {
 
 /*
  * Log
+ *  6    Gandalf   1.5         1/4/00   Ian Formanek    
  *  5    Gandalf   1.4         1/4/00   Petr Kuzel      Search module.
  *  4    Gandalf   1.3         1/4/00   Jesse Glick     OpenFile module 
  *       installation.
