@@ -781,6 +781,11 @@ public class WebProjectProperties {
             for (Iterator it = roots.iterator(); it.hasNext();) {
                 URL rootUrl = (URL) it.next();
                 FileObject root = URLMapper.findFileObject (rootUrl);
+                
+                //file inside library is broken
+                if (root == null)
+                    return;
+                
                 if ("jar".equals(rootUrl.getProtocol())) {  //NOI18N
                     root = FileUtil.getArchiveFile (root);
                 }
