@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
  <title>Database Explorer Module Documentation</title>
 
   <maps>
-     <homeID>dbexpovew</homeID>
+     <homeID>org.netbeans.modules.db.HOMEID</homeID>
      <mapref location="Map.jhm" />
   </maps>
   <view>

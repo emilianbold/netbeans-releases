@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
 <toc version="2.0">
 <tocitem text="Servers and Databases">
 <tocitem text="Working With Databases">
-<tocitem text="About the Database Explorer" target="dbexpovew" />
+<tocitem text="About the Database Explorer" target="org.netbeans.modules.db.HOMEID" />
 	
 <tocitem text="Setting Up a Database Connection">
 <tocitem text="Adding a New Driver" target="adddriver" />
