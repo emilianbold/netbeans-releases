@@ -34,7 +34,8 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
-			ResultSet rs = dmd.getIndexInfo(catalog,getUser(),table, true, false);
+//			ResultSet rs = dmd.getIndexInfo(catalog,getUser(),table, true, false);
+			ResultSet rs = dmd.getIndexInfo(catalog, dmd.getUserName(), table, true, false);
 			Set ixmap = new HashSet();
 			while (rs.next()) {
 				if (rs.getString("INDEX_NAME") != null) {
@@ -61,7 +62,8 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
-			ResultSet rs = dmd.getIndexInfo(catalog,getUser(),table, true, false);
+//			ResultSet rs = dmd.getIndexInfo(catalog,getUser(),table, true, false);
+			ResultSet rs = dmd.getIndexInfo(catalog, dmd.getUserName(), table, true, false);
 			while (rs.next()) {
 				String findex = rs.getString("INDEX_NAME");
 				if (findex != null) {

@@ -42,7 +42,8 @@ public class TableNodeInfo extends DatabaseNodeInfo
 			ResultSet rs;
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
-			String user = getUser();
+//			String user = getUser();
+			String user = dmd.getUserName();
 			String table = (String)get(DatabaseNode.TABLE);
         
 			// Primary keys
@@ -181,7 +182,8 @@ public class TableNodeInfo extends DatabaseNodeInfo
 //			DatabaseMetaData dmd = getConnection().getMetaData();
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
-			String user = getUser();
+//			String user = getUser();
+			String user = dmd.getUserName();
 			String table = (String)get(DatabaseNode.TABLE);
 			
 			initChildren(chvec, tname);

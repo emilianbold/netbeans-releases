@@ -35,7 +35,8 @@ implements TableOwnerOperations
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String[] filter = new String[] {"TABLE"};
 			String catalog = (String)get(DatabaseNode.CATALOG);
-			ResultSet rs = dmd.getTables(catalog, getUser(), null, filter);
+//			ResultSet rs = dmd.getTables(catalog, getUser(), null, filter);
+			ResultSet rs = dmd.getTables(catalog, dmd.getUserName(), null, filter);
 			while (rs.next()) {
 				DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, rs);
 				if (info != null) {
@@ -61,7 +62,8 @@ implements TableOwnerOperations
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			boolean uc = dmd.storesUpperCaseIdentifiers();
 			String cname = (uc ? tname.toUpperCase() : tname.toLowerCase());
-			ResultSet rs = dmd.getTables(catalog, getUser(), cname, filter);
+//			ResultSet rs = dmd.getTables(catalog, getUser(), cname, filter);
+			ResultSet rs = dmd.getTables(catalog, dmd.getUserName(), cname, filter);
 			rs.next();
 			DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, rs);
 			rs.close();

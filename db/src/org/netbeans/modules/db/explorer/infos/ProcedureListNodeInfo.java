@@ -34,7 +34,8 @@ implements ProcedureOwnerOperations
 //			DatabaseMetaData dmd = getConnection().getMetaData();
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
-			ResultSet rs = dmd.getProcedures(catalog, getUser(), null);
+//			ResultSet rs = dmd.getProcedures(catalog, getUser(), null);
+			ResultSet rs = dmd.getProcedures(catalog, dmd.getUserName(), null);
 			while (rs.next()) {
 				DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE, rs);
 				info.put(DatabaseNode.PROCEDURE, info.getName());

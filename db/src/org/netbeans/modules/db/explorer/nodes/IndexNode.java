@@ -106,7 +106,8 @@ public class IndexNode extends DatabaseNode
 
 					String index = destinfo.getName();
 					HashSet ixrm = new HashSet();
-					ResultSet rs = dmd.getIndexInfo(catalog,info.getUser(),info.getTable(), true, false);
+//					ResultSet rs = dmd.getIndexInfo(catalog,info.getUser(),info.getTable(), true, false);
+					ResultSet rs = dmd.getIndexInfo(catalog, dmd.getUserName(),info.getTable(), true, false);
 					while (rs.next()) {
 						String ixname = rs.getString("INDEX_NAME");
 						String colname = rs.getString("COLUMN_NAME");
@@ -126,7 +127,8 @@ public class IndexNode extends DatabaseNode
 					spec.createCommandDropIndex(index).execute();
 					icmd.execute();
 					
-					rs = dmd.getIndexInfo(catalog,destinfo.getUser(),destinfo.getTable(), true, false);
+//					rs = dmd.getIndexInfo(catalog,destinfo.getUser(),destinfo.getTable(), true, false);
+					rs = dmd.getIndexInfo(catalog, dmd.getUserName(), destinfo.getTable(), true, false);
 					while (rs.next()) {
 						String ixname = rs.getString("INDEX_NAME");
 						String colname = rs.getString("COLUMN_NAME");

@@ -82,7 +82,8 @@ public class ColumnNodeInfo extends DatabaseNodeInfo
 				col = (TableColumn)cmd.createColumn(getName());
 			} else throw new DatabaseException("unknown code "+code);
 
-			ResultSet rs = dmd.getColumns((String)get(DatabaseNode.CATALOG), getUser(), (String)get(DatabaseNode.TABLE), (String)get(code));
+//			ResultSet rs = dmd.getColumns((String)get(DatabaseNode.CATALOG), getUser(), (String)get(DatabaseNode.TABLE), (String)get(code));
+			ResultSet rs = dmd.getColumns((String)get(DatabaseNode.CATALOG), dmd.getUserName(), (String)get(DatabaseNode.TABLE), (String)get(code));
 			rs.next();
 			
 			col.setColumnType(rs.getInt(5));

@@ -51,7 +51,8 @@ public class AddToIndexAction extends DatabaseAction
 			// List columns used in current index (do not show)
 
 			HashSet ixrm = new HashSet();
-			ResultSet rs = dmd.getIndexInfo(catalog,nfo.getUser(),tablename, true, false);
+//			ResultSet rs = dmd.getIndexInfo(catalog,nfo.getUser(),tablename, true, false);
+			ResultSet rs = dmd.getIndexInfo(catalog, dmd.getUserName(), tablename, true, false);
 			while (rs.next()) {
 				String ixname = rs.getString("INDEX_NAME");
 				if (ixname != null) {
@@ -64,7 +65,8 @@ public class AddToIndexAction extends DatabaseAction
 			// List columns not present in current index
 
 			Vector cols = new Vector(5);
-			rs = dmd.getColumns(catalog, nfo.getUser(), tablename, null);
+//			rs = dmd.getColumns(catalog, nfo.getUser(), tablename, null);
+			rs = dmd.getColumns(catalog, dmd.getUserName(), tablename, null);
 			while (rs.next()) {
 				String colname = rs.getString("COLUMN_NAME");
 				if (!ixrm.contains(colname)) cols.add(colname);

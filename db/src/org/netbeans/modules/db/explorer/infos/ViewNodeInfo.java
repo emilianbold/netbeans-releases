@@ -36,12 +36,13 @@ public class ViewNodeInfo extends DatabaseNodeInfo
 //			DatabaseMetaData dmd = getConnection().getMetaData();
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
-			String user = getUser();
+//			String user = getUser();
+			String user = dmd.getUserName();
 			String view = (String)get(DatabaseNode.VIEW);
                 
 			// Columns
 
-			rs = dmd.getColumns(catalog,user,view,null);
+			rs = dmd.getColumns(catalog, user, view, null);
 			while (rs.next()) {
 				DatabaseNodeInfo nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEWCOLUMN, rs);
 				if (nfo != null) children.add(nfo);

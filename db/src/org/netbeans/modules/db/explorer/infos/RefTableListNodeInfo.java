@@ -33,10 +33,11 @@ public class RefTableListNodeInfo extends DatabaseNodeInfo
 //			DatabaseMetaData dmd = getConnection().getMetaData();
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
-			String user = getUser();
+//			String user = getUser();
+			String user = dmd.getUserName();
 			String table = (String)get(DatabaseNode.TABLE);
 
-			rs = dmd.getExportedKeys(catalog,user,table);
+			rs = dmd.getExportedKeys(catalog, user, table);
 			while (rs.next()) {
 				DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.EXPORTED_KEY, rs);
 				if (info != null) children.add(info);

@@ -237,7 +237,8 @@ public class AddTableColumnDialog
 				DatabaseMetaData dmd = nfo.getSpecification().getMetaData();
 				String catalog = (String)nfo.get(DatabaseNode.CATALOG);
 				String table = (String)nfo.get(DatabaseNode.TABLE);
-				ResultSet rs = dmd.getIndexInfo(catalog,nfo.getUser(),table, true, false);
+//				ResultSet rs = dmd.getIndexInfo(catalog,nfo.getUser(),table, true, false);
+				ResultSet rs = dmd.getIndexInfo(catalog, dmd.getUserName(), table, true, false);
 				ixmap = new HashMap();
 				while (rs.next()) {
 					String ixname = rs.getString("INDEX_NAME");

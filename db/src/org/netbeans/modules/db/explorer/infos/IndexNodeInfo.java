@@ -35,7 +35,8 @@ public class IndexNodeInfo extends TableNodeInfo
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
-			ResultSet rs = dmd.getIndexInfo(catalog,getUser(),table, true, false);
+//			ResultSet rs = dmd.getIndexInfo(catalog,getUser(),table, true, false);
+			ResultSet rs = dmd.getIndexInfo(catalog, dmd.getUserName(), table, true, false);
 			Hashtable ixmap = new Hashtable();
 			while (rs.next()) {
 				System.out.println("index column "+rs.getString("INDEX_NAME"));

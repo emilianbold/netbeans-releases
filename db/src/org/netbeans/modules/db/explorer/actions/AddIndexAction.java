@@ -52,7 +52,8 @@ public class AddIndexAction extends DatabaseAction
 			// List columns not present in current index
 
 			Vector cols = new Vector(5);
-			ResultSet rs = dmd.getColumns(catalog, nfo.getUser(), tablename, null);
+//			ResultSet rs = dmd.getColumns(catalog, nfo.getUser(), tablename, null);
+			ResultSet rs = dmd.getColumns(catalog, dmd.getUserName(), tablename, null);
 			while (rs.next()) cols.add(rs.getString("COLUMN_NAME"));
 			rs.close();
 			if (cols.size() == 0) throw new Exception("no usable column in place");

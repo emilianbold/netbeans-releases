@@ -50,7 +50,8 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String name = (String)get(DatabaseNode.PROCEDURE);
-			ResultSet rs = dmd.getProcedureColumns(catalog, getUser(), name, null);
+//			ResultSet rs = dmd.getProcedureColumns(catalog, getUser(), name, null);
+			ResultSet rs = dmd.getProcedureColumns(catalog, dmd.getUserName(), name, null);
 			while (rs.next()) {
 				DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE_COLUMN, rs);
 				if (info != null) {

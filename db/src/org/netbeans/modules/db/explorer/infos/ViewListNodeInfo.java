@@ -33,7 +33,8 @@ public class ViewListNodeInfo extends DatabaseNodeInfo
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String[] filter = new String[] {"VIEW"};
 			String catalog = (String)get(DatabaseNode.CATALOG);
-			ResultSet rs = dmd.getTables(catalog, getUser(), null, filter);
+//			ResultSet rs = dmd.getTables(catalog, getUser(), null, filter);
+			ResultSet rs = dmd.getTables(catalog, dmd.getUserName(), null, filter);
 			while (rs.next()) {
 				DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, rs);
 				if (info != null) {
@@ -60,7 +61,8 @@ public class ViewListNodeInfo extends DatabaseNodeInfo
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			boolean uc = dmd.storesUpperCaseIdentifiers();
 			String cname = (uc ? name.toUpperCase() : name.toLowerCase());
-			ResultSet rs = dmd.getTables(catalog, getUser(), cname, filter);
+//			ResultSet rs = dmd.getTables(catalog, getUser(), cname, filter);
+			ResultSet rs = dmd.getTables(catalog, dmd.getUserName(), cname, filter);
 			rs.next();
 			DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, rs);
 			if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
