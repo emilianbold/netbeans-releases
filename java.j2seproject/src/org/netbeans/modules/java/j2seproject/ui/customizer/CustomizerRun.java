@@ -27,8 +27,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -61,14 +61,10 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel {
             jButtonRemove,
             jButtonMoveUp,
             jButtonMoveDown );
-        //FileObject sourceRoot = (FileObject)j2seProperties.get (J2SEProjectProperties.SRC_DIR);
-        Object object = j2seProperties.get (J2SEProjectProperties.SRC_DIR);
-//        if (object == null) {
-//            System.out.println("### Object[]: null");
-//        } else {
-//            System.out.println("### Object[" + object.getClass () + "]: " + object);
-//        }
-        vms = new VisualMainClassSupport (jTextFieldMainClass, jButtonMainClass, null);
+        Project p = j2seProperties.getProject ();
+        FileObject root = p.getProjectDirectory ();
+        String sourceRoot = (String)j2seProperties.get (J2SEProjectProperties.SRC_DIR);
+        vms = new VisualMainClassSupport (jTextFieldMainClass, jButtonMainClass, root.getFileObject (sourceRoot));
     }
     
     

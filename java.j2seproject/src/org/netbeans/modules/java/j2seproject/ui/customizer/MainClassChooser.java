@@ -13,7 +13,11 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.cookies.SourceCookie;
@@ -22,6 +26,8 @@ import org.openide.explorer.ExplorerManager.Provider;
 import org.openide.explorer.view.TreeView;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -39,6 +45,7 @@ import org.openide.windows.TopComponent;
 public class MainClassChooser extends JPanel {
 
     private static final Node NO_CLASSES_NODE = new AbstractNode (Children.LEAF);
+    private ChangeListener changeListener;
             
     /** Creates new form MainClassChooser */
     public MainClassChooser (FileObject sourcesRoot) {
@@ -66,6 +73,13 @@ public class MainClassChooser extends JPanel {
         treeView.setSelectionMode (TreeSelectionModel.SINGLE_TREE_SELECTION);
 
         view.getExplorerManager ().setRootContext (root);
+        view.getExplorerManager ().addPropertyChangeListener (new PropertyChangeListener () {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (changeListener != null) {
+                    changeListener.stateChanged (new ChangeEvent (evt));
+                }
+            }
+        });
         treeView.expandNode (root);
     }
 
@@ -81,30 +95,51 @@ public class MainClassChooser extends JPanel {
         // check if this java object has main class
         if (nodes.length == 1) {
             // check if it's main class
-            SourceCookie cookie = (SourceCookie)nodes[0].getCookie (SourceCookie.class);
-            if (cookie != null) {
-                // check the main class
-                String name = nodes[0].getName ();
-                String fullName = null;
-                SourceElement source = cookie.getSource ();
-                ClassElement[] classes = source.getClasses();
-                boolean hasMain = false;
-                for (int i = 0; i < classes.length; i++) {
-                  if (classes[i].getName().getName().equals (name)) {
-                    if (classes[i].hasMainMethod()) {
-                        hasMain = true;
-                        fullName = classes[i].getName ().getFullName ();
-                        break;
-                    }
-                  }
-                }
-                if (hasMain) {
-                    return fullName;
-                }
-            }
+            return getMainMethod (nodes[0].getCookie (SourceCookie.class), nodes[0].getName ());
         }
         
         return null;
+    }
+    
+    public void addChangeListener (ChangeListener l) {
+        changeListener = l;
+    }
+    
+    private static String getMainMethod (Object obj, String expectedName) {
+        if (obj == null || !(obj instanceof SourceCookie)) {
+            return null;
+        }
+        SourceCookie cookie = (SourceCookie) obj;
+        // check the main class
+        String fullName = null;
+        SourceElement source = cookie.getSource ();
+        ClassElement[] classes = source.getClasses();
+        boolean hasMain = false;
+        for (int i = 0; i < classes.length; i++) {
+          if (expectedName == null || classes[i].getName().getName().equals (expectedName)) {
+            if (classes[i].hasMainMethod()) {
+                hasMain = true;
+                fullName = classes[i].getName ().getFullName ();
+                break;
+            }
+          }
+        }
+        if (hasMain) {
+            return fullName;
+        }
+        return null;
+    }
+    
+    // temporary method
+    public static boolean hasMainMethod (FileObject classFO) {
+        try {
+            DataObject classDO = DataObject.find (classFO);
+            return getMainMethod (classDO.getCookie (SourceCookie.class), null) != null;
+        } catch (DataObjectNotFoundException ex) {
+            // can ignore it, classFO could be wrongly set
+            return false;
+        }
+        
     }
 
     /** This method is called from within the constructor to

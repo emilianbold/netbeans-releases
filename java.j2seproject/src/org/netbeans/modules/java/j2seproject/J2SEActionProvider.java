@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
+import javax.swing.JButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassWarning;
@@ -280,14 +283,23 @@ class J2SEActionProvider implements ActionProvider {
     
     private boolean showMainClassWarning (String mainClass, String projectName, EditableProperties ep) {
         boolean canceled;
+        final JButton okButton = new JButton (NbBundle.getMessage (MainClassWarning.class, "LBL_MainClassWarning_ChooseMainClass_OK")); // NOI18N
         
         // main class goes wrong => warning
-        MainClassWarning panel = new MainClassWarning (antProjectHelper.getDisplayName (), project.getSourceDirectory ());
+        final MainClassWarning panel = new MainClassWarning (antProjectHelper.getDisplayName (), project.getSourceDirectory ());
 
         Object[] options = new Object[] {
-            NbBundle.getMessage (MainClassWarning.class, "LBL_MainClassWarning_ChooseMainClass_OK"), // NOI18N
+            okButton,
             DialogDescriptor.CANCEL_OPTION
         };
+        
+        panel.addChangeListener (new ChangeListener () {
+           public void stateChanged (ChangeEvent e) {
+               okButton.setEnabled (panel.getSelectedMainClass () != null);
+           }
+        });
+        
+        okButton.setEnabled (false);
         DialogDescriptor desc = new DialogDescriptor (panel,
                 NbBundle.getMessage (MainClassWarning.class, "CTL_MainClassWarning_Title", antProjectHelper.getDisplayName ()), // NOI18N
             true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);

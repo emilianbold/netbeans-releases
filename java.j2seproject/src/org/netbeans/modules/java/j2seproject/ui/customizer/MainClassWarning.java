@@ -14,6 +14,7 @@
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
 import javax.swing.JPanel;
+import javax.swing.event.ChangeListener;
 
 import org.openide.filesystems.FileObject;
 
@@ -42,6 +43,10 @@ public class MainClassWarning extends JPanel {
         return ((MainClassChooser)jPanel1).getSelectedMainClass ();
     }
 
+    public void addChangeListener (ChangeListener l) {
+        ((MainClassChooser)jPanel1).addChangeListener (l);
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
