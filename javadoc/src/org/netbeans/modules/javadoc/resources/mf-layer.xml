@@ -21,25 +21,35 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-core-actions-HTMLViewAction.instance/org-netbeans-modules-javadoc-search-SearchDocAction.instance" boolvalue="true" />
             <attr name="org-netbeans-modules-form-actions-ComponentInspectorAction.instance/org-netbeans-modules-javadoc-search-SearchDocAction.instance" boolvalue="true" />
             <attr name="org-netbeans-modules-objectbrowser-ShowBrowserAction.instance/org-netbeans-modules-javadoc-search-SearchDocAction.instance" boolvalue="true" />
-            <attr name="org-netbeans-modules-javadoc-search-SearchDocAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-javadoc-search-SearchDocAction.instance/Separator2.instance" boolvalue="true" />
         </folder>
   </folder>
 
   <folder name="Actions">
     <folder name="Help">
-      <file name="Search Doc Action[org-netbeans-modules-javadoc-search-SearchDocAction].instance" />
+      <file name="Search Doc Action.instance">
+        <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.search.SearchDocAction"/>
+      </file>
     </folder>
     <folder name="Build">
-      <file name="Generate Javadoc Action[org-netbeans-modules-javadoc-GenerateDocAction].instance" />
+      <file name="Generate Javadoc Action.instance">
+        <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.GenerateDocAction"/>
+      </file>
     </folder>
     <folder name="Tools">
-      <file name="Auto Comment Action[org-netbeans-modules-javadoc-comments-AutoCommentAction].instance" />
-      <file name="Correct Javadoc Action[org-netbeans-modules-javadoc-comments-CorrectJavaDocAction].instance" />
+      <file name="Auto Comment Action.instance">
+        <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.comments.AutoCommentAction"/>
+      </file>
+      <file name="Correct Javadoc Action.instance">
+        <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.comments.CorrectJavaDocAction"/>
+      </file>
     </folder>
   </folder>
 
   <folder name="Shortcuts">
-	<file name="S-F1[org-netbeans-modules-javadoc-search-SearchDocAction].instance" />
+      <file name="S-F1.instance">
+        <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.search.SearchDocAction"/>
+      </file>
   </folder> 
 
   <folder name="xml">
