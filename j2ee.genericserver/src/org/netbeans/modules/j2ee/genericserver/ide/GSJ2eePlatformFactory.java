@@ -51,11 +51,11 @@ public class GSJ2eePlatformFactory extends J2eePlatformFactory {
         
         public java.util.Set getSupportedModuleTypes() {
             Set result = new HashSet();
-            result.add(J2eeModule.EAR);
-            result.add(J2eeModule.WAR);
+//            result.add(J2eeModule.EAR);
+//            result.add(J2eeModule.WAR);
             result.add(J2eeModule.EJB);
-            result.add(J2eeModule.CONN);
-            result.add(J2eeModule.CLIENT);
+//            result.add(J2eeModule.CONN);
+//            result.add(J2eeModule.CLIENT);
             return result;
         }
         
