@@ -79,6 +79,7 @@
 	<mapID target="deploying_tasks" url="web/webmod/run_web_quickref.html" />
 	<mapID target="proj_webfree_debug" url="nbdocs:/org/netbeans/modules/usersguide/project/proj_webfree_debug.html" /> 
 	<mapID target="about_web_service" url="web/webservice/about_jwsd.html" />
+	<mapID target="ws_process" url="web/webservice/ws_process.html" />
 	<mapID target="create_ws" url="web/webservice/create_ws.html" />
 	<mapID target="create_ws_customize" url="web/webservice/create_ws_customize.html" />
 	<mapID target="add_ws_operation" url="web/webservice/add_ws_operation.html" />

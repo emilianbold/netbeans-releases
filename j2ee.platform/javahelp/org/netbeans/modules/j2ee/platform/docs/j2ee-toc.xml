@@ -203,7 +203,8 @@
         </tocitem>
 </tocitem>
 <tocitem text="Developing Web Services">
-         <tocitem text="About Web Services" target="about_web_service" />
+	 <tocitem text="About Web Services" target="about_web_service" />
+	 <tocitem text="Working with Web Services" target="ws_process" />
 	 <tocitem text="Creating a Web Service" target="create_ws" />
 	 <tocitem text="Configuring Web Service Creation" target="create_ws_customize" />
 	 <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
