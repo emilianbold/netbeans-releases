@@ -490,8 +490,14 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
         if (currentHelp != null || helpButtonShown) {
             if (currentPrimaryButtons == null) currentPrimaryButtons = new Component[] { };
             Component[] cPB2 = new Component[currentPrimaryButtons.length + 1];
-            System.arraycopy(currentPrimaryButtons, 0, cPB2, 0, currentPrimaryButtons.length);
-            cPB2[currentPrimaryButtons.length] = stdHelpButton;
+            if ("Aqua".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+                //Mac default dlg button should be rightmost, not the help button
+                System.arraycopy(currentPrimaryButtons, 0, cPB2, 1, currentPrimaryButtons.length);
+                cPB2[0] = stdHelpButton;
+            } else {
+                System.arraycopy(currentPrimaryButtons, 0, cPB2, 0, currentPrimaryButtons.length);
+                cPB2[currentPrimaryButtons.length] = stdHelpButton;
+            }
             currentPrimaryButtons = cPB2;
 
             stdHelpButton.setEnabled(currentHelp != null);
@@ -931,9 +937,11 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
                 options.length == (currentPrimaryButtons.length - 
                     ((currentHelp != null) ? 1 : 0))
                 ) {
+                    int offset = currentHelp != null && "Aqua".equals(UIManager.getLookAndFeel().getID()) ?
+                        -1 : 0;
                     for (int i = 0; i < currentPrimaryButtons.length; i++) {
                         if (evt.getSource() == currentPrimaryButtons[i]) {
-                            pressedOption = options[i];
+                            pressedOption = options[i + offset];
                         }
                     }
                 }
