@@ -15,22 +15,26 @@
 </head>
 <body>
 
-<h2>Tomcat Context Node</h2>
+<h2>Tomcat Web Modules Node</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-<p>The context node <img src="../images/context_node.jpg" width="21" height="15"> 
-  represents a web module context that has been deployed to the server. It appears 
-  in the Web Modules folder under the server's node in the Runtime window. </p>
-<p>The IDE creates a web module's context node the first time you execute the 
-  web module from the IDE.</p>
+<p>The web modules node <img src="../images/context_node.jpg" width="21" height="15"> 
+  lists the web module contexts that have been deployed to the server. It appears 
+  under the server's instance in the Runtime window. </p>
+<p>The IDE adds a web module's context the first time you execute the web module 
+  from the IDE.</p>
 <p>When the server receives the HTTP request, the server selects the web module 
   for processing the request by matching the longest possible prefix of the Request 
   URI against all of the defined context paths.</p>
 <h3>Working With This Node</h3>
-<p>If you right-click this node and display the contextual menu, you see a list 
-  of menu items that enable you to work with this node. The following list describes 
-  these menu items and provides links to topics that explain more.</p>
+<p>If you right-click the web module node and display the contextual menu, you 
+  can choose Refresh to bring the contents of the node up-to-date.</p>
+<h3>Working With The Web Module's Context Nodes </h3>
+<p>If you right-click one of the web module's context nodes and display the contextual 
+  menu, you see a list of menu items that enable you to work with the context. 
+  The following list describes these menu items and provides links to topics that 
+  explain more.</p>
 <ul>
   <li><b>Start.</b> Restarts a stopped web module.</li>
   <li><b>Stop.</b> Disables the web module so that no one can run the module. 

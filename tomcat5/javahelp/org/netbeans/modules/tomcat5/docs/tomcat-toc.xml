@@ -18,10 +18,10 @@
 	<tocitem text="Starting and Stopping a Tomcat Server" target="tomcat_start" />
 	<tocitem text="Editing the Tomcat Server Configuration File" target="tomcat_edit_config" />
 	<tocitem text="Tomcat 5 Servers Node" target="tomcat_top_node" /> 
-	<tocitem text="Tomcat Server Node" target="tomcat_internal_node" />
+	<tocitem text="Tomcat Instance Node" target="tomcat_internal_node" />
 	<tocitem text="Adding a Tomcat Server" target="tomcat_addinstall" />
-	<tocitem text="Tomcat Server Property Sheet" target="tomcat_internal_props"/>
-	<tocitem text="Tomcat Context Node" target="tomcat_context_node" />
+	<tocitem text="Tomcat Instance Property Sheet" target="tomcat_internal_props"/>
+	<tocitem text="Tomcat Web Modules Node" target="tomcat_context_node" />
 	<tocitem text="Tomcat 5 Class Loading" target="tomcat_classload" />
 
     </tocitem>
