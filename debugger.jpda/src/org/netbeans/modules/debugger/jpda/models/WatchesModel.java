@@ -262,29 +262,7 @@ public class WatchesModel implements TreeModel {
         
         private WatchesModel getModel () {
             WatchesModel m = (WatchesModel) model.get ();
-            if (m == null) {
-                DebuggerManager.getDebuggerManager ().removeDebuggerListener (
-                    DebuggerManager.PROP_WATCHES,
-                    this
-                );
-                JPDADebugger d = (JPDADebugger) debugger.get ();
-                if (d != null)
-                    d.removePropertyChangeListener (this);
-                
-                Watch[] ws = DebuggerManager.getDebuggerManager ().
-                    getWatches ();
-                int i, k = ws.length;
-                for (i = 0; i < k; i++)
-                    ws [i].removePropertyChangeListener (this);
-
-                if (task != null) {
-                    // cancel old task
-                    task.cancel ();
-                    if (verbose)
-                        System.out.println("WM cancel old task " + task);
-                    task = null;
-                }
-            }
+            if (m == null) destroy ();
             return m;
         }
         
@@ -309,6 +287,10 @@ public class WatchesModel implements TreeModel {
         public void propertyChange (PropertyChangeEvent evt) {
             final WatchesModel m = getModel ();
             if (m == null) return;
+            if (m.debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {
+                destroy ();
+                return;
+            }
             
             if (evt.getSource () instanceof Watch) {
                 m.fireTreeChanged ();
@@ -331,6 +313,30 @@ public class WatchesModel implements TreeModel {
             }, 500);
             if (verbose)
                 System.out.println("WM  create task " + task);
+        }
+        
+        private void destroy () {
+            DebuggerManager.getDebuggerManager ().removeDebuggerListener (
+                DebuggerManager.PROP_WATCHES,
+                this
+            );
+            JPDADebugger d = (JPDADebugger) debugger.get ();
+            if (d != null)
+                d.removePropertyChangeListener (this);
+
+            Watch[] ws = DebuggerManager.getDebuggerManager ().
+                getWatches ();
+            int i, k = ws.length;
+            for (i = 0; i < k; i++)
+                ws [i].removePropertyChangeListener (this);
+
+            if (task != null) {
+                // cancel old task
+                task.cancel ();
+                if (verbose)
+                    System.out.println("WM cancel old task " + task);
+                task = null;
+            }
         }
     }
 }
