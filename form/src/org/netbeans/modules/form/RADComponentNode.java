@@ -24,6 +24,7 @@ import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.datatransfer.NewType;
+import org.openide.explorer.propertysheet.editors.NodeCustomizer;
 
 import org.netbeans.modules.form.actions.*;
 import org.netbeans.modules.form.palette.PaletteItem;
@@ -33,6 +34,7 @@ import java.awt.*;
 import java.awt.datatransfer.*;
 import java.text.MessageFormat;
 import java.util.*;
+import java.beans.*;
 
 
 public class RADComponentNode extends AbstractNode
@@ -337,7 +339,8 @@ public class RADComponentNode extends AbstractNode
      * @return <CODE>true</CODE> if there is a customizer
      */
     public boolean hasCustomizer() {
-        return !component.isReadOnly() && component.getBeanInfo().getBeanDescriptor()
+        return !component.isReadOnly()
+               && component.getBeanInfo().getBeanDescriptor()
                                                  .getCustomizerClass() != null;
     }
 
@@ -345,29 +348,59 @@ public class RADComponentNode extends AbstractNode
      * @return the component, or <CODE>null</CODE> if there is no customizer
      */
     public java.awt.Component getCustomizer() {
-        Class customizerClass = component.getBeanInfo().getBeanDescriptor().getCustomizerClass();
+        Class customizerClass =
+            component.getBeanInfo().getBeanDescriptor().getCustomizerClass();
         if (customizerClass == null) return null;
-        Object customizer;
+
+        Object customizerObject;
         try {
-            customizer = customizerClass.newInstance();
-        } catch (InstantiationException e) {
-            return null;
-        } catch (IllegalAccessException e) {
+            customizerObject = customizerClass.newInstance();
+        }
+        catch (InstantiationException e1) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                e1.printStackTrace();
             return null;
         }
-        if (!(customizer instanceof java.awt.Component) ||
-            !(customizer instanceof java.beans.Customizer)) return null;
-
-        if (customizer instanceof FormAwareEditor) {
-            ((FormAwareEditor)customizer).setFormModel(component.getFormModel());
-        }
-        if (customizer instanceof org.openide.explorer.propertysheet.editors.NodeCustomizer) {
-            ((org.openide.explorer.propertysheet.editors.NodeCustomizer)customizer).attach(component.getNodeReference());
+        catch (IllegalAccessException e2) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                e2.printStackTrace();
+            return null;
         }
 
-        ((java.beans.Customizer)customizer).setObject(component.getBeanInstance());
-        // [PENDING - in X2 there is some strange addPropertyChangeListener code here...]
-        return(java.awt.Component)customizer;
+        if (!(customizerObject instanceof Component) ||
+            !(customizerObject instanceof Customizer)) return null;
+
+        if (customizerObject instanceof FormAwareEditor)
+            ((FormAwareEditor)customizerObject)
+                .setFormModel(component.getFormModel());
+
+        if (customizerObject instanceof NodeCustomizer)
+            ((NodeCustomizer)customizerObject)
+                .attach(component.getNodeReference());
+
+        Customizer customizer = (Customizer) customizerObject;
+
+        customizer.setObject(component.getBeanInstance());
+
+        customizer.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                try {
+                    RADProperty property = component.getPropertyByName(
+                                                     evt.getPropertyName());
+                    if (property != null) {
+                        property.reinstateProperty();
+                        property.firePropertyValueChange(evt.getOldValue(),
+                                                         evt.getNewValue());
+                    }
+                }
+                catch (Exception ex) {
+                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                        ex.printStackTrace();
+                }
+            }
+        });
+
+        return (Component) customizerObject;
     }
 
     // -----------------------------------------------------------------------------------------
