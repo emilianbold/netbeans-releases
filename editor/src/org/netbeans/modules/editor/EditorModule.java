@@ -22,6 +22,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.EditorKit;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationTypes;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.DialogSupport;
 import org.netbeans.editor.ImplementationProvider;
@@ -35,6 +36,7 @@ import org.netbeans.modules.editor.options.BasePrintOptions;
 import org.netbeans.modules.editor.options.HTMLPrintOptions;
 import org.netbeans.modules.editor.options.JavaPrintOptions;
 import org.netbeans.modules.editor.options.PlainPrintOptions;
+import org.netbeans.modules.javacore.JMManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -87,6 +89,8 @@ public class EditorModule extends ModuleInstall {
     
     /** Module installed again. */
     public void restored () {
+        JMManager.setDocumentLocksCounter(BaseDocument.THREAD_LOCAL_LOCK_DEPTH);
+
         LocaleSupport.addLocalizer(new NbLocalizer(AllOptions.class));
         LocaleSupport.addLocalizer(new NbLocalizer(BaseKit.class));
         LocaleSupport.addLocalizer(new NbLocalizer(JavaSettingsNames.class));
@@ -217,6 +221,8 @@ public class EditorModule extends ModuleInstall {
 
             }
         });
+        
+        JMManager.setDocumentLocksCounter(null);
 
         inited = false; // moved here as part of fix of #27418
     }
