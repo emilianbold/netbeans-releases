@@ -340,7 +340,7 @@
 <mapID target="shortcuts.menucuts-setting" url="shortcuts/menucuts-setting.html" />
 <mapID target="shortcuts.editor" url="shortcuts/editorcuts.html" />
 <mapID target="shortcuts.window" url="shortcuts/window-navcuts.html" />
-
+<mapID target="shortcuts.abbreviations-list" url="shortcuts/abbreviations-list.html" />
 
 <!--accessibility targets-->
 

@@ -148,6 +148,7 @@
     <tocitem text="Using Macros and Abbreviations" >
       <tocitem text="About" target="editing.macros" />
       <tocitem text="Using Abbreviations" target="editing.abbreviations"/>
+      <tocitem text="Abbreviations: Quick Reference" target="shortcuts.abbreviations-list"/>
       <tocitem text="Recording a Macro" target="editing.macros.recording"/>
       <tocitem text="Editing a Macro" target="editing.macros.editing"/>
       <tocitem text="Running a Macro" target="editing.macros.invoking"/>
