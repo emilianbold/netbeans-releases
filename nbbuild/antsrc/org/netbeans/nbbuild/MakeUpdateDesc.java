@@ -280,7 +280,7 @@ public class MakeUpdateDesc extends MatchingTask {
                                                     String line2;
                                                     int idx2 = pomline.indexOf("\""); //NOI18N
                                                     if (idx2 != -1) {
-                                                        line2 = pomline.substring (idx2 + 1);
+                                                        line2 = pomline.substring (idx2);
                                                         log ("distribution line2 " + line2, Project.MSG_DEBUG);
                                                     } else {
                                                         throw new BuildException ("Strange info.xml line: " + line, location);
