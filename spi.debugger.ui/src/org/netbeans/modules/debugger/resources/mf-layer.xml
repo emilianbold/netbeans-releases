@@ -170,6 +170,7 @@ Microsystems, Inc. All Rights Reserved.
         </file>
 
         <file name="DebuggerProjectSettings.settings">
+            <attr name="hidden" boolvalue="true" />
             <![CDATA[<?xml version="1.0"?>
                 <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
                 <settings version="1.0">
@@ -184,8 +185,9 @@ Microsystems, Inc. All Rights Reserved.
                 </settings>
             ]]>
         </file>
-
+        
         <file name="JavaProjectSettings.settings">
+            <attr name="hidden" boolvalue="true" />
             <![CDATA[<?xml version="1.0"?>
                 <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
                 <settings version="1.0">
