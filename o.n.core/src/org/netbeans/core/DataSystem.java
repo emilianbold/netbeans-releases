@@ -224,7 +224,7 @@ final class DataSystem extends AbstractNode {
       SystemAction.get (com.netbeans.developer.impl.actions.AddFSAction.class),
       SystemAction.get (com.netbeans.developer.impl.actions.AddJarAction.class),
       null,
-      SystemAction.get (com.netbeans.developer.impl.actions.PropertiesAction.class)
+      SystemAction.get (com.netbeans.ide.actions.PropertiesAction.class)
     };
   }
 
@@ -420,6 +420,7 @@ final class DataSystem extends AbstractNode {
 
 /*
  * Log
+ *  5    Gandalf   1.4         1/7/99   Jan Jancura     
  *  4    Gandalf   1.3         1/7/99   Ian Formanek    fixed resource names
  *  3    Gandalf   1.2         1/6/99   Ian Formanek    Reflecting change in 
  *       datasystem package
