@@ -159,25 +159,23 @@ public final class ClassPath {
      * @return array of roots (folders) of the classpath. Never returns
      * null.
      */
-    public FileObject[]  getRoots() {
-        synchronized (this) {
-            if (this.rootsCache == null) {
-                List entries = this.entries();
-                List l = new ArrayList ();
-                for (Iterator it = entries.iterator(); it.hasNext();) {
-                    Entry entry = (Entry) it.next();
-                    RootsListener rootsListener = this.getRootsListener();
-                    if (rootsListener != null) {
-                        rootsListener.addRoot (entry.getURL());
-                    }
-                    FileObject fo = entry.getRoot();
-                    if (fo != null)
-                        l.add (fo);
+    public synchronized FileObject[]  getRoots() {
+        if (this.rootsCache == null) {
+            List entries = this.entries();
+            List l = new ArrayList ();
+            for (Iterator it = entries.iterator(); it.hasNext();) {
+                Entry entry = (Entry) it.next();
+                RootsListener rootsListener = this.getRootsListener();
+                if (rootsListener != null) {
+                    rootsListener.addRoot (entry.getURL());
                 }
-                this.rootsCache = (FileObject[]) l.toArray (new FileObject[l.size()]);
+                FileObject fo = entry.getRoot();
+                if (fo != null)
+                    l.add (fo);
             }
+            this.rootsCache = (FileObject[]) l.toArray (new FileObject[l.size()]);
         }
-        return this.rootsCache;
+        return this.rootsCache;        
     }
 
     /**
