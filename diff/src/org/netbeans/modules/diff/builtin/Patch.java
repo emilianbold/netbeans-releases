@@ -528,9 +528,17 @@ public class Patch extends Reader {
             }
             while ((length = patchSource.read(buff)) > 0) {
                 String input = new String(buff, 0, length);
-                int nl = input.indexOf('\n');
+                int nl;
+                int nln = input.indexOf('\n');
+                int nlr = input.indexOf('\r');
+                if (nln < 0) nl = nlr;
+                else nl = nln;
                 if (nl >= 0) {
-                    input = input.substring(0, nl);
+                    if (nln > 0 && nln == nlr + 1) {
+                        input = input.substring(0, nl - 1);
+                    } else {
+                        input = input.substring(0, nl);
+                    }
                     if (nl + 1 < length) {
                         patchSource.unread(buff, nl + 1, length - (nl + 1));
                         length = nl + 1;
@@ -561,12 +569,19 @@ public class Patch extends Reader {
                         int r = 0;
                         char c = 0;
                         if (spaceIndex < 0) {
-                            while ((c = (char) (r = patchSource.read())) != '\n' && c != '\t' && r != -1) {
+                            while ((c = (char) (r = patchSource.read())) != '\n' && c != '\r' && c != '\t' && r != -1) {
                                 name.append(c);
                             }
                         }
-                        if (c != '\n' && r != -1) {
-                            while (((char) (r = patchSource.read())) != '\n' && r != -1) ; // Read the rest of the line
+                        if (c != '\n' && c != '\r' && r != -1) {
+                            while ((c = (char) (r = patchSource.read())) != '\n' && c != '\r' && r != -1) ; // Read the rest of the line
+                        }
+                        if (c == '\r') {
+                            r = patchSource.read();
+                            if (r != -1) {
+                                c = (char) r;
+                                if (c != '\n') patchSource.unread(c);
+                            }
                         }
                     }
                     fileName[0] = name.toString();
@@ -577,7 +592,15 @@ public class Patch extends Reader {
                 } else { // Read the rest of the garbaged line
                     if (nl < 0) {
                         int r;
-                        while (((char) (r = patchSource.read())) != '\n' && r != -1) ;
+                        char c;
+                        while ((c = (char) (r = patchSource.read())) != '\n' && c != '\r' && r != -1) ;
+                        if (c == '\r') {
+                            r = patchSource.read();
+                            if (r != -1) {
+                                c = (char) r;
+                                if (c != '\n') patchSource.unread(c);
+                            }
+                        }
                     }
                 }
             }
