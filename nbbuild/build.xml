@@ -14,11 +14,12 @@ Microsystems, Inc. All Rights Reserved.
 
 <!--
 ToDo:
-- use nested classpath tags in javac
+- use nested classpath tags in javac [in progress -jglick]
 - handle Japanese sanely
 - substitute @BUILDNUMBER@ in manifests, Versioning.properties
 - proper NBM task (with .xml, info, etc.)
 - build validator DTD for this build system
+- if experimental <obsolete> task can be used, do so for netbeans/firststart dirs, maybe
 Modules:
 (ant)
 crosscompile
