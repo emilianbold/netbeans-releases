@@ -88,8 +88,7 @@ public class JavaProjectModule extends ModuleInstall {
         private Action action;
         
         public ActionWrapper( Action action ) {
-            this.action = action;
-            this.action.addPropertyChangeListener( this );
+            this.action = action;            
         }
             
         public String getName() {
@@ -115,6 +114,16 @@ public class JavaProjectModule extends ModuleInstall {
         public boolean isEnabled() {
             return action.isEnabled();            
         }
+
+        protected void addNotify() {
+            this.action.addPropertyChangeListener( this );
+            super.addNotify();
+        }
+        
+        protected void removeNotify() {
+            this.action.removePropertyChangeListener( this );
+            super.removeNotify();
+        }
         
         public void performAction() {
             actionPerformed( new ActionEvent( this, 0, "" ) ); // NOI18N
@@ -127,6 +136,7 @@ public class JavaProjectModule extends ModuleInstall {
         public void propertyChange( PropertyChangeEvent evt ) {
             firePropertyChange( evt.getPropertyName(), evt.getOldValue(), evt.getNewValue() );
         }
+        
         
     }
     

@@ -239,9 +239,6 @@ public class Actions implements ActionsFactory {
      */
     public static class SystemNewFile extends CallableSystemAction implements ContextAwareAction, PropertyChangeListener {
         
-        public SystemNewFile() {
-            org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction().addPropertyChangeListener( this );
-        }
             
         public String getName() {
             return NbBundle.getMessage( Actions.class, "LBL_NewFileAction_Name"); // NOI18N
@@ -267,6 +264,17 @@ public class Actions implements ActionsFactory {
         public boolean isEnabled() {
             return org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction().isEnabled();            
         }
+    
+        protected void addNotify() {
+            org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction().addPropertyChangeListener( this );
+            super.addNotify();
+        }
+        
+        protected void removeNotify() {
+            org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction().removePropertyChangeListener( this );
+            super.removeNotify();
+        }
+
         
         public void performAction() {
             actionPerformed( new ActionEvent( this, 0, "" ) ); // NOI18N
