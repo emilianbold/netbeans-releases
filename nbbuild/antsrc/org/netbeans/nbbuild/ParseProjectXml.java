@@ -207,6 +207,7 @@ public final class ParseProjectXml extends Task {
                         define(moduleDependenciesProperty, b.toString());
                     }
                 }
+            }
                 if (codeNameBaseDashesProperty != null) {
                     String cnb = getCodeNameBase(pDoc);
                     define(codeNameBaseDashesProperty, cnb.replace('.', '-'));
@@ -240,7 +241,7 @@ public final class ParseProjectXml extends Task {
                         define(moduleClassPathProperty, cp);
                     }
                 }
-            }
+            
         } catch (Exception e) {
             throw new BuildException(e, getLocation());
         }
