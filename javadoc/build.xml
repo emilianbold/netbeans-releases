@@ -34,6 +34,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Hopefully set up bu nbbuild/build.xml: -->
         <pathelement location="${jdkhome}/lib/tools.jar"/>
       </classpath>
+      <exclude name="org/netbeans/modules/javadoc/httpfs/"/>
     </javac>
   </target>
 
@@ -47,6 +48,7 @@ Microsystems, Inc. All Rights Reserved.
 	    excludesfile="../nbbuild/standard-jar-excludes.txt"
 	    compress="false">
       <locale name="ja"/>
+    <exclude name="org/netbeans/modules/javadoc/httpfs/"/>
     </locjar>
   </target>
 
