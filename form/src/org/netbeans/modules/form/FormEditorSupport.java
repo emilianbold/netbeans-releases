@@ -903,10 +903,14 @@ public class FormEditorSupport extends JavaEditor
                     formModel.fireFormChanged();
                 }
                 else if (DataObject.PROP_COOKIE.equals(ev.getPropertyName())) {
-                    Node[] nodes = ComponentInspector.getInstance()
+                    java.awt.EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            Node[] nodes = ComponentInspector.getInstance()
                                      .getExplorerManager().getSelectedNodes();
-                    for (int i=0; i < nodes.length; i++)
-                        ((FormNode)nodes[i]).updateCookies();
+                            for (int i=0; i < nodes.length; i++)
+                                ((FormNode)nodes[i]).updateCookies();
+                        }
+                    });
                 }
             }
         };
