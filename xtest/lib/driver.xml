@@ -14,10 +14,12 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="XTest driver" basedir="." default="start">
 
+   <property file="${xtest.driver.re.user.conf}"/>
    <property file="${xtest.driver.re.conf}"/>
 
    <property name="xtest.driver.config" location="driver.properties"/>
    <property file="${xtest.driver.config}"/>
+
    <property name="xtest.execute" value="install-ide,checkout,build,execute"/>
 
    <property name="ide.installto" location="../ide" />
@@ -42,6 +44,7 @@ Microsystems, Inc. All Rights Reserved.
    <!-- ============== -->
    
    <target name="init" depends="check-classpath">
+  
      <available file="${xtest.driver.config}" property="xtest.driver.config.present"/>
 
      <antcall target="check-configfile"/>
