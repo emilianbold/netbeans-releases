@@ -113,6 +113,7 @@ public class SelectFolderPanel extends javax.swing.JPanel implements WizardDescr
         hintsArea.setBackground (new java.awt.Color (204, 204, 204));
         add (hintsArea, java.awt.BorderLayout.NORTH);
         
+        explorerPanel.setPreferredSize (new java.awt.Dimension (100, 100));
         treeView.setDefaultActionAllowed (false);
         treeView.setPopupAllowed (false);
         explorerPanel.add (treeView, java.awt.BorderLayout.CENTER);
