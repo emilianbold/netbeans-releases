@@ -1152,10 +1152,6 @@ public class WindowManagerParser {
                     winMgrConfig.mainWindowFrameStateJoined = Frame.NORMAL;
                 }
             } else {
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
-                "[WinSys.WindowManagerParser.handleJoinedProperties]" // NOI18N
-                + " Warning: Missing value of attribute \"frame-state\"" // NOI18N
-                + " of element \"joined-properties\"."); // NOI18N
                 winMgrConfig.mainWindowFrameStateJoined = Frame.NORMAL;
             }
         }
@@ -1347,10 +1343,6 @@ public class WindowManagerParser {
                     winMgrConfig.mainWindowFrameStateSeparated = Frame.NORMAL;
                 }
             } else {
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
-                "[WinSys.WindowManagerParser.handleSeparatedProperties]" // NOI18N
-                + " Warning: Missing value of attribute \"frame-state\"" // NOI18N
-                + " of element \"separated-properties\"."); // NOI18N
                 winMgrConfig.mainWindowFrameStateSeparated = Frame.NORMAL;
             }
         }
@@ -1391,10 +1383,6 @@ public class WindowManagerParser {
                     winMgrConfig.editorAreaFrameState = Frame.NORMAL;
                 }
             } else {
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
-                "[WinSys.WindowManagerParser.handleEditorArea]" // NOI18N
-                + " Warning: Missing value of attribute \"frame-state\"" // NOI18N
-                + " of element \"editor-area\"."); // NOI18N
                 winMgrConfig.editorAreaFrameState = Frame.NORMAL;
             }
         }
