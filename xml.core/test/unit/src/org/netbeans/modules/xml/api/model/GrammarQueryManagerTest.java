@@ -13,29 +13,16 @@
 
 package org.netbeans.modules.xml.api.model;
 
-import java.beans.FeatureDescriptor;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 import junit.framework.*;
-import org.netbeans.core.modules.ProxyClassLoader;
-import org.netbeans.junit.*;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
+import org.netbeans.ProxyClassLoader;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 import org.xml.sax.InputSource;
 
@@ -48,7 +35,7 @@ import org.xml.sax.InputSource;
  *
  * @author Petr Kuzel
  */
-public class GrammarQueryManagerTest extends NbTestCase {
+public class GrammarQueryManagerTest extends TestCase {
     
     public GrammarQueryManagerTest(java.lang.String testName) {
         super(testName);
@@ -59,7 +46,7 @@ public class GrammarQueryManagerTest extends NbTestCase {
     }
     
     public static Test suite() {
-        TestSuite suite = new NbTestSuite(GrammarQueryManagerTest.class);
+        TestSuite suite = new TestSuite(GrammarQueryManagerTest.class);
         
         return suite;
     }
