@@ -105,7 +105,6 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
         descriptors = new PropertyDescriptor[propNames.length];
         
         for (int i = 0; i < propNames.length; i++) {
-//          System.out.println("property=" + propNames[i]);
           descriptors[i] = new PropertyDescriptor(propNames[i], getBeanClass());
           descriptors[i].setDisplayName(getString("PROP_" + bundlePrefix + propNames[i]));
           descriptors[i].setShortDescription(getString("HINT_" + bundlePrefix + propNames[i]));
@@ -511,6 +510,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  9    Gandalf   1.8         11/14/99 Miloslav Metelka 
 *  8    Gandalf   1.7         11/11/99 Miloslav Metelka 
 *  7    Gandalf   1.6         11/5/99  Jesse Glick     Context help jumbo patch.
 *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 

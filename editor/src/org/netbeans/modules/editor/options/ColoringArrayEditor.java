@@ -168,7 +168,6 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
       }
       colorings[index] = ((ColoringBean)val).getColoring();
       Settings.touchValue(null, Settings.COLORING_MANAGER); // kit class null right now
-//      System.out.println("setValue(): colorings=" + System.identityHashCode(colorings) + ", coloring=" + colorings[index]);
     }
 
     public PropertyEditor getPropertyEditor() {
@@ -181,6 +180,7 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
 
 /*
 * Log
+*  10   Gandalf   1.9         11/14/99 Miloslav Metelka 
 *  9    Gandalf   1.8         11/5/99  Jesse Glick     Context help jumbo patch.
 *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment

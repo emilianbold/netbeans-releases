@@ -48,7 +48,6 @@ NbDocument.Printable, NbDocument.CustomEditor {
 
   public void setCharacterAttributes(int offset, int length, AttributeSet s,
   boolean replace) {
-//    System.out.println("NbEditorDocument.java:48 setCharacterAttributes(): offset=" + offset + ", length=" + length + ", attrSet=" + s);
     if (s != null) {
       Object val = s.getAttribute(NbDocument.GUARDED);
       if (val != null && val instanceof Boolean) {
@@ -82,6 +81,7 @@ NbDocument.Printable, NbDocument.CustomEditor {
 
 /*
  * Log
+ *  12   Gandalf   1.11        11/14/99 Miloslav Metelka 
  *  11   Gandalf   1.10        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  10   Gandalf   1.9         9/10/99  Miloslav Metelka 

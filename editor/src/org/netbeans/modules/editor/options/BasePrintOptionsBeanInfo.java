@@ -57,7 +57,6 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
         
         for (int i = 0; i < propNames.length; i++) {
           descriptors[i] = new PropertyDescriptor(propNames[i], getBeanClass());
-//          System.out.println("BasePrintOptionsBeanInfo.java:62 propNames[" + i + "]=" + propNames[i]);
           descriptors[i].setDisplayName(getString("PROP_" + propNames[i]));
           descriptors[i].setShortDescription(getString("HINT_" + propNames[i]));
         }
@@ -115,6 +114,7 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  8    Gandalf   1.7         11/14/99 Miloslav Metelka 
 *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  6    Gandalf   1.5         9/15/99  Miloslav Metelka 

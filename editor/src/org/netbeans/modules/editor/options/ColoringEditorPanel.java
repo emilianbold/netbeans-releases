@@ -78,7 +78,6 @@ static final long serialVersionUID =-1215879026462786721L;
   }
   
   public Coloring getColoring() {
-//    System.out.println("ColoringEditorPanel.java:78 coloring=" + coloring);
     return coloring;
   }
   
@@ -571,6 +570,7 @@ private javax.swing.JLabel preview;
 
 /*
  * Log
+ *  8    Gandalf   1.7         11/14/99 Miloslav Metelka 
  *  7    Gandalf   1.6         11/5/99  Jesse Glick     Context help jumbo 
  *       patch.
  *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
