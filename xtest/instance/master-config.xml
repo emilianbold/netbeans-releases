@@ -84,6 +84,12 @@ Microsystems, Inc. All Rights Reserved.
   <config name="qa-functional-ffjce">
   </config>
   -->
+  
+  <config name="david">
+      <module name="jndi"    	testtypes="qa-functional"  attributes="stable,validation">
+          <property file="../../../nbextra/qa/jndi/jndi.properties"/>
+      </module>
+  </config> 
 
 </testconfig>
 
