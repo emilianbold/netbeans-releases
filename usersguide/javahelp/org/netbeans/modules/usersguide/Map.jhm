@@ -87,10 +87,8 @@
 <mapID target="beans.csh.serialize" url="pending.html" />
 
 
-<mapID target="java.sync.intro" url="java/synchronizing/intro.html" />
 <mapID target="java.sync.properties" url="java/synchronizing/properties.html" />
 <mapID target="java.sync.new-interface" url="java/synchronizing/new-interface.html" />
-<mapID target="java.sync.update-interface" url="java/synchronizing/update-interface.html" />
 <mapID target="java.sync.template" url="java/synchronizing/template.html" />
 <mapID target="java.override" url="java/override.html" />
 <mapID target="java.java_sources" url="java/java_sources.html" />
@@ -968,7 +966,7 @@
 
    <!--csh for java actions-->
    <mapID target="org.netbeans.modules.java.imptool.ImpToolAction" url="java/imt/import.html" />
-   <mapID target="org.netbeans.modules.java.ui.actions.SynchronizeAction" url="java/synchronizing/intro.html" />
+   <mapID target="org.netbeans.modules.java.ui.actions.SynchronizeAction" url="java/synchronizing/new-interface.html" />
    
    <mapID target="org.netbeans.editor.GO_TO_DECLARATION" url="pending.html" />
    <mapID target="org.netbeans.editor.REFORMAT_CODE" url="pending.html" />
