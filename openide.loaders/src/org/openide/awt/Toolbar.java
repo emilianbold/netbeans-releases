@@ -15,10 +15,12 @@ package org.openide.awt;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.lang.reflect.Method;
 import java.util.EventObject;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
+import javax.swing.plaf.ToolBarUI;
 
 import org.openide.*;
 import org.openide.loaders.*;
@@ -142,7 +144,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             setBorder(Boolean.getBoolean("netbeans.small.main.window") ?
                 BorderFactory.createEmptyBorder(1,1,1,1) : 
                 BorderFactory.createEmptyBorder()); //NOI18N
-        } else {
+        } else if (!"Aqua".equals(UIManager.getLookAndFeel().getID())){
             Border b = UIManager.getBorder ("ToolBar.border"); //NOI18N
             //(TDB) hack to avoid no borders on toolbars
             //Can be removed once theme file ships with NetBeans, so that
@@ -154,11 +156,31 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                    new EmptyBorder (TOP, LEFT, BOTTOM, RIGHT))
                    );  
         }
-        putClientProperty("JToolBar.isRollover", Boolean.TRUE); // NOI18N
+        if (!"Aqua".equals(UIManager.getLookAndFeel().getID())) {
+            putClientProperty("JToolBar.isRollover", Boolean.TRUE); // NOI18N
+        }
         addGrip();
 
         getAccessibleContext().setAccessibleName(displayName == null ? getName() : displayName);
         getAccessibleContext().setAccessibleDescription(getName());
+    }
+    
+    public void updateUI() {
+        if ("Aqua".equals(UIManager.getLookAndFeel().getID())) {
+            //see org.netbeans.core.windows.view.ui.plaf.PlainAquaToolbarUI and
+            //org.netbeans.core.windows.view.ui.plaf.AquaLFCustoms
+            Object ui = UIManager.get("Nb.ToolBar.ui"); //NOI18N
+            
+            if (ui instanceof ToolBarUI) {
+                try {
+                    setUI ((ToolBarUI) ui);
+                    return;
+                } catch (Exception e) {
+                    ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                }
+            }
+        }
+        super.updateUI();
     }
 
     /** Removes all ACTION components. */
@@ -421,7 +443,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                     }
                     if (obj instanceof Action) {
                         Action a = (Action)obj;
-                        JButton b = new JButton ();
+                        JButton b = new JButton();
                         Actions.connect (b, a);
                         Toolbar.this.add (b);
                         continue;
