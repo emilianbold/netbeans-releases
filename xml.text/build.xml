@@ -69,7 +69,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${nbroot}/editor/netbeans/modules/editor.jar"/>
         	<pathelement location="${binroot}/core/release/lib/ext/dom.jar"/>
         	<pathelement location="${binroot}/core/release/lib/ext/sax.jar"/>
-        	<pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>  <!-- same as above -->
+        	<pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>  <!-- same as above -->
                 <pathelement location="${tax_lib_root}/src/"/>
                 <pathelement location="${core_root}/src/"/>
                 <pathelement location="${api_root}/src/"/>

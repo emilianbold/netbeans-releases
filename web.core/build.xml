@@ -61,7 +61,7 @@ Microsystems, Inc. All Rights Reserved.
      <java classname="org.netbeans.modules.schema2beans.GenBeans" fork="yes">
      	<classpath>
 	  <pathelement path="${binroot}/core/release/lib/ext/crimson.jar" />
-          <pathelement path="${binroot}/core/release/lib/ext/xerces.jar" />
+          <pathelement path="${binroot}/core/release/lib/ext/xml-apis.jar" />
 	  <pathelement path="${nb_root}/logger/netbeans/lib/ext/logger.jar" />
 	  <pathelement path="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" />
 	  <fileset dir = "${nb_root}/openide">
@@ -80,7 +80,7 @@ Microsystems, Inc. All Rights Reserved.
       <classpath>
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
         <pathelement location="${nb_root}/openidex/netbeans/modules/autoload/openidex.jar"/>
         <pathelement location="${nb_root}/html/netbeans/modules/html.jar"/>
         <pathelement location="${nb_root}/java/netbeans/modules/java.jar"/>

@@ -42,6 +42,7 @@ ToDo:
         <pathelement location="${binroot}/core/release/lib/ext/sax.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/dom.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/> <!-- XML serializer -->
         <pathelement location="${binroot}/nbbuild/lib/jhall.jar"/>
         <pathelement location="${binroot}/xml/catalog/release/modules/ext/resolver-1_1_nb.jar"/>
@@ -1103,6 +1104,7 @@ the ${netbeans.dest}/bin/ directory.
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
         <!-- For running inside IDE, to pick up ant.jar -->
         <pathelement location="${binroot}/nbbuild/lib/ant.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
         <pathelement location="${binroot}/nbbuild/lib/jhall.jar"/>
       </classpath>

@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../core/netbeans/lib/core.jar"/>
         <pathelement location="../properties/netbeans/modules/properties.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
      </classpath>
     </javac>
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
@@ -48,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../properties/netbeans/modules/properties.jar"/>
         <pathelement location="../form/netbeans/modules/form.jar"/>
         <pathelement location="../java/netbeans/modules/java.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
       </classpath>
     </javac>
 

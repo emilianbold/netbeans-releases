@@ -130,8 +130,23 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="hint.originalPublicID" stringvalue="-//XML Module//DTD SAX Bindings 1.0//EN"/>
                 </file>
             </folder>
-        </folder>
-    </folder>
+        </folder> <!-- entities -->
+    </folder> <!-- xml -->
+
+    <folder name="Mount">
+        <folder name="java">
+            <file name="org-netbeans-modules-xml-tools-resources-xml_apis.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.tools.resources.Bundle" />
+                <![CDATA[
+                    <!DOCTYPE Library PUBLIC "-//NetBeans IDE//DTD JavaLibrary//EN" "http://www.netbeans.org/dtds/JavaLibrary-1_0.dtd">
+
+                    <Library>
+                        <Archive name="lib/ext/xml-apis.jar"/>
+                    </Library>
+                ]]>
+              </file>
+          </folder> <!-- java -->
+    </folder> <!-- Mount -->
 
     <folder name="Shortcuts">
         <file name="F6.instance">

@@ -38,6 +38,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
           <include name="ant.jar"/>
           <include name="ant-1.*.jar"/>
         </fileset>
+        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
 	<pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
         <pathelement location="../core/javahelp/netbeans/modules/autoload/javahelp-api.jar"/>
       </classpath>
@@ -182,6 +183,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
         <pathelement location="${useful-sources}"/>
       </sourcepath>
       <classpath>
+        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
       </classpath>
     </javadoc>

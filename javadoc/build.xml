@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
           <include name="openide*.jar" />
         </fileset>
         <pathelement location="../java/netbeans/modules/java.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>      
+        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
       </classpath>
     </javac>
   </target>

@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="binroot" location="${nbroot}/../nbextra"/>
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
-    <property name="parserimpl" location="${binroot}/core/release/lib/ext/xerces.jar" />
+    <property name="xml-apis" location="${binroot}/core/release/lib/ext/xml-apis.jar" />
 
     <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
     <property name="homepage.base" value="xml.netbeans.org"/>
@@ -28,7 +28,6 @@ Microsystems, Inc. All Rights Reserved.
     <property name="storepass" value="?"/>
     <property name="nbm_alias" value="nb_ide"/>
     <property name="release" value="dev"/>
-    <property name="jaxp-transform" value="${binroot}/xml/libs/xalan/release/modules/autoload/ext/jaxp-transform-1.1.2.jar"/>
     <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext_root}/nbantext.jar"/>
@@ -55,8 +54,7 @@ Microsystems, Inc. All Rights Reserved.
                 <fileset dir="${nbroot}/openide/netbeans/lib">
                     <include name="openide*.jar"/>
                 </fileset>
-                <pathelement location="${parserimpl}"/> <!-- JAXP and SAX dependency -->
-                <pathelement location="${jaxp-transform}"/>
+                <pathelement location="${xml-apis}"/> <!-- JAXP and SAX dependency -->
             </classpath>
         </javac>
     </target>
@@ -142,8 +140,7 @@ Microsystems, Inc. All Rights Reserved.
                 <fileset dir="${nbroot}/openide/netbeans/lib">
                     <include name="openide*.jar"/>
                 </fileset>
-                <pathelement location="${parserimpl}"/> <!-- JAXP and SAX dependency -->
-                <pathelement location="${jaxp-transform}"/>
+                <pathelement location="${xml-apis}"/> <!-- JAXP and SAX dependency -->
             </classpath>                       
             
           <link href="${jdk-docs-location}"

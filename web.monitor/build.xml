@@ -130,7 +130,7 @@ Microsystems, Inc. All Rights Reserved.
          <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
          <pathelement location="${nb_root}/httpserver/netbeans/modules/httpserver.jar"/>
          <pathelement location="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar"/>
-         <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
+         <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
          <pathelement location="${servlet22}"/>
        </classpath>
      </javac>
@@ -144,7 +144,7 @@ Microsystems, Inc. All Rights Reserved.
        excludes="**/SCCS/**, **/CVS/**">
 
        <classpath>
-         <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
+         <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
          <pathelement location="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar"/>
          <pathelement location="${servlet23}"/>	
        </classpath>

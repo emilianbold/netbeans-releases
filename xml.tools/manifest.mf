@@ -8,7 +8,7 @@ OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Module-Dependencies: 
  org.netbeans.api.xml/1 > @API_SPEC_VERS_SUBST@,
  org.netbeans.modules.xml.core/1 > @CORE_SPEC_VERS_SUBST@,
- org.netbeans.libs.jaxp/1 > @JAXP_SPEC_VERS_SUBST@,
+ org.netbeans.libs.jaxp/1,
  org.netbeans.modules.servletapi/1
 OpenIDE-Module-Requires: org.openide.util.HttpServer$Impl
 Class-Path: docs/xml-tools.jar

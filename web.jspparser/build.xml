@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
       <classpath>
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
         <pathelement location="${core_root}/src/"/>
         <pathelement location="${binroot}/web/servletapi23/release/modules/ext/servlet-2.3.jar"/>
         <pathelement location="${binroot}/web/jspparser/release/modules/ext/jasper-runtime.jar"/>

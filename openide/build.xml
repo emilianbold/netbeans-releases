@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>        
 	<pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
 <!--    <pathelement location="${binroot}/core/release/lib/ext/parser.jar"/> -->
-        <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
       </classpath>
     </javac>
     <!-- Hack. Deprecated class. -->
@@ -75,7 +75,7 @@ Microsystems, Inc. All Rights Reserved.
       <classpath>
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>        
 	<pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
       </classpath>
 -->      
     </javac>
@@ -96,7 +96,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
 <!--    <pathelement location="${binroot}/core/release/lib/ext/parser.jar"/> -->
-        <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
       </classpath>
     </javac>
     <postprocess file="compatkit-work/org/openide/util/actions/SystemAction.class"
@@ -510,7 +510,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
         <pathelement location="src"/>
       </sourcepath>
       <classpath>
-        <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
       </classpath>
       <link href="${jdk-docs-location}"
@@ -818,18 +818,19 @@ Set jmf.home to the location of your JMF installation to continue."/>
     <delete dir="examplemodulereload"/>
   </target>
 
-    <target  name="standalone-fs" depends="standalone-fs-prepare" description="Creates zip file suitable for download. Zip file contains all jars necessary + xerces.jar for using standalone filesystems.">
+    <target  name="standalone-fs" depends="standalone-fs-prepare" description="Creates zip file suitable for download. Zip file contains all jars necessary + xml-apis.jar and xerces.jarjar for using standalone filesystems.">
         <zip compress="true" zipfile="standalone/nbfilesystems.zip">
             <fileset dir="standalone">
                 <include name="openide-fs.jar"/>
                 <include name="openide-util.jar"/>
                 <include name="README-FS.txt"/>
             </fileset>
-            <fileset dir="${binroot}/core/release/lib/ext" includes="xerces.jar"/>                      
+            <fileset dir="${binroot}/core/release/lib/ext" includes="xml-apis.jar"/>
+            <fileset dir="${binroot}/core/release/lib/ext" includes="xerces.jar"/>
         </zip>
     </target>
 
-    <target  name="standalone-fs-light" depends="standalone-fs-prepare" description="Creates zip file suitable for download. Zip file contains all jars necessary for using standalone filesystems. Without xerces.jar.">
+    <target  name="standalone-fs-light" depends="standalone-fs-prepare" description="Creates zip file suitable for download. Zip file contains all jars necessary for using standalone filesystems. Without xml-apis.jar and xerces.jar.">
         <zip compress="true" zipfile="standalone/nbfilesystems-light.zip">
             <fileset dir="standalone">
                 <include name="openide-fs.jar"/>
