@@ -13,14 +13,17 @@
 
 package org.netbeans.modules.java.freeform.ui;
 
+import java.awt.Component;
 import java.awt.FontMetrics;
 import java.io.File;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JTable;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.api.queries.CollocationQuery;
@@ -66,9 +69,10 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         testFolders.setModel(testFoldersModel);
         testFolders.getSelectionModel().addListSelectionListener(this);
         sourceFolders.getTableHeader().setReorderingAllowed(false);
+        sourceFolders.setDefaultRenderer(String.class, new ToolTipRenderer ());
         testFolders.getTableHeader().setReorderingAllowed(false);
+        testFolders.setDefaultRenderer(String.class, new ToolTipRenderer ());
         initSourceLevel();
-        updateColumnWidths();
         jLabel1.setVisible(isWizard);
         projectFolderLabel.setVisible(!isWizard);
         projectContentLabel.setVisible(!isWizard);
@@ -250,13 +254,6 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         removeFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_SourceFoldersPanel_removeFolder"));
 
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane1.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                jScrollPane1ComponentResized(evt);
-            }
-        });
-
-        sourceFolders.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         jScrollPane1.setViewportView(sourceFolders);
         sourceFolders.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_SourceFoldersPanel_sourceFolders"));
 
@@ -273,7 +270,6 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         jScrollPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_SourceFoldersPanel_jScrollPanel1"));
 
         jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        testFolders.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         jScrollPane2.setViewportView(testFolders);
         testFolders.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle").getString("ACSD_SourceFoldersPanel_testFolders"));
 
@@ -500,10 +496,6 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         doAddFolderActionPerformed(evt, true);
     }//GEN-LAST:event_addTestFolderActionPerformed
 
-    private void jScrollPane1ComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_jScrollPane1ComponentResized
-        updateColumnWidths();
-    }//GEN-LAST:event_jScrollPane1ComponentResized
-
     private void sourceLevelItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_sourceLevelItemStateChanged
         if (sourceLevel.getSelectedIndex() != -1 && model != null) {
             String sl = getSourceLevelValue(sourceLevel.getSelectedIndex());
@@ -568,8 +560,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
             }
             if (listener != null) {
                 listener.stateChanged(null);
-            }
-            updateColumnWidths();
+            }            
             updateButtons();
         }
     }                                         
@@ -694,7 +685,6 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         updateSourceLevelCombo(model.getSourceLevel());
         updateButtons();
         sourceFoldersModel.fireTableDataChanged();
-        updateColumnWidths();
         if (!isWizard) {
             projectFolder.setText(FileUtil.getFileDisplayName(projectHelper.getProjectDirectory()));
             contentFolder.setText(model.getBaseFolder().getAbsolutePath());
@@ -720,50 +710,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
             FileObject fo = helper.getProjectDirectory().getFileObject("build.xml"); // NOI18N
             return fo;
         }
-    }
-    
-    private void updateColumnWidths() {
-        FontMetrics fm = sourceFolders.getFontMetrics(sourceFolders.getFont());
-        
-        // calc the size so that columns take whole horizontal area
-        int preferedWidthLabel = (int)(0.2f * jScrollPane1.getWidth());
-        int preferedWidthFolder = jScrollPane1.getWidth()-preferedWidthLabel;
-        if (isWizard) {
-            preferedWidthFolder = jScrollPane1.getWidth();
-        }
-        // XXX: shorten it a bit to prevent horizontal scrollbar.
-//        preferedWidthFolder -= 5;
-        
-        TableColumnModel tcm = sourceFolders.getColumnModel();
-        if (updateColumnWidth(tcm, 0, preferedWidthFolder, fm) || updateColumnWidth(tcm, 1, preferedWidthLabel, fm)) {
-            sourceFolders.doLayout();
-        }
-        tcm = testFolders.getColumnModel();
-        if (updateColumnWidth(tcm, 0, preferedWidthFolder, fm) || updateColumnWidth(tcm, 1, preferedWidthLabel, fm)) {
-            testFolders.doLayout();
-        }
-    }
-    
-    private boolean updateColumnWidth(TableColumnModel tcm, int index, int minSize, FontMetrics fm) {
-        if (index >= sourceFoldersModel.getColumnCount()) {
-            return false;
-        }
-        int widest = minSize;
-        for (int i=0; i<sourceFoldersModel.getRowCount(); i++) {
-            String val = (String)sourceFoldersModel.getValueAt(i, index);
-            int width = fm.stringWidth(val);
-            if (width > widest) {
-                // XXX: enlarge width a bit
-                widest = width + 5;
-            }
-        }
-        TableColumn tc = tcm.getColumn(index);
-        if (tc.getPreferredWidth() < widest) {
-            tc.setPreferredWidth(widest);
-            return true;
-        }
-        return false;
-    }
+    }       
 
     private class SourcesModel extends AbstractTableModel {
         
@@ -829,6 +776,18 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
             if (sf.label.length() == 0) {
                 sf.label = getDefaultLabel(sf.location);
             }
+        }
+        
+    }
+    
+    private class ToolTipRenderer extends DefaultTableCellRenderer { 
+        
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,int row, int column) {
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            if (c instanceof JComponent) {
+                ((JComponent) c).setToolTipText ((String)value);
+            }
+            return c;
         }
         
     }
