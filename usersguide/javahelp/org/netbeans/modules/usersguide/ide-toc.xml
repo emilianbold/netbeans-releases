@@ -18,67 +18,6 @@
     <tocitem text="Key Concepts" target="gs.key" />
     <tocitem text="Starting With the Basic IDE Tasks" target="gs.howto" />
   </tocitem>
-<!--
-  <tocitem text="Filesystems and Application Development" >
-    <tocitem text="About" target="filesystems.classpath" />
-    <tocitem text="Mounting a Filesystem" target="filesystems.mount" />
-    <tocitem text="Changing the Mount Order of Filesystems" target="filesystems.order" />
-    <tocitem text="Opening a File Not Mounted in a Filesystem" target="filesystems.openfile" />
-    <tocitem text="Disabling Compilation for a Filesystem" target="filesystems.disable-compile" />
-    <tocitem text="Unmounting a Filesystem" target="filesystems.removing" />
-    <tocitem text="Hiding and Displaying a Filesystem" target="filesystems.hiding" />
-    <tocitem text="Setting Files to Back Up" target="filesystems.backup" />
-    <tocitem text="Mounting the Java 2 SDK" target="filesystems.jdk" />
-    <tocitem text="Specifying Files to Ignore in a Filesystem" target="filesystems.ignore-files" />
-    <tocitem text="Comparing Two Files in the IDE" target="filesystems.diff" />
-  </tocitem>    
-  <tocitem text="Managing Files" >
-    <tocitem text="Filesystems Window" target="explorer" />
-    <tocitem text="Node Icons in the Filesystems Window" target="objects.icons" />
-    <tocitem text="Creating a New File" target="objects.new" />
-    <tocitem text="Creating a Group of Files" target="objects.group" />
-    <tocitem text="Opening a File in the IDE" target="objects.opening" />
-    <tocitem text="Creating or Deleting a Java Package" target="objects.packages" />
-    <tocitem text="Properties Window" target="objects.properties" />
-    <tocitem text="Saving Work" target="objects.saving" />
-    <tocitem text="File Searches" >
-      <tocitem text="About" target="search" />
-      <tocitem text="Searching for a File by Object Name" target="search.name" />
-      <tocitem text="Searching for a File by Text in the File" target="search.text" />
-      <tocitem text="Searching for a File by Type" target="search.filetype" />
-      <tocitem text="Searching for a File by Date" target="search.date" />
-      <tocitem text="Searching for a File by VCS Status" target="search.status" />
-      <tocitem text="Searching With a Combination of Criteria" target="search.combo" />
-      <tocitem text="Saving and Reusing a Search Criterion" target="search.predefine" />
-      <tocitem text="Modifying an Existing Search Criterion" target="search.modify" />
-      <tocitem text="Search Results Window" target="search.window" />
-    </tocitem>
-    <tocitem text="Refreshing a View" target="objects.refresh" />
-    <tocitem text="Redisplaying a Window" target="objects.redisplaying" />
-    <tocitem text="Runtime Window" target="objects.runtime" />
-    <tocitem text="Specifying an Extension for a Text File" target="objects.specify-extension" />
-    <tocitem text="Adding a File Extension to an Object Type" target="objects.file-extensions" />
-    <tocitem text="Hiding File Extensions" target="objects.show-extensions" />
-    <tocitem text="Configuring the Display Name Format of Java Elements" target="org.openide.src.nodes.SourceOptions" />
-    <tocitem text="Templates" >
-        <tocitem text="Creating a Template" target="template.new"/>
-        <tocitem text="Modifying a Template" target="template.modifying" />
-        <tocitem text="Using Macros in Templates" target="template.macros" />
-        <tocitem text="Creating a Template for a Group of Files" target="template.group" />
-    </tocitem>
-  </tocitem>
-
-  <tocitem text="Projects in the IDE" >
-    <tocitem text="About" target="project"/>
-    <tocitem text="Creating a New Project" target="project.creating" />
-    <tocitem text="Importing a Project" target="project.importing"/>
-    <tocitem text="Adding an Existing File to a Project" target="project.adding-existing" />
-    <tocitem text="Adding a New File to a Project" target="project.adding-new" />
-    <tocitem text="Compiling, Running, and Debugging a Project" target="project.comp-run-debug" />
-    <tocitem text="Removing a File from the Project Window" target="project.delete-file" />
-    <tocitem text="Switching to a Different Project" target="project.switching" />
-    <tocitem text="Deleting a Project" target="project.deleting" />  
-  </tocitem> -->
   
   <tocitem text="Starting with Projects" >
     <tocitem text="About Projects" target="tbd" />
@@ -199,35 +138,6 @@
     </tocitem>
   </tocitem>
 
-<!--
-  <tocitem text="Compiling Java Programs" >
-    <tocitem text="Compiling a Java Program" target="compile.program" />
-    <tocitem text="Correcting Errors in Source Code" target="compile.error" />
-    <tocitem text="Stopping a Compile" target="compile.stop"/>
-    <tocitem text="Specifying a Target Directory for Class Files" target="compile.output"/>
-    <tocitem text="Managing Dependencies Between Java Classes" target="compile.javamake"/>
-    <tocitem text="Cross-Compiling Between Java Platforms" target="compile.crosscompile"/>
-    <tocitem text="Disabling Compilation of a Java Source File" target="compile.disable"/>
-    <tocitem text="Deleting .class Files" target="compile.delete"/>
-    <tocitem text="Viewing Compiler Output" >
-      <tocitem text="Output Window" target="output.window"/>
-      <tocitem text="Saving Compiler Messages" target="compile.messages"/>
-      <tocitem text="Fixing an Out of Memory Error" target="compile.memory.error"/>
-      <tocitem text="Customizing the Output Window" target="configure.output" />
-    </tocitem>
-    <tocitem text="Configuring the Compiler" >
-      <tocitem text="Compiler Types in the IDE" target="compile.options.jump"/>
-      <tocitem text="External Compilation" target="compile.external"/>
-      <tocitem text="Internal Compilation" target="compile.internal"/>
-      <tocitem text="Jikes Compilation" target="compile.jikes"/>
-      <tocitem text="Indirect Ant Compilation" target="ant.indantcomp"/>
-      <tocitem text="Ant Script Compilation" target="ant.antscriptcomp"/>
-      <tocitem text="Specifying the Default Compiler Type" target="compile.default"/>
-      <tocitem text="Defining a New Compiler Type" target="compile.new"/>
-      <tocitem text="Setting a Compiler Type in a Template" target="compile.template" />
-      <tocitem text="Removing a Compiler Type" target="compile.remove"/>
-    </tocitem>
-  </tocitem> -->
   <tocitem text="Building Java Applications" >
     <tocitem text="About Building" target="tbd" />
     <tocitem text="Working with Builds" target="comp_process" />
@@ -240,124 +150,13 @@
     <tocitem text="Building a JAR File" target="comp_jar" />
     <tocitem text="Output Window" target="output.window"/>
   </tocitem>
-<!--  
-  <tocitem text="Running Java Programs" >
-      <tocitem text="Running a Java Program" target="run.run" />
-      <tocitem text="Running a Program in Debug Mode" target="run.debugmode" />
-      <tocitem text="Running and Debugging an Applet" target="run.debug.applet" />
-      <tocitem text="Specifying the Main Class to Run" target="run.mainclass" />
-      <tocitem text="Running Java Sources in a Specific Locale" target="run.locale" />
-      <tocitem text="Running a Program on a 64-Bit Java Virtual Machine" target="run.64bit.jvm" />
-    <tocitem text="Configuring the Executor" >
-      <tocitem text="Setting Run Options" target="run.options.jump" />
-      <tocitem text="Specifying Arguments for Program Execution" target="run.arguments" />
-      <tocitem text="Setting an Execution Directory" target="run.execution.directory" />
-      <tocitem text="Setting Runtime Options for the Environment" target="run.options" />
-       <tocitem text="Configuring Execution Types" >
-         <tocitem text="Execution Types in the IDE" target="run.executor.options"/>
-         <tocitem text="External Execution" target="run.external"/>
-         <tocitem text="Internal Execution" target="run.internal"/>
-         <tocitem text="Applet Execution" target="run.applet"/>
-         <tocitem text="JAR Execution" target="run.jarexecutor"/>
-         <tocitem text="Debugger Execution" target="run.debugexecutor"/>
-         <tocitem text="Ant Script Execution" target="ant.execution"/>
-         <tocitem text="J2EE Server Execution" target="run.j2ee_executor"/>
-         <tocitem text="Specifying the Default Executor" target="run.project" />
-         <tocitem text="Defining a New Execution Type" target="run.new" />
-         <tocitem text="Setting an Execution Type in a Template" target="run.template" />
-         <tocitem text="Removing an Execution Type" target="run.remove" />
-      </tocitem>
-    </tocitem>
-  </tocitem> -->
-
   
   <tocitem text="Running Java Applications" >
       <tocitem text="Running an Application" target="run_app" />
-<!--      <tocitem text="Running a Single File" target="run_file" />-->
       <tocitem text="Setting the Runtime Classpath" target="run_classpath" />
       <tocitem text="Setting the Main Class and Arguments" target="run_args" />
   </tocitem>
-<!-- 
-  <tocitem text="Debugging Java Programs">
-    <tocitem text="Starting a Debugging Session" target="debug.sessions.jump"/>
-    <tocitem text="Attaching to a Java VM" target="debug.attach" />
-    <tocitem text="Debugging on a 64-Bit Java VM" target="debug.sessions.64bit" />
-    <tocitem text="Controlling Program Execution">
-       <tocitem text="Stepping Through Your Program" target="debug.step" />
-       <tocitem text="Running to the Cursor Location" target="debug.running.cursor" />
-       <tocitem text="Pausing a Program" target="debug.running.pause" />
-       <tocitem text="Continuing a Program" target="debug.running.resume" />
-    </tocitem>
-    <tocitem text="Fixing and Continuing" target="debug.fix"></tocitem>
-    <tocitem text="Finishing a Session" target="debug.sessions.finishsession" />
-    <tocitem text="Debugger Windows and Commands" >
-      <tocitem text="Debug Toolbar" target="debug.toolbar"></tocitem>
-      <tocitem text="Debug Menu" target="debug.menu"></tocitem>
-      <tocitem text="Debugger Windows" target="debug.window.all"> </tocitem>
-      <tocitem text="Sessions Window" target="debug.window.sessions"></tocitem>
-      <tocitem text="Threads Window" target="debug.window.threads"></tocitem>
-      <tocitem text="Call Stack Window" target="debug.window.callstack"></tocitem>
-      <tocitem text="Local Variables Window" target="debug.window.variables"></tocitem>
-      <tocitem text="All in One Window" target="debug.window.allinone"></tocitem>
-      <tocitem text="Watches Window" target="debug.window.watches"></tocitem>
-      <tocitem text="Classes Window" target="debug.window.classes"></tocitem>
-      <tocitem text="Breakpoints Window" target="debug.window.breakpoints"></tocitem>
-      <tocitem text="Debug Output" target="debug.output.window"></tocitem>
-      <tocitem text="Source Editor Debugging Features" target="debug.source.editor"></tocitem>
-      <tocitem text="Current Context in the Debugger" target="debug.current-context"></tocitem>
-    </tocitem>
-    <tocitem text="Setting Breakpoints">
-      <tocitem text="Breakpoints in the IDE" target="debug.breakpoint"/>
-      <tocitem text="Setting Java Breakpoints" >
-        <tocitem text="Setting a Java Breakpoint" target="debug.breakpoint.java" />
-        <tocitem text="Setting a Line Breakpoint" target="debug.breakpoint.line" />
-        <tocitem text="Setting a Method Breakpoint" target="debug.breakpoint.method" />
-        <tocitem text="Setting an Exception Breakpoint" target="debug.breakpoint.exception" />
-        <tocitem text="Setting a Class Breakpoint" target="debug.breakpoint.class" />
-        <tocitem text="Setting a Thread Breakpoint" target="debug.breakpoint.thread" />
-        <tocitem text="Setting a Variable Breakpoint" target="debug.breakpoint.variable" />
-        <tocitem text="Setting a Condition on a Breakpoint" target="debug.breakpoint.condition" />
-        <tocitem text="Printing a Breakpoint Message" target="debug.breakpoint.message" />
-      </tocitem>
-      <tocitem text="Modifying Breakpoint Properties" target="debug.breakpoint.properties" /> 
-      <tocitem text="Viewing the Source for a Line Breakpoint" target="debug.breakpoint.source" />
-      <tocitem text="Enabling and Disabling a Breakpoint" target="debug.breakpoint.enable" />
-      <tocitem text="Deleting a Breakpoint" target="debug.breakpoint.remove" />
-    </tocitem>
-    <tocitem text="Managing Threads">
-      <tocitem text="Threads in the IDE" target="debug.threads.jump"/>
-      <tocitem text="Making a Thread Current" target="debug.threads.change" />
-      <tocitem text="Suspending and Resuming a Thread" target="debug.threads.suspend" />
-      <tocitem text="Viewing the Source Code of a Thread" target="debug.threads.source" />
-    </tocitem>
-    <tocitem text="Using the Call Stack">
-      <tocitem text="Making a Call Current" target="debug.callstack.callingmethod" />
-      <tocitem text="Popping a Call From the Call Stack" target="debug.callstack.pop" />
-    </tocitem>
-    <tocitem text="Examining Variables and Expressions">
-      <tocitem text="Variables and Expressions in the IDE" target="debug.variables.jump" />
-      <tocitem text="Modifying the Value of a Variable" target="debug.variables.value"/>
-      <tocitem text="Creating a Watch" target="debug.watch" />
-      <tocitem text="Creating a Fixed Watch" target="debug.watch.fix" />
-      <tocitem text="Deleting a Watch" target="debug.watch.delete" />
-    </tocitem>
-    <tocitem text="Configuring the Debugger">
-      <tocitem text="Customizing a Debug View" target="debug.view.customize"></tocitem>
-      <tocitem text="Setting General Debugging Options" target="debug.options"/>
-      <tocitem text="Setting Options for Java Debugging" target="debug.java.options"></tocitem>
-      <tocitem text="Setting the Boot Class Path for Java Debugging" target="debug.debugger.bootclasspath"/>
-      <tocitem text="Configuring Debugger Types">
-        <tocitem text="Debugger Types in the IDE" target="debug.debugger.jump"/>
-        <tocitem text="Default Debugger" target="debug.debugger.default"/>
-        <tocitem text="Applet Debugger" target="debug.debugger.applet"/>
-        <tocitem text="J2EE Server Debugger" target="debug.debugger.j2ee"/>
-        <tocitem text="Specifying the Default Debugger" target="debug.debugger.project_default"/>
-        <tocitem text="Defining a New Debugger Type" target="debug.service.new"/>
-        <tocitem text="Removing a Debugger Type" target="debug.service.remove"/>
-      </tocitem>
-    </tocitem>
-  </tocitem>
--->
+
   <tocitem text="Debugging Java Applications">
     <tocitem text="Starting a Debugging Session" target="debug.sessions.jump"/>
     <tocitem text="Attaching to a Java VM" target="debug.attach" />
@@ -445,28 +244,6 @@
     <tocitem text="Configuring the Form Editor" target="gui.configuring" />
     <tocitem text="Making a Form Accessible" target="gui.accessibleform" />
   </tocitem>
-
-  <!--
-  <tocitem text="Building With Ant">
-    <tocitem text="About" target="ant.building" />
-    <tocitem text="Creating an Ant Script" target="ant.project" />
-    <tocitem text="Editing an Ant Script" target="ant.editing" />
-    <tocitem text="Setting Properties in an Ant Properties File" target="ant.props" />
-    <tocitem text="Handling User Input in an Ant Task" target="ant.input-handler" />
-    <tocitem text="Creating a Custom Ant Task" target="ant.createtask" />
-    <tocitem text="Running an Ant Script" target="ant.running" />
-    <tocitem text="Executing a Target" target="ant.target" />
-    <tocitem text="Creating a Shortcut to a Target" target="ant.shortcut" />
-    <tocitem text="Setting Ant as the Default Compiler Type for a Project" target="ant.compproject" />
-    <tocitem text="Optional Ant Tasks" target="ant.optional-tasks" />
-    <tocitem text="Setting the JDK for an Ant Script" target="ant.target-jdk" />
-    <tocitem text="Configuring Ant Settings" target="ant.settings" />
-    <tocitem text="Switching Ant Versions" target="ant.version" />
-    <tocitem text="Ant Classpath and Custom Tasks" target="ant.tasks-classpath" />     
-    <tocitem text="Viewing Ant Documentation" target="ant.ant-docs" />
-    <tocitem text="Installing Ant Documentation" target="ant.install-docs" />
-  </tocitem>
--->
   
   <tocitem text="Working With Ant">
     <tocitem text="About" target="tbd" />
@@ -480,19 +257,6 @@
     <tocitem text="Installing Ant Documentation" target="ant_docs" />
   </tocitem>
   
-  <!--
-  <tocitem text="Using the JAR Packager">
-    <tocitem text="About" target="jarpackager"/>
-    <tocitem text="Creating a JAR File" target="jarpackager.creating" />
-    <tocitem text="The JAR Contents Property Editor" target="jarpackager.contentpane" />
-    <tocitem text="Modifying a JAR File" target="jarpackager.modifying" />
-    <tocitem text="Updating a JAR File" target="jarpackager.updating" />
-    <tocitem text="Running a JAR File" target="jarpackager.execute" />
-    <tocitem text="Setting a JAR Content Filter" target="jarpackager.filter" />
-    <tocitem text="Creating a JAR Manifest" target="jarpackager.manifest" />
-    <tocitem text="Setting the Default JAR Compression Level" target="jarpackager.options" />
-  </tocitem>
--->
   <tocitem text="Using Version Control in the IDE" >
     <tocitem text="About" target="vcs.overview" />
     <tocitem text="Mounting a VCS Working Directory" target="vcsgeneric.mounting" />
@@ -539,29 +303,6 @@
       <tocitem text="Configuring VCS Group Settings" target="vcs.groupsproperties" />
     </tocitem>
   </tocitem>
-
-<!--  
-  <tocitem text="Working With Javadoc Documentation">
-    <tocitem text="About" target="javadoc.jump"/>
-    <tocitem text="Adding a Javadoc Library to a Project" target="javadoc.search.path" />
-    <tocitem text="Viewing Javadoc Documentation" target="javadoc.source_editor"/>
-    <tocitem text="Browsing a Javadoc Library" target="javadoc.indices"/>
-    <tocitem text="Searching Javadoc Documentation" target="javadoc.search"/>
-    <tocitem text="Using Javadoc With Code Completion" target="editing.completing-javadoc"/>    
-    <tocitem text="Generating Javadoc Documentation" target="javadoc.generate"/>
-    <tocitem text="Entering Javadoc Comments in Source Code" target="javadoc.accuracy"/>
-    <tocitem text="Removing a Javadoc Library from a Project" target="javadoc.filesystem.unmount"/>
-    <tocitem text="Setting Javadoc Options" >
-      <tocitem text="Turning Off Exact Case Matching for Javadoc Searches" target="javadoc.case.sensitive"/>
-      <tocitem text="Specifying an Output Directory for Javadoc Files" target="javadoc.output"/>
-      <tocitem text="Specifying a Style Sheet for Javadoc Documentation" target="javadoc.stylesheet"/>
-      <tocitem text="Configuring Doclet Properties" target="javadoc.doclet"/>
-      <tocitem text="Specifying the Default Javadoc Search Engine" target="javadoc.searchengine"/>
-      <tocitem text="Configuring the Javadoc Executor" target="javadoc.externaljavadoc">
-      </tocitem>
-    </tocitem>
-  </tocitem>  
--->  
   
   <tocitem text="Working With Javadoc Documentation">
     <tocitem text="Adding a Javadoc Library to a Project" target="tbd" />
@@ -640,7 +381,6 @@
       <tocitem text="Displaying Help in a Web Browser" target="accessibility.alternate.browser" />
   </tocitem>
   
-  
   <tocitem text="JUnit Module"><!--QUESTION(tm) : now that junit is built in should this title change? should this section live elsewhere in the TOC?-->
     <tocitem text="About the JUnit Module" target="junit_about"></tocitem>
     <tocitem text="Working with JUnit" target="junit_overview"></tocitem>
@@ -649,16 +389,7 @@
     <tocitem text="Working with Tests" target="junit_runningtests"></tocitem>
     <tocitem text="Configuring JUnit Module Settings" target="junit_configuringsettings"></tocitem>
   </tocitem>
-  
-<!--from JUnit TOC
-    <tocitem text="JUnit Module Commands">
-      <tocitem target="org.netbeans.modules.junit.TestsActions" text="About"></tocitem>
-      <tocitem target="org.netbeans.modules.junit.CreateTestAction" text="Create Tests"></tocitem>
-      <tocitem target="org.netbeans.modules.junit.RunTestAction" text="Execute Test"></tocitem>
-      <tocitem target="org.netbeans.modules.junit.OpenTestAction" text="Open Test"></tocitem>      
-    </tocitem>
--->
-  
+    
 </tocitem>
 </toc>
 
