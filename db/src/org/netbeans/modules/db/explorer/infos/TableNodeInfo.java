@@ -14,19 +14,21 @@
 package org.netbeans.modules.db.explorer.infos;
 
 import java.io.IOException;
-import java.sql.*;
-import java.util.*;
+import java.sql.ResultSet;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Vector;
 
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.lib.ddl.adaptors.*;
+import org.netbeans.lib.ddl.impl.AbstractCommand;
+import org.netbeans.lib.ddl.impl.DriverSpecification;
+import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
-import org.netbeans.modules.db.explorer.infos.*;
-import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 
 public class TableNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =-632875098783935367L;
@@ -217,7 +219,7 @@ public class TableNodeInfo extends DatabaseNodeInfo {
                 }
 
             // remove current sub-tree
-//            children.remove(childrenNodes);
+            children.remove(childrenNodes);
 
             // build refreshed sub-tree
             for (int i=0; i<charr.size(); i++)
