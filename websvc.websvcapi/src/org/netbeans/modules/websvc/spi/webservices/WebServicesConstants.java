@@ -26,6 +26,7 @@ public interface WebServicesConstants {
     public static final String WEB_SERVICE_CLIENT = "web-service-client"; //NOI18N
     public static final String WEB_SERVICE_CLIENT_NAME = "web-service-client-name"; //NOI18N
     public static final String WEB_SERVICE_STUB_TYPE = "web-service-stub-type"; //NOI18N
+    public static final String CLIENT_SOURCE_URL = "client-source-url"; //NOI18N
     public static final String WSCOMPILE="wscompile"; //NOI18N
     public static final String WSCOMPILE_CLASSPATH = "wscompile.classpath"; //NOI18N
     public static final String WSCOMPILE_TOOLS_CLASSPATH = "wscompile.tools.classpath"; //NOI18N
