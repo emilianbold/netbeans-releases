@@ -17,11 +17,8 @@ package org.apache.tools.ant.module.loader;
 
 import java.io.*;
 
-//import org.w3c.dom.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
-//import javax.xml.parsers.*;
-//import org.apache.xerces.parsers.DOMParser;
 
 import org.openide.*;
 import org.openide.actions.*;
@@ -122,18 +119,7 @@ public class AntProjectDataLoader extends UniFileLoader {
                 }
                 // OK, first attempt to parse this file.
                 try {
-                    XMLReader r;
-                    try {
-                        r = XMLReaderFactory.createXMLReader ();
-                    } catch (SAXException ignore) {
-                        // [PENDING] is this really a good idea??
-                        System.setProperty ("org.xml.sax.driver", "org.apache.xerces.parsers.SAXParser");
-                        // try again
-                        r = XMLReaderFactory.createXMLReader ();
-                    }
-                    r.setFeature ("http://xml.org/sax/features/validation", false); // NOI18N
-                    //r.setFeature ("http://xml.org/sax/features/external-general-entities", false); // NOI18N
-                    //r.setFeature ("http://xml.org/sax/features/external-parameter-entities", false); // NOI18N
+                    XMLReader r = XMLDataObject.Util.createXMLReader (false, false);
                     QuickieHandler h = new QuickieHandler ();
                     r.setContentHandler (h);
                     r.setDTDHandler (h);
@@ -152,95 +138,6 @@ public class AntProjectDataLoader extends UniFileLoader {
                     AntModule.err.notify (ErrorManager.INFORMATIONAL, e);
                     return null;
                 }
-                /*
-                SAXParserFactory sax = SAXParserFactory.newInstance ();
-                sax.setValidating (false);
-                sax.setNamespaceAware (false);
-                class ResolvedThrow extends SAXException {
-                    public boolean match;
-                    public ResolvedThrow (boolean match) {
-                        super ("determined"); // NOI18N
-                        this.match = match;
-                    }
-                }
-                class QuickieHandler extends HandlerBase {
-                    public void startElement (String name, AttributeList attrs) throws SAXException {
-                        throw new ResolvedThrow (name.equals ("project") && // NOI18N
-                                                 attrs.getValue ("name") != null && // NOI18N
-                                                 attrs.getValue ("basedir") != null && // NOI18N
-                                                 attrs.getValue ("default") != null); // NOI18N
-                    }
-                    public InputSource resolveEntity (String publicID, String systemID) {
-                        //System.err.println ("resolveEntity: " + publicID + " " + systemID);
-                        // Read nothing whatsoever.
-                        return new InputSource (new ByteArrayInputStream (new byte[] { }));
-                    }
-                }
-                try {
-                    SAXParser p = sax.newSAXParser ();
-                    p.parse (fo2.getInputStream, new QuickieHandler ());
-                    throw new IllegalStateException ();
-                } catch (ResolvedThrow rt) {
-                    recognizeIt (fo2, rt.match);
-                    return rt.match ? fo2 : null;
-                } catch (Exception e) {
-                    // SAXConfiguration or general SAX fatal parse error or IOException etc.
-                    AntModule.err.annotate (e, "Affected file: " + fo2); // NOI18N
-                    AntModule.err.notify (ErrorManager.INFORMATIONAL, e);
-                    return null;
-                }
-                */
-                /*
-                // [PENDING] would probably be more efficient and not much more work to use a SAXParser
-                // here instead. No need to parse the whole document when only the document element matters.
-                DOMParser parser = new DOMParser();
-                // Make sure it just does a raw scan, no evil web connections!
-                parser.setEntityResolver (new EntityResolver () {
-                        public InputSource resolveEntity (String publicID, String systemID) {
-                            //System.err.println ("resolveEntity: " + publicID + " " + systemID);
-                            // Read nothing whatsoever.
-                            return new InputSource (new ByteArrayInputStream (new byte[] { }));
-                        }
-                    });
-                try {
-
-                    // Parse the document as XML
-                    parser.parse (new InputSource (fo2.getInputStream ()));
-                    Document document = parser.getDocument();
-
-                    if (document != null) {
-
-                        Element docElem = document.getDocumentElement();
-                        if (docElem != null) {
-
-                            // Test for the "project" element // NOI18N
-                            if (docElem.getTagName().equals ("project") &&  // NOI18N
-                                docElem.getAttributeNode ("name") != null && // NOI18N
-                                docElem.getAttributeNode ("default") != null && // NOI18N
-                                docElem.getAttributeNode ("basedir") != null) { // NOI18N
-                                recognizeIt (fo2, true);
-                                return fo2;
-                            } else {
-                                recognizeIt (fo2, false);
-                                return null;
-                            }
-                        } else {
-                            TopManager.getDefault ().getErrorManager ().log (ErrorManager.INFORMATIONAL,
-                                                                             "Document.getDocumentElement -> null"); // NOI18N
-                            return null;
-                        }
-                    } else {
-                        TopManager.getDefault ().getErrorManager ().log (ErrorManager.INFORMATIONAL,
-                                                                         "DOMParser.getDocument -> null"); // NOI18N
-                        return null;
-                    }
-                } catch (Exception e) {
-                    TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
-                    // [PENDING] use ErrorManager.annotate(Throwable,String) when it works...
-                    System.err.println ("Affected file: " + fo2); // NOI18N
-                    return null;
-                }
-                */
             }
         }
     }
