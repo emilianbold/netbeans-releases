@@ -1,4 +1,0 @@
-Manifest-Version: 1.0
-XTest-MajorVersion: 1.5
-XTest-MinorVersion: 7
-XTest-Branch: dev

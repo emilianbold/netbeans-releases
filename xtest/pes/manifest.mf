@@ -1,3 +1,0 @@
-Manifest-Version: 1.0
-XTest-PES-MajorVersion: 1.0
-XTest-PES-MinorVersion: 1
