@@ -273,11 +273,11 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
           tagList.add(name);
         }
       }
-      tagList.add(NbBundle.getBundle(WorkspaceEditor.class).getString("VALUE_WORKSPACE_NONE"));
+      // XXX(-tdt)
+      // tagList.add(NbBundle.getBundle(WorkspaceEditor.class).getString("VALUE_WORKSPACE_NONE"));
       String[] names = new String [tagList.size()];
       for (int i=0, n=tagList.size(); i<n; i++)
         names[i] = (String)namesMap.get(tagList.get(i));
-      
       return names;
     }
 
@@ -312,6 +312,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  25   Gandalf-post-FCS1.22.1.1    4/20/00  Tran Duc Trung  FIX: Form Objects 
+ *       settings offer 'null' workspace => NPE
  *  24   Gandalf-post-FCS1.22.1.0    3/15/00  David Simonek   japanese localization 
  *       now works correctly (workspace setting)
  *  23   Gandalf   1.22        1/13/00  Pavel Buzek     #5322 fixed
