@@ -592,10 +592,6 @@ Microsystems, Inc. All Rights Reserved.
             </folder> <!-- IDEConfiguration -->
             
         </folder> <!-- Services -->
-        
-        <!-- Folder for old root nodes (temporary solution -> this folder has to exist) -->
-        <folder name="Roots">
-        </folder>
     </folder>  <!-- UI -->
 
     <!-- registers all roots of all filesystems -->

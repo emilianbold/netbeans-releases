@@ -50,6 +50,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/modules/ModuleManagerTest.class"/>
                 <include name="org/netbeans/core/modules/ModuleListTest.class"/>
                 <include name="org/netbeans/core/modules/NbInstallerTest?.class"/>
+                <include name="org/netbeans/core/NbPlacesTest.class"/>
                 <include name="org/netbeans/core/projects/SystemFileSystemTest.class"/>
                 <include name="org/netbeans/core/projects/cache/XMLLayerCacheManagerImplTest.class"/>
                 <include name="org/netbeans/core/PlainTest.class"/>

@@ -184,18 +184,29 @@ public final class NbPlaces extends Object {
      * folders go first (sorted by name) followed by the rest of objects sorted
      * by name.
      */
-     public synchronized DataFolder findSessionFolder (String name) {
+     public static DataFolder findSessionFolder (String name) {
         try {
             FileSystem fs = Repository.getDefault().getDefaultFileSystem ();
             FileObject fo = fs.findResource(name);
             if (fo == null) {
                 // resource not found, try to create new folder
-                fo = fs.getRoot ().createFolder (name);
+                fo = fs.getRoot();
+                StringTokenizer st = new StringTokenizer(name, "/"); // NOI18N
+                while(st.hasMoreTokens()) {
+                    String subFolderName = st.nextToken();
+                    FileObject ff = fo.getFileObject(subFolderName);
+                    if(ff != null && ff.isFolder()) {
+                        fo = ff;
+                        continue;
+                    }
+                    fo = fo.createFolder(subFolderName);
+                }
             }
             DataFolder df = DataFolder.findFolder(fo);
             return df;
         } catch (IOException ex) {
-            Error e = new InternalError ("Folder not found and cannot be created: " + name); // NOI18N
+            IllegalStateException e = new IllegalStateException(
+                "Folder not found and cannot be created: " + name); // NOI18N
             ErrorManager.getDefault ().annotate (e, ex);
             throw e;
         }
