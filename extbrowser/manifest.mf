@@ -1,0 +1,9 @@
+OpenIDE-Module: org.netbeans.modules.extbrowser/1
+OpenIDE-Module-Name: External HTML Browser
+OpenIDE-Module-Install: org/netbeans/modules/extbrowser/ExtHtmlBrowser.class
+OpenIDE-Module-Specification-Version: 0.1
+OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.httpserver/1, org.netbeans.modules.icebrowser/1
+
+Name: org/netbeans/modules/extbrowser/ExtBrowserSettings.class
+OpenIDE-Module-Class: Option
