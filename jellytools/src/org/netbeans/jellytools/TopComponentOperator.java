@@ -62,6 +62,8 @@ import org.openide.windows.TopComponent;
 public class TopComponentOperator extends JComponentOperator {
     
     static {
+        // need to set timeout for the case it was not set previously
+        JemmyProperties.getCurrentTimeouts().initDefault("EventDispatcher.RobotAutoDelay", 0);
         DriverManager.setDriver(DriverManager.MOUSE_DRIVER_ID, 
         new MouseRobotDriver(JemmyProperties.getCurrentTimeouts().create("EventDispatcher.RobotAutoDelay"), 
         new Class[] {TopComponentOperator.class}));
