@@ -55,6 +55,10 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     
+
+    <!--    
+    Removing this action in accordance with UI spec:
+    http://ui.netbeans.org/docs/hi/promoD/editorMenus.html
     
     <folder name="Editors">
         <folder name="text">
@@ -72,6 +76,7 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+    -->
 
     <folder name="Services">
         <!-- Has to be in Services folder iorder to be able to use the
