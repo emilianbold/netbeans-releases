@@ -250,11 +250,11 @@ Microsystems, Inc. All Rights Reserved.
         <!-- this classpath will be used for executing tests against installed IDE -->
     	<path id="codetest.classpath">
 	        <pathelement location="${netbeans.home}/modules/html.jar"/>
-        	<pathelement location="${netbeans.home}/lib/openide.jar"/>        
-                <fileset dir="../../core/netbeans/lib">
-	            <include name="core.jar"/>
-                    <include name="ext/*.jar"/>
-                </fileset>
+	        <fileset dir="${netbeans.home}/lib">
+              <include name="openide*.jar"/>
+					    <include name="core.jar"/>
+              <include name="ext/*.jar"/>
+          </fileset>
     	</path>
     </target>
     
