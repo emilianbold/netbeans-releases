@@ -250,14 +250,10 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
                 try {
                     parser.setProperty("http://xml.org/sax/properties/lexical-handler", this);  //NOI18N
                 } catch (SAXException sex) {
-                    ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);
-                    if (emgr != null) {
-                        emgr.log(NbBundle.getMessage(XMLMIMEComponent.class, "W-003"));  //NOI18N
-                    }
+                    ErrorManager.getDefault().log(NbBundle.getMessage(XMLMIMEComponent.class, "W-003"));  //NOI18N
                 }
             } catch (SAXException ex) {
-                ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);
-                emgr.notify(emgr.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
             return parser;
         }
@@ -303,10 +299,7 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
         
         public void error(SAXParseException exception) throws SAXException {            
             // we are not validating should not occure
-            ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);           
-            if (emgr != null) {
-                emgr.notify(emgr.WARNING, exception);  
-            }
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, exception);
             this.state = ERROR;
             throw STOP;
         }
@@ -316,13 +309,11 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
             // it may be caused by wrong user XML documents, notify only in debug mode
             if (Boolean.getBoolean("netbeans.debug.exceptions")) {
            
-                ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);           
-                if (emgr != null) {
-                    String msg = NbBundle.getMessage(XMLMIMEComponent.class, "W-001", fo, new Integer(exception.getLineNumber())); //NOI18N
-                    msg += "\n" + NbBundle.getMessage(XMLMIMEComponent.class, "W-002");  //NOI18N
-                    emgr.annotate(exception, msg);
-                    emgr.notify(emgr.INFORMATIONAL, exception);
-                }
+                ErrorManager emgr = ErrorManager.getDefault();
+                String msg = NbBundle.getMessage(XMLMIMEComponent.class, "W-001", fo, new Integer(exception.getLineNumber())); //NOI18N
+                msg += "\n" + NbBundle.getMessage(XMLMIMEComponent.class, "W-002");  //NOI18N
+                emgr.annotate(exception, msg);
+                emgr.notify(emgr.INFORMATIONAL, exception);
             }
 
             this.state = ERROR;

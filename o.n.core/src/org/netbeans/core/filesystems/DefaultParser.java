@@ -110,31 +110,18 @@ abstract class DefaultParser  extends DefaultHandler {
 
         } catch (IOException io) {
             if (stopException()  != io) {
-                ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);
-                if (emgr != null) {
-                    emgr.log("While parsing: " + fo.toString());
-                    emgr.notify(emgr.INFORMATIONAL, io);
-                } else if (Boolean.getBoolean("netbeans.debug.exceptions")) {
-                    System.err.println("While parsing: " + fo.toString());
-                    io.printStackTrace();
-                }
+                ErrorManager emgr = ErrorManager.getDefault();
+                emgr.log("While parsing: " + fo.toString());
+                emgr.notify(emgr.INFORMATIONAL, io);
                 state = ERROR;
             }
         } catch (SAXException sex) {
             if (stopException()  != sex) {
-                ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);
-                if (emgr != null) {
-                    emgr.log("While parsing: " + fo.toString());
-                    Exception e = sex.getException();
-                    if (e != null) emgr.notify(emgr.WARNING, e);
-                    emgr.notify(emgr.INFORMATIONAL, sex);
-                } else if (Boolean.getBoolean("netbeans.debug.exceptions")) {
-                    System.err.println("While parsing: " + fo.toString());
-                    Exception e = sex.getException();
-                    if (e != null) e.printStackTrace();                    
-                    sex.printStackTrace();
-                    
-                }
+                ErrorManager emgr = ErrorManager.getDefault();
+                emgr.log("While parsing: " + fo.toString());
+                Exception e = sex.getException();
+                if (e != null) emgr.notify(emgr.WARNING, e);
+                emgr.notify(emgr.INFORMATIONAL, sex);
                 state = ERROR;
             }
         } finally {

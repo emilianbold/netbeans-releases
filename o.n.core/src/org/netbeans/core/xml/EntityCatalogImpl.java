@@ -124,16 +124,11 @@ public final class EntityCatalogImpl extends EntityCatalog {
                 reader.parse(src);
             } catch (SAXException ex) {
                 // ignore
-                ErrorManager err = 
-                    (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);
-                err.notify(err.INFORMATIONAL, ex);
-                
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             } catch (IOException ex) {
                 // ignore
-               ErrorManager err = 
-                    (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);
-                err.notify(err.INFORMATIONAL, ex);
-           }
+        	ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+    	    }
         }
 
         // InstanceCookie impl
