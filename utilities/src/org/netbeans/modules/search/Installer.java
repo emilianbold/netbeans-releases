@@ -38,7 +38,6 @@ public class Installer extends ModuleInstall {
   private final String MENU = "Tools"; // NOI18N
   // place itself behind
   private final String MENUITEM = "UnmountFSAction"; // NOI18N
-  private final String ACTION = "RepositorySearchAction"; // NOI18N
 
   /** Holds hooking code. */
   private SearchHook hook;
@@ -61,13 +60,12 @@ public class Installer extends ModuleInstall {
 
       // add to action pool
       
-      InstanceDataObject.create (
+      Utilities2.createAction (
+        RepositorySearchAction.class,
         DataFolder.create (
           TopManager.getDefault ().getPlaces ().folders ().actions (), 
           MENU
-        ), 
-        ACTION, 
-        RepositorySearchAction.class.getName ()
+        )
       );
     
     } catch (Exception ex) {
@@ -104,13 +102,12 @@ public class Installer extends ModuleInstall {
       
       // remove from actions pool
       
-      InstanceDataObject.remove (
+      Utilities2.removeAction (
+        RepositorySearchAction.class,
         DataFolder.create (
           TopManager.getDefault ().getPlaces ().folders ().actions (), 
           MENU
-        ),
-        ACTION, 
-        RepositorySearchAction.class.getName ()
+        )
       );
       
     } catch (Exception ex) {
@@ -124,6 +121,8 @@ public class Installer extends ModuleInstall {
 
 /* 
 * Log
+*  10   Gandalf   1.9         1/15/00  Jesse Glick     Actions pool 
+*       installation.
 *  9    Gandalf   1.8         1/13/00  Radko Najman    I18N
 *  8    Gandalf   1.7         1/6/00   Petr Kuzel      Tools menu position and 
 *       debug removed.

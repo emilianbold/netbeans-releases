@@ -59,7 +59,7 @@ public class JavadocModule extends ModuleInstall {
       
       // Create Action in action pool
       DataFolder helpActions = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help"); // NOI18N
-      InstanceDataObject.create (helpActions, "JavaDocIndexSearch", SearchDocAction.class.getName ()); // NOI18N
+      Utilities2.createAction (SearchDocAction.class, helpActions);
     } 
     catch (IOException e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) {
@@ -267,6 +267,8 @@ public class JavadocModule extends ModuleInstall {
 
 /* 
  * Log
+ *  23   Gandalf   1.22        1/15/00  Jesse Glick     Actions pool 
+ *       installation.
  *  22   Gandalf   1.21        1/12/00  Petr Hrebejk    i18n
  *  21   Gandalf   1.20        1/10/00  Petr Hrebejk    Bug 4747 - closing of 
  *       output tab fixed
