@@ -584,6 +584,17 @@ public class JavaCodeGenerator extends CodeGenerator {
       initCodeWriter.write ("e.printStackTrace ();\n");
       initCodeWriter.write ("}\n");
     } else {
+      Class[] exceptions=null;
+      try {
+        exceptions = comp.getBeanClass ().getConstructor (new Class [0]).getExceptionTypes ();
+      } catch (NoSuchMethodException e) {
+        //PENDING  -announce this !!
+        e.printStackTrace();
+      }
+      if (exceptions.length > 0) {
+        initCodeWriter.write ("try {\n");
+      }
+
       if ((customCreateCode != null) && (!customCreateCode.equals(""))) {
         initCodeWriter.write (comp.getName () + " = ");
         initCodeWriter.write (customCreateCode);
@@ -592,7 +603,28 @@ public class JavaCodeGenerator extends CodeGenerator {
         initCodeWriter.write ("new ");
         initCodeWriter.write (comp.getBeanClass ().getName () + " ();");
       }
-     initCodeWriter.write ("\n");
+      initCodeWriter.write ("\n");
+
+      int varCount = 1;
+      // add the catch for all checked exceptions
+      for (int j = 0; j < exceptions.length; j++) {
+        initCodeWriter.write ("} catch (");
+        initCodeWriter.write (exceptions[j].getName ());
+        initCodeWriter.write (" ");
+        String excName = "e"+varCount;
+        varCount++;
+        while (formManager.getVariablesPool ().isReserved (excName)) {
+          excName = "e"+varCount;
+          varCount++;
+        }
+        initCodeWriter.write (excName);
+        initCodeWriter.write (") {\n");
+        initCodeWriter.write (excName);
+        initCodeWriter.write (".printStackTrace ();\n");
+        if (j == exceptions.length - 1) {
+          initCodeWriter.write ("}\n");
+        }
+      }
     }
     if ((postCode != null) && (!postCode.equals(""))) {
       initCodeWriter.write (postCode);
@@ -1422,6 +1454,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  61   Gandalf   1.60        12/16/99 Pavel Buzek     #3612
  *  60   Gandalf   1.59        12/13/99 Pavel Buzek     
  *  59   Gandalf   1.58        11/25/99 Pavel Buzek     support for multiple 
  *       handlers for one event
