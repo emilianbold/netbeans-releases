@@ -259,13 +259,11 @@ treefs (complete yet?)
     <echo message="(This both acts as a test, and primes some files"/>
     <echo message="to make the first user start faster and better.)"/>
     <!-- XXX should perhaps preset JAVA_PATH to ${java.home} or something? -->
-    <!-- XXX check these OS names...still need Windows 95/98 -->
-    <!-- XXX be aware, different JDK returns different OS names (ex. Win 2000 & JDK 1.2.2/1.3) -->
     <!-- XXX better would be to scan first start log for stacktraces and just show those; -->
     <!-- possibly after filtering for duplicates or something like this. -->
-    <exec os="Windows NT" dir="firststart/bin" command="runide.exe ${firststart.args}" failonerror="yes"/>
     <!-- WARNING: W2K fails with Ant 1.1 release, use a newer Ant without this bug: -->
-    <exec os="Windows 2000" dir="firststart/bin" command="runide.exe ${firststart.args}" failonerror="yes"/>
+    <!-- missing initial W intentional, to make it case-insensitive: -->
+    <exec os="indows" dir="firststart/bin" command="runide.exe ${firststart.args}" failonerror="yes"/>
     <exec os="Linux" dir="firststart/bin" command="sh runide.sh ${firststart.args}" failonerror="yes"/>
     <exec os="SunOS" dir="firststart/bin" command="sh runide.sh ${firststart.args}" failonerror="yes"/>
     <exec os="Solaris" dir="firststart/bin" command="sh runide.sh ${firststart.args}" failonerror="yes"/>
