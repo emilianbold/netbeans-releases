@@ -174,7 +174,7 @@ public class BundleEditPanel extends JPanel {
         commentLabel.setDisplayedMnemonic((NbBundle.getBundle(BundleEditPanel.class).getString("LBL_CommentLabel_Mnem")).charAt(0));
         valueLabel.setDisplayedMnemonic((NbBundle.getBundle(BundleEditPanel.class).getString("LBL_ValueLabel_Mnem")).charAt(0));                
             
-        table.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACS_CTL_Table"));        
+       // table.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACS_CTL_Table"));                
         textValue.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACS_CTL_TEXTVALUE"));
         addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACS_LBL_AddPropertyButton"));
         textComment.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACS_CTL_TEXTCOMMENT"));
