@@ -61,6 +61,9 @@ public final class XPLFCustoms extends LFCustoms {
         }
         return new Object[] {
             //Changes default fonts to Tahoma based ones, for consistent Windows look
+            // XXX Note that manual Tahoma setting is workaround for JDK bug 5079742.
+            // Please remove when JDK 1.4 is no longer supported,
+            // when only JDK 1.5_02 and higher are supported 
             "Button.font", patch2Tahoma("Button.font"), //NOI18N
             "CheckBox.font", patch2Tahoma("CheckBox.font"), //NOI18N
             "ComboBox.font", patch2Tahoma("ComboBox.font"), //NOI18N
@@ -147,6 +150,9 @@ public final class XPLFCustoms extends LFCustoms {
         }
     }
     
+    // XXX Note this is workaround for JDK bug 5079742.
+    // Please remove when JDK 1.4 is no longer supported,
+    // when only JDK 1.5_02 and higher are supported 
     /** Takes given font uiresource and creates Tahoma based font of same style
      * and size.
      */
