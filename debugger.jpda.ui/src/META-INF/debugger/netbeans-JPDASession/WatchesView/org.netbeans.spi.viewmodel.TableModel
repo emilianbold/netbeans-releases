@@ -1,2 +1,2 @@
-org.netbeans.modules.debugger.jpda.ui.models.JPDATableModel
+org.netbeans.modules.debugger.jpda.ui.models.WatchesTableModel
 org.netbeans.modules.debugger.jpda.ui.models.VariablesTreeModelFilterSI
