@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- says how to create classpath for code tests --> 
     <!-- can have values src, jar, ide               -->
-    <property name="xtest.code.classpath" value="src"/>
+    <property name="xtest.code.classpath" value="jar"/>
     
     <property name="xtest.home" location="../../xtest"/>
     <property name="xtest.results" location="results"/>
