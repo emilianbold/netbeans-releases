@@ -525,7 +525,6 @@
 <mapID target="NetbeansDebuggerClassesRootNode" url="debug/environment/classestab.html" />
 
 <mapID target="NetbeansDebuggerBreakpointNode" url="debug/breakpoint/breakpoint_set.html" />
-<mapID target="NetbeansDebuggerSessionNode" url="debug/sessions/sessions.html" />
 
 <mapID target="NetbeansDebuggerSessionThreadNode" url="debug/threads/threads_jump.html" />
 <mapID target="NetbeansDebuggerThreadGroupNode" url="debug/threads/threads_jump.html" />
@@ -587,9 +586,6 @@
   <mapID target="org.openide.actions.UndockAction" url="pending.html" />
   <mapID target="org.openide.actions.WorkspaceSwitchAction" url="pending.html" />
   <mapID target="org.openide.awt.HtmlBrowser$BrowserComponent" url="pending.html" />
-  <mapID target="org.openide.debugger.DebuggerType" url="pending.html" />
-  <mapID target="org.openide.debugger.DebuggerType$Default" url="pending.html" />
-  <mapID target="org.openide.execution.Executor" url="pending.html" />
   <mapID target="org.openide.execution.ProcessExecutor" url="pending.html" />
   <mapID target="org.openide.execution.ThreadExecutor" url="run/internal.html" />
   <mapID target="org.netbeans.modules.apisupport.lite" url="modules/newmodule.html" />
@@ -725,19 +721,14 @@
    <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogMultiCastES" url="pending.html" />
    <mapID target="org.netbeans.modules.beans.PatternNode" url="pending.html" />
    <mapID target="org.netbeans.modules.beans.PropertyPatternNode" url="pending.html" />
-   <mapID target="org.netbeans.modules.objectbrowser.ObjectBrowser" url="objects/browser.html" />
    <mapID target="org.netbeans.modules.objectbrowser.PackageFilterPanel" url="objects/browser/browser_packagefilter.html" />
    <mapID target="org.netbeans.modules.objectbrowser.ShowBrowserAction" url="objects/browser.html" />
    <mapID target="org.netbeans.modules.debugger.core.CoreDebugger.dialog" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.session.actions.StartSessionAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.debugger.support.actions.AddBreakpointAction" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.actions.SuspendDebuggerAction" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.actions.ResumeDebuggerAction" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.actions.CreateVariableAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.debugger.support.actions.AddBreakpointAction" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.actions.ConnectAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.java.JavaInternalCompilerType" url="pending.html" />
-   <mapID target="org.netbeans.modules.java.JavaExternalCompilerType" url="compile/external.html" />
    <mapID target="org.netbeans.modules.java.FastJavacCompilerType" url="compile/fastjavac.html" />
    <mapID target="org.netbeans.modules.java.gj.JavaCompilerType" url="compile/internal.html" />
 
@@ -779,9 +770,7 @@
    <mapID target="org.netbeans.modules.clazz.ClassDataObject" url="pending.html" />
    <mapID target="org.netbeans.modules.clazz.SerDataObject" url="pending.html" />
    <mapID target="org.netbeans.modules.form.FormDataObject" url="pending.html" />
-   <mapID target="org.netbeans.modules.form.FormEditor$ComponentInspector" url="pending.html" />
    <mapID target="org.netbeans.modules.form.FormLoaderSettings" url="pending.html"/> 
-   <mapID target="org.netbeans.modules.form.FormTopComponent" url="pending.html"/> 
    <mapID target="org.netbeans.modules.form.actions.ComponentInspectorAction" url="pending.html"/>
    <mapID target="org.netbeans.modules.form.actions.DesignModeAction" url="pending.html" />
    <mapID target="org.netbeans.modules.form.actions.EventsAction" url="pending.html" />
@@ -804,7 +793,6 @@
    <mapID target="org.netbeans.modules.form.ParametersPicker" url="pending.html"/>
    <mapID target="org.netbeans.modules.java.JavaConnections.dialog" url="pending.html"/>
    <mapID target="org.netbeans.modules.java.JavaDataObject" url="pending.html" />
-   <mapID target="org.netbeans.modules.java.SynchronizeAction" url="pending.html" /> 
    <mapID target="org.netbeans.modules.url.BookmarksNode" url="webbrowser/bookmark.html" />
    <mapID target="org.netbeans.modules.html.HtmlLoader.Obj" url="pending.html" /> 
    <mapID target="org.netbeans.modules.image.ImageViewer" url="pending.html" /> 
@@ -826,7 +814,6 @@
    <mapID target="org.netbeans.modules.form.FormEditor$ComponentInspector" url="pending.html" />
    <mapID target="org.netbeans.modules.form.FormTopComponent" url="pending.html" />
    <mapID target="org.netbeans.modules.objectbrowser.ObjectBrowser" url="objects/browser.html" />
-   <mapID target="org.netbeans.core.actions.ExecutionViewAction$ExecutionView" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.ServiceTypePanel" url="pending.html" />
    <mapID target="org.netbeans.modules.form.ConnectionWizard1" url="pending.html" />
    <mapID target="org.netbeans.modules.form.ConnectionWizard2" url="pending.html" />
@@ -895,7 +882,6 @@
    <mapID target="org.openide.actions.DebugProjectAction" url="project/project_comp-run-debug.html" />
    <mapID target="org.netbeans.modules.projects.SetMainClassCookieAction" url="run/mainclass.html" />
  
-   <mapID target="org.netbeans.core.actions.ConfigureShortcutsAction" url="shortcuts/kybdshortcuts.html" />
    <mapID target="org.netbeans.core.ShortcutsEditor" url="shortcuts/kybdshortcuts.html" />
    <mapID target="org.netbeans.core.ActionsPanel" url="pending.html" />
 
@@ -976,7 +962,6 @@
    <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPSubmitAndErrorURLInfoPanel" url="pending.html" />
    <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPSubmitProcessOptionPanel" url="pending.html" />
 
-   <mapID target="org.netbeans.modules.autoupdate.AutoCheckInfo" url="pending.html" />
    <mapID target="org.netbeans.modules.autoupdate.Wizard" url="modules/autoupdate.html" />
    <mapID target="org.netbeans.modules.autoupdate.CertDialog" url="pending.html" />
 
@@ -1132,7 +1117,6 @@
    <mapID target="org.netbeans.beaninfo.editors.DimensionCustomEditor" url="pending.html" /> 
    <mapID target="org.netbeans.core.MainWindow" url="pending.html" />
    <mapID target="org.netbeans.core.ActionsPoolNode" url="pending.html" />
-   <mapID target="org.netbeans.core.DataSystem" url="pending.html" /> 
    <mapID target="org.netbeans.core.Desktop$TemplatesNode" url="pending.html" /> 
    <mapID target="org.netbeans.core.DesktopNode$TemplatesNode" url="pending.html" /> 
    <mapID target="org.netbeans.core.DesktopNode" url="pending.html" /> 
