@@ -444,10 +444,37 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module sysprops..."/>
     <ant dir="../sysprops" target="netbeans"/>
   </target>
-  <target name="all-tasklist" depends="all-openide,all-editor">
-    <echo message="Building module tasklist..."/>
-    <ant dir="../tasklist" target="netbeans"/>
+
+  <!-- Tasklist modules -->
+  <target name="all-tasklist/api" depends="all-openide">
+    <echo message="Building module tasklist/api..."/>
+    <ant dir="../tasklist/api" target="netbeans"/>
   </target>
+  <target name="all-tasklist/core" depends="all-openide,all-tasklist/api">
+    <echo message="Building module tasklist/core..."/>
+    <ant dir="../tasklist/core" target="netbeans"/>
+  </target>
+  <target name="all-tasklist/usertasks" depends="all-openide,all-tasklist/api,all-tasklist/core">
+    <echo message="Building module tasklist/usertasks..."/>
+    <ant dir="../tasklist/usertasks" target="netbeans"/>
+  </target>
+  <target name="all-tasklist/suggestions" depends="all-openide,all-tasklist/api,all-tasklist/core">
+    <echo message="Building module tasklist/suggestions..."/>
+    <ant dir="../tasklist/suggestions" target="netbeans"/>
+  </target>
+  <target name="all-tasklist/docscan" depends="all-openide,all-tasklist/api,all-tasklist/core">
+    <echo message="Building module tasklist/docscan..."/>
+    <ant dir="../tasklist/docscan" target="netbeans"/>
+  </target>
+  <target name="all-tasklist/editor" depends="all-openide,all-editor,all-tasklist/api,all-tasklist/core,all-tasklist/usertasks">
+    <echo message="Building module tasklist/editor..."/>
+    <ant dir="../tasklist/editor" target="netbeans"/>
+  </target>
+  <target name="all-tasklist/bugs" depends="all-openide,all-tasklist/api,all-tasklist/core">
+    <echo message="Building module tasklist/bugs..."/>
+    <ant dir="../tasklist/bugs" target="netbeans"/>
+  </target>
+
   <target name="all-testtools" depends="all-ant,all-openide,all-core,all-java,all-jemmysupport,all-junit,all-utilities/group">
     <echo message="Building module testtools..."/>
     <ant dir="../testtools" target="netbeans"/>
