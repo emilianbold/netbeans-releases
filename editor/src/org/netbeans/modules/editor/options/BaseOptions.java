@@ -1217,8 +1217,12 @@ public class BaseOptions extends OptionSupport {
     
     private void refreshIndentEngineSettings() {
         // Touches the settings
-        Settings.touchValue(getKitClass(), NbEditorDocument.INDENT_ENGINE);
-        Settings.touchValue(getKitClass(), NbEditorDocument.FORMATTER);
+        RequestProcessor.postRequest(new Runnable(){
+            public void run(){
+                Settings.touchValue(getKitClass(), NbEditorDocument.INDENT_ENGINE);
+                Settings.touchValue(getKitClass(), NbEditorDocument.FORMATTER);
+            }
+        });
     }
     
     /** Return class of the default indentation engine. */
