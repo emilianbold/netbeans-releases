@@ -2,38 +2,43 @@
 
 <mconfig name="QA Beans config">
     
-    <testbag testattribs="full" executor="ide" name="testbag_beans_templates" resultsprocessor="qa-beans">
+    <testbag testattribs="full,templates" executor="ide" name="templates" resultsprocessor="qa-beans">
         <testset dir="qa-func/src">
             <patternset>
                 <include name="gui/BeansTemplates.class"/> 
-                <exclude name="**/*Tonga*"/>
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="full" executor="ide" name="testbag_beans_property" resultsprocessor="qa-beans">
+    <testbag testattribs="full,property" executor="ide" name="property" resultsprocessor="qa-beans">
         <testset dir="qa-func/src">
             <patternset>
-                <include name="gui/CreateNewIndexedProperty.class"/> 
-                <include name="gui/CreateNewNonIndexedProperty.class"/> 
-                <include name="gui/ChangingOfBeanPropertyProperties.class"/> 
-                <exclude name="**/*Tonga*"/>
+                <include name="gui/CreateNewIndexedProperty.class"/>
+                <include name="gui/CreateNewNonIndexedProperty.class"/>
+                <include name="gui/ChangingOfBeanPropertyProperties.class"/>
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="full" executor="ide" name="testbag_beans_event_source" resultsprocessor="qa-beans">
+    <testbag testattribs="full,event_source" executor="ide" name="event_source" resultsprocessor="qa-beans">
         <testset dir="qa-func/src">
             <patternset>
                 <include name="gui/NewMulticastEventSource.class"/> 
                 <include name="gui/NewUnicastEventSource.class"/> 
-                <exclude name="**/*Tonga*"/>
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="full" executor="ide" name="testbag_beans_beaninfo" resultsprocessor="qa-beans">
+    <testbag testattribs="full,beaninfo" executor="ide" name="beaninfo" resultsprocessor="qa-beans">
         <testset dir="qa-func/src">
             <patternset>
                 <include name="gui/BeanInfoGeneration.class"/>  
-                <exclude name="**/*Tonga*"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="validation" executor="ide" name="validaion" resultsprocessor="qa-beans">
+        <testset dir="qa-func/src">
+            <patternset>
+		<include name="gui/ChangingOfBeanPropertyProperties.class"/>
+		<include name="gui/BeanInfoGeneration.class"/>
             </patternset>
         </testset>
     </testbag>
