@@ -60,21 +60,23 @@ public final class BenchmarkSuite implements Test {
         this.dataManagers = new ArrayList(10);
         this.class2DD = new HashMap();
         
-        try {
-            List list = TestSpecBuilder.parse(testSpecs);
-            for (Iterator iter = list.iterator(); iter.hasNext(); ) {
-                Object obj = iter.next();
-                if (obj instanceof LoadDefinition) {
-                    ldef = (LoadDefinition) obj;
-                } else if (obj instanceof StoreDefinition) {
-                    sdef = (StoreDefinition) obj;
-                } else {
-                    TestDefinition testDef = (TestDefinition) obj;
-                    this.testSpecs.add(testDef);
+        if( testSpecs != null && testSpecs.length() != 0 ) {
+            try {
+                List list = TestSpecBuilder.parse(testSpecs);
+                for (Iterator iter = list.iterator(); iter.hasNext(); ) {
+                    Object obj = iter.next();
+                    if (obj instanceof LoadDefinition) {
+                        ldef = (LoadDefinition) obj;
+                    } else if (obj instanceof StoreDefinition) {
+                        sdef = (StoreDefinition) obj;
+                    } else {
+                        TestDefinition testDef = (TestDefinition) obj;
+                        this.testSpecs.add(testDef);
+                    }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
