@@ -3,6 +3,7 @@ OpenIDE-Module-Name: Properties Files
 OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Implementation-Version: 1.0
 OpenIDE-Module-Install: com/netbeans/developer/modules/loaders/properties/PropertiesModule.class
+OpenIDE-Module-Update-Location: update.netbeans.com/eap/developer30/updateInfoEAP.xml
 
 Name: com/netbeans/developer/modules/loaders/properties/PropertiesDataLoader.class
 OpenIDE-Module-Class: Loader
