@@ -2,11 +2,7 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.db/1
 OpenIDE-Module-Install: org/netbeans/modules/db/DatabaseModule.class
 OpenIDE-Module-Specification-Version: 1.9
-OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/db/resources/mf-layer.xml
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.20
-OpenIDE-Module-Module-Dependencies: org.openide.io > 1.0
 OpenIDE-Module-Requires: org.openide.windows.IOProvider, org.netbeans.api.javahelp.Help
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/db/resources/Bundle.properties
-Class-Path: ext/ddl.jar docs/db.jar
-
+Class-Path: ext/ddl.jar docs/org-netbeans-modules-db.jar
