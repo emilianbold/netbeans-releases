@@ -34,6 +34,7 @@ import org.netbeans.modules.j2ee.deployment.config.ui.ConfigUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
+import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.WebContextRoot;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter;
 import org.openide.ErrorManager;
@@ -107,7 +108,8 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         Server s = ServerRegistry.getInstance ().getServer (getProvider ().getServerID ());
         if (s == null) {
             //PENDING some ntoifcation.
-            s = ServerRegistry.getInstance().getDefaultInstance().getServer();
+            ServerString ss = ServerRegistry.getInstance().getDefaultInstance();
+            s = ss == null ? null : ss.getServer();
         }
         return s;
     }
