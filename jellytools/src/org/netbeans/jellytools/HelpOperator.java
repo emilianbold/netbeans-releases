@@ -90,7 +90,7 @@ public class HelpOperator extends JFrameOperator {
      */
     public JButtonOperator btBack() {
         if (_btBack==null) {
-            _btBack = new JButtonOperator( this, 0 );
+            _btBack = new JButtonOperator(this, helpPackageChooser, 0);
         }
         return _btBack;
     }
@@ -101,7 +101,7 @@ public class HelpOperator extends JFrameOperator {
      */
     public JButtonOperator btNext() {
         if (_btNext==null) {
-            _btNext = new JButtonOperator( this, 1 );
+            _btNext = new JButtonOperator(this, helpPackageChooser, 1);
         }
         return _btNext;
     }
@@ -112,7 +112,7 @@ public class HelpOperator extends JFrameOperator {
      */
     public JButtonOperator btPrint() {
         if (_btPrint==null) {
-            _btPrint = new JButtonOperator( this, 2 );
+            _btPrint = new JButtonOperator(this, helpPackageChooser, 2);
         }
         return _btPrint;
     }
@@ -145,7 +145,7 @@ public class HelpOperator extends JFrameOperator {
      */
     public JButtonOperator btPageSetup() {
         if (_btPageSetup==null) {
-            _btPageSetup = new JButtonOperator( this, 3 );
+            _btPageSetup = new JButtonOperator(this, helpPackageChooser, 3);
         }
         return _btPageSetup;
     }
@@ -320,6 +320,17 @@ public class HelpOperator extends JFrameOperator {
         }
         public String getDescription() {
             return("containing any javax.help.JHelp component");
+        }
+    };
+    
+    /** Implementation of ComponentChooser to choose component which 
+     * commes from package javax.help.*. */
+    private static final ComponentChooser helpPackageChooser = new ComponentChooser() {
+        public boolean checkComponent(Component comp) {
+            return comp.getClass().getName().startsWith("javax.help.");
+        }
+        public String getDescription() {
+            return("any javax.help.");
         }
     };
 }
