@@ -149,7 +149,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building openide/compiler..."/>
     <ant dir="../openide/compiler" target="netbeans"/>
   </target>
-  <target name="all-openide/execution" depends="all-openide,all-openide/io">
+  <target name="all-openide/execution" depends="all-openide,all-openide/io,all-openide/loaders">
     <echo message="Building openide/execution..."/>
     <ant dir="../openide/execution" target="netbeans"/>
   </target>
