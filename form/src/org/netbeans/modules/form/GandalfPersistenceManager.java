@@ -14,14 +14,18 @@
 package com.netbeans.developer.modules.loaders.form;
 
 import java.beans.PropertyDescriptor;
+import java.beans.PropertyEditor;
 import java.io.*;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
+
+import com.netbeans.developerx.loaders.form.formeditor.layouts.*;
 
 /** 
 *
@@ -36,6 +40,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
   public static final String XML_COMPONENT = "Component";
   public static final String XML_LAYOUT = "Layout";
   public static final String XML_CONSTRAINTS = "Constraints";
+  public static final String XML_CONSTRAINT = "Constraint";
   public static final String XML_SUB_COMPONENTS = "SubComponents";
   public static final String XML_EVENTS = "Events";
   public static final String XML_EVENT = "EventHandler";
@@ -52,6 +57,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
   public static final String ATTR_PROPERTY_VALUE = "value";
   public static final String ATTR_EVENT_NAME = "event";
   public static final String ATTR_EVENT_HANDLER = "handler";
+  public static final String ATTR_CONSTRAINT_LAYOUT = "layoutClass";
+  public static final String ATTR_CONSTRAINT_VALUE = "value";
 
   public static final String VALUE_RAD_CONNECTION = "RADConnection";
   
@@ -110,6 +117,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
       // 2.store body
       addElementOpenAttr (buf, XML_FORM, new String[] { ATTR_FORM_VERSION }, new String[] { CURRENT_VERSION });
       buf.append (ONE_INDENT); addElementOpen (buf, XML_NON_VISUAL_COMPONENTS);
+      RADComponent[] nonVisuals = manager.getNonVisualComponents ();
+      for (int i = 0; i < nonVisuals.length; i++) {
+        saveComponent (nonVisuals[i], buf, ONE_INDENT + ONE_INDENT);
+      }
       buf.append (ONE_INDENT); addElementClose (buf, XML_NON_VISUAL_COMPONENTS);
       buf.append ("\n");
       saveContainer ((ComponentContainer)manager.getRADForm ().getTopLevelComponent (), buf, ONE_INDENT);
@@ -193,7 +204,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         valueType = VALUE_RAD_CONNECTION;
       }
       buf.append (indent); 
-      addElementOpenAttr (
+      addLeafElementOpenAttr (
           buf, 
           XML_PROPERTY, 
           new String[] { 
@@ -207,10 +218,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
             desc.getPropertyType ().getName (), 
             prop.getCurrentEditor ().getClass ().getName (), 
             valueType, 
-            encodeValue (value) 
+            encodeValue (value, prop.getCurrentEditor ()) 
           }
       );
-      buf.append (indent); addElementClose (buf, XML_PROPERTY);
     }
   }
 
@@ -220,7 +230,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       String handlerName = (String)events.get (eventName);
       
       buf.append (indent); 
-      addElementOpenAttr (
+      addLeafElementOpenAttr (
           buf, 
           XML_EVENT, 
           new String[] { 
@@ -232,17 +242,35 @@ public class GandalfPersistenceManager extends PersistenceManager {
             handlerName, 
           }
       );
-      buf.append (indent); addElementClose (buf, XML_EVENT);
     }
   }
     
   private void saveConstraints (RADVisualComponent component, StringBuffer buf, String indent) {
+    Map constraintsMap = component.getConstraintsMap ();
+    for (Iterator it = constraintsMap.keySet ().iterator (); it.hasNext (); ) {
+      String layoutName = (String)it.next ();
+      DesignLayout.ConstraintsDescription cd = (DesignLayout.ConstraintsDescription)constraintsMap.get (layoutName);
+      
+      buf.append (indent); 
+      addLeafElementOpenAttr (
+          buf, 
+          XML_CONSTRAINT, 
+          new String[] { 
+            ATTR_CONSTRAINT_LAYOUT, 
+            ATTR_CONSTRAINT_VALUE 
+          },
+          new String[] { 
+            layoutName, 
+            "", 
+          }
+      );
+    }
   }
   
 // --------------------------------------------------------------------------------------
 // Utility formatting methods
   
-  private String encodeValue (Object value) {
+  private String encodeValue (Object value, PropertyEditor ed) {
     if (value == null) return "null";
    
     if (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {
@@ -289,11 +317,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
        return value.toString ();
      } 
      
+     if (ed instanceof XMLPropertyEditor) {
+       ed.setValue (value);
+       org.w3c.dom.Node node = ((XMLPropertyEditor)ed).storeToXML ();
+       
+       return "XMLized"; // [PENDING]
+     }
+     
      if (value instanceof Class) {
        return ((Class)value).getName ();
      }
-     
-     // [PENDING - Color, Font, ...]     
      
      ByteArrayOutputStream bos = new ByteArrayOutputStream ();
      try {
@@ -303,7 +336,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
      } catch (Exception e) {
        return "null"; // problem during serialization
      }
-     return bos.toString ();
+     byte[] bosBytes = bos.toByteArray ();
+     StringBuffer sb = new StringBuffer (bosBytes.length);
+     for (int i = 0; i < bosBytes.length; i++) {
+       if (i != bosBytes.length - 1) {
+         sb.append (Integer.toHexString (bosBytes[i])+",");
+       } else {
+         sb.append (Integer.toHexString (bosBytes[i]));
+       }
+     }
+     return sb.toString ();
   }
   
   private void addElementOpen (StringBuffer buf, String elementName) {
@@ -325,6 +367,19 @@ public class GandalfPersistenceManager extends PersistenceManager {
     buf.append (">\n");
   }
   
+  private void addLeafElementOpenAttr (StringBuffer buf, String elementName, String[] attrNames, String[] attrValues) {
+    buf.append ("<");
+    buf.append (elementName);
+    for (int i = 0; i < attrNames.length; i++) {
+      buf.append (" ");
+      buf.append (attrNames[i]);
+      buf.append ("=\"");
+      buf.append (attrValues[i]);
+      buf.append ("\"");
+    }
+    buf.append ("/>\n");
+  }
+
   private void addElementClose (StringBuffer buf, String elementName) {
     buf.append ("</");
     buf.append (elementName);
@@ -334,6 +389,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  6    Gandalf   1.5         6/30/99  Ian Formanek    Second draft of XML 
+ *       Serialization
  *  5    Gandalf   1.4         6/28/99  Ian Formanek    First cut of XML 
  *       persistence
  *  4    Gandalf   1.3         6/24/99  Ian Formanek    
