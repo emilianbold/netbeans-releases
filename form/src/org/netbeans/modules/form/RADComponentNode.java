@@ -649,7 +649,8 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
                 RADComponent newCopy = makeCopy(radComponent, false);
                 if ((newCopy instanceof RADVisualComponent) &&(component instanceof RADVisualContainer)) {
                     pasteManager.addVisualComponent((RADVisualComponent)newCopy,(RADVisualContainer)component, null);
-//                    pasteManager.addVisualComponentsRecursively((RADVisualContainer)component);
+                    if (radComponent instanceof RADVisualContainer)
+                        pasteManager.addVisualComponentsRecursively((RADVisualContainer)newCopy);
                     pasteManager.getFormTopComponent().validate();
                     pasteManager.fireCodeChange();
                 } else {
@@ -662,7 +663,8 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
                 radComponent.initialize(pasteManager); // if pasting into another form
                 if (radComponent instanceof RADVisualComponent) {
                     pasteManager.addVisualComponent((RADVisualComponent)radComponent,(RADVisualContainer)component, null);
-//                    pasteManager.addVisualComponentsRecursively((RADVisualContainer)component);
+                    if (radComponent instanceof RADVisualContainer)
+                        pasteManager.addVisualComponentsRecursively((RADVisualContainer)radComponent);
                     pasteManager.getFormTopComponent().validate();
                     pasteManager.fireCodeChange();
                 } else {
