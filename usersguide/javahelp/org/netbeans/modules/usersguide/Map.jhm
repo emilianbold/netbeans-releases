@@ -304,8 +304,10 @@
 <mapID target="editing.fontsandcolors" url="editing/configuring/fontsandcolors.html" />
 <mapID target="editing.colorchooser" url="editing/configuring/colorchooser.html" />
 <mapID target="editing.keybindings" url="editing/configuring/keybindings.html" />
-<!-- Need csh page for the Add Shortcut Sequent dialog box... -->
-<mapID target="editing.csh.shortcutseq" url="shortcuts/kybdshortcuts.html" />
+
+<!-- Csh page for the Add Keybinding dialog box... -->
+<mapID target="editing.csh.shortcutseq" url="editing/configuring/shortcut-seq.html" />
+
 <!-- Need csh page (and help topic) for Tools->Options, Printing node and subnodes -->
 <mapID target="editing.printing" url="pending.html" />
 <!-- These are csh pages for separate indentation engines, currently hooked to same page-->
@@ -321,7 +323,7 @@
 <mapID target="editing.editor.jsp" url="editing/configuring/javaeditor-props.html" />
 <mapID target="editing.editor.properties" url="editing/configuring/javaeditor-props.html" />
 <!-- Csh pages for scroll insets and Fonts and Color property editors -->
-<mapID target="editing.scrollinsets" url="pending.html" />
+<mapID target="editing.scrollinsets" url="editing/configuring/insets.html" />
 <mapID target="editing.fonts" url="editing/configuring/fontsandcolors.html" />
 
 
