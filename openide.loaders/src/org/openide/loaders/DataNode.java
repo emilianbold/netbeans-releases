@@ -431,6 +431,16 @@ public class DataNode extends AbstractNode {
                               public boolean canWrite () {
                                   return obj.isRenameAllowed();
                               }
+
+                              // #33296 - suppress custom editor
+                              public Object getValue(String key) {
+                                  if ("suppressCustomEditor".equals (key)) { //NOI18N
+                                      return Boolean.TRUE;
+                                  } else {
+                                      return super.getValue (key);
+                                  }
+                              }
+
                           };
 
         return p;
