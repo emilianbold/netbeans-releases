@@ -44,7 +44,7 @@ public final class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline,
     }
     
     public void removePropertyChangeListenerAPI( PropertyChangeListener listener ) {
-        pchSupport.addPropertyChangeListener( listener );        
+        pchSupport.removePropertyChangeListener( listener );        
     }
     
     public void propertyChange( PropertyChangeEvent e ) {
