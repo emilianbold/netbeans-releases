@@ -73,7 +73,7 @@ public class SystemExit extends CallableSystemAction {
   }
 
   public void performAction() {
-    java.util.Set set = com.netbeans.ide.loaders.DataObject.getModifiedObjects();
+    java.util.Set set = com.netbeans.ide.loaders.DataObject.getRegistry ().getModifiedSet ();
     if (!set.isEmpty())
       new ExitDlg(TopManager.getDefault().getWindowManager().getMainWindow()).show();
     else {
@@ -117,7 +117,7 @@ public class SystemExit extends CallableSystemAction {
 
       setTitle(NbBundle.getBundle().getString("CTL_ExitTitle"));
       listModel = new DefaultListModel();
-      Iterator iter = DataObject.getModifiedObjects().iterator();
+      Iterator iter = DataObject.getRegistry ().getModifiedSet ().iterator();
       while (iter.hasNext()) {
         DataObject obj = (DataObject) iter.next();
         listModel.addElement(obj);
@@ -252,7 +252,7 @@ public class SystemExit extends CallableSystemAction {
       Node node = ((DataObject)value).getNodeDelegate();
 
       ImageIcon icon = new ImageIcon(node.getIcon(BeanInfo.ICON_COLOR_16x16));
-      setIcon(icon);
+      super.setIcon(icon);
 
       setText(node.getDisplayName());
       if (isSelected){
@@ -273,6 +273,7 @@ public class SystemExit extends CallableSystemAction {
 
 /*
  * Log
+ *  6    Gandalf   1.5         1/20/99  Jaroslav Tulach 
  *  5    Gandalf   1.4         1/14/99  David Simonek   
  *  4    Gandalf   1.3         1/7/99   Ian Formanek    fixed resource names
  *  3    Gandalf   1.2         1/6/99   Ian Formanek    Reflecting change in 
