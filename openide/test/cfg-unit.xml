@@ -132,6 +132,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <!-- Add your own code tests -->
+                <include name="**/NodeLookupTest.class"/>
             </patternset>
         </testset>
     </testbag>
