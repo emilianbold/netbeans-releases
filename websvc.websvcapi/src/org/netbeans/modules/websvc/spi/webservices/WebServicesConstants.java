@@ -15,6 +15,7 @@ public interface WebServicesConstants {
     public static final String WEB_SERVICES =     "web-services";//NOI18N
     public static final String WEB_SERVICE  =     "web-service";//NOI18N
     public static final String WEB_SERVICE_NAME = "web-service-name";//NOI18N
+    public static final String WEB_SERVICE_FROM_WSDL = "from-wsdl"; // NOI18N
     public static final String CONFIG_PROP_SUFFIX = ".config.name";//NOI18N
     public static final String MAPPING_PROP_SUFFIX = ".mapping";//NOI18N
     public static final String MAPPING_FILE_SUFFIX = "-mapping.xml";//NOI18N

@@ -21,19 +21,36 @@ package org.netbeans.modules.websvc.api.webservices;
  */
 public class StubDescriptor {
 
-    /** Name to represent jsr-109 static stub clients
+    /** Client types.  Not to be intermixed with service types.
+     */
+    /** Key to represent jsr-109 static stub clients
      *
      *  Note: This string may be embedded in build-impl.xsl for the projects
      *  that implement web service client support.  Change with care.
      */
     public static final String JSR109_CLIENT_STUB = "jsr-109_client";
     
-    /** Name to represent jaxrpc static stub clients.
+    /** Key to represent jaxrpc static stub clients.
      *
      *  Note: This string may be embedded in build-impl.xsl for the projects
      *  that implement web service client support.  Change with care.
      */
     public static final String JAXRPC_CLIENT_STUB = "jaxrpc_static_client";
+
+    
+    /** Service types.  Not to be intermixed with client types.
+     */
+    /** Key to represent services generated from interface, e.g. SEI is under
+     *  source control and the WSDL file is generated via wscompile.
+     */
+    public static final String SEI_SERVICE_STUB = "sei_service";
+    
+    /** Key to represent services generated from a preexisting WSDL file, e.g.
+     *  wsdl file is under source control and the interface files are generated
+     *  from it.
+     */
+    public static final String WSDL_SERVICE_STUB = "wsdl_service";
+    
     
     // Private data
     private final String name;

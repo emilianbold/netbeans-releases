@@ -14,6 +14,7 @@
 package org.netbeans.modules.websvc.api.webservices;
 
 import java.util.Iterator;
+import java.util.List;
 import org.netbeans.modules.websvc.webservices.WebServicesSupportAccessor;
 import org.netbeans.modules.websvc.spi.webservices.*;
 import org.openide.filesystems.FileObject;
@@ -123,8 +124,12 @@ public final class WebServicesSupport {
     public ReferenceHelper getReferenceHelper(){
         return impl.getReferenceHelper();
     }
-    
-    public void addInfrastructure(String implBeanClass, FileObject pkg){
+
+    public List/*WsCompileEditorSupport.ServiceSettings*/ getServices() {
+        return impl.getServices();
+    }
+      
+    public void addInfrastructure(String implBeanClass, FileObject pkg) {
         impl.addInfrastructure(implBeanClass, pkg);
     }
     

@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.websvc.spi.webservices;
 
+import java.util.List;
+
 import org.openide.filesystems.FileObject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.api.project.Project;
@@ -88,10 +90,16 @@ public interface WebServicesSupportImpl {
      * Get the ReferenceHelper from the project
      */
     public ReferenceHelper getReferenceHelper();
+
+    /**
+     * Get the list of services and their wscompile settings.
+     */
+    public List/*WsCompileEditorSupport.ServiceSettings*/ getServices();
     
     /**
      * Add infrastructure methods and fields (if any) that should be present
      * in the implementation bean class
      */
     public void addInfrastructure(String implBeanClass, FileObject pkg);
+    
 }
