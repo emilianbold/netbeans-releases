@@ -25,6 +25,9 @@ import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 
 import org.netbeans.modules.web.debug.util.Utils;
+import org.netbeans.api.debugger.*;
+import org.netbeans.api.debugger.jpda.*;
+import org.openide.loaders.DataObject;
 
 public class JspToolTipAnnotation extends Annotation implements Runnable {
     
@@ -36,26 +39,25 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
         Utils.getEM().log("JspTooltip: getShortDescription");
         
         toolTipText = null;
-//        if (!(Register.getCurrentDebugger () instanceof JavaDebugger)) {
-//            return null;
-//        }
-//
-//        org.openide.text.Line.Part lp = (org.openide.text.Line.Part) getAttachedAnnotatable();
-//        org.openide.text.Line line = lp.getLine ();
-//        org.openide.loaders.DataObject dob = org.openide.text.DataEditorSupport.findDataObject(line);
-//        org.openide.cookies.EditorCookie ec = 
-//            (org.openide.cookies.EditorCookie) dob.getCookie(org.openide.cookies.EditorCookie.class);
-//
-//        if (ec != null) { // Only for editable dataobjects
-//            try {
-//                doc = ec.openDocument();                    
-//                RequestProcessor.getDefault().post(this);                    
-//                doc.render(this);
-//            } catch (IOException e) {
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-//            }
-//        }
-//        
+        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
+            getCurrentEngine ();
+        if (currentEngine == null) return null;
+        JPDADebugger d = JPDADebugger.getJPDADebugger (currentEngine);
+        if (d == null) return null;
+
+        Line.Part lp = (Line.Part) getAttachedAnnotatable();
+        Line line = lp.getLine ();
+        DataObject dob = DataEditorSupport.findDataObject(line);
+        EditorCookie ec = (EditorCookie) dob.getCookie(EditorCookie.class);
+
+        if (ec != null) { // Only for editable dataobjects
+            try {
+                doc = ec.openDocument ();                    
+                RequestProcessor.getDefault().post(this);                    
+                doc.render (this);
+            } catch (IOException e) {
+            }
+        }
         return toolTipText;
     }
 
@@ -63,46 +65,46 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
 
         Utils.getEM().log("JspTooltip: run");
 
-//        //1) get tooltip text
-//        Line.Part lp = (Line.Part)getAttachedAnnotatable();
-//        JEditorPane ep = getCurrentEditor();
-//        String textForTooltip = "";
-//        
-//        if ((lp == null) || (ep == null)) {
-//            return;
-//        }
-//        
-//        //first try EL
-//        String text = Utils.getELIdentifier(doc, ep,NbDocument.findLineOffset(doc, lp.getLine().getLineNumber()) + lp.getColumn());
-//        Utils.getEM().log("JspTooltip: ELIdentifier = " + text);
-//
-//        Boolean isScriptlet = Utils.isScriptlet(
-//            doc, ep, NbDocument.findLineOffset(doc, lp.getLine().getLineNumber()) + lp.getColumn()
-//        );
-//        Utils.getEM().log("isScriptlet: " + isScriptlet.booleanValue());
-//        
-//        //if not, try Java
-//        if ((text == null) && (isScriptlet.booleanValue())) {
-//            text = Utils.getJavaIdentifier(
-//                doc, ep, NbDocument.findLineOffset(doc, lp.getLine().getLineNumber()) + lp.getColumn()
-//            );
-//            textForTooltip = text;
-//            Utils.getEM().log("JspTooltip: javaIdentifier = " + text);
-//            if (text == null) {
-//                return;
-//            }
-//        } else {
-//            if (text == null) {
-//                return;
-//            }
-//            textForTooltip = text;
-//            String textEscaped = org.openide.util.Utilities.replaceString(text, "\"", "\\\"");
-//            text = "pageContext.getExpressionEvaluator().evaluate(\"" + textEscaped +
-//                                "\", java.lang.String.class, (javax.servlet.jsp.PageContext)pageContext, null)";
-//        }
-//        
-//        Utils.getEM().log("JspTooltip: fullWatch = " + text);
-//        
+        //1) get tooltip text
+        Line.Part lp = (Line.Part)getAttachedAnnotatable();
+        JEditorPane ep = getCurrentEditor();
+        String textForTooltip = "";
+        
+        if ((lp == null) || (ep == null)) {
+            return;
+        }
+        
+        //first try EL
+        String text = Utils.getELIdentifier(doc, ep,NbDocument.findLineOffset(doc, lp.getLine().getLineNumber()) + lp.getColumn());
+        Utils.getEM().log("JspTooltip: ELIdentifier = " + text);
+
+        boolean isScriptlet = Utils.isScriptlet(
+            doc, ep, NbDocument.findLineOffset(doc, lp.getLine().getLineNumber()) + lp.getColumn()
+        );
+        Utils.getEM().log("isScriptlet: " + isScriptlet);
+        
+        //if not, try Java
+        if ((text == null) && (isScriptlet)) {
+            text = Utils.getJavaIdentifier(
+                doc, ep, NbDocument.findLineOffset(doc, lp.getLine().getLineNumber()) + lp.getColumn()
+            );
+            textForTooltip = text;
+            Utils.getEM().log("JspTooltip: javaIdentifier = " + text);
+            if (text == null) {
+                return;
+            }
+        } else {
+            if (text == null) {
+                return;
+            }
+            textForTooltip = text;
+            String textEscaped = org.openide.util.Utilities.replaceString(text, "\"", "\\\"");
+            text = "pageContext.getExpressionEvaluator().evaluate(\"" + textEscaped +
+                                "\", java.lang.String.class, (javax.servlet.jsp.PageContext)pageContext, null)";
+        }
+        
+        Utils.getEM().log("JspTooltip: fullWatch = " + text);
+        
 //        //2) create watch for given text
 //        final AbstractDebugger debugger = Register.getCoreDebugger ();
 //        AbstractWatch watch = (AbstractWatch) debugger.createWatch (text, true);
@@ -112,23 +114,27 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
 //            if (w1 != null) w = w1;
 //        }
 //        
-//        //3) obtain text representation of value of watch
-//        String old = toolTipText;
-//        toolTipText = null;
-//        if (watch != null) {
-//            Utils.getEM().log("Error: " + watch.getErrorMessage());
-//            if (watch instanceof JavaWatch) {
-//                toolTipText = ((JavaWatch) watch).toStringValue ();
-//            }
-//            if (toolTipText == null) {
-//                toolTipText = watch.getAsText();
-//            }
-//            if (toolTipText != null) {
-//                toolTipText = textForTooltip + " = " + toolTipText; // NOI18N
-//            }
-//        }
-//        Utils.getEM().log("JspTooltip: " + toolTipText);
-//        firePropertyChange (PROP_SHORT_DESCRIPTION, old, toolTipText);       
+        //3) obtain text representation of value of watch
+        String old = toolTipText;
+        toolTipText = null;
+        
+        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+        if (currentEngine == null) return;
+        JPDADebugger d = JPDADebugger.getJPDADebugger(currentEngine);
+        if (d == null) return;
+        
+        try {
+            Variable v = d.evaluate(text);
+            if (v instanceof ObjectVariable) {
+                toolTipText = text + " = (" + v.getType() + ")" + ((ObjectVariable)v).getToStringValue();
+            } else {
+                toolTipText = text + " = (" + v.getType() + ")" + v.getValue();
+            }
+        } catch (InvalidExpressionException e) {
+            toolTipText = text + " = >" + e.getMessage() + "<";
+        }
+        Utils.getEM().log("JspTooltip: " + toolTipText);
+        firePropertyChange (PROP_SHORT_DESCRIPTION, old, toolTipText);       
     }
 
     public String getAnnotationType () {
