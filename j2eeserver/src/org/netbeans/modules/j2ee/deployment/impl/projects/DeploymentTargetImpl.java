@@ -27,6 +27,7 @@ import org.openide.filesystems.FileUtil;
 import java.util.*;
 import java.io.*;
 import java.net.URL;
+import org.openide.util.NbBundle;
 
 /** 
  *
@@ -57,7 +58,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
             return fastDeploy.booleanValue();
         
         if ("false".equalsIgnoreCase(System.getProperty("j2eeserver.fastDeploy"))) {
-            System.out.println("FastDeploy is off!");
+//            System.out.println("FastDeploy is off!");
             fastDeploy = Boolean.FALSE;
         } else
             fastDeploy = Boolean.TRUE;
@@ -156,12 +157,12 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
                 }
             }
         if (tmid == null) {
-            System.out.println("Failed to find TargetModuleID for webclient :"+childWeb.getUrl()+" from: "+module);
+//            System.out.println("Failed to find TargetModuleID for webclient :"+childWeb.getUrl()+" from: "+module);
             return null;
         }
         String urlString = tmid.getWebURL();
         if (urlString == null) {
-            System.out.println("Failed to get webURL for webclient :"+childWeb.getUrl()+" from: "+tmid);
+//            System.out.println("Failed to get webURL for webclient :"+childWeb.getUrl()+" from: "+tmid);
             return null;
         }
         return urlString;
@@ -172,7 +173,9 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
             urlString += "/" + defaultURL;
         }
         
-        StatusDisplayer.getDefault().setStatusText("Starting browser to "+urlString);
+        StatusDisplayer.getDefault().setStatusText(
+            NbBundle.getMessage(DeploymentTargetImpl.class, "MSG_StartWebClient", urlString)
+        );
         
         try {
             URL url = new URL(urlString);
