@@ -44,6 +44,7 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
     private static final String JSP_API_DOC = "webapps/tomcat-docs/jspapi";         // NOI18N
     private static final String SERVLET_API_JAR = "common/lib/servlet-api.jar";     // NOI18N
     private static final String SERVLET_API_DOC = "webapps/tomcat-docs/servletapi"; // NOI18N
+    private static final String J2EE_API_DOC    = "docs/j2eeri-1_4-doc-api.zip";    // NOI18N
     
     private static final String ICON = "org/netbeans/modules/tomcat5/resources/tomcat5instance.gif"; // NOI18N
     
@@ -76,7 +77,7 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
             
             File jspDoc = new File(catalinaHome, JSP_API_DOC);
             if (jspDoc == null || !jspDoc.exists()) {
-                jspDoc = InstalledFileLocator.getDefault().locate("docs/jsp20-docs.zip", null, false); // NOI18N
+                jspDoc = InstalledFileLocator.getDefault().locate(J2EE_API_DOC, null, false);
             }
             if (jspDoc != null) {
                 l = new ArrayList();
@@ -96,7 +97,7 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
             
             File servletDoc = new File(catalinaHome, SERVLET_API_DOC);
             if (servletDoc == null || !servletDoc.exists()) {
-                servletDoc = InstalledFileLocator.getDefault().locate("docs/servlet24-docs.zip", null, false); // NOI18N
+                servletDoc = InstalledFileLocator.getDefault().locate(J2EE_API_DOC, null, false);
             }
             if (servletDoc != null) {
                 l = new ArrayList();
