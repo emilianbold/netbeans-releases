@@ -239,7 +239,7 @@ public final class Deployment {
     }
     
     public String getServerDisplayName (String id) {
-        return ServerRegistry.getInstance ().getServer (id).getShortName ();
+        return ServerRegistry.getInstance ().getServer (id).getDisplayName();
     }
     
     public static interface Logger {
