@@ -79,15 +79,19 @@ merging you should set the "key data" on the helpset with the context
 <code>OpenIDE</code> and key <code>mergeIntoMaster</code> to
 <code>Boolean.FALSE</code>.
 
-<p class="nonnormative">Using <code>nbresloc</code> implies that the
+<p>Using <code>nbresloc</code> implies that the
 helpset can be found in the module's classloader, for example in its
 main JAR or in an extension ZIP or JAR referenced via the
 <code>Class-Path</code> manifest attribute. There is a URL protocol
-<code>nbdocs</code> which is similar to <code>nbresloc</code>, but the
-current NetBeans JavaHelp implementation recognizes this URL and permits
-the help set and associated files to reside in a package hierarchy
-underneath the <samp>docs/</samp> folder (of the IDE installation or
-user directory), if not in the module classloader.</p>
+<code>nbdocs</code> which is similar to <code>nbresloc</code> and will load anything it can.
+It also will try to load localized resources using
+<a href="@OPENIDE@/org/openide/modules/InstalledFileLocator.html"><code>InstalledFileLocator</code></a>
+with a prefix of <samp>docs/</samp>.
+<span class="nonnormative">Given the current implementation of the
+NetBeans installation structure, this will permit the help set and
+associated files to reside in a package hierarchy underneath the
+<samp>docs/</samp> folder (of the IDE installation or user directory),
+if not in the module classloader.</span></p>
 
 <p>To add a shortcut to a specific help ID in your help set, there is a different
 XML DTD you can use. Normally such shortcuts would go into the folder
