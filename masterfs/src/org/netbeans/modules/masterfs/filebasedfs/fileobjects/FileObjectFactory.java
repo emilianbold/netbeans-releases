@@ -72,59 +72,65 @@ public final class FileObjectFactory {
 
     }
 
-    private synchronized FileObject findFileObjectImpl(final File file, final List keepIt) {
-        final FileInfo fInfo = new FileInfo(file);
-        FileObject retVal = this.get(file);
+    private  FileObject findFileObjectImpl(final File file, final List keepIt) {
+        FileObject retVal;
+        synchronized (allInstances) {
+            final FileInfo fInfo = new FileInfo(file);
+            retVal = this.get(file);
 
-        if (retVal == null) {
-            final File parent = file.getParentFile();
-            if (parent != null) {
-                FileObject fileObjectImpl = findFileObjectImpl(parent, keepIt);
-                if (!(fileObjectImpl instanceof FolderObj)) return null;
-                assert (fileObjectImpl instanceof FolderObj) : fileObjectImpl.getClass().toString() + " file: " + file.getAbsolutePath() + " parent: " + parent.getAbsolutePath();
-                final FolderObj parentFo = ((FolderObj) fileObjectImpl);
-                if (parentFo != null) {
-                    final ChildrenCache parentChildrenCache = parentFo.getChildrenCache();
-                    final Mutex.Privileged mutexPrivileged = parentChildrenCache.getMutexPrivileged();
+            if (retVal == null) {
+                final File parent = file.getParentFile();
+                if (parent != null) {
+                    FileObject fileObjectImpl = findFileObjectImpl(parent, keepIt);
+                    if (!(fileObjectImpl instanceof FolderObj)) return null;
+                    assert (fileObjectImpl instanceof FolderObj) : fileObjectImpl.getClass().toString() + " file: " + file.getAbsolutePath() + " parent: " + parent.getAbsolutePath();
+                    final FolderObj parentFo = ((FolderObj) fileObjectImpl);
+                    if (parentFo != null) {
+                        final ChildrenCache parentChildrenCache = parentFo.getChildrenCache();
+                        final Mutex.Privileged mutexPrivileged = parentChildrenCache.getMutexPrivileged();
 
-                    mutexPrivileged.enterReadAccess();
-                    try {
-                        final FileNaming child = parentChildrenCache.getChild(file.getName(), true);
+                        mutexPrivileged.enterReadAccess();
+                        try {
+                            final FileNaming child = parentChildrenCache.getChild(file.getName(), true);
 
-                        if (child != null) {
-                            assert child.getFile().equals(file) : (child.getFile().getAbsolutePath() + " | " + file.getAbsolutePath());//NOI18N
-                            retVal = this.create(fInfo);
-                            assert retVal != null : parent.getAbsolutePath();
-                        } else {
-                            //TODO: find out why is this code here
-                            parentChildrenCache.getChild(file.getName(), false);
+                            if (child != null) {
+                                assert child.getFile().equals(file) : (child.getFile().getAbsolutePath() + " | " + file.getAbsolutePath());//NOI18N
+                                retVal = this.create(fInfo);
+                                assert retVal != null : parent.getAbsolutePath();
+                            } else {
+                                //TODO: find out why is this code here
+                                parentChildrenCache.getChild(file.getName(), false);
+                            }
+                        } finally {
+                            mutexPrivileged.exitReadAccess();
                         }
-                    } finally {
-                        mutexPrivileged.exitReadAccess();
                     }
+
+                    assert retVal != null || !fInfo.isConvertibleToFileObject() : (fInfo.getFile().getAbsolutePath() + " isConvertible:   " + fInfo.isConvertibleToFileObject()) ;//NOI18N
+                    //return null;
+
+                } else {
+                    retVal = this.getRoot();
                 }
-
-                assert retVal != null || !fInfo.isConvertibleToFileObject() : (fInfo.getFile().getAbsolutePath() + " isConvertible:   " + fInfo.isConvertibleToFileObject()) ;//NOI18N
-                //return null;
-
-            } else {
-                retVal = this.getRoot();
+                assert retVal != null || !fInfo.isConvertibleToFileObject() : (file.getAbsolutePath() + " isConvertible:   " + !fInfo.isConvertibleToFileObject());//NOI18N
             }
-            assert retVal != null || !fInfo.isConvertibleToFileObject() : (file.getAbsolutePath() + " isConvertible:   " + !fInfo.isConvertibleToFileObject());//NOI18N
+            keepIt.add(retVal);
         }
-        keepIt.add(retVal);
         return retVal;
     }
 
 
-    public final synchronized BaseFileObj get(final File file) {
-        final Object value = allInstances.get(NamingFactory.createID(file));
-        Reference ref = null;
-        ref = (Reference) (value instanceof Reference ? value : null);
-        ref = (ref == null && value instanceof List ? FileObjectFactory.getReference((List) value, file) : ref);
+    public final  BaseFileObj get(final File file) {
+        final Object o;
+        synchronized (allInstances) {
+            final Object value = allInstances.get(NamingFactory.createID(file));
+            Reference ref = null;
+            ref = (Reference) (value instanceof Reference ? value : null);
+            ref = (ref == null && value instanceof List ? FileObjectFactory.getReference((List) value, file) : ref);
 
-        final Object o = (ref != null) ? ref.get() : null;
-        assert (o == null || o instanceof BaseFileObj);
+            o = (ref != null) ? ref.get() : null;
+            assert (o == null || o instanceof BaseFileObj);
+        }
 
         return (BaseFileObj) o;
     }
@@ -181,24 +187,26 @@ public final class FileObjectFactory {
     }
 
 
-    private synchronized BaseFileObj putInCache(final BaseFileObj realRoot, final Integer id) {
-        final WeakReference value = new WeakReference(realRoot);
-        final Object instanceInCache = allInstances.put(id, value);
+    private BaseFileObj putInCache(final BaseFileObj realRoot, final Integer id) {
+        synchronized (allInstances) {
+            final WeakReference value = new WeakReference(realRoot);
+            final Object instanceInCache = allInstances.put(id, value);
 
-        final boolean isList = (instanceInCache instanceof List);
-        if (instanceInCache != null) {
-            if (!isList) {
-                assert (instanceInCache instanceof WeakReference);
-                final Reference ref = (Reference) ((instanceInCache instanceof WeakReference) ? instanceInCache : null);
-                final boolean keepRef = (ref != null && ref.get() == null);
-                if (!keepRef) {
-                    final List l = new ArrayList();
-                    l.add(instanceInCache);
-                    l.add(value);
-                    allInstances.put(id, l);
+            final boolean isList = (instanceInCache instanceof List);
+            if (instanceInCache != null) {
+                if (!isList) {
+                    assert (instanceInCache instanceof WeakReference);
+                    final Reference ref = (Reference) ((instanceInCache instanceof WeakReference) ? instanceInCache : null);
+                    final boolean keepRef = (ref != null && ref.get() == null);
+                    if (!keepRef) {
+                        final List l = new ArrayList();
+                        l.add(instanceInCache);
+                        l.add(value);
+                        allInstances.put(id, l);
+                    }
+                } else {
+                    ((List) instanceInCache).add(value);
                 }
-            } else {
-                ((List) instanceInCache).add(value);
             }
         }
 
