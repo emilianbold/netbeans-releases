@@ -1,2 +1,2 @@
-html/**/src/**/Bundle*.properites
+html/**/src/**/Bundle*.properties
 html/**/src/**/resources/**/*.html
