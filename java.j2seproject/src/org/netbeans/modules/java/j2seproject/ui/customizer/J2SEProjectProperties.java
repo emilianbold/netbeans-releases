@@ -33,6 +33,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -40,6 +41,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.MutexException;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -79,6 +81,7 @@ public class J2SEProjectProperties {
     public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes";
     public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir";
     public static final String NO_DEPENDENCIES="no.dependencies";
+    public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath";
     
     
     public static final String JAVADOC_PRIVATE="javadoc.private";
@@ -138,6 +141,7 @@ public class J2SEProjectProperties {
         new PropertyDescriptor( APPLICATION_ARGS, PRIVATE, STRING_PARSER ),          
         new PropertyDescriptor( NO_DEPENDENCIES, PROJECT, INVERSE_BOOLEAN_PARSER ),
         new PropertyDescriptor( JAVA_PLATFORM, PROJECT, PLATFORM_PARSER ),
+        new PropertyDescriptor( DEBUG_TEST_CLASSPATH, PROJECT, PATH_PARSER ),
         
         new PropertyDescriptor( JAVADOC_PRIVATE, PROJECT, BOOLEAN_PARSER ),
         new PropertyDescriptor( JAVADOC_NO_TREE, PROJECT, INVERSE_BOOLEAN_PARSER ),
@@ -366,7 +370,8 @@ public class J2SEProjectProperties {
      */
     private void resolveProjectDependencies() {
     
-        String allPaths[] = { JAVAC_CLASSPATH,  RUN_CLASSPATH, DEBUG_CLASSPATH, RUN_TEST_CLASSPATH };
+        String allPaths[] = { JAVAC_CLASSPATH,  RUN_CLASSPATH, DEBUG_CLASSPATH, RUN_TEST_CLASSPATH, 
+            DEBUG_TEST_CLASSPATH, JAVAC_TEST_CLASSPATH};
         
         // Create a set of old and new artifacts.
         Set oldArtifacts = new HashSet();
@@ -377,46 +382,96 @@ public class J2SEProjectProperties {
             // Get original artifacts
             List oldList = (List)pi.getOldValue();
             if ( oldList != null ) {
-                for( Iterator it = oldList.iterator(); it.hasNext(); ) {
-                    VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
-                    if ( vcpi.getType() == VisualClassPathItem.TYPE_ARTIFACT ) {
-                        oldArtifacts.add( vcpi );
-                    }
-                }
+                oldArtifacts.addAll(oldList);
             }
             
             // Get artifacts after the edit
             List newList = (List)pi.getValue();
             if ( newList != null ) {
-                for( Iterator it = newList.iterator(); it.hasNext(); ) {
-                    VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
-                    if ( vcpi.getType() == VisualClassPathItem.TYPE_ARTIFACT ) {
-                        newArtifacts.add( vcpi );
-                    }
-                }
+                newArtifacts.addAll(newList);
             }
                         
         }
-                
+
         // Create set of removed artifacts and remove them
         Set removed = new HashSet( oldArtifacts );
         removed.removeAll( newArtifacts );
+        Set added = new HashSet(newArtifacts);
+        added.removeAll(oldArtifacts);
+        
+        // 1. first remove all project references. The method will modify
+        // project property files, so it must be done separately
         for( Iterator it = removed.iterator(); it.hasNext(); ) {
             VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
-            System.out.println( "removing reference " + vcpi.getRaw() );
-            refHelper.destroyForeignFileReference( vcpi.getRaw() );
+            if ( vcpi.getType() == VisualClassPathItem.TYPE_ARTIFACT ||
+                    vcpi.getType() == VisualClassPathItem.TYPE_JAR ) {
+                refHelper.destroyForeignFileReference(vcpi.getRaw());
+            }
         }
-                
-        // Create set of newly added artifacts and add them
-        /*
-        Set added = new HashSet( newArtifacts );
-        added.removeAll( oldArtifacts );
+        
+        // 2. now read project.properties and modify rest
+        EditableProperties ep = antProjectHelper.getProperties( PROJECT );
+        boolean changed = false;
+        
+        for( Iterator it = removed.iterator(); it.hasNext(); ) {
+            VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
+            if (vcpi.getType() == VisualClassPathItem.TYPE_LIBRARY) {
+                // remove helper property pointing to library jar if there is any
+                String prop = vcpi.getRaw();
+                prop = prop.substring(2, prop.length()-1);
+                ep.remove(prop);
+                changed = true;
+            }
+        }
+        File projDir = FileUtil.toFile(antProjectHelper.getProjectDirectory());
         for( Iterator it = added.iterator(); it.hasNext(); ) {
             VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
-            refHelper.destroyForeignFileReference( vcpi.getRaw() );
+            if (vcpi.getType() == VisualClassPathItem.TYPE_LIBRARY) {
+                // add property to project.properties pointing to relativized 
+                // library jar(s) if possible
+                String prop = vcpi.getRaw();
+                prop = prop.substring(2, prop.length()-1);
+                String value = relativizeLibraryClasspath(prop, projDir);
+                if (value != null) {
+                    ep.setProperty(prop, value);
+                    ep.setComment(prop, new String[]{
+                        "# Property "+prop+" is set here just to make sharing of project simpler.", 
+                        "# The library definition has always preference over this property."}, false);
+                    changed = true;
+                }
+            }
         }
-        */
-                
+        if (changed) {
+            antProjectHelper.putProperties(PROJECT, ep);
+        }
+    }
+    
+    /**
+     * Tokenize library classpath and try to relativize all the jars.
+     * @param property library property name ala "libs.someLib.classpath"
+     * @param projectDir project dir for relativization
+     * @return relativized library classpath or null if some jar is not collocated
+     */
+    private String relativizeLibraryClasspath(String property, File projectDir) {
+        String value = PropertyUtils.getGlobalProperties().getProperty(property);
+        String[] paths = PropertyUtils.tokenizePath(value);
+        StringBuffer sb = new StringBuffer();
+        for (int i=0; i<paths.length; i++) {
+            File f = antProjectHelper.resolveFile(paths[i]);
+            if (CollocationQuery.areCollocated(f, projectDir)) {
+                sb.append(PropertyUtils.relativizeFile(projectDir, f));
+            } else {
+                return null;
+            }
+            if (i+1<paths.length) {
+                sb.append(File.pathSeparatorChar);
+            }
+        }
+        if (sb.length() == 0) {
+            return null;
+        } else {
+            return sb.toString();
+        }
     }
         
     private class PropertyInfo {
@@ -596,8 +651,8 @@ public class J2SEProjectProperties {
                     else {
                         // Standalone jar or property
                         String eval = evaluator.getProperty(getAntPropertyName(pe[i]));
-                        String[] tokenizedPath = PropertyUtils.tokenizePath( raw );                                                
-                        cpItem = new VisualClassPathItem( tokenizedPath, VisualClassPathItem.TYPE_JAR, pe[i], eval );
+                        File f = antProjectHelper.resolveFile(eval);
+                        cpItem = new VisualClassPathItem( f, VisualClassPathItem.TYPE_JAR, pe[i], eval );
                     }
                 }
                 if (cpItem!=null) {
@@ -620,18 +675,15 @@ public class J2SEProjectProperties {
                                         
                     case VisualClassPathItem.TYPE_JAR:
                         String raw = vcpi.getRaw();
-                        
-                        if ( raw == null ) {
+                        if (raw == null) {
                             // New file
                             File file = (File)vcpi.getObject();
-                            // XXX Relativize using collocation query
-                            sb.append( file.getPath() );
-                        }
-                        else {
+                            String reference = refHelper.createForeignFileReference(file, AntArtifact.TYPE_JAR);
+                            sb.append(reference);
+                        } else {
                             // Existing property
                             sb.append( raw );
                         }
-                                                
                         break;
                     case VisualClassPathItem.TYPE_LIBRARY:
                         sb.append(vcpi.getRaw());

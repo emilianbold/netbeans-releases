@@ -33,6 +33,9 @@
       </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="libraryName">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints gridX="3" gridY="0" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="12" insetsLeft="6" insetsBottom="2" insetsRight="12" anchor="18" weightX="2.0" weightY="0.0"/>

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
@@ -183,11 +184,13 @@ public final class ReferenceHelper {
                     throw new IllegalArgumentException("No project associated with " + artifact); // NOI18N
                 }
                 // Set up the raw reference.
-                String forProjName = ProjectUtils.getInformation(forProj).getName();
-                // XXX need to uniquify it! If there is already a reference using that name,
-                // but it refers to a different project, choose a new name.
                 File forProjDir = FileUtil.toFile(forProj.getProjectDirectory());
                 assert forProjDir != null : forProj.getProjectDirectory();
+                String projName = ProjectUtils.getInformation(forProj).getName();
+                String forProjName = findReferenceID(projName, "project.", forProjDir.getAbsolutePath());
+                if (forProjName == null) {
+                    forProjName = generateUniqueID(projName, "project.", forProjDir.getAbsolutePath());
+                }
                 File scriptFile = artifact.getScriptLocation();
                 URI scriptLocation = forProjDir.toURI().relativize(scriptFile.toURI());
                 RawReference ref = new RawReference(forProjName, artifact.getType(), scriptLocation, artifact.getTargetName(), artifact.getCleanTargetName());
@@ -405,6 +408,43 @@ public final class ReferenceHelper {
     }
     
     /**
+     * Remove reference to a file.
+     * <p>
+     * If the reference does not exist, nothing is done.
+     * <p>
+     * Acquires write access.
+     * @param fileName file reference as created by 
+     *    {@link #createForeignFileReference(File, String)}
+     * @return true if the reference was actually removed; otherwise false
+     */
+    public boolean removeReference(final String fileReference) {
+        return ((Boolean)ProjectManager.mutex().writeAccess(new Mutex.Action() {
+            public Object run() {
+                boolean success = false;
+                // Note: try to delete obsoleted properties from both project.properties
+                // and private.properties, just in case.
+                String[] PROPS_PATHS = {
+                    AntProjectHelper.PROJECT_PROPERTIES_PATH,
+                    AntProjectHelper.PRIVATE_PROPERTIES_PATH,
+                };
+                String refProp = fileReference;
+                if (refProp.startsWith("${") && refProp.endsWith("}")) {
+                    refProp = refProp.substring(2, refProp.length()-1);
+                }
+                for (int i = 0; i < PROPS_PATHS.length; i++) {
+                    EditableProperties props = h.getProperties(PROPS_PATHS[i]);
+                    if (props.containsKey(refProp)) {
+                        props.remove(refProp);
+                        h.putProperties(PROPS_PATHS[i], props);
+                        success = true;
+                    }
+                }
+                return Boolean.valueOf(success);
+            }
+        })).booleanValue();
+    }
+    
+    /**
      * Remove a raw reference to an artifact coming from a foreign project.
      * Does not attempt to manipulate backreferences in the foreign project
      * nor project properties.
@@ -546,13 +586,10 @@ public final class ReferenceHelper {
      * {@link AntArtifactQuery#findArtifactFromFile}, of the expected type
      * and associated with a particular project,
      * the behavior is identical to {@link #createForeignFileReference(AntArtifact)}.
-     * <p>
-     * Otherwise, a simple path to the foreign file is created; it will
+     * Otherwise, a reference for the file is created. The file path will
      * be relative in case {@link CollocationQuery#areCollocated} says that
      * the file is collocated with this project's main directory, else it
      * will be an absolute path.
-     * (XXX if not collocated, should perhaps create a private.properties
-     * entry for the absolute path and refer to that instead?)
      * <p>
      * Acquires write access.
      * @param file a file to refer to (need not currently exist)
@@ -574,19 +611,89 @@ public final class ReferenceHelper {
                         throw new AssertionError(iae);
                     }
                 } else {
+                    String propertiesFile;
+                    String path;
                     File myProjDir = FileUtil.toFile(AntBasedProjectFactorySingleton.getProjectFor(h).getProjectDirectory());
                     if (CollocationQuery.areCollocated(myProjDir, file)) {
-                        String path = PropertyUtils.relativizeFile(myProjDir, file);
+                        propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
+                        path = PropertyUtils.relativizeFile(myProjDir, file);
                         assert path != null : "expected relative path from " + myProjDir + " to " + file;
-                        return path;
                     } else {
-                        // XXX should perhaps update private.properties with a placeholder property
-                        // and return a reference to that, for maximum portability
-                        return file.getAbsolutePath();
+                        propertiesFile = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
+                        path = file.getAbsolutePath();
                     }
+                    EditableProperties props = h.getProperties(propertiesFile);
+                    String prop = findReferenceID(file.getName(), "file.reference.", file.getAbsolutePath());
+                    if (prop == null) {
+                        prop = generateUniqueID(file.getName(), "file.reference.", file.getAbsolutePath()); // NOI18N
+                    }
+                    if (!path.equals(props.getProperty("file.reference."+prop))) {
+                        props.setProperty("file.reference."+prop, path);
+                        h.putProperties(propertiesFile, props);
+                    }
+                    return "${file.reference."+prop+'}';
                 }
             }
         });
+    }
+
+    /**
+     * Find reference ID (e.g. something you can then pass to RawReference 
+     * as foreignProjectName) for the given property base name, prefix and path.
+     * @param property project name or jar filename
+     * @param prefix prefix used for reference, i.e. "project." for project 
+     *    reference or "file.reference." for file reference
+     * @param path absolute filename the reference points to
+     * @return found reference ID or null
+     */
+    private String findReferenceID(String property, String prefix, String path) {
+        Map m = h.getStandardPropertyEvaluator().getProperties();
+        Iterator it = m.keySet().iterator();
+        while (it.hasNext()) {
+            String key = (String)it.next();
+            if (key.startsWith(prefix+property)) {
+                String v = h.resolvePath((String)m.get(key));
+                if (path.equals(v)) {
+                    return key.substring(prefix.length());
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Find reference ID for the given AntArtifact. See also 
+     * {@link #findReferenceID(String, String, String)}.
+     */
+    private String findReferenceID(AntArtifact artifact) {
+        Project proj = artifact.getProject();
+        if (proj == null) {
+            throw new IllegalArgumentException("No project associated with " + artifact); // NOI18N
+        }
+        File projDir = FileUtil.toFile(proj.getProjectDirectory());
+        assert projDir != null : proj.getProjectDirectory();
+        return findReferenceID(ProjectUtils.getInformation(proj).getName(), "project.", projDir.getAbsolutePath());
+    }
+
+    /**
+     * Generate unique reference ID for the given property base name, prefix 
+     * and path. See also {@link #findReferenceID(String, String, String)}.
+     * @param property project name or jar filename
+     * @param prefix prefix used for reference, i.e. "project." for project 
+     *    reference or "file.reference." for file reference
+     * @param path absolute filename the reference points to
+     * @return generated unique reference ID
+     */
+    private String generateUniqueID(String property, String prefix, String value) {
+        PropertyEvaluator pev = h.getStandardPropertyEvaluator();
+        if (pev.getProperty(prefix+property) == null) {
+            return property;
+        }
+        int i = 1;
+        while (pev.getProperty(prefix+property+"-"+i) != null) {
+            i++;
+        }
+        return property+"-"+i;
     }
     
     /**
@@ -601,12 +708,12 @@ public final class ReferenceHelper {
      */
     public String createForeignFileReference(AntArtifact artifact) throws IllegalArgumentException {
         addReference(artifact);
-        // XXX need to take uniquified foreign project name from addReference somehow
-        String forProjName = ProjectUtils.getInformation(artifact.getProject()).getName();
-        return "${reference." + forProjName + '.' + artifact.getTargetName() + '}'; // NOI18N
+        String projID = findReferenceID(artifact);
+        return "${reference." + projID + '.' + artifact.getTargetName() + '}'; // NOI18N
     }
     
     private static final Pattern FOREIGN_FILE_REFERENCE = Pattern.compile("\\$\\{reference\\.([^.${}]+)\\.([^.${}]+)\\}"); // NOI18N
+    private static final Pattern FOREIGN_PLAIN_FILE_REFERENCE = Pattern.compile("\\$\\{file\\.reference\\.([^${}]+)\\}"); // NOI18N
     
     /**
      * Try to find an <code>AntArtifact</code> object corresponding to a given
@@ -635,15 +742,16 @@ public final class ReferenceHelper {
     /**
      * Remove a reference to a foreign file from the project.
      * If the passed string consists of an Ant property reference corresponding to
-     * a known inter-project reference, that reference is removed using
-     * {@link #removeReference}. Since this would break any other identical foreign
+     * a known inter-project reference created by 
+     * {@link #createForeignFileReference(AntArtifact)} or file reference created by
+     * {@link #createForeignFileReference(File, String)}, that reference is removed using
+     * {@link #removeReference(String, String)} or {@link #removeReference(String)}.
+     * Since this would break any other identical foreign
      * file references present in the project, you should first confirm that this
      * reference was the last one of its kind (by string match).
      * <p>
      * If the passed string is anything else (i.e. a plain file path, relative or
      * absolute), nothing is done.
-     * (XXX if dealing with absolute plain file paths specially using private.properties,
-     * deal with that here too)
      * <p>
      * Acquires write access.
      * @param reference an Ant-interpretable foreign file reference as created e.g.
@@ -656,6 +764,12 @@ public final class ReferenceHelper {
             String forProjName = m.group(1);
             String targetName = m.group(2);
             removeReference(forProjName, targetName);
+            return;
+        }
+        m = FOREIGN_PLAIN_FILE_REFERENCE.matcher(reference);
+        if (m.matches()) {
+            removeReference(reference);
+            return;
         }
     }
     

@@ -429,7 +429,7 @@ public class PropertyUtils {
      *         just <samp>.</samp> in case the paths are the same
      * @throws IllegalArgumentException if the basedir is known to be a file and not a directory
      */
-    /* public? */ static String relativizeFile(File basedir, File file) {
+    public static String relativizeFile(File basedir, File file) {
         if (basedir.isFile()) {
             throw new IllegalArgumentException("Cannot relative w.r.t. a data file " + basedir); // NOI18N
         }

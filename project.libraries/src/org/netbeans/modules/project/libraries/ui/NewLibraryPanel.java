@@ -86,7 +86,12 @@ public class NewLibraryPanel extends javax.swing.JPanel {
         else {
             valid = LibrariesCustomizer.isValidName (model, name);
             if (valid) {
-                message = " ";   //NOI18N
+                if (isReasonableAntProperty(name)) {
+                    message = " ";   //NOI18N
+                } else {
+                    valid = false;
+                    message = NbBundle.getMessage(NewLibraryPanel.class,"ERR_InvalidCharacters");
+                }
             }
             else {
                 message = MessageFormat.format(NbBundle.getMessage(NewLibraryPanel.class, "ERR_ExistingName"),
@@ -95,6 +100,11 @@ public class NewLibraryPanel extends javax.swing.JPanel {
         }
         this.okOption.setEnabled (valid);
         this.status.setText(message);
+    }
+    
+    private boolean isReasonableAntProperty(String name) {
+        // XXX: there will be a method in PropertyUtils which will obsolete this one.
+        return name.indexOf(' ') == -1;
     }
     
     /** This method is called from within the constructor to
