@@ -118,7 +118,8 @@ final public class GridBagCustomizer extends JPanel implements Customizer
 
         if (formListener == null) {
             formListener = new FormListener();
-            formModel.addFormModelListener(new FormModelWeakListener(formListener));
+            formModel.addFormModelListener(
+                new FormModelWeakListener(formListener, formModel));
         }
 
         getAccessibleContext().setAccessibleDescription(GridBagLayoutSupport.getBundleHack().getString("ACSD_GridBagCustomizer"));
@@ -375,9 +376,18 @@ final public class GridBagCustomizer extends JPanel implements Customizer
     // -----------------------------------------------------------------------------
     // Form listener implementation
 
-    class FormListener extends FormModelAdapter {
-        public void formChanged(FormModelEvent e) {
+    class FormListener implements FormModelListener {
+        public void formChanged(FormModelEvent[] events) {
             if (GridBagCustomizer.this.isShowing()) {
+                boolean modifying = false;
+                for (int i=0; i < events.length; i++)
+                    if (events[i].isModifying()) {
+                        modifying = true;
+                        break;
+                    }
+                if (!modifying)
+                    return;
+
                 // we perform update after designer is updated which takes
                 // three dispatch events - this is only temporary patch
                 // (very very very ugly :-)

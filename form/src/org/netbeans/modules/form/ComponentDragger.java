@@ -245,10 +245,6 @@ class ComponentDragger
         }
         // now we have lists of components and constraints in right order
 
-        // start compound undoable edit
-        boolean compoundUndoableEditStarted = formModel.isUndoRedoRecording()
-                                              && formModel.startCompoundEdit();
-
         // remove components from source containers
         for (int i=0; i < n; i++) {
             RADVisualComponent metacomp = (RADVisualComponent) newComponents.get(i);
@@ -326,7 +322,7 @@ class ComponentDragger
         else compsMovedWithinTarget = new RADVisualComponent[0];
 
         // setup undoable edit
-        if (compoundUndoableEditStarted) {
+        if (undoRedoOn) {
             DropUndoableEdit dropUndo = new DropUndoableEdit();
             dropUndo.targetContainer = targetMetaContainer;
             dropUndo.targetComponentsBeforeMove = originalComponents;
@@ -342,34 +338,16 @@ class ComponentDragger
         // finish undoable edit
         if (undoRedoOn) // turn on undo/redo monitoring again
             formModel.setUndoRedoRecording(true);
-        if (compoundUndoableEditStarted)
-            formModel.endCompoundEdit();
 
-        // select dropped components in designer
-        if (formDesigner.getSelectedComponents().size() == 0) {
-            for (int i=0; i < selectedComponents.length; i++)
-                formDesigner.addComponentToSelection(selectedComponents[i]);
-        }
+        // select dropped components in designer (after everything updates)
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                formDesigner.setSelectedComponents(selectedComponents);
+            }
+        });
     }
 
     // ------------
-
-    // moves components to/within target container
-    private void moveComponents(RADVisualComponent[] components,
-                                LayoutConstraints[] constraints)
-    {
-        // remember current layout configuration of target container
-
-        // start compound undoable edit
-
-        // remove components comming from other containers from their
-        // containers, remember stored constraints
-
-        // turn off undo/redo monitoring in FormModel as we provide our own
-        // undoable edit for second part of the operation
-
-        // clear layout of target container
-    }
 
     private boolean computeConstraints(Point p, List constraints, List indices) {
         if (selectedComponents == null || selectedComponents.length == 0)

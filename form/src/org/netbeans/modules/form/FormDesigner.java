@@ -71,7 +71,6 @@ public class FormDesigner extends TopComponent
                       MenuComponent.class },
         VisualReplicator.ATTACH_FAKE_PEERS | VisualReplicator.DISABLE_FOCUSING);
 
-    private VisualUpdater updater = new VisualUpdater();
     private boolean updateTaskPlaced;
 
     private final ArrayList selectedComponents = new ArrayList();
@@ -187,8 +186,7 @@ public class FormDesigner extends TopComponent
     }
 
     public UndoRedo getUndoRedo() {
-        UndoRedo ur = formEditorSupport != null ?
-                          formEditorSupport.getFormUndoManager() : null;
+        UndoRedo ur = formModel != null ? formModel.getUndoRedoManager() : null;
         return ur != null ? ur : super.getUndoRedo();
     }
 
@@ -296,8 +294,19 @@ public class FormDesigner extends TopComponent
     }
 
     void setSelectedComponent(RADComponent metacomp) {
-        clearSelectionImpl();
+        selectedComponents.clear();
         addComponentToSelectionImpl(metacomp);
+        updateActivatedNodes();
+    }
+
+    void setSelectedComponents(RADComponent[] metacomps) {
+        selectedComponents.clear();
+        for (int i=0; i < metacomps.length; i++) {
+            selectedComponents.add(metacomps[i]);
+            if (metacomps[i] instanceof RADVisualComponent)
+                ensureComponentIsShown((RADVisualComponent)metacomps[i]);
+        }
+        handleLayer.repaint();
         updateActivatedNodes();
     }
 
@@ -508,7 +517,9 @@ public class FormDesigner extends TopComponent
 
     private void setDesignerSize(Dimension size) {
         RADComponent metacomp = formModel.getTopRADComponent();
-        if (metacomp != null)
+        if (metacomp instanceof RADVisualFormContainer)
+            ((RADVisualFormContainer)metacomp).setDesignerSize(size);
+        else if (metacomp != null)
             metacomp.setAuxValue(PROP_DESIGNER_SIZE, size);
     }
 
@@ -558,19 +569,9 @@ public class FormDesigner extends TopComponent
     }
 
     void updateWholeDesigner() {
-        placeUpdateTask(UpdateTask.ALL, null);
+        if (formModelListener != null)
+            formModelListener.formChanged(null);
         updateName(formModel.getName());
-    }
-
-    void placeUpdateTask(int type, FormModelEvent event) {
-        if (formModel == null)
-            return;
-
-        updater.addTask(type, event);
-        if (!updateTaskPlaced) {
-            updateTaskPlaced = true;
-            SwingUtilities.invokeLater(updater);
-        }
     }
 
     public static Container createFormView(final RADVisualComponent metacomp,
@@ -653,7 +654,6 @@ public class FormDesigner extends TopComponent
                 formModel.getFormEventHandlers().addEventHandler(event,
                                                                  eventName,
                                                                  bodyText);
-                formModel.fireFormChanged();
             } else {
                 handler.setHandlerText(bodyText);
             }
@@ -773,228 +773,141 @@ public class FormDesigner extends TopComponent
     // -----------
     // innerclasses
 
-    // Listener on FormModel - ensures visual updating by creating
-    // update tasks (managed by VisualUpdater).
-    class FormListener extends FormModelAdapter {
+    // Listener on FormModel - ensures updating of designer view.
+    private class FormListener implements FormModelListener, Runnable {
+        private FormModelEvent[] events;
 
-        public void containerLayoutExchanged(FormModelEvent e) {
-            placeUpdateTask(UpdateTask.LAYOUT, e);
-        }
+        public void formChanged(FormModelEvent[] events) {
+            this.events = events; // we expect invoking in one thread...
 
-        public void containerLayoutChanged(FormModelEvent e) {
-            placeUpdateTask(UpdateTask.LAYOUT, e);
-        }
-
-        public void componentLayoutChanged(FormModelEvent e) {
-            if (e.getComponent() instanceof RADVisualComponent)
-                placeUpdateTask(UpdateTask.LAYOUT, e);
-        }
-
-        public void componentAddedToContainer(FormModelEvent e) {
-            if (isInDesignedTree(e.getComponent()))
-                placeUpdateTask(UpdateTask.ADD, e);
-        }
-
-        public void componentRemovedFromContainer(FormModelEvent e) {
-            RADComponent removed = e.getComponent();
-
-            // test whether topDesignComponent or some of its parents
-            // were not removed - then whole designer would be re-created
-            if (removed instanceof RADVisualComponent
-                && (removed == topDesignComponent
-                    || removed.isParentComponent(topDesignComponent)))
-            {
-                resetTopDesignComponent(false);
-                placeUpdateTask(UpdateTask.ALL, null);
+            boolean lafBlock;
+            if (events == null) {
+                lafBlock = true;
             }
-            else
-                placeUpdateTask(UpdateTask.REMOVE, e);
-
-            if (isComponentSelected(removed))
-                removeComponentFromSelection(removed);
-        }
-
-        public void componentsReordered(FormModelEvent e) {
-            placeUpdateTask(UpdateTask.ORDER, e);
-        }
-
-        public void componentPropertyChanged(FormModelEvent e) {
-            placeUpdateTask(UpdateTask.PROPERTY, e);
-        }
-
-        public void syntheticPropertyChanged(FormModelEvent e) {
-            if (PROP_DESIGNER_SIZE.equals(e.getPropertyName()))
-                fdPanel.updatePanel(getDesignerSize());
-        }
-        
-    }
-
-    // --------
-
-    // Visual updater - collects and performs update tasks that in turn call
-    // individual update operations.
-    class VisualUpdater implements Runnable {
-
-        ArrayList updateTasks;
-
-        public void run() {
-            if (updateTaskPlaced && updateTasks != null) {
-                updateTaskPlaced = false;
-                performTasks();
-            }
-        }
-
-        synchronized public void addTask(int type, FormModelEvent event) {
-            if (updateTasks == null)
-                updateTasks = new ArrayList();
-            updateTasks.add(new UpdateTask(type, event));
-        }
-
-        synchronized public void performTasks() {
-            int count = updateTasks.size();
-            if (count <= 0)
-                return;
-
-            // analyze updates
-            boolean[] useless = new boolean[count];
-            for (int i=count-1; i > 0; i--) {
-                UpdateTask itask = (UpdateTask) updateTasks.get(i);
-                for (int j=i-1; j >= 0; j--) {
-                    UpdateTask jtask = (UpdateTask) updateTasks.get(j);
-                    if (itask.cancelsPreviousTask(jtask))
-                        useless[j] = true;
-                }
-            }
-
-            // extract valid updates
-            boolean lafBlock = false;
-            final java.util.List tasks = new ArrayList(count);
-            for (int i=0; i < count; i++)
-                if (!useless[i]) {
-                    UpdateTask task = (UpdateTask) updateTasks.get(i);
-                    tasks.add(task);
-                    if (task.type == UpdateTask.ALL
-                            || task.type == UpdateTask.ADD)
+            else {
+                lafBlock = false;
+                boolean modifying = false;
+                for (int i=0; i < events.length; i++) {
+                    FormModelEvent ev = events[i];
+                    if (ev.isModifying())
+                        modifying = true;
+                    if (ev.getChangeType() == FormModelEvent.COMPONENT_ADDED
+                        && ev.getCreatedDeleted())
+                    {
                         lafBlock = true;
+                        break;
+                    }
                 }
+                if (!modifying)
+                    return;
+            }
 
-            updateTasks = null;
-
-            if (lafBlock) { // perform update with real LAF defaults
+            if (lafBlock) { // Look&Feel UI defaults remapping needed
                 try {
                     FormLAF.executeWithLookAndFeel(
                         UIManager.getLookAndFeel().getClass().getName(),
                         new Mutex.ExceptionAction () {
                             public Object run() throws Exception {
-                                for (Iterator it=tasks.iterator(); it.hasNext(); )
-                                    ((UpdateTask)it.next()).performUpdate();
+                                performUpdates();
                                 return null;
+                            }
                         }
-                    });
+                    );
                 }
-                catch (Exception ex) { // no exception should occur
+                catch (Exception ex) { // no exceptions expected
                     ex.printStackTrace();
                 }
             }
-            else // perform the update directly, without real LAF defaults
-                for (Iterator it=tasks.iterator(); it.hasNext(); )
-                    ((UpdateTask)it.next()).performUpdate();
+            else if (!EventQueue.isDispatchThread()) {
+                try {
+                    EventQueue.invokeAndWait(this);
+                }
+                catch (Exception ex) { // ignore
+                    ex.printStackTrace();
+                }
+            }
+            else performUpdates();
+        }
 
-            revalidate();
-            repaint();
+        public void run() {
+            performUpdates();
+        }
+
+        private void performUpdates() {
+            if (events == null) {
+                componentLayer.removeAll();
+                replicator.setTopMetaComponent(topDesignComponent);
+                Component formClone = (Component) replicator.createClone();
+                if (formClone != null) {
+                    formClone.setVisible(true);
+                    componentLayer.add(formClone, BorderLayout.CENTER);
+                }
+                updateName(formModel.getName());
+                return;
+            }
+
+            FormModelEvent[] events = this.events;
+            this.events = null;
+
+            boolean updateDone = false;
+
+            for (int i=0; i < events.length; i++) {
+                FormModelEvent ev = events[i];
+                int type = ev.getChangeType();
+
+                if (type == FormModelEvent.CONTAINER_LAYOUT_EXCHANGED
+                    || type == FormModelEvent.CONTAINER_LAYOUT_CHANGED
+                    || type == FormModelEvent.COMPONENT_LAYOUT_CHANGED)
+                {
+                    replicator.updateContainerLayout((RADVisualContainer)
+                                                     ev.getContainer());
+                    updateDone = true;
+                }
+                else if (type == FormModelEvent.COMPONENT_ADDED) {
+                    replicator.updateAddedComponents(ev.getContainer());
+                    updateDone = true;
+                }
+                else if (type == FormModelEvent.COMPONENT_REMOVED) {
+                    RADComponent removed = ev.getComponent();
+
+                    // if the top designed component (or some of its parents)
+                    // was removed then whole designer must be recreated
+                    if (removed instanceof RADVisualComponent
+                        && (removed == topDesignComponent
+                            || removed.isParentComponent(topDesignComponent)))
+                    {
+                        resetTopDesignComponent(false);
+                        updateWholeDesigner();
+                        return;
+                    }
+                    else {
+                        replicator.removeComponent(ev.getComponent(),
+                                                   ev.getContainer());
+                        updateDone = true;
+                    }
+                }
+                else if (type == FormModelEvent.COMPONENTS_REORDERED) {
+                    replicator.reorderComponents(ev.getContainer());
+                    updateDone = true;
+                }
+                else if (type == FormModelEvent.COMPONENT_PROPERTY_CHANGED) {
+                    replicator.updateComponentProperty(
+                                 ev.getComponentProperty());
+                    updateDone = true;
+                }
+                else if (type == FormModelEvent.SYNTHETIC_PROPERTY_CHANGED
+                         && PROP_DESIGNER_SIZE.equals(ev.getPropertyName()))
+                    fdPanel.updatePanel(getDesignerSize());
+            }
+
+            if (updateDone) {
+                revalidate();
+                repaint();
+            }
         }
     }
 
     // -----------
-
-    // Update task - is responsible for calling one update operation
-    // on VisualReplicator.
-    class UpdateTask {
-        // types of update
-        static final int ALL = 1; // re-create whole form
-        static final int ORDER = 2; // reorder components
-        static final int LAYOUT = 3; // update container layout
-        static final int ADD = 4; // add component
-        static final int REMOVE = 5; // remove component
-        static final int PROPERTY = 6; // update property
-
-        int type;
-        FormModelEvent event;
-
-        UpdateTask(int type, FormModelEvent ev) {
-            this.type = type;
-            this.event = ev;
-        }
-
-        void performUpdate() {
-            switch (type) {
-                case ALL:
-                    componentLayer.removeAll();
-                    replicator.setTopMetaComponent(topDesignComponent);
-                    Component formClone = (Component) replicator.createClone();
-                    if (formClone != null) {
-                        formClone.setVisible(true);
-                        componentLayer.add(formClone, BorderLayout.CENTER);
-                    }
-                    updateName(formModel.getName());
-                    break;
-
-                case ORDER:
-                    replicator.reorderComponents(event.getContainer());
-                    break;
-
-                case LAYOUT:
-                    replicator.updateContainerLayout((RADVisualContainer)
-                                                     event.getContainer());
-                    break;
-
-                case ADD:
-                    replicator.addComponent(event.getComponent());
-                    break;
-
-                case REMOVE:
-                    replicator.removeComponent(event.getComponent(),
-                                               event.getContainer());
-                    break;
-
-                case PROPERTY:
-                    replicator.updateComponentProperty(
-                                   event.getComponentProperty());
-                    break;
-            }
-        }
-
-        boolean cancelsPreviousTask(UpdateTask prevTask) {
-            if (type == ALL)
-                return true;
-            if (prevTask.type == ALL)
-                return false;
-
-            switch (type) {
-                case ORDER:
-                case LAYOUT:
-                    if (prevTask.type == type
-                            || prevTask.type == ADD || prevTask.type == REMOVE)
-                        return event.getContainer() == prevTask.event.getContainer();
-                    break;
-
-                case ADD:
-                    if (prevTask.type == ADD)
-                        return event.getComponent() == prevTask.event.getComponent();
-                    break;
-
-                case REMOVE:
-                    Object comp = event.getComponent();
-                    return comp != null
-                           && (comp == prevTask.event.getComponent()
-                               || comp == prevTask.event.getContainer());
-            }
-
-            return false;
-        }
-    }
-
-    // ------------
 
     public static class FormDesignerPanel extends JPanel {
         

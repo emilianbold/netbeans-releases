@@ -13,7 +13,7 @@
 
 package org.netbeans.modules.form;
 
-import java.util.EventObject;
+import java.util.*;
 import javax.swing.undo.*;
 
 import org.openide.nodes.Node;
@@ -27,21 +27,21 @@ import org.netbeans.modules.form.layoutsupport.*;
 
 public class FormModelEvent extends EventObject
 {
-    public static final int FORM_CHANGED = 1;
-    public static final int FORM_LOADED = 2;
-    public static final int FORM_TO_BE_SAVED = 3;
-//    public static final int FORM_TO_BE_CLOSED = 4;
-    public static final int CONTAINER_LAYOUT_EXCHANGED = 5;
-    public static final int CONTAINER_LAYOUT_CHANGED = 6;
-    public static final int COMPONENT_LAYOUT_CHANGED = 7;
-    public static final int COMPONENT_ADDED = 8;
-    public static final int COMPONENT_REMOVED = 9;
-    public static final int COMPONENTS_REORDERED = 10;
-    public static final int COMPONENT_PROPERTY_CHANGED = 11;
-    public static final int SYNTHETIC_PROPERTY_CHANGED = 12;
-    public static final int EVENT_HANDLER_ADDED = 13;
-    public static final int EVENT_HANDLER_REMOVED = 14;
-    public static final int EVENT_HANDLER_RENAMED = 15;
+    public static final int FORM_LOADED = 1;
+    public static final int FORM_TO_BE_SAVED = 2;
+    public static final int FORM_TO_BE_CLOSED = 3;
+    public static final int CONTAINER_LAYOUT_EXCHANGED = 4;
+    public static final int CONTAINER_LAYOUT_CHANGED = 5;
+    public static final int COMPONENT_LAYOUT_CHANGED = 6;
+    public static final int COMPONENT_ADDED = 7;
+    public static final int COMPONENT_REMOVED = 8;
+    public static final int COMPONENTS_REORDERED = 9;
+    public static final int COMPONENT_PROPERTY_CHANGED = 10;
+    public static final int SYNTHETIC_PROPERTY_CHANGED = 11;
+    public static final int EVENT_HANDLER_ADDED = 12;
+    public static final int EVENT_HANDLER_REMOVED = 13;
+    public static final int EVENT_HANDLER_RENAMED = 14;
+    public static final int OTHER_CHANGE = 15;
 
     private boolean createdDeleted;
     private RADComponent component;
@@ -64,8 +64,9 @@ public class FormModelEvent extends EventObject
 
     // -----------
 
-    FormModelEvent(FormModel source) {
+    FormModelEvent(FormModel source, int changeType) {
         super(source);
+        this.changeType = changeType;
     }
 
     void setProperty(String propName, Object oldValue, Object newValue) {
@@ -167,6 +168,12 @@ public class FormModelEvent extends EventObject
 
     public final int getChangeType() {
         return changeType;
+    }
+
+    public final boolean isModifying() {
+        return changeType != FORM_LOADED
+               && changeType != FORM_TO_BE_SAVED
+               && changeType != FORM_TO_BE_CLOSED;
     }
 
     public final ComponentContainer getContainer() {
@@ -497,22 +504,36 @@ public class FormModelEvent extends EventObject
                     ((RADVisualContainer)container).getLayoutSupport();
                 layoutSupport.removeAll();
 
-                RADVisualComponent[] visualComps =
-                    new RADVisualComponent[undoneSubComps.length];
-                LayoutConstraints[] originalConstraints =
-                    new LayoutConstraints[undoneSubComps.length];
-
-                for (int i=0; i < undoneSubComps.length; i++) {
-                    visualComps[i] = (RADVisualComponent) undoneSubComps[i];
-                    originalConstraints[i] =
-                        i == componentIndex && constraints != null ?
-                            constraints :
-                            layoutSupport.getStoredConstraints(visualComps[i]);
-                }
-
                 container.initSubComponents(undoneSubComps);
-                // [should not call acceptNewComponents?? - probably not]
-                layoutSupport.addComponents(visualComps, originalConstraints);
+
+                java.util.List visualList = new ArrayList(undoneSubComps.length);
+                java.util.List constrList = new ArrayList(undoneSubComps.length);
+
+                for (int i=0; i < undoneSubComps.length; i++)
+                    if (undoneSubComps[i] instanceof RADVisualComponent) {
+                        RADVisualComponent metacomp =
+                            (RADVisualComponent) undoneSubComps[i];
+                        LayoutConstraints constr = 
+                            i == componentIndex && constraints != null ?
+                                constraints :
+                                layoutSupport.getStoredConstraints(metacomp);
+
+                        visualList.add(metacomp);
+                        constrList.add(constr);
+                    }
+                    // there can be also a menu component in the visual container
+
+                if (visualList.size() > 0) {
+                    RADVisualComponent[] originalComponents =
+                        new RADVisualComponent[visualList.size()];
+                    LayoutConstraints[] originalConstraints =
+                        new LayoutConstraints[constrList.size()];
+                    visualList.toArray(originalComponents);
+                    constrList.toArray(originalConstraints);
+                    // [should not call acceptNewComponents?? - probably not]
+                    layoutSupport.addComponents(originalComponents,
+                                                originalConstraints);
+                }
             }
             else {
                 container.initSubComponents(undoneSubComps);

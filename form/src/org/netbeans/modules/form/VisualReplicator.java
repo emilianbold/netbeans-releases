@@ -205,6 +205,30 @@ public class VisualReplicator {
         laysup.arrangeContainer(cont, contDelegate);
     }
 
+    public void updateAddedComponents(ComponentContainer metacont) {
+        if (metacont == null)
+            return;
+
+        Object contClone = metacont instanceof RADComponent ?
+                           getClonedComponent((RADComponent)metacont) : null;
+        Container cont = contClone instanceof Container ?
+                         (Container)contClone : null;
+        if (cont != null)
+            cont = ((RADVisualContainer)metacont).getContainerDelegate(cont);
+
+        RADComponent[] subComps = metacont.getSubBeans();
+        for (int i=0; i < subComps.length; i++) {
+            Object compClone = getClonedComponent(subComps[i]);
+            if (compClone == null)
+                addComponent(subComps[i]);
+            else if (compClone instanceof Component
+                     && ((Component)compClone).getParent() != cont)
+                return; // the clone is placed elsewhere
+        }
+    }
+
+    // for adding just one component, for adding more components use
+    // updateAddedComponents
     public void addComponent(RADComponent metacomp) {
         if (metacomp == null)
             return;

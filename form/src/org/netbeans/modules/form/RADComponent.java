@@ -432,7 +432,6 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 
         if (renamed && getNodeReference() != null) {
             getNodeReference().fireComponentPropertySetsChange();
-            formModel.fireFormChanged();
         }
     }
 
@@ -829,19 +828,6 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
             if (FormProperty.PROP_VALUE.equals(eventName)
                 || FormProperty.PROP_VALUE_AND_EDITOR.equals(eventName))
             {   // property value has changed (or value and editor together)
-                if (formModel.isUndoRedoRecording()
-                    && !formModel.isCompoundEditInProgress()
-                    && java.awt.EventQueue.isDispatchThread())
-                {   // undo/redo hack - for the case more properties were
-                    // changed at once - to be handled as one undoable change
-                    formModel.startCompoundEdit();
-                    java.awt.EventQueue.invokeLater(new Runnable() {
-                        public void run() {
-                            formModel.endCompoundEdit();
-                        }
-                    });
-                }
-
                 Object oldValue = evt.getOldValue();
                 Object newValue = evt.getNewValue();
                 formModel.fireComponentPropertyChanged(

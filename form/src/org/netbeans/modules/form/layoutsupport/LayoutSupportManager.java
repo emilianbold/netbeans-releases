@@ -754,7 +754,6 @@ public final class LayoutSupportManager implements LayoutSupportContext {
             layoutDelegate.acceptContainerLayoutChange(getEventWithValues(ev));
 
             FormModel formModel = metaContainer.getFormModel();
-            placeCompoundEdit(formModel);
             formModel.fireContainerLayoutChanged(metaContainer,
                                                  ev.getPropertyName(),
                                                  ev.getOldValue(),
@@ -782,7 +781,6 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                                                        getEventWithValues(ev));
 
             FormModel formModel = metaContainer.getFormModel();
-            placeCompoundEdit(formModel);
             formModel.fireComponentLayoutChanged(metacomp,
                                                  ev.getPropertyName(),
                                                  ev.getOldValue(),
@@ -799,21 +797,6 @@ public final class LayoutSupportManager implements LayoutSupportContext {
             if (metacomp.getNodeReference() != null) // propagate the change to node
                 metacomp.getNodeReference().fireComponentPropertySetsChange();
             metacomp.resetConstraintsProperties();
-        }
-    }
-
-    private static void placeCompoundEdit(final FormModel formModel) {
-        if (formModel.isUndoRedoRecording()
-            && !formModel.isCompoundEditInProgress()
-            && java.awt.EventQueue.isDispatchThread())
-        {   // undo/redo hack - for the case more properties were
-            // changed at once - to be handled as one undoable change
-            formModel.startCompoundEdit();
-            java.awt.EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    formModel.endCompoundEdit();
-                }
-            });
         }
     }
 

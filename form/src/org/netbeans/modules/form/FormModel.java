@@ -17,6 +17,10 @@ import java.util.*;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.undo.*;
+
+import org.openide.awt.UndoRedo;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.netbeans.modules.form.layoutsupport.*;
 
 import org.netbeans.modules.form.codestructure.CodeStructure;
@@ -47,13 +51,15 @@ public class FormModel
     private boolean readOnly = false;
     private boolean formLoaded = false;
 
+    private UndoRedo.Manager undoRedoManager;
     private boolean undoRedoRecording = false;
     private CompoundEdit compoundEdit;
 
     private FormEventHandlers eventHandlers;
 
     // list of listeners registered on FormModel
-    private final EventListenerList listenerList = new EventListenerList();
+    private ArrayList listeners;
+    private EventBroker eventBroker;
 
     private MetaComponentCreator metaCreator;
 
@@ -297,13 +303,8 @@ public class FormModel
     }
 
     public void removeComponent(RADComponent metacomp) {
-        boolean compoundUndoableEditStarted;
-        if (eventHandlers != null) {
-            compoundUndoableEditStarted = undoRedoRecording
-                                          && startCompoundEdit();
+        if (eventHandlers != null)
             removeEventHandlersRecursively(metacomp);
-        }
-        else compoundUndoableEditStarted = false;
 
         RADComponent parent = metacomp.getParentComponent();
         ComponentContainer parentContainer =
@@ -337,9 +338,6 @@ public class FormModel
 
         fireComponentRemoved(metacomp, parentContainer, index, true,
                              codeStructureMark1, codeStructureMark2);
-
-        if (compoundUndoableEditStarted)
-            endCompoundEdit();
     }
 
     // removes all event handlers attached to given component and all
@@ -408,8 +406,7 @@ public class FormModel
             t("ending compound edit"); // NOI18N
             compoundEdit.end();
             if (undoRedoRecording && compoundEdit.isSignificant())
-                FormEditorSupport.getFormUndoManager(this)
-                                    .addEdit(compoundEdit);
+                getUndoRedoManager().addEdit(compoundEdit);
             CompoundEdit edit = compoundEdit;
             compoundEdit = null;
             return edit;
@@ -426,84 +423,128 @@ public class FormModel
         if (isCompoundEditInProgress())
             compoundEdit.addEdit(edit);
         else
-            FormEditorSupport.getFormUndoManager(this)
-                .undoableEditHappened(new UndoableEditEvent(this, edit));
+            getUndoRedoManager().undoableEditHappened(
+                     new UndoableEditEvent(this, edit));
+    }
+
+    UndoRedo.Manager getUndoRedoManager() {
+        if (undoRedoManager == null) {
+            undoRedoManager = new UndoRedoManager();
+            undoRedoManager.setLimit(50);
+        }
+        return undoRedoManager;
+    }
+
+    // [Undo manager performing undo/redo in AWT event thread should not be
+    //  probably implemented here - in FormModel - but seperately.]
+    static class UndoRedoManager extends UndoRedo.Manager {
+        private Mutex.ExceptionAction runUndo = new Mutex.ExceptionAction() {
+            public Object run() throws Exception {
+                superUndo();
+                return null;
+            }
+        };
+        private Mutex.ExceptionAction runRedo = new Mutex.ExceptionAction() {
+            public Object run() throws Exception {
+                superRedo();
+                return null;
+            }
+        };
+
+        public void superUndo() throws CannotUndoException {
+            super.undo();
+        }
+        public void superRedo() throws CannotRedoException {
+            super.redo();
+        }
+
+        public void undo() throws CannotUndoException {
+            if (java.awt.EventQueue.isDispatchThread()) {
+                superUndo();
+            }
+            else {
+                try {
+                    Mutex.EVENT.readAccess(runUndo);
+                }
+                catch (MutexException ex) {
+                    Exception e = ex.getException();
+                    if (e instanceof CannotUndoException)
+                        throw (CannotUndoException) e;
+                    else // should not happen, ignore
+                        e.printStackTrace();
+                }
+            }
+        }
+
+        public void redo() throws CannotRedoException {
+            if (java.awt.EventQueue.isDispatchThread()) {
+                superRedo();
+            }
+            else {
+                try {
+                    Mutex.EVENT.readAccess(runRedo);
+                }
+                catch (MutexException ex) {
+                    Exception e = ex.getException();
+                    if (e instanceof CannotRedoException)
+                        throw (CannotRedoException) e;
+                    else // should not happen, ignore
+                        e.printStackTrace();
+                }
+            }
+        }
     }
 
     // ----------
     // listeners registration, firing methods
 
-    public void addFormModelListener(FormModelListener l) {
-        listenerList.add(FormModelListener.class, l);
+    public synchronized void addFormModelListener(FormModelListener l) {
+        if (listeners == null)
+            listeners = new ArrayList();
+        listeners.add(l);
     }
 
-    public void removeFormModelListener(FormModelListener l) {
-        listenerList.remove(FormModelListener.class, l);
-    }
-
-    /** Fires an event informing about general form change. */
-    public void fireFormChanged() {
-        t("firing form change"); // NOI18N
-
-        FormModelEvent e = new FormModelEvent(this);
-        e.setChangeType(FormModelEvent.FORM_CHANGED);
-        
-  	Object[] listeners = listenerList.getListenerList();
-  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
-  	    if (listeners[i] == FormModelListener.class) {
-  		((FormModelListener)listeners[i+1]).formChanged(e);
-  	    }
-  	}
+    public synchronized void removeFormModelListener(FormModelListener l) {
+        if (listeners != null)
+            listeners.remove(l);
     }
 
     /** Fires an event informing about that the form has been just loaded. */
     public void fireFormLoaded() {
         t("firing form loaded"); // NOI18N
+
         formLoaded = true;
+        if (undoRedoManager != null)
+            undoRedoManager.discardAllEdits();
         if (!readOnly && !Boolean.getBoolean("netbeans.form.no_undo")) // NOI18N
             setUndoRedoRecording(true);
         initializeCodeGenerator();
 
-        FormModelEvent e = new FormModelEvent(this);
-        e.setChangeType(FormModelEvent.FORM_LOADED);
-
-  	Object[] listeners = listenerList.getListenerList();
-  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
-  	    if (listeners[i] == FormModelListener.class) {
-  		((FormModelListener)listeners[i+1]).formLoaded(e);
-  	    }
-  	}
+        fireEvents(new FormModelEvent[] {
+            new FormModelEvent(this, FormModelEvent.FORM_LOADED)
+        });
     }
 
     /** Fires an event informing about that the form is just about to be saved. */
     public void fireFormToBeSaved() {
         t("firing form to be saved"); // NOI18N
 
-        FormModelEvent e = new FormModelEvent(this);
-        e.setChangeType(FormModelEvent.FORM_TO_BE_SAVED);
-
-  	Object[] listeners = listenerList.getListenerList();
-  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
-  	    if (listeners[i] == FormModelListener.class) {
-  		((FormModelListener)listeners[i+1]).formToBeSaved(e);
-  	    }
-  	}
+        fireEvents(new FormModelEvent[] {
+            new FormModelEvent(this, FormModelEvent.FORM_TO_BE_SAVED)
+        });
     }
 
     /** Fires an event informing about that the form is just about to be closed. */
-//    public void fireFormToBeClosed() {
-//        t("firing form to be closed fired"); // NOI18N
-//
-//        FormModelEvent e = new FormModelEvent(this);
-//        e.setChangeType(FormModelEvent.FORM_TO_BE_CLOSED);
-//
-//  	Object[] listeners = listenerList.getListenerList();
-//  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
-//  	    if (listeners[i] == FormModelListener.class) {
-//  		((FormModelListener)listeners[i+1]).formToBeClosed(e);
-//  	    }
-//  	}
-//    }
+    public void fireFormToBeClosed() {
+        t("firing form to be closed"); // NOI18N
+
+        if (undoRedoManager != null)
+            undoRedoManager.discardAllEdits();
+
+        fireEvents(new FormModelEvent[] {
+            new FormModelEvent(this, FormModelEvent.FORM_TO_BE_CLOSED)
+        });
+    }
 
     /** Fires an event informing about changing layout manager of a container.
      * An undoable edit is created and registered automatically. */
@@ -514,21 +555,13 @@ public class FormModel
         t("firing container layout exchange, container: " // NOI18N
           + (metacont != null ? metacont.getName() : "null")); // NOI18N
 
-        FormModelEvent e = new FormModelEvent(this);
-        e.setLayout(metacont, oldLayout, newLayout);
-        e.setChangeType(FormModelEvent.CONTAINER_LAYOUT_EXCHANGED);
-
-        Object[] listeners = listenerList.getListenerList();
-        for (int i = listeners.length - 2; i >= 0; i -= 2) {
-            if (listeners[i] == FormModelListener.class) {
-                FormModelListener l = (FormModelListener)listeners[i+1];
-                l.containerLayoutExchanged(e);
-                l.formChanged(e);
-            }
-        }
+        FormModelEvent ev =
+            new FormModelEvent(this, FormModelEvent.CONTAINER_LAYOUT_EXCHANGED);
+        ev.setLayout(metacont, oldLayout, newLayout);
+        sendEvent(ev);
 
         if (undoRedoRecording && metacont != null && oldLayout != newLayout)
-            addUndoableEdit(e.getUndoableEdit());
+            addUndoableEdit(ev.getUndoableEdit());
     }
 
     /** Fires an event informing about changing a property of container layout.
@@ -542,24 +575,16 @@ public class FormModel
           + (metacont != null ? metacont.getName() : "null") // NOI18N
           + ", property: " + propName); // NOI18N
 
-        FormModelEvent e = new FormModelEvent(this);
-        e.setComponentAndContainer(metacont, metacont);
-        e.setProperty(propName, oldValue, newValue);
-        e.setChangeType(FormModelEvent.CONTAINER_LAYOUT_CHANGED);
-
-        Object[] listeners = listenerList.getListenerList();
-        for (int i = listeners.length - 2; i >= 0; i -= 2) {
-            if (listeners[i] == FormModelListener.class) {
-                FormModelListener l = (FormModelListener)listeners[i+1];
-                l.containerLayoutChanged(e);
-                l.formChanged(e);
-            }
-        }
+        FormModelEvent ev =
+            new FormModelEvent(this, FormModelEvent.CONTAINER_LAYOUT_CHANGED);
+        ev.setComponentAndContainer(metacont, metacont);
+        ev.setProperty(propName, oldValue, newValue);
+        sendEvent(ev);
 
         if (undoRedoRecording
             && metacont != null && propName != null && oldValue != newValue)
         {
-            addUndoableEdit(e.getUndoableEdit());
+            addUndoableEdit(ev.getUndoableEdit());
         }
     }
 
@@ -573,24 +598,16 @@ public class FormModel
         t("firing component layout change: " // NOI18N
           + (metacomp != null ? metacomp.getName() : "null")); // NOI18N
 
-        FormModelEvent e = new FormModelEvent(this);
-        e.setComponentAndContainer(metacomp, null);
-        e.setProperty(propName, oldValue, newValue);
-        e.setChangeType(FormModelEvent.COMPONENT_LAYOUT_CHANGED);
-
-        Object[] listeners = listenerList.getListenerList();
-        for (int i = listeners.length - 2; i >= 0; i -= 2) {
-            if (listeners[i] == FormModelListener.class) {
-                FormModelListener l = (FormModelListener)listeners[i+1];
-                l.componentLayoutChanged(e);
-                l.formChanged(e);
-            }
-        }
+        FormModelEvent ev =
+            new FormModelEvent(this, FormModelEvent.COMPONENT_LAYOUT_CHANGED);
+        ev.setComponentAndContainer(metacomp, null);
+        ev.setProperty(propName, oldValue, newValue);
+        sendEvent(ev);
 
         if (undoRedoRecording
             && metacomp != null && propName != null && oldValue != newValue)
         {
-            addUndoableEdit(e.getUndoableEdit());
+            addUndoableEdit(ev.getUndoableEdit());
         }
     }
 
@@ -602,23 +619,13 @@ public class FormModel
         t("firing component added: " // NOI18N
           + (metacomp != null ? metacomp.getName() : "null")); // NOI18N
 
-        FormModelEvent e = new FormModelEvent(this);
-        e.setAddData(metacomp, null, addedNew);
-        e.setChangeType(FormModelEvent.COMPONENT_ADDED);
-
-  	Object[] listeners = listenerList.getListenerList();
-  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
-  	    if (listeners[i] == FormModelListener.class) {
-                FormModelListener l = (FormModelListener)listeners[i+1];
-                if (addedNew)
-                    l.componentAdded(e);
-  		l.componentAddedToContainer(e);
-                l.formChanged(e);
-  	    }
-  	}
+        FormModelEvent ev =
+            new FormModelEvent(this, FormModelEvent.COMPONENT_ADDED);
+        ev.setAddData(metacomp, null, addedNew);
+        sendEvent(ev);
 
         if (undoRedoRecording && metacomp != null)
-            addUndoableEdit(e.getUndoableEdit());
+            addUndoableEdit(ev.getUndoableEdit());
     }
 
     /** Fires an event informing about removing a component from the form.
@@ -633,24 +640,14 @@ public class FormModel
         t("firing component removed: " // NOI18N
           + (metacomp != null ? metacomp.getName() : "null")); // NOI18N
 
-        FormModelEvent e = new FormModelEvent(this);
-        e.setRemoveData(metacomp, metacont, index, removedFromModel,
+        FormModelEvent ev =
+            new FormModelEvent(this, FormModelEvent.COMPONENT_REMOVED);
+        ev.setRemoveData(metacomp, metacont, index, removedFromModel,
                         codeStructureMark1, codeStructureMark2);
-        e.setChangeType(FormModelEvent.COMPONENT_REMOVED);
-
-  	Object[] listeners = listenerList.getListenerList();
-  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
-  	    if (listeners[i] == FormModelListener.class) {
-                FormModelListener l = (FormModelListener)listeners[i+1];
-  		l.componentRemovedFromContainer(e);
-                if (codeStructureMark1 != null)
-                    l.componentRemoved(e);
-                l.formChanged(e);
-  	    }
-  	}
+        sendEvent(ev);
 
         if (undoRedoRecording && metacomp != null && metacont != null)
-            addUndoableEdit(e.getUndoableEdit());
+            addUndoableEdit(ev.getUndoableEdit());
     }
 
     /** Fires an event informing about reordering components in a container.
@@ -662,22 +659,14 @@ public class FormModel
           + (metacont instanceof RADComponent ?
              ((RADComponent)metacont).getName() : "<top>")); // NOI18N
 
-        FormModelEvent e = new FormModelEvent(this);
-        e.setComponentAndContainer(null, metacont);
-        e.setReordering(perm);
-        e.setChangeType(FormModelEvent.COMPONENTS_REORDERED);
-
-  	Object[] listeners = listenerList.getListenerList();
-  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
-  	    if (listeners[i] == FormModelListener.class) {
-                FormModelListener l = (FormModelListener)listeners[i+1];
-  		l.componentsReordered(e);
-                l.formChanged(e);
-  	    }
-  	}
+        FormModelEvent ev =
+            new FormModelEvent(this, FormModelEvent.COMPONENTS_REORDERED);
+        ev.setComponentAndContainer(null, metacont);
+        ev.setReordering(perm);
+        sendEvent(ev);
 
         if (undoRedoRecording && metacont != null)
-            addUndoableEdit(e.getUndoableEdit());
+            addUndoableEdit(ev.getUndoableEdit());
     }
 
     /** Fires an event informing about changing a property of a component.
@@ -691,24 +680,16 @@ public class FormModel
           + (metacomp != null ? metacomp.getName() : "<null component>") // NOI18N
           + ", property: " + propName); // NOI18N
 
-        FormModelEvent e = new FormModelEvent(this);
-        e.setComponentAndContainer(metacomp, null);
-        e.setProperty(propName, oldValue, newValue);
-        e.setChangeType(FormModelEvent.COMPONENT_PROPERTY_CHANGED);
-
-        Object[] listeners = listenerList.getListenerList();
-        for (int i = listeners.length - 2; i >= 0; i -= 2) {
-            if (listeners[i] == FormModelListener.class) {
-                FormModelListener l = (FormModelListener)listeners[i+1];
-                l.componentPropertyChanged(e);
-                l.formChanged(e);
-            }
-        }
+        FormModelEvent ev =
+            new FormModelEvent(this, FormModelEvent.COMPONENT_PROPERTY_CHANGED);
+        ev.setComponentAndContainer(metacomp, null);
+        ev.setProperty(propName, oldValue, newValue);
+        sendEvent(ev);
 
         if (undoRedoRecording
             && metacomp != null && propName != null && oldValue != newValue)
         {
-            addUndoableEdit(e.getUndoableEdit());
+            addUndoableEdit(ev.getUndoableEdit());
         }
     }
 
@@ -723,24 +704,16 @@ public class FormModel
           + (metacomp != null ? metacomp.getName() : "null") // NOI18N
           + ", property: " + propName); // NOI18N
 
-        FormModelEvent e = new FormModelEvent(this);
-        e.setComponentAndContainer(metacomp, null);
-        e.setProperty(propName, oldValue, newValue);
-        e.setChangeType(FormModelEvent.SYNTHETIC_PROPERTY_CHANGED);
-
-  	Object[] listeners = listenerList.getListenerList();
-  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
-  	    if (listeners[i] == FormModelListener.class) {
-                FormModelListener l = (FormModelListener)listeners[i+1];
-  		l.syntheticPropertyChanged(e);
-                l.formChanged(e);
-  	    }
-  	}
+        FormModelEvent ev =
+            new FormModelEvent(this, FormModelEvent.SYNTHETIC_PROPERTY_CHANGED);
+        ev.setComponentAndContainer(metacomp, null);
+        ev.setProperty(propName, oldValue, newValue);
+        sendEvent(ev);
 
         if (undoRedoRecording
             && metacomp != null && propName != null && oldValue != newValue)
         {
-            addUndoableEdit(e.getUndoableEdit());
+            addUndoableEdit(ev.getUndoableEdit());
         }
     }
 
@@ -753,21 +726,14 @@ public class FormModel
                                       boolean createdNew)
     {
         t("event handler added: "+handler.getName()); // NOI18N
-        FormModelEvent e = new FormModelEvent(this);
-        e.setEvent(event, handler, bodyText, createdNew);
-        e.setChangeType(FormModelEvent.EVENT_HANDLER_ADDED);
 
-  	Object[] listeners = listenerList.getListenerList();
-  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
-  	    if (listeners[i] == FormModelListener.class) {
-                FormModelListener l = (FormModelListener)listeners[i+1];
-  		l.eventHandlerAdded(e);
-                l.formChanged(e);
-  	    }
-  	}
+        FormModelEvent ev =
+            new FormModelEvent(this, FormModelEvent.EVENT_HANDLER_ADDED);
+        ev.setEvent(event, handler, bodyText, createdNew);
+        sendEvent(ev);
 
         if (undoRedoRecording && event != null && handler != null)
-            addUndoableEdit(e.getUndoableEdit());
+            addUndoableEdit(ev.getUndoableEdit());
     }
 
     /** Fires an event informing about detaching an event from event handler
@@ -779,42 +745,121 @@ public class FormModel
                                         boolean handlerDeleted)
     {
         t("firing event handler removed: "+handler.getName()); // NOI18N
-        FormModelEvent e = new FormModelEvent(this);
-        e.setEvent(event, handler, bodyText, handlerDeleted);
-        e.setChangeType(FormModelEvent.EVENT_HANDLER_REMOVED);
 
-  	Object[] listeners = listenerList.getListenerList();
-  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
-  	    if (listeners[i] == FormModelListener.class) {
-                FormModelListener l = (FormModelListener)listeners[i+1];
-  		l.eventHandlerRemoved(e);
-                l.formChanged(e);
-  	    }
-  	}
+        FormModelEvent ev =
+            new FormModelEvent(this, FormModelEvent.EVENT_HANDLER_REMOVED);
+        ev.setEvent(event, handler, bodyText, handlerDeleted);
+        sendEvent(ev);
 
         if (undoRedoRecording && event != null && handler != null)
-            addUndoableEdit(e.getUndoableEdit());
+            addUndoableEdit(ev.getUndoableEdit());
     }
 
     /** Fires an event informing about renaming an event handler. An undoable
      * edit is created and registered automatically. */
     public void fireEventHandlerRenamed(EventHandler handler, String oldName) {
         t("event handler renamed: "+handler.getName()); // NOI18N
-        FormModelEvent e = new FormModelEvent(this);
-        e.setEvent(handler, oldName);
-        e.setChangeType(FormModelEvent.EVENT_HANDLER_RENAMED);
 
-  	Object[] listeners = listenerList.getListenerList();
-  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
-  	    if (listeners[i] == FormModelListener.class) {
-                FormModelListener l = (FormModelListener)listeners[i+1];
-  		l.eventHandlerRenamed(e);
-                l.formChanged(e);
-  	    }
-  	}
+        FormModelEvent ev =
+            new FormModelEvent(this, FormModelEvent.EVENT_HANDLER_RENAMED);
+        ev.setEvent(handler, oldName);
+        sendEvent(ev);
 
         if (undoRedoRecording && handler != null && oldName != null)
-            addUndoableEdit(e.getUndoableEdit());
+            addUndoableEdit(ev.getUndoableEdit());
+    }
+
+    /** Fires an event informing about general form change. */
+    public void fireFormChanged() {
+        t("firing form change"); // NOI18N
+
+        sendEvent(new FormModelEvent(this, FormModelEvent.OTHER_CHANGE));
+    }
+
+    public void fireEvents(FormModelEvent[] events) {
+        java.util.List targets;
+        synchronized(this) {
+            if (listeners == null)
+                return;
+            targets = (ArrayList) listeners.clone();
+        }
+
+        for (int i=0; i < targets.size(); i++) {
+            FormModelListener l = (FormModelListener) targets.get(i);
+            l.formChanged(events);
+        }
+    }
+
+    // ---------
+    // firing methods for batch event processing
+
+    void sendEvent(FormModelEvent ev) {
+        EventBroker broker = getEventBroker();
+        if (broker != null)
+            broker.sendEvent(ev);
+        else {
+            t("no event broker, firing event directly: "+ev.getChangeType()); // NOI18N
+            fireEvents(new FormModelEvent[] { ev });
+        }
+    }
+
+    EventBroker getEventBroker() {
+        if (eventBroker == null && isFormLoaded())
+            eventBroker = new EventBroker();
+        return eventBroker;
+    }
+
+    // [EventBroker could be more independent and extensible - interface
+    //  definition here, implementation separated elsewhere.]
+    private class EventBroker implements Runnable {
+        private List eventsList;
+        private boolean compoundUndoStarted;
+
+        public void sendEvent(FormModelEvent ev) {
+            if (!placeEvent(ev)) {
+                 // fire the event immediately
+                t("firing event directly from event broker: "+ev.getChangeType()); // NOI18N
+                FormModel.this.fireEvents(new FormModelEvent[] { ev });
+            }
+        }
+
+        private synchronized boolean placeEvent(FormModelEvent ev) {
+            if (eventsList == null) {
+                if (ev.isModifying() && java.awt.EventQueue.isDispatchThread()) {
+                    eventsList = new ArrayList();
+                    eventsList.add(ev);
+                    compoundUndoStarted = FormModel.this.isUndoRedoRecording()
+                                          && FormModel.this.startCompoundEdit();
+                    if (compoundUndoStarted)
+                        t("compound undoable edit started from event broker"); // NOI18N
+                    java.awt.EventQueue.invokeLater(this);
+                }
+                else return false;
+            }
+            else eventsList.add(ev);
+
+            return true;
+        }
+
+        private synchronized List pickUpEvents() {
+            List list = eventsList;
+            eventsList = null;
+            if (compoundUndoStarted) {
+                compoundUndoStarted = false;
+                FormModel.this.endCompoundEdit();
+            }
+            return list;
+        }
+
+        public void run() {
+            List list = pickUpEvents();
+            if (list != null && !list.isEmpty()) {
+                FormModelEvent[] events = new FormModelEvent[list.size()];
+                list.toArray(events);
+                t("firing event batch of "+list.size()+" events from event broker"); // NOI18N
+                FormModel.this.fireEvents(events);
+            }
+        }
     }
 
     // -------------

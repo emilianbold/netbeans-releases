@@ -119,7 +119,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
             if (!formModel.isReadOnly()) {
                 canGenerate = true;
-                formModel.addFormModelListener(new JCGFormListener());
+                formModel.addFormModelListener(new FormListener());
             }
             else canGenerate = false;
 
@@ -1978,43 +1978,56 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     //
-    // {{{ JCGFormListener
+    // {{{ FormListener
     //
 
-    private class JCGFormListener extends FormModelAdapter
-    {
-        /** Called when the form is succesfully loaded and fully initialized */
+    private class FormListener implements FormModelListener {
 
-        public void formLoaded(FormModelEvent e) {
-            if (needsRegeneration()) {
-                regenerateVariables();
-                regenerateInitializer();
-                regenerateEventHandlers();
+        public void formChanged(FormModelEvent[] events) {
+            boolean modifying = false;
+            boolean toBeSaved = false;
+            boolean toBeClosed = false;
+
+            for (int i=0; i < events.length; i++) {
+                FormModelEvent ev = events[i];
+
+                if (ev.isModifying())
+                    modifying = true;
+
+                if (ev.getChangeType() == FormModelEvent.FORM_LOADED) {
+                    if (needsRegeneration()) {
+                        regenerateVariables();
+                        regenerateInitializer();
+                        regenerateEventHandlers();
+                        codeUpToDate = true;
+                        FormModel.t("code regenerated");
+                    }
+                    return;
+                }
+                else if (ev.getChangeType() == FormModelEvent.FORM_TO_BE_SAVED)
+                    toBeSaved = true;
+                else if (ev.getChangeType() == FormModelEvent.FORM_TO_BE_CLOSED)
+                    toBeClosed = true;
             }
-        }
 
-        public void formChanged(FormModelEvent e) {
-            if (!formSettings.getGenerateOnSave()) {
+            if (modifying)
+                codeUpToDate = false;
+
+            if (!toBeClosed && !codeUpToDate
+                && (toBeSaved || !formSettings.getGenerateOnSave()))
+            {
                 regenerateVariables();
                 regenerateInitializer();
                 codeUpToDate = true;
-            }
-            else codeUpToDate = false;
-        }
-
-        /** Called when the form is about to be saved */
-
-        public void formToBeSaved(FormModelEvent e) {
-            if (!codeUpToDate && formSettings.getGenerateOnSave()) {
-                regenerateVariables();
-                regenerateInitializer();
-                codeUpToDate = true;
+                FormModel.t("code regenerated");
             }
 
-//            serializeComponentsRecursively(formModel.getTopRADComponent());
-            RADComponent[] components = formModel.getModelContainer().getSubBeans();
-            for (int i = 0; i < components.length; i++)
-                serializeComponentsRecursively(components[i]);
+            if (toBeSaved) {
+                RADComponent[] components =
+                    formModel.getModelContainer().getSubBeans();
+                for (int i=0; i < components.length; i++)
+                    serializeComponentsRecursively(components[i]);
+            }
         }
 
         private void serializeComponentsRecursively(RADComponent comp) {

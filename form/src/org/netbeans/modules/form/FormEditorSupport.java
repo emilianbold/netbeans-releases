@@ -67,7 +67,7 @@ public class FormEditorSupport extends JavaEditor implements EditCookie
     private boolean formLoaded = false; 
 
     /** An indicator whether the form should be opened additionally when
-     * switching back from a non-editing workspace to an editing one */
+     * switching back from a non-editing workspace to editing one */
     private boolean openOnEditing = false;
 
     // listeners
@@ -78,7 +78,6 @@ public class FormEditorSupport extends JavaEditor implements EditCookie
     private static PropertyChangeListener paletteListener;
 
     private UndoRedo.Manager editorUndoManager;
-    private UndoRedo.Manager formUndoManager;
 
     /** Table of FormModel instances (FormModel to FormEditorSupport map) */
     private static Hashtable openForms = new Hashtable();
@@ -406,12 +405,8 @@ public class FormEditorSupport extends JavaEditor implements EditCookie
             editorUndoManager.discardAllEdits();
     }
 
-    UndoRedo.Manager getFormUndoManager() {
-        if (formUndoManager == null) {
-            formUndoManager = new UndoRedo.Manager();
-            formUndoManager.setLimit(50);
-        }
-        return formUndoManager;
+    UndoRedo.Manager getFormUndoRedoManager() {
+        return formModel != null ? formModel.getUndoRedoManager() : null;
     }
 
     // ------------
@@ -450,12 +445,6 @@ public class FormEditorSupport extends JavaEditor implements EditCookie
     public static FormDataObject getFormDataObject(FormModel formModel) {
         FormEditorSupport fes = (FormEditorSupport) openForms.get(formModel);
         return fes != null ? fes.getFormDataObject() : null;
-    }
-
-    /** @return UndoRedo.Manager instance for given form */
-    public static UndoRedo.Manager getFormUndoManager(FormModel formModel) {
-        FormEditorSupport fes = (FormEditorSupport) openForms.get(formModel);
-        return fes != null ? fes.getFormUndoManager() : null;
     }
 
     /** @return FormEditorSupport instance for given form */
@@ -533,7 +522,6 @@ public class FormEditorSupport extends JavaEditor implements EditCookie
         formLoaded = true;
 //        getCodeGenerator().initialize(formModel);
         formModel.fireFormLoaded();
-        getFormUndoManager().discardAllEdits();
 
         // create form nodes hierarchy and add it to SourceChildren
         formRootNode = new FormRootNode(formModel);
@@ -746,7 +734,8 @@ public class FormEditorSupport extends JavaEditor implements EditCookie
     /** Closes the form. Used when closing or reloading the document.
      */
     synchronized private void closeForm() {
-//        formModel.fireFormToBeClosed();
+        formModel.fireFormToBeClosed();
+
         openForms.remove(formModel);
 
         // remove nodes hierarchy
@@ -780,9 +769,6 @@ public class FormEditorSupport extends JavaEditor implements EditCookie
             formDesigner = null;
         }
 
-        if (formUndoManager != null)
-            formUndoManager.discardAllEdits();
-
         // reset references
         formRootNode = null;
         formDesigner = null;
@@ -799,30 +785,76 @@ public class FormEditorSupport extends JavaEditor implements EditCookie
         if (formListener != null || formDataObject.isReadOnly())
             return;
 
-        // this listener ensures necessary updates according to changes in form
-        formListener = new FormModelAdapter() {
-            public void formChanged(FormModelEvent e) {
-                // Mark form document modified explicitly when something changes
-                // (so it must have been saved then). This is normally
-                // done automatically by code regeneration, but not always.
-                markFormModified();
-            }
+        // this listener ensures necessary updates of nodes according to
+        // changes in containers in form
+        formListener = new FormModelListener() {
+            public void formChanged(FormModelEvent[] events) {
+                boolean modifying = false;
+                Set changedContainers = events.length > 0 ?
+                                          new HashSet() : null;
+                Set compsToSelect = null;
+                FormNode nodeToSelect = null;
 
-            // the following methods perform node updates
-            public void containerLayoutExchanged(FormModelEvent e) {
-                updateNodeChildren(e.getContainer());
-            }
-            public void componentLayoutChanged(FormModelEvent e) {
-                updateNodeChildren(e.getContainer());
-            }
-            public void componentAddedToContainer(FormModelEvent e) {
-                updateNodeChildren(e.getContainer());
-            }
-            public void componentRemovedFromContainer(FormModelEvent e) {
-                updateNodeChildren(e.getContainer());
-            }
-            public void componentsReordered(FormModelEvent e) {
-                updateNodeChildren(e.getContainer());
+                for (int i=0; i < events.length; i++) {
+                    FormModelEvent ev = events[i];
+
+                    if (ev.isModifying())
+                        modifying = true;
+
+                    int type = ev.getChangeType();
+                    if (type == FormModelEvent.CONTAINER_LAYOUT_EXCHANGED
+                        || type == FormModelEvent.CONTAINER_LAYOUT_CHANGED
+                        || type == FormModelEvent.COMPONENT_ADDED
+                        || type == FormModelEvent.COMPONENT_REMOVED
+                        || type == FormModelEvent.COMPONENTS_REORDERED)
+                    {
+                        ComponentContainer cont = ev.getContainer();
+                        if (changedContainers == null
+                            || !changedContainers.contains(cont))
+                        {
+                            updateNodeChildren(cont);
+                            if (changedContainers != null)
+                                changedContainers.add(cont);
+                        }
+
+                        if (type == FormModelEvent.COMPONENT_REMOVED) {
+                            FormNode select;
+                            if (cont instanceof RADComponent)
+                                select = ((RADComponent)cont).getNodeReference();
+                            else
+                                select = formRootNode.getOthersNode();
+
+                            if (!(nodeToSelect instanceof RADComponentNode)) {
+                                if (nodeToSelect != formRootNode)
+                                    nodeToSelect = select;
+                            }
+                            else if (nodeToSelect != select)
+                                nodeToSelect = formRootNode;
+                        }
+                        else if (type == FormModelEvent.CONTAINER_LAYOUT_EXCHANGED) {
+                            nodeToSelect = ((RADVisualContainer)cont)
+                                                .getLayoutNodeReference();
+                        }
+                        else if (type == FormModelEvent.COMPONENT_ADDED) {
+                            if (compsToSelect == null)
+                                compsToSelect = new HashSet();
+                            compsToSelect.add(ev.getComponent());
+                        }
+                    }
+                }
+
+                if (formDesigner != null)
+                    if (compsToSelect != null) {
+                        RADComponent[] comps =
+                            new RADComponent[compsToSelect.size()];
+                        compsToSelect.toArray(comps);
+                        formDesigner.setSelectedComponents(comps);
+                    }
+                    else if (nodeToSelect != null)
+                        formDesigner.setSelectedNode(nodeToSelect);
+
+                if (modifying) // mark the form document modified explicitly
+                    markFormModified();
             }
         };
 

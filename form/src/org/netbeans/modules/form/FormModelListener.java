@@ -11,37 +11,22 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form;
 
 /**
+ * Listener class for notifying about changes in FormModel. There's only one
+ * method to implement, with an array of FormModelEvent objects as* parameter.
+ * (FormModel does batch event firing, all the events corresponding to one user
+ * action are fired at once.)
  *
- * @author Tran Duc Trung
+ * @author Tomas Pavek
  */
 
-public interface FormModelListener extends java.util.EventListener
-{
-    public void formChanged(FormModelEvent e);
+public interface FormModelListener extends java.util.EventListener {
 
-    public void formLoaded(FormModelEvent e);
-    public void formToBeSaved(FormModelEvent e);
-//    public void formToBeClosed(FormModelEvent e);
-
-    public void componentAdded(FormModelEvent e);
-    public void componentRemoved(FormModelEvent e);
-
-    public void componentAddedToContainer(FormModelEvent e);
-    public void componentRemovedFromContainer(FormModelEvent e);
-    public void componentsReordered(FormModelEvent e);
-
-    public void containerLayoutExchanged(FormModelEvent e);
-    public void containerLayoutChanged(FormModelEvent e);
-    public void componentLayoutChanged(FormModelEvent e);
-
-    public void componentPropertyChanged(FormModelEvent e);
-    public void syntheticPropertyChanged(FormModelEvent e);
-
-    public void eventHandlerAdded(FormModelEvent e);
-    public void eventHandlerRemoved(FormModelEvent e);
-    public void eventHandlerRenamed(FormModelEvent e);
+    /** Notification about changes made in FormModel. Type of the changes
+     * can be obtained from FormModelEvent.getChangeType() method.
+     * @param events array of events fired from FormModel
+     */
+    public void formChanged(FormModelEvent[] events);
 }

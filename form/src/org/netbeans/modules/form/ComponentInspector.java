@@ -426,7 +426,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
 
     public UndoRedo getUndoRedo() {
         UndoRedo ur = focusedForm != null ?
-                          focusedForm.getFormUndoManager() : null;
+                          focusedForm.getFormUndoRedoManager() : null;
         return ur != null ? ur : super.getUndoRedo();
     }
 
@@ -547,7 +547,11 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
     }
 
     // performer for DeleteAction
-    private class DeleteActionPerformer implements ActionPerformer {
+    private class DeleteActionPerformer implements ActionPerformer,
+                                                   Mutex.Action
+    {
+        private Node[] nodesToDestroy;
+
         public void performAction(SystemAction action) {
             Node[] selected = getExplorerManager().getSelectedNodes();
             if (selected == null || selected.length == 0)
@@ -561,27 +565,32 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
             }
             catch (PropertyVetoException e) {} // cannot be vetoed
 
-            FormModel formModel = focusedForm.getFormModel();
-
-            boolean compoundUndoableEditStarted =
-                formModel.isUndoRedoRecording() && formModel.startCompoundEdit();
-
-//            if (compoundUndoableEditStarted)
-//                formModel.addUndoableEdit(new SelectionUndo(selected));
-
-            for (int i=0; i < selected.length; i++) {
-                try {
-                    selected[i].destroy();
-                }
-                catch (IOException ex) { // should not happen
-                    ex.printStackTrace();
-                }
-            }
-
-            if (compoundUndoableEditStarted)
-                formModel.endCompoundEdit();
+            nodesToDestroy = selected;
+            if (java.awt.EventQueue.isDispatchThread())
+                doDelete();
+            else // reinvoke synchronously in AWT thread
+                Mutex.EVENT.readAccess(this);
         }
-        
+
+        public Object run() {
+            doDelete();
+            return null;
+        }
+
+        private void doDelete() {
+            if (nodesToDestroy != null) {
+                for (int i=0; i < nodesToDestroy.length; i++) {
+                    try {
+                        nodesToDestroy[i].destroy();
+                    }
+                    catch (IOException ex) { // should not happen
+                        ex.printStackTrace();
+                    }
+                }
+                nodesToDestroy = null;
+            }
+        }
+
         private boolean confirmDelete(Node[] selected) {
             String message;
             String title;
@@ -652,96 +661,50 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
     }
 
     // paste type used for ExTransferable.Multi
-    private class MultiPasteType extends PasteType {
-        private Transferable[] t;
-        private PasteType[] p;
+    private class MultiPasteType extends PasteType
+                                 implements Mutex.ExceptionAction
+    {
+        private Transferable[] transIn;
+        private PasteType[] pasteTypes;
 
         MultiPasteType(Transferable[] t, PasteType[] p) {
-            this.t = t;
-            this.p = p;
+            transIn = t;
+            pasteTypes = p;
         }
 
         // performs the paste action
         public Transferable paste() throws IOException {
-            FormModel thisForm = focusedForm.getFormModel();
-            boolean compoundEditOnThisForm = thisForm.isUndoRedoRecording()
-                                             && thisForm.startCompoundEdit();
-
-            // if this is cut operation from different form, start compound
-            // undoable edit also on the source form
-            FormModel sourceForm = null;
-            boolean compoundEditOnSourceForm = false;
-            if (p.length > 0 && p[0] instanceof CopySupport.RADPaste) {
-                CopySupport.RADPaste radPaste = (CopySupport.RADPaste) p[0];
-                if (radPaste.isComponentCut()) {
-                    RADComponent sourceComp = radPaste.getSourceComponent(true);
-                    if (sourceComp != null) {
-                        sourceForm = sourceComp.getFormModel();
-                        if (sourceForm != null && sourceForm != thisForm
-                                && sourceForm.isUndoRedoRecording())
-                            compoundEditOnSourceForm =
-                                sourceForm.startCompoundEdit();
+            if (java.awt.EventQueue.isDispatchThread())
+                return doPaste();
+            else { // reinvoke synchronously in AWT thread
+                try {
+                    return (Transferable) Mutex.EVENT.readAccess(this);
+                }
+                catch (MutexException ex) {
+                    Exception e = ex.getException();
+                    if (e instanceof IOException)
+                        throw (IOException) e;
+                    else { // should not happen, ignore
+                        e.printStackTrace();
+                        return ExTransferable.EMPTY;
                     }
                 }
             }
+        }
 
-            Transferable[] transOut = new Transferable[p.length];
+        public Object run() throws Exception {
+            return doPaste();
+        }
 
-            for (int i=0; i < p.length; i++) {
-                Transferable newTrans = p[i].paste();
-                transOut[i] = newTrans != null ? newTrans : t[i];
+        private Transferable doPaste() throws IOException {
+            Transferable[] transOut = new Transferable[transIn.length];
+            for (int i=0; i < pasteTypes.length; i++) {
+                Transferable newTrans = pasteTypes[i].paste();
+                transOut[i] = newTrans != null ? newTrans : transIn[i];
             }
-
-            if (compoundEditOnSourceForm)
-                sourceForm.endCompoundEdit();
-            if (compoundEditOnThisForm)
-                thisForm.endCompoundEdit();
-
             return new ExTransferable.Multi(transOut);
         }
     }
-
-/*    private class SelectionUndo extends AbstractUndoableEdit {
-        private RADComponent[] components;
-
-        SelectionUndo(Node[] selected) {
-            java.util.List compList = new ArrayList(selected.length);
-            for (int i=0; i < selected.length; i++) {
-                RADComponentCookie radCookie = (RADComponentCookie)
-                        selected[i].getCookie(RADComponentCookie.class);
-                if (radCookie != null)
-                   compList.add(radCookie.getRADComponent());
-            }
-            components = new RADComponent[compList.size()];
-            compList.toArray(components);
-        }
-
-        public void undo() throws CannotUndoException {
-            super.undo();
-            if (components != null && components.length > 0) {
-                Node[] nodes = new Node[components.length];
-                for (int i=0; i < components.length; i++)
-                    nodes[i] = components[i].getNodeReference();
-
-                try {
-                    getExplorerManager().setSelectedNodes(nodes);
-                }
-                catch (PropertyVetoException ex) {} // ignore
-            }
-        }
-
-        public void redo() throws CannotRedoException {
-            super.redo();
-            // redo does nothing
-        }
-
-        public String getUndoPresentationName() {
-            return ""; // NOI18N
-        }
-        public String getRedoPresentationName() {
-            return ""; // NOI18N
-        }
-    } */
 
     // -----------
 

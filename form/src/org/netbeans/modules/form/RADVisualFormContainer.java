@@ -88,11 +88,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     public void setFormSize(Dimension value) {
-         // changing more properties at once, so start a compound undobale edit
-        boolean compoundUndoableEditStarted =
-                    getFormModel().isUndoRedoRecording()
-                    && getFormModel().startCompoundEdit();
-
         Object old = formSize;
         formSize = value;
         getFormModel().fireSyntheticPropertyChanged(this, PROP_FORM_SIZE, old, value);
@@ -102,9 +97,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         
         if (getNodeReference() != null) // propagate the change to node
             getNodeReference().firePropertyChangeHelper(PROP_FORM_SIZE, old, value);
-
-        if (compoundUndoableEditStarted)
-            getFormModel().endCompoundEdit();
     }
     
     public Dimension getDesignerSize() {
@@ -115,11 +107,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     public void setDesignerSize(Dimension value) {
-         // changing more properties at once, so start a compound undobale edit
-        boolean compoundUndoableEditStarted =
-                    getFormModel().isUndoRedoRecording()
-                    && getFormModel().startCompoundEdit();
-
         Object old = getAuxValue(FormDesigner.PROP_DESIGNER_SIZE);
         setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, value);
         getFormModel().fireSyntheticPropertyChanged(
@@ -127,9 +114,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
         if (getFormSizePolicy() == GEN_BOUNDS && !getFormSize().equals(value))
             setFormSize(value);
-
-        if (compoundUndoableEditStarted)
-            getFormModel().endCompoundEdit();
     }
 
     public boolean getGeneratePosition() {
@@ -172,20 +156,12 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     public void setFormSizePolicy(int value) {
-         // changing more properties at once, so start a compound undobale edit
-        boolean compoundUndoableEditStarted =
-                    getFormModel().isUndoRedoRecording()
-                    && getFormModel().startCompoundEdit();
-
         int old = formSizePolicy;
         formSizePolicy = value;
         if (value == GEN_BOUNDS)
             setFormSize(getDesignerSize());
         getFormModel().fireSyntheticPropertyChanged(this, PROP_FORM_SIZE_POLICY,
                                         new Integer(old), new Integer(value));
-
-        if (compoundUndoableEditStarted)
-            getFormModel().endCompoundEdit();
     }
 
     // ------------------------------------------------------------------------------

@@ -13,14 +13,20 @@
 
 package org.netbeans.modules.form;
 
+import java.io.IOException;
 import java.awt.datatransfer.*;
+
 import org.openide.nodes.*;
 import org.openide.cookies.InstanceCookie;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.datatransfer.ExTransferable;
+
 import org.netbeans.modules.form.layoutsupport.*;
 
-/** Support class for copy/cut/paste operations on form.
+/**
+ * Support class for copy/cut/paste operations in form.
  *
  * @author Tomas Pavek
  */
@@ -78,7 +84,7 @@ class CopySupport {
         }
 
         public Object getTransferData(DataFlavor flavor)
-            throws UnsupportedFlavorException, java.io.IOException
+            throws UnsupportedFlavorException, IOException
         {
             if ("x-form-metacomponent".equals(flavor.getSubType())) // NOI18N
                 return radComponent;
@@ -110,7 +116,7 @@ class CopySupport {
 
     /** Paste type for meta components.
      */
-    static class RADPaste extends PasteType {
+    static class RADPaste extends PasteType implements Mutex.ExceptionAction {
         private Transferable transferable;
         private FormModel targetForm;
         private RADComponent targetComponent;
@@ -129,7 +135,30 @@ class CopySupport {
                                              "CTL_CutPaste" : "CTL_CopyPaste"); // NOI18N
         }
 
-        public Transferable paste() throws java.io.IOException {
+        public Transferable paste() throws IOException {
+            if (java.awt.EventQueue.isDispatchThread())
+                return doPaste();
+            else { // reinvoke synchronously in AWT thread
+                try {
+                    return (Transferable) Mutex.EVENT.readAccess(this);
+                }
+                catch (MutexException ex) {
+                    Exception e = ex.getException();
+                    if (e instanceof IOException)
+                        throw (IOException) e;
+                    else { // should not happen, ignore
+                        e.printStackTrace();
+                        return ExTransferable.EMPTY;
+                    }
+                }
+            }
+        }
+
+        public Object run() throws Exception {
+            return doPaste();
+        }
+
+        private Transferable doPaste() throws IOException {
             boolean fromCut = isComponentCut();
             RADComponent sourceComponent = getSourceComponent(fromCut);
 
@@ -171,10 +200,6 @@ class CopySupport {
                                                targetComponent))
                     return null; // not allowed, ignore paste
 
-                boolean compoundUndoableEditStarted =
-                          targetForm.isUndoRedoRecording()
-                          && targetForm.startCompoundEdit();
-
                 // remove source component from its parent
                 sourceForm.removeComponentFromContainer(sourceComponent);
 
@@ -215,11 +240,6 @@ class CopySupport {
                     // add the component to the target container
                     targetForm.addComponent(sourceComponent, targetContainer);
                 }
-
-                if (compoundUndoableEditStarted)
-                    targetForm.endCompoundEdit();
-
-                targetForm.getFormDesigner().setSelectedComponent(sourceComponent);
             }
 
             return ExTransferable.EMPTY;
@@ -229,7 +249,7 @@ class CopySupport {
             return transferable.isDataFlavorSupported(getComponentCutFlavor());
         }
 
-        RADComponent getSourceComponent(boolean fromCut) {
+        RADComponent getSourceComponent(boolean fromCut) throws IOException {
             RADComponent sourceComponent = null;
             try {
                 Object obj = transferable.getTransferData(
@@ -238,8 +258,8 @@ class CopySupport {
                 if (obj instanceof RADComponent)
                     sourceComponent = (RADComponent) obj;
             }
-            catch (java.io.IOException e) { } // ignore - should not happen
-            catch (UnsupportedFlavorException e) { } // ignore - should not happen
+            catch (UnsupportedFlavorException e) { // ignore - should not happen
+            }
 
             return sourceComponent;
         }
@@ -249,7 +269,9 @@ class CopySupport {
 
     /** Paste type for InstanceCookie.
      */
-    static class InstancePaste extends PasteType {
+    static class InstancePaste extends PasteType
+                               implements Mutex.ExceptionAction
+    {
         private Transferable transferable;
         private FormModel targetForm;
         private RADComponent targetComponent;
@@ -263,7 +285,30 @@ class CopySupport {
             this.targetComponent = targetComponent;
         }
 
-        public final Transferable paste() throws java.io.IOException {
+        public Transferable paste() throws IOException {
+            if (java.awt.EventQueue.isDispatchThread())
+                return doPaste();
+            else { // reinvoke synchronously in AWT thread
+                try {
+                    return (Transferable) Mutex.EVENT.readAccess(this);
+                }
+                catch (MutexException ex) {
+                    Exception e = ex.getException();
+                    if (e instanceof IOException)
+                        throw (IOException) e;
+                    else { // should not happen, ignore
+                        e.printStackTrace();
+                        return transferable;
+                    }
+                }
+            }
+        }
+
+        public Object run() throws Exception {
+            return doPaste();
+        }
+
+        private Transferable doPaste() throws IOException {
             InstanceCookie ic =
                 (InstanceCookie) NodeTransfer.cookie(transferable,
                                                      NodeTransfer.COPY,

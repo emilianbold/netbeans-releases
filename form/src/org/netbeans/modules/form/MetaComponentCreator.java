@@ -132,10 +132,6 @@ public class MetaComponentCreator {
             LayoutSupportManager.storeConstraints(
                                      (RADVisualComponent) sourceComp);
 
-        // start compound undoable edit
-        boolean compoundUndoableEditStarted = formModel.isUndoRedoRecording()
-                                              && formModel.startCompoundEdit();
-
         // turn on undo/redo recording on code structure (if allowed)
         CodeStructure codeStructure = formModel.getCodeStructure();
         if (formModel.isUndoRedoRecording()
@@ -151,20 +147,18 @@ public class MetaComponentCreator {
         RADComponent newMetaComp = makeCopy(sourceComp, targetPlacement);
 
         if (newMetaComp == null) { // copying failed (for a mystic reason)
-            if (undoEdit != null)
+            if (undoEdit != null) {
                 codeStructure.setUndoRedoRecording(false);
-            if (compoundUndoableEditStarted) {
-                formModel.setUndoRedoRecording(false); // don't record the edit
-                formModel.endCompoundEdit();
-                formModel.setUndoRedoRecording(true);
+                undoEdit = null;
             }
-            undoEdit = null;
             return null;
         }
 
         if (undoEdit != null) { // finish undo/redo recording on code structure
             undoEdit.codeUndoRedoEnd = codeStructure.markForUndo();
             codeStructure.setUndoRedoRecording(false);
+            if (!formModel.isCompoundEditInProgress())
+                formModel.fireFormChanged(); // to start compound undo [a bit ugly...]
             formModel.addUndoableEdit(undoEdit);
             undoEdit = null;
         }
@@ -190,9 +184,6 @@ public class MetaComponentCreator {
             addOtherComponent(newMetaComp, targetComp);
         }
         else finishCreatorCodeUndoableEdit();
-
-        if (compoundUndoableEditStarted)
-            formModel.endCompoundEdit(); // finish compound undoable edit
 
         return newMetaComp;
     }
@@ -263,10 +254,6 @@ public class MetaComponentCreator {
         if (targetPlacement == NO_TARGET)
             return null;
 
-        // start compound undoable edit
-        boolean compoundUndoableEditStarted = formModel.isUndoRedoRecording()
-                                              && formModel.startCompoundEdit();
-
         // turn on undo/redo recording on code structure (if allowed)
         CodeStructure codeStructure = formModel.getCodeStructure();
         if (formModel.isUndoRedoRecording()
@@ -275,6 +262,8 @@ public class MetaComponentCreator {
             codeStructure.setUndoRedoRecording(true);
             undoEdit = new CreatorCodeUndoableEdit();
             undoEdit.codeUndoRedoStart = codeStructure.markForUndo();
+            if (!formModel.isCompoundEditInProgress())
+                formModel.fireFormChanged(); // to start compound undo [a bit ugly...]
             formModel.addUndoableEdit(undoEdit);
         }
         else undoEdit = null;
@@ -294,8 +283,6 @@ public class MetaComponentCreator {
 
         // finish undo setup
         undoEdit = null;
-        if (compoundUndoableEditStarted)
-            formModel.endCompoundEdit();
 
         return newMetaComp;
     }
@@ -638,8 +625,6 @@ public class MetaComponentCreator {
         }
         else formModel.addComponent(newMetaComp, null);
 
-        getDesigner().setSelectedComponent(newMetaComp);
-
         return newMetaComp;
     }
 
@@ -667,8 +652,6 @@ public class MetaComponentCreator {
             (ComponentContainer) targetComp : null;
 
         formModel.addComponent(newMetaComp, targetCont);
-
-        getDesigner().setSelectedComponent(newMetaComp);
     }
 
     private RADComponent setContainerLayout(
@@ -775,12 +758,6 @@ public class MetaComponentCreator {
             em.notify(t);
             return null;
         }
-
-        FormNode node = metacont.getLayoutNodeReference();
-        if (node != null) {
-            getDesigner().setSelectedNode(node);
-        }
-        else getDesigner().setSelectedComponent(metacont);
 
         return metacont;
     }
@@ -983,8 +960,6 @@ public class MetaComponentCreator {
         }
 
         formModel.addComponent(newMenuComp, menuContainer);
-
-        getDesigner().setSelectedComponent(newMenuComp);
     }
 
     // --------
