@@ -31,14 +31,12 @@ import org.netbeans.jemmy.operators.JTreeOperator;
  * tree()) and nodes (method getRootNode()).<p>
  * Example:<p>
  * <pre>
- *  ProjectsTabOperator tab = ExplorerOperator.invoke().projectTab();
- *  // or when Explorer is already invoked
- *  ProjectsTabOperator tab = new ExplorerOperator().projectsTab();
- *  // or when tab is already (un)docked sowhere else
- *  ProjectsTabOperator tab = ProjectsTabOperator();
+ *      ProjectsTabOperator tab = ProjectsTabOperator.invoke();
+ *      // or when tab is already opened anywhere
+ *      ProjectsTabOperator tab = new ProjectsTabOperator();
  *
- *  JTreeOperator tree = tab.tree();
- *  System.out.println(tab.getRootNode().getText());
+ *      JTreeOperator tree = tab.tree();
+ *      System.out.println(tab.getRootNode().getText());
  * </pre> */
 public class ProjectsTabOperator extends TopComponentOperator {
     
