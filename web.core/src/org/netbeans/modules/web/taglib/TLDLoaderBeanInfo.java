@@ -26,7 +26,7 @@ public class TLDLoaderBeanInfo extends SimpleBeanInfo {
      * @return returns the Image loader's icon
      */
     public Image getIcon(int type) {
-        return org.openide.util.Utilities.loadImage("/org/netbeans/modules/web/taglib/resources/tags.gif"); // NOI18N
+        return org.openide.util.Utilities.loadImage("org/netbeans/modules/web/taglib/resources/tags.gif"); // NOI18N
     }
 }
 
