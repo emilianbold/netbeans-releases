@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?><!-- -*- sgml-indent-step: 2 -*- -->
 <!--
                 Sun Public License Notice
 
@@ -139,6 +139,8 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <delete dir="Info"/>
     <delete dir="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch2"/>
     <delete dir="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
+    <!-- See target 'release-helper': -->
+    <delete dir="release-work"/>
   </target>
 
   <target name="real-clean" depends="clean">
