@@ -290,7 +290,11 @@ public class KeyBindings extends JDialogOperator {
     public static KeyBindings invoke(String editorName) {
         OptionsOperator options = OptionsOperator.invoke();
         options.selectOption(ResourceBundle.getBundle("org/netbeans/core/Bundle").getString("UI/Services/Editing")+"|"+ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("OPTIONS_all")+"|" + editorName);
-        new EventTool().waitNoEvent(500);
+        //new EventTool().waitNoEvent(500);
+        try {
+            Thread.sleep(1000);
+        } catch (Exception ex) {
+        }
         PropertySheetOperator property = new PropertySheetOperator(options);
         PropertySheetTabOperator psto = new PropertySheetTabOperator(property);
         TextFieldProperty tfp=new TextFieldProperty(psto, ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("PROP_KeyBindings"));
