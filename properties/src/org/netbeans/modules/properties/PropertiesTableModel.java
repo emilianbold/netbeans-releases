@@ -242,18 +242,19 @@ public class PropertiesTableModel extends AbstractTableModel {
           if (entry != null) {
             PropertiesStructure ps = entry.getHandler().getStructure();
             if (ps != null) {    
+              // set the key
               if (!oldValue.equals(newValue)) {
                 ps.renameItem(oldValue, newValue);
-                if (i == 0) {
-                  Element.ItemElem item = ps.getItem(newValue);
-                  if (item != null) {
-                    // only set if they differ
-                    if (!item.getComment().equals(((StringPair)aValue).getComment()))
-                      // set it
-                      item.setComment(((StringPair)aValue).getComment());
-                  }                  
-                }                                
               }
+              // set the comment
+              if (i == 0) {
+                Element.ItemElem item = ps.getItem(newValue);
+                if (item != null && ((StringPair)aValue).isCommentEditable()) {
+                  // only set if they differ
+                  if (!item.getComment().equals(((StringPair)aValue).getComment()))
+                    item.setComment(((StringPair)aValue).getComment());
+                }                  
+              }                                
             }
           }  
         }  

@@ -24,6 +24,7 @@ import java.util.ResourceBundle;
 
 import org.openide.util.datatransfer.*;
 import org.openide.actions.*;
+import org.openide.cookies.SaveCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.ViewCookie;
 import org.openide.util.HelpCtx;
@@ -262,6 +263,7 @@ public class KeyNode extends AbstractNode {
   /** Returns all the item in addition to "normal" cookies. */
   public Node.Cookie getCookie(Class cls) {
     if (cls.isInstance(getItem())) return getItem();
+    if (cls.equals(SaveCookie.class)) return struct.getParent().getEntry().getCookie(cls);
     return super.getCookie(cls);
   }
 
@@ -280,6 +282,8 @@ public class KeyNode extends AbstractNode {
 
 /*
  * <<Log>>
+ *  12   Gandalf   1.11        10/25/99 Petr Jiricka    Fixes in a number of 
+ *       areas - saving, UI, cookies, ...
  *  11   Gandalf   1.10        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  10   Gandalf   1.9         8/9/99   Petr Jiricka    Removed debug prints

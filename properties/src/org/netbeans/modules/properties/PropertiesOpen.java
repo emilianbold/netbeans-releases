@@ -65,8 +65,8 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
   PropertyChangeListener modifL;
   
   private PropertiesTableModel tableModel = null;
-//  private CloneableTopComponent modalTopComponent;
   private Dialog dialog;
+  private boolean closingLast = false;
 
 
   /** Constructor */
@@ -80,7 +80,11 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
   void setRef(CloneableTopComponent.Ref ref) {
     allEditors = ref;
   }
-  
+                                                                    
+  /** Only here because of a compiler bug */                                                                  
+  public final CloneableTopComponent openCloneableTopComponentPublic() {
+    return openCloneableTopComponent();
+  }  
   /** A method to create a new component. Must be overridden in subclasses.
   * @return the cloneable top component for this support
   */
@@ -98,6 +102,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
   }
   
   public synchronized boolean hasOpenComponent() {
+    if (closingLast) return false;
     java.util.Enumeration en = allEditors.getComponents ();
     return en.hasMoreElements ();
   }
@@ -109,11 +114,13 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
   }
                                                                        
 
-  private void closeDocuments() {
+  private synchronized void closeDocuments() {
+    closingLast = true;
     closeEntry((PropertiesFileEntry)obj.getPrimaryEntry());
     for (Iterator it = obj.secondaryEntries().iterator(); it.hasNext(); ) {
       closeEntry((PropertiesFileEntry)it.next());
     }
+    closingLast = false;
   }
   
   private void closeEntry(PropertiesFileEntry entry) {
@@ -135,6 +142,8 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
   protected boolean canClose () {
     SaveCookie savec = (SaveCookie) obj.getCookie(SaveCookie.class);
     if (savec != null) {
+      if (!shouldAskSave())
+        return true;
       MessageFormat format = new MessageFormat(NbBundle.getBundle(PropertiesOpen.class).getString("MSG_SaveFile"));
       String msg = format.format(new Object[] { obj.getName()});
       NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_CANCEL_OPTION);
@@ -155,7 +164,27 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
     }
     return true;
   }
-
+                    
+  /** Returns true if closing this editor whithout saving would result in loss of data
+  *  because al least one of the modified files is not open in the code editor.
+  *  Should be called only if the object has SaveCookie
+  */                  
+  private boolean shouldAskSave() {
+    // for each entry : if there is a SaveCookie and no open editor component, return true.
+    // if passed for all entries, return false
+    PropertiesFileEntry entry = (PropertiesFileEntry)obj.getPrimaryEntry();
+    SaveCookie savec = (SaveCookie)entry.getCookie(SaveCookie.class);
+    if ((savec != null) && !entry.getPropertiesEditor().hasOpenEditorComponent())
+      return true;
+    for (Iterator it = obj.secondaryEntries().iterator(); it.hasNext(); ) {
+      entry = (PropertiesFileEntry)it.next();
+      savec = (SaveCookie)entry.getCookie(SaveCookie.class);
+      if ((savec != null) && !entry.getPropertiesEditor().hasOpenEditorComponent())
+        return true;
+    }
+    return false;                                          
+  }
+  
   /** Class for opening at a given key. */                                                                     
   public class PropertiesOpenAt implements OpenCookie {
     
@@ -176,14 +205,16 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
     }
     
     public void open() {
+      PropertiesCloneableTopComponent editor = (PropertiesCloneableTopComponent)openCloneableTopComponentPublic();
       PropertiesOpen.this.open();           
       BundleStructure bs = obj.getBundleStructure();
       // find the entry   
       int entryIndex = bs.getEntryIndexByFileName(entry.getFile().getName());
       int rowIndex   = bs.getKeyIndexByName(key);                                 
       if ((entryIndex != -1) && (rowIndex != -1)) {
-        // PENDING
+        editor.editCellAt(rowIndex, entryIndex + 1);
       }  
+      editor.requestFocus();
     }                 
     
   }
@@ -192,7 +223,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
     
     private PropertiesDataObject dobj;
     private transient PropertyChangeListener cookieL;
-//    PropertiesTableColumnModel ptcm;
+    private transient JPanel mainPanel;
 
     /** The string which will be appended to the name of top component
     * when top component becomes modified */
@@ -247,6 +278,11 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
     public HelpCtx getHelpCtx () {
       return new HelpCtx (PropertiesCloneableTopComponent.class);
     }
+    
+    public void editCellAt(int row, int column) {
+      ((BundleEditPanel)mainPanel).stopEditing();
+      ((BundleEditPanel)mainPanel).getTable().editCellAt(row, column);
+    }
 
     /** Inits the subcomponents. */ 
     private void initComponents() {
@@ -258,7 +294,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       c.weightx = 1.0;
       c.weighty = 1.0;
       c.gridwidth = GridBagConstraints.REMAINDER; 
-      JPanel mainPanel = new BundleEditPanel(dobj, dobj.getOpenSupport().getTableModel());
+      mainPanel = new BundleEditPanel(dobj, dobj.getOpenSupport().getTableModel());
       gridbag.setConstraints(mainPanel, c);
       add (mainPanel);
     }
@@ -287,7 +323,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       if (!dobj.getOpenSupport().canClose ()) {
         // if we cannot close the last window
         return false;
-      }
+      }                   
       dobj.getOpenSupport().closeDocuments();
       
       return true;
@@ -418,40 +454,3 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
   } // end of SavingManager inner class
 
 }
-
-/*
- * <<Log>>
- *  24   Gandalf   1.23        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  23   Gandalf   1.22        10/13/99 Petr Jiricka    Debug messages removed
- *  22   Gandalf   1.21        10/12/99 Petr Jiricka    Fixes in modified/save 
- *       functionality, fix of "allEditors " reference serialization
- *  21   Gandalf   1.20        10/12/99 Petr Jiricka    Mode changed to editor 
- *       mode
- *  20   Gandalf   1.19        10/10/99 Petr Hamernik   console debug messages 
- *       removed.
- *  19   Gandalf   1.18        9/23/99  Petr Jiricka    Fixed "==" string 
- *       comparisons (JLint)
- *  18   Gandalf   1.17        9/2/99   Petr Jiricka    Modal opener
- *  17   Gandalf   1.16        8/18/99  Petr Jiricka    Lost of changes about 
- *       saving
- *  16   Gandalf   1.15        8/17/99  Petr Jiricka    Changes related to 
- *       saving
- *  15   Gandalf   1.14        8/9/99   Petr Jiricka    Removed debug prints
- *  14   Gandalf   1.13        7/19/99  Jesse Glick     Context help.
- *  13   Gandalf   1.12        7/13/99  Petr Jiricka    Properties mode added
- *  12   Gandalf   1.11        7/13/99  Ales Novak      new window system
- *  11   Gandalf   1.10        7/8/99   Jesse Glick     Context help.
- *  10   Gandalf   1.9         6/23/99  Petr Jiricka    
- *  9    Gandalf   1.8         6/22/99  Petr Jiricka    
- *  8    Gandalf   1.7         6/18/99  Petr Jiricka    
- *  7    Gandalf   1.6         6/18/99  Petr Jiricka    
- *  6    Gandalf   1.5         6/16/99  Petr Jiricka    
- *  5    Gandalf   1.4         6/9/99   Petr Jiricka    
- *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  3    Gandalf   1.2         6/8/99   Petr Jiricka    
- *  2    Gandalf   1.1         6/6/99   Petr Jiricka    
- *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
- * $
- */

@@ -16,10 +16,12 @@ package com.netbeans.developer.modules.loaders.properties;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableCellEditor;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.SwingUtilities;
+import javax.swing.JTable;
 import java.awt.Color;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -101,6 +103,13 @@ public class BundleEditPanel extends javax.swing.JPanel {
       }
     });
   }
+  
+  void stopEditing() {
+    if (!theTable.isEditing()) return;
+    TableCellEditor cellEdit = theTable.getCellEditor();
+    if (cellEdit != null)
+      cellEdit.stopCellEditing();
+  }
 
   private void selectionChanged() {  
     // label for the key/value
@@ -168,6 +177,11 @@ public class BundleEditPanel extends javax.swing.JPanel {
       textComment.setEditable(false);
       textComment.setEnabled(false);
     }  
+  }
+          
+  /** Returns the main table with all values */        
+  public JTable getTable() {
+    return theTable;
   }
     
   /** This method is called from within the constructor to
@@ -340,6 +354,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
   }//GEN-END:initComponents
 
 private void removeButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
+    stopEditing();
     PropertiesTableModel.StringPair sp = 
       (PropertiesTableModel.StringPair)theTable.getModel().getValueAt(rowSelections.getMinSelectionIndex(), 0);
     NotifyDescriptor.Confirmation msg = new NotifyDescriptor.Confirmation(
@@ -361,6 +376,7 @@ private void removeButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN
   }//GEN-LAST:event_removeButtonActionPerformed
 
 private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
+    stopEditing();
     DialogDescriptor.InputLine descr = new DialogDescriptor.InputLine(
       NbBundle.getBundle(BundleEditPanel.class).getString ("CTL_PropertyKey"),
       NbBundle.getBundle(BundleEditPanel.class).getString("CTL_NewPropertyTitle"));
@@ -408,11 +424,3 @@ private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FI
   // End of variables declaration//GEN-END:variables
 
 }
-/*
- * <<Log>>
- *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  2    Gandalf   1.1         10/12/99 Petr Jiricka    
- *  1    Gandalf   1.0         8/18/99  Petr Jiricka    
- * $
- */
