@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,7 +28,7 @@ import org.apache.tools.ant.types.FileSet;
  * Causes the containing target to both depend on the building of the modules in
  * the first place; and then to unpack them all to a certain location.
  *
- * @author Jesse Glick
+ * @author various people
  *
  * 2002-07-31: Rudolf Balada Added build success granularity (Issue 9701),
  *             fixed modules can't fail, "modules" can fail
@@ -158,7 +158,7 @@ public class NbMerge extends Task {
 
     
     /** Execute targets which cannot fail and though throw BuildException */
-    private void FixedModulesBuild () throws BuildException {
+    private void fixedModulesBuild() throws BuildException {
         // Somewhat convoluted code because Project.executeTargets does not
         // eliminate duplicates when analyzing dependencies! Ecch.
         // build fixed modules first
@@ -199,7 +199,7 @@ public class NbMerge extends Task {
     }
     
     /** Execute targets which can fail _without_ throwing BuildException */
-    private void ModulesBuild () throws BuildException {
+    private void modulesBuild() throws BuildException {
         String module;
         if ( ! failonerror ) {
             // build the rest of modules
@@ -265,13 +265,13 @@ public class NbMerge extends Task {
         } 
 
         // build of fixed modules
-        FixedModulesBuild ();
+        fixedModulesBuild();
         
         // build of the rest of modules
-        ModulesBuild ();
+        modulesBuild();
         
         // final data merging
-        DataMerge();
+        dataMerge();
 
         // display build success status
         if (builtmodules.size() > 0 ) {
@@ -308,7 +308,7 @@ public class NbMerge extends Task {
     }
 
     /** Do final data merge */
-    private void DataMerge () throws BuildException {
+    private void dataMerge() throws BuildException {
         List suppressedlocales = new LinkedList (); // List<String>
         Iterator it = suppress.iterator ();
         while (it.hasNext ()) {
