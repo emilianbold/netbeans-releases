@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Comparator;
 
 /**
  * @author pfiala
@@ -148,13 +149,31 @@ public class EntityHelper extends EntityAndSessionHelper {
         }
 
         public CmpFieldHelper getCmpFieldHelper(int row) {
-            CmpField field = entity.getCmpField(row);
+            CmpField field = getCmpField(row);
             CmpFieldHelper cmpFieldHelper = (CmpFieldHelper) cmpFieldHelperMap.get(field);
             if (cmpFieldHelper == null) {
                 cmpFieldHelper = new CmpFieldHelper(EntityHelper.this, field);
                 cmpFieldHelperMap.put(field, cmpFieldHelper);
             }
             return cmpFieldHelper;
+        }
+
+        private CmpField getCmpField(int row) {
+            CmpField[] cmpFields = entity.getCmpField();
+            Arrays.sort(cmpFields, new Comparator() {
+                public int compare(Object o1, Object o2) {
+                    String s1 = ((CmpField) o1).getFieldName();
+                    String s2 = ((CmpField) o2).getFieldName();
+                    if (s1 == null) {
+                        s1 = "";
+                    }
+                    if (s2 == null) {
+                        s2 = "";
+                    }
+                    return s1.compareTo(s2);
+                }
+            });
+            return cmpFields[row];
         }
 
         public void addPropertyChangeListener(PropertyChangeListener listener) {
