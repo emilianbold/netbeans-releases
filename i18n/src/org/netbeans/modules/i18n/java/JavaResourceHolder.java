@@ -26,6 +26,7 @@ import org.netbeans.modules.properties.BundleStructure;
 import org.netbeans.modules.properties.Element;
 import org.netbeans.modules.properties.PropertiesDataObject;
 import org.netbeans.modules.properties.PropertiesStructure;
+import org.netbeans.modules.properties.UtilConvert;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -106,24 +107,28 @@ public class JavaResourceHolder extends ResourceHolder {
         if(resource == null || key == null)
             return;
 
+        String keyValue     = UtilConvert.charsToUnicodes(UtilConvert.escapeJavaSpecialChars(UtilConvert.escapePropertiesSpecialChars(key.toString())));
+        String valueValue   = value == null ? null : UtilConvert.charsToUnicodes(UtilConvert.escapeJavaSpecialChars(UtilConvert.escapeLineContinuationChar(value.toString())));
+        String commentValue = comment == null ? null : UtilConvert.charsToUnicodes(comment);
+        
         try {
             BundleStructure bundleStructure = ((PropertiesDataObject)resource).getBundleStructure();
 
             for(int i=0; i<bundleStructure.getEntryCount(); i++) {
                 PropertiesStructure propStructure = bundleStructure.getNthEntry(i).getHandler().getStructure();
-                Element.ItemElem item = propStructure.getItem(key.toString());
+                Element.ItemElem item = propStructure.getItem(keyValue);
 
                 if(item == null) {
                     // Item doesn't exist in this entry -> create it.
-                    propStructure.addItem(key.toString(), (value == null) ? null : value.toString(), comment);
-                } else if(!item.getValue().equals(value) && I18nUtil.getOptions().isReplaceResourceValue()) {
-                    item.setValue((String)value);
-                    item.setComment(comment);
+                    propStructure.addItem(keyValue, valueValue, commentValue);
+                } else if(!item.getValue().equals(valueValue) && I18nUtil.getOptions().isReplaceResourceValue()) {
+                    item.setValue(valueValue);
+                    item.setComment(commentValue);
                 }
             }
 
         } catch(NullPointerException npe) {
-            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+            if(I18nUtil.isDebug())
                 npe.printStackTrace();
             TopManager.getDefault().notifyException(npe);
         }
