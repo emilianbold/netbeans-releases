@@ -30,7 +30,7 @@ import org.netbeans.modules.xml.multiview.cookies.LinkCookie;
  */
 public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel {
     
-    private HashMap map = new HashMap();
+    private HashMap errorComponentMap = new HashMap();
     //private JScrollPane scrollPane;
     private Node activeNode=null;
     private SectionView sectionView;
@@ -39,6 +39,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     private boolean active;
     //private JPanel parentSection;
     private JPanel contentPanel;
+    private Object key;
     
     /** Creates new form SectionContainer */
 
@@ -112,15 +113,15 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     }
     
     /** Method from NodeSectionPanel interface */
-    public void scroll(javax.swing.JScrollPane scrollPane) {
-        Point location = SwingUtilities.convertPoint(this, getLocation(),scrollPane);
+    public void scroll() {
+        Point location = SwingUtilities.convertPoint(this, getLocation(),sectionView.scrollPane);
         location.x=0;
-        scrollPane.getViewport().setViewPosition(location);
+        sectionView.scrollPane.getViewport().setViewPosition(location);
     }
     
     /** Method from NodeSectionPanel interface */
     public void setActive(boolean active) {
-        System.out.println("setActive = "+active +":"+node.getDisplayName());
+        //System.out.println("setActive = "+active +":"+node.getDisplayName());
         titleButton.setBackground(active?SectionVisualTheme.getSectionHeaderActiveColor():SectionVisualTheme.getSectionHeaderColor());
         if (active && !this.equals(sectionView.getActivePanel())) {
             sectionView.sectionSelected(true);
@@ -240,5 +241,23 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
                 });
             }
         }
+        
+        public abstract javax.swing.JComponent[] getErrorComponents();
+    }
+    
+    public void setKey (Object key) {
+        this.key=key;
+    }
+    
+    public Object getKey() {
+        return key;
+    }
+    
+    public void addErrorComponent(String name, JComponent errorComponent) {
+        errorComponentMap.put(name, errorComponent);
+    }
+    
+    public JComponent getErrorComponent(String name) {
+        return (JComponent) errorComponentMap.get(name);
     }
 }

@@ -33,7 +33,15 @@ public class ErrorPanel extends javax.swing.JPanel {
         errorButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 javax.swing.JComponent comp = ErrorPanel.this.getFocusableComponent();
-                if (comp!=null) comp.requestFocus();
+                if (comp!=null) {
+                    comp.requestFocus();
+                    java.awt.Container cont = comp.getParent();
+                    if (cont !=null ) cont = cont.getParent();
+                    if (cont!=null && cont instanceof SectionPanel) {
+                        ((SectionPanel)cont).open();
+                        ((SectionPanel)cont).scroll();
+                    }
+                }
             }
         });
         add(errorButton,java.awt.BorderLayout.CENTER);

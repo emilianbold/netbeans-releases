@@ -24,7 +24,7 @@ import org.netbeans.modules.xml.multiview.cookies.SectionFocusCookie;
  */
 public class SectionView extends PanelView implements SectionFocusCookie {
     private JPanel scrollPanel, filler;
-    private javax.swing.JScrollPane scrollPane;
+    javax.swing.JScrollPane scrollPane;
     private java.util.Hashtable map;
     private int sectionCount=0;
     private NodeSectionPanel activePanel;
@@ -46,7 +46,7 @@ public class SectionView extends PanelView implements SectionFocusCookie {
     public boolean focusSection(NodeSectionPanel panel) {
         panel.open();
         openParents((JPanel)panel);
-        panel.scroll(scrollPane);
+        panel.scroll();
         setActivePanel(panel);
         panel.setActive(true);
         return true;
@@ -124,7 +124,7 @@ public class SectionView extends PanelView implements SectionFocusCookie {
     }
     
     public void showSelection(org.openide.nodes.Node[] nodes) {
-        System.out.println("showSelection "+nodes[0]+":"+sectionSelected);
+        //System.out.println("showSelection "+nodes[0]+":"+sectionSelected);
         if (sectionSelected) {
             sectionSelected=false;
             return;
@@ -141,6 +141,24 @@ public class SectionView extends PanelView implements SectionFocusCookie {
     
     void sectionSelected(boolean sectionSelected) {
         this.sectionSelected=sectionSelected;
+    }
+    
+    public org.netbeans.modules.xml.multiview.Error validatePanel() {
+        return null;
+    }
+    
+    public SectionPanel findSectionPanel(Object key) {
+        java.util.Enumeration en = map.keys();
+        while (en.hasMoreElements()) {
+            NodeSectionPanel pan = (NodeSectionPanel)map.get(en.nextElement());
+            if (pan instanceof SectionPanel) {
+                SectionPanel p = (SectionPanel)pan;
+                if (key==p.getKey()) {
+                    return p;
+                }
+            }
+        }
+        return null;
     }
     
 }

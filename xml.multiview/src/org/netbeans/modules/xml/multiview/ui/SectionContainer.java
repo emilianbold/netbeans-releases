@@ -69,10 +69,10 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
     }
 
     /** Method from NodeSectionPanel interface */
-    public void scroll(javax.swing.JScrollPane scrollPane) {
-        Point location = SwingUtilities.convertPoint(this, getLocation(),scrollPane);
+    public void scroll() {
+        Point location = SwingUtilities.convertPoint(this, getLocation(),sectionView.scrollPane);
         location.x=0;
-        scrollPane.getViewport().setViewPosition(location);
+        sectionView.scrollPane.getViewport().setViewPosition(location);
     }
     
     /** Method from NodeSectionPanel interface */
