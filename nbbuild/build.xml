@@ -1788,7 +1788,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <mkdir dir="${netbeans.dest.dir}"/>
     <delete includeEmptyDirs="true">
       <fileset dir="${netbeans.dest.dir}">
-        <include name="${netbeans.dest.dir}/*.built"/>
+        <include name="*.built"/>
       </fileset>
     </delete>
   </target>
