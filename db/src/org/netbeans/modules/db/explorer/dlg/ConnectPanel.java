@@ -73,6 +73,8 @@ public class ConnectPanel extends javax.swing.JPanel implements DocumentListener
         userTextField.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectDialogUserNameTextFieldA11yName")); //NOI18N
         passwordLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectDialogPasswordA11yDesc")); //NOI18N
         passwordField.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectDialogPasswordTextFieldA11yName")); //NOI18N
+        connectProgressBar.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yName")); //NOI18N
+        connectProgressBar.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc")); //NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -139,6 +141,7 @@ public class ConnectPanel extends javax.swing.JPanel implements DocumentListener
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 11);
         add(userTextField, gridBagConstraints);
 
+        connectProgressBar.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc"));
         connectProgressBar.setString("");
         connectProgressBar.setStringPainted(true);
         gridBagConstraints = new java.awt.GridBagConstraints();

@@ -64,6 +64,10 @@ public class SchemaPanel extends javax.swing.JPanel {
         schemaComboBox.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_SchemaDialogTextComboBoxA11yName")); //NOI18N
         commentTextArea.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_SchemaPanelCommentA11yName")); //NOI18N
         commentTextArea.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_SchemaPanelCommentA11yDesc")); //NOI18N
+        connectProgressBar.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yName")); //NOI18N
+        connectProgressBar.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc")); //NOI18N
+        schemaButton.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_GetSchemasButtonA11yName")); //NOI18N
+        schemaButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_GetSchemasButtonA11yDesc")); //NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -120,6 +124,7 @@ public class SchemaPanel extends javax.swing.JPanel {
 
         schemaButton.setMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("SchemaDialogGetButton_Mnemonic").charAt(0));
         schemaButton.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("SchemaDialogGetButton"));
+        schemaButton.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_GetSchemasButtonA11yDesc"));
         schemaButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 schemaButtonActionPerformed(evt);
@@ -133,6 +138,7 @@ public class SchemaPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         add(schemaButton, gridBagConstraints);
 
+        connectProgressBar.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc"));
         connectProgressBar.setString("");
         connectProgressBar.setStringPainted(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
