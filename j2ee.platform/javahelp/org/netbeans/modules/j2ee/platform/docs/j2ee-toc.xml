@@ -222,6 +222,7 @@
 <tocitem text="Developing Web Services">
          <tocitem text="About Web Services" >
 		<tocitem text="About Web Services" target="about_web_service" />
+		<tocitem text="About the Web Service Architecture" target="about_jwsd_architecture" />
 		<tocitem text="Working with Web Services" target="ws_process" />
 		<tocitem text="Web Service Tasks: Quick Reference" target="tbd" />
   	 </tocitem>
