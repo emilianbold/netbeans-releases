@@ -82,7 +82,7 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Templates">
     <folder name="TestTools">
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
-      <file name="test" url="templates/build_xml">
+      <file name="MyTestWorkspace.xml" url="templates/build.xml.template">
         <attr name="template" boolvalue="true"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestWorkspaceWizardIterator.singleton"/>
@@ -91,7 +91,7 @@ Microsystems, Inc. All Rights Reserved.
       </file>
       <file name="cfg-.xml" url="templates/cfg-.xml.template">
       </file>
-      <file name="qa-functional" url="templates/qa-functional.group.template">
+      <file name="qa-functional.group" url="templates/qa-functional.group.template">
         <attr name="template" boolvalue="true"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestTypeWizardIterator.singleton"/>

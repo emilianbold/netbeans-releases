@@ -23,6 +23,8 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.TopManager;
+import org.openide.loaders.DataFolder;
+import java.util.HashSet;
 
 /**
  *
@@ -49,7 +51,6 @@ public class TestTypeWizardIterator extends WizardIterator {
             new TestTypeSettingsPanel(),
             new TestBagSettingsPanel(),
             new TestSuiteTargetPanel(),
-            new TestSuiteSettingsPanel(),
             new TestCasesPanel()
         };
         names = new String[] {
@@ -57,7 +58,6 @@ public class TestTypeWizardIterator extends WizardIterator {
             "Test Type Settings",
             "Test Bag Settings",
             "Test Suite Target Location",
-            "Test Suite Settings",
             "Create Test Cases"
         };
         for (int i=0; i<panels.length; i++) {
@@ -68,11 +68,13 @@ public class TestTypeWizardIterator extends WizardIterator {
     }
     
     public java.util.Set instantiate(TemplateWizard wizard) throws java.io.IOException {
-        return null;
+        String name=wizard.getTargetName();
+        if (name==null)
+            name=wizard.getTemplate().getPrimaryFile().getName();
+        DataFolder.create(wizard.getTargetFolder(), name+"/src");
+        HashSet set=new HashSet();
+        set.add(wizard.getTemplate().createFromTemplate(wizard.getTargetFolder(), wizard.getTargetName()));
+        return set;
     }
-
-    /**
-     * @param args the command line arguments
-     */
     
 }

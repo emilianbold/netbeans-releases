@@ -23,6 +23,12 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.TopManager;
+import java.util.HashSet;
+import java.util.Vector;
+import org.netbeans.modules.java.JavaDataObject;
+import org.openide.src.MethodElement;
+import org.openide.src.SourceException;
+import org.openide.ErrorManager;
 
 /**
  *
@@ -46,12 +52,10 @@ public class TestSuiteWizardIterator extends WizardIterator {
         this.wizard=wizard;
         panels=new WizardDescriptor.Panel[] {
             wizard.targetChooser(),
-            new TestSuiteSettingsPanel(),
             new TestCasesPanel()
         };
         names = new String[] {
             "Test Suite "+wizard.targetChooser().getComponent().getName(),
-            "Test Suite Settings",
             "Create Test Cases"
         };
         for (int i=0; i<panels.length; i++) {
@@ -62,11 +66,18 @@ public class TestSuiteWizardIterator extends WizardIterator {
     }
     
     public java.util.Set instantiate(TemplateWizard wizard) throws java.io.IOException {
-        return null;
+        Vector methods=(Vector)wizard.getProperty(METHODS_PROPERTY);
+        JavaDataObject jdo=(JavaDataObject)wizard.getTemplate();
+        MethodElement[] templates=getTemplateMethods(jdo);
+        jdo=(JavaDataObject)jdo.createFromTemplate(wizard.getTargetFolder(), wizard.getTargetName());
+        try {
+            transformTemplateMethods(jdo, (CaseElement[])methods.toArray(new CaseElement[methods.size()]), templates);
+        } catch (SourceException se) {
+            ErrorManager.getDefault().notify(se);
+        }
+        HashSet set=new HashSet();
+        set.add(jdo);
+        return set;
     }
-
-    /**
-     * @param args the command line arguments
-     */
     
 }

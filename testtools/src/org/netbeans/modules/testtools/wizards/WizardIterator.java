@@ -20,7 +20,10 @@ package org.netbeans.modules.testtools.wizards;
  */
 
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.StringTokenizer;
 import java.lang.reflect.Modifier;
 import javax.swing.event.ChangeListener;
 
@@ -31,6 +34,7 @@ import org.openide.src.ClassElement;
 import org.openide.src.MethodElement;
 import org.openide.src.SourceException;
 import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.filesystems.FileObject;
 
@@ -41,6 +45,26 @@ import org.netbeans.modules.java.JavaDataObject;
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
 public abstract class WizardIterator implements TemplateWizard.Iterator {
+    
+    public static final String METHODS_PROPERTY = "METHODS_PROPERTY";
+    
+    public static class CaseElement extends Object {
+        String name;
+        MethodElement template;
+        public CaseElement(String name, MethodElement template) {
+            this.name=name;
+            this.template=template;
+        }
+        public String getName() {
+            return name;
+        }
+        public MethodElement getTemplate() {
+            return template;
+        }
+        public String toString() {
+            return name+" ["+template.getName().getName()+"]";
+        }
+    }
     
     protected transient WizardDescriptor.Panel[] panels;
     protected transient String[] names;
@@ -82,7 +106,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         names=null;
     }
     
-    private static MethodElement[] getTemplateMethods(JavaDataObject source) {
+    static MethodElement[] getTemplateMethods(JavaDataObject source) {
         ClassElement clel = source.getSource().getClass(Identifier.create(source.getName()));
         MethodElement[] methods = clel.getMethods();
         ArrayList templates = new ArrayList();
@@ -95,19 +119,20 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         return (MethodElement[])templates.toArray(new MethodElement[templates.size()]);
     }
             
-    private static void transformTemplateMethods(JavaDataObject source, String[] newNames,  int[] indexes, MethodElement[] templates) throws SourceException, IOException {
+    static void transformTemplateMethods(JavaDataObject source, CaseElement[] methods, MethodElement[] templates) throws SourceException, IOException {
         ClassElement clel = source.getSource().getClass(Identifier.create(source.getName()));
 
         // removing old template methods
         clel.removeMethods(getTemplateMethods(source));
 
         // adding and renaming new methods, creating golden files if needed
-        for (int i=0; i<newNames.length; i++) {
-            clel.addMethod(templates[indexes[i]]);
-            clel.getMethod(templates[indexes[i]].getName(), null).setName(Identifier.create(newNames[i]));
-            if (templates[indexes[i]].getBody().indexOf("compareReferenceFiles")>=0)
+        for (int i=0; i<methods.length; i++) {
+            CaseElement cel=methods[i];
+            clel.addMethod(cel.getTemplate());
+            clel.getMethod(cel.getTemplate().getName(), null).setName(Identifier.create(cel.getName()));
+            if (cel.getTemplate().getBody().indexOf("compareReferenceFiles")>=0)
                 try {
-                    createGoldenFile(source, newNames[i]);
+                    createGoldenFile(source, cel.getName());
                 } catch (IOException ioe) {}
         }
 
@@ -115,11 +140,11 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         String className=source.getName();
         StringBuffer suite = new StringBuffer();
         suite.append("\n        TestSuite suite = new NbTestSuite();\n");
-        for (int i=0; i<newNames.length; i++) {
+        for (int i=0; i<methods.length; i++) {
             suite.append("        suite.addTest(new ");
             suite.append(className);
             suite.append("(\"");
-            suite.append(newNames[i]);
+            suite.append(methods[i].getName());
             suite.append("\"));\n");
         }
         suite.append("        return suite;\n");
@@ -136,6 +161,25 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         if ((fo==null)||(!fo.isFolder()))
             fo=fo2.createFolder(source.getName());
         fo.createData(name,"pass");
+    }
+
+    private static boolean detectTestWorkspace(DataObject folder) throws IOException {
+        FileObject test=folder.getPrimaryFile().getFileObject("test");
+        return ((test!=null)&&(test.getFileObject("build","xml")!=null));
+    }
+    
+    private static boolean detectBuildScript(DataObject folder) throws IOException {
+        return folder.getPrimaryFile().getFileObject("build","xml")!=null;
+    }
+    
+    private static int detectWorkspaceLevel(DataObject folder) {
+        try {
+            BufferedReader br=new BufferedReader(new InputStreamReader(folder.getPrimaryFile().getFileObject("CVS").getFileObject("Repository").getInputStream()));
+            StringTokenizer repository=new StringTokenizer(br.readLine(),"/");
+            br.close();
+            return repository.countTokens();
+        } catch (Exception e) {}
+        return -1;
     }
     
 }
