@@ -142,9 +142,7 @@ Microsystems, Inc. All Rights Reserved.
       <folder name="File">
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
           <file name="org-openide-actions-NewTemplateAction.instance"/>
-          <attr name="org-openide-actions-NewTemplateAction.instance/org-netbeans-core-actions-OpenExplorerAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-OpenExplorerAction.instance"/>
-          <attr name="org-netbeans-core-actions-OpenExplorerAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
+          <attr name="org-openide-actions-NewTemplateAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
           <file name="Separator1[javax-swing-JSeparator].instance"/>
           <attr name="Separator1[javax-swing-JSeparator].instance/org-netbeans-core-actions-NewFileSystemAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-NewFileSystemAction.instance"/>
