@@ -104,11 +104,11 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Separator3.instance">
 		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
-            <attr name="Separator3.instance/org-openide-actions-PrintAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-PrintAction.instance"/>
-            <attr name="org-openide-actions-PrintAction.instance/org-openide-actions-PageSetupAction.instance" boolvalue="true" />
+            <attr name="Separator3.instance/org-openide-actions-PageSetupAction.instance" boolvalue="true" />
             <file name="org-openide-actions-PageSetupAction.instance"/>
-            <attr name="org-openide-actions-PageSetupAction.instance/Separator4.instance" boolvalue="true" />
+            <attr name="org-openide-actions-PageSetupAction.instance/org-openide-actions-PrintAction.instance" boolvalue="true" />
+            <file name="org-openide-actions-PrintAction.instance"/>
+            <attr name="org-openide-actions-PrintAction.instance/Separator4.instance" boolvalue="true" />
             <file name="Separator4.instance">
 		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>

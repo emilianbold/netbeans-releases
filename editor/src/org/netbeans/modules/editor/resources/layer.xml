@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Menu">
         <folder name="File">
-            <attr name="org-openide-actions-PageSetupAction.instance/org-netbeans-modules-editor-ExportHtmlAction.instance" boolvalue="true"/>
+            <attr name="org-openide-actions-PrintAction.instance/org-netbeans-modules-editor-ExportHtmlAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-editor-ExportHtmlAction.instance"/>
             <attr name="org-netbeans-modules-editor-ExportHtmlAction.instance/Separator4.instance" boolvalue="true"/>
         </folder>
