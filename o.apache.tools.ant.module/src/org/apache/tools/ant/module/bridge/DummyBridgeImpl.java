@@ -74,7 +74,7 @@ final class DummyBridgeImpl implements BridgeInterface, IntrospectionHelperProxy
         return null;
     }
     
-    public boolean run(File buildFile, FileObject buildFileObject, List targets, PrintStream out, PrintStream err, Properties properties, int verbosity, boolean useStatusLine) {
+    public boolean run(File buildFile, FileObject buildFileObject, List targets, InputStream in, PrintStream out, PrintStream err, Properties properties, int verbosity, boolean useStatusLine) {
         err.println(NbBundle.getMessage(DummyBridgeImpl.class, "ERR_cannot_run_target"));
         problem.printStackTrace(err);
         return false;

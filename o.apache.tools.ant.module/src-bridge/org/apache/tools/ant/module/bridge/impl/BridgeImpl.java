@@ -14,7 +14,9 @@
 package org.apache.tools.ant.module.bridge.impl;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.*;
@@ -79,7 +81,9 @@ public class BridgeImpl implements BridgeInterface {
         return null;
     }
     
-    public boolean run(File buildFile, final FileObject buildFileObject, List targets, PrintStream out, PrintStream err, Properties properties, int verbosity, boolean useStatusLine) {
+    public boolean run(File buildFile, final FileObject buildFileObject, List targets,
+                       InputStream in, PrintStream out, PrintStream err,
+                       Properties properties, int verbosity, boolean useStatusLine) {
         boolean ok = false;
         
         // Make sure "main Ant loader" is used as context loader for duration of the
@@ -119,6 +123,14 @@ public class BridgeImpl implements BridgeInterface {
             logger.setMessageOutputLevel(verbosity);
             logger.setOutputPrintStream(out);
             logger.setErrorPrintStream(err);
+            if (in != null && isAnt16()) {
+                try {
+                    Method m = Project.class.getMethod("setDefaultInputStream", new Class[] {InputStream.class}); // NOI18N
+                    m.invoke(project, new Object[] {in});
+                } catch (Exception e) {
+                    AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }
             //writer.println("#2"); // NOI18N
             project.addBuildListener(logger);
             if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
@@ -158,6 +170,13 @@ public class BridgeImpl implements BridgeInterface {
             }
             out.close();
             err.close();
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    AntModule.err.notify(e);
+                }
+            }
             return false;
         }
         
@@ -166,8 +185,19 @@ public class BridgeImpl implements BridgeInterface {
         logger.buildStarted(new BuildEvent(project));
         
         // Save & restore system output streams.
-        AntBridge.pushSystemOutErr(new PrintStream(new DemuxOutputStream(project, false)),
-                                   new PrintStream(new DemuxOutputStream(project, true)));
+        InputStream is = System.in;
+        if (in != null && isAnt16()) {
+            try {
+                Class dis = Class.forName("org.apache.tools.ant.DemuxInputStream"); // NOI18N
+                Constructor c = dis.getConstructor(new Class[] {Project.class});
+                is = (InputStream)c.newInstance(new Object[] {project});
+            } catch (Exception e) {
+                AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+        AntBridge.pushSystemInOutErr(is,
+                                     new PrintStream(new DemuxOutputStream(project, false)),
+                                     new PrintStream(new DemuxOutputStream(project, true)));
 
         try {
             // Execute the configured project
@@ -199,9 +229,16 @@ public class BridgeImpl implements BridgeInterface {
             ev.setException(e);
             logger.buildFinished(ev);
         } finally {
-            AntBridge.restoreSystemOutErr();
+            AntBridge.restoreSystemInOutErr();
             out.close();
             err.close();
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    AntModule.err.notify(e);
+                }
+            }
         }
         
         // Now check to see if the Project defined any cool new custom tasks.
@@ -230,7 +267,8 @@ public class BridgeImpl implements BridgeInterface {
             }
         }, 1000); // a bit later; the target can finish first!
         
-        {// XXX #36393 - memory leak. Remove when Ant 1.6 integrated.
+        if (!isAnt16()) {
+            // #36393 - memory leak in Ant 1.5.
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     hack36393();

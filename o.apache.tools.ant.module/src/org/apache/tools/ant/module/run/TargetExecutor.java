@@ -36,6 +36,7 @@ import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.bridge.AntBridge;
+import org.openide.util.io.ReaderInputStream;
 
 /** Executes an Ant Target asynchronously in the IDE.
  */
@@ -230,14 +231,14 @@ public class TargetExecutor implements Runnable {
             LifecycleManager.getDefault ().saveAll ();
         }
         
-        //PrintStream out = new PrintStream (new OutputWriterOutputStream (io.getOut ()));
+        PrintStream out;
         PrintStream err;
         if (outputStream == null) {
-            err = new PrintStream (new OutputWriterOutputStream (io.getErr ()));
+            out = new PrintStream(new OutputWriterOutputStream(io.getOut()));
+            err = new PrintStream(new OutputWriterOutputStream(io.getErr()));
         } else {
-            err = new PrintStream (outputStream);
+            out = err = new PrintStream(outputStream);
         }
-        PrintStream out = err; // at least for now...
         
         File buildFile = pcookie.getFile ();
         if (buildFile == null) {
@@ -248,8 +249,15 @@ public class TargetExecutor implements Runnable {
         // Don't hog the CPU, the build might take a while:
         Thread.currentThread().setPriority((Thread.MIN_PRIORITY + Thread.NORM_PRIORITY) / 2);
         
+        InputStream in = null;
+        try {
+            in = new ReaderInputStream(io.getIn());
+        } catch (IOException e) {
+            AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
+        }
+        
         ok = AntBridge.getInterface().run(buildFile, pcookie.getFileObject(), targetNames,
-                                          out, err, properties, verbosity, outputStream == null);
+                                          in, out, err, properties, verbosity, outputStream == null);
     }
 
 }

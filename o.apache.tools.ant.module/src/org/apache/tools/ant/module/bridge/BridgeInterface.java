@@ -14,6 +14,7 @@
 package org.apache.tools.ant.module.bridge;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Properties;
@@ -30,7 +31,7 @@ public interface BridgeInterface {
      * @param buildFile an Ant build script
      * @param targets a list of target names to run, or null to run the default target
      */
-    boolean run(File buildFile, FileObject buildFileObject, List targets, PrintStream out, PrintStream err, Properties properties, int verbosity, boolean useStatusLine);
+    boolean run(File buildFile, FileObject buildFileObject, List targets, InputStream in, PrintStream out, PrintStream err, Properties properties, int verbosity, boolean useStatusLine);
     
     /**
      * Get some informational value of the Ant version.
