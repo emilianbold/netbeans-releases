@@ -1626,7 +1626,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             }
         }
         // Now we have the begining of the tag and we can start with the finding opposit tag. 
-	if (token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID && isInside){
+	if (token != null && token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID && isInside){
 
 	    int start; // possition where the matched tag starts
 	    int end;   // possition where the matched tag ends
