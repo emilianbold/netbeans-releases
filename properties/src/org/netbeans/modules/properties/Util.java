@@ -28,6 +28,8 @@ import org.openide.util.NbBundle;
  */
 public final class Util extends Object {
     
+    /** Help ID for properties module in general. */
+    public static final String HELP_ID_PROPERTIES = "propfiles.prop"; // NOI18N
     /** Help ID for properties new from template. */
     public static final String HELP_ID_CREATING = "propfiles.creating"; // NOI18N
     /** Help ID for new property dialog. */
