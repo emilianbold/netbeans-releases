@@ -45,8 +45,10 @@ public class JspNode extends DataNode {
     private static final String SHEETNAME_TEXT_PROPERTIES = "textProperties"; // NOI18N
    
 
-    private static final String ICON_BASE_JSP = "org/netbeans/modules/web/core/resources/jspObject"; // NOI18N
-    private static final String ICON_BASE_TAG = "org/netbeans/modules/web/core/resources/tag"; // NOI18N
+    private static final String ICON_JSP = "org/netbeans/modules/web/core/resources/jsp16"; // NOI18N
+    private static final String ICON_TAG = "org/netbeans/modules/web/core/resources/tag16"; // NOI18N
+    private static final String ICON_JSP_XML = "org/netbeans/modules/web/core/resources/jsp-xml16"; // NOI18N
+    private static final String ICON_JSP_FRAGMENT = "org/netbeans/modules/web/core/resources/jsp-fragment16"; // NOI18N
     
     public static final String PROP_REQUEST_PARAMS   = "requestparams"; // NOI18N
 
@@ -227,15 +229,18 @@ public class JspNode extends DataNode {
     */
     protected String getIconBase() {
         String ext = getDataObject().getPrimaryFile().getExt();
-        String iconBase;
         
-        if (ext.equals(JspLoader.TAG_FILE_EXTENSION) 
-            || ext.equals(JspLoader.TAGF_FILE_EXTENSION)
-            || ext.equals(JspLoader.TAGX_FILE_EXTENSION))
-            iconBase = ICON_BASE_TAG;
-        else
-            iconBase = ICON_BASE_JSP;
-        return iconBase;
+        if (ext.equals(JspLoader.TAGF_FILE_EXTENSION) 
+            || ext.equals(JspLoader.TAGX_FILE_EXTENSION)
+            || ext.equals(JspLoader.TAG_FILE_EXTENSION))
+                return ICON_TAG;
+        if (ext.equals(JspLoader.JSF_EXTENSION )
+            || ext.equals(JspLoader.JSPF_EXTENSION))
+                return ICON_JSP_FRAGMENT;
+        if (ext.equals(JspLoader.JSPX_EXTENSION))
+                return ICON_JSP_XML;
+        return ICON_JSP;
+
     }
 
     public HelpCtx getHelpCtx() {
