@@ -396,7 +396,7 @@ ToDo:
     <echo message="Building module tomcatint/tomcat32..."/>
     <ant dir="../tomcatint/tomcat32" target="netbeans"/>
   </target>
-  <target name="all-tomcatint/tomcat40" depends="all-openide,all-web,all-schema2beans,all-web/advanced">
+  <target name="all-tomcatint/tomcat40" depends="all-openide,all-web/core,all-schema2beans">
     <echo message="Building module tomcatint/tomcat40..."/>
     <ant dir="../tomcatint/tomcat40" target="netbeans"/>
   </target>
