@@ -95,9 +95,10 @@ public final class Deployment {
             modules = targetserver.deploy(progress, forceRedeploy);
             progress.recordWork(MAX_DEPLOY_PROGRESS-1);
             
-        } catch (Exception ex) {
+        } catch (Exception ex) {            
             err = NbBundle.getMessage (Deployment.class, "MSG_DeployFailed", ex.getLocalizedMessage ());
-            ErrorManager.getDefault ().notify (ex);
+            progress.addError(err);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             throw new DeploymentException (err, ex);
         }
         
