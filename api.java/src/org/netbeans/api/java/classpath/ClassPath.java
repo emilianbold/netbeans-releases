@@ -156,10 +156,10 @@ public abstract class ClassPath {
      * is not underneath any of classpath roots.<BR>
      * The returned name uses uses slashes ('/') as folder separators and
      * dot ('.') to separate file name and its extension.
-     * Note that if the fileobject is in the classpath subtree, but is not reachable
+     * Note that if the file object is in the classpath subtree, but is not reachable
      * (it is hidden by some other resource), the resource name is still returned.
-     * @return java-style resource name for the given FileObject, or null if not
-     * within the classpath.
+     * @return Java-style resource name for the given file object (the empty string for the package root itself), or null if not
+     * within the classpath
      * @param f FileObject whose resource name is requested
      */
     public final String getResourceName(FileObject f) {
@@ -174,7 +174,7 @@ public abstract class ClassPath {
      * @param f FileObject whose resource name is requested.
      * @param dirSep directory separator character
      * @param includeExt whether the FileObject's extension should be included in the result
-     * @return resource name for the given FileObject.
+     * @return resource name for the given FileObject (the empty string for the package root itself) or null
      */
     public final String getResourceName(FileObject f, char dirSep, boolean includeExt) {
         FileObject owner = findOwnerRoot(f);
