@@ -114,13 +114,13 @@ public class OpenProjectsTrampolineImplTest extends NbTestCase {
         assertEquals( "Two projects should be open.", 2, projects.length );
         assertEquals( "Two events.", 2, tpchl.getEvents().size() );
         
-        OpenProjectList.getDefault().close( p1 );
+        OpenProjectList.getDefault().close(new Project[]{p1});
         projects = trampoline.getOpenProjectsAPI();
         assertEquals( "Two projects should be open.", 1, projects.length );
         assertEquals( "Two events.", 3, tpchl.getEvents().size() );
         
         
-        OpenProjectList.getDefault().close( p2 );
+        OpenProjectList.getDefault().close(new Project[]{p2});
         projects = trampoline.getOpenProjectsAPI();
         assertEquals( "Two projects should be open.", 0, projects.length );
         assertEquals( "Two events.", 4, tpchl.getEvents().size() );
