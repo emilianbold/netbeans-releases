@@ -63,7 +63,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <ul>
             <li><a href="allclasses.html">Index of all NetBeans API classes</a></li>
-            <li><a href="usecases.html">General overview of some usecases</a></li>
+            <li><a href="usecases.html">How to use certain NetBeans APIs</a></li>
         </ul>
 
         <hr/>
@@ -131,29 +131,43 @@ Microsystems, Inc. All Rights Reserved.
             <xsl:variable name="arch.target" select="@target" />
 
             <xsl:if test="$interfaces">
-                <h3>
+                <h3><a name="def-api-{$module.name}"><xsl:value-of select="$module.name"/></a></h3>
 
-                    <a name="def-api-{$module.name}"><xsl:value-of select="$module.name"/></a>
-                    
-                    (<a>
+                
+                <a>
+                    <xsl:attribute name="href">
+                        <xsl:call-template name="filedirapi" >
+                            <xsl:with-param name="arch.target" select="$arch.target" />
+                        </xsl:call-template>
+                        <xsl:text>/index.html</xsl:text>
+                    </xsl:attribute>
+                    <xsl:text>javadoc</xsl:text>
+                </a>
+                | <a>
+                    <xsl:attribute name="href">
+                        <xsl:call-template name="filedirapi" >
+                            <xsl:with-param name="arch.target" select="$arch.target" />
+                        </xsl:call-template>
+                        <xsl:text>.zip</xsl:text>
+                    </xsl:attribute>
+                    <xsl:text>download</xsl:text>
+                </a>
+                | <a>
+                    <xsl:attribute name="href">
+                        <xsl:value-of select="$arch.target" />
+                    </xsl:attribute>
+                    <xsl:text>architecture</xsl:text>
+                </a> 
+                <xsl:if test="//module[@name=$module.name]/arch-usecases" >
+                    | <a>
                         <xsl:attribute name="href">
-                            <xsl:call-template name="filedirapi" >
-                                <xsl:with-param name="arch.target" select="$arch.target" />
-                            </xsl:call-template>
-                            <xsl:text>/index.html</xsl:text>
+                            <xsl:text>usecases.html#usecase-</xsl:text>
+                            <xsl:value-of select="$module.name" />
                         </xsl:attribute>
-                        <xsl:text>javadoc</xsl:text>
-                    </a>,
-                    <a>
-                        <xsl:attribute name="href">
-                            <xsl:call-template name="filedirapi" >
-                                <xsl:with-param name="arch.target" select="$arch.target" />
-                            </xsl:call-template>
-                            <xsl:text>.zip</xsl:text>
-                        </xsl:attribute>
-                        <xsl:text>download</xsl:text>
-                    </a>)
-                </h3>
+                        <xsl:text>usecases</xsl:text>
+                    </a>
+                </xsl:if>
+                <p/>
 
                 <div><xsl:apply-templates select="description"/></div>
 

@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
         <head>
             <!-- projects.netbeans.org -->
            <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-           <title>NetBeans APIs Usecases</title>
+           <title>How to use certain NetBeans APIs</title>
             <link rel="stylesheet" href="OpenAPIs/netbeans.css" type="text/css"/>
 
           <link REL="icon" href="http://www.netbeans.org/favicon.ico" type="image/ico" />
@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
         </head>
 
         <body>
-            <center><h1>NetBeans APIs Usecases</h1></center>
+            <center><h1>How to use certain NetBeans APIs</h1></center>
 
             This page contains extracted usecases for some of the NetBeans modules
             that <a href="index.html">offer an API</a>. 
@@ -37,13 +37,20 @@ Microsystems, Inc. All Rights Reserved.
 
             <xsl:for-each select="//module/arch-usecases[not(../@name='_no module_')]" >
                 <hr/>
-                <h2>Usecases for
+                <h2><a>
+                        <xsl:attribute name="name">
+                            <xsl:text>usecase-</xsl:text>
+                            <xsl:value-of select="../@name"/>
+                        </xsl:attribute>
+                        <xsl:text>How to use </xsl:text>
+                    </a>
                     <a>
                         <xsl:attribute name="href" >
-                            <xsl:value-of select="../@target"/>
+                            <xsl:text>index.html#def-api-</xsl:text>
+                            <xsl:value-of select="../@name"/>
                         </xsl:attribute>
                         <xsl:value-of select="../@name"/>
-                    </a>
+                    </a>?
                 </h2>
                 <xsl:apply-templates select="../description" />
                 <p/>
