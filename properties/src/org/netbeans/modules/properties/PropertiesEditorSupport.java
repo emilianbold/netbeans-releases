@@ -90,7 +90,8 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     
     /** Constructor. */
     public PropertiesEditorSupport(PropertiesFileEntry entry) {
-        super (new Environment(entry));
+        super(new Environment(entry),
+              org.openide.util.lookup.Lookups.singleton(entry.getDataObject()));
         this.myEntry = entry;
         initialize();
     }
