@@ -78,6 +78,11 @@ public final class LoaderPoolNode extends AbstractNode {
 
     /** true if changes in loaders should be notified */
     private static boolean installationFinished = false;
+    
+    /** if true, we are adding/removing a bunch of loaders; resort later */
+    private static boolean updatingBatch = false;
+    /** see above; true if at least one change */
+    private static boolean updatingBatchUsed = false;
 
     /** Just workaround, need to pass instance of
     * the LoaderPoolNodeChildren as two params to superclass
@@ -115,6 +120,19 @@ public final class LoaderPoolNode extends AbstractNode {
                };
 
     }
+    
+    public static synchronized void beginUpdates() {
+        updatingBatch = true;
+        updatingBatchUsed = false;
+    }
+    public static synchronized void endUpdates() {
+        if (!updatingBatch) throw new IllegalStateException();
+        updatingBatch = false;
+        if (updatingBatchUsed) {
+            updatingBatchUsed = false;
+            resort();
+        }
+    }
 
     /** Adds new loader when previous and following are specified.
     * An attempt will be made to (re-)order the loader pool according to specified
@@ -148,7 +166,11 @@ public final class LoaderPoolNode extends AbstractNode {
         
         installBefores.put (l.getClass ().getName (), s.getInstallBefore ());
         installAfters.put (l.getClass ().getName (), s.getInstallAfter ());
-        resort ();
+        if (updatingBatch) {
+            updatingBatchUsed = true;
+        } else {
+            resort ();
+        }
     }
 
 
@@ -297,7 +319,7 @@ public final class LoaderPoolNode extends AbstractNode {
             try {
                 obj = new NbMarshalledObject (l);
             } catch (IOException ex) {
-                TopManager.getDefault ().notifyException (ex);
+                err.notify(ex);
                 obj = null;
             }
 
@@ -345,7 +367,7 @@ public final class LoaderPoolNode extends AbstractNode {
             try {
                 obj = new NbMarshalledObject (l);
             } catch (IOException ex) {
-                TopManager.getDefault ().notifyException (ex);
+                err.notify(ex);
                 obj = null;
             }
             if (obj != null) {
@@ -546,7 +568,11 @@ public final class LoaderPoolNode extends AbstractNode {
             installAfters.remove (dl.getClass ().getName ());
             dl.removePropertyChangeListener (getNbLoaderPool ());
         
-            resort ();
+            if (updatingBatch) {
+                updatingBatchUsed = true;
+            } else {
+                resort ();
+            }
             return true;
         }
         return false;
