@@ -15,7 +15,6 @@ package org.netbeans.modules.lexer.demo;
 
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenConstants;
 import org.netbeans.modules.lexer.inc.RawOffsetToken;
 import org.netbeans.modules.lexer.util.IntegerCache;
 import org.netbeans.modules.lexer.util.CharSeq;

@@ -18,7 +18,6 @@ import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenConstants;
 import org.netbeans.api.lexer.LexerInput;
 import org.netbeans.api.lexer.TokenTextMatcher;
 import org.netbeans.modules.lexer.inc.TextTokenUpdater;
