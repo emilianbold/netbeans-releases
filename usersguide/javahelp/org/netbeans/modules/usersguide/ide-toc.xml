@@ -135,7 +135,7 @@
     <tocitem text="Annotation Properties" target="editing.configuring.annotations"/>
     <tocitem text="Indentation Properties" target="editing.indentation"/>
     <tocitem text="Print Properties" target="editing.printing"/>
-    <tocitem text="Setting Fonts and Colors" target="editing.fontsandcolors"/>
+    <tocitem text="Setting Fonts and Colors in the Source Editor" target="editing.fontsandcolors"/>
     <tocitem text="Color Chooser" target="editing.colorchooser"/>
     <tocitem text="Setting Keyboard Shortcuts for the Source Editor" target="editing.settingkeybdshorts"/>
     <tocitem text="Key Bindings Property Editor" target="editing.keybindings"/>
