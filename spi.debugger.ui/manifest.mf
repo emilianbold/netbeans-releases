@@ -1,13 +1,10 @@
 OpenIDE-Module: org.netbeans.modules.debugger.core/2
-OpenIDE-Module-Name: Debugger Core
-OpenIDE-Module-Display-Category: Debugging
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/debugger/MF-Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/debugger/multisession/EnterpriseModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/debugger/resources/mf-layer.xml
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
 OpenIDE-Module-Specification-Version: 2.1
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Short-Description: The IDE's basic infrastructure for debugging.
-OpenIDE-Module-Long-Description: The Debugger Core module provides the basic infrastructure
-  in the IDE for debugging. Modules for specific debugger implementations are based on this module.
 
 Name: org/netbeans/modules/debugger/multisession/EnterpriseDebugger.class
 OpenIDE-Module-Class: Debugger
