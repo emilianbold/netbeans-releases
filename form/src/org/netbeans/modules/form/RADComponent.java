@@ -434,6 +434,10 @@ public class RADComponent {
     changedPropertyValues.put (prop, value);
   }
   
+  Object getDefaultPropertyValue (RADProperty prop) {
+    return changedPropertyValues.get (prop);
+  }
+
 // -----------------------------------------------------------------------------
 // Protected interface to working with properties on bean instance
 
@@ -534,6 +538,7 @@ public class RADComponent {
 // Inner Classes
 
   interface RADProperty {
+    public String getName ();
     public PropertyDescriptor getPropertyDescriptor ();
     public PropertyEditor getPropertyEditor ();
     public PropertyEditor getCurrentEditor ();
@@ -546,16 +551,28 @@ public class RADComponent {
   }
 
   class RADPropertyImpl extends Node.Property implements RADProperty {
-    private PropertyEditor currentEditor;
+//    int count = 0;
+//    java.io.PrintStream ps;
+    private PropertyEditor currentPropertyEditor;
     private PropertyDescriptor desc;
     
     RADPropertyImpl (PropertyDescriptor desc) {
       super (desc.getPropertyType ());
-      this.desc = desc;
-      PropertyEditor[] allEditors = FormPropertyEditorManager.getAllEditors (desc.getPropertyType (), false);
-      if ((allEditors != null) && (allEditors.length > 0)) {
-        currentEditor = allEditors[0];
+/*      try {
+        ps = new java.io.PrintStream (new java.io.FileOutputStream (new java.io.File ("D:\\out\\"+desc.getName ()+"_"+desc.hashCode ()+".txt")));
+      } catch (java.io.IOException e) {
+        e.printStackTrace ();
       }
+//      System.out.println ("1.. :"+this);
+      new java.lang.NullPointerException ().printStackTrace (ps); */
+      this.desc = desc;
+//      ps.println ("2.. :"+desc);
+////      currentPropertyEditor = findDefaultEditor (desc);
+//      ps.println ("3.. :"+this);
+//      ps.println ("Setting default Current Editor: "+desc.getName ()+", : "+this+", : "+currentPropertyEditor+", thread: "+Thread.currentThread ().getName ());
+//      ps.println ("4.. :"+this);
+//      ps.flush ();
+//      Thread.dumpStack ();
     }
 
     public PropertyDescriptor getPropertyDescriptor () {
@@ -567,11 +584,22 @@ public class RADComponent {
     }
 
     public PropertyEditor getCurrentEditor () {
-      return currentEditor;
+      if (currentPropertyEditor == null) {
+        currentPropertyEditor = findDefaultEditor (desc);
+      }
+//      ps.println ("Get Current Editor: "+count+" , in: "+desc.getName ()+", : "+this+", : "+currentPropertyEditor+", thread: "+Thread.currentThread ().getName ());
+//      ps.flush ();
+//      count++;
+//      Thread.dumpStack ();
+      return currentPropertyEditor;
     }
     
-    public void setCurrentEditor (PropertyEditor editor) {
-      currentEditor = editor;
+    public void setCurrentEditor (PropertyEditor value) {
+//      ps.println ("Set Current Editor: "+count+" , in: "+desc.getName ()+", : "+this+", : "+value+" , previous value: "+currentPropertyEditor);
+//      Thread.dumpStack ();
+      currentPropertyEditor = value;
+//      ps.println ("After Set Current Editor: in: "+desc.getName ()+", : "+this+", : "+currentPropertyEditor+", thread: "+Thread.currentThread ().getName ());
+//      ps.flush ();
     }
 
     /** Test whether the property is readable.
@@ -650,9 +678,21 @@ public class RADComponent {
       // 1. remove the property from list of changed values, so that the code for it is not generated
       changedPropertyValues.remove (RADPropertyImpl.this);
       
+      Object old = null;
+      
+      if (canRead ()) {
+        try {
+          old = getValue ();
+        } catch (IllegalArgumentException e) {  // no problem -> keep null
+        } catch (IllegalAccessException e) {    // no problem -> keep null
+        } catch (InvocationTargetException e) { // no problem -> keep null
+        }
+      }
+      
       // 2. restore the default property value
       Object def = defaultPropertyValues.get (desc.getName ());
       if (def != null) {
+//        System.out.println ("Restore default value: "+RADPropertyImpl.this.getName ()+ ", : "+def);
         try {
           setValue (def);
         } catch (IllegalAccessException e) {
@@ -662,6 +702,10 @@ public class RADComponent {
         } catch (InvocationTargetException e) {
           // what to do, ignore...
         }
+        if (getNodeReference () != null) {
+          getNodeReference ().notifyPropertiesChange ();
+        }
+        getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), old, def);
       }
       // [PENDING - test]
     }
@@ -676,24 +720,30 @@ public class RADComponent {
       if (!getFormManager ().getFormEditorSupport ().supportsAdvancedFeatures ()) {
         return super.getPropertyEditor ();
       }
-
       // the property editor cannot be reused as it is not reentrant !!! [IAN]
+      PropertyEditor defaultEditor = findDefaultEditor (desc);
+      FormPropertyEditor editor = null;
+      if (defaultEditor != null) {
+        editor = new FormPropertyEditor (RADComponent.this, desc.getPropertyType (), RADPropertyImpl.this, defaultEditor);
+      }
+//System.out.println ("RADComponent::RADPropertyImpl::getPropertyEditor: "+editor);
+      return editor;
+    }
 
+    private PropertyEditor findDefaultEditor (PropertyDescriptor desc) {
       PropertyEditor defaultEditor = null;
       if (desc.getPropertyEditorClass () != null) {
         try {
           defaultEditor = (PropertyEditor) desc.getPropertyEditorClass ().newInstance ();
         } catch (InstantiationException ex) {
+          if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace ();
         } catch (IllegalAccessException iex) {
+          if (System.getProperty ("netbeans.debug.exceptions") != null) iex.printStackTrace ();
         }
       } else {
         defaultEditor = FormPropertyEditorManager.findEditor (desc.getPropertyType ());
       }
-      FormPropertyEditor editor = null;
-      if (defaultEditor != null) {
-        editor = new FormPropertyEditor (RADComponent.this, desc.getPropertyType (), RADPropertyImpl.this, defaultEditor);
-      }
-      return editor;
+      return defaultEditor;
     }
   }
 
@@ -705,10 +755,7 @@ public class RADComponent {
     RADIndexedPropertyImpl (IndexedPropertyDescriptor desc) {
       super (getIndexedType (desc), desc.getIndexedPropertyType ());
       this.desc = desc;
-      PropertyEditor[] allEditors = FormPropertyEditorManager.getAllEditors (desc.getIndexedPropertyType (), false);
-      if ((allEditors != null) && (allEditors.length > 0)) {
-        currentEditor = allEditors[0];
-      }
+      currentEditor = findDefaultIndexedEditor (desc);
     }
 
     public PropertyDescriptor getPropertyDescriptor () {
@@ -803,6 +850,17 @@ public class RADComponent {
       // 1. remove the property from list of changed values, so that the code for it is not generated
       changedPropertyValues.remove (RADIndexedPropertyImpl.this);
       
+      Object old = null;
+      
+      if (canRead ()) {
+        try {
+          old = getValue ();
+        } catch (IllegalArgumentException e) {  // no problem -> keep null
+        } catch (IllegalAccessException e) {    // no problem -> keep null
+        } catch (InvocationTargetException e) { // no problem -> keep null
+        }
+      }
+      
       // 2. restore the default property value
       Object def = defaultPropertyValues.get (desc.getName ());
       if (def != null) {
@@ -815,6 +873,10 @@ public class RADComponent {
         } catch (InvocationTargetException e) {
           // what to do, ignore...
         }
+        if (getNodeReference () != null) {
+          getNodeReference ().notifyPropertiesChange ();
+        }
+        getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), old, def);
       }
       // [PENDING - test]
     }
@@ -832,21 +894,28 @@ public class RADComponent {
 
       // the property editor cannot be reused as it is not reentrant !!! [IAN]
 
-      PropertyEditor defaultEditor = null;
-      if (desc.getPropertyEditorClass () != null) {
-        try {
-          defaultEditor = (PropertyEditor) desc.getPropertyEditorClass ().newInstance ();
-        } catch (InstantiationException ex) {
-        } catch (IllegalAccessException iex) {
-        }
-      } else {
-        defaultEditor = FormPropertyEditorManager.findEditor (desc.getIndexedPropertyType ());
-      }
+      PropertyEditor defaultEditor = findDefaultIndexedEditor (desc);
       FormPropertyEditor editor = null;
       if (defaultEditor != null) {
         editor = new FormPropertyEditor (RADComponent.this, desc.getIndexedPropertyType (), RADIndexedPropertyImpl.this, defaultEditor);
       }
       return editor;
+    }
+
+    private PropertyEditor findDefaultIndexedEditor (IndexedPropertyDescriptor desc) {
+      PropertyEditor defaultEditor = null;
+      if (desc.getPropertyEditorClass () != null) {
+        try {
+          defaultEditor = (PropertyEditor) desc.getPropertyEditorClass ().newInstance ();
+        } catch (InstantiationException ex) {
+          if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace ();
+        } catch (IllegalAccessException iex) {
+          if (System.getProperty ("netbeans.debug.exceptions") != null) iex.printStackTrace ();
+        }
+      } else {
+        defaultEditor = FormPropertyEditorManager.findEditor (desc.getIndexedPropertyType ());
+      }
+      return defaultEditor;
     }
 
     /** Test whether the property is readable by index.
@@ -990,6 +1059,9 @@ public class RADComponent {
 
 /*
  * Log
+ *  32   Gandalf   1.31        7/23/99  Ian Formanek    Fixed firing property 
+ *       changes when restoring default value, improved performance when opening
+ *       form / adding components
  *  31   Gandalf   1.30        7/16/99  Ian Formanek    default action
  *  30   Gandalf   1.29        7/11/99  Ian Formanek    FormPropertyEditor is 
  *       provided only if the current persistence manager 
