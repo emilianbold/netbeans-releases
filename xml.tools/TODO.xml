@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
      When you change this, please regenerate result document by 'ant todo' in www directory.
   -->
 
-<list name="Tools">
+<list module="tools">
     <item>
         <summary>Cleanup files structure</summary>
         <description>Files' structure is not synoptical. I see two possible structures:

@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
     <!ENTITY tree-edit_todo.xml SYSTEM "tree-edit/TODO.xml">
 ]>
 
-<list name="XML">
+<list module="xml">
     <item>
         <summary>Backward compatability</summary>
         <description>Add to modules manifest conflict with old xml.jar and xml-syntax.jar modules OR try to load old settings.</description>

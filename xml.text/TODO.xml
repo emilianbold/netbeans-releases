@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
      When you change this, please regenerate result document by 'ant todo' in www directory.
   -->
 
-<list name="Text Editing Support">
+<list module="text-edit">
     <item>
         <summary>Actions to editors</summary>
         <description>Support to add actions to XML and DTD editors.</description>

@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
      When you change this, please regenerate result document by 'ant todo' in www directory.
   -->
 
-<list name="Catalog">
+<list module="catalog">
     <item>
         <summary>RuntimeCatalog does not work now</summary>
         <description>Correct support of org.openide.loaders.XMLDataObjectImpl.RuntimeCatalog which does not work now.</description>

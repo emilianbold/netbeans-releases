@@ -16,5 +16,5 @@ Microsystems, Inc. All Rights Reserved.
      When you change this, please regenerate result document by 'ant todo' in www directory.
   -->
 
-<list name="TAX">
+<list module="tax">
 </list>

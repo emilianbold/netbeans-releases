@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
      When you change this, please regenerate result document by 'ant todo' in www directory.
   -->
 
-<list name="Core">
+<list module="core">
     <item>
         <summary>DataNode and EditorSupport in ???DataObject</summary>
         <description>Bad model of DataNode and EditorSupport in XML- and DTD- DataObject.</description>
