@@ -1049,6 +1049,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../contrib/docbook" target="netbeans"/>
   </target>
 
+  <target name="all-contrib/mount" depends="build-platform,all-ant,all-java/api,all-java/platform,all-java/project,all-projects/projectapi,all-projects/queries">
+    <echo message="Building module contrib/mount..."/>
+    <ant dir="../contrib/mount" target="netbeans"/>
+  </target>
+
   <target name="all-contrib/pmd-nb-wrapper" depends="init">
     <echo message="Building module contrib/pmd-nb-wrapper..."/>
     <ant dir="../contrib/pmd-nb-wrapper" target="netbeans"/>
