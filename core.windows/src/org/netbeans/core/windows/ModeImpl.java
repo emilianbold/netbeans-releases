@@ -1960,6 +1960,10 @@ public final class ModeImpl implements Comparable, Mode, FrameTypeListener, Comp
         if (closedComponents == null) {
             closedComponents = new WeakHashMap(10);
         }
+        //Bugfix 34316: Set default value if constraint is not set.
+        if (constraints == null) {
+            constraints = PerimeterLayout.CENTER;
+        }
         synchronized (closedComponents) {
             ClosedTCContext existing = (ClosedTCContext)closedComponents.get(tc);
             // update existing entry if found, don't duplicate
