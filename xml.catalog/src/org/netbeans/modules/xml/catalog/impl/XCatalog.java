@@ -411,7 +411,8 @@ public final class XCatalog extends AbstractCatalog
                     if (Categorizer.isURL(href) == false) {
                         href = base + href;  // seems to be relative
                     }
-                    addPublicMapping(publicId, href);
+                    if (publicId != null)
+                        addPublicMapping(publicId, href);
                     
                 } else if (qName.equals(DELEGATE)) {
                     
