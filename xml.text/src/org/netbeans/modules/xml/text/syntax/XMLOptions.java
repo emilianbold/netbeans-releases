@@ -31,9 +31,12 @@ public class XMLOptions extends AbstractBaseOptions {
 
     public static final String COMPLETION_AUTO_POPUP_DELAY_PROP = "completionAutoPopupDelay"; // NOI18N
     
+    public static final String COMPLETION_INSTANT_SUBSTITUTION_PROP = "completionInstantSubstitution"; // NOI18N                
+    
     static final String[] XML_PROP_NAMES = new String[] {
                                                 COMPLETION_AUTO_POPUP_PROP,
                                                 COMPLETION_AUTO_POPUP_DELAY_PROP,
+                                                COMPLETION_INSTANT_SUBSTITUTION_PROP,
                                             };
     
     //
@@ -65,6 +68,15 @@ public class XMLOptions extends AbstractBaseOptions {
         setSettingInteger(ExtSettingsNames.COMPLETION_AUTO_POPUP_DELAY, delay,
             HTMLOptions.COMPLETION_AUTO_POPUP_DELAY_PROP);
     }
+
+    public boolean getCompletionInstantSubstitution() {
+        return getSettingBoolean(ExtSettingsNames.COMPLETION_INSTANT_SUBSTITUTION);
+    }
+    
+    public void setCompletionInstantSubstitution(boolean v) {
+        setSettingBoolean(ExtSettingsNames.COMPLETION_INSTANT_SUBSTITUTION, v,
+            COMPLETION_INSTANT_SUBSTITUTION_PROP);
+    }        
     
     // remap old XMLTokenContext to new XMLDefaultTokenContext
     // commented out match by name
