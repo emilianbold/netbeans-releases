@@ -122,6 +122,7 @@
     <mapID target="ent_app_configure" url="enterprise/general/ent_app_configure.html" />
     <mapID target="ent_app_build" url="enterprise/general/ent_app_build.html" />
     <mapID target="ent_app_server" url="enterprise/general/ent_app_server.html" />
+    <mapID target="ent_app_verify" url="enterprise/general/ent_app_verify.html" />
     
 
     !-- New Project Wizard csh -->
