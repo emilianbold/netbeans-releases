@@ -1,9 +1,9 @@
-properties/src/**/Bundle.properties
-properties/syntax/src/**/Bundle.properties
+properties/src/**/Bundle*.properties
 properties/src/**/*.html
-properties/src/org/netbeans/modules/properties/propertiesObject.gif
-properties/src/**/*.template
-exclude properties/src/**/doc-files/**
-exclude properties/src/**/package.html
+properties/src/**/*.gif
 properties/src/org/netbeans/modules/properties/sample.properties
-
+exclude properties/src/**/doc-files/**
+exclude properties/src/org/netbeans/modules/properties/package.html
+properties/syntax/src/**/Bundle*.properties
+properties/syntax/src/**/*.html
+properties/syntax/src/**/*.gif

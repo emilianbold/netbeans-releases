@@ -1,6 +1,4 @@
-junit/src/**/Bundle.properties
+junit/src/**/Bundle*.properties
 junit/src/**/*.html
+junit/src/**/*.gif
 junit/src/**/*.template
-junit/src/org/netbeans/modules/junit/resources/CreateTestActionIcon.gif
-junit/src/org/netbeans/modules/junit/resources/OpenTestActionIcon.gif
-junit/src/org/netbeans/modules/junit/resources/JUnitLogo.gif

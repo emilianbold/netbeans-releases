@@ -1,8 +1,7 @@
-i18n/src/**/Bundle.properties
+i18n/src/**/Bundle*.properties
 i18n/src/**/*.html
-i18n/src/org/netbeans/modules/i18n/i18nAction.gif
-i18n/src/org/netbeans/modules/i18n/insertI18nStringAction.gif
-i18n/form/src/**/Bundle.properties
+i18n/src/**/*.gif
+exclude i18n/src/org/netbeans/modules/i18n/wizard/package.html
+i18n/form/src/**/Bundle*.properties
 i18n/form/src/**/*.html
-exclude i18n/src/**/package.html
-exclude i18n/form/src/**/package.html
+i18n/form/src/**/*.gif

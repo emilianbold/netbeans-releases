@@ -1,4 +1,8 @@
-debuggercore/api/src/**/Bundle.properties
-debuggercore/oldapi/src/**/Bundle.properties
-debuggercore/src/**/Bundle.properties
-debuggercore/viewmodel/src/**/Bundle.properties
+debuggercore/api/src/**/Bundle*.properties
+debuggercore/api/src/**/*.gif
+debuggercore/oldapi/src/**/Bundle*.properties
+debuggercore/oldapi/src/**/*.gif
+debuggercore/src/**/Bundle*.properties
+debuggercore/src/**/*.gif
+debuggercore/viewmodel/src/**/Bundle*.properties
+debuggercore/viewmodel/src/**/*.gif

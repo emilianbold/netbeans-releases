@@ -1,1 +1,3 @@
-image/src/**/Bundle.properties
+image/src/**/Bundle*.properties
+image/src/**/*.html
+image/src/**/*.gif

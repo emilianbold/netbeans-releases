@@ -1,3 +1,4 @@
-form/src/**/Bundle.properties
-form/src/org/netbeans/modules/form/Bundle2.properties
-form/src/org/netbeans/modules/form/resources/*.html
+form/src/**/Bundle*.properties
+form/src/**/*.html
+form/src/**/*.gif
+form/src/**/*.png
