@@ -66,7 +66,7 @@ public class IndexSearch
   private String quickFind;
   
   /* Button icons */
-  //private static final ImageIcon windowIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif"));
+  //private static final ImageIcon windowIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif")); // NOI18N
   private static final ImageIcon refSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/refSort.gif")); // NOI18N
   private static final ImageIcon typeSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/typeSort.gif")); // NOI18N
   private static final ImageIcon alphaSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/alphaSort.gif")); // NOI18N
@@ -561,7 +561,7 @@ private void showSource (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_show
       indexSearch = new IndexSearch ();
       Workspace workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();  
       Mode myMode = workspace.createMode(
-        "JavaDocSearch", //NOI8N
+        "JavaDocSearch", //NOI8N // NOI18N
         org.openide.util.NbBundle.getBundle(IndexSearch.class).getString("IndexSearch.workspace.name"), 
         IndexSearch.class.getResource (ICON_RESOURCE));
       myMode.setBounds(new Rectangle( 200, 200, 450, 200 ) );
@@ -767,6 +767,7 @@ private void showSource (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_show
 
 /*
  * Log
+ *  25   Gandalf   1.24        1/13/00  Petr Hrebejk    i18n mk3  
  *  24   Gandalf   1.23        1/12/00  Petr Hrebejk    i18n mk2
  *  23   Gandalf   1.22        1/12/00  Petr Hrebejk    i18n
  *  22   Gandalf   1.21        1/11/00  Jesse Glick     Context help.

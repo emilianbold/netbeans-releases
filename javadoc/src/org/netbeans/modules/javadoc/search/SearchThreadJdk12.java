@@ -105,7 +105,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
       // Do nothing
     }
     //is.searchEnded();
-    //System.out.println ("THE REAL END");
+    //System.out.println ("THE REAL END"); // NOI18N
     taskFinished();
   }
 
@@ -266,6 +266,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
 
 /*
  * Log
+ *  15   Gandalf   1.14        1/13/00  Petr Hrebejk    i18n mk3  
  *  14   Gandalf   1.13        1/12/00  Petr Hrebejk    i18n
  *  13   Gandalf   1.12        11/3/99  Petr Hrebejk    Missing index file and 
  *       doc/api for single index file fixed

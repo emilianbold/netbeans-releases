@@ -62,10 +62,10 @@ public class SrcFinder extends Object {
     }
     
     
-    // System.out.println("MEMBER  :" + member );
-    // System.out.println("CLASS   :" + clazz );
-    // System.out.println("PACKAGE :" + thePackage );
-    // System.out.println("FILENAME:" + filename );
+    // System.out.println("MEMBER  :" + member ); // NOI18N
+    // System.out.println("CLASS   :" + clazz ); // NOI18N
+    // System.out.println("PACKAGE :" + thePackage ); // NOI18N
+    // System.out.println("FILENAME:" + filename ); // NOI18N
     
     Repository repository = TopManager.getDefault().getRepository();
      
