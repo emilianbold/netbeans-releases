@@ -196,12 +196,20 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   }
 
   private Node[] getRoots () {
-    Places.Nodes pn = TopManager.getDefault ().getPlaces ().nodes ();
-    Node[] moduleRoots = pn.roots ();
-    Node[] roots = new Node[2 + moduleRoots.length];
-    roots[0] = pn.projectDesktop ();
-    roots[1] = pn.repository ();
-    System.arraycopy (moduleRoots, 0, roots, 2, moduleRoots.length);
+    Places.Nodes ns = TopManager.getDefault ().getPlaces ().nodes ();
+    Node[] moduleRoots = ns.roots ();
+
+//    Node[] roots = new Node[2 + moduleRoots.length];
+//    roots[0] = ns.projectDesktop ();
+//    roots[1] = ns.repository ();
+//    System.arraycopy (moduleRoots, 0, roots, 2, moduleRoots.length);
+
+    Node[] roots = new Node[1 + moduleRoots.length + 3];
+    roots[0] = ns.repository ();
+    System.arraycopy (moduleRoots, 0, roots, 1, moduleRoots.length);
+    roots[roots.length - 3] = DesktopNode.createEnvironmentNode ();
+    roots[roots.length - 2] = DesktopNode.createSessionNode ();
+    roots[roots.length - 1] = DesktopNode.createProjectSettingsNode ();
     return roots;
   }
 
@@ -428,6 +436,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  16   Gandalf   1.15        7/13/99  Ian Formanek    New MainExplorer tabs 
+*       (usability&intuitiveness discussion results)
 *  15   Gandalf   1.14        7/12/99  Jesse Glick     Context help.
 *  14   Gandalf   1.13        7/11/99  David Simonek   window system change...
 *  13   Gandalf   1.12        6/8/99   Ian Formanek    ---- Package Change To 
