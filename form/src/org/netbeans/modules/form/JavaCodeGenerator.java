@@ -1052,16 +1052,37 @@ class JavaCodeGenerator extends CodeGenerator {
         if (getEventHandlerSection(handlerName) != null)
             return false;
 
+        FormEditorSupport s = formManager.getFormEditorSupport();
+        IndentEngine engine = IndentEngine.find(s.getDocument());
+        StringWriter buffer = new StringWriter();
+        Writer codeWriter = engine.createWriter(s.getDocument(),
+                                                initComponentsSection.getPositionAfter().getOffset(),
+                                                buffer);
         synchronized(GEN_LOCK) {
-            FormEditorSupport s = formManager.getFormEditorSupport();
-
             try {
                 JavaEditor.InteriorSection sec = s.createInteriorSectionAfter(initComponentsSection, getEventSectionName(handlerName));
-                sec.setHeader(getEventHandlerHeader(handlerName, paramTypes, exceptTypes));
-                sec.setBody(getEventHandlerBody(handlerName, paramTypes, bodyText));
-                sec.setBottom(getEventHandlerFooter(handlerName, paramTypes));
-            } catch (javax.swing.text.BadLocationException e) {
+                int i1, i2;
+
+                codeWriter.write(getEventHandlerHeader(handlerName, paramTypes, exceptTypes));
+                codeWriter.flush();
+                i1 = buffer.getBuffer().length();
+                codeWriter.write(getEventHandlerBody(handlerName, paramTypes, bodyText));
+                codeWriter.flush();
+                i2 = buffer.getBuffer().length();
+                codeWriter.write(getEventHandlerFooter(handlerName, paramTypes));
+                codeWriter.flush();
+
+                sec.setHeader(buffer.getBuffer().substring(0,i1));
+                sec.setBody(buffer.getBuffer().substring(i1,i2));
+                sec.setBottom(buffer.getBuffer().substring(i2));
+
+                codeWriter.close();
+            } 
+            catch (javax.swing.text.BadLocationException e) {
             }
+            catch (java.io.IOException ioe) {
+            }
+            
             clearUndo();
         }
 
@@ -1080,10 +1101,33 @@ class JavaCodeGenerator extends CodeGenerator {
         if (sec == null)
             return false;
 
+        FormEditorSupport s = formManager.getFormEditorSupport();
+        IndentEngine engine = IndentEngine.find(s.getDocument());
+        StringWriter buffer = new StringWriter();
+        Writer codeWriter = engine.createWriter(s.getDocument(),
+                                                sec.getPositionBefore().getOffset(),
+                                                buffer);
+        int i1, i2;
+
         synchronized(GEN_LOCK) {
-            sec.setHeader(getEventHandlerHeader(handlerName, paramTypes, exceptTypes));
-            sec.setBody(getEventHandlerBody(handlerName, paramTypes, bodyText));
-            sec.setBottom(getEventHandlerFooter(handlerName, paramTypes));
+            try {
+                codeWriter.write(getEventHandlerHeader(handlerName, paramTypes, exceptTypes));
+                codeWriter.flush();
+                i1 = buffer.getBuffer().length();
+                codeWriter.write(getEventHandlerBody(handlerName, paramTypes, bodyText));
+                codeWriter.flush();
+                i2 = buffer.getBuffer().length();
+                codeWriter.write(getEventHandlerFooter(handlerName, paramTypes));
+                codeWriter.flush();
+
+                sec.setHeader(buffer.getBuffer().substring(0,i1));
+                sec.setBody(buffer.getBuffer().substring(i1,i2));
+                sec.setBottom(buffer.getBuffer().substring(i2));
+
+                codeWriter.close();
+            }
+            catch (IOException e) {
+            }
             clearUndo();
         }
         return true;
