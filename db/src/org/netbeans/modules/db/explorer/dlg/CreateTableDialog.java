@@ -85,9 +85,6 @@ public class CreateTableDialog {
             pane.setMinimumSize(new Dimension(200,100));
             pane.setPreferredSize(new Dimension(502,200));
      
-            //MSSQL Server "sa" user patch
-            final boolean msSqlSa = nfo.getDriverSpecification().isMSSQLSaUser(nfo.getConnection().getMetaData());
-            
             // Table name field
 
             label = new JLabel(bundle.getString("CreateTableName")); // NOI18N
@@ -125,12 +122,7 @@ public class CreateTableDialog {
             pane.add(label);
 
             Vector users = new Vector();
-            //        	users.add(nfo.getUser());
-            try {
-                users.add(spe.getMetaData().getUserName());
-            } catch (java.sql.SQLException e) {
-                e.printStackTrace();
-            }
+            users.add(nfo.getDriverSpecification().getSchema());
 
             constr.fill = GridBagConstraints.HORIZONTAL;
             constr.weightx = 0.0;
@@ -233,11 +225,7 @@ public class CreateTableDialog {
                               Vector icols = new Vector();
                               CreateTable cmd = spec.createCommandCreateTable(tablename);
                               
-                              //MSSQL Server "sa" user patch
-                              if (msSqlSa)
-                                cmd.setObjectOwner("dbo"); // NOI18N
-                              else
-                                cmd.setObjectOwner((String)ownercombo.getSelectedItem());
+                              cmd.setObjectOwner((String)ownercombo.getSelectedItem());
                               
                               /* this variables and operation provide support for
                                * creating indexes for primary or unique keys,
