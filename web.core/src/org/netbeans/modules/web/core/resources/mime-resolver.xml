@@ -25,10 +25,14 @@ Microsystems, Inc. All Rights Reserved.
         <ext name="jspx"/>
         <ext name="jsf"/>
         <ext name="jspf"/>
+        <resolver mime="text/x-jsp">
+        </resolver>
+    </file>
+    <file>
         <ext name="tag"/>
         <ext name="tagx"/>
         <ext name="tagf"/>
-        <resolver mime="text/x-jsp">
+        <resolver mime="text/x-tag">
         </resolver>
     </file>
 
