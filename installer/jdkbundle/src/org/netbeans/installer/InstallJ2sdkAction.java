@@ -191,11 +191,11 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                 //Install public JRE only when it is not already installed.
                 if (!Util.isJREAlreadyInstalled()) {
                     cmdArray[0] = "msiexec.exe /qn /i \"" + resolveString("$D(common)")
-                    + "\\Java\\Update\\Base Images\\jdk1.5.0.b64\\patch-jdk1.5.0.b64\\jre.msi\"";
+                    + "\\Java\\Update\\Base Images\\jdk1.5.0.b64\\patch-jdk1.5.0.b64\\jre.msi\""
+                    + " IEXPLORER=1 MOZILLA=1";
                     runCommand(cmdArray, envP, support);
                 }
             }
-            
             
             //Move JDK up one dir level
             if (!Util.isWindowsOS()) {
