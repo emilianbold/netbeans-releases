@@ -176,9 +176,28 @@ public class TopSecurityManager extends SecurityManager {
                 }
             }
         }
+        if ("netbeans.home".equals(x)) { // NOI18N
+            // Get rid of this old system property.
+            Class[] ctxt = getClassContext();
+            for (int i = 0; i < ctxt.length; i++) {
+                Class c = ctxt[i];
+                if (c != TopSecurityManager.class &&
+                        c != System.class &&
+                        c != Boolean.class) {
+                    String n = c.getName();
+                    synchronized (warnedClassesNDE) {
+                        if (warnedClassesNH.add(n)) {
+                            System.err.println("Warning: use of system property netbeans.home in " + n + " has been obsoleted in favor of InstalledFileLocator"); // NOI18N
+                        }
+                    }
+                    break;
+                }
+            }
+        }
         return;
     }
     private final Set warnedClassesNDE = new HashSet(25); // Set<String>
+    private final Set warnedClassesNH = new HashSet(25); // Set<String>
 
     /* ----------------- private methods ------------- */
 
