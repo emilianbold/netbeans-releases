@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
@@ -58,6 +60,14 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
     public static String TEST_ACTION = "test"; // NOI18N
     public static String DEBUG_ACTION = "debug"; // NOI18N
 
+    private static List DEFAULT_BUILD_TARGETS = Arrays.asList(new String[]{"build", "compile", "jar", "dist", "all", ".*jar.*"}); // NOI18N
+    private static List DEFAULT_CLEAN_TARGETS = Arrays.asList(new String[]{"clean", ".*clean.*"}); // NOI18N
+    private static List DEFAULT_REBUILD_TARGETS = Arrays.asList(new String[]{"rebuild", ".*rebuild.*"}); // NOI18N
+    private static List DEFAULT_JAVADOC_TARGETS = Arrays.asList(new String[]{"javadoc", "javadocs", "docs", "doc", ".*javadoc.*", ".*doc.*"}); // NOI18N
+    private static List DEFAULT_RUN_TARGETS = Arrays.asList(new String[]{"run", "start", ".*run.*", ".*start.*"}); // NOI18N
+    private static List DEFAULT_TEST_TARGETS = Arrays.asList(new String[]{"test", ".*test.*"}); // NOI18N
+    private static List DEFAULT_DEBUG_TARGETS = Arrays.asList(new String[]{"debug", ".*debug.*"});; // NOI18N
+    
     private List/*<String>*/ targetNames;
     private List/*<TargetMapping>*/ targetMappings;
     private List/*<FreeformProjectGenerator.CustomTarget>*/ custTargets;
@@ -120,17 +130,17 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
     
     private void addTargets(List extraTargets) {
         combos.add(buildCombo);
-        targetDescs.add(new TargetDescriptor(BUILD_ACTION, BUILD_ACTION, null, null));
+        targetDescs.add(new TargetDescriptor(BUILD_ACTION, DEFAULT_BUILD_TARGETS, null, null));
         combos.add(cleanCombo);
-        targetDescs.add(new TargetDescriptor(CLEAN_ACTION, CLEAN_ACTION, null, null));
+        targetDescs.add(new TargetDescriptor(CLEAN_ACTION, DEFAULT_CLEAN_TARGETS, null, null));
         combos.add(javadocCombo);
-        targetDescs.add(new TargetDescriptor(JAVADOC_ACTION, JAVADOC_ACTION, null, null));
+        targetDescs.add(new TargetDescriptor(JAVADOC_ACTION, DEFAULT_JAVADOC_TARGETS, null, null));
         combos.add(runCombo);
-        targetDescs.add(new TargetDescriptor(RUN_ACTION, RUN_ACTION, null, null));
+        targetDescs.add(new TargetDescriptor(RUN_ACTION, DEFAULT_RUN_TARGETS, null, null));
         combos.add(testCombo);
-        targetDescs.add(new TargetDescriptor(TEST_ACTION, TEST_ACTION, null, null));
+        targetDescs.add(new TargetDescriptor(TEST_ACTION, DEFAULT_TEST_TARGETS, null, null));
         combos.add(debugCombo);
-        targetDescs.add(new TargetDescriptor(DEBUG_ACTION, DEBUG_ACTION, null, null));
+        targetDescs.add(new TargetDescriptor(DEBUG_ACTION, DEFAULT_DEBUG_TARGETS, null, null));
         int y = 6;
         Iterator it = extraTargets.iterator();
         while (it.hasNext()) {
@@ -227,22 +237,34 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
                 combo.addItem(name);
             }
             if (selectDefaults) {
-                selectItem(combo, desc.getDefaultTarget(), false); // NOI18N
+                selectItem(combo, desc.getDefaultTargets(), false); // NOI18N
             }
         }
     }
 
-    private void selectItem(JComboBox combo, String item, boolean add) {
+    /**
+     * @param items concrete item to be selected (or added) or list of
+     *  regular expressions to match
+     */
+    private void selectItem(JComboBox combo, List items, boolean add) {
         ComboBoxModel model = combo.getModel();
-        for (int i=0; i<model.getSize(); i++) {
-            if (model.getElementAt(i).equals(item)) {
-                model.setSelectedItem(item);
-                return;
+        Iterator it = items.iterator();
+        while (it.hasNext()) {
+            String item = (String)it.next();
+            Pattern pattern = Pattern.compile(item);
+            for (int i=0; i<model.getSize(); i++) {
+                String target = (String)model.getElementAt(i);
+                Matcher matcher = pattern.matcher(target);
+                if (matcher.matches()) {
+                    model.setSelectedItem(target);
+                    return;
+                }
             }
         }
         if (add) {
-            combo.addItem(item);
-            model.setSelectedItem(item);
+            assert items.size() == 1 : "There should be only one item in this case"; // NOI18N
+            combo.addItem(items.get(0));
+            model.setSelectedItem(items.get(0));
         } else {
             model.setSelectedItem(""); // NOI18N
         }
@@ -259,7 +281,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
                 assert it3.hasNext();
                 JComboBox combo = (JComboBox)it3.next();
                 if (tm.name.equals(desc.getIDEActionName())) {
-                    selectItem(combo, getListAsString(tm.targets), true);
+                    selectItem(combo, Collections.singletonList(getListAsString(tm.targets)), true);
                     checkAntScript(combo, antScript, tm.script);
                 }
             }

@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.ant.freeform.spi;
 
+import java.util.List;
+
 /**
  * Description of the build target to be shown in Target Mappings customizer
  * panel.
@@ -22,20 +24,21 @@ package org.netbeans.modules.ant.freeform.spi;
 public final class TargetDescriptor {
     
     private String actionName;
-    private String defaultTarget;
+    private List/*<String>*/ defaultTargets;
     private String actionLabel;
     private String accessibleLabel;
     
     /**
      * Constructor.
      * @param actionName IDE action name (see {@link org.netbeans.spi.project.ActionProvider})
-     * @param defaultTarget name of the Ant target to which this IDE action usually maps
+     * @param defaultTargets list of regular expressions to match name of the 
+     *   Ant target to which this IDE action usually maps
      * @param actionLabel localized label of this action. To be shown in UI csutomizer
      * @param accessibleLabel accessible label. Used togerther with actionLabel
      */
-    public TargetDescriptor(String actionName, String defaultTarget, String actionLabel, String accessibleLabel) {
+    public TargetDescriptor(String actionName, List/*<String>*/ defaultTargets, String actionLabel, String accessibleLabel) {
         this.actionName = actionName;
-        this.defaultTarget = defaultTarget;
+        this.defaultTargets = defaultTargets;
         this.actionLabel = actionLabel;
         this.accessibleLabel = accessibleLabel;
     }
@@ -48,11 +51,13 @@ public final class TargetDescriptor {
     }
     
     /**
-     * Name of the target in Ant script which usually maps to the IDE action.
-     * @return cannot be null
+     * List of regular expressions to match name of the target in Ant script 
+     * which usually maps to the IDE action. List will be processed in the
+     * given order so it is recommended to list the most specific ones first.
+     * @return cannot be null; can be empty array
      */
-    public String getDefaultTarget() {
-        return defaultTarget;
+    public List/*<String>*/ getDefaultTargets() {
+        return defaultTargets;
     }
 
     /**
