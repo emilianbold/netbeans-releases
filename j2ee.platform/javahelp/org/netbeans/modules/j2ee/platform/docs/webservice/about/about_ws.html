@@ -51,16 +51,20 @@ probably create a RPC-style web service:</p>
 <li>The web service is process-oriented, not data-oriented.</li>
 </ul></li></ul>
 <h3>Web Services in the IDE</h3>
-<p>In the IDE, you can create a web service by <a href="../create/create_ws_from_wsdl.html">implementing an existing WSDL file</a>,
-<a href="../create/create_ws_from_code.html">exposing existing code</a>, or <a href="../create/create_ws_from_scratch.html">creating from scratch</a>.
+<p>In the IDE, you can create a web service by <a href="../create/create_ws_from_scratch.html">implementing it from scratch</a>
+ or by <a href="../create/create_ws_from_wsdl.html">implementing an existing WSDL file</a>.
 The IDE generates deployment information in the deployment descriptors, the Java code that describes
 the web service (the implementation class and the Service End Point Interface), and a compilation target in
 the Ant build script. After you finish development,
-you can finetune your web service using settings for building a <a href="../build/compile_wsdl.html">web service from a WSDL file</a>,
-a <a href="../build/compile_doc.html">document-style web service</a>, or a <a href="../build/compile_rpc.html">RPC-style web service</a>.
-  Then, when you
+you can finetune your web service using settings for building a 
+<a href="../build/compile_doc.html">document-style web service</a>, or a <a href="../build/compile_rpc.html">RPC-style web service</a>.
+Then, when you
   build the web service, the <a href="../build/about_wscompile.html"><tt>wscompile</tt> tool</a> 
-  is called to generate the web service artifacts required for deployment.</p>
+  is called to generate the web service artifacts required for deployment. 
+  To finetune a web service that is created from a WSDL file, you must <a href="../build/compile_wsdl_regenerate.html">regenerate the web service
+   artifacts</a> 
+  by explicitly calling the compilation target in
+the Ant build script. </p>
 <table cellpadding="3" cellspacing="0" border="0">
 <tr valign="top"> 
 <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
