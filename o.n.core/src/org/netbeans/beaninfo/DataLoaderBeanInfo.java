@@ -50,9 +50,9 @@ public class DataLoaderBeanInfo extends SimpleBeanInfo {
     */
     public Image getIcon(int type) {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16))
-            return Utilities.loadImage("/org/netbeans/core/resources/objectTypes.gif"); // NOI18N
+            return Utilities.loadImage("org/netbeans/core/resources/objectTypes.gif"); // NOI18N
         else
-            return Utilities.loadImage("/org/netbeans/core/resources/objectTypes32.gif"); // NOI18N
+            return Utilities.loadImage("org/netbeans/core/resources/objectTypes32.gif"); // NOI18N
     }
 
     public static class ActionsEditor extends PropertyEditorSupport {

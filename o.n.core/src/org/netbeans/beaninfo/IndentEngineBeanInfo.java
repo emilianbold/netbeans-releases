@@ -55,8 +55,8 @@ public class IndentEngineBeanInfo extends SimpleBeanInfo {
     */
     public Image getIcon(int type) {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16))
-            return Utilities.loadImage("/org/netbeans/core/resources/indentEngines.gif"); // NOI18N
+            return Utilities.loadImage("org/netbeans/core/resources/indentEngines.gif"); // NOI18N
         else
-            return Utilities.loadImage("/org/netbeans/core/resources/indentEngines.gif"); // NOI18N
+            return Utilities.loadImage("org/netbeans/core/resources/indentEngines.gif"); // NOI18N
     }
 }

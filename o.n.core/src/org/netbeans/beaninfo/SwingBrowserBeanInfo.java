@@ -98,6 +98,6 @@ public class SwingBrowserBeanInfo extends SimpleBeanInfo {
     * Returns the internal browser icon. 
     */
     public Image getIcon (int type) {
-        return Utilities.loadImage("/org/openide/resources/html/htmlView.gif"); // NOI18N
+        return Utilities.loadImage("org/openide/resources/html/htmlView.gif"); // NOI18N
     }
 }

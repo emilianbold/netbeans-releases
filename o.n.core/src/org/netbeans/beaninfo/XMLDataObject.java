@@ -35,9 +35,9 @@ public class XMLDataObject {
 
         public Image getIcon (int type) {
             if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-                return Utilities.loadImage("/org/openide/resources/xmlObject.gif"); // NOI18N
+                return Utilities.loadImage("org/openide/resources/xmlObject.gif"); // NOI18N
             } else {
-                return Utilities.loadImage ("/org/openide/resources/xmlObject32.gif"); // NOI18N
+                return Utilities.loadImage ("org/openide/resources/xmlObject32.gif"); // NOI18N
             }
         }
 

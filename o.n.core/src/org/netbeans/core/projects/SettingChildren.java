@@ -120,10 +120,10 @@ public final class SettingChildren extends FilterNode.Children {
             });
 
             setValue (ListImageEditor.PROP_IMAGES, new Image [] {
-                Utilities.loadImage ("/org/netbeans/core/resources/setting-defined.gif"), // NOI18N
-                Utilities.loadImage ("/org/netbeans/core/resources/setting-ignored.gif"), // NOI18N
-                Utilities.loadImage ("/org/netbeans/core/resources/setting-inherited.gif"), // NOI18N
-                Utilities.loadImage ("/org/netbeans/core/resources/empty.gif") // NOI18N
+                Utilities.loadImage ("org/netbeans/core/resources/setting-defined.gif"), // NOI18N
+                Utilities.loadImage ("org/netbeans/core/resources/setting-ignored.gif"), // NOI18N
+                Utilities.loadImage ("org/netbeans/core/resources/setting-inherited.gif"), // NOI18N
+                Utilities.loadImage ("org/netbeans/core/resources/empty.gif") // NOI18N
             });
         }
 
@@ -252,8 +252,8 @@ public final class SettingChildren extends FilterNode.Children {
             });
 
             setValue (ListImageEditor.PROP_IMAGES, new Image [] {
-                Utilities.loadImage ("/org/netbeans/core/resources/empty.gif"), // NOI18N
-                Utilities.loadImage ("/org/netbeans/core/resources/project.gif") // NOI18N
+                Utilities.loadImage ("org/netbeans/core/resources/empty.gif"), // NOI18N
+                Utilities.loadImage ("org/netbeans/core/resources/project.gif") // NOI18N
             });
         }
 
