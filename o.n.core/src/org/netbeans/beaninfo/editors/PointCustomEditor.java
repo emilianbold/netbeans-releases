@@ -18,6 +18,7 @@ import java.util.ResourceBundle;
 
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
+import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
@@ -63,15 +64,19 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
             int x = Integer.parseInt (xField.getText ());
             int y = Integer.parseInt (yField.getText ());
             if ((x < 0) || (y < 0)) {
-                TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CTL_NegativeSize"), NotifyDescriptor.ERROR_MESSAGE));
-                Point point = (Point) editor.getValue();
-                x = point.x;
-                y = point.y;
+                IllegalStateException ise = new IllegalStateException();
+                TopManager.getDefault().getErrorManager().annotate(
+                    ise, ErrorManager.ERROR, null, 
+                    bundle.getString("CTL_NegativeSize"), null, null);
+                throw ise;
             }
             return new Point (x, y);
         } catch (NumberFormatException e) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CTL_InvalidValue"), NotifyDescriptor.ERROR_MESSAGE));
-            throw new IllegalStateException ();
+            IllegalStateException ise = new IllegalStateException();
+            TopManager.getDefault().getErrorManager().annotate(
+                ise, ErrorManager.ERROR, null, 
+                bundle.getString("CTL_InvalidValue"), null, null);
+            throw ise;
         }
     }
 
@@ -160,25 +165,3 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
 
 }
 
-
-/*
- * Log
- *  12   Gandalf   1.11        1/13/00  Petr Jiricka    i18n
- *  11   Gandalf   1.10        1/11/00  Radko Najman    fixed bug #4910
- *  10   Gandalf   1.9         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  9    Gandalf   1.8         8/18/99  Ian Formanek    Fixed bug 2322 - Some PE
- *       couldn't be initialized - en exception is issued
- *  8    Gandalf   1.7         8/17/99  Ian Formanek    Generated serial version
- *       UID
- *  7    Gandalf   1.6         7/8/99   Jesse Glick     Context help.
- *  6    Gandalf   1.5         6/30/99  Ian Formanek    Reflecting changes in 
- *       editors packages and enhanced property editor interfaces
- *  5    Gandalf   1.4         6/8/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  4    Gandalf   1.3         6/2/99   Ian Formanek    Fixed event handlers
- *  3    Gandalf   1.2         5/31/99  Ian Formanek    Updated to X2 format
- *  2    Gandalf   1.1         3/4/99   Jan Jancura     bundle moved
- *  1    Gandalf   1.0         1/5/99   Ian Formanek    
- * $
- */
