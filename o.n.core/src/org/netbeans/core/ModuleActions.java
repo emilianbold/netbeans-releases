@@ -16,9 +16,9 @@ package com.netbeans.developer.impl;
 import java.util.*;
 import javax.swing.event.*;
 
-import com.netbeans.ide.actions.ToolsAction;
-import com.netbeans.ide.modules.ManifestSection;
-import com.netbeans.ide.util.actions.SystemAction;
+import org.openide.actions.ToolsAction;
+import org.openide.modules.ManifestSection;
+import org.openide.util.actions.SystemAction;
 
 /** Holds list of all actions added by modules.
 *
@@ -141,6 +141,8 @@ class ModuleActions extends Object implements ToolsAction.Model {
 
 /*
 * Log
+*  3    Gandalf   1.2         6/8/99   Ian Formanek    ---- Package Change To 
+*       org.openide ----
 *  2    Gandalf   1.1         5/13/99  Jaroslav Tulach Services changed to 
 *       tools.
 *  1    Gandalf   1.0         5/13/99  Jaroslav Tulach 

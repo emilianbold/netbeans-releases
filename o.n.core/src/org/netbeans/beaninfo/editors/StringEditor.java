@@ -14,7 +14,7 @@
 package com.netbeans.developer.editors;
 
 import java.beans.PropertyEditorSupport;
-import com.netbeans.ide.util.Utilities;
+import org.openide.util.Utilities;
 
 /** A property editor for String class.
 * @author   Ian Formanek
@@ -47,6 +47,8 @@ public class StringEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  2    Gandalf   1.1         6/8/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  */

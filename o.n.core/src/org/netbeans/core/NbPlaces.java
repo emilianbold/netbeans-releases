@@ -15,12 +15,12 @@ package com.netbeans.developer.impl;
 
 import java.util.ArrayList;
 
-import com.netbeans.ide.*;
-import com.netbeans.ide.loaders.*;
-import com.netbeans.ide.filesystems.*;
-import com.netbeans.ide.util.NotImplementedException;
-import com.netbeans.ide.nodes.*;
-import com.netbeans.ide.util.NbBundle;
+import org.openide.*;
+import org.openide.loaders.*;
+import org.openide.filesystems.*;
+import org.openide.util.NotImplementedException;
+import org.openide.nodes.*;
+import org.openide.util.NbBundle;
 import com.netbeans.developer.impl.workspace.WorkspacePoolContext;
 import com.netbeans.developer.impl.execution.ExecutionEngine;
 
@@ -238,6 +238,8 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  21   Gandalf   1.20        6/8/99   Ian Formanek    ---- Package Change To 
+*       org.openide ----
 *  20   Gandalf   1.19        6/8/99   Ian Formanek    Added method actions() to
 *       obtain folder for ActionsPool
 *  19   Gandalf   1.18        5/27/99  Jaroslav Tulach Executors rearanged.

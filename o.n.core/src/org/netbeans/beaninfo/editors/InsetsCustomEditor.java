@@ -16,8 +16,8 @@ package com.netbeans.developer.editors;
 import java.awt.Insets;
 import java.util.ResourceBundle;
 
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.explorer.propertysheet.NbCustomPropertyEditor;
+import org.openide.util.NbBundle;
+import org.openide.explorer.propertysheet.NbCustomPropertyEditor;
 
 /**
 *
@@ -207,6 +207,8 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements NbCustomPr
 
 /*
  * Log
+ *  5    Gandalf   1.4         6/8/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  4    Gandalf   1.3         6/2/99   Ian Formanek    Fixed event handlers
  *  3    Gandalf   1.2         5/31/99  Ian Formanek    Updated to X2 format
  *  2    Gandalf   1.1         3/4/99   Jan Jancura     bundle moved

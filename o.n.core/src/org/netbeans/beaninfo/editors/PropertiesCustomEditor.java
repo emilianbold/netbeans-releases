@@ -13,7 +13,7 @@
 
 package com.netbeans.developer.editors;
 
-import com.netbeans.ide.explorer.propertysheet.NbCustomPropertyEditor;
+import org.openide.explorer.propertysheet.NbCustomPropertyEditor;
 import java.io.*;
 import java.util.Properties;
 import javax.swing.*;
@@ -87,6 +87,8 @@ public class PropertiesCustomEditor extends javax.swing.JPanel implements NbCust
 
 /*
  * Log
+ *  2    Gandalf   1.1         6/8/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  1    Gandalf   1.0         6/4/99   Ian Formanek    
  * $
  */

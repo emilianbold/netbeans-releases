@@ -16,7 +16,7 @@ package com.netbeans.developer.editors;
 import java.awt.Rectangle;
 import java.util.ResourceBundle;
 
-import com.netbeans.ide.util.NbBundle;
+import org.openide.util.NbBundle;
 
 /** A property editor for Rectangle class.
 * @author   Petr Hamernik
@@ -61,6 +61,8 @@ public class RectangleEditor extends ArrayOfIntSupport {
 
 /*
  * Log
+ *  3    Gandalf   1.2         6/8/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  2    Gandalf   1.1         3/4/99   Jan Jancura     bundle moved
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $

@@ -23,15 +23,15 @@ import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.border.CompoundBorder;
 
-import com.netbeans.ide.loaders.DataObject;
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.NotifyDescriptor;
-import com.netbeans.ide.DialogDescriptor;
-import com.netbeans.ide.util.HelpCtx;
-import com.netbeans.ide.util.actions.CallableSystemAction;
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.nodes.Node;
-import com.netbeans.ide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
+import org.openide.TopManager;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDescriptor;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.NbBundle;
+import org.openide.nodes.Node;
+import org.openide.cookies.SaveCookie;
 
 /** SystemExit action.
 * @author   Ian Formanek
@@ -68,7 +68,7 @@ public class SystemExit extends CallableSystemAction {
   }
 
   public void performAction() {
-    java.util.Set set = com.netbeans.ide.loaders.DataObject.getRegistry ().getModifiedSet ();
+    java.util.Set set = org.openide.loaders.DataObject.getRegistry ().getModifiedSet ();
     if (!set.isEmpty()) {
       if (exitDialog == null) {
         exitOptions = new JButton[] {
@@ -95,7 +95,7 @@ public class SystemExit extends CallableSystemAction {
       }
       exitDialog.show ();
     } else {
-      com.netbeans.ide.TopManager.getDefault().exit();
+      org.openide.TopManager.getDefault().exit();
     }
   }
 
@@ -255,6 +255,8 @@ public class SystemExit extends CallableSystemAction {
 
 /*
  * Log
+ *  11   Gandalf   1.10        6/8/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  10   Gandalf   1.9         5/26/99  Ian Formanek    Actions cleanup
  *  9    Gandalf   1.8         3/29/99  Ian Formanek    CoronaDialog -> 
  *       DialogDescriptor

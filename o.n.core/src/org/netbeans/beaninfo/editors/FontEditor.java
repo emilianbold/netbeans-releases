@@ -25,7 +25,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 
-import com.netbeans.ide.util.NbBundle;
+import org.openide.util.NbBundle;
 
 /**
 * A property editor for Font class.
@@ -308,6 +308,8 @@ public class FontEditor implements PropertyEditor {
 
 /*
  * Log
+ *  3    Gandalf   1.2         6/8/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  2    Gandalf   1.1         3/4/99   Jan Jancura     bundle moved
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $

@@ -13,12 +13,12 @@
 
 package com.netbeans.developer.impl.actions;
 
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.windows.TopComponent;
-import com.netbeans.ide.util.HelpCtx;
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.util.actions.ActionPerformer;
-import com.netbeans.ide.util.actions.CallableSystemAction;
+import org.openide.TopManager;
+import org.openide.windows.TopComponent;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.ActionPerformer;
+import org.openide.util.actions.CallableSystemAction;
 
 import com.netbeans.developer.impl.*;
 
@@ -56,6 +56,8 @@ public final class GlobalPropertiesAction extends CallableSystemAction {
 
 /*
 * Log
+*  3    src-jtulach1.2         6/8/99   Ian Formanek    ---- Package Change To 
+*       org.openide ----
 *  2    src-jtulach1.1         4/27/99  Jesse Glick     new HelpCtx () -> 
 *       HelpCtx.DEFAULT_HELP.
 *  1    src-jtulach1.0         4/2/99   Jaroslav Tulach 

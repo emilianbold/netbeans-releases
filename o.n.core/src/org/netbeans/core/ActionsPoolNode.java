@@ -17,12 +17,12 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.util.ResourceBundle;
 
-import com.netbeans.ide.nodes.*;
-import com.netbeans.ide.actions.*;
-import com.netbeans.ide.loaders.DataFolder;
-import com.netbeans.ide.util.datatransfer.NewType;
-import com.netbeans.ide.util.actions.SystemAction;
-import com.netbeans.ide.util.NbBundle;
+import org.openide.nodes.*;
+import org.openide.actions.*;
+import org.openide.loaders.DataFolder;
+import org.openide.util.datatransfer.NewType;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.NbBundle;
 
 /** The node for the actions pool folder representation.
 * Delegates most of its functionality to the original data folder node.
@@ -189,6 +189,8 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
 
 /*
 * Log
+*  2    Gandalf   1.1         6/8/99   Ian Formanek    ---- Package Change To 
+*       org.openide ----
 *  1    Gandalf   1.0         6/8/99   Ian Formanek    
 * $
 */

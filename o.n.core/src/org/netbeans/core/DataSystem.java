@@ -20,14 +20,14 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
 
-import com.netbeans.ide.loaders.DataFolder;
-import com.netbeans.ide.loaders.DataFilter;
-import com.netbeans.ide.loaders.DataObject;
-import com.netbeans.ide.filesystems.*;
-import com.netbeans.ide.util.datatransfer.*;
-import com.netbeans.ide.util.*;
-import com.netbeans.ide.nodes.*;
-import com.netbeans.ide.util.actions.SystemAction;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataFilter;
+import org.openide.loaders.DataObject;
+import org.openide.filesystems.*;
+import org.openide.util.datatransfer.*;
+import org.openide.util.*;
+import org.openide.nodes.*;
+import org.openide.util.actions.SystemAction;
 
 /** Data system encapsulates logical structure of more file systems.
 * It also allows filtering of content of DataFolders
@@ -115,14 +115,14 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
   *
   * @return array of system actions that should be in popup menu
   */
-  public com.netbeans.ide.util.actions.SystemAction[] createActions() {
+  public org.openide.util.actions.SystemAction[] createActions() {
     return new SystemAction[] {
       SystemAction.get (com.netbeans.developer.impl.actions.AddFSAction.class),
       SystemAction.get (com.netbeans.developer.impl.actions.AddJarAction.class),
       null,
-      SystemAction.get (com.netbeans.ide.actions.NewAction.class),
+      SystemAction.get (org.openide.actions.NewAction.class),
       null,
-      SystemAction.get (com.netbeans.ide.actions.PropertiesAction.class)
+      SystemAction.get (org.openide.actions.PropertiesAction.class)
     };
   }
 
@@ -211,13 +211,15 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
     }
 
     public Node getNode() {
-      return com.netbeans.ide.TopManager.getDefault().getPlaces().nodes().repository(filter);
+      return org.openide.TopManager.getDefault().getPlaces().nodes().repository(filter);
     }
   }
 }
 
 /*
  * Log
+ *  16   Gandalf   1.15        6/8/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  15   Gandalf   1.14        5/9/99   Ian Formanek    Fixed bug 1655 - 
  *       Renaming of top level nodes is not persistent (removed the possibility 
  *       to rename).

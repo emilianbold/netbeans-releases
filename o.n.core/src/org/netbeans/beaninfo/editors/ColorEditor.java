@@ -28,7 +28,7 @@ import javax.swing.event.*;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.colorchooser.ColorSelectionModel;
 
-import com.netbeans.ide.util.NbBundle;
+import org.openide.util.NbBundle;
 
 /** A property editor for Color class.
 * (Final only for performance, can be unfinaled if desired)
@@ -536,6 +536,8 @@ public final class ColorEditor implements PropertyEditor {
 
 /*
  * Log
+ *  10   Gandalf   1.9         6/8/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  9    Gandalf   1.8         4/16/99  Libor Martinek  
  *  8    Gandalf   1.7         3/4/99   Jan Jancura     QuickSorter removed
  *  7    Gandalf   1.6         3/4/99   Jan Jancura     bundle moved

@@ -23,7 +23,7 @@ import java.text.MessageFormat;
 * @version  0.14, Jul 20, 1998
 */
 abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport {
-  private static final String VALUE_FORMAT = com.netbeans.ide.util.NbBundle.getBundle(
+  private static final String VALUE_FORMAT = org.openide.util.NbBundle.getBundle(
     ArrayOfIntSupport.class).getString("EXC_BadFormatValue");
                                                                 
   /** Length of the array of the integers */
@@ -168,6 +168,8 @@ abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport {
 
 /*
  * Log
+ *  3    Gandalf   1.2         6/8/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  2    Gandalf   1.1         3/4/99   Jan Jancura     bundle moved
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $

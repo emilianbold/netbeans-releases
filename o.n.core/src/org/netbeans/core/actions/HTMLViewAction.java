@@ -13,11 +13,11 @@
 
 package com.netbeans.developer.impl.actions;
 
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.util.HelpCtx;
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.util.actions.ActionPerformer;
-import com.netbeans.ide.util.actions.CallableSystemAction;
+import org.openide.TopManager;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.ActionPerformer;
+import org.openide.util.actions.CallableSystemAction;
 
 /** Opens a HTML Browser on the home URL specified in IDESettings.
 * (Or activates last opened).
@@ -55,6 +55,8 @@ public class HTMLViewAction extends CallableSystemAction {
 
 /*
  * Log
+ *  9    Gandalf   1.8         6/8/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  8    Gandalf   1.7         3/26/99  Ian Formanek    Fixed use of obsoleted 
  *       NbBundle.getBundle (this)
  *  7    Gandalf   1.6         3/12/99  David Simonek   

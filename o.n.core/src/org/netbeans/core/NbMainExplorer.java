@@ -25,18 +25,18 @@ import java.io.IOException;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-import com.netbeans.ide.*;
-import com.netbeans.ide.actions.*;
-import com.netbeans.ide.awt.SplittedPanel;
-import com.netbeans.ide.awt.ToolbarToggleButton;
-import com.netbeans.ide.explorer.*;
-import com.netbeans.ide.explorer.view.BeanTreeView;
-import com.netbeans.ide.explorer.propertysheet.PropertySheetView;
-import com.netbeans.ide.nodes.Node;
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.util.actions.SystemAction;
-import com.netbeans.ide.windows.TopComponent;
-import com.netbeans.ide.windows.Workspace;
+import org.openide.*;
+import org.openide.actions.*;
+import org.openide.awt.SplittedPanel;
+import org.openide.awt.ToolbarToggleButton;
+import org.openide.explorer.*;
+import org.openide.explorer.view.BeanTreeView;
+import org.openide.explorer.propertysheet.PropertySheetView;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
+import org.openide.windows.TopComponent;
+import org.openide.windows.Workspace;
 
 import com.netbeans.developer.impl.output.OutputTab;
 
@@ -408,6 +408,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  13   Gandalf   1.12        6/8/99   Ian Formanek    ---- Package Change To 
+*       org.openide ----
 *  12   Gandalf   1.11        5/30/99  Ian Formanek    Fixed bug 1647 - Open, 
 *       Compile, Rename, Execute and  etc. actions in popup menu in explorer are
 *       sometimes disabled.  Fixed bug 1971 - If the tab is switched from 

@@ -27,28 +27,28 @@ import javax.swing.*;
 import javax.swing.text.Keymap;
 import javax.swing.border.*;
 
-import com.netbeans.ide.util.datatransfer.ExClipboard;
-import com.netbeans.ide.*;
-import com.netbeans.ide.awt.HtmlBrowser;
-import com.netbeans.ide.loaders.*;
-import com.netbeans.ide.actions.*;
-import com.netbeans.ide.cookies.SaveCookie;
-import com.netbeans.ide.cookies.ProjectCookie;
-import com.netbeans.ide.debugger.Debugger;
-import com.netbeans.ide.debugger.DebuggerNotFoundException;
-import com.netbeans.ide.filesystems.*;
-import com.netbeans.ide.filesystems.JarFileSystem;
-import com.netbeans.ide.options.ControlPanel;
-import com.netbeans.ide.windows.*;
-import com.netbeans.ide.explorer.*;
-import com.netbeans.ide.explorer.view.BeanTreeView;
+import org.openide.util.datatransfer.ExClipboard;
+import org.openide.*;
+import org.openide.awt.HtmlBrowser;
+import org.openide.loaders.*;
+import org.openide.actions.*;
+import org.openide.cookies.SaveCookie;
+import org.openide.cookies.ProjectCookie;
+import org.openide.debugger.Debugger;
+import org.openide.debugger.DebuggerNotFoundException;
+import org.openide.filesystems.*;
+import org.openide.filesystems.JarFileSystem;
+import org.openide.options.ControlPanel;
+import org.openide.windows.*;
+import org.openide.explorer.*;
+import org.openide.explorer.view.BeanTreeView;
 
 
 import com.netbeans.developer.impl.actions.*;
 import com.netbeans.developer.impl.output.OutputTab;
-import com.netbeans.ide.util.*;
-import com.netbeans.ide.util.io.*;
-import com.netbeans.ide.nodes.*;
+import org.openide.util.*;
+import org.openide.util.io.*;
+import org.openide.nodes.*;
 
 /** This class is a TopManager for Corona environment.
 *
@@ -65,10 +65,10 @@ public class NbTopManager extends TopManager {
   private static Repository repository;
 
   /** ExecutionMachine */
-  private com.netbeans.ide.execution.ExecutionEngine execEngine;
+  private org.openide.execution.ExecutionEngine execEngine;
 
   /** CompilationMachine */
-  private com.netbeans.ide.compiler.CompilationEngine compilationEngine;
+  private org.openide.compiler.CompilationEngine compilationEngine;
 
   /** WWW browser window. */
   static HtmlBrowser.BrowserComponent htmlViewer;
@@ -257,14 +257,14 @@ public class NbTopManager extends TopManager {
   /**
   * @return implementation of ExecutionMachine
   */
-  public com.netbeans.ide.execution.ExecutionEngine getExecutionEngine () {
+  public org.openide.execution.ExecutionEngine getExecutionEngine () {
     if (execEngine == null) execEngine =
       com.netbeans.developer.impl.execution.ExecutionEngine.getExecutionEngine();
     return execEngine;
   }
 
   /** @return implementation of CompilationEngine */
-  public com.netbeans.ide.compiler.CompilationEngine getCompilationEngine() {
+  public org.openide.compiler.CompilationEngine getCompilationEngine() {
     if (compilationEngine == null) compilationEngine =
       new com.netbeans.developer.impl.compiler.CompilationEngineImpl();
     return compilationEngine;
@@ -347,7 +347,7 @@ public class NbTopManager extends TopManager {
 
   
   private void storeLastProject () {
-    com.netbeans.ide.actions.SaveProjectAction spa = new com.netbeans.ide.actions.SaveProjectAction ();
+    org.openide.actions.SaveProjectAction spa = new org.openide.actions.SaveProjectAction ();
     if (spa.isEnabled ()) {
       boolean doSave = true;
   //    if (new IDESettings ().getConfirmSaveOnExit ()) {
@@ -406,7 +406,7 @@ public class NbTopManager extends TopManager {
   */
   /*
   public void exit () {
-    com.netbeans.ide.actions.SaveProjectAction spa = new com.netbeans.ide.actions.SaveProjectAction ();
+    org.openide.actions.SaveProjectAction spa = new org.openide.actions.SaveProjectAction ();
     if (spa.isEnabled ()) {
       boolean doSave = true;
   //    if (new IDESettings ().getConfirmSaveOnExit ()) {

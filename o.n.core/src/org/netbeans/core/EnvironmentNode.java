@@ -23,14 +23,14 @@ import java.io.ObjectOutputStream;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
-import com.netbeans.ide.*;
-import com.netbeans.ide.loaders.*;
-import com.netbeans.ide.options.*;
-import com.netbeans.ide.actions.PropertiesAction;
-import com.netbeans.ide.util.HelpCtx;
-import com.netbeans.ide.util.actions.*;
-import com.netbeans.ide.nodes.*;
-import com.netbeans.ide.util.NbBundle;
+import org.openide.*;
+import org.openide.loaders.*;
+import org.openide.options.*;
+import org.openide.actions.PropertiesAction;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.*;
+import org.openide.nodes.*;
+import org.openide.util.NbBundle;
 import com.netbeans.developer.impl.actions.*;
 
 /** This object represents environment settings in the Corona system.
@@ -146,6 +146,8 @@ final class EnvironmentNode extends AbstractNode {
 
 /*
  * Log
+ *  15   Gandalf   1.14        6/8/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  14   Gandalf   1.13        5/9/99   Ian Formanek    Fixed bug 1655 - 
  *       Renaming of top level nodes is not persistent (removed the possibility 
  *       to rename).

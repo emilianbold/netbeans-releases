@@ -22,11 +22,11 @@ import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import com.netbeans.ide.NotifyDescriptor;
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.options.SystemOption;
-import com.netbeans.ide.util.Utilities;
-import com.netbeans.ide.util.NbBundle;
+import org.openide.NotifyDescriptor;
+import org.openide.TopManager;
+import org.openide.options.SystemOption;
+import org.openide.util.Utilities;
+import org.openide.util.NbBundle;
 
 /** Global IDE settings.
 *
@@ -135,7 +135,7 @@ public class IDESettings extends SystemOption {
         );
       return; // we do not update UI, nor we fire the property change now
     }
-    com.netbeans.ide.TopManager.getDefault ().getWindowManager ().updateUI ();
+    org.openide.TopManager.getDefault ().getWindowManager ().updateUI ();
 
     // fire the PropertyChange
     firePropertyChange (PROP_LOOK_AND_FEEL, oldValue, value);
@@ -233,6 +233,8 @@ public class IDESettings extends SystemOption {
 
 /*
  * Log
+ *  5    Gandalf   1.4         6/8/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  4    Gandalf   1.3         4/8/99   Ian Formanek    Undone last change
  *  3    Gandalf   1.2         4/8/99   Ian Formanek    Removed SearchPath 
  *       properties

@@ -13,7 +13,7 @@
 
 package com.netbeans.developer.editors;
 
-import com.netbeans.ide.explorer.propertysheet.NbCustomPropertyEditor;
+import org.openide.explorer.propertysheet.NbCustomPropertyEditor;
 import java.util.Vector;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -75,6 +75,8 @@ public class StringCustomEditor extends javax.swing.JPanel implements NbCustomPr
 
 /*
  * Log
+ *  4    Gandalf   1.3         6/8/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  3    Gandalf   1.2         5/31/99  Ian Formanek    Updated to X2 format
  *  2    Gandalf   1.1         4/3/99   Ian Formanek    Fixed bug 1320 - 
  *       Connecion wizard does not work. No wizard window is opened.

@@ -13,10 +13,10 @@
 
 package com.netbeans.developer.impl.actions;
 
-import com.netbeans.ide.util.HelpCtx;
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.util.actions.ActionPerformer;
-import com.netbeans.ide.util.actions.CallableSystemAction;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.ActionPerformer;
+import org.openide.util.actions.CallableSystemAction;
 
 import com.netbeans.developer.impl.Splash;
 
@@ -54,6 +54,8 @@ public class AboutAction extends CallableSystemAction {
 
 /*
  * Log
+ *  5    Gandalf   1.4         6/8/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  4    Gandalf   1.3         3/26/99  Ian Formanek    Fixed use of obsoleted 
  *       NbBundle.getBundle (this)
  *  3    Gandalf   1.2         1/20/99  Jaroslav Tulach 

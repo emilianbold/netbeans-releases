@@ -15,9 +15,9 @@ package com.netbeans.developer.impl.beaninfo;
 
 import java.beans.*;
 import java.util.ResourceBundle;
-import com.netbeans.ide.util.NbBundle;
+import org.openide.util.NbBundle;
 
-import com.netbeans.ide.filesystems.*;
+import org.openide.filesystems.*;
 
 /** Object that provides beaninfo for {@link FileSystem}s.
 *
@@ -62,6 +62,8 @@ public class FileSystemBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  8    Gandalf   1.7         6/8/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  7    Gandalf   1.6         3/12/99  Jaroslav Tulach 
  *  6    Gandalf   1.5         3/4/99   David Simonek   
  *  5    Gandalf   1.4         3/4/99   Petr Hamernik   

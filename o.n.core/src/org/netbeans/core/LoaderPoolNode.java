@@ -20,17 +20,17 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.netbeans.ide.loaders.DataLoader;
-import com.netbeans.ide.loaders.DataLoaderPool;
-import com.netbeans.ide.modules.ManifestSection;
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.actions.*;
-import com.netbeans.ide.nodes.*;
-import com.netbeans.ide.util.actions.SystemAction;
-import com.netbeans.ide.util.enum.ArrayEnumeration;
-import com.netbeans.ide.util.Mutex;
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.actions.ReorderAction;
+import org.openide.loaders.DataLoader;
+import org.openide.loaders.DataLoaderPool;
+import org.openide.modules.ManifestSection;
+import org.openide.TopManager;
+import org.openide.actions.*;
+import org.openide.nodes.*;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.enum.ArrayEnumeration;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
+import org.openide.actions.ReorderAction;
 
 
 /** Node which represents loader pool and its content - all loaders
@@ -515,7 +515,7 @@ public final class LoaderPoolNode extends AbstractNode {
 
   /** Index support for reordering of file system pool.
   */
-  private final class Index extends com.netbeans.ide.nodes.Index.Support {
+  private final class Index extends org.openide.nodes.Index.Support {
     /** Get the nodes; should be overridden if needed.
     * @return the nodes
     * @throws NotImplementedException always
@@ -560,6 +560,8 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  21   Gandalf   1.20        6/8/99   Ian Formanek    ---- Package Change To 
+*       org.openide ----
 *  20   Gandalf   1.19        5/12/99  Jaroslav Tulach NullPointer fix.
 *  19   Gandalf   1.18        5/11/99  Jaroslav Tulach ToolbarPool changed to 
 *       look better in Open API
