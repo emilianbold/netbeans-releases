@@ -387,7 +387,7 @@ public class NbEditorKit extends ExtKit {
                     if (saClass != null && SystemAction.class.isAssignableFrom(saClass)) {
                         Lookup contextLookup = getContextLookup(component);
                         Action action = SystemAction.get(saClass);
-                        translateContextLookupAction(contextLookup, action);
+                        action = translateContextLookupAction(contextLookup, action);
                         
                         JMenuItem item = createLocalizedMenuItem(action);
                         if (item != null) { // && !(item instanceof JMenu))
