@@ -106,7 +106,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
     private static final Runnable returnFocusRunnable
         = new Runnable() {
             public void run() {
-                Component c = BaseTextUI.getFocusedComponent();
+                Component c = Utilities.getLastActiveComponent();
                 if (c != null) {
                     c.requestFocus();
                 }

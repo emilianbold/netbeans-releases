@@ -127,6 +127,14 @@ Microsystems, Inc. All Rights Reserved.
 
                 <folder name="Toolbars">
                     <folder name="Default">
+                        <file name="Separator0.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        </file>
+                        <attr name="Separator0.instance/jump-list-prev" boolvalue="true"/>
+                        <file name="jump-list-prev"/>
+                        <attr name="jump-list-prev/jump-list-next" boolvalue="true"/>
+                        <file name="jump-list-next"/>
+                        <attr name="jump-list-next/Separator-before-find-previous.instance" boolvalue="true"/>
                         <file name="Separator-before-find-previous.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         </file>
