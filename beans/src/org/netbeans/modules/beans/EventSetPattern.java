@@ -134,6 +134,9 @@ public class EventSetPattern extends Pattern {
       return null;
     }
 
+    System.out.println( "Type " + esp.type.toString() );
+
+
     esp.name = Introspector.decapitalize( esp.type.getClassName().getName() );
     esp.isUnicast = isUnicast;
 
@@ -550,6 +553,8 @@ public class EventSetPattern extends Pattern {
 
 /* 
  * Log
+ *  12   Gandalf   1.11        1/4/00   Petr Hrebejk    Various bugfixes - 5036,
+ *       5044, 5045
  *  11   Gandalf   1.10        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  10   Gandalf   1.9         9/13/99  Petr Hrebejk    Creating multiple 

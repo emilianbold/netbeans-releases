@@ -520,7 +520,7 @@ public class PropertyPattern extends Pattern {
     else {
       declaringClass.addMethod( newGetter );
       getterMethod = declaringClass.getMethod( newGetter.getName(), getParameterTypes( newGetter ) );
-      }
+    }
 
   }
 
@@ -589,6 +589,8 @@ public class PropertyPattern extends Pattern {
     ClassElement declaringClass = getDeclaringClass();
     FieldElement newField = new FieldElement();
     
+    System.out.println( "Field " + getName() );
+
     newField.setName( Identifier.create( Introspector.decapitalize( getName() ) ) );
     newField.setType( type );
     newField.setModifiers( Modifier.PRIVATE );
@@ -718,6 +720,8 @@ public class PropertyPattern extends Pattern {
 
 /* 
  * Log
+ *  10   Gandalf   1.9         1/4/00   Petr Hrebejk    Various bugfixes - 5036,
+ *       5044, 5045
  *  9    Gandalf   1.8         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  8    Gandalf   1.7         10/10/99 Petr Hamernik   console debug messages 

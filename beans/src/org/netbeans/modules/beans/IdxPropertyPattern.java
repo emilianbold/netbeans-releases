@@ -132,12 +132,17 @@ public class IdxPropertyPattern extends PropertyPattern {
     ipp.type = null;
     ipp.indexedType = Type.parse( type );
 
+    // Set the non-indexed type when needed
+    if ( withField || withSupport || niGetter || niSetter ) {
+      ipp.type = Type.createArray( ipp.indexedType );
+    }
+
     // Generate field  
     if ( withField || withSupport ) {
-      ipp.type = Type.createArray( ipp.indexedType );
       if ( ipp.type != null ) 
         ipp.generateField( true );
     }
+
 
     // Ensure property change support field and methods exist
     String supportName = null;
@@ -157,13 +162,13 @@ public class IdxPropertyPattern extends PropertyPattern {
 
     if ( mode == READ_WRITE || mode == READ_ONLY ) {
       ipp.generateIndexedGetterMethod( BeanPatternGenerator.idxPropertyGetterBody( name, withReturn ), true );      
-      if ( niGetter )
+      if ( ipp.type != null && niGetter )
         ipp.generateGetterMethod( BeanPatternGenerator.propertyGetterBody( name, niWithReturn), true );
     }
     if ( mode == READ_WRITE || mode == WRITE_ONLY ) {
       ipp.generateIndexedSetterMethod( BeanPatternGenerator.idxPropertySetterBody( name, ipp.getType(),
           bound, constrained, withSet, withSupport, supportName, vetoSupportName ), constrained, true );
-      if ( niSetter )
+      if ( ipp.type != null && niSetter )
         ipp.generateSetterMethod( BeanPatternGenerator.propertySetterBody( name, ipp.getType(),
           bound, constrained, niWithSet, withSupport, supportName, vetoSupportName ), constrained, true );
     }
@@ -676,6 +681,8 @@ public class IdxPropertyPattern extends PropertyPattern {
 
 /* 
  * Log
+ *  9    Gandalf   1.8         1/4/00   Petr Hrebejk    Various bugfixes - 5036,
+ *       5044, 5045
  *  8    Gandalf   1.7         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  7    Gandalf   1.6         9/13/99  Petr Hrebejk    Creating multiple 

@@ -149,7 +149,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
 
   /** Sets the name of the node */
   public void setName( String name ) {
-    
+
     try {
       pattern.patternAnalyser.setIgnore( true );
       setPatternName( name );
@@ -323,6 +323,8 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
 
 /*
 * Log
+*  7    Gandalf   1.6         1/4/00   Petr Hrebejk    Various bugfixes - 5036, 
+*       5044, 5045
 *  6    Gandalf   1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  5    Gandalf   1.4         9/24/99  Petr Hrebejk    Rename of properties from
