@@ -51,12 +51,10 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
     public static final String VOLUME_TYPE_CLASSPATH = "classpath";       //NOI18N
     public static final String VOLUME_TYPE_SRC = "src";       //NOI18N
     public static final String VOLUME_TYPE_JAVADOC = "javadoc";       //NOI18N
-    public static final String VOLUME_TYPE_PARSERDB = "parserdb";       //NOI18N
     public static final String[] VOLUME_TYPES = new String[] {
         VOLUME_TYPE_CLASSPATH,
         VOLUME_TYPE_SRC,
         VOLUME_TYPE_JAVADOC,
-        VOLUME_TYPE_PARSERDB
     };
 
     public String getLibraryType() {
