@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -39,6 +39,7 @@ import org.openide.explorer.*;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
+import org.openide.util.Utilities;
 import org.openide.util.io.*;
 import org.openide.nodes.*;
 
@@ -50,10 +51,10 @@ import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.projects.TrivialProjectManager;
 import org.netbeans.core.modules.ModuleSystem;
 
-/** This class is a TopManager for Corona environment.
-*
-* @author Ales Novak, Jaroslav Tulach, Ian Formanek, Petr Hamernik, Jan Jancura
-*/
+/**
+ * Most of the NetBeans startup logic that is not closely tied to the GUI.
+ * The meat of the startup sequence is in {@link #run}.
+ */
 public class NonGui extends NbTopManager implements Runnable {
     
     /** directory for modules */
@@ -109,16 +110,19 @@ public class NonGui extends NbTopManager implements Runnable {
             }
             
             /** #11735. Relative userDir is converted to absolute*/
-            userDir = new File(userDir).getAbsolutePath();
             // #21085: userDir might contain ../ sequences which should be removed
-            // Note that the meaning of ".." is defined on Windows and Unix but may
-            // be quite different on other OSs, so this is just a heuristic.
-            if (userDir.indexOf("..") != -1) { // NOI18N
+            // XXX should use some well-maintained "normalizeFile" method in FileUtil when available...
+            if (Utilities.isWindows()) {
+                // On Windows, best to canonicalize.
                 try {
                     userDir = new File(userDir).getCanonicalPath();
-                } catch (IOException ioe) {
-                    // No harm done; leave it non-canonicalized.
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    userDir = new File(userDir).getAbsolutePath();
                 }
+            } else {
+                // On Unix, do not want to traverse symlinks.
+                userDir = new File(new File(userDir).toURI().normalize()).getAbsolutePath();
             }
             System.setProperty("netbeans.user", userDir); // NOI18N
             
