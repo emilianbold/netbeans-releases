@@ -33,6 +33,7 @@ fi
 
 eval "$progdir"/../platform4/launcher/nbexec \
     $jdkhomeswitch \
+    --branding nb \
     --clusters "$netbeans_clusters" \
     --userdir "${netbeans_default_userdir}" \
     ${netbeans_default_options} \

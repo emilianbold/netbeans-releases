@@ -1055,6 +1055,16 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module features/web..."/>
     <ant dir="../ide/features/web" target="netbeans"/>
   </target>
+  
+  <!-- targets for branding of NetBeans IDE -->
+  <target name="all-ide/branding/core" depends="init">
+    <echo message="Building module ide/branding/core..."/>
+    <ant dir="../ide/branding/core" target="netbeans"/>
+  </target>
+  <target name="all-ide/branding/core/windows" depends="init">
+    <echo message="Building module ide/branding/core/windows..."/>
+    <ant dir="../ide/branding/core/windows" target="netbeans"/>
+  </target>
 
   <!-- #27098: MakeParserDB requires several modules to have been successfully built. -->
   <!-- Target all/mmm should depend on makeparserdb-modules if mmm/build.xml uses <makeparserdb>. -->
