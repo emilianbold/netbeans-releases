@@ -61,6 +61,10 @@ implements PropertyChangeListener {
             }
             
             if(mode.getKind() == Constants.MODE_KIND_EDITOR) {
+                // #37030 Unmaximize other mode if needed.
+                if(mode != wm.getMaximizedMode()) {
+                    wm.setMaximizedMode(null);
+                }
                 tc.requestActive();
                 break;
             }
