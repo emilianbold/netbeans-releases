@@ -76,7 +76,7 @@ public final class MasterURLMapper extends URLMapper {
         if (isWindowsDriveRoot(file)) {
             retVal = new URL ("file:/"+file.getAbsolutePath ());//NOI18N            
         } else {
-            if (fo.isFolder() && !fo.isValid()) {                
+            if (fo.isFolder() && (!fo.isValid() || fo.isVirtual())) {                
                 String urlDef = file.toURI().toURL().toExternalForm();
                 String pathSeparator = "/";//NOI18N
                 if (!urlDef.endsWith(pathSeparator)) {
