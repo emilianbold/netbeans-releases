@@ -115,7 +115,9 @@ public final class EntityCatalogImpl extends EntityCatalog {
             try {
                 String loc = peer.getPrimaryFile().getURL().toExternalForm();
                 InputSource src = new InputSource(loc);
-                XMLReader reader = XMLUtil.createXMLReader(true);
+
+                // XXX(-ttran) don't validate
+                XMLReader reader = XMLUtil.createXMLReader(false);
                 reader.setErrorHandler(this);
                 reader.setContentHandler(this);
                 reader.setEntityResolver(this);
