@@ -20,6 +20,7 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.debugger.jpda.ui.FixedWatch;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -39,7 +40,7 @@ public class WatchesNodeModel extends VariablesNodeModel {
     
     public String getDisplayName (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT)
-            return "Name";
+            return NbBundle.getBundle(WatchesNodeModel.class).getString("CTL_WatchesModel_Column_Name_Name");
         if (o instanceof JPDAWatch)
             return ((JPDAWatch) o).getExpression ();
         if (o instanceof FixedWatch)

@@ -25,6 +25,7 @@ import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -45,7 +46,7 @@ public class SesionsNodeModel implements NodeModel {
         if (listener == null)
             listener = new Listener (this);
         if (o == TreeModel.ROOT) {
-            return "Name";
+            return NbBundle.getBundle(SesionsNodeModel.class).getString("CTL_SessionsModel_Column_Name_Name");
         } else
         if (o instanceof Session) {
             return ((Session) o).getName ();

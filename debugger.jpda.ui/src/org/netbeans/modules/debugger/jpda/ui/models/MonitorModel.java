@@ -28,6 +28,7 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -96,14 +97,16 @@ NodeActionsProvider {
     public String getDisplayName (Object o) throws UnknownTypeException {
         if (o instanceof ContendedMonitor) {
             ObjectVariable v = ((ContendedMonitor) o).variable;
-            return "Contended Monitor: " + v.getType ();
+            return java.text.MessageFormat.format(NbBundle.getBundle(MonitorModel.class).getString(
+                    "CTL_MonitorModel_Column_ContendedMonitor"), new Object [] { v.getType() });
         } else
         if (o instanceof OwnedMonitors) {
-            return "Owned Monitors";
+            return NbBundle.getBundle(MonitorModel.class).getString("CTL_MonitorModel_Column_OwnedMonitors");
         } else
         if (o instanceof ObjectVariable) {
             ObjectVariable v = (ObjectVariable) o;
-            return "Monitor " + v.getType ();
+            return java.text.MessageFormat.format(NbBundle.getBundle(MonitorModel.class).getString(
+                    "CTL_MonitorModel_Column_Monitor"), new Object [] { v.getType() });
         } else
         throw new UnknownTypeException (o);
     }

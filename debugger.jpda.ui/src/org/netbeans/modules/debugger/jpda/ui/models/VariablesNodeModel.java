@@ -28,6 +28,7 @@ import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -58,9 +59,9 @@ public class VariablesNodeModel implements NodeModel {
     
     public String getDisplayName (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT)
-            return "Name";
+            return NbBundle.getBundle(VariablesNodeModel.class).getString("CTL_LocalsModel_Column_Name_Name");
         if (o.equals ("More")) // NOI18N
-            return "more items...";
+            return NbBundle.getBundle(VariablesNodeModel.class).getString("CTL_LocalsModel_Column_Name_MoreItems");
         if (o instanceof Field)
             return ((Field) o).getName ();
         if (o instanceof LocalVariable)
@@ -75,7 +76,7 @@ public class VariablesNodeModel implements NodeModel {
     public String getShortDescription (Object o) 
     throws UnknownTypeException {
         if (o == TreeModel.ROOT)
-            return "Locals Root";
+            return NbBundle.getBundle(VariablesNodeModel.class).getString("CTL_LocalsModel_Column_Name_Desc");
         if (o instanceof Field) {
             if (o instanceof ObjectVariable) {
                 String type = ((ObjectVariable) o).getType ();

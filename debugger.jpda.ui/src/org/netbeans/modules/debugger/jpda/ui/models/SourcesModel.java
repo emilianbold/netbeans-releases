@@ -42,6 +42,7 @@ import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -148,7 +149,7 @@ NodeActionsProvider {
      * @return display name of this column
      */
     public String getDisplayName () {
-        return "Use for debugging";
+        return NbBundle.getBundle(SourcesModel.class).getString("CTL_SourcesModel_Column_Debugging_Name");
     }
     
     /**
@@ -167,7 +168,7 @@ NodeActionsProvider {
      * @return  tooltip for given node or <code>null</code>
      */
     public String getShortDescription () {
-        return "Should be this source root used for debugging?";
+        return NbBundle.getBundle(SourcesModel.class).getString("CTL_SourcesModel_Column_Debugging_Desc");
     }
     
     /**
@@ -283,12 +284,12 @@ NodeActionsProvider {
     
     // innerclasses ............................................................
     
-    private final Action NEW_FILTER_ACTION = new AbstractAction 
-        ("Add Class Exclusion Filter") {
+    private final Action NEW_FILTER_ACTION = new AbstractAction
+        (NbBundle.getBundle(SourcesModel.class).getString("CTL_SourcesModel_Action_AddFilter")) {
             public void actionPerformed (ActionEvent e) {
                 NotifyDescriptor.InputLine descriptor = new NotifyDescriptor.InputLine (
-                    "Class Exclusion Filter: ",
-                    "Add Class Exclusion Filter Dialog"
+                    NbBundle.getBundle(SourcesModel.class).getString("CTL_SourcesModel_NewFilter_Filter_Label"),
+                    NbBundle.getBundle(SourcesModel.class).getString("CTL_SourcesModel_NewFilter_Title")
                 );
                 if (DialogDisplayer.getDefault ().notify (descriptor) == 
                     NotifyDescriptor.OK_OPTION
@@ -304,7 +305,7 @@ NodeActionsProvider {
             }
     };
     private final Action DELETE_ACTION = Models.createAction (
-        "Delete", 
+        NbBundle.getBundle(SourcesModel.class).getString("CTL_SourcesModel_Action_Delete"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;

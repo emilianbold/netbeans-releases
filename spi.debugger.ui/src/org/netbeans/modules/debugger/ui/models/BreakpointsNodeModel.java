@@ -17,6 +17,7 @@ import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.NbBundle;
 
 /**
  * @author   Jan Jancura
@@ -29,7 +30,7 @@ public class BreakpointsNodeModel implements NodeModel {
     
     public String getDisplayName (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT) {
-            return "Name";
+            return NbBundle.getBundle(BreakpointsNodeModel.class).getString("CTL_BreakpointModel_Column_Name_Name");
         } else
         if (o instanceof String) {
             return (String) o;
@@ -42,7 +43,7 @@ public class BreakpointsNodeModel implements NodeModel {
             return TreeModel.ROOT;
         } else
         if (o instanceof String) {
-            return "Group of Breakpoints";
+            return NbBundle.getBundle(BreakpointsNodeModel.class).getString("CTL_BreakpointModel_Column_GroupName_Desc");
         } else
         throw new UnknownTypeException (o);
     }

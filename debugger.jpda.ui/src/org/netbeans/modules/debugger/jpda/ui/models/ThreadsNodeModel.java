@@ -32,6 +32,7 @@ import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -66,7 +67,7 @@ public class ThreadsNodeModel implements NodeModel {
     
     public String getDisplayName (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT) {
-            return "Name";
+            return NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_Column_Name_Name");
         } else
         if (o instanceof JPDAThread) {
             return ((JPDAThread) o).getName ();
@@ -79,7 +80,7 @@ public class ThreadsNodeModel implements NodeModel {
     
     public String getShortDescription (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT) {
-            return "Displayes all threads for current session.";
+            return NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_Column_Name_Desc");
         } else
         if (o instanceof JPDAThread) {
             JPDAThread t = (JPDAThread) o;
@@ -87,41 +88,43 @@ public class ThreadsNodeModel implements NodeModel {
             String s = "";
             switch (i) {
                 case JPDAThread.STATE_UNKNOWN:
-                    s = "Unknown";
+                    s = NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_State_Unknown");
                     break;
                 case JPDAThread.STATE_MONITOR:
                     ObjectVariable ov = t.getContendedMonitor ();
                     if (ov == null)
-                        s = "Waiting on synchronized block";
+                        s = NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_State_Monitor");
                     else
                         try {
-                            s = "Waiting on synchronized block (" + ov.getToStringValue () + ")";
+                            s = java.text.MessageFormat.format(NbBundle.getBundle(ThreadsNodeModel.class).getString(
+                                    "CTL_ThreadsModel_State_ConcreteMonitor"), new Object [] { ov.getToStringValue() });
                         } catch (InvalidExpressionException ex) {
                             s = ex.getLocalizedMessage ();
                         }
                     break;
                 case JPDAThread.STATE_NOT_STARTED:
-                    s = "Not Started";
+                    s = NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_State_NotStarted");
                     break;
                 case JPDAThread.STATE_RUNNING:
-                    s = "Running";
+                    s = NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_State_Running");
                     break;
                 case JPDAThread.STATE_SLEEPING:
-                    s = "Sleeping";
+                    s = NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_State_Sleeping");
                     break;
                 case JPDAThread.STATE_WAIT:
                     ov = t.getContendedMonitor ();
                     if (ov == null)
-                        s = "Waiting";
+                        s = NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_State_Waiting");
                     else
                         try {
-                            s = "Waiting on " + ov.getToStringValue ();
+                            s = java.text.MessageFormat.format(NbBundle.getBundle(ThreadsNodeModel.class).getString(
+                                    "CTL_ThreadsModel_State_WaitingOn"), new Object [] { ov.getToStringValue() });
                         } catch (InvalidExpressionException ex) {
                             s = ex.getLocalizedMessage ();
                         }
                     break;
                 case JPDAThread.STATE_ZOMBIE:
-                    s = "State Zombie";
+                    s = NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_State_Zombie");
                     break;
             }
             if (t.isSuspended () && (t.getStackDepth () > 0)) {

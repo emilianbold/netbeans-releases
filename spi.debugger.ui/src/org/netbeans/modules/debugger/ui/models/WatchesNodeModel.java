@@ -15,12 +15,12 @@ package org.netbeans.modules.debugger.ui.models;
 
 import java.util.Vector;
 
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.NbBundle;
 
 /**
  * @author   Jan Jancura
@@ -35,7 +35,7 @@ public class WatchesNodeModel implements NodeModel {
     
     public String getDisplayName (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT)
-            return "Name";
+            return NbBundle.getBundle(WatchesNodeModel.class).getString("CTL_WatchesModel_Column_Name_Name");
         if (o instanceof Watch)
             return ((Watch) o).getExpression ();
         throw new UnknownTypeException (o);
@@ -46,7 +46,7 @@ public class WatchesNodeModel implements NodeModel {
             return TreeModel.ROOT;
         if (o instanceof Watch) {
             Watch w = (Watch) o;
-            return w.getExpression () + " = [No current context]";
+            return w.getExpression () + NbBundle.getBundle(WatchesNodeModel.class).getString("CTL_WatchesModel_Column_NameNoContext_Desc");
         }
         throw new UnknownTypeException (o);
     }
