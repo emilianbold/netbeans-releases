@@ -451,10 +451,9 @@ public abstract class Properties {
             Reader r = (Reader) register.get (typeID);
             if (r != null) return r;
 
-            ClassLoader cl = Thread.currentThread ().getContextClassLoader ();
             Class c = null;
             try {
-                c = cl.loadClass (typeID);
+                c = getClassLoader ().loadClass (typeID);
             } catch (ClassNotFoundException e) {
                 e.printStackTrace ();
                 return null;
@@ -662,8 +661,12 @@ public abstract class Properties {
             if (l < 0) return defaultValue;
             Object[] os = null;
             try {
-                os = (Object[]) Array.newInstance (Class.forName (arrayType), l);
+                os = (Object[]) Array.newInstance (
+                    getClassLoader ().loadClass (arrayType), 
+                    l
+                );
             } catch (ClassNotFoundException ex) {
+                ex.printStackTrace ();
                 os = new Object [l];
             }
             for (int i = 0; i < l; i++) {
@@ -767,6 +770,15 @@ public abstract class Properties {
 
         public Properties getProperties (String propertyName) {
             return new DelegatingProperties (this, propertyName);
+        }
+        
+        private static ClassLoader classLoader;
+        private static ClassLoader getClassLoader () {
+            if (classLoader == null)
+                //Thread.currentThread ().getContextClassLoader ();
+                classLoader = (ClassLoader) org.openide.util.Lookup.
+                    getDefault ().lookup (ClassLoader.class);
+            return classLoader;
         }
     }
     

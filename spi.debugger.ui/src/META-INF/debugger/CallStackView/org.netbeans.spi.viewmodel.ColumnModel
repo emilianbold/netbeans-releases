@@ -1,1 +1,2 @@
 org.netbeans.modules.debugger.ui.models.ColumnModels$CallStackLocationColumn
+org.netbeans.modules.debugger.ui.models.ColumnModels$DefaultCallStackColumn

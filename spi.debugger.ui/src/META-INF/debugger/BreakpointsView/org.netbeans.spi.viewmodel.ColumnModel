@@ -1,1 +1,2 @@
 org.netbeans.modules.debugger.ui.models.ColumnModels$BreakpointEnabledColumn
+org.netbeans.modules.debugger.ui.models.ColumnModels$DefaultBreakpointsColumn

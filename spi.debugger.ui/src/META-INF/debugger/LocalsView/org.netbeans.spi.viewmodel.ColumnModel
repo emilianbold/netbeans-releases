@@ -1,3 +1,4 @@
 org.netbeans.modules.debugger.ui.models.ColumnModels$LocalsTypeColumn
 org.netbeans.modules.debugger.ui.models.ColumnModels$LocalsValueColumn
 org.netbeans.modules.debugger.ui.models.ColumnModels$LocalsToStringColumn
+org.netbeans.modules.debugger.ui.models.ColumnModels$DefaultLocalsColumn

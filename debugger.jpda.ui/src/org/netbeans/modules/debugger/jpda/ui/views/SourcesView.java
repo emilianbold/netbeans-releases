@@ -45,6 +45,7 @@ public class SourcesView extends TopComponent {
             setLayout (new BorderLayout ());
             tree = Models.createView 
                 (null, null, null, null, new ArrayList ());
+            tree.setName ("SourcesView");
             add (tree, "Center");  //NOI18N
         }
         if (viewModelListener != null)

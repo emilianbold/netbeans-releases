@@ -1,3 +1,4 @@
 org.netbeans.modules.debugger.ui.models.ColumnModels$WatchTypeColumn
 org.netbeans.modules.debugger.ui.models.ColumnModels$WatchValueColumn
 org.netbeans.modules.debugger.ui.models.ColumnModels$WatchToStringColumn
+org.netbeans.modules.debugger.ui.models.ColumnModels$DefaultWatchesColumn

@@ -79,16 +79,6 @@ public abstract class ColumnModel {
     }
     
     /**
-     * True if column should be visible by default. Default implementation 
-     * returns <code>true</code>.
-     *
-     * @return <code>true</code> if column should be visible by default
-     */
-    public boolean initiallyVisible () {
-        return true;
-    }
-    
-    /**
      * True if column can be sorted. Default implementation returns 
      * <code>true</code>.
      *
@@ -99,14 +89,38 @@ public abstract class ColumnModel {
     }
     
     /**
+     * True if column should be visible by default. Default implementation 
+     * returns <code>true</code>.
+     *
+     * @return <code>true</code> if column should be visible by default
+     */
+    public boolean isVisible () {
+        return true;
+    }
+    
+    /**
+     * Set true if column is visible.
+     *
+     * @param visible set true if column is visible
+     */
+    public void setVisible (boolean visible) {}
+    
+    /**
      * True if column should be sorted by default.
      * Default implementation returns <code>false</code>.
      *
      * @return <code>true</code> if column should be sorted by default
      */
-    public boolean initiallySorted () {
+    public boolean isSorted () {
         return false;
     }
+    
+    /**
+     * Set true if column should be sorted by default.
+     *
+     * @param sorted set true if column should be sorted by default 
+     */
+    public void setSorted (boolean sorted) {}
     
     /**
      * True if column should be sorted by default in descending order.
@@ -115,9 +129,49 @@ public abstract class ColumnModel {
      * @return <code>true</code> if column should be sorted by default 
      *         in descending order
      */
-    public boolean initiallySortedDescending () {
+    public boolean isSortedDescending () {
         return false;
     }
+    
+    /**
+     * Set true if column should be sorted by default in descending order.
+     *
+     * @param sortedDescending set true if column should be sorted by default 
+     *        in descending order
+     */
+    public void setSortedDescending (boolean sortedDescending) {}
+    
+    /**
+     * Should return current order number of this column.
+     *
+     * @return current order number of this column
+     */
+    public int getCurrentOrderNumber () {
+        return -1;
+    }
+    
+    /**
+     * Is called when current order number of this column is changed.
+     *
+     * @param newOrderNumber new order number
+     */
+    public void setCurrentOrderNumber (int newOrderNumber) {}
+    
+    /**
+     * Return column width of this column.
+     *
+     * @return column width of this column
+     */
+    public int getColumnWidth () {
+        return 20;
+    }
+    
+    /**
+     * Is called when column width of this column is changed.
+     *
+     * @param newColumnWidth a new column width
+     */
+    public void setColumnWidth (int newColumnWidth) {}
     
     /**
      * Returns {@link java.beans.PropertyEditor} to be used for 

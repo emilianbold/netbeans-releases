@@ -1,3 +1,4 @@
 org.netbeans.modules.debugger.ui.models.ColumnModels$SessionStateColumn
 org.netbeans.modules.debugger.ui.models.ColumnModels$SessionLanguageColumn
 org.netbeans.modules.debugger.ui.models.ColumnModels$SessionHostNameColumn
+org.netbeans.modules.debugger.ui.models.ColumnModels$DefaultSessionColumn
