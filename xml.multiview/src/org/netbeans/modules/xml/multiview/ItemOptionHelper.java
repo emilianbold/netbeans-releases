@@ -68,7 +68,8 @@ public abstract class ItemOptionHelper implements ActionListener {
     /**
      * Selects option matched the item value.
      * If no option matches the value the unmatchedOption option is selected,
-     * if the "unmatchedOption" uption exists. See {@link #ItemOptionHelper(javax.swing.ButtonGroup)}
+     * if the "unmatchedOption" uption exists.
+     * See {@link #ItemOptionHelper(javax.swing.ButtonGroup, XmlMultiViewDataObject)}
      *
      * @param itemValue value of item to be selected in button group
      */

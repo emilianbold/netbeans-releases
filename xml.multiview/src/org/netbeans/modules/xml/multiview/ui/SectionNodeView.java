@@ -14,6 +14,7 @@
 package org.netbeans.modules.xml.multiview.ui;
 
 import org.netbeans.modules.xml.multiview.SectionNode;
+import org.netbeans.modules.xml.multiview.Utils;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -63,7 +64,7 @@ public class SectionNodeView extends SectionView {
         setActivePanel(sectionNodePanel);
         sectionNodePanel.setActive(true);
         selectNode(sectionNodePanel.getNode());
-        sectionNodePanel.scrollRectToVisible(new Rectangle(sectionNodePanel.getWidth(), sectionNodePanel.getHeight()));
+        Utils.scrollToVisible(sectionNodePanel);
     }
 
     public SectionNode getRootNode() {

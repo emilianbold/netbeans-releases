@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.xml.multiview;
 
+import javax.swing.*;
 import java.awt.*;
 
 /**
@@ -188,5 +189,13 @@ public class Utils {
         if (componentAfter != null) {
             componentAfter.requestFocus();
         }
+    }
+
+    public static void scrollToVisible(final JComponent component) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                component.scrollRectToVisible(new Rectangle(component.getWidth(), component.getHeight()));
+            }
+        });
     }
 }
