@@ -137,12 +137,12 @@ public class JavaResourceHolder extends ResourceHolder {
         FileObject fileObject = defaultFS.findResource("Templates/Other/properties.properties"); // NOI18N
 
         if(fileObject == null)
-            throw new IOException(I18nUtil.getBundle().getString("EXC_TemplateNotFound"));
+            throw new IOException(Util.getString("EXC_TemplateNotFound"));
 
         try {
             return DataObject.find(fileObject);
         } catch(DataObjectNotFoundException e) {
-            throw new IOException(I18nUtil.getBundle().getString("EXC_TemplateNotFound"));
+            throw new IOException(Util.getString("EXC_TemplateNotFound"));
         }
     }
 }

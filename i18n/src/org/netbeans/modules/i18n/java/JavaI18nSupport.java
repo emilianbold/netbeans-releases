@@ -703,7 +703,7 @@ public class JavaI18nSupport extends I18nSupport {
                 // Note: All this shouldn't happen. The reason is 1) bad set reg exp format (in options) or 
                 // 2) it's error in this code.
                 String msg = MessageFormat.format(
-                    I18nUtil.getBundle().getString("MSG_RegExpCompileError"),
+                    Util.getString("MSG_RegExpCompileError"),
                     new Object[] {hardString}
                 );
                 
@@ -795,7 +795,7 @@ public class JavaI18nSupport extends I18nSupport {
                         }
                     } catch(BadLocationException ble) {
                         NotifyDescriptor.Message message = new NotifyDescriptor.Message(
-                            I18nUtil.getBundle().getString("MSG_CouldNotReplace"), NotifyDescriptor.ERROR_MESSAGE);
+                            Util.getString("MSG_CouldNotReplace"), NotifyDescriptor.ERROR_MESSAGE);
                         TopManager.getDefault().notify(message);
                     }
                 }

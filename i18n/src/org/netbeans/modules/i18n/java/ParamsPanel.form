@@ -13,7 +13,7 @@
           <Connection component="paramsList" type="bean"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_Parameters" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/i18n/java/Bundle.properties" key="LBL_Parameters" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -28,7 +28,7 @@
           <Connection component="codePane" type="bean"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_Code" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/i18n/java/Bundle.properties" key="LBL_Code" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -66,10 +66,10 @@
         <Component class="javax.swing.JButton" name="addParamButton">
           <Properties>
             <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="(I18nUtil.getBundle().getString(&quot;CTL_AddButton_Mnem&quot;)).charAt(0)" type="code"/>
+              <Connection code="Util.getChar(&quot;CTL_AddButton_Mnem&quot;)" type="code"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_AddButton" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/i18n/java/Bundle.properties" key="CTL_AddButton" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <Events>
@@ -84,10 +84,10 @@
         <Component class="javax.swing.JButton" name="removeParamButton">
           <Properties>
             <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="(I18nUtil.getBundle().getString(&quot;CTL_RemoveButton_Mnem&quot;)).charAt(0)" type="code"/>
+              <Connection code="Util.getChar(&quot;CTL_RemoveButton_Mnem&quot;)" type="code"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_RemoveButton" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/i18n/java/Bundle.properties" key="CTL_RemoveButton" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <Events>

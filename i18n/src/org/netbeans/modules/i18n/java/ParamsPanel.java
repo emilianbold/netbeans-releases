@@ -16,6 +16,7 @@ package org.netbeans.modules.i18n.java;
 
 
 import java.util.ArrayList;
+import java.util.ResourceBundle;
 import javax.swing.AbstractListModel;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
@@ -42,6 +43,8 @@ public class ParamsPanel extends JPanel {
     /** List model for parameters. */
     private ParamsListModel model;
 
+    private static ResourceBundle bundle = org.openide.util.NbBundle.getBundle(Util.class);
+    
     /** Generated serailized version UID. */
     static final long serialVersionUID =-3754019215574878093L;
     
@@ -143,12 +146,12 @@ public class ParamsPanel extends JPanel {
 
     
     private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_ParamsPanel"));        
-        codeLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Code_Mnem")).charAt(0));
-        paramLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Parameters_Mnem")).charAt(0));
-        removeParamButton.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_CTL_RemoveButton"));        
-        addParamButton.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_CTL_AddButton"));        
-        paramsList.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_paramsList"));        
+        this.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_ParamsPanel"));        
+        codeLabel.setDisplayedMnemonic((bundle.getString("LBL_Code_Mnem")).charAt(0));
+        paramLabel.setDisplayedMnemonic((bundle.getString("LBL_Parameters_Mnem")).charAt(0));
+        removeParamButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CTL_RemoveButton"));        
+        addParamButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CTL_AddButton"));        
+        paramsList.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_paramsList"));        
     }
     
     /** This method is called from within the constructor to
@@ -172,15 +175,15 @@ public class ParamsPanel extends JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         paramLabel.setLabelFor(paramsList);
-        paramLabel.setText(I18nUtil.getBundle().getString("LBL_Parameters"));
+        paramLabel.setText(bundle.getString("LBL_Parameters"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(paramLabel, gridBagConstraints);
 
         codeLabel.setLabelFor(codePane);
-        codeLabel.setText(I18nUtil.getBundle().getString("LBL_Code"));
+        codeLabel.setText(bundle.getString("LBL_Code"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -196,15 +199,15 @@ public class ParamsPanel extends JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(2, 12, 0, 0);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 12, 0, 0);
         add(paramsScroll, gridBagConstraints);
 
         addRemovePanel.setLayout(new java.awt.GridBagLayout());
 
-        addParamButton.setMnemonic((I18nUtil.getBundle().getString("CTL_AddButton_Mnem")).charAt(0));
-        addParamButton.setText(I18nUtil.getBundle().getString("CTL_AddButton"));
+        addParamButton.setMnemonic(Util.getChar("CTL_AddButton_Mnem"));
+        addParamButton.setText(bundle.getString("CTL_AddButton"));
         addParamButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addParamButtonActionPerformed(evt);
@@ -217,8 +220,8 @@ public class ParamsPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         addRemovePanel.add(addParamButton, gridBagConstraints);
 
-        removeParamButton.setMnemonic((I18nUtil.getBundle().getString("CTL_RemoveButton_Mnem")).charAt(0));
-        removeParamButton.setText(I18nUtil.getBundle().getString("CTL_RemoveButton"));
+        removeParamButton.setMnemonic(Util.getChar("CTL_RemoveButton_Mnem"));
+        removeParamButton.setText(bundle.getString("CTL_RemoveButton"));
         removeParamButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeParamButtonActionPerformed(evt);
@@ -240,8 +243,8 @@ public class ParamsPanel extends JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(2, 11, 0, 11);
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 11, 0, 11);
         add(addRemovePanel, gridBagConstraints);
 
         codePane.setContentType("text/x-java");
@@ -257,9 +260,9 @@ public class ParamsPanel extends JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(2, 12, 11, 0);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 12, 11, 0);
         add(codeScroll, gridBagConstraints);
 
     }//GEN-END:initComponents

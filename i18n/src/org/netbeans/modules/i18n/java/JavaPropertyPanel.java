@@ -20,6 +20,7 @@ import java.awt.event.ActionListener;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.ResourceBundle;
 import javax.swing.JButton;
 
 import org.netbeans.modules.i18n.I18nString;
@@ -40,6 +41,8 @@ public class JavaPropertyPanel extends PropertyPanel {
     /** Arguments button. */
     private JButton argumentsButton;
 
+
+    private static ResourceBundle bundle = org.openide.util.NbBundle.getBundle(Util.class);
     
     /** Creates new form JavaPropertyPanel */
     public JavaPropertyPanel() {
@@ -53,9 +56,9 @@ public class JavaPropertyPanel extends PropertyPanel {
      */
     private void initComponents() {
         argumentsButton = new JButton();
-        argumentsButton.setText(I18nUtil.getBundle().getString("CTL_Arguments"));
-        argumentsButton.setMnemonic((I18nUtil.getBundle().getString("CTL_Arguments_Mnem")).charAt(0));
-        argumentsButton.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_CTL_Arguments"));
+        argumentsButton.setText(bundle.getString("CTL_Arguments"));
+        argumentsButton.setMnemonic((bundle.getString("CTL_Arguments_Mnem")).charAt(0));
+        argumentsButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CTL_Arguments"));
         argumentsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 argumentsButtonActionPerformed(evt);
@@ -85,7 +88,7 @@ public class JavaPropertyPanel extends PropertyPanel {
 
         DialogDescriptor dd = new DialogDescriptor(
             paramsPanel,
-            I18nUtil.getBundle().getString("CTL_ParamsPanelTitle"), // NOI18N
+            bundle.getString("CTL_ParamsPanelTitle"), // NOI18N
             true,
             DialogDescriptor.OK_CANCEL_OPTION,
             DialogDescriptor.OK_OPTION,

@@ -1,23 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
-  <SyntheticProperties>
-    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,44,0,0,1,-112"/>
-  </SyntheticProperties>
+  <AuxValues>
+    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,44,0,0,1,-112"/>
+  </AuxValues>
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
   <SubComponents>
     <Component class="javax.swing.JCheckBox" name="generateCheck">
       <Properties>
         <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="(bundle.getString(&quot;CTL_GenerateField_Mnem&quot;)).charAt(0)" type="code"/>
+          <Connection code="Util.getChar(&quot;CTL_GenerateField_Mnem&quot;)" type="code"/>
         </Property>
         <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_GenerateField" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/i18n/java/Bundle.properties" key="CTL_GenerateField" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
-
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="generateCheckActionPerformed"/>
       </Events>
@@ -30,7 +29,7 @@
     <Component class="javax.swing.JLabel" name="modifiersLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_Modifiers" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/i18n/java/Bundle.properties" key="LBL_Modifiers" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -42,14 +41,13 @@
     <Component class="javax.swing.JRadioButton" name="defaultRadio">
       <Properties>
         <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="(bundle.getString(&quot;CTL_DefaultRadio_Mnem&quot;)).charAt(0)" type="code"/>
+          <Connection code="Util.getChar(&quot;CTL_DefaultRadio_Mnem&quot;)" type="code"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_DefaultRadio" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/i18n/java/Bundle.properties" key="CTL_DefaultRadio" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
-
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="defaultRadioActionPerformed"/>
       </Events>
@@ -66,7 +64,6 @@
         <Property name="text" type="java.lang.String" value=" private"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
-
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="privateRadioActionPerformed"/>
       </Events>
@@ -82,7 +79,6 @@
         <Property name="text" type="java.lang.String" value=" protected"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
-
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="protectedRadioActionPerformed"/>
       </Events>
@@ -98,11 +94,9 @@
         <Property name="text" type="java.lang.String" value=" public"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
-
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="publicRadioActionPerformed"/>
       </Events>
-
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="ButtonGroup radioGroup = new ButtonGroup();&#xa;&#xa;radioGroup.add(defaultRadio);&#xa;radioGroup.add(privateRadio);&#xa;radioGroup.add(protectedRadio);&#xa;radioGroup.add(publicRadio);"/>
       </AuxValues>
@@ -119,7 +113,6 @@
         <Property name="text" type="java.lang.String" value=" static"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
-
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="staticCheckActionPerformed"/>
       </Events>
@@ -136,7 +129,6 @@
         <Property name="text" type="java.lang.String" value=" final"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
-
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="finalCheckActionPerformed"/>
       </Events>
@@ -152,7 +144,6 @@
         <Property name="text" type="java.lang.String" value=" transient"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
-
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="transientCheckActionPerformed"/>
       </Events>
@@ -164,11 +155,11 @@
     </Component>
     <Component class="javax.swing.JLabel" name="identifierLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_Identifier" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="identifierTextField" type="bean"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/i18n/java/Bundle.properties" key="LBL_Identifier" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -178,7 +169,6 @@
       </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="identifierTextField">
-
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="identifierTextFieldActionPerformed"/>
         <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="identifierTextFieldFocusLost"/>
@@ -191,11 +181,11 @@
     </Component>
     <Component class="javax.swing.JLabel" name="initLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_InitFormat" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="initTextField" type="bean"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/i18n/java/Bundle.properties" key="LBL_InitFormat" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -208,7 +198,6 @@
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
-
       <Events>
         <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="initTextFieldFocusGained"/>
       </Events>
@@ -220,11 +209,11 @@
     </Component>
     <Component class="javax.swing.JLabel" name="fieldLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_Field" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="fieldTextField" type="bean"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/i18n/java/Bundle.properties" key="LBL_Field" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -237,7 +226,6 @@
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
-
       <Events>
         <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="fieldTextFieldFocusGained"/>
       </Events>
@@ -250,13 +238,12 @@
     <Component class="javax.swing.JButton" name="initButton">
       <Properties>
         <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="(I18nUtil.getBundle().getString(&quot;CTL_Format_Mnem&quot;)).charAt(0)" type="code"/>
+          <Connection code="Util.getChar(&quot;CTL_Format_mne&quot;)" type="code"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_Format" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/i18n/java/Bundle.properties" key="CTL_Format" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
-
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="initButtonActionPerformed"/>
       </Events>

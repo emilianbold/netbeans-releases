@@ -57,7 +57,7 @@ public class JavaReplacePanel extends JPanel {
         this.javaI18nSupport = javaI18nSupport;
         
         // Init bundle.
-        bundle = I18nUtil.getBundle();
+        bundle = org.openide.util.NbBundle.getBundle(Util.class);
         initComponents();
         initAccessibility();
 
@@ -167,7 +167,7 @@ public class JavaReplacePanel extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        generateCheck.setMnemonic((bundle.getString("CTL_GenerateField_Mnem")).charAt(0));
+        generateCheck.setMnemonic(Util.getChar("CTL_GenerateField_Mnem"));
         generateCheck.setSelected(true);
         generateCheck.setText(bundle.getString("CTL_GenerateField"));
         generateCheck.addActionListener(new java.awt.event.ActionListener() {
@@ -190,7 +190,7 @@ public class JavaReplacePanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(modifiersLabel, gridBagConstraints);
 
-        defaultRadio.setMnemonic((bundle.getString("CTL_DefaultRadio_Mnem")).charAt(0));
+        defaultRadio.setMnemonic(Util.getChar("CTL_DefaultRadio_Mnem"));
         defaultRadio.setText(bundle.getString("CTL_DefaultRadio"));
         defaultRadio.setEnabled(false);
         defaultRadio.addActionListener(new java.awt.event.ActionListener() {
@@ -314,8 +314,8 @@ public class JavaReplacePanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 11);
         add(transientCheck, gridBagConstraints);
 
-        identifierLabel.setText(bundle.getString("LBL_Identifier"));
         identifierLabel.setLabelFor(identifierTextField);
+        identifierLabel.setText(bundle.getString("LBL_Identifier"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -344,8 +344,8 @@ public class JavaReplacePanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         add(identifierTextField, gridBagConstraints);
 
-        initLabel.setText(bundle.getString("LBL_InitFormat"));
         initLabel.setLabelFor(initTextField);
+        initLabel.setText(bundle.getString("LBL_InitFormat"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -369,8 +369,8 @@ public class JavaReplacePanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(initTextField, gridBagConstraints);
 
-        fieldLabel.setText(bundle.getString("LBL_Field"));
         fieldLabel.setLabelFor(fieldTextField);
+        fieldLabel.setText(bundle.getString("LBL_Field"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -394,8 +394,8 @@ public class JavaReplacePanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
         add(fieldTextField, gridBagConstraints);
 
-        initButton.setMnemonic((I18nUtil.getBundle().getString("CTL_Format_Mnem")).charAt(0));
-        initButton.setText(I18nUtil.getBundle().getString("CTL_Format"));
+        initButton.setMnemonic(Util.getChar("CTL_Format_mne"));
+        initButton.setText(bundle.getString("CTL_Format"));
         initButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 initButtonActionPerformed(evt);
