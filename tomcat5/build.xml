@@ -30,9 +30,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <path id="cp">
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
-        <!--
-        <pathelement path="${nb_root}/core/external/xml-apis-1.0b2.jar" />
-        -->
+        <!--<pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>-->
         <pathelement location="${nb_root}/openide/io/netbeans/modules/autoload/openide-io.jar"/>
         <pathelement location="${nb_root}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
         <pathelement location="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
@@ -88,7 +86,18 @@ Microsystems, Inc. All Rights Reserved.
     </locjar>
   </target>
 
-  <target name="netbeans" depends="jars">
+  <target name="release">
+  <!--
+    <mkdir dir="netbeans/modules/ext"/>
+    <copy todir="netbeans/modules/ext">
+      <fileset dir="../external">
+         <include name="mx4j-tools.jar"/>
+      </fileset>
+    </copy>
+    -->
+  </target>
+
+  <target name="netbeans" depends="jars,release">
     <genlist targetname="nbm" outputfiledir="netbeans"/>
   </target>
 
