@@ -32,7 +32,6 @@ import org.openide.ErrorManager;
  */
 public class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
     private J2eeDeploymentLookup deployment;
-    private ServerString server;
     private String webContextRootXpath;
     private String webContextRootPropName;
     
@@ -43,7 +42,10 @@ public class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
 
     //the values are not chached, catch can be cached by client or add listening to server change
     private void refresh () {
-        server = deployment.getJ2eeProfileSettings().getServerString();
+        refresh (deployment.getJ2eeProfileSettings().getServerString());
+    }
+    
+    private void refresh (ServerString server) {
         WebContextRoot webContextRoot = server.getServer().getWebContextRoot();
         if (webContextRoot != null) {
             webContextRootXpath = webContextRoot.getXpath();
@@ -80,6 +82,23 @@ public class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
         }
         return null;
     }*/
+    
+    /**
+     * Get context root
+     * @return string value, null if not set or could not find
+     */
+    public String getWebContextRoot(ServerString server) {
+        refresh (server);
+        if (webContextRootXpath == null || webContextRootPropName == null)
+            return null;
+
+        DConfigBean configBean = getWebContextDConfigBean();
+        if (configBean == null) {
+            ErrorManager.getDefault ().log ("ConfigBean for "+webContextRootXpath+" not found"); //NOI18N
+            return null;
+        }
+        return (String) ConfigUtils.getBeanPropertyValue(configBean, webContextRootPropName);
+    }
     
     /**
      * Get context root
