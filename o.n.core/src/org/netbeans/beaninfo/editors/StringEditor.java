@@ -40,6 +40,8 @@ public class StringEditor extends PropertyEditorSupport implements ExPropertyEdi
                 
     /** sets new value */
     public void setAsText(String s) {
+        if ( "null".equals( s ) && getValue() == null ) // NOI18N
+            return;
         setValue(s);
     }
 
