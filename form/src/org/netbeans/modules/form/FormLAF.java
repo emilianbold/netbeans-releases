@@ -98,12 +98,13 @@ class FormLAF
         if (laf == null) {
             try {
                 laf = (LookAndFeel) Class.forName(lafClassName).newInstance();
+                laf.initialize();
+                lafInstances.put(lafClassName, laf);
             }
             catch (Throwable ignore) {
                 return;
             }
         }
-        lafInstances.put(lafClassName, laf);
         useLookAndFeel(laf);
     }
     
