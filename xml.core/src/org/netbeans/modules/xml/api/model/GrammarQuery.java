@@ -104,4 +104,25 @@ public interface GrammarQuery {
      * @return enumeration of <code>GrammarResult</code>s (NOTATION_NODEs)
      */    
     Enumeration queryNotations(String prefix);
+    
+    /**
+     * Allows Grammars to supply customizer for the HintContext
+     * @param ctx the hint context node
+     * @return a Component which can be used to customize the context node
+     */
+    java.awt.Component getCustomizer(HintContext ctx);
+    
+    /**
+     * Allows Grammars to supply customizer from the HintContext
+     * @param ctx the hint context node
+     * @return true if a customizer is available for this context
+     */
+    boolean hasCustomizer(HintContext ctx);
+
+    /**
+     * Allows Grammars to supply properties for the HintContext
+     * @param ctx the hint context node
+     * @return an array of properties for this context
+     */
+    org.openide.nodes.Node.Property[] getProperties(HintContext ctx);
 }

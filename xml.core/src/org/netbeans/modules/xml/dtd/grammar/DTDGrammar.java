@@ -191,6 +191,18 @@ public class DTDGrammar implements GrammarQuery {
         return EmptyEnumeration.EMPTY;        
     }
     
+    public java.awt.Component getCustomizer(HintContext ctx) {
+        return null;
+    }
+    
+    public boolean hasCustomizer(HintContext ctx) {
+        return false;
+    }
+
+    public org.openide.nodes.Node.Property[] getProperties(HintContext ctx) {
+        return null;
+    }
+    
 
     /** For debug purposes only. */
     public String toString() {
