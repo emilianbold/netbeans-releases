@@ -46,7 +46,6 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.modules.debugger.jpda.actions.StepActionProvider;
 
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.LocalsTreeModel;
@@ -56,10 +55,8 @@ import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext;
 import org.netbeans.modules.debugger.jpda.expr.ParseException;
-import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
-import org.netbeans.spi.debugger.jpda.SmartSteppingListener;
 
 import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -559,15 +556,17 @@ public class JPDADebuggerImpl extends JPDADebugger {
     * Performs stop action.
     */
     public void setStoppedState (ThreadReference thread) {
-        if (getState () == STATE_STOPPED) return; 
-        // this can happen if two breakpoints are reached at one time?!?!?
-        
-        //S ystem.err.println("setStoppedState");
-        JPDAThread t = getThread (thread);
-        checkJSR45Languages (t);
-        setCurrentThread (t);
-        setState (STATE_STOPPED);
-        //S ystem.err.println("setStoppedState end");
+        synchronized (LOCK) {
+            if (getState () == STATE_STOPPED) return;
+            // this can happen if two breakpoints are reached at one time?!?!?
+
+            //S ystem.err.println("setStoppedState");
+            JPDAThread t = getThread (thread);
+            checkJSR45Languages (t);
+            setCurrentThread (t);
+            setState (STATE_STOPPED);
+            //S ystem.err.println("setStoppedState end");
+        }
     }
 
     /**
