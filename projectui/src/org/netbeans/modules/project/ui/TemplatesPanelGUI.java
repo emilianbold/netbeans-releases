@@ -16,6 +16,7 @@ package org.netbeans.modules.project.ui;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Font;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -26,6 +27,7 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.text.EditorKit;
 import javax.swing.text.html.HTMLEditorKit;
@@ -466,15 +468,25 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         
     }
     
+    private static class TemplatesListView extends ListView {
+        public TemplatesListView () {
+            super ();
+            // bugfix #44717, Enter key must work regardless if TemplatesPanels is focused
+            list.unregisterKeyboardAction (KeyStroke.getKeyStroke (KeyEvent.VK_ENTER, 0, false));
+        }
+    }
+    
     private static final class TemplatesPanel extends ExplorerProviderPanel {
         
         private ListView list;
 
         protected synchronized JComponent createComponent () {
+            
             if (this.list == null) {
-                this.list = new ListView ();
+                this.list = new TemplatesListView ();
                 this.list.setPopupAllowed(false);
             }
+            
             return this.list;
         }
         
