@@ -68,7 +68,8 @@ public class JspLineBreakpoint extends Breakpoint {
         
         this.url = url;
         this.lineNumber = lineNumber;
-        this.printText = NbBundle.getMessage(JspLineBreakpoint.class, "CTL_Default_Print_Text");
+        this.printText = NbBundle.getMessage(JspLineBreakpoint.class, 
+                                            "CTL_Default_Print_Text", Utils.getJspName(url));
         
         DebuggerManager d = DebuggerManager.getDebuggerManager();
         
