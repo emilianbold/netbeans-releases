@@ -1742,6 +1742,8 @@ final class Central implements ControllerHandler {
 //            debugLog("userDisabledAutoHide- removing " + source.getDisplayName());
             model.removeMode(source);
         }
+        //set active mode, to avoid stuff like issue #50767
+        setActiveMode(targetMode);
         
         if(isVisible()) {
             viewRequestor.scheduleRequest(
