@@ -275,14 +275,12 @@ public class UpdateHelper {
             ArrayList cpItems = new ArrayList();
             while(items.hasNext()) {
                 ClassPathSupport.Item cpti = (ClassPathSupport.Item)items.next();
-                System.out.println("item: " + cpti);
                 String propertyName = cpti.getReference();
                 if(propertyName != null) {
                     String libname = propertyName.substring("${libs.".length());
                     if(libname != null && libname.indexOf(".classpath}") != -1) libname = libname.substring(0, libname.indexOf(".classpath}"));
                     
                     if(!("servlet24".equals(libname) || "jsp20".equals(libname))) { //NOI18N
-                        System.out.println("left!");
                         cpItems.add(cpti);
                     }
                 }
