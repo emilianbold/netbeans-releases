@@ -11,9 +11,7 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd" [
-    <!ENTITY dtds SYSTEM "mf-dtds.xml">
-]>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
 
@@ -188,6 +186,87 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="instanceClass" stringvalue="org.netbeans.core.projects.SystemFileSystem$StructureNode"/>
     </file>
     
-    &dtds;
+    <folder name="xml">
+
+    	<!--
+    	  This 'entities' folder represents an entity catalog realized by mapping 
+    	  public IDs to filesystem constructs (files and folders).
+    	-->
+
+    	<folder name="entities">
+        	<folder name="NetBeans_IDE">
+            	<!-- public ID defined by XMLDataObject -->
+            	<file name="DTD_xmlinfo" url="nbresboot:/org/openide/resources/xmlinfo.dtd">
+                	<attr name="hint.originalPublicID" stringvalue="-//NetBeans IDE//DTD xmlinfo//EN"/>
+            	</file>
+        	</folder>
+
+        	<folder name="NetBeans">
+            	<file name="Entity_Mapping_Registration_1_0" url="nbresboot:/org/openide/xml/EntityCatalog.dtd" >
+                	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//Entity Mapping Registration 1.0//EN"/>
+            	</file>
+            	<file name="DTD_Filesystem_1_0" url="nbresboot:/org/openide/filesystems/filesystem.dtd">
+                	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Filesystem 1.0//EN"/>
+            	</file>
+            	<file name="DTD_Filesystem_1_1" url="nbresboot:/org/openide/filesystems/filesystem1_1.dtd">
+                	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Filesystem 1.1//EN"/>
+            	</file>
+            	<file name="DTD_DefaultAttributes_1_0" url="nbresboot:/org/openide/filesystems/attributes.dtd">
+                	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD DefaultAttributes 1.0//EN"/>
+            	</file>
+
+            	<!-- Session settings -->
+            	<file name="DTD_Session_settings_1_0"
+                	  url="nbresboot:/org/openide/resources/sessionsettings-1_0.dtd">
+                	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Session settings 1.0//EN"/>
+            	</file>
+
+            	<!-- Modules -->
+            	<file name="DTD_Module_Status_1_0" url="nbresboot:/org/netbeans/core/modules/module-status-1_0.dtd">
+                	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Module Status 1.0//EN"/>
+            	</file>
+
+            	<!-- Declarative MIME resolver -->
+            	<file name="DTD_MIME_Resolver_1_0" url="nbresboot:/org/netbeans/core/filesystems/resolver.dtd">
+                	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD MIME Resolver 1.0//EN"/>
+            	</file>
+
+            	<file name="DTD_MIME_Resolver_XML_Rules_1_0" url="nbresboot:/org/netbeans/core/filesystems/xml-rules.dtd">
+                	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD MIME Resolver XML Rules 1.0//EN"/>
+            	</file>            
+        	</folder>
+
+        	<!-- folder name="Forte_for_Java">
+            	<file name="DTD_xmlinfo" url="nbresboot:/org/openide/resources/xmlinfo.dtd" />
+            	<file name="DTD_toolbar" url="nbresboot:/org/netbeans/core/windows/resources/toolbar.dtd" />
+        	</folder -->
+
+    	</folder>
+
+
+    	<!-- XMLDataObject.Info processors -->
+    	<folder name="lookups">
+        	<folder name="NetBeans_IDE">
+            	<!-- public ID defined by XMLDataObject -->
+            	<file name="DTD_toolbar.instance">
+                	<attr name="instanceClass" stringvalue="org.openide.loaders.XMLDataObject$Processor"/>
+                	<attr name="instanceCreate" newvalue="org.netbeans.core.windows.toolbars.ToolbarProcessor" />
+            	</file>
+        	</folder>
+
+        	<folder name="NetBeans">
+            	<file name="Entity_Mapping_Registration_1_0.instance">
+                	<attr name="instanceClass" stringvalue="org.openide.loaders.XMLDataObject$Processor"/>
+                	<attr name="instanceCreate" newvalue="org.netbeans.core.xml.EntityCatalogImpl$RegistrationProcessor" />
+            	</file>
+
+            	<!-- Environment.Provider for declarative MIME resolver XML documents. -->
+            	<file name="DTD_MIME_Resolver_1_0.instance">
+                	<attr name="instanceClass" stringvalue="org.openide.loaders.Environment$Provider"/>
+                	<attr name="instanceCreate" newvalue="org.netbeans.core.filesystems.MIMEResolverImpl"/>
+            	</file>            
+        	</folder>
+    	</folder>
+	</folder>
   
 </filesystem>
