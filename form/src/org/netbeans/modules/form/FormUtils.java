@@ -1190,21 +1190,22 @@ public class FormUtils
         // LinkageError left uncaught
 
         // try execution classpath - in case the class is within the same project
-        loader = ClassPath.getClassPath(formFile, ClassPath.EXECUTE)
-                                 .getClassLoader(true);
-        try {
-            Class cls = loader.loadClass(name);
-            // a source must be available for the class in the project
-            String resourceName = name.replace('.', '/') + ".java"; // NOI18N
-            if (ClassPath.getClassPath(formFile, ClassPath.SOURCE)
-                                   .findResource(resourceName) != null)
-                return cls;
+        // (first check there is a java source file for the class available)
+        String resourceName = name.replace('.', '/') + ".java"; // NOI18N
+        if (ClassPath.getClassPath(formFile, ClassPath.SOURCE)
+                               .findResource(resourceName) != null)
+        {
+            loader = ClassPath.getClassPath(formFile, ClassPath.EXECUTE)
+                                     .getClassLoader(true);
+            try {
+                return loader.loadClass(name);
+            }
+            catch (ClassNotFoundException ex) {
+                // report failure against compilation classpath (just annotate by this one)
+                ErrorManager.getDefault().annotate(cnfe, ex);
+            }
+            // LinkageError left uncaught
         }
-        catch (ClassNotFoundException ex) {
-            // report failure against compilation classpath (just annotate by this one)
-            ErrorManager.getDefault().annotate(cnfe, ex);
-        }
-        // LinkageError left uncaught
 
         throw cnfe;
     }
