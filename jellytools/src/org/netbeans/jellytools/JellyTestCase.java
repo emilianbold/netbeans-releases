@@ -77,6 +77,10 @@ public class JellyTestCase extends NbTestCase {
             // ThreadDead must be re-throwed immediately
             throw td;
         } catch (Throwable th) {
+            // suite is notified about test failure so it can do some debug actions
+            try {
+                failNotify(th);
+            } catch (Exception e3) {}
             // screen capture is performed when test fails and in dependency on system property
             if (captureScreen) {
                 try {
@@ -100,6 +104,14 @@ public class JellyTestCase extends NbTestCase {
                 throw th;
             }
         }
+    }
+    
+    /** Method called in case of fail or error just after screen shot and XML dumps.<br>
+     * Override this method when you need to be notified about test failures or errors 
+     * but avoid any exception to be throwed from this method.<br>
+     * super.failNotify() does not need to be called because it is empty.
+     * @param reason Throwable reason of current fail */
+    protected void failNotify(Throwable reason) {
     }
     
     /** Closes all opened modal dialogs. Non-modal stay opened. */
