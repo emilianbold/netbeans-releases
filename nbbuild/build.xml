@@ -117,7 +117,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="init" depends="init-module-list,maybe-pre-unscramble,set-buildnumber">
     <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
     <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
-    <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc" classpath="nbantext.jar"/>
     <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="nbantext.jar"/>
 
     <!-- We need absolute path to ${netbeans.dest} -->
@@ -353,7 +352,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module java/fastjavac..."/>
     <ant dir="../java/fastjavac" target="netbeans"/>
   </target>
-  <target name="all-java/api" depends="all-openide">
+  <target name="all-java/api" depends="all-openide,all-openide/execution,all-openide/io">
     <echo message="Building Java support APIs.."/>
     <ant dir="../java/api" target="netbeans"/>
   </target>
