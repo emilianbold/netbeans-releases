@@ -38,6 +38,7 @@ public class JNIKill  {
     private static final String [][] SUPPORTED_PLATFORMS = { 
         {"Linux,i386","lib.jnikill.linux.i386.so"},
         {"Linux,x86","lib.jnikill.linux.i386.so"},
+        {"Mac_OS_X,ppc","lib.jnikill.macosx.ppc.dylib"},
         {"SunOS,sparc","lib.jnikill.solaris.sparc.so"},
         {"SunOS,x86","lib.jnikill.solaris.x86.so"},
         {"Windows_NT,x86","lib.jnikill.win32.x86.dll"},

@@ -105,7 +105,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="netbeans.no.pre.unscramble" value="true"/>
      </ant>
      <zip zipfile="xtest-distribution.zip">     
-	<zipfileset dir="lib" prefix="lib" includes="**/*.xml,**/*.jar,**/*.xsl,**/*.exe,**/*.so,**/*.dll,**/*.properties"/>
+	<zipfileset dir="lib" prefix="lib" includes="**/*.xml,**/*.jar,**/*.xsl,**/*.exe,**/*.so,**/*.dll,**/*.properties,**/*.dylib"/>
         <zipfileset dir="plugins" prefix="plugins" includes="**"/>
         <zipfileset dir="." includes="dist_build.xml" fullpath="build.xml"/>
         <zipfileset dir="." includes="standard-test-includes.txt,standard-test-excludes.txt"/>

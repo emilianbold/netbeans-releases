@@ -1,0 +1,46 @@
+# Mac OS X makefile
+
+#
+#                 Sun Public License Notice
+#
+# The contents of this file are subject to the Sun Public License
+# Version 1.0 (the "License"). You may not use this file except in
+# compliance with the License. A copy of the License is available at
+# http://www.sun.com/
+#
+# The Original Code is NetBeans. The Initial Developer of the Original
+# Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+# Microsystems, Inc. All Rights Reserved.
+#
+
+
+# change to your location of JDK
+JAVA_HOME=/Library/Java/Home
+
+# you might need to change 'i386' to your architecture when
+# compiling on non x86 machines
+# you can get your architecture from java system property 'os.arch'
+LIBRARY_NAME=lib.jnikill.macosx.ppc.dylib
+
+
+# you should not change anything below this line
+
+INCLUDES=-I$(JAVA_HOME)/include/
+CC=gcc
+CFLAGS=
+
+# fi
+
+
+killer: org_netbeans_xtest_util_JNIKill.o
+	$(CC) $(CFLAGS) -dynamiclib org_netbeans_xtest_util_JNIKill.o -o $(LIBRARY_NAME)
+
+org_netbeans_xtest_util_JNIKill.o: \
+	org_netbeans_xtest_util_JNIKill.c \
+	org_netbeans_xtest_util_JNIKill.h
+
+	$(CC) $(INCLUDES) $(CFLAGS) -c org_netbeans_xtest_util_JNIKill.c
+
+clean:
+	rm org_netbeans_xtest_util_JNIKill.o
+	rm $(LIBRARY_NAME)
