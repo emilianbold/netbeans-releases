@@ -3427,7 +3427,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             addElementOpenAttr(buf,
                                XML_CODE_EXPRESSION,
                                new String[] { ATTR_EXPRESSION_ID },
-                               new String[] { expId.toString() });
+                               new String[] { expId });
 
             String subIndent = indent + ONE_INDENT;
 
