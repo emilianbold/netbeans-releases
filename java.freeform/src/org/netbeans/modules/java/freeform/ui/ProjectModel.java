@@ -146,10 +146,7 @@ public class ProjectModel  {
         if (sourceFolders.size() > 0) {
             JavaProjectGenerator.putSourceViews(helper, sourceFolders, null);
         }
-        if (model.javaCompilationUnitsList.size() > 0) {
-            JavaProjectGenerator.putJavaCompilationUnits(helper, Util.getAuxiliaryConfiguration(helper), model.javaCompilationUnitsList);
-        }
-        
+        JavaProjectGenerator.putJavaCompilationUnits(helper, Util.getAuxiliaryConfiguration(helper), model.javaCompilationUnitsList);        
         List exports = JavaProjectGenerator.guessExports(model.evaluator, JavaProjectGenerator.getTargetMappings(helper), model.javaCompilationUnitsList);
         if (exports.size() > 0) {
             JavaProjectGenerator.putExports(helper, exports);
