@@ -16,12 +16,9 @@ package org.netbeans.modules.extbrowser;
 import java.awt.Image;
 import java.beans.*;
 import org.openide.ErrorManager;
-import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
 public class NetscapeBrowserBeanInfo extends SimpleBeanInfo {
-
-    private static PropertyDescriptor[] properties = null; 
 
     public BeanDescriptor getBeanDescriptor() {
         BeanDescriptor descr = new BeanDescriptor (NetscapeBrowser.class);

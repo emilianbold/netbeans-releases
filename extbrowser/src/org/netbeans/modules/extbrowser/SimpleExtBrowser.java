@@ -14,12 +14,8 @@
 package org.netbeans.modules.extbrowser;
 
 import java.beans.*;
-import java.io.IOException;
-import java.net.URL;
 import java.util.HashMap;
 
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
