@@ -30,7 +30,7 @@ import org.netbeans.jemmy.operators.JEditorPaneOperator;
  */
 public class SearchTest extends EditorTestCase {
     
-    private static int FIND_TIMEOUT = 2000;
+    private static int FIND_TIMEOUT = 1000;
     
     /** Creates a new instance of Main */
     public SearchTest(String testMethodName) {
@@ -88,8 +88,7 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find.close();
             // check status bar
-            assertEquals(editor.lblStatusBar().getText(),
-                    "'public' found at 16:5");
+            waitForLabel("'public' found at 16:5");
             
             // choose the "testFindSelectionRepeated" word
             editor.select(13, 14, 38);
@@ -102,8 +101,7 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find2.close();
             // check status bar
-            assertEquals(editor.lblStatusBar().getText(),
-                    "'testFindSelectionRepeated' found at 15:35");
+            waitForLabel("'testFindSelectionRepeated' found at 15:35");
             
         } finally {
             closeFileWithDiscard();
@@ -121,6 +119,7 @@ public class SearchTest extends EditorTestCase {
             
             // first search
             editor.setCaretPosition(0);
+            new EventTool().waitNoEvent(FIND_TIMEOUT);            
             new FindAction().perform();
             Find find = new Find();
             find.cboFindWhat().getTextField().setText("package");
@@ -130,6 +129,7 @@ public class SearchTest extends EditorTestCase {
             
             // second search
             editor.setCaretPosition(0);
+            new EventTool().waitNoEvent(FIND_TIMEOUT);            
             new FindAction().perform();
             Find find2 = new Find();
             find2.cboFindWhat().getTextField().setText("class");
@@ -146,8 +146,7 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find3.close();
             // check status bar
-            assertEquals(editor.lblStatusBar().getText(),
-                    "'package' found at 7:1; End of document reached. "
+            waitForLabel("'package' found at 7:1; End of document reached. "
                     +"Continuing search from beginning.");
             
         } finally {
@@ -166,6 +165,7 @@ public class SearchTest extends EditorTestCase {
             
             // perform search with all options unselected
             editor.setCaretPosition(0);
+            new EventTool().waitNoEvent(FIND_TIMEOUT);            
             new FindAction().perform();
             Find find = new Find();
             JComboBoxOperator cbo = find.cboFindWhat();
@@ -177,8 +177,7 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find.close();
             // check status bar
-            assertEquals(editor.lblStatusBar().getText(),
-                    "'cLaSs' found at 13:8");
+            waitForLabel("'cLaSs' found at 13:8");
             
         } finally {
             closeFileWithDiscard();
@@ -203,7 +202,7 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find.close();
             // check status bar
-            assertEquals(editor.lblStatusBar().getText(), "'foo' not found");
+            waitForLabel("'foo' not found");
             
         } finally {
             closeFileWithDiscard();
@@ -229,11 +228,11 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find.close();
             // check status bar
-            assertEquals(editor.lblStatusBar().getText(), 
-                    "'Package' not found");
+            waitForLabel("'Package' not found");
 
             // perform case sensitive search - package found
             editor.setCaretPosition(0);            
+            new EventTool().waitNoEvent(FIND_TIMEOUT);            
             new FindAction().perform();
             Find find2 = new Find();
             JComboBoxOperator cbo2 = find2.cboFindWhat();
@@ -242,8 +241,7 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find2.close();
             // check status bar
-            assertEquals(editor.lblStatusBar().getText(), 
-                    "'package' found at 7:1");
+            waitForLabel("'package' found at 7:1");
             
         } finally {
             closeFileWithDiscard();
@@ -272,8 +270,7 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find.close();
             // check status bar            
-            assertEquals(editor.lblStatusBar().getText(), 
-                    "'smarttest' found at 17:16");
+            waitForLabel("'smarttest' found at 17:16");
             
             // perform smart case search 
             new FindAction().perform();
@@ -284,8 +281,7 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find.close();
             // check status bar            
-            assertEquals(editor.lblStatusBar().getText(), 
-                    "'smarttest' found at 18:16");
+            waitForLabel("'smarttest' found at 18:16");
 
             // perform smart case search 
             new FindAction().perform();
@@ -296,8 +292,7 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find3.close();
             // check status bar            
-            assertEquals(editor.lblStatusBar().getText(), 
-                    "'smarttest' found at 19:16");
+            waitForLabel("'smarttest' found at 19:16");
 
             // perform smart case search - negative
             new FindAction().perform();
@@ -308,8 +303,7 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(FIND_TIMEOUT); 
             find4.close(); 
             // check status bar             
-            assertEquals(editor.lblStatusBar().getText(),  
-                    "'smarttest' not found"); 
+            waitForLabel("'smarttest' not found"); 
             
         } finally {
             closeFileWithDiscard();
@@ -328,14 +322,15 @@ public class SearchTest extends EditorTestCase {
             // perform search for Smarttest (found Smarttest)
             new FindAction().perform();
             Find find = new Find();
+            // check smart case
+            find.cbSmartCase().setSelected(true);            
             JComboBoxOperator cbo = find.cboFindWhat();
             cbo.getTextField().setText("Smarttest");
             find.find();
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find.close();
             // check status bar
-            assertEquals(editor.lblStatusBar().getText(), 
-                    "'Smarttest' found at 18:16");
+            waitForLabel("'Smarttest' found at 18:16");
 
             // perform smart case search - negative
             new FindAction().perform();
@@ -346,8 +341,7 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(FIND_TIMEOUT); 
             find2.close(); 
             // check status bar             
-            assertEquals(editor.lblStatusBar().getText(),  
-                    "'Smarttest' not found"); 
+            waitForLabel("'Smarttest' not found"); 
             
         } finally {
             closeFileWithDiscard();
@@ -366,7 +360,7 @@ public class SearchTest extends EditorTestCase {
             // perform search for "word"
             new FindAction().perform();
             Find find = new Find();
-            find.cbMatchCase().setSelected(false);
+            find.cbSmartCase().setSelected(false);
             find.cbMatchWholeWordsOnly().setSelected(true);
             JComboBoxOperator cbo = find.cboFindWhat();
             cbo.getTextField().setText("word");
@@ -374,8 +368,7 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find.close();
             // check status bar
-            assertEquals(editor.lblStatusBar().getText(), 
-                    "'word' found at 18:16");
+            waitForLabel("'word' found at 18:16");
 
             // perform search for "word"
             new FindAction().perform();
@@ -386,8 +379,7 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find2.close();
             // check status bar
-            assertEquals(editor.lblStatusBar().getText(), 
-                    "'word' found at 18:24");
+            waitForLabel("'word' found at 18:24");
 
             // perform search for "word"
             new FindAction().perform();
@@ -398,8 +390,7 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find3.close();
             // check status bar
-            assertEquals(editor.lblStatusBar().getText(), 
-                    "'word' found at 19:25");
+            waitForLabel("'word' found at 19:25");
 
             // perform search for "word" - negative
             new FindAction().perform();
@@ -410,8 +401,7 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find4.close();
             // check status bar
-            assertEquals(editor.lblStatusBar().getText(), 
-                    "'word' not found");
+            waitForLabel("'word' not found");
             
         } finally {
             closeFileWithDiscard();
@@ -435,30 +425,95 @@ public class SearchTest extends EditorTestCase {
             JComboBoxOperator cbo = find.cboFindWhat();
             cbo.getTextField().setText("testHighlightSearch");
             find.find();
-            new EventTool().waitNoEvent(FIND_TIMEOUT);
-            assertEquals(editor.lblStatusBar().getText(), 
-                    "'testHighlightSearch' found at 2:4");
+            waitForLabel("'testHighlightSearch' found at 2:4");
             find.find();
-            new EventTool().waitNoEvent(FIND_TIMEOUT);
-            assertEquals(editor.lblStatusBar().getText(), 
-                    "'testHighlightSearch' found at 13:14");
+            waitForLabel("'testHighlightSearch' found at 13:14");
             find.find();
-            new EventTool().waitNoEvent(FIND_TIMEOUT);
-            assertEquals(editor.lblStatusBar().getText(), 
-                    "'testHighlightSearch' found at 15:35");
+            waitForLabel("'testHighlightSearch' found at 15:35");
             find.find();
-            new EventTool().waitNoEvent(FIND_TIMEOUT);
-            assertEquals(editor.lblStatusBar().getText(), 
-                    "'testHighlightSearch' found at 16:12");
+            waitForLabel("'testHighlightSearch' found at 16:12");
             find.find();
-            new EventTool().waitNoEvent(FIND_TIMEOUT);
-            assertEquals(editor.lblStatusBar().getText(), 
-                    "'testHighlightSearch' not found");
+            waitForLabel("'testHighlightSearch' not found");
             find.close();
             
         } finally {
             closeFileWithDiscard();
         }                
+    }
+    
+    /**
+     * TC11 - Incremental Search
+     */
+    public void testIncrementalSearch() {
+        openDefaultProject();
+        openDefaultSampleFile();
+        try {
+            EditorOperator editor = getDefaultSampleEditorOperator();
+            
+            // perform search searched word, only checks checkbox
+            new FindAction().perform();
+            Find find = new Find();
+            find.cbHighlightSearch().setSelected(true);
+            JComboBoxOperator cbo = find.cboFindWhat();
+            cbo.getTextField().setText("searchedWord");
+            for (int i = 0; i<10; i++) {
+                find.find();
+                waitForLabel("'searchedWord' found at "+String.valueOf(i+17)
+                        +":12");
+            }
+            find.close();
+            
+        } finally {
+            closeFileWithDiscard();
+        }                
+    }
+    
+    /**
+     * TC12 - Backward Search 
+     */
+    public void testBackwardSearch() {
+        openDefaultProject();
+        openDefaultSampleFile();
+        try {
+            EditorOperator editor = getDefaultSampleEditorOperator();
+            
+            // perform backward search
+            new FindAction().perform();
+            Find find = new Find();
+            find.cbHighlightSearch().setSelected(false);
+            find.cbBackwardSearch().setSelected(true);
+            JComboBoxOperator cbo = find.cboFindWhat();
+            cbo.getTextField().setText("first");
+            find.find();
+            waitForLabel("'first' found at 21:12");
+            cbo.getTextField().setText("second");
+            find.find();
+            waitForLabel("'second' found at 20:12");
+            cbo.getTextField().setText("third");
+            find.find();
+            waitForLabel("'third' found at 19:12");
+            cbo.getTextField().setText("fourth");
+            find.find();
+            waitForLabel("'fourth' found at 18:12");            
+            find.close();
+            
+        } finally {
+            closeFileWithDiscard();
+        }                
+    }    
+    
+    /**
+     * Waits for label to appear on Status Bar, checks it 10 times before 
+     * failing.
+     * @param label label which should be displayed on status bar
+     */
+    public void waitForLabel(String label) {
+        EditorOperator editor = getDefaultSampleEditorOperator();
+        for (int i = 0; i<10; i++) {
+            if (editor.lblStatusBar().getText().equals(label)) break;
+            new EventTool().waitNoEvent(FIND_TIMEOUT);
+        }
+        assertEquals(editor.lblStatusBar().getText(), label);
     }
 
 }
