@@ -1763,7 +1763,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../web/jstl11" target="netbeans"/>
   </target>
-  <target name="all-web/ddapi" depends="init">
+  <target name="all-web/ddapi" depends="init,build-schema2beans/anttask">
     <echo message="Building module web/ddapi..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
