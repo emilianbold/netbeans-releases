@@ -131,7 +131,7 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 
-  <target name="clean" depends="clean-ddgen-src">
+  <target name="clean" depends="clean-ddgen-src,clean-ddapi">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
@@ -159,6 +159,47 @@ Microsystems, Inc. All Rights Reserved.
         </delete>
         <delete dir="${s2b_root_2_4}"/>
   </target>
+  
+  <target name="ddapi">
+  	<property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4.2/docs/api"/>
+  	<property name="openide-docs-location" value="http://www.netbeans.org/download/release35/javadoc/OpenAPIs"/>
+  	<delete dir="DD-API"/>
+        <javadoc destdir="DD-API"
+                 packagenames="org.netbeans.api.*"
+                 doctitle="Deployment Descriptor API"
+                 windowtitle="DD API" 
+                 overview="doc/overview.html">
+            <sourcepath>
+                <pathelement location="src"/>
+            </sourcepath>
+            <classpath>       
+	         <pathelement location="${nb_root}/openide/fs/netbeans/lib/openide-fs.jar"/> 
+	         <pathelement location="${nb_root}/openide/util/netbeans/lib/openide-util.jar"/>
+	         <pathelement path="netbeans/modules/jsp.jar" />
+	         <pathelement location="${nb_root}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
+            </classpath>
+	    
+            <link href="${jdk-docs-location}"
+                  offline="true"
+                  packagelistLoc="doc/external/jdk"
+            />
+            <link href="${openide-docs-location}"
+                  offline="true"
+                  packagelistLoc="doc/external/openide"
+            />          
+        </javadoc>
+        <copy file="../www/prose.css" todir="DD-API"/>
+        <copy file="../www/netbeans.css" todir="DD-API"/>
+        <copy file="../www/nb-docs.css" todir="DD-API"/>
+        <mkdir dir="DD-API/arch"/>
+        <copy file="../www/doc/ddapi_architecture.html" todir="DD-API/arch"/>
+        <zip zipfile="DD-API.zip" basedir="DD-API"/>
+  </target>
+  
+  <target name="clean-ddapi">
+    <delete dir="DD-API"/>
+    <delete file="DD-API.zip"/>
+  </target>  
 
   <!-- This target will only work *inside* the IDE! -->
   <target depends="jars" description="Test the module inside the running IDE." name= "test">
