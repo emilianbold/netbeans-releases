@@ -100,7 +100,24 @@ public class CheckoutNeeded extends Task {
                 
                 cvs.setCommand( "-z6 " + action ); //NOI18N
                 
-                cvs.execute();
+                try { cvs.execute();  }
+                catch (BuildException e) {
+                    log("First attempt to checkout failed: "+e);
+                    log("Trying to checkout for the second time.");
+                    try { cvs.execute();  }
+                    catch (BuildException e2) {
+                        log("Second attempt to checkout failed: "+e2);
+                        log("Deleting local directory.");
+                        Delete del = (Delete) getProject().createTask("delete");
+                        del.setOwningTarget(getOwningTarget());
+                        del.setLocation(getLocation());
+                        del.setDir(new File(destfile,module));
+                        del.init();
+                        del.execute();
+                        log("Trying to checkout for the third time.");
+                        cvs.execute();
+                    }
+                }
                 
                 log( module + " OK" ); //NOI18N
                 
