@@ -20,7 +20,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.modules.i18n.HardCodedString;
-import org.netbeans.modules.i18n.I18nString;
 import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.java.JavaI18nSupport;
 

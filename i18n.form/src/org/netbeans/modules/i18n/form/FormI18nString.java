@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,12 +16,8 @@ package org.netbeans.modules.i18n.form;
 
 
 import org.netbeans.modules.form.FormDesignValue;
-import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.java.JavaI18nString;
-
-import org.netbeans.modules.properties.UtilConvert;
-
 
 /**
  * This class extends the capability of <code>JavaI18nString</code> to be 
