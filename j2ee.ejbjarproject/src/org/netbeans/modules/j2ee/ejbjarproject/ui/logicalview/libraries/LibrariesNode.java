@@ -22,6 +22,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -267,7 +268,7 @@ public final class LibrariesNode extends AbstractNode {
                         result = new Node[] {J2eePlatformNode.create(project, eval, platformProperty)};
                         break;
                     case Key.TYPE_PROJECT:
-                        result = new Node[] {new ProjectNode(key.getProject(), helper, eval, refHelper, key.getClassPathId(),
+                        result = new Node[] {new ProjectNode(key.getProject(), key.getArtifactLocation(), helper, eval, refHelper, key.getClassPathId(),
                             key.getEntryId(), includedLibrariesElement)};
                         break;
                     case Key.TYPE_LIBRARY:
@@ -366,10 +367,11 @@ public final class LibrariesNode extends AbstractNode {
                 }
                 else if (prop.startsWith(ANT_ARTIFACT_PREFIX)) {
                     //Project reference
-                    AntArtifact artifact = (AntArtifact) refHelper.findArtifactAndLocation(prop)[0];
-                    if ( artifact != null ) {
-                        Project project = artifact.getProject();
-                        result.add (new Key(project,currentClassPath, propName));
+                    Object[] ref = refHelper.findArtifactAndLocation(prop);
+                    if (ref[0] != null && ref[1] != null) {
+                        AntArtifact artifact = (AntArtifact)ref[0];
+                        URI uri = (URI)ref[1];
+                        result.add(new Key(artifact, uri, currentClassPath, propName));
                     }
                 }
                 else if (prop.startsWith(FILE_REF_PREFIX)) {
@@ -437,7 +439,8 @@ public final class LibrariesNode extends AbstractNode {
         private String classPathId;
         private String entryId;
         private SourceGroup sg;
-        private Project project;
+        private AntArtifact antArtifact;
+        private URI uri;
         
         Key () {
             this(false);
@@ -454,9 +457,10 @@ public final class LibrariesNode extends AbstractNode {
             this.entryId = entryId;
         }
 
-        Key (Project p, String classPathId, String entryId) {
+        Key (AntArtifact a, URI uri, String classPathId, String entryId) {
             this.type = TYPE_PROJECT;
-            this.project = p;
+            this.antArtifact = a;
+            this.uri = uri;
             this.classPathId = classPathId;
             this.entryId = entryId;
         }
@@ -477,10 +481,14 @@ public final class LibrariesNode extends AbstractNode {
             return this.sg;
         }
 
-        public Project getProject () {
-            return this.project;
+        public AntArtifact getProject() {
+            return this.antArtifact;
         }
-
+        
+        public URI getArtifactLocation() {
+            return this.uri;
+        }
+        
         public int hashCode() {
             int hashCode = this.type<<16;
             switch (this.type) {
@@ -488,7 +496,7 @@ public final class LibrariesNode extends AbstractNode {
                     hashCode ^= this.sg == null ? 0 : this.sg.hashCode();
                     break;
                 case TYPE_PROJECT:
-                    hashCode ^= this.project == null ? 0 : this.project.hashCode();
+                    hashCode ^= this.antArtifact == null ? 0 : this.antArtifact.hashCode();
                     break;
             }
             return hashCode;
@@ -508,7 +516,7 @@ public final class LibrariesNode extends AbstractNode {
                         this.classPathId == null ? other.classPathId == null : this.classPathId.equals (other.classPathId) &&
                         this.entryId == null ? other.entryId == null : this.entryId.equals (other.entryId);
                 case TYPE_PROJECT:
-                    return this.project == null ? other.project == null : this.project.equals(other.project) &&
+                    return this.antArtifact == null ? other.antArtifact == null : this.antArtifact.equals(other.antArtifact) &&
                         this.classPathId == null ? other.classPathId == null : this.classPathId.equals (other.classPathId) &&
                         this.entryId == null ? other.entryId == null : this.entryId.equals (other.entryId);
                 case TYPE_PLATFORM:
