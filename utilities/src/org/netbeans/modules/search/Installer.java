@@ -17,6 +17,7 @@ import org.openide.*;
 import org.openide.modules.ModuleInstall;
 import org.openide.loaders.*;
 
+import org.openidex.search.SearchEngine;
 import org.openidex.util.*;
 
 import com.netbeans.developer.modules.search.res.*;
@@ -82,6 +83,8 @@ public class Installer extends ModuleInstall {
   /** Start listening at SELECTED_NODES.
   */
   public void restored () {
+    SearchEngine.setDefault (new SearchEngineImpl ());
+    
     hook = new SearchHook(new SearchPerformer());
     hook.hook();   
   }
@@ -121,6 +124,8 @@ public class Installer extends ModuleInstall {
 
 /* 
 * Log
+*  11   Gandalf   1.10        1/16/00  Jesse Glick     Installing implementation
+*       to search API.
 *  10   Gandalf   1.9         1/15/00  Jesse Glick     Actions pool 
 *       installation.
 *  9    Gandalf   1.8         1/13/00  Radko Najman    I18N
