@@ -1065,7 +1065,7 @@ is divided into following sections:
                             </xsl:if>
                             <arg value="-windowtitle"/>
                             <arg value="${{javadoc.windowtitle}}"/>
-                            <arg line="${{javadoc.notree.opt}} ${{javadoc.use.opt}} ${{javadoc.nonavbar.opt}} ${{javadoc.noindex.opt}} ${{javadoc.splitindex.opt}} ${{javadoc.author.opt}} ${{javadoc.version.opt}} ${{javadoc.private.opt}} ${{javadoc.classpath.opt}}"/>
+                            <arg line="${{javadoc.notree.opt}} ${{javadoc.use.opt}} ${{javadoc.nonavbar.opt}} ${{javadoc.noindex.opt}} ${{javadoc.splitindex.opt}} ${{javadoc.author.opt}} ${{javadoc.version.opt}} ${{javadoc.private.opt}} ${{javadoc.additionalparam}}"/>
                             <arg value="-classpath"/>
                             <arg value="${{javadoc.classpath.opt}}"/>
                             <arg value="-sourcepath"/>
@@ -1095,6 +1095,7 @@ is divided into following sections:
                             <xsl:attribute name="version">${javadoc.version}</xsl:attribute>
                             <xsl:attribute name="windowtitle">${javadoc.windowtitle}</xsl:attribute>
                             <xsl:attribute name="private">${javadoc.private}</xsl:attribute>
+                            <xsl:attribute name="additionalparam">${javadoc.additionalparam}</xsl:attribute>
                             <xsl:attribute name="failonerror">true</xsl:attribute> <!-- #47325 -->
                             <classpath>
                                 <path path="${{javac.classpath}}:${{j2ee.platform.classpath}}"/>
