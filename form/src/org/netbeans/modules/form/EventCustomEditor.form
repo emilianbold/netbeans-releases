@@ -46,8 +46,9 @@
     </Container>
     <Component class="javax.swing.JButton" name="addButton">
       <Properties>
-        <Property name="label" type="java.lang.String" editor="com.netbeans.developer.editors.StringEditor" value="Add..."/>
-        <Property name="text" type="java.lang.String" editor="com.netbeans.developer.editors.StringEditor" value="Add"/>
+        <Property name="label" type="java.lang.String" editor="com.netbeans.developer.modules.loaders.form.RADConnectionPropertyEditor">
+          <Connection code="FormEditor.getFormBundle ().getString (&quot;CTL_EE_ADD&quot;)" type="code"/>
+        </Property>
       </Properties>
 
       <Events>
@@ -61,7 +62,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="removeButton">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="com.netbeans.developer.editors.StringEditor" value="Remove"/>
+        <Property name="label" type="java.lang.String" editor="com.netbeans.developer.modules.loaders.form.RADConnectionPropertyEditor">
+          <Connection code="FormEditor.getFormBundle ().getString (&quot;CTL_EE_REMOVE&quot;)" type="code"/>
+        </Property>
       </Properties>
 
       <Events>
@@ -75,8 +78,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="editButton">
       <Properties>
-        <Property name="label" type="java.lang.String" editor="com.netbeans.developer.editors.StringEditor" value="Edit..."/>
-        <Property name="text" type="java.lang.String" editor="com.netbeans.developer.editors.StringEditor" value="Rename"/>
+        <Property name="label" type="java.lang.String" editor="com.netbeans.developer.modules.loaders.form.RADConnectionPropertyEditor">
+          <Connection code="FormEditor.getFormBundle ().getString (&quot;CTL_EE_RENAME&quot;)" type="code"/>
+        </Property>
       </Properties>
 
       <Events>

@@ -18,8 +18,8 @@ import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 /** 
  *
- * @author  pbuzek
- * @version 
+ * @author  Pavel Buzek
+ * @version
  */
 public class EventCustomEditor extends javax.swing.JPanel {
 
@@ -71,8 +71,7 @@ public class EventCustomEditor extends javax.swing.JPanel {
     gridBagConstraints1.weighty = 1.0;
     add (jScrollPane1, gridBagConstraints1);
 
-    addButton.setLabel ("Add...");
-    addButton.setText ("Add");
+    addButton.setLabel (FormEditor.getFormBundle ().getString ("CTL_EE_ADD"));
     addButton.addActionListener (new java.awt.event.ActionListener () {
       public void actionPerformed (java.awt.event.ActionEvent evt) {
         addButtonActionPerformed (evt);
@@ -90,7 +89,7 @@ public class EventCustomEditor extends javax.swing.JPanel {
     gridBagConstraints1.weightx = 0.1;
     add (addButton, gridBagConstraints1);
 
-    removeButton.setText ("Remove");
+    removeButton.setLabel (FormEditor.getFormBundle ().getString ("CTL_EE_REMOVE"));
     removeButton.addActionListener (new java.awt.event.ActionListener () {
       public void actionPerformed (java.awt.event.ActionEvent evt) {
         removeButtonActionPerformed (evt);
@@ -108,8 +107,7 @@ public class EventCustomEditor extends javax.swing.JPanel {
     gridBagConstraints1.weightx = 0.1;
     add (removeButton, gridBagConstraints1);
 
-    editButton.setLabel ("Edit...");
-    editButton.setText ("Rename");
+    editButton.setLabel (FormEditor.getFormBundle ().getString ("CTL_EE_RENAME"));
     editButton.addActionListener (new java.awt.event.ActionListener () {
       public void actionPerformed (java.awt.event.ActionEvent evt) {
         editButtonActionPerformed (evt);
@@ -142,7 +140,7 @@ private void handlersListValueChanged (javax.swing.event.ListSelectionEvent evt)
 
 private void editButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
 // Add your handling code here:
-  NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine ("New Name For Handler:", "Rename Handler");
+  NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine (FormEditor.getFormBundle ().getString ("CTL_EE_RENAME_LABEL"), FormEditor.getFormBundle ().getString ("CTL_EE_RENAME_CAPTION"));
   Object[] handlers = handlersList.getSelectedValues();
   for (int i=0, n=handlers.length; i<n; i++) {
     nd.setInputText((String)handlers[i]);
@@ -154,7 +152,7 @@ private void editButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-F
         handlersModel.remove(pos);
         handlersModel.add(pos, nd.getInputText());
       } else {
-         NotifyDescriptor.Message msg = new NotifyDescriptor.Message ("Handler name is not valid java identifier !", NotifyDescriptor.WARNING_MESSAGE);
+         NotifyDescriptor.Message msg = new NotifyDescriptor.Message (FormEditor.getFormBundle ().getString ("CTL_EE_NOT_IDENTIFIER"), NotifyDescriptor.WARNING_MESSAGE);
          TopManager.getDefault().notify(msg);
       }
     }
@@ -172,13 +170,13 @@ private void removeButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN
 
 private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
 // Add your handling code here:
-  NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine ("New Handler Name:", "Add Handler");
+  NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine (FormEditor.getFormBundle ().getString ("CTL_EE_ADD_LABEL"), FormEditor.getFormBundle ().getString ("CTL_EE_ADD_CAPTION"));
   if (TopManager.getDefault().notify(nd).equals (NotifyDescriptor.OK_OPTION)) {
     if (org.openide.util.Utilities.isJavaIdentifier (nd.getInputText())) {
       changes.getAdded ().add (nd.getInputText());
       handlersModel.addElement(nd.getInputText());
     } else {
-       NotifyDescriptor.Message msg = new NotifyDescriptor.Message ("Handler name is not valid java identifier !", NotifyDescriptor.WARNING_MESSAGE);
+       NotifyDescriptor.Message msg = new NotifyDescriptor.Message (FormEditor.getFormBundle ().getString ("CTL_EE_NOT_IDENTIFIER"), NotifyDescriptor.WARNING_MESSAGE);
        TopManager.getDefault().notify(msg);
     }
   }  
@@ -205,5 +203,19 @@ private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FI
   RADComponent.EventProperty eventProperty;
   javax.swing.DefaultListModel handlersModel = new javax.swing.DefaultListModel ();
   RADComponent.EventProperty.HandlerSetChange changes;
-
 }
+
+/*
+ * Log
+ *  7    Gandalf   1.6         1/12/00  Pavel Buzek     I18N
+ *  6    Gandalf   1.5         1/12/00  Pavel Buzek     #4910 - check if name of
+ *       event is valid java identifier
+ *  5    Gandalf   1.4         1/1/00   Ian Formanek    Event handlers list is 
+ *       in Scroll Pane
+ *  4    Gandalf   1.3         11/27/99 Patrik Knakal   
+ *  3    Gandalf   1.2         11/26/99 Pavel Buzek     
+ *  2    Gandalf   1.1         11/26/99 Pavel Buzek     EventCustomEditor 
+ *       changed to panel, displayed via DialogDescriptor
+ *  1    Gandalf   1.0         11/25/99 Pavel Buzek     
+ * $
+ */
