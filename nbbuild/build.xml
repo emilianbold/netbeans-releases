@@ -412,6 +412,10 @@ workspaceswitcher
 
   <target name="all-xml" depends="all-xml/tax,all-xml/core,all-xml/catalog,all-xml/tools,all-xml/text-edit,all-xml/tree-edit,all-xml/css"/>
 
+  <target name="all-treefs" depends="all-openide">
+    <echo message="Building module treefs..."/>
+    <ant dir="../treefs" target="netbeans"/>
+  </target>
 
   <target name="build-messaging" depends="init">
     <echo message="Starting a build for NetBeans (build ${buildnum}, config '${moduleconfig}') ..."/>
