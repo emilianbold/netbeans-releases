@@ -36,7 +36,10 @@ Microsystems, Inc. All Rights Reserved.
         <!-- property name="buildfile" location="C:/NBNew/NB.xml" / -->
         <copy todir="${is-install-dir}/jvms" >
             <fileset dir="jvms" />
-        </copy>
+		    </copy>
+				<copy todir="${is-install-dir}/images/InstallShield Images">
+						<fileset dir="images"/>
+				</copy>
     </target>
 
     <target name="compile" depends="init">        
