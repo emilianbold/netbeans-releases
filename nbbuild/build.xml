@@ -404,7 +404,7 @@ ToDo:
     <echo message="Building module sysprops..."/>
     <ant dir="../sysprops" target="netbeans"/>
   </target>
-  <target name="all-tasklist" depends="all-openide">
+  <target name="all-tasklist" depends="all-openide,all-editor">
     <echo message="Building module tasklist..."/>
     <ant dir="../tasklist" target="netbeans"/>
   </target>
