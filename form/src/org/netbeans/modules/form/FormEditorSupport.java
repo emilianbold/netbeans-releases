@@ -36,6 +36,7 @@ import org.netbeans.core.spi.multiview.*;
 import org.netbeans.core.api.multiview.*;
 
 import org.netbeans.modules.java.JavaEditor;
+import org.netbeans.modules.java.parser.JavaParser;
 import org.netbeans.modules.form.palette.CPManager;
 
 /**
@@ -1432,6 +1433,7 @@ public class FormEditorSupport extends JavaEditor
                 if ((nodes == null) || (nodes.length == 0)) {
                     editor.setActivatedNodes(new Node[] {dataObject.getNodeDelegate()});
                 }
+                dataObject.getCookie(JavaParser.class);
                 return (MultiViewElement) editor;
             }
             return MultiViewFactory.BLANK_ELEMENT;

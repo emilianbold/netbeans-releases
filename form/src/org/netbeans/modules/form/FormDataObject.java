@@ -116,7 +116,7 @@ public class FormDataObject extends JavaDataObject {
     }
 
     public FormEditorSupport getFormEditor() {
-        return (FormEditorSupport) createJavaEditor();
+        return (FormEditorSupport) getJavaEditor();
     }
 
     FileEntry getFormEntry() {
