@@ -79,6 +79,7 @@ public class AnnotationTypesNode extends AbstractNode {
         ps.put(createProperty(AnnotationTypes.PROP_BACKGROUND_GLYPH_ALPHA, int.class)); //NOI18N
         ps.put(createProperty(AnnotationTypes.PROP_COMBINE_GLYPHS, boolean.class));    //NOI18N
         ps.put(createProperty(AnnotationTypes.PROP_GLYPHS_OVER_LINE_NUMBERS, boolean.class));    //NOI18N
+        ps.put(createProperty(AnnotationTypes.PROP_SHOW_GLYPH_GUTTER, boolean.class));    //NOI18N
         sheet.put(ps);
         
         return sheet;
@@ -111,6 +112,8 @@ public class AnnotationTypesNode extends AbstractNode {
             AnnotationTypes.getTypes().setCombineGlyphs((Boolean)value);
         if (property.equals(AnnotationTypes.PROP_GLYPHS_OVER_LINE_NUMBERS))
             AnnotationTypes.getTypes().setGlyphsOverLineNumbers((Boolean)value);
+        if (property.equals(AnnotationTypes.PROP_SHOW_GLYPH_GUTTER))
+            AnnotationTypes.getTypes().setShowGlyphGutter((Boolean)value);
     }
 
     /** General getter*/
@@ -123,6 +126,8 @@ public class AnnotationTypesNode extends AbstractNode {
             return AnnotationTypes.getTypes().isCombineGlyphs();
         if (property.equals(AnnotationTypes.PROP_GLYPHS_OVER_LINE_NUMBERS))
             return AnnotationTypes.getTypes().isGlyphsOverLineNumbers();
+        if (property.equals(AnnotationTypes.PROP_SHOW_GLYPH_GUTTER))
+            return AnnotationTypes.getTypes().isShowGlyphGutter();
         
         return null;
     }

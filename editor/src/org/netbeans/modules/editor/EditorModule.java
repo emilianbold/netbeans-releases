@@ -62,6 +62,9 @@ import org.openide.util.SharedClassObject;
 import org.openide.util.WeakListener;
 import org.openide.windows.TopComponent;
 import org.netbeans.editor.AnnotationTypes;
+import org.netbeans.modules.editor.options.BaseOptions;
+import org.netbeans.editor.ImplementationProvider;
+import org.netbeans.modules.editor.NbImplementationProvider;
 
 
 /**
@@ -96,13 +99,55 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
         // Initializations
         DialogSupport.setDialogFactory( new NbDialogSupport() );
         
+        ImplementationProvider.registerDefault(new NbImplementationProvider());
+        
         // register loader for annotation types
         AnnotationTypes.getTypes().registerLoader( new AnnotationTypes.Loader() {
-                public void load() {
+                public void loadTypes() {
                     AnnotationTypesFolder.getAnnotationTypesFolder();
+                }
+                public void loadSettings() {
+                    // AnnotationType properties are stored in BaseOption, so let's read them now
+                    BaseOptions bo = (BaseOptions)BaseOptions.findObject(BaseOptions.class, true);
+
+                    Integer i = (Integer)bo.getSettingValue(AnnotationTypes.PROP_BACKGROUND_GLYPH_ALPHA);
+                    if (i != null)
+                        AnnotationTypes.getTypes().setBackgroundGlyphAlpha(i.intValue());
+                    Boolean b = (Boolean)bo.getSettingValue(AnnotationTypes.PROP_BACKGROUND_DRAWING);
+                    if (b != null)
+                        AnnotationTypes.getTypes().setBackgroundDrawing(b);
+                    b = (Boolean)bo.getSettingValue(AnnotationTypes.PROP_COMBINE_GLYPHS);
+                    if (b != null)
+                        AnnotationTypes.getTypes().setCombineGlyphs(b);
+                    b = (Boolean)bo.getSettingValue(AnnotationTypes.PROP_GLYPHS_OVER_LINE_NUMBERS);
+                    if (b != null)
+                        AnnotationTypes.getTypes().setGlyphsOverLineNumbers(b);
+                    b = (Boolean)bo.getSettingValue(AnnotationTypes.PROP_SHOW_GLYPH_GUTTER);
+                    if (b != null)
+                        AnnotationTypes.getTypes().setShowGlyphGutter(b);
                 }
                 public void saveType(AnnotationType type) {
                     AnnotationTypesFolder.getAnnotationTypesFolder().saveAnnotationType(type);
+                }
+                public void saveSetting(String settingName, Object value) {
+                    // AnnotationType properties are stored to BaseOption
+                    BaseOptions bo = (BaseOptions)BaseOptions.findObject(BaseOptions.class, true);
+
+                    if (settingName.equals(AnnotationTypes.PROP_BACKGROUND_DRAWING)) {
+                        bo.setSettingValue(AnnotationTypes.PROP_BACKGROUND_DRAWING, value);
+                    }
+                    if (settingName.equals(AnnotationTypes.PROP_BACKGROUND_GLYPH_ALPHA)) {
+                        bo.setSettingValue(AnnotationTypes.PROP_BACKGROUND_GLYPH_ALPHA, value);
+                    }
+                    if (settingName.equals(AnnotationTypes.PROP_COMBINE_GLYPHS)) {
+                        bo.setSettingValue(AnnotationTypes.PROP_COMBINE_GLYPHS, value);
+                    }
+                    if (settingName.equals(AnnotationTypes.PROP_GLYPHS_OVER_LINE_NUMBERS)) {
+                        bo.setSettingValue(AnnotationTypes.PROP_GLYPHS_OVER_LINE_NUMBERS, value);
+                    }
+                    if (settingName.equals(AnnotationTypes.PROP_SHOW_GLYPH_GUTTER)) {
+                        bo.setSettingValue(AnnotationTypes.PROP_SHOW_GLYPH_GUTTER, value);
+                    }
                 }
             } );
 

@@ -12,7 +12,7 @@
  */
 
 package org.netbeans.modules.editor.options;
-
+ 
 import org.openide.util.Task;
 import java.io.IOException;
 import org.w3c.dom.*;
@@ -33,11 +33,17 @@ import java.net.MalformedURLException;
 import javax.swing.Action;
 import org.netbeans.modules.editor.options.AnnotationTypeActionsFolder;
 import org.openide.TopManager;
+import java.util.List;
+import java.util.ArrayList;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.ByteArrayInputStream;
+import java.util.Map;
+import java.util.HashMap;
 
 /** Processor of the XML file. The result of parsing is instance of AnnotationType
  * class.
  *
- * @author  David Konecny
+ * @author  David Konecny, Petr Nejedly
  * @since 07/2001
 */
 public class AnnotationTypeProcessor implements XMLDataObject.Processor, InstanceCookie {
@@ -73,6 +79,8 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
      * Annotation type created from XML file.
      */
     private AnnotationType  annotationType;
+
+    private Parser par;
     
     /** When the XMLDataObject creates new instance of the processor,
      * it uses this method to attach the processor to the data object.
@@ -92,14 +100,8 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
         if (annotationType != null)
             return annotationType;
 
-        try {
-            loadLibrary( xmlDataObject.getDocument() );
+            parse();
             return annotationType;
-        } catch (org.xml.sax.SAXException e) {
-            IOException ex = new IOException ();
-            org.openide.TopManager.getDefault ().getErrorManager ().copyAnnotation (ex, e);
-            throw ex;
-        }
     }
     
     /** The representation type that may be created as instances.
@@ -123,105 +125,164 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
 
     ////////////////////////////////////////////////////////////////////////
 
-    /** Process one XML document */
-    private void loadLibrary (Document doc) {
-        Element rootElement = doc.getDocumentElement();
-        if (!TAG_TYPE.equals(rootElement.getTagName())) {
-            return;
+    private synchronized AnnotationType parse() {
+        if (annotationType == null) {
+            AnnotationType at = new AnnotationType();
+            Handler h = new Handler(at);
+
+            try {
+		Parser xp = par;
+		if (xp == null) {
+            	    SAXParserFactory factory = SAXParserFactory.newInstance ();
+            	    factory.setValidating (false);
+            	    factory.setNamespaceAware(false);
+            	    par = xp = factory.newSAXParser ().getParser ();
+            	    xp.setEntityResolver(h);
+                    xp.setDocumentHandler(h);
+            	    xp.setErrorHandler(h);
+		}
+                xp.parse(new InputSource(xmlDataObject.getPrimaryFile().getInputStream()));
+                at.putProp(AnnotationType.PROP_FILE, xmlDataObject.getPrimaryFile());
+                annotationType = at;
+            } catch (Exception e) { 
+                TopManager.getDefault().getErrorManager().notify(e);
+            }
+
         }
-        annotationType = new AnnotationType();
-        if (!readLibraryID(rootElement))
-            annotationType = null;
+        return annotationType;
     }
     
-    /** Reads the TYPE tag and fill in AnnotationType members*/
-    boolean readLibraryID(Element def) {
-
-        ResourceBundle bundle = null;
+    private static class Handler extends HandlerBase {
+        private AnnotationType at;
+        private int depth = 0;
+        private ResourceBundle bundle;
+        private List combinations;
         
-        // read all TYPE attributes
-        annotationType.setName(def.getAttribute(ATTR_TYPE_NAME));
-        annotationType.setContentType(def.getAttribute(ATTR_TYPE_CONTENTTYPE));
-        annotationType.setVisible(def.getAttribute(ATTR_TYPE_VISIBLE));
-        if (annotationType.isVisible()) {
-            bundle = NbBundle.getBundle(def.getAttribute(ATTR_TYPE_LOCALIZING_BUNDLE));
-            annotationType.putProp(AnnotationType.PROP_LOCALIZING_BUNDLE, def.getAttribute(ATTR_TYPE_LOCALIZING_BUNDLE));
-        }
-        annotationType.setWholeLine(def.getAttribute(ATTR_TYPE_TYPE).equals("line"));
-        try {
-            if (def.getAttribute(ATTR_TYPE_HIGHLIGHT) != null && def.getAttribute(ATTR_TYPE_HIGHLIGHT).length() > 0) {
-                annotationType.setHighlight(Color.decode(def.getAttribute(ATTR_TYPE_HIGHLIGHT)));
-                annotationType.setUseHighlightColor(true);
-            } else {
-                annotationType.setUseHighlightColor(false);
-            }
-            
-            if (def.getAttribute(ATTR_TYPE_FOREGROUND) != null && def.getAttribute(ATTR_TYPE_FOREGROUND).length() > 0) {
-                annotationType.setForegroundColor(Color.decode(def.getAttribute(ATTR_TYPE_FOREGROUND)));
-                annotationType.setInheritForegroundColor(false);
-            } else {
-                annotationType.setInheritForegroundColor(true);
-            }
-        } catch (NumberFormatException ex) {
-            TopManager.getDefault().getErrorManager().notify(ex);
-            return false;
-        }
-        try {
-            if (def.getAttribute(ATTR_TYPE_GLYPH) != null && def.getAttribute(ATTR_TYPE_GLYPH).length() > 0)
-                annotationType.setGlyph(new URL(def.getAttribute(ATTR_TYPE_GLYPH)));
-
-        } catch (MalformedURLException ex) {
-            TopManager.getDefault().getErrorManager().notify(ex);
-            return false;
-        }
-        if (annotationType.isVisible())
-        {
-            try {
-                annotationType.setDescription(bundle.getString(def.getAttribute(ATTR_TYPE_DESCRIPTION_KEY)));
-                annotationType.putProp(AnnotationType.PROP_DESCRIPTION_KEY, def.getAttribute(ATTR_TYPE_DESCRIPTION_KEY));
-            } catch (MissingResourceException ex) {
-                TopManager.getDefault().getErrorManager().notify(ex);
-                return false;
-            }
+        Handler(AnnotationType at) {
+            this.at=at;
         }
 
-        if (def.getAttribute(ATTR_TYPE_ACTIONS) != null && def.getAttribute(ATTR_TYPE_ACTIONS).length() > 0) {
-            AnnotationTypeActionsFolder.readActions(annotationType, def.getAttribute(ATTR_TYPE_ACTIONS));
-            annotationType.putProp(AnnotationType.PROP_ACTIONS_FOLDER, def.getAttribute(ATTR_TYPE_ACTIONS));
+	private void rethrow(Exception e) throws SAXException {
+            SAXException saxe = new SAXException(e);
+	    TopManager.getDefault().getErrorManager().copyAnnotation(saxe, e);
+            throw saxe;
+	}
+
+        public void startElement(String name, AttributeList amap) throws SAXException {
+            switch (depth++) {
+                case 0:
+                    if (! TAG_TYPE.equals(name)) {
+                        throw new SAXException("malformed AnnotationType xml file");
+                    }
+                    // basic properties
+                    at.setName(amap.getValue(ATTR_TYPE_NAME));
+                    if (amap.getValue(ATTR_TYPE_TYPE) == null)
+                        at.setWholeLine(true);
+                    else
+                        at.setWholeLine("line".equals(amap.getValue(ATTR_TYPE_TYPE)));
+
+                    // localization stuff
+                    if (amap.getValue(ATTR_TYPE_VISIBLE) == null)
+                        at.setVisible(true);
+                    else
+                        at.setVisible(amap.getValue(ATTR_TYPE_VISIBLE));
+                    if (at.isVisible()) {
+                        String localizer = amap.getValue(ATTR_TYPE_LOCALIZING_BUNDLE);
+                        String key = amap.getValue(ATTR_TYPE_DESCRIPTION_KEY);
+                        at.putProp(AnnotationType.PROP_LOCALIZING_BUNDLE, localizer);
+                        at.putProp(AnnotationType.PROP_DESCRIPTION_KEY, key);
+                    }
+
+                    // colors
+                    try {
+                        String color = amap.getValue(ATTR_TYPE_HIGHLIGHT);
+                        if (color != null) {
+                            at.setHighlight(Color.decode(color));
+                            at.setUseHighlightColor(true);
+                        } else {
+                            at.setUseHighlightColor(false);
+                        }
+
+                        color = amap.getValue(ATTR_TYPE_FOREGROUND);
+                        if (color != null) {
+                            at.setForegroundColor(Color.decode(color));
+                            at.setInheritForegroundColor(false);
+                        } else {
+                            at.setInheritForegroundColor(true);
+                        }
+                    } catch (NumberFormatException ex) {
+                        rethrow(ex);
+                    }
+
+                    // glyph
+                    try {
+                        String uri = amap.getValue(ATTR_TYPE_GLYPH);
+                        if (uri != null) {
+                            at.setGlyph(new URL(uri));
+                        }
+                    } catch (MalformedURLException ex) {
+                        rethrow(ex);
+                    }
+
+                    // actions
+                    String actions = amap.getValue(ATTR_TYPE_ACTIONS);
+                    if (actions != null) {
+                        AnnotationTypeActionsFolder.readActions(at, actions);
+                        at.putProp(AnnotationType.PROP_ACTIONS_FOLDER, actions);
+                    }
+                    break;
+                    
+                case 1: // <combination ...
+                   if (! TAG_COMBINATION.equals(name)) {
+                        throw new SAXException("malformed AnnotationType xml file");
+                   }
+                   
+                   combinations = new ArrayList();
+                   
+                   String key = amap.getValue(ATTR_COMBINATION_TIPTEXT_KEY);
+                   if (key != null) {
+                       at.putProp(AnnotationType.PROP_COMBINATION_TOOLTIP_TEXT_KEY, key);
+                   }
+                   
+                   String order = amap.getValue(ATTR_COMBINATION_ORDER);
+                   if (order != null)
+                       at.setCombinationOrder(order);
+
+                   String min = amap.getValue(ATTR_COMBINATION_MIN_OPTIONALS);
+                   if (min != null)
+                       at.setMinimumOptionals(min);
+
+                   break;
+                   
+                 case 2: // <combine ...
+                     combinations.add(new AnnotationType.CombinationMember(
+                        amap.getValue(ATTR_COMBINE_ANNOTATIONTYPE),
+                        amap.getValue(ATTR_COMBINE_ABSORBALL) == null ? false : "true".equals(amap.getValue(ATTR_COMBINE_ABSORBALL)) ? true : false,
+                        amap.getValue(ATTR_COMBINE_OPTIONAL) == null ? false : "true".equals(amap.getValue(ATTR_COMBINE_OPTIONAL)) ? true : false,
+                        amap.getValue(ATTR_COMBINE_MIN)
+                     ));
+
+                     break;
+                default:
+                    throw new SAXException("malformed AnnotationType xml file");
+            }
         }
         
-        //System.err.println("Annotation="+annotationType);
-        
-        NodeList nL = def.getElementsByTagName (TAG_COMBINATION);
-        if (nL.getLength() > 0 ) {
-            Element combNode = (Element)nL.item (0);
-            if (combNode.getAttribute(ATTR_COMBINATION_TIPTEXT_KEY) != null && combNode.getAttribute(ATTR_COMBINATION_TIPTEXT_KEY).length() > 0) {
-                annotationType.setTooltipText(bundle.getString(combNode.getAttribute(ATTR_COMBINATION_TIPTEXT_KEY)));
-                annotationType.putProp(AnnotationType.PROP_COMBINATION_TOOLTIP_TEXT_KEY, combNode.getAttribute(ATTR_COMBINATION_TIPTEXT_KEY));
-            }
-            if (combNode.getAttribute(ATTR_COMBINATION_ORDER) != null && combNode.getAttribute(ATTR_COMBINATION_ORDER).length() > 0)
-                annotationType.setCombinationOrder(combNode.getAttribute(ATTR_COMBINATION_ORDER));
-            if (combNode.getAttribute(ATTR_COMBINATION_MIN_OPTIONALS) != null && combNode.getAttribute(ATTR_COMBINATION_MIN_OPTIONALS).length() > 0)
-                annotationType.setMinimumOptionals(combNode.getAttribute(ATTR_COMBINATION_MIN_OPTIONALS));
-            nL = combNode.getElementsByTagName (TAG_COMBINE);
-            int a=0;
-            AnnotationType.CombinationMember[] combs = new AnnotationType.CombinationMember[nL.getLength()];
-            while (a<nL.getLength()) {
-                Element actionNode = (Element)nL.item (a);
-                combs[a] = new AnnotationType.CombinationMember(
-                    actionNode.getAttribute(ATTR_COMBINE_ANNOTATIONTYPE), 
-                    actionNode.getAttribute(ATTR_COMBINE_ABSORBALL).equals("true") ? true : false, 
-                    actionNode.getAttribute(ATTR_COMBINE_OPTIONAL).equals("true") ? true : false, 
-                    actionNode.getAttribute(ATTR_COMBINE_MIN)
-                     );
-                a++;
-            }
-            annotationType.setCombinations(combs);
+        public void endElement(String name) throws SAXException {
+            if (--depth == 1) {
+                AnnotationType.CombinationMember[] combs = new AnnotationType.CombinationMember[combinations.size()];
+                combinations.toArray(combs);
+                at.setCombinations(combs);
+            };
         }
         
-        annotationType.putProp(AnnotationType.PROP_FILE, xmlDataObject.getPrimaryFile());
-        
-        return true;
+        public InputSource resolveEntity(java.lang.String pid,java.lang.String sid) throws SAXException   {
+            if (DTD_PUBLIC_ID.equals(pid)) {
+                return new InputSource(new ByteArrayInputStream(new byte[0]));
+            }            
+            return new InputSource (sid);            
+        }
+
     }
     
 }

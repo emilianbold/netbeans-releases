@@ -143,9 +143,9 @@ public class AnnotationTypesFolder extends FolderInstance{
         typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_TYPE, type.isWholeLine() ? "line" : "linepart"); // NOI18N
         if (type.getProp(AnnotationType.PROP_GLYPH_URL) != null)
             typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_GLYPH, type.getGlyph().toExternalForm());
-        if (type.getProp(AnnotationType.PROP_HIGHLIGHT_COLOR) != null)
+        if (type.getProp(AnnotationType.PROP_HIGHLIGHT_COLOR) != null && type.isUseHighlightColor())
             typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_HIGHLIGHT, "0x"+Integer.toHexString(type.getHighlight().getRGB() & 0x00FFFFFF));
-        if (type.getProp(AnnotationType.PROP_FOREGROUND_COLOR) != null)
+        if (type.getProp(AnnotationType.PROP_FOREGROUND_COLOR) != null && !type.isInheritForegroundColor())
             typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_FOREGROUND, "0x"+Integer.toHexString(type.getForegroundColor().getRGB() & 0x00FFFFFF));
         if (type.getProp(AnnotationType.PROP_ACTIONS_FOLDER) != null)
             typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_ACTIONS, (String)type.getProp(AnnotationType.PROP_ACTIONS_FOLDER));
