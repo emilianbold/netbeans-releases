@@ -39,6 +39,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     protected static final String DEBUGGER_PORT = "debugger_port"; //NOI18N
     protected static final String DEBUGGING_TYPE = "debugging_type"; //NOI18N
     protected static final String SERVER_PORT= "server_port";//NOI18N
+    protected static final String ADMIN_PORT= "admin_port";//NOI18N
     protected static final String CLASSIC = "classic"; //NOI18N
     protected static final String NAME_FOR_SHARED_MEMORY_ACCESS = "name_for_shared_memory_access"; //NOI18N
     private static final String DEFAULT_NAME_FOR_SHARED_MEMORY_ACCESS = "tomcat_shared_memory_id"; //NOI18N
@@ -50,15 +51,19 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
      */
     public TomcatInstanceNode(Children children, Lookup lookup) {
         super(children);
+        this.getChildren().add(new Node[]{new WebModuleNode(new Children.Map())});
         lkp = lookup;
         setIconBase(ICON_BASE);
-        this.setName("TomcatInstanceNode"); //NOI18N
+
         getCookieSet().add(this);
     }
-
+    
+    private int iPort = 0;
+    
     public String getDisplayName(){
         Integer port = getServerPort();
         String portStr = "";
+        System.out.println("getDisplayName() port: "+  getServerPort());
         if (port != null) { 
             portStr = port.toString();
         }
@@ -69,8 +74,14 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     private Integer getServerPort () {
         DeploymentManager m = (DeploymentManager)lkp.lookup(DeploymentManager.class);
         if (m instanceof TomcatManager){
-            return ((TomcatManager)m).getServerPort();
-        }
+            Integer port = ((TomcatManager)m).getServerPort();
+            if (port != null && port.intValue() != iPort){
+                iPort = port.intValue();
+                setDisplayName(NbBundle.getMessage(TomcatInstanceNode.class, "LBL_TomcatInstanceNode",  // NOI18N
+                    new Object []{"" + iPort}));
+            }
+            return port;
+        };
         return new Integer(8080);
     }
     
@@ -131,6 +142,22 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                    public Object getValue () {
                        // TODO 
                        return getServerPort();
+                   }
+                   
+                   public void setValue (Object val){
+                       // TODO
+                   }
+               };    
+        ssProp.put(p);  
+        p = new PropertySupport.ReadWrite (
+                   ADMIN_PORT,
+                   Integer.TYPE,
+                   NbBundle.getMessage (TomcatInstanceNode.class, "PROP_adminPort"),   // NOI18N
+                   NbBundle.getMessage (TomcatInstanceNode.class, "HINT_adminPort")   // NOI18N
+               ) {
+                   public Object getValue () {
+                       // TODO 
+                       return new Integer(0);
                    }
                    
                    public void setValue (Object val){
@@ -250,4 +277,11 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         return sheet;
     }
     
+    class WebModuleNode extends AbstractNode{
+         public WebModuleNode(Children children) {
+            super(children);
+            setIconBase(ICON_BASE);
+            setDisplayName("Web Modules");
+         }
+    }
 }
