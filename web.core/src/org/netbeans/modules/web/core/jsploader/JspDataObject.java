@@ -291,7 +291,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             // get the JspCompilationInfo
             JspParserAPI parser = JspCompileUtil.getJspParser();
             if (parser == null) {
-                TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, 
+                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, 
                 new NullPointerException());
             }
             JspParserAPI.ParseResult result = parser.analyzePage(this, JspCompileUtil.getContextPath(getPrimaryFile()), 
