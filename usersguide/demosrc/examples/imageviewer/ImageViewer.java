@@ -13,6 +13,9 @@
 
 package examples.imageviewer;
 
+/** This class is an entry point of the simple image viewer.
+ * It creates and shows the main application frame.
+ */
 public class ImageViewer extends javax.swing.JFrame {
 
     /** Image Viewer constructor.

@@ -13,6 +13,8 @@
 
 package examples.imageviewer;
 
+/** Instances of this class create internal frames to display given images.
+ */
 public class ImageFrame extends javax.swing.JInternalFrame {
 
     /** ImageFrame constructor.
