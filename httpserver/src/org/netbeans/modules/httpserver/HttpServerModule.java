@@ -38,7 +38,6 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
 
   
   private static HttpServer server;
-//  private static NbServer config;
   private static Thread serverThread;
   private static boolean inSetRunning = false;
   
@@ -199,6 +198,7 @@ e.printStackTrace();
 
 /*
  * Log
+ *  28   Gandalf   1.27        10/7/99  Petr Jiricka    
  *  27   Gandalf   1.26        10/6/99  Petr Jiricka    Removed module 
  *       (de)serialization
  *  26   Gandalf   1.25        10/6/99  Petr Jiricka    Removed debug DumpStack
