@@ -30,7 +30,6 @@
 		<!-- End of "Create/About" subsection -->
 	        <!-- Start of "Create/Applet" subsection -->
 		<mapID target="applet_create" url="web/create/applet/applet_create.html" />
-		<mapID target="applet_addtowar" url="web/create/applet/applet_addtowar.html" />
 		<mapID target="applet_run" url="web/create/applet/applet_run.html" />
 		<mapID target="applet_security" url="web/create/applet/applet_security.html" />
 		<!-- End of "Create/Applet" subsection -->
@@ -69,7 +68,6 @@
 		<!-- End of "Create/Listener" subsection -->
 	        <!-- Start of "Create/Servlet" subsection -->
        		<mapID target="about_servlet" url="web/create/servlet/about_servlet.html" />
-		<mapID target="servlet_addtowar" url="web/create/servlet/servlet_addtowar.html" />
 		<mapID target="servlet_create" url="web/create/servlet/servlet_create.html" />
 		<mapID target="servlet_run" url="web/create/servlet/servlet_run.html" />
 		<mapID target="servlet_edit" url="web/create/servlet/servlet_edit.html" />
@@ -88,7 +86,6 @@
 		<mapID target="tagfile_create" url="web/create/tag/tagfile/tagfile_create.html" />
 		<mapID target="taghandler_create" url="web/create/tag/taghandler/taghandler_create.html" />
 		<mapID target="taghandler_edit" url="web/create/tag/taghandler/taghandler_edit.html" />
-		<mapID target="taglib_addtowar" url="web/create/tag/taglib/taglib_addtowar.html" />
 		<mapID target="taglib_manage" url="web/create/tag/taglib/taglib_manage.html" />
 		<mapID target="taglib_create_separate" url="web/create/tag/taglib/taglib_create_separate.html" />
 		<mapID target="about_tld" url="web/create/tag/tld/about_tld.html" />

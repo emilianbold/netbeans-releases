@@ -92,9 +92,8 @@
 	  <tocitem text="About the JSTL" target="about_jstl" />
       
       <tocitem text="Tag Libraries" >
-          <tocitem text="Managing Libraries" target="taglib_manage"/>
-          <tocitem text="Creating a Separate Tag Library"  target="taglib_create_separate"/>
-          <tocitem text="Adding a Tag Library to a WAR File" target="taglib_addtowar" />         
+          <tocitem text="Managing a Library" target="taglib_manage"/>
+          <tocitem text="Creating a Tag Library"  target="taglib_create_separate"/>     
       </tocitem>
       <tocitem text="Tag Library Descriptors" >
           <tocitem text="About Tag Library Descriptors" target="about_tld"  />        
@@ -126,7 +125,6 @@
       </tocitem> 
        <tocitem text="Applets" >
               <tocitem text="Creating an Applet" target="applet_create"/>
-              <tocitem text="Adding an Applet JAR File to a WAR File" target="applet_addtowar"/>
 	      <tocitem text="Running an Applet" target="applet_run"/>
               <tocitem text="Setting Permissions for an Applet" target="applet_security"/>
        </tocitem>
@@ -135,7 +133,6 @@
          <tocitem text="Creating a Servlet" target="servlet_create" />
 	 <tocitem text="Editing a Servlet" target="servlet_edit"/>
          <tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
-         <tocitem text="Adding a Servlet JAR file to a WAR File" target="servlet_addtowar" />
          <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
 	 <tocitem text="Running a Servlet" target="servlet_run" />
        </tocitem> 
@@ -159,8 +156,8 @@
    </tocitem>
    <tocitem text="Building Web Applications"> 
 	    <tocitem text="About Building Web Applications" target="about_build"  />
+	    <tocitem text="Packaging a Resource in a WAR File" target="build_externalresources" />
             <tocitem text="Building a WAR File" target="build_warfile" />
-            <tocitem text="Adding an External Resource to a WAR File" target="build_externalresources" />
             <tocitem text="Removing a WAR File" target="build_remove"/>        
     </tocitem>
 
