@@ -144,14 +144,16 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
           menu = comp;
         }
       }
-      // set the real menu
-      if (formInfo instanceof JMenuBarContainer) {
-        if (menu.getBeanInstance () instanceof JMenuBar) {
-          ((JMenuBarContainer)formInfo).setJMenuBar ((JMenuBar)menu.getBeanInstance ());
-        }
-      } else if (formInfo instanceof MenuBarContainer) {
-        if (menu.getBeanInstance () instanceof MenuBar) {
-          ((MenuBarContainer)formInfo).setMenuBar ((MenuBar)menu.getBeanInstance ());
+      if (menu != null) { // menu with the specified name not found
+        // set the real menu
+        if (formInfo instanceof JMenuBarContainer) {
+          if (menu.getBeanInstance () instanceof JMenuBar) {
+            ((JMenuBarContainer)formInfo).setJMenuBar ((JMenuBar)menu.getBeanInstance ());
+          }
+        } else if (formInfo instanceof MenuBarContainer) {
+          if (menu.getBeanInstance () instanceof MenuBar) {
+            ((MenuBarContainer)formInfo).setMenuBar ((MenuBar)menu.getBeanInstance ());
+          }
         }
       }
     } else {
@@ -457,6 +459,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
 /*
  * Log
+ *  15   Gandalf   1.14        10/9/99  Ian Formanek    Fixed bug 4045 - 
+ *       Exception while opening form with menus. The form did not open due to 
+ *       this exception.
  *  14   Gandalf   1.13        9/29/99  Ian Formanek    codeChanged added to 
  *       FormListener
  *  13   Gandalf   1.12        8/15/99  Ian Formanek    getContainerGenName 
