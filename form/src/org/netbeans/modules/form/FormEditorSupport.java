@@ -85,10 +85,19 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     getFormTopComponent ().open ();
     
     // 3. show the ComponentInspector
-    FormEditor.getComponentInspector().open ();
+    gotoInspector ();
 
     // clear status line
     TopManager.getDefault ().setStatusText ("");
+  }
+  
+  public FormDataObject getFormObject () {
+    return formObject;
+  }
+  
+  /** @returns the FormManager of this form */
+  FormManager getFormManager () {
+    return formManager;
   }
   
   /** @returns the Form Window */
@@ -156,7 +165,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       // create new objects from Backward compatibility classes
       RADForm radForm = null;
       if (deserializedForm instanceof DesignForm) {
-        formManager = new FormManager (formObject);
+        formManager = new FormManager (this);
         radForm = new RADForm (new JFrameFormInfo (), formManager);
         RADComponent[] subComps = createHierarchy ((((DesignForm)deserializedForm).getFormManager ().getRootNode ()), formManager);
         radForm.getTopLevelComponent ().initSubComponents (subComps);
@@ -246,13 +255,16 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   /** Method from FormCookie */
   public void gotoInspector() {
     // show the ComponentInspector
+    FormEditor.getComponentInspector().focusForm (getFormManager ());
     FormEditor.getComponentInspector().open ();
+    
   }
 
 }
 
 /*
  * Log
+ *  9    Gandalf   1.8         5/2/99   Ian Formanek    
  *  8    Gandalf   1.7         4/29/99  Ian Formanek    
  *  7    Gandalf   1.6         4/29/99  Ian Formanek    
  *  6    Gandalf   1.5         4/12/99  Ian Formanek    Improved form loading 

@@ -388,6 +388,10 @@ final public class FormEditor extends Object {
       setIcon (inspectorIcon);
     }
 
+    public void focusForm (FormManager formManager) {
+      getExplorerManager ().setRootContext (formManager.getFormEditorSupport ().getFormRootNode ());
+    }
+
     /** Called when the explored context changes.
     * The default implementation updates the title of the window.
     */
@@ -518,6 +522,7 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  5    Gandalf   1.4         5/2/99   Ian Formanek    
  *  4    Gandalf   1.3         4/7/99   Ian Formanek    Backward-compatible 
  *       deserialization finalized for Gandalf beta
  *  3    Gandalf   1.2         3/24/99  Ian Formanek    
