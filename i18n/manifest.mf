@@ -5,6 +5,4 @@ OpenIDE-Module-Specification-Version: 0.9
 OpenIDE-Module-Implementation-Version: 0.9
 OpenIDE-Module-Install: com/netbeans/developer/modules/i18n/PropertiesFormModule.class
 
-Name: com/netbeans/developer/modules/i18n/LocalizeAction.class
-OpenIDE-Module-Class: Action
 
