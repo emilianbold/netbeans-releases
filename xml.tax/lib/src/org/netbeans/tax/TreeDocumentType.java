@@ -67,7 +67,7 @@ public class TreeDocumentType extends AbstractTreeDTD implements TreeDTDRoot, Do
         this.elementName = elementName;
         this.publicId    = publicId;
         this.systemId    = systemId;
-        this.dtdIdentity = getDTDIdentity();
+        this.dtdIdentity = new DTDIdentity();
 
     }
     
@@ -403,7 +403,7 @@ public class TreeDocumentType extends AbstractTreeDTD implements TreeDTDRoot, Do
      * Get DTDIdentity proxy for this class. It's a live object.
      */
     public final DTDIdentity getDTDIdentity() {
-        return new DTDIdentity();
+        return dtdIdentity;
     }
 
     /**
