@@ -544,7 +544,7 @@
    <tocitem text="Specifying JNDI Settings for a Project" target="jndi_settings_intro" />
 </tocitem>
 
-<tocitem text="J2EE Server Integration Module">
+<tocitem text="J2EE and Web Server Integration Module" target="general_about_the_j2eeserver_module_html">
   <tocitem text="About the J2EE Server Integration Module" target="general_about_the_j2eeserver_module_html" />
   <tocitem text="Setting the Default  Application Server" target="nodes_j2ee_applications_defsrv_node_html" />
   <tocitem text="Setting the Default Web Server" target="nodes_web_applications_defsrv_node_html" />
