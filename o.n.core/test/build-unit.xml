@@ -22,6 +22,8 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
         <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
         <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+        <pathelement location="${core.dir}/${nb.lib.dir}/org-netbeans-swing-plaf.jar"/>
+        <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-swing-tabcontrol.jar"/>
         <!-- XXX -->
         <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
     </path>
@@ -29,6 +31,8 @@ Microsystems, Inc. All Rights Reserved.
 	<pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
         <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
         <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+        <pathelement location="${core.dir}/${nb.lib.dir}/org-netbeans-swing-plaf.jar"/>
+        <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-swing-tabcontrol.jar"/>
         <!-- XXX -->
         <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
         <pathelement location="${core/settings.dir}/${nb.modules.dir}/org-netbeans-modules-settings.jar"/>
