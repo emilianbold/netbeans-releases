@@ -47,17 +47,17 @@
 			delimiter,
 			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				system = YES;
 			}
 		);
@@ -103,17 +103,17 @@
 			delimiter,
 			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				system = YES;
 			}
 		);
@@ -162,26 +162,26 @@
 			delimiter,
 			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				node = driverlist;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				node = driverlist;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				node = driverlist;
 				system = YES;
 			},
 			delimiter,
 			{
 				name = "RemoveDriver";
-				class = com.netbeans.ide.actions.DeleteAction;
+				class = org.openapi.actions.DeleteAction;
 				node = driverlist;
 				system = YES;
 			},
@@ -230,26 +230,26 @@
 			delimiter,
 			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				node = driverlist;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				node = driverlist;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				node = driverlist;
 				system = YES;
 			},
 			delimiter,
 			{
 				name = "RemoveConnection";
-				class = com.netbeans.ide.actions.DeleteAction;
+				class = org.openapi.actions.DeleteAction;
 				node = driverlist;
 				system = YES;
 			}
@@ -346,17 +346,17 @@
 */
 			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				system = YES;
 			}
 		);
@@ -405,17 +405,17 @@
 			delimiter,
 			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				system = YES;
 			}
 		);
@@ -474,23 +474,23 @@
 			delimiter,
 			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				system = YES;
 			},
 			delimiter,
 			{
 				name = "RemoveTable";
-				class = com.netbeans.ide.actions.DeleteAction;
+				class = org.openapi.actions.DeleteAction;
 				system = YES;
 			}
 		);
@@ -555,23 +555,23 @@
 			delimiter,
 			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				system = YES;
 			},
 			delimiter,
 			{
 				name = "RemoveColumn";
-				class = com.netbeans.ide.actions.DeleteAction;
+				class = org.openapi.actions.DeleteAction;
 				system = YES;
 			}
 		);
@@ -654,23 +654,23 @@
 			delimiter,
 			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				system = YES;
 			},
 			delimiter,
 			{
 				name = "Remove column";
-				class = com.netbeans.ide.actions.DeleteAction;
+				class = org.openapi.actions.DeleteAction;
 				system = YES;
 			}
 		);
@@ -759,23 +759,23 @@
 			delimiter,
 			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				system = YES;
 			},
 			delimiter,
 			{
 				name = "RemoveColumn";
-				class = com.netbeans.ide.actions.DeleteAction;
+				class = org.openapi.actions.DeleteAction;
 				system = YES;
 			}
 		);
@@ -863,23 +863,23 @@
 			delimiter,			
 			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				system = YES;
 			},
 			delimiter,
 			{
 				name = "RemoveColumn";
-				class = com.netbeans.ide.actions.DeleteAction;
+				class = org.openapi.actions.DeleteAction;
 				system = YES;
 			}
 		);
@@ -970,17 +970,17 @@
 			delimiter,
 			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				system = YES;
 			}
 		);
@@ -1015,23 +1015,23 @@
 			delimiter,
 			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				system = YES;
 			},
 			delimiter,
 			{
 				name = "RemoveIndex";
-				class = com.netbeans.ide.actions.DeleteAction;
+				class = org.openapi.actions.DeleteAction;
 				node = ilist;
 				system = YES;
 			}
@@ -1054,17 +1054,17 @@
 		actions = (
 			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				system = YES;
 			}
 		);
@@ -1117,19 +1117,19 @@
 		actions = (
 			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				node = driverlist;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				node = driverlist;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				node = driverlist;
 				system = YES;
 			}
@@ -1211,17 +1211,17 @@
 			delimiter,
 			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				system = YES;
 			}
 		);
@@ -1253,23 +1253,23 @@
 			delimiter,			
 			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				system = YES;
 			},
 			delimiter,
 			{
 				name = "RemoveView";
-				class = com.netbeans.ide.actions.DeleteAction;
+				class = org.openapi.actions.DeleteAction;
 				system = YES;
 			}
 		);
@@ -1303,17 +1303,17 @@
 			delimiter,			
 			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				system = YES;
 			},
 		);
@@ -1382,17 +1382,17 @@
 			delimiter,
 */			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				system = YES;
 			}
 		);
@@ -1418,23 +1418,23 @@
 			delimiter,
 */			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				system = YES;
 			},
 			delimiter,
 			{
 				name = "RemoveProcedure";
-				class = com.netbeans.ide.actions.DeleteAction;
+				class = org.openapi.actions.DeleteAction;
 				system = YES;
 			}
 		);
@@ -1483,23 +1483,23 @@
 			delimiter,
 */			{
 				name = "Cut";
-				class = com.netbeans.ide.actions.CutAction;
+				class = org.openapi.actions.CutAction;
 				system = YES;
 			},
 			{
 				name = "Copy";
-				class = com.netbeans.ide.actions.CopyAction;
+				class = org.openapi.actions.CopyAction;
 				system = YES;
 			},
 			{
 				name = "Paste";
-				class = com.netbeans.ide.actions.PasteAction;
+				class = org.openapi.actions.PasteAction;
 				system = YES;
 			},
 			delimiter,
 			{
 				name = "RemoveTable";
-				class = com.netbeans.ide.actions.DeleteAction;
+				class = org.openapi.actions.DeleteAction;
 				node = procedurelist;
 				system = YES;
 			}
