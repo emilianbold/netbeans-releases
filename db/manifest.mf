@@ -1,6 +1,6 @@
 OpenIDE-Module: org.netbeans.modules.db/1
 OpenIDE-Module-Install: org/netbeans/modules/db/DatabaseModule.class
-OpenIDE-Module-Specification-Version: 1.4
+OpenIDE-Module-Specification-Version: 1.4.1
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Description: org.netbeans.modules.db.docs.HelpSet
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
