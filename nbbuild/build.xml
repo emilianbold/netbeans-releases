@@ -74,7 +74,7 @@ workspaceswitcher
     <!-- Best to leave this alone, though, unless you know what you are doing: -->
     <property name="firststart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true -single"/>
     <!-- But this it is OK to change: -->
-    <property name="tryme.args" value=" -J-Dnetbeans.debug.exceptions=true"/>
+    <property name="tryme.args" value=" -J-Dnetbeans.debug.exceptions=true -single"/>
     <!-- Override this with the Ant command, e.g. -Dmoduleconfig=superslim -->
     <property name="moduleconfig" value="stable"/>
     <!-- You can also explicitly set a particular list of modules if you prefer: -->
