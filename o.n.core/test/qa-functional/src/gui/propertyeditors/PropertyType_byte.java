@@ -30,7 +30,7 @@ public class PropertyType_byte extends PropertyEditorsTest {
     public boolean waitDialog = false;
 
     
-    /** Creates a new instance of PropertyType_Byte */
+    /** Creates a new instance of PropertyType_byte */
     public PropertyType_byte(String testName) {
         super(testName);
     }
@@ -44,8 +44,8 @@ public class PropertyType_byte extends PropertyEditorsTest {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new PropertyType_Byte("testByInPlace"));
-        suite.addTest(new PropertyType_Byte("testByInPlaceInvalid"));
+        suite.addTest(new PropertyType_byte("testByInPlace"));
+        suite.addTest(new PropertyType_byte("testByInPlaceInvalid"));
         return suite;
     }
     
