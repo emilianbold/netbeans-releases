@@ -227,8 +227,8 @@ implements RepositoryListener, NewTemplateAction.Cookie {
                 Object o = en.nextElement();
                 // XXX hack to show only masterfs and no other filesystems
                 // should later be solved better
-                // XXX if we stay with this behavior, this whole class could be rewritten
-                // to be much much simpler, since there will always be exactly one MasterFileSystem
+                // XXX should check if fs.root.url.protocol is not 'file' or 'jar', and if so, show it also
+                // (to display network mounts)
                 if (fs != o && o.getClass().getName().equals("org.netbeans.modules.masterfs.MasterFileSystem")) { // NOI18N
                     DataObject root = null;
                     try {
