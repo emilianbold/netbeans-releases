@@ -456,6 +456,30 @@ public class MakeNBM extends MatchingTask {
 			ps.print (description.getText ());
 			ps.println ("</description>");
                     }
+
+                    if (notification != null) {
+                        ps.print("  <module_notification>");
+                        ps.print(notification.getText());
+                        ps.println("</module_notification>");
+		    }
+
+		    if (externalPackages != null) {
+			Enumeration exp = externalPackages.elements();
+			while (exp.hasMoreElements()) {
+			    ExternalPackage externalPackage = (ExternalPackage) exp.nextElement();
+			    if (externalPackage.name == null || 
+				externalPackage.targetName == null ||
+				externalPackage.startUrl == null)
+				throw new BuildException("Must define name, targetname, starturl for external package");
+			    ps.print("  <external_package ");
+			    ps.print("name=\""+externalPackage.name+"\" ");
+			    ps.print("target_name=\""+externalPackage.targetName+"\" ");
+			    ps.print("start_url=\""+externalPackage.startUrl+"\"");
+			    if (externalPackage.description != null)
+				ps.print(" description=\""+externalPackage.description+"\"");
+			    ps.println("/>");
+			}
+		    }
 		    // Write manifest attributes.
 		    ps.print ("  <manifest ");
 		    boolean firstline = true;
@@ -489,28 +513,6 @@ public class MakeNBM extends MatchingTask {
                         ps.print ("  <license name=\"" + xmlEscape(license.getName ()) + "\">");
 			ps.print (license.getText ());
 			ps.println ("</license>");
-		    }
-                    if (notification != null) {
-                        ps.print("  <module_notification>");
-                        ps.print(notification.getText());
-                        ps.println("</module_notification>");
-		    }
-		    if (externalPackages != null) {
-			Enumeration exp = externalPackages.elements();
-			while (exp.hasMoreElements()) {
-			    ExternalPackage externalPackage = (ExternalPackage) exp.nextElement();
-			    if (externalPackage.name == null || 
-				externalPackage.targetName == null ||
-				externalPackage.startUrl == null)
-				throw new BuildException("Must define name, targetname, starturl for external package");
-			    ps.print("  <external_package ");
-			    ps.print("name=\""+externalPackage.name+"\" ");
-			    ps.print("target_name=\""+externalPackage.targetName+"\" ");
-			    ps.print("start_url=\""+externalPackage.startUrl+"\"");
-			    if (externalPackage.description != null)
-				ps.print(" description=\""+externalPackage.description+"\"");
-			    ps.println("/>");
-			}
 		    }
 		    ps.println ("</module>");
                     ps.flush();
