@@ -199,26 +199,19 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     public int getLogicalLineCountAbove (int line, int charsPerLine) {
         return writer.getLogicalLineCountAbove(line, charsPerLine);
     }
-
-    /**
-     * Get a logical line index for a given point in the display space.
-     * This is to accomodate word wrapping using fixed width fonts - this
-     * method answers the question "What line of output does the nth row
-     * of lines correspond to, given <code>charsPerLine</code> characters
-     * per line?".  If the logical line in question is itself wrapped, it
-     * will also return how many wrapped lines down from the beginning of
-     * the logical line the passed row index is, and the total number of
-     * wraps for this logical line to fit inside <code>charsPerLine</code>.
-     *
-     * @param physIdx A 3 entry array.  Element 0 should be the physical line
-     *        (the line position if no wrapping were happening).  On return,
-     *        it contains: <ul>
-     *         <li>[0] The logical line index for the passed line</li>
-     *         <li>[1] The number of line wraps below the logical line
-     *             index for this physical line</li>
-     *         <li>[2] The total number of line wraps for the logical line</li>
-     *         </ul>
-     */
+    
+    //The original version of this method is left in as it demonstrates clearly
+    //what toLogicalLineIndex should do - convert a physical position when
+    //wrapped at a certain number of characters into the line index in the
+    //document that should appear there.
+    
+    //The version below is quite simple, but for a 300000 line file, it must
+    //loop 300000 times to find the logical position of the last line.
+    
+    //On the contrary, the divide and conquer approach used below is called
+    //recursively an average of 19 times to do the same thing for a 300000 line
+    //file - it is much, much faster.
+/*    
     public void toLogicalLineIndex (final int[] physIdx, int charsPerLine) {
         physIdx[1] = 0;
         if (charsPerLine >= getLongestLineLength() || (writer.lineCount() <= 1)) {
@@ -229,7 +222,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         int line = physIdx[0] + 1;
         int lcount = 0;
 
-        int max = getElementCount();
+        int max = writer.lineCount();
 
         for (int i=0; i < max; i++) {
             int len = writer.length(i);
@@ -242,6 +235,127 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
                 break;
             }
         }
+    }
+ */    
+
+    /**
+     * Get a logical line index for a given point in the display space.
+     * This is to accomodate word wrapping using fixed width fonts - this
+     * method answers the question "What line of output does the nth row
+     * of lines correspond to, given <code>charsPerLine</code> characters
+     * per line?".  If the logical line in question is itself wrapped, it
+     * will also return how many wrapped lines down from the beginning of
+     * the logical line the passed row index is, and the total number of
+     * wraps for this logical line to fit inside <code>charsPerLine</code>.
+     *
+     * @param physIdx A 3 entry array.  Element 0 should be the physical line
+     *        (the line position if no wrapping were happening) when called;
+     *        the other two elements are ignored.  On return,
+     *        it contains: <ul>
+     *         <li>[0] The logical line index for the passed line</li>
+     *         <li>[1] The number of line wraps below the logical line
+     *             index for this physical line</li>
+     *         <li>[2] The total number of line wraps for the logical line</li>
+     *         </ul>
+     */
+    public void toLogicalLineIndex (final int[] physIdx, int charsPerLine) {
+        int physicalLine = physIdx[0];
+        physIdx[1] = 0;
+        int linecount = writer.lineCount();
+        
+        if (physicalLine == 0) {
+            //First line never has lines above it
+            physIdx[1] = 0;
+            physIdx[2] = (writer.length(physicalLine) / charsPerLine);
+        }
+        
+        if (charsPerLine >= getLongestLineLength() || (writer.lineCount() <= 1)) {
+            //The doc is empty, or there are no lines long enough to wrap anyway
+            physIdx[1] = 0;
+            physIdx[2] = 1;
+            return;
+        }
+        
+        int logicalLine = 
+            findFirstLineWithoutMoreLinesAboveItThan (physicalLine, charsPerLine);
+        
+        int linesAbove = writer.getLogicalLineCountAbove(logicalLine, charsPerLine);
+
+        int len = writer.length(logicalLine);
+        
+        int wrapCount = len > charsPerLine ? (len / charsPerLine) + 1 : 1;
+        
+        physIdx[0] = logicalLine;
+        int lcount = linesAbove + wrapCount;
+        physIdx[1] = (wrapCount - (lcount - physicalLine));
+          
+        physIdx[2] = wrapCount;
+    }
+    
+    /**
+     * Uses a divide-and-conquer approach to quickly locate a line which has
+     * the specified number of logical lines above it.  For large output, this
+     * data is cached in OutWriter in a sparse int array.  This method is called
+     * from viewToModel, so it must be very, very fast - it may be called once
+     * every time the mouse is moved, to determine if the cursor should be 
+     * updated.
+     */
+    private int findFirstLineWithoutMoreLinesAboveItThan (int target, int charsPerLine) {
+        int start = 0;
+        int end = writer.lineCount();
+        int midpoint = start + ((end - start) / 2);
+        int linesAbove = writer.getLogicalLineCountAbove(midpoint, charsPerLine);
+        int result = divideAndConquer (target, start, midpoint, end, charsPerLine, linesAbove);
+        
+        return Math.min(end, result) -1;
+    }
+    /**
+     * Recursively search for the line number with the smallest number of lines
+     * above it, greater than the passed target number of lines.  This is 
+     * effectively a binary search - divides the range of lines in half and
+     * checks if the middle value is greater than the target; then recurses on
+     * itself with whatever half of the range of lines has a better chance at
+     * containing a smaller value.
+     * <p>
+     * It is primed with an initial call with the start, midpoint and end values.
+     */
+    private int divideAndConquer (int target, int start, int midpoint, int end, int charsPerLine, int midValue) {
+        //We have an exact match - we're done
+        if (midValue == target) {
+            return midpoint + 1;
+        }
+        
+        //In any of these conditions, the search has run out of gas - the
+        //end value must be the match
+        if (end - start <= 1 || midpoint == start || midpoint == end) {
+            return end;
+        }
+
+        if (midValue > target) {
+            //The middle value is greater than the target - look for a closer
+            //match between the first and the middle line
+            
+            int upperMidPoint = upperMidPoint = start + ((midpoint - start) / 2);
+            if ((midpoint - start) % 2 != 0) {
+                upperMidPoint++;
+            }
+            int upperMidValue = writer.getLogicalLineCountAbove (upperMidPoint, charsPerLine);
+            return divideAndConquer (target, start, upperMidPoint, midpoint, charsPerLine, upperMidValue);
+        } else {
+            //The middle value is less than the target - look for a match
+            //between the midpoint and the last line
+            
+            int lowerMidPoint = ((end - start) / 4) + midpoint;
+            if ((end - midpoint) % 2 != 0) {
+                lowerMidPoint++;
+            }
+            int lowerMidValue = writer.getLogicalLineCountAbove (lowerMidPoint, charsPerLine);
+            return divideAndConquer (target, midpoint, lowerMidPoint, end, charsPerLine, lowerMidValue);
+        }
+    }
+    
+    boolean stillGrowing() {
+        return !writer.isClosed();
     }
 
     public int getLineStart (int line) {
@@ -445,6 +559,10 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     
     public boolean isHyperlink (int line) {
         return writer.listenerForLine(line) != null;
+    }
+    
+    public boolean hasHyperlinks() {
+        return writer.firstListenerLine() != -1;
     }
     
     public boolean isErr (int line) {

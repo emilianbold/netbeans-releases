@@ -273,11 +273,7 @@ class OutWriter extends OutputWriter implements Runnable {
         if (idx != lineStartList.size()-1) {
             lineEnd = lineStartList.get(idx+1);
         } else {
-            int result;
-            synchronized (this) {
-                result = getStorage().size();
-            }
-            lineEnd = result;
+            lineEnd = getStorage().size();
         }
         return toCharIndex(lineEnd - lineStart);
     }
@@ -388,10 +384,10 @@ class OutWriter extends OutputWriter implements Runnable {
                 ByteBuffer buf;
                 synchronized (this) {
                     buf = getStorage().getWriteBuffer(toByteIndex(s.length()));
+                    buf.asCharBuffer().put(s);
+                    buf.position (buf.position() + toByteIndex(s.length()));
+                    write (buf);
                 }
-                buf.asCharBuffer().put(s);
-                buf.position (buf.position() + toByteIndex(s.length()));
-                write (buf);
             }
             return result;
         } catch (IOException ioe) {
@@ -655,18 +651,32 @@ class OutWriter extends OutputWriter implements Runnable {
             lineStartList.add (start);
             
             //If we already have enough lines that we need to cache logical line
-            //lengths, update the cache - rebuilding it is expensive
+            //lengths, update the cache - rebuilding it is very expensive
             if (knownLogicalLineCounts != null) {
-                int len = length(lineStartList.size()-2);
-                int aboveLineCount = knownLogicalLineCounts.size() == 0 ? 0 : knownLogicalLineCounts.get(lineStartList.size()-2);
+                //This is the index of the line we just added
+                int lastline = lineStartList.size()-1;
+                //Get the length of the line
+                int len = length(lastline);
+                
+                //We only need to add if it will wrap - SparseIntList's get()
+                //semantics takes care of non-wrapped lines
                 if (len > knownCharCount) {
+                    int aboveLineCount;
+                    if (knownLogicalLineCounts.lastIndex() != -1) {
+                        //If the cache already has some entries, calculate the
+                        //values from the last entry - this is less expensive
+                        //than looking it up
+                        aboveLineCount = (lastline - (knownLogicalLineCounts.lastIndex() + 1)) + knownLogicalLineCounts.lastAdded();
+                    } else {
+                        //Otherwise, it's just the number of lines above this
+                        //one - it's the first entry
+                        aboveLineCount = Math.max(0, lastline-1);
+                    }
+                    //Add in the number of times this line will wrap
                     aboveLineCount += (len / knownCharCount) + 1;
-                } else {
-                    aboveLineCount++;
+                    knownLogicalLineCounts.add(aboveLineCount, lastline);
                 }
-                knownLogicalLineCounts.add(aboveLineCount);
             }
-
         
             if (Controller.verbose) Controller.log (this + ": Wrote " + ((ByteBuffer)bb.flip()).asCharBuffer() + " at " + start);
             if (lineStartList.size() == 20 || lineStartList.size() == 10 || lineStartList.size() == 1) { //Fire again after the first 20 lines
@@ -684,6 +694,15 @@ class OutWriter extends OutputWriter implements Runnable {
         return toCharIndex(longestLine);
     }
     
+    private static Boolean unitTestCache = null;
+    /**
+     * Hook for unit tests to confirm the same behavior in caching mode and 
+     * non caching mode on the same data.
+     */
+    static final void unitTestUseCache (Boolean val) {
+        unitTestCache = val;
+    }
+    
     /**
      * Get the number of logical lines if character wrapped at the specified
      * width.  Calculates on the fly below 100000 characters, above that builds
@@ -696,7 +715,17 @@ class OutWriter extends OutputWriter implements Runnable {
         if (toByteIndex(charCount) > longestLine) {
             return line;
         }
-        if (getStorage().size() < 500000 || !storage.isClosed()) {
+        
+        //See OutputDocumentTest.testWordWrapping
+        if (unitTestCache != null) {
+            if (Boolean.TRUE.equals(unitTestCache)) {
+                return dynLogicalLineCountAbove(line, charCount);
+            } else {
+                return cachedLogicalLineCountAbove (line, charCount);
+            }
+        }
+        
+        if (getStorage().size() < 100000) {
             return dynLogicalLineCountAbove(line, charCount);
         } else {
             return cachedLogicalLineCountAbove (line, charCount);
@@ -713,7 +742,16 @@ class OutWriter extends OutputWriter implements Runnable {
         if (toByteIndex(charCount) > longestLine) {
             return lineCount();
         }
-        if (getStorage().size() < 500000 || !storage.isClosed()) {
+        
+        if (unitTestCache != null) {
+            if (Boolean.TRUE.equals(unitTestCache)) {
+                return dynLogicalLineCountIfWrappedAt(charCount);
+            } else {
+                return cachedLogicalLineCountIfWrappedAt(charCount);
+            }
+        }        
+        
+        if (getStorage().size() < 100000) {
             return dynLogicalLineCountIfWrappedAt(charCount);
         } else {
             return cachedLogicalLineCountIfWrappedAt(charCount);
@@ -721,7 +759,7 @@ class OutWriter extends OutputWriter implements Runnable {
     }
     
     int knownCharCount = -1;
-    private synchronized int cachedLogicalLineCountAbove (int line, int charCount) {
+    private int cachedLogicalLineCountAbove (int line, int charCount) {
         if (charCount != knownCharCount || knownLogicalLineCounts == null) {
             knownCharCount = charCount;
             calcCharCounts(charCount);
@@ -729,7 +767,7 @@ class OutWriter extends OutputWriter implements Runnable {
         return knownLogicalLineCounts.get(line);
     }
     
-    private synchronized int cachedLogicalLineCountIfWrappedAt (int charCount) {
+    private int cachedLogicalLineCountIfWrappedAt (int charCount) {
         int lineCount = lineCount();
         if (charCount == 0 || lineCount == 0) {
             return 0;
@@ -744,30 +782,40 @@ class OutWriter extends OutputWriter implements Runnable {
         return result;
     }
     
+    /**
+     * Builds a cache of lines which are longer than the last known width, which
+     * can be retained for future lookups.  Finding the logical position of a 
+     * line when wrapped means iterating all the lines above it.  Above a 
+     * threshold, it is much preferable to cache it.  We use SparseIntList to
+     * create a cache which only actually holds the counts for lines that *are*
+     * wrapped, and interpolates the rest, so we don't need to create an int[]
+     * as big as the number of lines we have.  This presumes that most lines
+     * don't wrap.
+     */
     private synchronized void calcCharCounts(int width) {
         int lineCount = lineCount();
-        knownLogicalLineCounts = new IntList(lineCount);
+        knownLogicalLineCounts = new SparseIntList(30);
+        
+//        System.err.println("BUILDING CACHE - size " + getStorage().size());
         
         int bcount = toByteIndex(width);
         
-        
-        knownLogicalLineCounts.add(0);
         int val = 0;
         for (int i=1; i < lineCount; i++) {
             int len = length(i);
             
             if (len > width) {
                 val += (len / width) + 1;
+                knownLogicalLineCounts.add(val, i);
             } else {
                 val++;
             }
-            knownLogicalLineCounts.add(val);
         }
         
         knownCharCount = width;
     }
     
-    private IntList knownLogicalLineCounts = null;
+    private SparseIntList knownLogicalLineCounts = null;
     
     
     private int lastCharCountForWrapCalculation = -1;

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.*;
 import java.nio.channels.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -145,6 +146,92 @@ public class OutputDocumentTest extends TestCase {
             ble = e;
         }
         assertNotNull("Exception should have been thrown when creating a bogus negative location", ble);
+    }
+    
+    public void testStillGrowing() {
+        System.out.println("testStillGrowing");
+        
+        OutWriter ow = new OutWriter ();
+        OutputDocument doc = new OutputDocument (ow);
+        String first = "This is the first string";
+        String second = "This is the second string, ain't it?";
+        String third = "This is the third string";
+        ow.println(first);
+        ow.println (second);
+        ow.println (third);
+        assertTrue ("After a few writes, document should not think its output stream is closed, it isn't.", doc.stillGrowing());
+        ow.flush();
+        assertTrue ("After a flush, document should not think its output stream is closed, it isn't.", doc.stillGrowing());
+        ow.close();
+        assertFalse ("After closing the writer, the document should not expect itself to grow", doc.stillGrowing());
+    }
+    
+    private static String STATE = "(STATE NOT SET!)";
+    public void testWordWrap() {
+        System.out.println("testWordWrap - line data caching ON");
+        STATE = "(CACHED MODE)";
+        OutWriter.unitTestUseCache(Boolean.TRUE);
+        doTestWordWrap();
+        
+        System.out.println("testWordWrap - line data caching OFF");
+        STATE = "(DYNAMIC MODE)";
+        OutWriter.unitTestUseCache(Boolean.FALSE);
+//        doTestWordWrap();
+        
+        OutWriter.unitTestUseCache(null);
+        STATE = "(STATE NOT SET!)";
+    }
+        
+    private void doTestWordWrap() {
+        OutWriter ow = new OutWriter ();
+        OutputDocument doc = new OutputDocument (ow);
+        
+        char[] c120 = new char[120];
+        Arrays.fill(c120, 'A');
+        String s120 = new String(c120);
+        char[] c80 = new char[80];
+        Arrays.fill(c80, 'B');
+        String s80 = new String(c80);
+        char[] c20 = new char[20];
+        Arrays.fill (c20, 'C');
+        String s20 = new String(c20);
+        
+        ow.println (c80);
+        ow.println (c80);
+        ow.println (c80);
+        
+        int val = doc.getLogicalLineCountAbove(2, 90);
+        assertTrue (STATE + "With three 80 character lines of data, wrapped at 90 characters, there should be 2 lines above line 2, not " + val, val == 2);
+        
+        val = doc.getLogicalLineCountIfWrappedAt(90);
+        assertTrue (STATE + "With three 80 character lines of data, wrapped at 90 characters, the line count should be 3, not " + val, val == 3);
+        assertTrue (val == ow.lineCount());
+        
+        val = doc.getLogicalLineCountIfWrappedAt(50);
+        assertTrue (STATE + "With three 80 character lines of data, wrapped at 50 characters, the line count should be 5, not " + val, val == 5);
+        
+        val = doc.getLogicalLineCountAbove(2, 50);
+        assertTrue (STATE + "With three 80 character lines of data, wrapped at 50 characters, there should be 4 logical lines above 2, not " + val, val == 4);
+        
+        int[] wrapData = new int[] {5, 0, 0};
+        doc.toLogicalLineIndex(wrapData, 50);
+        assertTrue("The logical line index of the 5th phys line with three 80 char lines wrapped at 50 chars should be 2 in the document, not " + wrapData[0], wrapData[0] == 2);
+        assertTrue("An 80 char line should wrap twice, not " + wrapData[2], wrapData[2] == 2);
+        assertTrue("On the 5th physical line with three 80 char lines wrapped at 50 chars should be the 1st line of actual line 3, not " + wrapData[1], wrapData[1] == 1);
+        
+        wrapData[0] = 6;
+        doc.toLogicalLineIndex(wrapData, 50);
+        assertTrue("On the 5th physical line with three 80 char lines wrapped at 50 chars should be the 2nd line of actual line 3, not " + wrapData[1], wrapData[1] == 2);
+        
+        ow.println(c20);
+        ow.println(c80);
+        
+        val = doc.getLogicalLineCountAbove(3, 50);
+        assertTrue ("There should be 6 logical lines above a 20 char line following three 80 char lines when wrapped at 50 chars", val == 6);
+        
+        wrapData[0] = 6;
+        doc.toLogicalLineIndex(wrapData, 50);
+        assertTrue ("20 char line should not be wrapped, but shows " + wrapData[2] + " wraps", wrapData[2] == 1);
     }
     
     public void testGetDefaultRootElement() {

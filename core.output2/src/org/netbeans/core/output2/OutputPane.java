@@ -12,6 +12,7 @@
  */
 package org.netbeans.core.output2;
 
+import java.awt.event.MouseEvent;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
 
 import javax.swing.*;
@@ -46,7 +47,6 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
 
     public void setMouseLine (int line) {
         if (line != getMouseLine()) {
-
             Document doc = getDocument();
             if (doc instanceof OutputDocument) {
                 boolean link = line != -1 && ((OutputDocument) doc).isHyperlink(line);
@@ -55,6 +55,21 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
             }
         }
         super.setMouseLine(line);
+    }
+    
+    
+    /**
+     * Only calls super if there are hyperlinks in the document to avoid huge
+     * numbers of calls to viewToModel if the cursor is never going to be 
+     * changed anyway.
+     */
+    public void mouseMoved (MouseEvent evt) {
+        Document doc = getDocument();
+        if (doc instanceof OutputDocument) {
+            if (((OutputDocument) doc).hasHyperlinks()) {
+                super.mouseMoved(evt);
+            }
+        }
     }
 
     private OutputTab findOutputTab() {
@@ -75,8 +90,10 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
         updateKeyBindings();
     }
     
+    private static boolean wrapByDefault = Boolean.getBoolean("nb.output.wrap"); //NOI18N
     public void setWrapped (boolean val) {
-        if (val != isWrapped()) {
+        if (val != isWrapped() || !(getEditorKit() instanceof OutputEditorKit)) {
+            wrapByDefault = val;
             final int pos = textView.getCaret().getDot();
             setEditorKit (new OutputEditorKit(val, textView));
             if (val) {
@@ -98,13 +115,20 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
                     textView.getCaret().setDot(pos);
                 }
             });
+            if (getDocument() instanceof OutputDocument && ((OutputDocument) getDocument()).stillGrowing()) {
+                lockScroll();
+            }
             validate();
         }
     }
     
     public boolean isWrapped() {
-        return getEditorKit() instanceof OutputEditorKit 
-          && ((OutputEditorKit) getEditorKit()).isWrapped();
+        if (getEditorKit() instanceof OutputEditorKit) {
+            return getEditorKit() instanceof OutputEditorKit 
+              && ((OutputEditorKit) getEditorKit()).isWrapped();
+        } else {
+            return wrapByDefault;
+        }
     }
     
     protected JEditorPane createTextView() {
