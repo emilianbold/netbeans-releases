@@ -106,6 +106,11 @@ final class NbModuleProject implements Project {
             new SubprojectProviderImpl(this),
             fileBuilt,
             new AccessibilityQueryImpl(this),
+            helper.createSharabilityQuery(new String[0], new String[] {
+                // XXX replace with properties when possible using APH
+                "build", // NOI18N
+                "javadoc", // NOI18N
+            }),
             // XXX need, in rough descending order of importance:
             // AntArtifactProvider - should it run netbeans target, or all-foo/bar?
             // CustomizerProvider - ???
@@ -265,14 +270,20 @@ final class NbModuleProject implements Project {
         }
     }
     
-    private String getNbrootRel() {
+    String getPath() {
         Element config = helper.getPrimaryConfigurationData(true);
         Element path = Util.findElement(config, "path", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
         if (path != null) {
-            String pathS = Util.findText(path);
-            if (pathS != null) {
-                return pathS.replaceAll("[^/]+", ".."); // NOI18N
-            }
+            return Util.findText(path);
+        } else {
+            return null;
+        }
+    }
+    
+    private String getNbrootRel() {
+        String path = getPath();
+        if (path != null) {
+            return path.replaceAll("[^/]+", ".."); // NOI18N
         }
         Util.err.log(ErrorManager.WARNING, "Could not compute relative path to nb_all for " + this);
         return ".."; // NOI18N

@@ -31,7 +31,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.j2seproject.queries.CompiledSourceForBinaryQuery;
-import org.netbeans.modules.java.j2seproject.queries.J2SESharabilityQueryImpl;
 import org.netbeans.modules.java.j2seproject.queries.JavadocForBinaryQueryImpl;
 import org.netbeans.modules.java.j2seproject.queries.UnitTestForSourceQueryImpl;
 import org.netbeans.modules.java.j2seproject.ui.J2SECustomizerProvider;
@@ -122,7 +121,13 @@ final class J2SEProject implements Project, AntProjectListener {
             new ProjectOpenedHookImpl(),
             new UnitTestForSourceQueryImpl(helper),
             new J2SESourceGroup(this, helper),
-            new J2SESharabilityQueryImpl(helper, new String[] {"dist.dir", "build.dir"}), // NOI18N
+            helper.createSharabilityQuery(new String[] {
+                "${src.dir}", // NOI18N
+                "${test.src.dir}", // NOI18N
+            }, new String[] {
+                "${dist.dir}", // NOI18N
+                "${build.dir}", // NOI18N
+            }),
             fileBuilt,
         });
     }

@@ -44,6 +44,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
+import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -762,6 +763,78 @@ public final class AntProjectHelper {
     public AntArtifact createSimpleAntArtifact(String type, String locationProperty, String targetName, String cleanTargetName) {
         return new SimpleAntArtifact(this, type, locationProperty, targetName, cleanTargetName);
     }
+    
+    /**
+     * Create an implementation of the file sharability query.
+     * You may specify a list of source roots to include that should be considered sharable,
+     * as well as a list of build directories that should not be considered sharable.
+     * <p>
+     * The project directory itself is automatically included in the list of sharable directories
+     * so you need not explicitly specify it.
+     * Similarly, the <code>nbproject/private</code> subdirectory is automatically excluded
+     * from VCS, so you do not need to explicitly specify it.
+     * </p>
+     * <p>
+     * Any file (or directory) mentioned (explicitly or implicity) in the source
+     * directory list but not in any of the build directory lists, and not containing
+     * any build directories inside it, will be given as sharable. If a directory itself
+     * is sharable but some directory inside it is not, it will be given as mixed.
+     * A file or directory inside some build directory will be listed as not sharable.
+     * A file or directory matching neither the source list nor the build directory list
+     * will be treated as of unknown status, but in practice such a file should never
+     * have been passed to this implementation anyway - {@link SharabilityQuery} will
+     * normally only call an implementation in project lookup if the file is owned by
+     * that project.
+     * </p>
+     * <p>
+     * Each entry in either list should be a string evaluated first for Ant property
+     * escapes (if any), then treated as a file path relative to the project directory
+     * (or it may be absolute).
+     * </p>
+     * <p>
+     * It is permitted, and harmless, to include items that overlap others. For example,
+     * you can have both a directory and one of its children in the include list.
+     * </p>
+     * <div class="nonnormative">
+     * <p>
+     * Typical usage would be:
+     * </p>
+     * <pre>
+     * helper.createSharabilityQuery(new String[] {"${src.dir}", "${test.src.dir}"},
+     *                               new String[] {"${build.dir}", "${dist.dir}"})
+     * </pre>
+     * <p>
+     * A quick rule of thumb is that the include list should contain any
+     * source directories which <em>might</em> reside outside the project directory;
+     * and the exclude list should contain any directories which you would want
+     * to add to a <samp>.cvsignore</samp> file if using CVS (for example).
+     * </p>
+     * <p>
+     * Note that in this case <samp>${src.dir}</samp> and <samp>${test.src.dir}</samp>
+     * may be relative paths inside the project directory; relative paths pointing
+     * outside of the project directory; or absolute paths (generally outside of the
+     * project directory). If they refer to locations inside the project directory,
+     * including them does nothing but is harmless - since the project directory itself
+     * is always treated as sharable. If they refer to external locations, you will
+     * need to also make sure that {@link FileOwnerQuery} actually maps files in those
+     * directories to this project, or else {@link SharabilityQuery} will never find
+     * this implementation in your project lookup and may return <code>UNKNOWN</code>.
+     * </p>
+     * </div>
+     * @param sourceRoots a list of additional paths to treat as sharable
+     * @param buildDirectories a list of paths to treat as not sharable
+     * @return a sharability query implementation suitable for the project lookup
+     * @see Project#getLookup
+     */
+    public SharabilityQueryImplementation createSharabilityQuery(String[] sourceRoots, String[] buildDirectories) {
+        String[] includes = new String[sourceRoots.length + 1];
+        System.arraycopy(sourceRoots, 0, includes, 0, sourceRoots.length);
+        includes[sourceRoots.length] = ""; // NOI18N
+        String[] excludes = new String[buildDirectories.length + 1];
+        System.arraycopy(buildDirectories, 0, excludes, 0, buildDirectories.length);
+        excludes[buildDirectories.length] = "nbproject/private"; // NOI18N
+        return new SharabilityQueryImpl(this, includes, excludes);
+    }
         
     /**
      * Convenience method to evaluate one Ant property in this project.
@@ -893,6 +966,9 @@ public final class AntProjectHelper {
      * @return an absolute, locally usable path
      */
     public String resolvePath(String path) {
+        if (path == null) {
+            throw new NullPointerException("Must pass a non-null path"); // NOI18N
+        }
         // XXX consider memoizing results since this is probably called a lot
         return PropertyUtils.resolvePath(FileUtil.toFile(dir), path);
     }
