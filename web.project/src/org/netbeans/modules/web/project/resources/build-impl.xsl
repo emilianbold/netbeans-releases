@@ -470,7 +470,7 @@ is divided into following sections:
               <xsl:when test="webproject3:from-wsdl">
                 <target name="{$wsname}_wscompile" depends="init, wscompile-init">
                   <wscompile import="true" 
-                     config="${{src.dir}}/${{{$wsname}.config.name}}"
+                     config="${{{$wsname}.config.name}}"
                      features="${{wscompile.service.{$wsname}.features}}"
                      mapping="${{web.docbase.dir}}/WEB-INF/wsdl/${{{$wsname}.mapping}}"
                      classpath="${{wscompile.classpath}}" 
@@ -495,7 +495,7 @@ is divided into following sections:
                      nonClassDir="${{build.web.dir.real}}/WEB-INF/wsdl"
                      classpath="${{wscompile.classpath}}:${{build.classes.dir.real}}"
                      mapping="${{build.web.dir.real}}/WEB-INF/wsdl/${{{$wsname}.mapping}}"
-                     config="${{src.dir}}/${{{$wsname}.config.name}}"
+                     config="${{{$wsname}.config.name}}"
                      features="${{wscompile.service.{$wsname}.features}}">
                   </wscompile>
                 </target>

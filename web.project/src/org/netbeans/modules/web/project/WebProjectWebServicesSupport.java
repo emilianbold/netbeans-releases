@@ -13,6 +13,9 @@
 
 package org.netbeans.modules.web.project;
 
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesClientSupportImpl;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportImpl;
 import java.io.IOException;
@@ -482,7 +485,10 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         String packageName = null;
         for (int i = 0; i < groups.length && packageName == null; i++) {
-            packageName = FileUtil.getRelativePath(groups [i].getRootFolder(), parent);
+            packageName = FileUtil.getRelativePath(groups[i].getRootFolder(), parent);
+            if (packageName != null) {
+                packageName = groups[i].getName() + "/" + packageName;
+            }
         }
         return packageName + "";
     }
