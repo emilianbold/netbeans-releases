@@ -222,7 +222,7 @@ public final class ClassPath {
      * in the <code>ClassPath</code>
      * Note: do not pass names starting with slash to this method.
      * @param resourceName name of the resource as it would be passed
-     * to <link>java.lang.ClassLoader.getResource()</link>.
+     *                     to {@link ClassLoader#getResource}
      * @return FileObject for the resource, or null if the resource cannot
      * be found in this ClassPath.
      */
