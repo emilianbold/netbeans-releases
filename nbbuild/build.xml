@@ -1403,9 +1403,13 @@ the ${netbeans.dest}/bin/ directory.
 
     <!-- package the misc files -->
     <zip destfile="${netbeans.build.dir}/zips/${clusters.prefix}-misc-${buildnum}.zip" update="true" duplicate="preserve">
-      <zipfileset file="${netbeans.dest}/bin/netbeans" filemode="755" prefix="bin"/>
-      <zipfileset dir="${netbeans.dest}/bin" prefix="bin"/>
-      <zipfileset dir="${netbeans.dest}/etc" prefix="etc"/>
+      <zipfileset dir="${netbeans.dest}" filemode="755">
+         <include name="bin/netbeans"/>
+      </zipfileset>
+      <zipfileset dir="${netbeans.dest}">
+        <include name="bin/**"/>
+        <include name="etc/**/"/>
+      </zipfileset>
     </zip>
   </target>
 
