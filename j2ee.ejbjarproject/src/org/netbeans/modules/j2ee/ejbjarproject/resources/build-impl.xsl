@@ -398,10 +398,10 @@ is divided into following sections:
                 <ejbproject:javac xmlns:ejbproject="http://www.netbeans.org/ns/j2ee-ejbjarproject/1"/>
                 <copy todir="${{build.classes.dir}}">
                     <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
+                    <fileset dir="${{meta.inf}}" includes="**/*.dbschema"/>
                 </copy>
                 <copy todir="${{build.classes.dir}}/META-INF">
-                  <fileset dir="${{meta.inf}}">
-                  </fileset>
+                  <fileset dir="${{meta.inf}}" excludes="**/*.dbschema"/> 
                 </copy>
                 <xsl:if test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
                     <xsl:comment>For web services, refresh ejb-jar.xml and sun-ejb-jar.xml</xsl:comment>  
