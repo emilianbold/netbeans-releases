@@ -58,6 +58,10 @@ NbDocument.Printable, NbDocument.CustomEditor {
     /** Indent engine for the given kitClass. */
     public static final String INDENT_ENGINE = "indentEngine";
 
+    /** Whether formatting debug messages should be displayed */
+    private static final boolean debugFormat
+        = Boolean.getBoolean("netbeans.debug.editor.format"); // NOI18N
+
     /** Formatter being used. */
     private Formatter formatter;
 
@@ -83,15 +87,22 @@ NbDocument.Printable, NbDocument.CustomEditor {
         formatter = (Formatter)Settings.getValue(getKitClass(), FORMATTER);
 
         // Check whether the mimeType is set
-        Object o = getProperty("mimeType");
+        Object o = getProperty(MIME_TYPE_PROP);
         if (!(o instanceof String)) {
             BaseKit kit = BaseKit.getKit(getKitClass());
-            putProperty("mimeType", kit.getContentType());
+            putProperty(MIME_TYPE_PROP, kit.getContentType());
         }
 
         // Fill in the indentEngine property
-        
-        putProperty("indentEngine", Settings.getValue(getKitClass(), INDENT_ENGINE));
+        putProperty(INDENT_ENGINE, Settings.getValue(getKitClass(), INDENT_ENGINE));
+
+        if (debugFormat) {
+            System.err.println("NbEditorDocument.settingsChange() doc=" + this
+                + ", mimeType=" + getProperty(MIME_TYPE_PROP)
+                + ", indentEngine=" + getProperty(INDENT_ENGINE)
+                + ", formatter=" + formatter
+            );
+        }
     }
 
     public void setCharacterAttributes(int offset, int length, AttributeSet s,
