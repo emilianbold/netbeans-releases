@@ -387,6 +387,38 @@ public class PropertyUtilsTest extends NbTestCase {
         l.reset();
     }
     
+    private static final String ILLEGAL_CHARS = " !\"#$%&'()*+,/:;<=>?@[\\]^`{|}~";
+    
+    public void testIsUsablePropertyName() throws Exception {
+        for (int i=0; i<ILLEGAL_CHARS.length(); i++) {
+            String s = ILLEGAL_CHARS.substring(i, i+1);
+            assertFalse("Not a valid property name: "+s, PropertyUtils.isUsablePropertyName(s));
+        }
+        for (int i=127; i<256; i++) {
+            String s = ""+(char)i;
+            assertFalse("Not a valid property name: "+s+" - "+i, PropertyUtils.isUsablePropertyName(s));
+        }
+        assertFalse("Not a valid property name", PropertyUtils.isUsablePropertyName(ILLEGAL_CHARS));
+        for (int i=32; i<127; i++) {
+            String s = ""+(char)i;
+            if (ILLEGAL_CHARS.indexOf((char)i) == -1) {
+                assertTrue("Valid property name: "+s, PropertyUtils.isUsablePropertyName(s));
+            }
+        }
+    }
+    
+    public void testGetUsablePropertyName() throws Exception {
+        StringBuffer bad = new StringBuffer();
+        StringBuffer good = new StringBuffer();
+        for (int i=0; i<ILLEGAL_CHARS.length(); i++) {
+            bad.append(ILLEGAL_CHARS.substring(i, i+1));
+            bad.append("x");
+            good.append("_");
+            good.append("x");
+        }
+        assertEquals("Corrected property name does match", good.toString(), PropertyUtils.getUsablePropertyName(bad));
+    }
+    
     private static final class TestMutablePropertyProvider implements PropertyProvider {
         
         public final Map/*<String,String>*/ defs;

@@ -553,6 +553,37 @@ public class PropertyUtils {
         }
         return (String[])l.toArray(new String[l.size()]);
     }
+
+    private static final Pattern VALID_PROPERTY_NAME = Pattern.compile("[-._a-zA-Z0-9]"); // NOI18N
+
+    /**
+     * Checks whether the name is usable as Ant property name.
+     * @param name name to check for usability as Ant property
+     * @return true if name is usable otherwise false
+     */
+    public static boolean isUsablePropertyName(CharSequence name) {
+        return VALID_PROPERTY_NAME.matcher(name).matches();
+    }
+
+    /**
+     * Returns name usable as Ant property which is based on the given
+     * name. All forbidden characters are either removed or replaced with
+     * suitable ones.
+     * @param name name to use as base for Ant property name
+     * @return name usable as Ant property name
+     */
+    public static String getUsablePropertyName(CharSequence name) {
+        if (isUsablePropertyName(name)) {
+            return name.toString();
+        }
+        StringBuffer sb = new StringBuffer(name.toString());
+        for (int i=0; i<sb.length(); i++) {
+            if (!isUsablePropertyName(sb.subSequence(i,i+1))) {
+                sb.replace(i,i+1,"_");
+            }
+        }
+        return sb.toString();
+    }
     
     /**
      * Create a trivial property producer using only a fixed list of property definitions.
