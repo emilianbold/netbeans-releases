@@ -58,10 +58,9 @@ public final class DataObjectAdapters {
     /**
      * Create InputSource from DataObject. Default implementation prefers opened
      * Swing <code>Document</code> over primary file URL.
-     * @throws IOException if I/O error occurs.
-     * @return InputSource never <code>null</code>
+     * @return <code>DataObject</code> never <code>null</code>
      */           
-    public static InputSource inputSource(DataObject dataObject) throws IOException {
+    public static InputSource inputSource (DataObject dataObject) {
         if (dataObject == null) throw new NullPointerException();
         return new DataObjectInputSource(dataObject);
     }
@@ -72,15 +71,13 @@ public final class DataObjectAdapters {
     private static class DataObjectInputSource extends InputSource {
         
         private final DataObject dataObject;
-        private final String systemId;
         
-        public DataObjectInputSource(DataObject dataObject) throws IOException {
+        public DataObjectInputSource (DataObject dataObject) {
             this.dataObject = dataObject;
-            this.systemId = dataObject.getPrimaryFile().getURL().toExternalForm();
         }
                 
         public String getSystemId() {
-            return systemId;
+            return DataObjectAdapters.getSystemId (dataObject);
         }
         
         public Reader getCharacterStream() {
@@ -103,10 +100,9 @@ public final class DataObjectAdapters {
     /**
      * Create Source from DataObject. Default implementation prefers opened
      * Swing <code>Document</code> over primary file URL.
-     * @throws IOException if I/O error occurs.
-     * @return InputSource never <code>null</code>
+     * @return <code>DataObject</code> never <code>null</code>
      */               
-    public static Source source(DataObject dataObject) throws IOException {
+    public static Source source (DataObject dataObject) {
         if (dataObject == null) throw new NullPointerException();        
         return new DataObjectSAXSource(dataObject);
     }
@@ -116,17 +112,14 @@ public final class DataObjectAdapters {
      */    
     private static class DataObjectSAXSource extends SAXSource {
         
-        private final String systemId;
         private final DataObject dataObject;
         
-        public DataObjectSAXSource(DataObject dataObject) throws IOException {
-            URL url = preferFileURL (dataObject.getPrimaryFile());
-            systemId = url.toExternalForm();
+        public DataObjectSAXSource(DataObject dataObject) {
             this.dataObject = dataObject;
         }
         
         public String getSystemId() {
-            return systemId;
+            return DataObjectAdapters.getSystemId (dataObject);
         }
         
         public XMLReader getXMLReader() {
@@ -147,30 +140,49 @@ public final class DataObjectAdapters {
         }
         
         public InputSource getInputSource() {
-            try {
-                return inputSource (dataObject);
-            } catch (IOException ex) {
-                Util.THIS.debug(ex);
-                return null;
-            }
+            return inputSource (dataObject);
         }
 
-        /**
-         * If possible it find "file:" URL if <code>fileObject</code> is on LocalFileSystem.
-         * @return URL of <code>fileObject</code>.
-         */
-        private static URL preferFileURL (FileObject fileObject) throws MalformedURLException, FileStateInvalidException {
-            URL fileURL = null;
-            File file = FileUtil.toFile (fileObject);
-            
-            if ( file != null ) {
+    } // class DataObjectSAXSource
+
+
+    /** Try to find the best URL name of <code>dataObject</code>.
+     * @return system Id of <code>dataObject</code>
+     */
+    private static String getSystemId (DataObject dataObject) {
+        String systemId = null;
+        try {
+            FileObject fileObject = dataObject.getPrimaryFile();
+            URL url = preferFileURL (fileObject);
+            systemId = url.toExternalForm();
+        } catch (FileStateInvalidException exc) {
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug (exc);
+
+            // nothing to do -> return null; //???
+        }
+        return systemId;
+    }
+
+    /**
+     * If possible it finds "file:" URL if <code>fileObject</code> is on LocalFileSystem.
+     * @return URL of <code>fileObject</code>.
+     */
+    private static URL preferFileURL (FileObject fileObject) throws FileStateInvalidException {
+        URL fileURL = null;
+        File file = FileUtil.toFile (fileObject);
+        
+        if ( file != null ) {
+            try {
                 fileURL = file.toURL();
-            } else {
+            } catch (MalformedURLException exc) {
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug (exc);
+
                 fileURL = fileObject.getURL();
             }
-            return fileURL;
+        } else {
+            fileURL = fileObject.getURL();
         }
-        
+        return fileURL;
     }
     
     private static synchronized SAXParserFactory getSAXParserFactory () throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {

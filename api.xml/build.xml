@@ -116,7 +116,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="all" depends="clean,nbm"/>
 
-    <target name="javadoc">
+    <target name="javadoc" depends="apichanges">
         <delete dir="javadoc"/>
         <mkdir dir="javadoc"/>
         
@@ -126,37 +126,39 @@ Microsystems, Inc. All Rights Reserved.
         <property name="openide-docs-location" value="http://www.netbeans.org/download/apis"/>
         
         
-        <javadoc    destdir="javadoc" 
-                    packagenames="org.netbeans.api.xml.*,org.netbeans.spi.xml.*"
-                    doctitle="NetBeans XML Tools  APIs"
-                    windowtitle="NetBeans XML Tools APIs"
-                    overview="doc/overview.html"
+        <javadoc destdir="javadoc"
+                 packagenames="org.netbeans.api.xml.*,org.netbeans.spi.xml.*"
+                 doctitle="NetBeans XML Tools  APIs"
+                 windowtitle="NetBeans XML Tools APIs"
+                 overview="doc/overview.html"
         >
-              <sourcepath>
+            <sourcepath>
                 <pathelement location="doc"/> <!-- doc-files -->
                 <pathelement location="src"/>
-              </sourcepath>        
-             <classpath>        
+            </sourcepath>        
+            <classpath>        
                 <fileset dir="${nbroot}/openide/netbeans/lib">
                     <include name="openide*.jar"/>
                 </fileset>
                 <pathelement location="${xml-apis}"/> <!-- JAXP and SAX dependency -->
             </classpath>                       
             
-          <link href="${jdk-docs-location}"
-                offline="true"
-                packagelistLoc="doc/external/jdk"
-          />
-          <link href="${sax-docs-location}"
-                offline="true"
-                packagelistLoc="doc/external/sax"
-          />
-          <link href="${openide-docs-location}"
-                offline="true"
-                packagelistLoc="doc/external/openide"
-          />
-            
+            <link href="${jdk-docs-location}"
+                  offline="true"
+                  packagelistLoc="doc/external/jdk"
+            />
+            <link href="${sax-docs-location}"
+                  offline="true"
+                  packagelistLoc="doc/external/sax"
+            />
+            <link href="${openide-docs-location}"
+                  offline="true"
+                  packagelistLoc="doc/external/openide"
+            />            
         </javadoc>                
+        <copy todir="javadoc/doc-files/">
+            <fileset dir="doc/doc-files/"/>
+        </copy>
     </target>
     
     <target name="apichanges">
@@ -165,10 +167,10 @@ Microsystems, Inc. All Rights Reserved.
         <!-- 1.3: treated as a name relative to XML file. -->
         <!-- 1.4: treated as a filename consistent with normal Ant usage. -->
         <!-- Be safe and give the absolute path here. -->
-        <style  in="doc/changes/apichanges.xml" 
-                out="doc/doc-files/apichanges.html" 
-                destdir="doc/doc-files/" 
-                style="${nbroot}/openide/api/doc/changes/apichanges.xsl"
+        <style in="doc/changes/apichanges.xml"
+               out="doc/doc-files/apichanges.html"
+               destdir="doc/doc-files/"
+               style="${nbroot}/openide/api/doc/changes/apichanges.xsl"
         />    
         <echo message="done"/>
     </target>
