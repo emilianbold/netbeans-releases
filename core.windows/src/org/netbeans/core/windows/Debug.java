@@ -40,8 +40,9 @@ public abstract class Debug {
     
     
     public static void dumpStack(Class clazz) {
+        // log(Class,String) only has an effect if INFORMATIONAL logging enabled on that prefix
         if(ErrorManager.getDefault().getInstance(clazz.getName())
-                .isLoggable(ErrorManager.INFORMATIONAL)) { // XXX Why is there that parameter in that method?
+                .isLoggable(ErrorManager.INFORMATIONAL)) {
             StringWriter sw = new StringWriter();
             new Throwable().printStackTrace(new PrintWriter(sw));
             log(clazz, sw.getBuffer().toString());
