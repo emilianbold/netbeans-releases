@@ -465,6 +465,11 @@ class Controller  {
 	}
 	
 	MonitorData md = getMonitorData(tn, false, false);
+        if (md == null) {
+            String msg = NbBundle.getMessage(Controller.class, "MSG_NoMonitorData");
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
+            return;
+        }
 	if(!useBrowserCookie) 
 	    md.getRequestData().setReplaceSessionCookie(true);
 
@@ -931,7 +936,9 @@ class Controller  {
 		    
 	    // Retrieve the monitordata
 	    md = retrieveMonitorData(id, currDir); 
-	    nodes.add(createTransactionNode(md, true)); 
+            if (md != null) {
+                nodes.add(createTransactionNode(md, true)); 
+            }
 	}
 	    
 	numtns = nodes.size();
@@ -952,7 +959,9 @@ class Controller  {
 		log("getting current transaction: " + id); //NOI18N 
 	    // Retrieve the monitordata 
 	    md = retrieveMonitorData(id, saveDir); 
-	    nodes.add(createTransactionNode(md, false)); 
+            if (md != null) {
+                nodes.add(createTransactionNode(md, false));
+            }
 	}
 	 
 	numtns = nodes.size();
@@ -1135,8 +1144,14 @@ class Controller  {
 	    // Since this method is used to retrieve data records for
 	    // the purposes of displaying the transaction, we cache
 	    // the result
-	    return (DataRecord)(getMonitorData((TransactionNode)anode,
-					       fromCache, true));
+            MonitorData md = getMonitorData((TransactionNode)anode,
+					    fromCache, true);
+            if (md == null) {
+                String msg = NbBundle.getMessage(Controller.class, "MSG_NoMonitorData");
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
+                return null;
+            }
+	    return (DataRecord)md;
 	}
 	else if(anode instanceof NestedNode) {
 
@@ -1162,9 +1177,14 @@ class Controller  {
 
 	    // We get the data record, from cache if it is present,
 	    // and cache the node also
-	    DataRecord dr = 
-		(DataRecord)(getMonitorData((TransactionNode)parent,
-					    true, true));
+            MonitorData md = getMonitorData((TransactionNode)parent,
+					    true, true); 
+            if (md == null) {
+                String msg = NbBundle.getMessage(Controller.class, "MSG_NoMonitorData");
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
+                return null;
+            }
+	    DataRecord dr = (DataRecord)md;
 	    int[] nodeindex = node.getIndex();
 	    
 	    int c = 0;
@@ -1187,7 +1207,7 @@ class Controller  {
      * the cache
      * @param cacheIt true if it is OK to cache the data that we
      * retrieve 
-     * @return a data record
+     * @return a data record, <code>null</code> if monitor date could not be got
      */
     MonitorData getMonitorData(TransactionNode node, 
 				      boolean fromCache,
@@ -1216,7 +1236,7 @@ class Controller  {
 	    return (MonitorData)(ht.get(id));
 	    
 	MonitorData md = retrieveMonitorData(id, dir);
-	if(cacheIt) ht.put(id, md);
+	if(cacheIt && md != null) ht.put(id, md);
 	return md;
     }
 
@@ -1245,7 +1265,11 @@ class Controller  {
 	return retrieveMonitorData(id, dir);
     }
     
-
+    /**
+     * @param id The ID of the record.
+     * @param dir The directory in which the transaction resides.
+     * @return monitor date, <code>null</code> if monitor date could not be retrieved.
+     */
     MonitorData retrieveMonitorData(String id, FileObject dir) {
 
 	// PENDING - this method needs an error reporting mechanism in
@@ -1280,18 +1304,21 @@ class Controller  {
 	    catch(IOException ioex2) {} 
 	} 
 	catch(FileAlreadyLockedException falex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, falex);
 	    if(debug) { 
 		log("File is locked: " + fo.getNameExt()); //NOI18N 
 		falex.printStackTrace();
 	    }
 	}
 	catch(IOException ioex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
 	    if(debug) { 
 		log("Couldn't read data file: " + fo.getNameExt()); //NOI18N 
 		ioex.printStackTrace();
 	    }
 	}
 	catch(Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
 	    if(debug) { 
 		log("Something went wrong when retrieving record"); //NOI18N 
 		ex.printStackTrace();

@@ -55,6 +55,7 @@ import javax.swing.event.*;
 
 import java.util.*;
 
+import org.openide.ErrorManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -127,15 +128,15 @@ class EditPanel extends javax.swing.JPanel implements
     static void displayEditPanel(TransactionNode node) { 
 	if(debug) log(":: displayEditPanel()"); 
 	MonitorData md = null;	    
-	try {
-	    // We retrieve the data from the file system, not from the 
-	    // cache
-	    md = Controller.getInstance().getMonitorData((TransactionNode)node, 
-							 false,  // from file
-							 false); // don't cache
-	}
-	catch(Exception ex) {
+        // We retrieve the data from the file system, not from the 
+        // cache
+        md = Controller.getInstance().getMonitorData((TransactionNode)node, 
+                                                     false,  // from file
+                                                     false); // don't cache
+        if (md == null) {
 	    // We couldn't get the data. 
+            String msg = NbBundle.getMessage(EditPanel.class, "MSG_NoMonitorData");
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
 	    return; 
 	}
 
