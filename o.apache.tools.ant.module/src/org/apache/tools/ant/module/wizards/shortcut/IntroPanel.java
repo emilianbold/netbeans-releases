@@ -29,10 +29,13 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.loaders.TemplateWizard;
 
-public class IntroPanel extends javax.swing.JPanel implements WizardDescriptor.Panel /* .FinishPanel */ {
+public class IntroPanel extends javax.swing.JPanel {
 
-    /** Create the wizard panel and set up some basic properties. */
-    public IntroPanel () {
+    private IntroWizardPanel wiz;
+    
+    /** Create the wizard panel component and set up some basic properties. */
+    public IntroPanel (IntroWizardPanel wiz) {
+        this.wiz = wiz;
         initComponents ();
         initAccessibility();
         // Provide a name in the title bar.
@@ -165,7 +168,7 @@ public class IntroPanel extends javax.swing.JPanel implements WizardDescriptor.P
     }//GEN-END:initComponents
 
     private void someCheckboxClicked (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_someCheckboxClicked
-        fireChangeEvent ();
+        wiz.fireChangeEvent ();
     }//GEN-LAST:event_someCheckboxClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -177,58 +180,65 @@ public class IntroPanel extends javax.swing.JPanel implements WizardDescriptor.P
     private javax.swing.JCheckBox customizeCheck;
     // End of variables declaration//GEN-END:variables
 
-    // --- WizardDescriptor.Panel METHODS ---
-
-    // Get the visual component for the panel. In this template, the same class
-    // serves as the component and the Panel interface, but you could keep
-    // them separate if you wished.
-    public Component getComponent () {
-        return this;
-    }
-
-    public HelpCtx getHelp () {
-        return new HelpCtx("ant.wizard.shortcut");
-    }
-
-    public boolean isValid () {
-        return menuCheck.isSelected () ||
-               toolbarCheck.isSelected () ||
-               projectCheck.isSelected () ||
-               keyboardCheck.isSelected ();
-    }
-
-    private final Set listeners = new HashSet (1); // Set<ChangeListener>
-    public final void addChangeListener (ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add (l);
+    public static class IntroWizardPanel implements WizardDescriptor.Panel {
+    
+        private IntroPanel panel = null;
+        
+        public Component getComponent () {
+            return getPanel();
         }
-    }
-    public final void removeChangeListener (ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove (l);
+        
+        private IntroPanel getPanel() {
+            if (panel == null) {
+                panel = new IntroPanel(this);
+            }
+            return panel;
         }
-    }
-    protected final void fireChangeEvent () {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet (listeners).iterator ();
-        }
-        ChangeEvent ev = new ChangeEvent (this);
-        while (it.hasNext ()) {
-            ((ChangeListener) it.next ()).stateChanged (ev);
-        }
-    }
 
-    public void readSettings (Object settings) {
-        // XXX should read checkboxes from settings... skip for now.
-    }
-    public void storeSettings (Object settings) {
-        TemplateWizard wiz = (TemplateWizard) settings;
-        wiz.putProperty (ShortcutIterator.PROP_SHOW_CUST, customizeCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
-        wiz.putProperty (ShortcutIterator.PROP_SHOW_MENU, menuCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
-        wiz.putProperty (ShortcutIterator.PROP_SHOW_TOOL, toolbarCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
-        wiz.putProperty (ShortcutIterator.PROP_SHOW_PROJ, projectCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
-        wiz.putProperty (ShortcutIterator.PROP_SHOW_KEYB, keyboardCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
+        public HelpCtx getHelp () {
+            return new HelpCtx("ant.wizard.shortcut");
+        }
+
+        public boolean isValid () {
+            return getPanel().menuCheck.isSelected () ||
+                   getPanel().toolbarCheck.isSelected () ||
+                   getPanel().projectCheck.isSelected () ||
+                   getPanel().keyboardCheck.isSelected ();
+        }
+
+        private final Set listeners = new HashSet (1); // Set<ChangeListener>
+        public final void addChangeListener (ChangeListener l) {
+            synchronized (listeners) {
+                listeners.add (l);
+            }
+        }
+        public final void removeChangeListener (ChangeListener l) {
+            synchronized (listeners) {
+                listeners.remove (l);
+            }
+        }
+        protected final void fireChangeEvent () {
+            Iterator it;
+            synchronized (listeners) {
+                it = new HashSet (listeners).iterator ();
+            }
+            ChangeEvent ev = new ChangeEvent (this);
+            while (it.hasNext ()) {
+                ((ChangeListener) it.next ()).stateChanged (ev);
+            }
+        }
+
+        public void readSettings (Object settings) {
+            // XXX should read checkboxes from settings... skip for now.
+        }
+        public void storeSettings (Object settings) {
+            TemplateWizard wiz = (TemplateWizard) settings;
+            wiz.putProperty (ShortcutIterator.PROP_SHOW_CUST, getPanel().customizeCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
+            wiz.putProperty (ShortcutIterator.PROP_SHOW_MENU, getPanel().menuCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
+            wiz.putProperty (ShortcutIterator.PROP_SHOW_TOOL, getPanel().toolbarCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
+            wiz.putProperty (ShortcutIterator.PROP_SHOW_PROJ, getPanel().projectCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
+            wiz.putProperty (ShortcutIterator.PROP_SHOW_KEYB, getPanel().keyboardCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
+        }
     }
 
 }

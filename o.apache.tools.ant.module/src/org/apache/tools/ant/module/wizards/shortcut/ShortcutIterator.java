@@ -74,14 +74,14 @@ public class ShortcutIterator implements TemplateWizard.Iterator {
 
     protected WizardDescriptor.Panel[] createPanels () {
         return new WizardDescriptor.Panel[] {
-            new IntroPanel (),
-            new SelectTargetPanel (),
-            new CustomizeScriptPanel (),
-            new SelectFolderPanel (NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_menu_to_add_to"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_menu_locn"), TopManager.getDefault ().getPlaces ().folders ().menus ().getNodeDelegate (), false, true, PROP_FOLDER_MENU),
-            new SelectFolderPanel (NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_toolbar"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_toolbar_locn"), TopManager.getDefault ().getPlaces ().folders ().toolbars ().getNodeDelegate (), false, false, PROP_FOLDER_TOOL),
+            new IntroPanel.IntroWizardPanel(),
+            new SelectTargetPanel.SelectTargetWizardPanel(),
+            new CustomizeScriptPanel.CustomizeScriptWizardPanel(),
+            new SelectFolderPanel.SelectFolderWizardPanel(NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_menu_to_add_to"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_menu_locn"), TopManager.getDefault ().getPlaces ().folders ().menus ().getNodeDelegate (), false, true, PROP_FOLDER_MENU),
+            new SelectFolderPanel.SelectFolderWizardPanel(NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_toolbar"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_toolbar_locn"), TopManager.getDefault ().getPlaces ().folders ().toolbars ().getNodeDelegate (), false, false, PROP_FOLDER_TOOL),
             // #28214: for now, use Filesystems rather than the active Project tab:
-            new SelectFolderPanel (NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_proj_folder"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_select_project_locn"), TopManager.getDefault ().getPlaces ().nodes ().repository(), true, false, PROP_FOLDER_PROJ),
-            new SelectKeyboardShortcutPanel (),
+            new SelectFolderPanel.SelectFolderWizardPanel(NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_proj_folder"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_select_project_locn"), TopManager.getDefault ().getPlaces ().nodes ().repository(), true, false, PROP_FOLDER_PROJ),
+            new SelectKeyboardShortcutPanel.SelectKeyboardShortcutWizardPanel(),
         };
     }
 

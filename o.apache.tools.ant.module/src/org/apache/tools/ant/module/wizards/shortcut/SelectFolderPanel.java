@@ -37,13 +37,16 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import org.openide.nodes.FilterNode;
 
-public class SelectFolderPanel extends javax.swing.JPanel implements WizardDescriptor.Panel, PropertyChangeListener {
+public class SelectFolderPanel extends javax.swing.JPanel implements PropertyChangeListener {
 
     private String prop;
     private boolean topOK;
     
-    /** Create the wizard panel and set up some basic properties. */
-    public SelectFolderPanel (String name, String hint, Node top, boolean topOK, boolean stripAmps, String prop) {
+    private SelectFolderWizardPanel wiz;
+    
+    /** Create the wizard panel component and set up some basic properties. */
+    public SelectFolderPanel (SelectFolderWizardPanel wiz, String name, String hint, Node top, boolean topOK, boolean stripAmps, String prop) {
+        this.wiz = wiz;
         initComponents ();
         // Provide a name in the title bar.
         setName (name);
@@ -140,71 +143,94 @@ public class SelectFolderPanel extends javax.swing.JPanel implements WizardDescr
     private org.openide.explorer.ExplorerPanel explorerPanel;
     // End of variables declaration//GEN-END:variables
 
-    // --- WizardDescriptor.Panel METHODS ---
-
-    // Get the visual component for the panel. In this template, the same class
-    // serves as the component and the Panel interface, but you could keep
-    // them separate if you wished.
-    public Component getComponent () {
-        return this;
-    }
-
-    public HelpCtx getHelp () {
-        // Show no Help button for this panel:
-        return new HelpCtx("ant.wizard.shortcut");
-    }
-
-    public boolean isValid () {
-        Node[] nodes = explorerPanel.getExplorerManager ().getSelectedNodes ();
-        return nodes.length == 1 &&
-               nodes[0].getCookie (DataFolder.class) != null &&
-               (topOK || nodes[0] != explorerPanel.getExplorerManager ().getRootContext ());
-    }
-
-    private final Set listeners = new HashSet (1); // Set<ChangeListener>
-    public final void addChangeListener (ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add (l);
-        }
-    }
-    public final void removeChangeListener (ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove (l);
-        }
-    }
-    protected final void fireChangeEvent () {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet (listeners).iterator ();
-        }
-        ChangeEvent ev = new ChangeEvent (this);
-        while (it.hasNext ()) {
-            ((ChangeListener) it.next ()).stateChanged (ev);
-        }
-    }
-
-    public void readSettings (Object settings) {
-        // XXX unimplemented currently...
-        ExplorerManager mgr = explorerPanel.getExplorerManager ();
-        try {
-            mgr.setSelectedNodes (new Node[] { mgr.getRootContext () });
-        } catch (PropertyVetoException pve) {
-            AntModule.err.notify (pve);
-        }
-    }
-    public void storeSettings (Object settings) {
-        Node[] nodes = explorerPanel.getExplorerManager ().getSelectedNodes ();
-        if (nodes.length != 1) return;
-        DataFolder folder = (DataFolder) nodes[0].getCookie (DataFolder.class);
-        if (folder == null) return;
-        TemplateWizard wiz = (TemplateWizard) settings;
-        wiz.putProperty (prop, folder);
-    }
-
     public void propertyChange (PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals (evt.getPropertyName ())) {
-            fireChangeEvent ();
+            wiz.fireChangeEvent ();
         }
     }
-    
+        
+    public static class SelectFolderWizardPanel implements WizardDescriptor.Panel {
+
+        private SelectFolderPanel panel;
+
+        private String namePanel;
+        private String hintPanel;
+        private Node topPanel;
+        private boolean topOKPanel;
+        private boolean stripAmpsPanel;
+        private String propPanel;
+        
+        public SelectFolderWizardPanel(String name, String hint, Node top, boolean topOK, boolean stripAmps, String prop) {
+            this.namePanel = name;
+            this.hintPanel = hint;
+            this.topPanel = top;
+            this.topOKPanel = topOK;
+            this.stripAmpsPanel = stripAmps;
+            this.propPanel = prop;
+        }
+        
+        public Component getComponent () {
+            return getPanel();
+        }
+        
+        private SelectFolderPanel getPanel() {
+            if (panel == null) {
+                panel = new SelectFolderPanel(this, namePanel, hintPanel, topPanel, topOKPanel, stripAmpsPanel, propPanel);
+            }
+            return panel;
+        }
+
+        public HelpCtx getHelp () {
+            // Show no Help button for this panel:
+            return new HelpCtx("ant.wizard.shortcut");
+        }
+
+        public boolean isValid () {
+            Node[] nodes = getPanel().explorerPanel.getExplorerManager ().getSelectedNodes ();
+            return nodes.length == 1 &&
+                   nodes[0].getCookie (DataFolder.class) != null &&
+                   (getPanel().topOK || nodes[0] != getPanel().explorerPanel.getExplorerManager ().getRootContext ());
+        }
+
+        private final Set listeners = new HashSet (1); // Set<ChangeListener>
+        public final void addChangeListener (ChangeListener l) {
+            synchronized (listeners) {
+                listeners.add (l);
+            }
+        }
+        public final void removeChangeListener (ChangeListener l) {
+            synchronized (listeners) {
+                listeners.remove (l);
+            }
+        }
+        protected final void fireChangeEvent () {
+            Iterator it;
+            synchronized (listeners) {
+                it = new HashSet (listeners).iterator ();
+            }
+            ChangeEvent ev = new ChangeEvent (this);
+            while (it.hasNext ()) {
+                ((ChangeListener) it.next ()).stateChanged (ev);
+            }
+        }
+
+        public void readSettings (Object settings) {
+            // XXX unimplemented currently...
+            ExplorerManager mgr = getPanel().explorerPanel.getExplorerManager ();
+            try {
+                mgr.setSelectedNodes (new Node[] { mgr.getRootContext () });
+            } catch (PropertyVetoException pve) {
+                AntModule.err.notify (pve);
+            }
+        }
+        public void storeSettings (Object settings) {
+            Node[] nodes = getPanel().explorerPanel.getExplorerManager ().getSelectedNodes ();
+            if (nodes.length != 1) return;
+            DataFolder folder = (DataFolder) nodes[0].getCookie (DataFolder.class);
+            if (folder == null) return;
+            TemplateWizard wiz = (TemplateWizard) settings;
+            wiz.putProperty (getPanel().prop, folder);
+        }
+
+    }
 }

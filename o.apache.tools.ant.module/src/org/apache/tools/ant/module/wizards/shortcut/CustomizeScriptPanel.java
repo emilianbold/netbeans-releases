@@ -31,10 +31,13 @@ import org.openide.loaders.TemplateWizard;
 import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;
 
-public class CustomizeScriptPanel extends javax.swing.JPanel implements WizardDescriptor.Panel /* .FinishPanel */ {
+public class CustomizeScriptPanel extends javax.swing.JPanel {
 
-    /** Create the wizard panel and set up some basic properties. */
-    public CustomizeScriptPanel () {
+    private CustomizeScriptWizardPanel wiz;
+    
+    /** Create the wizard panel component and set up some basic properties. */
+    public CustomizeScriptPanel (CustomizeScriptWizardPanel wiz) {
+        this.wiz = wiz;
         initComponents ();
         initAccessibility ();
         // Provide a name in the title bar.
@@ -100,61 +103,69 @@ public class CustomizeScriptPanel extends javax.swing.JPanel implements WizardDe
     private javax.swing.JEditorPane scriptPane;
     // End of variables declaration//GEN-END:variables
 
-    // --- WizardDescriptor.Panel METHODS ---
+    
+    public static class CustomizeScriptWizardPanel implements WizardDescriptor.Panel {
 
-    // Get the visual component for the panel. In this template, the same class
-    // serves as the component and the Panel interface, but you could keep
-    // them separate if you wished.
-    public Component getComponent () {
-        return this;
-    }
+        private CustomizeScriptPanel panel = null;
 
-    public HelpCtx getHelp () {
-        return new HelpCtx("ant.wizard.shortcut");
-    }
-
-    public boolean isValid () {
-        return true;
-        // XXX ideally make it valid only if script is parseable without errors;
-        // could use AntProjectSupport for this, or just parse the XML and check
-        // for the correct root element etc.
-    }
-
-    public final void addChangeListener (ChangeListener l) {}
-    public final void removeChangeListener (ChangeListener l) {}
-    /*
-    private final Set listeners = new HashSet (1); // Set<ChangeListener>
-    public final void addChangeListener (ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add (l);
+        public Component getComponent () {
+            return getPanel();
         }
-    }
-    public final void removeChangeListener (ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove (l);
+        
+        private CustomizeScriptPanel getPanel() {
+            if (panel == null) {
+                panel = new CustomizeScriptPanel(this);
+            }
+            return panel;
         }
-    }
-    protected final void fireChangeEvent () {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet (listeners).iterator ();
-        }
-        ChangeEvent ev = new ChangeEvent (this);
-        while (it.hasNext ()) {
-            ((ChangeListener) it.next ()).stateChanged (ev);
-        }
-    }
-    */
 
-    public void readSettings (Object settings) {
-        TemplateWizard wiz = (TemplateWizard) settings;
-        String contents = (String) wiz.getProperty (ShortcutIterator.PROP_CONTENTS);
-        if (contents == null) contents = ""; // NOI18N
-        scriptPane.setText (contents);
-    }
-    public void storeSettings (Object settings) {
-        TemplateWizard wiz = (TemplateWizard) settings;
-        wiz.putProperty (ShortcutIterator.PROP_CONTENTS, scriptPane.getText ());
+        public HelpCtx getHelp () {
+            return new HelpCtx("ant.wizard.shortcut");
+        }
+
+        public boolean isValid () {
+            return true;
+            // XXX ideally make it valid only if script is parseable without errors;
+            // could use AntProjectSupport for this, or just parse the XML and check
+            // for the correct root element etc.
+        }
+
+        public final void addChangeListener (ChangeListener l) {}
+        public final void removeChangeListener (ChangeListener l) {}
+        /*
+        private final Set listeners = new HashSet (1); // Set<ChangeListener>
+        public final void addChangeListener (ChangeListener l) {
+            synchronized (listeners) {
+                listeners.add (l);
+            }
+        }
+        public final void removeChangeListener (ChangeListener l) {
+            synchronized (listeners) {
+                listeners.remove (l);
+            }
+        }
+        protected final void fireChangeEvent () {
+            Iterator it;
+            synchronized (listeners) {
+                it = new HashSet (listeners).iterator ();
+            }
+            ChangeEvent ev = new ChangeEvent (this);
+            while (it.hasNext ()) {
+                ((ChangeListener) it.next ()).stateChanged (ev);
+            }
+        }
+        */
+
+        public void readSettings (Object settings) {
+            TemplateWizard wiz = (TemplateWizard) settings;
+            String contents = (String) wiz.getProperty (ShortcutIterator.PROP_CONTENTS);
+            if (contents == null) contents = ""; // NOI18N
+            getPanel().scriptPane.setText (contents);
+        }
+        public void storeSettings (Object settings) {
+            TemplateWizard wiz = (TemplateWizard) settings;
+            wiz.putProperty (ShortcutIterator.PROP_CONTENTS, getPanel().scriptPane.getText ());
+        }
     }
 
 }

@@ -33,12 +33,15 @@ import org.openide.util.Utilities;
 import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
 
-public class SelectKeyboardShortcutPanel extends javax.swing.JPanel implements WizardDescriptor.Panel, KeyListener {
+public class SelectKeyboardShortcutPanel extends javax.swing.JPanel implements KeyListener {
 
     private KeyStroke stroke = null;
     
-    /** Create the wizard panel and set up some basic properties. */
-    public SelectKeyboardShortcutPanel () {
+    private SelectKeyboardShortcutWizardPanel wiz;
+    
+    /** Create the wizard panel component and set up some basic properties. */
+    public SelectKeyboardShortcutPanel (SelectKeyboardShortcutWizardPanel wiz) {
+        this.wiz = wiz;
         initComponents ();
 	initAccessibility ();
         // Provide a name in the title bar.
@@ -93,53 +96,6 @@ public class SelectKeyboardShortcutPanel extends javax.swing.JPanel implements W
     private javax.swing.JPanel mainPanel;
     private javax.swing.JTextField testField;
     // End of variables declaration//GEN-END:variables
-
-    // --- WizardDescriptor.Panel METHODS ---
-
-    // Get the visual component for the panel. In this template, the same class
-    // serves as the component and the Panel interface, but you could keep
-    // them separate if you wished.
-    public Component getComponent () {
-        return this;
-    }
-
-    public HelpCtx getHelp () {
-        return new HelpCtx("ant.wizard.shortcut");
-    }
-
-    public boolean isValid () {
-        return stroke != null;
-    }
-
-    private final Set listeners = new HashSet (1); // Set<ChangeListener>
-    public final void addChangeListener (ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add (l);
-        }
-    }
-    public final void removeChangeListener (ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove (l);
-        }
-    }
-    protected final void fireChangeEvent () {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet (listeners).iterator ();
-        }
-        ChangeEvent ev = new ChangeEvent (this);
-        while (it.hasNext ()) {
-            ((ChangeListener) it.next ()).stateChanged (ev);
-        }
-    }
-
-    public void readSettings (Object settings) {
-        // XXX later...
-    }
-    public void storeSettings (Object settings) {
-        TemplateWizard wiz = (TemplateWizard) settings;
-        wiz.putProperty (ShortcutIterator.PROP_STROKE, stroke);
-    }
     
     // KeyListener:
 
@@ -147,7 +103,7 @@ public class SelectKeyboardShortcutPanel extends javax.swing.JPanel implements W
         // XXX ideally make TAB switch focus, rather than be handled...
         stroke = KeyStroke.getKeyStroke (e.getKeyCode (), e.getModifiers ());
         testField.setText (Utilities.keyToString (stroke));
-        fireChangeEvent ();
+        wiz.fireChangeEvent ();
         e.consume ();
     }
     public void keyReleased (KeyEvent e) {
@@ -155,6 +111,60 @@ public class SelectKeyboardShortcutPanel extends javax.swing.JPanel implements W
     }
     public void keyTyped (KeyEvent e) {
         e.consume ();
+    }
+    
+    public static class SelectKeyboardShortcutWizardPanel implements WizardDescriptor.Panel {
+
+        private SelectKeyboardShortcutPanel panel;
+        
+        public Component getComponent () {
+            return getPanel(); 
+        }
+        
+        private SelectKeyboardShortcutPanel getPanel() {
+            if (panel == null) {
+                panel = new SelectKeyboardShortcutPanel(this);
+            }
+            return panel;
+        }
+
+        public HelpCtx getHelp () {
+            return new HelpCtx("ant.wizard.shortcut");
+        }
+
+        public boolean isValid () {
+            return getPanel().stroke != null;
+        }
+
+        private final Set listeners = new HashSet (1); // Set<ChangeListener>
+        public final void addChangeListener (ChangeListener l) {
+            synchronized (listeners) {
+                listeners.add (l);
+            }
+        }
+        public final void removeChangeListener (ChangeListener l) {
+            synchronized (listeners) {
+                listeners.remove (l);
+            }
+        }
+        protected final void fireChangeEvent () {
+            Iterator it;
+            synchronized (listeners) {
+                it = new HashSet (listeners).iterator ();
+            }
+            ChangeEvent ev = new ChangeEvent (this);
+            while (it.hasNext ()) {
+                ((ChangeListener) it.next ()).stateChanged (ev);
+            }
+        }
+
+        public void readSettings (Object settings) {
+            // XXX later...
+        }
+        public void storeSettings (Object settings) {
+            TemplateWizard wiz = (TemplateWizard) settings;
+            wiz.putProperty (ShortcutIterator.PROP_STROKE, getPanel().stroke);
+        }
     }
     
 }
