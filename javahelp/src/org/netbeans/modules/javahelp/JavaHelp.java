@@ -731,9 +731,14 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                 }
             }
         }
+        String title = null; // for debugging purposes
         try {
+            title = hs.getTitle();
             jh = new JHelp(hs);
         } catch (RuntimeException e) {
+            if (title != null) {
+                Installer.err.annotate(e, ErrorManager.UNKNOWN, "While trying to display: " + title, null, null, null); // NOI18N
+            }
             Installer.err.notify(e);
             return new JHelp();
         }
