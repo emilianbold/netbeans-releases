@@ -520,13 +520,15 @@ public final class XNIBuilder implements TreeBuilder {
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeStreamBuilderXercesImpl: going to inspect:\n" + idtd);
             
             final String DOCTYPE = "<!DOCTYPE";
-            int pos = idtd.lastIndexOf (DOCTYPE);
+            int pos = idtd.indexOf (DOCTYPE);
             if (pos == -1) {
                 if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeStreamBuilderXercesImpl: no DOCTYPE detected.");
 
                 return;
             }
             
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\nlast index = " + pos);
+
             // skip root element name
             
             pos += DOCTYPE.length ();
@@ -534,6 +536,9 @@ public final class XNIBuilder implements TreeBuilder {
             for (; StringUtil.isWS (idtd.charAt (pos)) == false; pos ++);
             for (; StringUtil.isWS (idtd.charAt (pos)); pos ++);
             
+
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\nafter process index = " + pos);
+
             // SYSTEM or PUBLIC or [
             
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\nTesting DOCTYPE kind-----\n" + idtd.substring (pos));

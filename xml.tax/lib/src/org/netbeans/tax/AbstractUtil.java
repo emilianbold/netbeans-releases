@@ -22,7 +22,7 @@ import java.text.MessageFormat;
  */
 public abstract class AbstractUtil {
     /** */
-    private static ResourceBundle bundle;
+    private ResourceBundle bundle;
 
     
     /**
