@@ -22,6 +22,7 @@ import org.openide.text.IndentEngine;
 import org.openide.util.SharedClassObject;
 import org.openide.loaders.MultiDataObject.Entry;
 
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.JavaEditor;
 
 import org.netbeans.modules.form.editors.CustomCodeEditor;
@@ -985,12 +986,11 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write(" =("); // NOI18N
             initCodeWriter.write(getSourceClassName(comp.getBeanClass()));
             initCodeWriter.write(")java.beans.Beans.instantiate(getClass().getClassLoader(), \""); // NOI18N
-            assert false : "XXX needs to be rewritten";
-            /*
+
             // write package name
-            // !! [this won't work when filesystem root != classpath root]
-            String packageName = formEditorSupport.getFormDataObject()
-                            .getPrimaryFile().getParent().getPackageName('.');
+            FileObject fo = formEditorSupport.getFormDataObject().getPrimaryFile();
+            ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+            String packageName = cp.getResourceName(fo.getParent());
             if (!"".equals(packageName)) { // NOI18N
                 initCodeWriter.write(packageName + "."); // NOI18N
             }
@@ -1001,7 +1001,6 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write("} catch (java.io.IOException e) {\n"); // NOI18N
             initCodeWriter.write("e.printStackTrace();\n"); // NOI18N
             initCodeWriter.write("}\n"); // NOI18N
-             */
         }
         else { // generate standard component creation code
             StringBuffer varBuf = new StringBuffer();
