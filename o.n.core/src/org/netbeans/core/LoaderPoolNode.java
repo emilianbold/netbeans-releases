@@ -65,6 +65,9 @@ public final class LoaderPoolNode extends AbstractNode {
 
   /** copy of the loaders to prevent copying */
   private static Object[] loadersArray;
+
+  /** true if changes in loaders should be notified */
+  private static int notifications;
   
   /** Just workaround, need to pass instance of
   * the LoaderPoolNodeChildren as two params to superclass
@@ -162,9 +165,25 @@ public final class LoaderPoolNode extends AbstractNode {
     }
   }
 
+  /** Allows to stop notifications about adding of new loaders.
+  * This is used from auto install of modules to disable notifications till
+  * all modules are installed.
+  */
+  static synchronized void setNotifications (boolean notify) {
+    if (!notify) {
+      notifications++;
+    } else {
+      int n = notifications;
+      notifications = 0;
+      if (n == 1) {
+        update ();
+      }
+    }
+  }
+  
   /** Notification to finish installation of nodes during startup.
   */
-  public static synchronized void finishInstallation () {
+  static synchronized void finishInstallation () {
     loaders = initialize (sections);
     sections = null;
     
@@ -220,8 +239,8 @@ public final class LoaderPoolNode extends AbstractNode {
     loadersArray = null;
     
     myChildren.update ();
-
-    if (loaderPool != null) {
+    
+    if (loaderPool != null && notifications == 0) {
       loaderPool.superFireChangeEvent(
         new ChangeEvent(loaderPool)
       );
@@ -571,6 +590,7 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  17   Gandalf   1.16        5/4/99   Jaroslav Tulach Relative URL for modules.
 *  16   Gandalf   1.15        4/15/99  Martin Ryzl     add fixed
 *  15   Gandalf   1.14        4/7/99   Ian Formanek    Rename 
 *       Section->ManifestSection
