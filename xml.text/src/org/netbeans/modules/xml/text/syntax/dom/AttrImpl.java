@@ -27,6 +27,7 @@ import org.netbeans.editor.*;
  * <code>SyntaxNode</code>s.
  *
  * @author Petr Kuzel
+ * @author asgeir@dimonsoftware.com
  */
 public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
         
@@ -68,6 +69,8 @@ public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
         return null;
     }
     
+    // NOTE:  This method has to be implemented, unless the getChildNodes() method
+    // will only return the first child node.
     Node getNextSibling(Text text) {
         return null;
     }
@@ -101,7 +104,7 @@ public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
         }
         if (next == null) return null;                
         if (next.getTokenID() == VALUE) {
-            return new TextImpl(syntax, first, this);  //!!! strip out ending "'", return standalone "'" token
+            return new TextImpl(syntax, next, this);  //!!! strip out ending "'", return standalone "'" token
         } else {
             throw new RuntimeException("Not recognized yet: " + next.getTokenID());
         }
@@ -135,12 +138,26 @@ public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
         return getValue();
     }
 
+    // NOTE:  This method doesn't resolve entities.  If the attirbute value 
+    // contains entities, the attribute value if chopped at the entity location.
     public String getValue() {
         NodeList nodes = getChildNodes();
         StringBuffer buf = new StringBuffer();
         for (int i = 0; i<nodes.getLength(); i++) {
             buf.append(nodes.item(i).getNodeValue());  //!!! entity reference handling
         }
+        
+        // Remove " and ' around the attribute value, because getChildNodes returns it
+        if (buf.length() > 0) {
+            char firstChar = buf.charAt(0);
+            if (firstChar == '"' ||  firstChar == '\'') {
+                buf.deleteCharAt(0);
+                if (buf.length() > 0 && buf.charAt(buf.length()-1) == firstChar) {
+                    buf.deleteCharAt(buf.length()-1);
+                }
+            }
+        }
+        
         return buf.toString();        
     }
     
