@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.editor.options;
 
+import java.io.IOException;
+import java.io.ObjectInput;
 import java.util.List;
 import org.openide.options.ContextSystemOption;
 import org.openide.util.HelpCtx;
@@ -32,14 +34,22 @@ public class AllOptions extends ContextSystemOption {
     BaseOptions baseOptions = new BaseOptions(); // base kit settings
 
     public AllOptions() {
-        addOption(new PlainOptions());
-        addOption(new JavaOptions());
-        addOption(new HTMLOptions());
-
+    }
+    
+    /** Initialization of the options contains adding listener
+     * watching for adding/removing child options to <code>AllOptions</code>
+     * and <code>org.openide.text.PrintSettings</code>
+     * and adding standard (java, html, plain) child options.
+     */
+    public void init() {
+        refreshContextListeners();
+    }
+    
+    private void refreshContextListeners() {
         PrintSettings ps = (PrintSettings) PrintSettings.findObject(PrintSettings.class, true);
-        ps.addOption(new PlainPrintOptions());
-        ps.addOption(new JavaPrintOptions());
-        ps.addOption(new HTMLPrintOptions());
+        // Start listening on AllOptions and PrintSettings
+        ContextOptionsListener.processExistingAndListen(ps);
+        ContextOptionsListener.processExistingAndListen(this);
     }
 
     public String displayName() {
@@ -60,6 +70,12 @@ public class AllOptions extends ContextSystemOption {
 
     public boolean isGlobal() {
         return true;
+    }
+    
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        super.readExternal(in);
+        
+        refreshContextListeners(); // beanContext was changed in super
     }
 
 }

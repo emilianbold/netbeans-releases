@@ -17,6 +17,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.ResourceBundle;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.Coloring;
@@ -45,7 +46,11 @@ public class OptionSupport extends SystemOption {
     private String typeName;
 
     private PropertyChangeListener settingsListener;
-
+    
+    private HashMap initializerValuesMap;
+    
+    private transient SettingsInitializer settingsInitializer;
+    
     private static final HashMap kitClass2Type = new HashMap();
 
     /** Construct new option support. The pair [kitClass, typeName]
@@ -57,6 +62,7 @@ public class OptionSupport extends SystemOption {
     public OptionSupport(Class kitClass, String typeName) {
         this.kitClass = kitClass;
         this.typeName = typeName;
+        initializerValuesMap = new HashMap();
         kitClass2Type.put(kitClass, typeName);
     }
 
@@ -67,7 +73,7 @@ public class OptionSupport extends SystemOption {
     public String getTypeName() {
         return typeName;
     }
-
+    
     public static String getTypeName(Class kitClass) {
         return (String)kitClass2Type.get(kitClass);
     }
@@ -76,7 +82,52 @@ public class OptionSupport extends SystemOption {
         return getString(OPTIONS_PREFIX + typeName);
     }
 
+    Settings.KitAndValue[] getSettingValueHierarchy(String settingName) {
+        return Settings.getValueHierarchy(kitClass, settingName);
+    }
+
+    /** Get the value of the setting from the <code>Settings</code>
+     * @param settingName name of the setting to get.
+     */
+    public Object getSettingValue(String settingName) {
+        return Settings.getValue(kitClass, settingName);
+    }
+
+    /** Get the value of the boolean setting from the <code>Settings</code>
+     * @param settingName name of the setting to get.
+     */
+    boolean getSettingBoolean(String settingName) {
+        Boolean val = (Boolean)getSettingValue(settingName);
+        return (val != null) ? val.booleanValue() : false;
+    }
+
+    /** Get the value of the integer setting from the <code>Settings</code>
+     * @param settingName name of the setting to get.
+     */
+    int getSettingInteger(String settingName) {
+        Integer val = (Integer)getSettingValue(settingName);
+        return (val != null) ? val.intValue() : 0;
+    }
+
+    /** Can be used when the settingName is the same as the propertyName */
     public void setSettingValue(String settingName, Object newValue) {
+        setSettingValue(settingName, newValue, settingName);
+    }
+    
+    /** Set the value into the <code>Settings</code> and optionally 
+     * fire the property change.
+     * @param settingName name of the setting to change
+     * @param newValue new value of the setting
+     * @param propertyName if non-null it means that the property change
+     *  should be fired if the newValue is differernt from the old one.
+     *  Firing is performed using the given property name. Nothing is fired
+     *  when it's set to null.
+     */
+    public void setSettingValue(String settingName, Object newValue,
+    String propertyName) {
+        
+        initializerValuesMap.put(settingName, newValue);
+
         Object oldValue = getSettingValue(settingName);
         if ((oldValue == null && newValue == null)
                 || (oldValue != null && oldValue.equals(newValue))
@@ -85,32 +136,33 @@ public class OptionSupport extends SystemOption {
         }
 
         Settings.setValue(kitClass, settingName, newValue);
-        firePropertyChange(settingName, oldValue, newValue);
+
+        if (propertyName != null) {
+            firePropertyChange(propertyName, oldValue, newValue);
+        }
     }
 
-    public Object getSettingValue(String settingName) {
-        return Settings.getValue(kitClass, settingName);
-    }
-
-    Settings.KitAndValue[] getSettingValueHierarchy(String settingName) {
-        return Settings.getValueHierarchy(kitClass, settingName);
-    }
-
-    boolean getSettingBoolean(String settingName) {
-        Boolean val = (Boolean)getSettingValue(settingName);
-        return (val != null) ? val.booleanValue() : false;
-    }
-
-    void setSettingBoolean(String settingName, boolean newValue) {
+    /** Enables easier handling of the boolean settings.
+     * @param settingName name of the setting to change
+     * @param newValue new boolean value of the setting
+     * @param propertyName if non-null it means that the property change
+     *  should be fired if the newValue is differernt from the old one.
+     *  Firing is performed using the given property name. Nothing is fired
+     *  when it's set to null.
+     */
+    void setSettingBoolean(String settingName, boolean newValue, String propertyName) {
         setSettingValue(settingName, newValue ? Boolean.TRUE : Boolean.FALSE);
     }
 
-    int getSettingInteger(String settingName) {
-        Integer val = (Integer)getSettingValue(settingName);
-        return (val != null) ? val.intValue() : 0;
-    }
-
-    void setSettingInteger(String settingName, int newValue) {
+    /** Enables easier handling of the integer settings.
+     * @param settingName name of the setting to change
+     * @param newValue new integer value of the setting
+     * @param propertyName if non-null it means that the property change
+     *  should be fired if the newValue is differernt from the old one.
+     *  Firing is performed using the given property name. Nothing is fired
+     *  when it's set to null.
+     */
+    void setSettingInteger(String settingName, int newValue, String propertyName) {
         setSettingValue(settingName, new Integer(newValue));
     }
 
@@ -121,13 +173,59 @@ public class OptionSupport extends SystemOption {
         }
         return bundle.getString(s);
     }
-
+    
+    /** Helper method for merging string arrays without searching
+     * for the same strings.
+     * @param a1 array that will be at the begining of the resulting array
+     * @param a1 array that will be at the end of the resulting array
+     */
     public static String[] mergeStringArrays(String[] a1, String[] a2) {
         return NbEditorUtilities.mergeStringArrays(a1, a2);
     }
 
+    /** Editor options are global therefore they return true
+     * from this method.
+     */
     public boolean isGlobal() {
         return true;
+    }
+    
+    /** Get the name of the <code>Settings.Initializer</code> related
+     * to these options.
+     */
+    protected String getSettingsInitializerName() {
+        return getTypeName() + "-options-initalizer";
+    }
+
+    protected void updateSettingsMap(Class kitClass, Map settingsMap) {
+        if (kitClass == getKitClass()) {
+            settingsMap.putAll(initializerValuesMap);
+        }
+    }
+    
+    Settings.Initializer getSettingsInitializer() {
+        if (settingsInitializer == null) {
+            settingsInitializer = new SettingsInitializer();
+        }
+        return settingsInitializer;
+    }
+    
+    class SettingsInitializer implements Settings.Initializer {
+        
+        String name;
+        
+        public String getName() {
+            if (name == null) {
+                name = getSettingsInitializerName();
+            }
+            
+            return name;
+        }
+        
+        public void updateSettingsMap(Class kitClass, Map settingsMap) {
+            OptionSupport.this.updateSettingsMap(kitClass, settingsMap);
+        }
+        
     }
 
 }

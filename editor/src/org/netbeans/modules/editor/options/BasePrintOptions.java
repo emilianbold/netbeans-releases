@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 
+import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.BaseKit;
@@ -48,6 +49,8 @@ public class BasePrintOptions extends OptionSupport {
         this(BaseKit.class, BASE);
     }
 
+    private transient Settings.Initializer printColoringMapInitializer;
+
     public BasePrintOptions(Class kitClass, String typeName) {
         super(kitClass, typeName);
     }
@@ -66,11 +69,27 @@ public class BasePrintOptions extends OptionSupport {
         return new HelpCtx (BasePrintOptions.class);
     }
 
+    /** Get the name of the <code>Settings.Initializer</code> related
+     * to these options.
+     */
+    protected String getSettingsInitializerName() {
+        return getTypeName() + "-print-options-initalizer";
+    }
+
+    protected void updateSettingsMap(Class kitClass, Map settingsMap) {
+        super.updateSettingsMap(kitClass, settingsMap);
+
+        if (printColoringMapInitializer != null) {
+            printColoringMapInitializer.updateSettingsMap(kitClass, settingsMap);
+        }
+    }
+
     public boolean getPrintLineNumberVisible() {
         return ((Boolean)getSettingValue(SettingsNames.PRINT_LINE_NUMBER_VISIBLE)).booleanValue();
     }
     public void setPrintLineNumberVisible(boolean b) {
-        setSettingValue(SettingsNames.PRINT_LINE_NUMBER_VISIBLE, (b ? Boolean.TRUE : Boolean.FALSE));
+        setSettingBoolean(SettingsNames.PRINT_LINE_NUMBER_VISIBLE, b,
+            PRINT_LINE_NUMBER_VISIBLE_PROP);
     }
 
     public Map getPrintColoringMap() {
@@ -79,9 +98,18 @@ public class BasePrintOptions extends OptionSupport {
         return cm;
     }
     public void setPrintColoringMap(Map coloringMap) {
-        coloringMap.remove(null); // remove kit class
-        SettingsUtil.setColoringMap( getKitClass(), coloringMap, true );
-// !!!        SettingsUtil.updateColoringSettings(getKitClass(), coloringMap, true);
+        if (coloringMap != null) {
+            coloringMap.remove(null); // remove kit class
+            SettingsUtil.setColoringMap( getKitClass(), coloringMap, true );
+
+            printColoringMapInitializer = SettingsUtil.getColoringMapInitializer(
+                getKitClass(), coloringMap, true,
+                getTypeName() + "-print-coloring-map-initializer"
+            );
+
+
+            firePropertyChange(PRINT_COLORING_MAP_PROP, null, null);
+        }
     }
 
 }

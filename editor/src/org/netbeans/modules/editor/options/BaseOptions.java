@@ -64,7 +64,7 @@ public class BaseOptions extends OptionSupport {
     public static final String CARET_TYPE_OVERWRITE_MODE_PROP = "caretTypeOverwriteMode"; // NOI18N
     public static final String COLORING_MAP_PROP = "coloringMap"; // NOI18N
     public static final String EXPAND_TABS_PROP = "expandTabs"; // NOI18N
-    public static final String FIND_HIGHLIGHT_SEARCH = "findHighlightSearch"; // NOI18N
+    public static final String FIND_HIGHLIGHT_SEARCH_PROP = "findHighlightSearch"; // NOI18N
     public static final String FIND_HISTORY_PROP = "findHistory"; // NOI18N
     public static final String FIND_HISTORY_SIZE_PROP = "findHistorySize"; // NOI18N
     public static final String FIND_INC_SEARCH_DELAY_PROP = "findIncSearchDelay"; // NOI18N
@@ -129,6 +129,8 @@ public class BaseOptions extends OptionSupport {
     /** Whether formatting debug messages should be displayed */
     private static final boolean debugFormat
         = Boolean.getBoolean("netbeans.debug.editor.format"); // NOI18N
+    
+    private transient Settings.Initializer coloringMapInitializer;
 
     public BaseOptions() {
         this(BaseKit.class, BASE);
@@ -136,6 +138,14 @@ public class BaseOptions extends OptionSupport {
 
     public BaseOptions(Class kitClass, String typeName) {
         super(kitClass, typeName);
+    }
+    
+    protected void updateSettingsMap(Class kitClass, Map settingsMap) {
+        super.updateSettingsMap(kitClass, settingsMap);
+
+        if (coloringMapInitializer != null) {
+            coloringMapInitializer.updateSettingsMap(kitClass, settingsMap);
+        }
     }
 
     public HelpCtx getHelpCtx () {
@@ -146,104 +156,114 @@ public class BaseOptions extends OptionSupport {
         return getSettingInteger(SettingsNames.TAB_SIZE);
     }
     public void setTabSize(int tabSize) {
-        setSettingInteger(SettingsNames.TAB_SIZE, tabSize);
+        setSettingInteger(SettingsNames.TAB_SIZE, tabSize, TAB_SIZE_PROP);
     }
 
 /*    public boolean getExpandTabs() {
         return getSettingBoolean(SettingsNames.EXPAND_TABS);
     }
-    [Mila] Moved to IndentEngine
+    [Mila] Moved to IndentEngine; Setter must stay here
 */
 
     public void setExpandTabs(boolean expandTabs) {
-        setSettingBoolean(SettingsNames.EXPAND_TABS, expandTabs);
+        setSettingBoolean(SettingsNames.EXPAND_TABS, expandTabs, EXPAND_TABS_PROP);
     }
 
 /*    public int getSpacesPerTab() {
         return getSettingInteger(SettingsNames.SPACES_PER_TAB);
     }
-    [Mila] Moved to IndentEngine
+    [Mila] Moved to IndentEngine; Setter must stay here
 */
     public void setSpacesPerTab(int i){
-        setSettingInteger(SettingsNames.SPACES_PER_TAB, i);
+        setSettingInteger(SettingsNames.SPACES_PER_TAB, i, SPACES_PER_TAB_PROP);
     }
 
     public Map getAbbrevMap() {
-        return new HashMap( (Map)getSettingValue(SettingsNames.ABBREV_MAP) );
+        return new HashMap((Map)getSettingValue(SettingsNames.ABBREV_MAP) );
     }
 
     public void setAbbrevMap(Map map) {
-        setSettingValue(SettingsNames.ABBREV_MAP, map);
+        setSettingValue(SettingsNames.ABBREV_MAP, map, ABBREV_MAP_PROP);
     }
 
     public String getCaretTypeInsertMode() {
-        return (String) getSettingValue(SettingsNames.CARET_TYPE_INSERT_MODE);
+        return (String)getSettingValue(SettingsNames.CARET_TYPE_INSERT_MODE);
     }
     public void setCaretTypeInsertMode(String type) {
-        setSettingValue(SettingsNames.CARET_TYPE_INSERT_MODE, type);
+        setSettingValue(SettingsNames.CARET_TYPE_INSERT_MODE, type,
+            CARET_TYPE_INSERT_MODE_PROP);
     }
 
     public String getCaretTypeOverwriteMode() {
-        return (String) getSettingValue(SettingsNames.CARET_TYPE_OVERWRITE_MODE);
+        return (String)getSettingValue(SettingsNames.CARET_TYPE_OVERWRITE_MODE);
     }
     public void setCaretTypeOverwriteMode(String type) {
-        setSettingValue(SettingsNames.CARET_TYPE_OVERWRITE_MODE, type);
+        setSettingValue(SettingsNames.CARET_TYPE_OVERWRITE_MODE, type,
+            CARET_TYPE_OVERWRITE_MODE_PROP);
     }
 
     public boolean getCaretItalicInsertMode() {
         return getSettingBoolean(SettingsNames.CARET_ITALIC_INSERT_MODE);
     }
     public void setCaretItalicInsertMode(boolean b) {
-        setSettingBoolean(SettingsNames.CARET_ITALIC_INSERT_MODE, b);
+        setSettingBoolean(SettingsNames.CARET_ITALIC_INSERT_MODE, b,
+            CARET_ITALIC_INSERT_MODE_PROP);
     }
 
     public boolean getCaretItalicOverwriteMode() {
         return getSettingBoolean(SettingsNames.CARET_ITALIC_OVERWRITE_MODE);
     }
     public void setCaretItalicOverwriteMode(boolean b) {
-        setSettingBoolean(SettingsNames.CARET_ITALIC_OVERWRITE_MODE, b);
+        setSettingBoolean(SettingsNames.CARET_ITALIC_OVERWRITE_MODE, b,
+            CARET_ITALIC_OVERWRITE_MODE_PROP);
     }
 
     public Color getCaretColorInsertMode() {
-        return (Color) getSettingValue(SettingsNames.CARET_COLOR_INSERT_MODE);
+        return (Color)getSettingValue(SettingsNames.CARET_COLOR_INSERT_MODE);
     }
     public void setCaretColorInsertMode(Color color) {
-        setSettingValue(SettingsNames.CARET_COLOR_INSERT_MODE, color);
+        setSettingValue(SettingsNames.CARET_COLOR_INSERT_MODE, color,
+            CARET_COLOR_INSERT_MODE_PROP);
     }
 
     public Color getCaretColorOverwriteMode() {
-        return (Color) getSettingValue(SettingsNames.CARET_COLOR_OVERWRITE_MODE);
+        return (Color)getSettingValue(SettingsNames.CARET_COLOR_OVERWRITE_MODE);
     }
     public void setCaretColorOverwriteMode(Color color) {
-        setSettingValue(SettingsNames.CARET_COLOR_OVERWRITE_MODE, color);
+        setSettingValue(SettingsNames.CARET_COLOR_OVERWRITE_MODE, color,
+            CARET_COLOR_OVERWRITE_MODE_PROP);
     }
 
     public int getCaretBlinkRate() {
         return getSettingInteger(SettingsNames.CARET_BLINK_RATE);
     }
     public void setCaretBlinkRate(int rate) {
-        setSettingInteger(SettingsNames.CARET_BLINK_RATE, rate);
+        setSettingInteger(SettingsNames.CARET_BLINK_RATE, rate,
+            CARET_BLINK_RATE_PROP);
     }
 
     public boolean getLineNumberVisible() {
         return getSettingBoolean(SettingsNames.LINE_NUMBER_VISIBLE);
     }
     public void setLineNumberVisible(boolean b) {
-        setSettingBoolean(SettingsNames.LINE_NUMBER_VISIBLE, b);
+        setSettingBoolean(SettingsNames.LINE_NUMBER_VISIBLE, b,
+            LINE_NUMBER_VISIBLE_PROP);
     }
 
     public Insets getScrollJumpInsets() {
         return (Insets)getSettingValue(SettingsNames.SCROLL_JUMP_INSETS);
     }
     public void setScrollJumpInsets(Insets i) {
-        setSettingValue(SettingsNames.SCROLL_JUMP_INSETS, i);
+        setSettingValue(SettingsNames.SCROLL_JUMP_INSETS, i,
+            SCROLL_JUMP_INSETS_PROP);
     }
 
     public Insets getScrollFindInsets() {
         return (Insets)getSettingValue(SettingsNames.SCROLL_FIND_INSETS);
     }
     public void setScrollFindInsets(Insets i) {
-        setSettingValue(SettingsNames.SCROLL_FIND_INSETS, i);
+        setSettingValue(SettingsNames.SCROLL_FIND_INSETS, i,
+            SCROLL_FIND_INSETS_PROP);
     }
 
     public List getKeyBindingList() {
@@ -298,7 +318,7 @@ public class BaseOptions extends OptionSupport {
             }
         }
         
-        setSettingValue(SettingsNames.KEY_BINDING_LIST, list);
+        setSettingValue(SettingsNames.KEY_BINDING_LIST, list, KEY_BINDING_LIST_PROP);
     }
 
     public Map getColoringMap() {
@@ -311,7 +331,14 @@ public class BaseOptions extends OptionSupport {
         if (coloringMap != null) {
             coloringMap.remove(null); // remove kit class
             SettingsUtil.setColoringMap( getKitClass(), coloringMap, false );
-// !!!           SettingsUtil.updateColoringSettings(getKitClass(), coloringMap, false);
+            
+            coloringMapInitializer = SettingsUtil.getColoringMapInitializer(
+                getKitClass(), coloringMap, false,
+                getTypeName() + "-coloring-map-initializer"
+            );
+                
+            
+            firePropertyChange(COLORING_MAP_PROP, null, null);
         }
     }
 
@@ -337,8 +364,8 @@ public class BaseOptions extends OptionSupport {
                     }
                 }
             }
-            SettingsUtil.setColoringMap( getKitClass(), cm, false );        
-// !!!            SettingsUtil.updateColoringSettings(getKitClass(), cm, false);
+            SettingsUtil.setColoringMap( getKitClass(), cm, false );
+            firePropertyChange(FONT_SIZE_PROP, null, null);
         }
     }
 
@@ -346,35 +373,37 @@ public class BaseOptions extends OptionSupport {
         return ((Float) getSettingValue(SettingsNames.LINE_HEIGHT_CORRECTION)).floatValue();
     }
     public void setLineHeightCorrection(float f) {
-        setSettingValue(SettingsNames.LINE_HEIGHT_CORRECTION, new Float(f));
+        setSettingValue(SettingsNames.LINE_HEIGHT_CORRECTION, new Float(f),
+            LINE_HEIGHT_CORRECTION_PROP);
     }
 
     public Insets getMargin() {
         return (Insets)getSettingValue(SettingsNames.MARGIN);
     }
     public void setMargin(Insets i) {
-        setSettingValue(SettingsNames.MARGIN, i);
+        setSettingValue(SettingsNames.MARGIN, i, MARGIN_PROP);
     }
 
     public Insets getLineNumberMargin() {
         return (Insets)getSettingValue(SettingsNames.LINE_NUMBER_MARGIN);
     }
     public void setLineNumberMargin(Insets i) {
-        setSettingValue(SettingsNames.LINE_NUMBER_MARGIN, i);
+        setSettingValue(SettingsNames.LINE_NUMBER_MARGIN, i, LINE_NUMBER_MARGIN_PROP);
     }
 
     public boolean getStatusBarVisible() {
         return getSettingBoolean(SettingsNames.STATUS_BAR_VISIBLE);
     }
     public void setStatusBarVisible(boolean v) {
-        setSettingBoolean(SettingsNames.STATUS_BAR_VISIBLE, v);
+        setSettingBoolean(SettingsNames.STATUS_BAR_VISIBLE, v, STATUS_BAR_VISIBLE_PROP);
     }
 
     public int getStatusBarCaretDelay() {
         return getSettingInteger(SettingsNames.STATUS_BAR_CARET_DELAY);
     }
     public void setStatusBarCaretDelay(int delay) {
-        setSettingInteger(SettingsNames.STATUS_BAR_CARET_DELAY, delay);
+        setSettingInteger(SettingsNames.STATUS_BAR_CARET_DELAY, delay,
+            STATUS_BAR_CARET_DELAY_PROP);
     }
 
     public boolean getFindHighlightSearch() {
@@ -382,7 +411,8 @@ public class BaseOptions extends OptionSupport {
     }
 
     public void setFindHighlightSearch(boolean b) {
-        setSettingBoolean(SettingsNames.FIND_HIGHLIGHT_SEARCH, b);
+        setSettingBoolean(SettingsNames.FIND_HIGHLIGHT_SEARCH, b,
+            FIND_HIGHLIGHT_SEARCH_PROP);
     }
 
     public boolean getFindIncSearch() {
@@ -390,7 +420,7 @@ public class BaseOptions extends OptionSupport {
     }
 
     public void setFindIncSearch(boolean b) {
-        setSettingBoolean(SettingsNames.FIND_INC_SEARCH, b);
+        setSettingBoolean(SettingsNames.FIND_INC_SEARCH, b, FIND_INC_SEARCH_PROP);
     }
 
     public int getFindIncSearchDelay() {
@@ -398,7 +428,8 @@ public class BaseOptions extends OptionSupport {
     }
 
     public void setFindIncSearchDelay(int delay) {
-        setSettingInteger(SettingsNames.FIND_INC_SEARCH_DELAY, delay);
+        setSettingInteger(SettingsNames.FIND_INC_SEARCH_DELAY, delay,
+            FIND_INC_SEARCH_DELAY_PROP);
     }
 
     public boolean getFindWrapSearch() {
@@ -406,7 +437,8 @@ public class BaseOptions extends OptionSupport {
     }
 
     public void setFindWrapSearch(boolean b) {
-        setSettingBoolean(SettingsNames.FIND_WRAP_SEARCH, b);
+        setSettingBoolean(SettingsNames.FIND_WRAP_SEARCH, b,
+            FIND_WRAP_SEARCH_PROP);
     }
 
     public boolean getFindSmartCase() {
@@ -414,7 +446,7 @@ public class BaseOptions extends OptionSupport {
     }
 
     public void setFindSmartCase(boolean b) {
-        setSettingBoolean(SettingsNames.FIND_SMART_CASE, b);
+        setSettingBoolean(SettingsNames.FIND_SMART_CASE, b, FIND_SMART_CASE_PROP);
     }
 
     public Map getFindHistory() {
@@ -422,7 +454,7 @@ public class BaseOptions extends OptionSupport {
     }
 
     public void setFindHistory(Map m) {
-        setSettingValue(SettingsNames.FIND_HISTORY, m);
+        setSettingValue(SettingsNames.FIND_HISTORY, m, FIND_HISTORY_PROP);
     }
 
     public int getFindHistorySize() {
@@ -430,7 +462,8 @@ public class BaseOptions extends OptionSupport {
     }
 
     public void setFindHistorySize(int size) {
-        setSettingInteger(SettingsNames.FIND_HISTORY_SIZE, size);
+        setSettingInteger(SettingsNames.FIND_HISTORY_SIZE, size,
+            FIND_HISTORY_SIZE_PROP);
     }
 
     public Color getTextLimitLineColor() {
@@ -438,7 +471,8 @@ public class BaseOptions extends OptionSupport {
     }
 
     public void setTextLimitLineColor(Color color) {
-        setSettingValue(SettingsNames.TEXT_LIMIT_LINE_COLOR, color);
+        setSettingValue(SettingsNames.TEXT_LIMIT_LINE_COLOR, color,
+            TEXT_LIMIT_LINE_COLOR_PROP);
     }
 
     public int getTextLimitWidth() {
@@ -446,7 +480,8 @@ public class BaseOptions extends OptionSupport {
     }
 
     public void setTextLimitWidth(int width) {
-        setSettingInteger(SettingsNames.TEXT_LIMIT_WIDTH, width);
+        setSettingInteger(SettingsNames.TEXT_LIMIT_WIDTH, width,
+            TEXT_LIMIT_WIDTH_PROP);
     }
 
     public boolean getTextLimitLineVisible() {
@@ -454,7 +489,8 @@ public class BaseOptions extends OptionSupport {
     }
 
     public void setTextLimitLineVisible(boolean visible) {
-        setSettingBoolean(SettingsNames.TEXT_LIMIT_LINE_VISIBLE, visible);
+        setSettingBoolean(SettingsNames.TEXT_LIMIT_LINE_VISIBLE, visible,
+            TEXT_LIMIT_LINE_VISIBLE_PROP);
     }
 
     public boolean getHighlightMatchingBracket() {
@@ -462,7 +498,8 @@ public class BaseOptions extends OptionSupport {
     }
 
     public void setHighlightMatchingBracket(boolean highlight) {
-        setSettingBoolean(ExtSettingsNames.HIGHLIGHT_MATCH_BRACE, highlight);
+        setSettingBoolean(ExtSettingsNames.HIGHLIGHT_MATCH_BRACE, highlight,
+            HIGHLIGHT_MATCHING_BRACKET_PROP);
     }
 
     public boolean getHighlightCaretRow() {
@@ -470,64 +507,32 @@ public class BaseOptions extends OptionSupport {
     }
 
     public void setHighlightCaretRow(boolean highlight) {
-        setSettingBoolean(ExtSettingsNames.HIGHLIGHT_CARET_ROW, highlight);
+        setSettingBoolean(ExtSettingsNames.HIGHLIGHT_CARET_ROW, highlight,
+            HIGHLIGHT_CARET_ROW_PROP);
     }
 
-/*    public IndentEngine getIndentEngine() {
-        IndentEngine.Handle handle = (IndentEngine.Handle)getProperty(INDENT_ENGINE_PROP);
-        if (handle == null) {
-            return null;
-        } else {
-            return (IndentEngine)handle.getServiceType();
-        }
-    }
-
-    public void setIndentEngine(IndentEngine eng) {
-        putProperty(INDENT_ENGINE_PROP,
-            (eng != null) ? new IndentEngine.Handle(eng) : null,
-            true
-        );
-
-        // Assign a formatter to the Settings
-        Formatter f = null;
-        if (eng != null) {
-            if (eng instanceof FormatterIndentEngine) {
-                f = ((FormatterIndentEngine)eng).getFormatter();
-
-            } else { // generic indent engine
-                f = new IndentEngineFormatter(getKitClass(), eng);
-            }
-
-        }
-        Settings.setValue(getKitClass(), NbEditorDocument.FORMATTER, f);
-    }
-*/
 
     public IndentEngine getIndentEngine() {
-        return (IndentEngine)getProperty(INDENT_ENGINE_PROP);
+        return (IndentEngine)getSettingValue(NbEditorDocument.INDENT_ENGINE);
     }
 
     public void setIndentEngine(IndentEngine eng) {
-        putProperty(INDENT_ENGINE_PROP, eng, true);
-
         // Assign a formatter to the Settings
-        Formatter f = null;
-        if (eng != null) {
-            if (eng instanceof FormatterIndentEngine) {
-                f = ((FormatterIndentEngine)eng).getFormatter();
+        Formatter f
+            = (eng != null)
+                ? ((eng instanceof FormatterIndentEngine)
+                    ? ((FormatterIndentEngine)eng).getFormatter()
+                    : ((Formatter)new IndentEngineFormatter(getKitClass(), eng)))
+                : null;
 
-            } else { // generic indent engine
-                f = new IndentEngineFormatter(getKitClass(), eng);
-            }
-
-        }
-        Settings.setValue(getKitClass(), NbEditorDocument.INDENT_ENGINE, eng);
-        Settings.setValue(getKitClass(), NbEditorDocument.FORMATTER, f);
+        setSettingValue(NbEditorDocument.FORMATTER, f, null);
+        setSettingValue(NbEditorDocument.INDENT_ENGINE, eng, INDENT_ENGINE_PROP);
         
         if (debugFormat) {
             System.err.println("BaseOptions.setIndentEngine(): engine for kitClass=" // NOI18N
                 + getKitClass() + " set to eng=" + eng + ", formatter=" + f); // NOI18N
         }
+        
     }
 
 }
