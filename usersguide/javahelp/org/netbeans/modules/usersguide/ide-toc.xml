@@ -340,7 +340,7 @@
 </tocitem> <!-- About Web Modules -->
 
  <tocitem text="Creating Web Modules" >
-    <tocitem text="About Projects" target="tbd" />
+    <tocitem text="About Creating Web Module" target="tbd" />
     <tocitem text="Working with Projects" target="proj_process"/>
     <tocitem text="Project Tasks: Quick Reference" target="proj_quickref"/>
     <tocitem text="Java Project Templates" target="proj_templates" />
@@ -365,8 +365,8 @@
     </tocitem>
 </tocitem>
 
-<tocitem text="Developing Web Modules" > 
-	
+<tocitem text="Developing Web Modules" target="tbd" > 
+  <tocitem text="About Developing Web Modules" target="tbd" />	
   <tocitem text="Applets" >
       <tocitem text="Adding Simple Applets" target="webmod_addapplet"/>
       <tocitem text="Adding Applets With Servlet Dependencies" target="webmod_addcompapplet"/>
