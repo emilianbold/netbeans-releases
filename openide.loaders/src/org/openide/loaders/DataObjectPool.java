@@ -229,9 +229,8 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
         notifyAll ();
     }
     
-    /** Checks whether it is safe to enter the recognition. 
+    /** Ensures it is safe to enter the recognition. 
      * @param fo file object we want to recognize or null if we do not know it
-     * @return value that shall be put into the FIND.set on exit
      */
     private synchronized void enterRecognition (FileObject fo) {
         // wait till nobody else stops the recognition
