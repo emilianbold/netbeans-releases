@@ -1094,7 +1094,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module java/platform..."/>
     <ant dir="../java/platform" target="netbeans"/>
   </target>
-  <target name="all-java/j2seplatform" depends="build-platform,all-java/api,all-java/platform,all-ant/project,all-projects/libraries">
+  <target name="all-java/j2seplatform" depends="build-platform,all-java/api,all-java/platform,all-ant/project,all-projects/libraries,all-classfile">
     <echo message="Building module java/j2seplatform..."/>
     <ant dir="../java/j2seplatform" target="netbeans"/>
   </target>

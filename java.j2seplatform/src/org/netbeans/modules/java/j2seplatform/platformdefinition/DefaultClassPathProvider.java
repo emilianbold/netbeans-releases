@@ -43,6 +43,8 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.modules.classfile.ClassFile;
+import org.netbeans.modules.classfile.ClassName;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -57,7 +59,13 @@ public class DefaultClassPathProvider implements ClassPathProvider {
     private static final String PACKAGE = "package";                    //NOI18N
     /**Java file extension */
     private static final String JAVA_EXT = "java";                      //NOI18N
-        
+    /**Class file extension*/
+    private static final String CLASS_EXT = "class";                    //NOI18N
+
+    private static final int TYPE_JAVA = 1;
+
+    private static final int TYPE_CLASS = 2;
+
     private /*WeakHash*/Map/*<FileObject,WeakReference<FileObject>>*/ sourceRootsCache = new WeakHashMap ();
     private /*WeakHash*/Map/*<FileObject,WeakReference<ClassPath>>*/ sourceClasPathsCache = new WeakHashMap();
     private Reference/*<ClassPath>*/ compiledClassPath;
@@ -101,7 +109,7 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                         Reference ref = (Reference) this.sourceRootsCache.get (file);
                         FileObject sourceRoot = null;
                         if (ref == null || (sourceRoot = (FileObject)ref.get()) == null ) {
-                            sourceRoot = getRootForFile (file);
+                            sourceRoot = getRootForFile (file, TYPE_JAVA);
                             this.sourceRootsCache.put (file, new WeakReference(sourceRoot));
                         }
                         ref = (Reference) this.sourceClasPathsCache.get(sourceRoot);
@@ -114,14 +122,43 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                 }                    
             }
         }
+        else if (CLASS_EXT.equals(file.getExt())) {
+            if (ClassPath.BOOT.equals (type)) {
+                JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+                if (defaultPlatform != null) {
+                    return defaultPlatform.getBootstrapLibraries();
+                }
+            }
+            else if (ClassPath.EXECUTE.equals(type)) {
+                ClassPath cp = null;
+                Reference ref = (Reference) this.sourceRootsCache.get (file);
+                FileObject execRoot = null;
+                if (ref == null || (execRoot = (FileObject)ref.get()) == null ) {
+                    execRoot = getRootForFile (file, TYPE_CLASS);
+                    this.sourceRootsCache.put (file, new WeakReference(execRoot));
+                }
+                ref = (Reference) this.sourceClasPathsCache.get(execRoot);
+                if (ref == null || (cp = (ClassPath)ref.get()) == null ) {
+                    cp = ClassPathSupport.createClassPath(new FileObject[] {execRoot});
+                    this.sourceClasPathsCache.put (execRoot, new WeakReference(cp));
+                }
+                return cp;
+            }
+        }
         return null;
     }            
     
-    private static FileObject getRootForFile (final FileObject fo) {
-        String pkg = findJavaPackage (fo);
-        FileObject sourceRoot = null;
+    private static FileObject getRootForFile (final FileObject fo, int type) {
+        String pkg;
+        if (type == TYPE_JAVA) {
+            pkg = findJavaPackage (fo);
+        }
+        else  {
+            pkg = findClassPackage (fo);
+        }
+        FileObject packageRoot = null;
         if (pkg == null) {
-            sourceRoot = fo.getParent();
+            packageRoot = fo.getParent();
         }
         else {
             List elements = new ArrayList ();
@@ -137,11 +174,33 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                     break;
                 }                
             }
-            sourceRoot = tmp.getParent();
+            packageRoot = tmp.getParent();
         }
-        return sourceRoot;
+        return packageRoot;
     }
-    
+
+
+    /**
+     * Find java package in side .class file.
+     *
+     * @return package or null if not found
+     */
+    private static final String findClassPackage (FileObject file) {
+        try {
+            InputStream in = file.getInputStream();
+            try {
+                ClassFile cf = new ClassFile(in,false);
+                ClassName cn = cf.getName();
+                return cn.getPackage();
+            } finally {
+                in.close ();
+            }
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(e);
+        }
+        return null;
+    }
+
     /**
      * Find java package in side .java file. 
      *
