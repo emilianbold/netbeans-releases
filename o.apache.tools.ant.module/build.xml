@@ -25,7 +25,6 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
       <classpath>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
 	<pathelement location="release/modules/ext/ant.jar"/>
-	<pathelement location="release/modules/ext/xalan.jar"/>
 	<pathelement location="release/modules/ext/xerces.jar"/>
 	<!-- Using IDE's version of jaxp + parser, these cannot be overridden: -->
 	<pathelement location="../core/release/lib/ext/jaxp.jar"/>
@@ -86,8 +85,6 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
 	<file location="Ant_License"/>
 	For the Xerces library:
 	<file location="Xerces_License"/>
-	For the Xalan library:
-	<file location="Xalan_License"/>
       </license>
       <description>
         Support for Ant build scripts.
