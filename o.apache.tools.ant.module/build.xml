@@ -85,17 +85,17 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
   </target>
 
   <target name="test-build" depends="compile">
-    <mkdir dir="test"/>
+    <mkdir dir="reload"/>
     <filter token="BUILD_NUMBER_SUBST" value="testing"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="test/ant.jar" manifest="manifest-subst.mf" compress="false">
+    <jar jarfile="reload/ant.jar" manifest="manifest-subst.mf" compress="false">
       <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <zipfileset src="${binroot}/ant/release/modules/ext/ant-1.4.1.jar" excludes="META-INF/MANIFEST.MF"/>
       <zipfileset src="${binroot}/ant/release/modules/ext/ant-optional-1.4.1.jar" excludes="META-INF/MANIFEST.MF"/>
     </jar>
   </target>
   <target name="test" depends="test-build" description="Test module inside running IDE.">
-    <nbinstaller module="test/ant.jar" action="reinstall"/>
+    <nbinstaller module="reload/ant.jar" action="reinstall"/>
   </target>
 
   <target name="clean" description="Clean out build products.">
@@ -113,7 +113,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
   </target>
 
   <target name="real-clean" depends="clean">
-    <delete dir="test"/>
+    <delete dir="reload"/>
   </target>
 
   <!-- For use when making new releases: -->
