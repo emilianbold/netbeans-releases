@@ -452,14 +452,18 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
         currentPrimaryButtons = null;
         currentSecondaryButtons = null;
         
-        boolean isAqua = "Aqua".equals (UIManager.getLookAndFeel().getID());
+        boolean isAqua = "Aqua".equals (UIManager.getLookAndFeel().getID()); //NOI18N
+        if (isAqua) {
+            //No mac dialogs with buttons on side
+            currentAlign = DialogDescriptor.BOTTOM_ALIGN;
+        }
         
         // explicitly provided options (AKA buttons)
         // JST: The following line causes only problems,
         //      I hope that my change will not cause additional ones ;-)
         //    if (descriptor.getOptionType () == NotifyDescriptor.DEFAULT_OPTION) {
         if (primaryOptions != null) {
-            if ((Utilities.getOperatingSystem() & Utilities.OS_MAC) != 0) {
+            if (isAqua) {
                 Arrays.sort(primaryOptions, this);
             }
             currentPrimaryButtons = new Component [primaryOptions.length];
@@ -977,6 +981,11 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
                 }
                 
                 Object[] options = descriptor.getOptions();
+                boolean isAqua = "Aqua".equals (UIManager.getLookAndFeel().getID()); //NOI18N
+                if (isAqua && options != null) {
+                    Arrays.sort (options, NbPresenter.this);
+                }
+                
                 if (
                 options != null &&
                 currentPrimaryButtons != null &&
@@ -993,6 +1002,10 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
                 }
                 
                 options = descriptor.getAdditionalOptions();
+                if (isAqua && options != null) {
+                    Arrays.sort (options, NbPresenter.this);
+                }
+                
                 if (
                 options != null &&
                 currentSecondaryButtons != null &&
