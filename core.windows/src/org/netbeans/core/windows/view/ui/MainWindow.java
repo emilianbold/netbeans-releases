@@ -22,8 +22,6 @@ import java.util.Iterator;
 import java.util.Locale;
 
 import javax.swing.*;
-import javax.swing.JComponent;
-import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -87,6 +85,21 @@ public final class MainWindow extends JFrame {
         //to the component root.  Post 1.5, root pane will automatically be
         //opaque.
         root.setOpaque(true);
+        if (Utilities.isWindows()) {
+            // use glass pane that will not cause repaint/revalidate of parent when set visible
+            // is called (when setting wait cursor in ModuleActions) #40689
+            JComponent c = new JPanel() {
+                public void setVisible(boolean flag) {
+                    if (flag != isVisible ()) {
+                        show(flag);
+                    }
+                }
+            };
+            c.setName(root.getName()+".nbGlassPane");  // NOI18N
+            c.setVisible(false);
+            ((JPanel)c).setOpaque(false);
+            root.setGlassPane(c);
+        }
     }
     
     /** Initializes main window. */
