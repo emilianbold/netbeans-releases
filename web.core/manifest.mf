@@ -51,9 +51,6 @@ OpenIDE-Module-Class: Loader
 Name: org/netbeans/modules/web/context/WebInfLoader.class
 OpenIDE-Module-Class: Loader
 
-Name: org/netbeans/modules/web/context/actions/PackageWarAction.class
-OpenIDE-Module-Class: Action
-
 Name: org/netbeans/modules/web/context/actions/ConvertToWarAction.class
 OpenIDE-Module-Class: Action
 
@@ -62,5 +59,4 @@ OpenIDE-Module-Class: Action
 
 Name: org/netbeans/modules/web/war/WarDataLoader.class
 OpenIDE-Module-Class: Loader
-
 
