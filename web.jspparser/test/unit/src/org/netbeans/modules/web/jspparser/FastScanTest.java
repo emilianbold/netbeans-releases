@@ -53,11 +53,11 @@ public class FastScanTest extends NbTestCase {
     }
     
     public void testXMLFromExamples1() throws Exception {
-        doFastScanTest("project3/web", "xml/xml.jsp", new JspParserAPI.JspOpenInfo(true, "UTF8"));
+        doFastScanTest("project3/web", "xml/xml.jsp", new JspParserAPI.JspOpenInfo(true, "UTF-8"));
     }
     
     public void testXMLFromExamples2() throws Exception {
-        doFastScanTest("project3/web", "jsp2/jspx/basic.jspx", new JspParserAPI.JspOpenInfo(true, "UTF8"));
+        doFastScanTest("project3/web", "jsp2/jspx/basic.jspx", new JspParserAPI.JspOpenInfo(true, "UTF-8"));
     }
     
     public void doFastScanTest(String wmRootPath, String path, JspParserAPI.JspOpenInfo correctInfo) throws Exception {
