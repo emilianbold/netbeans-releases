@@ -481,6 +481,11 @@
   <tocitem text="Running a Localized Application" target="internation.runlocale" />
 </tocitem>
 
+<tocitem text="Using Scripting Languages" target="script.scripting">
+  <tocitem text="Running a Script" target="script.runscript" />
+  <tocitem text="Adding a Scripting Language" target="script.addscript" />
+</tocitem>
+
 <tocitem text="Building With Ant" target="ant.building">
   <tocitem text="Ant Project Files" target="ant.ident" />
   <tocitem text="Creating and Running an Ant Project" target="ant.project" />
