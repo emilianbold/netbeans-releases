@@ -65,7 +65,8 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="netbeans/modules/eager/ext"/>
     <copy todir="netbeans/modules/eager/ext">
       <fileset dir="../external">
-        <include name="jasper-*.jar"/>
+        <include name="jasper-compiler-4.0.6.jar"/>
+        <include name="jasper-runtime-4.0.6.jar"/>
       </fileset>
     </copy>
   </target>
