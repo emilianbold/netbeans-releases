@@ -140,7 +140,7 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
 
   /** @return available new types */
   public NewType[] getNewTypes () {
-    return ModuleFSSection.listOfNewTypes();
+    return ModuleFSSection.listOfNewTypes(false);
   }
 
   /** Getter for set of actions that should be present in the
@@ -253,6 +253,8 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
 
 /*
  * Log
+ *  14   Gandalf   1.13        5/4/99   Jaroslav Tulach No new directory & jar 
+ *       in Repository node.
  *  13   Gandalf   1.12        4/9/99   Ian Formanek    Removed debug printlns
  *  12   Gandalf   1.11        3/26/99  Jaroslav Tulach 
  *  11   Gandalf   1.10        3/26/99  Ian Formanek    Fixed use of obsoleted 
