@@ -24,27 +24,25 @@
     <tocitem text="About Projects" target="tbd" />
     <tocitem text="Working with Projects" target="proj_process"/>
     <tocitem text="Project Tasks: Quick Reference" target="proj_quickref"/>
+    <tocitem text="Creating a Java Project" target="tbd"/>
     <tocitem text="Java Project Templates" target="proj_templates" />
     <tocitem text="Setting the Main Project" target="proj_main" />
     <tocitem text="Standard Projects" target="tbd" >
       <tocitem text="About Standard Projects" target="proj_stand_about" />
-      <tocitem text="Creating a Standard J2SE Project" target="tbd" />
-      <tocitem text="Creating a Standard Web Application Project" target="tbd" />
       <tocitem text="Creating Dependencies Between Projects" target="comp_dependencies" />
       <tocitem text="Managing the Classpath" target="comp_classpath" />
       <tocitem text="Adding Javadoc to a Project" target="javadoc.add" />
       <tocitem text="Setting the Target JDK" target="proj_jdk" />
-      <tocitem text="Customizing the IDE-Generated Ant Script" target="tbd" />
+      <tocitem text="Customizing the IDE-Generated Ant Script" target="proj_stand_customize" />
     </tocitem>
     <tocitem text="Freeform Projects" target="tbd" >
       <tocitem text="About Freeform Projects" target="proj_free_about" />
-      <tocitem text="Creating a J2SE Project with Existing Ant Script" target="tbd" />
-      <tocitem text="Creating a Web Application with Existing Ant Script" target="tbd" />
       <tocitem text="Adding a Source Directory to a Freeform Project" target="proj_free_add" />
       <tocitem text="Declaring the Classpath in Freeform Projects" target="proj_free_classpath" />
       <tocitem text="Setting the Target JDK" target="tbd" />
-      <tocitem text="Linking Ant Targets to IDE Commands" target="proj_free_targets" />
-      <tocitem text="Writing Ant Targets for IDE Commands" target="tbd" />
+      <tocitem text="Mapping an Ant Target to an IDE Command" target="proj_free_targets" />
+      <tocitem text="Writing A Debug Target for a Freeform Project" target="proj_free_debug" />
+      <tocitem text="Storing IDE Targets in a Separate Ant Script" target="proj_free_nbtargs" />
     </tocitem>
   </tocitem>
 
