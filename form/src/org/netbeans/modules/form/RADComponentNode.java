@@ -841,7 +841,14 @@ public class RADComponentNode extends AbstractNode
         // 3. copy changed properties
         RADProperty[] originalProps = original.getAllBeanProperties();
         RADProperty[] newProps = copy.getAllBeanProperties();
-        FormUtils.copyProperties(originalProps, newProps, true, false);
+        if (copy instanceof RADMenuItemComponent) {
+	    // HACK for AWT menuItem components when making COPY
+	    // Label must be updated before copying properties from AWT to Swing designTimeMenus
+            FormUtils.copyProperties(originalProps, newProps, true, true);
+        } else {
+            // maybe it would be OK, if the last parameter (fireChange) will be always true
+            FormUtils.copyProperties(originalProps, newProps, true, false);
+        }
 
         // 4. copy aux values
         java.util.Map auxVals = original.getAuxValues();
