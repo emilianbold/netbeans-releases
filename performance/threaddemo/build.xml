@@ -89,7 +89,7 @@ Microsystems, Inc. All Rights Reserved.
         <java classname="threaddemo.Main" fork="true" failonerror="true">
             <classpath refid="run.cp"/>
             <arg file="${testdir}"/>
-            <jvmarg value="-Xmx64m"/>
+            <jvmarg value="-Xmx128m"/>
             <jvmarg value="-ea"/>
             <sysproperty key="java.util.logging.config.file" file="logging.properties"/>
         </java>
@@ -99,7 +99,7 @@ Microsystems, Inc. All Rights Reserved.
         <java classname="threaddemo.Main" fork="true" failonerror="true">
             <classpath refid="run.cp"/>
             <arg file="${testdir}"/>
-            <jvmarg value="-Xmx64m"/>
+            <jvmarg value="-Xmx128m"/>
             <jvmarg value="-ea"/>
             <sysproperty key="java.util.logging.config.file" file="logging.properties"/>
             <jvmarg value="-Xdebug"/>
@@ -118,7 +118,7 @@ Microsystems, Inc. All Rights Reserved.
             <arg value="-startCPUprofiler:type=sampler,samplingPeriod=1,onlyCPU=true"/>
             <arg value="threaddemo.Main"/>
             <arg file="${testdir}"/>
-            <jvmarg value="-Xmx64m"/>
+            <jvmarg value="-Xmx128m"/>
             <!--<jvmarg value="-ea"/>-->
             <sysproperty key="OPTITDIR" file="${optit}"/>
             <env key="LD_LIBRARY_PATH" path="${optit}/lib"/>
