@@ -3495,10 +3495,22 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </zip>
   </target>
   
-  <target name="generate-golden-files" depends="init,bootstrap" >
-    <property name="golden.files.dir" location="build/generated" />
+  <target name="generate-golden-files-init" depends="init,bootstrap" unless="${golden.files.dir}" >
+    <property name="golden.files.dir" location="build/golden" />
     
     <mkdir dir="${golden.files.dir}" />
+    
+    <!-- convert the golden files into platform default encoding -->
+    <fixcrlf srcdir="../ide/golden" destdir="${golden.files.dir}" >
+        <include name="*txt" />
+    </fixcrlf>
+    
+  </target>
+  
+  
+  <target name="generate-golden-files" depends="generate-golden-files-init" >
+    <property name="generated.files.dir" location="build/generated" />
+    <mkdir dir="${generated.files.dir}" />
     
     <taskdef name="deps" classname="org.netbeans.nbbuild.ModuleDependencies" classpath="nbantext.jar"/>
     
@@ -3524,19 +3536,19 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         </jars>
       </input>
       
-      <output type="group-dependencies" file="${golden.files.dir}/cluster-deps.txt" />
-      <output type="group-implementation-dependencies" file="${golden.files.dir}/cluster-impl-deps.txt" />
-      <output type="modules" file="${golden.files.dir}/modules.txt" />
-      <output type="dependencies" file="${golden.files.dir}/deps.txt" />
-      <output type="implementation-dependencies" file="${golden.files.dir}/impl-deps.txt" />
-      <output type="public-packages" file="${golden.files.dir}/public-packages.txt" />
-      <output type="external-libraries" file="${golden.files.dir}/external-libraries.txt" />
+      <output type="group-dependencies" file="${generated.files.dir}/cluster-deps.txt" />
+      <output type="group-implementation-dependencies" file="${generated.files.dir}/cluster-impl-deps.txt" />
+      <output type="modules" file="${generated.files.dir}/modules.txt" />
+      <output type="dependencies" file="${generated.files.dir}/deps.txt" />
+      <output type="implementation-dependencies" file="${generated.files.dir}/impl-deps.txt" />
+      <output type="public-packages" file="${generated.files.dir}/public-packages.txt" />
+      <output type="external-libraries" file="${generated.files.dir}/external-libraries.txt" />
     </deps>
   </target>
   
   <target name="check-public-packages" depends="generate-golden-files" >
-    <property name="check.public.packages.template" location="../ide/golden/public-packages.txt" />
-    <property name="check.public.packages.generated" location="${golden.files.dir}/public-packages.txt" />
+    <property name="check.public.packages.template" location="${golden.files.dir}/public-packages.txt" />
+    <property name="check.public.packages.generated" location="${generated.files.dir}/public-packages.txt" />
   
     <condition property="check-public-packages-are-they-the-same" >
         <filesmatch file1="${check.public.packages.template}" file2="${check.public.packages.generated}" />
@@ -3582,8 +3594,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
 
   <target name="check-external-libraries" depends="generate-golden-files" >
-    <property name="check.external.libraries.template" location="../ide/golden/external-libraries.txt" />
-    <property name="check.external.libraries.generated" location="${golden.files.dir}/external-libraries.txt" />
+    <property name="check.external.libraries.template" location="${golden.files.dir}/external-libraries.txt" />
+    <property name="check.external.libraries.generated" location="${generated.files.dir}/external-libraries.txt" />
   
     <condition property="check-external-libraries-are-they-the-same" >
         <filesmatch file1="${check.external.libraries.template}" file2="${check.external.libraries.generated}" />
@@ -3628,8 +3640,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
   
   <target name="check-modules" depends="generate-golden-files" >
-    <property name="check.modules.template" location="../ide/golden/modules.txt" />
-    <property name="check.modules.generated" location="${golden.files.dir}/modules.txt" />
+    <property name="check.modules.template" location="${golden.files.dir}/modules.txt" />
+    <property name="check.modules.generated" location="${generated.files.dir}/modules.txt" />
   
     <condition property="check-modules-are-they-the-same" >
         <filesmatch file1="${check.modules.template}" file2="${check.modules.generated}" />
@@ -3671,29 +3683,29 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
 
   <target name="check-dependencies" depends="generate-golden-files" >
     <antcall target="check-dependencies-subroutine" >
-        <param name="check.dependencies.template" location="../ide/golden/deps.txt" />
-        <param name="check.dependencies.generated" location="${golden.files.dir}/deps.txt" />
+        <param name="check.dependencies.template" location="${golden.files.dir}/deps.txt" />
+        <param name="check.dependencies.generated" location="${generated.files.dir}/deps.txt" />
     </antcall>
   </target>
   
   <target name="check-implementation-dependencies" depends="generate-golden-files" >
     <antcall target="check-dependencies-subroutine" >
-        <param name="check.dependencies.template" location="../ide/golden/impl-deps.txt" />
-        <param name="check.dependencies.generated" location="${golden.files.dir}/impl-deps.txt" />
+        <param name="check.dependencies.template" location="${golden.files.dir}/impl-deps.txt" />
+        <param name="check.dependencies.generated" location="${generated.files.dir}/impl-deps.txt" />
     </antcall>
   </target>
 
   <target name="check-cluster-dependencies" depends="generate-golden-files" >
     <antcall target="check-dependencies-subroutine" >
-        <param name="check.dependencies.template" location="../ide/golden/cluster-deps.txt" />
-        <param name="check.dependencies.generated" location="${golden.files.dir}/cluster-deps.txt" />
+        <param name="check.dependencies.template" location="${golden.files.dir}/cluster-deps.txt" />
+        <param name="check.dependencies.generated" location="${generated.files.dir}/cluster-deps.txt" />
     </antcall>
   </target>
   
   <target name="check-cluster-implementation-dependencies" depends="generate-golden-files" >
     <antcall target="check-dependencies-subroutine" >
-        <param name="check.dependencies.template" location="../ide/golden/cluster-impl-deps.txt" />
-        <param name="check.dependencies.generated" location="${golden.files.dir}/cluster-impl-deps.txt" />
+        <param name="check.dependencies.template" location="${golden.files.dir}/cluster-impl-deps.txt" />
+        <param name="check.dependencies.generated" location="${generated.files.dir}/cluster-impl-deps.txt" />
     </antcall>
   </target>
     
@@ -3737,9 +3749,12 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
     
     
-  <target name="check-files-layout" >
-    <property name="check.files.layout.template" location="../ide/golden/files-layout.txt" />
-    <property name="check.files.layout.generated" location="build/generated/files-layout.txt" />
+  <target name="check-files-layout" depends="generate-golden-files-init" >
+    <property name="generated.files.dir" location="build/generated" />
+    <mkdir dir="${generated.files.dir}" />
+    
+    <property name="check.files.layout.template" location="${golden.files.dir}/files-layout.txt" />
+    <property name="check.files.layout.generated" location="${generated.files.dir}/files-layout.txt" />
   
     <property name="check-file-layout-root" location="${netbeans.dest.dir}" />
     <fileset id="check-file-layout" dir="${check-file-layout-root}" casesensitive="yes" >
@@ -3749,15 +3764,12 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <include name="nb*/**" />
     </fileset>
     
-    <pathconvert property="check-file-layout" refid="check-file-layout" dirsep="/" pathsep=",">
+    <pathconvert property="check-file-layout" refid="check-file-layout" dirsep="/" pathsep="," >
         <map from="${check-file-layout-root}${file.separator}" to="" />
     </pathconvert>
     <mkdir dir="build/generated" />
-    <echo message="${check-file-layout}" file="${check.files.layout.generated}" />
-    <replace file="${check.files.layout.generated}" token=",">
-        <replacevalue><![CDATA[
-]]></replacevalue>
-    </replace>
+    <echo message="${check-file-layout}${line.separator}" file="${check.files.layout.generated}" />
+    <replace file="${check.files.layout.generated}" token="," value="${line.separator}" />
     <replace file="${check.files.layout.generated}" token="\" value="/" />
     <condition property="check-files-are-they-the-same" >
         <filesmatch file1="${check.files.layout.template}" file2="${check.files.layout.generated}" />
