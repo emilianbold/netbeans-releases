@@ -374,7 +374,6 @@ Microsystems, Inc. All Rights Reserved.
 
   <folder name="Shortcuts">
     <file name="CS-F6[org-openide-actions-ExecuteProjectAction].instance" />
-    <file name="S-F5[org-openide-actions-FinishDebuggerAction].instance" />
     <file name="CS-F5[org-openide-actions-DebugProjectAction].instance" />
     <file name="S-F12[org-openide-actions-CleanAllAction].instance" />
     <file name="CA-C[org-netbeans-core-actions-StopCompileAction].instance" />
@@ -392,18 +391,12 @@ Microsystems, Inc. All Rights Reserved.
     <file name="F9[org-openide-actions-CompileAction].instance" />
     <file name="C-G[org-openide-actions-GotoAction].instance" />
     <file name="C-7[org-netbeans-core-actions-HTMLViewAction].instance" />
-    <file name="S-F7[org-openide-actions-TraceOverAction].instance" />
     <file name="A-RIGHT[org-openide-actions-NextTabAction].instance" />
-    <file name="SA-F7[org-openide-actions-StepOutAction].instance" />
-    <file name="F7[org-openide-actions-TraceIntoAction].instance" />
     <file name="C-V[org-openide-actions-PasteAction].instance" />
     <file name="F6[org-openide-actions-ExecuteAction].instance" />
     <file name="C-F[org-openide-actions-FindAction].instance" />
     <file name="C-6[org-netbeans-core-actions-ExecutionViewAction].instance" />
-    <file name="A-F5[org-openide-actions-StartDebuggerAction].instance" />
-    <file name="F4[org-openide-actions-GoToCursorAction].instance" />
     <file name="A-LEFT[org-openide-actions-PreviousTabAction].instance" />
-    <file name="C-F5[org-openide-actions-GoAction].instance" />
     <file name="F1[org-openide-actions-HelpAction].instance" />
     <file name="C-4[org-netbeans-core-actions-OutputWindowAction].instance" />
     <file name="C-F4[org-openide-actions-CloseViewAction].instance" />
