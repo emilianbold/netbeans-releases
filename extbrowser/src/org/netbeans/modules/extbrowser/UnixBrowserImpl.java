@@ -43,6 +43,8 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
     
     private static ResourceBundle bundle = NbBundle.getBundle(UnixBrowserImpl.class);
     
+    private static boolean debug = false;
+    
     /** windowID of servicing window (-1 if there is no assocciated window */
     private transient int     currWinID = -1;
     
@@ -119,12 +121,12 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
      * @param url URL to show in the browser.
      */
     public void setURL(URL url) {
+        String cmd = "";    // NOI18N
         try {
             // internal protocols cannot be displayed in external viewer
             if (isInternalProtocol (url.getProtocol ())) {
                 url = WrapperServlet.createHttpURL (url);
             }
-            String cmd;
             if (currWinID != -1) {
                 // check if given window still exists
                 if (getXProperty (currWinID, "WM_NAME") == null) { // NOI18N
@@ -137,17 +139,17 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             if (currWinID == -1) {
                 setStatusMessage (bundle.getString("MSG_creating_new_window")+Integer.toHexString (currWinID));
 
-                byte [] buff = new byte [256];
-                
                 // is netcape running?
-                Process p = Runtime.getRuntime ().exec ("xwininfo -name " + getCommand (false)); // NOI18N
+                cmd = "xwininfo -name " + getCommand (false);   // NOI18N
+                Process p = Runtime.getRuntime ().exec (cmd); 
                 if (p.waitFor () == 0) {
                     cmd = getCommand (true) + " -raise -remote openURL("+url.toString ()+",new-window)"; // NOI18N
                     setStatusMessage (bundle.getString("MSG_Running_command")+cmd);
                     p = Runtime.getRuntime ().exec (cmd);
                     if (p.waitFor () != 0) {
                         TopManager.getDefault ().notify (
-                            new NotifyDescriptor.Message (bundle.getString("MSG_Cant_run_netscape"),
+                            new NotifyDescriptor.Message (
+                            NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Cant_run_netscape", new Object [] { cmd }),
                             NotifyDescriptor.Message.WARNING_MESSAGE)
                         );
                         return;
@@ -170,7 +172,8 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                 Process p = Runtime.getRuntime ().exec (cmd);
                 if (p.waitFor () != 0) {
                     TopManager.getDefault ().notify (
-                        new NotifyDescriptor.Message (bundle.getString("MSG_Cant_run_netscape"),
+                        new NotifyDescriptor.Message (
+                        NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Cant_run_netscape", new Object [] { cmd }),
                         NotifyDescriptor.Message.WARNING_MESSAGE)
                     );
                     return;
@@ -185,8 +188,12 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             pcs.firePropertyChange (PROP_URL, old, url);
         }
         catch (java.io.IOException ex) {
-            System.out.println(ex.getMessage ());
-            ex.printStackTrace ();
+            // occurs when executable is not found or not executable
+            TopManager.getDefault ().notify (
+                new NotifyDescriptor.Message (
+                NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Cant_run_netscape", new Object [] { cmd }),
+                NotifyDescriptor.Message.WARNING_MESSAGE)
+            );
         }
         catch (InterruptedException ex) {
             System.out.println(ex.getMessage ());
@@ -215,7 +222,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
     }
     
     private void setWindowID (int winID) {
-        System.out.println("setWindowID to "+Integer.toHexString (winID));
+        if (debug) System.out.println("setWindowID to "+Integer.toHexString (winID));
         currWinID = winID;
     }
     
@@ -297,6 +304,11 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
     }  
 
 
+    /**
+     * This class searches for window that contains rendered content.
+     * When NN4.x is used this window has _MOZILLA_URL xproperty that is equal to URL
+     * In other cases we only try to find it by WM_NAME property
+     */
     class WindowFinder implements Runnable {
 
         String url;
