@@ -157,7 +157,10 @@ final class NewObjectPanel extends javax.swing.JPanel implements DocumentListene
         changedUpdate (p1);
     }
 
-
+    public void addNotify () {
+        super.addNotify ();
+        newObjectName.requestFocus ();
+    }
 
     /** Add a listener to changes of the panel's validity.
     * @param l the listener to add

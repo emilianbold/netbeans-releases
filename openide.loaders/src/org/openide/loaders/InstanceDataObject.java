@@ -500,15 +500,12 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
      */
     private final class CookieAdjustingFilter extends FilterNode {
         public CookieAdjustingFilter(Node n) {
-            super(n);
+            super(n, null, new org.openide.util.lookup.ProxyLookup (new org.openide.util.Lookup[] {
+                n.getLookup (),
+                org.openide.util.lookup.Lookups.singleton(InstanceDataObject.this)
+            }));
         }
-        public Node.Cookie getCookie(Class clazz) {
-            if (clazz == DataObject.class || clazz == InstanceDataObject.class) {
-                return InstanceDataObject.this;
-            } else {
-                return super.getCookie(clazz);
-            }
-        }
+        
         // If this node is used as the root of a new Explorer window etc.,
         // just save the real underlying node; no need to make it a CAF later.
         public Node.Handle getHandle() {
