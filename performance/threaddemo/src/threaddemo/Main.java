@@ -56,9 +56,9 @@ public final class Main extends JFrame {
         getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
         JPanel modelPanel = new JPanel();
         ButtonGroup modelGroup = new ButtonGroup();
-        synchButton = new JRadioButton("Synchronous", true);
+        synchButton = new JRadioButton("Synchronous", false);
         lockedButton = new JRadioButton("Locked", false);
-        eventHybridLockedButton = new JRadioButton("Event-Hybrid-Locked", false);
+        eventHybridLockedButton = new JRadioButton("Event-Hybrid-Locked", true);
         spunButton = new JRadioButton("Spun", false);
         swungButton = new JRadioButton("Swung", false);
         modelGroup.add(synchButton);
