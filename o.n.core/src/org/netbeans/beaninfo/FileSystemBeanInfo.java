@@ -17,7 +17,7 @@ import java.beans.*;
 import java.util.ResourceBundle;
 import com.netbeans.ide.util.NbBundle;
 
-/** Object that provides beaninfo for file systems.
+/** Object that provides beaninfo for {@link FileSystem}s.
 *
 * @author Ian Formanek
 */
@@ -48,7 +48,7 @@ public class FileSystemBeanInfo extends SimpleBeanInfo {
   }
 
 
-  /** Descriptor of valid properties
+  /* Descriptor of valid properties
   * @return array of properties
   */
   public PropertyDescriptor[] getPropertyDescriptors () {
@@ -60,8 +60,8 @@ public class FileSystemBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  2    Gandalf   1.1         3/1/99   Jesse Glick     [JavaDoc]
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  * Beta Change History:
  *  0    Tuborg    0.11        --/--/98 Jaroslav Tulach added hidden property
- */
