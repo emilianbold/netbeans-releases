@@ -172,10 +172,10 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
         java.awt.GridBagConstraints gridBagConstraints;
 
         versionLabel = new javax.swing.JLabel();
-        encodingLabel = new javax.swing.JLabel();
-        standaloneLabel = new javax.swing.JLabel();
         cbVersion = new javax.swing.JComboBox();
+        encodingLabel = new javax.swing.JLabel();
         cbEncoding = new javax.swing.JComboBox();
+        standaloneLabel = new javax.swing.JLabel();
         cbStandalone = new javax.swing.JComboBox();
         fillPanel = new javax.swing.JPanel();
 
@@ -185,29 +185,9 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
         versionLabel.setLabelFor(cbVersion);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(versionLabel, gridBagConstraints);
-
-        encodingLabel.setText(Util.getString ("PROP_document_encoding"));
-        encodingLabel.setLabelFor(cbEncoding);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(encodingLabel, gridBagConstraints);
-
-        standaloneLabel.setText(Util.getString ("PROP_document_standalone"));
-        standaloneLabel.setLabelFor(cbStandalone);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(standaloneLabel, gridBagConstraints);
 
         cbVersion.setModel((new javax.swing.DefaultComboBoxModel(VersionEditor.getItems())));
         cbVersion.addActionListener(new java.awt.event.ActionListener() {
@@ -227,10 +207,20 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(cbVersion, gridBagConstraints);
+
+        encodingLabel.setText(Util.getString ("PROP_document_encoding"));
+        encodingLabel.setLabelFor(cbEncoding);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(encodingLabel, gridBagConstraints);
 
         cbEncoding.setModel(new javax.swing.DefaultComboBoxModel(EncodingEditor.getItems())
         );
@@ -250,9 +240,19 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         add(cbEncoding, gridBagConstraints);
+
+        standaloneLabel.setText(Util.getString ("PROP_document_standalone"));
+        standaloneLabel.setLabelFor(cbStandalone);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(standaloneLabel, gridBagConstraints);
 
         cbStandalone.setModel(new javax.swing.DefaultComboBoxModel(StandaloneEditor.getItems()));
         cbStandalone.addActionListener(new java.awt.event.ActionListener() {
@@ -270,12 +270,11 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         add(cbStandalone, gridBagConstraints);
 
         fillPanel.setPreferredSize(new java.awt.Dimension(0, 0));
-        fillPanel.setMinimumSize(new java.awt.Dimension(0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;

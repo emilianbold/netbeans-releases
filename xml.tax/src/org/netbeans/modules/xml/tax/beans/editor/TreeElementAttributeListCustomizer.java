@@ -171,8 +171,8 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
 
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(450, 250));
-        setMinimumSize(new java.awt.Dimension(450, 250));
+        setPreferredSize(new java.awt.Dimension(350, 230));
+        attrTable.setPreferredScrollableViewportSize(new java.awt.Dimension(200, 150));
         tableScrollPane.setViewportView(attrTable);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

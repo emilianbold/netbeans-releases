@@ -28,7 +28,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="nameField">
       <Properties>
-        <Property name="columns" type="int" value="30"/>
+        <Property name="columns" type="int" value="20"/>
       </Properties>
 
       <Events>

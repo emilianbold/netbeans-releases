@@ -166,6 +166,7 @@ public class TreeElementDeclCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(contentLabel, gridBagConstraints);
 
+        contentField.setColumns(20);
         contentField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 contentFieldFocusGained(evt);
@@ -181,7 +182,7 @@ public class TreeElementDeclCustomizer extends AbstractTreeCustomizer {
         add(contentField, gridBagConstraints);
 
         fillPanel.setPreferredSize(new java.awt.Dimension(0, 0));
-        fillPanel.setMinimumSize(new java.awt.Dimension(0, 0));
+        fillPanel.setName("null");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;

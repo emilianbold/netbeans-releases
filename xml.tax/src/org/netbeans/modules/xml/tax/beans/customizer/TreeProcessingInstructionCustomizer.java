@@ -130,8 +130,7 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
 
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(380, 250));
-        setMinimumSize(new java.awt.Dimension(380, 250));
+        setPreferredSize(new java.awt.Dimension(350, 230));
         targetLabel.setText(Util.getString ("PROP_xmlTarget"));
         targetLabel.setLabelFor(targetField);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -140,7 +139,7 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(targetLabel, gridBagConstraints);
 
-        targetField.setColumns(23);
+        targetField.setColumns(20);
         targetField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 targetFieldActionPerformed(evt);
@@ -164,6 +163,7 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
 
         dataPanel.setLayout(new java.awt.BorderLayout());
 
+        dataPanel.setPreferredSize(new java.awt.Dimension(350, 230));
         dataPane.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 dataPaneFocusLost(evt);

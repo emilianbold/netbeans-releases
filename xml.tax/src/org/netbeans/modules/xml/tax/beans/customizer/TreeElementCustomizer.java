@@ -135,6 +135,7 @@ public class TreeElementCustomizer extends AbstractTreeCustomizer {
 
         setLayout(new java.awt.GridBagLayout());
 
+        setPreferredSize(new java.awt.Dimension(350, 230));
         nameLabel.setText(Util.getString ("PROP_xmlName"));
         nameLabel.setLabelFor(nameField);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -143,7 +144,7 @@ public class TreeElementCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(nameLabel, gridBagConstraints);
 
-        nameField.setColumns(30);
+        nameField.setColumns(20);
         nameField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nameFieldActionPerformed(evt);

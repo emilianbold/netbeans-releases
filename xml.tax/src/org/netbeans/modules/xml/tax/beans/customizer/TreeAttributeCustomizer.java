@@ -183,7 +183,7 @@ public class TreeAttributeCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(nameLabel, gridBagConstraints);
 
-        nameField.setColumns(23);
+        nameField.setColumns(20);
         nameField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nameFieldActionPerformed(evt);
@@ -217,6 +217,7 @@ public class TreeAttributeCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(valueLabel, gridBagConstraints);
 
+        valueField.setColumns(20);
         valueField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 valueFieldActionPerformed(evt);

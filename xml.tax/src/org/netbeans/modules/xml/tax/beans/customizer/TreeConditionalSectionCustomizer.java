@@ -70,6 +70,7 @@ public class TreeConditionalSectionCustomizer extends AbstractTreeCustomizer {
         ignoreRadioButton.setSelected (!!! getConditionalSection ().isInclude ());
         
         ignoredContentScrollPane.setVisible (!!! getConditionalSection ().isInclude ());
+        fillPanel.setVisible (getConditionalSection ().isInclude ());
     }
     
     protected void updateConditionalSectionInclude () {
@@ -131,13 +132,17 @@ public class TreeConditionalSectionCustomizer extends AbstractTreeCustomizer {
         ignoreRadioButton = new javax.swing.JRadioButton();
         ignoredContentScrollPane = new javax.swing.JScrollPane();
         ignoredContentPane = new javax.swing.JEditorPane();
+        fillPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
+        setPreferredSize(new java.awt.Dimension(350, 100));
         includeRadioButton.setSelected(true);
         includeRadioButton.setText(Util.getString ("PROP_condSection_include"));
         includeButtonGroup.add(includeRadioButton);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(includeRadioButton, gridBagConstraints);
 
@@ -145,23 +150,34 @@ public class TreeConditionalSectionCustomizer extends AbstractTreeCustomizer {
         includeButtonGroup.add(ignoreRadioButton);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(ignoreRadioButton, gridBagConstraints);
 
-        ignoredContentScrollPane.setPreferredSize(new java.awt.Dimension(320, 200));
+        ignoredContentScrollPane.setPreferredSize(new java.awt.Dimension(350, 200));
         ignoredContentScrollPane.setViewportView(ignoredContentPane);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(ignoredContentScrollPane, gridBagConstraints);
+
+        fillPanel.setPreferredSize(new java.awt.Dimension(0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(fillPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
     
@@ -171,6 +187,7 @@ public class TreeConditionalSectionCustomizer extends AbstractTreeCustomizer {
     private javax.swing.JEditorPane ignoredContentPane;
     private javax.swing.ButtonGroup includeButtonGroup;
     private javax.swing.JRadioButton includeRadioButton;
+    private javax.swing.JPanel fillPanel;
     // End of variables declaration//GEN-END:variables
     
 }

@@ -116,7 +116,7 @@ public class TreeGeneralEntityReferenceCustomizer extends AbstractTreeCustomizer
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(nameLabel, gridBagConstraints);
 
-        nameField.setColumns(23);
+        nameField.setColumns(20);
         nameField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nameFieldActionPerformed(evt);
@@ -139,7 +139,6 @@ public class TreeGeneralEntityReferenceCustomizer extends AbstractTreeCustomizer
         add(nameField, gridBagConstraints);
 
         fillPanel.setPreferredSize(new java.awt.Dimension(0, 0));
-        fillPanel.setMinimumSize(new java.awt.Dimension(0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;

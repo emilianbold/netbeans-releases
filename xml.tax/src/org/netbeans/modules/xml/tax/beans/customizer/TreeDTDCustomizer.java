@@ -135,8 +135,8 @@ public class TreeDTDCustomizer extends AbstractTreeCustomizer {
         java.awt.GridBagConstraints gridBagConstraints;
 
         versionLabel = new javax.swing.JLabel();
-        encodingLabel = new javax.swing.JLabel();
         cbVersion = new javax.swing.JComboBox();
+        encodingLabel = new javax.swing.JLabel();
         cbEncoding = new javax.swing.JComboBox();
         fillPanel = new javax.swing.JPanel();
 
@@ -146,19 +146,9 @@ public class TreeDTDCustomizer extends AbstractTreeCustomizer {
         versionLabel.setLabelFor(cbVersion);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(versionLabel, gridBagConstraints);
-
-        encodingLabel.setText(Util.getString ("PROP_dtd_encoding"));
-        encodingLabel.setLabelFor(cbEncoding);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(encodingLabel, gridBagConstraints);
 
         cbVersion.setModel(new javax.swing.DefaultComboBoxModel(VersionEditor.getItems()));
         cbVersion.addActionListener(new java.awt.event.ActionListener() {
@@ -178,9 +168,19 @@ public class TreeDTDCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(cbVersion, gridBagConstraints);
+
+        encodingLabel.setText(Util.getString ("PROP_dtd_encoding"));
+        encodingLabel.setLabelFor(cbEncoding);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(encodingLabel, gridBagConstraints);
 
         cbEncoding.setModel(new javax.swing.DefaultComboBoxModel(EncodingEditor.getItems()));
         cbEncoding.setEditable(true);
@@ -201,12 +201,11 @@ public class TreeDTDCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(cbEncoding, gridBagConstraints);
 
         fillPanel.setPreferredSize(new java.awt.Dimension(0, 0));
-        fillPanel.setMinimumSize(new java.awt.Dimension(0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;

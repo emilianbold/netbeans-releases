@@ -241,7 +241,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         add(elementNameLabel, gridBagConstraints);
 
         elementNameField.setEditable(false);
-        elementNameField.setColumns(23);
+        elementNameField.setColumns(20);
         elementNameField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 elementNameFieldFocusGained(evt);
@@ -267,7 +267,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(nameLabel, gridBagConstraints);
 
-        nameField.setColumns(23);
+        nameField.setColumns(20);
         nameField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nameFieldActionPerformed(evt);
@@ -302,6 +302,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(typeLabel, gridBagConstraints);
 
+        typeField.setColumns(20);
         typeField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 typeFieldActionPerformed(evt);
@@ -336,6 +337,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(enumeratedLabel, gridBagConstraints);
 
+        enumeratedField.setColumns(20);
         enumeratedField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 enumeratedFieldActionPerformed(evt);
@@ -369,6 +371,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(defaultTypeLabel, gridBagConstraints);
 
+        defaultTypeField.setColumns(20);
         defaultTypeField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 defaultTypeFieldActionPerformed(evt);
@@ -403,6 +406,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(defaultValueLabel, gridBagConstraints);
 
+        defaultValueField.setColumns(20);
         defaultValueField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 defaultValueFieldActionPerformed(evt);
@@ -427,7 +431,6 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         add(defaultValueField, gridBagConstraints);
 
         fillPanel.setPreferredSize(new java.awt.Dimension(0, 0));
-        fillPanel.setMinimumSize(new java.awt.Dimension(0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;

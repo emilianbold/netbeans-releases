@@ -25,7 +25,7 @@
     <Component class="javax.swing.JTextField" name="elementNameField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
-        <Property name="columns" type="int" value="23"/>
+        <Property name="columns" type="int" value="20"/>
       </Properties>
 
       <Events>
@@ -54,7 +54,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="nameField">
       <Properties>
-        <Property name="columns" type="int" value="23"/>
+        <Property name="columns" type="int" value="20"/>
       </Properties>
 
       <Events>
@@ -84,6 +84,9 @@
       </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="typeField">
+      <Properties>
+        <Property name="columns" type="int" value="20"/>
+      </Properties>
 
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="typeFieldActionPerformed"/>
@@ -112,6 +115,9 @@
       </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="enumeratedField">
+      <Properties>
+        <Property name="columns" type="int" value="20"/>
+      </Properties>
 
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="enumeratedFieldActionPerformed"/>
@@ -140,6 +146,9 @@
       </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="defaultTypeField">
+      <Properties>
+        <Property name="columns" type="int" value="20"/>
+      </Properties>
 
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="defaultTypeFieldActionPerformed"/>
@@ -168,6 +177,9 @@
       </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="defaultValueField">
+      <Properties>
+        <Property name="columns" type="int" value="20"/>
+      </Properties>
 
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="defaultValueFieldActionPerformed"/>
@@ -183,9 +195,6 @@
     <Container class="javax.swing.JPanel" name="fillPanel">
       <Properties>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[0, 0]"/>
-        </Property>
-        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[0, 0]"/>
         </Property>
       </Properties>

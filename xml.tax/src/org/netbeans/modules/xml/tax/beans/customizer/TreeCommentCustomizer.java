@@ -108,7 +108,6 @@ public class TreeCommentCustomizer extends AbstractTreeCustomizer {
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(350, 230));
-        setMinimumSize(new java.awt.Dimension(350, 230));
         dataPanel.setLayout(new java.awt.BorderLayout());
 
         dataPane.addFocusListener(new java.awt.event.FocusAdapter() {

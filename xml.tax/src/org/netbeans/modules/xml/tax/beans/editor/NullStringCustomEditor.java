@@ -74,21 +74,21 @@ public class NullStringCustomEditor extends JPanel implements EnhancedCustomProp
     private void initComponents() {//GEN-BEGIN:initComponents
         textAreaScroll = new javax.swing.JScrollPane();
         textArea = new javax.swing.JTextArea();
-        
+
         setLayout(new java.awt.BorderLayout());
-        
+
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(6, 6, 6, 6)));
-        setPreferredSize(new java.awt.Dimension(500, 50));
+        setPreferredSize(new java.awt.Dimension(350, 230));
         textAreaScroll.setViewportView(textArea);
-        
+
         add(textAreaScroll, java.awt.BorderLayout.CENTER);
-        
+
     }//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane textAreaScroll;
     private javax.swing.JTextArea textArea;
+    private javax.swing.JScrollPane textAreaScroll;
     // End of variables declaration//GEN-END:variables
     
    /** Initialize accesibility

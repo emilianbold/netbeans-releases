@@ -144,7 +144,7 @@ public class TreeAttlistDeclCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(elemNameLabel, gridBagConstraints);
 
-        elemNameField.setColumns(30);
+        elemNameField.setColumns(20);
         elemNameField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 elemNameFieldFocusGained(evt);

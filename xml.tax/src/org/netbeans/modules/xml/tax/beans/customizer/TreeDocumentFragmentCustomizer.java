@@ -129,8 +129,8 @@ public class TreeDocumentFragmentCustomizer extends AbstractTreeCustomizer {
         java.awt.GridBagConstraints gridBagConstraints;
 
         versionLabel = new javax.swing.JLabel();
-        encodingLabel = new javax.swing.JLabel();
         cbVersion = new javax.swing.JComboBox();
+        encodingLabel = new javax.swing.JLabel();
         cbEncoding = new javax.swing.JComboBox();
         jPanel1 = new javax.swing.JPanel();
 
@@ -140,9 +140,18 @@ public class TreeDocumentFragmentCustomizer extends AbstractTreeCustomizer {
         versionLabel.setLabelFor(cbVersion);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(versionLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(cbVersion, gridBagConstraints);
 
         encodingLabel.setText(Util.getString ("PROP_docFrag_encoding"));
         encodingLabel.setLabelFor(cbEncoding);
@@ -150,26 +159,17 @@ public class TreeDocumentFragmentCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(encodingLabel, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
-        add(cbVersion, gridBagConstraints);
+        add(encodingLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(cbEncoding, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

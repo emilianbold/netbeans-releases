@@ -17,6 +17,11 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
         <Component class="javax.swing.JTable" name="attrTable">
+          <Properties>
+            <Property name="preferredScrollableViewportSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[250, 150]"/>
+            </Property>
+          </Properties>
         </Component>
       </SubComponents>
     </Container>
