@@ -618,7 +618,9 @@ final class ViewHierarchy {
     }
     
     private boolean hasEditorAreaVisibleView() {
-        return findEditorAreaElement().getEditorArea() != null;
+        //#41875 fix, checking for null EditorView, can be null when using the netbeans.winsys.hideEmptyDocArea command line property
+        EditorView view = findEditorAreaElement();
+        return (view != null ? (view.getEditorArea() != null) : false);
     }
     
     
