@@ -34,7 +34,7 @@ public class PEConstants {
     public static final String TESTRUN_FAILURES_XML_FILE="testrun-failures.xml";
     public static final String TESTRUN_DIR_PREFIX="testrun_";
     public static final String TESTREPORT_FAILURES_XML_FILE="testreport-failures.xml";
-    public static final String TESTREPORT_FAILURES_HTML_FILE = "testreport-failures.html";;
+    public static final String TESTREPORT_FAILURES_HTML_FILE = "testreport-failures.html";
     public static final String TESTREPORT_XML_FILE="testreport.xml";
     public static final String TESTREPORT_HTML_FILE="testreport.html";
     public static final String TESTSUITES_SUBDIR="suites";
