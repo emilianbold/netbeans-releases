@@ -20,6 +20,7 @@ import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.spi.debugger.*;
 import org.netbeans.modules.web.debug.Context;
 import org.netbeans.modules.web.debug.util.*;
+import org.netbeans.modules.web.debug.breakpoints.*;
 
 import org.openide.windows.TopComponent;
 
@@ -32,7 +33,7 @@ public class JspGoToCursorActionProvider extends ActionsProviderSupport implemen
 
     private JPDADebugger debugger;
     private Session session;
-    private LineBreakpoint breakpoint;
+    private JspLineBreakpoint breakpoint;
     
     
     public JspGoToCursorActionProvider(LookupProvider lookupProvider) {
@@ -63,12 +64,12 @@ public class JspGoToCursorActionProvider extends ActionsProviderSupport implemen
             DebuggerManager.getDebuggerManager ().removeBreakpoint (breakpoint);
             breakpoint = null;
         }
-        breakpoint = LineBreakpoint.create (
-            Context.getCurrentURL (),
-            Context.getCurrentLineNumber ()
+        breakpoint = JspLineBreakpoint.create (
+            Context.getCurrentURL(),
+            Context.getCurrentLineNumber()
         );
-        breakpoint.setHidden (true);
-        DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
+        breakpoint.setHidden(true);
+        DebuggerManager.getDebuggerManager().addBreakpoint (breakpoint);
         session.getEngineForLanguage ("Java").getActionsManager ().doAction (
             DebuggerManager.ACTION_CONTINUE
         );
