@@ -36,7 +36,11 @@ public class InsetsEditor extends ArrayOfIntSupport {
     /** Abstract method for translating the value from getValue() method to array of int. */
     int[] getValues() {
         Insets insets = (Insets) getValue();
-        return new int[] { insets.top, insets.left, insets.bottom, insets.right };
+        if (insets != null) {
+            return new int[] { insets.top, insets.left, insets.bottom, insets.right };
+        } else {
+            return new int[4];
+        }
     }
 
     /** Abstract method for translating the array of int to value
