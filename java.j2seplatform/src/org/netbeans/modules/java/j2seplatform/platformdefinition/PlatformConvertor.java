@@ -367,7 +367,7 @@ implements Environment.Provider, InstanceCookie.Of,
             }
             else if (ELEMENT_JAVADOC.equals(qName)) {
                 this.javadoc = new ArrayList ();
-                this.path = this.sources;
+                this.path = this.javadoc;
             }
             else if (ELEMENT_JDKHOME.equals(qName)) {
                 this.installFolders = new ArrayList ();
