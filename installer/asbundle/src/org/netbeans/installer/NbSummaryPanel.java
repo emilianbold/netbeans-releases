@@ -190,8 +190,9 @@ public class NbSummaryPanel extends TextDisplayPanel
     }
     
     private String getPostUninstallSummaryMessage() {
-        String summaryMessage = "$L(org.netbeans.installer.Bundle,PreviewPanel.previewPostUninstallMessage," 
-        + "$L(org.netbeans.installer.Bundle,Product.displayName))";
+        String summaryMessage = resolveString("$L(org.netbeans.installer.Bundle, PreviewPanel.previewPostUninstallMessage," 
+        + "$L(org.netbeans.installer.Bundle, Product.displayName),"
+        + "$L(org.netbeans.installer.Bundle, AS.name))");
         
         summaryMessage += "<br><br>"
         + resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.descriptionPostUninstall,"
@@ -208,8 +209,9 @@ public class NbSummaryPanel extends TextDisplayPanel
     }
     
     private String getPreUninstallSummaryMessage() {
-        String summaryMessage = "$L(org.netbeans.installer.Bundle,PreviewPanel.previewPreUninstallMessage," 
-        + "$L(org.netbeans.installer.Bundle,Product.displayName),"
+        String summaryMessage = "$L(org.netbeans.installer.Bundle, PreviewPanel.previewPreUninstallMessage," 
+        + "$L(org.netbeans.installer.Bundle, Product.displayName),"
+        + "$L(org.netbeans.installer.Bundle, AS.name),"
         + nbInstallDir + ")";
         
         return summaryMessage;
