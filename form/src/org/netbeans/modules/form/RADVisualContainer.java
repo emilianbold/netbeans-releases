@@ -141,12 +141,12 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
                 RADVisualComponent comp = components[i];
                 LayoutSupport.ConstraintsDesc constr =
                     layoutSupport.getConstraints(comp);
-                if (constr != null) {
-                    if (oldConstraints == null)
-                        oldConstraints =
-                            new LayoutSupport.ConstraintsDesc[components.length];
-                    oldConstraints[i] = constr;
-                }
+
+                if (oldConstraints == null)
+                    oldConstraints =
+                        new LayoutSupport.ConstraintsDesc[components.length];
+                oldConstraints[i] = constr;
+
                 layoutSupport.removeComponent(comp);
             }
 

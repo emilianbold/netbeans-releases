@@ -779,15 +779,19 @@ public class FormDesigner extends TopComponent
             LayoutSupport.ConstraintsDesc desc =
                     radcomp.getConstraintsDesc(JLayeredPaneSupport.class);
             if (desc instanceof JLayeredPaneSupport.LayeredConstraintsDesc) {
+                container.add(comp, desc.getConstraintsObject());
                 Rectangle bounds =
                     ((JLayeredPaneSupport.LayeredConstraintsDesc)desc)
                         .getBounds();
-                if (bounds.width == -1)
-                    bounds.width = comp.getPreferredSize().width;
-                if (bounds.height == -1)
-                    bounds.height = comp.getPreferredSize().height;
-
-                container.add(comp, desc.getConstraintsObject());
+                if (bounds.width == -1 || bounds.height == -1) {
+                    Dimension pref = comp.isDisplayable() ?
+                                     comp.getPreferredSize() :
+                                     radcomp.getComponent().getPreferredSize();
+                    if (bounds.width == -1)
+                        bounds.width = pref.width;
+                    if (bounds.height == -1)
+                        bounds.height = pref.height;
+                }
                 comp.setBounds(bounds);
             }
         }
@@ -812,14 +816,20 @@ public class FormDesigner extends TopComponent
                     root.add(comp, constr);
             }
             else if (constrDesc instanceof AbsoluteLayoutSupport.AbsoluteConstraintsDesc) {
+                // null layout
                 root.add(comp);
                 Rectangle bounds =
                     ((AbsoluteLayoutSupport.AbsoluteConstraintsDesc)constrDesc)
                         .getBounds();
-                if (bounds.width == -1)
-                    bounds.width = comp.getPreferredSize().width;
-                if (bounds.height == -1)
-                    bounds.height = comp.getPreferredSize().height;
+                if (bounds.width == -1 || bounds.height == -1) {
+                    Dimension pref = comp.isDisplayable() ?
+                                     comp.getPreferredSize() :
+                                     radcomp.getComponent().getPreferredSize();
+                    if (bounds.width == -1)
+                        bounds.width = pref.width;
+                    if (bounds.height == -1)
+                        bounds.height = pref.height;
+                }
                 comp.setBounds(bounds);
             }
         }
