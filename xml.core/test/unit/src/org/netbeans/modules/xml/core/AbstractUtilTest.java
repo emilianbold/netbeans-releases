@@ -11,7 +11,6 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
-import org.netbeans.tax.TreeException;
 import junit.framework.*;
 
 public class AbstractUtilTest extends TestCase {
