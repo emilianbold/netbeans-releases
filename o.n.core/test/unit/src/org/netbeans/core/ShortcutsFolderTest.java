@@ -147,33 +147,14 @@ public class ShortcutsFolderTest extends NbTestCase {
         }
     } 
     
-    private static String lastDir = null;
-    private File getTempDir() {
-        String outdir = System.getProperty("java.io.tmpdir"); //NOI18N
-        if (!outdir.endsWith(File.separator)) {
-            outdir += File.separator;
-        }
-        String dirname = Long.toHexString(System.currentTimeMillis());
-        lastDir = outdir + dirname + File.separator;
-        File dir = new File (outdir + dirname);
-        try {
-            dir.mkdir();
-        } catch (Exception ioe) {
-            ioe.printStackTrace();
-            fail ("Exception creating temporary dir for tests " + dirname + " - " + ioe.getMessage());
-        }
-        dir.deleteOnExit();
-        return dir;
-    }
-    
-    private static Repository repository = null;
     private FileSystem createTestingFilesystem () {
+        FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
         try {
-            LocalFileSystem result = new LocalFileSystem();
-            result.setRootDirectory(getTempDir());
-            repository = new Repository (result);
-            System.setProperty ("org.openide.util.Lookup", "org.netbeans.core.ShortcutsFolderTest$LKP");
-            return result;
+            FileObject[] arr = root.getChildren ();
+            for (int i = 0; i < arr.length; i++) {
+                arr[i].delete ();
+            }
+            return root.getFileSystem ();
         } catch (Exception e) {
             e.printStackTrace();
             fail (e.getMessage());
@@ -220,10 +201,6 @@ public class ShortcutsFolderTest extends NbTestCase {
         assertNotNull(data2);
         data2.setAttribute("instanceClass", "org.netbeans.core.ShortcutsFolderTest$TestAction");
         
-        File file = new File (lastDir + "Shortcuts" + File.separator + "AD-F5.instance");
-        assertTrue ("Actual file not created: " + file.getPath(), file.exists());
-        
-        
         ShortcutsFolder sf = createShortcutsFolder(fs);
         System.err.println("Created shortcuts folder " + sf);
         
@@ -250,11 +227,7 @@ public class ShortcutsFolderTest extends NbTestCase {
         FileObject now = fo.getFileObject ("AD-F5.instance");
         assertNull ("File object should be deleted - ", now);
         
-        assertFalse ("File still exists: " + lastDir + "AD-F5.instance", file.exists());
-        
-        file = new File (lastDir + "Shortcuts" + File.separator + "AS-F5.instance");
-        assertTrue ("File should not have been deleted: " + file.getPath(), file.exists());
-        
+        assertNotNull ("File should not have been deleted: " + fo, fo.getFileObject ("AS-F5.instance"));
     }
     
     public static class TestAction extends AbstractAction {
@@ -265,9 +238,6 @@ public class ShortcutsFolderTest extends NbTestCase {
         private javax.swing.text.Keymap keymap = new NbKeymap ();
         
         public Object lookup (Class clazz) {
-            if (Repository.class == clazz) {
-                return repository;
-            }
             if (ErrorManager.class == clazz) {
                 return new EM();
             }
