@@ -61,4 +61,12 @@ public class AnnotationTypeOptions {
         delegate.setInheritForegroundColor(inherit);
     }
     
+    public boolean isUseHighlightColor() {
+        return delegate.isUseHighlightColor();
+    }
+
+    public void setUseHighlightColor(boolean use) {
+        delegate.setUseHighlightColor(use);
+    }
+    
 }

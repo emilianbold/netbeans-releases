@@ -136,13 +136,17 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
         try {
             if (def.getAttribute(ATTR_TYPE_HIGHLIGHT) != null && def.getAttribute(ATTR_TYPE_HIGHLIGHT).length() > 0) {
                 annotationType.setHighlight(Color.decode(def.getAttribute(ATTR_TYPE_HIGHLIGHT)));
+                annotationType.setUseHighlightColor(true);
+            } else {
+                annotationType.setUseHighlightColor(false);
             }
+            
             if (def.getAttribute(ATTR_TYPE_FOREGROUND) != null && def.getAttribute(ATTR_TYPE_FOREGROUND).length() > 0) {
                 annotationType.setForegroundColor(Color.decode(def.getAttribute(ATTR_TYPE_FOREGROUND)));
                 annotationType.setInheritForegroundColor(false);
-            }
-            else 
+            } else {
                 annotationType.setInheritForegroundColor(true);
+            }
         } catch (NumberFormatException ex) {
             if( Boolean.getBoolean( "netbeans.debug.exceptions" ) )
                 ex.printStackTrace();
