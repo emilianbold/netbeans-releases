@@ -67,7 +67,7 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
 
         //1) get tooltip text
         Line.Part lp = (Line.Part)getAttachedAnnotatable();
-        JEditorPane ep = getCurrentEditor();
+        JEditorPane ep = Utils.getCurrentEditor();
         String textForTooltip = "";
         
         if ((lp == null) || (ep == null)) {
@@ -105,15 +105,6 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
         
         Utils.getEM().log("JspTooltip: fullWatch = " + text);
         
-//        //2) create watch for given text
-//        final AbstractDebugger debugger = Register.getCoreDebugger ();
-//        AbstractWatch watch = (AbstractWatch) debugger.createWatch (text, true);
-//        AbstractWatch w = watch;
-//        if (watch instanceof DelegatingWatch) {
-//            AbstractWatch w1 = (AbstractWatch) ((DelegatingWatch) watch).getInnerWatch ();
-//            if (w1 != null) w = w1;
-//        }
-//        
         //3) obtain text representation of value of watch
         String old = toolTipText;
         toolTipText = null;
@@ -139,39 +130,6 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
 
     public String getAnnotationType () {
         return null;
-    }
-
-    /** 
-     * Returns current editor component instance.
-     *
-     * Used in: ToolTipAnnotation
-     */
-    static JEditorPane getCurrentEditor () {
-        EditorCookie e = getCurrentEditorCookie ();
-        if (e == null) {
-            return null;
-        }
-        JEditorPane[] op = e.getOpenedPanes ();
-        if ((op == null) || (op.length < 1)) {
-            return null;
-        }
-        return op [0];
-    }
-    
-    /** 
-     * Returns current editor component instance.
-     *
-     * @return current editor component instance
-     */
-    private static EditorCookie getCurrentEditorCookie () {
-        Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
-        if ( (nodes == null) || (nodes.length != 1) ) {
-            return null;
-        }
-        Node n = nodes [0];
-        return (EditorCookie) n.getCookie (
-            EditorCookie.class
-        );
     }
     
 }

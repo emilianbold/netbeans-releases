@@ -17,6 +17,7 @@ import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.*;
+import org.netbeans.modules.web.debug.breakpoints.*;
 
 /**
  *
