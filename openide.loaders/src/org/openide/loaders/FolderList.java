@@ -234,7 +234,12 @@ implements FileChangeListener, DataObject.Container {
     /** Blocks if the processing of content of folder is in progress.
     */
     public void waitProcessingFinished () {
-        Task t = refreshTask;
+        Task t = comparatorTask;
+        if (t != null) {
+            t.waitFinished ();
+        }
+        
+        t = refreshTask;
         if (t != null) {
             t.waitFinished ();
         }
