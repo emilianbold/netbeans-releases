@@ -308,6 +308,7 @@ Microsystems, Inc. All Rights Reserved.
         <nbjunit fork="${junit.fork}" printsummary="yes">            
             <sysproperty key="work.dir" value="${xtest.results}/${tbag.testtype}/work"/>
             <sysproperty key="xtest.results" value="${xtest.results}/${tbag.testtype}/formaters/${tbag.formater}"/>
+            <sysproperty key="system.dir" value="${xtest.results}/${tbag.testtype}/work"/>
             <formatter classname="org.netbeans.xtest.junit.JUnitXMLFormatter" extension=".xml"/>
             
             <classpath refid="test.classpath"/>
