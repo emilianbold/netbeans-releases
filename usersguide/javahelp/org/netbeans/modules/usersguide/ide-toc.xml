@@ -582,7 +582,7 @@
   <tocitem text="Managing Modules" target="modules.manage">
     <tocitem text="Updating the IDE" target="ide.autoupdate" />
     <tocitem text="Installing Modules Offline" target="update.offline" />
-    <tocitem text="Installing Modules Offline" target="update.offline" />
+    <tocitem text="Setting the Update Prompt Frequency" target="update.prompt" />
     <tocitem text="Updating a Multi-User IDE Installation" target="update.globally" />
     <tocitem text="Enabling or Disabling a Module" target="configure.module" />
   </tocitem>

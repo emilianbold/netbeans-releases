@@ -222,6 +222,7 @@
 <mapID target="org.netbeans.core.ExLocalFileSystem" url="filesystems/filesystems_settings.html" />
 <mapID target="org.netbeans.core.LocalFileSystem" url="filesystems/filesystems_settings.html" />
 
+
 <!--csh page for Import Management Tool panels-->
 <mapID target="java.import.FqnPanel" url="java/imt/resolve-ids.html" />
 <mapID target="java.import.ImportPanel" url="java/imt/create-imports.html" />
@@ -836,6 +837,19 @@
    <mapID target="org.netbeans.core.execution.ExecutionSettings" url="run/options.html" />
    <mapID target="org.netbeans.core.execution.ExecutorRepositoryNode" url="pending.html" /> 
    <mapID target="org.netbeans.core.DataSystem" url="filesystems/filesystems_classpath.html" />
+   
+   <!--nodes for Diff Settings and Diff and Merge Types-->
+   <mapID target="org.netbeans.modules.diff.DiffSettings" url="filesystems/filesystems_diff.html" />
+   <mapID target="org.netbeans.modules.diff.Diff.types" url="filesystems/filesystems_diff.html" />
+   <mapID target="org.netbeans.modules.diff.Diff.providers" url="filesystems/filesystems_diff.html" />
+   <mapID target="org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider" url="filesystems/filesystems_diff.html" />
+   <mapID target="org.netbeans.modules.diff.cmdline.CmdlineDiffProvider" url="filesystems/filesystems_diff.html" />
+   <mapID target="org.netbeans.modules.diff.Diff.visualizers" url="filesystems/filesystems_diff.html" />
+   <mapID target="org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer" url="filesystems/filesystems_diff.html" />
+   <mapID target="org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer" url="filesystems/filesystems_diff.html" />
+   <mapID target="org.netbeans.modules.diff.builtin.DefaultDiff" url="filesystems/filesystems_diff.html" />
+
+
    <!--Filesystems node--> 
    <mapID target="org.netbeans.core.DesktopNode$ProjectSettingsNode" url="pending.html" /> 
    <mapID target="org.netbeans.core.IDESettings" url="configure/system_settings.html" /> 
