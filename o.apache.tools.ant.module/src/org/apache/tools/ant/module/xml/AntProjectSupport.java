@@ -32,7 +32,6 @@ import org.apache.xml.serialize.*;
 
 import org.openide.*;
 import org.openide.cookies.EditorCookie;
-import org.openide.execution.NbClassPath;
 import org.openide.nodes.*;
 import org.openide.loaders.*;
 import org.openide.filesystems.*;
@@ -71,7 +70,7 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
     private static final long serialVersionUID = 7366509989041657663L;
     
     public AntProjectSupport (FileObject fo) {
-        this (fo, NbClassPath.toFile (fo));
+        this (fo, FileUtil.toFile (fo));
     }
   
     public AntProjectSupport (File f) {
@@ -134,7 +133,7 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
     
     public void setFileObject (FileObject fo) { // #11979
         this.fo = fo;
-        file = NbClassPath.toFile (fo);
+        file = FileUtil.toFile (fo);
         invalidate ();
     }
     
