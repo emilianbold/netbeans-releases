@@ -140,7 +140,7 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
             if (url == null)
                 return;
             try {
-                if (url.getProtocol().equals("nbfs")) {
+                if (url.getProtocol().equals("nbfs")) {   // NOI18N
                     url = WrapperServlet.createHttpURL(url);
                 }
                 process.exec(new BrowserFormat(new ExecInfo(""), (url == null)? "": url.toString())); // NOI18N
@@ -199,9 +199,9 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
         /** Dummy. */
         public void showHistory() {}
         /** Dummy. */
-        public String getStatusMessage() { return ""; }
+        public String getStatusMessage() { return ""; }   // NOI18N
         /** Dummy. */
-        public String getTitle() { return ""; }
+        public String getTitle() { return ""; }   // NOI18N
         /** Dummy. */
         public URL getURL() { return url; }
         

@@ -150,7 +150,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                 if (p.waitFor () == 0) {
                     cmd = extBrowserFactory.getBrowserExecutable (); // NOI18N
                     tm.setStatusText (bundle.getString("MSG_Running_command")+cmd);
-                    p = cmd.exec (new UnixWebBrowser.UnixBrowserFormat (new ExecInfo(""), "-raise -remote openURL("+url.toString ()+",new-window)"));
+                    p = cmd.exec (new UnixWebBrowser.UnixBrowserFormat (new ExecInfo(""), "-raise -remote openURL("+url.toString ()+",new-window)"));   // NOI18N
                     if (p.waitFor () != 0) {
                         tm.notify (
                             new NotifyDescriptor.Message (
@@ -163,7 +163,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                 else {
                     cmd = extBrowserFactory.getBrowserExecutable (); // NOI18N
                     tm.setStatusText (bundle.getString("MSG_Running_command")+cmd);
-                    p = cmd.exec (new UnixWebBrowser.UnixBrowserFormat (new ExecInfo(""), url.toString ()));
+                    p = cmd.exec (new UnixWebBrowser.UnixBrowserFormat (new ExecInfo(""), url.toString ()));   // NOI18N
                 }
                 
                 new Thread (new UnixBrowserImpl.WindowFinder (url.toString())).start();
@@ -176,7 +176,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                 cmd = extBrowserFactory.getBrowserExecutable (); // NOI18N
                 tm.setStatusText (bundle.getString("MSG_Running_command")+cmd);
                 p = cmd.exec (new UnixWebBrowser.UnixBrowserFormat (
-                    new ExecInfo(""), "-id 0x"+Integer.toHexString (currWinID)+" -raise -remote openURL("+url.toString ()+")")
+                    new ExecInfo(""), "-id 0x"+Integer.toHexString (currWinID)+" -raise -remote openURL("+url.toString ()+")")   // NOI18N
                 );
                 if (p.waitFor () != 0) {
                     tm.notify (
@@ -188,7 +188,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                 }
                 // this is too early to get window title now
             }
-            tm.setStatusText ("");
+            tm.setStatusText ("");   // NOI18N
             
             URL old = this.url;
             this.url = url;
@@ -229,17 +229,8 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
     }
     
     private void setWindowID (int winID) {
-        if (debug) System.out.println("setWindowID to "+Integer.toHexString (winID));
+        if (debug) System.out.println("setWindowID to "+Integer.toHexString (winID));   // NOI18N
         currWinID = winID;
-    }
-    
-    /** returns internal http server port number */
-    int getInternalServerPort () throws java.lang.Exception {
-        HttpServerSettings setting = (HttpServerSettings)SystemOption.findObject (HttpServerSettings.class);
-        if (setting == null)
-            throw new java.lang.Exception ("Cannot get Httpserver port number");
-        
-        return setting.getPort ();
     }
     
     /** 
