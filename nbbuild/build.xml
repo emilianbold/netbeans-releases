@@ -663,7 +663,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../externaleditor" target="netbeans"/>
   </target>
 
-  <target name="all-corba" depends="all-openide,all-editor,all-java,all-openide/compiler,all-openide/execution">
+  <target name="all-corba" depends="all-openide,all-editor,all-java,all-openide/compiler,all-openide/execution,all-projects">
     <echo message="Building module corba..."/>
     <ant dir="../corba" target="netbeans"/>
   </target>
