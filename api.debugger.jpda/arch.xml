@@ -40,14 +40,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <answer id="arch-what">
 The debuggerjpda/api (Debugger JPDA API) defines API for NetBeans Java Debugger. 
-List of APIs:
-<ul>
-<li><api name="JPDADebuggerAPI" type="export" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" group="java"/></li>
-<li><api name="JPDADebuggerSPI" type="import" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" group="java"/></li>
-
-<li><api name="Meta-inf-debugger-netbeans-JPDASession-Java-org.netbeans.spi.debugger.jpda.JPDADebugger" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debugger-netbeans-JPDASession-org.netbeans.spi.debugger.jpda.JPDADebugger" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
-</ul>
 
 
 See <a href="http://debugger.netbeans.org/">debugger.netbeans.org</a> and
@@ -72,6 +64,14 @@ for more information.
 -->
 <answer id="arch-overall">
 See <a href="http://debuggercore.netbeans.org/docs/api/ProgrammersGuide.html">Programmers Guide</a>.
+List of APIs:
+<ul>
+<li><api name="JPDADebuggerAPI" type="export" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" group="java"/></li>
+<li><api name="JPDADebuggerSPI" type="import" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" group="java"/></li>
+
+<li><api name="Meta-inf-debugger-netbeans-JPDASession-Java-org.netbeans.spi.debugger.jpda.JPDADebugger" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-netbeans-JPDASession-org.netbeans.spi.debugger.jpda.JPDADebugger" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+</ul>
 </answer>
         
 <!--

@@ -40,8 +40,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <answer id="arch-what">
 The debuggerjpda module supports debugging of Java applications. 
-
-<api name="JPDADebuggerAPI" type="export" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" />
+It provides <api name="JPDADebuggerAPI" type="export" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" />.
 See <a href="http://debugger.netbeans.org/">debugger.netbeans.org</a> and
  <a href="http://debuggercore.netbeans.org/">debuggercore.netbeans.org</a>
 for more information.

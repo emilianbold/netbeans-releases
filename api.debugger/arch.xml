@@ -41,28 +41,6 @@ Microsystems, Inc. All Rights Reserved.
 <answer id="arch-what">
 The debuggercore/api module (Debugger Core API) allows to install different debugger implementation to one IDE. 
 It allows to share some common UI components. 
-List of APIs:
-<ul>
-<li><api name="DebuggerCoreAPI" type="export" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html" group="java"/>Debugger Core APIs</li>
-<li><api name="DebuggerCoreSPI" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html" group="java"/>Debugger Core SPIs</li>
-
-<li><api name="Meta-inf-debugger-org.netbeans.api.debugger.Properties-Reader" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all property readers from given folder.</li>
-<li><api name="Meta-inf-debugger-DebuggerInfo-ID-org.netbeans.spi.debugger.SessionProvider" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all session providers for specific DebuggerInfo.</li>
-<li><api name="Meta-inf-debugger-DebuggerInfo-ID-org.netbeans.spi.debugger.DelegatingSessionProvider" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all delegating session providers for specific DebuggerInfo.</li>
-<li><api name="Meta-inf-debugger-DebuggerInfo-ID-org.netbeans.spi.debugger.DebuggerEngineProvider" group="lookup" type="import" category="private" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all debugger engine providers for specific DebuggerInfo.</li>
-<li><api name="Meta-inf-debugger-DebuggerInfo-ID-org.netbeans.spi.debugger.DelegatingDebuggerEngineProvider" group="lookup" type="import" category="private" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all delegating debugger engine providers for specific DebuggerInfo.</li>
-<li><api name="Meta-inf-debugger-Session-ID-org.netbeans.spi.debugger.DebuggerEngineProvider" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all debugger engine providers for specific Session.</li>
-<li><api name="Meta-inf-debugger-Session-ID-org.netbeans.spi.debugger.DelegatingDebuggerEngineProvider" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all delegating debugger engine providers for specific Session.</li>
-<li><api name="Meta-inf-debugger-org.netbeans.api.debugger.LazyDebuggerManagerListener" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all debbugger manager listeners and adds them to DebuggerManager.getDebuggerManager () instance.</li>
-<li><api name="Meta-inf-debugger-org.netbeans.spi.debugger.ActionsProvider" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all action providers for DebuggerManager context.</li>
-<li><api name="Meta-inf-debugger-DebuggerEngine-ID-org.netbeans.spi.debugger.ActionsProvider" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all action providers for DebuggerEngine (language) context.</li>
-<li><api name="Meta-inf-debugger-Session-ID-org.netbeans.spi.debugger.ActionsProvider" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all action providers for Session context.</li>
-<li><api name="Meta-inf-debugger-DebuggerInfo-ID-org.netbeans.spi.debugger.ActionsProvider" group="lookup" type="import" category="private" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all action providers for DebuggerInfo context.</li>
-
-<li><api name="netbeans.debugger.registration" group="property" type="import" category="private"/>Writes registration log to console.</li>
-
-
-</ul>
 
 
 See <a href="http://debugger.netbeans.org/">debugger.netbeans.org</a> and
@@ -87,6 +65,29 @@ for more information.
 -->
 <answer id="arch-overall">
 See <a href="http://debuggercore.netbeans.org/docs/api/ProgrammersGuide.html">Programmers Guide</a>.
+List of APIs:
+<ul>
+<li><api name="DebuggerCoreAPI" type="export" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html" group="java"/>Debugger Core APIs</li>
+<li><api name="DebuggerCoreSPI" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html" group="java"/>Debugger Core SPIs</li>
+
+<li><api name="Meta-inf-debugger-org.netbeans.api.debugger.Properties-Reader" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all property readers from given folder.</li>
+<li><api name="Meta-inf-debugger-DebuggerInfo-ID-org.netbeans.spi.debugger.SessionProvider" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all session providers for specific DebuggerInfo.</li>
+<li><api name="Meta-inf-debugger-DebuggerInfo-ID-org.netbeans.spi.debugger.DelegatingSessionProvider" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all delegating session providers for specific DebuggerInfo.</li>
+<li><api name="Meta-inf-debugger-DebuggerInfo-ID-org.netbeans.spi.debugger.DebuggerEngineProvider" group="lookup" type="import" category="private" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all debugger engine providers for specific DebuggerInfo.</li>
+<li><api name="Meta-inf-debugger-DebuggerInfo-ID-org.netbeans.spi.debugger.DelegatingDebuggerEngineProvider" group="lookup" type="import" category="private" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all delegating debugger engine providers for specific DebuggerInfo.</li>
+<li><api name="Meta-inf-debugger-Session-ID-org.netbeans.spi.debugger.DebuggerEngineProvider" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all debugger engine providers for specific Session.</li>
+<li><api name="Meta-inf-debugger-Session-ID-org.netbeans.spi.debugger.DelegatingDebuggerEngineProvider" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all delegating debugger engine providers for specific Session.</li>
+<li><api name="Meta-inf-debugger-org.netbeans.api.debugger.LazyDebuggerManagerListener" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all debbugger manager listeners and adds them to DebuggerManager.getDebuggerManager () instance.</li>
+<li><api name="Meta-inf-debugger-org.netbeans.spi.debugger.ActionsProvider" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all action providers for DebuggerManager context.</li>
+<li><api name="Meta-inf-debugger-DebuggerEngine-ID-org.netbeans.spi.debugger.ActionsProvider" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all action providers for DebuggerEngine (language) context.</li>
+<li><api name="Meta-inf-debugger-Session-ID-org.netbeans.spi.debugger.ActionsProvider" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all action providers for Session context.</li>
+<li><api name="Meta-inf-debugger-DebuggerInfo-ID-org.netbeans.spi.debugger.ActionsProvider" group="lookup" type="import" category="private" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all action providers for DebuggerInfo context.</li>
+
+<li><api name="netbeans.debugger.registration" group="property" type="import" category="private"/>Writes registration log to console.</li>
+
+
+</ul>
+
 </answer>
         
 <!--

@@ -41,6 +41,29 @@ Microsystems, Inc. All Rights Reserved.
 <answer id="arch-what">
 The debuggercore module (Debugger Core UI) contains shared UI components for all debugger implementations, and defines some SPI
 for sharing of them. 
+
+See <a href="http://debugger.netbeans.org/">debugger.netbeans.org</a> and
+ <a href="http://debuggercore.netbeans.org/">debuggercore.netbeans.org</a>
+for more information.
+</answer>
+
+<!--
+        <question id="arch-overall" when="init">
+            Describe the overall architecture. 
+            <hint>
+            What will be API for 
+            <a href="http://openide.netbeans.org/tutorial/api-design.html#design.apiandspi">
+                clients and what support API</a>? 
+            What parts will be pluggable?
+            How will plug-ins be registered? Please use <code>&lt;api type="export"/&gt;</code>
+            to describe your general APIs.
+            If possible please provide 
+            simple diagrams. 
+            </hint>
+        </question>
+-->
+<answer id="arch-overall">
+See <a href="http://debuggercore.netbeans.org/docs/api/ProgrammersGuide.html">Programmers Guide</a>.
 List of APIs:
 <ul>
 <li><api name="DebuggerCoreUI-SPI" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20Core%20UI%20SPI/index.html" group="java"/></li>
@@ -79,29 +102,6 @@ List of APIs:
 
 <li><api name="netbeans.debugger.models" group="property" type="import" category="private"/>Writes information about loading of models to console.</li>
 </ul>
-
-See <a href="http://debugger.netbeans.org/">debugger.netbeans.org</a> and
- <a href="http://debuggercore.netbeans.org/">debuggercore.netbeans.org</a>
-for more information.
-</answer>
-
-<!--
-        <question id="arch-overall" when="init">
-            Describe the overall architecture. 
-            <hint>
-            What will be API for 
-            <a href="http://openide.netbeans.org/tutorial/api-design.html#design.apiandspi">
-                clients and what support API</a>? 
-            What parts will be pluggable?
-            How will plug-ins be registered? Please use <code>&lt;api type="export"/&gt;</code>
-            to describe your general APIs.
-            If possible please provide 
-            simple diagrams. 
-            </hint>
-        </question>
--->
-<answer id="arch-overall">
-See <a href="http://debuggercore.netbeans.org/docs/api/ProgrammersGuide.html">Programmers Guide</a>.
 </answer>
         
 <!--
