@@ -37,6 +37,8 @@ import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.api.debugger.jpda.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
@@ -207,7 +209,20 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
+    /**
+     * Helper method that fires JPDABreakpointEvent on JPDABreakpoints.
+     *
+     * @param breakpoint a breakpoint to be changed
+     * @param event a event to be fired
+     */
+    public void fireBreakpointEvent (
+        JPDABreakpoint breakpoint, 
+        JPDABreakpointEvent event
+    ) {
+        super.fireBreakpointEvent (breakpoint, event);
+    }
 
+    
     // other methods ...........................................................
 
     public void setException (Exception e) {

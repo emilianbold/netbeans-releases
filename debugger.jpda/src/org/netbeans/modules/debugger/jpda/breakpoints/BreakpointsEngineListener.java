@@ -197,7 +197,6 @@ implements PropertyChangeListener, DebuggerManagerListener {
     private void removeBreakpoint (Breakpoint b) {
         JPDABreakpointImpl impl = (JPDABreakpointImpl) breakpointToImpl.get (b);
         if (impl == null) return;
-        impl.remove ();
         breakpointToImpl.remove (b);
     }
 }

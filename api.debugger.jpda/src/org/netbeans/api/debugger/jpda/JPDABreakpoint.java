@@ -17,6 +17,9 @@ import com.sun.jdi.request.EventRequest;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 
 import org.netbeans.api.debugger.Breakpoint;
 
@@ -48,17 +51,22 @@ public abstract class JPDABreakpoint extends Breakpoint {
     // private variables .....................................................
 
     /** Support for property listeners. */
-    private transient PropertyChangeSupport pcs;
+    private PropertyChangeSupport       pcs;
     /** Set of actions. */
     private boolean                     enabled = true;
     private boolean                     hidden = false;
     private int                         suspend = SUSPEND_ALL;
     private String                      printText = null;
+    private HashSet                     breakpointListeners = new HashSet ();
+    
     
     {
         pcs = new PropertyChangeSupport (this);
     }
-            
+
+    JPDABreakpoint () {
+    }
+    
 
     // main methods ............................................................
     
@@ -159,7 +167,9 @@ public abstract class JPDABreakpoint extends Breakpoint {
      *
      * @param listener the listener to add
      */
-    public synchronized void addPropertyChangeListener (PropertyChangeListener listener) {
+    public synchronized void addPropertyChangeListener (
+        PropertyChangeListener listener
+    ) {
         pcs.addPropertyChangeListener (listener);
     }
 
@@ -168,7 +178,9 @@ public abstract class JPDABreakpoint extends Breakpoint {
      *
      * @param listener the listener to remove
      */
-    public synchronized void removePropertyChangeListener (PropertyChangeListener listener){
+    public synchronized void removePropertyChangeListener (
+        PropertyChangeListener listener
+    ) {
         pcs.removePropertyChangeListener (listener);
     }
 
@@ -195,6 +207,28 @@ public abstract class JPDABreakpoint extends Breakpoint {
     ) {
         pcs.removePropertyChangeListener (propertyName, l);
     }
+    
+    /** 
+     * Adds a JPDABreakpointListener.
+     *
+     * @param listener the listener to add
+     */
+    public synchronized void addJPDABreakpointListener (
+        JPDABreakpointListener listener
+    ) {
+        breakpointListeners.add (listener);
+    }
+
+    /** 
+     * Removes a JPDABreakpointListener.
+     *
+     * @param listener the listener to remove
+     */
+    public synchronized void removeJPDABreakpointListener (
+        JPDABreakpointListener listener
+    ){
+        breakpointListeners.remove (listener);
+    }
 
     /**
      * Fire property change.
@@ -205,5 +239,16 @@ public abstract class JPDABreakpoint extends Breakpoint {
      */
     protected void firePropertyChange (String name, Object o, Object n) {
         pcs.firePropertyChange (name, o, n);
+    }
+
+    /**
+     * Fire JPDABreakpointEvent.
+     *
+     * @param event a event to be fired
+     */
+    void fireJPDABreakpointChange (JPDABreakpointEvent event) {
+        Iterator i = ((HashSet) breakpointListeners.clone ()).iterator ();
+        while (i.hasNext ())
+            ((JPDABreakpointListener) i.next ()).breakpointReached (event);
     }
 }

@@ -276,13 +276,6 @@ public abstract class JPDADebugger {
     public abstract CallStackFrame getCurrentCallStackFrame ();
     
     /**
-     * {@link org.netbeans.api.debugger.DebuggerEngine}
-     *
-     * @return DebuggerEngine
-     */
-//    public abstract DebuggerEngine getDebuggerEngine ();
-    
-    /**
      * Evaluates given expression in the current context.
      *
      * @param expression a expression to be evaluated
@@ -302,6 +295,19 @@ public abstract class JPDADebugger {
      * @see AbstractDICookie#getVirtualMachine()
      */
     public abstract void waitRunning () throws DebuggerStartException;
+
+    /**
+     * Helper method that fires JPDABreakpointEvent on JPDABreakpoints.
+     *
+     * @param breakpoint a breakpoint to be changed
+     * @param event a event to be fired
+     */
+    protected void fireBreakpointEvent (
+        JPDABreakpoint breakpoint, 
+        JPDABreakpointEvent event
+    ) {
+        breakpoint.fireJPDABreakpointChange (event);
+    }
     
     /**
      * Adds property change listener.
