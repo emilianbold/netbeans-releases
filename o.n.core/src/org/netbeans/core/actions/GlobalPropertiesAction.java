@@ -18,6 +18,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.Mutex;
 
 import org.netbeans.core.*;
 
@@ -25,30 +26,29 @@ import org.netbeans.core.*;
 *
 * @author Jaroslav Tulach
 */
-public final class GlobalPropertiesAction extends CallableSystemAction {
+public final class GlobalPropertiesAction extends CallableSystemAction implements Runnable
+{
+    private static final long serialVersionUID =-4072717465854016148L;
 
-    static final long serialVersionUID =-4072717465854016148L;
-    /** Opens std IO top component */
     public void performAction() {
+        Mutex.EVENT.readAccess(this);
+    }
+
+    public void run() {
         TopComponent c = NbNodeOperation.Sheet.getDefault ();
         c.open ();
         c.requestFocus();
     }
 
     public String getName() {
-        return NbBundle.getBundle(GlobalPropertiesAction.class).getString("GlobalProperties");
+        return NbBundle.getBundle(GlobalPropertiesAction.class).getString("GlobalProperties"); // NOI18N
     }
 
-    /** @return the action's help context */
     public HelpCtx getHelpCtx() {
         return new HelpCtx (GlobalPropertiesAction.class);
     }
 
-    /**
-    * @return resource for the action icon
-    */
     protected String iconResource () {
         return "org/netbeans/core/resources/frames/globalProperties.gif"; // NOI18N
     }
-
 }
