@@ -30,6 +30,7 @@ To implement:
 - nbrescurr: where nbres: suffices
 - use of org.netbeans.core from modules (except apisupport to reload, autoupdate, maybe projects)
 - System.getProperty("java.version").startsWith(...) [cf. #16813]
+- static resource bundle variables (should load using NbBundle if and when needed)
 -->
 
 <project name="Source Monitor" default="all" basedir=".">
