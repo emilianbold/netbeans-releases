@@ -1,2 +1,8 @@
 testIkCARET_POSITION
 testCARET_POSITIONtest
+try {
+    CARET_POSITION
+    
+} catch (Exception ex) {
+    ex.printStackTrace();
+}
