@@ -142,7 +142,7 @@ import org.openide.nodes.Sheet;
   /** Creates properties for this node */
   private void createProperties () {
     
-    // default sheet with "properties" property set
+    // default sheet with "properties" property set // NOI18N
     Sheet sheet = Sheet.createDefault();
     Sheet.Set ps = sheet.get(Sheet.PROPERTIES);
     
@@ -529,7 +529,7 @@ import org.openide.nodes.Sheet;
   /** Executes default action.
   */
   public void invokeDefaultAction() {
-    //System.out.println ( "Default action");
+    //System.out.println ( "Default action"); // NOI18N
     toggleSelection();
   }
 

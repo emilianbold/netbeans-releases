@@ -160,7 +160,7 @@ public class PatternAnalyser extends Object implements Node.Cookie {
     
     while (keys.hasMoreElements()) {
       String compound = (String) keys.nextElement();
-      // Skip any "add" which doesn't have a matching remove
+      // Skip any "add" which doesn't have a matching remove // NOI18N
       if (removes.get (compound) == null ) {
         continue;
       }
@@ -546,6 +546,7 @@ public class PatternAnalyser extends Object implements Node.Cookie {
 
 /* 
  * Log
+ *  10   Gandalf   1.9         1/13/00  Petr Hrebejk    i18n mk3
  *  9    Gandalf   1.8         1/12/00  Petr Hrebejk    i18n  
  *  8    Gandalf   1.7         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

@@ -134,7 +134,7 @@ public class EventSetPattern extends Pattern {
       return null;
     }
 
-    //System.out.println( "Type " + esp.type.toString() );
+    //System.out.println( "Type " + esp.type.toString() ); // NOI18N
 
 
     esp.name = Introspector.decapitalize( esp.type.getClassName().getName() );
@@ -205,8 +205,8 @@ public class EventSetPattern extends Pattern {
 
     name = capitalizeFirstLetter( name );
 
-    Identifier addMethodID = Identifier.create( "add" + name ); //+ "Listener" );
-    Identifier removeMethodID = Identifier.create( "remove" + name ); //+ "Listener" );
+    Identifier addMethodID = Identifier.create( "add" + name ); //+ "Listener" ); // NOI18N
+    Identifier removeMethodID = Identifier.create( "remove" + name ); //+ "Listener" ); // NOI18N
 
     addListenerMethod.setName( addMethodID );
     removeListenerMethod.setName( removeMethodID );
@@ -315,7 +315,7 @@ public class EventSetPattern extends Pattern {
     // Ask if we have to change the bame of the methods
     String mssg = MessageFormat.format( PatternNode.bundle.getString( "FMT_ChangeEventSourceName" ), 
                                            new Object[] { capitalizeFirstLetter( newType.getClassName().getName() ) } );
-                                           //new Object[] { "Blah Blah !" } );
+                                           //new Object[] { "Blah Blah !" } ); // NOI18N
     NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
     if ( TopManager.getDefault().notify( nd ).equals( NotifyDescriptor.YES_OPTION ) ) {
       setName( newType.getClassName().getName() );
@@ -553,6 +553,7 @@ public class EventSetPattern extends Pattern {
 
 /* 
  * Log
+ *  14   Gandalf   1.13        1/13/00  Petr Hrebejk    i18n mk3
  *  13   Gandalf   1.12        1/12/00  Petr Hrebejk    i18n  
  *  12   Gandalf   1.11        1/4/00   Petr Hrebejk    Various bugfixes - 5036,
  *       5044, 5045

@@ -532,12 +532,12 @@ public class IdxPropertyPattern extends PropertyPattern {
       newGetter.getJavaDoc().setRawText( comment );
     }
 
-    //System.out.println ("Generating getter" );
+    //System.out.println ("Generating getter" ); // NOI18N
 
     if ( declaringClass == null )
       throw new SourceException();
     else {
-      //System.out.println ( "Adding getter method" );
+      //System.out.println ( "Adding getter method" ); // NOI18N
       declaringClass.addMethod( newGetter );
       indexedGetterMethod = declaringClass.getMethod( newGetter.getName(), getParameterTypes( newGetter ) );
       }
@@ -681,6 +681,7 @@ public class IdxPropertyPattern extends PropertyPattern {
 
 /* 
  * Log
+ *  11   Gandalf   1.10        1/13/00  Petr Hrebejk    i18n mk3
  *  10   Gandalf   1.9         1/12/00  Petr Hrebejk    i18n  
  *  9    Gandalf   1.8         1/4/00   Petr Hrebejk    Various bugfixes - 5036,
  *       5044, 5045

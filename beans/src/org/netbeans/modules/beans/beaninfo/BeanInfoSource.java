@@ -101,7 +101,7 @@ public class BeanInfoSource extends Object {
      try {
       biDataObject = DataObject.find( biFile );
       javaEditor = (JavaEditor)biDataObject.getCookie( JavaEditor.class );
-      //System.out.println("ClassElem : " + biDataObject );
+      //System.out.println("ClassElem : " + biDataObject ); // NOI18N
      }
      catch ( org.openide.loaders.DataObjectNotFoundException e ) {
         // Do nothing if no data object is found
@@ -262,6 +262,7 @@ public class BeanInfoSource extends Object {
 
 /*
  * Log
+ *  6    Gandalf   1.5         1/13/00  Petr Hrebejk    i18n mk3
  *  5    Gandalf   1.4         1/12/00  Petr Hrebejk    i18n  
  *  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

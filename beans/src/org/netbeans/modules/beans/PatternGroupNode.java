@@ -255,7 +255,7 @@ public class  PatternGroupNode extends AbstractNode {
         NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
         NotifyDescriptor.OK_OPTION,                           // Default
         DialogDescriptor.BOTTOM_ALIGN,                        // Align
-        new HelpCtx (PatternGroupNode.class.getName () + ".dialogIdxProperty"), // Help
+        new HelpCtx (PatternGroupNode.class.getName () + ".dialogIdxProperty"), // Help // NOI18N
         idxPropertyPanel );
       dd.setClosingOptions( new Object[]{} );
       
@@ -289,7 +289,7 @@ public class  PatternGroupNode extends AbstractNode {
         NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
         NotifyDescriptor.OK_OPTION,                           // Default
         DialogDescriptor.BOTTOM_ALIGN,                        // Align
-        new HelpCtx (PatternGroupNode.class.getName () + ".dialogUniCastES"), // Help
+        new HelpCtx (PatternGroupNode.class.getName () + ".dialogUniCastES"), // Help // NOI18N
         uEventSetPanel );
       dd.setClosingOptions( new Object[]{} );
       
@@ -315,7 +315,7 @@ public class  PatternGroupNode extends AbstractNode {
         NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
         NotifyDescriptor.OK_OPTION,                           // Default
         DialogDescriptor.BOTTOM_ALIGN,                        // Align
-        new HelpCtx (PatternGroupNode.class.getName () + ".dialogMultiCastES"), // Help
+        new HelpCtx (PatternGroupNode.class.getName () + ".dialogMultiCastES"), // Help // NOI18N
         eventSetPanel );
       dd.setClosingOptions( new Object[]{} );
       
@@ -331,7 +331,7 @@ public class  PatternGroupNode extends AbstractNode {
                                  result.type, result.implementation, result.firing, 
                                  result.passEvent, false );      
       }
-      //EventSetPattern.create( ((PatternChildren)getChildren()).getPatternAnalyser(), "NewEventListener", "java.util.EventListener", false );
+      //EventSetPattern.create( ((PatternChildren)getChildren()).getPatternAnalyser(), "NewEventListener", "java.util.EventListener", false ); // NOI18N
       return;
     }
   }
@@ -384,6 +384,7 @@ public class  PatternGroupNode extends AbstractNode {
 
 /* 
  * Log
+ *  13   Gandalf   1.12        1/13/00  Petr Hrebejk    i18n mk3
  *  12   Gandalf   1.11        1/12/00  Petr Hrebejk    i18n  
  *  11   Gandalf   1.10        1/11/00  Jesse Glick     Context help.
  *  10   Gandalf   1.9         11/11/99 Jesse Glick     Display miscellany.

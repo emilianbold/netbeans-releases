@@ -53,7 +53,7 @@ static final long serialVersionUID =3773842179168178798L;
   */
   protected String iconResource () {
     return null;
-    //return "/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif";
+    //return "/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif"; // NOI18N
   }
   
   /*
@@ -96,6 +96,7 @@ static final long serialVersionUID =3773842179168178798L;
 
 /*
  * Log
+ *  4    Gandalf   1.3         1/13/00  Petr Hrebejk    i18n mk3
  *  3    Gandalf   1.2         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  2    Gandalf   1.1         8/9/99   Ian Formanek    Generated Serial Version

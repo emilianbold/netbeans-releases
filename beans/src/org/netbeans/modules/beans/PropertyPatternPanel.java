@@ -423,7 +423,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
     if ( dialog != null ) {
        //System.out.println( e );
       
-       //if ( e.getActionCommand().equals( "OK" ) ) { 
+       //if ( e.getActionCommand().equals( "OK" ) ) { // NOI18N
       
        if ( e.getSource() == org.openide.DialogDescriptor.OK_OPTION ) {
 
@@ -484,6 +484,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
 
 /*
  * Log
+ *  11   Gandalf   1.10        1/13/00  Petr Hrebejk    i18n mk3
  *  10   Gandalf   1.9         1/12/00  Petr Hrebejk    i18n  
  *  9    Gandalf   1.8         1/4/00   Petr Hrebejk    Various bugfixes - 5036,
  *       5044, 5045

@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.StringTokenizer;
+import java.util.ResourceBundle;
 
 import org.openide.src.MethodElement;
 import org.openide.src.ClassElement;
@@ -41,6 +42,8 @@ import com.netbeans.developer.modules.beans.EventSetPattern;
  */
 
 public class BiAnalyser extends Object implements Node.Cookie {
+  
+  private static final ResourceBundle bundle = NbBundle.getBundle( BiAnalyser.class );
   
   private static final String TAB = "  "; // NOI18N
   private static final String TABx2 = TAB +TAB;
@@ -270,7 +273,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
     
     if ( nullProperties ) {
-      sb.append( TAB + "// Properties information will be obtained from introspection.\n" );
+      sb.append( TAB + bundle.getString( "COMMENT_NullProperties" ) );
       sb.append( TAB + "private static PropertyDescriptor[] properties = null;\n" ); // NOI18N
       bis.setPropertiesSection( sb.toString(), "  \n" ); // NOI18N
       return;
@@ -281,7 +284,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
     allProperties.addAll( getProperties() );
     allProperties.addAll( getIdxProperties() );
 
-    sb.append( TAB + "// Property identifiers \n" );
+    sb.append( TAB + bundle.getString( "COMMENT_PropertyIdentifiers" ) );
 
     Iterator it = allProperties.iterator();
     while ( it.hasNext() ) {
@@ -295,7 +298,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
       }
     }            
       
-    sb.append( "\n" + TAB + "// Property array \n" );
+    sb.append( "\n" + TAB + bundle.getString("COMMENT_PropertyArray" ));
     sb.append( TAB + "private static PropertyDescriptor[] properties = new PropertyDescriptor[" + // NOI18N
                propertyCount + "];\n\n" ); // NOI18N
     
@@ -332,13 +335,13 @@ public class BiAnalyser extends Object implements Node.Cookie {
     int eventCount = 0;
     
     if ( nullEventSets ) {
-      sb.append( TAB + "// Event sets information will be obtained from introspection.\n" );
+      sb.append( TAB + bundle.getString( "COMMENT_NullEventSets" ) );
       sb.append( TAB + "private static EventSetDescriptor[] eventSets = null;\n" ); // NOI18N
       bis.setEventSetsSection( sb.toString(), "  \n" ); // NOI18N
       return;
     }    
     
-    sb.append( TAB + "// EventSet identifiers\n" );
+    sb.append( TAB + bundle.getString("COMMENT_EventSetsIdentifiers") );
 
     
     Iterator it = eventSets.iterator();
@@ -353,7 +356,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
       }
     }      
 
-    sb.append( "\n" + TAB + "// EventSet array\n" );
+    sb.append( "\n" + TAB + bundle.getString("COMMENT_EventSetsArray"));
     sb.append( TAB + "private static EventSetDescriptor[] eventSets = new EventSetDescriptor[" // NOI18N
       + eventCount + "];\n\n" ); // NOI18N
 
@@ -628,6 +631,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
 }
 /* 
  * Log
+ *  11   Gandalf   1.10        1/13/00  Petr Hrebejk    i18n mk3
  *  10   Gandalf   1.9         1/12/00  Petr Hrebejk    i18n  
  *  9    Gandalf   1.8         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

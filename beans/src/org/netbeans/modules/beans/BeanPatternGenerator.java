@@ -658,7 +658,7 @@ class BeanPatternGenerator extends Object {
         body.append( TABx3 + "((").append(type.toString()).append(")listeners[i+1]).").append(method.getName()); // NOI18N
         body.append(" ("); // NOI18N
         if ( usesConstructorParameters( eventClass, passEvent ) ) {
-          body.append( "e" ); // the created event
+          body.append( "e" ); // the created event // NOI18N
         }
         else {
           body.append( fireParameterstoString( newMethodParams ) ); // the event parameter
@@ -842,6 +842,7 @@ class BeanPatternGenerator extends Object {
 }
 /* 
  * Log
+ *  8    Gandalf   1.7         1/13/00  Petr Hrebejk    i18n mk3
  *  7    Gandalf   1.6         1/12/00  Petr Hrebejk    i18n  
  *  6    Gandalf   1.5         11/10/99 Petr Hrebejk    Generation of new 
  *       EventListenerList added to MultiCast event sources

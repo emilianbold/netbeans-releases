@@ -61,7 +61,7 @@ static final long serialVersionUID =-4937492476805017833L;
   */
   protected String iconResource () {
     return null;
-    //return "/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif";
+    //return "/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif"; // NOI18N
   }
   
   /** Help context where to find more about the action.
@@ -99,7 +99,7 @@ static final long serialVersionUID =-4937492476805017833L;
       NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
       NotifyDescriptor.OK_OPTION,                           // Default
       DialogDescriptor.BOTTOM_ALIGN,                        // Align
-      new HelpCtx (GenerateBeanInfoAction.class.getName () + ".dialog"), // Help
+      new HelpCtx (GenerateBeanInfoAction.class.getName () + ".dialog"), // Help // NOI18N
       null );
      
     biDialog = TopManager.getDefault().createDialog( dd );
@@ -165,6 +165,7 @@ static final long serialVersionUID =-4937492476805017833L;
 
 /*
  * Log
+ *  6    Gandalf   1.5         1/13/00  Petr Hrebejk    i18n mk3
  *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  4    Gandalf   1.3         8/18/99  Petr Hrebejk    BeanInfo analyse moved 

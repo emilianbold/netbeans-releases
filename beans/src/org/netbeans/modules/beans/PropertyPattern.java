@@ -394,7 +394,7 @@ public class PropertyPattern extends Pattern {
       getterMethod = yr;
     }
     // However, if both x and y reference read method in the same class,
-    // give priority to a boolean "is" method over boolean "get" method.
+    // give priority to a boolean "is" method over boolean "get" method. // NOI18N
     if ( xr != null && yr != null &&
       xr.getDeclaringClass() == yr.getDeclaringClass() &&
       xr.getReturn().compareTo( Type.BOOLEAN, false ) && 
@@ -419,8 +419,8 @@ public class PropertyPattern extends Pattern {
       type = findPropertyType();
     }
     catch ( IntrospectionException ex ) {
-      //System.out.println (x.getName() + ":" +  y.getName());
-      //System.out.println (x.getType() + ":" + y.getType() );
+      //System.out.println (x.getName() + ":" +  y.getName()); // NOI18N
+      //System.out.println (x.getType() + ":" + y.getType() ); // NOI18N
       throw new InternalError( "Mixing invalid PropertyPattrens" + ex ); // NOI18N
     }
 
@@ -514,7 +514,7 @@ public class PropertyPattern extends Pattern {
     }
 
     if ( declaringClass == null ) {
-      //System.out.println ("nodecl - gen getter");
+      //System.out.println ("nodecl - gen getter"); // NOI18N
       throw new SourceException();
     }
     else {
@@ -565,7 +565,7 @@ public class PropertyPattern extends Pattern {
 
 
     if ( declaringClass == null ) {
-      //System.out.println ("nodecl - gen setter");
+      //System.out.println ("nodecl - gen setter"); // NOI18N
       throw new SourceException();
       }
     else {
@@ -600,7 +600,7 @@ public class PropertyPattern extends Pattern {
     }
    
     if ( declaringClass == null ) {
-      //System.out.println ("nodecl - gen setter");
+      //System.out.println ("nodecl - gen setter"); // NOI18N
       throw new SourceException();
       }
     else {
@@ -620,7 +620,7 @@ public class PropertyPattern extends Pattern {
     ClassElement declaringClass = getDeclaringClass();
 
     if ( declaringClass == null ) {
-      //System.out.println ("nodecl");
+      //System.out.println ("nodecl"); // NOI18N
       throw new SourceException();
       }
     else {   
@@ -719,6 +719,7 @@ public class PropertyPattern extends Pattern {
 
 /* 
  * Log
+ *  12   Gandalf   1.11        1/13/00  Petr Hrebejk    i18n mk3
  *  11   Gandalf   1.10        1/12/00  Petr Hrebejk    i18n  
  *  10   Gandalf   1.9         1/4/00   Petr Hrebejk    Various bugfixes - 5036,
  *       5044, 5045
