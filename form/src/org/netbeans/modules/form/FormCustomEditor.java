@@ -161,8 +161,8 @@ public class FormCustomEditor extends JPanel
 
         editorsCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                CardLayout cl = (CardLayout) cardPanel.getLayout();
-                cl.show(cardPanel, (String) editorsCombo.getSelectedItem());
+                CardLayout cl2 = (CardLayout) cardPanel.getLayout();
+                cl2.show(cardPanel, (String) editorsCombo.getSelectedItem());
                 FormCustomEditor.this.editor.setModifiedEditor(getCurrentPropertyEditor());
             }
         });
