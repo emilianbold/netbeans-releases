@@ -4,6 +4,7 @@ OpenIDE-Module-Install: org/netbeans/modules/usersguide/UGModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/usersguide/layer.xml
 OpenIDE-Module-Specification-Version: 1.8
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.6
 OpenIDE-Module-Short-Description: Online documentation for the IDE.
 OpenIDE-Module-Long-Description: The General Online Help module provides online and context-sensitive
   documentation for basic IDE features such as browsing and editing files; compiling, running,
