@@ -312,7 +312,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${xtest.results}/${xtest.testtype}"/>
     </target>
     
-    <target name="realclean" depends="clean,cleanresults"
+    <target name="realclean" depends="clean"
             description="Deletes classes, lib/test.jar and *all* results.">
         <delete dir="${xtest.results}"/>
     </target>
