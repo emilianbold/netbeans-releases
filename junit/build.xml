@@ -16,9 +16,13 @@ Microsystems, Inc. All Rights Reserved.
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
 
-  <property name="binroot" value=".." />
+  <property name="binroot" value="../../nbextra" />
   <property name="build.compiler.deprecation" value="off" />
   <property name="build.compiler.debug" value="off" />
+  <property name="build.compiler.debug" value="off" />
+
+  <property name="module.license.file" location="../nbbuild/standard-nbm-license.txt"/>
+  <property name="junit.license.file" location="ibm-public-license.txt"/>
 
   <target name="compile">
     <javac srcdir="src" destdir="src"
@@ -29,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-	<pathelement location="${binroot}/core/release/lib/ext/junit.jar"/>
+	<pathelement location="${binroot}/junit/release/lib/ext/junit.jar"/>
       </classpath>
     </javac>
   </target>
@@ -52,7 +56,13 @@ Microsystems, Inc. All Rights Reserved.
     </copy>
   </target>
 
-  <target name="netbeans" depends="jars,javahelp"/>
+  <target name="release">
+    <copy todir="netbeans">
+      <fileset dir="${binroot}/junit/release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+    </copy>
+  </target>
+
+  <target name="netbeans" depends="jars,javahelp,release"/>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="junit.nbm"
@@ -60,7 +70,12 @@ Microsystems, Inc. All Rights Reserved.
 	     manifest="manifest-subst.mf"
 	     homepage="http://junit.netbeans.org/"
 	     distribution="http://www.netbeans.org/download/nbms/40/junit.nbm">
-      <license file="../nbbuild/standard-nbm-license.txt"/>
+      <license name="junit-license.txt">
+        For the JUnit module itself:
+        <file location="${module.license.file}"/>
+	For the JUnit framework:
+	<file location="${junit.license.file}"/>
+      </license>
       <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
     </makenbm>
   </target>
