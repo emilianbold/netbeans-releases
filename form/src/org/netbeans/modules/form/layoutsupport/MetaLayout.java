@@ -17,6 +17,7 @@ import java.awt.*;
 import java.beans.*;
 import org.openide.nodes.Node;
 import org.netbeans.modules.form.*;
+import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
 /**
  * @author Tomas Pavek
@@ -45,8 +46,16 @@ class MetaLayout extends RADComponent {
 
             super.updateInstance(beanInstance); // calls setBeanInstance
 
-            for (int i=0; i < comps.length; i++)
-                cont.add(comps[i].getComponent());
+            for (int i=0; i < comps.length; i++) {
+                Component comp = comps[i].getComponent();
+
+                // hack for AWT components - fake peer must be attached again
+                boolean attached = FakePeerSupport.attachFakePeer(comp);
+                if (attached && comp instanceof Container)
+                        FakePeerSupport.attachFakePeerRecursively((Container)comp);
+
+                cont.add(comp);
+            }
 //            getFormModel().fireFormChanged();
         }
         else super.updateInstance(beanInstance); // calls setBeanInstance
