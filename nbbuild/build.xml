@@ -283,7 +283,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module ant/browsetask..."/>
     <ant dir="../ant/browsetask" target="netbeans"/>
   </target>
-  <target name="all-apisupport" depends="all-openide,all-core/javahelp,all-java/api,all-openide/compiler,all-openide/execution,all-openide/io">
+  <target name="all-apisupport" depends="all-openide,all-core/javahelp,all-java/api,all-openide/io">
     <echo message="Building module apisupport..."/>
     <ant dir="../apisupport" target="netbeans"/>
   </target>
@@ -296,7 +296,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module apisupport/apidocs..."/>
     <ant dir="../apisupport/apidocs" target="netbeans"/>
   </target>
-  <target name="all-apisupport/lite" depends="all-openide,all-java/srcmodel,all-openide/execution">
+  <target name="all-apisupport/lite" depends="all-openide,all-java/srcmodel,all-openide/loaders">
     <echo message="Building module apisupport lite..."/>
     <ant dir="../apisupport/lite" target="netbeans"/>
   </target>
@@ -992,7 +992,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <!-- #27098: MakeParserDB requires several modules to have been successfully built. -->
   <!-- Target all/mmm should depend on makeparserdb-modules if mmm/build.xml uses <makeparserdb>. -->
-  <!-- XXX update for stavbicka: -->
   <target name="makeparserdb-modules" depends="all-openide,all-openide/loaders,all-openide/execution,all-openide/io,all-core,all-classfile,all-java/api,all-java/srcmodel,all-java,all-editor,all-debuggercore/oldapi,all-core/execution,all-core/output,all-core/term"/>
   
   <!-- build NBMs for selected modules -->

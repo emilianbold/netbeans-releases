@@ -18,9 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init" depends="default.init">
         <patternset id="apisupport/apidocs.files">
             <include name="${nb.modules.dir}/apisupport-apidocs.jar"/>
-            <include name="${nb.docs.dir}/CompilerAPI.zip"/>
             <include name="${nb.docs.dir}/ConvertorAPI.zip"/>
-            <include name="${nb.docs.dir}/DebuggerAPI.zip"/>
             <include name="${nb.docs.dir}/ExecutionAPI.zip"/>
             <include name="${nb.docs.dir}/InputOutputAPI.zip"/>
             <include name="${nb.docs.dir}/JavaHelpAPI.zip"/>
@@ -31,9 +29,7 @@ Microsystems, Inc. All Rights Reserved.
             <include name="${nb.docs.dir}/OpenAPIs.zip"/>
             <include name="${nb.docs.dir}/RegistryAPI.zip"/>
             <include name="${nb.docs.dir}/RegistryOverFSAPI.zip"/>
-            <include name="${nb.system.dir}/ParserDB/CompilerAPI.jc*"/>
             <include name="${nb.system.dir}/ParserDB/ConvertorAPI.jc*"/>
-            <include name="${nb.system.dir}/ParserDB/DebuggerAPI.jc*"/>
             <include name="${nb.system.dir}/ParserDB/ExecutionAPI.jc*"/>
             <include name="${nb.system.dir}/ParserDB/InputOutputAPI.jc*"/>
             <include name="${nb.system.dir}/ParserDB/JavaHelpAPI.jc*"/>
@@ -62,9 +58,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="parser-db" depends="init">
         <taskdef name="makeparserdb" classname="org.netbeans.nbbuild.MakeParserDB" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB"/>
-        <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/CompilerAPI" sources="${nb_all}/openide/compiler/src" nbroot="${nb_all}"/>
         <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/ConvertorAPI" sources="${nb_all}/openide/convertor/src" nbroot="${nb_all}"/>
-        <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/DebuggerAPI" sources="${nb_all}/debuggercore/oldapi/src" nbroot="${nb_all}"/>
         <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/ExecutionAPI" sources="${nb_all}/openide/execution/src" nbroot="${nb_all}"/>
         <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/InputOutputAPI" sources="${nb_all}/openide/io/src" nbroot="${nb_all}"/>
         <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/JavaHelpAPI" sources="${nb_all}/core/javahelp/src" nbroot="${nb_all}"/>
@@ -87,10 +81,6 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${nb_all}/openide/io/javadoc/InputOutputAPI.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/InputOutputAPI.zip"/>
         <ant dir="${nb_all}/openide/execution" target="javadoc"/>
         <copy file="${nb_all}/openide/execution/javadoc/ExecutionAPI.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/ExecutionAPI.zip"/>
-        <ant dir="${nb_all}/debuggercore/oldapi" target="javadoc"/>
-        <copy file="${nb_all}/debuggercore/oldapi/javadoc/DebuggerAPI.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/DebuggerAPI.zip"/>
-        <ant dir="${nb_all}/openide/compiler" target="javadoc"/>
-        <copy file="${nb_all}/openide/compiler/javadoc/CompilerAPI.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/CompilerAPI.zip"/>
         <ant dir="${nb_all}/openide/loaders" target="javadoc"/>
         <copy file="${nb_all}/openide/loaders/javadoc/LoadersAPI.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/LoadersAPI.zip"/>
         <ant dir="${nb_all}/core/javahelp" target="javadoc"/>
