@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.ant.freeform</type>
+    <name>NetBeans Installer</name>
+    <configuration>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
+            <name>NetBeans_Installer</name>
+            <folders>
+                <source-folder>
+                    <label>src</label>
+                    <location>/h/ttran/work/nbsrc/installer/coreide/src</location>
+                    <type>java</type>
+                </source-folder>
+            </folders>
+            <view>
+                <items>
+                    <source-file>
+                        <location>/h/ttran/work/nbextra/installer/netbeans/build.xml</location>
+                    </source-file>
+                    <source-folder style="packages">
+                        <label>src</label>
+                        <location>/h/ttran/work/nbsrc/installer/coreide/src</location>
+                    </source-folder>
+                </items>
+                <context-menu>
+                    <ide-action name="build"/>
+                    <ide-action name="clean"/>
+                    <ide-action name="rebuild"/>
+                    <ide-action name="run"/>
+                    <ide-action name="test"/>
+                </context-menu>
+            </view>
+            <ide-actions>
+                <action name="build">
+                    <target>build</target>
+                </action>
+                <action name="clean">
+                    <target>clean</target>
+                </action>
+                <action name="rebuild">
+                    <target>clean</target>
+                    <target>build</target>
+                </action>
+                <action name="run">
+                    <target>run</target>
+                </action>
+                <action name="test">
+                    <target>test</target>
+                </action>
+            </ide-actions>
+        </general-data>
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
+            <compilation-unit>
+                <package-root>/h/ttran/work/nbsrc/installer/coreide/src</package-root>
+                <classpath mode="compile">/usr/local/ismp5/lib/platform.jar:/usr/local/ismp5/lib/product.jar:/usr/local/ismp5/lib/wizard.jar:/usr/local/ismp5/lib/xt.jar:/usr/local/ismp5/ppk/linuxppk.jar:/usr/local/ismp5/ppk/solarisppk.jar:/usr/local/ismp5/ppk/win32ppk.jar</classpath>
+                <source-level>1.4</source-level>
+            </compilation-unit>
+        </java-data>
+    </configuration>
+</project>
