@@ -80,8 +80,8 @@ public class ErrorAnnotation {
         if (document == null)
             return;
         
-        // The active Jtext component
-        JTextComponent component = org.netbeans.editor.Utilities.getLastActiveComponent();
+        // The approriate JText component
+        JTextComponent component = editor.getOpenedPanes()[0];
         if (component != null){
             if (errors != null && errors.length > 0){
                 // Place the first error in the status bar

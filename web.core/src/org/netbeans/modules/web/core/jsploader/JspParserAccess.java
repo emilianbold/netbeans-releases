@@ -47,12 +47,14 @@ public class JspParserAccess {
          * @param docBase the document base of the web module. May be null if 
          *  we are parsing a tag file that it outside of a web module.
          */
+        private ClassPath cp;
         private WM (WebModule webModule) {
             this.webModule = webModule;
             pcs = new PropertyChangeSupport(this);
             //Listen on the changes for libraries
             if (webModule != null){
-                ClassPath.getClassPath(webModule.getDocumentBase (), ClassPath.EXECUTE).addPropertyChangeListener(this);
+                cp = ClassPath.getClassPath(webModule.getDocumentBase (), ClassPath.EXECUTE);
+                cp.addPropertyChangeListener(this);
             }
         }
         
@@ -142,6 +144,9 @@ public class JspParserAccess {
         public void propertyChange(java.beans.PropertyChangeEvent evt) {
             if (ClassPath.PROP_ENTRIES.equals(evt.getPropertyName())){
                 fireLibraries();
+            }
+            if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())){
+                firePackageRoots();
             }
         }
         

@@ -12,7 +12,6 @@
  */
 
 package org.netbeans.modules.web.core.jsploader;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Reader;
@@ -23,14 +22,8 @@ import java.io.Writer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-
-import javax.swing.Action;
 import javax.swing.Timer;
 import javax.swing.event.CaretListener;
-import javax.swing.JEditorPane;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ChangeListener;
@@ -39,35 +32,23 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.EditorKit;
+import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
 
 import org.openide.text.DataEditorSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.MultiDataObject;
 import org.openide.cookies.*;
-import org.openide.windows.CloneableTopComponent;
 import org.openide.text.CloneableEditor;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.TaskListener;
 import org.openide.util.Task;
-
-import org.netbeans.modules.web.core.jsploader.TagLibParseSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-
-import org.openide.util.LookupListener;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import javax.swing.AbstractAction;
-import java.awt.event.ActionEvent;
-import java.util.Iterator;
-import org.openide.text.Line;
-
-import org.openide.text.NbDocument;
 //import org.openide.debugger.Debugger;
 //import org.openide.debugger.Breakpoint;
 
@@ -172,15 +153,42 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         });
         
         encoding = null;
-                
+        
+        JspParserAccess
+                .getJspParserWM (getWebModule (getDataObject().getPrimaryFile()))
+                .addPropertyChangeListener(
+                    new PropertyChangeListener() {
+                        public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                            String propName = evt.getPropertyName();
+                            if (JspParserAPI.WebModule.PROP_LIBRARIES.equals(propName) 
+                                || JspParserAPI.WebModule.PROP_PACKAGE_ROOTS.equals(propName)) {
+                                // the classpath was changed, need to reparsed
+                                restartTimer(false);
+                            }
+                       }    
+                    });
+                    
+        
     }
     
+    private WebModule getWebModule(FileObject fo){
+        WebModule wm = WebModule.getWebModule(fo);
+        if (wm != null){
+            FileObject wmRoot = wm.getDocumentBase();
+            if (fo == wmRoot || FileUtil.isParentOf(wmRoot, fo)) {
+                return wm;
+            }
+        }
+        return null;
+    }
     /** Restart the timer which starts the parser after the specified delay.
      * @param onlyIfRunning Restarts the timer only if it is already running
      */
     private void restartTimer(boolean onlyIfRunning) {
-        if (onlyIfRunning && !timer.isRunning())
+        if (onlyIfRunning && !timer.isRunning()){
             return;
+        }
+            
         
         int delay = AUTO_PARSING_DELAY;
         if (delay > 0) {
@@ -197,6 +205,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         catch (java.nio.charset.IllegalCharsetNameException e){
             supported = false;
         }
+        
         return supported;
     }
     
@@ -503,6 +512,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
                 getEditorPane().addCaretListener(caretListener);
                 super.componentActivated();
             }
+            ((BaseJspEditorSupport)cloneableEditorSupport()).restartTimer(false);
         }
         
         /*

@@ -346,8 +346,13 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                         }
                         // set icon with error.
                         changeIcon(true);
+                        
                     }
                     PageInfo pageInfo = locResult.getPageInfo();
+                    
+                    // if failure do nothing
+                    parsingTask = null;
+                    
                     if (pageInfo == null) return;
                     //Map prefixMapper = (pageInfo.getXMLPrefixMapper().size() > 0) ?
                     //    pageInfo.getApproxXmlPrefixMapper() : pageInfo.getJspPrefixMapper();
@@ -366,11 +371,8 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                     getJSPColoringData(false).applyParsedData(pageInfo.getTagLibraries(), prefixMapper, 
                                                               pageInfo.isELIgnored(), getCachedOpenInfo(false, false).isXmlSyntax(), 
                                                               locResult.isParsingSuccess());
-                    // if failure do nothing
-                    parsingTask = null;
-                    
                 }
-            } 
+            }
         }
         
         
