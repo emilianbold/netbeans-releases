@@ -551,8 +551,15 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                 public Dimension getPreferredSize() {
                     Component comp = (Component)formModel.getFormDesigner()
                                                     .getComponent(component);
-                    Dimension size = /*comp instanceof JComponent ?
-                                       comp.getPreferredSize() :*/ comp.getSize();
+                    Dimension size;
+                    if (comp == null) {
+                        comp = (Component) component.getBeanInstance();
+                        size = comp.getPreferredSize();
+                    }
+                    else { 
+                        size = formModel.getFormDesigner().isOpened() ?
+                               comp.getSize() : comp.getPreferredSize();
+                    }
 
                     if (comp instanceof JComponent && !(comp instanceof JPanel)) {
                         Insets thisIns = getInsets();
@@ -587,6 +594,8 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                 public Dimension getMinimumSize() {
                     Component comp = (Component)formModel.getFormDesigner()
                                                     .getComponent(component);
+                    if (comp == null)
+                        comp = (Component) component.getBeanInstance();
                     return comp.getMinimumSize();
 //                    return component.getComponent().getMinimumSize();
                 }
@@ -594,6 +603,8 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                 public Dimension getMaximumSize() {
                     Component comp = (Component)formModel.getFormDesigner()
                                                     .getComponent(component);
+                    if (comp == null)
+                        comp = (Component) component.getBeanInstance();
                     return comp.getMaximumSize();
 //                    return component.getComponent().getMaximumSize();
                 }

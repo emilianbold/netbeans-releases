@@ -82,10 +82,6 @@ public class SelectLayoutAction extends NodeAction
 
             if (container.getLayoutSupport().isDedicated())
                 return false;
-
-            FormDesigner designer = container.getFormModel().getFormDesigner();
-            if (!designer.isInDesignedTree(container))
-                return false;
         }
         return true;
     }

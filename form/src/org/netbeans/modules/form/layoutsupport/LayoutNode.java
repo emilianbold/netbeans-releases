@@ -70,13 +70,8 @@ public class LayoutNode extends FormNode
     }
 
     public boolean hasCustomizer() {
-        if (layoutSupport.getMetaContainer().isReadOnly()
-               || layoutSupport.getCustomizerClass() == null)
-            return false;
-
-        RADVisualContainer container = layoutSupport.getMetaContainer();
-        FormDesigner designer = getFormModel().getFormDesigner();
-        return designer.isInDesignedTree(container);
+        return !layoutSupport.getMetaContainer().isReadOnly()
+               && layoutSupport.getCustomizerClass() != null;
     }
 
     public Component getCustomizer() {

@@ -59,7 +59,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
 
     /** An indicator whether the form should be opened additionally when
      * switching back from a non-editing workspace to an editing one */
-    private static boolean openOnEditing = false;
+    private boolean openOnEditing = false;
 
     // listeners
     private FormModelListener formListener;
@@ -455,6 +455,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
         attachWorkspacesListener();
 
         if (isCurrentWorkspaceEditing()) {
+            openOnEditing = false;
             String formWorkspace = FormEditor.getFormSettings().getWorkspace();
             if (!formWorkspace.equalsIgnoreCase(FormEditor.getFormBundle()
                                         .getString("VALUE_WORKSPACE_NONE"))) {
@@ -467,7 +468,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
             return true;
         }
         else {
-            // if this is not an "editing" workspace, do not open the designer
+            // if this is not an editing workspace, do not open the designer
             openOnEditing = true;
             return false;
         }
@@ -635,38 +636,48 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                                            evt.getPropertyName()))
                     return;
 
-                if (openOnEditing && isCurrentWorkspaceEditing()) {
-                    openOnEditing = false;
-                    FormEditorAction viewAction = (FormEditorAction)
-                        SharedClassObject.findObject(FormEditorAction.class, true);
-                    viewAction.performAction();
-                }
-                else {
-                    Workspace ws = TopManager.getDefault().getWindowManager()
-                                                       .getCurrentWorkspace();
-                    if (FormEditor.getFormSettings().getWorkspace().equals(
-                                                              ws.getName()))
-                        return; // switched to the main "GUI" workspace
-
-                    Mode formMode = ws.findMode("Form"); // NOI18N
-                    if (formMode != null) {
-                        boolean modeOpened = false;
-                        TopComponent[] comps = formMode.getTopComponents();
-                        for (int i=0; i < comps.length; i++)
-                            if (comps[i].isOpened(ws)) {
-                                modeOpened = true;
-                                break;
-                            }
-
-                        if (modeOpened) {
-                            FormModel[] forms = FormEditorSupport.getOpenedForms();
-                            for (int i=0; i < forms.length; i++) {
-                                TopComponent formDesigner =
-                                    FormEditorSupport.getFormDesigner(forms[i]);
-                                if (formDesigner != null)
-                                    formDesigner.open(ws);
-                            }
+                // if switched to an editing workspace, look for forms
+                // waiting for opening their designers
+                if (isCurrentWorkspaceEditing()) {
+                    boolean anyWaitingForm = false;
+                    Collection forms = openForms.values();
+                    for (Iterator it=forms.iterator(); it.hasNext(); ) {
+                        FormEditorSupport fes = (FormEditorSupport) it.next();
+                        if (fes.openOnEditing) {
+                            fes.openOnEditing = false;
+                            fes.openGUI();
+                            anyWaitingForm = true;
                         }
+                    }
+                    if (anyWaitingForm)
+                        return;
+                }
+
+                // do nothig if switched to the main "GUI" workspace
+                Workspace ws = TopManager.getDefault().getWindowManager()
+                                                   .getCurrentWorkspace();
+                if (FormEditor.getFormSettings().getWorkspace().equals(
+                                                          ws.getName()))
+                    return;
+
+                // refresh opened designers on this workspace
+                Mode formMode = ws.findMode("Form"); // NOI18N
+                if (formMode == null)
+                    return; // no form mode on this workspace
+
+                boolean modeOpened = false;
+                TopComponent[] comps = formMode.getTopComponents();
+                for (int i=0; i < comps.length; i++)
+                    if (comps[i].isOpened(ws)) {
+                        modeOpened = true;
+                        break;
+                    }
+
+                if (modeOpened) { // form editor is opened on this workspace
+                    Collection forms = openForms.values();
+                    for (Iterator it=forms.iterator(); it.hasNext(); ) {
+                        FormEditorSupport fes = (FormEditorSupport) it.next();
+                        fes.getFormDesigner().open(ws);
                     }
                 }
             }
