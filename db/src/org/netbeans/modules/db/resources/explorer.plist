@@ -12,7 +12,7 @@
  */
 
 {
-	/** 
+	/**
 	* Root section.
 	* This section describes subnode "Databases" in "Runtime". It is a root for
 	* database explorer, handles open connections and a list of drives. Serves list
@@ -22,7 +22,7 @@
 		name = Databases;
 		class = org.netbeans.modules.db.explorer.nodes.RootNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.RootNodeInfo;
-		children_ordering = {
+		  = {
 			org.openide.loaders.DataFolder$FolderNode = 0;
 			org.netbeans.modules.db.explorer.nodes.DriverListNode = 1;
 			org.netbeans.modules.db.explorer.nodes.ConnectionNode = 2;
@@ -64,7 +64,7 @@
 		);
 	};
 
-	/** 
+	/**
 	* Driver list section.
 	* This section describes subnode "Drivers" in "Database". It is a root for driver
 	* list (a list of all available and registered drivers). Allows add a new driver.
@@ -79,6 +79,21 @@
 		properties = ();
 		options = {};
 		defaultdriverlist = (
+			{
+				name = "Oracle thin";
+				driver = "oracle.jdbc.driver.OracleDriver";
+				prefix = "jdbc:oracle:thin:@<HOST>:<PORT>:<SID>";
+			},
+			{
+				name = "PointBase Mobile Edition";
+				driver = "com.pointbase.jdbc.jdbcDriver";
+				prefix = "jdbc:pointbase:<DB>";
+			},
+			{
+				name = "PointBase Server Edition";
+				driver = "com.pointbase.net.netJDBCDriver";
+				prefix = "jdbc:pointbase://<HOST>[:<PORT>]/<DB>";
+			},
 			{
 				name = "Cloudscape";
 				driver = "COM.cloudscape.core.JDBCDriver";
@@ -155,21 +170,6 @@
 				prefix = "jdbc:oracle:oci8:@<SID>";
 			},
 			{
-				name = "Oracle thin";
-				driver = "oracle.jdbc.driver.OracleDriver";
-				prefix = "jdbc:oracle:thin:@<HOST>:<PORT>:<SID>";
-			},
-			{
-				name = "PointBase Mobile Edition";
-				driver = "com.pointbase.jdbc.jdbcDriver";
-				prefix = "jdbc:pointbase:<DB>";
-			},
-			{
-				name = "PointBase Server Edition";
-				driver = "com.pointbase.net.netJDBCDriver";
-				prefix = "jdbc:pointbase://<HOST>[:<PORT>]/<DB>";
-			},
-			{
 				name = "PostgreSQL";
 				driver = "postgresql.Driver";
 				prefix = "jdbc:postgresql://<HOST>:<PORT>/<DB>";
@@ -184,7 +184,7 @@
 				driver = "com.sybase.jdbc2.jdbc.SybDriver";
 				prefix = "jdbc:sybase:Tds:<HOST>:<PORT>";
 			}
-		);	
+		);
 		actions = (
 			{
 				name = "AddNewDriver";
@@ -194,7 +194,7 @@
 		);
 	};
 
-	/** 
+	/**
 	* Driver section.
 	* This section describes dynamic subnodes in "Drivers" node. Entire drivers serves name
 	* and URL properties, allows to delete selected node and connect using selected driver.
@@ -205,12 +205,13 @@
 		infoclass = org.netbeans.modules.db.explorer.infos.DriverNodeInfo;
 		creator = driverlist;
 		iconbase = "/org/netbeans/modules/db/resources/driver";
+		iconbaseprefered = "/org/netbeans/modules/db/resources/driverPrefered";
 		children = ();
 		options = {
 			cut = YES;
 			copy = YES;
 			delete = YES;
-		};	
+		};
 		properties = (
 			{
 				code = name;
@@ -226,13 +227,13 @@
 				code = prefix;
 				name = "DatabasePrefix";
 				class = java.lang.String;
-				writable = YES;	
+				writable = YES;
 			},
 			{
 				code = adaptorClass;
 				name = "AdaptorClass";
 				class = java.lang.String;
-				writable = YES;	
+				writable = YES;
 			}
 		);
 		actions = (
@@ -281,7 +282,7 @@
 		);
 	};
 
-	/** 
+	/**
 	* Connection section.
 	* This section describes dynamic subnodes in "Databases" node. Entire connection
 	* serves a lot of properties, allows connect or disconnect to database, eventually
@@ -300,7 +301,7 @@
 			cut = YES;
 			copy = YES;
 			delete = YES;
-		};	
+		};
 		children_ordering = {
 			org.netbeans.modules.db.explorer.nodes.TableListNode = 0;
 			org.netbeans.modules.db.explorer.nodes.ViewListNode = 1;
@@ -776,7 +777,7 @@
 				code = union;
 				name = union;
 				class = java.lang.Boolean;
-				writable = NO;			
+				writable = NO;
 				expert = YES;
 			},
 			{
@@ -1143,7 +1144,7 @@
 		);
 	};
 
-	/** 
+	/**
 	* Table list section.
 	* This section describes dynamic subnodes in "Connection" node.
 	*/
@@ -1155,7 +1156,7 @@
 		iconbase = "/org/netbeans/modules/db/resources/folder";
 		children = ();
 		properties = ();
-		options = {};	
+		options = {};
 		actions = (
 			{
 				name = "CreateTable";
@@ -1182,7 +1183,7 @@
 		);
 	};
 
-	/** 
+	/**
 	* Table  section.
 	* This section describes one table.
 	*/
@@ -1199,7 +1200,7 @@
 			cut = NO;
 			copy = YES;
 			delete = YES;
-		};	
+		};
 		children_ordering = {
 			org.netbeans.modules.db.explorer.nodes.PrimaryKeyNode = 0;
 			org.netbeans.modules.db.explorer.nodes.ColumnNode = 1;
@@ -1297,8 +1298,8 @@
 			}
 		);
 	};
-		
-	/** 
+
+	/**
 	* Column section.
 	* This section describes list of one column.
 	*/
@@ -1312,7 +1313,7 @@
 			cut = YES;
 			copy = YES;
 			delete = YES;
-		};	
+		};
 		actions = (
 			{
 				name = "AddColumn";
@@ -1418,7 +1419,7 @@
 		infoclass = org.netbeans.modules.db.explorer.infos.IndexColumnNodeInfo;
 		iconbase = "/org/netbeans/modules/db/resources/columnIndex";
 		resultset = (catalog,schema,tablename,unique,qual,idxname,type,ordpos,name,ord,card,pages,filter);
-		options = {};	
+		options = {};
 		actions = (
 			{
 				name = "AddColumn";
@@ -1521,8 +1522,8 @@
 			}
 		);
 	};
-	
-	/** 
+
+	/**
 	* Primary key section.
 	* This section describes list of one column.
 	*/
@@ -1536,7 +1537,7 @@
 			cut = YES;
 			copy = YES;
 			delete = YES;
-		};	
+		};
 		actions = (
 			{
 				name = "AddColumn";
@@ -1634,7 +1635,7 @@
 		);
 	};
 
-	/** 
+	/**
 	* Foreign key section.
 	* This section describes one related column.
 	*/
@@ -1647,7 +1648,7 @@
 			cut = YES;
 			copy = YES;
 			delete = YES;
-		};	
+		};
 		actions = (
 			{
 				name = "AddColumn";
@@ -1664,7 +1665,7 @@
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
-			delimiter,			
+			delimiter,
 			{
 				name = "Cut";
 				class = org.openide.actions.CutAction;
@@ -1752,7 +1753,7 @@
 		iconbase = "/org/netbeans/modules/db/resources/folder";
 		children = ();
 		properties = ();
-		options = {};	
+		options = {};
 		actions = ();
 	};
 
@@ -1767,8 +1768,8 @@
 			cut = YES;
 			copy = YES;
 			delete = YES;
-		};	
-		actions = (			
+		};
+		actions = (
 			{
 				name = "AddIndex";
 				class = org.netbeans.modules.db.explorer.actions.AddIndexAction;
@@ -1794,8 +1795,8 @@
 			cut = YES;
 			copy = YES;
 			delete = YES;
-		};	
-		actions = (			
+		};
+		actions = (
 			{
 				name = "AddColumn";
 				class = org.netbeans.modules.db.explorer.actions.AddToIndexAction;
@@ -1857,7 +1858,7 @@
 			cut = YES;
 			copy = YES;
 			delete = YES;
-		};	
+		};
 		actions = (
 			{
 				name = "ExecuteCommand";
@@ -1926,7 +1927,7 @@
 		iconbase = "/org/netbeans/modules/db/resources/tableReferenced";
 		resultset = (pcatalog,pschema,pname,pcolname,catalog,schema,name,colname,keyseq,updaterule,deleterule,fkname,pkname,defer);
 		children = ();
-		options = {};	
+		options = {};
 		actions = (
 			{
 				name = "Cut";
@@ -2003,7 +2004,7 @@
 			}
 		);
 	};
-		
+
 	viewlist = {
 		name = "Views";
 		displayname = "{name}";
@@ -2012,7 +2013,7 @@
 		iconbase = "/org/netbeans/modules/db/resources/folder";
 		children = ();
 		properties = ();
-		options = {};	
+		options = {};
 		actions = (
 			{
 				name = "AddView";
@@ -2039,7 +2040,7 @@
 			cut = YES;
 			copy = YES;
 			delete = YES;
-		};	
+		};
 		actions = (
 			{
 				name = "AddView";
@@ -2056,7 +2057,7 @@
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
-			delimiter,			
+			delimiter,
 			{
 				name = "Cut";
 				class = org.openide.actions.CutAction;
@@ -2094,7 +2095,7 @@
 			}
 		);
 	};
-		
+
 	viewcolumn = {
 		name = "Column";
 		class = org.netbeans.modules.db.explorer.nodes.LeafNode;
@@ -2102,7 +2103,7 @@
 		iconbase = "/org/netbeans/modules/db/resources/columnView";
 		resultset = (catalog,schema,tablename,name,datatype,typename,columnsize,bufflen,decdigits,radix,nullable,remarks,coldef,reserved1,reserved2,octetlen,ordpos,isnullable);
 		children = ();
-		options = {};	
+		options = {};
 		actions = (
 			{
 				name = "ViewData";
@@ -2112,7 +2113,7 @@
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
-			delimiter,			
+			delimiter,
 			{
 				name = "Cut";
 				class = org.openide.actions.CutAction;
@@ -2172,8 +2173,8 @@
 				writable = NO;
 			}
 		);
-	};	
-		
+	};
+
 	procedurelist = {
 		name = "Procedures";
 		displayname = "{name}";
@@ -2182,7 +2183,7 @@
 		iconbase = "/org/netbeans/modules/db/resources/folder";
 		children = ();
 		properties = ();
-		options = {};	
+		options = {};
 		actions = (
 			{
 				name = "ExecuteCommand";
@@ -2202,7 +2203,7 @@
 			cut = YES;
 			copy = YES;
 			delete = YES;
-		};	
+		};
 		actions = (
 //			{
 //				name = "AddProcedure";
@@ -2214,7 +2215,7 @@
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
-			delimiter,			
+			delimiter,
 			{
 				name = "Cut";
 				class = org.openide.actions.CutAction;
@@ -2256,7 +2257,7 @@
 			}
 		);
 	};
-	
+
 	procedurecolumn = {
 		name = "ProcedureColumn";
 		class = org.netbeans.modules.db.explorer.nodes.ProcedureParamNode;
@@ -2272,7 +2273,7 @@
 			cut = YES;
 			copy = YES;
 			delete = YES;
-		};	
+		};
 		actions = (
 //			{
 //				name = "AddProcedure";
@@ -2284,7 +2285,7 @@
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
-			delimiter,			
+			delimiter,
 			{
 				name = "Cut";
 				class = org.openide.actions.CutAction;
