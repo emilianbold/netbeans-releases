@@ -377,6 +377,8 @@ public class JarClassLoader extends ProxyClassLoader {
             try {
                 ze = src.getEntry(name);
             } catch (IllegalStateException ex) {
+                // this exception occurs in org/netbeans/core/lookup/* tests
+                // without this catch statement the tests fail
                 return null;
             }
             if (VERBOSE) {
@@ -391,6 +393,8 @@ public class JarClassLoader extends ProxyClassLoader {
             try {
                 ze = src.getEntry(path);
             } catch (IllegalStateException ex) {
+                // this exception occurs in org/netbeans/core/lookup/* tests
+                // without this catch statement the tests fail
                 return null;
             }
             if (ze == null) return null;
