@@ -49,7 +49,6 @@ import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -72,8 +71,8 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
 /**
- * Represents one plain Web project.
- * @author Jesse Glick, et al., Pavel Buzek
+ * Represents one ejb module project
+ * @author Chris Webster
  */
 final class EjbJarProject implements Project, AntProjectListener {
     
@@ -346,7 +345,7 @@ final class EjbJarProject implements Project, AntProjectListener {
                 try {
                     FileObject ddFO = ejbModule.getDeploymentDescriptor();
                     if (ddFO != null) {
-                        DataObject dobj = DataObject.find(ddFO);
+                        DataObject.find(ddFO);
                     }
                 } catch (org.openide.loaders.DataObjectNotFoundException ex) {}
 
@@ -437,9 +436,10 @@ final class EjbJarProject implements Project, AntProjectListener {
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
             
-            "Templates/J2EE/Session",
-            "Templates/Classes/Class.java",
-            "Templates/Other/Folder"
+            "Templates/J2EE/Session", // NOI18N
+            "Templates/J2EE/RelatedCMP", // NOI18N
+            "Templates/Classes/Class.java", // NOI18N
+            "Templates/Other/Folder" // NOI18N
         };
         
         public String[] getRecommendedTypes() {

@@ -29,14 +29,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectGenerator;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
-
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-
 import org.openide.util.NbBundle;
 
 /**
@@ -46,9 +39,6 @@ import org.openide.util.NbBundle;
 public class NewEjbJarProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
-    
-    /** Create a new wizard iterator. */
-    public NewEjbJarProjectWizardIterator() {}
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
@@ -142,13 +132,4 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Instanti
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
     
-    // helper methods, finds indexJSP's FileObject
-    private FileObject getIndexJSPFO(FileObject webRoot, String indexJSP) {
-        // replace '.' with '/'
-        indexJSP = indexJSP.replace ('.', '/'); // NOI18N
-        
-        // ignore unvalid mainClass ???
-        
-        return webRoot.getFileObject (indexJSP, "jsp"); // NOI18N
-    }
 }

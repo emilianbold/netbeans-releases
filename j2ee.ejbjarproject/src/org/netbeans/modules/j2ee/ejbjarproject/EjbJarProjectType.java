@@ -19,8 +19,8 @@ import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 /**
- * Factory for simple J2SE projects.
- * @author Jesse Glick
+ * Factory for EJB Module projects
+ * @author Chris Webster
  */
 public final class EjbJarProjectType implements AntBasedProjectType {
     
@@ -29,9 +29,6 @@ public final class EjbJarProjectType implements AntBasedProjectType {
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-ejbjarproject/1";
     private static final String PRIVATE_CONFIGURATION_NAME = "data";
     private static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-ejbjarproject-private/1";
-    
-    /** Do nothing, just a service. */
-    public EjbJarProjectType() {}
     
     public String getType() {
         return TYPE;

@@ -38,7 +38,6 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.*;
 import org.netbeans.api.project.ProjectInformation;
 
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.NoSelectedServerWarning;
 
 import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;

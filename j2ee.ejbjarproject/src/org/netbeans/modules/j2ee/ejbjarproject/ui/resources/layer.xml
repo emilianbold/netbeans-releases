@@ -30,6 +30,18 @@ Microsystems, Inc. All Rights Reserved.
                       urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/EnterpriseJavaBean16.gif"/>
             
         </file>
+        <file name="RelatedCMP">
+         <attr name="template" boolvalue="true"/>
+         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.cmp.RelatedCMPWizard.create" />
+         <attr name="templateCategory" stringvalue="ejb-types"/>
+         <attr name="templateWizardURL"
+                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/CMPDatabase.html"/>
+         <attr name="SystemFileSystem.localizingBundle"
+                      stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.cmp.Bundle"/>
+         <attr name="SystemFileSystem.icon"
+                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/EnterpriseJavaBean16.gif"/>
+            
+        </file>
         </folder>
     
         <folder name="Project">
