@@ -159,7 +159,10 @@ Microsystems, Inc. All Rights Reserved.
             <!-- additional path elements needed for tests - sources, libs -->
             <path>
                 <pathelement location="../src"/>
-                <pathelement location="../../core/netbeans/lib/core.jar"/>
+                <fileset dir="../../core/netbeans/lib">
+                    <include name="core.jar"/>
+                    <include name="ext/*.jar"/>
+                </fileset>
             </path>
         </pathdef>
     </target>

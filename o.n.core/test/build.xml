@@ -158,7 +158,13 @@ Microsystems, Inc. All Rights Reserved.
             </path>
             <!-- additional path elements needed for tests - sources, libs -->
             <path>
+                <!-- Working sources should take precedence over core.jar: -->
                 <pathelement location="../src"/>
+                <fileset dir="../netbeans/lib">
+                    <!-- But loading core.jar means its manifest is available to module system: -->
+                    <include name="core.jar"/>
+                    <include name="ext/*.jar"/>
+                </fileset>
                 <fileset dir="../../openide/netbeans/lib">
                     <include name="openide*.jar"/>
                 </fileset>
@@ -187,6 +193,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="test.target" value="ide_test_helper"/>
         <property name="xtest.ide.path" refid="xtest.ide.path">
             <classpath id="xtest.ide.path">
+                <!-- XXX this is bad, it assumes the Ant module is installed! -->
                 <pathelement location="${netbeans.test.home}/modules/ext/ant.jar" />
                 <pathelement location="${netbeans.test.home}/modules/ext/ant-optional.jar" />
             </classpath>
