@@ -24,6 +24,7 @@ import java.util.ResourceBundle;
 
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Utilities;
 
 
 /**
@@ -86,32 +87,18 @@ public class HTTPFileSystemBeanInfo extends SimpleBeanInfo {
      */
     public Image getIcon (int kind) {
 
-        // Icon image to return
-        Image   icon;
-        
-        
         switch( kind ) {
             
             case ICON_COLOR_16x16:
             default:
-                icon = loadImage( "resources/BeanIcon16C.gif" );    // NO I18N
-                break;
-                
+                return Utilities.loadImage( "/org/netbeans/modules/javadoc/httpfs/resources/BeanIcon16C.gif" );    // NOI18N
             case ICON_COLOR_32x32:
-                icon = loadImage( "resources/BeanIcon32C.gif" );    // NO I18N
-                break;
-                
+                return Utilities.loadImage( "/org/netbeans/modules/javadoc/httpfs/resources/BeanIcon32C.gif" );    // NOI18N
             case ICON_MONO_16x16:
-                icon = loadImage( "resources/BeanIcon16M.gif" );    // NO I18N
-                break;
-                
+                return Utilities.loadImage( "/org/netbeans/modules/javadoc/httpfs/resources/BeanIcon16M.gif" );    // NOI18N
             case ICON_MONO_32x32:
-                icon = loadImage( "resources/BeanIcon32M.gif" );    // NO I18N
-                break;
-                
+                return Utilities.loadImage( "/org/netbeans/modules/javadoc/httpfs/resources/BeanIcon32M.gif" );    // NOI18N
         }
-        return icon;
-
     }
 
 }
