@@ -26,6 +26,8 @@ import java.util.*;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.openide.filesystems.FileLock;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -104,6 +106,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
     private final ProjectWebModule webModule;
     private FileObject libFolder = null;
     private CopyOnSaveSupport css;
+    private WebModule apiWebModule;
     
     WebProject(final AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -112,6 +115,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator ());
         genFilesHelper = new GeneratedFilesHelper(helper);
         webModule = new ProjectWebModule (this, helper);
+        apiWebModule = WebModuleFactory.createWebModule (webModule);
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
         css = new CopyOnSaveSupport();
@@ -214,6 +218,10 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
     
     ProjectWebModule getWebModule () {
         return webModule;
+    }
+    
+    WebModule getAPIWebModule () {
+        return apiWebModule;
     }
     
     FileObject getSourceDirectory() {
