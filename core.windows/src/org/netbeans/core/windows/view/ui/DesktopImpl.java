@@ -13,33 +13,25 @@
 
 package org.netbeans.core.windows.view.ui;
 
-import java.awt.AWTEvent;
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.event.AWTEventListener;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.border.EmptyBorder;
 import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.view.EditorView;
 import org.netbeans.core.windows.view.SlidingView;
 import org.netbeans.core.windows.view.ViewElement;
 import org.netbeans.core.windows.view.ui.slides.SlideOperation;
-import org.netbeans.swing.tabcontrol.TabDataModel;
-import org.netbeans.swing.tabcontrol.TabbedContainer;
-import org.openide.ErrorManager;
-import org.openide.windows.TopComponent;
+
 
 /** Implementation of compact mode desktop, containing split views as well
  * as slide bars.
@@ -75,7 +67,7 @@ public final class DesktopImpl {
         layeredPane.setLayout(new LayeredLayout());
         // desktop represents regular layer of layeredPane
         desktop = new JPanel();
-        desktop.setLayout(new BorderLayout());
+        desktop.setLayout(new GridBagLayout());
         layeredPane.add(desktop);
     }
     
@@ -102,7 +94,6 @@ public final class DesktopImpl {
 //            System.out.println("desktopimpl: splitroot comp");
             setViewComponent(splitRoot.getComponent());
         } else {
-//            System.out.println("desktopimpl: null");
             setViewComponent(null);
         }
 
@@ -114,7 +105,6 @@ public final class DesktopImpl {
 
         maximizedMode = component;
         if (component.getComponent() != viewComponent) {
-//            System.out.println("desktopimpl : maximized perform");
             setViewComponent(component.getComponent());
 
         }
@@ -125,13 +115,17 @@ public final class DesktopImpl {
             return;
         }
         if (viewComponent != null) {
-//            System.out.println("desktopimpl : removing compl");
             desktop.remove(viewComponent);
         }
         viewComponent = component;
         if (viewComponent != null) {
-//            System.out.println("desktopimpl : adding compl");
-            desktop.add(component, BorderLayout.CENTER);
+            GridBagConstraints constr = new GridBagConstraints();
+            constr.gridx = 1;
+            constr.gridy = 0;
+            constr.fill = constr.BOTH;
+            constr.weightx = 1;
+            constr.weighty = 1;
+            desktop.add(component, constr);
         }
         layeredPane.revalidate();
         layeredPane.repaint();
@@ -147,11 +141,25 @@ public final class DesktopImpl {
             return;
         }
         slidingViews.add(view);
-        String constraint = convertSide(view.getSide());
-        desktop.add(view.getComponent(), constraint);
-        if (constraint == BorderLayout.WEST || constraint == BorderLayout.SOUTH) {
-            redefineBorderForSouthBar();
+        GridBagConstraints constraint = new GridBagConstraints();
+        constraint.fill = GridBagConstraints.BOTH;
+        if (Constants.BOTTOM.equals(view.getSide())) {
+            constraint.gridx = 1;
+            constraint.gridy = 1;
+            constraint.anchor = GridBagConstraints.SOUTHWEST;
+            
+        } else if (Constants.LEFT.equals(view.getSide())) {
+            constraint.gridx = 0;
+            constraint.gridy = 0;
+            constraint.gridheight = 2;
+            constraint.anchor = GridBagConstraints.NORTHWEST;
+        } else if (Constants.RIGHT.equals(view.getSide())) {
+            constraint.gridx = 2;
+            constraint.gridy = 0;
+            constraint.gridheight = 2;
+            constraint.anchor = GridBagConstraints.NORTHEAST;
         }
+        desktop.add(view.getComponent(), constraint);
         // #45033 fix - invalidate isn't enough, revalidate is correct
         layeredPane.revalidate();
     }
@@ -162,11 +170,7 @@ public final class DesktopImpl {
             return;
         }
         slidingViews.remove(view);
-        String constraint = convertSide(view.getSide());
         desktop.remove(view.getComponent());
-        if (constraint == BorderLayout.WEST || constraint == BorderLayout.SOUTH) {
-            redefineBorderForSouthBar();
-        }
         checkCurSlide();
         // #45033 fix - invalidate isn't enough, revalidate is correct
         layeredPane.revalidate();
@@ -184,28 +188,6 @@ public final class DesktopImpl {
             }
             // currently slided component not found in view data, so remove
             layeredPane.remove(curSlideComp);
-        }
-    }
-    
-    private void redefineBorderForSouthBar() {
-        SlidingView south = null;
-        SlidingView west = null;
-        Iterator it = slidingViews.iterator();
-        while (it.hasNext()) {
-            SlidingView view = (SlidingView)it.next();
-            if (Constants.LEFT.equals(view.getSide())) {
-                west = view;
-            }
-            if (Constants.BOTTOM.equals(view.getSide())) {
-                south = view;
-            }
-        }
-        if (south != null) {
-            if (west != null) {
-                ((JComponent)south.getComponent()).setBorder(new EmptyBorder(1, 26, 2, 26));
-            } else {
-                ((JComponent)south.getComponent()).setBorder(new EmptyBorder(1, 2, 2, 26));
-            }
         }
     }
     
@@ -265,18 +247,6 @@ public final class DesktopImpl {
         
         return new Rectangle(leftTop, screenRect.getSize());
     }
-    
-    private String convertSide(String origSide) {
-        if (Constants.TOP.equals(origSide)) {
-            return BorderLayout.NORTH;
-        } else if (Constants.LEFT.equals(origSide)) {
-            return BorderLayout.WEST;
-        } else if (Constants.RIGHT.equals(origSide)) {
-            return BorderLayout.EAST;
-        }
-        return BorderLayout.SOUTH;
-    }
-    
     
     /** Updates slide operation by setting correct finish bounds of component 
      * which will component have after slide in. It should cover whole one side
