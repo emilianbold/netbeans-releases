@@ -105,8 +105,10 @@ public final class MainWindow extends JFrame {
     
         JComponent tb = getToolbarComponent();
         
-        getContentPane().add(tb, BorderLayout.NORTH);        
-        getContentPane().add(StatusLine.createLabel(), BorderLayout.SOUTH);
+        getContentPane().add(tb, BorderLayout.NORTH);
+        JComponent status = StatusLine.createLabel();
+        status.setName("statusLine"); //NOI18N
+        getContentPane().add(status, BorderLayout.SOUTH);
         // initialize desktop panel
         desktopPanel = new JPanel();
         desktopPanel.setBorder(getDesktopBorder());
