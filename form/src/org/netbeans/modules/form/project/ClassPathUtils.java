@@ -176,10 +176,9 @@ public class ClassPathUtils {
         String[] outputs = null;
 
         for (int i=0; i < artifacts.length; i++) {
-            File outputFile = new File(
-                artifacts[i].getScriptLocation().getParent()
-                + File.separator
-                + artifacts[i].getArtifactLocation().getPath());
+            URI scriptLocation = artifacts[i].getScriptLocation().toURI();
+            URI artifactLocation = artifacts[i].getArtifactLocation();
+            File outputFile = new File(scriptLocation.resolve(artifactLocation).normalize());
 
             URL outputURL;
             try {

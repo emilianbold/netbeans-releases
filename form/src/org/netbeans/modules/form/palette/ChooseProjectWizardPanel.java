@@ -19,6 +19,7 @@ import javax.swing.BorderFactory;
 import javax.swing.event.*;
 import java.beans.*;
 import java.util.*;
+import java.net.URI;
 
 import org.openide.WizardDescriptor;
 import org.openide.ErrorManager;
@@ -125,11 +126,12 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel {
         AntArtifact[] artifacts =
             AntArtifactQuery.findArtifactsByType(project, "jar"); // NOI18N
 
-        for (int i=0; i < artifacts.length; i++)
-            fileList.add(new File(
-                artifacts[i].getScriptLocation().getParent()
-                + File.separator
-                + artifacts[i].getArtifactLocation().getPath()));
+        for (int i=0; i < artifacts.length; i++) {
+            URI scriptLocation = artifacts[i].getScriptLocation().toURI();
+            URI artifactLocation = artifacts[i].getArtifactLocation();
+            File outputFile = new File(scriptLocation.resolve(artifactLocation).normalize());
+            fileList.add(outputFile);
+        }
 
         File[] outputFiles = new File[fileList.size()];
         fileList.toArray(outputFiles);
