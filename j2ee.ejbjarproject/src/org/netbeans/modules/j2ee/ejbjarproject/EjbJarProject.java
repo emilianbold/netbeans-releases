@@ -396,7 +396,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     public String getName() {
         return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
-                Element data = helper.getPrimaryConfigurationData(true);
+                Element data = updateHelper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
                 if (nl.getLength() == 1) {
@@ -405,7 +405,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                         return ((Text) nl.item(0)).getNodeValue();
                     }
                 }
-                return "???"; // NOI18N
+                return "EJB???"; // NOI18N
             }
         });
     }

@@ -334,7 +334,7 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
     public String getName() {
         return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
-                Element data = helper.getPrimaryConfigurationData(true);
+                Element data = updateHelper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
                 if (nl.getLength() == 1) {
