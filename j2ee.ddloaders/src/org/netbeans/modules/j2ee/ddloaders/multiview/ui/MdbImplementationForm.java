@@ -43,7 +43,8 @@ public class MdbImplementationForm extends SectionInnerPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         beanClassTextField = new javax.swing.JTextField();
-        changeImplClassButton = new javax.swing.JButton();
+        moveClassButton = new javax.swing.JButton();
+        renameClassButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -51,21 +52,31 @@ public class MdbImplementationForm extends SectionInnerPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
         add(beanClassTextField, gridBagConstraints);
 
-        changeImplClassButton.setText(org.openide.util.NbBundle.getMessage(MdbImplementationForm.class, "LBL_ChangeImplementationClass"));
+        moveClassButton.setText(org.openide.util.NbBundle.getMessage(MdbImplementationForm.class, "LBL_MoveClass"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(changeImplClassButton, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
+        add(moveClassButton, gridBagConstraints);
+
+        renameClassButton.setText(org.openide.util.NbBundle.getMessage(MdbImplementationForm.class, "LBL_RenameClass"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
+        add(renameClassButton, gridBagConstraints);
 
     }//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField beanClassTextField;
-    private javax.swing.JButton changeImplClassButton;
+    private javax.swing.JButton moveClassButton;
+    private javax.swing.JButton renameClassButton;
     // End of variables declaration//GEN-END:variables
 
     public void setValue(JComponent source, Object value) {
@@ -82,7 +93,11 @@ public class MdbImplementationForm extends SectionInnerPanel {
         return beanClassTextField;
     }
 
-    public JButton getChangeImplClassButton() {
-        return changeImplClassButton;
+    public JButton getMoveClassButton() {
+        return moveClassButton;
+    }
+
+    public JButton getRenameClassButton() {
+        return renameClassButton;
     }
 }

@@ -35,15 +35,15 @@ import java.util.List;
  */
 public class EntityAndSessionHelper {
 
-    protected EntityAndSession ejb;
-    protected ClassElement beanClass;
-    protected FileObject ejbJarFile;
-    protected ClassElement localBusinessInterfaceClass;
-    protected ClassElement remoteBusinessInterfaceClass;
-    protected ClassElement localInterfaceClass;
-    protected ClassElement remoteInterfaceClass;
-    protected ClassElement localHomeClass;
-    protected ClassElement homeClass;
+    protected final EntityAndSession ejb;
+    protected final ClassElement beanClass;
+    protected final FileObject ejbJarFile;
+    private ClassElement localBusinessInterfaceClass;
+    private ClassElement remoteBusinessInterfaceClass;
+    private ClassElement localInterfaceClass;
+    private ClassElement remoteInterfaceClass;
+    private ClassElement localHomeClass;
+    private ClassElement homeClass;
 
     protected ClassPath sourceClassPath;
 

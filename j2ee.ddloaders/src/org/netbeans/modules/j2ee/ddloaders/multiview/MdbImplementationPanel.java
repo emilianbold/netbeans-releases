@@ -17,6 +17,10 @@ import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.MdbImplementationForm;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
+import javax.swing.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+
 /**
  * @author pfiala
  */
@@ -29,6 +33,20 @@ public class MdbImplementationPanel extends MdbImplementationForm {
      */
     public MdbImplementationPanel(SectionNodeView sectionNodeView, MessageDriven messageDriven) {
         super(sectionNodeView);
+        JButton moveClassButton = getMoveClassButton();
+        final String className = getBeanClassTextField().getText().trim();
+        moveClassButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Utils.activateMoveClassUI(className);
+            }
+        });
+        JButton renameClassButton = getRenameClassButton();
+        renameClassButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Utils.activateRenameClassUI(className);
+            }
+        });
+
 
     }
 }

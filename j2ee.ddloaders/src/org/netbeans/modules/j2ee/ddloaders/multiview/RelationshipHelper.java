@@ -108,13 +108,13 @@ public class RelationshipHelper {
 
     public RelationshipHelper(Relationships singleRelationships) {
         relation = singleRelationships.newEjbRelation();
-        EjbRelationshipRole role = newRole();
-        relation.setEjbRelationshipRole(role);
-        EjbRelationshipRole role2 = newRole();
-        relation.setEjbRelationshipRole2(role2);
+        EjbRelationshipRole roleA = newRole();
+        relation.setEjbRelationshipRole(roleA);
+        EjbRelationshipRole roleB = newRole();
+        relation.setEjbRelationshipRole2(roleB);
         singleRelationships.addEjbRelation(relation);
-        roleA = new RelationshipRoleHelper(role);
-        roleB = new RelationshipRoleHelper(role2);
+        this.roleA = new RelationshipRoleHelper(roleA);
+        this.roleB = new RelationshipRoleHelper(roleB);
     }
 
     private EjbRelationshipRole newRole() {

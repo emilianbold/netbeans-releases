@@ -23,7 +23,7 @@ import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.src.ClassElement;
 import org.openide.src.MethodElement;
-import org.openide.src.SourceException;
+import org.openide.src.Type;
 
 import javax.swing.*;
 import java.awt.*;
@@ -50,9 +50,6 @@ class CmpRelationshipsDialogHelper {
 
     private class FormRoleHelper {
 
-        private boolean lastGetter = true;
-        private boolean lastSetter = true;
-
         private JTextField roleNameTextField;
         private JComboBox ejbComboBox;
         private JRadioButton multiplicityManyRadioButton;
@@ -63,15 +60,23 @@ class CmpRelationshipsDialogHelper {
         private JComboBox fieldTypeComboBox;
         private JCheckBox getterCheckBox;
         private JCheckBox setterCheckBox;
+
         private String origEjbName;
-        private MethodElement origLocalGetterMethod;
-        private MethodElement origLocalSetterMethod;
-        private ClassElement origLocalInterface;
         private String origFieldName;
         private String origFieldType;
+        private EntityHelper origEntityHelper;
+        protected MethodElement origGetterMethod;
+        protected MethodElement origSetterMethod;
+        protected boolean origGetter;
+        protected boolean origSetter;
+
+        private String opositeEjbName;
+
         private String lastFieldName;
         private String lastFieldType = CLASS_COLLECTION;
         private boolean lastCreateField;
+        private boolean lastGetter = true;
+        private boolean lastSetter = true;
 
         private void init() {
             ejbComboBox.setModel(new DefaultComboBoxModel(entityNames));
@@ -105,46 +110,49 @@ class CmpRelationshipsDialogHelper {
             }
             boolean getter = hasGetter();
             boolean setter = hasSetter();
-            boolean origGetter = origLocalGetterMethod != null;
-            boolean origSetter = origLocalSetterMethod != null;
-            if (origEjbName != ejbName || origFieldName != fieldName || getter != origGetter || setter != origSetter) {
-                if (origGetter) {
-                    try {
-                        origLocalInterface.removeMethod(origLocalGetterMethod);
-                    } catch (SourceException e) {
-                        Utils.notifyError(e);
-                    }
+            boolean ejbNameChanged = !equal(origEjbName, ejbName);
+            boolean fieldChanged = !equal(origFieldName, fieldName) || !equal(origFieldType, fieldType);
+            boolean getterChanged = origGetter != getter;
+            boolean setterChanged = origSetter != setter;
+            if (ejbNameChanged || fieldChanged || getterChanged || setterChanged) {
+                if (fieldChanged) {
+                    ClassElement beanClass = origEntityHelper.beanClass;
+                    Utils.removeMethod(beanClass, origGetterMethod);
+                    Utils.removeMethod(beanClass, origSetterMethod);
                 }
-                if (origSetter) {
-                    try {
-                        origLocalInterface.removeMethod(origLocalSetterMethod);
-                    } catch (SourceException e) {
-                        Utils.notifyError(e);
-                    }
+                if (getterChanged || fieldChanged) {
+                    Utils.removeMethod(origEntityHelper.getLocalBusinessInterfaceClass(), origGetterMethod);
                 }
-                if (getter || setter) {
-                    Entity entity = getEntity(ejbName);
-                    EntityHelper entityHelper = new EntityHelper(ejbJarFile, entity);
+                if (setterChanged || fieldChanged) {
+                    Utils.removeMethod(origEntityHelper.getLocalBusinessInterfaceClass(), origSetterMethod);
+                }
+                if (fieldName != null) {
+                    EntityHelper entityHelper = ejbNameChanged ?
+                            new EntityHelper(ejbJarFile, getEntity(ejbName)) : origEntityHelper;
+                    Type type = Type.parse(fieldType == null ? getEntity(opositeEjbName).getLocal() : fieldType);
                     MethodElement getterMethod = entityHelper.getGetterMethod(fieldName);
+                    if (getterMethod == null) {
+                        getterMethod = entityHelper.createAccessMethod(fieldName, type, true);
+                    }
                     MethodElement setterMethod = entityHelper.getSetterMethod(fieldName, getterMethod);
-                    ClassElement localInterface = entityHelper.getLocalBusinessInterfaceClass();
+                    if (setterMethod == null) {
+                        setterMethod = entityHelper.createAccessMethod(fieldName, type, false);
+                    }
                     if (getter) {
-                        try {
-                            localInterface.addMethod(getterMethod);
-                        } catch (SourceException e) {
-                            Utils.notifyError(e);
-                        }
+                        Utils.addMethod(entityHelper.getLocalBusinessInterfaceClass(), getterMethod, false, 0);
                     }
                     if (setter) {
-                        try {
-                            localInterface.addMethod(setterMethod);
-                        } catch (SourceException e) {
-                            Utils.notifyError(e);
-                        }
+                        Utils.addMethod(entityHelper.getLocalBusinessInterfaceClass(), setterMethod, false, 0);
                     }
-
                 }
             }
+        }
+
+        private boolean equal(String s1, String s2) {
+            if (s1 == s2) {
+                return true;
+            }
+            return s1 == s2 || (s1 != null && s1.equals(s2));
         }
 
         private boolean isCascadeDelete() {
@@ -209,6 +217,7 @@ class CmpRelationshipsDialogHelper {
         private void populateFormFields(RelationshipHelper.RelationshipRoleHelper helper) {
             setRoleName(helper.getRoleName());
             origEjbName = helper.getEjbName();
+            origEntityHelper = new EntityHelper(ejbJarFile, getEntity(origEjbName));
             setEjbName(origEjbName);
             setMultiple(helper.isMultiple());
             setCascadeDelete(helper.isCascadeDelete());
@@ -222,20 +231,18 @@ class CmpRelationshipsDialogHelper {
                 setFieldType(null);
             } else {
                 origFieldName = field.getCmrFieldName();
-                Entity entity = getEntity(origEjbName);
-                EntityHelper entityHelper = new EntityHelper(ejbJarFile, entity);
-                MethodElement getterMethod = entityHelper.getGetterMethod(origFieldName);
-                MethodElement setterMethod = entityHelper.getSetterMethod(origFieldName, getterMethod);
-                origLocalInterface = entityHelper.getLocalBusinessInterfaceClass();
-                origLocalGetterMethod = Utils.getMethod(origLocalInterface, getterMethod);
-                origLocalSetterMethod = Utils.getMethod(origLocalInterface, setterMethod);
-                lastGetter = origLocalGetterMethod != null;
-                lastSetter = origLocalSetterMethod != null;
-                setLocalGetter(lastGetter);
-                setLocalSetter(lastSetter);
+                origFieldType = field.getCmrFieldType();
+                origGetterMethod = origEntityHelper.getGetterMethod(origFieldName);
+                origSetterMethod = origEntityHelper.getSetterMethod(origFieldName, origGetterMethod);
+                ClassElement localBusinessInterfaceClass = origEntityHelper.getLocalBusinessInterfaceClass();
+                origGetter = Utils.getMethod(localBusinessInterfaceClass, origGetterMethod) != null;
+                origSetter = Utils.getMethod(localBusinessInterfaceClass, origSetterMethod) != null;
+                lastGetter = origGetter;
+                lastSetter = origSetter;
+                setLocalGetter(origGetter);
+                setLocalSetter(origSetter);
                 setCreateCmrField(true);
                 setFieldName(origFieldName);
-                origFieldType = field.getCmrFieldType();
                 setFieldType(origFieldType);
             }
         }
@@ -263,30 +270,32 @@ class CmpRelationshipsDialogHelper {
             fieldNameTextField.setText(fieldName);
         }
 
-        public void validate(FormRoleHelper opositeRole) {
-            lastCreateField = isCreateCmrField();
-            String fieldName = getFieldName();
-            if (lastCreateField) {
-                if (fieldName.length() == 0) {
-                    setFieldName(lastFieldName);
+        public void setFieldStates(FormRoleHelper opositeRole) {
+            if(lastCreateField != isCreateCmrField()) {
+                lastCreateField = isCreateCmrField();
+                String fieldName = getFieldName();
+                if (lastCreateField) {
+                    if (fieldName.length() == 0) {
+                        setFieldName(lastFieldName);
+                    }
+                    fieldNameTextField.setEnabled(true);
+                    setLocalGetter(lastGetter);
+                    getterCheckBox.setEnabled(true);
+                    setLocalSetter(lastSetter);
+                    setterCheckBox.setEnabled(true);
+                } else {
+                    lastGetter = getterCheckBox.isSelected();
+                    lastSetter = setterCheckBox.isSelected();
+                    if (fieldName.length() > 0) {
+                        lastFieldName = fieldName;
+                    }
+                    setFieldName(null);
+                    fieldNameTextField.setEnabled(false);
+                    setLocalGetter(false);
+                    getterCheckBox.setEnabled(false);
+                    setLocalSetter(false);
+                    setterCheckBox.setEnabled(false);
                 }
-                fieldNameTextField.setEnabled(true);
-                setLocalGetter(lastGetter);
-                getterCheckBox.setEnabled(true);
-                setLocalSetter(lastSetter);
-                setterCheckBox.setEnabled(true);
-            } else {
-                lastGetter = getterCheckBox.isSelected();
-                lastSetter = setterCheckBox.isSelected();
-                if (fieldName.length() > 0) {
-                    lastFieldName = fieldName;
-                }
-                setFieldName(null);
-                fieldNameTextField.setEnabled(false);
-                setLocalGetter(false);
-                getterCheckBox.setEnabled(false);
-                setLocalSetter(false);
-                setterCheckBox.setEnabled(false);
             }
             boolean opositeMultiple = opositeRole.isMultiple();
             String fieldType = getFieldType();
@@ -302,6 +311,7 @@ class CmpRelationshipsDialogHelper {
                 setFieldType(null);
                 fieldTypeComboBox.setEnabled(false);
             }
+            opositeEjbName = opositeRole.getEjbName();
         }
     }
 
@@ -315,9 +325,6 @@ class CmpRelationshipsDialogHelper {
 
     public boolean showCmpRelationshipsDialog(String title, EjbRelation relation) {
         CmpRelationshipsForm form = initForm();
-        entityNames = getEntities();
-        roleA.init();
-        roleB.init();
 
         RelationshipHelper helper;
         if (relation != null) {
@@ -327,8 +334,6 @@ class CmpRelationshipsDialogHelper {
             helper = null;
         }
 
-        listener = new RelationshipDialogActionListener();
-
         listener.validate();
 
         DialogDescriptor dialogDescriptor = new DialogDescriptor(form, title);
@@ -336,6 +341,7 @@ class CmpRelationshipsDialogHelper {
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setVisible(true);
         if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
+//            listener.validate();
             if (helper == null) {
                 helper = new RelationshipHelper(ejbJar.getSingleRelationships());
             }
@@ -377,11 +383,11 @@ class CmpRelationshipsDialogHelper {
         roleB.populateFormFields(helper.roleB);
     }
 
-    private Entity getEntity(String origEjbName) {
+    private Entity getEntity(String entityName) {
         Entity[] entities = ejbJar.getEnterpriseBeans().getEntity();
         for (int i = 0; i < entities.length; i++) {
             Entity entity = entities[i];
-            if (origEjbName.equals(entity.getEjbName())) {
+            if (entityName.equals(entity.getEjbName())) {
                 return entity;
             }
         }
@@ -389,6 +395,8 @@ class CmpRelationshipsDialogHelper {
     }
 
     private CmpRelationshipsForm initForm() {
+        listener = new RelationshipDialogActionListener();
+        entityNames = getEntities();
         CmpRelationshipsForm form = new CmpRelationshipsForm();
         relationshipNameTextField = form.getRelationshipNameTextField();
         descriptionTextArea = form.getDescriptionTextArea();
@@ -403,6 +411,7 @@ class CmpRelationshipsDialogHelper {
         roleA.fieldTypeComboBox = form.getFieldTypeComboBox();
         roleA.getterCheckBox = form.getGetterCheckBox();
         roleA.setterCheckBox = form.getSetterCheckBox();
+        roleA.init();
 
         roleB.roleNameTextField = form.getRoleNameTextField2();
         roleB.ejbComboBox = form.getEjbComboBox2();
@@ -414,6 +423,7 @@ class CmpRelationshipsDialogHelper {
         roleB.fieldTypeComboBox = form.getFieldTypeComboBox2();
         roleB.getterCheckBox = form.getGetterCheckBox2();
         roleB.setterCheckBox = form.getSetterCheckBox2();
+        roleB.init();
         return form;
     }
 
@@ -424,8 +434,8 @@ class CmpRelationshipsDialogHelper {
         }
 
         public void validate() {
-            roleA.validate(roleB);
-            roleB.validate(roleA);
+            roleA.setFieldStates(roleB);
+            roleB.setFieldStates(roleA);
         }
     }
 }

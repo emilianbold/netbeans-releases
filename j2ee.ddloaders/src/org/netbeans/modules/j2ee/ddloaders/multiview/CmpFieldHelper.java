@@ -77,7 +77,7 @@ public class CmpFieldHelper {
     }
 
     public boolean hasLocalGetter() {
-        ClassElement interfaceElement = entityHelper.localBusinessInterfaceClass;
+        ClassElement interfaceElement = entityHelper.getLocalBusinessInterfaceClass();
         MethodElement method = getterMethod;
         return getBusinessMethod(interfaceElement, method) != null;
     }
@@ -87,46 +87,50 @@ public class CmpFieldHelper {
     }
 
     public boolean hasLocalSetter() {
-        return getBusinessMethod(entityHelper.localBusinessInterfaceClass, setterMethod) != null;
+        return getBusinessMethod(entityHelper.getLocalBusinessInterfaceClass(), setterMethod) != null;
     }
 
     public boolean hasRemoteGetter() {
-        return getBusinessMethod(entityHelper.remoteBusinessInterfaceClass, getterMethod) != null;
+        return getBusinessMethod(entityHelper.getRemoteBusinessInterfaceClass(), getterMethod) != null;
     }
 
     public boolean hasRemoteSetter() {
-        return getBusinessMethod(entityHelper.remoteBusinessInterfaceClass, setterMethod) != null;
+        return getBusinessMethod(entityHelper.getRemoteBusinessInterfaceClass(), setterMethod) != null;
     }
 
     public void setLocalGetter(boolean create) {
+        ClassElement businessInterfaceClass = entityHelper.getLocalBusinessInterfaceClass();
         if (create) {
-            Utils.addMethod(entityHelper.localBusinessInterfaceClass, getterMethod, false, 0);
+            Utils.addMethod(businessInterfaceClass, getterMethod, false, 0);
         } else {
-            Utils.removeBusinessMethod(entityHelper.localBusinessInterfaceClass, getterMethod);
+            Utils.removeBusinessMethod(businessInterfaceClass, getterMethod);
         }
     }
 
     public void setLocalSetter(boolean create) {
+        ClassElement localBusinessInterfaceClass = entityHelper.getLocalBusinessInterfaceClass();
         if (create) {
-            Utils.addMethod(entityHelper.localBusinessInterfaceClass, setterMethod, false, 0);
+            Utils.addMethod(localBusinessInterfaceClass, setterMethod, false, 0);
         } else {
-            Utils.removeBusinessMethod(entityHelper.localBusinessInterfaceClass, setterMethod);
+            Utils.removeBusinessMethod(localBusinessInterfaceClass, setterMethod);
         }
     }
 
     public void setRemoteGetter(boolean create) {
+        ClassElement remoteBusinessInterfaceClass = entityHelper.getRemoteBusinessInterfaceClass();
         if (create) {
-            Utils.addMethod(entityHelper.remoteBusinessInterfaceClass, getterMethod, true, 0);
+            Utils.addMethod(remoteBusinessInterfaceClass, getterMethod, true, 0);
         } else {
-            Utils.removeBusinessMethod(entityHelper.remoteBusinessInterfaceClass, getterMethod);
+            Utils.removeBusinessMethod(remoteBusinessInterfaceClass, getterMethod);
         }
     }
 
     public void setRemoteSetter(boolean create) {
+        ClassElement remoteBusinessInterfaceClass = entityHelper.getRemoteBusinessInterfaceClass();
         if (create) {
-            Utils.addMethod(entityHelper.remoteBusinessInterfaceClass, setterMethod, true, 0);
+            Utils.addMethod(remoteBusinessInterfaceClass, setterMethod, true, 0);
         } else {
-            Utils.removeBusinessMethod(entityHelper.remoteBusinessInterfaceClass, setterMethod);
+            Utils.removeBusinessMethod(remoteBusinessInterfaceClass, setterMethod);
         }
     }
 
@@ -135,10 +139,12 @@ public class CmpFieldHelper {
         String title = NbBundle.getMessage(CmpFieldHelper.class, "MSG_ConfirmDeleteFieldTitle");
         NotifyDescriptor desc = new NotifyDescriptor.Confirmation(message, title, NotifyDescriptor.YES_NO_OPTION);
         if (NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(desc))) {
-            removeMethod(entityHelper.localBusinessInterfaceClass, getterMethod);
-            removeMethod(entityHelper.localBusinessInterfaceClass, setterMethod);
-            removeMethod(entityHelper.remoteBusinessInterfaceClass, getterMethod);
-            removeMethod(entityHelper.remoteBusinessInterfaceClass, setterMethod);
+            ClassElement localBusinessInterfaceClass = entityHelper.getLocalBusinessInterfaceClass();
+            removeMethod(localBusinessInterfaceClass, getterMethod);
+            removeMethod(localBusinessInterfaceClass, setterMethod);
+            ClassElement remoteBusinessInterfaceClass = entityHelper.getRemoteBusinessInterfaceClass();
+            removeMethod(remoteBusinessInterfaceClass, getterMethod);
+            removeMethod(remoteBusinessInterfaceClass, setterMethod);
             try {
                 EntityMethodController ec = (EntityMethodController) EntityMethodController.createFromClass(
                         entityHelper.beanClass);
@@ -161,10 +167,12 @@ public class CmpFieldHelper {
 
     public void setFieldName(String newName) {
         //todo: launch refactoring instead of following code
-        MethodElement localGetter = getBusinessMethod(entityHelper.localBusinessInterfaceClass, getterMethod);
-        MethodElement localSetter = getBusinessMethod(entityHelper.localBusinessInterfaceClass, setterMethod);
-        MethodElement remoteGetter = getBusinessMethod(entityHelper.remoteBusinessInterfaceClass, getterMethod);
-        MethodElement remoteSetter = getBusinessMethod(entityHelper.remoteBusinessInterfaceClass, setterMethod);
+        ClassElement localBusinessInterfaceClass = entityHelper.getLocalBusinessInterfaceClass();
+        MethodElement localGetter = getBusinessMethod(localBusinessInterfaceClass, getterMethod);
+        MethodElement localSetter = getBusinessMethod(localBusinessInterfaceClass, setterMethod);
+        ClassElement remoteBusinessInterfaceClass = entityHelper.getRemoteBusinessInterfaceClass();
+        MethodElement remoteGetter = getBusinessMethod(remoteBusinessInterfaceClass, getterMethod);
+        MethodElement remoteSetter = getBusinessMethod(remoteBusinessInterfaceClass, setterMethod);
         Identifier getterName = Identifier.create(Utils.getMethodName(newName, true));
         Identifier setterName = Identifier.create(Utils.getMethodName(newName, false));
         field.setFieldName(newName);

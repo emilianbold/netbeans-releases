@@ -22,6 +22,13 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodc
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.src.MethodElement;
+import org.openide.src.ClassElement;
+import org.openide.src.Type;
+import org.openide.src.Identifier;
+import org.openide.src.SourceException;
+import org.openide.src.MethodParameter;
+
+import java.lang.reflect.Modifier;
 
 /**
  * @author pfiala
@@ -50,6 +57,31 @@ public class EntityHelper extends EntityAndSessionHelper {
                 super.performAction(activatedNodes);
             }
         }.performAction(new Node[]{createEntityNode()});
+    }
+
+    public MethodElement createAccessMethod(String fieldName, Type type, boolean get) {
+        MethodElement method = new MethodElement();
+        try {
+            method.setName(Identifier.create(Utils.getMethodName(fieldName, get)));
+        } catch (SourceException e) {
+            Utils.notifyError(e);
+        }
+        if (get) {
+            try {
+                method.setReturn(type);
+            } catch (SourceException e) {
+                Utils.notifyError(e);
+            }
+        } else {
+            try {
+                method.setParameters(
+                        new MethodParameter[]{new MethodParameter(fieldName, type, false)});
+            } catch (SourceException e) {
+                Utils.notifyError(e);
+            }
+        }
+        Utils.addMethod(beanClass, method, false, Modifier.PUBLIC | Modifier.ABSTRACT);
+        return Utils.getMethod(beanClass, method);
     }
 
     public MethodElement getSetterMethod(String fieldName, MethodElement getterMethod) {

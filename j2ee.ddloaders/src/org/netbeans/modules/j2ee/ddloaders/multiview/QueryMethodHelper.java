@@ -209,7 +209,7 @@ public class QueryMethodHelper {
 
     private MethodElement setMethod(MethodElement method, MethodElement prototype, boolean singleReturn,
             boolean remote) {
-        ClassElement interfaceClass = remote ? entityHelper.homeClass : entityHelper.localHomeClass;
+        ClassElement interfaceClass = getHomeClass(remote);
         setReturn(prototype, singleReturn, remote);
         if (method == null) {
             Utils.addMethod(interfaceClass, (MethodElement) prototype.clone(), remote);
@@ -221,16 +221,22 @@ public class QueryMethodHelper {
     }
 
     private MethodElement removeMethod(MethodElement method, boolean remote) {
-        ClassElement intefaceClass = remote ? entityHelper.homeClass : entityHelper.localHomeClass;
+        ClassElement interfaceClass = getHomeClass(remote);
         if (remoteMethod != null) {
             try {
-                intefaceClass.removeMethod(method);
+                interfaceClass.removeMethod(method);
             } catch (SourceException e) {
                 notifyError(e);
                 return method;
             }
         }
         return null;
+    }
+
+    private ClassElement getHomeClass(boolean remote) {
+        ClassElement interfaceClass = remote ?
+                entityHelper.getHomeInterfaceClass() : entityHelper.getLocalHomeInterfaceClass();
+        return interfaceClass;
     }
 
     private void setReturn(MethodElement prototype, boolean singleReturn, boolean remote) {

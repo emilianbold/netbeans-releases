@@ -245,7 +245,9 @@ public class Utils {
     }
 
     public static void addMethod(ClassElement interfaceElement, MethodElement method, boolean remote) {
-        addMethod(interfaceElement, method, remote, method.getModifiers());
+        if (method != null) {
+            addMethod(interfaceElement, method, remote, method.getModifiers());
+        }
     }
 
     public static void addMethod(ClassElement interfaceElement, MethodElement method, boolean remote, int modifiers) {
@@ -338,10 +340,15 @@ public class Utils {
     }
 
     public static void removeMethod(ClassElement classElement, MethodElement method) {
-        try {
-            classElement.removeMethod(method);
-        } catch (SourceException e) {
-            Utils.notifyError(e);
+        if (classElement != null) {
+            method = getMethod(classElement, method);
+            if (method != null) {
+                try {
+                    classElement.removeMethod(method);
+                } catch (SourceException e) {
+                    Utils.notifyError(e);
+                }
+            }
         }
     }
 }
