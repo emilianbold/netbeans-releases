@@ -93,11 +93,9 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
         init ();
     }
     
-    private EditorCookie getEditor () {
+    private synchronized EditorCookie getEditor () {
         FileObject fo = getFileObject ();
         if (fo == null) return null;
-        if (editor == null) {
-            synchronized (this) {
                 if (editor == null) {
                     try {
                         editor = (EditorCookie) DataObject.find (fo).getCookie (EditorCookie.class);
@@ -108,8 +106,6 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
                         AntModule.err.notify (ErrorManager.INFORMATIONAL, donfe);
                     }
                 }
-            }
-        }
         return editor;
     }
     
