@@ -117,7 +117,18 @@ public class TestCreator extends java.lang.Object {
             //System.err.println("createTestSuite(): srcelTarget:"+srcelTarget);
         
             srcelTarget.setPackage(packageName.length() != 0 ? Identifier.create(packageName) : null);
-            srcelTarget.addImport(new Import(Identifier.create(JUNIT_FRAMEWORK_PACKAGE_NAME), Import.PACKAGE));
+
+            // import for junit.framework.*
+            Import frameworkImp = new Import(Identifier.create(JUNIT_FRAMEWORK_PACKAGE_NAME), Import.PACKAGE);
+            Import [] timports = srcelTarget.getImports();
+
+            // look for the import among all imports in the target file
+            int i;
+            for (i = 0 ; i < timports.length; i++) 
+                if (timports[i].equals(frameworkImp)) break;
+
+            // if not found, add it
+            if (i == timports.length) srcelTarget.addImport(frameworkImp);                
 
             // construct/update test class from the source class
             fillSuiteClass(listMembers, packageName, classTarget);
