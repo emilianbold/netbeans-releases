@@ -25,6 +25,7 @@ import org.netbeans.modules.xml.core.*;
 import org.netbeans.modules.xml.core.actions.*;
 
 import org.netbeans.api.xml.cookies.*;
+import org.openide.util.RequestProcessor;
 
 /**
  * Checks well-formess of XML file sending results to output window.
@@ -52,19 +53,9 @@ public class CheckAction extends CookieAction implements CollectXMLAction.XMLAct
     protected void performAction (Node[] nodes) {
 
         if (nodes == null) return;
-
-        InputOutputReporter console = new InputOutputReporter();
         
-        for (int i = 0; i<nodes.length; i++) {
-            Node node = nodes[i];
-            CheckXMLCookie cake = (CheckXMLCookie) node.getCookie(CheckXMLCookie.class);
-            if (cake == null) continue;
-            console.setNode(node); //??? how can console determine which editor to highlight
-            cake.checkXML(console);
-        }
-        
-        console.message(Util.THIS.getString("MSG_XML_check_end"));
-        console.moveToFront();
+        RequestProcessor.postRequest(
+               new CheckAction.RunAction (nodes));
     }
 
     /** Human presentable name. */
@@ -86,4 +77,26 @@ public class CheckAction extends CookieAction implements CollectXMLAction.XMLAct
         return false;
     }
 
+    private class RunAction implements Runnable{
+        private Node[] nodes;
+
+        RunAction (Node[] nodes){
+            this.nodes = nodes;
+        }
+
+        public void run() {
+            InputOutputReporter console = new InputOutputReporter();
+        
+            for (int i = 0; i<nodes.length; i++) {
+                Node node = nodes[i];
+                CheckXMLCookie cake = (CheckXMLCookie) node.getCookie(CheckXMLCookie.class);
+                if (cake == null) continue;
+                console.setNode(node); //??? how can console determine which editor to highlight
+                cake.checkXML(console);
+            }
+
+            console.message(Util.THIS.getString("MSG_XML_check_end"));
+            console.moveToFront();
+       }
+    }
 }
