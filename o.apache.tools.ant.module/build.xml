@@ -10,8 +10,6 @@ http://www.sun.com/
 The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
-
-Contributor(s): Jayme C. Edwards, Jesse Glick.
 -->
 
 <project name="ant" default="netbeans" basedir=".">
@@ -29,15 +27,16 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     </target>
     
     <target name="files-init" depends="basic-init">
-        <patternset id="ant.files">
+        <patternset id="module.files">
             <include name="${module.jar}"/>
+            <include name="${javahelp.jar}" if="has.javahelp"/>
             <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
             <include name="ant/nblib/bridge.jar"/>
             <include name="ant/lib/**"/>
         </patternset>
     </target>
 
-    <target name="compile-bridge" depends="init">
+    <target name="compile-bridge" depends="init,compile">
         <mkdir dir="build/bridge-classes"/>
         <javac srcdir="src-bridge" destdir="build/bridge-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath refid="cp+ant"/>
