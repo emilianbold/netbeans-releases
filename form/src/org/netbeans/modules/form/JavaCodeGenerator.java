@@ -40,7 +40,7 @@ import java.util.*;
  * JavaCodeGenerator is the default code generator which produces a Java source
  * for the form.
  *
- * @author Ian Formanek
+ * @author Ian Formanek, Jan Stola
  */
 
 class JavaCodeGenerator extends CodeGenerator {
@@ -55,6 +55,7 @@ class JavaCodeGenerator extends CodeGenerator {
     static final String PROP_INIT_CODE_PRE = "initCodePre"; // NOI18N
     static final String PROP_INIT_CODE_POST = "initCodePost"; // NOI18N
     static final String PROP_GENERATE_MNEMONICS = "generateMnemonicsCode"; // Mnemonics support NOI18N
+    static final String PROP_LISTENER_GENERATION_STYLE = "listenerGenerationStyle"; // NOI18N
 
     static final String AUX_VARIABLE_MODIFIER =
         "JavaCodeGenerator_VariableModifier"; // NOI18N
@@ -171,7 +172,12 @@ class JavaCodeGenerator extends CodeGenerator {
     public Node.Property[] getSyntheticProperties(final RADComponent component) {
         ResourceBundle bundle = FormUtils.getBundle();
         java.util.List propList = new ArrayList();
-        if (component != formModel.getTopRADComponent()) {
+        if (component == null) {
+            propList.add(new VariablesModifierProperty());
+            propList.add(new LocalVariablesProperty());
+            propList.add(new GenerateMnemonicsCodeProperty());
+            propList.add(new ListenerGenerationStyleProperty());
+        } else if (component != formModel.getTopRADComponent()) {
             propList.add(new PropertySupport.ReadWrite(
                 RADComponent.PROP_NAME,
                 String.class,
@@ -220,14 +226,16 @@ class JavaCodeGenerator extends CodeGenerator {
                         varType |= CodeVariable.EXPLICIT_DECLARATION;
 
                     if ((varType & CodeVariable.ALL_MODIF_MASK)
-                            != (formSettings.getVariablesModifier()
+                            != (formModel.getSettings().getVariablesModifier()
                                 & CodeVariable.ALL_MODIF_MASK))
                     {   // non-default value
                         component.setAuxValue(AUX_VARIABLE_MODIFIER, value);
                     }
                     else { // default value
                         varType = 0x30DF; // default
-                        component.getAuxValues().remove(AUX_VARIABLE_MODIFIER);
+                        if (component.getAuxValue(AUX_VARIABLE_MODIFIER) != null) {
+                            component.getAuxValues().remove(AUX_VARIABLE_MODIFIER);
+                        }
                     }
 
                     codeStructure.removeExpressionFromVariable(exp);
@@ -245,7 +253,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     if (val != null)
                         return val;
 
-                    return new Integer(formSettings.getVariablesModifier());
+                    return new Integer(formModel.getSettings().getVariablesModifier());
                 }
 
                 public boolean supportsDefaultValue() {
@@ -254,7 +262,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
                 public void restoreDefaultValue() {
                     if (component.getAuxValue(AUX_VARIABLE_LOCAL) == null)
-                        setValue(new Integer(formSettings.getVariablesModifier()));
+                        setValue(new Integer(formModel.getSettings().getVariablesModifier()));
                 }
 
                 public boolean canWrite() {
@@ -263,6 +271,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
                 public PropertyEditor getPropertyEditor() {
                     Boolean local = (Boolean) component.getAuxValue(AUX_VARIABLE_LOCAL);
+                    local = (local == null) ? Boolean.valueOf(formModel.getSettings().getVariablesLocal()) : local;
                     return Boolean.TRUE.equals(local) ?
                         new ModifierEditor(Modifier.FINAL)
                         :
@@ -286,25 +295,26 @@ class JavaCodeGenerator extends CodeGenerator {
                     if (!(value instanceof Boolean))
                         throw new IllegalArgumentException();
 
-                    Object oldValue = getValue();
+                    Boolean oldValue = (Boolean)getValue();
+                    if (value.equals(oldValue)) return;
 
                     CodeStructure codeStructure = formModel.getCodeStructure();
                     CodeExpression exp = component.getCodeExpression();
                     int varType = exp.getVariable().getType();
                     String varName = component.getName();
 
-                    varType &= /*CodeVariable.FINAL
-                               |*/ ~(CodeVariable.ALL_MODIF_MASK
+                    varType &= CodeVariable.FINAL
+                               | ~(CodeVariable.ALL_MODIF_MASK
                                      | CodeVariable.SCOPE_MASK);
                     if (Boolean.TRUE.equals(value))
                         varType |= CodeVariable.LOCAL
                                    | CodeVariable.EXPLICIT_DECLARATION;
                     else
                         varType |= CodeVariable.FIELD
-                                   | formSettings.getVariablesModifier();
+                                   | formModel.getSettings().getVariablesModifier();
 
                     if (((varType & CodeVariable.LOCAL) != 0)
-                            != (formSettings.getVariablesLocal()))
+                            != (formModel.getSettings().getVariablesLocal()))
                     {   // non-default value
                         component.setAuxValue(AUX_VARIABLE_LOCAL, value);
                         component.setAuxValue(
@@ -313,8 +323,12 @@ class JavaCodeGenerator extends CodeGenerator {
                     }
                     else { // default value
                         varType = 0x30DF; // default
-                        component.getAuxValues().remove(AUX_VARIABLE_LOCAL);
-                        component.getAuxValues().remove(AUX_VARIABLE_MODIFIER);
+                        if (component.getAuxValue(AUX_VARIABLE_LOCAL) != null) {
+                            component.getAuxValues().remove(AUX_VARIABLE_LOCAL);
+                        }
+                        if (component.getAuxValue(AUX_VARIABLE_MODIFIER) != null) {
+                            component.getAuxValues().remove(AUX_VARIABLE_MODIFIER);
+                        }
                     }
 
                     codeStructure.removeExpressionFromVariable(exp);
@@ -331,7 +345,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     if (val != null)
                         return val;
 
-                    return formSettings.getVariablesLocal() ? Boolean.TRUE : Boolean.FALSE;
+                    return Boolean.valueOf(formModel.getSettings().getVariablesLocal());
                 }
 
                 public boolean supportsDefaultValue() {
@@ -339,7 +353,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
 
                 public void restoreDefaultValue() {
-                    setValue(formSettings.getVariablesLocal() ? Boolean.TRUE : Boolean.FALSE);
+                    setValue(Boolean.valueOf(formModel.getSettings().getVariablesLocal()));
                 }
                     
                 public boolean canWrite() {
@@ -718,7 +732,7 @@ class JavaCodeGenerator extends CodeGenerator {
             addCreateCode(top, initCodeWriter);
             initCodeWriter.write("\n"); // NOI18N
 
-            if (formSettings.getListenerGenerationStyle() == CEDL_INNERCLASS
+            if (formModel.getSettings().getListenerGenerationStyle() == CEDL_INNERCLASS
                 && anyEvents())
             {
                 addDispatchListenerDeclaration(initCodeWriter);
@@ -792,7 +806,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
             initCodeWriter.write("}\n"); // NOI18N
 
-            int listenerCodeStyle = formSettings.getListenerGenerationStyle();
+            int listenerCodeStyle = formModel.getSettings().getListenerGenerationStyle();
             if ((listenerCodeStyle == CEDL_INNERCLASS
                   || listenerCodeStyle == CEDL_MAINCLASS)
                 && anyEvents())
@@ -1368,7 +1382,7 @@ class JavaCodeGenerator extends CodeGenerator {
         // we must deal somehow with the fact that for some (pathological)
         // events only anonymous innerclass listener can be generated
         // (CEDL cannot be used)
-        int defaultMode = formSettings.getListenerGenerationStyle();
+        int defaultMode = formModel.getSettings().getListenerGenerationStyle();
         int mode = defaultMode;
         boolean mixedMode = false;
 
@@ -1574,11 +1588,7 @@ class JavaCodeGenerator extends CodeGenerator {
         if (mnem != null)
             return Boolean.TRUE.equals(mnem);
 
-        RADComponent topComp = comp.getFormModel().getTopRADComponent();
-        if (topComp == null)
-            return false;
-
-        return Boolean.TRUE.equals(topComp.getAuxValue(PROP_GENERATE_MNEMONICS));
+        return comp.getFormModel().getSettings().getGenerateMnemonicsCode();
     }
     // Mnemonics support - end -
 
@@ -1689,8 +1699,8 @@ class JavaCodeGenerator extends CodeGenerator {
         throws IOException
     {
         FormEvents formEvents = formModel.getFormEvents();
-        boolean innerclass = formSettings.getListenerGenerationStyle() == CEDL_INNERCLASS;
-        boolean mainclass = formSettings.getListenerGenerationStyle() == CEDL_MAINCLASS;
+        boolean innerclass = formModel.getSettings().getListenerGenerationStyle() == CEDL_INNERCLASS;
+        boolean mainclass = formModel.getSettings().getListenerGenerationStyle() == CEDL_MAINCLASS;
 
         Class[] listenersToImplement = formEvents.getCEDLTypes();
         Arrays.sort(listenersToImplement, new Comparator() {
@@ -2453,7 +2463,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
                 // form loaded
                 if (ev.getChangeType() == FormModelEvent.FORM_LOADED) {
-                    if (formSettings.getListenerGenerationStyle() == CEDL_MAINCLASS)
+                    if (formModel.getSettings().getListenerGenerationStyle() == CEDL_MAINCLASS)
                         listenersInMainClass_lastSet =
                             formModel.getFormEvents().getCEDLTypes();
 
@@ -2509,25 +2519,21 @@ class JavaCodeGenerator extends CodeGenerator {
                     RADComponent topComp = formModel.getTopRADComponent();
                     if (comp != null
                         && comp.getAuxValue(PROP_GENERATE_MNEMONICS) == null
-                        && (topComp == null || topComp.getAuxValue(PROP_GENERATE_MNEMONICS) == null)
+                        // it is JLabel or AbstractButton
                         && (javax.swing.JLabel.class.isAssignableFrom(comp.getBeanClass())
-                            || javax.swing.AbstractButton.class.isAssignableFrom(comp.getBeanClass())))
-                    {   // it is JLabel or AbstractButton
-                        if (formSettings.getGenerateMnemonicsCode())
-                            // set component's Mnemonics property according global option
-                            comp.setAuxValue(PROP_GENERATE_MNEMONICS, Boolean.TRUE);
-                        else if (formSettings.getShowMnemonicsDialog()) {
-                            // check if the value contains & (ampersand) to inform
-                            // the user about the Mnemonics code generation feature
-                            try {
-                                String str = (String)
-                                    ev.getComponentProperty().getRealValue();
-                                if (org.openide.awt.Mnemonics.findMnemonicAmpersand(str) > -1
-                                        && showMnemonicsDialog())
-                                    comp.setAuxValue(PROP_GENERATE_MNEMONICS, Boolean.TRUE);
-                            }
-                            catch (Exception ex) {} // ignore
-                        }
+                            || javax.swing.AbstractButton.class.isAssignableFrom(comp.getBeanClass()))
+                        && formSettings.getShowMnemonicsDialog()
+                        && !formModel.getSettings().getGenerateMnemonicsCode())
+                    {   
+                        // check if the value contains & (ampersand) to inform
+                        // the user about the Mnemonics code generation feature
+                        try {
+                            String str = (String)
+                                ev.getComponentProperty().getRealValue();
+                            if (org.openide.awt.Mnemonics.findMnemonicAmpersand(str) > -1
+                                && showMnemonicsDialog())
+                                comp.setAuxValue(PROP_GENERATE_MNEMONICS, Boolean.TRUE);
+                        } catch (Exception ex) {} // ignore
                     }
                  }
                  // Mnemonics support - end -
@@ -2615,6 +2621,7 @@ class JavaCodeGenerator extends CodeGenerator {
             mnemonicsInfoDialog = new MnemonicsInfoDialog();
         mnemonicsInfoDialog.show();
         if (mnemonicsInfoDialog.mnemonicsEnabled())
+            formModel.getSettings().setGenerateMnemonicsCode(true);
             formSettings.setGenerateMnemonicsCode(true);
         if (mnemonicsInfoDialog.showingDisabled())
             formSettings.setShowMnemonicsDialog(false);
@@ -2826,4 +2833,222 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     // }}}
+
+    // Properties
+      
+    private class VariablesModifierProperty extends PropertySupport.ReadWrite {
+          
+        private VariablesModifierProperty() {
+            super(PROP_VARIABLE_MODIFIER,
+            Integer.class,
+            FormUtils.getBundleString("PROP_VARIABLES_MODIFIER"), // NOI18N
+            FormUtils.getBundleString("HINT_VARIABLES_MODIFIER")); // NOI18N
+        }
+              
+        public void setValue(Object value) {
+            if (!(value instanceof Integer))
+                throw new IllegalArgumentException();
+            
+            Integer oldValue = (Integer)getValue();
+            Integer newValue = (Integer)value;
+            int varType;
+            int variablesModifier = newValue.intValue();
+            if (formModel.getSettings().getVariablesLocal()) {
+                varType = CodeVariable.LOCAL | (variablesModifier & CodeVariable.FINAL) | CodeVariable.EXPLICIT_DECLARATION;
+            } else varType = CodeVariable.FIELD | variablesModifier;
+            
+            formModel.getCodeStructure().setDefaultVariableType(varType);
+            formModel.getSettings().setVariablesModifier(variablesModifier);
+            formModel.fireSyntheticPropertyChanged(null, PROP_VARIABLE_MODIFIER, oldValue, newValue);
+            ((FormRootNode)formEditorSupport.getFormRootNode()).firePropertyChangeHelper(
+                PROP_VARIABLE_MODIFIER, oldValue, newValue);
+        }
+          
+        public Object getValue() {
+            return new Integer(formModel.getSettings().getVariablesModifier());
+        }
+        
+        public boolean supportsDefaultValue() {
+            return true;
+        }
+        
+        public void restoreDefaultValue() {
+            setValue(new Integer(FormLoaderSettings.getInstance().getVariablesModifier()));
+        }
+        
+        public boolean isDefaultValue() {
+            return (formModel.getSettings().getVariablesModifier() ==
+                FormLoaderSettings.getInstance().getVariablesModifier());
+        }
+        
+        public boolean canWrite() {
+            return JavaCodeGenerator.this.canGenerate;
+        }
+
+        public PropertyEditor getPropertyEditor() {
+            boolean local = formModel.getSettings().getVariablesLocal();
+            return local ? new ModifierEditor(Modifier.FINAL) :
+                new ModifierEditor(Modifier.PUBLIC
+                    | Modifier.PROTECTED
+                    | Modifier.PRIVATE
+                    | Modifier.STATIC
+                    | Modifier.FINAL
+                    | Modifier.TRANSIENT
+                    | Modifier.VOLATILE);
+        }
+        
+    }
+
+    private class LocalVariablesProperty extends PropertySupport.ReadWrite {
+        
+        private LocalVariablesProperty() {
+            super(PROP_VARIABLE_LOCAL,
+            Boolean.TYPE,
+            FormUtils.getBundleString("PROP_VARIABLES_LOCAL"), // NOI18N
+            FormUtils.getBundleString("HINT_VARIABLES_LOCAL")); // NOI18N
+        }
+        
+        public void setValue(Object value) {
+            if (!(value instanceof Boolean))
+                throw new IllegalArgumentException();
+            if (value.equals(getValue())) return;
+
+            Boolean oldValue = (Boolean)getValue();
+            Boolean newValue = (Boolean)value;
+            FormSettings formSettings = formModel.getSettings();
+            boolean variablesLocal = newValue.booleanValue();
+            int variablesModifier = variablesLocal ? (formSettings.getVariablesModifier() & CodeVariable.FINAL)
+                : formSettings.getVariablesModifier();
+            Integer oldModif = new Integer(formModel.getSettings().getVariablesModifier());
+            Integer newModif = new Integer(variablesModifier);
+            int varType = variablesLocal ?
+                CodeVariable.LOCAL | variablesModifier | CodeVariable.EXPLICIT_DECLARATION
+                : CodeVariable.FIELD | variablesModifier;
+            
+            formModel.getCodeStructure().setDefaultVariableType(varType);
+            formSettings.setVariablesLocal(variablesLocal);
+            formSettings.setVariablesModifier(variablesModifier);
+            formModel.fireSyntheticPropertyChanged(null, PROP_VARIABLE_LOCAL, oldValue, newValue);
+            formModel.fireSyntheticPropertyChanged(null, PROP_VARIABLE_MODIFIER, oldModif, newModif);
+            ((FormRootNode)formEditorSupport.getFormRootNode()).firePropertyChangeHelper(
+                PROP_VARIABLE_LOCAL, oldValue, newValue);
+            ((FormRootNode)formEditorSupport.getFormRootNode()).firePropertyChangeHelper(
+                PROP_VARIABLE_MODIFIER, oldModif, newModif);
+        }
+        
+        public Object getValue() {
+            return Boolean.valueOf(formModel.getSettings().getVariablesLocal());
+        }
+        
+        public boolean supportsDefaultValue() {
+            return true;
+        }
+        
+        public void restoreDefaultValue() {
+            setValue(Boolean.valueOf(FormLoaderSettings.getInstance().getVariablesLocal()));
+        }
+        
+        public boolean isDefaultValue() {
+            return (formModel.getSettings().getVariablesLocal() ==
+                FormLoaderSettings.getInstance().getVariablesLocal());
+        }
+          
+        public boolean canWrite() {
+            return JavaCodeGenerator.this.canGenerate;
+        }
+        
+    }
+    
+    private class GenerateMnemonicsCodeProperty extends PropertySupport.ReadWrite {
+        
+        private GenerateMnemonicsCodeProperty() {
+            super(PROP_GENERATE_MNEMONICS,
+            Boolean.TYPE,
+            FormUtils.getBundleString("PROP_GENERATE_MNEMONICS"), // NOI18N
+            FormUtils.getBundleString("HINT_GENERATE_MNEMONICS2")); // NOI18N
+        }
+
+        public void setValue(Object value) {
+            if (!(value instanceof Boolean))
+                throw new IllegalArgumentException();
+            
+            Boolean oldValue = (Boolean)getValue();
+            Boolean newValue = (Boolean)value;
+            formModel.getSettings().setGenerateMnemonicsCode(newValue.booleanValue());
+            formModel.fireSyntheticPropertyChanged(null, PROP_GENERATE_MNEMONICS, oldValue, newValue);
+            ((FormRootNode)formEditorSupport.getFormRootNode()).firePropertyChangeHelper(
+                PROP_GENERATE_MNEMONICS, oldValue, newValue);
+        }
+          
+        public Object getValue() {
+            return Boolean.valueOf(formModel.getSettings().getGenerateMnemonicsCode());
+        }
+        
+        public boolean canWrite() {
+            return JavaCodeGenerator.this.canGenerate;
+        }
+        
+        public boolean supportsDefaultValue() {
+            return true;
+        }
+        
+        public void restoreDefaultValue() {
+            setValue(Boolean.valueOf(FormLoaderSettings.getInstance().getGenerateMnemonicsCode()));
+        }
+        
+        public boolean isDefaultValue() {
+            return (formModel.getSettings().getGenerateMnemonicsCode() ==
+                FormLoaderSettings.getInstance().getGenerateMnemonicsCode());
+        }
+        
+    }
+    
+    private class ListenerGenerationStyleProperty extends PropertySupport.ReadWrite {
+        
+        private ListenerGenerationStyleProperty() {
+            super(PROP_LISTENER_GENERATION_STYLE,
+                Integer.class,
+                FormUtils.getBundleString("PROP_LISTENER_GENERATION_STYLE"), // NOI18N
+                FormUtils.getBundleString("HINT_LISTENER_GENERATION_STYLE")); // NOI18N
+        }
+              
+        public void setValue(Object value) {
+            if (!(value instanceof Integer))
+                throw new IllegalArgumentException();
+            
+            Integer oldValue = (Integer)getValue();
+            Integer newValue = (Integer)value;
+            formModel.getSettings().setListenerGenerationStyle(newValue.intValue());
+            formModel.fireSyntheticPropertyChanged(null, PROP_LISTENER_GENERATION_STYLE, oldValue, newValue);
+            ((FormRootNode)formEditorSupport.getFormRootNode()).firePropertyChangeHelper(
+                PROP_LISTENER_GENERATION_STYLE, oldValue, newValue);
+        }
+          
+        public Object getValue() {
+            return new Integer(formModel.getSettings().getListenerGenerationStyle());
+        }
+        
+        public boolean supportsDefaultValue() {
+            return true;
+        }
+        
+        public void restoreDefaultValue() {
+            setValue(new Integer(FormLoaderSettings.getInstance().getListenerGenerationStyle()));
+        }
+        
+        public boolean isDefaultValue() {
+            return (formModel.getSettings().getListenerGenerationStyle() ==
+                FormLoaderSettings.getInstance().getListenerGenerationStyle());
+        }
+        
+        public boolean canWrite() {
+            return JavaCodeGenerator.this.canGenerate;
+        }
+        
+        public PropertyEditor getPropertyEditor() {
+            return new FormLoaderSettingsBeanInfo.ListenerGenerationStyleEditor();
+        }
+        
+    }
+  
 }

@@ -26,6 +26,7 @@ import org.netbeans.modules.form.actions.*;
  */
 
 class FormRootNode extends FormNode {
+    private Node.Property[] syntheticProperties;
 
     public FormRootNode(FormModel formModel) {
         super(new RootChildren(formModel), formModel);
@@ -33,6 +34,29 @@ class FormRootNode extends FormNode {
         setIconBase("org/netbeans/modules/form/resources/formDesigner"); // NOI18N
         updateName(formModel.getName());
     }
+    
+    public Node.PropertySet[] getPropertySets() {
+        Node.PropertySet ps = new Node.PropertySet(
+            "synthetic", // NOI18N
+            FormUtils.getBundleString("CTL_SyntheticTab"), // NOI18N
+            FormUtils.getBundleString("CTL_SyntheticTabHint")) { // NOI18N
+                public Node.Property[] getProperties() {
+                    return getSyntheticProperties();
+                }
+            };
+        return new Node.PropertySet[] {ps};
+    }
+    
+    Node.Property[] getSyntheticProperties() {
+        if (syntheticProperties == null)
+            syntheticProperties = createSyntheticProperties();
+        return syntheticProperties;
+    }
+    
+    private Node.Property[] createSyntheticProperties() {
+        return getFormModel().getCodeGenerator().getSyntheticProperties(null);
+    }
+  
 
     // TODO: icons for visual and non-visual forms
 //    public Image getIcon(int iconType) {

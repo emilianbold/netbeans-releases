@@ -110,6 +110,12 @@ public class FormNode extends AbstractNode implements FormCookie {
     protected Component createCustomizer() {
         return null;
     }
+    
+    /** Provides access for firing property changes */
+    public void firePropertyChangeHelper(String name,
+                                         Object oldValue, Object newValue) {
+        super.firePropertyChange(name, oldValue, newValue);
+    }
 
     // ----------
     // automatic children updates

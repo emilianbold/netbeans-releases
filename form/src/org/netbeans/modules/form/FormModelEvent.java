@@ -675,9 +675,15 @@ public class FormModelEvent extends EventObject
                         propName.substring(RADProperty.SYNTH_POST_CODE.length()));
                     prop.setPostCode((String)getOldPropertyValue());
                 }
-            }
-            else { // component synthetic property
-                Node.Property[] props = getComponent().getSyntheticProperties();
+            } else { 
+                Node.Property[] props;
+                if (getComponent() == null) { // form synthetic property
+                    FormEditorSupport fes = FormEditorSupport.getFormEditor(getFormModel());
+                    FormRootNode rootNode = (FormRootNode)fes.getFormRootNode();
+                    props = rootNode.getSyntheticProperties();
+                } else { // component synthetic property
+                    props = getComponent().getSyntheticProperties();
+                }
                 for (int i=0; i < props.length; i++) {
                     if (props[i].getName().equals(propName)) {
                         try {
@@ -708,9 +714,15 @@ public class FormModelEvent extends EventObject
                         propName.substring(RADProperty.SYNTH_POST_CODE.length()));
                     prop.setPostCode((String)getNewPropertyValue());
                 }
-            }
-            else { // component synthetic property
-                Node.Property[] props = getComponent().getSyntheticProperties();
+            } else {
+                Node.Property[] props;
+                if (getComponent() == null) { // form synthetic property
+                    FormEditorSupport fes = FormEditorSupport.getFormEditor(getFormModel());
+                    FormRootNode rootNode = (FormRootNode)fes.getFormRootNode();
+                    props = rootNode.getSyntheticProperties();
+                } else { // component synthetic property
+                    props = getComponent().getSyntheticProperties();
+                }
                 for (int i=0; i < props.length; i++) {
                     if (props[i].getName().equals(propName)) {
                         try {

@@ -1014,10 +1014,7 @@ public class FormEditorSupport extends JavaEditor
                     String propName = evt.getPropertyName();
 
                     if (FormLoaderSettings.PROP_USE_INDENT_ENGINE.equals(propName)
-                        || FormLoaderSettings.PROP_GENERATE_ON_SAVE.equals(propName)
-                        || FormLoaderSettings.PROP_VARIABLES_MODIFIER.equals(propName)
-                        || FormLoaderSettings.PROP_VARIABLES_LOCAL.equals(propName)
-                        || FormLoaderSettings.PROP_LISTENER_GENERATION_STYLE.equals(propName))
+                        || FormLoaderSettings.PROP_GENERATE_ON_SAVE.equals(propName))
                     {
                         formModel.fireSyntheticPropertyChanged(null, propName,
                                         evt.getOldValue(), evt.getNewValue());

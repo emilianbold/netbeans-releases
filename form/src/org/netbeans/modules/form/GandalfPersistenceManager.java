@@ -117,6 +117,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     private static final String ONE_INDENT =  "  "; // NOI18N
     private static final Object NO_VALUE = new Object();
+    private static final String FORM_SETTINGS_PREFIX = "FormSettings_"; // NOI18N
 
     private org.w3c.dom.Document topDocument =
         XMLUtil.createDocument("topDocument",null,null,null); // NOI18N
@@ -2199,8 +2200,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 continue;
             }
 
-            // we have a valid name / value pair
-            comp.setAuxValue(name, value);
+            // Form settings are stored in AuxValues of top-level container
+            if ((comp == formModel.getTopRADComponent() && (name.startsWith(FORM_SETTINGS_PREFIX)))) {
+                String settingName = name.substring(FORM_SETTINGS_PREFIX.length());
+                formModel.getSettings().set(settingName, value);
+            } else {
+                // we have a valid name / value pair
+                comp.setAuxValue(name, value);
+            }
         }
 
         // we must care about some aux values specially ...
@@ -2272,6 +2279,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
             String varName = comp.getName(); // get the original name
             codeStructure.removeExpressionFromVariable(exp);
             codeStructure.createVariableForExpression(exp, varType, varName);
+            
+            // Default variable modifiers for form
+            if (comp == formModel.getTopRADComponent()) {
+                FormSettings settings = formModel.getSettings();
+                boolean local = settings.getVariablesLocal();
+                int modifiers = settings.getVariablesModifier();
+                int type = local ? (CodeVariable.LOCAL | (modifiers & CodeVariable.FINAL)
+                    | CodeVariable.EXPLICIT_DECLARATION) : modifiers | CodeVariable.FIELD;
+                formModel.getCodeStructure().setDefaultVariableType(type);
+            }
         }
     }
 
@@ -2927,6 +2944,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         // 3. Aux Values
         Map auxValues = component.getAuxValues();
+        // Form settings are stored as a part of AuxValues of top-level container
+        if (component == formModel.getTopRADComponent()) {
+            auxValues = (auxValues == null) ? new TreeMap() : new TreeMap(auxValues);
+            Map settings = formModel.getSettings().allSettings();
+            Iterator iter = settings.entrySet().iterator();
+            while (iter.hasNext()) {
+                Map.Entry entry = (Map.Entry)iter.next();
+                auxValues.put(FORM_SETTINGS_PREFIX + entry.getKey(), entry.getValue());
+            }
+        }
         if (auxValues != null && auxValues.size() > 0) {
 //            buf.append("\n"); // NOI18N
             buf.append(indent); addElementOpen(buf, XML_AUX_VALUES);

@@ -32,7 +32,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     public static final String PROP_GENERATE_POSITION = "generatePosition"; // NOI18N
     public static final String PROP_GENERATE_SIZE = "generateSize"; // NOI18N
     public static final String PROP_GENERATE_CENTER = "generateCenter"; // NOI18N
-    public static final String PROP_GENERATE_MNEMONICS = "generateMnemonicsCode"; // Mnemonics support NOI18N
 
     public static final int GEN_BOUNDS = 0;
     public static final int GEN_PACK = 1;
@@ -374,42 +373,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             }
         };
 
-        // Mnemonics support - start -
-        Node.Property mnemonicsProperty = new PropertySupport.ReadWrite(
-            PROP_GENERATE_MNEMONICS, 
-            Boolean.TYPE,
-            bundle.getString("PROP_GENERATE_MNEMONICS"), // NOI18N
-            bundle.getString("HINT_GENERATE_MNEMONICS2")) // NOI18N
-        {
-            public void setValue(Object value) {
-                Object oldValue = getValue();
-                setAuxValue(PROP_GENERATE_MNEMONICS, value);
-                getFormModel().fireSyntheticPropertyChanged(
-                                   RADVisualFormContainer.this,
-                                   PROP_GENERATE_MNEMONICS,
-                                   oldValue, value);
-                if (getNodeReference() != null)
-                    getNodeReference().firePropertyChangeHelper(
-                            PROP_GENERATE_MNEMONICS, null, null);
-            }
-            public Object getValue() {
-                Object value = getAuxValue(PROP_GENERATE_MNEMONICS);
-                return value != null ? value : Boolean.FALSE;
-            }
-            public boolean canWrite() {
-                return !isReadOnly();
-            }
-            public boolean supportsDefaultValue() {
-                return true;
-            }
-            public void restoreDefaultValue() {
-                setValue(null);
-            }
-        };
-        // avoid saving as synthetic property - will be saved as aux 
-        mnemonicsProperty.setValue("defaultValue", Boolean.TRUE); // NOI18N
-        // Mnemonics support - end -
-
         java.util.List propList = new java.util.ArrayList();
 
         if (java.awt.Window.class.isAssignableFrom(getBeanClass())
@@ -424,9 +387,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         }
         
         propList.add(designerSizeProperty);
-
-        if (java.awt.Container.class.isAssignableFrom(getBeanClass()))
-            propList.add(mnemonicsProperty);
 
         Node.Property[] props = new Node.Property[propList.size()];
         propList.toArray(props);

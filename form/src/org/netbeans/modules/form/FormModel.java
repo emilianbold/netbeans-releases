@@ -64,6 +64,8 @@ public class FormModel
 
     private CodeStructure codeStructure = new CodeStructure(false);
     private CodeGenerator codeGenerator; // [this reference should be removed]
+    
+    private FormSettings settings = new FormSettings();
 
     // -------------
     // initialization
@@ -724,9 +726,7 @@ public class FormModel
         ev.setProperty(propName, oldValue, newValue);
         sendEvent(ev);
 
-        if (undoRedoRecording
-            && metacomp != null && propName != null && oldValue != newValue)
-        {
+        if (undoRedoRecording && propName != null && oldValue != newValue) {
             addUndoableEdit(ev.getUndoableEdit());
         }
 
@@ -848,6 +848,10 @@ public class FormModel
         if (eventBroker == null && isFormLoaded())
             eventBroker = new EventBroker();
         return eventBroker;
+    }
+    
+    public FormSettings getSettings() {
+        return settings;
     }
 
     /** Class that collects events and fires them on FormModel in one batch

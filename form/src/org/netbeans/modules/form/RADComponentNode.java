@@ -83,12 +83,6 @@ public class RADComponentNode extends FormNode
         firePropertySetsChange(null, null);
     }
 
-    /** Provides access for firing property changes */
-    public void firePropertyChangeHelper(String name,
-                                         Object oldValue, Object newValue) {
-        super.firePropertyChange(name, oldValue, newValue);
-    }
-
     public Image getIcon(int iconType) {
         // try to get a special icon
         Image icon = BeanSupport.getBeanIcon(component.getBeanClass(), iconType);

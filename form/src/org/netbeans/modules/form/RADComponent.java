@@ -61,8 +61,8 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 
     private PropertyChangeListener propertyListener;
 
-    private HashMap auxValues;
-    protected HashMap nameToProperty;
+    private Map auxValues;
+    protected Map nameToProperty;
 
     private RADComponent parentComponent;
 
@@ -472,7 +472,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
      */
     public void setAuxValue(String key, Object value) {
         if (auxValues == null)
-            auxValues = new HashMap(10);
+            auxValues = new TreeMap();
         auxValues.put(key, value);
     }
 
