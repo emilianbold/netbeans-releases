@@ -96,6 +96,8 @@ is divided into following sections:
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
                 <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
                 <property value="${{build.ear.web.dir}}/META-INF" name="build.meta.inf.dir"/>
+                <property name="build.classes.dir.real" value="${{build.ear.classes.dir}}"/>
+                <property name="build.web.dir.real" value="${{build.ear.web.dir}}"/>
             </target>
     
             <target name="-do-init">
@@ -153,6 +155,8 @@ is divided into following sections:
                 </condition>
                 <available file="${{conf.dir}}/MANIFEST.MF" property="has.custom.manifest"/>
                 <property value="${{build.web.dir}}/META-INF" name="build.meta.inf.dir"/>
+                <property name="build.classes.dir.real" value="${{build.classes.dir}}"/>
+                <property name="build.web.dir.real" value="${{build.web.dir}}"/>
             </target>
 
             <target name="-post-init">
@@ -213,7 +217,7 @@ is divided into following sections:
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">destdir</xsl:attribute>
-                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
+                        <xsl:attribute name="default">${build.classes.dir.real}</xsl:attribute>
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">classpath</xsl:attribute>
@@ -312,7 +316,7 @@ is divided into following sections:
                             </xsl:if>
                             <jvmarg line="${{runmain.jvmargs}}"/>
                             <classpath>
-                                <path path="${{build.classes.dir}}:${{javac.classpath}}:${{j2ee.platform.classpath}}"/>
+                                <path path="${{build.classes.dir.real}}:${{javac.classpath}}:${{j2ee.platform.classpath}}"/>
                             </classpath>
                             <syspropertyset>
                                 <propertyref prefix="run-sys-prop."/>
@@ -354,7 +358,7 @@ is divided into following sections:
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
                     <attribute>
                         <xsl:attribute name="name">dir</xsl:attribute>
-                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
+                        <xsl:attribute name="default">${build.classes.dir.real}</xsl:attribute>
                     </attribute>
                     <sequential>
                         <nbjpdareload>
@@ -438,9 +442,9 @@ is divided into following sections:
                       <classpath path="${{wscompile.classpath}}"/>
                     </taskdef>
 
-                    <mkdir dir="${{build.web.dir}}/WEB-INF/wsdl"/>
+                    <mkdir dir="${{build.web.dir.real}}/WEB-INF/wsdl"/>
                     <mkdir dir="${{web.docbase.dir}}/WEB-INF/wsdl"/>
-                    <mkdir dir="${{build.classes.dir}}"/>
+                    <mkdir dir="${{build.classes.dir.real}}"/>
                     <mkdir dir="${{build.generated.dir}}/wssrc"/>
                 </target>
             </xsl:if>
@@ -457,7 +461,7 @@ is divided into following sections:
                      features="${{wscompile.service.{$wsname}.features}}"
                      mapping="${{web.docbase.dir}}/WEB-INF/wsdl/${{{$wsname}.mapping}}"
                      classpath="${{wscompile.classpath}}" 
-                     nonClassDir="${{build.web.dir}}/WEB-INF/wsdl" 
+                     nonClassDir="${{build.web.dir.real}}/WEB-INF/wsdl" 
                      verbose="true" 
                      xPrintStackTrace="true" 
                      base="${{build.generated.dir}}/wssrc"
@@ -475,9 +479,9 @@ is divided into following sections:
                      base="${{build.generated.dir}}/wssrc"
                      xPrintStackTrace="true"
                      verbose="true"
-                     nonClassDir="${{build.web.dir}}/WEB-INF/wsdl"
-                     classpath="${{wscompile.classpath}}:build/web/WEB-INF/classes"
-                     mapping="${{build.web.dir}}/WEB-INF/wsdl/${{{$wsname}.mapping}}"
+                     nonClassDir="${{build.web.dir.real}}/WEB-INF/wsdl"
+                     classpath="${{wscompile.classpath}}:${{build.classes.dir.real}}"
+                     mapping="${{build.web.dir.real}}/WEB-INF/wsdl/${{{$wsname}.mapping}}"
                      config="${{src.dir}}/${{{$wsname}.config.name}}"
                      features="${{wscompile.service.{$wsname}.features}}">
                   </wscompile>
@@ -520,10 +524,10 @@ is divided into following sections:
                         xPrintStackTrace="true" verbose="false" fork="true" keep="true"
                         client="{$useclient}" import="{$useimport}"
                         features="${{wscompile.client.{$wsclientname}.features}}"
-                        base="${{build.classes.dir}}"
+                        base="${{build.classes.dir.real}}"
                         sourceBase="${{build.generated.dir}}/wssrc"
                         classpath="${{wscompile.classpath}}"
-                        mapping="${{build.web.dir}}/WEB-INF/wsdl/{$wsclientname}-mapping.xml"
+                        mapping="${{build.web.dir.real}}/WEB-INF/wsdl/{$wsclientname}-mapping.xml"
                         config="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml">
                     </wscompile>
                 </target>
@@ -531,8 +535,7 @@ is divided into following sections:
 
             <target name="-pre-pre-compile">
                 <xsl:attribute name="depends">init,deps-jar</xsl:attribute>
-                <mkdir dir="${{build.classes.dir}}"/>
-                <mkdir dir="${{build.ear.classes.dir}}"/>
+                <mkdir dir="${{build.classes.dir.real}}"/>
             </target>
 
             <target name="-pre-compile">
@@ -553,24 +556,24 @@ is divided into following sections:
 
             <target name="-do-compile">
                 <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest</xsl:attribute>
-                <xsl:attribute name="unless">dist.ear.dir</xsl:attribute>
+                
                 <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
                     <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment> 
                     <delete> 
-                      <fileset dir="${{build.classes.dir}}" includes="**/*_Tie.* **/*_SerializerRegistry.*"/>
+                      <fileset dir="${{build.classes.dir.real}}" includes="**/*_Tie.* **/*_SerializerRegistry.*"/>
                     </delete>
                 </xsl:if>
 
-                <webproject2:javac/>
+                <webproject2:javac destdir="${{build.classes.dir.real}}"/>
                
-                <copy todir="${{build.classes.dir}}">
+                <copy todir="${{build.classes.dir.real}}">
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/webproject2:data/webproject2:source-roots"/>
                         <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
                     </xsl:call-template>
                 </copy>
                 
-                <copy todir="${{build.web.dir}}">
+                <copy todir="${{build.web.dir.real}}">
                   <fileset excludes="${{build.web.excludes}}" dir="${{web.docbase.dir}}">
                    <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
                      <xsl:attribute name="excludes">WEB-INF/classes/** WEB-INF/web.xml WEB/sun-web.xml</xsl:attribute>
@@ -580,57 +583,11 @@ is divided into following sections:
                 
                 <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
                     <xsl:comment>For web services, refresh web.xml and sun-web.xml</xsl:comment>  
-                    <copy todir="${{build.web.dir}}" overwrite="true"> 
+                    <copy todir="${{build.web.dir.real}}" overwrite="true"> 
                       <fileset includes="WEB-INF/web.xml WEB-INF/sun-web.xml" dir="${{web.docbase.dir}}"/>
                     </copy>
                  </xsl:if>
-                
-                <xsl:for-each select="/p:project/p:configuration/webproject2:data/webproject2:web-module-libraries/webproject2:library[webproject2:path-in-war]">
-                    <xsl:variable name="copyto" select=" webproject2:path-in-war"/>
-                    <xsl:variable name="libfile" select="webproject2:file"/>
-                    <copyfiles todir="${{build.web.dir}}/{$copyto}" files="{$libfile}"/>
-                </xsl:for-each>
-                <xsl:for-each select="/p:project/p:configuration/webproject2:data/webproject2:web-module-additional-libraries/webproject2:library[webproject2:path-in-war]">
-                    <xsl:variable name="copyto" select=" webproject2:path-in-war"/>
-                    <xsl:variable name="libfile" select="webproject2:file"/>
-                    <copyfiles todir="${{build.web.dir}}/{$copyto}" files="{$libfile}"/>
-                </xsl:for-each>
-            </target>
-
-            <target name="-do-ear-compile">
-                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest</xsl:attribute>
-                <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
-                
-                <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
-                    <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment> 
-                    <delete> 
-                      <fileset dir="${{build.ear.classes.dir}}" includes="**/*_Tie.* **/*_SerializerRegistry.*"/>
-                    </delete>
-                </xsl:if>
-
-                <webproject2:javac destdir="${{build.ear.classes.dir}}"/>
-               
-                <copy todir="${{build.ear.classes.dir}}">
-                    <xsl:call-template name="createFilesets">
-                        <xsl:with-param name="roots" select="/p:project/p:configuration/webproject2:data/webproject2:source-roots"/>
-                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
-                    </xsl:call-template>
-                </copy>
-                
-                <copy todir="${{build.ear.web.dir}}">
-                  <fileset excludes="${{build.web.excludes}}" dir="${{web.docbase.dir}}">
-                   <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
-                     <xsl:attribute name="excludes">WEB-INF/classes/** WEB-INF/web.xml WEB/sun-web.xml</xsl:attribute>
-                   </xsl:if>
-                  </fileset>
-                </copy>
-                
-                <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
-                    <xsl:comment>For web services, refresh web.xml and sun-web.xml</xsl:comment>  
-                    <copy todir="${{build.web.dir}}" overwrite="true"> 
-                      <fileset includes="WEB-INF/web.xml WEB-INF/sun-web.xml" dir="${{web.docbase.dir}}"/>
-                    </copy>
-                 </xsl:if>
+                 
             </target>
             
             <target name="-copy-manifest" if="conf.dir">
@@ -660,7 +617,7 @@ is divided into following sections:
             </target>
 
             <target name="compile">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-do-compile,-do-ear-compile,-post-compile</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-do-compile,-post-compile</xsl:attribute>
                 <xsl:attribute name="description">Compile project.</xsl:attribute>
             </target>
 
@@ -699,7 +656,7 @@ is divided into following sections:
                    failonerror="true"
                 >
                     <arg value="-uriroot"/>
-                    <arg file="${{basedir}}/${{build.web.dir}}"/>
+                    <arg file="${{basedir}}/${{build.web.dir.real}}"/>
                     <arg value="-d"/>
                     <arg file="${{basedir}}/${{build.generated.dir}}/src"/>
                     <arg value="-die1"/>
@@ -709,7 +666,7 @@ is divided into following sections:
                 <webproject2:javac
                     srcdir="${{build.generated.dir}}/src"
                     destdir="${{build.generated.dir}}/classes"
-                    classpath="${{javac.classpath}}:${{j2ee.platform.classpath}}:${{build.classes.dir}}:${{jspc.classpath}}"/>
+                    classpath="${{javac.classpath}}:${{j2ee.platform.classpath}}:${{build.classes.dir.real}}:${{jspc.classpath}}"/>
 
             </target>
 
@@ -724,7 +681,7 @@ is divided into following sections:
                    failonerror="true"
                 >
                     <arg value="-uriroot"/>
-                    <arg file="${{basedir}}/${{build.web.dir}}"/>
+                    <arg file="${{basedir}}/${{build.web.dir.real}}"/>
                     <arg value="-d"/>
                     <arg file="${{basedir}}/${{build.generated.dir}}/src"/>
                     <arg value="-die1"/>
@@ -736,7 +693,7 @@ is divided into following sections:
                 <webproject2:javac
                     srcdir="${{build.generated.dir}}/src"
                     destdir="${{build.generated.dir}}/classes"
-                    classpath="${{javac.classpath}}:${{j2ee.platform.classpath}}:${{build.classes.dir}}:${{jspc.classpath}}">
+                    classpath="${{javac.classpath}}:${{j2ee.platform.classpath}}:${{build.classes.dir.real}}:${{jspc.classpath}}">
                     <customize>
                         <patternset includes="${{javac.jsp.includes}}"/>
                     </customize>
@@ -745,8 +702,8 @@ is divided into following sections:
                 <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1">
                     <xsl:with-param name="srcdir" select="'${{build.generated.dir}}/src'"/>
                     <xsl:with-param name="destdir" select="'${{build.generated.dir}}/classes'"/>
-                    <xsl:with-param name="classpath" select="'${{javac.classpath}}:${{j2ee.platform.classpath}}:${{build.classes.dir}}'"/>
-                    <xsl:with-param name="classpath" select="'${{javac.classpath}}:${{j2ee.platform.classpath}}:${{build.classes.dir}}:${{jspc.classpath}}'"/>
+                    <xsl:with-param name="classpath" select="'${{javac.classpath}}:${{j2ee.platform.classpath}}:${{build.classes.dir.real}}'"/>
+                    <xsl:with-param name="classpath" select="'${{javac.classpath}}:${{j2ee.platform.classpath}}:${{build.classes.dir.real}}:${{jspc.classpath}}'"/>
                </webproject:javac>
                -->
             </target>
@@ -772,7 +729,7 @@ is divided into following sections:
                 <dirname property="dist.jar.dir" file="${{dist.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
                 <jar jarfile="${{dist.war}}" compress="${{jar.compress}}">
-                    <fileset dir="${{build.web.dir}}"/>
+                    <fileset dir="${{build.web.dir.real}}"/>
                 </jar>
             </target>
             
@@ -780,13 +737,13 @@ is divided into following sections:
                 <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
-                <jar manifest="${{build.web.dir}}/META-INF/MANIFEST.MF" jarfile="${{dist.war}}" compress="${{jar.compress}}">
-                    <fileset dir="${{build.web.dir}}"/>
+                <jar manifest="${{build.meta.inf.dir}}/MANIFEST.MF" jarfile="${{dist.war}}" compress="${{jar.compress}}">
+                    <fileset dir="${{build.web.dir.real}}"/>
                 </jar>
             </target>
             
             <target name="do-dist">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist,-do-dist-with-manifest,-do-dist-without-manifest</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist,-do-dist-with-manifest,-do-dist-without-manifest,library-inclusion-in-archive</xsl:attribute>
             </target>
             
 
@@ -806,11 +763,8 @@ is divided into following sections:
                         <xsl:attribute name="file"><xsl:value-of select="$included.prop.name"/></xsl:attribute>
                      </copy>
                 </xsl:for-each>
-                <mkdir dir="${{build.ear.web.dir}}/META-INF"/>
-                
-                
-                
-                <manifest file="${{build.ear.web.dir}}/META-INF/MANIFEST.MF" mode="update">
+                <mkdir dir="${{build.web.dir.real}}/META-INF"/>
+                <manifest file="${{build.web.dir.real}}/META-INF/MANIFEST.MF" mode="update">
                     <attribute>
                         <xsl:attribute name="name">Class-Path</xsl:attribute>
                         <xsl:attribute name="value">
@@ -826,12 +780,26 @@ is divided into following sections:
                 </manifest>
             </target>
             
+            <target name="library-inclusion-in-archive" depends="compile">
+                  <xsl:for-each select="/p:project/p:configuration/webproject2:data/webproject2:web-module-libraries/webproject2:library[webproject2:path-in-war]">
+                    <xsl:variable name="copyto" select=" webproject2:path-in-war"/>
+                    <xsl:variable name="libfile" select="webproject2:file"/>
+                    <copyfiles todir="${{build.web.dir.real}}/{$copyto}" files="{$libfile}"/>
+                </xsl:for-each>
+                
+                <xsl:for-each select="/p:project/p:configuration/webproject2:data/webproject2:web-module-additional-libraries/webproject2:library[webproject2:path-in-war]">
+                    <xsl:variable name="copyto" select=" webproject2:path-in-war"/>
+                    <xsl:variable name="libfile" select="webproject2:file"/>
+                    <copyfiles todir="${{build.web.dir.real}}/{$copyto}" files="{$libfile}"/>
+                </xsl:for-each>
+             </target>
+            
             <target name="do-ear-dist">
                 <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist,library-inclusion-in-manifest</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.ear.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
-                <jar jarfile="${{dist.ear.war}}" compress="${{jar.compress}}" manifest="${{build.ear.web.dir}}/META-INF/MANIFEST.MF">
-                    <fileset dir="${{build.ear.web.dir}}"/>
+                <jar jarfile="${{dist.ear.war}}" compress="${{jar.compress}}" manifest="${{build.web.dir.real}}/META-INF/MANIFEST.MF">
+                    <fileset dir="${{build.web.dir.real}}"/>
                 </jar>
             </target>
             
@@ -1282,10 +1250,10 @@ is divided into following sections:
             <target name="do-clean">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 
-                <condition value="${{build.ear.web.dir}}" property="build.dir.to.clean">
+                <condition value="${{build.web.dir.real}}" property="build.dir.to.clean">
                     <isset property="dist.ear.dir"/>
                 </condition>
-                <property value="${{build.web.dir}}" name="build.dir.to.clean"/>
+                <property value="${{build.web.dir.real}}" name="build.dir.to.clean"/>
                 
                 <delete includeEmptyDirs="true" quiet="true">
                     <fileset dir="${{build.dir.to.clean}}/WEB-INF/lib"/>
@@ -1301,7 +1269,7 @@ is divided into following sections:
                 <!-- XXX explicitly delete all build.* and dist.* dirs in case they are not subdirs -->
                 <!--
                 <delete dir="${{build.generated.dir}}"/>
-                <delete dir="${{build.web.dir}}"/>
+                <delete dir="${{build.web.dir.real}}"/>
                 -->
             </target>
 
@@ -1312,13 +1280,13 @@ is divided into following sections:
                     When undeploy is implemented it should be optional:
                 <xsl:attribute name="unless">clean.check.skip</xsl:attribute>
                 -->
-                <echo message="Warning: unable to delete some files in ${{build.web.dir}}/WEB-INF/lib - they are probably locked by the J2EE server. " />
+                <echo message="Warning: unable to delete some files in ${{build.web.dir.real}}/WEB-INF/lib - they are probably locked by the J2EE server. " />
                 <echo level="info" message="To delete all files undeploy the module from Server Registry in Runtime tab and then use Clean again."/>
                 <!--
                     Here comes the undeploy code when supported by nbdeploy task:
                 <nbdeploy undeploy="true" clientUrlPart="${client.urlPart}"/>
                     And then another attempt to delete:
-                <delete dir="${{build.web.dir}}/WEB-INF/lib"/>
+                <delete dir="${{build.web.dir.real}}/WEB-INF/lib"/>
                 -->
             </target>
 
