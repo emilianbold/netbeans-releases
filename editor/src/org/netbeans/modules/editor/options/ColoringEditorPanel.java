@@ -70,7 +70,6 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints1.insets = new java.awt.Insets (0, 0, 0, 0);
         gridBagConstraints1.weightx = 1.0;
-        gridBagConstraints1.weighty = 0.3;
         fontPanel = new PropWithDefaultPanel( Font.class, FontEditor.class,
                                               getBundleString("CEP_FontTitle"),        // NOI18N
                                               getBundleString("ACSD_CEP_Font"),        // NOI18N
