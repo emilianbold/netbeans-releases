@@ -142,7 +142,7 @@ public class Util {
     }
 
     // following block is copy/pasted code from 
-    // org.netbeans.modules.j2ee.ejbjarproject.Utils
+    // org.netbeans.modules.j2ee.common.Util
     
     /**
      * Returns Java source groups for all source packages in given project.<br>
