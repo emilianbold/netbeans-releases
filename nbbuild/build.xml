@@ -287,17 +287,10 @@ to make the first user start faster and better.)
     <!-- possibly after filtering for duplicates or something like this. -->
     <!-- Timeout is ten minutes; should be enough for valid first start, while preventing -->
     <!-- a deadlock from hanging an automated build: -->
-    <!-- missing initial W intentional, to make it case-insensitive: -->
-    <exec os="indows" dir="firststart/bin" executable="runide.exe" failonerror="yes" timeout="600000">
+    <exec os="Windows NT Windows 95 Windows 98" dir="firststart/bin" executable="runide.exe" failonerror="yes" timeout="600000">
       <arg line="${firststart.args}"/>
     </exec>
-    <exec os="Linux" dir="firststart/bin" executable="sh" failonerror="yes" timeout="600000">
-      <arg line="runide.sh ${firststart.args}"/>
-    </exec>
-    <exec os="SunOS" dir="firststart/bin" executable="sh" failonerror="yes" timeout="600000">
-      <arg line="runide.sh ${firststart.args}"/>
-    </exec>
-    <exec os="Solaris" dir="firststart/bin" executable="sh" failonerror="yes" timeout="600000">
+    <exec os="Linux SunOS Solaris" dir="firststart/bin" executable="sh" failonerror="yes" timeout="600000">
       <arg line="runide.sh ${firststart.args}"/>
     </exec>
     <echo message="Successfully started, cleaning up detritus..."/>
@@ -329,16 +322,10 @@ the nbbuild/firststart/bin/ directory.
   </target>
   <target name="tryme" depends="init,maybe-firststart"
           description="Try running the IDE interactively (build it first if needed).">
-    <exec os="indows" dir="firststart/bin" executable="runide.exe" failonerror="yes">
+    <exec os="Windows NT Windows 95 Windows 98" dir="firststart/bin" executable="runide.exe" failonerror="yes">
       <arg line="${tryme.args}"/>
     </exec>
-    <exec os="Linux" dir="firststart/bin" executable="sh" failonerror="yes">
-      <arg line="runide.sh ${tryme.args}"/>
-    </exec>
-    <exec os="SunOS" dir="firststart/bin" executable="sh" failonerror="yes">
-      <arg line="runide.sh ${tryme.args}"/>
-    </exec>
-    <exec os="Solaris" dir="firststart/bin" executable="sh" failonerror="yes">
+    <exec os="Linux SunOS Solaris" dir="firststart/bin" executable="sh" failonerror="yes">
       <arg line="runide.sh ${tryme.args}"/>
     </exec>
   </target>
