@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:project="http://www.netbeans.org/ns/project/1"
-                xmlns:webproject="http://www.netbeans.org/ns/web-project/2"
+                xmlns:webproject="http://www.netbeans.org/ns/web-project/3"
                 xmlns:xalan="http://xml.apache.org/xslt"
                 exclude-result-prefixes="xalan project webproject">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
