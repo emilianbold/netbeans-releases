@@ -16,6 +16,7 @@ package com.netbeans.developer.modules.text;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.Writer;
+import java.io.File;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;
@@ -29,6 +30,8 @@ import com.netbeans.editor.ext.ExtSettings;
 import org.openide.modules.ModuleInstall;
 import org.openide.text.IndentEngine;
 import org.openide.TopManager;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.LocalFileSystem;
 
 /**
 * Module installation class for editor
@@ -36,6 +39,8 @@ import org.openide.TopManager;
 * @author Miloslav Metelka
 */
 public class EditorModule implements ModuleInstall {
+
+  private static final String DB_DIR = "ParserDB";
 
   private static final String MIME_PLAIN = "text/plain";
   private static final String MIME_JAVA = "text/x-java";
@@ -74,11 +79,13 @@ public class EditorModule implements ModuleInstall {
   /** Module installed again. */
   public void restored () {
 
-    // initial initializations
+    // initializations
+    FileSystem rfs = TopManager.getDefault().getRepository().getDefaultFileSystem();
+    File rootDir = ((LocalFileSystem)rfs).getRootDirectory();
 
     DialogSupport.init();
     DialogSupport.setDialogCreator(new NbDialogCreator());
-    ExtSettings.init("");
+    ExtSettings.init(rootDir.getAbsolutePath() + File.separator + DB_DIR);
 
     // preload some classes for faster editor opening
     BaseKit.getKit(NbEditorJavaKit.class).createDefaultDocument();
@@ -144,6 +151,7 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  16   Gandalf   1.15        6/9/99   Miloslav Metelka 
  *  15   Gandalf   1.14        6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  14   Gandalf   1.13        6/8/99   Miloslav Metelka 
