@@ -59,7 +59,6 @@ abstract class ContentModel {
                 do {
                     ch = tokens.nextToken().charAt(0);
                 } while (ch == ' ' || ch == '\t' || ch == '\n');
-                ch = tokens.nextToken().charAt(0);
                 if (ch != '|') throw new IllegalStateException();
                 continue; 
             } else if (ch == '(') {
@@ -148,7 +147,7 @@ abstract class ContentModel {
     /**
      * Move the automaton to next state. It is may not be called
      * twice without reset!
-     * @return true if moved, false at root model indicate document error
+     * @return true if accepted the food, false at root model indicate document error
      */
     protected abstract boolean eat(Food food);
 
@@ -239,22 +238,13 @@ abstract class ContentModel {
         public Sequence(ContentModel[] models) {
             this.models = models;
         }
-        
-        /**
-         * If used <code>init</code> must be called immediatelly
-         */
-        protected Sequence() {
-        }
-        
-        protected final void init(ContentModel[] models) {
-            this.models = models;
-        }
 
         /**
          * Reset all models upto (inclusive) current one.
          */
         protected void reset() {
-            for (int i = 0; i<=current; i++) {
+            int bounds = Math.min(current+1, models.length);
+            for (int i = 0; i<bounds; i++) {
                 models[i].reset();
             }
             current = 0;
@@ -412,21 +402,90 @@ abstract class ContentModel {
     /**
      * At least one sub-content model must eat.     
      */
-    private static class Choice extends Sequence {
+    private static class Choice extends ContentModel {
+
+        private ContentModel[] models;
+
+        private boolean terminated = false;
+
+        // index of current model to use <0, models.length>
+        private int current = 0;
 
         public Choice(ContentModel[] models) {
-            //??? IT IS SIMPLIFICATION may provide more options than dictated by grammar
-            for (int i = 0; i<models.length; i++) {
-                models[i] = new MultiplicityGroup(models[i], 0, 1);
-            }
-            init(models);
+            this.models = models;
         }
-        
+
+
+        /**
+         * Reset all models upto (inclusive) current one.
+         */
+        protected void reset() {
+            int bounds = Math.min(current+1, models.length);
+            for (int i = 0; i<bounds; i++) {
+                models[i].reset();
+            }
+            current = 0;
+        }
+
+        /**
+         * Feed all choice models until is enough food.
+         * @return trua if at least one accepted
+         */
+        protected boolean eat(Food food) {
+
+            boolean accepted = false;
+            int newFood = food.mark();
+            boolean acceptedAndHungry = false;
+
+            while (food.hasNext()) {
+
+                if (current == models.length) break;
+
+                int store = food.mark();
+                boolean accept = models[current].eat(food);
+                if (accept) {
+                    accepted = true;
+                    if (food.hasNext() == false) {
+                        acceptedAndHungry = models[current].terminated() == false;
+                    }
+                    newFood = Math.max(newFood, food.mark());
+                }
+                current++;
+                food.reset(store);
+            }
+
+            food.reset(newFood);
+            terminated = acceptedAndHungry == false;
+            return accepted;
+        }
+
+        protected boolean terminated() {
+            return terminated;
+        }
+
+        protected Enumeration possibilities() {
+            if (terminated() == false) {
+                Enumeration en = EmptyEnumeration.EMPTY;
+                for ( int i = current; i<models.length; i++) {
+                    ContentModel next = models[i];
+                    en = new SequenceEnumeration(en, next.possibilities());
+                }
+                return en;
+            } else {
+                return EmptyEnumeration.EMPTY;
+            }
+        }
+
         public String toString() {
-            return "Choice[" + super.toString() + "]";            
+            String ret = "Choice[";
+            for (int i = 0; i<models.length; i++) {
+                ret += models[i].toString() + ", ";
+            }
+            return ret + " current=" + current + "]";
         }
     }
-    
+
+
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~ Utility classes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     
@@ -437,7 +496,7 @@ abstract class ContentModel {
     private static class Food {
 
         // stack emulator
-        private final List list = new ArrayList(13);
+        private final List list = new LinkedList();
         
         // source of lazy stack initilization
         private final Enumeration en;
