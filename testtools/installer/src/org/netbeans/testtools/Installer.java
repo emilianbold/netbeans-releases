@@ -76,7 +76,10 @@ public class Installer {
     
     private static ZipInputStream getStream(String fileName) {
         InputStream is=Installer.class.getClassLoader().getResourceAsStream(fileName);
-        if (is==null) err("Missing "+fileName+" !");
+        if (is==null) {
+            is=Installer.class.getClassLoader().getResourceAsStream("nb/"+fileName);
+            if (is==null) err("Missing [nb/]"+fileName+" !");
+        }
         return new ZipInputStream(is);
     }
     
