@@ -124,7 +124,8 @@
       <tocitem text="Applets" >
               <tocitem text="Creating an Applet" target="applet_create"/>
               <tocitem text="Adding an Applet JAR File to a WAR File" target="applet_addtowar"/>
-              <tocitem text="Running an Applet" target="applet_run"/>
+	      <tocitem text="Running an Applet" target="applet_run"/>
+              <tocitem text="Setting Permissions for an Applet" target="applet_security"/>
       </tocitem>
    </tocitem>
    <tocitem text="Configuring Web Applications" >

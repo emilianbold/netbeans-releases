@@ -32,6 +32,7 @@
 		<mapID target="applet_create" url="web/create/applet/applet_create.html" />
 		<mapID target="applet_addtowar" url="web/create/applet/applet_addtowar.html" />
 		<mapID target="applet_run" url="web/create/applet/applet_run.html" />
+		<mapID target="applet_security" url="web/create/applet/applet_security.html" />
 		<!-- End of "Create/Applet" subsection -->
 		<!-- Start of "Create/Filter" subsection -->
        		<mapID target="about_filter" url="web/create/filter/about_filter.html" />
