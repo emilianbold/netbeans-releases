@@ -193,6 +193,10 @@ public class JUnitTestRunnerProperties {
     
     
     
+    public void list(PrintStream out) {
+        runnerProperties.list(out);
+    }
+    
     //public String 
     
     // private stuff
