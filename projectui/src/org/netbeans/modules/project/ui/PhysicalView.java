@@ -70,9 +70,7 @@ public class PhysicalView {
     public static Node[] createNodesForProject( Project p ) {
         Sources s = ProjectUtils.getSources(p);
         SourceGroup[] groups = s.getSourceGroups(Sources.TYPE_GENERIC);
-        
-        Node[] nodes = new Node[ groups.length ];
-        
+                
         FileObject projectDirectory = p.getProjectDirectory();
         SourceGroup projectDirGroup = null;
         
@@ -104,7 +102,8 @@ public class PhysicalView {
         
                     
         // Create the nodes
-        nodes[0] = new GroupNode( p, projectDirGroup, true, DataFolder.findFolder( projectDirGroup.getRootFolder() ) );
+        ArrayList nodesList = new ArrayList( groups.length );
+        nodesList.add( new GroupNode( p, projectDirGroup, true, DataFolder.findFolder( projectDirGroup.getRootFolder() ) ) );
         
         for( int i = 0; i < groups.length; i++ ) {
             
@@ -112,9 +111,11 @@ public class PhysicalView {
                 continue;
             }
             
-            nodes[i+1] = new GroupNode( p, groups[i], false, DataFolder.findFolder( groups[i].getRootFolder() ) );
+            nodesList.add( new GroupNode( p, groups[i], false, DataFolder.findFolder( groups[i].getRootFolder() ) ) );
         }
         
+        Node nodes[] = new Node[ nodesList.size() ];
+        nodesList.toArray( nodes );
         return nodes;
     }
    
