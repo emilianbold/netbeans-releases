@@ -107,18 +107,11 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow" boolvalue="true" />
-            <!-- <file name="org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
-            </file> -->
-            <attr name="org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow/Separator3.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow/Separator3.instance" boolvalue="true" />
             <file name="Separator3.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
 
-            <!-- attr name="Separator3.instance/org-netbeans-modules-project-ui-PlaceHolderAction$DebugFix.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$DebugFix.instance"/>
-            <attr name="org-netbeans-modules-project-ui-PlaceHolderAction$DebugFix.instance/Separator4.instance" boolvalue="true" / -->            
             <attr name="Separator3.instance/Separator4.instance" boolvalue="true" />            
             <file name="Separator4.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
@@ -234,11 +227,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow" boolvalue="true" />
-            <!-- <file name="org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
-            </file> -->
-            <attr name="org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow/org-netbeans-modules-debugger-ui-actions-FixAction.shadow" boolvalue="true" />
+            <attr name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow/org-netbeans-modules-debugger-ui-actions-FixAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-FixAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-FixAction.instance"/>
             </file>
