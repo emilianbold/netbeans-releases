@@ -158,7 +158,6 @@ final class Services extends ServiceType.Registry {
     */
     public synchronized java.util.List getServiceTypes () {
         if (doinit) {
-            doinit = false;
             setServiceTypes(null);
         }
         return new LinkedList (current);
@@ -171,7 +170,8 @@ final class Services extends ServiceType.Registry {
     * @param arr list of ServiceTypes 
     */
     public synchronized void setServiceTypes (java.util.List arr) {
-        
+
+        doinit = false;
         if (arr == null) {
 
             InstantiationException mainExc = null;
@@ -415,11 +415,9 @@ final class Services extends ServiceType.Registry {
 
 /*
 * $Log$
-* Revision 1.28  2000/06/19 08:16:19  anovak
-* #6817 patch - ServiceTypes not visible after start
-* doinit flag added
-* setServiceTypes(null) called
-* needs further rewriting
+* Revision 1.29  2000/06/19 08:22:53  anovak
+* doinit = false moved to setServiceTypes
+* previous code might be unsafe...
 *
 * Revision 1.27  2000/06/08 21:13:17  jtulach
 * Implements two level Compiler Type/instance
