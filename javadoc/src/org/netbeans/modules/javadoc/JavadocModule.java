@@ -55,6 +55,7 @@ public class JavadocModule implements ModuleInstall {
     if ( !dir.isDirectory() ) 
       dir.mkdirs();
 
+    restored();
   }
 
   /** By uninstalling module from the IDE do nothing. 
@@ -142,6 +143,7 @@ public class JavadocModule implements ModuleInstall {
 
 /* 
  * Log
+ *  4    Gandalf   1.3         5/7/99   Petr Hrebejk    
  *  3    Gandalf   1.2         4/27/99  Petr Hrebejk    GenerateDocAction for 
  *       all producersOf JavaDataObjects
  *  2    Gandalf   1.1         4/23/99  Petr Hrebejk    
