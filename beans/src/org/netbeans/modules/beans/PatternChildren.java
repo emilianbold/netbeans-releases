@@ -38,7 +38,7 @@ public class PatternChildren extends ClassChildren {
 
     private PropertyChangeListener weakMethodListener = WeakListener.propertyChange( methodListener, null);
     // = new WeakListener.PropertyChange( methodListener );
-    private PropertyChangeListener weakFieldListener = WeakListener.propertyChange( fieldListener, null);  ;
+    private PropertyChangeListener weakFieldListener = WeakListener.propertyChange( fieldListener, null);
     // = new WeakListener.PropertyChange( fieldListener );
 
     static {
