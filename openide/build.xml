@@ -573,7 +573,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
         </fileset>
       </classpath>
     </taskdef>
-    <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4.1/docs/api"/>
+    <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4.2/docs/api"/>
     <property name="javadoc.web.root" value="http://www.netbeans.org/download/dev/javadoc"/>
     <property name="execution-docs-location" value="${javadoc.web.root}/ExecutionAPI"/>
     <property name="io-docs-location" value="${javadoc.web.root}/InputOutputAPI"/>
