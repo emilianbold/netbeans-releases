@@ -225,7 +225,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../apisupport/ant" target="netbeans"/>
   </target>
   <!-- #27098: MakeParserDB requires several modules to have been successfully built: -->
-  <target name="all-apisupport/apidocs" depends="all-openide,all-core,all-classfile,all-java,all-java/api,all-editor,all-java/srcmodel,all-openide/deprecated,all-core/deprecated">
+  <target name="all-apisupport/apidocs" depends="all-openide,all-core,all-classfile,all-java,all-java/api,all-editor,all-java/srcmodel">
     <echo message="Building module apisupport/apidocs..."/>
     <ant dir="../apisupport/apidocs" target="netbeans"/>
   </target>
