@@ -36,8 +36,7 @@ help\
 	<mapID target="tomcat_internal_props" url="tomcat/tomcat_internal_props.html" />
 	<mapID target="tomcat_plugin" url="tomcat/tomcat_plugintro.html" />
 	<mapID target="tomcat_top_node" url="tomcat/tomcat_top_node.html" />
-        <!-- these appear in the web module help --> 
-        <mapID target="tomcat_default" url="tomcat/tomcat_default.html" /> 
+ 
 
         <!-- CSH topics -->
         <mapID target="context_help" url="tomcat/tomcat_plugintro.html" />

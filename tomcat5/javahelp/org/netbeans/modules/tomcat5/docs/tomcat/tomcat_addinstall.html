@@ -9,23 +9,23 @@
 <meta name="lastupdated" content="4Feb04">
 <!-- p1 -->
 
-<title>Adding a Tomcat Server</title>
+<title>Registering an External Tomcat Web Server</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
-<h2>Adding a Tomcat Web Server</h2>
+<h2>Registering an External Tomcat Web Server</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-<p>When you install the IDE, the installer automatically adds the bundled Tomcat 
-  servlet container. You can also configure the IDE to deploy web applications to other 
-  installations of supported versions of Tomcat, as shown in the following steps.</p>
+<p>When you install the IDE, the installer automatically registers the bundled Tomcat 
+Web Server with the IDE. You can also configure the IDE to deploy web applications to other 
+  installations of supported versions of the Tomcat Web Server.</p>
 <table cellpadding="3" cellspacing="0" border="0">
   <tr valign="top"> 
     <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
-    <td> Before you can add a server, you must have a Tomcat username that has 
+    <td> Before you can register a server, you must have a Tomcat username that has 
       the manager role associated with it. By default, there are no Tomcat user 
       names with the manager role. You must either create a user and associate 
       the manager role with the user or you must add the manager role to an existing 
@@ -41,14 +41,13 @@
     </td>
   </tr>
 </table>
-<p><b>To add a Tomcat Web Server:</b></p>
+<p><b>To register an external Tomcat Web Server:</b></p>
 <ol>
   <li>Make sure the server is not running. If the server is running and there 
   is a port number conflict with other installed servers, the IDE will not
   be able to resolve the conflict.</li>
-  <li>In the Runtime window, expand the Server Registry node, right-click the 
-    Tomcat 5 Servers node, and choose Add New Server from the contextual menu 
-    to display the Add New Server dialog box.</li>
+  <li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Server Manager.</li>
+  <li>Click Add New Server to display the Add New Server wizard.</li>
   <li>In the Install Directory text box, type or browse to the Tomcat installation 
     directory on your local system. Note that the system verifies that you have 
     specified a valid Tomcat home directory.</li>
@@ -105,8 +104,6 @@ from the contextual menu.</p>
 
 <td><a href="tomcat_plugintro.html">About the Tomcat Web Server</a><br>
 <a href="tomcat_top_node.html">Viewing a Tomcat Web Server in the IDE</a><br>
-<a href="tomcat_context_add.html">Setting a Context Path for a Web Application</a><br>
-<a href="tomcat_start.html">Starting and Stopping a Tomcat Web Server</a><br>
 <a href="tomcat_internal_props.html">Customizing a Tomcat Web Server</a><br>
 <a href="tomcat_edit_config.html">Reconfiguring a Tomcat Web Server</a><br>
 
