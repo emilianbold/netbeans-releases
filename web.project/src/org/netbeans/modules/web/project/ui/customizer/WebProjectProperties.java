@@ -377,14 +377,17 @@ public class WebProjectProperties {
                 Object item = cptm.getValueAt(i,0);
                 if (item instanceof ClassPathSupport.Item) {
                     ClassPathSupport.Item cpti = (ClassPathSupport.Item)item;
-                    String propertyName = cpti.getEvaluated();
+                    String propertyName = cpti.getReference();
                     if(propertyName != null) {
-                        if("servlet24".equals(propertyName) || "jsp20".equals(propertyName)) { //NOI18N
+                        String libname = propertyName.substring("${libs.".length());
+                        if(libname != null && libname.indexOf(".classpath}") != -1) libname = libname.substring(0, libname.indexOf(".classpath}"));
+                                
+                        if("servlet24".equals(libname) || "jsp20".equals(libname)) { //NOI18N
                             cpItemsToRemove.add(cpti);
                         }
                     }
                 }
-            }
+            } 
             
             //remove selected libraries
             Iterator remove = cpItemsToRemove.iterator();
