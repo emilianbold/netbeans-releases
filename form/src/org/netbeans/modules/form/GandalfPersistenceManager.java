@@ -74,8 +74,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
   private static final String ONE_INDENT =  "  ";
   private static final Object NO_VALUE = new Object ();
-
+  
   private org.w3c.dom.Document topDocument = XMLDataObject.createDocument();
+  
   
   /** A method which allows the persistence manager to provide infotrmation on whether
   * is is capable to store info about advanced features provided from Developer 3.0 
@@ -104,6 +105,34 @@ public class GandalfPersistenceManager extends PersistenceManager {
     return true;
   }
 
+  private String readEncoding (InputStream is) {
+    byte buffer[] = new byte [1024];
+    try {
+      for (int i; (i = is.read()) != '<'; );
+      is.read(buffer);
+      String s = new String (buffer);
+      System.out.println("buffer:"+s);
+      int pos = s.indexOf("encoding");
+      String result=null;
+      int startPos, endPos;
+      if ((pos < 0) || (pos < s.indexOf (">"))) {
+        if ( (startPos = s.indexOf('"', pos)) > 0 && 
+             (endPos = s.indexOf('"', startPos+1)) > startPos ) {
+          result = s.substring(startPos+1, endPos);
+        }
+      }
+      if (result == null) {
+        // encoding not specified in xml
+        result = System.getProperty ("file.encoding");
+      }
+      System.out.println("result:"+result);
+      return result;
+    } catch (java.io.IOException e) {
+      e.printStackTrace();
+      return "unknown encoding";
+    }
+  }
+  
   /** Called to actually load the form stored in specified formObject.
   * @param formObject the FormDataObject which represents the form files
   * @return the FormManager2 representing the loaded form or null if some problem occured
@@ -113,7 +142,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
     FileObject formFile = formObject.getFormEntry ().getFile ();
     org.w3c.dom.Document doc;
     org.w3c.dom.Element mainElement;
+    String encoding;
     try {
+      encoding = readEncoding (formFile.getURL ().openStream ());
       doc = org.openide.loaders.XMLDataObject.parse (formFile.getURL ());
       mainElement = doc.getDocumentElement ();
     } catch (org.xml.sax.SAXException e) {
@@ -149,6 +180,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     RADForm radForm = new RADForm (formInfo);
     FormManager2 formManager2 = new FormManager2 (formObject, radForm);
+    formManager2.setEncoding (encoding);
     RADVisualContainer topComp = (RADVisualContainer)radForm.getTopLevelComponent (); // [PENDING - illegal cast]
     
 // B. process top-element's subnodes (all required)
@@ -504,7 +536,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
       StringBuffer buf = new StringBuffer ();
       
       // 1.store XML file header
-      buf.append ("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n");
+      buf.append ("<?xml version=\"1.0\" encoding=\"");
+      buf.append (manager.getEncoding ());
+      buf.append ("\" ?>\n");
       buf.append ("\n");
       
       // 2.store Form element
@@ -552,7 +586,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       addElementClose (buf, XML_FORM);
       
       os = formFile.getOutputStream (lock); // [PENDING - first save to ByteArray for safety]
-      os.write (buf.toString ().getBytes ());
+      os.write (buf.toString ().getBytes (manager.getEncoding ()));
     } finally {
       if (os != null) os.close ();
       if (lock != null) lock.releaseLock ();
@@ -1400,10 +1434,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
     if (valueNode == null) return null;
     else return valueNode.getNodeValue ();
   }
+  
 }
 
 /*
  * Log
+ *  40   Gandalf   1.39        11/15/99 Pavel Buzek     property for encoding
  *  39   Gandalf   1.38        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  38   Gandalf   1.37        10/6/99  Ian Formanek    Fixed bug 4199 - 

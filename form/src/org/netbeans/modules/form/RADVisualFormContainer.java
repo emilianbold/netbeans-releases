@@ -331,8 +331,27 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       }
     };
 
+    Node.Property genEncodingProperty = new PropertySupport.ReadWrite ("encoding", String.class, "Form Encoding",  // [PENDING - localize]
+                                   "Encoding used for serialization") {
+      public void setValue (Object value) {
+        if (!(value instanceof String)) {
+          throw new IllegalArgumentException ();
+        }
+        getFormManager ().setEncoding ((String) value);
+        //getNodeReference ().notifyPropertiesChange ();
+      }
+      
+      public Object getValue () {
+        Object value = getFormManager ().getEncoding ();
+        if (value == null) {
+          value = "";
+        }
+        return value;
+      }          
+    };
+
     if ((formInfo instanceof JMenuBarContainer) || (formInfo instanceof MenuBarContainer)) {
-      Node.Property[] ret = new Node.Property [7];
+      Node.Property[] ret = new Node.Property [8];
 
       ret[0] = createMenuProperty ();
       ret[1] = sizeProperty;
@@ -341,15 +360,17 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       ret[4] = genPositionProperty;
       ret[5] = genSizeProperty;
       ret[6] = genCenterProperty;
+      ret[7] = genEncodingProperty;
       return ret;
     } else {
-      Node.Property[] ret = new Node.Property [6];
+      Node.Property[] ret = new Node.Property [7];
       ret[0] = sizeProperty;
       ret[1] = positionProperty;
       ret[2] = policyProperty;
       ret[3] = genPositionProperty;
       ret[4] = genSizeProperty;
       ret[5] = genCenterProperty;
+      ret[6] = genEncodingProperty;
       return ret;
     }
   }
@@ -459,6 +480,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
 /*
  * Log
+ *  17   Gandalf   1.16        11/15/99 Pavel Buzek     property for encoding
  *  16   Gandalf   1.15        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  15   Gandalf   1.14        10/9/99  Ian Formanek    Fixed bug 4045 - 
