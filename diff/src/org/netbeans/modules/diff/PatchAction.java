@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.text.MessageFormat;
+import java.util.List;
+import java.util.Map;
 import javax.swing.JDialog;
 
 import javax.swing.JFileChooser;
@@ -212,6 +214,7 @@ public class PatchAction extends NodeAction {
             if (NotifyDescriptor.YES_OPTION.equals(notifyResult)) {
                 showDiffs(appliedFiles, backups);
             }
+            removeBackups(appliedFiles, backups);
         }
     }
 
@@ -314,6 +317,33 @@ public class PatchAction extends NodeAction {
         }
     }
 
+    /** Removes the backup copies of files upon the successful application 
+     * of a patch (.orig files).
+     * @param files a list of files, to which the patch was successfully applied
+     * @param backups a map of a form original file -> backup file
+     */
+    private static void removeBackups(List files, Map backups) {
+        StringBuffer filenames=new StringBuffer(), 
+                     exceptions=new StringBuffer();
+        for (int i = 0; i < files.size(); i++) {
+            FileObject backup=(FileObject) backups.get(files.get(i));
+            try {
+                backup.delete();
+            }
+            catch (IOException ex) {
+                filenames.append(backup.getPath());
+                filenames.append("\n");
+                exceptions.append(ex.getLocalizedMessage());
+                exceptions.append("\n");
+            }
+        }
+        if (filenames.length()>0)
+            ErrorManager.getDefault().notify(
+                ErrorManager.getDefault().annotate(new IOException(),
+                    NbBundle.getMessage(PatchAction.class, 
+                        "EXC_CannotRemoveBackup", filenames, exceptions)));
+    }
+   
     public HelpCtx getHelpCtx() {
         return new HelpCtx(PatchAction.class);
     }
