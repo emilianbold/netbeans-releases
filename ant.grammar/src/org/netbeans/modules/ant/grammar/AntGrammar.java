@@ -410,10 +410,10 @@ class AntGrammar implements GrammarQuery {
      * @return true if there is an uncompleted property here
      */
     private static boolean canCompleteProperty(String content) {
+        content = deletedEscapedShells(content);
         if (content.length() == 0) {
             return false;
         }
-        // XXX should also check for $$ escape
         if (content.charAt(content.length() - 1) == '$') {
             return true;
         }
@@ -579,7 +579,7 @@ class AntGrammar implements GrammarQuery {
             case Node.ATTRIBUTE_NODE:
             case Node.TEXT_NODE:
                 // Look for ${propname}
-                String text = n.getNodeValue();
+                String text = deletedEscapedShells(n.getNodeValue());
                 int idx = 0;
                 while (true) {
                     int start = text.indexOf("${", idx);
@@ -612,6 +612,15 @@ class AntGrammar implements GrammarQuery {
                 visitForLikelyPropertyNames(m.item(i), choices);
             }
         }
+    }
+    
+    /**
+     * Remove pairs of '$$' to avoid being confused by them.
+     * They do not introduce property references.
+     */
+    private static String deletedEscapedShells(String text) {
+        // XXX could be faster w/o regexps
+        return text.replaceAll("\\$\\$", "");
     }
 
     // return defaults, no way to query them
