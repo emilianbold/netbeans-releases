@@ -598,10 +598,14 @@ Microsystems, Inc. All Rights Reserved.
     <!-- maybe there should be more includes here, not just classes -->
     <target name="jartests" unless="xtest.distexec">
         <mkdir dir="${xtest.build}/${xtest.file.location}"/>
+        <property name="jartests.includes" value=""/>
+        <property name="jartests.excludes" value=""/>
         <jar basedir="." 
              jarfile="${xtest.build}/${xtest.file.location}/${xtest.file.name}"
              includesfile="${xtest.home}/standard-test-includes.txt"
-             excludesfile="${xtest.home}/standard-test-excludes.txt">
+             includes="${jartests.includes}"
+             excludesfile="${xtest.home}/standard-test-excludes.txt"
+             excludes="${jartests.excludes}">
         </jar>
     </target>
     
