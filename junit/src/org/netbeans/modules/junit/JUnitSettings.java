@@ -56,14 +56,25 @@ public class JUnitSettings extends SystemOption {
     public static final String PROP_PROPERTIES          = "properties";    
     public static final String PROP_REGENERATE_SUITE_METHOD = "regenerate_suite_method";
     
-    // !-- GENERATE NbJUnit no longer supported
-    // public static final String PROP_GENERATE_NBJUNIT    = "generate_nbjunit";
-    //  GENERATE NbJUnit no longer supported --!
+    public static final String PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES = "include_package_private_classes";
+    public static final String PROP_GENERATE_TESTS_FROM_TEST_CLASSES = "generate_tests_from_tests_classes";    
+    public static final String PROP_GENERATE_MAIN_METHOD = "generate_main_method";
+    public static final String PROP_GENERATE_MAIN_METHOD_BODY = "generate_main_method_body";
+    public static final String PROP_TEST_CLASSNAME_PREFIX = "test_classname_prefix";
+    public static final String PROP_TEST_CLASSNAME_SUFFIX = "test_classname_suffix";
+    public static final String PROP_SUITE_CLASSNAME_PREFIX = "suite_classname_prefix";
+    public static final String PROP_SUITE_CLASSNAME_SUFFIX = "suite_classname_suffix";
+    public static final String PROP_ROOT_SUITE_CLASSNAME = "root_suite_classname";
     
-
+    
+    
+    public static final String PROP_VERSION = "version";    
+    
     public static final int EXECUTOR_EXTERNAL           = 0;
     public static final int EXECUTOR_INTERNAL           = 1;
     public static final int EXECUTOR_DEBUGGER           = 2;
+    
+    public static final Integer CURRENT_VERSION = new Integer(29);
     
     // No constructor please!
 
@@ -76,6 +87,7 @@ public class JUnitSettings extends SystemOption {
         
         super.initialize();
         
+        putProperty(PROP_VERSION, CURRENT_VERSION, true);
         putProperty(PROP_FILE_SYSTEM, "", true);
         putProperty(PROP_SUITE_TEMPLATE, "Templates/JUnit/SimpleJUnitTest.java", true);
         putProperty(PROP_CLASS_TEMPLATE, "Templates/JUnit/SimpleJUnitTest.java", true);
@@ -90,16 +102,22 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_EXECUTOR_TYPE, new Integer(EXECUTOR_EXTERNAL), true);
         putProperty(PROP_GENERATE_ABSTRACT_IMPL, Boolean.TRUE, true);
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, Boolean.FALSE, true);
-        putProperty(PROP_TEST_RUNNER, "org.netbeans.modules.junit.JUnitTestRunner", true);
+        putProperty(PROP_TEST_RUNNER, "org.netbeans.modules.junit.testrunner.JUnitTestRunner", true);
         putProperty(PROP_PROPERTIES, NbBundle.getMessage(JUnitSettings.class, "PROP_properties_default_value"), true);        
         putProperty(PROP_REGENERATE_SUITE_METHOD, Boolean.TRUE, true);
-        
-        // !-- GENERATE NbJUnit no longer supported
-        //putProperty(PROP_GENERATE_NBJUNIT, Boolean.FALSE, true);
-        //  GENERATE NbJUnit no longer supported --!
+        putProperty(PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES, Boolean.FALSE, true);
+        putProperty(PROP_GENERATE_TESTS_FROM_TEST_CLASSES, Boolean.FALSE, false);        
+        putProperty(PROP_GENERATE_MAIN_METHOD, Boolean.FALSE, true);
+        putProperty(PROP_GENERATE_MAIN_METHOD_BODY, NbBundle.getMessage(JUnitSettings.class, "PROP_generate_main_method_body_default_value"), true);
+        putProperty(PROP_TEST_CLASSNAME_PREFIX, NbBundle.getMessage(JUnitSettings.class, "PROP_test_classname_prefix_default_value"), true);
+        putProperty(PROP_TEST_CLASSNAME_SUFFIX, NbBundle.getMessage(JUnitSettings.class, "PROP_test_classname_suffix_default_value"), true);
+        putProperty(PROP_SUITE_CLASSNAME_PREFIX, NbBundle.getMessage(JUnitSettings.class, "PROP_suite_classname_prefix_default_value"), true);
+        putProperty(PROP_SUITE_CLASSNAME_SUFFIX, NbBundle.getMessage(JUnitSettings.class, "PROP_suite_classname_suffix_default_value"), true);        
+        putProperty(PROP_ROOT_SUITE_CLASSNAME, NbBundle.getMessage(JUnitSettings.class, "PROP_root_suite_classname_default_value"), true);        
     }
 
     public void writeExternal (ObjectOutput out) throws IOException {
+        out.writeObject(getProperty(PROP_VERSION));
         out.writeObject(getProperty(PROP_FILE_SYSTEM));
         out.writeObject(getProperty(PROP_SUITE_TEMPLATE));
         out.writeObject(getProperty(PROP_CLASS_TEMPLATE));
@@ -117,14 +135,46 @@ public class JUnitSettings extends SystemOption {
         out.writeObject(getProperty(PROP_TEST_RUNNER));
         out.writeObject(getProperty(PROP_PROPERTIES));
         out.writeObject(getProperty(PROP_REGENERATE_SUITE_METHOD));
-        
-        // !-- GENERATE NbJUnit no longer supported
-        //out.writeObject(getProperty(PROP_GENERATE_NBJUNIT));
-        //  GENERATE NbJUnit no longer supported --!
-        
+        out.writeObject(getProperty(PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES));
+        out.writeObject(getProperty(PROP_GENERATE_TESTS_FROM_TEST_CLASSES));        
+        out.writeObject(getProperty(PROP_GENERATE_MAIN_METHOD));
+        out.writeObject(getProperty(PROP_GENERATE_MAIN_METHOD_BODY));
+        out.writeObject(getProperty(PROP_TEST_CLASSNAME_PREFIX));
+        out.writeObject(getProperty(PROP_TEST_CLASSNAME_SUFFIX));
+        out.writeObject(getProperty(PROP_SUITE_CLASSNAME_PREFIX));
+        out.writeObject(getProperty(PROP_SUITE_CLASSNAME_SUFFIX));
+        out.writeObject(getProperty(PROP_ROOT_SUITE_CLASSNAME));
     }
     
     public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
+        Object firstProperty = in.readObject();
+        if (firstProperty instanceof String) {
+            // here goes old (version pre 2.9 settings file);
+            readPre29VersionOptions(in, firstProperty);
+        } else if (firstProperty instanceof Integer) {
+            int version = ((Integer)firstProperty).intValue();
+            readVersionedOptions(in, version);
+        } else {
+            // something went wrong
+            //System.err.println("Unkonwn options?");
+            // Notification should be added
+        }
+    }
+    
+    
+    private void readVersionedOptions(ObjectInput in, int version) throws IOException, ClassNotFoundException {
+        switch (version) {
+            case 29: 
+                readVersion29Options(in);
+                break;
+            default:
+                // weird stuff
+                // System.err.println("Unkonwn options? - version"+version);
+                // Notification should be added
+        }
+    }
+    
+    private void readVersion29Options(ObjectInput in) throws IOException, ClassNotFoundException {
         putProperty(PROP_FILE_SYSTEM, in.readObject(), true);
         putProperty(PROP_SUITE_TEMPLATE, in.readObject(), true);
         putProperty(PROP_CLASS_TEMPLATE, in.readObject(), true);
@@ -142,11 +192,43 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_TEST_RUNNER, in.readObject(), true);
         putProperty(PROP_PROPERTIES, in.readObject(), true);
         putProperty(PROP_REGENERATE_SUITE_METHOD,in.readObject(), true);
-
-        // !-- GENERATE NbJUnit no longer supported
-        //putProperty(PROP_GENERATE_NBJUNIT,in.readObject(), true);
-        //  GENERATE NbJUnit no longer supported --!        
-        
+        putProperty(PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES,in.readObject(), true);
+        putProperty(PROP_GENERATE_TESTS_FROM_TEST_CLASSES,in.readObject(), true);
+        putProperty(PROP_GENERATE_MAIN_METHOD,in.readObject(), true);
+        putProperty(PROP_GENERATE_MAIN_METHOD_BODY,in.readObject(), true);
+        putProperty(PROP_TEST_CLASSNAME_PREFIX,in.readObject(), true);
+        putProperty(PROP_TEST_CLASSNAME_SUFFIX,in.readObject(), true);
+        putProperty(PROP_SUITE_CLASSNAME_PREFIX,in.readObject(), true);
+        putProperty(PROP_SUITE_CLASSNAME_SUFFIX,in.readObject(), true);
+        putProperty(PROP_ROOT_SUITE_CLASSNAME,in.readObject(), true);
+    }
+    
+    private void readPre29VersionOptions(ObjectInput in, Object firstProperty) throws IOException, ClassNotFoundException {
+        try {            
+            putProperty(PROP_FILE_SYSTEM, firstProperty, true);
+            putProperty(PROP_SUITE_TEMPLATE, in.readObject(), true);
+            putProperty(PROP_CLASS_TEMPLATE, in.readObject(), true);
+            putProperty(PROP_MEMBERS_PUBLIC, in.readObject(), true);
+            putProperty(PROP_MEMBERS_PROTECTED, in.readObject(), true);
+            putProperty(PROP_MEMBERS_PACKAGE, in.readObject(), true);
+            putProperty(PROP_BODY_COMMENTS, in.readObject(), true);
+            putProperty(PROP_BODY_CONTENT, in.readObject(), true);
+            putProperty(PROP_JAVADOC, in.readObject(), true);
+            putProperty(PROP_CFGCREATE_ENABLED, in.readObject(), true);
+            putProperty(PROP_CFGEXEC_ENABLED, in.readObject(), true);
+            putProperty(PROP_EXECUTOR_TYPE, in.readObject(), true);
+            putProperty(PROP_GENERATE_ABSTRACT_IMPL, in.readObject(), true);
+            putProperty(PROP_GENERATE_EXCEPTION_CLASSES, in.readObject(), true);
+            putProperty(PROP_TEST_RUNNER, in.readObject(), true);
+            putProperty(PROP_PROPERTIES, in.readObject(), true); 
+            // dummy read object (Generate NBJUnit poperty) 
+            in.readObject();
+            // dummy end
+            putProperty(PROP_REGENERATE_SUITE_METHOD,in.readObject(), true);
+        } catch (OptionalDataException ode) {
+            // deserialization failed - just swallow it
+            // probably a very old version of JUNit (pre 2.5)
+        }
     }
 
     public String displayName () {
@@ -154,7 +236,7 @@ public class JUnitSettings extends SystemOption {
     }
 
     public HelpCtx getHelpCtx () {
-        return new HelpCtx(JUnitSettings.class);
+        return new HelpCtx(JUnitSettings.class); 
     }
 
     /** Default instance of this system option, for the convenience of associated classes. */
@@ -294,19 +376,6 @@ public class JUnitSettings extends SystemOption {
     public boolean isGlobal() {
         return false;
     }
-
-    // !-- GENERATE NbJUnit no longer supported
-    /*
-    public boolean isGenerateNbJUnit() {
-        return ((Boolean) getProperty(PROP_GENERATE_NBJUNIT)).booleanValue();
-    }
-
-     
-    public void setGenerateNbJUnit(boolean newVal) {
-        putProperty(PROP_GENERATE_NBJUNIT, newVal ? Boolean.TRUE : Boolean.FALSE, true);
-    }
-     */
-    // GENERATE NbJUnit no longer supported --!
     
     public boolean isRegenerateSuiteMethod() {
         return ((Boolean) getProperty(PROP_REGENERATE_SUITE_METHOD)).booleanValue();
@@ -314,5 +383,78 @@ public class JUnitSettings extends SystemOption {
 
     public void setRegenerateSuiteMethod(boolean newVal) {
         putProperty(PROP_REGENERATE_SUITE_METHOD, newVal ? Boolean.TRUE : Boolean.FALSE, true);
+    }
+
+    
+    public boolean isIncludePackagePrivateClasses() {
+        return ((Boolean) getProperty(PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES)).booleanValue();
+    }
+
+    public void setIncludePackagePrivateClasses(boolean newVal) {
+        putProperty(PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES, newVal ? Boolean.TRUE : Boolean.FALSE, true);
+    }    
+    
+    public boolean isGenerateTestsFromTestClasses() {
+        return ((Boolean) getProperty(PROP_GENERATE_TESTS_FROM_TEST_CLASSES)).booleanValue();
+    }
+
+    public void setGenerateTestsFromTestClasses(boolean newVal) {
+        putProperty(PROP_GENERATE_TESTS_FROM_TEST_CLASSES, newVal ? Boolean.TRUE : Boolean.FALSE, true);
+    }    
+    
+    public boolean isGenerateMainMethod() {
+        return ((Boolean) getProperty(PROP_GENERATE_MAIN_METHOD)).booleanValue();
+    }
+
+    public void setGenerateMainMethod(boolean newVal) {
+        putProperty(PROP_GENERATE_MAIN_METHOD, newVal ? Boolean.TRUE : Boolean.FALSE, true);
+    }
+    
+    public String getGenerateMainMethodBody() {
+        return (String) getProperty(PROP_GENERATE_MAIN_METHOD_BODY);
+    }
+
+    public void setGenerateMainMethodBody(String newVal) {
+        putProperty(PROP_GENERATE_MAIN_METHOD_BODY, newVal, true);
+    }
+    
+    public String getTestClassNamePrefix() {
+        return (String) getProperty(PROP_TEST_CLASSNAME_PREFIX);
+    }
+
+    public void setTestClassNamePrefix(String newVal) {
+        putProperty(PROP_TEST_CLASSNAME_PREFIX, newVal, true);
+    }    
+
+    public String getTestClassNameSuffix() {
+        return (String) getProperty(PROP_TEST_CLASSNAME_SUFFIX);
+    }
+
+    public void setTestClassNameSuffix(String newVal) {
+        putProperty(PROP_TEST_CLASSNAME_SUFFIX, newVal, true);
+    }        
+    
+    public String getSuiteClassNamePrefix() {
+        return (String) getProperty(PROP_SUITE_CLASSNAME_PREFIX);
+    }
+
+    public void setSuiteClassNamePrefix(String newVal) {
+        putProperty(PROP_SUITE_CLASSNAME_PREFIX, newVal, true);
+    }    
+
+    public String getSuiteClassNameSuffix() {
+        return (String) getProperty(PROP_SUITE_CLASSNAME_SUFFIX);
+    }
+
+    public void setSuiteClassNameSuffix(String newVal) {
+        putProperty(PROP_SUITE_CLASSNAME_SUFFIX, newVal, true);
+    }
+
+    public String getRootSuiteClassName() {
+        return (String) getProperty(PROP_ROOT_SUITE_CLASSNAME);
+    }
+
+    public void setRootSuiteClassName(String newVal) {
+        putProperty(PROP_ROOT_SUITE_CLASSNAME, newVal, true);
     }    
 }

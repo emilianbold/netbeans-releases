@@ -30,24 +30,81 @@ import java.util.*;
  * @version 1.0
  */
 class TestUtil extends Object {
-    static private final String JAVA_EXT                        = "java";
-    static private final String CLS_SUFFIX                      = "Test";
-    static private final String CLS_FULL_SUFFIX                 = CLS_SUFFIX + "." + JAVA_EXT;
-    static private final String SUITE_SUFFIX                    = "Suite";
-    static private final String SUITE_FULL_SUFFIX               = SUITE_SUFFIX + "." + JAVA_EXT;
-    static private final String SUITE_ROOT_NAME                 = "Root";
+    static private final String JAVA_SOURCES_SUFFIX               = "java";
+    static private final String JAVA_SOURCES_FULL_SUFFIX          = "." + JAVA_SOURCES_SUFFIX;
+
+
+
+    static private String getTestClassSuffix() {
+        return JUnitSettings.getDefault().getTestClassNameSuffix();
+    }
+    
+    static private String getTestClassPrefix() {
+        return JUnitSettings.getDefault().getTestClassNamePrefix();
+    }
+    
+    static private String getTestSuiteSuffix() {
+        return JUnitSettings.getDefault().getSuiteClassNameSuffix();
+    }
+    
+    static private String getTestSuitePrefix() {
+        return JUnitSettings.getDefault().getSuiteClassNamePrefix();
+    }
+    
+    static private String getRootSuiteName() {
+        return JUnitSettings.getDefault().getRootSuiteClassName();
+    }
+    
+    static private String getRootSuiteNameFullSuffix() {
+        return  getRootSuiteName() + JAVA_SOURCES_FULL_SUFFIX;
+    }    
+    
+    static private String getTestSuiteFullSuffix() {
+        return getTestSuiteSuffix() + JAVA_SOURCES_FULL_SUFFIX;
+    }
+
+    //
+    // test class names    
+    //
     
     static public String getTestClassFullName(FileObject foSourceFile) {
-        return foSourceFile.getPackageName('/') + CLS_FULL_SUFFIX;
+        FileObject packageFileObject = foSourceFile.getParent();
+        StringBuffer name = new StringBuffer();
+        if (packageFileObject != null) {
+            name.append(packageFileObject.getPackageName('/'));
+            if ( name.length() != 0 ) {
+                // only when the package is not root
+                name.append('/');
+            }
+        }
+        //System.err.println("TestUtil.getTestClassFullName() foSourceFile="+foSourceFile);
+        //System.err.println("TestUtil.getTestClassFullName() packageName="+name);
+        name.append(getTestClassName(foSourceFile));
+        name.append(JAVA_SOURCES_FULL_SUFFIX);
+        //System.err.println("TestUtil.getTestClassFullName() result = "+name);
+        return name.toString();
     }
+    
+    
     static public String getTestClassName(FileObject foSourceFile) {
         return getTestClassName(foSourceFile.getName());
     }
-    static public String getTestClassName(String sourceClassName) {
-        return sourceClassName + CLS_SUFFIX;
-    }
     
-    static public String getTestSuitFullName(FileObject foPackage) {
+    static public String getTestClassName(String sourceClassName) {
+        return getTestClassPrefix() + sourceClassName + getTestClassSuffix();
+    }
+        
+    static public boolean isTestClassFile(String packageName) {
+        // definitely not that easy !!!! -- need to work on it
+        //System.err.println("TestUtil.isTestClassFile packageName = "+packageName);
+        return packageName.endsWith(getTestClassSuffix());
+    }    
+    
+    //
+    // suite class names
+    //
+    
+    static public String getTestSuiteFullName(FileObject foPackage) {
         StringBuffer name = new StringBuffer();
         
         name.append(foPackage.getPackageName('/'));
@@ -55,26 +112,39 @@ class TestUtil extends Object {
             name.append("/");
         
         if (foPackage.getName().length() == 0)
-            name.append(SUITE_ROOT_NAME);
+            name.append(getRootSuiteNameFullSuffix());
         else {
+            name.append(getTestSuitePrefix());
             name.append(foPackage.getName().substring(0, 1).toUpperCase());
             name.append(foPackage.getName().substring(1));
-        }
-        name.append(SUITE_FULL_SUFFIX);
+            name.append(getTestSuiteFullSuffix());
+        } 
         return name.toString();
     }
-    static public String getTestSuitName(FileObject foPackage) {
+    
+    static public String getTestSuiteName(FileObject foPackage) {
         StringBuffer name = new StringBuffer();
         
         if (foPackage.getName().length() == 0)
-            name.append(SUITE_ROOT_NAME);
+            name.append(getRootSuiteName());
         else {
+            name.append(getTestSuitePrefix());
             name.append(foPackage.getName().substring(0, 1).toUpperCase());
             name.append(foPackage.getName().substring(1));
-        }
-        name.append(SUITE_SUFFIX);
+            name.append(getTestSuiteSuffix());
+        }        
         return  name.toString();
     }
+
+
+    
+    static public boolean isTestSuiteFile(String packageName) {
+        // again need to work on that
+        //System.err.println("TestUtil.isTestSuiteFile packageName = "+packageName);
+        return packageName.endsWith(getTestSuiteSuffix());
+    }    
+    
+    // other misc methods
     
     static public FileObject getFileObjectFromNode(Node node) {
         ClassElement    ce;
@@ -99,13 +169,7 @@ class TestUtil extends Object {
         return null;
     }
     
-    static public boolean isTestClassFile(String packageName) {
-        return packageName.endsWith(CLS_SUFFIX);
-    }
-    
-    static public boolean isTestSuiteFile(String packageName) {
-        return packageName.endsWith(SUITE_SUFFIX);
-    }
+
    static Executor findExecutor (Class executorClass) {
 	for (Enumeration execs = Executor.getDefault().executors();
 	     execs.hasMoreElements();) {
@@ -150,7 +214,13 @@ class TestUtil extends Object {
     
     static boolean isSupportedFileSystem(FileSystem fileSystem) {
         FileSystemCapability capability = fileSystem.getCapability();
-        
+    /*    
+        System.err.println("FS: "+fileSystem.getDisplayName());
+        System.err.println("isValid():"+fileSystem.isValid());
+        System.err.println("! - isDefault():"+fileSystem.isDefault());
+        System.err.println("! - isReadOnly():"+fileSystem.isReadOnly());
+        System.err.println("! - capability.capableOf(capability.DOC):"+capability.capableOf(capability.DOC));
+      */  
         return (fileSystem.isValid() && 
                 !fileSystem.isDefault() &&
                 !fileSystem.isReadOnly() &&

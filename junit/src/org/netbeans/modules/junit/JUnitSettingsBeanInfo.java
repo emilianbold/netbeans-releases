@@ -86,22 +86,8 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
             PropertyDescriptor propCfgConfigEnabled = new PropertyDescriptor ("CfgCreateEnabled", JUnitSettings.class);
             propCfgConfigEnabled.setPropertyEditorClass(BoolPropEd.class);
             propCfgConfigEnabled.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_cfgcreate_enabled"));
-            propCfgConfigEnabled.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_cfgcreate_enabled"));
-
-            // !-- CONFIGURE Test Execution is not yet supported
-            /*
-            PropertyDescriptor propCfgExecEnabled = new PropertyDescriptor ("CfgExecEnabled", JUnitSettings.class);
-            propCfgExecEnabled.setPropertyEditorClass(BoolPropEd.class);
-            propCfgExecEnabled.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_cfgexec_enabled"));
-            propCfgExecEnabled.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_cfgexec_enabled"));            
-             */
-            // CONFIGURE Test Execution is not yet supported --!
+            propCfgConfigEnabled.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_cfgcreate_enabled"));            
             
-            
-            PropertyDescriptor propInternalExecutor = new PropertyDescriptor ("ExecutorType", JUnitSettings.class);
-            propInternalExecutor.setPropertyEditorClass(ExecutorPropEd.class);
-            propInternalExecutor.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_executor_type"));
-            propInternalExecutor.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_executor_type"));
             
             PropertyDescriptor propGenerateExceptionClasses = new PropertyDescriptor ("GenerateExceptionClasses", JUnitSettings.class);
             propGenerateExceptionClasses.setPropertyEditorClass(BoolPropEd.class);
@@ -113,34 +99,87 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
             propGenerateAbstractImpl.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_generate_abstract_impl"));
             propGenerateAbstractImpl.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_generate_abstract_impl"));
 
-            PropertyDescriptor propTestRunner = new PropertyDescriptor ("TestRunner", JUnitSettings.class);
-            propTestRunner.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_test_runner"));
-            propTestRunner.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_test_runner"));
-            
-            PropertyDescriptor propProperties = new PropertyDescriptor ("Properties", JUnitSettings.class);
-            propProperties.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_properties"));
-            propProperties.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_properties"));
-            
-            // !-- GENERATE NbJUnit no longer supported
-            /*
-            PropertyDescriptor propGenerateNbJUnit = new PropertyDescriptor ("GenerateNbJUnit", JUnitSettings.class);
-            propGenerateNbJUnit.setPropertyEditorClass(BoolPropEd.class);
-            propGenerateNbJUnit.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_generate_nbjunit"));
-            propGenerateNbJUnit.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_generate_nbjunit"));
-             */
-            // GENERATE NbJUnit no longer supported --!
             
             PropertyDescriptor propRegenerateSuiteMethod = new PropertyDescriptor ("RegenerateSuiteMethod", JUnitSettings.class);
             propRegenerateSuiteMethod.setPropertyEditorClass(BoolPropEd.class);
             propRegenerateSuiteMethod.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_regenerate_suite_method"));
             propRegenerateSuiteMethod.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_regenerate_suite_method"));
+            
+            PropertyDescriptor propIncludePackagePrivateClasses = new PropertyDescriptor ("IncludePackagePrivateClasses", JUnitSettings.class);
+            propIncludePackagePrivateClasses.setPropertyEditorClass(BoolPropEd.class);
+            propIncludePackagePrivateClasses.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_include_package_private_classes"));
+            propIncludePackagePrivateClasses.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_include_package_private_classes"));
+            
 
+            
+            // expert properties
+            PropertyDescriptor propTestRunner = new PropertyDescriptor ("TestRunner", JUnitSettings.class);
+            propTestRunner.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_test_runner"));
+            propTestRunner.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_test_runner"));
+            propTestRunner.setExpert(true);
+            
+            PropertyDescriptor propProperties = new PropertyDescriptor ("Properties", JUnitSettings.class);
+            propProperties.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_properties"));
+            propProperties.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_properties"));
+            propProperties.setExpert(true);
+            
+            PropertyDescriptor propInternalExecutor = new PropertyDescriptor ("ExecutorType", JUnitSettings.class);
+            propInternalExecutor.setPropertyEditorClass(ExecutorPropEd.class);
+            propInternalExecutor.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_executor_type"));
+            propInternalExecutor.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_executor_type"));            
+            propInternalExecutor.setExpert(true);           
+            
+            PropertyDescriptor propGenerateTestsFromTestClasses = new PropertyDescriptor ("GenerateTestsFromTestClasses", JUnitSettings.class);
+            propGenerateTestsFromTestClasses.setPropertyEditorClass(BoolPropEd.class);
+            propGenerateTestsFromTestClasses.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_generate_test_from_test_classes"));
+            propGenerateTestsFromTestClasses.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_generate_test_from_test_classes"));
+            propGenerateTestsFromTestClasses.setExpert(true);
+            
+            PropertyDescriptor propGenerateMainMethod = new PropertyDescriptor ("GenerateMainMethod", JUnitSettings.class);
+            propGenerateMainMethod.setPropertyEditorClass(BoolPropEd.class);
+            propGenerateMainMethod.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_generate_main_method"));
+            propGenerateMainMethod.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_generate_main_method"));
+            propGenerateMainMethod.setExpert(true);
+            
+            PropertyDescriptor propGenerateMainMethodBody = new PropertyDescriptor ("GenerateMainMethodBody", JUnitSettings.class);
+            propGenerateMainMethodBody.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_generate_main_method_body"));
+            propGenerateMainMethodBody.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_generate_main_method_body"));            
+            propGenerateMainMethodBody.setExpert(true);
+
+            PropertyDescriptor propTestClassNamePrefix = new PropertyDescriptor ("TestClassNamePrefix", JUnitSettings.class);
+            propTestClassNamePrefix.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_test_classname_prefix"));
+            propTestClassNamePrefix.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_test_classname_prefix"));
+            propTestClassNamePrefix.setExpert(true);
+
+            PropertyDescriptor propTestClassNameSuffix = new PropertyDescriptor ("TestClassNameSuffix", JUnitSettings.class);
+            propTestClassNameSuffix.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_test_classname_suffix"));
+            propTestClassNameSuffix.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_test_classname_suffix"));            
+            propTestClassNameSuffix.setExpert(true);
+            
+            PropertyDescriptor propSuiteClassNamePrefix = new PropertyDescriptor ("SuiteClassNamePrefix", JUnitSettings.class);
+            propSuiteClassNamePrefix.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_suite_classname_prefix"));
+            propSuiteClassNamePrefix.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_suite_classname_prefix"));
+            propSuiteClassNamePrefix.setExpert(true);
+
+            PropertyDescriptor propSuiteClassNameSuffix = new PropertyDescriptor ("SuiteClassNameSuffix", JUnitSettings.class);
+            propSuiteClassNameSuffix.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_suite_classname_suffix"));
+            propSuiteClassNameSuffix.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_suite_classname_suffix"));            
+            propSuiteClassNameSuffix.setExpert(true);
+            
+            PropertyDescriptor propRootSuiteClassName = new PropertyDescriptor ("RootSuiteClassName", JUnitSettings.class);
+            propRootSuiteClassName.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_root_suite_classname"));
+            propRootSuiteClassName.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_root_suite_classname"));            
+            propRootSuiteClassName.setExpert(true);
+                        
 
             return new PropertyDescriptor[] { propFileSystem, propSuiteTemplate, propClassTemplate,
               propMembersPublic, propMembersProtected, propMembersPackage, propBodyComments, propBodyContent, 
               propJavaDoc, propCfgConfigEnabled, propInternalExecutor, 
-              propGenerateExceptionClasses, propGenerateAbstractImpl,  
-              propRegenerateSuiteMethod, propTestRunner, propProperties };
+              propGenerateExceptionClasses, propGenerateAbstractImpl, propIncludePackagePrivateClasses, 
+              propRegenerateSuiteMethod, propTestRunner, propProperties,  propGenerateTestsFromTestClasses,
+              propGenerateMainMethod, propGenerateMainMethodBody, propTestClassNamePrefix, propTestClassNameSuffix,
+              propSuiteClassNamePrefix, propSuiteClassNameSuffix, propRootSuiteClassName 
+            };
         }
         catch (IntrospectionException ie) {
             org.openide.ErrorManager.getDefault().notify(ie);

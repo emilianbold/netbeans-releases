@@ -51,7 +51,9 @@ public class CreateTestAction extends CookieAction {
 
     /* protected members */
     protected Class[] cookieClasses () {
-        return new Class[] { DataFolder.class, DataObject.class, ClassElement.class };
+        //return new Class[] { DataFolder.class, DataObject.class, ClassElement.class };
+        // return new Class[] { DataFolder.class, SourceCookie.Editor.class, ClassElement.class };
+        return new Class[] { DataFolder.class, SourceCookie.class, ClassElement.class };
     }
 
     /** Perform special enablement check in addition to the normal one.
@@ -60,6 +62,16 @@ public class CreateTestAction extends CookieAction {
 	if (...) ...;
     }
     */
+    /*
+    protected boolean enable (Node[] nodes) {
+        if (nodes.length == 0) {
+            return false;            
+        }
+        for (int i=0; i < nodes.length; i++) {
+            Cookie cookie = nodes[i].getCookie(type
+        }
+    }
+     **/
 
     protected void initialize () {
 	super.initialize ();
@@ -129,11 +141,13 @@ public class CreateTestAction extends CookieAction {
                     }
                 }
             }
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(CreateTestAction.class, "MSG_StatusBar_CreateTests_Finished"));
         }
         catch (CreateTestCanceledException e) {
             // tests creation has been canceled by the user
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(CreateTestAction.class, "MSG_StatusBar_CreateTests_Cancelled"));
         }
-        finally {
+        finally {            
             progress.hideMe();
         }
     }
@@ -149,7 +163,7 @@ public class CreateTestAction extends CookieAction {
     private JUnitProgress progress = new JUnitProgress();
     private class CreateTestCanceledException extends Exception {}
     
-    private void createSuitTest(FileSystem fsTest, DataFolder folder, LinkedList suite, DataObject doSuitT, LinkedList parentSuite) {
+    private void createSuiteTest(FileSystem fsTest, DataFolder folder, LinkedList suite, DataObject doSuiteT, LinkedList parentSuite) {
         ClassElement        classTarget;
         DataObject          doTarget;
         FileObject          fo;
@@ -157,14 +171,14 @@ public class CreateTestAction extends CookieAction {
         try {
             fo = folder.getPrimaryFile();
             // find the suite class, if it exists or create one from active template
-            doTarget = getTestClass(fsTest, TestUtil.getTestSuitFullName(fo), doSuitT);
+            doTarget = getTestClass(fsTest, TestUtil.getTestSuiteFullName(fo), doSuiteT);
 
             // generate the test suite for all listed test classes
             classTarget = getClassElementFromDO(doTarget);
 
             progress.setMessage(msgCreating + classTarget.getName().getFullName() + " ...");
 
-            TestCreator.createTestSuit(suite, fo.getPackageName('.'), classTarget);
+            TestCreator.createTestSuite(suite, fo.getPackageName('.'), classTarget);
             save(doTarget);
             
             // add the suite class to the list of members of the parent
@@ -177,7 +191,7 @@ public class CreateTestAction extends CookieAction {
         }
     }
 
-    private void createTest(FileSystem fsTest, FileObject foSource, DataObject doTestT, DataObject doSuitT, LinkedList parentSuite) throws CreateTestCanceledException {
+    private void createTest(FileSystem fsTest, FileObject foSource, DataObject doTestT, DataObject doSuiteT, LinkedList parentSuite) throws CreateTestCanceledException {
         if (foSource.isFolder()) {
             // recurse of subfolders
             FileObject  childs[] = foSource.getChildren();
@@ -195,12 +209,12 @@ public class CreateTestAction extends CookieAction {
                 }
                 
                 if (recurse) {
-                    createTest(fsTest, childs[i], doTestT, doSuitT, mySuite);
+                    createTest(fsTest, childs[i], doTestT, doSuiteT, mySuite);
                 }
             }
             
             if (0 < mySuite.size()) 
-                createSuitTest(fsTest, DataFolder.findFolder(foSource), mySuite, doSuitT, parentSuite);
+                createSuiteTest(fsTest, DataFolder.findFolder(foSource), mySuite, doSuiteT, parentSuite);
         }
         else {
             ClassElement    classSource;

@@ -39,10 +39,7 @@ public class TestCreator extends java.lang.Object {
 
     /* attributes - private */
     static private final String JUNIT_SUPER_CLASS_NAME                = "TestCase";
-    static private final String JUNIT_FRAMEWORK_PACKAGE_NAME    = "junit.framework";
-    
-    static private final String NBJUNIT_SUPER_CLASS_NAME                = "NbTestCase";
-    static private final String NBJUNIT_EXTENSION_PACKAGE_NAME          = "org.netbeans.junit";
+    static private final String JUNIT_FRAMEWORK_PACKAGE_NAME    = "junit.framework";    
     
     static private final String forbidenMethods[]               = {"main", "suite", "setUp"};
     static private final String SUIT_BLOCK_START                = "--JUNIT:";
@@ -75,48 +72,30 @@ public class TestCreator extends java.lang.Object {
 
         srcelTarget.setPackage(srcelSource.getPackage());
         srcelTarget.addImports(srcelSource.getImports());
-        srcelTarget.addImport(new Import(Identifier.create(JUNIT_FRAMEWORK_PACKAGE_NAME), Import.PACKAGE));
-        
-        // !-- GENERATE NbJUnit no longer supported
-        // if generate NbJUnit - add appropriate import, if not - remove it
-        /*
-        Import nbjunitImport = new Import(Identifier.create(NBJUNIT_EXTENSION_PACKAGE_NAME), Import.PACKAGE);
-        if (JUnitSettings.getDefault().isGenerateNbJUnit()) {            
-            srcelTarget.addImport(nbjunitImport);
-        } else {            
-            srcelTarget.removeImport(nbjunitImport);
-        }
-         */
-        // GENERATE NbJUnit no longer supported --!
-        //System.err.println("TestCreator.createTestClass(): target imports:"+arrayToString(srcelTarget.getImports()));
+        srcelTarget.addImport(new Import(Identifier.create(JUNIT_FRAMEWORK_PACKAGE_NAME), Import.PACKAGE));        
 
         // construct/update test class from the source class
         fillTestClass(classSource, classTarget);
+        
+        // if aplicable, add main method (method checks options itself)
+        addMainMethod(classTarget);
     }
     
-    static public void createTestSuit(LinkedList listMembers, String packageName, ClassElement classTarget) throws SourceException {
+    static public void createTestSuite(LinkedList listMembers, String packageName, ClassElement classTarget) throws SourceException {
         SourceElement   srcelTarget;
 
         // update the source file of the suite class
         srcelTarget = classTarget.getSource();
-        //System.err.println("createTestSuit(): srcelTarget:");
+        //System.err.println("createTestSuite(): srcelTarget:");
         
         srcelTarget.setPackage(packageName.length() != 0 ? Identifier.create(packageName) : null);
         srcelTarget.addImport(new Import(Identifier.create(JUNIT_FRAMEWORK_PACKAGE_NAME), Import.PACKAGE));
 
-        // !-- GENERATE NbJUnit no longer supported
-        // if generate NbJUnit - add appropriate import, if not - remove it
-        /*
-        Import nbjunitImport = new Import(Identifier.create(NBJUNIT_EXTENSION_PACKAGE_NAME), Import.PACKAGE);
-        if (JUnitSettings.getDefault().isGenerateNbJUnit()) {            
-            srcelTarget.addImport(nbjunitImport);
-        } else {            
-            srcelTarget.removeImport(nbjunitImport);
-        }
-         */
-         // GENERATE NbJUnit no longer supported --!
         // construct/update test class from the source class
-        fillSuitClass(listMembers, packageName, classTarget);
+        fillSuiteClass(listMembers, packageName, classTarget);
+        
+        // if aplicable, add main method (method checks options itself)
+        addMainMethod(classTarget);        
     }
     
     static public void initialize() {
@@ -132,19 +111,44 @@ public class TestCreator extends java.lang.Object {
         
         ClassElement[]  innerClasses;
 
-        if (null != ce && 
-            ce.isClass() && 
-            (0 != (ce.getModifiers() & Modifier.PUBLIC)) &&
-            (JUnitSettings.getDefault().isGenerateExceptionClasses() || !isException(ce)) &&
-            (!ce.isInner() || 0 != (ce.getModifiers() & Modifier.STATIC)) &&
-            (0 == (ce.getModifiers() & Modifier.ABSTRACT) || JUnitSettings.getDefault().isGenerateAbstractImpl()) &&
-            hasTestableMethods(ce))
-            return true;
+        // check whether the ClassElement is class
+        if (null == ce || (!ce.isClass())) {
+            // we will not create tests for it
+            return false;
+        }
         
+        JUnitSettings settings = JUnitSettings.getDefault();
+        
+        //System.err.println("isClassTestable: class name="+ce.getVMName());
+        
+        // check whether class implements test interfaces
+        if (isClassElementImplementingTestInterface(ce)) {
+            //System.err.println("!!Class implements Test Interface");
+            if ( ! settings.isGenerateTestsFromTestClasses()) {
+                // we don't want to generate tests from test classes                
+                return false;
+            }
+        }
+
+        // this is WILD :-(((( ....
+        int classModifiers = ce.getModifiers();
+        if ( ((0 != (classModifiers & Modifier.PUBLIC)) || 
+                ( settings.isIncludePackagePrivateClasses() && (0 == ( classModifiers & Modifier.PRIVATE )))
+              ) &&
+             (settings.isGenerateExceptionClasses() || ! isException(ce)) &&
+             (!ce.isInner() || 0 != (classModifiers & Modifier.STATIC)) &&
+             (0 == (classModifiers & Modifier.ABSTRACT) || settings.isGenerateAbstractImpl()) &&
+              hasTestableMethods(ce)) {
+                    return true;
+        }
+
+        //System.err.println("isClassTestable(): does not seem to be testable");
         // nothing from the non-static inner class is accessible (and testable),
         // except there is a class specific way how to get an instance of inner class
-        if (ce.isInner() && 0 == (ce.getModifiers() & Modifier.STATIC))
+        if (ce.isInner() && 0 == (classModifiers & Modifier.STATIC)) {
+            //System.err.println("isClassTestable(): is inner, but not static");
             return false;
+        }
             
         // check for testable inner classes
         innerClasses = ce.getClasses();
@@ -155,6 +159,74 @@ public class TestCreator extends java.lang.Object {
 
         return false;
     }
+    
+    
+    private static boolean anyInterfaceImplementsName(Identifier[] interfaces, String name) {
+        for (int i=0; i < interfaces.length; i++) {
+            if (interfaces[i].getFullName().equals(name)) {
+                return true;
+            }
+        }
+        // hmm, it does not seem to 
+        // let's try parent interfaces (if any)
+        for (int i=0; i < interfaces.length; i++) {
+            ClassElement interfaceClassElement = ClassElement.forName(interfaces[i].getFullName());
+            if (interfaceClassElement != null) {
+                Identifier[] parentInterfaces = interfaceClassElement.getInterfaces();
+                if (parentInterfaces != null) {
+                    boolean result = anyInterfaceImplementsName(parentInterfaces, name);
+                    if (result == true) {
+                       // great - we found it
+                       return true;
+                    } 
+                    // otherwise continue
+                }
+            }
+        }
+        // hmm, this branch does not seem to implement the interface name
+        return false;
+    }
+    
+        
+    
+    // is ClassElement a Test class ?
+    private static boolean isClassElementImplementingTestInterface(ClassElement ce) {        
+        
+        boolean result = false;
+        ClassElement classElement = ce;
+        while (classElement != null) {            
+            //System.err.println("###############Tested ClassElement:"+classElement.getVMName());
+            Identifier superClass = classElement.getSuperclass();
+            //System.err.println("Tested superClass :"+superClass);
+            Identifier[] interfaces = classElement.getInterfaces();            
+            // check the supperclass (if available)            
+            if (superClass != null) {
+                String superClassName = superClass.getFullName();                
+                //System.err.println("Tested ClassElement superclassFullName:"+superClassName);
+                // shortcut !!!
+                classElement = ClassElement.forName(superClassName);
+                if (classElement != null) {
+                    //System.err.println("Testes SuperClassElement.getVMName()"+classElement.getVMName());
+                    if ("junit.framework.TestCase".equals(classElement.getVMName())) {
+                        return true;
+                    }
+                }
+            } else {
+                // no super class - go on
+                classElement = null;
+            }
+            
+            // now check the interfaces            
+            if (anyInterfaceImplementsName(interfaces,"junit.framework.Test")) {
+                // we found it
+                return true;
+            }
+            // otherwise continue in our search
+        }
+        // not implemented (or class has no superclass)
+        return false;
+    }
+
 
     
     /* private methods */
@@ -179,16 +251,6 @@ public class TestCreator extends java.lang.Object {
         }
     }    
     
-    static private MethodElement createMainMethod() throws SourceException {
-        MethodElement method = new MethodElement();
-        method.setName(Identifier.create("main"));
-        method.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
-        method.setReturn(Type.VOID);
-        MethodParameter[] params = {new MethodParameter("args", Type.createArray(Type.createFromClass(java.lang.String.class)), false)};
-        method.setParameters(params);
-        method.setBody("\njunit.textui.TestRunner.run(suite());\n");
-        return method;
-    }
 
     /**
      * Creates function <b>static public Test suite()</b> and fills its body,
@@ -406,9 +468,8 @@ public class TestCreator extends java.lang.Object {
             }
         }
         
-        // fill main and suite methods
+        // fill suite methods
         methods = new LinkedList();
-        methods.add(createMainMethod());
         methods.add(createTestClassSuiteMethod(classTest));
         addMethods(classTest, methods);
         
@@ -429,7 +490,7 @@ public class TestCreator extends java.lang.Object {
         }
     }        
 
-    static private void fillSuitClass(LinkedList listMembers, String packageName, ClassElement classTest) throws SourceException {
+    static private void fillSuiteClass(LinkedList listMembers, String packageName, ClassElement classTest) throws SourceException {
         LinkedList      methods;
         MethodElement   method;
         StringBuffer    newBody;
@@ -440,9 +501,7 @@ public class TestCreator extends java.lang.Object {
         
         fillGeneral(classTest);
         
-        // create main method
         methods = new LinkedList();
-        methods.add(createMainMethod());
 
         // create suite method  - if regenerate - remove the old suite method
        if (JUnitSettings.getDefault().isRegenerateSuiteMethod()) {     
@@ -471,7 +530,7 @@ public class TestCreator extends java.lang.Object {
             else if (-1 != line.indexOf(SUIT_BLOCK_END)) {
                 // JUst's owned suite block, regenerate it
                 insideBlock = false;
-                generateSuitBody(classTest.getName().getName(), newBody, listMembers, true);
+                generateSuiteBody(classTest.getName().getName(), newBody, listMembers, true);
                 justBlockExists = true;
             }
             else if (!insideBlock) {
@@ -481,7 +540,7 @@ public class TestCreator extends java.lang.Object {
         }
         
         if (!justBlockExists)
-            generateSuitBody(classTest.getName().getName(), newBody, listMembers, false);
+            generateSuiteBody(classTest.getName().getName(), newBody, listMembers, false);
 
         method.setBody(newBody.toString());
         methods.add(method);
@@ -490,7 +549,7 @@ public class TestCreator extends java.lang.Object {
         addMethods(classTest, methods);
     }
     
-    static private void generateSuitBody(String testName, StringBuffer body, LinkedList members, boolean alreadyExists) {
+    static private void generateSuiteBody(String testName, StringBuffer body, LinkedList members, boolean alreadyExists) {
         ListIterator    li;
         String          name;
         
@@ -770,5 +829,33 @@ public class TestCreator extends java.lang.Object {
             // remove the method
             classTest.removeMethod(suiteMethod);
         } 
+    }
+    
+    private static void addMainMethod(ClassElement targetClass) throws SourceException {
+        if (JUnitSettings.getDefault().isGenerateMainMethod()) {
+            if (!targetClass.hasMainMethod()) {
+                // add main method
+                String mainMethodBodySetting = JUnitSettings.getDefault().getGenerateMainMethodBody();
+                if ((mainMethodBodySetting != null) & (mainMethodBodySetting.length() > 0) ) {
+                    MethodElement mainMethod = createMainMethodElement();
+                    StringBuffer mainMethodBody = new StringBuffer(mainMethodBodySetting.length() + 2);
+                    mainMethodBody.append('\n');
+                    mainMethodBody.append(mainMethodBodySetting);
+                    mainMethodBody.append('\n');
+                    mainMethod.setBody(mainMethodBody.toString());
+                    targetClass.addMethod(mainMethod);
+                }
+            }
+        }
+    }
+    
+    private static MethodElement createMainMethodElement() throws SourceException {
+        MethodElement mainMethod = new MethodElement();
+        mainMethod.setName(Identifier.create("main"));
+        mainMethod.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
+        mainMethod.setReturn(Type.VOID);
+        MethodParameter parameter = new MethodParameter("args", Type.createArray(Type.createFromClass(String.class)), false);
+        mainMethod.setParameters(new MethodParameter[] {parameter} );
+        return mainMethod;
     }
 }
