@@ -47,7 +47,7 @@ public class ConfigureShortcutsAction extends org.openide.util.actions.CallableS
   * @return URL to the action icon
   */
   public String iconResource () {
-    return "/com/netbeans/developer/impl/resources/actions/empty.gif"; // NOI18N
+    return "/com/netbeans/developer/impl/resources/actions/configureShortcuts.gif"; // NOI18N
   }
 
   public HelpCtx getHelpCtx() {
@@ -62,6 +62,7 @@ public class ConfigureShortcutsAction extends org.openide.util.actions.CallableS
 
 /*
  * Log
+ *  7    Gandalf   1.6         2/7/00   David Simonek   Icon resource added
  *  6    Gandalf   1.5         1/5/00   Ian Formanek    NOI18N
  *  5    Gandalf   1.4         1/4/00   Ian Formanek    
  *  4    Gandalf   1.3         12/21/99 Ian Formanek    
