@@ -530,6 +530,7 @@ class J2SEActionProvider implements ActionProvider {
     private boolean showMainClassWarning (String mainClass, String projectName, EditableProperties ep, int messageType) {
         boolean canceled;
         final JButton okButton = new JButton (NbBundle.getMessage (MainClassWarning.class, "LBL_MainClassWarning_ChooseMainClass_OK")); // NOI18N
+        okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (MainClassWarning.class, "AD_MainClassWarning_ChooseMainClass_OK"));
         
         // main class goes wrong => warning
         String message;
