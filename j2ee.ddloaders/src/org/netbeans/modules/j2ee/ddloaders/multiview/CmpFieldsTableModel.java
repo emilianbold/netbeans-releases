@@ -32,7 +32,7 @@ class CmpFieldsTableModel extends InnerTableModel {
     private static final int[] COLUMN_WIDTHS = new int[]{120, 160, 70, 70, 70, 70, 220};
 
     public CmpFieldsTableModel(EntityHelper.CmpFields cmpFields) {
-        super(COLUMN_NAMES, COLUMN_WIDTHS);
+        super(null, COLUMN_NAMES, COLUMN_WIDTHS);
         this.cmpFields = cmpFields;
         cmpFields.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {

@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 
@@ -21,11 +23,13 @@ import javax.swing.table.TableCellEditor;
  */
 public abstract class InnerTableModel extends AbstractTableModel {
 
+    private XmlMultiViewDataObject dataObject;
     protected final String[] columnNames;
     private int[] columnWidths;
     private int rowCount = -1;
 
-    public InnerTableModel(String[] columnNames, int[] columnWidths) {
+    public InnerTableModel(XmlMultiViewDataObject dataObject, String[] columnNames, int[] columnWidths) {
+        this.dataObject = dataObject;
         this.columnNames = columnNames;
         this.columnWidths = columnWidths;
     }
@@ -85,6 +89,12 @@ public abstract class InnerTableModel extends AbstractTableModel {
             return true;
         } else {
             return false;
+        }
+    }
+
+    protected void modelUpdatedFromUI() {
+        if (dataObject!= null) {
+            dataObject.modelUpdatedFromUI();
         }
     }
 }

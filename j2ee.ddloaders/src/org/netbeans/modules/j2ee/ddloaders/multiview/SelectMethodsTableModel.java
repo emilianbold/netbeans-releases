@@ -40,7 +40,6 @@ class SelectMethodsTableModel extends QueryMethodsTableModel {
 
     public int addRow() {
         queries.addSelectMethod();
-        //fireTableRowsInserted(-1, -1);
         return getRowCount() - 1;
     }
 
@@ -53,7 +52,6 @@ class SelectMethodsTableModel extends QueryMethodsTableModel {
         boolean result = customizer.showSelectCustomizer(methodElement, aQuery);
         if (result) {
             helper.updateSelectMethod(methodElement, aQuery);
-            //fireTableRowsUpdated(row, row);
         }
     }
 

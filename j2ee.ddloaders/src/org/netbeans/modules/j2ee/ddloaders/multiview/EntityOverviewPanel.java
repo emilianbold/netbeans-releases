@@ -18,6 +18,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EntityOverviewForm;
 import org.netbeans.modules.xml.multiview.ItemComboBoxHelper;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
+import org.netbeans.modules.xml.multiview.ItemCheckBoxHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.netbeans.modules.xml.tools.generator.ValidatingTextField;
 
@@ -47,7 +48,6 @@ public class EntityOverviewPanel extends EntityOverviewForm {
         final JComboBox primaryKeyFieldComboBox = getPrimaryKeyFieldComboBox();
         final JComboBox primaryKeyClassComboBox = getPrimaryKeyClassComboBox();
         final JTextField primaryKeyClassTextField = getPrimaryKeyClassTextField();
-        final JCheckBox reentrantCheckBox = getReentrantCheckBox();
 
         addRefreshable(new ItemEditorHelper(ejbNameTextField, new TextItemEditorModel(dataObject, false) {
             protected String getValue() {
@@ -88,7 +88,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                 primaryKeyFieldComboBox.addItem(cmpField.getFieldName());
                 primaryKeyFieldComboBox.setEditor(new ValidatingTextField());
             }
-            addRefreshable(new ItemComboBoxHelper(primaryKeyFieldComboBox) {
+            addRefreshable(new ItemComboBoxHelper(dataObject, primaryKeyFieldComboBox) {
                 public String getItemValue() {
                     return entity.getPrimkeyField();
                 }
@@ -107,7 +107,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                         primaryKeyClassComboBox.setEnabled(false);
                         CmpField cmpField = entity.getCmpField(selectedIndex - 1);
                         CmpFieldHelper helper = new CmpFieldHelper(entityHelper, cmpField);
-                        entity.setPrimKeyClass(helper.getType());
+                        entityHelper.setPrimKeyClass(helper.getType());
                     }
                     primaryKeyClassComboBox.setSelectedItem(entity.getPrimKeyClass());
                 }
@@ -132,7 +132,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
             primaryKeyClassComboBox.addItem("java.lang.String");    //NOI18N
             primaryKeyClassComboBox.addItem("java.math.BigDecimal");//NOI18N
 
-            addRefreshable(new ItemComboBoxHelper(primaryKeyClassComboBox) {
+            addRefreshable(new ItemComboBoxHelper(dataObject, primaryKeyClassComboBox) {
                 public String getItemValue() {
                     return entity.getPrimKeyClass();
                 }
@@ -162,9 +162,13 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                 }
             }));
         }
-        reentrantCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                entity.setReentrant(reentrantCheckBox.isSelected());
+        addRefreshable(new ItemCheckBoxHelper(dataObject, getReentrantCheckBox()) {
+            public boolean getItemValue() {
+                return entity.isReentrant();
+            }
+
+            public void setItemValue(boolean value) {
+                entity.setReentrant(value);
             }
         });
     }

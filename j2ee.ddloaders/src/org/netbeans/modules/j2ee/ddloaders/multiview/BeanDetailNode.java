@@ -13,7 +13,7 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
-import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 /**
@@ -25,7 +25,7 @@ public class BeanDetailNode extends EjbSectionNode {
         super(sectionNodeView, ejb, Utils.getBundleMessage("LBL_BeanDetails"), Utils.ICON_BASE_MISC_NODE);
     }
 
-    protected SectionInnerPanel createNodeInnerPanel() {
+    protected SectionNodeInnerPanel createNodeInnerPanel() {
         SectionNodeView sectionNodeView = getSectionNodeView();
         return new BeanDetailsPanel(sectionNodeView, (Ejb) key);
     }

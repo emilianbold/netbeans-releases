@@ -14,7 +14,7 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 /**
@@ -27,7 +27,7 @@ class EjbJarDetailsNode extends EjbSectionNode {
         setExpanded(true);
     }
 
-    protected SectionInnerPanel createNodeInnerPanel() {
+    protected SectionNodeInnerPanel createNodeInnerPanel() {
         SectionNodeView sectionNodeView = getSectionNodeView();
         return new EjbJarDetailsPanel(sectionNodeView, (EjbJar) key);
     }

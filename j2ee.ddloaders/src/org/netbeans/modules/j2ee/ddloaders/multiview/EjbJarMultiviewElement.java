@@ -12,11 +12,10 @@
  */
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
-import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 
 import java.beans.PropertyChangeEvent;
@@ -30,7 +29,6 @@ public abstract class EjbJarMultiviewElement extends ToolBarMultiViewElement {
     private SectionView view;
     protected ToolBarDesignEditor comp;
     protected EjbJarMultiViewDataObject dataObject;
-    EnterpriseBeans enterpriseBeans;
 
     public EjbJarMultiviewElement(EjbJarMultiViewDataObject dataObject) {
         super(dataObject);

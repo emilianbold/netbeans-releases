@@ -13,72 +13,70 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
-import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+
 
 /**
  * @author pfiala
  */
 class EnvironmentEntriesTableModel extends InnerTableModel {
 
-    private Ejb ejb;
+    private EjbHelper ejbHelper;
     private static final String[] COLUMN_NAMES = {Utils.getBundleMessage("LBL_EntryName"),
                                                   Utils.getBundleMessage("LBL_EntryType"),
                                                   Utils.getBundleMessage("LBL_EntryValue"),
                                                   Utils.getBundleMessage("LBL_Description")};
     private static final int[] COLUMN_WIDTHS = new int[]{100, 120, 100, 150};
 
-    public EnvironmentEntriesTableModel(Ejb ejb) {
-        super(COLUMN_NAMES, COLUMN_WIDTHS);
-        this.ejb = ejb;
+    public EnvironmentEntriesTableModel(EjbHelper ejbHelper) {
+        super(null, COLUMN_NAMES, COLUMN_WIDTHS);
+        this.ejbHelper = ejbHelper;
     }
 
     public void setValueAt(Object value, int rowIndex, int columnIndex) {
-        EnvEntry envEntry = ejb.getEnvEntry(rowIndex);
+        EjbHelper.EnvEntryHelper envEntryHelper = ejbHelper.getEnvEntryHelper(rowIndex);
         switch (columnIndex) {
             case 0:
-                envEntry.setEnvEntryName((String) value);
+                envEntryHelper.setEnvEntryName((String) value);
                 break;
             case 1:
-                envEntry.setEnvEntryType((String) value);
+                envEntryHelper.setEnvEntryType((String) value);
                 break;
             case 2:
-                envEntry.setEnvEntryValue((String) value);
+                envEntryHelper.setEnvEntryValue((String) value);
                 break;
             case 3:
-                envEntry.setDescription((String) value);
+                envEntryHelper.setDescription((String) value);
                 break;
         }
         fireTableCellUpdated(rowIndex, columnIndex);
     }
 
     public int getRowCount() {
-        return ejb.getEnvEntry().length;
+        return ejbHelper.getEnvEntryCount();
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
-        EnvEntry envEntry = ejb.getEnvEntry(rowIndex);
+        EjbHelper.EnvEntryHelper envEntryHelper = ejbHelper.getEnvEntryHelper(rowIndex);
         switch (columnIndex) {
             case 0:
-                return envEntry.getEnvEntryName();
+                return envEntryHelper.getEnvEntryName();
             case 1:
-                return envEntry.getEnvEntryType();
+                return envEntryHelper.getEnvEntryType();
             case 2:
-                return envEntry.getEnvEntryValue();
+                return envEntryHelper.getEnvEntryValue();
             case 3:
-                return envEntry.getDefaultDescription();
+                return envEntryHelper.getDefaultDescription();
         }
         return null;
     }
 
     public int addRow() {
-        EnvEntry entry = ejb.newEnvEntry();
-        ejb.addEnvEntry(entry);
+        ejbHelper.newEnvEntry();
         int row = getRowCount() - 1;
         return row;
     }
 
     public void removeRow(final int row) {
-        ejb.removeEnvEntry(ejb.getEnvEntry(row));
+        ejbHelper.removeEnvEntry(row);
     }
 }

@@ -14,7 +14,7 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
-import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 /**
@@ -27,7 +27,7 @@ class MdbImplementationNode extends EjbSectionNode {
                 Utils.ICON_BASE_MISC_NODE);
     }
 
-    protected SectionInnerPanel createNodeInnerPanel() {
+    protected SectionNodeInnerPanel createNodeInnerPanel() {
         return new MdbImplementationPanel(getSectionNodeView(), (MessageDriven) key);
     }
 }

@@ -15,9 +15,10 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EjbImplementationAndInterfacesForm;
-import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-import org.netbeans.modules.xml.multiview.ui.LinkButton;
 import org.netbeans.modules.xml.multiview.ItemCheckBoxHelper;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+import org.netbeans.modules.xml.multiview.ui.LinkButton;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.src.ClassElement;
@@ -75,8 +76,8 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
     /**
      * Creates new form BeanForm
      */
-    public EjbImplementationAndInterfacesPanel(final SectionNodeView sectionNodeView, final EntityAndSession ejb,
-            EntityAndSessionHelper helper) {
+    public EjbImplementationAndInterfacesPanel(final SectionNodeView sectionNodeView,
+            final EntityAndSessionHelper helper) {
         super(sectionNodeView);
         this.helper = helper;
         getBeanClassTextField().setDocument(beanClassDocument);
@@ -113,6 +114,7 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         moveClassButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Utils.activateMoveClassUI(className);
+                signalUIChange();
                 moveClassButton.setEnabled(false);
                 renameClassButton.setEnabled(false);
             }
@@ -125,9 +127,10 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
             }
         });
 
-        addRefreshable(new ItemCheckBoxHelper(getLocalInterfaceCheckBox()) {
+        XmlMultiViewDataObject dataObject = sectionNodeView.getDataObject();
+        addRefreshable(new ItemCheckBoxHelper(dataObject, getLocalInterfaceCheckBox()) {
             public boolean getItemValue() {
-                boolean value = ejb.getLocal() != null;
+                boolean value = helper.getLocal() != null;
                 getLocalComponentLinkButton().setVisible(value);
                 getLocalHomeLinkButton().setVisible(value);
                 return value;
@@ -145,9 +148,9 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
             }
         });
 
-        addRefreshable(new ItemCheckBoxHelper(getRemoteInterfaceCheckBox()) {
+        addRefreshable(new ItemCheckBoxHelper(dataObject, getRemoteInterfaceCheckBox()) {
             public boolean getItemValue() {
-                boolean value = ejb.getRemote() != null;
+                boolean value = helper.getRemote() != null;
                 getRemoteComponentLinkButton().setVisible(value);
                 getRemoteHomeLinkButton().setVisible(value);
                 return value;

@@ -16,6 +16,7 @@ import org.netbeans.modules.xml.multiview.ui.BoxPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -65,7 +66,7 @@ public class SectionNode extends AbstractNode {
         getChildren().add(new Node[]{node});
     }
 
-    public SectionInnerPanel createInnerPanel() {
+    public SectionNodeInnerPanel createInnerPanel() {
         Children children = getChildren();
         if (children.getNodesCount() == 0) {
             return createNodeInnerPanel();
@@ -100,7 +101,7 @@ public class SectionNode extends AbstractNode {
         return true;
     }
 
-    protected SectionInnerPanel createNodeInnerPanel() {
+    protected SectionNodeInnerPanel createNodeInnerPanel() {
         return null;
     }
 

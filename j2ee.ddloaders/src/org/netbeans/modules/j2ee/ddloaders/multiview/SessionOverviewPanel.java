@@ -45,7 +45,7 @@ public class SessionOverviewPanel extends SessionOverviewForm {
             }
         }));
 
-        addRefreshable(new ItemOptionHelper(getSessionTypeButtonGroup()) {
+        addRefreshable(new ItemOptionHelper(dataObject, getSessionTypeButtonGroup()) {
             public String getItemValue() {
                 return session.getSessionType();
             }
@@ -55,7 +55,7 @@ public class SessionOverviewPanel extends SessionOverviewForm {
             }
         });
 
-        addRefreshable(new ItemOptionHelper(getTransactionTypeButtonGroup()) {
+        addRefreshable(new ItemOptionHelper(dataObject, getTransactionTypeButtonGroup()) {
             public String getItemValue() {
                 return session.getTransactionType();
             }

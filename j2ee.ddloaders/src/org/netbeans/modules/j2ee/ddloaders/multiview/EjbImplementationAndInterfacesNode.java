@@ -14,7 +14,7 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
-import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 /**
@@ -31,10 +31,10 @@ class EjbImplementationAndInterfacesNode extends EjbSectionNode {
         this.helper = helper;
     }
 
-    protected SectionInnerPanel createNodeInnerPanel() {
+    protected SectionNodeInnerPanel createNodeInnerPanel() {
         SectionNodeView sectionNodeView = getSectionNodeView();
         final EjbImplementationAndInterfacesPanel panel = new EjbImplementationAndInterfacesPanel(sectionNodeView,
-                (EntityAndSession) getKey(), helper);
+                helper);
         return panel;
     }
 }

@@ -205,6 +205,7 @@ public class QueryMethodHelper {
         this.query.setQueryMethod(query.getQueryMethod());
         this.query.setDescription(query.getDefaultDescription());
         this.query.setEjbQl(query.getEjbQl());
+        entityHelper.modelUpdatedFromUI();
     }
 
     private MethodElement setMethod(MethodElement method, MethodElement prototype, boolean singleReturn,

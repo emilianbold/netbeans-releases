@@ -14,7 +14,7 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
-import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 /**
@@ -31,7 +31,7 @@ class MessageDrivenNode extends EjbSectionNode {
         addChild(new BeanDetailNode(sectionNodeView, messageDriven));
     }
 
-    protected SectionInnerPanel createNodeInnerPanel() {
+    protected SectionNodeInnerPanel createNodeInnerPanel() {
         return null;
     }
 }

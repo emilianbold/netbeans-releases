@@ -46,13 +46,19 @@ public abstract class TextItemEditorModel extends ItemEditorHelper.ItemEditorMod
     protected abstract String getValue();
 
     public final boolean setItemValue(String value) {
-        if (emptyAllowed && emptyIsNull && value.length() == 0) {
-            value = null;
+        if (emptyAllowed && emptyIsNull && value != null) {
+            while (value.length() > 0 && value.charAt(0) == ' ') {
+                value = value.substring(1);
+            }
+            if (value.length() == 0) {
+                value = null;
+            }
         }
         if (validate(value)) {
             String currentValue = getValue();
             if (!(value == currentValue || value != null && value.equals(currentValue))) {
                 setValue(value);
+                dataObject.modelUpdatedFromUI();
             }
             return true;
         } else {

@@ -20,7 +20,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.BoxPanel;
-import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -58,7 +58,7 @@ public class EnterpriseBeansNode extends EjbSectionNode {
         }
     }
 
-    public SectionInnerPanel createInnerPanel() {
+    public SectionNodeInnerPanel createInnerPanel() {
         SectionNodeView sectionNodeView = getSectionNodeView();
         BoxPanel boxPanel = new BoxPanel(sectionNodeView) {
             public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {

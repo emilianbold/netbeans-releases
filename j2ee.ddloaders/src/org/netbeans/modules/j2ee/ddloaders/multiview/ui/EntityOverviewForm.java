@@ -13,7 +13,7 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview.ui;
 
-import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 import javax.swing.*;
@@ -21,7 +21,7 @@ import javax.swing.*;
 /**
  * @author pfiala
  */
-public class EntityOverviewForm extends SectionInnerPanel {
+public class EntityOverviewForm extends SectionNodeInnerPanel {
 
     /**
      * Creates new form EntityOverviewForm

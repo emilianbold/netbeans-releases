@@ -14,7 +14,7 @@ package org.netbeans.modules.xml.multiview.ui;
 
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.Utils;
-import org.openide.loaders.DataObject;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -27,7 +27,7 @@ import java.util.HashMap;
  */
 public class SectionNodeView extends SectionView {
 
-    private final DataObject dataObject;
+    private final XmlMultiViewDataObject dataObject;
     private SectionNode rootNode = null;
     private HashMap nodes = new HashMap();
 
@@ -39,7 +39,7 @@ public class SectionNodeView extends SectionView {
 
     private static final int REFRESH_DELAY = 20;
 
-    public SectionNodeView(DataObject dataObject) {
+    public SectionNodeView(XmlMultiViewDataObject dataObject) {
         super();
         this.dataObject = dataObject;
     }
@@ -55,7 +55,7 @@ public class SectionNodeView extends SectionView {
         addSection(rootNode.getSectionNodePanel());
     }
 
-    public DataObject getDataObject() {
+    public XmlMultiViewDataObject getDataObject() {
         return dataObject;
     }
 

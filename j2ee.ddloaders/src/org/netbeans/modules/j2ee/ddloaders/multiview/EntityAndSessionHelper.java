@@ -124,6 +124,11 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
                 removeBeanInterface(remoteBusinessInterfaceClass.getName());
             }
         }
+        modelUpdatedFromUI();
+    }
+
+    public void modelUpdatedFromUI() {
+        ejbJarMultiViewDataObject.modelUpdatedFromUI();
     }
 
     private void removeBeanInterface(Identifier identifier) {
@@ -201,6 +206,7 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
                 ejb.setRemote(remoteInterfaceName);
                 ejb.setHome(homeInterfaceName);
             }
+            modelUpdatedFromUI();
         } catch (IOException e) {
             Utils.notifyError(e);
         }

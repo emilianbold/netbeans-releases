@@ -14,7 +14,7 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
-import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 /**
@@ -26,7 +26,7 @@ public class MessageDrivenOverviewNode extends EjbSectionNode {
         super(sectionNodeView, messageDriven, Utils.getBundleMessage("LBL_Overview"), Utils.ICON_BASE_MISC_NODE);
     }
 
-    protected SectionInnerPanel createNodeInnerPanel() {
+    protected SectionNodeInnerPanel createNodeInnerPanel() {
         return new MessageDrivenOverviewPanel(getSectionNodeView(), (MessageDriven) key);
     }
 }

@@ -15,6 +15,7 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRoleRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 
 /**
  * @author pfiala
@@ -27,8 +28,8 @@ class SecurityRoleReferencesTableModel extends InnerTableModel {
                                                   Utils.getBundleMessage("LBL_Description")};
     private static final int[] COLUMN_WIDTHS = new int[]{100, 150, 100};
 
-    public SecurityRoleReferencesTableModel(EntityAndSession ejb) {
-        super(COLUMN_NAMES, COLUMN_WIDTHS);
+    public SecurityRoleReferencesTableModel(XmlMultiViewDataObject dataObject, EntityAndSession ejb) {
+        super(dataObject, COLUMN_NAMES, COLUMN_WIDTHS);
         this.ejb = ejb;
     }
 
@@ -45,6 +46,7 @@ class SecurityRoleReferencesTableModel extends InnerTableModel {
                 securityRoleRef.setDescription((String) value);
                 break;
         }
+        modelUpdatedFromUI();
         fireTableCellUpdated(rowIndex, columnIndex);
     }
 
@@ -68,10 +70,12 @@ class SecurityRoleReferencesTableModel extends InnerTableModel {
     public int addRow() {
         SecurityRoleRef securityRoleRef = ejb.newSecurityRoleRef();
         ejb.addSecurityRoleRef(securityRoleRef);
+        modelUpdatedFromUI();
         return getRowCount() - 1;
     }
 
     public void removeRow(int row) {
         ejb.removeSecurityRoleRef(ejb.getSecurityRoleRef(row));
+        modelUpdatedFromUI();
     }
 }

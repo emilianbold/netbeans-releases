@@ -13,7 +13,7 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 /**
@@ -28,7 +28,7 @@ class SelectMethodsNode extends EjbSectionNode {
         this.queries = queries;
     }
 
-    protected SectionInnerPanel createNodeInnerPanel() {
+    protected SectionNodeInnerPanel createNodeInnerPanel() {
         final SelectMethodsTableModel model = new SelectMethodsTableModel(queries);
         final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(), model) {
             protected void editCell(final int row, final int column) {

@@ -16,13 +16,19 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.openide.util.NbBundle;
+import org.openide.filesystems.FileObject;
+
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * @author pfiala
  */
 class EjbReferencesTableModel extends InnerTableModel {
 
+    private XmlMultiViewDataObject dataObject;
     Ejb ejb;
     private static final String[] COLUMN_NAMES = {
         NbBundle.getBundle(EjbReferencesTableModel.class).getString("LBL_ReferenceName"),
@@ -31,8 +37,9 @@ class EjbReferencesTableModel extends InnerTableModel {
         NbBundle.getBundle(EjbReferencesTableModel.class).getString("LBL_Description")};
     private static final int[] COLUMN_WIDTHS = new int[]{170, 260, 70, 250};
 
-    public EjbReferencesTableModel(Ejb ejb) {
-        super(COLUMN_NAMES, COLUMN_WIDTHS);
+    public EjbReferencesTableModel(XmlMultiViewDataObject dataObject, Ejb ejb) {
+        super(dataObject, COLUMN_NAMES, COLUMN_WIDTHS);
+        this.dataObject = dataObject;
         this.ejb = ejb;
     }
 
@@ -45,9 +52,26 @@ class EjbReferencesTableModel extends InnerTableModel {
     }
 
     public int addRow() {
+        FileObject ejbJarFile = dataObject.getPrimaryFile();
+        if (new OpenAddReferenceDialog(ejb, createRefNameSet(ejb), ejbJarFile).openDialog()) {
+            modelUpdatedFromUI();
+
+        }
         return -1;
     }
 
+    private Set createRefNameSet(Ejb ejb) {
+        Set refNameSet = new HashSet();
+        EjbLocalRef[] ejbLocalRef = ejb.getEjbLocalRef();
+        for (int i = 0; i < ejbLocalRef.length; i++) {
+            refNameSet.add(ejbLocalRef[i].getEjbRefName());
+        }
+        EjbRef[] ejbRef = ejb.getEjbRef();
+        for (int i = 0; i < ejbRef.length; i++) {
+            refNameSet.add(ejbRef[i].getEjbRefName());
+        }
+        return refNameSet;
+    }
     public void removeRow(int selectedRow) {
         // TODO: implement removal of reference
     }

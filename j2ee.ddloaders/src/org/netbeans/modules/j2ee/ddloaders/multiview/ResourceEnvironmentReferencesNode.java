@@ -14,7 +14,7 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
-import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 /**
@@ -27,7 +27,9 @@ public class ResourceEnvironmentReferencesNode extends EjbSectionNode {
                 Utils.ICON_BASE_MISC_NODE);
     }
 
-    protected SectionInnerPanel createNodeInnerPanel() {
-        return new InnerTablePanel(getSectionNodeView(), new ResourceEnvironmentReferencesTableModel((Ejb) key));
+    protected SectionNodeInnerPanel createNodeInnerPanel() {
+        SectionNodeView sectionNodeView = getSectionNodeView();
+        return new InnerTablePanel(sectionNodeView,
+                new ResourceEnvironmentReferencesTableModel(sectionNodeView.getDataObject(), (Ejb) key));
     }
 }

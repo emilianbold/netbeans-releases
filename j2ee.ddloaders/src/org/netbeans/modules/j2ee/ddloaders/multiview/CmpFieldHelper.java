@@ -92,6 +92,11 @@ public class CmpFieldHelper {
         changeParameterType(getBusinessMethod(remoteBusinessInterfaceClass, setterMethod), newType);
         changeReturnType(getterMethod, newType);
         changeParameterType(setterMethod, newType);
+        modelUpdatedFromUI();
+    }
+
+    private void modelUpdatedFromUI() {
+        entityHelper.modelUpdatedFromUI();
     }
 
     private static Type createType(String type) {
@@ -114,6 +119,7 @@ public class CmpFieldHelper {
         if (method != null) {
             try {
                 method.setReturn(type);
+                modelUpdatedFromUI();
             } catch (SourceException e) {
                 Utils.notifyError(e);
             }
@@ -194,6 +200,7 @@ public class CmpFieldHelper {
                 EntityMethodController ec = (EntityMethodController) EntityMethodController.createFromClass(
                         entityHelper.beanClass);
                 new CMPFieldNode(field, ec, entityHelper.ejbJarFile).destroy();
+                modelUpdatedFromUI();
             } catch (IOException e) {
                 Utils.notifyError(e);
             }
@@ -224,6 +231,7 @@ public class CmpFieldHelper {
         Identifier getterName = Identifier.create(Utils.getMethodName(newName, true));
         Identifier setterName = Identifier.create(Utils.getMethodName(newName, false));
         field.setFieldName(newName);
+        modelUpdatedFromUI();
         Utils.renameMethod(getterMethod, getterName);
         Utils.renameMethod(setterMethod, setterName);
         Utils.renameMethod(localGetter, getterName);
@@ -234,6 +242,7 @@ public class CmpFieldHelper {
 
     public void setDescription(String s) {
         field.setDescription(s);
+        modelUpdatedFromUI();
     }
 
     public String getDefaultDescription() {
@@ -273,6 +282,7 @@ public class CmpFieldHelper {
             setLocalSetter(customizer.isLocalSetter());
             setRemoteGetter(customizer.isRemoteGetter());
             setRemoteSetter(customizer.isRemoteSetter());
+            modelUpdatedFromUI();
             return true;
         }
         return false;

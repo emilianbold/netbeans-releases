@@ -14,7 +14,7 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.xml.multiview.ui.DefaultTablePanel;
-import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 import javax.swing.*;
@@ -35,7 +35,7 @@ import java.awt.event.MouseEvent;
 /**
  * @author pfiala
  */
-public class InnerTablePanel extends SectionInnerPanel {
+public class InnerTablePanel extends SectionNodeInnerPanel {
 
     private final TablePanel tablePanel;
     private JTable table;
@@ -46,6 +46,7 @@ public class InnerTablePanel extends SectionInnerPanel {
             public void actionPerformed(ActionEvent e) {
                 stopCellEditing(table);
                 selectCell(model.addRow(), 0);
+                model.modelUpdatedFromUI();
                 Utils.runInAwtDispatchThread(new Runnable() {
                     public void run() {
                         Utils.scrollToVisible(tablePanel);
@@ -68,6 +69,7 @@ public class InnerTablePanel extends SectionInnerPanel {
                 }
                 int rowCount = model.getRowCount() - 1;
                 model.removeRow(row);
+                model.modelUpdatedFromUI();
                 if (row >= rowCount) {
                     row = rowCount - 1;
                 }

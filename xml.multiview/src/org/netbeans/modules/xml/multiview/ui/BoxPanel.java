@@ -18,15 +18,15 @@ import java.awt.*;
 /**
  * @author pfiala
  */
-public class BoxPanel extends SectionInnerPanel {
+public class BoxPanel extends SectionNodeInnerPanel {
 
     /**
      * Creates new form BoxPanel
      *
-     * @param sectionView
+     * @param sectionNodeView
      */
-    public BoxPanel(SectionView sectionView) {
-        super(sectionView);
+    public BoxPanel(SectionNodeView sectionNodeView) {
+        super(sectionNodeView);
         initComponents();
     }
 

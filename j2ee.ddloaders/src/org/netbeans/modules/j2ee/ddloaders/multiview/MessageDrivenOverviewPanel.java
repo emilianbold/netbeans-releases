@@ -59,7 +59,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
             }
         }));
 
-        addRefreshable(new ItemOptionHelper(getTransactionTypeButtonGroup()) {
+        addRefreshable(new ItemOptionHelper(dataObject, getTransactionTypeButtonGroup()) {
             public String getItemValue() {
                 return messageDriven.getTransactionType();
             }
@@ -96,7 +96,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
                 }
             }));
 
-            addRefreshable(new ItemOptionHelper(getAcknowledgeModeButtonGroup()) {
+            addRefreshable(new ItemOptionHelper(dataObject, getAcknowledgeModeButtonGroup()) {
                 public String getItemValue() {
                     return getConfigProperty(PROPERTY_ACKNOWLEDGE_NAME, "Auto-acknowledge");//NOI18N
                 }
@@ -106,10 +106,9 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
                 }
             });
 
-            final DurabilityComboBoxHelper durabilityComboBoxHelper = new DurabilityComboBoxHelper(durabilityComboBox,
-                    dataObject);
+            final DurabilityComboBoxHelper durabilityComboBoxHelper = new DurabilityComboBoxHelper(dataObject, durabilityComboBox);
 
-            new ItemComboBoxHelper(destinationTypeComboBox) {
+            new ItemComboBoxHelper(dataObject, destinationTypeComboBox) {
                 {
                     setDurabilityEnabled();
                 }
@@ -131,7 +130,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
         }
 
         // the second ItemComboboxHelper for destinationTypeComboBox handles message-destination-type element
-        new ItemComboBoxHelper(destinationTypeComboBox) {
+        new ItemComboBoxHelper(dataObject, destinationTypeComboBox) {
 
             public String getItemValue() {
                 try {
@@ -191,6 +190,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
                 } else {
                     config.removeActivationConfigProperty(property);
                 }
+                signalUIChange();
                 return;
             }
         }
@@ -208,8 +208,8 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
 
     private class DurabilityComboBoxHelper extends ItemComboBoxHelper {
 
-        public DurabilityComboBoxHelper(JComboBox durabilityComboBox, EjbJarMultiViewDataObject dataObject) {
-            super(durabilityComboBox);
+        public DurabilityComboBoxHelper(EjbJarMultiViewDataObject dataObject, JComboBox durabilityComboBox) {
+            super(dataObject, durabilityComboBox);
         }
 
         public String getItemValue() {

@@ -90,6 +90,7 @@ public class EntityHelper extends EntityAndSessionHelper {
 
     public void removeQuery(Query query) {
         entity.removeQuery(query);
+        modelUpdatedFromUI();
     }
 
     public boolean hasLocalInterface() {
@@ -110,10 +111,12 @@ public class EntityHelper extends EntityAndSessionHelper {
 
     public void setPrimkeyField(String fieldName) {
         entity.setPrimkeyField(fieldName);
+        modelUpdatedFromUI();
     }
 
     public void setPrimKeyClass(String className) {
         entity.setPrimKeyClass(className);
+        modelUpdatedFromUI();
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -206,6 +209,7 @@ public class EntityHelper extends EntityAndSessionHelper {
 
         public void addCmpField() {
             new AddCmpFieldAction().addCmpField(beanClass, ejbJarFile);
+            modelUpdatedFromUI();
         }
     }
 
@@ -261,6 +265,7 @@ public class EntityHelper extends EntityAndSessionHelper {
                     super.performAction(activatedNodes);
                 }
             }.performAction(new Node[]{createEntityNode()});
+            modelUpdatedFromUI();
         }
 
         public void addSelectMethod() {
@@ -269,6 +274,7 @@ public class EntityHelper extends EntityAndSessionHelper {
                     super.performAction(activatedNodes);
                 }
             }.performAction(new Node[]{createEntityNode()});
+            modelUpdatedFromUI();
         }
 
         public int getFinderMethodCount() {

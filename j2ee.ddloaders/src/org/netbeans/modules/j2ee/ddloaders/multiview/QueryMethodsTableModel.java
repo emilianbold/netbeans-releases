@@ -26,7 +26,7 @@ public abstract class QueryMethodsTableModel extends InnerTableModel {
     protected final EntityHelper.Queries queries;
 
     public QueryMethodsTableModel(String[] columnNames, int[] columnWidths, EntityHelper.Queries queries) {
-        super(columnNames, columnWidths);
+        super(null, columnNames, columnWidths);
         this.queries = queries;
         queries.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {

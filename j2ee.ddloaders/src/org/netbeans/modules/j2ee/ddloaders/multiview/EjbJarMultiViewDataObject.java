@@ -176,6 +176,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     }
 
     public EjbJar getEjbJar() {
+        waitForSync();
         return ejbJar;
     }
 
@@ -639,7 +640,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             if (EjbJar.PROPERTY_STATUS.equals(evt.getPropertyName())) {
                 return;
             }
-            modelChanged();
+            //modelChanged();
             Object source = evt.getSource();
             if (source instanceof EnterpriseBeans) {
                 Object oldValue = evt.getOldValue();
@@ -652,4 +653,5 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             }
         }
     }
+
 }

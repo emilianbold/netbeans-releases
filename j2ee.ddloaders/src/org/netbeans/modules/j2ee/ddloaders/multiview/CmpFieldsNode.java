@@ -12,7 +12,7 @@
  */
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 /**
@@ -27,7 +27,7 @@ class CmpFieldsNode extends EjbSectionNode {
         this.cmpFields = cmpFields;
     }
 
-    protected SectionInnerPanel createNodeInnerPanel() {
+    protected SectionNodeInnerPanel createNodeInnerPanel() {
         final CmpFieldsTableModel model = new CmpFieldsTableModel(cmpFields);
         final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(), model) {
             protected void editCell(final int row, final int column) {

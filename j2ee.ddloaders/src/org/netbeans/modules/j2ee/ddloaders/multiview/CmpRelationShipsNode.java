@@ -14,7 +14,7 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 /**
@@ -27,7 +27,7 @@ class CmpRelationShipsNode extends EjbSectionNode {
         setExpanded(true);
     }
 
-    protected SectionInnerPanel createNodeInnerPanel() {
+    protected SectionNodeInnerPanel createNodeInnerPanel() {
         final EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) getSectionNodeView().getDataObject();
         final CmpRelationshipsTableModel model = new CmpRelationshipsTableModel(dataObject);
         final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(), model) {

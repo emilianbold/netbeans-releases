@@ -13,7 +13,12 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.*;
+import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelationshipRole;
+import org.netbeans.modules.j2ee.dd.api.ejb.RelationshipRoleSource;
+import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -39,7 +44,7 @@ class CmpRelationshipsTableModel extends InnerTableModel {
     private EjbJarMultiViewDataObject dataObject;
 
     public CmpRelationshipsTableModel(EjbJarMultiViewDataObject dataObject) {
-        super(COLUMN_NAMES, COLUMN_WIDTHS);
+        super(dataObject, COLUMN_NAMES, COLUMN_WIDTHS);
         this.dataObject = dataObject;
         this.ejbJar = dataObject.getEjbJar();
         ejbJar.addPropertyChangeListener(new PropertyChangeListener() {
@@ -56,12 +61,14 @@ class CmpRelationshipsTableModel extends InnerTableModel {
     public int addRow() {
         CmpRelationshipsDialogHelper dialogHelper = new CmpRelationshipsDialogHelper(dataObject, ejbJar);
         if (dialogHelper.showCmpRelationshipsDialog(Utils.getBundleMessage("LBL_AddCMPRelationship"), null)) {
+            modelUpdatedFromUI();
         }
         return getRowCount() - 1;
     }
 
     public void removeRow(int row) {
         ejbJar.getSingleRelationships().removeEjbRelation(ejbJar.getSingleRelationships().getEjbRelation(row));
+        modelUpdatedFromUI();
     }
 
     public void editRow(int row) {
@@ -69,6 +76,7 @@ class CmpRelationshipsTableModel extends InnerTableModel {
         CmpRelationshipsDialogHelper dialogHelper = new CmpRelationshipsDialogHelper(dataObject, ejbJar);
         if (dialogHelper.showCmpRelationshipsDialog(Utils.getBundleMessage("LBL_Edit_CMP_Relationship"),
                 ejbRelation)) {
+            modelUpdatedFromUI();
         }
 
     }
