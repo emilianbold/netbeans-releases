@@ -707,6 +707,9 @@ public final class NbMainExplorer extends CloneableTopComponent
 
             Node[] arr = node.getChildren ().getNodes ();
             for (int i = 0; i < arr.length; i++) {
+                if (obj == arr[i].getCookie (DataFolder.class)) {
+                    return arr[i];
+                }
                 if (obj == arr[i].getCookie (DataObject.class)) {
                     return arr[i];
                 }
