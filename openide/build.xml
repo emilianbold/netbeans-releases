@@ -99,6 +99,7 @@ Microsystems, Inc. All Rights Reserved.
       <include name="org/openide/filesystems/AbstractFileSystem.java"/>
       <include name="org/openide/explorer/propertysheet/PropertyDialogManager.java"/>
       <include name="org/openide/awt/Toolbar.java"/>
+      <include name="org/openide/explorer/view/BeanTreeView.java"/>
     </preprocess>
   </target>
   
