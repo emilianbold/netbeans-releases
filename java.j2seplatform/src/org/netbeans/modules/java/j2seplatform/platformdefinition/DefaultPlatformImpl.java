@@ -21,6 +21,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
@@ -83,7 +84,19 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
     private static List getSources (File javaHome) {
         if (javaHome != null) {
             try {
-                File f = new File (javaHome, "src.zip");    //NOI18N
+                File f;
+                //On VMS, the root of the "src.zip" is "src", and this causes
+                //problems with NetBeans 4.0. So use the modified "src.zip" shipped 
+                //with the OpenVMS NetBeans 4.0 kit.
+                if (Utilities.getOperatingSystem() == Utilities.OS_VMS) {
+                    String srcHome = 
+                        System.getProperty("netbeans.openvms.j2seplatform.default.srcdir");
+                    if (srcHome != null)
+                        f = new File(srcHome, "src.zip");
+                    else
+                        f = new File (javaHome, "src.zip");
+                } else
+                    f = new File (javaHome, "src.zip");    //NOI18N
                 if (f.exists() && f.canRead()) {
                     //Test for src folder in the src.zip
                     URL url = FileUtil.getArchiveRoot(f.toURI().toURL());
