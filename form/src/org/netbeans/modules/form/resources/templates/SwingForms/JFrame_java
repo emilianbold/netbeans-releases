@@ -24,9 +24,19 @@ public class JFrame extends javax.swing.JFrame {
      */
     private void initComponents() {//GEN-BEGIN:initComponents
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                exitForm(evt);
+            }
+        });
+
         pack();
     }//GEN-END:initComponents
+
+    /** Exit the Application */
+    private void exitForm(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_exitForm
+        System.exit(0);
+    }//GEN-LAST:event_exitForm
 
     /**
     * @param args the command line arguments
