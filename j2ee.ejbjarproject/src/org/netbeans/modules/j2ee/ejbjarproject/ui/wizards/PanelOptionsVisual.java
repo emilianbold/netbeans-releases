@@ -87,7 +87,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 11);
         add(j2eeSpecLabel, gridBagConstraints);
 
         j2eeSpecComboBox.setMinimumSize(new java.awt.Dimension(100, 24));
@@ -95,9 +95,9 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 0);
         add(j2eeSpecComboBox, gridBagConstraints);
         j2eeSpecComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NPW1_J2EESpecLevel_A11YDesc"));
 
@@ -107,7 +107,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
         add(serverInstanceLabel, gridBagConstraints);
 
         serverInstanceComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -119,22 +119,31 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(serverInstanceComboBox, gridBagConstraints);
         serverInstanceComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_NEJB_Server_ComboBox_A11YDesc"));
 
         addToAppCheckBox.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_AddToEApp_CheckBox"));
+        addToAppCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                addToAppCheckBoxStateChanged(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(addToAppCheckBox, gridBagConstraints);
 
+        addToAppComboBox.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -142,6 +151,10 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         add(addToAppComboBox, gridBagConstraints);
 
     }//GEN-END:initComponents
+
+    private void addToAppCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_addToAppCheckBoxStateChanged
+        addToAppComboBox.setEnabled(addToAppCheckBox.isSelected());
+    }//GEN-LAST:event_addToAppCheckBoxStateChanged
 
     private void serverInstanceComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverInstanceComboBoxActionPerformed
         String prevSelectedItem = (String)j2eeSpecComboBox.getSelectedItem();
