@@ -33,6 +33,7 @@ import com.netbeans.ide.awt.HtmlBrowser;
 import com.netbeans.ide.loaders.*;
 import com.netbeans.ide.actions.*;
 import com.netbeans.ide.cookies.SaveCookie;
+import com.netbeans.ide.cookies.ProjectCookie;
 import com.netbeans.ide.debugger.Debugger;
 import com.netbeans.ide.debugger.DebuggerNotFoundException;
 import com.netbeans.ide.filesystems.*;
@@ -139,6 +140,14 @@ public class NbTopManager extends TopManager {
   */
   public Places getPlaces () {
     return NbPlaces.getDefault ();
+  }
+
+  /** Opens specified project. Asks to save the previously opened project.
+  * @exception IOException if error occurs accessing the project
+  * @exception UserCancelException if the selection is interrupted by the user
+  */
+  public void openProject (ProjectCookie project) throws IOException, UserCancelException {
+    NbProjectOperation.setProject (project);
   }
 
   /** Window manager.
