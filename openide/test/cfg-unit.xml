@@ -52,7 +52,9 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/util/*.class"/>
                 <include name="org/openide/util/actions/*Test.class"/>
                 <include name="org/openide/xml/*.class"/>
+                <!-- following test was excluded because of issue #22629 
                 <include name="org/openide/explorer/FindHelpTest.class"/>
+                -->                
                 <include name="org/openide/explorer/propertysheet/FindHelpTest.class/testFindHelpOnPropertySheetTab"/>
             </patternset>
         </testset>      
@@ -62,9 +64,6 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openide/explorer/propertysheet/*.class"/>
-                <!-- following test was excluded because of issue #22629 -->
-                <exclude name="org/openide/explorer/FindHelpTest.class"/>
-                <!-- x -->
                 <exclude name="org/openide/explorer/propertysheet/FindHelpTest.class"/>
                 <include name="org/openide/explorer/view/*.class"/>
                 <exclude name="org/openide/explorer/view/SelectionModeTest.class"/>
