@@ -278,13 +278,14 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
     /** After showing dialog with unclosed objects, shows also 
      * dialog with running tasks if there are some. */
     private static boolean innerShowDialog(Node[] activatedNodes, boolean showPending) {
-        boolean res = innerShowDialogImpl(activatedNodes);
+        boolean shutdown = innerShowDialogImpl(activatedNodes);
         
-        if(showPending) {
+        if(shutdown && showPending) {
             return showPendingTasks();
         }
-        
-        return res;
+        else {
+            return shutdown;
+        }
     }
     
     /** Opens the ExitDialog for activated nodes or for
