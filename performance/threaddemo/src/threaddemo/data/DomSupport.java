@@ -54,6 +54,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     
     private final Phadhail ph;
     private final Set listeners = new HashSet();
+    private boolean inIsolatingChange = false;
     
     public DomSupport(Phadhail ph, EditorCookie.Observable edit, Mutex mutex) {
         super(edit, mutex);
@@ -65,6 +66,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
         try {
             return (Document)getMutex().readAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
+                    assert !inIsolatingChange;
                     try {
                         Object v = getValueBlocking();
                         System.err.println("getDocument: " + v);//XXX
@@ -84,6 +86,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
         try {
             getMutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
+                    assert !inIsolatingChange;
                     Document old = (Document)getStaleValueNonBlocking();
                     if (old != null && old != d) {
                         ((EventTarget)old).removeEventListener("DOMSubtreeModified", DomSupport.this, false);
@@ -107,6 +110,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     public boolean isReady() {
         return ((Boolean)getMutex().readAccess(new Mutex.Action() {
             public Object run() {
+                assert !inIsolatingChange;
                 return getValueNonBlocking() != null ? Boolean.TRUE : Boolean.FALSE;
             }
         })).booleanValue();
@@ -143,6 +147,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
         final ChangeEvent ev = new ChangeEvent(this);
         getMutex().readAccess(new Mutex.Action() {
             public Object run() {
+                assert !inIsolatingChange;
                 System.err.println("DS.fireChange");
                 for (int i = 0; i < ls.length; i++) {
                     ls[i].stateChanged(ev);
@@ -157,6 +162,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     }
     
     protected final DerivationResult doDerive(StyledDocument document, List documentEvents, Object oldValue) throws IOException {
+        assert !inIsolatingChange;
         // ignoring documentEvents
         System.err.println("DS.doDerive");//XXX
         if (oldValue != null) {
@@ -188,6 +194,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     }
     
     protected final Object doRecreate(StyledDocument document, Object oldValue, Object derivedDelta) throws IOException {
+        assert !inIsolatingChange;
         System.err.println("doRecreate");//XXX
         Document newDom = (Document)derivedDelta;
         // ignoring oldValue, returning same newDom
@@ -278,10 +285,12 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
                     Document d = (Document)evt.getCurrentTarget();
                     Document old = (Document)getValueNonBlocking();
                     assert old == null || old == d;
-                    try {
-                        setDocument(d);
-                    } catch (IOException e) {
-                        assert false : e;
+                    if (!inIsolatingChange) {
+                        try {
+                            setDocument(d);
+                        } catch (IOException e) {
+                            assert false : e;
+                        }
                     }
                     return null;
                 }
@@ -289,6 +298,25 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
         } catch (RuntimeException e) {
             // Xerces ignores them.
             e.printStackTrace();
+        }
+    }
+    
+    public void isolatingChange(Runnable r) {
+        assert getMutex().canWrite();
+        assert !inIsolatingChange;
+        inIsolatingChange = true;
+        try {
+            r.run();
+        } finally {
+            inIsolatingChange = false;
+            Document d = (Document)getValueNonBlocking();
+            if (d != null) {
+                try {
+                    setDocument(d);
+                } catch (IOException e) {
+                    assert false : e;
+                }
+            }
         }
     }
     

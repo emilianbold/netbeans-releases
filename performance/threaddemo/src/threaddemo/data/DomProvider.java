@@ -63,5 +63,15 @@ public interface DomProvider {
      * Mutex on which to lock while doing things.
      */
     Mutex mutex();
+    
+    /**
+     * Do an isolated block of operations to the document (must be in the write mutex).
+     * During this block you may not call any other methods of this interface which
+     * require the mutex (in read or write mode), or this method itself; you may
+     * only adjust the document using DOM mutations.
+     * Changes will be fired, and any underlying storage recreated, only when the
+     * block is finished (possibly with an error). Does not roll back partial blocks.
+     */
+    void isolatingChange(Runnable r);
 
 }
