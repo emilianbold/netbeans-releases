@@ -19,6 +19,7 @@ import com.netbeans.ide.TopManager;
 import com.netbeans.ide.loaders.MultiDataObject;
 import com.netbeans.developer.modules.loaders.java.JavaEditor;
 import com.netbeans.developer.modules.loaders.form.formeditor.*;
+import com.netbeans.developer.modules.loaders.form.backward.DesignForm;
 
 /** 
 *
@@ -132,11 +133,13 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     
     ObjectInputStream ois = null;
     try {
-      ois = new BCObjectInputStream(is); 
+      ois = new FormBCObjectInputStream(is); 
       Object deserializedForm = ois.readObject ();
-//      designForm = (DesignForm) deserializedForm;
+      if (deserializedForm instanceof DesignForm) {
+        DesignForm designForm = (DesignForm) deserializedForm;
+        System.out.println("Hele, Design Form... !!!: " + designForm);
 //      FormEditor.displayErrorLog ();
-
+      }
       formLoaded = true;
 //      designForm.initialize (this);
 //      if (!modifiedInit) {
@@ -193,33 +196,11 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     return true;
   }
 
-// -----------------------------------------------------------------------------
-// Innerclasses
-
-  public class BCObjectInputStream extends ObjectInputStream {
-    public BCObjectInputStream (InputStream is) throws IOException, StreamCorruptedException {
-      super (is);
-    }
-
-    /** Provides backward compatibility with Developer 2.0/2.1/X2 2.1 */
-    protected Class resolveClass (ObjectStreamClass v) throws IOException, ClassNotFoundException {
-      String className = v.getName ();
-      System.out.println("Resolve Class: "+className);
-      if (className.startsWith ("com.netbeans.developerx.loaders.form")) {
-        className = "com.netbeans.developer.modules." + className.substring (24);
-        System.out.println("Resolve Class Translated to: "+className);
-      }
-      if (className.equals ("com.netbeans.developer.util.NbVersion")) {
-        className = "com.netbeans.ide.util.NbVersion";
-        System.out.println("Resolve Class Translated to: "+className);
-      }
-      return super.resolveClass (ObjectStreamClass.lookup (Class.forName (className)));
-    }
-  }
 }
 
 /*
  * Log
+ *  4    Gandalf   1.3         3/28/99  Ian Formanek    
  *  3    Gandalf   1.2         3/27/99  Ian Formanek    
  *  2    Gandalf   1.1         3/26/99  Ian Formanek    
  *  1    Gandalf   1.0         3/24/99  Ian Formanek    

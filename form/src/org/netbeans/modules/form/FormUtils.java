@@ -26,6 +26,7 @@ import com.netbeans.ide.util.io.*;
 //import com.netbeans.developer.modules.loaders.form.formeditor.layouts.*;
 //import com.netbeans.developer.modules.loaders.form.formeditor.layouts.support.*;
 import com.netbeans.developer.modules.loaders.form.formeditor.util.*;
+import com.netbeans.developer.modules.loaders.form.FormBCObjectInputStream;
 
 /** A class that contains utility methods for the formeditor.
 *
@@ -429,7 +430,7 @@ public class FormUtils extends Object {
   public static void writeSafely (ObjectOutput oo, Object obj)
   throws IOException {
     ByteArrayOutputStream bos = new ByteArrayOutputStream (200);
-    NbObjectOutputStream oos = new NbObjectOutputStream (bos);
+    ObjectOutputStream oos = new ObjectOutputStream (bos);
     oos.writeObject (obj);
     oos.flush ();
     bos.close ();
@@ -445,7 +446,7 @@ public class FormUtils extends Object {
     oi.readFully (byteArray, 0, size);
 
     ByteArrayInputStream bis = new ByteArrayInputStream (byteArray);
-    NbObjectInputStream ois = new NbObjectInputStream (bis);
+    ObjectInputStream ois = new FormBCObjectInputStream (bis);
     Object obj = ois.readObject ();
     bis.close ();
 
@@ -456,6 +457,7 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  3    Gandalf   1.2         3/28/99  Ian Formanek    
  *  2    Gandalf   1.1         3/24/99  Ian Formanek    
  *  1    Gandalf   1.0         3/17/99  Ian Formanek    
  * $
