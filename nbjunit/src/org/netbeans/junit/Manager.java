@@ -79,6 +79,9 @@ public class Manager extends Object {
             readProperties();            
             path = fPreferences.getProperty(NBJUNIT_WORKDIR);
         }
+        if (path != null) {
+            path = path.replace('/', File.separatorChar);
+        }
         return path;
     }
     
