@@ -135,7 +135,7 @@ is divided into following sections:
                     <isfalse value="${{javadoc.preview}}"/>
                 </condition>
                 <property name="run.jvmargs" value=""/>
-                <property name="javac.compilerarg" value=""/>
+                <property name="javac.compilerargs" value=""/>
                 <condition property="no.deps">
                     <and>
                         <istrue value="${{no.dependencies}}"/>
@@ -226,7 +226,7 @@ is divided into following sections:
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
-                            <compilerarg line="${{javac.compilerarg}}"/>
+                            <compilerarg line="${{javac.compilerargs}}"/>
                             <customize/>
                         </javac>
                     </sequential>
