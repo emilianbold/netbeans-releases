@@ -63,7 +63,7 @@ public class Main extends Object {
         while (it2.hasNext()) {
             File f = (File)it2.next();
             if (f.isFile()) {
-                it2.set(new JarFile (f));
+                it2.set(new JarFile (f, false));
             }
         }
         
