@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.form;
+package com.netbeans.developer.modules.loaders.form;
 
 import com.netbeans.developer.impl.IDESettings;
 import com.netbeans.ide.modules.ModuleInstall;
@@ -23,35 +23,33 @@ import com.netbeans.ide.modules.ModuleInstall;
 */
 public class FormEditorModule implements ModuleInstall {
 
-
-
   /** Module installed for the first time. */
   public void installed () {
-    // [PENDING] IAN - Highly temporary solution
-    IDESettings is = new IDESettings ();
-    String[] bisp = is.getBeanInfoSearchPath ();
-    String[] bisp2 = new String[bisp.length+1];
-    System.arraycopy (bisp2, 0, bisp, 0, bisp.length);
-    bisp2 [bisp2.length-1] = "com.netbeans.developer.modules.beaninfo.awt";
-    is.setBeanInfoSearchPath (bisp2);
-  }
-
-  /** Module installed again. */
-  public void restored () {
-    // [PENDING] IAN - Highly temporary solution
-    IDESettings is = new IDESettings ();
-    String[] bisp = is.getBeanInfoSearchPath ();
-    String[] bisp2 = new String[bisp.length+1];
-    System.arraycopy (bisp2, 0, bisp, 0, bisp.length);
-    bisp2 [bisp2.length-1] = "com.netbeans.developer.modules.beaninfo.awt";
-    is.setBeanInfoSearchPath (bisp2);
-
+//    System.out.println("FormEditorModule: installed");
+    addBeanInfos ();
     // 1. create palette
     // bla bla
   }
 
+  /** Module installed again. */
+  public void restored () {
+//    System.out.println("FormEditorModule: restored");
+    addBeanInfos ();
+  }
+
+  private void addBeanInfos () {
+    // [PENDING] IAN - Highly temporary solution
+    IDESettings is = new IDESettings ();
+    String[] bisp = is.getBeanInfoSearchPath ();
+    String[] bisp2 = new String[bisp.length+1];
+    System.arraycopy (bisp2, 0, bisp, 0, bisp.length);
+    bisp2 [bisp2.length-1] = "com.netbeans.developer.modules.beaninfo.awt";
+    is.setBeanInfoSearchPath (bisp2);
+  }
+
   /** Module was uninstalled. */
   public void uninstalled () {
+    // [PENDING - ask and delete ComponentPalette]
   }
 
   /** Module is being closed. */
@@ -63,6 +61,7 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  5    Gandalf   1.4         3/30/99  Ian Formanek    
  *  4    Gandalf   1.3         3/27/99  Ian Formanek    
  *  3    Gandalf   1.2         3/26/99  Ian Formanek    
  *  2    Gandalf   1.1         3/22/99  Ian Formanek    

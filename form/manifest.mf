@@ -1,5 +1,6 @@
 Netbeans-Module: Version 1.00
 Netbeans-Module-Name: Form Module
+Netbeans-Module-Install: com/netbeans/developer/modules/loaders/form/FormEditorModule.class
 
 Name: com/netbeans/developer/modules/loaders/form/FormDataLoader.class
 Netbeans-Module-Class: Loader
