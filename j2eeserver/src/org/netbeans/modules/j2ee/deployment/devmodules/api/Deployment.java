@@ -166,6 +166,16 @@ public final class Deployment {
         private DeploymentException (String s, Throwable t) {
             super (s, t);
         }
+        /**
+         * Returns a short description of this DeploymentException.
+         * overwrite the one from Exception to avoid showing the class name that does nto provide any real value.
+         * @return a string representation of this DeploymentException.
+         */
+        public String toString() {
+            String s = getClass().getName();
+            String message = getLocalizedMessage();
+            return (message != null) ? (message) : s;
+        }
     }
     
     public String [] getServerInstanceIDs () {
