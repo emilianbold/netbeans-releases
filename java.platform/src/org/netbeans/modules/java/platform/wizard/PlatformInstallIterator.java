@@ -54,7 +54,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
             WizardDescriptor.Panel p = typeIterator.current();
             if (p != null) {
                 javax.swing.JComponent pc = (javax.swing.JComponent)p.getComponent();
-                String[] steps = (String[])pc.getClientProperty("WizardPanel_contentData");
+                String[] steps = (String[])pc.getClientProperty("WizardPanel_contentData"); // NOI18N
                 if (steps != null)
                     c.addAll(Arrays.asList(steps));
             }
@@ -63,7 +63,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
         }
         String[] names = (String[])c.toArray(new String[c.size()]);
         for (int i=0; i< where.length; i++) {
-            where[i].putClientProperty("WizardPanel_contentData",names);
+            where[i].putClientProperty("WizardPanel_contentData",names); // NOI18N
         }
     }
     
@@ -131,7 +131,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
             firstPanel = false;
         }
         panelNumber++;
-        wizard.putProperty("WizardPanel_contentSelectedIndex",
+        wizard.putProperty("WizardPanel_contentSelectedIndex", // NOI18N
             new Integer(panelNumber));
     }
     
@@ -144,7 +144,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
             }
         } 
         panelNumber--;
-        wizard.putProperty("WizardPanel_contentSelectedIndex", 
+        wizard.putProperty("WizardPanel_contentSelectedIndex", // NOI18N
             new Integer(panelNumber));
     }
     
@@ -175,7 +175,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
                 updatePanelsList(new JComponent[]{
                     (JComponent)locationPanel.getComponent()});
             }
-            wizard.putProperty("WizardPanel_contentSelectedIndex", new Integer(panelNumber));
+            wizard.putProperty("WizardPanel_contentSelectedIndex", new Integer(panelNumber)); // NOI18N
 
         }
     }

@@ -71,7 +71,7 @@ public class Profile {
     public String toString () {
         String str;
         str = this.name == null ? "" : this.name;
-        str += " " + this.version == null ? "" : this.version.toString();
+        str += " " + this.version == null ? "" : this.version.toString(); // NOI18N
         return str;
     }
 }

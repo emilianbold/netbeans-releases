@@ -29,7 +29,7 @@ import org.netbeans.spi.java.platform.PlatformInstall;
  * @author Svata Dedic
  */
 public class InstallerRegistry extends FolderInstance {
-    static final String INSTALLER_REGISTRY_FOLDER = "org-netbeans-api-java/platform/installers";
+    static final String INSTALLER_REGISTRY_FOLDER = "org-netbeans-api-java/platform/installers"; // NOI18N
     
     static Reference defaultInstance = new WeakReference(null);
     

@@ -24,15 +24,15 @@ public class FileNameUtil {
     public static String computeAbsolutePath(String home, String relative) {
         String path;
         String separator = System.getProperty("file.separator");
-        if (home.endsWith("\\") || home.endsWith("/"))
+        if (home.endsWith("\\") || home.endsWith("/")) // NOI18N
             home = home.substring(0, home.length() - 1);
-        if (relative.startsWith("\\") || relative.startsWith("/"))
+        if (relative.startsWith("\\") || relative.startsWith("/")) // NOI18N
             relative = relative.substring(1);
         
         path = home + separator + relative;
-        if (separator.equals("/"))
+        if (separator.equals("/")) // NOI18N
             path = path.replace('\\', separator.charAt(0));
-        else if (separator.equals("\\"))
+        else if (separator.equals("\\")) // NOI18N
             path = path.replace('/', separator.charAt(0));
         
         return path;

@@ -35,7 +35,7 @@ public final class PlatformsCustomizer {
                 new org.netbeans.modules.java.platform.ui.PlatformsCustomizer ();
         Object close = NbBundle.getMessage(PlatformsCustomizer.class,"CTL_Close");
         DialogDescriptor descriptor = new DialogDescriptor (customizer,NbBundle.getMessage(PlatformsCustomizer.class,
-                "TXT_PlatformsManager"), true, new Object[] {close},close,DialogDescriptor.DEFAULT_ALIGN,null,null);
+                "TXT_PlatformsManager"), true, new Object[] {close},close,DialogDescriptor.DEFAULT_ALIGN,null,null); // NOI18N
         Dialog dlg = null;
         try {
             dlg = DialogDisplayer.getDefault().createDialog (descriptor);

@@ -95,14 +95,14 @@ public final class Specification {
     }
 
     public String toString () {
-        String str = this.name == null ? "" : this.name + " ";
-        str += this.version == null ? "" : this.version + " ";
+        String str = this.name == null ? "" : this.name + " "; // NOI18N
+        str += this.version == null ? "" : this.version + " "; // NOI18N
         if (this.profiles != null) {
-            str+="[";
+            str+="["; // NOI18N
             for (int i = 0; i < profiles.length; i++) {
-                str+= profiles[i]+ " ";
+                str+= profiles[i]+ " "; // NOI18N
             }
-            str+="]";
+            str+="]"; // NOI18N
         }
         return str;
     }
