@@ -167,7 +167,7 @@ public class TableNode extends DatabaseNode implements InstanceCookie
         public Transferable paste() throws IOException
         {
             TableNodeInfo info = (TableNodeInfo)getInfo();
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle_noi18n");
             TableListNodeInfo ownerinfo = (TableListNodeInfo)getInfo().getParent(DatabaseNode.TABLELIST);
             if (info != null) {
                 TableNodeInfo exinfo = ownerinfo.getChildrenTableInfo(info);
