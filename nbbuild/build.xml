@@ -95,10 +95,10 @@ workspaceswitcher
       <config name="stable" modules="ant,apisupport/lite,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javacvs,javadoc,jndi,objectbrowser,openidex,projects,properties,rmi,scripting,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
       <config name="stable-with-apisupport" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javacvs,javadoc,jndi,objectbrowser,openidex,projects,properties,rmi,scripting,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
       <config name="ide-hacker" modules="ant,apisupport,apisupport/lite,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,i18n,icebrowser,image,jarpackager,java,javacvs,javadoc,jndi,objectbrowser,openidex,projects,properties,rmi,scripting,serialversion,sysprops,text,utilities,vcscore,vcscvs,vcsgeneric"/>
-      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javacvs,javadoc,javaembeddedserver,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
+      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
       <config name="sandwich" modules="apisupport,apisupport/lite,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javacvs,javadoc,objectbrowser,openidex,projects,properties,text,utilities,vcscore,vcscvs,web"/>
       <!-- You are on your own for getting the binaries for some of these: -->
-      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javacvs,javadoc,javaembeddedserver,jini,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
+      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
     </configmods>
   </target>
 
@@ -220,10 +220,12 @@ workspaceswitcher
     <echo message="Building module javadoc..."/>
     <ant dir="../javadoc" target="netbeans"/>
   </target>
+  <!--
   <target name="all-javaembeddedserver" depends="all-openide,all-jarpackager,all-form">
     <echo message="Building module javaembeddedserver..."/>
     <ant dir="../javaembeddedserver" target="netbeans"/>
   </target>
+  -->
   <target name="all-jini" depends="all-openide,all-httpserver">
     <echo message="Building module jini..."/>
     <ant dir="../jini" target="netbeans"/>
@@ -493,8 +495,10 @@ the nbbuild/netbeans/bin/ directory.
     <ant dir="../apisupport" target="nbm"/>
     <echo message="Making NBM for module javadoc..."/>
     <ant dir="../javadoc" target="nbm"/>
+    <!--
     <echo message="Making NBM for module javaembeddedserver..."/>
     <ant dir="../javaembeddedserver" target="nbm"/>
+    -->
     <echo message="Making NBM for module jini..."/>
     <ant dir="../jini" target="nbm"/>
     <echo message="Making NBM for module makefile..."/>
@@ -571,7 +575,9 @@ the nbbuild/netbeans/bin/ directory.
       </group>
       <group name="Experimental">
         <nbm file="../ant/ant.nbm"/>
+        <!--
         <nbm file="../javaembeddedserver/javaembeddedserver.nbm"/>
+        -->
         <nbm file="../jini/jini.nbm"/>
         <nbm file="../multicompile/multicompile.nbm"/>
         <nbm file="../remotefs/remotefs.nbm"/>
