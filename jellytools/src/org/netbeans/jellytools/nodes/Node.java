@@ -93,10 +93,13 @@ public class Node {
      * @param treeOperator JTreeOperator of tree where node lives
      * @param path TreePath of node */
     public Node(JTreeOperator treeOperator, TreePath path) {
-        if(treeOperator instanceof NodesJTreeOperator) {
-            this.treeOperator = treeOperator;
-        } else {
+        // Only for plain JTreeOperator creates NodesJTreeOperator. If treeOperator
+        // is something different (like TreeTableOperator$RenderedTreeOperator)
+        // we cannot replace it.
+        if(treeOperator.getClass().getName().endsWith("JTreeOperator")) {
             this.treeOperator = new NodesJTreeOperator(treeOperator);
+        } else {
+            this.treeOperator = treeOperator;
         }
         this.treePath=path;
     }

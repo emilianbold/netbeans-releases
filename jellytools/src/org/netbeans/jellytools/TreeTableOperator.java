@@ -34,6 +34,7 @@ import org.netbeans.jemmy.operators.JScrollPaneOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.util.EmptyVisualizer;
+import org.openide.explorer.view.Visualizer;
 
 /**
  * Handle IDE's org.openide.explorer.view.TreeTable component
@@ -299,6 +300,15 @@ public class TreeTableOperator extends JTableOperator {
             } else {
                 throw(new NoSuchPathException(path));
             }
+        }
+        
+        /** Expands path and waits until all children are ready. This method
+         * is used in JTreeOperator.findPathPrimitive, so we need it override here.
+         * @param treePath tree path to be expanded
+         */
+        public void expandPath(final TreePath treePath) {
+            super.expandPath(treePath);
+            Visualizer.findNode(treePath.getLastPathComponent()).getChildren().getNodes(true);
         }
     }
     
