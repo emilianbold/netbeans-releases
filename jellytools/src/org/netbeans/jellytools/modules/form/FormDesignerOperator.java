@@ -17,11 +17,15 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Point;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JFrameOperator;
+import org.netbeans.jemmy.operators.JToggleButtonOperator;
 
 /**
  * Handles access to org.netbeans.modules.form.FormDesigner component.
@@ -30,6 +34,9 @@ public class FormDesignerOperator extends TopComponentOperator {
     private ComponentOperator _handleLayer;
     private ContainerOperator _componentLayer;
     private ContainerOperator _fakePane;
+    private JToggleButtonOperator _tbSelectionMode;
+    private JToggleButtonOperator _tbConnectionMode;
+    private JButtonOperator _btTestForm;
 
     /** Waits for the form Designer appearence and creates operator for it.
      * It is activated by defalt.
@@ -55,6 +62,70 @@ public class FormDesignerOperator extends TopComponentOperator {
         copyEnvironment(contOper);
     }
 
+    /** Getter for the "Selection Mode" toggle button.
+     * @return JToggleButtonOperator instance
+     */
+    public JToggleButtonOperator tbSelectionMode() {
+        if(_tbSelectionMode == null) {
+            _tbSelectionMode = new JToggleButtonOperator(this, 0);
+        }
+        return(_tbSelectionMode);
+    }
+
+    /** Getter for the "Connection Mode" toggle button.
+     * @return JToggleButtonOperator instance
+     */
+    public JToggleButtonOperator tbConnectionMode() {
+        if(_tbConnectionMode == null) {
+            _tbConnectionMode = new JToggleButtonOperator(this, 1);
+        }
+        return(_tbConnectionMode);
+    }
+    
+    /** Getter for the "Test Form" button.
+     * @return JButtonOperator instance
+     */
+    public JButtonOperator btTestForm() {
+        if(_btTestForm == null) {
+            _btTestForm = new JButtonOperator(this);
+        }
+        return _btTestForm;
+    }
+
+    /**
+     * Switches to the selection mode.
+     */
+    public void selectionMode() {
+        tbSelectionMode().push();
+    }
+
+    /**
+     * Switches to the connection mode.
+     */
+    public void connectionMode() {
+        tbConnectionMode().push();
+    }
+    
+    /** Pushes "Test Form" button and waits for a frame opened.
+     * @param frameName Frame class name.
+     * @return JFrameOperator instance of "Testing Form" window
+     */
+    public JFrameOperator testForm(String frameName) {
+        btTestForm().push();
+        return(new JFrameOperator(Bundle.getString("org.netbeans.modules.form.actions.Bundle",
+                                                   "FMT_TestingForm",
+                                                   new Object[] {frameName})));
+    }
+
+    /** Pushes "Test Form" button and waits for a frame opened.
+     * @return JFrameOperator instance of "Testing Form" window
+     */
+    public JFrameOperator testForm() {
+        btTestForm().push();
+        return(new JFrameOperator(Bundle.getStringTrimmed("org.netbeans.modules.form.actions.Bundle",
+                                                          "FMT_TestingForm")));
+    }
+    
     /** Returns component which actually handles all events happening
      * on components inside designer.
      * During reproducing, all events should be posted to this component.
@@ -237,6 +308,9 @@ public class FormDesignerOperator extends TopComponentOperator {
         handleLayer();
         componentLayer();
         fakePane();
+        btTestForm();
+        tbConnectionMode();
+        tbSelectionMode();
     }
     
 }
