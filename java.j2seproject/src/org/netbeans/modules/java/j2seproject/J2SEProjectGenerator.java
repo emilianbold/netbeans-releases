@@ -164,7 +164,10 @@ public class J2SEProjectGenerator {
         ep.setProperty("platform.active", "default_platform"); // NOI18N
 
         ep.setProperty("run.jvmargs", ""); // NOI18N
-        ep.setComment("run.jvmargs", new String[] {"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_run.jvmargs")}, false); // NOI18N
+        ep.setComment("run.jvmargs", new String[] {
+            "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_run.jvmargs"), // NOI18N
+            "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_run.jvmargs_2"), // NOI18N
+        }, false);
 
         ep.setProperty(J2SEProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
         ep.setProperty(J2SEProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N
