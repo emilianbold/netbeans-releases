@@ -156,7 +156,7 @@ public final class Startup {
     private void installTheme(LookAndFeel lf) {
         //Load the theme
         if (themeURL != null) {
-          NbTheme nbTheme = new NbTheme();
+          NbTheme nbTheme = new NbTheme(themeURL);
           MetalLookAndFeel.setCurrentTheme(nbTheme);
         }
     }

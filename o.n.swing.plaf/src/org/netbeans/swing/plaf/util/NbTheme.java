@@ -110,11 +110,13 @@ public class NbTheme extends MetalTheme implements org.xml.sax.DocumentHandler {
 
     private HashSet activeThemes=null;
     private boolean inActiveTheme=false;
+    private URL themeURL = null;
     
     private UIDefaults defaults;
     public String getName(){ return "NetBeans XML Theme"; } // NOI18N
     /** Create a new instance of NBTheme */
-    public NbTheme() {
+    public NbTheme(URL themeURL) {
+        this.themeURL = themeURL;
         initThemeDefaults();
         defaults = UIManager.getDefaults();
         parseTheme();
@@ -136,7 +138,6 @@ public class NbTheme extends MetalTheme implements org.xml.sax.DocumentHandler {
     
     private void parseTheme(){
         try{
-            URL themeURL = (URL) UIManager.get("themeURL"); //NOI18N
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setValidating(false);
             factory.setNamespaceAware(false);
