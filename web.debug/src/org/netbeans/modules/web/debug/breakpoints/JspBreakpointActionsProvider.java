@@ -130,12 +130,14 @@ public class JspBreakpointActionsProvider implements NodeActionsProviderFilter {
                 "ACSD_CTL_Ok" // NOI18N
             )
         );
+        bOk.setMnemonic(NbBundle.getMessage(JspBreakpointActionsProvider.class, "CTL_Ok_MNEM").charAt(0)); // NOI18N
         bClose.getAccessibleContext ().setAccessibleDescription (
             NbBundle.getMessage (
                 JspBreakpointActionsProvider.class,
                 "ACSD_CTL_Close" // NOI18N
             )
         );
+        bClose.setMnemonic(NbBundle.getMessage(JspBreakpointActionsProvider.class, "CTL_Close_MNEM").charAt(0)); // NOI18N
         descriptor.setClosingOptions (null);
         Dialog d = DialogDisplayer.getDefault ().createDialog (descriptor);
         d.pack ();
