@@ -165,24 +165,10 @@ public final class BeanInstaller extends Object {
   * @param pal palettecategory where to place beans.
   */
   private static void finishInstall(JarFileSystem jar, final Collection list, String pal) {
-    boolean alreadyInstalled = false;
-    if (jar != null) {
-      Repository rep = TopManager.getDefault().getRepository();
-      JarFileSystem jar2 = (JarFileSystem) rep.findFileSystem(jar.getSystemName());
-      if (jar2 != null) {
-        alreadyInstalled = true;
-        jar = jar2;
-      }
-          
-      if (!alreadyInstalled) {
-        jar.setHidden(true);
-        rep.addFileSystem(jar);
-      }
-  
-    }
+    addJarFileSystem (jar);
 
     if (pal == null) {
-      pal = "Beans"; // defaul palette category
+      pal = "Beans"; // default palette category
     }
 
     FileObject root = TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot();
@@ -230,6 +216,24 @@ public final class BeanInstaller extends Object {
 //        }
 //      }
 //    };
+  }
+
+
+  private static void addJarFileSystem (JarFileSystem jar) {
+    boolean alreadyInstalled = false;
+    if (jar != null) {
+      Repository rep = TopManager.getDefault().getRepository();
+      JarFileSystem jar2 = (JarFileSystem) rep.findFileSystem(jar.getSystemName());
+      if (jar2 != null) {
+        alreadyInstalled = true;
+        jar = jar2;
+      }
+          
+      if (!alreadyInstalled) {
+        jar.setHidden(true);
+        rep.addFileSystem(jar);
+      }
+    }
   }
 
   private static void createInstance(FileObject folder, String className, String iconName) {
@@ -403,11 +407,16 @@ public final class BeanInstaller extends Object {
 
     String[] categories = ComponentPalette.getDefault ().getPaletteCategories();
     for (int i = 0; i < list.length; i++) {
-      if (list[i].endsWith(JAR_EXT) && (alreadyInstalled.get(list[i]) == null)) {
-        String withoutExt = list[i].substring(0, list[i].length() - JAR_EXT.length());
-        String categoryName = details.getProperty(withoutExt, withoutExt);
-        if (autoLoadJar(new File (base + list[i]), categoryName, details.getProperty(withoutExt + ".beans"))) {
-          alreadyInstalled.put(list[i], "true");
+      if (list[i].endsWith(JAR_EXT)) {
+        if (alreadyInstalled.get(list[i]) == null) {
+          String withoutExt = list[i].substring(0, list[i].length() - JAR_EXT.length());
+          String categoryName = details.getProperty(withoutExt, withoutExt);
+          if (autoLoadJar(new File (base + list[i]), categoryName, details.getProperty(withoutExt + ".beans"))) {
+            alreadyInstalled.put(list[i], "true");
+          }
+        } else {
+          // ensure, that the filesystems are present
+          addJarFileSystem (createJarForFile(new File (base + list[i])));
         }
       }
     }
@@ -609,6 +618,9 @@ public final class BeanInstaller extends Object {
 
 /*
  * Log
+ *  13   Gandalf   1.12        7/25/99  Ian Formanek    Fixed bug 2582 - Beans 
+ *       tab is empty although the COmponent Palette node shows that there is 
+ *       the Timer bean
  *  12   Gandalf   1.11        7/18/99  Ian Formanek    InstallToPaletteAction
  *  11   Gandalf   1.10        7/8/99   Jesse Glick     Context help.
  *  10   Gandalf   1.9         6/22/99  Ian Formanek    Fixed bug 2004 - The 
