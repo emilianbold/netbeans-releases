@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
 <map version="2.0">
 
 <mapID target="org.netbeans.modules.db.HOMEID" url="dbexpovew.html" />
-<mapID target="dbexpovew" url="dbexpovew.html" />
+<mapID target="dbexpovew" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html" />
 
 <mapID target="adddriver" url="adddriver.html" />
 <mapID target="connectdb" url="connectdb.html" />

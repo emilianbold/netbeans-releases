@@ -578,7 +578,7 @@ the Options window:-->
    <mapID target="org.netbeans.core.windows.services.MenuFolderNode" url="configure/workspace/menu_customize.html" /> 
    <mapID target="org.netbeans.core.windows.services.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
 
-   <mapID target="org.netbeans.modules.httpserver.HttpServerSettings" url="webbrowser/httpserver-options.html" />
+   <mapID target="org.netbeans.modules.httpserver.HttpServerSettings" url="files/files_runtime.html" />
   
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.installBean" url="beans/adding.html" />
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.selectPaletteCategory" url="beans/adding.html" />
