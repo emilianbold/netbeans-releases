@@ -5,5 +5,5 @@ OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/tests/j2eeserver/plugin/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/tests/j2eeserver/plugin/Bundle.properties
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.j2ee/3
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.j2eeserver/3
 Class-Path: ext/testjsr88.jar ext/testjsr77.jar
