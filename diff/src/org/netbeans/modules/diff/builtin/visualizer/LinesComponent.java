@@ -145,15 +145,66 @@ public class LinesComponent extends JComponent {
      * If in the middle, subsequent lines are overwritten.
      */
     public void insertNumbers(int line, int startNum, int count) {
-        boolean appending = line > linesList.size();
+        boolean appending = line >= linesList.size();
         if (appending) {
             for (int i = 0; i < count; i++, startNum++) {
                 linesList.add(Integer.toString(startNum));
             }
         } else {
+            int toAdd = Math.max(line + count - linesList.size(), 0);
+            count -= toAdd;
             for (int i = 0; i < count; i++, startNum++, line++) {
                 linesList.set(line, Integer.toString(startNum));
             }
+            for (int i = 0; i < toAdd; i++, startNum++) {
+                linesList.add(Integer.toString(startNum));
+            }
+        }
+    }
+    
+    /*
+     * Test method.
+     *
+    private void dumpResultLineNumbers() {
+        System.out.print("LinesComponent: linesList = ");
+        boolean was = false;
+        for (int i = 0; i < linesList.size(); i++) {
+            System.out.print(linesList.get(i)+", ");
+        }
+        System.out.println("");
+    }
+     */
+    
+    /**
+     * Remove line numbers and leave the corresponding part of the lines component empty.
+     * If at the end, then an empty space is added to the end of the component.
+     * If in the middle, subsequent lines are overwritten by an empty space.
+     */
+    public void removeNumbers(int line, int count) {
+        boolean appending = line >= linesList.size();
+        if (appending) {
+            for (int i = 0; i < count; i++) {
+                linesList.add("");
+            }
+        } else {
+            int toAdd = Math.max(line + count - linesList.size(), 0);
+            count -= toAdd;
+            for (int i = 0; i < count; i++, line++) {
+                linesList.set(line, "");
+            }
+            for (int i = 0; i < toAdd; i++) {
+                linesList.add("");
+            }
+        }
+    }
+    
+    /**
+     * Shrink the component, so that it will have <code>numLines</code> number of lines.
+     * @param numLines The new number of lines
+     */
+    public void shrink(int numLines) {
+        while (linesList.size() > numLines) {
+            linesList.remove(numLines);
         }
     }
     
