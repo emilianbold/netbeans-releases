@@ -41,7 +41,7 @@ import com.netbeans.developer.modules.javadoc.search.DocFileSystem;
 */
 public class JavadocModule extends ModuleInstall {
   
-  private int numberOfStarts = 0;
+  private static int numberOfStarts = 0;
   
   /** By first install of module in the IDE, check whether standard documentation folder
   * exists. If not creates it.
@@ -84,7 +84,7 @@ public class JavadocModule extends ModuleInstall {
   public void restored() {
     
     numberOfStarts ++;
-    
+        
     if ( numberOfStarts < 3 ) {
       /* 
        * This works only on the first start when called from
@@ -267,13 +267,16 @@ public class JavadocModule extends ModuleInstall {
   
   public void readExternal(final java.io.ObjectInput objectInput ) 
               throws java.io.IOException, java.lang.ClassNotFoundException {
-    
+
+    super.readExternal( objectInput );
+        
     numberOfStarts = objectInput.readInt();
     
   }
   
   public void writeExternal(final java.io.ObjectOutput objectOutput ) 
               throws java.io.IOException {
+    super.writeExternal( objectOutput );
     
     objectOutput.writeInt( numberOfStarts );
   }
@@ -281,6 +284,8 @@ public class JavadocModule extends ModuleInstall {
 
 /* 
  * Log
+ *  17   Gandalf   1.16        10/7/99  Petr Hrebejk    Module Externalization 
+ *       fix
  *  16   Gandalf   1.15        10/1/99  Petr Hrebejk    org.openide.modules.ModuleInstall
  *        changed to class + some methods added
  *  15   Gandalf   1.14        8/13/99  Petr Hrebejk    Initialization of JDoc 
