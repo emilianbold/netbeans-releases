@@ -43,7 +43,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.debugger.DebuggerInfo;
-//import org.netbeans.modules.debugger.jpda.RemoteDebuggerInfo;
+import org.netbeans.modules.debugger.jpda.RemoteDebuggerInfo;
 
 /** Extension to JSR88 that enables starting of Tomcat.
  *
@@ -195,7 +195,8 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
     }
 
     public DebuggerInfo getDebugInfo(Target target) { 
-        return null;//new RemoteDebuggerInfo("localhost", 8000); // TODO - main build fails with this - don't know why
+        RemoteDebuggerInfo rdi = new RemoteDebuggerInfo("localhost", 8000); // TODO - this must be taken from some sort of customizer of Tomcat node
+        return rdi;
     }
     
     public synchronized void run () {
@@ -250,8 +251,8 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
                     new TomcatFormat (homeDir.getAbsolutePath ()), 
                     new String[] { 
                         "JAVA_HOME="+System.getProperty ("jdk.home"),  // NOI18N 
-//                        "JPDA_TRANSPORT=" + "dt_socket",               // NOI18N
-//                        "JPDA_ADDRESS="+"8000",                        // NOI18N
+//                        "JPDA_TRANSPORT=" + "dt_socket",               // NOI18N  TODO - this must be taken from customizer of Tomcat node
+//                        "JPDA_ADDRESS="+"8000",                        // NOI18N  TODO - same as above
                         "CATALINA_HOME="+homeDir.getAbsolutePath (),   // NOI18N
                         "CATALINA_BASE="+baseDir.getAbsolutePath ()    // NOI18N
                     },
@@ -382,14 +383,6 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
             for (int i = 0; i<subdirs.length; i++) {
                 File dest = new File (baseDirFO, subdirs [i]);
                 dest.mkdirs ();
-
-
-
-
-
-
-
-
             }
             // copy config files
             String [] files = new String [] { 
