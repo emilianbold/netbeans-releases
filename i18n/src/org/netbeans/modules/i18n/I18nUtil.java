@@ -381,8 +381,6 @@ public final class I18nUtil {
         topComponent.setName(name);
         topComponent.setToolTipText(title);
 
-        topComponent.putClientProperty("I18nPanel", interior);                  // NOI18N
-        
         // #24106
         topComponent.putClientProperty("TabPolicy", "HideWhenAlone");           // NOI18N
 

@@ -35,12 +35,12 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="i18n">
             <attr name="hidden" boolvalue="true"/>
             
-            <file name="org-netbeans-modules-i18n-java-JavaI18nSupportFactory.settings" url="java/JavaI18nSupportFactory.settings"/>
-            <file name="org-netbeans-modules-i18n-jsp-JspI18nSupportFactory.settings" url="jsp/JspI18nSupportFactory.settings"/>
+            <file name="org-netbeans-modules-i18n-java-JavaI18nSupportFactory.settings" url="java/JavaI18nSupportFactory.xml"/>
+            <file name="org-netbeans-modules-i18n-jsp-JspI18nSupportFactory.settings" url="jsp/JspI18nSupportFactory.xml"/>
         </folder>
     
         <!-- I18N Settings -->
-        <file name="org-netbeans-modules-i18n-I18nOptions.settings" url="I18nOptions.settings">
+        <file name="org-netbeans-modules-i18n-I18nOptions.settings" url="I18nOptions.xml">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.i18n.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/i18n/i18nAction.gif"/>
         </file>

@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.i18n;
 
+import org.openide.ErrorManager;
+import org.openide.TopManager;
 import org.openide.util.*;
 
 /**
@@ -29,4 +31,22 @@ final class Util {
     public static char getChar(String key) {
         return getString(key).charAt(0);
     }
+    
+    /**
+     * Write the exception into log.
+     */
+    public static void debug(Throwable t) {
+        ErrorManager err = TopManager.getDefault().getErrorManager();
+        err.notify(err.INFORMATIONAL, t);
+    }
+
+    /**
+     * Write annotated exception into log.
+     */
+    public static void debug(String annotation, Throwable t) {
+        ErrorManager err = TopManager.getDefault().getErrorManager();
+        err.annotate(t, err.INFORMATIONAL, annotation, null, null, null);
+        err.notify(err.INFORMATIONAL, t);
+    }
+    
 }

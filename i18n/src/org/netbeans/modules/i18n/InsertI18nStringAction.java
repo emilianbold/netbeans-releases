@@ -30,6 +30,7 @@ import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 
 import org.openide.cookies.EditorCookie;
@@ -54,32 +55,40 @@ public class InsertI18nStringAction extends CookieAction {
     /** Generated serial version UID. */
     static final long serialVersionUID =-7002111874047983222L;       
     
-    /** Weak reference to top component to which the i18n string will be added. */
-    private WeakReference topComponentWRef = new WeakReference(null);
+    /** 
+     * Weak reference to top component wrapping I18nPanel. 
+     * It cannot be collected while the component is visible.
+     */
+    private static WeakReference topComponentWRef = new WeakReference(null);
 
     /** Position to insert the new i18n-string. */
     private int position;
-    
-    
+        
     /** 
-     * Actually performs InsertI18nStringAction. Implements superclass abstract method.
-     * @param activatedNodes currently activated nodes */
+     * Open I18nPanel and grab user response then update Document.
+     * ??? Why it is not modal?
+     * @param activatedNodes currently activated nodes 
+     */
     protected void performAction (final Node[] activatedNodes) {
         final EditorCookie editorCookie = (EditorCookie)(activatedNodes[0]).getCookie(EditorCookie.class);
-        if(editorCookie == null)
+        if (editorCookie == null) {
+            Util.debug(new IllegalArgumentException("Missing editor cookie!")); // NOI18N
             return;
+        }
         
-        editorCookie.open();
-
         // Set data object.
         DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
-        if(dataObject == null)
+        if (dataObject == null) {
+            Util.debug(new IllegalArgumentException("Missing DataObject!"));    // NOI18N
             return; 
+        }
 
         JEditorPane[] panes = editorCookie.getOpenedPanes();
         
-        if(panes == null || panes.length == 0)
+        if (panes == null || panes.length == 0) {
+            Util.debug(new IllegalArgumentException("Missing editor pane!"));   // NOI18N            
             return;
+        }
 
         // Set insert position. 
         position = panes[0].getCaret().getDot();
@@ -89,10 +98,9 @@ public class InsertI18nStringAction extends CookieAction {
 
         try {
             addPanel(dataObject);
-        } catch(IOException ioe) {
-            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                System.err.println("I18N: Document could not be loaded for "+dataObject.getName()); // NOI18N
-            
+        } catch(IOException ex) {
+            String msg = "Document loading failure " + dataObject.getName();    // NOI18N
+            Util.debug(msg, ex); 
             return;
         }
 
@@ -181,21 +189,26 @@ public class InsertI18nStringAction extends CookieAction {
                     try {
                         I18nString i18nString = i18nPanel.getI18nString();
 
-                        if(i18nString.key == null) {
+                        if(i18nString.key == null) {                            
                             return;
                         }
                         
                         // Try to add key to bundle.                            
-                        support.getResourceHolder().addProperty(i18nString.getKey(), i18nString.getValue(), i18nString.getComment());
+                        support.getResourceHolder().addProperty(
+                            i18nString.getKey(), 
+                            i18nString.getValue(), 
+                            i18nString.getComment()
+                        );
 
                         // Create field if necessary. 
                         // PENDING, should not be performed here -> capability moves to i18n wizard.
                         if(support.hasAdditionalCustomizer())
                             support.performAdditionalChanges();
 
-                        // Replace string.
-                        support.getDocument().insertString(position, i18nString.getReplaceString(), null);
-
+                        // Replace string.                        
+                        String code = i18nString.getReplaceString();
+                        support.getDocument().insertString(position, code, null);
+                        
                     } catch (IllegalStateException e) {
                         NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
                             I18nUtil.getBundle().getString("EXC_BadKey"),
@@ -208,7 +221,7 @@ public class InsertI18nStringAction extends CookieAction {
                                 NotifyDescriptor.INFORMATION_MESSAGE
                             )
                         );
-                    } finally { 
+                    } finally {
                         cancel();
                     }
                 }
@@ -226,34 +239,73 @@ public class InsertI18nStringAction extends CookieAction {
         return i18nPanel;
     }
     
-    /** Adds panel to top component in split pane. */
+    /**
+     * Open new mode with internationalization panel.
+     * Reuse old one if working  with the same data object.
+     */
     private void addPanel(DataObject sourceDataObject) throws IOException {
-        TopComponent topComponent = (TopComponent)topComponentWRef.get();
 
-        if(topComponent == null) {
+        final String PROP_REUSE = "i18n.Reuse";                                 // NOI18N
+        TopComponent topComponent = (TopComponent) topComponentWRef.get();        
+        
+        // check if the component can be reused properly
+        if (topComponent != null) {
+            Reuse reuse = (Reuse) topComponent.getClientProperty(PROP_REUSE);   
+            if (reuse.dataObject != sourceDataObject) {
+                topComponent = null;
+            }
+            EditorCookie editor = (EditorCookie) sourceDataObject.getCookie(EditorCookie.class);
+            if (reuse.document != editor.getDocument()) {
+                topComponent = null;
+            }
+        }
+
+        if (topComponent == null) {
             JPanel panel = createPanel(sourceDataObject);
-
+                        
             String title = Util.getString("CTL_I18nDialogTitle");
             URL icon = getClass().getResource("i18nAction.gif");                // NOI18N
             String name = sourceDataObject.getName();
             topComponent = I18nUtil.createTopComponent(panel, name, title, icon);
-                
+            
+            // close old topComponent associated with wrong data object
+            //??? it would be better to change topComponent interior
+            // but it roughly equals to close() followed by open().
+            cancel();
+            
             // Reset weak reference.
+            Reuse last = new Reuse();
+            last.i18nPanel = (I18nPanel) panel;
+            last.dataObject = sourceDataObject;
+            EditorCookie editor = (EditorCookie) sourceDataObject.getCookie(EditorCookie.class);
+            last.document = editor.getDocument();
+            topComponent.putClientProperty(PROP_REUSE, last);                   
             topComponentWRef = new WeakReference(topComponent);
         }
 
-        I18nPanel panel = (I18nPanel)  topComponent.getClientProperty("I18nPanel");
-        panel.setDefaultResource(sourceDataObject);
+        Reuse reuse = (Reuse) topComponent.getClientProperty(PROP_REUSE);
+        reuse.i18nPanel.setDefaultResource(sourceDataObject);
         topComponent.open();
         topComponent.requestFocus();
     }
     
     /** Cancels the current insert i18n string action. */
     public void cancel() {
-        TopComponent topComponent= (TopComponent)topComponentWRef.get();
+        TopComponent tc = (TopComponent)topComponentWRef.get();
         
-        if(topComponent != null)
-            topComponent.close();
+        if (tc != null) {
+            tc.close();
+        }
+    }
+    
+    /**
+     * Last opened dialog with assosiated data object.
+     * It cannot be reused for diferent data object or Document!
+     */
+    private static class Reuse {
+        I18nPanel i18nPanel;
+        DataObject dataObject;
+        Document document;
     }
     
     /** Overrides superclass method. Adds additional test if i18n module has registered factory
@@ -300,7 +352,7 @@ public class InsertI18nStringAction extends CookieAction {
      * #see org.openide.cookies.EditorCookie */
     protected Class[] cookieClasses () {
         return new Class [] {
-            EditorCookie.class
+            EditorCookie.class,
         };
     }
 

@@ -14,7 +14,6 @@
 
 package org.netbeans.modules.i18n;
 
-
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Dimension;
