@@ -314,9 +314,10 @@ public class TabbedContainer extends JComponent {
         //A few borders and such will check this
         //@see org.netbeans.swing.plaf.gtk.AdaptiveMatteBorder
         putClientProperty ("viewType", new Integer(type)); //NOI18N
-        setFocusCycleRoot(true);
+//        setFocusCycleRoot(true);
         setFocusable(true);
-        setFocusTraversalPolicy(new TCFTP());
+// ignore traversal policy - #46922        
+//        setFocusTraversalPolicy(new TCFTP());
     }
 
     /**
@@ -769,7 +770,7 @@ public class TabbedContainer extends JComponent {
     /**
      * simple traversal policy..
      */
-    private final class TCFTP extends FocusTraversalPolicy {
+/*    private final class TCFTP extends FocusTraversalPolicy {
         private Component getSel() {
             if (getModel().size() == 0 || getSelectionModel().getSelectedIndex() == -1) {
                 return null;
@@ -782,11 +783,11 @@ public class TabbedContainer extends JComponent {
         }
         
         public Component getComponentAfter(Container focusCycleRoot, Component aComponent) {
-            return getSel();
+            return null;
         }
 
         public Component getComponentBefore(Container focusCycleRoot, Component aComponent) {
-            return getSel();
+            return null;
         }
 
         public Component getDefaultComponent(Container focusCycleRoot) {
@@ -801,5 +802,5 @@ public class TabbedContainer extends JComponent {
             return getSel();
         }
     }
-
+*/
 }

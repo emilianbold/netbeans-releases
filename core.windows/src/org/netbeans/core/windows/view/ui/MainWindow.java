@@ -63,7 +63,8 @@ public final class MainWindow extends JFrame {
 
     /** Constructs main window. */
     public MainWindow() {
-        setFocusTraversalPolicy(new WrapperFocusTraversalPolicy(getFocusTraversalPolicy()));
+// ignore the policy - #46922        
+//        setFocusTraversalPolicy(new WrapperFocusTraversalPolicy(getFocusTraversalPolicy()));
     }
     
     /** Overrides superclass method, adds help context to the new root pane. */
@@ -420,7 +421,7 @@ public final class MainWindow extends JFrame {
         setTitle(NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title", buildNumber, subTitle));
     }
 
-    private final class WrapperFocusTraversalPolicy extends FocusTraversalPolicy {
+/*    private final class WrapperFocusTraversalPolicy extends FocusTraversalPolicy {
         private FocusTraversalPolicy w;
         public WrapperFocusTraversalPolicy (FocusTraversalPolicy w) {
             this.w = w;
@@ -454,5 +455,6 @@ public final class MainWindow extends JFrame {
             return result;
         }
     }    
+ */
 }
 
