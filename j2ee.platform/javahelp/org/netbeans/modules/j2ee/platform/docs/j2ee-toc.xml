@@ -228,7 +228,6 @@
 		<tocitem text="Web Service Tasks: Quick Reference" target="tbd" />
   	 </tocitem>
 	 <tocitem text="Creating Web Services" >
-	        <tocitem text="About Creating Web Services" target="about_web_service_rpc" />
 		<tocitem text="Implementing an Existing WSDL File" target="create_ws_fromwsdl" />
 		<tocitem text="Exposing Existing Code as a Web Service" target="create_ws_fromcode" />
 		<tocitem text="Creating a Web Service from Scratch" target="create_ws" />
