@@ -113,5 +113,11 @@
     getIndexInfo_Unique = false;
   };
   
+// ****************************************************
+// Sybase jConnect driver
+// ****************************************************
+  "jConnect (TM) for JDBC (TM)" = {
+    DriverName = "jConnect (TM) for JDBC (TM)";
+  };
 
 }
