@@ -16,6 +16,7 @@ package org.netbeans.beaninfo.editors;
 import java.beans.*;
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.openide.ErrorManager;
 import org.openide.TopManager;
@@ -25,6 +26,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 /**
  * Defines editor for choosing of Web browser.
@@ -47,18 +49,12 @@ public class HtmlBrowser extends Object {
         public String getAsText () {
             try {
                 org.openide.awt.HtmlBrowser.Factory f = (org.openide.awt.HtmlBrowser.Factory)getValue ();
-                if (f == null)
-                    return NbBundle.getMessage (FactoryEditor.class, "CTL_UnspecifiedBrowser");
                 
-                FileObject fo = Repository.getDefault ()
-                .getDefaultFileSystem ().findResource (BROWSER_FOLDER);
-                DataFolder folder = DataFolder.findFolder (fo);
-                DataObject [] dobjs = folder.getChildren ();
-                for (int i = 0; i<dobjs.length; i++) {
-                    Object o = ((InstanceCookie)dobjs[i].getCookie (InstanceCookie.class)).instanceCreate ();
-                    if (f.equals (o))
-                        return dobjs[i].getNodeDelegate ().getDisplayName ();
-                }
+                Lookup.Item i = Lookup.getDefault().lookupItem(
+                    new Lookup.Template (org.openide.awt.HtmlBrowser.Factory.class, null, f)
+                );
+                if (i != null)
+                    return i.getDisplayName();
             }
             catch (Exception ex) {
                 ErrorManager.getDefault ().notify (ex);
@@ -72,18 +68,19 @@ public class HtmlBrowser extends Object {
         
         public void setAsText (java.lang.String str) throws java.lang.IllegalArgumentException {
             try {
-                if (NbBundle.getMessage (FactoryEditor.class, "CTL_UnspecifiedBrowser").equals (str)) {
+                if (NbBundle.getMessage (FactoryEditor.class, "CTL_UnspecifiedBrowser").equals (str)
+                ||  str == null) {
                     setValue (null);
                     return;
                 }
-                FileObject fo = Repository.getDefault ()
-                .getDefaultFileSystem ().findResource (BROWSER_FOLDER);
-                DataFolder folder = DataFolder.findFolder (fo);
-                DataObject [] dobjs = folder.getChildren ();
-                for (int i = 0; i<dobjs.length; i++) {
-                    if (str.equals (dobjs[i].getNodeDelegate ().getDisplayName ())) {
-                        Object o = ((InstanceCookie)dobjs[i].getCookie (InstanceCookie.class)).instanceCreate ();
-                        setValue (o);
+                Lookup.Result r = Lookup.getDefault().lookup(
+                    new Lookup.Template (org.openide.awt.HtmlBrowser.Factory.class)
+                );
+                Iterator it = r.allItems().iterator();
+                while (it.hasNext()) {
+                    Lookup.Item i = (Lookup.Item)it.next();
+                    if (str.equals(i.getDisplayName())) {
+                        setValue (i.getInstance());
                         return;
                     }
                 }
@@ -95,14 +92,26 @@ public class HtmlBrowser extends Object {
         }
         
         public java.lang.String[] getTags () {
+            ArrayList list = new ArrayList (4);
+            Lookup.Result r = Lookup.getDefault().lookup(
+                new Lookup.Template (org.openide.awt.HtmlBrowser.Factory.class)
+            );
+            Iterator it = r.allItems().iterator();
+            while (it.hasNext()) {
+                Lookup.Item i = (Lookup.Item)it.next();
+                list.add(i.getDisplayName());
+            }
+            
+            // PENDING need to get rid of this filtering
             FileObject fo = Repository.getDefault ()
             .getDefaultFileSystem ().findResource (BROWSER_FOLDER);
             DataFolder folder = DataFolder.findFolder (fo);
             DataObject [] dobjs = folder.getChildren ();
-            ArrayList list = new ArrayList (dobjs.length);
             for (int i = 0; i<dobjs.length; i++) {
-                if (!Boolean.TRUE.equals (dobjs[i].getPrimaryFile ().getAttribute (EA_HIDDEN)))
-                    list.add (dobjs[i].getNodeDelegate ().getDisplayName ());
+                // Must not be hidden and have to provide instances (we assume instance is HtmlBrowser.Factory)
+                if (Boolean.TRUE.equals (dobjs[i].getPrimaryFile ().getAttribute (EA_HIDDEN))
+                ||  dobjs[i].getCookie (InstanceCookie.class) == null)
+                    list.remove (dobjs[i].getNodeDelegate ().getDisplayName ());
             }
             String[] retValue = new String[list.size ()];
             
