@@ -5,9 +5,15 @@ require 5.005;
 use File::Find;
 
 my @files = ();
+my $quiet = 0;
 
 if ($#ARGV < 0) {
-    die "usage: $0 [-f] file | directory ...\n";
+    die "usage: $0 [-q] file | directory ...\n";
+}
+
+if ($ARGV[0] eq "-q") {
+    $quiet = 1;
+    shift @ARGV;
 }
 
 foreach my $name (@ARGV) {
@@ -31,7 +37,9 @@ foreach my $name (@ARGV) {
 
 foreach $f (@files) {
     next if $f !~ m,\bBundle.properties$,i;
-      
+
+    print STDERR "*** $f\n" unless $quiet;
+    
     open FH, "< $f" or die;
     {
         local $/ = undef;
@@ -72,7 +80,7 @@ foreach $f (@files) {
 foreach $f (@files) {
     next if $f =~ m,\bBundle.properties$,i;
 
-    print STDERR "*** $f\n";
+    print STDERR "*** $f\n" unless $quiet;
     
     open FH, "< $f" or die;
     {
