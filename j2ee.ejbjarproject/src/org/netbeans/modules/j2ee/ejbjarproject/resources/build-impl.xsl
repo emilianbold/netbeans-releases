@@ -81,7 +81,7 @@ is divided into following sections:
             </target>
 
             <target name="do-init">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,init-macrodef-property</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:explicit-platform">
                     <!--Setting java and javac default location -->
                     <property name="platforms.${{platform.active}}.javac" value="${{platform.home}}/bin/javac"/>
@@ -149,6 +149,22 @@ is divided into following sections:
                 <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
                 <fail unless="dist.jar">Must set dist.jar</fail>
             </target>
+            
+            <target name="init-macrodef-property">
+                <macrodef>
+                    <xsl:attribute name="name">property</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-ejbjarproject/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">name</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">value</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <property name="@{{name}}" value="${{@{{value}}}}"/>
+                    </sequential>
+                  </macrodef>
+            </target>            
 
             <target name="init-macrodef-javac">
                 <macrodef>
@@ -326,7 +342,7 @@ is divided into following sections:
 
             
             <target name="init">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-macrodef-javac,init-macrodef-junit,init-macrodef-nbjpda,init-macrodef-debug,init-taskdefs</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-macrodef-property,init-macrodef-javac,init-macrodef-junit,init-macrodef-nbjpda,init-macrodef-debug,init-taskdefs</xsl:attribute>
             </target>
 
             <xsl:comment>
@@ -754,13 +770,18 @@ is divided into following sections:
                             <istrue value="${{javadoc.private}}"/>
                         </condition>
                         <property name="javadoc.private.opt" value=""/>
-                        <condition property="javadoc.classpath.opt" value="${{javac.classpath}}:${{j2ee.platform.classpath}}">
-                            <!-- -classpath '' cannot be passed safely on Windows; cf. #46901. -->
-                            <not>
-                                <equals arg1="${{javac.classpath}}:${{j2ee.platform.classpath}}" arg2=""/>
-                            </not>
+                        <!-- -classpath '' cannot be passed safely on Windows; cf. #46901. -->
+                        <condition property="javadoc.classpath.opt" value="&quot;&quot;">
+                            <and>
+                                <equals arg1="${{javac.classpath}}" arg2=""/>
+                                <equals arg1="${{j2ee.platform.classpath}}" arg2=""/>
+                            </and>
                         </condition>
-                        <property name="javadoc.classpath.opt" value='""'/>
+                        <path id="javadoc.classpath.temp">
+                            <pathelement path="${{javac.classpath}}"/>
+                            <pathelement path="${{j2ee.platform.classpath}}"/>
+                        </path>
+                        <property name="javadoc.classpath.opt" refid="javadoc.classpath.temp"/>
                         <apply executable="${{platform.javadoc}}" failonerror="true" parallel="true">
                             <arg value="-d"/>
                             <arg file="${{dist.javadoc.dir}}"/>
@@ -772,7 +793,7 @@ is divided into following sections:
                             <arg value="${{javadoc.windowtitle}}"/>
                             <arg line="${{javadoc.notree.opt}} ${{javadoc.use.opt}} ${{javadoc.nonavbar.opt}} ${{javadoc.noindex.opt}} ${{javadoc.splitindex.opt}} ${{javadoc.author.opt}} ${{javadoc.version.opt}} ${{javadoc.private.opt}}"/>
                             <arg value="-classpath"/>
-                            <arg path="${{javadoc.classpath.opt}}"/>
+                            <arg value="${{javadoc.classpath.opt}}"/>
                             <arg value="-sourcepath"/>
                             <xsl:element name="arg">
                                 <xsl:attribute name="path">
