@@ -226,14 +226,14 @@ removed !!!!
         
         <echo message="enableAssertions=${xtest.enable.assertions} debugPort=${xtest.debug.port} debugSuspend=${xtest.debug.suspend}"/>
         
-        <ideTestRunner dir="${netbeans.home}/bin" executable="${netbeans.home}/bin/runide.exe" workdir="${xtest.workdir}/sys"
+        <ideTestRunner dir="${core/ide.dir}/${nb.bin.dir}" executable="${core/ide.dir}/${nb.bin.dir}/runide.exe" workdir="${xtest.workdir}/sys"
               os="Windows 95 Windows 98 Windows Me Windows NT Windows 2000 Windows XP"
               failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}"
               enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}">
 	    	  <arg line="${args}"/>
         </ideTestRunner>            
         
-        <ideTestRunner dir="${netbeans.home}/bin" executable="sh"  workdir="${xtest.workdir}/sys"
+        <ideTestRunner dir="${core/ide.dir}/${nb.bin.dir}" executable="sh"  workdir="${xtest.workdir}/sys"
               os="Linux SunOS Solaris Mac OS X" 
               failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}"
               enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}">

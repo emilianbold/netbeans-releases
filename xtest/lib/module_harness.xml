@@ -149,6 +149,14 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="${xtest.home}/lib" antfile="harness.xml" target="buildxtest"/>
     </target>
     
+    <!-- ======================== -->
+    <!-- Init cluster properties  -->
+    <!-- ======================== -->
+    <target name="init_cluster_properties">
+         <!-- Read moduleCluster.properties and directories.properties from netbeans.dest.dir -->
+         <property file="${netbeans.dest.dir}/directories.properties"/>
+         <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
+    </target>
     
     <!-- ======== -->
     <!-- Run test -->
@@ -173,7 +181,7 @@ Microsystems, Inc. All Rights Reserved.
 	</test-configurator>                           
     </target>
     
-    <target name="runtests" depends="config">
+    <target name="runtests" depends="config,init_cluster_properties">
         <condition property="xtest.runmessage" value="attributes: ${xtest.attribs}">
            <equals arg1="${xtest.testbags}" arg2=""/>
         </condition>
@@ -317,7 +325,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Building -->
     <!-- ======== -->
     
-    <target name="compiler-launcher" depends="config,deleteworkdir" unless="xtest.distexec">
+    <target name="compiler-launcher" depends="config,deleteworkdir,init_cluster_properties" unless="xtest.distexec">
        <test-compiler  paramClasspathProp="tbag.classpath"
                        paramTestConfigProp="tbag.testtype"
                        paramNameProp="tbag.name"
