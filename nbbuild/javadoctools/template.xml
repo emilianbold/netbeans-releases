@@ -139,7 +139,6 @@ cause it to fail.
             <doctitle>NetBeans ${javadoc.title}</doctitle>
             <header>${javadoc.header}</header>
             <bottom>${javadoc.footer}</bottom>
-            <tag name="beaninfo" scope="methods" description="Bean info:"/>
         </javadoc>
         <copy todir="${javadoc.out.dir}">
             <fileset refid="javadoc.css.files"/>

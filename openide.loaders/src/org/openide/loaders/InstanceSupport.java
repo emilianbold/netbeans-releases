@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -216,7 +216,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
     }
 
     /** Is this an applet?
-    * @return <code>true</code> if this class is an {@link java.applet.Applet}
+    * @return <code>true</code> if this class is a <code>java.applet.Applet</code>
     * @deprecated This method probably should not be used, as it catches a variety of potentially
     *             serious exceptions and errors, and swallows them so as to produce a simple boolean
     *             result. (Notifying them all would be inappropriate as they typically come from user
