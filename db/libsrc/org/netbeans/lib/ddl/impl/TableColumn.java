@@ -169,8 +169,8 @@ public class TableColumn extends AbstractTableColumn
         // Decimal size for sizeless type
         if (sizelesstypes != null && size > 0) {
             if (!sizelesstypes.contains(stype)) {
-                if (size > 0) args.put("column.size", new Integer(size)); // NOI18N
-                if (decsize > 0) args.put("column.decsize", new Integer(decsize)); // NOI18N
+                if (size > 0) args.put("column.size", String.valueOf(size)); // NOI18N
+                if (decsize > 0) args.put("column.decsize", String.valueOf(decsize)); // NOI18N
             }
         }
 
