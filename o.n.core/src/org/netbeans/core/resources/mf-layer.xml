@@ -79,6 +79,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-actions-OpenExplorerAction.instance"/>
             <file name="org-openide-actions-OpenAction.instance"/>
             <file name="org-openide-actions-PrintAction.instance"/>
+            <file name="org-openide-actions-PageSetupAction.instance"/>
             <file name="org-openide-filesystems-RefreshAction.instance"/>
             <file name="org-netbeans-core-actions-UnmountFSAction.instance"/>
             <file name="org-openide-actions-RenameAction.instance"/>
@@ -150,7 +151,9 @@ Microsystems, Inc. All Rights Reserved.
           <file name="Separator3[javax-swing-JSeparator].instance"/>
           <attr name="Separator3[javax-swing-JSeparator].instance/org-openide-actions-PrintAction.instance" boolvalue="true" />
           <file name="org-openide-actions-PrintAction.instance"/>
-          <attr name="org-openide-actions-PrintAction.instance/Separator4[javax-swing-JSeparator].instance" boolvalue="true" />
+          <attr name="org-openide-actions-PrintAction.instance/org-openide-actions-PageSetupAction.instance" boolvalue="true" />
+          <file name="org-openide-actions-PageSetupAction.instance"/>
+          <attr name="org-openide-actions-PageSetupAction.instance/Separator4[javax-swing-JSeparator].instance" boolvalue="true" />
           <file name="Separator4[javax-swing-JSeparator].instance"/>
           <attr name="Separator4[javax-swing-JSeparator].instance/org-netbeans-core-actions-SystemExit.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-SystemExit.instance"/>
