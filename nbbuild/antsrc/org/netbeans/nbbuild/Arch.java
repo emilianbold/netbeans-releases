@@ -23,6 +23,7 @@ import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
 
 import org.w3c.dom.*;
+import org.apache.xml.serialize.*;
 
 /**
  * Task to process Arch questions & answers document.
@@ -196,10 +197,31 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
         java.util.Iterator it = missing.iterator();
         while (it.hasNext()) {
             String s = (String)it.next ();
-            Node n = (Node)questions.get (s);
+            Element n = (Element)questions.get (s);
             
-            w.write("\n\n<!-- Question: " + s + "\n");
-            w.write("\n     " + n);
+            //w.write("\n\n<!-- Question: " + s + "\n");
+            w.write("\n\n<!--\n        ");
+            //w.write("\n     " + n); #30529 - does not work with all DOM parsers
+            XMLSerializer ser = new XMLSerializer();
+            StringWriter wr = new StringWriter();
+            ser.setOutputCharStream(wr);
+            OutputFormat fmt = new OutputFormat();
+            fmt.setIndenting(false);
+            fmt.setOmitXMLDeclaration(true);
+            fmt.setOmitDocumentType(true);
+            fmt.setPreserveSpace(true);
+            fmt.setOmitComments(true);
+            ser.setOutputFormat(fmt);
+            ser.serialize(n);
+            /*
+            DocumentFragment frag = n.getOwnerDocument().createDocumentFragment();
+            NodeList l = n.getChildNodes();
+            for (int i = 0; i < l.getLength(); i++) {
+                frag.appendChild(l.item(i));
+            }
+            ser.serialize(frag);
+             */
+            w.write(wr.toString());
             w.write("\n-->\n");
             w.write("<answer id=\"" + s + "\">\nNo answer\n</answer>\n\n");
         }
