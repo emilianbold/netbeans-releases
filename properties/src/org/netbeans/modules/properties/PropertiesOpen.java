@@ -21,6 +21,7 @@ import java.beans.*;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.OptionalDataException;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.*;
@@ -759,7 +760,12 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
             propDataObject = (PropertiesDataObject)in.readObject();
             
             // deserialize secondaries this way see writeExternal
-            HashSet s = (HashSet)in.readObject();
+            try {
+                HashSet s = (HashSet)in.readObject();
+            } catch(OptionalDataException ode) {
+                if(!ode.eof && Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                    ode.printStackTrace();
+            }
             
             initialize();
         }
