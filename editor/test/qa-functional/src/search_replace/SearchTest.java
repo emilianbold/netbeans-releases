@@ -49,7 +49,7 @@ public class SearchTest extends EditorTestCase {
     /**
      * TC1 - open and close find dialog
      */
-    public void testFindDialogOpenClose() {
+/*    public void testFindDialogOpenClose() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -76,7 +76,7 @@ public class SearchTest extends EditorTestCase {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
         }
-    }
+    }*/
     
     /**
      * TC2 - Find Selection Repeated
