@@ -242,10 +242,10 @@ Microsystems, Inc. All Rights Reserved.
     <target name="openideandcore-jarcompile-classpath" depends="which-classpath" if="openideandcore.jarcode.classpath">
         <echo message="Using jars (Openide and Core) classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against jars -->
-	<path id="compiletest.classpath">        
-	    <pathelement location="../openide-13javac-workaround.jar"/>
-	    <pathelement location="../netbeans/lib/openide.jar"/>
-	    <pathelement location="../../core/netbeans/lib/core.jar"/>
+    	<path id="compiletest.classpath">        
+    		<pathelement location="${xtest.home}/lib/openide-13javac-workaround.jar"/>
+	        <pathelement location="${netbeans.home}/lib/openide.jar"/>
+                <pathelement location="${netbeans.home}/lib/core.jar"/>
 	</path>
     </target>
 
@@ -295,14 +295,13 @@ Microsystems, Inc. All Rights Reserved.
     </target>
         
     <target name="openideandcore-jartest-classpath" depends="which-classpath,setDOclasspath" if="openideandcore.jarcode.classpath">
-        <echo message="Using jars (Openide and Core) classpath."/>
+        <echo message="Using IDE (Openide and Core jars) classpath."/>
         <echo message="Additional execution classpath: ${additionalclasspath}"/>
-        <!-- this classpath will be used for executing tests against jars -->
 	<path id="codetest.classpath">
-        	<pathelement location="../netbeans/lib/openide.jar"/>
-        	<fileset dir="../../core/netbeans/lib">
-            		<include name="core.jar"/>
-            		<include name="ext/*.jar"/>
+	        <pathelement location="${netbeans.home}/lib/openide.jar"/>
+	        <fileset dir="${netbeans.home}/lib">
+                        <include name="core.jar"/>
+                	<include name="ext/*.jar"/>
         	</fileset>
         	<pathelement path="${additionalclasspath}" />
     	</path>
