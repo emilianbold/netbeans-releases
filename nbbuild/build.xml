@@ -3038,6 +3038,48 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
 
 <!-- End of Solaris package section. -->
 
+
+<!-- Localized builds -->
+  <target name="all-dutch" depends="set-dutch-locale,all"/>
+  <target name="all-russian" depends="set-russian-locale,all"/>
+  <target name="all-french" depends="set-french-locale,all"/>
+  <target name="all-ja-zh" depends="set-ja-zh_CN-locales,all"/>
+  
+  <target name="set-ja-zh_CN-locales">
+        <property name="locales" value="ja,zh_CN"/>
+        <property name="locjar.locales" value="${locales}"/>
+        <property name="locmakenbm.locales"   value="${locales}"/>
+        <property name="locjhindexer.locales" value="${locales}"/>
+        <property name="localized.build.locales" value="${locales}"/>
+  </target>
+  
+  <target name="set-dutch-locale">
+        <property name="locales" value="nl"/>
+        <property name="locjar.locales" value="${locales}"/>
+        <property name="locmakenbm.locales"   value="${locales}"/>
+        <property name="locjhindexer.locales" value="${locales}"/>
+        <property name="localized.build.locales" value="${locales}"/>
+  </target>
+
+  <target name="set-russian-locale">
+        <property name="locales" value="ru"/>
+        <property name="locjar.locales" value="${locales}"/>
+        <property name="locmakenbm.locales"   value="${locales}"/>
+        <property name="locjhindexer.locales" value="${locales}"/>
+        <property name="localized.build.locales" value="${locales}"/>
+  </target>
+
+  <target name="set-french-locale">
+        <property name="locales" value="fr"/>
+        <property name="locjar.locales" value="${locales}"/>
+        <property name="locmakenbm.locales"   value="${locales}"/>
+        <property name="locjhindexer.locales" value="${locales}"/>
+        <property name="localized.build.locales" value="${locales}"/>
+  </target>
+  
+<!-- end of localized builds -->
+
+
   <target name="print-selected-modules" depends="init" description="Prints list of modules to build in selected moduleconfig.">
     <echo message="modules=${allmodules}"/>
   </target>
