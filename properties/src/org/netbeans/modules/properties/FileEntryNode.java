@@ -39,7 +39,7 @@ public class FileEntryNode extends AbstractNode {
     static final long serialVersionUID = -7882925922830244768L;
 
     /** default base for icons for data objects */
-    private static final String ICON_BASE = "/org/netbeans/core/resources/x"; // NOI18N
+    private static final String ICON_BASE = "org/netbeans/core/resources/x"; // NOI18N
 
     /** Helper field. ResourceBundle for i18n-ing strings in this source. */
     private static ResourceBundle bundle;
