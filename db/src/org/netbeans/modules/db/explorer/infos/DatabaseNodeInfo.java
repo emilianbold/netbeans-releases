@@ -134,7 +134,8 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 				}
 				colidx++;
 			} catch (SQLException ex) {
-        System.out.println("createNodeInfo: " + ex);
+//        ex.printStackTrace();
+//        System.out.println("createNodeInfo: " + ex);
 		  }
 		
 		nfo.putAll(data);
@@ -674,6 +675,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 }
 /*
  * <<Log>>
+ *  22   Gandalf   1.21        12/22/99 Radko Najman    debug message
  *  21   Gandalf   1.20        12/15/99 Radko Najman    driver adaptor
  *  20   Gandalf   1.19        11/27/99 Patrik Knakal   
  *  19   Gandalf   1.18        11/15/99 Radko Najman    
