@@ -41,7 +41,9 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/PlainTest.class"/>
                 <include name="org/netbeans/core/AutomountSupportTest.class"/>
                 <include name="org/netbeans/core/lookup/*Test.class"/>
-                <exclude name="org/netbeans/core/lookup/InstanceDataObjectModuleTest.class/testReloadDotInstanceSwitchesLookupByNewClass"/>
+                <include name="org/netbeans/core/lookup/*Test?.class"/>
+                <exclude name="org/netbeans/core/lookup/InstanceDataObjectModuleTest4.class"/>
+                <exclude name="org/netbeans/core/lookup/InstanceDataObjectModuleTest8.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -49,8 +51,10 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="code,failing" executor="code" name="testbag_4" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
-                <!-- Under investigation why it fails: -->
-                <include name="org/netbeans/core/lookup/InstanceDataObjectModuleTest.class/testReloadDotInstanceSwitchesLookupByNewClass"/>
+                <!-- Under investigation why it fails (probably "as designed"): -->
+                <include name="org/netbeans/core/lookup/InstanceDataObjectModuleTest4.class"/>
+                <!-- Also under investigation; probably really a bug: -->
+                <include name="org/netbeans/core/lookup/InstanceDataObjectModuleTest8.class"/>
             </patternset>
         </testset>
     </testbag>

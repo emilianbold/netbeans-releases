@@ -13,12 +13,19 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="all">
 
-    <target name="all" depends="test1"/>
+    <target name="all" depends="test1,test2"/>
 
     <target name="test1">
         <javac srcdir="test1-src" destdir="test1-src"/>
         <jar jarfile="test1.jar" manifest="test1.mf" compress="false">
             <fileset dir="test1-src"/>
+        </jar>
+    </target>
+
+    <target name="test2">
+        <javac srcdir="test2-src" destdir="test2-src"/>
+        <jar jarfile="test2.jar" manifest="test2.mf" compress="false">
+            <fileset dir="test2-src"/>
         </jar>
     </target>
 
