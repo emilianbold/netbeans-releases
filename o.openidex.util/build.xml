@@ -46,8 +46,8 @@ Microsystems, Inc. All Rights Reserved.
     </jar>
     <!-- Now the real thing. -->
     <mkdir dir="netbeans/lib/ext"/>
+    <!-- #9708: do not use a manifest with OpenIDE-Module here -->
     <locjar jarfile="netbeans/lib/ext/openidex.jar"
-            manifest="manifest-subst.mf"
             basedir="src"
 	    excludesfile="../nbbuild/standard-jar-excludes.txt"
 	    compress="false">
