@@ -213,8 +213,6 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     
     public void userToggledAutoHide(int tabIndex, boolean enabled) {
         commandMgr.slideIntoDesktop(tabIndex, true);
-        //#47227 - repaint the bar when removing component from bar.
-        repaint();
     }
     
     public void userTriggeredPopup(MouseEvent mouseEvent, Component clickedButton) {
@@ -362,6 +360,9 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         commandMgr.syncWithModel();
         // #46488 - add(...) is sometimes not enough for proper repaint, god knows why
         revalidate();
+        //#47227 - repaint the bar when removing component from bar.
+        //#48318 - repaint when changing name -> can change the width of buttons.
+        repaint();
     }
     
     /** Builds empty border around slide bar. Computes its correct size
