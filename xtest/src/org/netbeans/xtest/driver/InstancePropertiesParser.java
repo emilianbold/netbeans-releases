@@ -40,6 +40,7 @@ public class InstancePropertiesParser extends Task {
     public static final String INSTANCE = "xtest.instance.location";
     public static final String CVS_ROOT = "xtest.instance.cvs.root";
     public static final String CONFIG = "xtest.instance.config";
+    public static final String MASTER_CONFIG = "xtest.instance.master-config";
     
     public void setProperty(String p) {
         output_property = p;
@@ -74,6 +75,7 @@ public class InstancePropertiesParser extends Task {
             if (name.startsWith(INSTANCE)) { prefix = INSTANCE; }
             if (name.startsWith(CVS_ROOT)) { prefix = CVS_ROOT; }
             if (name.startsWith(CONFIG)) { prefix = CONFIG; }
+            if (name.startsWith(MASTER_CONFIG)) { prefix = MASTER_CONFIG; }
             if (prefix != null) {
               if (name.equals(prefix)) {
                 onlyone = true;

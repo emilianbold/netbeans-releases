@@ -42,6 +42,7 @@ public class PropertySetter extends Task {
     public void execute() throws BuildException {
         if (in_property == null) throw new BuildException("Attribute 'input' is empty.");   
         if (out_property == null) throw new BuildException("Attribute 'output' is empty.");   
+        if (getProject().getProperty(in_property) == null) return;
         getProject().setProperty(out_property,getProject().getProperty(in_property));
     }
 
