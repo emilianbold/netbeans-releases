@@ -720,7 +720,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
 
   <!-- XXX illegal dependence on core! -->
-  <target name="all-ui/welcome" depends="all-openide,all-core,all-utilities,all-openide/deprecated">
+  <target name="all-ui/welcome" depends="all-openide,all-core,all-utilities,all-openide/deprecated,all-autoupdate">
     <echo message="Building module ui/welcome..."/>
     <ant dir="../ui/welcome" target="netbeans"/>
   </target>
