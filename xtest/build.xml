@@ -52,7 +52,7 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
-    <delete file="lib"/>
+    <delete dir="lib"/>
   </target>
 
 </project>
