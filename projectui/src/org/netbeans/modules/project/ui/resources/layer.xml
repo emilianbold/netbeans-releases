@@ -50,7 +50,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.RecentProjects"/>
             </file>
             
-            <!-- Building project -->
+            <!-- Main project -->
             <file name="org-netbeans-modules-project-ui-BuildMainProject.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.buildMainProject"/>            
             </file>
@@ -58,16 +58,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-project-ui-RebuildMainProject.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.rebuildMainProject"/>            
             </file>
-            
-            <file name="org-netbeans-modules-project-ui-JavadocProject.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.javadocProject"/>                       
-            </file>
-            
-            <file name="org-netbeans-modules-project-ui-CompileSingle.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.compileSingle"/>
-            </file>
-            
-            <!-- Running project -->
+                                                
             <file name="org-netbeans-modules-project-ui-RunMainProject.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.runMainProject"/>
             </file>
@@ -76,10 +67,32 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.debugMainProject"/>
             </file>
             
+            <!-- Current project -->            
             <file name="org-netbeans-modules-project-ui-TestProject.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.testProject"/>
             </file>
             
+            <file name="org-netbeans-modules-project-ui-JavadocProject.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.javadocProject"/>                       
+            </file>
+            
+            <file name="org-netbeans-modules-project-ui-BuildProject.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.buildProject"/>            
+            </file>
+            
+            <file name="org-netbeans-modules-project-ui-RebuildProject.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.rebuildProject"/>            
+            </file>
+                                                
+            <file name="org-netbeans-modules-project-ui-RunProject.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.runProject"/>
+            </file>
+                        
+            <!-- 1 off actions -->            
+            <file name="org-netbeans-modules-project-ui-CompileSingle.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.compileSingle"/>
+            </file>
+                        
             <file name="org-netbeans-modules-project-ui-RunSingle.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.runSingle"/>
             </file>

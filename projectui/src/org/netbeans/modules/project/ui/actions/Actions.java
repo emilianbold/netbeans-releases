@@ -119,6 +119,37 @@ public class Actions implements ActionsFactory {
             null,
             null ); 
     }
+        
+    
+    public static Action buildProject() {
+        Action a = new ProjectAction (
+            ActionProvider.COMMAND_BUILD, 
+            NbBundle.getMessage(Actions.class, "LBL_BuildProjectAction_Name" ), // NO18N
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/buildCurrentProject.gif" ) ), //NOI18N
+            null );  
+        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/buildCurrentProject.gif"); //NOI18N
+        return a;
+    }
+    
+    public static Action rebuildProject() {
+        Action a = new ProjectAction(
+            ActionProvider.COMMAND_REBUILD,
+            NbBundle.getMessage(Actions.class, "LBL_RebuildProjectAction_Name"),  // NOI18N
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/rebuildCurrentProject.gif" ) ), //NOI18N
+            null ); 
+        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/rebuildCurrentProject.gif"); //NOI18N
+        return a;
+    }
+        
+    public static Action runProject() {
+        Action a = new ProjectAction(
+            ActionProvider.COMMAND_RUN, 
+            NbBundle.getMessage(Actions.class, "LBL_RunProjectAction_Name"), // NO18N
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/runCurrentProject.gif" ) ), //NOI18N
+            null ); 
+        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/runCurrentProject.gif"); //NOI18N
+        return a;
+    }
     
     // 1-off actions -----------------------------------------------------------
     
@@ -185,7 +216,7 @@ public class Actions implements ActionsFactory {
         
     public static Action runMainProject() {
         Action a = new MainProjectAction(
-            "run", // XXX Define standard 
+            ActionProvider.COMMAND_RUN,
             NbBundle.getMessage(Actions.class, "LBL_RunMainProjectAction_Name"), // NO18N
             new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/runProject.gif" ) ) ); //NOI18N
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/runProject.gif"); //NOI18N
