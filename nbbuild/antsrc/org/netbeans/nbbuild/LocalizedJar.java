@@ -686,7 +686,7 @@ if( localeKitFiles.contains( file)) {
 
     if( shouldWriteSrcDir() && jarFile != null && baseDir != null) {
       name = jarFile.getPath() ;
-      idx = name.indexOf( "/netbeans/") ;
+      idx = name.indexOf( File.separator+"netbeans"+File.separator) ;
       if( idx != -1) {
 	try {
 	  file = new File( name.substring( 0, idx) + "/srcdir.properties") ;
