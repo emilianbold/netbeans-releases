@@ -27,6 +27,7 @@ import org.openide.actions.ExecuteAction;
 import org.openide.awt.Actions;
 import org.openide.awt.StatusDisplayer;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.*;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.NbClassLoader;
 import org.openide.loaders.DataObject;
@@ -162,8 +163,6 @@ public class TargetExecutor implements Runnable {
             // #16720:
             io.select();
             
-            // [PENDING] note that calls to System.exit() from tasks
-            // are apparently not trapped! (#9953)
             task = ExecutionEngine.getDefault().execute (name, this, InputOutput.NULL);
             //System.err.println("execute #2: " + this);
             //System.err.println("execute #3: " + this);
@@ -356,12 +355,22 @@ public class TargetExecutor implements Runnable {
 
         // Now check to see if the Project defined any cool new custom tasks.
         final Project p2 = project;
-        RequestProcessor.postRequest (new Runnable () {
-                public void run () {
-                    IntrospectedInfo custom = AntSettings.getDefault ().getCustomDefs ();
-                    custom.scanProject (p2);
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                IntrospectedInfo custom = AntSettings.getDefault().getCustomDefs();
+                custom.scanProject(p2);
+                // #8993: also try to refresh FS that script was on...
+                FileObject script = pcookie.getFileObject();
+                if (script != null) {
+                    try {
+                        FileSystem fs = script.getFileSystem();
+                        fs.refresh(false);
+                    } catch (FileStateInvalidException e) {
+                        AntModule.err.notify(ErrorManager.WARNING, e);
+                    }
                 }
-            }, 1000); // a bit later; the target can finish first!
+            }
+        }, 1000); // a bit later; the target can finish first!
     }
 
     // See #29245 for more details. Relevant only for Ant 1.5.1
