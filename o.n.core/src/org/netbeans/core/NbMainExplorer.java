@@ -199,6 +199,9 @@ public final class NbMainExplorer extends CloneableTopComponent
                 listenerInitialized = true;
             }
         }
+        
+        // should we close ProjectsTab?
+        ProjectsTab prjToClose = null;
 
         List curRoots = getRoots ();
         // first of all we have to close top components for
@@ -213,6 +216,15 @@ public final class NbMainExplorer extends CloneableTopComponent
                 if (toRemove.contains(r)) {
                     // close top component asociated with this root context
                     // on all workspaces
+                    
+                    // but not the project since it is a singleton
+                    // i.e. mark it for closing
+                    if (NbProjectOperation.hasProjectDesktop() && 
+                        NbProjectOperation.getProjectDesktop().getClass() == r.getClass()) {
+                        prjToClose = (ProjectsTab) me.getValue();
+                        continue;
+                    }
+                    
                     closeEverywhere((TopComponent)me.getValue());
                 }
             }
@@ -236,8 +248,26 @@ public final class NbMainExplorer extends CloneableTopComponent
                 for (Iterator iter2 = workspaces.iterator(); iter2.hasNext(); ) {
                     tc.open((Workspace)iter2.next());
                 }
+            } 
+
+            
+            if (r.equals(NbProjectOperation.getProjectDesktop())) {
+                // put a request for later validation
+                // we must do this here, because of ExplorerManager's deserialization.
+                // Root context of ExplorerManager is validated AFTER all other
+                // deserialization, so we must wait for it
+                
+                //assert tc == prjToClose
+                tc.scheduleValidation();
+                // unmark close flag
+                prjToClose = null;
             }
         }
+        
+        if (prjToClose != null) {
+            closeEverywhere(prjToClose);
+        }
+        
         // save roots for use during future changes
         prevRoots = curRoots;
 
@@ -488,8 +518,7 @@ public final class NbMainExplorer extends CloneableTopComponent
             // we must do this here, because of ExplorerManager's deserialization.
             // Root context of ExplorerManager is validated AFTER all other
             // deserialization, so we must wait for it
-            valid = false;
-            WindowManagerImpl.deferredPerformer().putRequest(this, null);
+            scheduleValidation();
         }
 
         /** Implementation of DeferredPerformer.DeferredCommand
@@ -546,6 +575,15 @@ public final class NbMainExplorer extends CloneableTopComponent
                 weakRcL = WeakListener.propertyChange(rcListener(), rc);
             }
             rc.addPropertyChangeListener(weakRcL);
+        }
+        
+        // put a request for later validation
+        // we must do this here, because of ExplorerManager's deserialization.
+        // Root context of ExplorerManager is validated AFTER all other
+        // deserialization, so we must wait for it
+        final void scheduleValidation() {
+            valid = false;
+            WindowManagerImpl.deferredPerformer().putRequest(this, null);
         }
 
         /** Multi - purpose listener, listens to: <br>
@@ -794,7 +832,7 @@ public final class NbMainExplorer extends CloneableTopComponent
         
         private static ProjectsTab DEFAULT;
         
-        public ProjectsTab() {
+        private ProjectsTab() {
             if (DEFAULT == null) {
                 DEFAULT = this;
             }
@@ -803,6 +841,12 @@ public final class NbMainExplorer extends CloneableTopComponent
         public static synchronized ProjectsTab getDefault() {
             if (DEFAULT == null) {
                 DEFAULT = new ProjectsTab();
+                
+                // put a request for later validation
+                // we must do this here, because of ExplorerManager's deserialization.
+                // Root context of ExplorerManager is validated AFTER all other
+                // deserialization, so we must wait for it
+                DEFAULT.scheduleValidation();
             }
             
             return DEFAULT;
