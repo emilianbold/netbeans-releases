@@ -16,7 +16,6 @@ package org.netbeans.modules.xml.multiview;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -28,8 +27,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.windows.CloneableTopComponent;
 import org.xml.sax.InputSource;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,11 +48,11 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     private org.xml.sax.SAXException saxError;
     boolean changedFromUI;
 
-    private static final int PARSING_INIT_DELAY = 100;
+    private static final int UPDATE_FROM_MODEL_DELAY = 100;
+    private static final int UPDATE_MODEL_DELAY = 500;
     private RequestProcessor.Task synchronizeModelTask = null;
     private boolean updateFromModel = false;
     private boolean updatingFromModel = false;
-    private boolean updatingModel = false;
     private Boolean overwriteUnparseable = Boolean.TRUE;
     private long handleUnparseableTimeout = 0;
     private static final int HANDLE_UNPARSABLE_TIMEOUT = 2000;
@@ -68,6 +65,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             editor.saveDocument();
         }
     };
+    private final RequestProcessor requestProcessor = new RequestProcessor();
 
     /** Creates a new instance of XmlMultiViewDataObject */
     public XmlMultiViewDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
@@ -88,13 +86,6 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     private synchronized XmlMultiViewEditorSupport createEditorSupport() {
         if(editor == null) {
             editor = new XmlMultiViewEditorSupport(this);
-            editor.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (EditorCookie.Observable.PROP_DOCUMENT.equals(evt.getPropertyName())) {
-                        documentUpdated();
-                    }
-                }
-            });
         }
         return editor;
     }
@@ -340,13 +331,11 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     }
 
     public void modelChanged() {
-        if (!updatingModel) {
-            synchronizeModel(true);
-        }
+        synchronizeModel(true);
     }
 
     public void documentUpdated() {
-        if (!updatingFromModel) {
+        if (!updateFromModel && !updatingFromModel) {
             synchronizeModel(false);
         }
     }
@@ -354,6 +343,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     private void sync() {
         if (updateFromModel) {
             updatingFromModel = true;
+            updateFromModel = false;
             try {
                 updateDocument();
             } finally {
@@ -365,25 +355,22 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 ErrorManager.getDefault().notify(ex);
             }
         } else {
-            updatingModel = true;
             try {
                 parseDocument(true);
             } catch (IOException e) {
                 synchronizeModel(updateFromModel);
-            } finally {
-                updatingModel = false;
             }
         }
     }
 
     private void synchronizeModel(boolean updateFromModel) {
         this.updateFromModel = updateFromModel;
-        getSynchronizeModelTask().schedule(PARSING_INIT_DELAY);
+        getSynchronizeModelTask().schedule(updateFromModel ? UPDATE_FROM_MODEL_DELAY : UPDATE_MODEL_DELAY);
     }
 
     private RequestProcessor.Task getSynchronizeModelTask() {
         if (synchronizeModelTask == null) {
-            synchronizeModelTask = RequestProcessor.getDefault().create(new Runnable() {
+            synchronizeModelTask = requestProcessor.create(new Runnable() {
                 public void run() {
                     sync();
                 }
