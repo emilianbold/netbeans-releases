@@ -406,6 +406,7 @@
 <mapID target="listen_create" url="web/servlet/listen_create.html" />
 <mapID target="ieglossary_URL_query_string" url="web/glossary/URL_query_string.html" />
 <mapID target="debug.attachvm.window" url="debug/debug_remote.html" />
+<mapID target="use_dbcp_in_jsp" url="nbdocs:/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html" />
 
 <!--Open Image dialog available from icon property editors (and other places?)-->
 <mapID target="csh.openimage" url="pending.html" />
