@@ -16,8 +16,10 @@ package threaddemo.views;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.beans.PropertyVetoException;
+import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.tree.TreeModel;
 import threaddemo.views.looktree.LookTreeView;
 import org.openide.explorer.ExplorerPanel;
@@ -25,6 +27,9 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import threaddemo.model.Phadhail;
 import org.netbeans.api.nodes2looks.Nodes;
+import org.openide.actions.PopupAction;
+import org.openide.util.actions.CallbackSystemAction;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Factory for views over Phadhail.
@@ -45,6 +50,15 @@ public class PhadhailViews {
         } catch (PropertyVetoException pve) {
             pve.printStackTrace();
         }
+        CallbackSystemAction a = (CallbackSystemAction)SystemAction.get(PopupAction.class);
+        Object key = a.getActionMapKey();
+        p.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("shift F10"), key);
+        // XXX shouldn't TreeView bind this in the ActionMap automatically?
+        p.getActionMap().put(key, a /*new javax.swing.AbstractAction() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                System.err.println("S-F10!");
+            }
+        }*/);
         return p;
     }
     
