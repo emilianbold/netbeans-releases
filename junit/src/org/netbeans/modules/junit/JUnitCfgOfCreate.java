@@ -380,9 +380,9 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setMaximumSize(new java.awt.Dimension(500, 320));
+        setMaximumSize(null);
         setMinimumSize(new java.awt.Dimension(500, 320));
-        setPreferredSize(new java.awt.Dimension(500, 320));
+        setPreferredSize(null);
         lblFileSystem.setText(bundle.getString("JUnitCfgOfCreate.lblFileSystem.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
