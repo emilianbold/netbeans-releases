@@ -31,6 +31,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.GlobFileBuiltQuery;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
@@ -62,10 +63,13 @@ final class NbModuleProject implements Project {
     private final Lookup lookup;
     private String displayName;
     private final ModuleList moduleList;
+    private Map/*<String,String>*/ evalPredefs;
+    private List/*<Map<String,String>>*/ evalDefs;
     
     NbModuleProject(AntProjectHelper helper) {
         this.helper = helper;
-        moduleList = new ModuleList(this);
+        File nbroot = helper.resolveFile(getNbrootRel());
+        moduleList = ModuleList.getModuleList(nbroot);
         genFilesHelper = new GeneratedFilesHelper(helper);
         FileBuiltQueryImplementation fileBuilt;
         if (supportsUnitTests()) {
@@ -146,7 +150,7 @@ final class NbModuleProject implements Project {
                                         break;
                                     }
                                 } catch (IOException e) {
-                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
                                 }
                             }
                         }
@@ -194,7 +198,7 @@ final class NbModuleProject implements Project {
                     is.close();
                 }
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Util.err.notify(ErrorManager.INFORMATIONAL, e);
             }
         }
         return null;
@@ -213,38 +217,79 @@ final class NbModuleProject implements Project {
     }
     
     /**
+     * Replacement for AntProjectHelper.evaluateString for NbModuleProject.
+     * Takes into account default values for various properties.
+     */
+    String evaluateString(String text) {
+        return PropertyUtils.evaluateString(text, makeEvalPredefs(), makeEvalDefs());
+    }
+    
+    /**
      * Create stock predefs: ${basedir} and system properties.
      */
     private Map/*<String,String>*/ makeEvalPredefs() {
-        Map/*<String,String>*/ m = new HashMap();
-        m.putAll(System.getProperties());
-        m.put("basedir", FileUtil.toFile(getProjectDirectory()).getAbsolutePath()); // NOI18N
-        return m;
+        if (evalPredefs == null) {
+            evalPredefs = new HashMap();
+            evalPredefs.putAll(System.getProperties());
+            evalPredefs.put("basedir", FileUtil.toFile(getProjectDirectory()).getAbsolutePath()); // NOI18N
+        }
+        return evalPredefs;
     }
     
     /**
      * Create stock defs: private project props, shared project props, defaults.
-     * Synch with build-impl.xsl.
+     * Synch with nbbuild/templates/projectized.xml.
      */
     private List/*<Map<String,String>>*/ makeEvalDefs() {
-        Map defaults = new HashMap();
+        if (evalDefs != null) {
+            return evalDefs;
+        }
+        EditableProperties priv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        EditableProperties proj = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        Map/*<String,String>*/ stock = new HashMap();
+        stock.put("nb_all", getNbrootRel()); // NOI18N
+        Iterator it = getModuleList().getAllEntries().iterator();
+        while (it.hasNext()) {
+            stock.put(((ModuleList.Entry)it.next()).getPath() + ".dir", "${nb_all}/nbbuild/netbeans"); // NOI18N
+        }
+        String[] dirs = {
+            "modules", // NOI18N
+            "modules/autoload", // NOI18N
+            "modules/eager", // NOI18N
+            "lib", // NOI18N
+            "lib/ext", // NOI18N
+        };
+        for (int i = 0; i < dirs.length; i++) {
+            stock.put("nb." + dirs[i] + ".dir", dirs[i]); // NOI18N
+        }
+        stock.put("netbeans.dest.dir", "${nb_all}/nbbuild"); // NOI18N
+        stock.put("cluster.dir", "netbeans"); // NOI18N
+        Map/*<String,String>*/ defaults = new HashMap();
         defaults.put("code.name.base.dashes", getName().replace('.', '-')); // NOI18N
-        // XXX the following two are now wrong; needs to look in nb_all/nbbuild/netbeans:
-        defaults.put("module.jar.dir", "modules"); // NOI18N
-        defaults.put("module.jar", "${module.jar.dir}/${code.name.base.dashes}.jar"); // NOI18N
-        defaults.put("manifest.mf", "manifest.mf");
-        defaults.put("src.dir", "src");
-        defaults.put("build.classes.dir", "build/classes");
+        if ("true".equals(proj.getProperty("is.autoload"))) { // NOI18N
+            defaults.put("module.jar.dir", "${nb.modules/autoload.dir}"); // NOI18N
+        } else if ("true".equals(proj.getProperty("is.eager"))) { // NOI18N
+            defaults.put("module.jar.dir", "${nb.modules/eager.dir}"); // NOI18N
+        } else {
+            defaults.put("module.jar.dir", "${nb.modules.dir}"); // NOI18N
+        }
+        defaults.put("module.jar.basename", "${code.name.base.dashes}.jar"); // NOI18N
+        defaults.put("module.jar", "${module.jar.dir}/${module.jar.basename}"); // NOI18N
+        defaults.put("manifest.mf", "manifest.mf"); // NOI18N
+        defaults.put("src.dir", "src"); // NOI18N
+        defaults.put("build.classes.dir", "build/classes"); // NOI18N
         if (supportsUnitTests()) {
-            defaults.put("test.src.dir", "test/unit/src");
-            defaults.put("build.test.classes.dir", "build/test/classes");
+            defaults.put("test.src.dir", "test/unit/src"); // NOI18N
+            defaults.put("build.test.classes.dir", "build/test/classes"); // NOI18N
         }
         // skip a bunch of properties irrelevant here - NBM stuff, etc.
-        return Arrays.asList(new Map/*<String,String>*/[] {
-            helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
-            helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH),
+        evalDefs = Arrays.asList(new Map/*<String,String>*/[] {
+            stock,
+            priv,
+            proj,
             defaults,
         });
+        return evalDefs;
     }
     
     FileObject getSourceDirectory() {
@@ -269,8 +314,7 @@ final class NbModuleProject implements Project {
     }
     
     File getModuleJarLocation() {
-        String moduleJar = "netbeans/" + evaluate("module.jar"); // NOI18N
-        return helper.resolveFile(moduleJar);
+        return helper.resolveFile(evaluateString("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")); // NOI18N
     }
     
     FileObject getModuleJavadocDirectory() {
@@ -278,11 +322,24 @@ final class NbModuleProject implements Project {
         return helper.resolveFileObject(moduleJavadoc);
     }
     
+    private String getNbrootRel() {
+        Element config = helper.getPrimaryConfigurationData(true);
+        Element path = Util.findElement(config, "path", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        if (path != null) {
+            String pathS = Util.findText(path);
+            if (pathS != null) {
+                return pathS.replaceAll("[^/]+", ".."); // NOI18N
+            }
+        }
+        Util.err.log(ErrorManager.WARNING, "Could not compute relative path to nb_all for " + getName());
+        return ".."; // NOI18N
+    }
+    
     FileObject getNbroot() {
-        String nbrootRel = evaluate("nbroot"); // NOI18N
+        String nbrootRel = getNbrootRel();
         FileObject nbroot = getHelper().resolveFileObject(nbrootRel);
         if (nbroot == null) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - cannot find nbroot for " + getName());
+            Util.err.log(ErrorManager.WARNING, "Warning - cannot find nb_all for " + getName());
         }
         return nbroot;
     }
@@ -342,7 +399,7 @@ final class NbModuleProject implements Project {
             try {
                 refreshBuildScripts(true);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Util.err.notify(e);
             }
             
             // register project's classpaths to GlobalClassPathRegistry
@@ -356,7 +413,7 @@ final class NbModuleProject implements Project {
             try {
                 ProjectManager.getDefault().saveProject(NbModuleProject.this);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Util.err.notify(e);
             }
             
             // XXX could discard caches, etc.

@@ -15,6 +15,7 @@ package org.netbeans.modules.apisupport.project;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openide.ErrorManager;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -27,6 +28,8 @@ import org.w3c.dom.Text;
 class Util {
     
     private Util() {}
+
+    public static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project"); // NOI18N
     
     // COPIED FROM org.netbeans.modules.project.ant:
     // (except for namespace == null support in findElement)
