@@ -9,5 +9,5 @@
 #       Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun 
 #       Microsystems, Inc. All Rights Reserved. 
 #                                                            
-pkgrm SUNWnetbeans-ide SUNWnetbeans-ide4-modules SUNWnetbeans-platform4
+pkgrm SUNWnetbeans-netbeans4-1 SUNWnetbeans-enterprise1 SUNWnetbeans-ide5 SUNWnetbeans-platform5
 rm -Rf ~/.netbeans

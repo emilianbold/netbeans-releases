@@ -16,6 +16,18 @@
 #              -                                                             
 #
 ##############################################################################
+#
+# This build script creates following packages with following content:
+# 		pkg name			cluster		content
+# Platform	SUNWnetbeans-platform5	platform5
+# IDE		SUNWnetbeans-ide5		ide5		
+# J2EE		SUNWnetbeans-enterprise1	enterprise1
+# NetBeans4.1	SUNWnetbeans-netbeans4-1	netbeans4.1	+bin+etc
+#
+# It may be extended to build also:
+# Mobility	mobility7.1
+# Profiler	profiler1
+#
 
 TODAY=`date -u '+%Y.%m.%d.%H.%M'`
 
@@ -28,9 +40,10 @@ DO_COMPRESS_PACKAGES=no
 
 FILTER=`dirname $0`/filter
 
-ALL_PACKAGES="SUNWnetbeans-platform4
-SUNWnetbeans-ide4-modules
-SUNWnetbeans-ide"
+ALL_PACKAGES="SUNWnetbeans-platform5
+SUNWnetbeans-ide5
+SUNWnetbeans-enterprise1
+SUNWnetbeans-netbeans4-1"
 ARCH=
 
 
@@ -130,17 +143,21 @@ prepare_source () {
 
 create_pkginfo () {
   case ${1} in
-    SUNWnetbeans-platform4)
-        name="NetBeans Platform"
-        desc="NetBeans Platform"
+    SUNWnetbeans-platform5)
+        name="NetBeans Platform 5"
+        desc="NetBeans Platform version 5"
         ;;
-    SUNWnetbeans-ide4-modules)
+    SUNWnetbeans-ide5)
         name="NetBeans IDE Modules"
         desc="NetBeans IDE Modules"
         ;;
-    SUNWnetbeans-ide)
-        name="NetBeans IDE"
-        desc="NetBeans IDE"
+    SUNWnetbeans-enterprise1)
+        name="NetBeans J2EE Modules"
+        desc="NetBeans J2EE Modules version 1"
+        ;;
+    SUNWnetbeans-netbeans4-1)
+        name="NetBeans IDE 4.1"
+        desc="NetBeans IDE version 4.1"
         ;;
   esac
 
@@ -150,14 +167,14 @@ NAME=${name}
 DESC=${desc}
 ARCH=${ARCH}
 SUNW_PRODNAME=NetBeans
-SUNW_PRODVERS=4.0 DEV
+SUNW_PRODVERS=4.1 DEV
 SUNW_PKGVERS=1.0
 CATEGORY=application
 VENDOR=Sun Microsystems, Inc.
 HOTLINE=Please contact your local service provider
 EMAIL=
 MAXINST=1000
-VERSION=4.0,REV=${TODAY}
+VERSION=4.1,REV=${TODAY}
 BASEDIR=/opt
 CLASSES=none
 EOF
@@ -170,20 +187,27 @@ P SUNWj5dev J2SDK 1.5 development tools
 EOF
 
   case ${1} in
-    SUNWnetbeans-platform4)
+    SUNWnetbeans-platform5)
         cat >> depend << EOF
 P SUNWjhrt JavaHelp Runtime
 EOF
         ;;
-    SUNWnetbeans-ide4-modules)
+    SUNWnetbeans-ide5)
         cat >> depend << EOF
-P SUNWnetbeans-platform4 NetBeans Platform
+P SUNWnetbeans-platform5 NetBeans Platform 5
 EOF
         ;;
-    SUNWnetbeans-ide)
+    SUNWnetbeans-enterprise1)
         cat >> depend << EOF
-P SUNWnetbeans-platform4 NetBeans Platform
-P SUNWnetbeans-ide4-modules NetBeans IDE Modules
+P SUNWnetbeans-platform5 NetBeans Platform 5
+P SUNWnetbeans-ide5 NetBeans IDE Modules
+EOF
+        ;;
+    SUNWnetbeans-netbeans4-1)
+        cat >> depend << EOF
+P SUNWnetbeans-platform5 NetBeans Platform 5
+P SUNWnetbeans-ide5 NetBeans IDE Modules
+P SUNWnetbeans-enterprise1 NetBeans J2EE Modules
 EOF
         ;;
   esac
@@ -193,13 +217,13 @@ build_package () {
   create_pkginfo $1
   create_depend $1
   pkgproto ${SOURCE_DIR}/netbeans/${2}=netbeans/${2} > proto
-  if [ "${1}" = "SUNWnetbeans-ide" ]; then
+  if [ "${1}" = "SUNWnetbeans-netbeans4-1" ]; then
     pkgproto ${SOURCE_DIR}/netbeans/bin=netbeans/bin >> proto
     echo 's none /usr/bin/netbeans=$BASEDIR/netbeans/bin/netbeans 0755' >> proto
     pkgproto ${SOURCE_DIR}/netbeans/etc/netbeans.conf=/etc/netbeans.conf >> proto
-    pkgproto ${GNOME_DIR}/NetBeans-IDE-4.0.desktop=/usr/share/applications/NetBeans-IDE-4.0.desktop >> proto
+    pkgproto ${GNOME_DIR}/NetBeans-IDE.desktop=/usr/share/applications/NetBeans-IDE-4.1.desktop >> proto
     pkgproto ${GNOME_DIR}/nb48x48.png=/usr/share/pixmaps/nb48x48.png >> proto
-    pkgproto ${GNOME_DIR}/productid=netbeans/nb4.0/config/productid >> proto
+    pkgproto ${GNOME_DIR}/productid=netbeans/nb4.1/config/productid >> proto
   fi
 
   echo "i pkginfo=pkginfo" > prototype
@@ -264,14 +288,17 @@ do_build () {
 
   for package in $ALL_PACKAGES; do
     case ${package} in
-      SUNWnetbeans-platform4)
-        package_subdir=platform4
+      SUNWnetbeans-platform5)
+        package_subdir=platform5
         ;;
-      SUNWnetbeans-ide4-modules)
-        package_subdir=ide4
+      SUNWnetbeans-ide5)
+        package_subdir=ide5
         ;;
-      SUNWnetbeans-ide)
-        package_subdir=nb4.0
+      SUNWnetbeans-enterprise1)
+        package_subdir=enterprise1
+        ;;
+      SUNWnetbeans-netbeans4-1)
+        package_subdir=nb4.1
         ;;
     esac
 

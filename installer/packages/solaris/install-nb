@@ -10,16 +10,17 @@
 #       Microsystems, Inc. All Rights Reserved. 
 #                                                            
 
-gunzip -c SUNWnetbeans-platform4.tar.gz | tar xf -
-gunzip -c SUNWnetbeans-ide4-modules.tar.gz | tar xf -
-gunzip -c SUNWnetbeans-ide.tar.gz | tar xf -
+gunzip -c SUNWnetbeans-platform5.tar.gz | tar xf -
+gunzip -c SUNWnetbeans-ide5.tar.gz | tar xf -
+gunzip -c SUNWnetbeans-enterprise1.tar.gz | tar xf -
+gunzip -c SUNWnetbeans-netbeans4-1.tar.gz | tar xf -
 
-pkgadd -d ./ SUNWnetbeans-platform4 SUNWnetbeans-ide4-modules SUNWnetbeans-ide
+pkgadd -d ./ SUNWnetbeans-platform5 SUNWnetbeans-ide5 SUNWnetbeans-enterprise1 SUNWnetbeans-netbeans4-1
 
-rm -Rf SUNWnetbeans-platform4 SUNWnetbeans-ide4-modules SUNWnetbeans-ide
+rm -Rf SUNWnetbeans-platform5 SUNWnetbeans-ide5 SUNWnetbeans-enterprise1 SUNWnetbeans-netbeans4-1
 
 ls -l /opt/netbeans
 ls -l /usr/bin/netbeans
 ls -l /etc/netbeans.conf
-ls -l /usr/share/applications/NetBeans-IDE-4.0.desktop
+ls -l /usr/share/applications/NetBeans-IDE-4.1.desktop
 ls -l /usr/share/pixmaps/nb48x48.png
