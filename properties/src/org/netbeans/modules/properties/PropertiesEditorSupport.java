@@ -23,6 +23,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.Timer;
+import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.EditorKit;
 import javax.swing.text.BadLocationException;
@@ -30,6 +31,8 @@ import javax.swing.text.BadLocationException;
 
 import org.openide.util.WeakListener;
 import org.openide.util.NbBundle;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.text.EditorSupport;          
 import org.openide.text.PositionRef;
 import org.openide.cookies.EditCookie;
@@ -66,6 +69,8 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
 
   /** The flag saying if we should listen to the document modifications */
   private boolean listenToEntryModifs = true;
+  
+  private Document listenDocument;
 
   /** Listener to the document changes - entry. The superclass holds a saving manager 
   * for the whole dataobject. */
@@ -89,7 +94,8 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent evt) {
         if (isDocumentLoaded()) {
-          getDocument().addDocumentListener(getEntryModifL());
+          listenDocument = getDocument();
+          listenDocument.addDocumentListener(getEntryModifL());
         }
       }
     });
@@ -191,10 +197,15 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     });
   }              
   
-  /** Returns whether there is an open editor component. */
+  /** Returns whether there is an open component (editor or open). */
   public synchronized boolean hasOpenComponent() {
     if (((PropertiesDataObject)myEntry.getDataObject()).getOpenSupport().hasOpenComponent())
       return true;
+    return hasOpenEditorComponent();
+  }  
+
+  /** Returns whether there is an open editor component. */
+  public synchronized boolean hasOpenEditorComponent() {
     java.util.Enumeration en = allEditors.getComponents ();
     return en.hasMoreElements ();
   }  
@@ -203,7 +214,23 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     super.saveDocument();
     myEntry.setModified(false);
   }
+  
+  public boolean close() {
+    if (!super.close())
+      return false;
+                      
+    closeDocumentEntry();                  
+    myEntry.getHandler().reparseNowBlocking();  
+    return true;  
+  }
 
+  /** Clears all data from memory.
+  */
+/*  protected void closeDocument () {
+    super.closeDocument();
+    closeDocumentEntry();
+  }*/
+  
   /** Utility method which enables or disables listening to modifications
   * on asociated document.
   * <P>
@@ -215,10 +242,14 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
   public void setModificationListening (final boolean listenToModifs) {
     this.listenToEntryModifs = listenToModifs;
     if (getDocument() == null) return;
-    if (listenToEntryModifs)
-      getDocument().addDocumentListener(getEntryModifL());
-    else
-      getDocument().removeDocumentListener(getEntryModifL());
+    if (listenToEntryModifs) {
+      listenDocument = getDocument();
+      listenDocument.addDocumentListener(getEntryModifL());
+    }  
+    else {
+      if (listenDocument != null)
+        listenDocument.removeDocumentListener(getEntryModifL());
+    }  
   }
 
   /* A method to create a new component. Overridden in subclasses.
@@ -232,9 +263,20 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     Editor editor = new PropertiesEditor (obj, this);
     return editor;
   }
+                
+  /** Creates the loading task. When the task finishes, attaches a modification lisetner to the document */
+  public synchronized Task prepareDocument () {
+    Task t = super.prepareDocument();
+    t.addTaskListener(new TaskListener() {
+      public void taskFinished (Task task) {
+        getDocument().addDocumentListener(getEntryModifL());
+      }
+    });
+    return t;
+  }                                                         
   
   /** Should test whether all data is saved, and if not, prompt the user
-  * to save.
+  * to save. Called by my topcomponent when it wants to close its last topcomponent, but the table editor may still be open
   *
   * @return <code>true</code> if everything can be closed
   */
@@ -243,9 +285,6 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     if (savec != null) {                                                           
       // if the table is open, can close without worries, don't remove the save cookie
       // PENDING - is not thread safe
-      if (((PropertiesDataObject)myEntry.getDataObject()).getOpenSupport().hasOpenComponent())
-          return true;
-    
       MessageFormat format = new MessageFormat(NbBundle.getBundle(PropertiesEditorSupport.class).
         getString("MSG_SaveFile"));
       String msg = format.format(new Object[] { entry.getFile().getName()});
@@ -330,12 +369,10 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
   private void closeDocumentEntry () {
     // listen to modifs
     if (listenToEntryModifs) {
-      // if the save cookie is present and the opener is NOT open -> the user answered NO to save question -> clear save cookie without saving
-      if (((PropertiesDataObject)myEntry.getDataObject()).getOpenSupport().hasOpenComponent())
-        getEntryModifL().clearSaveCookie();
+      getEntryModifL().clearSaveCookie();
 
-      if (getDocument() != null) {
-        getDocument().removeDocumentListener(getEntryModifL());
+      if (listenDocument != null) {
+        listenDocument.removeDocumentListener(getEntryModifL());
       }
     }
   }
@@ -461,6 +498,7 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
       if (!canClose)
         return false;
       propSupport.closeDocumentEntry();
+      entry.getHandler().reparseNowBlocking();  
       return true;
     }
 
