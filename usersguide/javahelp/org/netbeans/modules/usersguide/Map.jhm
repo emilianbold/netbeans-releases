@@ -1093,6 +1093,21 @@
    <mapID target="jndi_jndibrowser_commands" url="jndi/jndibrowser/jndi_jndibrowser_commands.html" />	
    <mapID target="jndi_settings_intro" url="jndi/settings/jndi_settings.html" />
 
+<!--from j2eeserver module-->
+  <mapID target="credits_html" url="credits.html" />
+  <mapID target="general_about_the_j2eeserver_module_html" url="j2eeserver/general/about_the_j2eeserver_module.html" />
+  <mapID target="glossary_deploymentdesc_html" url="j2eeserver/glossary/deploymentdesc.html" />
+  <mapID target="glossary_j2eeappdef_html" url="j2eeserver/glossary/j2eeappdef.html" />
+  <mapID target="glossary_j2eeserverdef_html" url="j2eeserver/glossary/j2eeserverdef.html" />
+  <mapID target="glossary_webcontainerdef_html" url="j2eeserver/glossary/webcontainerdef.html" />
+  <mapID target="glossary_webserverdef_html" url="j2eeserver/glossary/webserverdef.html" />
+  <mapID target="nodes_default_servers_node_html" url="j2eeserver/nodes/default_servers_node.html" />
+  <mapID target="nodes_installed_servers_node_html" url="j2eeserver/nodes/installed_servers_node.html" />
+  <mapID target="nodes_j2ee_applications_defsrv_node_html" url="j2eeserver/nodes/j2ee_applications_defsrv_node.html" />
+  <mapID target="nodes_server_registry_node_html" url="j2eeserver/nodes/server_registry_node.html" />
+  <mapID target="nodes_web_applications_defsrv_node_html" url="j2eeserver/nodes/web_applications_defsrv_node.html" />
+
+
 
 <!--very abstract IDs that are hard to map to anything useful-->
 
