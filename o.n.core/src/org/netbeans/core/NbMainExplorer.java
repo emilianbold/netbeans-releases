@@ -323,7 +323,7 @@ public final class NbMainExplorer extends CloneableTopComponent
   public void readExternal (ObjectInput in)
               throws IOException, ClassNotFoundException {
     super.readExternal(in);
-    System.out.println("READING old main explorer..."); // NOI18N
+    //System.out.println("READING old main explorer..."); // NOI18N
     // read explorer panels (and managers)
     int cnt = in.readInt ();
     for (int i = 0; i < cnt; i++) {
@@ -788,6 +788,8 @@ public final class NbMainExplorer extends CloneableTopComponent
 
 /*
 * Log
+*  54   Gandalf   1.53        1/19/00  Petr Nejedly    Commented out debug 
+*       messages
 *  53   Gandalf   1.52        1/17/00  David Simonek   renaming of tabs now 
 *       react also on NAME node chaanges, not only display name
 *  52   Gandalf   1.51        1/13/00  Jaroslav Tulach I18N
