@@ -27,6 +27,8 @@ import java.io.File;
 import java.nio.charset.Charset;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.URLCookie;
 
 import org.openide.*;
 import org.openide.cookies.EditorCookie;
@@ -63,7 +65,7 @@ import org.netbeans.modules.web.core.WebExecSupport;
 *
 * @author Petr Jiricka
 */
-public class JspDataObject extends MultiDataObject implements QueryStringCookie {
+public class JspDataObject extends MultiDataObject implements QueryStringCookie, URLCookie {
 
     public static final String EA_CONTENT_LANGUAGE = "AttrJSPContentLanguage"; // NOI18N
     public static final String EA_SCRIPTING_LANGUAGE = "AttrJSPScriptingLanguage"; // NOI18N
@@ -85,11 +87,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     transient private Listener listener;
     
     transient final private static boolean debug = false;
-    
+        
     public JspDataObject (FileObject pf, final UniFileLoader l) throws DataObjectExistsException {
         super (pf, l);
         CookieSet cookies = getCookieSet();
         cookies.add (createJspEditorSupport());
+        cookies.add (J2eeModuleProvider.getExecutionSupport(this));
         initialize();
     }
 
@@ -98,7 +101,22 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     public org.openide.nodes.CookieSet getCookieSet0 () {
         return super.getCookieSet ();
     }
+    
+    public DataObject getModule(){
+        try {
+                FileObject root = JspCompileUtil.getContextRoot(getPrimaryFile());
+                DataObject wco = DataObject.find(root);
 
+                if (wco instanceof WebContextObject) {
+                    return wco;
+                }
+            } 
+            catch (DataObjectNotFoundException e) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            }
+        return null;        
+    }
+    
     protected org.openide.nodes.Node createNodeDelegate () {
         Lookup.Template template = new Lookup.Template( org.openidex.nodes.looks.Look.class ); 
         Lookup.Result result = Lookup.getDefault().lookup( template );
@@ -551,6 +569,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return index2;
     }
 
+    public String getURL() {
+        String url = JspCompileUtil.findRelativeContextPath(JspCompileUtil.getContextRoot(getPrimaryFile()), getPrimaryFile());
+        url = url + JspNode.getRequestParams(((MultiDataObject)this).getPrimaryEntry());        
+        return url;
+    }
+    
     ////// -------- INNER CLASSES ---------
 
     private class Listener extends FileChangeAdapter implements PropertyChangeListener/*, ServerRegistryImpl.ServerRegistryListener */{
@@ -622,6 +646,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             refreshPlugin(true);
             firePropertyChange0(PROP_SERVER_CHANGE, null, null);
         }
-    }
+    }    
 }
 

@@ -49,6 +49,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_root}/java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
         <!-- Hopefully set up by nbbuild/build.xml: -->
         <pathelement location="${jdkhome}/lib/tools.jar"/>
+	<pathelement location="${nb_root}/j2eeserver/netbeans/modules/autoload/j2eeserver.jar"/>
       </classpath>
     </javac>
   </target>
