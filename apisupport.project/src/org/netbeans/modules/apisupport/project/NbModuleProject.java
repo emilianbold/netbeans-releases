@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -102,6 +103,26 @@ final class NbModuleProject implements Project {
         sourcesHelper.addTypedSourceRoot("${src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Source Packages", null, null);
         sourcesHelper.addTypedSourceRoot("${test.unit.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Unit Test Packages", null, null);
         sourcesHelper.addTypedSourceRoot("${test.qa-functional.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Functional Test Packages", null, null);
+        // #42332: also any other misc. test dirs (just add source roots, no CP etc. for now)
+        FileObject testDir = helper.getProjectDirectory().getFileObject("test"); // NOI18N
+        if (testDir != null) {
+            Enumeration/*<FileObject>*/ kids = testDir.getChildren(false);
+            while (kids.hasMoreElements()) {
+                FileObject testSubdir = (FileObject) kids.nextElement();
+                if (!testSubdir.isFolder()) {
+                    continue;
+                }
+                String name = testSubdir.getNameExt();
+                if (testDir.getFileObject("build-" + name + ".xml") == null) { // NOI18N
+                    continue;
+                }
+                if (name.equals("unit") || name.equals("qa-functional")) { // NOI18N
+                    // Already handled specially.
+                    continue;
+                }
+                sourcesHelper.addTypedSourceRoot("test/" + name + "/src", JavaProjectConstants.SOURCES_TYPE_JAVA, name + " Test Packages", null, null);
+            }
+        }
         if (helper.resolveFileObject("javahelp/manifest.mf") == null) { // NOI18N
             // Special hack for core - ignore core/javahelp
             sourcesHelper.addTypedSourceRoot("javahelp", "javahelp", "JavaHelp Packages", null, null);
