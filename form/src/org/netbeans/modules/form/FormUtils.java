@@ -24,6 +24,7 @@ import javax.swing.JComponent;
 
 import org.openide.util.Utilities;
 import org.openide.util.io.*;
+import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import com.netbeans.developer.modules.loaders.form.util.*;
 
 /** A class that contains utility methods for the formeditor.
@@ -35,6 +36,8 @@ public class FormUtils extends Object {
 // -----------------------------------------------------------------------------
 // Static variables
   
+  private static String PROP_NAME = "PropertyName";
+
   private static final boolean debug = (System.getProperty ("netbeans.debug.form") != null);
 
   /** The list of all well-known heavyweight components */
@@ -367,10 +370,81 @@ public class FormUtils extends Object {
     if ((cl == null) || (!(stopClass.isAssignableFrom (cl)))) return null;
     return cl;
   }  
+
+// -----------------------------------------------------------------------------
+// XML utilities
+  
+  /** Read property from XML node.
+   * @param propName name of property
+   * @param propClass class of property (to find editor)
+   * @param element XML element representing the property
+   * @return value of property created from XML element
+   */
+  public static Object readProperty (String propName, Class propClass, org.w3c.dom.Node element) throws java.io.IOException {
+    org.w3c.dom.NodeList items = element.getChildNodes ();
+    Object result = null;
+    if (items.getLength () >0) {
+      PropertyEditor propEdit = FormPropertyEditorManager.findEditor (propClass);
+      for(int i=0, n=items.getLength ();i<n; i++){
+        if (items.item (i).getNodeType () == org.w3c.dom.Node.ELEMENT_NODE &&
+            ((org.w3c.dom.Element) items.item (i)).getAttribute (PROP_NAME).equals (propName)) {
+          ((XMLPropertyEditor) propEdit).readFromXML (items.item (i));
+          result = propEdit.getValue();
+        }
+      }
+    }
+    if (result == null) {
+      org.w3c.dom.NamedNodeMap attributes = element.getAttributes ();
+      if (attributes != null) {
+        org.w3c.dom.Node attr = attributes.getNamedItem (propName);
+        if (attr!=null) {
+          String valueText = attr.getNodeValue ();
+          if (valueText != null ){
+            result = GandalfPersistenceManager.decodeValue (valueText);
+          }
+        }
+      }
+    }
+    return result;
+  }
+
+  /** Write information about Color into XML element.
+   * @param propName name of property
+   * @param value value of property
+   * @param propClass class of property (to find editor)
+   * @param element XML element to write to
+   * @param doc the whole XML document
+   */
+  public static void writeProperty (String propName, Object value, Class propClass, org.w3c.dom.Element el,org.w3c.dom.Document doc) {
+    boolean written = false;
+    PropertyEditor propEdit = FormPropertyEditorManager.findEditor (propClass);
+    org.w3c.dom.Node valueNode = null;
+    if (propEdit instanceof XMLPropertyEditor) {
+      propEdit.setValue (value);
+      valueNode = ((XMLPropertyEditor) propEdit).storeToXML (doc);
+      if (valueNode != null) {
+        el.appendChild (valueNode);
+        if (valueNode.getNodeType () == org.w3c.dom.Node.ELEMENT_NODE) {
+          ((org.w3c.dom.Element) valueNode).setAttribute (PROP_NAME, propName);
+        }
+        written = true;
+      }
+    } 
+    if (!written) {
+      String encodedSerializeValue = GandalfPersistenceManager.encodeValue (value);
+      if (encodedSerializeValue != null) {
+        el.setAttribute (propName, encodedSerializeValue);
+      } else {
+        // [PENDING - notify problem?]
+      }
+    }
+  }
 }
 
 /*
  * Log
+ *  22   Gandalf   1.21        12/9/99  Pavel Buzek     utils for XML properties
+ *       - readProperty, writeProperty
  *  21   Gandalf   1.20        11/25/99 Ian Formanek    Uses Utilities module
  *  20   Gandalf   1.19        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
