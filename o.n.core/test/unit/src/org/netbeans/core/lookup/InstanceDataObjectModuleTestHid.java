@@ -226,6 +226,15 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
     private static final class ErrManager extends org.openide.ErrorManager {
         public static final StringBuffer messages = new StringBuffer ();
         
+        private String prefix;
+        
+        public ErrManager () {
+            this ("");
+        }
+        private ErrManager (String s) {
+            prefix = s;
+        }
+        
         public Throwable annotate (Throwable t, int severity, String message, String localizedMessage, Throwable stackTrace, java.util.Date date) {
             return t;
         }
@@ -239,10 +248,13 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         }
         
         public org.openide.ErrorManager getInstance (String name) {
-            return this;
+            return new ErrManager (prefix + name);
         }
         
         public void log (int severity, String s) {            
+            messages.append ('[');
+            messages.append (prefix);
+            messages.append (']');
             messages.append (s);
             messages.append ('\n');
         }
