@@ -515,6 +515,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module jini..."/>
     <ant dir="../jini" target="netbeans"/>
   </target>
+  <target name="all-latex/ant/antint" depends="build-platform">
+    <echo message="Building module latex/ant/antint..."/>
+    <ant dir="../latex/ant/antint" target="netbeans"/>
+  </target>
   <target name="all-latex/auted" depends="build-platform,all-latex/model">
     <echo message="Building module latex/auted..."/>
     <ant dir="../latex/auted" target="netbeans"/>
@@ -523,7 +527,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module latex/bibtex..."/>
     <ant dir="../latex/bibtex" target="netbeans"/>
   </target>
-  <target name="all-latex/branding" depends="build-platform,all-latex/ui">
+  <target name="all-latex/branding" depends="build-platform,all-core/ui,all-latex/project,all-latex/ui">
     <echo message="Building module latex/branding..."/>
     <ant dir="../latex/branding" target="netbeans"/>
   </target>
@@ -551,11 +555,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module latex/nexplorer..."/>
     <ant dir="../latex/nexplorer" target="netbeans"/>
   </target>
-  <target name="all-latex/project" depends="build-platform,all-editor,all-ant,all-latex/model,all-latex/editor,all-latex/core,all-latex/loaders">
+  <target name="all-latex/project" depends="build-platform,all-editor,all-ant,all-latex/ant/antint,all-latex/model,all-latex/editor,all-latex/core,all-latex/loaders">
     <echo message="Building module latex/project..."/>
     <ant dir="../latex/project" target="netbeans"/>
   </target>
-  <target name="all-latex/ui" depends="build-platform,all-editor,all-latex/model,all-latex/editor,all-latex/core,all-latex/loaders,all-latex/project">
+  <target name="all-latex/guiproject" depends="build-platform,all-editor,all-ant,all-latex/ant/antint,all-latex/model,all-latex/editor,all-latex/core,all-latex/loaders,all-projects/projectapi,all-projects/projectuiapi">
+    <echo message="Building module latex/guiproject..."/>
+    <ant dir="../latex/guiproject" target="netbeans"/>
+  </target>
+  <target name="all-latex/ui" depends="build-platform,all-editor,all-latex/model,all-latex/editor,all-latex/core,all-latex/loaders">
     <echo message="Building module latex/ui..."/>
     <ant dir="../latex/ui" target="netbeans"/>
   </target>
