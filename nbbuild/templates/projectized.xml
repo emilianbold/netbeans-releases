@@ -346,7 +346,12 @@ Microsystems, Inc. All Rights Reserved.
     <target name="debug-test-single-nb" depends="init,test-init,test-build" if="netbeans.home">
         <fail unless="test.class">Must set test.class</fail>
         <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${test.class}">
-            <classpath refid="test.unit.run.cp"/>
+            <classpath>
+                <path refid="test.unit.run.cp"/>
+                <!-- Permit extra sources to be searched even if they are not in the actual CP. -->
+                <!-- Used e.g. from ant/test/unit since some tests use dynamic loading: -->
+                <pathelement path="${test.unit.debug.cp.extra}"/>
+            </classpath>
         </nbjpdastart>
         <antcall target="do-debug-test-single"/>
     </target>
