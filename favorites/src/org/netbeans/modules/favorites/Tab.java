@@ -395,11 +395,6 @@ implements OperationListener, Runnable, ExplorerManager.Provider {
         return current;
     }
 
-    /** Temporary solution. An API should be created to allow logical view providers
-     * to register routines for serching nodes in these views. Since the WebModule's
-     * logical view is currently the only logical view known, serching nodes in this
-     * view is "hardcoded" in this method.
-     */
     private static Node selectInLogicalViews(DataObject original, Node start) {
         return start;
         /* Nothing for now.
