@@ -34,32 +34,31 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
  * @author Peter Williams
  */
 public class WebServiceClientWizardDescriptor implements WizardDescriptor.FinishablePanel, WizardDescriptor.ValidatingPanel {
-    
-	private WizardDescriptor wizardDescriptor;
-	private ClientInfo component = null;
-        private String projectPath;
-	
+
+    private WizardDescriptor wizardDescriptor;
+    private ClientInfo component = null;
+    private String projectPath;
+
     public WebServiceClientWizardDescriptor() {
     }
-    
+
     public boolean isFinishPanel(){
         return true;
     }
 
     private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
-
-	public final void addChangeListener(ChangeListener l) {
+        public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
-	
+
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
-	
+
     protected final void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
@@ -70,23 +69,20 @@ public class WebServiceClientWizardDescriptor implements WizardDescriptor.Finish
             ((ChangeListener)it.next()).stateChanged(ev);
         }
     }
-	
-    public Component getComponent()
-    {
-		if(component == null) {
-			component = new ClientInfo(this);
-		}
-		
-		return component;
+
+    public Component getComponent() {
+        if(component == null) {
+            component = new ClientInfo(this);
+        }
+
+        return component;
     }
-	
-    public HelpCtx getHelp()
-	{
-		return null;
+
+    public HelpCtx getHelp() {
+        return null;
     }
-	
-    public boolean isValid()
-    { 
+
+    public boolean isValid() { 
         boolean projectDirValid=true;
         String illegalChar = null;
         if (projectPath.indexOf("%")>=0) {
@@ -99,33 +95,34 @@ public class WebServiceClientWizardDescriptor implements WizardDescriptor.Finish
             projectDirValid=false;
             illegalChar="?";
         }
+
         if (!projectDirValid) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage",NbBundle.getMessage(WebServiceClientWizardDescriptor.class,"MSG_InvalidProjectPath",projectPath,illegalChar));
             return false;
-            
+
+        } else {
+            return component.valid(wizardDescriptor);   
         }
-        else return component.valid(wizardDescriptor);
     }
 
-	public void readSettings(Object settings) {
-            wizardDescriptor = (WizardDescriptor) settings;
-            component.read(wizardDescriptor);
-            Project project = Templates.getProject(wizardDescriptor);
-            projectPath = project.getProjectDirectory().getPath();
+    public void readSettings(Object settings) {
+        wizardDescriptor = (WizardDescriptor) settings;
+        component.read(wizardDescriptor);
+        Project project = Templates.getProject(wizardDescriptor);
+        projectPath = project.getProjectDirectory().getPath();
 
-            // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
-            // this name is used in NewFileWizard to modify the title
-            wizardDescriptor.putProperty("NewFileWizard_Title", 
-            NbBundle.getMessage(WebServiceClientWizardDescriptor.class, "LBL_WebServiceClient"));// NOI18N        
-	}
+        // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
+        // this name is used in NewFileWizard to modify the title
+        wizardDescriptor.putProperty("NewFileWizard_Title", 
+        NbBundle.getMessage(WebServiceClientWizardDescriptor.class, "LBL_WebServiceClient"));// NOI18N        
+    }
 
-	public void storeSettings(Object settings) {
-		WizardDescriptor d = (WizardDescriptor) settings;
-		component.store(d);
-		((WizardDescriptor) d).putProperty("NewFileWizard_Title", null); // NOI18N
-	}
-	
-	public void validate() throws org.openide.WizardValidationException {
-	}
-	
+    public void storeSettings(Object settings) {
+        WizardDescriptor d = (WizardDescriptor) settings;
+        component.store(d);
+        ((WizardDescriptor) d).putProperty("NewFileWizard_Title", null); // NOI18N
+    }
+
+    public void validate() throws org.openide.WizardValidationException {
+    }
 }

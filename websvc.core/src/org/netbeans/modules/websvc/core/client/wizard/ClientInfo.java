@@ -105,12 +105,16 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         btnGrpWsdlSource = new javax.swing.ButtonGroup();
         jLblChooseSource = new javax.swing.JLabel();
         jRbnServiceURL = new javax.swing.JRadioButton();
+        jLblWsdlURL = new javax.swing.JLabel();
         jTxtWsdlURL = new javax.swing.JTextField();
         jBtnGetWsdl = new javax.swing.JButton();
+        jLblLocalFNDescription = new javax.swing.JLabel();
+        jBtnProxy = new javax.swing.JButton();
         jLblLocalFilename = new javax.swing.JLabel();
         jTxtLocalFilename = new javax.swing.JTextField();
-        jBtnProxy = new javax.swing.JButton();
+        jLblDummy = new javax.swing.JLabel();
         jRbnFilesystem = new javax.swing.JRadioButton();
+        jLblWsdlFile = new javax.swing.JLabel();
         jTxtWsdlFile = new javax.swing.JTextField();
         jBtnBrowse = new javax.swing.JButton();
         jSeparator = new javax.swing.JSeparator();
@@ -145,8 +149,15 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(jRbnServiceURL, gridBagConstraints);
 
+        jLblWsdlURL.setLabelFor(jTxtWsdlURL);
+        org.openide.awt.Mnemonics.setLocalizedText(jLblWsdlURL, org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_WsdlUrl"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 22, 6, 6);
+        add(jLblWsdlURL, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(jTxtWsdlURL, gridBagConstraints);
@@ -166,18 +177,12 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(jBtnGetWsdl, gridBagConstraints);
 
-        jLblLocalFilename.setLabelFor(jTxtLocalFilename);
-        org.openide.awt.Mnemonics.setLocalizedText(jLblLocalFilename, NbBundle.getMessage(ClientInfo.class, "LBL_LocalFilename"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLblLocalFNDescription, org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_LocalFNDescription"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 21, 6, 6);
-        add(jLblLocalFilename, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
-        add(jTxtLocalFilename, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 22, 6, 6);
+        add(jLblLocalFNDescription, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(jBtnProxy, org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_ProxySettings"));
         jBtnProxy.setFocusable(false);
@@ -194,6 +199,24 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(jBtnProxy, gridBagConstraints);
 
+        jLblLocalFilename.setLabelFor(jTxtLocalFilename);
+        org.openide.awt.Mnemonics.setLocalizedText(jLblLocalFilename, NbBundle.getMessage(ClientInfo.class, "LBL_LocalFilename"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 22, 12, 6);
+        add(jLblLocalFilename, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 6);
+        add(jTxtLocalFilename, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        add(jLblDummy, gridBagConstraints);
+
         btnGrpWsdlSource.add(jRbnFilesystem);
         org.openide.awt.Mnemonics.setLocalizedText(jRbnFilesystem, org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_WsdlSourceFilesystem"));
         jRbnFilesystem.addActionListener(new java.awt.event.ActionListener() {
@@ -207,8 +230,15 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(jRbnFilesystem, gridBagConstraints);
 
+        jLblWsdlFile.setLabelFor(jTxtWsdlFile);
+        org.openide.awt.Mnemonics.setLocalizedText(jLblWsdlFile, org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_WsdlFilename"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 22, 12, 6);
+        add(jLblWsdlFile, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 6);
@@ -335,10 +365,13 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
 
     private void enableWsdlSourceFields(boolean fromService, boolean fromFile) {
         // file related fields
+        jLblWsdlFile.setEnabled(fromFile);
         jTxtWsdlFile.setEnabled(fromFile);
         jBtnBrowse.setEnabled(fromFile);
 
         // service related fields
+        jLblLocalFNDescription.setEnabled(fromService);
+        jLblWsdlURL.setEnabled(fromService);
         jTxtWsdlURL.setEnabled(fromService);
         String wsdlUrlText = jTxtWsdlURL.getText().trim();
         jBtnGetWsdl.setEnabled(fromService && isValidUrl(wsdlUrlText));
@@ -356,10 +389,14 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
     private javax.swing.JComboBox jCbxPackageName;
     private javax.swing.JLabel jLblChooseSource;
     private javax.swing.JLabel jLblClientType;
+    private javax.swing.JLabel jLblDummy;
+    private javax.swing.JLabel jLblLocalFNDescription;
     private javax.swing.JLabel jLblLocalFilename;
     private javax.swing.JLabel jLblPackageDescription;
     private javax.swing.JLabel jLblPackageName;
     private javax.swing.JLabel jLblProject;
+    private javax.swing.JLabel jLblWsdlFile;
+    private javax.swing.JLabel jLblWsdlURL;
     private javax.swing.JRadioButton jRbnFilesystem;
     private javax.swing.JRadioButton jRbnServiceURL;
     private javax.swing.JSeparator jSeparator;
