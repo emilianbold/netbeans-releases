@@ -44,11 +44,8 @@ ToDo:
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
   </target>
-  <target name="javahelp" depends="check" if="jpda">
-    <copydir src="javahelp" dest="netbeans/docs"/>
-  </target>
   <!-- Build only if JPDA is available now. -->
-  <target name="netbeans" depends="check,jars,javahelp" if="jpda"/>
+  <target name="netbeans" depends="check,jars" if="jpda"/>
   <target name="nbm" depends="check,netbeans" if="jpda">
     <makenbm file="debuggerjpda.nbm"
              topdir="."
