@@ -34,6 +34,15 @@ Microsystems, Inc. All Rights Reserved.
         </folder> <!-- Hidden -->
     </folder> <!-- Services -->
 
+    <folder name="Plugins">
+        <folder name="XML">
+            <folder name="GrammarQueryManagers">
+                <file name="semantics-grammar-to-generic-grammar-separator"/>
+                <file name="generic-grammar-to-universal-grammar-separator"/>
+            </folder>
+        </folder>
+    </folder>
+    
     <folder name="Editors">
 
         <folder name="text">
