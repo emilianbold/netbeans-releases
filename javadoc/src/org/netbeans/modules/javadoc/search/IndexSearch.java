@@ -91,7 +91,8 @@ public class IndexSearch
     /* Hand made components */
     private javax.swing.JScrollPane resultsScrollPane;
     private javax.swing.JList resultsList;
-    private HtmlBrowser.BrowserComponent quickBrowser;
+    //private HtmlBrowser.BrowserComponent quickBrowser;
+    private HtmlBrowser quickBrowser;
     private org.openide.awt.SplittedPanel splitPanel;
 
     /** Button titles */
@@ -190,7 +191,7 @@ public class IndexSearch
         splitPanel.add( resultsScrollPane, org.openide.awt.SplittedPanel.ADD_FIRST );
 
         // Quick browser component
-        quickBrowser = new HtmlBrowser.BrowserComponent( true, false );
+        quickBrowser = new HtmlBrowser( true, false );//.BrowserComponent( true, false );
         quickBrowser.setEnableLocation( false );
         quickBrowser.setEnableHome( false );
         splitPanel.add( quickBrowser, org.openide.awt.SplittedPanel.ADD_SECOND );
