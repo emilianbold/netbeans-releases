@@ -107,7 +107,7 @@ class FakeCheckboxPeer extends FakeComponentPeer implements CheckboxPeer
         public Dimension getMinimumSize() {
             String label = ((Checkbox)_target).getLabel();
 
-            FontMetrics fm = this.getFontMetrics(_target.getFont());
+            FontMetrics fm = this.getFontMetrics(this.getFont());
             int w = fm.stringWidth(label);
             int h = fm.getHeight();
 

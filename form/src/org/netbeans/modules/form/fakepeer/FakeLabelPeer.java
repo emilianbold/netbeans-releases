@@ -52,7 +52,7 @@ class FakeLabelPeer extends FakeComponentPeer implements LabelPeer
         }
         
         public void paint(Graphics g) {
-            Label target =(Label) _target;
+            Label target = (Label) _target;
 
             Dimension sz = target.getSize();
             g.setColor(target.getBackground());
@@ -89,9 +89,9 @@ class FakeLabelPeer extends FakeComponentPeer implements LabelPeer
         }
 
         public Dimension getMinimumSize() {
-            String label =((Label)_target).getText();
+            String label = ((Label)_target).getText();
 
-            FontMetrics fm = this.getFontMetrics(_target.getFont());
+            FontMetrics fm = this.getFontMetrics(this.getFont());
             int w = fm.stringWidth(label);
             int h = fm.getHeight();
 

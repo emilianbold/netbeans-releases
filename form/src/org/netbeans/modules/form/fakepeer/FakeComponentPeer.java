@@ -43,9 +43,6 @@ abstract class FakeComponentPeer implements FakePeer
         setCursor(_target.getCursor());
         setEnabled(_target.isEnabled());
 
-//        if (_target.getParent() == null)
-//            setFont(_target.getFont());
-
         // how to recognize that the color was set to target explicitly?
         Container parent = _target.getParent();
         Color color = _target.getBackground();
@@ -60,6 +57,11 @@ abstract class FakeComponentPeer implements FakePeer
         else
             _target.setForeground(_delegate.getForeground());
 
+        Font font = _target.getFont();
+        if (font == null || (parent != null && parent.getFont() == font))
+            font = new Font("Dialog", Font.PLAIN, 12); // NOI18N
+        _delegate.setFont(font);
+            
         _delegate.setName(_target.getName());
         //    _delegate.setLocale(_target.getLocale());
         _delegate.setDropTarget(_target.getDropTarget());

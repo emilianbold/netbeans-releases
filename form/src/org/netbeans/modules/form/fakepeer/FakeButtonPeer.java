@@ -80,9 +80,9 @@ class FakeButtonPeer extends FakeComponentPeer implements ButtonPeer
         }
 
         public Dimension getMinimumSize() {
-            String label =((Button)_target).getLabel();
+            String label = ((Button)_target).getLabel();
 
-            FontMetrics fm = this.getFontMetrics(_target.getFont());
+            FontMetrics fm = this.getFontMetrics(this.getFont());
             int w = fm.stringWidth(label);
             int h = fm.getHeight();
 

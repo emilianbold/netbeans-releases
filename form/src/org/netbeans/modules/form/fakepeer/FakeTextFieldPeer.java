@@ -79,9 +79,9 @@ class FakeTextFieldPeer extends FakeTextComponentPeer implements TextFieldPeer
         }
 
         public Dimension getMinimumSize() {
-            String text =((TextField)_target).getText();
+            String text = ((TextField)_target).getText();
 
-            FontMetrics fm = this.getFontMetrics(_target.getFont());
+            FontMetrics fm = this.getFontMetrics(this.getFont());
             int w = fm.stringWidth(text);
             int h = fm.getHeight();
 

@@ -15,6 +15,7 @@
 package org.netbeans.modules.form.fakepeer;
 
 import java.awt.*;
+import java.awt.peer.ComponentPeer;
 import java.lang.reflect.*;
 
 /**
@@ -27,7 +28,12 @@ public class FakePeerSupport
     private FakePeerSupport() {
     }
 
-    public static void attachFakePeer(Component comp) {
+    public static boolean attachFakePeer(Component comp) {
+        if (comp == null || comp.isDisplayable()
+              || comp instanceof javax.swing.JComponent
+              || comp instanceof javax.swing.RootPaneContainer)
+            return false;
+
         FakePeer peer = null;
 
         if (comp instanceof Label)
@@ -55,8 +61,13 @@ public class FakePeerSupport
         else if (comp instanceof Canvas)
             peer = new FakeCanvasPeer((Canvas) comp);
         else
-            return;
+            return false;
 
+        attachFakePeer(comp, peer);
+        return false;
+    }
+
+    public static void attachFakePeer(Component comp, ComponentPeer peer) {
         try {
             Field f = Component.class.getDeclaredField("peer"); // NOI18N
             f.setAccessible(true);
@@ -73,12 +84,25 @@ public class FakePeerSupport
 
         for (int i = 0; i < ncomponents; i++) {
             Component comp = components[i];
-            if (!comp.isDisplayable()) // peer not attached yet
-                attachFakePeer(comp);
-
+            attachFakePeer(comp);
             if (comp instanceof Container)
                 attachFakePeerRecursively((Container) comp);
         }
     }
-}
 
+    public static ComponentPeer detachFakePeer(Component comp) {
+        try {
+            Field f = Component.class.getDeclaredField("peer"); // NOI18N
+            f.setAccessible(true);
+            Object peer = (ComponentPeer) f.get(comp);
+            if (peer instanceof FakePeer) {
+                f.set(comp, null);
+                return (FakePeer) peer;
+            }
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+}

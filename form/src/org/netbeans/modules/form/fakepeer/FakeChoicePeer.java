@@ -97,8 +97,9 @@ class FakeChoicePeer extends FakeComponentPeer implements ChoicePeer
         }
 
         public Dimension getMinimumSize() {
-            String label =((Choice)_target).getSelectedItem();
-            FontMetrics fm = this.getFontMetrics(_target.getFont());
+            String label = ((Choice)_target).getSelectedItem();
+
+            FontMetrics fm = this.getFontMetrics(this.getFont());
             int w = label != null ? fm.stringWidth(label)+5 : 8,
                 h = fm.getHeight();
 
