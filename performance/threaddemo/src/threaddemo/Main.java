@@ -20,8 +20,7 @@ import javax.swing.*;
 import threaddemo.model.*;
 import threaddemo.views.PhadhailViews;
 
-// XXX memory usage meter
-// XXX AWT blockage meter
+// XXX parallel apps - some read only, some with write
 
 /**
  * Demonstrate various models and views for big data sets.
