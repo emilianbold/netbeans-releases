@@ -60,9 +60,8 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Editing">
           <!-- I18N Settings -->
           <file name="org-netbeans-modules-i18n-I18nOptions.shadow">
-            <![CDATA[Services/org-netbeans-modules-i18n-I18nOptions.settings
-SystemFileSystem
-]]>
+            <attr name="originalFile" stringvalue="Services/org-netbeans-modules-i18n-I18nOptions.settings"/>
+            <attr name="originalFileSystem" stringvalue="SystemFileSystem"/>
           </file>
         </folder> <!-- Editing -->
       </folder> <!-- Services -->
