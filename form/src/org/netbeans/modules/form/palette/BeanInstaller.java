@@ -11,8 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/* $Id$ */
-
 package org.netbeans.modules.form.palette;
 
 import java.io.*;
@@ -181,13 +179,13 @@ public final class BeanInstaller
             try {
                 category = paletteFolder.createFolder(cat);
             } catch (IOException e) {
-                if (System.getProperty("netbeans.debug.exceptions") != null) e.printStackTrace();
+                if (System.getProperty("netbeans.debug.exceptions") != null)
+                    e.printStackTrace();
                 /* ignore */
                 return;
             }
         }
 
-        ClassLoader loader = TopManager.getDefault().currentClassLoader();
         Iterator it = beans.iterator();
         LinkedList paletteNodes = new LinkedList();
 
@@ -284,6 +282,24 @@ public final class BeanInstaller
     }
 
     private static void createInstance(FileObject folder, String className, String iconName) {
+        // first check if the class is valid and can be loaded
+        try {
+            Class.forName(className, true, TopManager.getDefault().currentClassLoader());
+        }
+        catch (Throwable ex) {
+            if (System.getProperty("netbeans.debug.exceptions") != null)
+                ex.printStackTrace();
+
+            String message = MessageFormat.format(
+                bundle.getString("FMT_ERR_CannotLoadClass"),
+                new Object [] { className, ex.getClass().getName(), ex.getMessage() });
+
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                message, NotifyDescriptor.ERROR_MESSAGE));
+
+            return;
+        }
+        
         String fileName = formatName(className);
         FileLock lock = null;
         try {
