@@ -31,7 +31,7 @@ import org.openidex.search.*;
 import org.netbeans.modules.search.types.DetailHandler;
 import org.netbeans.modules.search.res.*;
 
-import org.netbeans.editor.*;
+//import org.netbeans.editor.*;
 
 /**
  * Presents search results in output window. It can display
