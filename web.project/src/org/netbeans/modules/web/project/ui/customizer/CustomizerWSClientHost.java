@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -46,8 +46,7 @@ import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
  *
  * @author Peter Williams
  */
-public class CustomizerWSClientHost extends javax.swing.JPanel 
-    implements /*WebCustomizer.Panel, WebCustomizer.ValidatingPanel,*/ PropertyChangeListener {
+public class CustomizerWSClientHost extends javax.swing.JPanel implements PropertyChangeListener {
     
     private WebProjectProperties webProperties;
     private WsCompileEditorSupport.Panel wsCompileEditor;
@@ -56,11 +55,15 @@ public class CustomizerWSClientHost extends javax.swing.JPanel
     
     public CustomizerWSClientHost(WebProjectProperties webProperties, List serviceSettings) {
 //        System.out.println("WSClientCustomizer: constructor");
+        assert serviceSettings != null;
         initComponents();
 
         this.webProperties = webProperties;
         this.wsCompileEditor = null;
         this.serviceSettings = serviceSettings;
+
+        if (serviceSettings.size() > 0)
+            initValues();
     }
     
     /** This method is called from within the constructor to
@@ -108,29 +111,19 @@ public class CustomizerWSClientHost extends javax.swing.JPanel
         wsCompileEditor.initValues(serviceSettings, WsCompileEditorSupport.TYPE_CLIENT);
     }   
     
-    public void validatePanel() throws WizardValidationException {
+//    public void validatePanel() throws WizardValidationException {
 //        System.out.println("WSClientCustomizer: validatePanel ");
-        if(wsCompileEditor != null) {
-            wsCompileEditor.validatePanel();
-        }
-    }
+//        if(wsCompileEditor != null) {
+//            wsCompileEditor.validatePanel();
+//        }
+//    }
     
     public void propertyChange(PropertyChangeEvent evt) {
 //        System.out.println("WSClientCustomizer: propertyChange - " + evt.getPropertyName());
         
         WsCompileEditorSupport.FeatureDescriptor newFeatureDesc = (WsCompileEditorSupport.FeatureDescriptor) evt.getNewValue();
         String propertyName = "wscompile.client." + newFeatureDesc.getServiceName() + ".features";
-        ensurePropertyExists(propertyName, newFeatureDesc.getFeatures());
-        webProperties.put(propertyName, newFeatureDesc.getFeatures());
+        webProperties.putAdditionalProperty(propertyName, newFeatureDesc.getFeatures());
     }
     
-    private void ensurePropertyExists(String propertyName, String features) {
-//        if(webProperties.get(propertyName) == null) {
-//            WebProjectProperties.PropertyDescriptor propertyDescriptor = new WebProjectProperties.PropertyDescriptor(
-//                propertyName, AntProjectHelper.PROJECT_PROPERTIES_PATH, WebProjectProperties.STRING_PARSER);
-//            WebProjectProperties.PropertyInfo propertyInfo = 
-//                webProperties.new PropertyInfo(propertyDescriptor, features, features);
-//            webProperties.initProperty(propertyName, propertyInfo);
-//        }
-    }
 }

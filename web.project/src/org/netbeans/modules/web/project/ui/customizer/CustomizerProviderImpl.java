@@ -14,20 +14,30 @@
 package org.netbeans.modules.web.project.ui.customizer;
 
 import java.awt.Dialog;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.web.project.ProjectWebModule;
+import org.netbeans.modules.web.project.ProjectWebModuleProvider;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.UpdateHelper;
+import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
+import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.netbeans.modules.websvc.api.webservices.WebServicesClientSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.CustomizerProvider;
@@ -109,6 +119,10 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     private static final String RUN = "Run";    
     private static final String RUN_TESTS = "RunTests";
     
+    private static final String WEBSERVICE_CATEGORY = "WebServiceCategory";
+    private static final String WEBSERVICES = "WebServices";
+    private static final String WEBSERVICECLIENTS = "WebServiceClients";
+
     private void init(WebProjectProperties uiProperties) {
         ResourceBundle bundle = NbBundle.getBundle( CustomizerProviderImpl.class );
     
@@ -156,11 +170,43 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 bundle.getString( "LBL_Config_BuildCategory" ), // NOI18N
                 null,
                 new ProjectCustomizer.Category[] { build, war, javadoc }  );
+                
+        ProjectCustomizer.Category services = ProjectCustomizer.Category.create(
+                WEBSERVICES,
+                bundle.getString( "LBL_Config_WebServices" ), // NOI18N
+                null,
+                null);
+                
+        ProjectCustomizer.Category clients = ProjectCustomizer.Category.create(
+                WEBSERVICECLIENTS,
+                bundle.getString( "LBL_Config_WebServiceClients" ), // NOI18N
+                null,
+                null);
+                
+        ProjectCustomizer.Category webServices = ProjectCustomizer.Category.create(
+                WEBSERVICE_CATEGORY,
+                bundle.getString( "LBL_Config_WebServices" ), // NOI18N
+                null,
+                new ProjectCustomizer.Category[] { services, clients } );
+
+        List servicesSettings = null;
+        List serviceClientsSettings = null;
+        ProjectWebModule wm = (ProjectWebModule) uiProperties.getProject().getLookup().lookup(ProjectWebModule.class);
+        WebServicesSupport servicesSupport = WebServicesSupport.getWebServicesSupport(wm.getDocumentBase());
+        if (servicesSupport != null) {
+            servicesSettings = servicesSupport.getServices();
+        }
+        WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(wm.getDocumentBase());
+        if (clientSupport != null) {
+            serviceClientsSettings = clientSupport.getServiceClients();
+        }
+                
         categories = new ProjectCustomizer.Category[] { 
                 sources,
                 libraries,        
                 buildCategory,
                 run,  
+                webServices
         };
         
         Map panels = new HashMap();
@@ -171,6 +217,19 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         panels.put( javadoc, new CustomizerJavadoc( uiProperties ) );
         panels.put( run, new CustomizerRun( uiProperties ) ); 
         
+        if(servicesSettings != null && servicesSettings.size() > 0) {
+            panels.put( services, new CustomizerWSServiceHost( uiProperties, servicesSettings ));
+        } else {
+            panels.put( services, new LabelPanel(NbBundle.getMessage(CustomizerProviderImpl.class, 
+                "LBL_CustomizeWsServiceHost_NoWebServices")));
+        }
+        if(servicesSettings != null && servicesSettings.size() > 0) {
+            panels.put( clients, new CustomizerWSClientHost( uiProperties, serviceClientsSettings ));
+        } else {
+            panels.put( clients, new LabelPanel(NbBundle.getMessage(CustomizerProviderImpl.class, 
+                "LBL_CustomizeWsServiceClientHost_NoWebServiceClients")));
+        }
+
         panelProvider = new PanelProvider( panels );
         
     }
@@ -221,7 +280,35 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 
         public void windowClosed( WindowEvent e) {
             project2Dialog.remove( project );
-        }    
+        }   
+        
+        public void windowClosing( WindowEvent e ) {
+            //Dispose the dialog otherwsie the {@link WindowAdapter#windowClosed}
+            //may not be called
+            Dialog dialog = (Dialog)project2Dialog.get( project );
+            if ( dialog != null ) {
+                dialog.hide ();
+                dialog.dispose();
+            }
+        }
     }    
-                            
+      
+    private class LabelPanel extends JPanel {
+        private JLabel label;
+        
+        LabelPanel(String text) {
+            setLayout(new GridBagLayout());
+            
+            label = new JLabel(text);
+            label.setVerticalAlignment(SwingConstants.CENTER);
+            label.setHorizontalAlignment(SwingConstants.CENTER);
+            GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+            gridBagConstraints.weightx = 1.0;
+            gridBagConstraints.weighty = 1.0;
+            
+            add(label, gridBagConstraints);
+        }
+    }
+
 }

@@ -228,6 +228,8 @@ public class WebProjectProperties {
 
     private StoreGroup privateGroup; 
     private StoreGroup projectGroup;
+    
+    private Properties additionalProperties;
 
     public WebProjectProperties(WebProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
         this.project = project;
@@ -240,6 +242,8 @@ public class WebProjectProperties {
         privateGroup = new StoreGroup();
         projectGroup = new StoreGroup();
         
+        additionalProperties = new Properties();
+
         init(); // Load known properties        
     }
     
@@ -388,12 +392,21 @@ public class WebProjectProperties {
             //PENDING
         }
 
+        storeAdditionalProperties(projectProperties);
+        
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );        
         
     }
     
+    private void storeAdditionalProperties(EditableProperties projectProperties) {
+        for (Iterator i = additionalProperties.keySet().iterator(); i.hasNext();) {
+            Object key = i.next();
+            projectProperties.put(key, additionalProperties.get(key));
+        }
+    }
+
     private static String getDocumentText( Document document ) {
         try {
             return document.getText( 0, document.getLength() );
@@ -549,6 +562,11 @@ public class WebProjectProperties {
 
     public void store() {
         save();
+    }
+
+    /* This is used by CustomizerWSServiceHost */
+    void putAdditionalProperty(String propertyName, String propertyValue) {
+        additionalProperties.setProperty(propertyName, propertyValue);
     }
 
     private static void setNewServerInstanceValue(String newServInstID, Project project, EditableProperties projectProps, EditableProperties privateProps) {
