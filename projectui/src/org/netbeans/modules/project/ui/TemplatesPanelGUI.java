@@ -74,6 +74,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     private static final String ATTR_INSTANTIATING_DESC = "instantiatingWizardURL"; //NOI18N
     
     private Builder firer;
+    private String selectedTemplate = null;
     
     /** Creates new form TemplatesPanelGUI */
     public TemplatesPanelGUI (Builder firer) {
@@ -106,20 +107,26 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     }
     
     public void setSelectedTemplateByName (final String templateName) {
+        selectedTemplate = templateName;
         final TemplatesPanel tempExplorer = ((TemplatesPanel)this.projectsPanel);
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 if (templateName != null) {
                     tempExplorer.setSelectedNode (templateName);
+                    if (tempExplorer.getSelectionPath () == null) {
+                        tempExplorer.selectFirstTemplate ();
+                        selectedTemplate = tempExplorer.getSelectionPath ();
+                    }
                 } else {
                     tempExplorer.selectFirstTemplate ();
+                    selectedTemplate = tempExplorer.getSelectionPath ();
                 }
             }
         });
     }
     
     public String getSelectedTemplateName () {
-        return ((ExplorerProviderPanel)this.projectsPanel).getSelectionPath ();
+        return selectedTemplate;
     }
     
     public FileObject getSelectedTemplate () {
@@ -138,21 +145,22 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
 
     public void propertyChange (PropertyChangeEvent event) {
         if (event.getSource() == this.categoriesPanel) {
-            if (ExplorerManager.PROP_SELECTED_NODES.equals (event.getPropertyName())) {
-                try {
-                    ((ExplorerProviderPanel)this.projectsPanel).setSelectedNodes(new Node[0]);
-                } catch (PropertyVetoException e) {
-                    /*Ignore it*/
-                }
+            if (ExplorerManager.PROP_SELECTED_NODES.equals (event.getPropertyName ())) {
                 Node[] selectedNodes = (Node[]) event.getNewValue();
                 if (selectedNodes != null && selectedNodes.length == 1) {
+                    String lastSelectedTemplate = getSelectedTemplateName ();
+                    try {
+                        ((ExplorerProviderPanel)this.projectsPanel).setSelectedNodes(new Node[0]);
+                    } catch (PropertyVetoException e) {
+                        /*Ignore it*/
+                    }
                     DataObject template = (DataObject) selectedNodes[0].getCookie(DataFolder.class);
                     if (template != null) {
                         FileObject fo = template.getPrimaryFile();
                         ((ExplorerProviderPanel)this.projectsPanel).setRootNode(
                             new FilterNode (selectedNodes[0], this.firer.createTemplatesChildren((DataFolder)template)));
                         // after change of root select the first template to make easy move in wizard
-                        this.setSelectedTemplateByName (null);
+                        this.setSelectedTemplateByName (lastSelectedTemplate);
                     }
                 }
             }
