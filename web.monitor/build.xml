@@ -102,6 +102,22 @@ Microsystems, Inc. All Rights Reserved.
     </locjar>
   </target>
 
+  <target name="check-javahelp" depends="javahelp" description="Validate helpset for various errors.">
+    <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets">
+      <classpath>
+        <pathelement location="../nbbuild/nbantext.jar"/>
+        <fileset dir="../nbbuild/external">
+          <include name="jhall*.jar"/>
+        </fileset>
+      </classpath>
+    </taskdef>
+    <checkhelpsets>
+      <fileset dir="javahelp">
+        <include name="org/netbeans/modules/web/monitor/docs/monitor.hs"/>
+      </fileset>
+    </checkhelpsets>
+  </target>
+
   <target name="copy-to-tomcat5" if="tomcat5-bundled" depends="bundled-tomcat5-check">
     <!-- Originally added by Radim Kubacki. This target copies the
     server side component directly to the installed Tomcat server,
