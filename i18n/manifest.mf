@@ -8,7 +8,7 @@ OpenIDE-Module-Module-Dependencies:
  org.openide.src > 1.0, org.openide.execution > 1.0,
  org.netbeans.modules.javahelp/1 > 1.2
 OpenIDE-Module-Requires: org.openide.execution.ExecutionEngine
-OpenIDE-Module-Specification-Version: 1.13
+OpenIDE-Module-Specification-Version: 1.14
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/i18n/Layer.xml
 
