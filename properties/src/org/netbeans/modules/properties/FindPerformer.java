@@ -246,13 +246,13 @@ public class FindPerformer extends javax.swing.AbstractAction
         else {
             // There is already the find dialog open.
             findDialog.setVisible(true);
-            findDialog.requestFocus();
+            findDialog.requestFocusInWindow();
         }
     }
 
     /** Methods which does the dirty job. It creates and shows find dialog. */
     private void createFindDialog() {
-        final JDialog[] dialog = new JDialog[1];
+        final JDialog dialog;
         final FindPanel panel = new FindPanel();
         DialogDescriptor dd = new DialogDescriptor(
             panel,
@@ -265,13 +265,15 @@ public class FindPerformer extends javax.swing.AbstractAction
             null // listener
         );
 
-        dialog[0] = (javax.swing.JDialog)DialogDisplayer.getDefault().createDialog(dd);
+        dialog = (javax.swing.JDialog)DialogDisplayer.getDefault().createDialog(dd);
 
         // Static reference to the dialog.
-        findDialog = dialog[0];
+        findDialog = dialog;
 
         // set findButton as default
-        dialog[0].getRootPane().setDefaultButton(panel.getButtons()[0]);
+        dialog.getRootPane().setDefaultButton(panel.getButtons()[0]);
+        dialog.setFocusable(false);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
         // set listeners
         // find button
@@ -287,9 +289,7 @@ public class FindPerformer extends javax.swing.AbstractAction
                     wrapSearch = panel.getWrapCheck().isSelected();
                     rowSearch = panel.getRowCheck().isSelected();
                     
-                    dialog[0].setVisible(false);
-                    dialog[0].dispose();
-                    findDialog = null;
+                    dialog.dispose();
                     
                     if(findString != null && !findString.trim().equals("")) {
 
@@ -308,12 +308,16 @@ public class FindPerformer extends javax.swing.AbstractAction
         panel.getButtons()[1].addActionListener(
             new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
-                    dialog[0].setVisible(false);
-                    dialog[0].dispose();
-                    findDialog = null;
+                    dialog.dispose();
                 }
             }
         );
+        
+        dialog.addWindowListener(new WindowAdapter() {
+            public void windowClosed(WindowEvent e) {
+                findDialog = null;
+            }
+        });
         
         // Set flags.
         panel.getHighlightCheck().setSelected(highlightSearch);
@@ -328,10 +332,8 @@ public class FindPerformer extends javax.swing.AbstractAction
         if (findString != null)
             panel.getComboBox().setSelectedItem(findString);
         
-        // Set focus to combo box.
-        panel.getComboBox().requestFocus();
-
-        dialog[0].setVisible(true);
+        dialog.setVisible(true);
+        panel.requestFocusInWindow();
     }
     
     /** Closes find dialog if one is opened. */

@@ -14,6 +14,8 @@
 
 package org.netbeans.modules.properties;
 
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.ContainerOrderFocusTraversalPolicy;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -33,6 +35,14 @@ public class FindPanel extends javax.swing.JPanel {
     public FindPanel() {
         initComponents ();
         initAccessibility ();
+        findCombo.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
+             public void keyTyped(KeyEvent evt) {
+                if (evt.getKeyChar() == '\n') {
+                    findButton.doClick(20);
+                    evt.consume();
+                }
+            }
+        });
     }
 
     private String getBundleString(String s){
@@ -200,6 +210,9 @@ public class FindPanel extends javax.swing.JPanel {
 
     }//GEN-END:initComponents
 
+    public boolean requestFocusInWindow() {
+        return findCombo.requestFocusInWindow();
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox backwardCheck;
