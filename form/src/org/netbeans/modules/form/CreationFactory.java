@@ -608,6 +608,20 @@ public class CreationFactory {
             java.awt.Dialog.class,
             null, null, defaultConstrParams));
 
+        // other -------
+
+        // JPanel on JDK 1.3 uses one instance of FlowLayout for all instances
+        // created by default constructor - this causes problems
+        registerDescriptor(
+            new ConstructorsDescriptor(javax.swing.JPanel.class) {
+                public Object createDefaultInstance() {
+                    return new javax.swing.JPanel(new java.awt.FlowLayout());
+                }
+            }
+        );
+
+        // ----------
+
         defaultDescriptorsCreated = true;
 
         }
