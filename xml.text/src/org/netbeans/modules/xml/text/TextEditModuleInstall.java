@@ -23,6 +23,7 @@ import org.netbeans.editor.Settings;
 import org.netbeans.modules.editor.options.AllOptions;
 
 import org.netbeans.modules.xml.core.XMLDataObject;
+import org.netbeans.modules.xml.core.EntityDataObject;
 import org.netbeans.modules.xml.core.DTDDataObject;
 
 import org.netbeans.modules.xml.text.syntax.XMLKit;
@@ -86,6 +87,8 @@ public class TextEditModuleInstall extends ModuleInstall {
         
         JEditorPane.registerEditorKitForContentType
             (XMLDataObject.MIME_TYPE, XMLKit.class.getName(), loader);
+        JEditorPane.registerEditorKitForContentType
+            (EntityDataObject.MIME_TYPE, XMLKit.class.getName(), loader);
         JEditorPane.registerEditorKitForContentType
             (DTDDataObject.MIME_TYPE, DTDKit.class.getName(), loader);
 
