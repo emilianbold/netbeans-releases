@@ -12,22 +12,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <HTML><BODY>
-Using this template you can design a simple Filter class.
+This wizard creates a Filter which does not wrap the Request and Response
+objects prior to passing on the request. 
 <P>
-A filter implements <b>javax.servlet.Filter</b> and defines its three methods: 
-<ul>
-<li><b>void setFilterConfig(FilterConfig config)</b>: Sets the filter's configuration object
-<li><b>FilterConfig getFilterConfig()</b>: Returns the filter's configuration object
-<li><b>void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)</b>: Performs the actual filtering work
-</ul> 
-The server calls <b>setFilterConfig()</b> once to prepare the filter for service, then calls <b>doFilter()</b> any number of times for various requests.<br>
-The <b>FilterConfig</b> interface has methods to retrieve the filter's name, its init parameters, and the active servlet context.
-<P>
-Each filter receives in its <b>doFilter()</b> method the current request and response objects, as well as a <b>FilterChain</b> containing the filters that still must be processed.<br>
-In the <b>doFilter()</b> method, a filter may do what it wants with the request and response objects(see the <b>doBeforeProcessing</b> method). The filter then calls <b>chain.doFilter()</b> to transfer control to the next filter. When that call returns, a filter can, at the end of its own <b>doFilter()</b> method, perform additional work on the request/response objects(see the <b>doAfterProcessing</b> method).
-<p> The most important methods that should be implemented in this template are :
-<ul>
-<li>private void <b>doBeforeProcessing(ServletRequest req, ServletResponse res)</b>: write code here to process the request and/or response before the rest of the filter chain is invoked.
-<li>private void <b>doAfterProcessing(ServletRequest req, ServletResponse res</b>:  write code here to process the request and/or response after the rest of the filter chain is invoked.
-</ul>
+Filters allow you to intercept, inspect or modify Servlet requests and
+responses before or after they are processed by a Servlet or JSP. 
 </BODY></HTML>
