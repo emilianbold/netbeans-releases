@@ -73,10 +73,10 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
     }
 
     public boolean isValid() {
-        if( gui == null || gui.getTargetName() == null ||
-            ( bottomPanel != null && !bottomPanel.isValid() ) ) {
+              
+        if (gui == null || gui.getTargetName() == null) {
            setErrorMessage( null );
-           return false;        
+           return false;
         }
         
         if ( isPackage ) {
@@ -99,12 +99,22 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
         // check if the file name can be created
         FileObject template = Templates.getTemplate( wizard );
 
+        boolean returnValue=true;
+        
         String errorMessage = canUseFileName (getTargetFolderFromGUI (), gui.getTargetName(), template.getExt ());
         if (gui.isShowing ()) {
             setLocalizedErrorMessage (errorMessage);
         }
-
-        return errorMessage == null;
+        if (errorMessage!=null) returnValue=false;
+        
+        // this enables to display error messages from the bottom panel
+        // Nevertheless, the previous error messages have bigger priorities 
+        if (returnValue && bottomPanel != null) {
+           if (!bottomPanel.isValid())
+               return false;
+        }
+        
+        return returnValue;
     }
 
     public void addChangeListener(ChangeListener l) {
