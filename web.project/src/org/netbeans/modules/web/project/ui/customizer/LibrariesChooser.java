@@ -16,7 +16,6 @@ package org.netbeans.modules.web.project.ui.customizer;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.WebProjectGenerator;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -35,15 +34,18 @@ import java.util.List;
  */
 public class LibrariesChooser extends javax.swing.JPanel {
     private Collection incompatibleLibs;
+    private Collection alreadySelectedLibs;
 
     /** Creates new form LibrariesChooser */
     public LibrariesChooser(Collection alreadySelectedLibs, String j2eePlatform) {
         initComponents();
+        jLabel2.setForeground(getErrorColor());
         jList1.setPrototypeCellValue("0123456789012345678901234");      //NOI18N
-        jList1.setModel(new LibrariesListModel(alreadySelectedLibs, j2eePlatform));
+        jList1.setModel(new LibrariesListModel());
         incompatibleLibs =
                 VisualClasspathSupport.getLibrarySet(WebProjectGenerator.getIncompatibleLibraries(j2eePlatform));
-        jList1.setCellRenderer(new LibraryRenderer(alreadySelectedLibs, incompatibleLibs, j2eePlatform));
+        jList1.setCellRenderer(new LibraryRenderer(incompatibleLibs));
+        this.alreadySelectedLibs = alreadySelectedLibs;
     }
 
     public Library[] getSelectedLibraries () {
@@ -75,6 +77,12 @@ public class LibrariesChooser extends javax.swing.JPanel {
         return true;
     }
 
+    private static Color getErrorColor() {
+        // inspired by org.openide.WizardDescriptor
+        Color c = UIManager.getColor("nb.errorForeground"); //NOI18N
+        return c == null ? new Color(89,79,191) : c;
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -86,7 +94,10 @@ public class LibrariesChooser extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
+        jLabel2 = new javax.swing.JLabel();
         edit = new javax.swing.JButton();
+
+        FormListener formListener = new FormListener();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -105,6 +116,9 @@ public class LibrariesChooser extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jLabel1, gridBagConstraints);
 
+        jScrollPane1.setMinimumSize(new java.awt.Dimension(100, 74));
+        jList1.addListSelectionListener(formListener);
+
         jScrollPane1.setViewportView(jList1);
         jList1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("AD_jScrollPaneLibraries"));
 
@@ -116,26 +130,81 @@ public class LibrariesChooser extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 12);
         add(jScrollPane1, gridBagConstraints);
 
-        edit.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("CTL_EditLibraries"));
-        edit.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("MNE_EditLibraries").charAt(0));
-        edit.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editLibraries(evt);
-            }
-        });
-
+        jLabel2.setForeground(javax.swing.UIManager.getColor("nb.errorForeground"));
+        jLabel2.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
+        add(jLabel2, gridBagConstraints);
+
+        edit.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("MNE_EditLibraries").charAt(0));
+        edit.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("CTL_EditLibraries"));
+        edit.addActionListener(formListener);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 12);
         add(edit, gridBagConstraints);
         edit.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("AD_jButtonManageLibraries"));
 
+    }
+
+    // Code for dispatching events from components to event handlers.
+
+    private class FormListener implements java.awt.event.ActionListener, javax.swing.event.ListSelectionListener {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            if (evt.getSource() == edit) {
+                LibrariesChooser.this.editLibraries(evt);
+            }
+        }
+
+        public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+            if (evt.getSource() == jList1) {
+                LibrariesChooser.this.jList1ValueChanged(evt);
+            }
+        }
     }//GEN-END:initComponents
+
+    private void jList1ValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jList1ValueChanged
+        if (evt.getValueIsAdjusting()) {
+            return;
+        }
+        StringBuffer sb = new StringBuffer();
+        Object[] selected = this.jList1.getSelectedValues();
+        for (int i = 0; i < selected.length; i++) {
+            final Library lib = (Library) selected[i];
+            if (incompatibleLibs.contains(lib)) {
+                addMessage(sb, "MSG_IncompatibleLibrary", lib);
+            }
+        }
+        for (int i = 0; i < selected.length; i++) {
+            final Library lib = (Library) selected[i];
+            if (alreadySelectedLibs.contains(lib)) {
+                addMessage(sb, "MSG_LibraryAlreadyInProject", lib);
+            }
+        }
+        if(sb.length() > 0) {
+            sb.insert(0, "<html>");
+            sb.append("</html>");
+        }
+        jLabel2.setText(sb.toString());
+        doLayout();
+    }//GEN-LAST:event_jList1ValueChanged
+
+    private static void addMessage(StringBuffer sb, String msgId, final Library lib) {
+        String displayName = "<b>" + lib.getDisplayName() + "</b>";
+        sb.append(NbBundle.getMessage(LibrariesChooser.class, msgId, displayName) + "<br>");
+    }
 
     private void editLibraries(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editLibraries
         LibrariesListModel model = (LibrariesListModel) jList1.getModel ();
@@ -159,6 +228,7 @@ public class LibrariesChooser extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton edit;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JList jList1;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
@@ -170,17 +240,8 @@ public class LibrariesChooser extends javax.swing.JPanel {
         private Library[] cache;
         /** No of libs in LibraryManager when last refreshed */
         private int numberOfLibs;
-        private Collection alreadySelectedLibs;
-        private String j2eePlatform;
 
-        private static Collection filter13 = VisualClasspathSupport.getLibrarySet(
-                WebProjectGenerator.getIncompatibleLibraries(WebModule.J2EE_13_LEVEL));
-        private static Collection filter14 = VisualClasspathSupport.getLibrarySet(
-                WebProjectGenerator.getIncompatibleLibraries(WebModule.J2EE_14_LEVEL));
-
-        public LibrariesListModel (Collection alreadySelectedLibs, String j2eePlatform) {
-            this.j2eePlatform = j2eePlatform;
-            this.alreadySelectedLibs = alreadySelectedLibs;
+        public LibrariesListModel () {
             LibraryManager manager = LibraryManager.getDefault();
             manager.addPropertyChangeListener((PropertyChangeListener)WeakListeners.create(PropertyChangeListener.class,
                     this, manager));
@@ -245,39 +306,23 @@ public class LibrariesChooser extends javax.swing.JPanel {
 
         private static final String LIBRARY_ICON = "org/netbeans/modules/web/project/ui/resources/libraries.gif";  //NOI18N
         private Icon cachedIcon;
-        private Collection alreadySelectedLibs;
         private Collection incompatibleLibs;
-        private String j2eePlatform;
 
-        public LibraryRenderer(Collection alreadySelectedLibs, Collection incompatibleLibs, String j2eePlatform) {
-            this.alreadySelectedLibs = alreadySelectedLibs;
-            this.j2eePlatform = j2eePlatform;
+        public LibraryRenderer(Collection incompatibleLibs) {
             this.incompatibleLibs = incompatibleLibs;
         }
 
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+                boolean cellHasFocus) {
             String displayName = null;
             if (value instanceof Library) {
-                displayName = ((Library)value).getDisplayName();
+                displayName = ((Library) value).getDisplayName();
             }
             super.getListCellRendererComponent(list, displayName, index, isSelected, cellHasFocus);
-            final String toolTipText;
-            if (value instanceof Library) {
-                final String libraryString = VisualClasspathSupport.getLibraryString((Library) value);
-                if (alreadySelectedLibs.contains(value)) {
-                    toolTipText = NbBundle.getMessage(LibrariesChooser.class, "LBL_LibraryAlreadyInProject_ToolTip") +
-                            " !!!     (" + libraryString + ")";
-                } else if (incompatibleLibs.contains(value)) {
-                    toolTipText = NbBundle.getMessage(LibrariesChooser.class, "LBL_IncompatibleLibrary_ToolTip")
-                            + " (" + j2eePlatform + ") !!!     (" + libraryString + ")";
-                    setEnabled(false);
-                } else {
-                    toolTipText = libraryString;
-                }
-            } else {
-                toolTipText = null;
+            if (incompatibleLibs.contains(value)) {
+                setEnabled(false);
             }
-            setToolTipText(toolTipText);
+            setToolTipText(value instanceof Library ? VisualClasspathSupport.getLibraryString((Library) value) : null);
             setIcon(createIcon());
             return this;
         }
