@@ -244,19 +244,19 @@ public class RADComponent implements FormDesignValue {
 
         CodeStructure codeStructure = formModel.getCodeStructure();
         componentCodeExpression = codeStructure.createExpression(
-                                   FormCodeSupport.createOrigin(this));
+                                    FormCodeSupport.createOrigin(this));
         codeStructure.registerExpression(componentCodeExpression);
 
         if (formModel.getTopRADComponent() != this)
             codeStructure.createVariableForExpression(componentCodeExpression,
-                                                      CodeVariable.FIELD,
+                                                      CodeVariable.DEFAULT_TYPE,
                                                       storedName);
     }
 
     void resetCodeExpression() {
         if (componentCodeExpression != null) {
             CodeVariable var = componentCodeExpression.getVariable();
-            if (var != null && var.getType() != CodeVariable.NO_VARIABLE)
+            if (var != null)
                 storedName = var.getName();
             CodeStructure.removeExpression(componentCodeExpression);
             componentCodeExpression = null;
@@ -388,11 +388,12 @@ public class RADComponent implements FormDesignValue {
     public void setName(String name) {
         if (componentCodeExpression == null)
             return;
+
         CodeVariable var = componentCodeExpression.getVariable();
-        if (var != null && name.equals(var.getName())) //&& var.getType() == 0
+        if (var == null || name.equals(var.getName()))
             return;
-        // [maybe we should distinguish between component name and variable
-        //  name when componentCodeExpression.getVariableType() == 0]
+        // [maybe we should handle the component name differently if there is
+        //  no variable for the component]
 
         if (!org.openide.util.Utilities.isJavaIdentifier(name)) {
             IllegalArgumentException iae =
@@ -404,7 +405,6 @@ public class RADComponent implements FormDesignValue {
             throw iae;
         }
 
-//        if (formModel.getVariablePool().findVariableType(value) != null)
         if (formModel.getCodeStructure().isVariableNameReserved(name)) {
             IllegalArgumentException iae =
                 new IllegalArgumentException("Component name already in use: "+name); // NOI18N
@@ -415,9 +415,9 @@ public class RADComponent implements FormDesignValue {
             throw iae;
         }
 
-        String oldName;
-
-        if (var != null) {
+        String oldName = var.getName();
+        formModel.getCodeStructure().renameVariable(oldName, name);
+/*        if (var != null) {
             oldName = var.getName();
             formModel.getCodeStructure().renameVariable(oldName, name);
         }
@@ -425,13 +425,14 @@ public class RADComponent implements FormDesignValue {
             oldName = null;
             formModel.getCodeStructure().createVariableForExpression(
                                              componentCodeExpression,
-                                             CodeVariable.FIELD,
+                                             CodeVariable.DEFAULT_TYPE,
                                              name);
         }
 
-        if (oldName != null)
-            renameDefaultEventHandlers(oldName, name);
-        // [PENDING] renaming of default event handlers could be in global options...
+        if (oldName != null) */
+        renameDefaultEventHandlers(oldName, name);
+        // [renaming of default event handlers should be probably a setting
+        //  be in global options]
 
         formModel.fireSyntheticPropertyChanged(this, PROP_NAME,
                                                oldName, name);

@@ -31,7 +31,9 @@ public class CodeStructure {
     private Map namesToVariables = new HashMap(50);
     private Map expressionsToVariables = new HashMap(50);
 
-    private int defaultVariableAccessType = CodeVariable.PRIVATE;
+    private static int globalDefaultVariableType = CodeVariable.FIELD
+                                                   | CodeVariable.PRIVATE;
+    private int defaultVariableType = globalDefaultVariableType;
 
     // -------
     // expressions
@@ -356,7 +358,7 @@ public class CodeStructure {
         return var;
     }
 
-    /** Checks whether given name is already used for some variable.
+    /** Checks whether given name is already used by some variable.
      */
     public boolean isVariableNameReserved(String name) {
         return namesToVariables.get(name) != null;
@@ -427,11 +429,11 @@ public class CodeStructure {
                    | CodeVariable.EXPLICIT_DECLARATION;
         if ((var.getType() & mask) == CodeVariable.LOCAL
              && var.getAttachedExpressions().size() > 0)
-        {
-            // local variable without a standalone declaration can be used
-            // only for one expression
+        {   // local variable without a standalone declaration cannot be used
+            // for multiple expressions
             throw new IllegalStateException(
-                      "Standalone local variable declaration required"); // NOI18N
+                      "Standalone local variable declaration required for: " // NOI18N
+                      + var.getName());
         }
 
         Variable prevVar = (Variable) expressionsToVariables.get(expression);
@@ -486,6 +488,44 @@ public class CodeStructure {
 
     // ---------
 
+    public static void setGlobalDefaultVariableType(int type) {
+        if (type < 0) {
+            globalDefaultVariableType = CodeVariable.FIELD
+                                        | CodeVariable.PRIVATE;
+        }
+        else {
+            type &= CodeVariable.ALL_MASK;
+            if ((type & CodeVariable.SCOPE_MASK) == CodeVariable.NO_VARIABLE)
+                type |= CodeVariable.FIELD;
+
+            globalDefaultVariableType = type;
+        }
+    }
+
+    public void setDefaultVariableType(int type) {
+        if (type < 0) {
+            defaultVariableType = -1; // global default will be used
+        }
+        else {
+            type &= CodeVariable.ALL_MASK;
+            if ((type & CodeVariable.SCOPE_MASK) == CodeVariable.NO_VARIABLE)
+                type |= CodeVariable.FIELD;
+
+            defaultVariableType = type;
+        }
+    }
+
+    static int getGlobalDefaultVariableType() {
+        return globalDefaultVariableType;
+    }
+
+    int getDefaultVariableType() {
+        return defaultVariableType > -1 ?
+               defaultVariableType : globalDefaultVariableType;
+    }
+
+    // ---------
+
     protected Map getNamesToVariablesMap() {
         return namesToVariables;
     }
@@ -524,7 +564,8 @@ public class CodeStructure {
         }
 
         public int getType() {
-            return type;
+            return (type & DEFAULT_TYPE) != DEFAULT_TYPE ?
+                   type : getDefaultVariableType();
         }
 
         public String getName() {
@@ -564,10 +605,6 @@ public class CodeStructure {
         void removeCodeExpression(CodeExpression expression) {
             if (expressionsMap != null)
                 expressionsMap.remove(expression);
-        }
-
-        int getDefaultAccessType() {
-            return defaultVariableAccessType;
         }
     }
 

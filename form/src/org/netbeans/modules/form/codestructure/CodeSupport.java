@@ -132,9 +132,11 @@ class CodeSupport {
             StringBuffer buf = new StringBuffer();
             int varType = variable.getType();
 
-            int declareMask = CodeVariable.LOCAL |
-                              CodeVariable.EXPLICIT_DECLARATION;
+            int declareMask = CodeVariable.SCOPE_MASK
+                              | CodeVariable.DECLARATION_MASK;
             if ((varType & declareMask) == CodeVariable.LOCAL) {
+                // no explicit local variable declaration, so we make the
+                // declaration together with the assignment
                 buf.append(variable.getDeclaredType().getName()
                                                        .replace('$','.'));
                 buf.append(" "); // NOI18N
@@ -151,9 +153,9 @@ class CodeSupport {
     }
 
     static final class DeclareVariableStatement extends AbstractCodeStatement {
-        private CodeStructure.Variable variable;
+        private CodeVariable variable;
 
-        public DeclareVariableStatement(CodeStructure.Variable var) {
+        public DeclareVariableStatement(CodeVariable var) {
             super(null);
             variable = var;
         }
@@ -168,33 +170,34 @@ class CodeSupport {
 
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             StringBuffer buf = new StringBuffer();
-
             int type = variable.getType();
+
             if ((type & CodeVariable.SCOPE_MASK) == CodeVariable.FIELD) {
-                if ((type & CodeVariable.TRANSIENT) == CodeVariable.TRANSIENT)
-                    buf.append("transient "); // NOI18N
-                if ((type & CodeVariable.STATIC) == CodeVariable.STATIC)
-                    buf.append("static "); // NOI18N
-
-                int access = type & CodeVariable.ACCESS_MASK;
-                if (access == CodeVariable.DEFAULT_ACCESS)
-                    access = variable.getDefaultAccessType();
-
-                switch (access) {
+                switch (type & CodeVariable.ACCESS_MODIF_MASK) {
                     case CodeVariable.PUBLIC:
                         buf.append("public "); // NOI18N
+                        break;
+                    case CodeVariable.PRIVATE:
+                        buf.append("private "); // NOI18N
                         break;
                     case CodeVariable.PROTECTED:
                         buf.append("protected "); // NOI18N
                         break;
-                    case CodeVariable.PACKAGE_PRIVATE:
-                        break;
-                    case CodeVariable.PRIVATE:
-                    default:
-                        buf.append("private "); // NOI18N
-                        break;
                 }
 
+                if ((type & CodeVariable.STATIC) == CodeVariable.STATIC)
+                    buf.append("static "); // NOI18N
+
+                if ((type & CodeVariable.FINAL) == CodeVariable.FINAL)
+                    buf.append("final "); // NOI18N
+
+                if ((type & CodeVariable.TRANSIENT) == CodeVariable.TRANSIENT)
+                    buf.append("transient "); // NOI18N
+
+                if ((type & CodeVariable.VOLATILE) == CodeVariable.VOLATILE)
+                    buf.append("volatile "); // NOI18N
+            }
+            else { // local variable
                 if ((type & CodeVariable.FINAL) == CodeVariable.FINAL)
                     buf.append("final "); // NOI18N
             }
