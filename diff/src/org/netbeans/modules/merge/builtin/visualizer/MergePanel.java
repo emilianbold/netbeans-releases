@@ -101,22 +101,25 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         java.awt.GridBagConstraints gridBagConstraints;
 
         commandPanel = new javax.swing.JPanel();
-        leftCommandPanel = new javax.swing.JPanel();
+        firstConflictButton = new javax.swing.JButton();
         prevConflictButton = new javax.swing.JButton();
         nextConflictButton = new javax.swing.JButton();
-        acceptLeftButton = new javax.swing.JButton();
-        acceptAndNextLeftButton = new javax.swing.JButton();
-        rightCommandPanel = new javax.swing.JPanel();
-        acceptAndNextRightButton = new javax.swing.JButton();
-        acceptRightButton = new javax.swing.JButton();
+        lastConflictButton = new javax.swing.JButton();
+        statusLabel = new javax.swing.JLabel();
         editorPanel = new javax.swing.JPanel();
         mergeSplitPane = new javax.swing.JSplitPane();
         diffSplitPane = new javax.swing.JSplitPane();
         filePanel1 = new javax.swing.JPanel();
+        leftCommandPanel = new javax.swing.JPanel();
+        acceptLeftButton = new javax.swing.JButton();
+        acceptAndNextLeftButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jEditorPane1 = new javax.swing.JEditorPane();
         fileLabel1 = new javax.swing.JLabel();
         filePanel2 = new javax.swing.JPanel();
+        rightCommandPanel = new javax.swing.JPanel();
+        acceptRightButton = new javax.swing.JButton();
+        acceptAndNextRightButton = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         jEditorPane2 = new javax.swing.JEditorPane();
         fileLabel2 = new javax.swing.JLabel();
@@ -129,7 +132,8 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
 
         commandPanel.setLayout(new java.awt.GridBagLayout());
 
-        leftCommandPanel.setLayout(new java.awt.GridBagLayout());
+        firstConflictButton.setPreferredSize(new java.awt.Dimension(24, 24));
+        commandPanel.add(firstConflictButton, new java.awt.GridBagConstraints());
 
         prevConflictButton.setToolTipText(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.prevButton.toolTipText"));
         prevConflictButton.setPreferredSize(new java.awt.Dimension(24, 24));
@@ -139,7 +143,7 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 1);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        leftCommandPanel.add(prevConflictButton, gridBagConstraints);
+        commandPanel.add(prevConflictButton, gridBagConstraints);
 
         nextConflictButton.setToolTipText(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.nextButton.toolTipText"));
         nextConflictButton.setPreferredSize(new java.awt.Dimension(24, 24));
@@ -149,46 +153,20 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 1, 0, 1);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        leftCommandPanel.add(nextConflictButton, gridBagConstraints);
+        commandPanel.add(nextConflictButton, gridBagConstraints);
 
-        acceptLeftButton.setText("Accept");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 1, 0, 1);
-        leftCommandPanel.add(acceptLeftButton, gridBagConstraints);
-
-        acceptAndNextLeftButton.setText("Accept & Next");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 1, 0, 2);
-        leftCommandPanel.add(acceptAndNextLeftButton, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        commandPanel.add(leftCommandPanel, gridBagConstraints);
-
-        rightCommandPanel.setLayout(new java.awt.GridBagLayout());
-
-        acceptAndNextRightButton.setText("Accept & Next");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 1);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        rightCommandPanel.add(acceptAndNextRightButton, gridBagConstraints);
-
-        acceptRightButton.setText("Accept");
+        lastConflictButton.setPreferredSize(new java.awt.Dimension(24, 24));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 1, 0, 2);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        rightCommandPanel.add(acceptRightButton, gridBagConstraints);
+        commandPanel.add(lastConflictButton, gridBagConstraints);
 
+        statusLabel.setText("jLabel1");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 1);
         gridBagConstraints.weightx = 1.0;
-        commandPanel.add(rightCommandPanel, gridBagConstraints);
+        commandPanel.add(statusLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 0;
@@ -206,6 +184,28 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         diffSplitPane.setDividerSize(4);
         filePanel1.setLayout(new java.awt.GridBagLayout());
 
+        leftCommandPanel.setLayout(new java.awt.GridBagLayout());
+
+        acceptLeftButton.setText("Accept");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 1);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        leftCommandPanel.add(acceptLeftButton, gridBagConstraints);
+
+        acceptAndNextLeftButton.setText("Accept & Next");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 1, 0, 2);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        leftCommandPanel.add(acceptAndNextLeftButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        filePanel1.add(leftCommandPanel, gridBagConstraints);
+
         jEditorPane1.addCaretListener(new javax.swing.event.CaretListener() {
             public void caretUpdate(javax.swing.event.CaretEvent evt) {
                 jEditorPane1CaretUpdate(evt);
@@ -215,6 +215,7 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         jScrollPane1.setViewportView(jEditorPane1);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -222,15 +223,37 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
 
         fileLabel1.setText("jLabel1");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.weightx = 1.0;
         filePanel1.add(fileLabel1, gridBagConstraints);
 
         diffSplitPane.setLeftComponent(filePanel1);
 
         filePanel2.setLayout(new java.awt.GridBagLayout());
+
+        rightCommandPanel.setLayout(new java.awt.GridBagLayout());
+
+        acceptRightButton.setText("Accept");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 1);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        rightCommandPanel.add(acceptRightButton, gridBagConstraints);
+
+        acceptAndNextRightButton.setText("Accept & Next");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
+        gridBagConstraints.insets = new java.awt.Insets(0, 1, 0, 2);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        rightCommandPanel.add(acceptAndNextRightButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        filePanel2.add(rightCommandPanel, gridBagConstraints);
 
         jEditorPane2.addCaretListener(new javax.swing.event.CaretListener() {
             public void caretUpdate(javax.swing.event.CaretEvent evt) {
@@ -241,6 +264,7 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         jScrollPane2.setViewportView(jEditorPane2);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -248,10 +272,10 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
 
         fileLabel2.setText("jLabel2");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.weightx = 1.0;
         filePanel2.add(fileLabel2, gridBagConstraints);
 
         diffSplitPane.setRightComponent(filePanel2);
@@ -874,6 +898,14 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         fileLabel2.setText(title);
     }
     
+    public void setResultSourceTitle(String title) {
+        resultLabel.setText(title);
+    }
+    
+    public void setStatusLabel(String status) {
+        statusLabel.setText(status);
+    }
+    
     public void setMimeType1(String mime) {
         jEditorPane1.setContentType(mime);
         EditorKit kit = JEditorPane.createEditorKitForContentType(mime);
@@ -1015,12 +1047,15 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
     private javax.swing.JButton acceptRightButton;
     private javax.swing.JLabel fileLabel2;
     private javax.swing.JLabel fileLabel1;
+    private javax.swing.JButton firstConflictButton;
     private javax.swing.JPanel rightCommandPanel;
     private javax.swing.JButton prevConflictButton;
     private javax.swing.JPanel filePanel2;
     private javax.swing.JSplitPane diffSplitPane;
     private javax.swing.JPanel filePanel1;
     private javax.swing.JPanel leftCommandPanel;
+    private javax.swing.JButton lastConflictButton;
+    private javax.swing.JLabel statusLabel;
     private javax.swing.JEditorPane jEditorPane3;
     private javax.swing.JScrollPane resultScrollPane;
     private javax.swing.JButton nextConflictButton;
@@ -1062,6 +1097,10 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
                 panel.setCurrentLine(45, 1);
             }
         });
+        panel.setSource1Title("Working File");
+        panel.setSource2Title("Revision 1.2");
+        panel.setResultSourceTitle("Merge Result");
+        panel.setStatusLabel("Conflict: 2 of 10, Unresolved: 8");
         javax.swing.JFrame frame = new javax.swing.JFrame();
         frame.getContentPane().add(panel);
         frame.setVisible(true);
