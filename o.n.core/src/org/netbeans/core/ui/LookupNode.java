@@ -182,14 +182,15 @@ public final class LookupNode extends DataFolder.FolderNode implements NewTempla
             
             
             DataObject obj = (DataObject)node.getCookie(DataFolder.class);
-            if (obj instanceof DataFolder) {
-                return new Node[] { new LookupNode((DataFolder)obj) };
-            }
             
             if (
                 obj != null && Boolean.TRUE.equals (obj.getPrimaryFile ().getAttribute (EA_HIDDEN))
             ) {
                 return new Node[0];
+            }
+            
+            if (obj instanceof DataFolder) {
+                return new Node[] { new LookupNode((DataFolder)obj) };
             }
 
             return new Node[] { node.cloneNode () }; 
