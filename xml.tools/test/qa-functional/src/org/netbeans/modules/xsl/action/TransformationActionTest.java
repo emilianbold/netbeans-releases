@@ -19,10 +19,9 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.xml.XSLTransformationDialog;
+import org.netbeans.jellytools.modules.xsl.actions.TransformAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.test.oo.gui.jelly.Explorer;
-import org.netbeans.test.oo.gui.jelly.xml.nodes.XMLNode;
 import org.netbeans.tests.xml.JXTest;
 import org.openide.loaders.DataObject;
 
@@ -92,11 +91,8 @@ public class TransformationActionTest extends JXTest {
      * @param path relative to the 'data' folder delimited by 'DELIM'
      */
     private XSLTransformationDialog transformXML(String path) throws Exception {
-        Explorer exp = Explorer.find();
-        exp.switchToFilesystemsTab();
-        String treePath = getFilesystemName() + DELIM + getDataPackageName(DELIM) + DELIM + path;
-        XMLNode xnode = new XMLNode(exp.getJTreeOperator(), treePath);
-        xnode.transform();
+        TransformAction transform =  new TransformAction();
+        transform.perform(findDataNode(path));
         XSLTransformationDialog dialog =  new XSLTransformationDialog();
         dialog.activate();
         return dialog;
