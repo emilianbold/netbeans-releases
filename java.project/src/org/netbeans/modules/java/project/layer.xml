@@ -100,7 +100,7 @@ Microsystems, Inc. All Rights Reserved.
               </file>
               <attr boolvalue="true" name="java-project-separator-1.instance/CompileFile.instance" />
               <file name="CompileFile.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.java.project.JavaProjectModule$CompileWrapper" />
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.project.JavaProjectModule.compile" />
               </file>
               <attr boolvalue="true" name="CompileFile.instance/java-project-separator-2.instance" />
               <file name="java-project-separator-2.instance">
@@ -108,11 +108,11 @@ Microsystems, Inc. All Rights Reserved.
               </file>
               <attr boolvalue="true" name="java-project-separator-2.instance/RunFile.instance" />
               <file name="RunFile.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.java.project.JavaProjectModule$RunWrapper" />
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.project.JavaProjectModule.run" />
               </file>
               <attr boolvalue="true" name="RunFile.instance/DebugFile.instance" />
               <file name="DebugFile.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.java.project.JavaProjectModule$DebugWrapper" />
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.project.JavaProjectModule.debug" />
               </file>
               <attr boolvalue="true" name="DebugFile.instance/java-project-separator-3.instance" />
               <file name="java-project-separator-3.instance">
