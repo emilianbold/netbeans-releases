@@ -82,6 +82,9 @@
 	<mapID target="about_web_service_client" url="web/webserviceclient/about_websvc_client.html" />
 	<mapID target="create_ws" url="web/webservice/create_ws.html" />
 	<mapID target="add_ws_operation" url="web/webservice/add_ws_operation.html" />
+	<mapID target="add_ws_to_registry" url="web/webservice/add_ws_to_registry.html" />
+	<mapID target="test_ws" url="web/webservice/test_ws.html" />
+	<mapID target="run_ws" url="web/webservice/run_ws.html" />	
 	<mapID target="create_wsc" url="web/webserviceclient/create_wsc.html" />
 <!-- End of web apps help -->
 
