@@ -110,7 +110,10 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     /** All invisible toolbars (visibility==false || tb.isCorrect==false). */
     private HashMap     invisibleToolbars;
     
-    private JMenu       toolbarMenu;
+    /** Toolbar menu is global so it is static. It it the same for all toolbar
+     configurations. */
+    private static JMenu toolbarMenu;
+    
     /** Toolbars which was described in DOM Document,
 	but which aren't represented in ToolbarPool.
 	For exapmle ComponentPalette and first start of IDE. */
@@ -748,15 +751,15 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                 );
                 mi.putClientProperty("ToolbarName", tbName); //NOI18N
                 mi.addActionListener (new ActionListener () {
-                                          public void actionPerformed (ActionEvent ae) {
-                                              // #39741 fix
-                                              // for some reason (unknown to me - mkleint) the menu gets recreated repeatedly, which 
-                                              // can cause the formerly final ToolbarConstraints instance to be obsolete.
-                                              // that's why we each time look up the current instance on the allToolbars map.
-                                              ToolbarConstraints tc = (ToolbarConstraints)allToolbars.get (tbName );
-                                              setToolbarVisible(tb, !tc.isVisible());
-                                          }
-                                      });
+                    public void actionPerformed (ActionEvent ae) {
+                        // #39741 fix
+                        // for some reason (unknown to me - mkleint) the menu gets recreated repeatedly, which 
+                        // can cause the formerly final ToolbarConstraints instance to be obsolete.
+                        // that's why we each time look up the current instance on the allToolbars map.
+                        ToolbarConstraints tc = (ToolbarConstraints)allToolbars.get (tbName );
+                        setToolbarVisible(tb, !tc.isVisible());
+                    }
+                });
                 menu.add (mi);
             }
         }
@@ -784,8 +787,8 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                       ToolbarConfiguration tbConf = findConfiguration(name);
                       if (tbConf != null) {
                           tbConf.rebuildPanel();
-                          tbConf.rebuildMenu();
                       }
+                      rebuildMenu();
                   }
               }
         });
@@ -798,7 +801,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         if (configList.size() > 1) {
             it = configList.iterator ();
             ButtonGroup bg = new ButtonGroup ();
-            String current = ToolbarPool.getDefault ().getConfiguration ();
+            final String current = ToolbarPool.getDefault ().getConfiguration ();
             
             while (it.hasNext()) {
                 final String name = (String)it.next ();
@@ -807,11 +810,13 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                     displayName, (name != null && name.equals(current))
                 );
                 mi.addActionListener (new ActionListener () {
-                                          public void actionPerformed (ActionEvent e) {
-                                              ErrorManager.getDefault().getInstance(getClass().getName()).log("triggered a change in toolbar config.");
-                                              WindowManagerImpl.getInstance().setToolbarConfigName (name);
-                                          }
-                                      });
+                    public void actionPerformed (ActionEvent e) {
+                        ErrorManager.getDefault().getInstance(getClass().getName()).log
+                        ("Triggered a change in toolbar config from " + current + " to " + name + "."); //NOI18N
+                        WindowManagerImpl.getInstance().setToolbarConfigName (name);
+                        rebuildMenu();
+                    }
+                });
                 bg.add (mi);
                 menu.add (mi);
             }
