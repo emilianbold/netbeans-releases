@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.java.j2seplatform/1
-OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Specification-Version: 1.3
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/java/j2seplatform/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/java/j2seplatform/resources/layer.xml
 OpenIDE-Module-Install: org/netbeans/modules/java/j2seplatform/J2SEPlatformModule.class

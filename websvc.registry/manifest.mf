@@ -4,7 +4,7 @@ OpenIDE-Module-Public-Packages: org.netbeans.modules.websvc.api.registry.*
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/websvc/registry/netbeans/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/websvc/registry/netbeans/WebServiceModuleInstaller.class
 OpenIDE-Module-Layer: org/netbeans/modules/websvc/registry/netbeans/mf-layer.xml
-OpenIDE-Module-Specification-Version: 0.2
+OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.37
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.schema2beans/1,
     org.netbeans.modules.editor/3,

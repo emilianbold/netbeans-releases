@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.i18n.form/2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/i18n/form/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.15
+OpenIDE-Module-Specification-Version: 1.16
 OpenIDE-Module-Layer: org/netbeans/modules/i18n/form/I18nFormLayer.xml
 OpenIDE-Module-Install: org/netbeans/modules/i18n/form/I18nFormCrossModule.class
 

@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.editor/3
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/editor/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/editor/EditorModule.class
-OpenIDE-Module-Specification-Version: 1.19
+OpenIDE-Module-Specification-Version: 1.20
 OpenIDE-Module-Layer: org/netbeans/modules/editor/resources/layer.xml
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.editor.lib/1 = 0.1, org.netbeans.modules.editor.fold/1, org.netbeans.modules.editor.util/1, org.openidex.util/3, org.openide.loaders > 4.11
 

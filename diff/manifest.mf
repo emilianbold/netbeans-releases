@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.diff/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/diff/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.10
+OpenIDE-Module-Specification-Version: 1.11
 OpenIDE-Module-Implementation-Version: promotionE
 OpenIDE-Module-Layer: org/netbeans/modules/diff/mf-layer.xml
 

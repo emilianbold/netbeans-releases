@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 OpenIDE-Module-Layer: org/netbeans/modules/j2ee/common/ui/resource
  s/layer.xml
-OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/common
  /Bundle.properties
 OpenIDE-Module: org.netbeans.modules.j2ee.common/1

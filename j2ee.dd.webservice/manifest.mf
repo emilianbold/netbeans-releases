@@ -1,6 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.j2ee.dd.webservice
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/dd/webservice/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.0
-X-comment-OpenIDE-Module-Implementation-Version: 1.0
+OpenIDE-Module-Specification-Version: 1.1
 

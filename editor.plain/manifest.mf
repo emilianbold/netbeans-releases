@@ -2,5 +2,5 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.editor.plain/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/editor/plain/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/editor/plain/PlainEditorModule.class
-OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module-Layer: org/netbeans/modules/editor/plain/resources/layer.xml

@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.javahelp/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/javahelp/resources/Bundle.properties
-OpenIDE-Module-Specification-Version: 2.5
+OpenIDE-Module-Specification-Version: 2.6
 OpenIDE-Module-Provides: org.netbeans.api.javahelp.Help
 OpenIDE-Module-Public-Packages: org.netbeans.api.javahelp.*, javax.help.**
 OpenIDE-Module-Requires: org.openide.modules.InstalledFileLocator

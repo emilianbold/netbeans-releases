@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.web.jspparser/2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/jspparser/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/web/jspparser/layer.xml
-OpenIDE-Module-Specification-Version: 2.2
+OpenIDE-Module-Specification-Version: 2.3
 OpenIDE-Module-Requires: org.openide.windows.IOProvider
 OpenIDE-Module-Package-Dependencies: [javax.servlet.ServletException]
 Class-Path: autoload/ext/commons-el.jar

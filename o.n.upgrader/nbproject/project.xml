@@ -15,7 +15,7 @@ Microsystems, Inc. All Rights Reserved.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
-            <code-name-base>org.netbeans.upgrade</code-name-base>
+            <code-name-base>org.netbeans.upgrader</code-name-base>
             <path>ide/launcher/upgrade</path>
             <module-dependencies>
                 <dependency>

@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
         <property file="../../xml/spec-vers.properties"/>
         <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
             <manifest>
-                <attribute name="OpenIDE-Module-Specification-Version" value="1.9.${xml.common.impl.version}"/>
+                <attribute name="OpenIDE-Module-Specification-Version" value="1.11.${xml.common.impl.version}"/>
                 <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
                 <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
                 <attribute name="OpenIDE-Module-Module-Dependencies" value="org.netbeans.modules.xml.core/2 = ${xml.common.impl.version}, org.apache.tools.ant.module/3 &gt; 3.3"/>

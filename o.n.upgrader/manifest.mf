@@ -1,5 +1,4 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.upgrader
-OpenIDE-Module-Specification-Version: 4.2
-_OpenIDE-Module-Localizing-Bundle: org/openide/io/Bundle.properties
+OpenIDE-Module-Specification-Version: 4.3
 
