@@ -108,6 +108,9 @@ is divided into following sections:
                     <and>
                         <isset property="manifest.available"/>
                         <isset property="main.class"/>
+                        <not>
+                            <equals arg1="${{main.class}}" arg2="" trim="true"/>
+                        </not>
                     </and>
                 </condition>
                 <available property="have.tests" file="${{test.src.dir}}"/>
@@ -365,14 +368,10 @@ is divided into following sections:
 
             <target name="-init-presetdef-jar">
                 <presetdef>
-                    <xsl:attribute name="name">nb.j2seproject.jar</xsl:attribute>
-                    
-                    <!-- There seems to be bug in Ant in presetdef when namespaces is used.-->
-                    <!-- Temporarily do not use namespace.-->
-                    <!-- <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute> -->
-                    
+                    <xsl:attribute name="name">jar</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
                     <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
-                        <fileset dir="${{build.classes.dir}}"/>
+                        <fileset dir="${{build.classes.dir}}" xmlns="http://www.netbeans.org/ns/j2se-project/1"/>
                     </jar>
                 </presetdef>
             </target>
@@ -464,24 +463,24 @@ is divided into following sections:
             <target name="-do-jar-without-manifest">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
                 <xsl:attribute name="unless">manifest.available</xsl:attribute>
-                <nb.j2seproject.jar/>
+                <j2seproject:jar/>
             </target>
 
             <target name="-do-jar-with-manifest">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
                 <xsl:attribute name="if">manifest.available</xsl:attribute>
                 <xsl:attribute name="unless">manifest.available+main.class</xsl:attribute>
-                <nb.j2seproject.jar manifest="${{manifest.file}}"/>
+                <j2seproject:jar manifest="${{manifest.file}}"/>
             </target>
 
             <target name="-do-jar-with-mainclass">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
                 <xsl:attribute name="if">manifest.available+main.class</xsl:attribute>
-                <nb.j2seproject.jar manifest="${{manifest.file}}">
-                    <manifest>
+                <j2seproject:jar manifest="${{manifest.file}}">
+                    <manifest xmlns="http://www.netbeans.org/ns/j2se-project/1">
                         <attribute name="Main-Class" value="${{main.class}}"/>
                     </manifest>
-                </nb.j2seproject.jar>
+                </j2seproject:jar>
             </target>
 
             <target name="-post-jar">
