@@ -1027,7 +1027,11 @@ public class JavaCodeGenerator extends CodeGenerator {
 
   private String getEventHandlerHeader (String handlerName, String[] paramTypes) {
     StringBuffer buf = new StringBuffer ();
-    buf.append ("private void "); // NOI18N
+
+    // [IAN] following line contains a hack, where the first two spaces in the event handler header
+    // is a quick workaround for the bug, where sections in JavaEditor do not use Indentation Engine
+    // and thus the first line of event handlers was not indented correctly
+    buf.append ("  private void "); // NOI18N
     buf.append (handlerName);
     buf.append (" ("); // NOI18N
 
@@ -1461,6 +1465,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  69   Gandalf   1.68        2/16/00  Ian Formanek    Workaround for the 
+ *       indentation of the first line of event handlers
  *  68   Gandalf   1.67        1/18/00  Pavel Buzek     #4348
  *  67   Gandalf   1.66        1/15/00  Ian Formanek    NOI18N
  *  66   Gandalf   1.65        1/13/00  Ian Formanek    NOI18N #2
