@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -42,6 +42,7 @@ public final class FolderList extends javax.swing.JPanel {
 
     private String fcMessage;
     private File projectFolder;
+    private File lastUsedFolder;
 
     /** Creates new form FolderList */
     public FolderList (String label, char mnemonic, String accessibleDesc, String fcMessage,
@@ -175,11 +176,8 @@ public final class FolderList extends javax.swing.JPanel {
         if (this.projectFolder != null && this.projectFolder.isDirectory()) {
             chooser.setCurrentDirectory (this.projectFolder);            
         }
-        else {
-            File cd = FoldersListSettings.getDefault().getLastUsedSourceRootFolder();
-            if (cd != null && cd.isDirectory()) {
-                chooser.setCurrentDirectory(cd);
-            }
+        else if (this.lastUsedFolder != null && this.lastUsedFolder.isDirectory()) {
+            chooser.setCurrentDirectory (this.lastUsedFolder);
         }                
         if (chooser.showOpenDialog(this)== JFileChooser.APPROVE_OPTION) {
             File[] files = chooser.getSelectedFiles();
@@ -202,7 +200,7 @@ public final class FolderList extends javax.swing.JPanel {
             File cd = chooser.getCurrentDirectory();
             if (cd != null) {
                 this.projectFolder = null;
-                FoldersListSettings.getDefault().setLastUsedSourceRootFolder(FileUtil.normalizeFile(cd));
+                this.lastUsedFolder = FileUtil.normalizeFile(cd);
             }
         }
     }//GEN-LAST:event_addButtonActionPerformed

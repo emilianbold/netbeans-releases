@@ -190,16 +190,16 @@ final class J2SESourceRootsUi {
                 chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
                 chooser.setMultiSelectionEnabled( true );
                 chooser.setDialogTitle( NbBundle.getMessage( J2SESourceRootsUi.class, "LBL_SourceFolder_DialogTitle" )); // NOI18N
-                File curDir = FoldersListSettings.getDefault().getLastUsedSourceRootFolder();
-                chooser.setCurrentDirectory (curDir);
+                File curDir = FileUtil.toFile(this.project.getProjectDirectory());
+                if (curDir != null) {
+                    chooser.setCurrentDirectory (curDir);
+                }
                 int option = chooser.showOpenDialog( SwingUtilities.getWindowAncestor( addFolderButton ) ); // Sow the chooser
                 
                 if ( option == JFileChooser.APPROVE_OPTION ) {
                     
                     File files[] = chooser.getSelectedFiles();
                     addFolders( files );
-                    curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
-                    FoldersListSettings.getDefault().setLastUsedSourceRootFolder(curDir);
                 }
                 
             }
