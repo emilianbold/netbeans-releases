@@ -14,6 +14,7 @@
 package com.netbeans.developer.impl;
 
 import com.netbeans.ide.*;
+import com.netbeans.ide.loaders.*;
 import com.netbeans.ide.util.NotImplementedException;
 import com.netbeans.ide.nodes.*;
 import com.netbeans.developer.impl.desktop.DesktopPoolContext;
@@ -90,6 +91,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  2    Gandalf   1.1         1/6/99   Jan Jancura     
 *  1    Gandalf   1.0         1/5/99   Ian Formanek    
 * $
 */
