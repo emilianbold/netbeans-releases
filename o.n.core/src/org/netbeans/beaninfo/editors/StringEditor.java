@@ -29,7 +29,7 @@ import org.openide.nodes.Node;
 */
 public class StringEditor extends PropertyEditorSupport implements ExPropertyEditor
 {
-    private static boolean useRaw = System.getProperty("netbeans.stringEditor.useRawCharacters") != null;
+    private static boolean useRaw = Boolean.getBoolean("netbeans.stringEditor.useRawCharacters");
     
    // bugfix# 9219 added editable field and isEditable() "getter" to be used in StringCustomEditor    
     private boolean editable=true;   
