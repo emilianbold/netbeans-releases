@@ -217,6 +217,7 @@ public class NonGui extends NbTopManager implements Runnable {
         System.out.println(getString("CTL_UI_option"));
         System.out.println(getString("CTL_FontSize_option"));
         System.out.println(getString("CTL_Locale_option"));
+        System.out.println(getString("CTL_Branding_option"));
         System.out.println(getString("CTL_Noinfo_option"));
         System.out.println(getString("CTL_Nologging_option"));
         System.out.println(getString("CTL_Nosysclipboard_option"));
@@ -224,6 +225,7 @@ public class NonGui extends NbTopManager implements Runnable {
 
     public static void parseCommandLine(String[] args) {
         boolean noinfo = false;
+        boolean specifiedBranding = false;
 
         // let's go through the command line
         for(int i = 0; i < args.length; i++)
@@ -282,7 +284,13 @@ public class NonGui extends NbTopManager implements Runnable {
                 java.util.Locale.setDefault(new java.util.Locale(language, country, variant));
             } else if (args[i].equalsIgnoreCase ("-branding")) { // NOI18N
                 String branding = args[++i];
-                NbBundle.setBranding (branding);
+                if (branding.equals ("-")) branding = null; // NOI18N
+                try {
+                    NbBundle.setBranding (branding);
+                } catch (IllegalArgumentException iae) {
+                    iae.printStackTrace ();
+                }
+                specifiedBranding = true;
             }
             else if (args[i].equalsIgnoreCase("-?") || args[i].equalsIgnoreCase("-help")) { // NOI18N
                 showHelp();
@@ -292,6 +300,37 @@ public class NonGui extends NbTopManager implements Runnable {
                 System.out.println(getString("ERR_UnknownOption")+": "+args[i]);
                 showHelp();
                 doExit(0);
+            }
+        }
+
+        if (! specifiedBranding) {
+            // Read default branding from file "lib/branding" in installation.
+            File branding = new File (getUserDir (), "lib" + File.separator + "branding"); // NOI18N
+            if (! branding.exists ())
+                branding = new File (getHomeDir (), "lib" + File.separator + "branding"); // NOI18N
+            if (branding.exists ()) {
+                try {
+                    InputStream is = new FileInputStream (branding);
+                    try {
+                        BufferedReader rd = new BufferedReader (new InputStreamReader (is));
+                        String line = rd.readLine ();
+                        if (line == null || line.equals (""))
+                            throw new IOException ("empty branding file"); // NOI18N
+                        if (rd.readLine () != null)
+                            throw new IOException ("branding file more than one line"); // NOI18N
+                        line = line.trim ();
+                        if (line.equals ("-")) line = null;
+                        try {
+                            NbBundle.setBranding (line);
+                        } catch (IllegalArgumentException iae) {
+                            iae.printStackTrace ();
+                        }
+                    } finally {
+                        is.close ();
+                    }
+                } catch (IOException ioe) {
+                    ioe.printStackTrace ();
+                }
             }
         }
 
