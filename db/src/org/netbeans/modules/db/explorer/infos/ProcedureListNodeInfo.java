@@ -32,13 +32,21 @@ public class ProcedureListNodeInfo extends DatabaseNodeInfo {
     public void initChildren(Vector children) throws DatabaseException {
         try {
             DriverSpecification drvSpec = getDriverSpecification();
-            drvSpec.getProcedures(null);
+            drvSpec.getProcedures("%");
             ResultSet rs = drvSpec.getResultSet();
             if (rs != null) {
                 HashMap rset = new HashMap();
                 DatabaseNodeInfo info;
                 while (rs.next()) {
                     rset = drvSpec.getRow();
+                    
+                    //workaround for issue #21409 (http://db.netbeans.org/issues/show_bug.cgi?id=21409)
+                    if (drvSpec.getDBName().indexOf("Oracle") != -1) {
+                        String pac = (String) rset.get(new Integer(1));
+                        if (pac != null)
+                            rset.put(new Integer(3), pac + "." + rset.get(new Integer(3)));
+                    }
+
                     info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE, rset);
                     if (info != null) {
                         info.put(DatabaseNode.PROCEDURE, info.getName());

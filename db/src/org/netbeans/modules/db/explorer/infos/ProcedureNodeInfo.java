@@ -49,8 +49,19 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo {
     public void initChildren(Vector children) throws DatabaseException {
         try {
             String name = (String)get(DatabaseNode.PROCEDURE);
-
+            
             DriverSpecification drvSpec = getDriverSpecification();
+            
+            //workaround for issue #21409 (http://db.netbeans.org/issues/show_bug.cgi?id=21409)
+            String pac = null;
+            if (drvSpec.getDBName().indexOf("Oracle") != -1) {
+                int pos = name.indexOf(".");
+                if (pos != -1) {
+                    pac = name.substring(0, pos);
+                    name = name.substring(pos + 1);
+                }
+            }
+
             drvSpec.getProcedureColumns(name, "%");
             ResultSet rs = drvSpec.getResultSet();
             if (rs != null) {
@@ -58,6 +69,17 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo {
                 DatabaseNodeInfo info;
                 while (rs.next()) {
                     rset = drvSpec.getRow();
+                    
+                    if (rset.get(new Integer(4)) == null)
+                        continue;
+                    
+                    //workaround for issue #21409 (http://db.netbeans.org/issues/show_bug.cgi?id=21409)
+                    if (drvSpec.getDBName().indexOf("Oracle") != -1) {
+                        String pac1 = (String) rset.get(new Integer(1));
+                        if ((pac == null && pac1 != null) || (pac != null && pac1 == null) || (pac != null && pac1 != null && ! pac1.equals(pac)))
+                                continue;
+                    }
+                    
                     info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE_COLUMN, rset);
                     if (info != null) {
                         Object ibase = null;

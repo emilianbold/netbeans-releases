@@ -278,4 +278,13 @@ public class DriverSpecification {
         
         return str;
     }
+    
+    public String getDBName() {
+        try {
+            return dmd.getDatabaseProductName().trim();
+        } catch (SQLException exc) {
+            //PENDING
+            return null;
+        }
+    }
 }
