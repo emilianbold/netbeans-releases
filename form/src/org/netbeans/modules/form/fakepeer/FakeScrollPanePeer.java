@@ -64,7 +64,11 @@ class FakeScrollPanePeer extends FakeContainerPeer implements ScrollPanePeer
         }
 
         public Dimension getMinimumSize() {
-            return ((ScrollPane)_target).getViewportSize();
+            ScrollPane scrollPane = (ScrollPane) _target;
+            int n = scrollPane.getComponentCount();
+            return n > 0 ?
+                     scrollPane.getComponent(n-1).getMinimumSize():
+                     new Dimension(100, 100);
         }
     }
 }
