@@ -58,7 +58,7 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
             setSmallIcon( icon );
         }
         
-        //refreshView();                
+        refreshView();                
         // Start listening on open projects list to correctly enable the action
         OpenProjectList.getDefault().addPropertyChangeListener( this );
     }
@@ -68,9 +68,11 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
         Project p = OpenProjectList.getDefault().getMainProject();
         
         // if no main project than show warning and allow choose a main project
-        while (p == null) {
+        if (p == null) {
             // show warning, if cancel then return
-            if (showNoMainProjectWarning (OpenProjectList.getDefault().getOpenProjects ())) return ;
+            if (showNoMainProjectWarning (OpenProjectList.getDefault().getOpenProjects ())) {
+                return ;
+            }
             p = OpenProjectList.getDefault().getMainProject();
         }
 
@@ -84,18 +86,39 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
     }
         
        
+    // Private methods ---------------------------------------------------------
+    
     // Implementation of PropertyChangeListener --------------------------------
     
     public void propertyChange( PropertyChangeEvent evt ) {
         
-        // ??? could be removed, listening is useless now
-        if ( evt.getPropertyName() == OpenProjectList.PROPERTY_MAIN_PROJECT ) {}
+        if ( evt.getPropertyName() == OpenProjectList.PROPERTY_MAIN_PROJECT ) {
+            refreshView ();
+        }
                
     }   
     
-    // Private methods ---------------------------------------------------------
+    private void refreshView() {
+        
+        Project p = OpenProjectList.getDefault().getMainProject();
+        
+        if ( command == null ) {
+            setEnabled( performer.enable( p ) );
+        }
+        else {
+            if ( p == null ) {
+                setEnabled( true );
+            }
+            else if ( ActionsUtil.commandSupported ( p, command, Lookup.EMPTY ) ) {
+                setEnabled( true );
+            }
+            else {
+                setEnabled( false );
+            }
+        }        
+    }
     
-    private boolean showNoMainProjectWarning (Project[] projects) {
+   private boolean showNoMainProjectWarning (Project[] projects) {
         boolean canceled;
         
         // no main project set => warning

@@ -169,7 +169,9 @@ class J2SEActionProvider implements ActionProvider {
             
             while (!isSetMainClass (mainClass)) {
                 // show warning, if cancel then return
-                if (showMainClassWarning (mainClass, antProjectHelper.getDisplayName (), ep)) return ;
+                if (showMainClassWarning (mainClass, antProjectHelper.getDisplayName (), ep)) {
+                    return ;
+                }
                 mainClass = (String)ep.get ("main.class"); // NOI18N
                 antProjectHelper.putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
             }
