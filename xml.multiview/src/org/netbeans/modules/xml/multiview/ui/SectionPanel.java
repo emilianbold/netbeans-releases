@@ -377,6 +377,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         public HeaderButton(SectionPanel panel, Action action) {
             super(action);
             this.panel=panel;
+            setMargin(new java.awt.Insets(0,14,0,14));
             setEnabled(false);
         }     
         public SectionPanel getSectionPanel() {
