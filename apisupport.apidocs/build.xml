@@ -34,10 +34,10 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
     </target>
 
-    <target name="release">
-        <copy todir="netbeans">
-            <fileset dir="release" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
-        </copy>
+    <target name="parser-db">
+        <taskdef name="makeparserdb" classname="org.netbeans.nbbuild.MakeParserDB" classpath="../../nbbuild/nbantext.jar"/>
+        <mkdir dir="netbeans/system/ParserDB"/>
+        <makeparserdb db="netbeans/system/ParserDB/OpenAPIs" sources="../../openide/src" nbroot="../.."/>
     </target>
 
     <target name="open-apis">
@@ -46,7 +46,7 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="../../openide/OpenAPIs.zip" tofile="netbeans/docs/OpenAPIs.zip"/>
     </target>
 
-    <target name="netbeans" depends="jars,release,open-apis" description="Build complete module.">
+    <target name="netbeans" depends="jars,parser-db,open-apis" description="Build complete module.">
         <genlist targetname="nbm" outputfiledir="../../nbbuild/netbeans"/>
     </target>
 
