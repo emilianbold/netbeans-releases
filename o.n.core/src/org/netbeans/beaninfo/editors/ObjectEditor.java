@@ -302,18 +302,18 @@ implements ExPropertyEditor {
             setValue (item.getInstance());
             ObjectEditor.this.firePropertyChange();
         }
-        
-        private class ItemRadioButton extends JRadioButton {
-            Lookup.Item item;
-            public ItemRadioButton(Lookup.Item item, Font font) {
-                this.item = item;
-                setName(item.getId());
-                setText(item.getDisplayName());
-                setFont(font);
-                getAccessibleContext().setAccessibleName(getName());
-                getAccessibleContext().setAccessibleDescription(
-                    getText());
-            }
+    }
+    
+    private static class ItemRadioButton extends JRadioButton {
+        Lookup.Item item;
+        public ItemRadioButton(Lookup.Item item, Font font) {
+            this.item = item;
+            setName(item.getId());
+            setText(item.getDisplayName());
+            setFont(font);
+            getAccessibleContext().setAccessibleName(getName());
+            getAccessibleContext().setAccessibleDescription(
+            getText());
         }
     }
 }
