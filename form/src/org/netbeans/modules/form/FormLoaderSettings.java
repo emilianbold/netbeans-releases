@@ -44,7 +44,7 @@ public class FormLoaderSettings extends SystemOption {
     /** Property name of the dragBorderColor property */
     public static final String PROP_DRAG_BORDER_COLOR = "dragBorderColor"; // NOI18N
     /** Property name of the showGrid property */
-    public static final String PROP_SHOW_GRID = "showGrid"; // NOI18N
+//    public static final String PROP_SHOW_GRID = "showGrid"; // NOI18N
     /** Property name of the gridX property */
     public static final String PROP_GRID_X = "gridX"; // NOI18N
     /** Property name of the gridY property */
@@ -100,7 +100,7 @@ public class FormLoaderSettings extends SystemOption {
     /** The color of the drag border on selection border */
     private static java.awt.Color dragBorderColor = java.awt.Color.gray;
     /** True if grid should be used, false otherwise. */
-    private static boolean showGrid = true;
+//    private static boolean showGrid = true;
     /** The grid size(in pixels) in x axis. */
     private static int gridX = 10;
     /** The grid size(in pixels) in y axis. */
@@ -256,18 +256,18 @@ public class FormLoaderSettings extends SystemOption {
     }
 
     /** Getter for the showGrid option */
-    public boolean getShowGrid() {
+/*    public boolean getShowGrid() {
         return showGrid;
-    }
+    } */
 
     /** Setter for the showGrid option */
-    public void setShowGrid(boolean value) {
+/*    public void setShowGrid(boolean value) {
         if (value == showGrid)
             return;
         boolean oldValue = showGrid;
         showGrid = value;
         firePropertyChange(PROP_SHOW_GRID, new Boolean(oldValue), new Boolean(showGrid));
-    }
+    } */
 
     /** Getter for the gridX option */
     public int getGridX() {
