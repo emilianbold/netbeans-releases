@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,6 +17,8 @@ import java.util.*;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.AWTEvent;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.MouseEvent;
 import java.awt.event.*;
 import java.io.*;
@@ -177,13 +179,9 @@ public class Main extends Object {
                 }
             }
         });
-        // Wait a little because of issue 42414 (addAWTEventListener has to be
-        // called after IDE adds its own listener)
-        try {
-            Thread.sleep(5000);
-        } catch (Exception e) {
-            errMan.notify(ErrorManager.EXCEPTION, e);
-        }
+        // workaround for JDK bug 4924516 (see below)
+        Toolkit.getDefaultToolkit().addAWTEventListener(distributingHierarchyListener, 
+                                                        HierarchyEvent.HIERARCHY_EVENT_MASK);
         // start the init thread
         initThread.start();
         try {
@@ -191,7 +189,9 @@ public class Main extends Object {
         }
         catch (InterruptedException iex) {
             errMan.notify(ErrorManager.EXCEPTION, iex);
-            
+        } finally {
+            // workaround for JDK bug 4924516 (see below)
+            Toolkit.getDefaultToolkit().removeAWTEventListener(distributingHierarchyListener);
         }
         if (initThread.isAlive()) {
             // time-out expired, event queue still busy -> interrupt the init thread
@@ -549,7 +549,7 @@ public class Main extends Object {
             Thread t = Thread.currentThread();
             // get current AWT Event Queue
             EventQueue queue=Toolkit.getDefaultToolkit().getSystemEventQueue();
-            
+
             try {
                 
                 // while AWT Event Queue is not empty and timedelay from last event is shorter then eventdelaytime
@@ -638,5 +638,51 @@ public class Main extends Object {
         void openProject(String projectPath);
         void createProject(String projectDir);
     }
+    
+    /* Workaround for JDK bug http://developer.java.sun.com/developer/bugParade/bugs/4924516.html.
+     * Also see issue http://www.netbeans.org/issues/show_bug.cgi?id=42414.
+     * ------------------------------------------------------------------------------------------
+     * It is fixed in JDK1.5.0, so tt can be removed when JDK1.4.2 become unsupported. The following
+     * listener is added to Toolkit at runBare() method and removed when it finishes. 
+     * It distributes HierarchyEvent to all listening components and its subcomponents.
+     */
+    private static final DistributingHierarchyListener 
+                distributingHierarchyListener = new DistributingHierarchyListener();
+    
+    private static class DistributingHierarchyListener implements AWTEventListener {
+        
+        public DistributingHierarchyListener() {
+        }
+        
+        public void eventDispatched(java.awt.AWTEvent aWTEvent) {
+            HierarchyEvent hevt = null;
+            if (aWTEvent instanceof HierarchyEvent) {
+                hevt = (HierarchyEvent) aWTEvent;
+            }
+            if (hevt != null && ((HierarchyEvent.SHOWING_CHANGED & hevt.getChangeFlags()) != 0)) {
+                distributeShowingEvent(hevt.getComponent(), hevt);
+            }
+        }
+        
+        private static void distributeShowingEvent(Component c, HierarchyEvent hevt) {
+            //HierarchyListener[] hierarchyListeners = c.getHierarchyListeners();
+            // Need to use component.getListeners because it is not synchronized
+            // and it not cause deadlock
+            HierarchyListener[] hierarchyListeners = (HierarchyListener[])(c.getListeners(HierarchyListener.class));
+            if (hierarchyListeners != null) {
+                for (int i = 0; i < hierarchyListeners.length; i++) {
+                    hierarchyListeners[i].hierarchyChanged(hevt);
+                }
+            }
+            if (c instanceof Container) {
+                Container cont = (Container) c;
+                int n = cont.getComponentCount();
+                for (int i = 0; i < n; i++) {
+                    distributeShowingEvent(cont.getComponent(i), hevt);
+                }
+            }
+        }
+    }
+
 }
 
