@@ -1,34 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
 
-<!DOCTYPE fontscolors PUBLIC '-//NetBeans//DTD Editor Fonts and Colors settings 1.0//EN' 'http://www.netbeans.org/dtds/EditorFontsColors-1_0.dtd'>
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.0//EN"
+                             "http://www.netbeans.org/dtds/EditorFontsColors-1_0.dtd">
 
 <fontscolors>
-  <fontcolor syntaxName="dtd-error" foreColor="#FF0000">
-    <font name="Monospaced" style="plain" />
-  </fontcolor>
-  <fontcolor syntaxName="dtd-string" foreColor="#99006B">
-    <font name="Monospaced" style="plain" />
-  </fontcolor>
-  <fontcolor syntaxName="dtd-ref" foreColor="#0000FF">
-    <font name="Monospaced" style="plain" />
-  </fontcolor>
-  <fontcolor syntaxName="dtd-target" foreColor="#B20000">
-    <font name="Monospaced" style="bold" />
-  </fontcolor>
-  <fontcolor syntaxName="dtd-comment" foreColor="#808080">
-    <font name="Monospaced" style="italic" />
-  </fontcolor>
-  <fontcolor syntaxName="dtd-plain" foreColor="#000000">
-    <font name="Monospaced" style="plain" />
-  </fontcolor>
-  <fontcolor syntaxName="default" foreColor="#000000" bgColor="#FFFFFF">
-    <font name="Monospaced" size="12" style="plain" />
-  </fontcolor>
-  <fontcolor syntaxName="dtd-symbol" foreColor="#000000">
-    <font name="Monospaced" style="bold" />
-  </fontcolor>
-  <fontcolor syntaxName="dtd-keyword" foreColor="#00007C">
-    <font name="Monospaced" style="bold" />
-  </fontcolor>
+    <fontcolor syntaxName="dtd-error" foreColor="#FF0000">
+        <font name="Monospaced" style="plain" />
+    </fontcolor>
+    <fontcolor syntaxName="dtd-string" foreColor="#99006B">
+        <font name="Monospaced" style="plain" />
+    </fontcolor>
+    <fontcolor syntaxName="dtd-ref" foreColor="#0000FF">
+        <font name="Monospaced" style="plain" />
+    </fontcolor>
+    <fontcolor syntaxName="dtd-target" foreColor="#B20000">
+        <font name="Monospaced" style="bold" />
+    </fontcolor>
+    <fontcolor syntaxName="dtd-comment" foreColor="#808080">
+        <font name="Monospaced" style="italic" />
+    </fontcolor>
+    <fontcolor syntaxName="dtd-plain" foreColor="#000000">
+        <font name="Monospaced" style="plain" />
+    </fontcolor>
+    <fontcolor syntaxName="default" foreColor="#000000" bgColor="#FFFFFF">
+        <font name="Monospaced" size="12" style="plain" />
+    </fontcolor>
+    <fontcolor syntaxName="dtd-symbol" foreColor="#000000">
+        <font name="Monospaced" style="bold" />
+    </fontcolor>
+    <fontcolor syntaxName="dtd-keyword" foreColor="#00007C">
+        <font name="Monospaced" style="bold" />
+    </fontcolor>
 </fontscolors>
-

@@ -94,11 +94,6 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
                     new TokenContext[] { XMLDefaultTokenContext.context }
             );
             
-            settingsMap.put(SettingsNames.MACRO_MAP, getXMLMacroMap());
-            
-            SettingsUtil.updateListSetting(settingsMap, SettingsNames.KEY_BINDING_LIST,
-                getXMLKeyBindings());
-
             settingsMap.put(SettingsNames.IDENTIFIER_ACCEPTOR, getXMLIdentifierAcceptor());            
         }
 
@@ -115,91 +110,51 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
         }
 
     }
-
+    
+    // This must be synchronized with org/netbeans/modules/xml/text/resources/XMLEditor-abbreviations.xml!!!
     Map getXMLAbbrevMap() {
-        Map xmlAbbrevMap = getDTDAbbrevMap();
-        xmlAbbrevMap.put ("?xm", "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"); // NOI18N
+        Map xmlAbbrevMap = new TreeMap();
+
+        xmlAbbrevMap.put ("?xm", "<?xml version=\"1.0\" encoding=\"UTF-8\">"); // NOI18N
         xmlAbbrevMap.put ("!do", "<!DOCTYPE "); // NOI18N
-        xmlAbbrevMap.put ("!cd", "<![CDATA["); // NOI18N
+        xmlAbbrevMap.put ("!cd", "<![CDATA[|]]>"); // NOI18N
+        xmlAbbrevMap.put ("!at", "<!ATTLIST |>"); // NOI18N
+        xmlAbbrevMap.put ("!el", "<!ELEMENT |>"); // NOI18N
+        xmlAbbrevMap.put ("!en", "<!ENTITY |>"); // NOI18N
+        xmlAbbrevMap.put ("pu",  "PUBLIC \"|\""); // NOI18N
+        xmlAbbrevMap.put ("sy",  "SYSTEM \"|\""); // NOI18N
+
         return xmlAbbrevMap;
     }
 
+    // This must be synchronized with org/netbeans/modules/xml/text/resources/DTDEditor-abbreviations.xml!!!
     Map getDTDAbbrevMap() {
-        Map dtdAbbrevMap = new TreeMap ();
-        dtdAbbrevMap.put ("!el", "<!ELEMENT "); // NOI18N
-        dtdAbbrevMap.put ("!en", "<!ENTITY "); // NOI18N
-        dtdAbbrevMap.put ("!at", "<!ATTLIST "); // NOI18N
-        dtdAbbrevMap.put ("!no", "<!NOTATION "); // NOI18N
-        dtdAbbrevMap.put ("pu", "PUBLIC "); // NOI18N
-        dtdAbbrevMap.put ("sy", "SYSTEM "); // NOI18N
-        dtdAbbrevMap.put ("cd", "CDATA"); // NOI18N
-        dtdAbbrevMap.put ("pc", "#PCDATA"); // NOI18N
-//        dtdAbbrevMap.put ("an", "ANY"); // NOI18N
-        dtdAbbrevMap.put ("em", "EMPTY"); // NOI18N
-        dtdAbbrevMap.put ("fi", "#FIXED"); // NOI18N
-        dtdAbbrevMap.put ("im", "#IMPLIED"); // NOI18N
-        dtdAbbrevMap.put ("re", "#REQUIRED"); // NOI18N
-        dtdAbbrevMap.put ("nm", "NMTOKEN"); // NOI18N
-        dtdAbbrevMap.put ("nms", "NMTOKENS"); // NOI18N
-        dtdAbbrevMap.put ("rf", "IDREF"); // NOI18N
-        dtdAbbrevMap.put ("rfs", "IDREFS"); // NOI18N
-        dtdAbbrevMap.put ("en", "ENTITY"); // NOI18N
+        Map dtdAbbrevMap = new TreeMap();
+
+        dtdAbbrevMap.put ("!at", "<!ATTLIST |>"); // NOI18N
+        dtdAbbrevMap.put ("!el", "<!ELEMENT |>"); // NOI18N
+        dtdAbbrevMap.put ("!en", "<!ENTITY |>"); // NOI18N
+        dtdAbbrevMap.put ("!no", "<!NOTATION |>"); // NOI18N
+        dtdAbbrevMap.put ("cd",  "CDATA"); // NOI18N
+        dtdAbbrevMap.put ("em",  "EMPTY"); // NOI18N
+        dtdAbbrevMap.put ("en",  "ENTITY"); // NOI18N
         dtdAbbrevMap.put ("ens", "ENTITIES"); // NOI18N
-        dtdAbbrevMap.put ("nn", "NOTATION"); // NOI18N
+        dtdAbbrevMap.put ("fi",  "#FIXED"); // NOI18N
+        dtdAbbrevMap.put ("im",  "#IMPLIED"); // NOI18N
+        dtdAbbrevMap.put ("nm",  "NMTOKEN"); // NOI18N
+        dtdAbbrevMap.put ("nms", "NMTOKENS"); // NOI18N
+        dtdAbbrevMap.put ("nn",  "NOTATION"); // NOI18N
+        dtdAbbrevMap.put ("pc",  "#PCDATA"); // NOI18N
+        dtdAbbrevMap.put ("pu",  "PUBLIC \"|\""); // NOI18N
+        dtdAbbrevMap.put ("re",  "#REQUIRED"); // NOI18N
+        dtdAbbrevMap.put ("rf",  "IDREF"); // NOI18N
+        dtdAbbrevMap.put ("rfs", "IDREFS"); // NOI18N
+        dtdAbbrevMap.put ("sy",  "SYSTEM \"|\""); // NOI18N
 
         return dtdAbbrevMap;
     }
-
     
     
-
-    /*
-     * Editor is bundled with one usefull macro, bind it
-     */
-    MultiKeyBinding[] getXMLKeyBindings() {
-        return new MultiKeyBinding[] {
-                    
-                    new MultiKeyBinding(
-                        new KeyStroke[] {
-                            KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_MASK),
-                        },
-                        "macro-put-end-tag" // NOI18N
-                    ),
-                    
-                    new MultiKeyBinding(
-                        KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK),
-                        XMLKit.xmlCommentAction
-                    ),
-
-                    new MultiKeyBinding(
-                         KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK),
-                         XMLKit.xmlUncommentAction
-                    ),                   
-
-               };
-    }
-
-
-    // just a temporary macro emulating put-end-tag
-    Map getXMLMacroMap() {
-        Map xmlMacroMap = new HashMap();
-        
-        // the macro uses trick with marking current position with "<"
-        // then select it and instruct all subsequent finds to use it
-        // it is very sensitive for exact find action sematics
-        
-        // it destroys users clipboard content and search selections
-        
-        xmlMacroMap.put( "put-end-tag", "\"<\" selection-backward find-selection find-previous find-previous caret-forward caret-forward\n" + // NOI18N
-                         "select-identifier copy-to-clipboard caret-backward caret-forward\n" + // NOI18N
-                         "find-next caret-backward caret-forward\n" + // NOI18N
-                         "\"/\" paste-from-clipboard \">\"\n" + // NOI18N
-                         "find-previous caret-forward caret-backward"); // NOI18N
-        
-        return xmlMacroMap;
-    }
-    
-
     /*
      * Identifiers accept all NameChar [4].
      */
@@ -386,7 +341,7 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
 
                     case DTDTokenContext.COMMENT_ID:
                         return new Coloring(italicFont, Coloring.FONT_MODE_APPLY_STYLE,
-                                                  Color.lightGray, null);
+                                                  Color.gray, null);
 
                     case DTDTokenContext.KW_ID:
                         return new Coloring(boldFont, Color.blue.darker().darker(), null);

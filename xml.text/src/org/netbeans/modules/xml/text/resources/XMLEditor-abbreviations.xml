@@ -15,12 +15,13 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE abbrevs PUBLIC "-//NetBeans//DTD Editor Abbreviations settings 1.0//EN"
                          "http://www.netbeans.org/dtds/EditorAbbreviations-1_0.dtd">
 
+<!-- This must be synchronized with org.netbeans.modules.xml.text.syntax.XMLSettingsInitializer.getXMLAbbrevMap()!!! -->
 <abbrevs>
-    <abbrev key="?xm">&lt;?xml version="1.0" encoding="UTF-8" ?&gt;</abbrev>
+    <abbrev key="?xm">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</abbrev>
     <abbrev key="!do">&lt;!DOCTYPE </abbrev>
     <abbrev key="!cd">&lt;![CDATA[|]]&gt;</abbrev>
 
-    <!-- DTD abbrevs subsed useful for internal DTD -->
+    <!-- DTD abbrevs subset useful for internal DTD -->
     <abbrev key="!at">&lt;!ATTLIST |&gt;</abbrev>
     <abbrev key="!el">&lt;!ELEMENT |&gt;</abbrev>
     <abbrev key="!en">&lt;!ENTITY |&gt;</abbrev>

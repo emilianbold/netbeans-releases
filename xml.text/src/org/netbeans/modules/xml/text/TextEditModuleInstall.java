@@ -67,7 +67,7 @@ public class TextEditModuleInstall extends ModuleInstall {
     /**
      */
     public void restoredTextEditor () {
-        //??? layer based defaults does not work
+        //layer based defaults still need it
         Settings.addInitializer (new XMLSettingsInitializer());
 
         // editor options
@@ -90,7 +90,7 @@ public class TextEditModuleInstall extends ModuleInstall {
         if (opt != null)
 	    ps.removeOption (opt);
         
-        //??? layer based defaults does not work
+        //layer based defaults still need it
         Settings.removeInitializer (XMLSettingsInitializer.NAME);                
     }
     

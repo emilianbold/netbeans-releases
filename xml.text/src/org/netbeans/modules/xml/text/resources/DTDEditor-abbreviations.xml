@@ -15,6 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE abbrevs PUBLIC "-//NetBeans//DTD Editor Abbreviations settings 1.0//EN"
                          "http://www.netbeans.org/dtds/EditorAbbreviations-1_0.dtd">
 
+<!-- This must be synchronized with org.netbeans.modules.xml.text.syntax.XMLSettingsInitializer.getDTDAbbrevMap()!!! -->
 <abbrevs>
     <abbrev key="!at">&lt;!ATTLIST |&gt;</abbrev>
     <abbrev key="!el">&lt;!ELEMENT |&gt;</abbrev>
