@@ -14,6 +14,7 @@
 package org.netbeans.beaninfo.editors;
 
 import java.beans.*;
+import java.io.File;
 
 import org.openide.loaders.DataFolder;
 
@@ -52,11 +53,16 @@ public class DataFolderEditor extends PropertyEditorSupport {
     */
     public String getAsText() {
         DataFolder df = (DataFolder)getValue ();
+        String result;
         if (df == null) {
-            return getString ("LAB_DefaultDataFolder");
+            result = getString ("LAB_DefaultDataFolder"); //NOI18N
         } else {
-            return df.getName();
+            result = df.getName();
         }
+        if (result.length() ==0) {
+            result = File.pathSeparator;
+        }
+        return result;
     }
 
     /** Set the property value by parsing a given String.  May raise
@@ -66,10 +72,14 @@ public class DataFolderEditor extends PropertyEditorSupport {
     * @param text  The string to be parsed.
     */
     public void setAsText(String text) {
-        if ( text==null || text.equals("") || text.equals( getString ("LAB_DefaultDataFolder") ) )
+        if (text==null || 
+            "".equals(text) || 
+            text.equals( getString ("LAB_DefaultDataFolder")) || 
+            File.pathSeparator.equals(text)) {
             setValue(null);
-        else
+        } else {
             throw new IllegalArgumentException();
+        }
     }
 
     public boolean supportsCustomEditor () {
