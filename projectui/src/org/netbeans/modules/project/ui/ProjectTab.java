@@ -15,6 +15,7 @@ package org.netbeans.modules.project.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -30,8 +31,10 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.ActionMap;
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeModel;
 import org.openide.ErrorManager;
 import org.openide.actions.PopupAction;
 
@@ -263,6 +266,7 @@ public class ProjectTab extends TopComponent
                 manager.setSelectedNodes( new Node[] { selectedNode } );
                 open();
                 requestActive();                
+                btv.scrollToNode(selectedNode);
                 return true;
             }
             catch ( PropertyVetoException e ) {
@@ -322,6 +326,17 @@ public class ProjectTab extends TopComponent
     /** Extending bean treeview. To be able to persist the selected paths
      */
     private class ProjectTreeView extends BeanTreeView {
+        public void scrollToNode(Node n) {
+            TreeNode tn = Visualizer.findVisualizer( n );
+            if (tn == null) return;
+
+            TreeModel model = tree.getModel();
+            if (!(model instanceof DefaultTreeModel)) return;
+
+            TreePath path = new TreePath(((DefaultTreeModel)model).getPathToRoot(tn));
+            Rectangle r = tree.getPathBounds(path);
+            if (r != null) tree.scrollRectToVisible(r);
+	}
                         
         public List getExpandedPaths() { 
 
