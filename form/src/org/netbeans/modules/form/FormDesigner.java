@@ -790,6 +790,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         UndoRedo ur = formModel != null ? formModel.getUndoRedoManager() : null;
         return ur != null ? ur : super.getUndoRedo();
     }
+    
+    protected String preferredID() {
+        return formEditorSupport.getFormDataObject().getName();
+    }
 
     // ------
     // multiview stuff
