@@ -59,7 +59,6 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     private static final String UNINSTALL_BAT = "custom-uninstall.bat";
     private static final String AS8_LICENSE   = "appserv.lic";
     private static final String PERM_LICENSE  = "plf";
-    private static final String J2EESDK_PROP_FILE = "enterprise1/config/J2EE/InstalledServers/J2EESDK.properties";
     
     protected static int installMode = 0;
     private static final int INSTALL = 0;
@@ -296,13 +295,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
             logEvent(this, Log.ERROR, ex);
             logEvent(this, Log.DBG, ex);
         }
-	/* Create the file the plugin uses to determine how to
-	 * configure itself.
-	 */
-	if (!createJ2EESDKPropertiesFile()) {
-	    //InstallerExceptions.setWarnings(true);
-	}
-
+        
         logEvent(this, Log.DBG,"Appserver installation took: (ms) " + (System.currentTimeMillis() - currtime));
     }
     
@@ -354,24 +347,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
                 logEvent(this, Log.DBG,"Deleted -> " + imageDirPath);
             }
             
-            //Delete properties file
-            File file = new File(nbInstallDir,"enterprise1/config/J2EE/InstalledServers/J2EESDK.properties");
-            if (file.exists()) {
-                File parent = file.getParentFile();
-                logEvent(this, Log.DBG, "Delete: " + file);
-                file.delete();
-                if (parent.listFiles().length == 0) {
-                    file = parent;
-                    parent = file.getParentFile();
-                    logEvent(this, Log.DBG, "Delete: " + file);
-                    file.delete();
-                    if (parent.listFiles().length == 0) {
-                        file = parent;
-                        logEvent(this, Log.DBG, "Delete: " + file);
-                        file.delete();
-                    }
-                }
-            }
+            File file;
             //Delete files created during installation/uninstallation
             file = new File(instDirPath + File.separator + "as-install.log");
             if (file.exists()) {
@@ -1211,39 +1187,6 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         }
         return installerName;
     }
-    
-    private boolean createJ2EESDKPropertiesFile() {
-	String filename = nbInstallDir + File.separator + J2EESDK_PROP_FILE; 
-        File file = new File(filename);
-	logEvent(this, Log.DBG, "Creating J2SDKEE properties file: " + 
-		 file.getAbsolutePath());
-	try {
-	    FileService fileService = (FileService)getService(FileService.NAME);
-	    if (fileService == null) {
-		logEvent(this, Log.ERROR, "FileService is null. Cannot create directory for: " +  file.getAbsolutePath());
-		return false;
-	    }
-	    fileService.createDirectory(file.getParent());
-	} catch (Exception ex) {
-            logEvent(this, Log.ERROR, "Cannot create the directory for: " 
-		     + file.getAbsolutePath() + "\nException: " + ex);
-	    return false;
-	}
-	try {
-	    PrintWriter ps = new PrintWriter(new BufferedWriter(new FileWriter(file)));
-	    
-	    ps.println("serverName=J2EESDK");
-	    ps.println("url=deployer:Sun:AppServer::localhost:" + adminPortNumber);
-	    
-	    ps.close();
-        } catch (java.io.IOException e) {
-            logEvent(this, Log.ERROR, file.getAbsolutePath() 
-		     + " file may not have been created.");
-	    return false;
-        }
-	return true;
-    }
-    
     
     /** inner class to update the progress pane while installation */
     class ProgressThread extends Thread {
