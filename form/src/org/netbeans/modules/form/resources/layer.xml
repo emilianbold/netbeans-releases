@@ -237,6 +237,17 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JOptionPaneColor16.gif" />
                 <attr name="beaninfo" boolvalue="false"/>
+                <attr name="isContainer" boolvalue="false"/>
+            </file>
+            <file name="javax-swing-JColorChooser.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JColorChooserColor16.gif" />
+                <attr name="beaninfo" boolvalue="false"/>
+            </file>
+            <file name="javax-swing-JFileChooser.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JFileChooserColor16.gif" />
+                <attr name="beaninfo" boolvalue="false"/>
             </file>
 
             <attr name="javax-swing-JSlider.instance/javax-swing-JProgressBar.instance" boolvalue="true" />
@@ -252,6 +263,8 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="javax-swing-JInternalFrame.instance/javax-swing-JLayeredPane.instance" boolvalue="true" />
             <attr name="javax-swing-JLayeredPane.instance/javax-swing-JDesktopPane.instance" boolvalue="true" />
             <attr name="javax-swing-JDesktopPane.instance/javax-swing-JOptionPane.instance" boolvalue="true" />
+            <attr name="javax-swing-JOptionPane.instance/javax-swing-JColorChooser.instance" boolvalue="true" />
+            <attr name="javax-swing-JColorChooser.instance/javax-swing-JFileChooser.instance" boolvalue="true" />
         </folder>
 
         <folder name="AWT">
