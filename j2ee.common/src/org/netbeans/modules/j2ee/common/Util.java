@@ -16,16 +16,30 @@ package org.netbeans.modules.j2ee.common;
 import java.awt.Component;
 import javax.swing.JLabel;
 import java.awt.Container;
+import java.net.URL;
+import java.util.ArrayList;
 import javax.swing.JComponent;
 import java.util.Vector;
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.Collections;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.openide.ErrorManager;
 import org.openide.src.ClassElement;
 import org.openide.src.Identifier;
 
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 
 public class Util {
     
@@ -136,4 +150,80 @@ public class Util {
         return false;
     }
     
+    /**
+     * Returns Java source groups for all source packages in given project.<br>
+     * Doesn't include test packages.
+     *
+     * @param project Project to search
+     * @return Array of SourceGroup. It is empty if any probelm occurs.
+     */
+    public static SourceGroup[] getJavaSourceGroups(Project project) {
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
+                                    JavaProjectConstants.SOURCES_TYPE_JAVA);
+        Set testGroups = getTestSourceGroups(project, sourceGroups);
+        List result = new ArrayList();
+        for (int i = 0; i < sourceGroups.length; i++) {
+            if (!testGroups.contains(sourceGroups[i])) {
+                result.add(sourceGroups[i]);
+            }
+        }
+        return (SourceGroup[]) result.toArray(new SourceGroup[result.size()]);
+    }
+
+    private static Set/*<SourceGroup>*/ getTestSourceGroups(Project project, SourceGroup[] sourceGroups) {
+        Map foldersToSourceGroupsMap = createFoldersToSourceGroupsMap(sourceGroups);
+        Set testGroups = new HashSet();
+        for (int i = 0; i < sourceGroups.length; i++) {
+            testGroups.addAll(getTestTargets(sourceGroups[i], foldersToSourceGroupsMap));
+        }
+        return testGroups;
+    }
+    
+    private static Map createFoldersToSourceGroupsMap(final SourceGroup[] sourceGroups) {
+        Map result;
+        if (sourceGroups.length == 0) {
+            result = Collections.EMPTY_MAP;
+        } else {
+            result = new HashMap(2 * sourceGroups.length, .5f);
+            for (int i = 0; i < sourceGroups.length; i++) {
+                SourceGroup sourceGroup = sourceGroups[i];
+                result.put(sourceGroup.getRootFolder(), sourceGroup);
+            }
+        }
+        return result;
+    }
+
+    private static List/*<FileObject>*/ getFileObjects(URL[] urls) {
+        List result = new ArrayList();
+        for (int i = 0; i < urls.length; i++) {
+            FileObject sourceRoot = URLMapper.findFileObject(urls[i]);
+            if (sourceRoot != null) {
+                result.add(sourceRoot);
+            } else {
+                int severity = ErrorManager.INFORMATIONAL;
+                if (ErrorManager.getDefault().isNotifiable(severity)) {
+                    ErrorManager.getDefault().notify(severity, new IllegalStateException(
+                       "No FileObject found for the following URL: " + urls[i])); //NOI18N
+                }
+            }
+        }
+        return result;
+    }
+    
+    private static List/*<SourceGroup>*/ getTestTargets(SourceGroup sourceGroup, Map foldersToSourceGroupsMap) {
+        final URL[] rootURLs = UnitTestForSourceQuery.findUnitTests(sourceGroup.getRootFolder());
+        if (rootURLs.length == 0) {
+            return new ArrayList();
+        }
+        List result = new ArrayList();
+        List sourceRoots = getFileObjects(rootURLs);
+        for (int i = 0; i < sourceRoots.size(); i++) {
+            FileObject sourceRoot = (FileObject) sourceRoots.get(i);
+            SourceGroup srcGroup = (SourceGroup) foldersToSourceGroupsMap.get(sourceRoot);
+            if (srcGroup != null) {
+                result.add(srcGroup);
+            }
+        }
+        return result;
+    }
 }
