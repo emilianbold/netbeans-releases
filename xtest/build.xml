@@ -97,6 +97,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="xtest.basedir" value="dist"/>
             <property name="xtest.code.classpath" value="ide"/>            
             <property name="xtest.distexec" value="true"/>
+            <property name="xtest.nobuildxtest" value="true"/>
             <property name="netbeans.home" location="${netbeans.home}"/>
         </ant>
     </target>
@@ -202,7 +203,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="buildxtest"
-            description="Builds XTest framework." unless="xtest.distexec">
+            description="Builds XTest framework." unless="xtest.nobuildxtest">
         <ant antfile="xtest.xml"/>
     </target>
     
