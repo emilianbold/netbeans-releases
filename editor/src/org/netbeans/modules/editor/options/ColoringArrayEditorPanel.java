@@ -19,6 +19,11 @@ import java.util.Set;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Vector;
 import javax.swing.SwingUtilities;
 
 import org.openide.explorer.propertysheet.PropertyPanel;
@@ -130,28 +135,40 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         }
 
         Set keySet = map.keySet();
-
+        HashMap tempMap = new HashMap(keySet.size() - 1);
         String[] names = new String[keySet.size() - 1];
-        String[] visualNames = new String[keySet.size() - 1];
 
-        int i=0;
         Iterator iter = keySet.iterator();
-
-        while( iter.hasNext() ) {
-            String key = (String)iter.next();
-            if( key == null ) continue;  // ignore the typeName item
-            names[ (key == SettingsNames.DEFAULT_COLORING) ? 0 : (++i) ] = key;
+        String defaultName = null;
+        while (iter.hasNext()){
+            String name = (String) iter.next();
+            if (name == null) continue;
+            String visualName = LocaleSupport.getString( "NAME_coloring_"  + name ); // NOI18N
+            if( visualName == null )
+                visualName = LocaleSupport.getString("NAME_coloring_" + BaseOptions.BASE + "-" + name, name ); // NOI18N
+            if (name == SettingsNames.DEFAULT_COLORING) defaultName = visualName;
+            tempMap.put(visualName, name);
         }
+        
+        List visualNamesList = new ArrayList(tempMap.keySet());
+        
+        Collections.sort(visualNamesList);
 
-        for( i = 0; i < names.length; i++ ) {
-            visualNames[i] = LocaleSupport.getString( "NAME_coloring_" /* + typeName + "_" */ + names[i] ); // NOI18N
-            if( visualNames[i] == null )
-                visualNames[i] = LocaleSupport.getString("NAME_coloring_" + BaseOptions.BASE + "-" + names[i], names[i] ); // NOI18N
+        if (defaultName!=null){
+            boolean removed = visualNamesList.remove(defaultName);
+            if (removed){
+                visualNamesList.add(0, defaultName);
+            }
         }
-
+        
+        for (int i = 0; i<visualNamesList.size(); i++){
+            names[i] = (String)tempMap.get(visualNamesList.get(i));
+        }
+        
         this.names = names;
-        syntaxList.setListData( visualNames );
-        if( oldIndex < visualNames.length ) actValueIndex = oldIndex;
+        
+        syntaxList.setListData(new Vector(visualNamesList));
+        if( oldIndex < visualNamesList.size() ) actValueIndex = oldIndex;
         else actValueIndex = 0;
         syntaxList.setSelectedIndex( actValueIndex );
     }
