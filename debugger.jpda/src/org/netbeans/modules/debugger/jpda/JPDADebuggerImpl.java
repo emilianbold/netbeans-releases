@@ -680,6 +680,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
         int o = this.state;
         this.state = state;
         firePropertyChange (PROP_STATE, new Integer (o), new Integer (state));
+        
+        //PENDING HACK see issue 46287
+        System.setProperty(
+            "org.openide.awt.SwingBrowserImpl.do-not-block-awt",
+            String.valueOf (state != STATE_DISCONNECTED)
+        );
     }
 
     /**
