@@ -35,6 +35,10 @@ Microsystems, Inc. All Rights Reserved.
       <property name="localdir" location="src" />
       <property name="selector" value="openide.windows" />
     </ant>
+    <javac srcdir="src" >
+       <classpath refid="classpath" />
+       <classpath location="src" />
+    </javac>
     
   </target>
 
