@@ -64,6 +64,10 @@ final class Favorites extends FilterNode {
         return false;
     }
     
+    public boolean canRename () {
+        return false;
+    }
+    
     public static org.openide.loaders.DataFolder getFolder () {
         try {
             org.openide.filesystems.FileObject fo = org.openide.filesystems.FileUtil.createFolder (
