@@ -30,4 +30,8 @@ Microsystems, Inc. All Rights Reserved.
         <ext name="png"/>
         <resolver mime="image/png"/>
     </file>
+    <file>
+        <ext name="bmp"/>
+        <resolver mime="image/bmp"/>
+    </file>
 </MIME-resolver>
