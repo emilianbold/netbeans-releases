@@ -270,7 +270,11 @@ public class PropertyPanel extends JPanel {
 
     private void replaceFormatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceFormatButtonActionPerformed
         final Dialog[] dialogs = new Dialog[1];
-        final HelpStringCustomEditor customPanel = new HelpStringCustomEditor(i18nString.getReplaceFormat(), I18nUtil.getReplaceFormatItems(), I18nUtil.getReplaceHelpItems());
+        final HelpStringCustomEditor customPanel = new HelpStringCustomEditor(
+                                                        i18nString.getReplaceFormat(),
+                                                        I18nUtil.getReplaceFormatItems(),
+                                                        I18nUtil.getReplaceHelpItems(),
+                                                        I18nUtil.getBundle().getString("LBL_ReplaceCodeFormat"));
 
         DialogDescriptor dd = new DialogDescriptor(
             customPanel,

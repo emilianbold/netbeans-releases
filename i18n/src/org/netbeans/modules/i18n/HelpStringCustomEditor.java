@@ -43,7 +43,7 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
      * @param items for sleecteing in combo box
      * @param help patterns described in list
      */
-    public HelpStringCustomEditor(String value, List items, List helpItems) {
+    public HelpStringCustomEditor(String value, List items, List helpItems, String comboText) {
         initComponents();
         
         combo.setModel(new DefaultComboBoxModel(items.toArray()));
@@ -51,6 +51,9 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
 
         list.setListData(helpItems.toArray());
         list.setBackground(new Color(SystemColor.window.getRGB()));
+        
+        comboLabel.setText(comboText);
+        listLabel.setText(I18nUtil.getBundle().getString("LBL_Arguments"));
     }
 
     /**
@@ -70,14 +73,18 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
         combo = new javax.swing.JComboBox();
         scrollPane = new javax.swing.JScrollPane();
         list = new javax.swing.JList();
+        comboLabel = new javax.swing.JLabel();
+        listLabel = new javax.swing.JLabel();
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
         
         combo.setEditable(true);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 1;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints1.weightx = 1.0;
         add(combo, gridBagConstraints1);
         
@@ -101,12 +108,30 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 1;
+        gridBagConstraints1.gridy = 3;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 11, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(5, 12, 11, 11);
         gridBagConstraints1.weightx = 1.0;
         gridBagConstraints1.weighty = 1.0;
         add(scrollPane, gridBagConstraints1);
+        
+        
+        comboLabel.setText("comboLabel");
+        
+        gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
+        add(comboLabel, gridBagConstraints1);
+        
+        
+        listLabel.setText("listLabel");
+        
+        gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 2;
+        gridBagConstraints1.insets = new java.awt.Insets(11, 12, 0, 11);
+        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
+        add(listLabel, gridBagConstraints1);
         
     }//GEN-END:initComponents
 
@@ -147,6 +172,8 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
     private javax.swing.JComboBox combo;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JList list;
+    private javax.swing.JLabel comboLabel;
+    private javax.swing.JLabel listLabel;
     // End of variables declaration//GEN-END:variables
 
     /** Nested class. <code>PropertyEditor</code>. 
@@ -154,7 +181,11 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
     public static class InitCodeEditor extends StringEditor {
         /** Overrides superclass method. */
         public Component getCustomEditor() {
-            return new HelpStringCustomEditor((String)getValue(), I18nUtil.getInitFormatItems(), I18nUtil.getInitHelpItems());
+            return new HelpStringCustomEditor(
+                (String)getValue(), 
+                I18nUtil.getInitFormatItems(), 
+                I18nUtil.getInitHelpItems(),
+                I18nUtil.getBundle().getString("LBL_InitCodeFormat"));
         }
     } // End of nested class InitCodeEditor.
     
@@ -163,7 +194,11 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
     public static class ReplaceCodeEditor extends StringEditor {
         /** Overrides superclass method. */
         public Component getCustomEditor() {
-            return new HelpStringCustomEditor((String)getValue(), I18nUtil.getReplaceFormatItems(), I18nUtil.getReplaceHelpItems());
+            return new HelpStringCustomEditor(
+                (String)getValue(),
+                I18nUtil.getReplaceFormatItems(),
+                I18nUtil.getReplaceHelpItems(),
+                I18nUtil.getBundle().getString("LBL_ReplaceCodeFormat"));
         }
     } // End of nested class ReplaceCodeEditor.
     
@@ -172,7 +207,11 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
     public static class RegExpEditor extends StringEditor {
         /** Overrides superclass method. */
         public Component getCustomEditor() {
-            return new HelpStringCustomEditor((String)getValue(), I18nUtil.getRegExpItems(), I18nUtil.getRegExpHelpItems());
+            return new HelpStringCustomEditor(
+                (String)getValue(),
+                I18nUtil.getRegExpItems(),
+                I18nUtil.getRegExpHelpItems(),
+                I18nUtil.getBundle().getString("LBL_NonI18nRegExpFormat"));
         }
     } // End of nested class RegExpEditor.
     
@@ -181,7 +220,11 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
     public static class I18nRegExpEditor extends StringEditor {
         /** Overrides superclass method. */
         public Component getCustomEditor() {
-            return new HelpStringCustomEditor((String)getValue(), I18nUtil.getI18nRegExpItems(), I18nUtil.getRegExpHelpItems());
+            return new HelpStringCustomEditor(
+                (String)getValue(), 
+                I18nUtil.getI18nRegExpItems(), 
+                I18nUtil.getRegExpHelpItems(),
+                I18nUtil.getBundle().getString("LBL_I18nRegExpFormat"));
         }
     } // End of nested class I18nRegExpEditor.
     
