@@ -14,6 +14,7 @@
 package com.netbeans.developer.modules.loaders.form;
 
 import org.openide.nodes.*;
+import org.openide.explorer.propertysheet.editors.*;
 import com.netbeans.developerx.loaders.form.formeditor.layouts.*;
 import com.netbeans.developer.modules.loaders.form.forminfo.FormInfo;
 
@@ -21,6 +22,8 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import javax.swing.JMenuBar;
+import javax.swing.JComboBox;
+import java.util.Hashtable;
 
 /** RADVisualFormContainer represents the top-level container of the form and the form itself
 * during design time.
@@ -36,6 +39,53 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
   public static final String PROP_GENERATE_SIZE = "generateSize";
   public static final String PROP_GENERATE_CENTER = "generateCenter";
 
+  public static final Hashtable encodingList = new Hashtable ();
+  static {
+    encodingList.put ("US-ASCII (English)", "US-ASCII");
+    encodingList.put ("UTF-8 (Compressed Unicode)", "UTF-8");
+    encodingList.put ("UTF-16 (Compressed UCS)", "UTF-16");
+    encodingList.put ("ISO-10646-UCS-2 (Raw Unicode)", "ISO-10646-UCS-2");
+    encodingList.put ("ISO-10646-UCS-4 (Raw UCS)", "ISO-10646-UCS-4"); // NOTE: no support for ISO-10646-UCS-4 yet. [from XmlReader]
+    encodingList.put ("ISO-8859-1 (Latin-1, western Europe)", "ISO-8859-1");
+    encodingList.put ("ISO-8859-2 (Latin-2, eastern Europe)", "ISO-8859-2");
+    encodingList.put ("ISO-8859-3 (Latin-3, southern Europe)", "ISO-8859-3");
+    encodingList.put ("ISO-8859-4 (Latin-4, northern Europe)", "ISO-8859-4");
+    encodingList.put ("ISO-8859-5 (ASCII plus Cyrillic)", "ISO-8859-5");
+    encodingList.put ("ISO-8859-6 (ASCII plus Arabic)", "ISO-8859-6");
+    encodingList.put ("ISO-8859-7 (ASCII plus Greek)", "ISO-8859-7");
+    encodingList.put ("ISO-8859-8 (ASCII plus Hebrew)", "ISO-8859-8");
+    encodingList.put ("ISO-8859-9 (Latin-5, Turkish)", "ISO-8859-9");
+    encodingList.put ("ISO-2022-JP (Japanese)", "ISO-2022-JP");
+    encodingList.put ("Shift_JIS (Japanese, Windows)", "Shift_JIS");
+    encodingList.put ("EUC-JP (Japanese, UNIX)", "EUC-JP");
+    encodingList.put ("Big5 (Chinese, Taiwan)", "Big5");
+    encodingList.put ("GB2312 (Chinese, mainland China)", "GB2312");
+    encodingList.put ("KOI8-R (Russian)", "KOI8-R");
+    encodingList.put ("ISO-2022-KR (Korea)", "ISO-2022-KR");
+    encodingList.put ("EUC-KR (Korean, UNIX)", "EUC-KR");
+    encodingList.put ("ISO-2022-CN (Chinese)", "ISO-2022-CN");
+
+    encodingList.put ("EBCDIC-CP-US (EBCDIC: US)", "EBCDIC-CP-US");
+    encodingList.put ("EBCDIC-CP-CA (EBCDIC: Canada)", "EBCDIC-CP-CA");
+    encodingList.put ("EBCDIC-CP-NL (EBCDIC: Netherlands)", "EBCDIC-CP-NL");
+    encodingList.put ("EBCDIC-CP-WT (like EBCDIC-CP-US)", "EBCDIC-CP-WT");
+    encodingList.put ("EBCDIC-CP-DK (EBCDIC: Denmark)", "EBCDIC-CP-DK");
+    encodingList.put ("EBCDIC-CP-NO (EBCDIC: Norway)", "EBCDIC-CP-NO");
+    encodingList.put ("EBCDIC-CP-FI (EBCDIC: Finland)", "EBCDIC-CP-FI");
+    encodingList.put ("EBCDIC-CP-SE (EBCDIC: Sweden)", "EBCDIC-CP-SE");
+    encodingList.put ("EBCDIC-CP-IT (EBCDIC: Italy)", "EBCDIC-CP-IT");
+    encodingList.put ("EBCDIC-CP-ES (EBCDIC: Spain, Latin America)", "EBCDIC-CP-ES");
+    encodingList.put ("EBCDIC-CP-GB (EBCDIC: Great Britain)", "EBCDIC-CP-GB");
+    encodingList.put ("EBCDIC-CP-FR (EBCDIC: France)", "EBCDIC-CP-FR");
+    encodingList.put ("EBCDIC-CP-AR1 (EBCDIC: Arabic)", "EBCDIC-CP-AR1");
+    encodingList.put ("EBCDIC-CP-HE (EBCDIC: Hebrew)", "EBCDIC-CP-HE");
+    encodingList.put ("EBCDIC-CP-BE (like EBCDIC-CP-CH)", "EBCDIC-CP-BE");
+    encodingList.put ("EBCDIC-CP-CH (EBCDIC: Switzerland)", "EBCDIC-CP-CH");
+    encodingList.put ("EBCDIC-CP-ROECE (EBCDIC: Roece)", "EBCDIC-CP-ROECE");
+    encodingList.put ("EBCDIC-CP-YU (EBCDIC: Yogoslavia)", "EBCDIC-CP-YU");
+    encodingList.put ("EBCDIC-CP-IS (EBCDIC: Iceland)", "EBCDIC-CP-IS");
+    encodingList.put ("EBCDIC-CP-AR2 (EBCDIC: Urdu)", "EBCDIC-CP-AR2");
+  }
   protected static final String AUX_MENU_COMPONENT = "RADVisualFormContainer_MenuComponent";
 
   public static final int GEN_BOUNDS = 0;
@@ -331,8 +381,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       }
     };
 
-    Node.Property genEncodingProperty = new PropertySupport.ReadWrite ("encoding", String.class, "Form Encoding",  // [PENDING - localize]
-                                   "Encoding used for serialization") {
+    Node.Property genEncodingProperty = new EncodingProperty ("encoding", String.class, "form encoding",  // [PENDING - localize]
+                                   "encoding used for serialization") {
       public void setValue (Object value) {
         if (!(value instanceof String)) {
           throw new IllegalArgumentException ();
@@ -347,9 +397,10 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
           value = "";
         }
         return value;
-      }          
-    };
+      }
 
+    };
+    
     if ((formInfo instanceof JMenuBarContainer) || (formInfo instanceof MenuBarContainer)) {
       Node.Property[] ret = new Node.Property [8];
 
@@ -476,10 +527,67 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       setValue (str);
     }
   }
+
+  abstract class EncodingProperty extends PropertySupport.ReadWrite {
+    EncodingProperty (String name, Class type, String displayName, String shortDescription) {
+      super (name, type, displayName, shortDescription);
+    }
+    
+    /** Editor with list of encodings */
+    public java.beans.PropertyEditor getPropertyEditor () {
+      return new EncodingEditor ();
+    }
+    
+    class EncodingEditor extends java.beans.PropertyEditorSupport implements EnhancedPropertyEditor {
+      /**
+      * @return true if this PropertyEditor provides a enhanced in-place custom 
+      *              property editor, false otherwise
+      */
+      public boolean hasInPlaceCustomEditor () {
+        return true;
+      }
+      
+      public void setAsText (String value) {
+        String newValue = (String) encodingList.get (value);
+        if (newValue == null) newValue = value;
+        setValue (newValue);
+      }
+          
+      public String getAsText () {
+        return getValue ().toString ();
+      }
+          
+      public java.awt.Component getInPlaceCustomEditor () {
+        final JComboBox eventBox = new JComboBox ();
+        eventBox.setEditable(true);
+        for (java.util.Iterator iter = encodingList.keySet().iterator(); iter.hasNext(); ) {
+          eventBox.addItem(iter.next());
+        }
+        eventBox.getEditor().setItem(getAsText ());
+        eventBox.addActionListener (new java.awt.event.ActionListener () {
+            public void actionPerformed (java.awt.event.ActionEvent e) {
+              setAsText ((String) eventBox.getEditor().getItem());
+            }
+          }
+        );
+        return eventBox;
+      }
+      
+      /**
+      * @return true if this property editor provides tagged values and
+      * a custom strings in the choice should be accepted too, false otherwise
+      */
+      public boolean supportsEditingTaggedValues () {
+        return false;
+      }
+    }
+  }
 }
 
 /*
  * Log
+ *  18   Gandalf   1.17        11/24/99 Pavel Buzek     list of encodings for 
+ *       Encoding property, editor changed to combo box
  *  17   Gandalf   1.16        11/15/99 Pavel Buzek     property for encoding
  *  16   Gandalf   1.15        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
