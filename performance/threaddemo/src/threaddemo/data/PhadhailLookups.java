@@ -67,6 +67,7 @@ public class PhadhailLookups {
         // XXX Have to keep the InstanceContent separately; it is a field in AbstractLookup
         // but we cannot access it!
         private final InstanceContent c;
+        private PhadhailEditorSupport ed = null;
         
         public PhadhailLookup(Phadhail ph) {
             this(ph, new InstanceContent());
@@ -81,11 +82,9 @@ public class PhadhailLookups {
         protected void initialize() {
             if (!ph.hasChildren()) {
                 c.add(KEY_EDITOR, this);
-                /* XXX readd when DomSupport functional:
                 if (ph.getName().endsWith(".xml")) {
                     c.add(KEY_DOM_PROVIDER, this);
                 }
-                 */
             }
             super.initialize();
         }
@@ -98,16 +97,20 @@ public class PhadhailLookups {
             c.remove(s);
         }
         
+        private PhadhailEditorSupport getEd() {
+            if (ed == null) {
+                ed = new PhadhailEditorSupport(ph);
+            }
+            return ed;
+        }
+        
         public Object convert(Object obj) {
             if (obj == KEY_EDITOR) {
-                return new PhadhailEditorSupport(ph);
+                return getEd();
             } else {
                 assert obj == KEY_DOM_PROVIDER;
-                // XXX is it permitted to do a lookup inside another?
-                PhadhailEditorSupport edit = (PhadhailEditorSupport)lookup(PhadhailEditorSupport.class);
-                assert edit != null;
                 Mutex m = ph.mutex(); // XXX may need a different mutex...
-                return new DomSupport(ph, edit, m);
+                return new DomSupport(ph, getEd(), m);
             }
         }
         
@@ -125,7 +128,7 @@ public class PhadhailLookups {
         }
         
         public String id(Object obj) {
-            throw new UnsupportedOperationException();
+            return "PhadhailLookup[" + ph + "," + obj + "]";
         }
         
     }
