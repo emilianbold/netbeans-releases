@@ -20,7 +20,8 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="JSP_Servlet">
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/context/resources/WebModule.html" />
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-
+        <attr name="templateWizardURL" 
+              urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Web.html"/>
       <file name="JSP.jsp" url="templates/JSP.template">
         <attr name="template" boolvalue="true"/>
         <attr name="templateWizardURL" 
