@@ -13,11 +13,18 @@
 
 package org.netbeans.modules.url;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.BeanInfo;
+import java.beans.PropertyChangeEvent;
 import java.io.*;
+import javax.swing.ImageIcon;
+import javax.swing.JMenuItem;
 
 import org.openide.*;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditCookie;
+import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
@@ -31,7 +38,7 @@ import org.openide.nodes.*;
 *
 * @author Ian Formanek
 */
-public class URLDataObject extends MultiDataObject implements EditCookie, OpenCookie, URLNodeCookie {
+public class URLDataObject extends MultiDataObject implements EditCookie, OpenCookie, URLNodeCookie, InstanceCookie {
     /** generated Serialized Version UID */
     //  static final long serialVersionUID = -6035788991669336965L;
 
@@ -116,7 +123,7 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
     /** Help context for this object.
     * @return help context
     */
-    public org.openide.util.HelpCtx getHelpCtx () {
+    public HelpCtx getHelpCtx () {
         return new HelpCtx (URLDataObject.class);
     }
 
@@ -244,6 +251,54 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
         if (urlLine.getValue () == NotifyDescriptor.OK_OPTION)
             setURLString (urlLine.getInputText ());
     }
+
+    // -----------------------------------------------------------------
+    // InstanceCookie implementation
+
+    public String instanceName () {
+        return getName ();
+    }
+
+    public Class instanceClass () throws IOException, ClassNotFoundException {
+        return JMenuItem.class;
+    }
+
+    /** Menu item representing the bookmark.
+     * Takes display name and icon from associated node;
+     * when invoked, opens the URL in the browser.
+     */
+    private static class URLMenuItem extends JMenuItem implements ActionListener, NodeListener {
+        private final Node n;
+        URLMenuItem (Node n) {
+            super (n.getDisplayName (),
+                   new ImageIcon (n.getIcon (BeanInfo.ICON_COLOR_16x16)));
+            this.n = n;
+            HelpCtx.setHelpIDString (this, n.getHelpCtx ().getHelpID ());
+            addActionListener (this);
+            n.addNodeListener (WeakListener.node (this, n));
+        }
+        public void actionPerformed (ActionEvent ev) {
+            ((OpenCookie) n.getCookie (OpenCookie.class)).open ();
+        }
+        public void childrenAdded (NodeMemberEvent ev) {}
+        public void childrenRemoved (NodeMemberEvent ev) {}
+        public void childrenReordered (NodeReorderEvent ev) {}
+        public void nodeDestroyed (NodeEvent ev) {}
+        public void propertyChange (PropertyChangeEvent ev) {
+            String what = ev.getPropertyName ();
+            if (what == null || what.equals (Node.PROP_DISPLAY_NAME)
+                             || what.equals (Node.PROP_NAME)) {
+                setText (n.getDisplayName ());
+            }
+            if (what == null || what.equals (Node.PROP_ICON)) {
+                setIcon (new ImageIcon (n.getIcon (BeanInfo.ICON_COLOR_16x16)));
+            }
+        }
+    }
+    public Object instanceCreate () throws IOException, ClassNotFoundException {
+        return new URLMenuItem (getNodeDelegate ());
+    }
+
 
     // -----------------------------------------------------------------
     // Innerclasses
