@@ -285,7 +285,12 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
     private void updateTexts(DocumentEvent e) {
         if (e.getDocument() == moduleDocument) {
             String moduleFolder = moduleLocationTextField.getText().trim();
-            FileObject fo = FileUtil.toFileObject(new File(moduleFolder));
+            FileObject fo;
+            try {
+                fo= FileUtil.toFileObject(new File(moduleFolder));
+            } catch (IllegalArgumentException exc) {
+                return;
+            }
             if (fo != null && panel.isSuitableProjectRoot(fo)) {
                 projectLocationTextField.setText (moduleFolder);
                 createdFolderTextField.setText (moduleFolder);
