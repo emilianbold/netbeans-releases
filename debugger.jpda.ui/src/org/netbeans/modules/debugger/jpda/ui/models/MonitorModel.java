@@ -20,11 +20,14 @@ import javax.swing.Action;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.spi.viewmodel.ComputingException;
 import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
+import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
+import org.netbeans.spi.viewmodel.NodeModelFilter;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.TreeModelListener;
@@ -35,8 +38,8 @@ import org.openide.util.NbBundle;
 /**
  * @author   Jan Jancura
  */
-public class MonitorModel implements TreeModelFilter, NodeModel, 
-NodeActionsProvider {
+public class MonitorModel implements TreeModelFilter, NodeModelFilter, 
+NodeActionsProviderFilter {
 
     public static final String CONTENDED_MONITOR =
         "org/netbeans/modules/debugger/resources/allInOneView/ContendedMonitor"; // NOI18N
@@ -58,9 +61,9 @@ NodeActionsProvider {
         int         from, 
         int         to
     ) throws NoInformationException, ComputingException, UnknownTypeException {
-        if (o instanceof JPDAThread) {
+        if (o instanceof ThreadWithBordel) {
             try {
-                JPDAThread t = (JPDAThread) o;
+                JPDAThread t = ((ThreadWithBordel) o).originalThread;
                 ObjectVariable contended = t.getContendedMonitor ();
                 ObjectVariable[] owned = t.getOwnedMonitors ();
                 int i = 0;
@@ -79,6 +82,26 @@ NodeActionsProvider {
             }
             return new Object [0];
         }
+        if (o instanceof JPDAThreadGroup) {
+            JPDAThreadGroup tg = (JPDAThreadGroup) o;
+            Object[] ch = model.getChildren (o, from, to);
+            int i, k = ch.length;
+            for (i = 0; i < k; i++) {
+                if (!(ch [i] instanceof JPDAThread)) continue;
+                try {
+                    JPDAThread t = (JPDAThread) ch [i];
+                    if (t.getContendedMonitor () == null &&
+                        t.getOwnedMonitors ().length == 0
+                    ) continue;
+                    ThreadWithBordel twb = new ThreadWithBordel ();
+                    twb.originalThread = t;
+                    ch [i] = twb;
+                } catch (ObjectCollectedException e) {
+                } catch (VMDisconnectedException e) {
+                }
+            }
+            return ch;
+        }
         if (o instanceof OwnedMonitors) {
             OwnedMonitors om = (OwnedMonitors) o;
             Object[] fo = new Object [to - from];
@@ -92,9 +115,9 @@ NodeActionsProvider {
         TreeModel   model, 
         Object      o
     ) throws NoInformationException, ComputingException, UnknownTypeException {
-        if (o instanceof JPDAThread) {
+        if (o instanceof ThreadWithBordel) {
             try {
-                JPDAThread t = (JPDAThread) o;
+                JPDAThread t = ((ThreadWithBordel) o).originalThread;
                 ObjectVariable contended = t.getContendedMonitor ();
                 ObjectVariable[] owned = t.getOwnedMonitors ();
                 int i = 0;
@@ -106,6 +129,11 @@ NodeActionsProvider {
             }
             return 0;
         }
+        if (o instanceof ThreadWithBordel) {
+            return model.getChildrenCount (
+                ((ThreadWithBordel) o).originalThread
+            );
+        }
         if (o instanceof OwnedMonitors) {
             return ((OwnedMonitors) o).variables.length;
         }
@@ -114,15 +142,8 @@ NodeActionsProvider {
     
     public boolean isLeaf (TreeModel model, Object o) 
     throws UnknownTypeException {
-        if (o instanceof JPDAThread) {
-            try {
-                JPDAThread t = (JPDAThread) o;
-                return t.getContendedMonitor () == null &&
-                       t.getOwnedMonitors ().length == 0;
-            } catch (ObjectCollectedException e) {
-            } catch (VMDisconnectedException e) {
-            }
-            return true;
+        if (o instanceof ThreadWithBordel) {
+            return false;
         }
         if (o instanceof OwnedMonitors)
             return false;
@@ -136,12 +157,18 @@ NodeActionsProvider {
     
     // NodeModel impl...........................................................
     
-    public String getDisplayName (Object o) throws UnknownTypeException {
+    public String getDisplayName (NodeModel model, Object o) throws 
+    UnknownTypeException, ComputingException {
         if (o instanceof ContendedMonitor) {
             ObjectVariable v = ((ContendedMonitor) o).variable;
             return java.text.MessageFormat.format(NbBundle.getBundle(MonitorModel.class).getString(
                     "CTL_MonitorModel_Column_ContendedMonitor"), new Object [] { v.getType(), v.getValue() });
         } else
+        if (o instanceof ThreadWithBordel) {
+            return model.getDisplayName (
+                ((ThreadWithBordel) o).originalThread
+            );
+        }
         if (o instanceof OwnedMonitors) {
             return NbBundle.getBundle(MonitorModel.class).getString("CTL_MonitorModel_Column_OwnedMonitors");
         } else
@@ -150,10 +177,11 @@ NodeActionsProvider {
             return java.text.MessageFormat.format(NbBundle.getBundle(MonitorModel.class).getString(
                     "CTL_MonitorModel_Column_Monitor"), new Object [] { v.getType(), v.getValue() });
         } else
-        throw new UnknownTypeException (o);
+        return model.getDisplayName (o);
     }
     
-    public String getShortDescription (Object o) throws UnknownTypeException {
+    public String getShortDescription (NodeModel model, Object o) throws 
+    UnknownTypeException, ComputingException {
         if (o instanceof ContendedMonitor) {
             ObjectVariable v = ((ContendedMonitor) o).variable;
             try {
@@ -162,6 +190,11 @@ NodeActionsProvider {
                 return ex.getLocalizedMessage ();
             }
         } else
+        if (o instanceof ThreadWithBordel) {
+            return model.getShortDescription (
+                ((ThreadWithBordel) o).originalThread
+            );
+        }
         if (o instanceof OwnedMonitors) {
             return null;
         } else
@@ -173,20 +206,26 @@ NodeActionsProvider {
                 return ex.getLocalizedMessage ();
             }
         } else
-        throw new UnknownTypeException (o);
+        return model.getShortDescription (o);
     }
     
-    public String getIconBase (Object o) throws UnknownTypeException {
+    public String getIconBase (NodeModel model, Object o) throws 
+    UnknownTypeException, ComputingException {
         if (o instanceof ContendedMonitor) {
             return CONTENDED_MONITOR;
         } else
+        if (o instanceof ThreadWithBordel) {
+            return model.getIconBase (
+                ((ThreadWithBordel) o).originalThread
+            );
+        }
         if (o instanceof OwnedMonitors) {
             return OWNED_MONITORS;
         } else
         if (o instanceof ObjectVariable) {
             return MONITOR;
         } else
-        throw new UnknownTypeException (o);
+        return model.getIconBase (o);
     }
 
     public void addTreeModelListener (TreeModelListener l) {
@@ -198,30 +237,42 @@ NodeActionsProvider {
     
     // NodeActionsProvider impl.................................................
     
-    public Action[] getActions (Object o) throws UnknownTypeException {
+    public Action[] getActions (NodeActionsProvider model, Object o) throws 
+    UnknownTypeException {
         if (o instanceof ContendedMonitor) {
             return new Action [0];
         } else
         if (o instanceof OwnedMonitors) {
             return new Action [0];
         } else
+        if (o instanceof ThreadWithBordel) {
+            return model.getActions (
+                ((ThreadWithBordel) o).originalThread
+            );
+        }
         if (o instanceof ObjectVariable) {
             return new Action [0];
         } else
-        throw new UnknownTypeException (o);
+        return model.getActions (o);
     }
     
-    public void performDefaultAction (Object o) throws UnknownTypeException {
+    public void performDefaultAction (NodeActionsProvider model, Object o) 
+    throws UnknownTypeException {
         if (o instanceof ContendedMonitor) {
             return;
         } else
         if (o instanceof OwnedMonitors) {
             return;
         } else
+        if (o instanceof ThreadWithBordel) {
+            model.performDefaultAction (
+                ((ThreadWithBordel) o).originalThread
+            );
+        }
         if (o instanceof ObjectVariable) {
             return;
         } else
-        throw new UnknownTypeException (o);
+        model.performDefaultAction (o);
     }
     
     
@@ -241,5 +292,9 @@ NodeActionsProvider {
         ContendedMonitor (ObjectVariable v) {
             variable = v;
         }
+    }
+    
+    private static class ThreadWithBordel {
+        JPDAThread originalThread;
     }
 }
