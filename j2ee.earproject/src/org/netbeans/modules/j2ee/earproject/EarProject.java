@@ -176,7 +176,7 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
 //            aux,
 //            helper.createCacheDirectoryProvider(),
             spp,
-// //           new ProjectEarProvider (),
+            new ProjectEarProvider (),
             appModule, //implements J2eeModuleProvider
             new J2eeArchiveActionProvider( this, helper, refHelper, abpt),
             new LogicalViewProvider(this, helper, evaluator (), spp, refHelper, abpt),
