@@ -54,7 +54,6 @@ import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
-import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.options.OptionUtilities;
 
@@ -94,7 +93,6 @@ public class NbEditorKit extends ExtKit {
     }
 
     protected EditorUI createEditorUI() {
-        AllOptionsFolder.getDefault().loadMIMEOption(this.getClass());
         return new NbEditorUI();
     }
 

@@ -44,6 +44,7 @@ import java.beans.PropertyChangeEvent;
 import org.netbeans.editor.BaseDocument;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.AnnotationDesc;
+import org.netbeans.modules.editor.options.AllOptionsFolder;
 
 /**
 * BaseDocument extension managing the readonly blocks of text
@@ -84,6 +85,9 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.Annotatable {
         setNormalStyleName(NbDocument.NORMAL_STYLE_NAME);
         
         annoMap = new HashMap(20);
+        
+        // lazy init of MIME options
+        AllOptionsFolder.getDefault().loadMIMEOption(kitClass);
     }
 
     public void settingsChange(SettingsChangeEvent evt) {
