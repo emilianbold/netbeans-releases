@@ -7,6 +7,7 @@
 package org.netbeans.i18n.test;
 
 import java.io.File;
+import java.net.URL;
 import javax.swing.SwingUtilities;
 import org.netbeans.i18n.jelly.InternationalizeOperator;
 import org.netbeans.i18n.jelly.NewBundleOperator;
@@ -126,15 +127,31 @@ public class ComplexWalkthrough extends JellyTestCase {
         try {
             FileObject frameGolden = goldenFolder.getFileObject(name+".pass");
             FileObject propertiesGolden = goldenFolder.getFileObject(name+"properties.pass");
-            System.out.println(frameGolden.getURL().getPath());
-            System.out.println(frameFO.getURL().getPath());
-            assertFile("Golden source file differ.",frameGolden.getURL().getPath(),frameFO.getURL().getPath(),null,new LineDiff(false));
-            assertFile("Golden properties file differ.",propertiesGolden.getURL().getPath(),propertiesFO.getURL().getPath(),null,new LineDiff(false));
+            
+            File frameGF=convertURL(frameGolden.getURL());
+            File propertiesGF=convertURL(propertiesGolden.getURL());
+            File frameF=convertURL(frameFO.getURL());
+            File propertiesF=convertURL(propertiesFO.getURL());
+            
+            System.out.println(frameGF);
+            System.out.println(propertiesGF);
+            assertFile("Golden frame file differs.",frameGF,frameF,null,new LineDiff(false));
+            assertFile("Golden properties file differs.",propertiesGF,propertiesF,null,new LineDiff(false));
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
     
+    protected File convertURL(URL url) {
+        try {
+            String path=java.net.URLDecoder.decode(url.getPath(),"UTF-8");
+            path.replaceAll("/",((File.separatorChar == '\\')?File.separator+File.separator:File.separator));
+            return new File(path);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
     
     private static final String toolsMenuItem = Bundle.getStringTrimmed("org.openide.actions.Bundle", "CTL_Tools");
     private static final String internationalizationMenuItem = Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "LBL_Internationalization");
