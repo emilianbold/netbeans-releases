@@ -10,7 +10,7 @@ Netbeans-Module-Class: Option
 
 Name: com/netbeans/developer/modules/loaders/form/palette/PaletteNode.class
 Netbeans-Module-Class: Node
-Type: Environment
+Type: Session
 
 Name: com/netbeans/developer/modules/loaders/form/palette/PaletteAction.class
 Netbeans-Module-Class: Action
