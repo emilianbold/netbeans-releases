@@ -13,29 +13,14 @@
 
 package org.netbeans.modules.project.ui;
 
-import java.awt.Component;
-import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.SourceGroup;
-//import org.netbeans.spi.project.ui.templates.support.InstantiatingIterator;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
 import org.openide.loaders.TemplateWizard;
-import org.openide.util.HelpCtx;
 
 public final class NewFileWizard extends TemplateWizard {
         
@@ -49,12 +34,12 @@ public final class NewFileWizard extends TemplateWizard {
         setTitleFormat( new MessageFormat( "{0}") );
     }
 
-    protected org.openide.WizardDescriptor.Panel createTemplateChooser() {
+    protected WizardDescriptor.Panel createTemplateChooser () {
         return new TemplateChooserPanel( p /*, recommendedTypes */ );
 
     }        
 
-    protected org.openide.WizardDescriptor.Panel createTargetChooser() {
+    protected WizardDescriptor.Panel createTargetChooser () {
         Sources c = ProjectUtils.getSources(p);
         return Templates.createSimpleTargetChooser(p, c.getSourceGroups(Sources.TYPE_GENERIC));
     }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,7 +16,7 @@ package org.netbeans.modules.java.j2seproject.ui.wizards;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -28,16 +28,13 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.TemplateWizard;
+
 
 /**
  * Wizard to create a new J2SE project.
  * @author Jesse Glick
  */
-public class NewJ2SEProjectWizardIterator implements TemplateWizard.Iterator {
+public class NewJ2SEProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
 
     static final int TYPE_APP = 0;
     static final int TYPE_LIB = 1;
@@ -69,7 +66,7 @@ public class NewJ2SEProjectWizardIterator implements TemplateWizard.Iterator {
         return new NewJ2SEProjectWizardIterator( TYPE_EXT );
     }
 
-    private WizardDescriptor.Panel[] createPanels() {
+    private WizardDescriptor.Panel[] createPanels () {
         WizardDescriptor.Panel[] result = null;
         if (this.type == TYPE_EXT) {
             result =  new WizardDescriptor.Panel[] {
@@ -102,11 +99,12 @@ public class NewJ2SEProjectWizardIterator implements TemplateWizard.Iterator {
     }
     
     
-    public Set/*<DataObject>*/ instantiate(TemplateWizard wiz) throws IOException/*, IllegalStateException*/ {
-        File dirF = (File)wiz.getProperty("projdir");
-        String codename = (String)wiz.getProperty("codename");
-        String displayName = (String)wiz.getProperty("displayName");
-        String mainClass = (String)wiz.getProperty("mainClass");
+    public Set/*<FileObject>*/ instantiate () throws IOException {
+        Set resultSet = new HashSet ();
+        File dirF = (File)wiz.getProperty("projdir");        //NOI18N
+        String codename = (String)wiz.getProperty("codename");        //NOI18N
+        String displayName = (String)wiz.getProperty("displayName");        //NOI18N
+        String mainClass = (String)wiz.getProperty("mainClass");        //NOI18N
         if (this.type == TYPE_EXT) {
             File sourceFolder = (File)wiz.getProperty("sourceRoot");        //NOI18N
             File testFolder = (File)wiz.getProperty("testRoot");            //NOI18N
@@ -116,22 +114,36 @@ public class NewJ2SEProjectWizardIterator implements TemplateWizard.Iterator {
             J2SEProjectGenerator.createProject(dirF, codename, displayName, sourceFolder, testFolder );
         }
         else {
-            J2SEProjectGenerator.createProject(dirF, codename, displayName, mainClass );
+            AntProjectHelper h = J2SEProjectGenerator.createProject (dirF, codename, displayName, mainClass );
+            if (mainClass != null && mainClass.length () > 0) {
+                try {
+                    //String sourceRoot = "src"; //(String)j2seProperties.get (J2SEProjectProperties.SRC_DIR);
+                    FileObject sourcesRoot = h.getProjectDirectory ().getFileObject ("src");        //NOI18N
+                    FileObject mainClassFo = getMainClassFO (sourcesRoot, mainClass);
+                    assert mainClassFo != null : "sourcesRoot: " + sourcesRoot + ", mainClass: " + mainClass;        //NOI18N
+                    // Returning FileObject of main class, will be called its preferred action
+                    resultSet.add (mainClassFo);
+                } catch (Exception x) {
+                    // XXX
+                    x.printStackTrace();
+                }
+            }
         }
         FileObject dir = FileUtil.toFileObject(dirF);
         Project p = ProjectManager.getDefault().findProject(dir);
         
-        // Returning set of DataObject of project diretory. 
+        // Returning FileObject of project diretory. 
         // Project will be open and set as main
-        return Collections.singleton(DataObject.find(dir));
+        resultSet.add (dir);
+        return resultSet;
     }
     
         
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
-    private transient TemplateWizard wiz;
+    private transient WizardDescriptor wiz;
     
-    public void initialize(TemplateWizard wiz) {
+    public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
         panels = createPanels();
@@ -154,7 +166,7 @@ public class NewJ2SEProjectWizardIterator implements TemplateWizard.Iterator {
             }
         }
     }
-    public void uninitialize(TemplateWizard wiz) {
+    public void uninitialize(WizardDescriptor wiz) {
         this.wiz = null;
         panels = null;
     }
@@ -177,43 +189,21 @@ public class NewJ2SEProjectWizardIterator implements TemplateWizard.Iterator {
         if (!hasPrevious()) throw new NoSuchElementException();
         index--;
     }
-    public WizardDescriptor.Panel current() {
+    public WizardDescriptor.Panel current () {
         return panels[index];
     }
     
     // If nothing unusual changes in the middle of the wizard, simply:
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
-    // If something changes dynamically (besides moving between panels),
-    // e.g. the number of panels changes in response to user input, then
-    // uncomment the following and call when needed:
-    // fireChangeEvent();
-    /*
-    private transient Set listeners = new HashSet(1); // Set<ChangeListener>
-    public final void addChangeListener(ChangeListener l) {
-        synchronized(listeners) {
-            listeners.add(l);
-        }
-    }
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized(listeners) {
-            listeners.remove(l);
-        }
-    }
-    protected final void fireChangeEvent() {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
-        }
-    }
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        listeners = new HashSet(1);
-    }
-     */
     
+    // helper methods, finds mainclass's FileObject
+    private FileObject getMainClassFO (FileObject sourcesRoot, String mainClass) {
+        // replace '.' with '/'
+        mainClass = mainClass.replace ('.', '/'); // NOI18N
+        
+        // ignore unvalid mainClass ???
+        
+        return sourcesRoot.getFileObject (mainClass, "java"); // NOI18N
+    }
 }

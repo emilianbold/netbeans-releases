@@ -7,46 +7,35 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.java.project;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import javax.swing.Action;
+import java.util.*;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 
 /**
  * Wizard to create a new Java file.
  */
-public class NewJavaFileWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class NewJavaFileWizardIterator implements InstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
     
@@ -59,7 +48,7 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.Instantiating
         return new NewJavaFileWizardIterator();
     }
             
-    private WizardDescriptor.Panel[] createPanels( WizardDescriptor wizardDescriptor ) {
+    private WizardDescriptor.Panel[] createPanels (WizardDescriptor wizardDescriptor) {
         
         // Ask for Java folders
         Project project = Templates.getProject( wizardDescriptor );
@@ -91,24 +80,10 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.Instantiating
         DataFolder df = DataFolder.findFolder( dir );
         FileObject template = Templates.getTemplate( wiz );
         
-        //FileUtil.copy( template.getInputStream(), System.out );
-        
         DataObject dTemplate = DataObject.find( template );                
-        DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wiz )  );
-
-        // Same what template wizard does - not vey nice
-        // run default action (hopefully should be here)
-        final Node node = dobj.getNodeDelegate ();
-        final Action a = node.getPreferredAction();
-        if (a != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-                }
-            });
-        }
+        dTemplate.createFromTemplate( df, Templates.getTargetName( wiz )  );
         
-        return Collections.singleton(dobj.getPrimaryFile ());
+        return Collections.singleton(dir);
     }
     
         

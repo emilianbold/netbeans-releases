@@ -13,17 +13,25 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.NewFileWizard;
 import org.netbeans.modules.project.ui.OpenProjectList;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -63,11 +71,40 @@ public class NewFile extends ProjectAction implements PropertyChangeListener {
         }
 
         try { 
-            wd.instantiate();
+            Set resultSet = wd.instantiate ();
+            
+            if (resultSet == null) {
+                // no new object, no work
+                return ;
+            }
+            
+            Iterator it = resultSet.iterator ();
+            
+            while (it.hasNext ()) {
+                Object obj = it.next ();
+                assert !(obj instanceof FileObject) : obj;
+                try {
+                    DataObject newDO = DataObject.find ((FileObject)obj);
+                    if (newDO != null) {
+                        // Same what template wizard does - not very nice
+                        // run default action (hopefully should be here)
+                        final Node node = newDO.getNodeDelegate ();
+                        Action a = node.getPreferredAction();
+                        if (a instanceof ContextAwareAction) {
+                            a = ((ContextAwareAction)a).createContextAwareInstance(node.getLookup ());
+                        }
+                        if (a != null) {
+                            a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                        }
+                    }
+                } catch (DataObjectNotFoundException x) {
+                    // XXX
+                    assert false : obj;
+                }
+            }
         }
         catch ( IOException e ) {
-            // XXX
-            e.printStackTrace();
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
         }
 
     }

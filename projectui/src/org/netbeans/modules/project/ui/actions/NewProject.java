@@ -17,17 +17,20 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.project.ui.NewProjectWizard;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.TemplateWizard;
+import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -37,7 +40,7 @@ public class NewProject extends BasicAction {
     private static final String NAME = NbBundle.getMessage( NewProject.class, "LBL_NewProjectAction_Name" ); // NOI18N
     
     
-    private static TemplateWizard wizard;
+    private static NewProjectWizard wizard;
 
     public NewProject() {
         super( NAME, ICON );
@@ -46,32 +49,54 @@ public class NewProject extends BasicAction {
     public void actionPerformed( ActionEvent evt ) {
 
         if ( wizard == null ) {
-            wizard = new TemplateWizard(); // XXX Create NewProjectWizard instead of TemplateWizard               
             FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Project" ); //NOI18N                
-
-            DataFolder templates = DataFolder.findFolder( fo );
-            wizard.setTemplatesFolder( templates ); 
+            wizard = new NewProjectWizard(fo);
         }
 
         try {
-            Set dataObjects = wizard.instantiate();
+            Set newObjects = wizard.instantiate();
 
             Object mainProperty = wizard.getProperty( /* XXX Define somewhere */ "setAsMain" ); // NOI18N
-            boolean main = true;
+            boolean setFirstMain = true;
             if ( mainProperty instanceof Boolean ) {
-                main = ((Boolean)mainProperty).booleanValue();
+                setFirstMain = ((Boolean)mainProperty).booleanValue();
             }
 
-            if ( dataObjects != null && !dataObjects.isEmpty() ) { // Open all returned projects in the GUI
-                for( Iterator it = dataObjects.iterator(); it.hasNext(); ) {
-                    DataObject prjDirDo = (DataObject)it.next();
-                    FileObject prjDirFo = prjDirDo.getPrimaryFile();
-                    Project p = ProjectManager.getDefault().findProject( prjDirFo );
-                    if ( p != null ) {
-                        OpenProjectList.getDefault().open( p, true );
-                        if ( main ) {
-                            OpenProjectList.getDefault().setMainProject( p );
+            if ( newObjects != null && !newObjects.isEmpty() ) { // Open all returned projects in the GUI
+                for( Iterator it = newObjects.iterator(); it.hasNext(); ) {
+                    Object obj = it.next ();
+                    FileObject newFo = null;
+                    if (obj instanceof DataObject) {
+                        // old style way with Set/*DataObject*/
+                        final DataObject newDo = (DataObject)obj;
+                        
+                        // check if it's project's directory
+                        if (newDo.getPrimaryFile ().isFolder ()) {
+                            Project p = ProjectManager.getDefault().findProject( newDo.getPrimaryFile () );
+                            if ( p != null ) {
+                                OpenProjectList.getDefault().open( p, true );
+                                if ( setFirstMain ) {
+                                    OpenProjectList.getDefault().setMainProject( p );
+                                    setFirstMain = false;
+                                }
+                            }
+                        } else {
+                            // call the preferred action on main class
+                            Mutex.EVENT.writeAccess (new Runnable () {
+                                public void run () {
+                                    final Node node = newDo.getNodeDelegate ();
+                                    Action a = node.getPreferredAction();
+                                    if (a instanceof ContextAwareAction) {
+                                        a = ((ContextAwareAction)a).createContextAwareInstance(node.getLookup ());
+                                    }
+                                    if (a != null) {
+                                        a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                                    }
+                                }
+                            });
                         }
+                    } else {
+                        assert false : obj;
                     }
                 }
             }
@@ -79,7 +104,6 @@ public class NewProject extends BasicAction {
         catch ( IOException e ) {
             ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
         }
-
     }
     
 }
