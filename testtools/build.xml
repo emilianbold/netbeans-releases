@@ -91,7 +91,7 @@ Microsystems, Inc. All Rights Reserved.
              topdir="."
              module="netbeans/modules/testtools.jar"
 	     homepage="http://testtools.${homepage.base}"
-	     distribution="${dist.base}/testtools.nbm">
+	     distribution="http://${dist.base}/testtools.nbm">
       <license name="testtools-license.txt">
         <text>For the Test Tools Module itself:</text>
         <file location="${module.license.file}"/>
