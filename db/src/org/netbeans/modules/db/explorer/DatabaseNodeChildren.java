@@ -77,7 +77,10 @@ public class DatabaseNodeChildren extends Children.Array
                             cinfo.put(DatabaseNodeInfo.REMEMBER_PWD, new Boolean(true));
 
                             // open connection
-                            cinfo.connect();
+                            try {
+                                cinfo.connect();
+                            } catch(Exception ex) {
+                            }
                     }
                 }
                 else
@@ -114,7 +117,10 @@ public class DatabaseNodeChildren extends Children.Array
                 cons.add(conn);
 
                 // open connection
-                cinfo.connect();
+                try {
+                    cinfo.connect();
+                } catch(Exception ex) {
+                }
 
                 // adding node into children of Database node
                 children.add(cnode);
