@@ -631,7 +631,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     System.out.println ("\nS StartActionProvider." +
                         "finish () VM exception " + e
                     );
-                e.printStackTrace ();
+                // debugee VM is already disconnected (it finished normally)
             }
             virtualMachine = null;
             setState (STATE_DISCONNECTED);
