@@ -45,6 +45,7 @@ import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.ElementCookie;
 import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.xml.ElementSupport;
+import org.apache.tools.ant.module.wizards.properties.PropertiesFileProperty;
 
 /** A node that represents an Ant project.
  */
@@ -242,6 +243,7 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         props.put (prop);
         // id prop unnecessary, since project name functions as an ID
         props.put (new ProjectBuildSequenceProperty(proj));
+        props.put (new ProjectPropertiesFileProperty ());
     }
 
     public void propertyChange (PropertyChangeEvent evt) {
@@ -403,5 +405,22 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         protected org.w3c.dom.Node getParentNode() {
             return ((AntProjectCookie) indexNode.getCookie (AntProjectCookie.class)).getProjectElement ();
         }
+    }
+    
+    /** Displays the Properties for the project stored in a .properties file. */
+    class ProjectPropertiesFileProperty extends PropertiesFileProperty {
+        ProjectPropertiesFileProperty () {
+            super ( NbBundle.getMessage (AntProjectNode.class, "PROP_project_properties"),
+                    NbBundle.getMessage (AntProjectNode.class, "HINT_project_properties")
+                  );
+        }
+        /** Get the Project Element. */
+        public Element getElement () {
+            return ((AntProjectCookie) getCookie (AntProjectCookie.class)).getProjectElement ();
+        }
+        /** Get the AntProjectCookie. */
+        public AntProjectCookie getAntProjectCookie () {
+            return (AntProjectCookie) getCookie (AntProjectCookie.class);
+        }        
     }
 }

@@ -45,6 +45,7 @@ import org.apache.tools.ant.module.api.ElementCookie;
 import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.run.TargetExecutor;
 import org.apache.tools.ant.module.xml.ElementSupport;
+import org.apache.tools.ant.module.wizards.properties.PropertiesFileProperty;
 
 /** A node representing an Ant build target.
  */
@@ -129,8 +130,25 @@ public class AntTargetNode extends ElementNode {
         }
         props.put (new DependsProperty (proj));
         props.put (new BuildSequenceProperty(el));
+        props.put (new TargetPropertiesFileProperty ()); 
     }
 
+    private class TargetPropertiesFileProperty extends PropertiesFileProperty {
+        TargetPropertiesFileProperty () {
+            super ( NbBundle.getMessage (AntTargetNode.class, "PROP_target_properties"),
+                    NbBundle.getMessage (AntTargetNode.class, "HINT_target_properties")
+                  );
+        }
+        /** Get the Element of this TargetNode. */
+        public Element getElement () {
+            return el;
+        }
+        /** Get the AntProjectCookie. */
+        public AntProjectCookie getAntProjectCookie () {
+            return (AntProjectCookie) getCookie (AntProjectCookie.class);
+        }
+    }
+    
     private class DependsProperty extends AntProperty {
         public DependsProperty (AntProjectCookie proj) {
             super (el, "depends", proj); // NOI18N
