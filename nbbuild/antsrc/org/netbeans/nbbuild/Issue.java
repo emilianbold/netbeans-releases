@@ -198,23 +198,35 @@ public final class Issue extends Object implements Comparable {
         return string (SUBCOMPONENT);
     }
 
+    /**
+     * @deprecated Use <code>getWhiteboardAttribute("duration")</code> instead.
+     */
     public String getDuration () {
-        String duration = "";
+        String val = getWhiteboardAttribute("duration");
+        return val == null ? "" :  val;
+    }
+
+    /**
+     * Get status white board attribute. Status whiteboard attributes
+     * are convetionally defined in form <tt>name:WORD=value:WORD</tt> e.g.
+     * <tt>duration=50</tt> or <tt>lines=1000</tt>.
+     * @param attribute name
+     * @return token representing attribute value or <code>null</code>
+     */
+    public final String getWhiteboardAttribute(String attribute) {
+        String ret = null;
         String swb = string (STATUS_WHITEBOARD);
-//         System.out.println (STATUS_WHITEBOARD + "='" + swb + "'");
         StringTokenizer st = new StringTokenizer (swb);
         while (st.hasMoreTokens()) {
             String token = st.nextToken();
-//             System.out.println ("    token <" + token + ">");
-            if ( token.startsWith ("duration=") ) {
-                duration = token.substring (token.indexOf ('=') + 1);
+            if ( token.startsWith (attribute + '=') ) {
+                ret = token.substring (token.indexOf ('=') + 1);
                 break;
             }
         }
-//         System.out.println (" => '" + duration + "'");
-        return duration;
+        return ret;
     }
-    
+
     /** Number of votes for given component.
      * @return integer representing number of votes or 0 is no votes present
      */
