@@ -302,6 +302,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="../netbeans/lib/openide.jar"/>
                 <fileset dir="../../core/netbeans/lib">
             		<include name="core.jar"/>
+            		<include name="core-windows.jar"/>
             		<include name="ext/*.jar"/>
                 </fileset>             
     	</path>
@@ -337,6 +338,7 @@ Microsystems, Inc. All Rights Reserved.
  	      --> 
              <fileset dir="${netbeans.home}/lib">
             		<include name="core.jar"/>
+            		<include name="core-windows.jar"/>
                         <include name="openide.jar"/>
             		<include name="ext/*.jar"/>
              </fileset>             
