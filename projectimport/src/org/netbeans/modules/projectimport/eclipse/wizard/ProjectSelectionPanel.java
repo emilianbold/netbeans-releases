@@ -16,10 +16,12 @@ package org.netbeans.modules.projectimport.eclipse.wizard;
 import java.awt.Color;
 import java.awt.Component;
 import java.io.File;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
@@ -34,6 +36,7 @@ import org.netbeans.modules.projectimport.eclipse.EclipseProject;
 import org.netbeans.modules.projectimport.eclipse.Workspace;
 import org.netbeans.modules.projectimport.eclipse.WorkspaceFactory;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * Represent "Project to import" step(panel) in the Eclipse importer wizard.
@@ -41,8 +44,6 @@ import org.openide.util.HelpCtx;
  * @author  mkrauskopf
  */
 final class ProjectSelectionPanel extends ImporterWizardPanel {
-    
-    private static final Color NEEDED_PROJECT_COLOR = new Color(220, 220, 220);
     
     /** List of all workspace projects. */
     private EclipseProject[] projects;
@@ -57,7 +58,7 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
      * All projects we need to import (involving projects which selected
      * projects depend on.
      */
-    private Set neededProjects;
+    private Set requiredProjects;
     
     private class ProjectTableModel extends AbstractTableModel {
         static final int COLUMN_CHECKBOX = 0;
@@ -67,7 +68,9 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         public Object getValueAt(int rowIndex, int columnIndex) {
             EclipseProject project = projects[rowIndex];
             if (columnIndex == COLUMN_CHECKBOX) {
-                return Boolean.valueOf(selectedProjects.contains(project));
+                return Boolean.valueOf(
+                        selectedProjects.contains(project) ||
+                        requiredProjects.contains(project));
             } else {
                 return (project.hasJavaNature() ?
                     project.getName() :
@@ -115,11 +118,12 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
             return;
         }
         String parent = destination.getText();
-        for (Iterator it = neededProjects.iterator(); it.hasNext(); ) {
+        for (Iterator it = requiredProjects.iterator(); it.hasNext(); ) {
             EclipseProject prj = (EclipseProject) it.next();
             String destDir = parent + "/" + prj.getName();
             if (new File(destDir).exists()) {
-                setErrorMessage(destDir + " directory already exists.");
+                setErrorMessage(NbBundle.getMessage(ProjectSelectionPanel.class,
+                        "MSG_ProjectExist", prj.getName())); // NOI18N
                 return;
             }
         }
@@ -133,26 +137,25 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
             Component c = super.getTableCellRendererComponent(table, value,
                     isSelected, hasFocus, row, column);
             EclipseProject project = projects[row];
-            if (project.hasJavaNature()) {
+            if (project.hasJavaNature() && !requiredProjects.contains(project)) {
                 c.setForeground(Color.BLACK);
+                c.setEnabled(true);
             } else {
-                c.setForeground(Color.LIGHT_GRAY);
-            }
-            if (neededProjects.contains(project)) {
-                c.setBackground(NEEDED_PROJECT_COLOR);
-            } else {
-                c.setBackground(Color.WHITE);
+                // required and non-java project are disabled
+                c.setForeground(Color.RED);
+                c.setEnabled(false);
+                c.setVisible(false);
             }
             return c;
         }
     }
     
     private void solveDependencies() {
-        neededProjects.clear();
+        requiredProjects.clear();
         for (Iterator it = selectedProjects.iterator(); it.hasNext(); ) {
             EclipseProject project = (EclipseProject) it.next();
-            neededProjects.add(project);
-            neededProjects.addAll(project.getProjects());
+            //            requiredProjects.add(project);
+            requiredProjects.addAll(project.getProjects());
         }
     }
     
@@ -181,6 +184,7 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         projectTable.setSelectionBackground(projectTable.getSelectionBackground());
         projectTable.setSelectionForeground(projectTable.getSelectionForeground());
         projectTable.setDefaultRenderer(Object.class, new ProjectCellRenderer());
+        //        projectTable.setDefaultRenderer(Boolean.class, new ProjectCellRenderer());
         TableColumn checkboxCol = projectTable.getColumnModel().getColumn(0);
         checkboxCol.setMinWidth(COL_CHECKBOX_WIDTH);
         checkboxCol.setMaxWidth(COL_CHECKBOX_WIDTH);
@@ -221,7 +225,7 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
             projects[i++] = (EclipseProject) it.next();
         }
         selectedProjects = new HashSet();
-        neededProjects = new HashSet();
+        requiredProjects = new HashSet();
         updateValidity();
     }
     
@@ -231,11 +235,13 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
     }
     
     /**
-     * Return number of projects which will be imported (including required
-     * projects.
+     * Return number of projects which will be imported (including both required
+     * and selected projects)
      */
-    int getNumberOfNeededProjects() {
-        return neededProjects.size();
+    int getNumberOfImportedProject() {
+        Collection all = new HashSet(selectedProjects);
+        all.addAll(requiredProjects);
+        return all.size();
     }
     
     /**
@@ -257,6 +263,7 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         choosePanel = new javax.swing.JPanel();
         destination = new javax.swing.JTextField();
         chooseDestButton = new javax.swing.JButton();
+        prjLocationLBL = new javax.swing.JLabel();
         projectPanel = new javax.swing.JPanel();
         projectListLabel = new javax.swing.JLabel();
         projectTableSP = new javax.swing.JScrollPane();
@@ -264,20 +271,19 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
 
         jLabel1.setText("jLabel1");
 
-        setLayout(new java.awt.BorderLayout(5, 5));
+        setLayout(new java.awt.BorderLayout(0, 24));
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)));
         choosePanel.setLayout(new java.awt.GridBagLayout());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         choosePanel.add(destination, gridBagConstraints);
 
-        chooseDestButton.setText("Choose Destination");
+        chooseDestButton.setText(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "CTL_BrowseButton"));
         chooseDestButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 chooseDestButtonActionPerformed(evt);
@@ -285,17 +291,24 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
         choosePanel.add(chooseDestButton, gridBagConstraints);
+
+        prjLocationLBL.setText(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "LBL_LocationOfNBProjects"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        choosePanel.add(prjLocationLBL, gridBagConstraints);
 
         add(choosePanel, java.awt.BorderLayout.SOUTH);
 
         projectPanel.setLayout(new java.awt.GridBagLayout());
 
-        projectListLabel.setText("Workspace projects:");
+        projectListLabel.setText(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "CTL_ProjectSelectionStep"));
         projectListLabel.setAutoscrolls(true);
         projectListLabel.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -306,6 +319,7 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         projectPanel.add(projectListLabel, gridBagConstraints);
 
+        projectTable.setShowHorizontalLines(false);
         projectTableSP.setViewportView(projectTable);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -335,6 +349,7 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
     private javax.swing.JPanel choosePanel;
     private javax.swing.JTextField destination;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel prjLocationLBL;
     private javax.swing.JLabel projectListLabel;
     private javax.swing.JPanel projectPanel;
     private javax.swing.JTable projectTable;

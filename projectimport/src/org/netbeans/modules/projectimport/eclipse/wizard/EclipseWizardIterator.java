@@ -58,11 +58,11 @@ final class EclipseWizardIterator implements
     }
     
     /**
-     * Return number of projects which will be imported (including required
-     * projects.
+     * Return number of projects which will be imported (including both required
+     * and selected projects)
      */
-    int getNumberOfNeededProjects() {
-        return projectPanel.getNumberOfNeededProjects();
+    int getNumberOfImportedProject() {
+        return projectPanel.getNumberOfImportedProject();
     }
     
     /**

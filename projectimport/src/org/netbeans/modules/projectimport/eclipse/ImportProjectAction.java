@@ -51,7 +51,7 @@ public class ImportProjectAction extends CallableSystemAction {
         // prepare progress monitor
         final ProgressMonitor pm = new ProgressMonitor(
                 null, "Importing selected projects", "", 0,
-                wizard.getNumberOfNeededProjects() + 1);
+                wizard.getNumberOfImportedProject() + 1);
         pm.setProgress(0);
         pm.setMillisToPopup(0);
         pm.setMillisToDecideToPopup(0);

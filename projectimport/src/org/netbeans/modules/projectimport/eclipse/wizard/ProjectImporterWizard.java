@@ -31,7 +31,7 @@ public final class ProjectImporterWizard {
     private Set projects;
     private String destination;
     private boolean cancelled;
-    private int numberOfNeededProjects;
+    private int numberOfImportedProjects;
     
     public void start() {
         final EclipseWizardIterator iterator = new EclipseWizardIterator();
@@ -52,7 +52,7 @@ public final class ProjectImporterWizard {
         if (!cancelled) {
             projects = iterator.getProjects();
             destination = iterator.getDestination();
-            numberOfNeededProjects = iterator.getNumberOfNeededProjects();
+            numberOfImportedProjects = iterator.getNumberOfImportedProject();
         }
     }
     
@@ -60,8 +60,8 @@ public final class ProjectImporterWizard {
         return projects;
     }
     
-    public int getNumberOfNeededProjects() {
-        return numberOfNeededProjects;
+    public int getNumberOfImportedProject() {
+        return numberOfImportedProjects;
     }
     
     public String getDestination() {
