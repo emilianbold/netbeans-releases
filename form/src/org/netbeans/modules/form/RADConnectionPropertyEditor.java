@@ -103,18 +103,10 @@ public class RADConnectionPropertyEditor
     }
 
     public void paintValue(Graphics g, Rectangle rectangle) {
-        String label;
-        if (designValue != null)
-            label = designValue.getName();
-        else if (realValue != null)
-            label = realValue.toString();
-        else
-            label = "null"; //FormEditor.getFormBundle().getString("CTL_CONNECTION_NOT_SET"); // NOI18N
-
         Color color = g.getColor();
         g.setColor(valueColor);
         FontMetrics fm = g.getFontMetrics();
-        g.drawString(label, rectangle.x + 4,
+        g.drawString(getValueString(), rectangle.x + 4,
                             rectangle.y + (rectangle.height - fm.getHeight()) / 2 + fm.getAscent());
         g.setColor(color);
     }
@@ -185,6 +177,35 @@ public class RADConnectionPropertyEditor
     public String getDisplayName() {
         return FormEditor.getFormBundle().getString("CTL_RADConn_DisplayName");
     }
+
+    // ------------------------------------------
+    private String getValueString() {
+        String str;
+        if (designValue != null) {
+            str = designValue.getName();
+        }
+        else if (realValue != null) {
+            if (realValue instanceof Number
+                  || realValue instanceof Boolean
+                  || realValue instanceof String
+                  || realValue instanceof Character)
+                str = realValue.toString();
+            else
+                str = realValue.getClass().isArray() ?
+                        "[" + FormEditor.getFormBundle().getString("CTL_ArrayOf") + " " 
+                            + realValue.getClass().getComponentType().getName() + "]"
+                        :
+                        "["+org.openide.util.Utilities.getShortClassName(realValue.getClass())+"]";
+        }
+        else
+            str = "null"; //FormEditor.getFormBundle().getString("CTL_CONNECTION_NOT_SET"); // NOI18N
+
+        return str;
+    }
+
+
+    // ------------------------------------------
+    // implementation class for FormDesignValue
 
     public static class RADConnectionDesignValue implements FormDesignValue, java.io.Serializable {
         public final static int TYPE_PROPERTY = 0;
@@ -367,7 +388,7 @@ public class RADConnectionPropertyEditor
                 case TYPE_BEAN:
                     return FormDesignValue.IGNORED_VALUE; // [PENDING: use the value during design time]
                 case TYPE_CODE:
-                    return userCode;
+                    return FormDesignValue.IGNORED_VALUE; // [T.P.] code is not a real value
                 default:
                     return FormDesignValue.IGNORED_VALUE;
             }
@@ -522,7 +543,3 @@ public class RADConnectionPropertyEditor
         return el;
     }
 }
-
-/*
- * Log
- */
