@@ -135,7 +135,6 @@ public final class BorderEditor extends PropertyEditorSupport { // implements or
     UnknownBorderNode unknownBorder;
     Node root;
 
-static final long serialVersionUID =3211506006576003689L;
     BorderPanel() {
       root = new AbstractNode (new Children.Array ());
       noBorder = new NoBorderNode();
@@ -272,10 +271,6 @@ static final long serialVersionUID =3211506006576003689L;
       }
     }
                                      
-    public void removeNotify () {
-      super.removeNotify ();
-      getExplorerManager ().removeListeners ();
-    }
   }
   
   static final class BorderListNode extends AbstractNode implements PropertyChangeListener {
@@ -432,6 +427,7 @@ static final long serialVersionUID =3211506006576003689L;
 
 /*
  * Log
+ *  9    Gandalf   1.8         8/13/99  Jaroslav Tulach ExplorerManager change
  *  8    Gandalf   1.7         8/9/99   Ian Formanek    Generated Serial Version
  *       UID
  *  7    Gandalf   1.6         8/2/99   Ian Formanek    preview of XML 
