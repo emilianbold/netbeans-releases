@@ -115,6 +115,10 @@ public class MainClassChooser extends JPanel {
         changeListener = l;
     }
     
+    public void removeChangeListener (ChangeListener l) {
+        changeListener = null;
+    }
+    
     private static String getMainMethod (Object obj, String expectedName) {
         if (obj == null || !(obj instanceof SourceCookie)) {
             return null;
