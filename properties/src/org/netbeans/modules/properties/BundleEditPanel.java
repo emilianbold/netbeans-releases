@@ -19,6 +19,7 @@ import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.SystemColor;
+import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
@@ -103,8 +104,8 @@ public class BundleEditPanel extends javax.swing.JPanel {
 	            }
                 }
 
-                setText((value == null) ? "" : value.toString());
-		setBorder(javax.swing.UIManager.getBorder("TableHeader.cellBorder"));
+                setText((value == null) ? "" : value.toString()); // NOI18N
+		setBorder(javax.swing.UIManager.getBorder("TableHeader.cellBorder")); // NOI18N
 	        return this;
             }
         };
@@ -153,7 +154,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
          
                 PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)value;
                 
-                // set backgound
+                // Set background color.
                 if(sp.isKeyType())
                     c.setBackground(colors.getKeyBackground());
                 else {
@@ -163,7 +164,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
                         c.setBackground(colors.getShadowColor());
                 }
 
-                // set foregound
+                // Set foregound color.
                 if(sp.isKeyType())
                     c.setForeground(colors.getKeyColor());
                 else
@@ -215,10 +216,17 @@ public class BundleEditPanel extends javax.swing.JPanel {
 
     }
 
-    /** Calculates width of columns from the table component. 
+    /** 
+    * Calculates the initial widths of columns of the table component.
     */
     void setColumnWidths() {
+        // The least initial width of column (1/10 of screen witdh).
+        int columnWidth = Toolkit.getDefaultToolkit().getScreenSize().width/10;        
+        
+        // Try to set widths according parent (viewport) width.
         int totalWidth = theTable.getParent().getWidth();
+        
+        // If previous was not succesful try to set width according EDITOR_MODE width.
         if(totalWidth == 0) {
             try {
                 Workspace currWS = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
@@ -229,14 +237,17 @@ public class BundleEditPanel extends javax.swing.JPanel {
                 // means the editor mode is was not yet reconstructed
             }
         }
-        int columnCount = theTable.getColumnModel().getColumnCount();
-        int columnWidth = totalWidth/columnCount;
         
-        if(columnWidth < totalWidth/5)
-            columnWidth = totalWidth/5;
+        // If calculations were succesful try to set the widths in case calculated width
+        // for one column is not less than 1/10 of screen width.
+        if(totalWidth != 0) {
+            int computedColumnWidth = totalWidth / theTable.getColumnCount();
+            if(computedColumnWidth > columnWidth)
+                columnWidth = computedColumnWidth;
+        }
 
         // set the column widths
-        for (int i = 0; i < theTable.getColumnModel().getColumnCount(); i++) {
+        for (int i = 0; i < theTable.getColumnCount(); i++) {
             TableColumn column = theTable.getColumnModel().getColumn(i);
 
             column.setPreferredWidth(columnWidth);
@@ -381,15 +392,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints2;
         
         
-          theTable.setModel(new javax.swing.table.DefaultTableModel (
-            new Object [][] {
-                
-            },
-            new String [] {
-                
-            }
-            ));
-            theTable.setCellSelectionEnabled(true);
+          theTable.setCellSelectionEnabled(true);
             theTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
             scrollPane.setViewportView(theTable);
             
