@@ -59,6 +59,7 @@ final class RunClassThread extends Thread implements IOThreadIfc {
         this.task = task;
         this.run = run;
         this.finalized = false;
+        setDaemon(false);
         this.start();
     }
 
