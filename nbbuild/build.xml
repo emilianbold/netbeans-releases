@@ -364,7 +364,7 @@ ToDo:
     <echo message="Building module openidex..."/>
     <ant dir="../openidex" target="netbeans"/>
   </target>
-  <target name="all-projects" depends="all-openide">
+  <target name="all-projects" depends="all-openide,all-core">
     <echo message="Building module projects..."/>
     <ant dir="../projects" target="netbeans"/>
   </target>
