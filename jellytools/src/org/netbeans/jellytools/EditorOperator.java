@@ -361,13 +361,17 @@ public class EditorOperator extends TopComponentOperator {
      * of newly inserted text.
      * @param text a string to be inserted
      */
-    public void insert(String text) {
-        int offset = txtEditorPane().getCaretPosition();
-        try {
-            txtEditorPane().getDocument().insertString(offset, text, null);
-        } catch (BadLocationException e) {
-            throw new JemmyException("Cannot insert \""+text+"\" to position "+offset+".", e);
-        }
+    public void insert(final String text) {
+        final int offset = txtEditorPane().getCaretPosition();
+        runMapping(new MapVoidAction("insertString") {
+            public void map() {
+                try {
+                    txtEditorPane().getDocument().insertString(offset, text, null);
+                } catch (BadLocationException e) {
+                    throw new JemmyException("Cannot insert \""+text+"\" to position "+offset+".", e);
+                }
+            }
+        });
     }
     
     /** Inserts text to position specified by line number and column.
@@ -584,8 +588,7 @@ public class EditorOperator extends TopComponentOperator {
         while(iter.hasNext()) {
             result.addAll(getAnnotations((Line)iter.next()));
         }
-
-        // get parser annotations
+        // get error and override parser annotations
         Class javaEditorClass = null;
         try {
             javaEditorClass = Class.forName("org.netbeans.modules.java.JavaEditor");
@@ -596,17 +599,25 @@ public class EditorOperator extends TopComponentOperator {
         }
         Object javaEditorInstance = dob.getCookie(javaEditorClass);
         if(javaEditorInstance != null) {
-            ArrayList parserAnnotations;
+            ArrayList errorAnnotations;
             try {
-                java.lang.reflect.Field annot = javaEditorClass.getDeclaredField("annotations");
+                java.lang.reflect.Field annot = javaEditorClass.getDeclaredField("errorAnnotations");
                 annot.setAccessible(true);
-                parserAnnotations = (ArrayList)annot.get(javaEditorInstance);
+                errorAnnotations = (ArrayList)annot.get(javaEditorInstance);
             } catch (Exception e) {
-                throw new JemmyException("Get annotations field failed.", e);
+                throw new JemmyException("Get errorAnnotations field failed.", e);
             }
-            result.addAll(parserAnnotations);
+            result.addAll(errorAnnotations);
+            ArrayList overrideAnnotations;
+            try {
+                java.lang.reflect.Field annot = javaEditorClass.getDeclaredField("overrideAnnotations");
+                annot.setAccessible(true);
+                overrideAnnotations = (ArrayList)annot.get(javaEditorInstance);
+            } catch (Exception e) {
+                throw new JemmyException("Get overrideAnnotations field failed.", e);
+            }
+            result.addAll(overrideAnnotations);
         }
-       
         // return all line and parser annotations together
         return result.toArray(new Annotation[result.size()]);
     }
