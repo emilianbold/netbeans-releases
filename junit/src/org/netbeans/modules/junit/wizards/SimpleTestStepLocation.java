@@ -327,6 +327,7 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         optCode.setAlignmentX(0.0f);
         optComments.setAlignmentX(0.0f);
 
+        result.setName(bundle.getString("LBL_panel_ChooseClass"));
         return result;
     }
     

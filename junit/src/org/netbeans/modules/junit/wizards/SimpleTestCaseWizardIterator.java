@@ -192,6 +192,8 @@ public class SimpleTestCaseWizardIterator
                            Boolean.valueOf(settings.isJavaDoc()));
         wizard.putProperty(GuiUtils.CHK_HINTS,
                            Boolean.valueOf(settings.isBodyComments()));
+
+        wizard.putProperty("NewFileWizard_Title", NbBundle.getMessage(SimpleTestStepLocation.class, "LBL_simpleTestWizard_stepName"));
     }
 
     private void saveSettings(TemplateWizard wizard) {
@@ -225,7 +227,7 @@ public class SimpleTestCaseWizardIterator
 
         String [] panelNames =  new String [] {
           NbBundle.getMessage(EmptyTestCaseWizardIterator.class,"LBL_panel_chooseFileType"),
-          NbBundle.getMessage(EmptyTestCaseWizardIterator.class,"LBL_panel_Target")};
+          NbBundle.getMessage(EmptyTestCaseWizardIterator.class,"LBL_panel_ChooseClass")};
 
         ((javax.swing.JComponent)getClassChooserPanel().getComponent()).putClientProperty("WizardPanel_contentData", panelNames); 
         ((javax.swing.JComponent)getClassChooserPanel().getComponent()).putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0)); 
