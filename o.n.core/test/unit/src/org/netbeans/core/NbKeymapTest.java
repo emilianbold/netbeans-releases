@@ -26,8 +26,7 @@ import junit.textui.TestRunner;
 
 /** Test NbKeymap.
  * @author Jesse Glick
- * @see "#30455"
- */
+ * @see "#30455" */
 public class NbKeymapTest extends NbTestCase {
     
     public NbKeymapTest(String name) {
@@ -36,6 +35,10 @@ public class NbKeymapTest extends NbTestCase {
     
     public static void main(String[] args) {
         TestRunner.run(new NbTestSuite(NbKeymapTest.class));
+    }
+    
+    protected boolean runInEQ () {
+        return true;
     }
     
     public void testBasicFunctionality() throws Exception {
