@@ -1,5 +1,5 @@
 /*
- * ide.css      10/19/2001
+ * ide.css      11/20/2001
  *
  * Copyright 2001 Sun Microsystems, Inc. All rights reserved.
  * Use is subject to license terms.
@@ -12,15 +12,15 @@
  * Sept. 2001
  * <p> now has margin-top and margin-bottom = 5, instead of margin-top = 10.
  * <h2>, <h3>, and <h4> now use margin-top = 10 instead of margin-top = 15.
- *Oct. 2001
- * Changed default body font from single SansSerif font to 
- * standard list of sans serif fonts plus SansSerif.
+ * Oct. 2001
  * For table, td, and th tags, border-color changed to silver, a light gray color.
  * Margin for <ol> changed to 14 to match <ul> margin.
+ * Nov. 2001
+ * Added <small> tag for accessibility purposes. 
  */
 
 body  {font-size: small;
-	font-family: Arial, Helvetica, sans-serif, SansSerif;
+	font-family: SansSerif, Arial, Helvetica, sans-serif;
 	margin-left: 5;
 	margin-right: 5;
 	color: Black;
@@ -29,6 +29,7 @@ body  {font-size: small;
 p  {font-size: small;
      margin-top: 5;
      margin-bottom: 5}
+
 
 h2 { font-size: large;
      font-weight: bold;
@@ -59,21 +60,24 @@ ul {margin-top: 5;
     margin-bottom: 0;
     margin-left: 14}
         
-table { border-style: solid;
-            border-color: silver;
-			margin-top: 5;
-			margin-bottom: 5}
-
-td { border-style: solid;
+table {border-style: solid;
        border-color: silver;
-		padding-left: 1;
-		padding-right: 1;
-		padding-top: 1;
-		padding-bottom: 1}
+       margin-top: 5;
+       margin-bottom: 5}
 
-th {  border-style: solid;
-        border-color: silver;
-        padding-left: 1;
-        padding-right: 1;
-        padding-top: 1;
-        padding-bottom: 1}
+td {border-style: solid;
+    border-color: silver;
+    padding-left: 1;
+    padding-right: 1;
+    padding-top: 1;
+    padding-bottom: 1}
+
+th {border-style: solid;
+    border-color: silver;
+    padding-left: 1;
+    padding-right: 1;
+    padding-top: 1;
+    padding-bottom: 1}
+
+small {font-size: x-small}
+

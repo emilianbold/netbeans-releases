@@ -32,7 +32,7 @@
 </tocitem>
 
 
-<tocitem text="Filesystems and Objects">
+<tocitem text="Filesystems and Objects" target="filesystems-objects">
    <tocitem text="Filesystems and the Java Classpath" target="filesystems.classpath"/>
    <tocitem text="Mounting a Filesystem" target="filesystems.mount" />
    <tocitem text="Changing the Mount Order of Filesystems" target="filesystems.order" />

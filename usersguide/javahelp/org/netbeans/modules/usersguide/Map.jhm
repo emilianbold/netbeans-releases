@@ -50,6 +50,7 @@
 
 <mapID target="explorer" url="objects/explorer.html" />
 
+<mapID target="filesystems-objects" url="filesystems/filesystems-objects.html" />
 <mapID target="filesystems.classpath" url="filesystems/filesystems_classpath.html" />
 <mapID target="filesystems.mount" url="filesystems/filesystems_mounting.html" />
 <mapID target="filesystems.openfile" url="filesystems/filesystems_openfile.html" />
@@ -691,9 +692,10 @@
    <mapID target="org.netbeans.beaninfo.editors.ColorEditor$NbColorChooser" url="pending.html" /> 
    <mapID target="org.netbeans.beaninfo.editors.FontEditor$FontPanel" url="pending.html" /> 
 <!--OptionsAction is Options window--> 
-   <mapID target="org.netbeans.core.actions.OptionsAction" url="configure/configure.html" /> 
-   <mapID target="org.netbeans.core.ControlPanelNode" url="configure/configure.html" />
-   <mapID target="org.netbeans.core.EnvironmentNode" url="configure/configure.html" />
+   <mapID target="org.netbeans.core.actions.OptionsAction" url="configure/configure_options.html" /> 
+<!--root Options node + category nodes-->
+   <mapID target="org.netbeans.core.ControlPanelNode" url="configure/configure_options.html" />
+   <mapID target="org.netbeans.core.EnvironmentNode" url="configure/configure_options.html" />
    <mapID target="org.netbeans.core.FSPoolNode" url="filesystems/filesystems_settings.html" /> 
    <mapID target="org.netbeans.core.FSPoolNode$FSNode" url="filesystems/filesystems_settings.html" />
    <mapID target="org.netbeans.core.LoaderPoolNode" url="objects/objects_file-extensions.html" /> 
@@ -1061,7 +1063,7 @@
    <mapID target="org.openide.src.nodes.ClassCustomizer" url="pending.html" />
 
    <mapID target="org.netbeans.core.actions.ConfigureShortcutsAction" url="shortcuts/kybdshortcuts.html" />
-
+   <mapID target="org.netbeans.core.NbNodeOperation.customize" url="pending.html" />
    <mapID target="org.netbeans.core.windows.nodes.ModeContext" url="workspace/workspace.html" />
    <mapID target="org.openide.explorer.propertysheet.PropertySheet$BeanPasteType" url="pending.html" />
    <mapID target="org.openide.text.DefaultPrintable.cancelDialog" url="pending.html" />
@@ -1081,7 +1083,9 @@
    <mapID target="org.netbeans.beaninfo.editors.DebuggerTypeEditor$NoDebugger" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.ExecutorEditor$NoExecutor" url="pending.html" />
    <mapID target="org.netbeans.modules.vcs.cmdline.diff.DiffComponent" url="pending.html"/>
-   <mapID target="org.netbeans.core.ui.LookupNode" url="webbrowser/webbrowser.html" />
+   <mapID target="org.netbeans.core.ui.LookupNode" url="pending.html" />
+<!--for Filesystems Settings in customizer and in Options window-->
+   <mapID target="org.netbeans.core.ui.MountNode" url="webbrowser/webbrowser.html" />
    <mapID target="org.netbeans.core.ui.NewTemplateWizard1" url="pending.html" />
    <mapID target="org.openide.text.CloneableEditor" url="pending.html" />
    <mapID target="org.openide.actions.ClassNamePanel" url="pending.html" />
