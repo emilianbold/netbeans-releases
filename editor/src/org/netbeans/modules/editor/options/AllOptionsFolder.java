@@ -220,6 +220,15 @@ public class AllOptionsFolder{
         return retList;
     }
     
+    public static void unregisterModuleRegListener(){
+        FileObject moduleRegistry = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Modules"); //NOI18N
+
+        if (moduleRegistry !=null){ //NOI18N
+            if (moduleRegListener!=null)
+                moduleRegistry.removeFileChangeListener(moduleRegListener);
+        }
+    }
+    
     /** Creates the only instance of AllOptionsFolder. */
     public static synchronized AllOptionsFolder getDefault(){
         // try to find the itutor XML settings
@@ -245,8 +254,7 @@ public class AllOptionsFolder{
                     FileObject moduleRegistry = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Modules"); //NOI18N
 
                     if (moduleRegistry !=null){ //NOI18N
-                        moduleRegistry.addFileChangeListener(
-                        WeakListener.fileChange(moduleRegListener, moduleRegistry ));
+                        moduleRegistry.addFileChangeListener(moduleRegListener);
                     }
                 }
                 

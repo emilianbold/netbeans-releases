@@ -48,7 +48,6 @@ import org.openide.options.SystemOption;
 import org.openide.text.PrintSettings;
 import org.openide.util.RequestProcessor;
 import org.openide.util.SharedClassObject;
-import org.openide.util.WeakListener;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.netbeans.editor.AnnotationTypes;
@@ -216,7 +215,7 @@ public class EditorModule extends ModuleInstall {
             repoListen=new RepositListener();
             Repository repo = TopManager.getDefault().getRepository();
             if (repo!=null){
-                repo.addRepositoryListener((RepositoryListener)(WeakListener.repository(repoListen, repo)));
+                repo.addRepositoryListener(repoListen);
             }
         }
 
@@ -225,6 +224,15 @@ public class EditorModule extends ModuleInstall {
     /** Called when module is uninstalled. Overrides superclass method. */
     public void uninstalled() {
 
+        if (repoListen!=null){
+            Repository repo = TopManager.getDefault().getRepository();
+            if (repo!=null){
+                repo.removeRepositoryListener(repoListen);
+            }
+        }
+        
+        AllOptionsFolder.unregisterModuleRegListener();
+        
         TopManager.getDefault().getLoaderPool().removeOperationListener(operationListener);
         operationListener = null;
         
