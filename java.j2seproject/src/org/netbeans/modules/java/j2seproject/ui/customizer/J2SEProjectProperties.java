@@ -33,6 +33,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
+import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
@@ -455,7 +456,8 @@ public class J2SEProjectProperties {
         URL[] rootURLs = new URL[data.size()];
         String []rootLabels = new String[data.size()];
         for (int i=0; i<data.size();i++) {
-            rootURLs[i] = ((File)((Vector)data.elementAt(i)).elementAt(0)).toURI().toURL();
+            File f = (File) ((Vector)data.elementAt(i)).elementAt(0);
+            rootURLs[i] = J2SEProjectUtil.getRootURL(f,null);            
             rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
         }
         roots.putRoots(rootURLs,rootLabels);

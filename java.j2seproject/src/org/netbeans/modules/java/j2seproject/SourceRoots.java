@@ -181,14 +181,8 @@ public final class SourceRoots {
                             String prop = evaluator.getProperty(srcProps[i]);
                             if (prop != null) {
                                 File f = helper.getAntProjectHelper().resolveFile(prop);
-                                try {
-                                    URL url = f.toURI().toURL();
-                                    if (FileUtil.isArchiveFile(url)) {
-                                        url = FileUtil.getArchiveRoot(url);
-                                    } else if (!f.exists()) {
-                                        url = new URL(url.toExternalForm() + "/"); // NOI18N
-                                    }
-                                    result.add(url);
+                                try {                                    
+                                    result.add(J2SEProjectUtil.getRootURL(f,null));
                                 } catch (MalformedURLException e) {
                                     ErrorManager.getDefault().notify(e);
                                 }
@@ -328,6 +322,11 @@ public final class SourceRoots {
         return rootName;
     }
     
+    /**
+     * Creates initial display name of source/test root
+     * @param sourceRoot the source root
+     * @return the label to be displayed
+     */
     public String createInitialDisplayName (File sourceRoot) {
         String rootName;
         if (sourceRoot != null) {

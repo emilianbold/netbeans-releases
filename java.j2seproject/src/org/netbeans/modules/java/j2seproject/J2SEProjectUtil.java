@@ -13,7 +13,10 @@
 
 package org.netbeans.modules.java.j2seproject;
 
+import java.io.File;
 import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -30,6 +33,7 @@ import org.netbeans.modules.javacore.ClassIndex;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Miscellaneous utilities for the j2seproject module.
@@ -163,6 +167,31 @@ public class J2SEProjectUtil {
             JavaModel.getJavaRepository ().endTrans ();
         }
         return isMain;
+    }
+    
+    
+    /**
+     * Creates an URL of a classpath or sourcepath root
+     * For the existing directory it returns the URL obtained from {@link File#toUri()}
+     * For archive file it returns an URL of the root of the archive file
+     * For non existing directory it fixes the ending '/'
+     * @param root the file of a root
+     * @param offset a path relative to the root file or null (eg. src/ for jar:file:///lib.jar!/src/)" 
+     * @return an URL of the root
+     * @throws MalformedURLException if the URL cannot be created
+     */
+    public static URL getRootURL (File root, String offset) throws MalformedURLException {
+        URL url = root.toURI().toURL();
+        if (FileUtil.isArchiveFile(url)) {
+            url = FileUtil.getArchiveRoot(url);
+        } else if (!root.exists()) {
+            url = new URL(url.toExternalForm() + "/"); // NOI18N
+        }
+        if (offset != null) {
+            assert offset.endsWith("/");    //NOI18N
+            url = new URL(url.toExternalForm() + offset); // NOI18N
+        }
+        return url;
     }
 
     // copied from JavaNode.hasMain
