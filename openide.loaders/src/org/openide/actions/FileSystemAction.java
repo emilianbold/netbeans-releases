@@ -42,13 +42,9 @@ import org.openide.util.enum.*;
 * {@link FileSystem}.
 *
 * @author  Jaroslav Tulach
-* @version 0.10, Jun 16, 1998
 */
-
 public class FileSystemAction extends SystemAction
 implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
-    /** generated Serialized Version UID */
-    static final long serialVersionUID = -7572252564167491022L;
     /** empty array of menu items */
     static JMenuItem[] NONE = new JMenuItem[] {};
 
@@ -184,26 +180,18 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
         return array;
     }
 
-    /* @return menu presenter.
-    */
     public JMenuItem getMenuPresenter () {
         return new Menu (false, null);
     }
 
-    /* @return popup presenter.
-    */
     public JMenuItem getPopupPresenter () {
         return new Menu (true, null);
     }
 
-    /* Getter for name
-    */
     public String getName () {
         return NbBundle.getMessage(org.openide.loaders.DataObject.class, "ACT_FileSystemAction");
     }
 
-    /* Getter for help.
-    */
     public HelpCtx getHelpCtx () {
         return new HelpCtx (FileSystemAction.class);
     }
@@ -212,7 +200,9 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
     * This action itself does nothing, it only presents other actions.
     * @param ev ignored
     */
-    public void actionPerformed (java.awt.event.ActionEvent e) {}
+    public void actionPerformed (java.awt.event.ActionEvent e) {
+        assert false;
+    }
     
     /** Implements <code>ContextAwareAction</code> interface method. */
     public Action createContextAwareInstance(Lookup actionContext) {

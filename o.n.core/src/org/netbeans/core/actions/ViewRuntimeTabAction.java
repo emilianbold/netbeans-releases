@@ -11,9 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.core.actions;
-
 
 import java.awt.event.ActionEvent;
 
@@ -24,7 +22,6 @@ import org.openide.windows.TopComponent;
 
 import org.netbeans.core.NbMainExplorer;
 
-
 /**
  * Action which opend <code>CurrentProjectNode.ProjectsTab</code> default component.
  *
@@ -32,17 +29,12 @@ import org.netbeans.core.NbMainExplorer;
  */
 public class ViewRuntimeTabAction extends SystemAction {
     
-    /** Creates a new instance of OpenProjectsTabAction */
-    public ViewRuntimeTabAction() {
-    }
-
-    
     public void actionPerformed(ActionEvent evt) {
         final TopComponent runtimeTab = NbMainExplorer.MainTab.createEnvironmentTab();
         runtimeTab.open();
         runtimeTab.requestFocus();
     }
-
+    
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ViewRuntimeTabAction.class);
     }
@@ -57,4 +49,3 @@ public class ViewRuntimeTabAction extends SystemAction {
     }
 
 }
-
