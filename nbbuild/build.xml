@@ -513,7 +513,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module monitor..."/>
     <ant dir="../monitor" target="netbeans"/>
   </target>
-  <target name="all-mdr" depends="all-openide,all-openide/deprecated,all-openide/loaders,all-openidex">
+  <target name="all-mdr" depends="all-openide,all-openide/loaders">
     <echo message="Building module mdr..."/>
     <ant dir="../mdr" target="netbeans"/>
   </target>
