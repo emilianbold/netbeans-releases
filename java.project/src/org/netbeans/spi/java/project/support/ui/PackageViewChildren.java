@@ -475,34 +475,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 Exception ioe = new IOException ();
                 throw (IOException) ErrorManager.getDefault().annotate(ioe,e);
             }
-        }
-
-
-        public PasteType[] getPasteTypes(Transferable t) {
-            DataFlavor[] flavors = t.getTransferDataFlavors();
-            if (root!= null  && root.canWrite()) {
-                for (int i=0; i<flavors.length; i++) {
-                    if (SUBTYPE.equals(flavors[i].getSubType ()) && PRIMARY_TYPE.equals(flavors[i].getPrimaryType ())) {
-                        try {
-                            int op = Integer.valueOf (flavors[i].getParameter (MASK)).intValue ();
-                            PackageNode pkgNode = (PackageNode) t.getTransferData(flavors[i]);
-                            if ( root.equals( pkgNode.root ) ) {
-                                return new PasteType[0];
-                            }
-                            return new PasteType[] {new PackagePasteType (root, pkgNode, op)};
-                        } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify(ioe);
-                            return new PasteType[0];
-                        }
-                        catch (UnsupportedFlavorException ufe) {
-                            ErrorManager.getDefault().notify(ufe);
-                            return new PasteType[0];
-                        }
-                    }
-                }
-            }
-            return super.getPasteTypes(t);
-        }
+        }        
 
         public void setName(String name) {
             System.out.println( "Rename to " + name );
