@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.lang.ref.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import org.openide.DialogDisplayer;
 
@@ -1112,7 +1113,7 @@ implements Serializable, DataObject.Container {
         /* No default action on data folder node.
          * @return null
          */
-        public org.openide.util.actions.SystemAction getDefaultAction() {
+        public Action getPreferredAction() {
             return null;
         }
         
