@@ -21,6 +21,7 @@ import java.util.Iterator;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -116,9 +117,17 @@ public class HtmlBrowser extends Object {
             DataObject [] dobjs = folder.getChildren ();
             for (int i = 0; i<dobjs.length; i++) {
                 // Must not be hidden and have to provide instances (we assume instance is HtmlBrowser.Factory)
-                if (Boolean.TRUE.equals (dobjs[i].getPrimaryFile ().getAttribute (EA_HIDDEN))
-                ||  dobjs[i].getCookie (InstanceCookie.class) == null)
-                    list.remove (dobjs[i].getNodeDelegate ().getDisplayName ());
+                if (Boolean.TRUE.equals(dobjs[i].getPrimaryFile().getAttribute(EA_HIDDEN)) ||
+                        dobjs[i].getCookie(InstanceCookie.class) == null) {
+                    FileObject fo2 = dobjs[i].getPrimaryFile();
+                    String n = fo2.getName();
+                    try {
+                        n = fo2.getFileSystem().getStatus().annotateName(n, dobjs[i].files());
+                    } catch (FileStateInvalidException e) {
+                        // Never mind.
+                    }
+                    list.remove(n);
+                }
             }
             String[] retValue = new String[list.size ()];
             

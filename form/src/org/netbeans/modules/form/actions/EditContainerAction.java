@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,14 +29,6 @@ public class EditContainerAction extends NodeAction {
 
     private static String name;
 
-    /**
-    * Perform the action based on the currently activated nodes.
-    * Note that if the source of the event triggering this action was itself
-    * a node, that node will be the sole argument to this method, rather
-    * than the activated nodes.
-    *
-    * @param activatedNodes current activated nodes, may be empty but not <code>null</code>
-    */
     protected void performAction(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length == 1) {
             RADComponentCookie radCookie = (RADComponentCookie)activatedNodes[0]
@@ -55,13 +47,10 @@ public class EditContainerAction extends NodeAction {
         }
     }
 
-    /**
-    * Test whether the action should be enabled based
-    * on the currently activated nodes.
-    *
-    * @param activatedNodes current activated nodes, may be empty but not <code>null</code>
-    * @return <code>true</code> to be enabled, <code>false</code> to be disabled
-    */
+    protected boolean asynchronous() {
+        return false;
+    }
+
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length == 1) {
             RADComponentCookie radCookie = (RADComponentCookie)activatedNodes[0]
@@ -73,11 +62,6 @@ public class EditContainerAction extends NodeAction {
         return false;
     }
 
-    /**
-     * human presentable name of the action. This should be
-     * presented as an item in a menu.
-     * @return the name of the action
-     */
     public String getName() {
         if (name == null)
             name = org.openide.util.NbBundle.getBundle(EditContainerAction.class)
@@ -85,11 +69,8 @@ public class EditContainerAction extends NodeAction {
         return name;
     }
 
-    /**
-     * Help context where to find more about the action.
-     * @return the help context for this action
-     */
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.components.designing"); // NOI18N
     }
+
 }
