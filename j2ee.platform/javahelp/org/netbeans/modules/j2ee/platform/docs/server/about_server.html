@@ -35,10 +35,18 @@ server types are supported by the IDE:</p>
             or <a href="../web/create/tag/framework/framework_jsf_add.html">add JSF support</a>
 	    to an existing web application</li>
     </ul></li>
-<li><b>Tomcat Web Server</b>
+    <li><b>Tomcat Web Server</b>
 <p>Use this server for the following development activities:
     <ul><li>Creating and deploying web applications.</li>
-	<li>Deploying JSR-101 web services.</li></ul>
+	    <li>Deploying a web service client that uses JSR-101 stubs.
+	    <table cellpadding="3" cellspacing="0" border="0">
+<tr valign="top"> 
+<td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
+<td>The Tomcat Web Server is not a J2EE 1.4 container. Therefore, you cannot deploy a web service client
+	that uses JSR-109 stubs to this server. When you <a href="../consume/wsc_create.html">create the web service client</a>,
+	make sure that you select JAXRPC Static Stub in the Web service client type drop-down.</td>
+</tr>
+</table></li></ul>
 </ul>
 
 <h3>Servers in the IDE</h3>
@@ -55,7 +63,8 @@ choose Properties, click Run, and select the server.</p>
 </tr>
 <tr>
 <td width="23"></td>
-<td><a href="nbdocs:/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_plugintro.html">About the Tomcat Web Server</a></td>
+<td><a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/aboutplugin.html">About the SJS Application Server</a><br>
+<a href="nbdocs:/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_plugintro.html">About the Tomcat Web Server</a></td>
 </tr>
 </table>
 <!-- #EndEditable --> 
