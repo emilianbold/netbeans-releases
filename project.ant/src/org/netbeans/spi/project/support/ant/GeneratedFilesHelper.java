@@ -17,8 +17,6 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,8 +30,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
-import org.netbeans.modules.project.ant.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -41,6 +37,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.UserQuestionException;
 
 /**
  * Helps a project type (re-)generate, and manage the state and versioning of,
@@ -218,7 +215,7 @@ public final class GeneratedFilesHelper {
                     dir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                         public void run() throws IOException {
                             FileObject projectXml = dir.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
-                            FileObject buildScriptXml = FileUtil.createData(dir, path);
+                            final FileObject buildScriptXml = FileUtil.createData(dir, path);
                             byte[] projectXmlData;
                             InputStream is = projectXml.getInputStream();
                             try {
@@ -233,7 +230,7 @@ public final class GeneratedFilesHelper {
                             } finally {
                                 is.close();
                             }
-                            byte[] resultData;
+                            final byte[] resultData;
                             TransformerFactory tf = TransformerFactory.newInstance();
                             try {
                                 StreamSource stylesheetSource = new StreamSource(
@@ -249,49 +246,54 @@ public final class GeneratedFilesHelper {
                             } catch (TransformerException e) {
                                 throw (IOException)new IOException(e.toString()).initCause(e);
                             }
-                            FileLock lock = buildScriptXml.lock();
                             try {
-                                OutputStream os = buildScriptXml.getOutputStream(lock);
+                                FileLock lock = buildScriptXml.lock();
                                 try {
-                                    os.write(resultData);
+                                    OutputStream os = buildScriptXml.getOutputStream(lock);
+                                    try {
+                                        os.write(resultData);
+                                    } finally {
+                                        os.close();
+                                    }
                                 } finally {
-                                    os.close();
+                                    lock.releaseLock();
                                 }
-                            } finally {
-                                lock.releaseLock();
-                            }
-                            // Update genfiles.properties too.
-                            EditableProperties p = new EditableProperties();
-                            FileObject genfiles = dir.getFileObject(GENFILES_PROPERTIES_PATH);
-                            if (genfiles != null) {
-                                is = genfiles.getInputStream();
+                                // Update genfiles.properties too.
+                                EditableProperties p = new EditableProperties();
+                                FileObject genfiles = dir.getFileObject(GENFILES_PROPERTIES_PATH);
+                                if (genfiles != null) {
+                                    is = genfiles.getInputStream();
+                                    try {
+                                        p.load(is);
+                                    } finally {
+                                        is.close();
+                                    }
+                                } else {
+                                    // XXX set a file header comment, when EditableProperties supports that
+                                }
+                                p.setProperty(path + KEY_SUFFIX_DATA_CRC,
+                                    computeCrc32(new ByteArrayInputStream(projectXmlData)));
+                                p.setProperty(path + KEY_SUFFIX_STYLESHEET_CRC,
+                                    computeCrc32(new ByteArrayInputStream(stylesheetData)));
+                                p.setProperty(path + KEY_SUFFIX_SCRIPT_CRC,
+                                    computeCrc32(new ByteArrayInputStream(resultData)));
+                                if (genfiles == null) {
+                                    genfiles = FileUtil.createData(dir, GENFILES_PROPERTIES_PATH);
+                                }
+                                lock = genfiles.lock();
                                 try {
-                                    p.load(is);
+                                    OutputStream os = genfiles.getOutputStream(lock);
+                                    try {
+                                        p.store(os);
+                                    } finally {
+                                        os.close();
+                                    }
                                 } finally {
-                                    is.close();
+                                    lock.releaseLock();
                                 }
-                            } else {
-                                // XXX set a file header comment, when EditableProperties supports that
-                            }
-                            p.setProperty(path + KEY_SUFFIX_DATA_CRC,
-                                computeCrc32(new ByteArrayInputStream(projectXmlData)));
-                            p.setProperty(path + KEY_SUFFIX_STYLESHEET_CRC,
-                                computeCrc32(new ByteArrayInputStream(stylesheetData)));
-                            p.setProperty(path + KEY_SUFFIX_SCRIPT_CRC,
-                                computeCrc32(new ByteArrayInputStream(resultData)));
-                            if (genfiles == null) {
-                                genfiles = FileUtil.createData(dir, GENFILES_PROPERTIES_PATH);
-                            }
-                            lock = genfiles.lock();
-                            try {
-                                OutputStream os = genfiles.getOutputStream(lock);
-                                try {
-                                    p.store(os);
-                                } finally {
-                                    os.close();
-                                }
-                            } finally {
-                                lock.releaseLock();
+                            } catch (UserQuestionException uqe) {
+                                // Don't bother asking to lock it; not important enough.
+                                // Cf. #46089.
                             }
                         }
                     });

@@ -28,6 +28,7 @@ import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.FileChangeSupport;
 import org.netbeans.modules.project.ant.FileChangeSupportEvent;
 import org.netbeans.modules.project.ant.FileChangeSupportListener;
+import org.netbeans.modules.project.ant.UserQuestionHandler;
 import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.CacheDirectoryProvider;
@@ -40,15 +41,15 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.openide.util.UserQuestionException;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
+
 
 // XXX various methods need to acquire read or write mutex!
 
@@ -245,17 +246,54 @@ public final class AntProjectHelper {
         try {
             dir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
-                    FileObject xml = FileUtil.createData(dir, path);
-                    FileLock lock = xml.lock();
-                    try {
-                        OutputStream os = xml.getOutputStream(lock);
-                        try {
-                            XMLUtil.write(doc, os, "UTF-8"); // NOI18N
-                        } finally {
-                            os.close();
+                    final FileObject xml = FileUtil.createData(dir, path);
+                    final FileSystem.AtomicAction body = new FileSystem.AtomicAction() {
+                        public void run() throws IOException {
+                            FileLock lock = xml.lock();
+                            try {
+                                OutputStream os = xml.getOutputStream(lock);
+                                try {
+                                    XMLUtil.write(doc, os, "UTF-8"); // NOI18N
+                                } finally {
+                                    os.close();
+                                }
+                            } finally {
+                                lock.releaseLock();
+                            }
                         }
-                    } finally {
-                        lock.releaseLock();
+                    };
+                    try {
+                        body.run();
+                    } catch (UserQuestionException uqe) { // #46089
+                        UserQuestionHandler.handle(uqe, new UserQuestionHandler.Callback() {
+                            public void accepted() {
+                                // Try again.
+                                try {
+                                    body.run();
+                                } catch (IOException e) {
+                                    // Oh well.
+                                    ErrorManager.getDefault().notify(e);
+                                    reload();
+                                }
+                            }
+                            public void denied() {
+                                reload();
+                            }
+                            public void error(IOException e) {
+                                ErrorManager.getDefault().notify(e);
+                                reload();
+                            }
+                            private void reload() {
+                                // Revert the save.
+                                if (path.equals(PROJECT_XML_PATH)) {
+                                    projectXml = null;
+                                } else {
+                                    assert path.equals(PRIVATE_XML_PATH) : path;
+                                    privateXml = null;
+                                }
+                                fireExternalChange(path);
+                            }
+                        });
                     }
                 }
             });

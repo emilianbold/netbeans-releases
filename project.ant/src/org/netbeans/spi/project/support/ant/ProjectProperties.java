@@ -30,6 +30,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.project.ant.FileChangeSupport;
 import org.netbeans.modules.project.ant.FileChangeSupportEvent;
 import org.netbeans.modules.project.ant.FileChangeSupportListener;
+import org.netbeans.modules.project.ant.UserQuestionHandler;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
@@ -37,6 +38,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
 
 /**
@@ -192,22 +194,53 @@ final class ProjectProperties {
                     // (which for *.properties means no keys), which is wrong.
                     dir().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                         public void run() throws IOException {
-                            FileObject _f;
+                            final FileObject _f;
                             if (f == null) {
                                 _f = FileUtil.createData(dir(), path);
                             } else {
                                 _f = f;
                             }
-                            FileLock lock = _f.lock();
-                            try {
-                                OutputStream os = _f.getOutputStream(lock);
-                                try {
-                                    properties.store(os);
-                                } finally {
-                                    os.close();
+                            final FileSystem.AtomicAction body = new FileSystem.AtomicAction() {
+                                public void run() throws IOException {
+                                    FileLock lock = _f.lock();
+                                    try {
+                                        OutputStream os = _f.getOutputStream(lock);
+                                        try {
+                                            properties.store(os);
+                                        } finally {
+                                            os.close();
+                                        }
+                                    } finally {
+                                        lock.releaseLock();
+                                    }
                                 }
-                            } finally {
-                                lock.releaseLock();
+                            };
+                            try {
+                                body.run();
+                            } catch (UserQuestionException uqe) { // #46089
+                                UserQuestionHandler.handle(uqe, new UserQuestionHandler.Callback() {
+                                    public void accepted() {
+                                        // Try again.
+                                        try {
+                                            body.run();
+                                        } catch (IOException e) {
+                                            // Oh well.
+                                            ErrorManager.getDefault().notify(e);
+                                            reload();
+                                        }
+                                    }
+                                    public void denied() {
+                                        reload();
+                                    }
+                                    public void error(IOException e) {
+                                        ErrorManager.getDefault().notify(e);
+                                        reload();
+                                    }
+                                    private void reload() {
+                                        // Revert the save.
+                                        diskChange();
+                                    }
+                                });
                             }
                         }
                     });
