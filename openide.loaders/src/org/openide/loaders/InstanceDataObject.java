@@ -888,27 +888,29 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
      * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=16278">Issue #16278</a>
      */
     protected DataObject handleCopy(DataFolder df) throws IOException {
-        try {
-            if (getPrimaryFile ().hasExt(XML_EXT)) {
-                InstanceCookie ic = (InstanceCookie)getCookie(InstanceCookie.class);
-                if (ic != null) {
-                    Object obj = ic.instanceCreate();
-                    InstanceDataObject ido = createSettingsFile(
-                        df, getNodeDelegate().getDisplayName(), obj);
-                    ido.attachToConvertor(null);
-                    return ido;
+        if (getPrimaryFile ().getFileSystem().isDefault()) {
+            try {
+                if (getPrimaryFile ().hasExt(XML_EXT)) {
+                    InstanceCookie ic = (InstanceCookie)getCookie(InstanceCookie.class);
+                    if (ic != null) {
+                        Object obj = ic.instanceCreate();
+                        InstanceDataObject ido = createSettingsFile(
+                            df, getNodeDelegate().getDisplayName(), obj);
+                        ido.attachToConvertor(null);
+                        return ido;
+                    }
+                } else if ( (!getPrimaryFile().hasExt(INSTANCE)) &&
+                            Serializable.class.isAssignableFrom(instanceClass()) ) {
+                    InstanceCookie ic = (InstanceCookie)getCookie(InstanceCookie.class);
+                    if (ic != null) {
+                        Object obj = ic.instanceCreate();
+                        return DataObject.find(createSerFile(
+                            df, getNodeDelegate().getDisplayName(), obj));
+                    }
                 }
-            } else if ( (!getPrimaryFile().hasExt(INSTANCE)) &&
-                        Serializable.class.isAssignableFrom(instanceClass()) ) {
-                InstanceCookie ic = (InstanceCookie)getCookie(InstanceCookie.class);
-                if (ic != null) {
-                    Object obj = ic.instanceCreate();
-                    return DataObject.find(createSerFile(
-                        df, getNodeDelegate().getDisplayName(), obj));
-                }
+            } catch (ClassNotFoundException ex) {
+                inform(ex);
             }
-        } catch (ClassNotFoundException ex) {
-    	    inform(ex);
         }
         return super.handleCopy(df);
     }
