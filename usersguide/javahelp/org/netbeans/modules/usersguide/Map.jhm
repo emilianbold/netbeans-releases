@@ -544,7 +544,7 @@
 <mapID target="org.netbeans.modules.extbrowser.ExtWebBrowser" url="webbrowser/options.html" />
 <mapID target="org.openide.awt.SwingBrowser" url="webbrowser/swingbrowser.html" />
 
-<mapID target="org.netbeans.modules.httpserver.HttpServerNode_properties" url="webbrowser/httpserver_properties.html" />
+<mapID target="org.netbeans.modules.httpserver.HttpServerNode_properties" url="webbrowser/httpserver-options.html" />
 
 
   <mapID target="org.openide.util.HelpCtx.DEFAULT_HELP" url="pending.html" />
