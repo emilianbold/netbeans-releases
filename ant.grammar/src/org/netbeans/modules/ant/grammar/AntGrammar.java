@@ -15,6 +15,7 @@ package org.netbeans.modules.ant.grammar;
 
 import java.util.*;
 import javax.swing.Icon;
+
 import org.apache.tools.ant.module.api.IntrospectedInfo;
 
 import org.w3c.dom.*;
@@ -49,7 +50,8 @@ class AntGrammar implements GrammarQuery {
         
         return list;
     }
-    
+
+    /*
     private static String getTaskClassFor(String elementName) {
         Map defs = getAntGrammar().getDefs("task");
         return (String) defs.get(elementName);
@@ -59,6 +61,7 @@ class AntGrammar implements GrammarQuery {
         Map defs = getAntGrammar().getDefs("type");
         return (String) defs.get(elementName);        
     }
+     */
     
     private static IntrospectedInfo getAntGrammar() {
         return IntrospectedInfo.getKnownInfo();
@@ -312,7 +315,7 @@ class AntGrammar implements GrammarQuery {
     public Enumeration queryNotations(String prefix) {
         return EmptyEnumeration.EMPTY;
     }
-       
+    
     /**
      * @semantics Navigates through read-only Node tree to determine context and provide right results.
      * @postconditions Let ctx unchanged
@@ -323,7 +326,233 @@ class AntGrammar implements GrammarQuery {
      *        Every list member represents one possibility.
      */
     public Enumeration queryValues(HintContext ctx) {
-        return EmptyEnumeration.EMPTY;
+        Attr ownerAttr;
+        if (canCompleteProperty(ctx.getCurrentPrefix())) {
+            return completeProperties(ctx);
+        } else if (ctx.getNodeType() == Node.ATTRIBUTE_NODE) {
+            ownerAttr = (Attr)ctx;
+        } else {
+            return EmptyEnumeration.EMPTY;
+        }
+        Element ownerElement = ownerAttr.getOwnerElement();
+        String attrName = ownerAttr.getName();
+        String[] typePair = typeOf(ownerElement);
+        if (typePair == null) {
+            return EmptyEnumeration.EMPTY;
+        }
+        List/*<String>*/ choices = new ArrayList();
+        
+        if (typePair[0].equals(KIND_SPECIAL)) {
+            if (typePair[1].equals(SPECIAL_PROJECT)) {
+                if (attrName.equals("default")) {
+                    // XXX list known targets?
+                } else if (attrName.equals("basedir")) {
+                    // XXX file completion?
+                }
+                // freeform: name
+            } else if (typePair[1].equals(SPECIAL_TARGET)) {
+                if (attrName.equals("depends")) {
+                    // XXX list known targets?
+                } else if (attrName.equals("if") || attrName.equals("unless")) {
+                    choices.addAll(Arrays.asList(likelyPropertyNames(ctx)));
+                }
+                // freeform: description
+            } else if (typePair[1].equals(SPECIAL_DESCRIPTION)) {
+                // nothing applicable
+            } else {
+                assert false : typePair[1];
+            }
+        } else {
+            String elementClazz = typePair[1];
+            if (getAntGrammar().isKnown(elementClazz)) {
+                String attrClazzName = (String)getAntGrammar().getAttributes(elementClazz).get(attrName);
+                if (attrClazzName != null) {
+                    if (getAntGrammar().isKnown(attrClazzName)) {
+                        String[] enumTags = getAntGrammar().getTags(attrClazzName);
+                        if (enumTags != null) {
+                            choices.addAll(Arrays.asList(enumTags));
+                        }
+                    }
+                    if (attrClazzName.equals("boolean")) {
+                        choices.add("true");
+                        choices.add("false");
+                    } else if (attrClazzName.equals("org.apache.tools.ant.types.Reference")) {
+                        // XXX add names of ids
+                    } else if (attrClazzName.equals("org.apache.tools.ant.types.Path") ||
+                               attrClazzName.equals("java.io.File")
+                               /* || "path" attr on Path or Path.Element */
+                              ) {
+                        // XXX complete filenames
+                    } else if (attrClazzName.equals("java.lang.String") &&
+                               (attrName.equals("if") || attrName.equals("unless") ||
+                                attrName.equals("property"))) {
+                        // <isset property="..."/>, <include name="*" unless="..."/>, etc.
+                        choices.addAll(Arrays.asList(likelyPropertyNames(ctx)));
+                    }
+                }
+            }
+        }
+        
+        // Create the completion:
+        String prefix = ctx.getCurrentPrefix();
+        QueueEnumeration list = new QueueEnumeration();
+        Iterator it = choices.iterator();
+        while (it.hasNext()) {
+            String next = (String)it.next();
+            if (next.startsWith(prefix)) {
+                list.put(new MyText(next));
+            }
+        }
+        return list;
+    }
+    
+    /**
+     * Check whether a given content string (of an attribute value or of an element's
+     * content) has an uncompleted "${" sequence in it, i.e. one that has not been matched
+     * with a corresponding "}".
+     * E.g.:
+     * <pathelement location="${foo
+     *                             ^ caret
+     * Also if the last character is "$" it can be completed.
+     * @param content the current content of the attribute value or element
+     * @return true if there is an uncompleted property here
+     */
+    private static boolean canCompleteProperty(String content) {
+        if (content.length() == 0) {
+            return false;
+        }
+        // XXX should also check for $$ escape
+        if (content.charAt(content.length() - 1) == '$') {
+            return true;
+        }
+        int idx = content.lastIndexOf("${");
+        return idx != -1 && content.indexOf('}', idx) == -1;
+    }
+    
+    private static Enumeration completeProperties(HintContext ctx) {
+        String content = ctx.getCurrentPrefix();
+        assert content.length() > 0;
+        String header;
+        String propPrefix;
+        if (content.charAt(content.length() - 1) == '$') {
+            header = content + '{';
+            propPrefix = "";
+        } else {
+            int idx = content.lastIndexOf("${");
+            assert idx != -1;
+            header = content.substring(0, idx + 2);
+            propPrefix = content.substring(idx + 2);
+        }
+        String[] props = likelyPropertyNames(ctx);
+        // XXX completion on text works differently from attrs:
+        // the context should not be returned
+        boolean shortHeader = ctx.getNodeType() == Node.TEXT_NODE;
+        QueueEnumeration list = new QueueEnumeration();
+        for (int i = 0; i < props.length; i++) {
+            if (props[i].startsWith(propPrefix)) {
+                String text = header + props[i] + '}';;
+                if (shortHeader) {
+                    assert text.startsWith(content) : "text=" + text + " content=" + content;
+                    text = text.substring(content.length());
+                }
+                list.put(new MyText(text));
+            }
+        }
+        return list;
+    }
+    
+    private static String[] likelyPropertyNames(HintContext ctx) {
+        // XXX ctx.getOwnerDocument returns some bogus unusable empty thing
+        // so find the root element manually
+        Element parent;
+        // XXX docs for queryValues says Attr or Element, but really Attr or Text
+        // (and CDataSection never seems to permit completion at all...)
+        if (ctx.getNodeType() == Node.ATTRIBUTE_NODE) {
+            parent = ((Attr)ctx).getOwnerElement();
+        } else if (ctx.getNodeType() == Node.TEXT_NODE) {
+            Node p = ctx.getParentNode();
+            if (p != null && p.getNodeType() == Node.ELEMENT_NODE) {
+                parent = (Element)p;
+            } else {
+                System.err.println("strange parent of text node: " + p.getNodeType() + " " + p);
+                return new String[0];
+            }
+        } else {
+            System.err.println("strange context type: " + ctx.getNodeType() + " " + ctx);
+            return new String[0];
+        }
+        while (parent.getParentNode() != null && parent.getParentNode().getNodeType() == Node.ELEMENT_NODE) {
+            parent = (Element)parent.getParentNode();
+        }
+        // XXX getElementsByTagName just throws an exception, you can't use it...
+        Set/*<String>*/ choices = new TreeSet();
+        visitForLikelyPropertyNames(parent, choices);
+        return (String[])choices.toArray(new String[choices.size()]);
+    }
+    
+    private static void visitForLikelyPropertyNames(Node n, Set/*<String>*/ choices) {
+        int type = n.getNodeType();
+        switch (type) {
+            case Node.ELEMENT_NODE:
+                // XXX would be more precise to use typeOf here, but maybe slower?
+                // Look for <property name="propname" .../> and similar
+                Element el = (Element)n;
+                String tagname = el.getTagName();
+                if (tagname.equals("property")) {
+                    String propname = el.getAttribute("name");
+                    // XXX it seems that the Element impl is broken and can return null from getAttribute
+                    if (propname != null && propname.length() > 0) {
+                        choices.add(propname);
+                    }
+                    // XXX handle <property file="..."/> with a resolvable filename
+                } else if (tagname.equals("buildnumber")) {
+                    // This task always defines ${build.number}
+                    choices.add("build.number");
+                } else if (tagname.equals("tstamp")) {
+                    // XXX handle prefix="whatever" -> ${whatever.TODAY} etc.
+                    // XXX handle nested <format property="foo" .../> -> ${foo}
+                    choices.add("DSTAMP");
+                    choices.add("TSTAMP");
+                    choices.add("TODAY");
+                }
+                // <available>, <dirname>, <pathconvert>, <uptodate>, <target>, <isset>, <include>, etc.
+                String[] attrs = {"if", "unless", "property"};
+                for (int i = 0; i < attrs.length; i++) {
+                    String propname = el.getAttribute(attrs[i]);
+                    if (propname != null && propname.length() > 0) {
+                        choices.add(propname);
+                    }
+                }
+                break;
+            case Node.ATTRIBUTE_NODE:
+            case Node.TEXT_NODE:
+                // Look for ${propname}
+                String text = n.getNodeValue();
+                int idx = 0;
+                while (true) {
+                    int start = text.indexOf("${", idx);
+                    if (start == -1) {
+                        break;
+                    }
+                    int end = text.indexOf('}', start + 2);
+                    if (end == -1) {
+                        break;
+                    }
+                    String propname = text.substring(start + 2, end);
+                    if (propname.length() > 0) {
+                        choices.add(propname);
+                    }
+                    idx = end + 1;
+                }
+                break;
+            default:
+                // ignore
+                break;
+        }
+        NodeList l = n.getChildNodes();
+        for (int i = 0; i < l.getLength(); i++) {
+            visitForLikelyPropertyNames(l.item(i), choices);
+        }
     }
 
     // return defaults, no way to query them
@@ -528,7 +757,7 @@ class AntGrammar implements GrammarQuery {
         }
 
         public String getNodeValue() {
-            return getData();
+            return data;
         }
         
         public String getData() throws DOMException {

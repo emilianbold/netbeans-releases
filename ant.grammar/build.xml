@@ -12,7 +12,7 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="ant" default="netbeans" basedir=".">
+<project name="ant/grammar" default="netbeans" basedir=".">
 
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../../nbbuild/nbantext.jar"/>
 
   <target name="compile">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
       <classpath>
         <pathelement location="../../openide/netbeans/lib/openide.jar"/>
         <pathelement location="../netbeans/modules/ant.jar"/>
