@@ -360,7 +360,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         String folderName = folderTextField.getText().trim();
         String documentName = documentNameTextField.getText().trim();
         
-        String createdFileName = root.getPath() + 
+        String createdFileName = FileUtil.getFileDisplayName( root ) + 
             ( folderName.startsWith("/") || folderName.startsWith( File.separator ) ? "" : "/" ) + // NOI18N
             folderName + 
             ( folderName.endsWith("/") || folderName.endsWith( File.separator ) || folderName.length() == 0 ? "" : "/" ) + // NOI18N

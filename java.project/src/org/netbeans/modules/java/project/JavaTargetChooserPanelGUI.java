@@ -421,7 +421,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         else if ( documentName.length() > 0 ) {
             documentName = documentName + expectedExtension;
         }
-        String createdFileName = rootFolder.getPath() + 
+        String createdFileName = FileUtil.getFileDisplayName( rootFolder ) + 
             ( packageName.startsWith("/") || packageName.startsWith( File.separator ) ? "" : "/" ) + // NOI18N
             packageName + 
             ( packageName.endsWith("/") || packageName.endsWith( File.separator ) || packageName.length() == 0 ? "" : "/" ) + // NOI18N
