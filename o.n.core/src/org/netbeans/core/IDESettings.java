@@ -296,11 +296,15 @@ public class IDESettings extends SystemOption {
         /* akemr: following notification removed because of new implemented
         * runtime refresh of nodes
         *
-        if (SwingUtilities.isEventDispatchThread ()) {
-            TopManager.getDefault ().notify
-            (new NotifyDescriptor.Message
-             (Main.getString ("MSG_must_restart_IDE_for_show_file_extensions"),
-              NotifyDescriptor.WARNING_MESSAGE));
+        if (old != s) {
+            new Thread () {
+                    public void run () {
+                        TopManager.getDefault ().notify
+                            (new NotifyDescriptor.Message
+                                (Main.getString ("MSG_must_restart_IDE_for_show_file_extensions"),
+                                 NotifyDescriptor.WARNING_MESSAGE));
+                    }
+                }.start ();
         }
         */
     }
