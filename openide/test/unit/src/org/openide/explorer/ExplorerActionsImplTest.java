@@ -65,10 +65,10 @@ public class ExplorerActionsImplTest extends ExplorerPanelTest {
     protected Object[] createManagerAndContext () {
         ExplorerManager em = new ExplorerManager ();
         ActionMap map = new ActionMap ();
-        map.put (DefaultEditorKit.copyAction, ExplorerManager.actionCopy(em));
-        map.put (DefaultEditorKit.cutAction, ExplorerManager.actionCut(em));
-        map.put (DefaultEditorKit.pasteAction, ExplorerManager.actionPaste(em));
-        map.put ("delete", ExplorerManager.actionDelete(em, false));
+        map.put (DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(em));
+        map.put (DefaultEditorKit.cutAction, ExplorerUtils.actionCut(em));
+        map.put (DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(em));
+        map.put ("delete", ExplorerUtils.actionDelete(em, false));
         
         return new Object[] { em, org.openide.util.lookup.Lookups.singleton(map) };
     }
@@ -76,19 +76,19 @@ public class ExplorerActionsImplTest extends ExplorerPanelTest {
     /** Instructs the actions to stop/
      */
     protected void stopActions(ExplorerManager em) {
-        ExplorerManager.findExplorerActionsImpl (em).detach ();
+        ExplorerUtils.activateActions (em, false);
     }
     /** Instructs the actions to start again.
      */
     protected void startActions (ExplorerManager em) {
-        ExplorerManager.findExplorerActionsImpl(em).attach (em);
+        ExplorerUtils.activateActions (em, true);
     }
     
     
     public void testActionDeleteDoesNotAffectStateOfPreviousInstances () throws Exception {
         ExplorerManager em = new ExplorerManager ();
-        Action a1 = ExplorerManager.actionDelete(em, false);
-        Action a2 = ExplorerManager.actionDelete(em, true);
+        Action a1 = ExplorerUtils.actionDelete(em, false);
+        Action a2 = ExplorerUtils.actionDelete(em, true);
         
         Node node = new AbstractNode (Children.LEAF) {
             public boolean canDestroy () {
