@@ -117,5 +117,12 @@ public interface CallStackFrame {
      * frame will become the current frame.
      */
     public abstract void popFrame ();
+    
+    /**
+     * Returns thread.
+     *
+     * @return thread
+     */
+    public abstract JPDAThread getThread ();
 }
  

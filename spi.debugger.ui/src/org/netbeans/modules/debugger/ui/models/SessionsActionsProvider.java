@@ -43,8 +43,8 @@ Models.ActionPerformer {
                     DebuggerManager.getDebuggerManager ().getCurrentSession ()
                         != node
                 ),
-                Models.createAction ("Kill", node, this),
-                Models.createAction ("Properties", node, this, false)
+                Models.createAction ("Kill", node, this)
+//                Models.createAction ("Properties", node, this, false)
             };
         throw new UnknownTypeException (node);
     }

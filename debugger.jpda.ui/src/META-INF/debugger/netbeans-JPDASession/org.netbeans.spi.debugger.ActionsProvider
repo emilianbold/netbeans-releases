@@ -1,3 +1,5 @@
 org.netbeans.modules.debugger.jpda.ui.actions.RunToCursorActionProvider
 org.netbeans.modules.debugger.jpda.ui.actions.RunIntoMethodActionProvider
 org.netbeans.modules.debugger.jpda.ui.actions.ToggleBreakpointActionProvider
+org.netbeans.modules.debugger.jpda.ui.actions.MakeCalleeCurrentActionProvider
+org.netbeans.modules.debugger.jpda.ui.actions.MakeCallerCurrentActionProvider

@@ -24,6 +24,7 @@ import org.netbeans.api.debugger.LookupProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TreeModelListener;
@@ -52,43 +53,37 @@ Models.ActionPerformer {
     }
     
     public Action[] getActions (Object node) throws UnknownTypeException {
-        String language = DebuggerManager.getDebuggerManager ().
-            getCurrentSession ().getCurrentLanguage ();
         if (node == TreeModel.ROOT)
             return new Action [0];
-        EngineContext ectx = (EngineContext) lookupProvider.lookupFirst 
-            (EngineContext.class);
-        if (node instanceof CallStackFrame)
-            return new Action [] {
-                Models.createAction (
-                    "Make Current",
-                    (CallStackFrame) node,
-                    this,
-                    debugger.getCurrentCallStackFrame () != node
-                ),
-                Models.createAction (
-                    "Pop To Here",
-                    (CallStackFrame) node,
-                    this,
-                    ectx.sourceAvailable (
-                        (CallStackFrame) node,
-                        language
-                    )
-/*
-                    Context.sourceAvailable (
-                        (CallStackFrame) node,
-                        language
-                    )
-*/
-                ),
-                Models.createAction (
-                    "Properties",
-                    (CallStackFrame) node,
-                    this,
-                    false
-                )
-            };
-        throw new UnknownTypeException (node);
+        if (!(node instanceof CallStackFrame))
+            throw new UnknownTypeException (node);
+        
+        CallStackFrame csf = (CallStackFrame) node;
+        JPDAThread t = csf.getThread ();
+        boolean popToHere = debugger.canPopFrames () && 
+                            (t.getStackDepth () > 0);
+        if (popToHere)
+            try {
+                popToHere = ! debugger.getCurrentThread ().getCallStack () [0].
+                    equals (csf);
+            } catch (NoInformationException ex) {
+                popToHere = false;
+            }
+
+        return new Action [] {
+            Models.createAction (
+                "Make Current",
+                (CallStackFrame) node,
+                this,
+                !debugger.getCurrentCallStackFrame ().equals (node)
+            ),
+            Models.createAction (
+                "Pop To Here",
+                (CallStackFrame) node,
+                this,
+                popToHere
+            )
+        };
     }
     
     public void performDefaultAction (Object node) throws UnknownTypeException {
@@ -120,22 +115,26 @@ Models.ActionPerformer {
             makeCurrent ((CallStackFrame) node);
         } else
         if ("Pop To Here".equals (action)) {
-            String language = DebuggerManager.getDebuggerManager ().
-                getCurrentSession ().getCurrentLanguage ();
-            EngineContext ectx = (EngineContext) lookupProvider.lookupFirst 
-                (EngineContext.class);
-            ectx.showSource ((CallStackFrame) node, language);
-        } else
-        if ("Properties".equals (action)) {
+            popToHere ((CallStackFrame) node);
         }
     }    
 
-    private void makeCurrent (CallStackFrame frame) {
-        frame.makeCurrent ();
-        popToHere (frame);
-    }
-
     private void popToHere (final CallStackFrame frame) {
+        try {
+        JPDAThread t = frame.getThread ();
+        CallStackFrame[] stack = t.getCallStack ();
+        int i, k = stack.length;
+        for (i = 0; i < k; i++)
+            if (stack [i].equals (frame)) {
+                stack [i - 1].popFrame ();
+                return;
+            }
+        } catch (NoInformationException ex) {
+        }
+    }
+    
+    private void makeCurrent (final CallStackFrame frame) {
+        frame.makeCurrent ();
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 String language = DebuggerManager.getDebuggerManager ().

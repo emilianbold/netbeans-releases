@@ -1,7 +1,6 @@
-org.netbeans.modules.debugger.jpda.actions.StepAction
-org.netbeans.modules.debugger.jpda.actions.StartAction
-org.netbeans.modules.debugger.jpda.actions.KillAction
-org.netbeans.modules.debugger.jpda.actions.MakeCalleeCurrentAction
-org.netbeans.modules.debugger.jpda.actions.MakeCallerCurrentAction
-org.netbeans.modules.debugger.jpda.actions.PauseAction
-org.netbeans.modules.debugger.jpda.actions.ContinueAction
+org.netbeans.modules.debugger.jpda.actions.StepActionProvider
+org.netbeans.modules.debugger.jpda.actions.StartActionProvider
+org.netbeans.modules.debugger.jpda.actions.KillActionProvider
+org.netbeans.modules.debugger.jpda.actions.PauseActionProvider
+org.netbeans.modules.debugger.jpda.actions.ContinueActionProvider
+org.netbeans.modules.debugger.jpda.actions.PopToHereActionProvider

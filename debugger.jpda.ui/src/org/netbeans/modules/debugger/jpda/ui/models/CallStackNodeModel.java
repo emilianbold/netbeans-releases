@@ -79,8 +79,9 @@ public class CallStackNodeModel implements NodeModel {
     public String getIconBase (Object node) throws UnknownTypeException {
         if (node instanceof String) return null;
         if (node instanceof CallStackFrame) {
-            if (debugger.getCurrentCallStackFrame () ==
-                node
+            CallStackFrame ccsf = debugger.getCurrentCallStackFrame ();
+            if ( (ccsf != null) && 
+                 (ccsf.equals (node)) 
             ) return CURRENT_CALL_STACK;
             return CALL_STACK;
         }

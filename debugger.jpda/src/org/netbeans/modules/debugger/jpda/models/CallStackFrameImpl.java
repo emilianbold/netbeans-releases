@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.spi.viewmodel.NoInformationException;
 
@@ -207,19 +208,24 @@ public class CallStackFrameImpl implements CallStackFrame {
      * frame will become the current frame.
      */
     public void popFrame () {
-        try {
-            thread.popFrames (getStackFrame ());
-        } catch (IncompatibleThreadStateException ex) {
-            ex.printStackTrace ();
-        }
+        ctm.getDebugger ().popFrames (thread, getStackFrame ());
+    }
+    
+    /**
+     * Returns thread.
+     *
+     * @return thread
+     */
+    public JPDAThread getThread () {
+        return ctm.getDebugger ().getThread (thread);
     }
 
     
     // other methods............................................................
 
-    public StackFrame getStackFrame() {
+    public StackFrame getStackFrame () {
         try {
-            return thread.frame(index);
+            return thread.frame (index);
         } catch (Exception e) {
             return null;
         }

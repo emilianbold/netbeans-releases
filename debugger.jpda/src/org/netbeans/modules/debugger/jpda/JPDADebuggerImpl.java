@@ -206,13 +206,22 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     /**
+     * Returns <code>true</code> if this debugger supports Pop action.
+     *
+     * @return <code>true</code> if this debugger supports Pop action
+     */
+    public boolean canPopFrames () {
+        return getVirtualMachine ().canRedefineClasses ();
+    }
+
+    /**
      * Returns <code>true</code> if this debugger supports fix & continue 
      * (HotSwap).
      *
      * @return <code>true</code> if this debugger supports fix & continue
      */
     public boolean canFixClasses () {
-        return getVirtualMachine ().canRedefineClasses ();
+        return getVirtualMachine ().canPopFrames ();
     }
 
     /**
@@ -252,7 +261,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             updateCurrentCallStackFrame (t);
             setState (STATE_STOPPED);
         }
-
     }
 
     /**
@@ -307,6 +315,19 @@ public class JPDADebuggerImpl extends JPDADebugger {
     
     // internal interface ......................................................
 
+    public void popFrames (ThreadReference thread, StackFrame frame) {
+        synchronized (LOCK2) {
+            try {
+                thread.popFrames (frame);
+                setState (STATE_RUNNING);
+                updateCurrentCallStackFrame (getThread (thread));
+                setState (STATE_STOPPED);
+            } catch (IncompatibleThreadStateException ex) {
+                ex.printStackTrace ();
+            }
+        }
+    }
+
     public void setException (Exception e) {
         synchronized (LOCK2) {
             exception = e;
@@ -315,11 +336,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     public void setCurrentThread (JPDAThread thread) {
-        updateCurrentCallStackFrame (thread);
-        if (thread == currentThread) return;
         Object oldT = currentThread;
         currentThread = (JPDAThreadImpl) thread;
-        pcs.firePropertyChange (PROP_CURRENT_THREAD, oldT, currentThread);
+        if (thread != oldT)
+            pcs.firePropertyChange (PROP_CURRENT_THREAD, oldT, currentThread);
+        updateCurrentCallStackFrame (thread);
     }
 
     public void setCurrentCallStackFrame (CallStackFrame callStackFrame) {
@@ -345,12 +366,17 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
-    public Value evaluateIn (Expression expression) throws InvalidExpressionException {
-        if (currentCallStackFrame == null) {
+    public Value evaluateIn (Expression expression) 
+    throws InvalidExpressionException {
+        if (getCurrentCallStackFrame () == null) {
             throw new InvalidExpressionException("No current context (stack frame)");
         }
         synchronized (LOCK) {
-            return evaluateIn(expression, ((CallStackFrameImpl)currentCallStackFrame).getStackFrame());
+            return evaluateIn (
+                expression, 
+                ((CallStackFrameImpl) getCurrentCallStackFrame ()).
+                    getStackFrame ()
+            );
         }
     }
 
@@ -624,12 +650,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private void updateCurrentCallStackFrame (JPDAThread thread) {
         if ( (thread == null) ||
              (thread.getStackDepth () < 1))
-            currentCallStackFrame = null;
+            setCurrentCallStackFrame (null);
         else
         try {
-            currentCallStackFrame = thread.getCallStack () [0];
+            setCurrentCallStackFrame (thread.getCallStack () [0]);
         } catch (NoInformationException e) {
-            currentCallStackFrame = null;
+            setCurrentCallStackFrame (null);
         }
     }
 

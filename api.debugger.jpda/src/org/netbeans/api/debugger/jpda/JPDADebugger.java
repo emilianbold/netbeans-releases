@@ -303,7 +303,13 @@ public abstract class JPDADebugger {
      * @return <code>true</code> if this debugger supports fix & continue
      */
     public abstract boolean canFixClasses ();
-    
+
+    /**
+     * Returns <code>true</code> if this debugger supports Pop action.
+     *
+     * @return <code>true</code> if this debugger supports Pop action
+     */
+    public abstract boolean canPopFrames ();
 
     /**
      * Implements fix & continue (HotSwap). Map should contain class names

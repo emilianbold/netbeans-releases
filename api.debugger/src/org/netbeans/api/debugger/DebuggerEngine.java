@@ -128,8 +128,8 @@ public final class DebuggerEngine implements LookupProvider {
                 new Lookup.MetaInf (typeID, this)
             );
         this.lookup = new Lookup.Compound (
-            sessionLookup,
-            privateLookup
+            privateLookup,
+            sessionLookup
         );
     }
     
