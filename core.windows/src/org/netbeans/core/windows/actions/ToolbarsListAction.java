@@ -30,8 +30,9 @@ import org.openide.util.actions.Presenter;
  */
 public class ToolbarsListAction extends AbstractAction 
                                 implements Presenter.Menu {
-
+    
     public ToolbarsListAction() {
+        putValue(NAME,NbBundle.getMessage(ToolbarsListAction.class, "CTL_ToolbarsListAction"));
     }
     
     /** Perform the action. Tries the performer and then scans the ActionMap
