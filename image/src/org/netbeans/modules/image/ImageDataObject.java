@@ -105,7 +105,7 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
      * @return the help context
      */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ImageDataObject.class);
+        return HelpCtx.DEFAULT_HELP;
     }
 
     /** Get a URL for the image.
