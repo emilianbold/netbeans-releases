@@ -111,7 +111,7 @@ public class Controller { //XXX public only for debug access to logging code
     private Action[] kbdActions = new Action[] {
         copyAction, selectAllAction, findAction, findNextAction, 
         findPreviousAction, wrapAction, saveAsAction, closeAction,
-        navToLineAction, postMenuAction,
+        navToLineAction, postMenuAction, clearAction,
     };
 
     Controller() {}
