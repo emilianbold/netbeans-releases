@@ -373,6 +373,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module i18n..."/>
     <ant dir="../i18n" target="netbeans"/>
   </target>
+  <target name="all-installer" description="Dummy target for build system compatibility"/>
   <target name="all-itutor" depends="all-openide,all-core">
     <echo message="Building module itutor..."/>
     <ant dir="../itutor" target="netbeans"/>
