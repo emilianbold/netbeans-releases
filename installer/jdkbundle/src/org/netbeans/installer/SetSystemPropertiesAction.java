@@ -113,7 +113,7 @@ public class SetSystemPropertiesAction extends WizardAction {
             String command = "regedit -e " + regFile.getAbsolutePath() + " \"HKEY_LOCAL_MACHINE\\SOFTWARE\\JavaSoft\\Java Development Kit\"";
             RunCommand runCommand = new RunCommand();
             runCommand.execute(command);
-            runCommand.getReturnStatus();
+            runCommand.waitFor();
             BufferedReader reader;
 
             if (Util.isWindows98()) {
@@ -179,7 +179,7 @@ public class SetSystemPropertiesAction extends WizardAction {
             String command = "regedit -e " + regFile.getAbsolutePath() + " \"HKEY_LOCAL_MACHINE\\SOFTWARE\\JavaSoft\\Java Runtime Environment\"";
             RunCommand runCommand = new RunCommand();
             runCommand.execute(command);
-            runCommand.getReturnStatus();
+            runCommand.waitFor();
             BufferedReader reader;
 
             if (Util.isWindows98()) {
