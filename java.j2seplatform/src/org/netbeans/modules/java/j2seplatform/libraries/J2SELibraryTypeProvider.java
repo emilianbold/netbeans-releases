@@ -133,6 +133,9 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
             boolean first = true;
             for (Iterator rootsIt=roots.iterator(); rootsIt.hasNext();) {
                 URL url = (URL) rootsIt.next();
+                if ("jar".equals(url.getProtocol())) {
+                    url = FileUtil.getArchiveFile (url);
+                }
                 FileObject fo = URLMapper.findFileObject(url);
                 if (fo != null) {
                     File f = FileUtil.toFile(fo);
