@@ -78,6 +78,8 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     /** Was projectName property edited by user? */
     private boolean projectNameTouched = false;
     private List earProjects;
+    private BigDecimal ejbJarXmlVersion;
+    private WizardDescriptor wizardDescriptor;
         
     /** Creates new form TestPanel */
     public ImportLocationVisual (ImportLocation panel) {
@@ -323,6 +325,12 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         j2eeSpecComboBox.setMinimumSize(new java.awt.Dimension(100, 24));
         j2eeSpecComboBox.setNextFocusableComponent(jCheckBox1);
         j2eeSpecComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
+        j2eeSpecComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                j2eeSpecComboBoxActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -381,6 +389,20 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     }
     // </editor-fold>//GEN-END:initComponents
 
+    private void j2eeSpecComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_j2eeSpecComboBoxActionPerformed
+        String errorMessage;
+        String selectedItem = (String)j2eeSpecComboBox.getSelectedItem();
+        
+        if (J2EE_SPEC_14_LABEL.equals(selectedItem) && new BigDecimal(EjbJar.VERSION_2_0).equals(ejbJarXmlVersion)) {
+            errorMessage = NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "MSG_EjbJarXMLNotSupported");
+        } else {
+            errorMessage = null;
+        }
+        if (wizardDescriptor != null) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", errorMessage); //NOI18N
+        }
+    }//GEN-LAST:event_j2eeSpecComboBoxActionPerformed
+
     private void addToAppCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_addToAppCheckBoxStateChanged
         addToAppComboBox.setEnabled(addToAppCheckBox.isSelected());
     }//GEN-LAST:event_addToAppCheckBoxStateChanged
@@ -434,8 +456,8 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
             File projectLoc = FileUtil.normalizeFile(chooser.getSelectedFile());
             FileObject configFilesPath = guessConfigFilesPath(FileUtil.toFileObject(projectLoc));
             if (configFilesPath != null) {
-                File ejbJarXml = new File(FileUtil.toFile(configFilesPath).getAbsolutePath(), "ejb-jar.xml"); // NOI18N
-                checkEjbJarXmlJ2eeVersion(FileUtil.toFileObject(ejbJarXml));
+                FileObject ejbJarXml = configFilesPath.getFileObject("ejb-jar.xml"); // NOI18N
+                checkEjbJarXmlJ2eeVersion(ejbJarXml);
             }
             projectLocation.setText(projectLoc.getAbsolutePath());
         }
@@ -638,6 +660,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     }        
 
     void read (WizardDescriptor d) {
+        wizardDescriptor = d;
     }
     
     void store( WizardDescriptor d ) {
@@ -892,21 +915,31 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
             addToAppComboBox.setSelectedIndex(0);
         }
     }
+    
+    private BigDecimal getEjbJarXmlVersion(FileObject ejbJarXml) throws IOException {
+        if (ejbJarXml != null) {
+            return DDProvider.getDefault().getDDRoot(ejbJarXml).getVersion();
+        } else {
+            return null;
+        }
+    }
 
-    private void checkEjbJarXmlJ2eeVersion(FileObject fileDD) {
-        if(fileDD != null) {
-            try {
-                BigDecimal version = DDProvider.getDefault().getDDRoot(fileDD).getVersion();
-                if(new BigDecimal(EjbJar.VERSION_2_0).equals(version)) {
-                    j2eeSpecComboBox.setSelectedItem(J2EE_SPEC_13_LABEL);
-                } else if(new BigDecimal(EjbJar.VERSION_2_1).equals(version)) {
-                    j2eeSpecComboBox.setSelectedItem(J2EE_SPEC_14_LABEL);
-                }
-            } catch (Exception e) {
-                final ErrorManager errorManager = ErrorManager.getDefault();
-                String message = NbBundle.getMessage(ImportLocationVisual.class, "MSG_EjbJarXmlCorrupted"); // NOI18N
-                errorManager.notify(errorManager.annotate(e, message));
+    private void checkEjbJarXmlJ2eeVersion(FileObject ejbJarXml) {
+        try {
+            BigDecimal version = getEjbJarXmlVersion(ejbJarXml);
+            ejbJarXmlVersion = version;
+            if (version == null)
+                return;
+            
+            if(new BigDecimal(EjbJar.VERSION_2_0).equals(version)) {
+                j2eeSpecComboBox.setSelectedItem(J2EE_SPEC_13_LABEL);
+            } else if(new BigDecimal(EjbJar.VERSION_2_1).equals(version)) {
+                j2eeSpecComboBox.setSelectedItem(J2EE_SPEC_14_LABEL);
             }
+        } catch (IOException e) {
+            final ErrorManager errorManager = ErrorManager.getDefault();
+            String message = NbBundle.getMessage(ImportLocationVisual.class, "MSG_EjbJarXmlCorrupted"); // NOI18N
+            errorManager.notify(errorManager.annotate(e, message));
         }
     }
     
