@@ -91,16 +91,20 @@ class MetaLayout extends RADComponent {
     }
 
     protected PropertyChangeListener createPropertyListener() {
+        // cannot reuse RADComponent.PropertyListener, because this is not
+        // a regular RADComponent (properties have a special meaning)
         return new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent ev) {
-                LayoutNode node = container.getLayoutNodeReference();
-                if (node == null) return;
+                getFormModel().fireContainerLayoutChanged(container,
+                                                          null, null);
 
-                // changes in layout's properties should be propagated
-                // to LayoutNode node
+                LayoutNode node = container.getLayoutNodeReference();
+                if (node == null)
+                    return;
+
+                // propagate the change to node
                 if (FormProperty.PROP_VALUE.equals(ev.getPropertyName()))
                     node.fireLayoutPropertiesChange();
-
                 else if (FormProperty.CURRENT_EDITOR.equals(ev.getPropertyName()))
                     node.fireLayoutPropertySetsChange();
             }
