@@ -403,6 +403,9 @@ public class IDESettings extends SystemOption {
         try {
             Object obj = getProperty (PROP_WWWBROWSER);
             
+            if (obj == null && isWriteExternal())
+                return null;
+            
             if (obj instanceof String) {
                 // use new style
                 Lookup.Item item = Lookup.getDefault ().lookupItem (new Lookup.Template (HtmlBrowser.Factory.class, (String)obj, null));
@@ -429,14 +432,16 @@ public class IDESettings extends SystemOption {
                     for (int i = 0; i<dobjs.length; i++) {
                         Object o = null;
                         try {
+                            if (Boolean.TRUE.equals (dobjs[i].getPrimaryFile ().getAttribute ("hidden"))) // NOI18N see LookupNode.EA_HIDDEN
+                                continue;
+                            
                             InstanceCookie cookie = (InstanceCookie)dobjs[i].getCookie (InstanceCookie.class);
                             if (cookie == null)
                                 continue;
                             
                             o = cookie.instanceCreate ();
                             if (o != null 
-                            && o.equals (brow) 
-                            && !Boolean.TRUE.equals (dobjs[i].getPrimaryFile ().getAttribute ("hidden"))) { // NOI18N see LookupNode.EA_HIDDEN
+                            && o.equals (brow)) {
                                 return (HtmlBrowser.Factory)brow;
                             }
                         }
@@ -448,10 +453,13 @@ public class IDESettings extends SystemOption {
                 }
                 return null;
             }
-            
+
             Node n = hdl.getNode ();
-            Object o = ((InstanceCookie) n.getCookie (InstanceCookie.class)).instanceCreate ();
-            return (HtmlBrowser.Factory)o;
+            InstanceCookie ic = (InstanceCookie) n.getCookie (InstanceCookie.class);
+            if (ic != null) {
+                Object o = ic.instanceCreate ();
+                return (HtmlBrowser.Factory)o;
+            }
         }
         catch (java.io.IOException ex) {
             // handle is invalid or instanceCreate failed - uninstalled module
@@ -481,7 +489,7 @@ public class IDESettings extends SystemOption {
                 return;
             }
             
-            Lookup.Item item = Lookup.getDefault().lookupItem(new Lookup.Template (null, null, brow));
+            Lookup.Item item = Lookup.getDefault().lookupItem(new Lookup.Template (HtmlBrowser.Factory.class, null, brow));
             if (item != null) {
                 putProperty (PROP_WWWBROWSER, item.getId (), true);
             } else {
@@ -502,7 +510,9 @@ public class IDESettings extends SystemOption {
             for (int i = 0; i<dobjs.length; i++) {
                 Object o = null;
                 try {
-                    o = ((InstanceCookie)dobjs[i].getCookie (InstanceCookie.class)).instanceCreate ();
+                    InstanceCookie ic = (InstanceCookie)dobjs[i].getCookie (InstanceCookie.class);
+                    if (ic != null)
+                        o = ic.instanceCreate ();
                 }
                 // exceptions are thrown if module is uninstalled 
                 // we still need to remove default_browser mark in such case
