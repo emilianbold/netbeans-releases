@@ -37,9 +37,9 @@ public class Deploy extends Task implements Deployment.Logger {
     private boolean forceRedeploy = false;
     
     /**
-     *  Context root to execute the default web client in J2EE application.
+     *  URI of the web client or rich client in J2EE application to execute after deployment.
      */
-    private String contextRoot;
+    private String clientModuleUri;
     
     /**
      * Part to build returned property client.url
@@ -59,7 +59,7 @@ public class Deploy extends Task implements Deployment.Logger {
         }
 
         try {
-            String clientUrl = Deployment.getDefault ().deploy (jmp, debugmode, contextRoot, clientUrlPart, forceRedeploy, this);
+            String clientUrl = Deployment.getDefault ().deploy (jmp, debugmode, clientModuleUri, clientUrlPart, forceRedeploy, this);
             if (clientUrl != null) {
                 getProject().setProperty("client.url", clientUrl);
             }
@@ -109,12 +109,13 @@ public class Deploy extends Task implements Deployment.Logger {
     }
     
     /**
-     * Get/setter for task parameter 'contextRoot'
+     * Get/setter for task parameter 'clientUri'
      */
-    public String getContextRoot() {
-        return this.contextRoot;
+    public String getClientModuleUri() {
+        return this.clientModuleUri;
     }
-    public void setContextRoot(String contextRoot) {
-        this.contextRoot = contextRoot;
+    
+    public void setClientModuleUri(String clientModuleUri) {
+        this.clientModuleUri = clientModuleUri;
     }
 }
