@@ -134,7 +134,7 @@ Microsystems, Inc. All Rights Reserved.
             <xsl:when test="/p:project/p:configuration/web:data/web:explicit-platform">
                 <javac srcdir="${{build.generated.dir}}/src" destdir="${{build.generated.dir}}/classes" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}" source="${{javac.source}}" includeantruntime="false" fork="yes" executable="${{platform.home}}/bin/javac">
                     <classpath>
-                        <path path="${{javac.classpath}}"/>
+                        <path path="${{javac.classpath}}:${{build.classes.dir}}"/>
                         <path path="${{jspc.classpath}}"/>
                     </classpath>
                 </javac>
@@ -142,7 +142,7 @@ Microsystems, Inc. All Rights Reserved.
             <xsl:otherwise>
                 <javac srcdir="${{build.generated.dir}}/src" destdir="${{build.generated.dir}}/classes" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}" source="${{javac.source}}" includeantruntime="false">
                     <classpath>
-                        <path path="${{javac.classpath}}"/>
+                        <path path="${{javac.classpath}}:${{build.classes.dir}}"/>
                         <path path="${{jspc.classpath}}"/>
                     </classpath>
                 </javac>
