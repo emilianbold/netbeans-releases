@@ -27,6 +27,7 @@ import javax.swing.*;
 import javax.swing.JPopupMenu.Separator;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.NewFileWizard;
+import org.netbeans.modules.project.ui.NoProjectNew;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -51,7 +52,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     private static final String POPUP_NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_PopupName" ); // NOI18N
     private static final String FILE_POPUP_NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_File_PopupName" ); // NOI18N
     private static final String TEMPLATE_NAME_FORMAT = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Template_PopupName" ); // NOI18N
-    
+        
     public NewFile() {
         this( null );
     }
@@ -71,15 +72,21 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     //private NewFileWizard wizardIterator;  
 
     protected void actionPerformed( Lookup context ) {
-        doPerform( context, null );
+        doPerform( context, null, true );
     }    
         
-    private void doPerform( Lookup context, DataObject template ) {
+    private void doPerform( Lookup context, DataObject template, boolean inProject ) {
         
         if ( context == null ) {
             context = getLookup();
         }
     
+        if ( !inProject ) {
+            // Context outside of projects
+            NoProjectNew.showDialog( template, preselectedFolder( context ) );
+            return;
+        }
+        
         NewFileWizard wd = new NewFileWizard( preselectedProject( context ) /* , null */ );
 
         DataFolder preselectedFolder = preselectedFolder( context );
@@ -124,7 +131,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         // Update the Templates LRU for given project
         Project project = Templates.getProject( wd );
         FileObject foTemplate = Templates.getTemplate( wd );
-        OpenProjectList.getDefault().updateTemplatesLRU( project, foTemplate );
+        OpenProjectList.getDefault().updateTemplatesLRU( foTemplate );
 
     }
     
@@ -141,10 +148,14 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         if ( projects != null && projects.length > 0 ) {
             return createSubmenu( projects[0] );
         }
-        // cannot return null 
-        return new JMenuItem ();
+        else {
+            // When no project is seleceted only file and folder can be created
+            return createNonProjectSubmenu();
+        }
     }
-
+    
+    // Private methods ---------------------------------------------------------
+    
     private Project preselectedProject( Lookup context ) {
         Project preselectedProject = null;
 
@@ -195,6 +206,8 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     }
     
     public static String TEMPLATE_PROPERTY = "org.netbeans.modules.project.ui.actions.NewFile.Template"; // NOI18N
+    public static String IN_PROJECT_PROPERTY = "org.netbeans.modules.project.ui.actions.NewFile.InProject"; // NOI18N
+    
     
     JMenuItem createSubmenu( Project project ) {
         JMenu menuItem = new JMenu( POPUP_NAME );
@@ -215,8 +228,8 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
             JMenuItem item = new JMenuItem( 
                 MessageFormat.format( TEMPLATE_NAME_FORMAT, new Object[] { delegate.getDisplayName() } ),
                 new ImageIcon( delegate.getIcon( BeanInfo.ICON_COLOR_16x16 ) ) );
-            item.putClientProperty( TEMPLATE_PROPERTY, template );
             item.addActionListener( menuListener );
+            item.putClientProperty( TEMPLATE_PROPERTY, template );            
             menuItem.add( item );
         }
         
@@ -224,13 +237,40 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     }
     
     
+    JMenuItem createNonProjectSubmenu() {
+        JMenu menuItem = new JMenu( POPUP_NAME );
+        
+        ActionListener menuListener = new PopupMenuListener();
+        
+        DataObject templates[] = NoProjectNew.getTemplates();
+        for( int i = 0; i < templates.length; i++ ) {
+            Node n = templates[i].getNodeDelegate();
+            JMenuItem item = new JMenuItem( 
+                MessageFormat.format( TEMPLATE_NAME_FORMAT, new Object[] { n.getDisplayName() } ),
+                                      new ImageIcon( n.getIcon( BeanInfo.ICON_COLOR_16x16 ) ) );
+            item.addActionListener( menuListener );
+            item.putClientProperty( TEMPLATE_PROPERTY, templates[i] );
+            item.putClientProperty( IN_PROJECT_PROPERTY, Boolean.FALSE );
+            menuItem.add( item );
+        }
+        
+        return menuItem;
+    }
+    
     private class PopupMenuListener implements ActionListener {
                 
         public void actionPerformed( ActionEvent e ) {
             JMenuItem source = (JMenuItem)e.getSource();
+
+            Boolean inProject = (Boolean)source.getClientProperty( IN_PROJECT_PROPERTY );
             DataObject template = (DataObject)source.getClientProperty( TEMPLATE_PROPERTY );
-                        
-            doPerform( null, template );            
+            
+            if ( inProject != null && inProject == Boolean.FALSE ) {
+                doPerform( null, template, false );            
+            }
+            else {                                        
+                doPerform( null, template, true );            
+            }
         }
         
     }

@@ -107,7 +107,10 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         Project openProjects[] = OpenProjectList.getDefault().getOpenProjects();
         Arrays.sort( openProjects, OpenProjectList.PROJECT_BY_DISPLAYNAME );
         DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( openProjects );
-        projectsComboBox.setModel( projectsModel );                
+        projectsComboBox.setModel( projectsModel );
+        if ( projectsModel.getIndexOf( p ) == -1 ) {
+            projectsModel.insertElementAt( p, 0 );
+        }
         projectsComboBox.setSelectedItem( p );
     }
     
