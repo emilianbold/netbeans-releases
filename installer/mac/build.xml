@@ -99,7 +99,7 @@ Microsystems, Inc. All Rights Reserved.
 
       <echo message="Adding apple-specific jvm flags and system arguments to ${configfilename}: ${jvmflags}" />     
       <property location="${appdir}/Resources/nbhome/etc/${configfilename}" name="config-file"/>    
-      <replace file="${config-file}" token="-J-Xms24m" value="${jvmflags}"/>
+      <replace file="${config-file}" token="-J-Xmx160m" value="${jvmflags}"/>
 
       <echo message="Creating launch script in ${appdir}/MacOS/${exename}"/>       
       <copy file="resources/launcher.sh" tofile="${appdir}/MacOS/${exename}"/>
