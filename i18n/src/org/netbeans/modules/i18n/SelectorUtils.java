@@ -192,7 +192,7 @@ public class SelectorUtils {
     private static String getDisplayName(FileObject fo, Project owner, boolean incPrjName) {
         if (owner != null) {
             SourceGroup grp = getSourceGroup(fo, owner);
-            String n = (grp!=null)?grp.getDisplayName():fo.getName(); 
+            String n = (grp!=null)?grp.getDisplayName():FileUtil.getFileDisplayName(fo);
             if (incPrjName) {
                 ProjectInformation pi = (ProjectInformation)owner.getLookup().lookup(ProjectInformation.class);
                 if (pi != null) n  += " ["+pi.getDisplayName()+"]";
