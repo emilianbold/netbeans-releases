@@ -177,8 +177,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
                     throw new Exception();
 
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, fcmd);
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.getMessage() + "\n" + fcmd); //NOI18N
             }
         }
 
@@ -193,13 +192,10 @@ public class AbstractCommand implements Serializable, DDLCommand {
             stat.execute(fcmd);
             stat.close();
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-
             executionWithException = true;
             if (opened && fcon != null)
                 spec.closeJDBCConnection();
 
-//            Topmanager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("EXC_UnableToExecute")+"\n" + fcmd + "\n" + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
             throw new DDLException(bundle.getString("EXC_UnableToExecute")+"\n" + fcmd + "\n" + e.getMessage()); // NOI18N
         }
 
