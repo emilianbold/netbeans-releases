@@ -104,7 +104,7 @@ final class ResultView extends TopComponent
         }
         return instance;
     }
-    
+
     /**
      * Singleton accessor reserved for the window systemm only. The window
      * system calls this method to create an instance of this
@@ -238,9 +238,21 @@ final class ResultView extends TopComponent
     /** Overriden to explicitely set persistence type of ResultView
      * to PERSISTENCE_NEVER */
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_NEVER;
+        return TopComponent.PERSISTENCE_ALWAYS;
     }
-    
+
+    /** Replaces this in object stream. */
+    public Object writeReplace() {
+        return new ResolvableHelper();
+    }
+
+    final public static class ResolvableHelper implements java.io.Serializable {
+        static final long serialVersionUID = 7398708142639457544L;
+        public Object readResolve() {
+            return ResultView.getDefault();
+        }
+    }
+
     /**
      * Resolves to the {@linkplain #getDefault default instance} of this class.
      *
