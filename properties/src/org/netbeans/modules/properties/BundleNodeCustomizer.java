@@ -30,6 +30,7 @@ import javax.swing.ImageIcon;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 
 /**
@@ -45,10 +46,6 @@ public class BundleNodeCustomizer extends JPanel {
     /** Properties data object to customize. */
     private PropertiesDataObject propDataObject;
 
-    /** Icon for keys in key list. */
-    private static Icon keyIcon;
-    
-    
     /** Creates new form BundleNodeCustomizer */
     public BundleNodeCustomizer(PropertiesDataObject propDataObject) {
         this.propDataObject = propDataObject;
@@ -66,9 +63,7 @@ public class BundleNodeCustomizer extends JPanel {
 
     /** Utility method. Gets icon for key item in key list. */    
     private static Icon getLocaleIcon() {
-        if(keyIcon == null)
-            keyIcon = new ImageIcon(Toolkit.getDefaultToolkit().getImage(LocaleNodeCustomizer.class.getResource("/org/netbeans/modules/properties/propertiesLocale.gif"))); // NOI18N
-        return keyIcon;
+        return new ImageIcon(Utilities.loadImage("/org/netbeans/modules/properties/propertiesLocale.gif")); // NOI18N
     }
     
     /** Retrieves entry locales. Utility method.

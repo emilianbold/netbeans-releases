@@ -52,6 +52,7 @@ import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.*;
 import org.openide.windows.*;
+import org.openide.util.Utilities;
 
 
 /** 
@@ -540,9 +541,6 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
          * Changes display name of components accordingly. */
         private transient PropertyChangeListener dataObjectListener;
         
-        /** Icon. */
-        private static Image icon = null;
-
         /** Generated serial version UID. */
         static final long serialVersionUID =2836248291419024296L;
         
@@ -644,9 +642,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
 
         /** Overrides superclass method. Gets <code>Icon</code>. */
         public Image getIcon () {
-            if (icon == null)
-                icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/netbeans/modules/properties/propertiesEditorMode.gif")); // NOI18N
-            return icon;
+            return Utilities.loadImage("/org/netbeans/modules/properties/propertiesEditorMode.gif"); // NOI18N
         }
 
         /** Overrides superclass method. Gets help context. */

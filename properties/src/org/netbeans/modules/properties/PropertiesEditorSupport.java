@@ -56,6 +56,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListener;
+import org.openide.util.Utilities;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 
@@ -782,9 +783,6 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
         /** Listener for entry's save cookie changes. */
         private transient PropertyChangeListener saveCookieLNode;
         
-        /** Icon. */
-        private static Image icon = null;
-        
         /** Generated serial version UID. */
         static final long serialVersionUID =-2702087884943509637L;
         
@@ -844,9 +842,7 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
 
         /** Overrides superclass method. Gets <code>Icon</code>. */
         public Image getIcon () {
-            if (icon == null)
-                icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/netbeans/modules/properties/propertiesLocale.gif")); // NOI18N
-            return icon;
+            return Utilities.loadImage("/org/netbeans/modules/properties/propertiesLocale.gif"); // NOI18N
         }
         
         /** Overrides superclass method. Gets help context. */

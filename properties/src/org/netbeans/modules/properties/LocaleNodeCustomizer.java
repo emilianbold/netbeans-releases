@@ -38,6 +38,7 @@ import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 
 /**
@@ -51,10 +52,6 @@ public class LocaleNodeCustomizer extends JPanel {
     /** Customized properties file entry which represents one properties file. */
     private PropertiesFileEntry entry;
 
-    /** Icon for keys in key list. */
-    private static Icon keyIcon;
-    
-    
     /** Creates new <code>LocaleNodeCustomizer</code>. */
     public LocaleNodeCustomizer(PropertiesFileEntry entry) {
         this.entry = entry;
@@ -92,9 +89,7 @@ public class LocaleNodeCustomizer extends JPanel {
 
     /** Utility method. Gets icon for key item in key list. */    
     private static Icon getKeyIcon() {
-        if(keyIcon == null)
-            keyIcon = new ImageIcon(Toolkit.getDefaultToolkit().getImage(LocaleNodeCustomizer.class.getResource("/org/netbeans/modules/properties/propertiesKey.gif"))); // NOI18N
-        return keyIcon;
+        return new ImageIcon(Utilities.loadImage("/org/netbeans/modules/properties/propertiesKey.gif")); // NOI18N
     }
     
     /** Gets locale which represents the entry. Utility method.
