@@ -157,8 +157,10 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
     }
     
     public static class SortedListPropEd extends PropertyEditorSupport {
-        private LinkedList displays = new LinkedList();
-        private LinkedList values = new LinkedList();
+        private LinkedList  displays = new LinkedList();
+        private LinkedList  values = new LinkedList();
+        private String      defaultDisplay = NbBundle.getMessage(JUnitSettingsBeanInfo.class, "LBL_value_not_found");
+        private String      defaultValue = "";
 
         public String[] getTags () {
             TreeSet t = new TreeSet(displays);
@@ -174,9 +176,9 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
                 value = (String) iV.next();
                 display = (String) iD.next();
                 if (value.equals(getValue()))
-                    break;
+                    return display;
             }
-            return display;
+            return defaultDisplay;
         }
         
         public void setAsText (String text) throws IllegalArgumentException {
@@ -189,15 +191,25 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
                 display = (String) iD.next();
                 if (display.equals(text)) {
                     setValue(value);
-                    break;
+                    return;
                 }
             }
+            throw new IllegalArgumentException ();
         }
 
-        protected void put(String display, String value) {
-            displays.add(display);
-            values.add(value);
+        protected void put(String display, String value, int type) {
+            if (SHOW_IN_LIST == (type & SHOW_IN_LIST)) {
+                displays.add(display);
+                values.add(value);
+            }
+            if (IS_DEFAULT == (type & IS_DEFAULT)) {
+                defaultDisplay = display;
+                defaultValue = value;
+            }
         }
+        
+        protected static int SHOW_IN_LIST   = 1;
+        protected static int IS_DEFAULT     = 2;
     }
 
     public static class ExecutorPropEd extends PropertyEditorSupport {
@@ -229,13 +241,13 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
     public static class FileSystemPropEd extends SortedListPropEd {
         public FileSystemPropEd() {
             // default value, when no file system is selected
-            put(NbBundle.getMessage(JUnitSettingsBeanInfo.class, "LBL_no_file_system_selected"), "");
+            put(NbBundle.getMessage(JUnitSettingsBeanInfo.class, "LBL_no_file_system_selected"), "", SHOW_IN_LIST | IS_DEFAULT);
             
             Enumeration fss = TopManager.getDefault().getRepository().getFileSystems();
             while (fss.hasMoreElements()) {
                 FileSystem fs = (FileSystem) fss.nextElement();
                 if (TestUtil.isSupportedFileSystem(fs)) {
-                    put(fs.getDisplayName(), fs.getSystemName());
+                    put(fs.getDisplayName(), fs.getSystemName(), SHOW_IN_LIST);
                 }
             }
         }
@@ -252,7 +264,7 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
                 for(int i = 0; i < foTemplates.length; i++) {
                     if (!foTemplates[i].getExt().equals("java"))
                         continue;
-                    put(foTemplates[i].getName(), foTemplates[i].getPackageNameExt('/', '.'));
+                    put(foTemplates[i].getName(), foTemplates[i].getPackageNameExt('/', '.'), SHOW_IN_LIST);
                 }
             }
         }
