@@ -16,7 +16,6 @@ package org.netbeans.modules.web.jspparser;
 
 import java.io.File;
 import java.io.InputStream;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -25,13 +24,11 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
-import java.net.URL;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
-import org.openide.TopManager;
 import org.openide.ErrorManager;
 
 import org.netbeans.modules.web.core.jsploader.ContextDescriptor;
@@ -351,7 +348,7 @@ public class ParserServletContext implements ServletContext {
      */
     public void log(Exception exception, String message) {
         
-        TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, exception);
+        ErrorManager.getDefault ().notify(ErrorManager.INFORMATIONAL, exception);
 
         if (myLogWriter == null)
             return;
@@ -369,7 +366,7 @@ public class ParserServletContext implements ServletContext {
      */
     public void log(String message, Throwable exception) {
 
-        TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, exception);
+        ErrorManager.getDefault ().notify(ErrorManager.INFORMATIONAL, exception);
 
         if (myLogWriter == null)
             return;

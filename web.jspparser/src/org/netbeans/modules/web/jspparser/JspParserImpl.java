@@ -15,8 +15,6 @@ package org.netbeans.modules.web.jspparser;
 
 import java.io.IOException;
 import java.io.File;
-import java.io.StringWriter;
-import java.io.PrintWriter;
 import java.io.FileNotFoundException;
 import java.util.Hashtable;
 import java.util.Map;
@@ -34,7 +32,6 @@ import org.netbeans.modules.web.core.jsploader.TagLibParseSupport;
 import org.netbeans.modules.web.core.jsploader.ErrorCompiler;
 
 //import org.apache.jasper.compiler.JspReader;
-import org.apache.jasper.compiler.Parser;
 import org.apache.jasper.compiler.ParseException;
 import org.apache.jasper.compiler.CompileException;
 import org.apache.jasper.compiler.ParseEventListener;
@@ -43,7 +40,6 @@ import org.apache.jasper.JasperException;
 import org.apache.jasper.logging.Logger;
 import org.apache.jasper.logging.DefaultLogger;
 
-import org.openide.TopManager;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -147,13 +143,13 @@ public class JspParserImpl implements JspParserAPI {
             return new JspParserAPI.ParseResult(alistener.getJspInfo());
         }
         catch (JasperException e) {
-            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
             return constructErrorResult(e, jspPage.getPrimaryFile());
         }
         catch (ArrayIndexOutOfBoundsException e) {
             // fixes bug 20919: under some circumstances the parser may throw 
             // other exceptions than JasperException
-            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
             return constructErrorResult(e, jspPage.getPrimaryFile());
         }
         catch (ThreadDeath e) {
@@ -162,7 +158,7 @@ public class JspParserImpl implements JspParserAPI {
         catch (Throwable e) {
             // fixes bug 21169: the parser throws Error
             // related to Tomcat bug 7124
-            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
             return constructErrorResult(e, jspPage.getPrimaryFile());
         }
     }
@@ -180,11 +176,11 @@ public class JspParserImpl implements JspParserAPI {
                 JspCompileUtil.getContextRoot(jspPage), jspPage, e);
         }
         catch (FileStateInvalidException e2) {
-            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e2);
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e2);
             // do nothing, error will just remain to be null
         }
         catch (IOException e2) {
-            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e2);
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e2);
             // do nothing, error will just remain to be null
         }
         if (error == null) {
@@ -272,10 +268,10 @@ public class JspParserImpl implements JspParserAPI {
             }
         }
         catch (NoSuchFieldException e) {
-            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
         }
         catch (IllegalAccessException e) {
-            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
         }
         return result;
     }
