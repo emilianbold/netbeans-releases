@@ -169,7 +169,7 @@ class EditPanel extends javax.swing.JPanel implements
 	cookiesPanel = new EditPanelCookies();
 	serverPanel  = new EditPanelServer();
 	headersPanel = new EditPanelHeaders();
-
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EditPanel.class,"ACS_MON_Replay_panel"));
 	JTabbedPane tabs = new JTabbedPane();
         tabs.getAccessibleContext().setAccessibleName(NbBundle.getBundle(EditPanel.class).getString("ACS_MON_Replay_tabsName"));
         tabs.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(EditPanel.class).getString("ACS_MON_Replay_tabsDesc"));
