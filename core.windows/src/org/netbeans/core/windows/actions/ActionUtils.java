@@ -65,14 +65,19 @@ public abstract class ActionUtils {
         ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(tc);
         int kind = mode != null ? mode.getKind() : Constants.MODE_KIND_EDITOR;
         
+        
         List actions = new ArrayList();
         if(kind == Constants.MODE_KIND_EDITOR) {
+            CloseAllButThisAction allBut = new CloseAllButThisAction(tc);
+            if (mode.getOpenedTopComponents().size() == 1) {
+                allBut.setEnabled(false);
+            }
             actions.add(new CloseAllDocumentsAction());
             actions.add(null); // Separator
             actions.add(new SaveDocumentAction(tc));
             actions.add(new CloneDocumentAction(tc));
             actions.add(null); // Separator
-            actions.add(new CloseAllButThisAction(tc));
+            actions.add(allBut);
         } else if (kind == Constants.MODE_KIND_VIEW) {
             actions.add(new CloseWindowAction(tc));
             actions.add(new MaximizeWindowAction(tc));
