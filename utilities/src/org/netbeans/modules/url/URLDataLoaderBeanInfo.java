@@ -32,12 +32,6 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
   /** Propertydescriptors */
   private static PropertyDescriptor[] descriptors;
 
-
-  /** Default constructor.
-  */
-  public URLDataLoaderBeanInfo() {
-  }
-
   /**
   * @return Returns an array of PropertyDescriptors
   * describing the editable properties supported by this bean.
@@ -54,11 +48,11 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
     if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
         (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
       if (icon == null)
-        icon = loadImage("/com/netbeans/developer/modules/resources/urlObject.gif");
+        icon = loadImage("/com/netbeans/developer/modules/loaders/url/urlObject.gif");
       return icon;
     } else {
       if (icon32 == null)
-        icon32 = loadImage ("/com/netbeans/developer/modules/resources/urlObject32.gif");
+        icon32 = loadImage ("/com/netbeans/developer/modules/loaders/url/urlObject32.gif");
       return icon32;
     }
   }
@@ -81,6 +75,7 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  3    Gandalf   1.2         3/9/99   Ian Formanek    
 *  2    Gandalf   1.1         2/16/99  David Simonek   
 *  1    Gandalf   1.0         1/22/99  Ian Formanek    
 * $

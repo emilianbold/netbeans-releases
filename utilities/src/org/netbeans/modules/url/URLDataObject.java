@@ -34,7 +34,7 @@ public class URLDataObject extends MultiDataObject {
 //  static final long serialVersionUID = -6035788991669336965L;
 
   private static final String URL_ICON_BASE =
-    "com/netbeans/developer/modules/resources/urlObject";
+    "com/netbeans/developer/modules/loaders/url/urlObject";
 
   /* The FileObject containing the URL String */
   private FileObject urlFile;
@@ -193,6 +193,7 @@ public class URLDataObject extends MultiDataObject {
 
 /*
  * Log
+ *  3    Gandalf   1.2         3/9/99   Ian Formanek    
  *  2    Gandalf   1.1         2/25/99  Ian Formanek    
  *  1    Gandalf   1.0         1/22/99  Ian Formanek    
  * $
