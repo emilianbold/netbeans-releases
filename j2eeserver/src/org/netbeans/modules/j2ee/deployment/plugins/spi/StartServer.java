@@ -65,9 +65,20 @@ public interface StartServer extends DeploymentManagerWrapper {
 
 
     /**
-     * Returns true if the admin server should be started before configure.
+     * Returns true if the admin server should be started before server deployment configuration.
      */
     public boolean needsStartForConfigure();
+
+    /**
+     * Returns true if the admin server should be started before asking for
+     * target list.
+     */
+    public boolean needsStartForTargetList();
+
+    /**
+     * Returns true if the admin server should be started before admininistrative configuration.
+     */
+    public boolean needsStartForAdminConfig();
 
     /**
      * Returns true if this admin server is running.

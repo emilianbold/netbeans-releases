@@ -66,7 +66,8 @@ public class ServerInstance implements Node.Cookie {
     }
     
     public void refresh() {
-        manager.release();
+        if (manager != null)
+            manager.release();
         targets = null;
         
         FileObject fo = ServerRegistry.getInstanceFileObject(url);
@@ -105,11 +106,10 @@ public class ServerInstance implements Node.Cookie {
         if (targets == null) {
             Target[] targs = null;
             try {
-                if (! isRunning()) {
-                    //PENDING: need quiet start w/o progress???
+                if (! isRunning() && getStartServer().needsStartForTargetList()) {
                     start();
-                    refresh();
                 }
+                
                 targs = manager.getTargets();
             } catch(IllegalStateException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -277,6 +277,7 @@ public class ServerInstance implements Node.Cookie {
         ui.startProgressUI(10);
         _start(ui);
         ui.recordWork(10);
+        refresh();
     }
     
     /**
