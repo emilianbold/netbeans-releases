@@ -51,6 +51,9 @@ public class Manager extends Object {
      */
     public static final String NBJUNIT_WORKDIR = "nbjunit.workdir";
     
+    // nbjunit home dir - directory where nbjunit.jar and other files are stored
+    public static final String NBJUNIT_HOME = "nbjunit.home";
+    
     
     static {
         fPreferences = new Properties();
@@ -83,6 +86,34 @@ public class Manager extends Object {
             path = path.replace('/', File.separatorChar);
         }
         return path;
+    }
+    
+    public static String getNbJUnitHomePath() throws IOException {
+        String path = System.getProperty(NBJUNIT_HOME);
+                
+        if (path == null) {            
+            // try to get property from user's settings
+            readProperties();            
+            path = fPreferences.getProperty(NBJUNIT_HOME);
+        }
+        if (path != null) {
+            path = path.replace('/', File.separatorChar);
+            return path;
+        } else {
+            throw new IOException("Cannot determine NbJUnit home. Please make sure you have "+NBJUNIT_HOME
+                        +" propery set in your "+JUNIT_PROPERTIES_FILENAME+" file.");
+        }
+
+    }    
+    
+    
+    public static File getNbJUnitHome() throws IOException {
+        File nbJUnitHome = new File(getNbJUnitHomePath());
+        if (nbJUnitHome.isDirectory()) {            
+            return nbJUnitHome;
+        } else {
+            throw new IOException("Property "+NBJUNIT_HOME+" does not point to nbjunit home.");
+        }
     }
     
     protected static Diff instantiateDiffImpl(String diffImplName) {

@@ -177,7 +177,7 @@ Microsystems, Inc. All Rights Reserved.
 
 -J-Dxtest.error.manager=${xtest.error.manager} 
 -J-Dxtest.home=&quot;${xtest.home}&quot;         
-	
+-J-Dnbjunit.home=&quot;${nbjunit.home}&quot;
 -J-Dtestrunner.workdir=&quot;${xtest.workdir}/sys&quot;
 -J-Dtestrunner.timeout=${xtest.timeout} 
 -J-Dtestrunner.propertyfiles=&quot;${test.propertyfile}&quot;

@@ -36,6 +36,9 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.file.name" value="tests.xar"/>
     <property name="xtest.file.location" value="lib"/>
     
+    <!-- nbjunit library home -->
+    <property name="nbjunit.home" value="${xtest.home}/lib"/>
+    
     <!-- XTest ide plugin ant script name - mostly for compatibility reason -->
     <property name="xtest.ide.plugin.ant.script" value="${xtest.home}/plugins/ide/lib/ide_plugin_targets.xml"/>
 
