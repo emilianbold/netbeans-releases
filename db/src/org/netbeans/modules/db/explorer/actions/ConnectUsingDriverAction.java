@@ -33,12 +33,13 @@ public class ConnectUsingDriverAction extends DatabaseAction
 		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
 		else return;
 		try {
-			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+			DriverNodeInfo info = (DriverNodeInfo)node.getCookie(DatabaseNodeInfo.class);
 			ConnectionOwnerOperations nfo = (ConnectionOwnerOperations)info.getParent(nodename);
 			Vector drvs = RootNode.getOption().getAvailableDrivers();
 			DatabaseConnection cinfo = new DatabaseConnection();
+			cinfo.setDriverName(info.getName());
+			cinfo.setDriver(info.getURL());
 			NewConnectionDialog cdlg = new NewConnectionDialog(drvs, cinfo);
-//			cdlg.setSelectedDriver((DatabaseDriver)((DatabaseNodeInfo)nfo).get(DatabaseNodeInfo.DRIVER));
 			if (cdlg.run()) nfo.addConnection((DBConnection)cinfo);
 		} catch(Exception e) {
 			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to add connection, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
