@@ -65,6 +65,7 @@ public class MainClassWarning extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_MainClassWarning"));
         jLabel1.setText(org.openide.util.NbBundle.getMessage(MainClassWarning.class, "LBL_MainClassNotFound", new Object[] {projectName}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

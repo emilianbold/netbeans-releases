@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
       <Dimension value="[400, 270]"/>
     </Property>
   </Properties>
+  <AccessibilityProperties>
+    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="AD_MainClassChooser" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+    </Property>
+  </AccessibilityProperties>
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
   <SubComponents>
@@ -13,6 +18,9 @@
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="CTL_AvaialableMainClasses" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="jMainClassList"/>
         </Property>
       </Properties>
       <AuxValues>
@@ -39,6 +47,11 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
         <Component class="javax.swing.JList" name="jMainClassList">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="AD_jMainClassList" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
         </Component>
       </SubComponents>
     </Container>

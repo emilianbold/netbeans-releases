@@ -220,7 +220,9 @@ public class MainClassChooser extends JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(400, 270));
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_MainClassChooser"));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("CTL_AvaialableMainClasses"));
+        jLabel1.setLabelFor(jMainClassList);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -233,6 +235,7 @@ public class MainClassChooser extends JPanel {
 
         jScrollPane1.setMinimumSize(new java.awt.Dimension(100, 200));
         jScrollPane1.setViewportView(jMainClassList);
+        jMainClassList.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_jMainClassList"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
