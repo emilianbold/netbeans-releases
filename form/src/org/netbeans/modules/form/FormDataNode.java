@@ -43,7 +43,7 @@ public class FormDataNode extends DataNode {
 
   /** Constructs a new FormDataObject for specified primary file */
   public FormDataNode (FormDataObject fdo) {
-    super (fdo, new SourceChildren(fdo.getSource()));
+    super (fdo, new SourceChildren(JavaElementNodeFactory.DEFAULT, fdo.getSource()));
     initialize ();
   }
 
@@ -51,26 +51,6 @@ public class FormDataNode extends DataNode {
     setIconBase(ICON_BASE + ICON_CLASS);
     currentIcon = ICON_CLASS;
   }
-
-//  void updateFormNode () {
-//    parseChanged ();
-//  }
-
-/*  protected Node[] createSubNodes(Node parNode) {
-    Node[] inherited = super.createSubNodes(parNode);
-    FormDataObject fdo = getFormDataObject();
-    if (fdo.isLoaded ()) {
-      Node[] newNodes = new Node [inherited.length + 1];
-      System.arraycopy (inherited, 0, newNodes, 0, inherited.length);
-      DesignForm form = fdo.getDesignForm();
-      FormManager manager = form.getFormManager();
-      newNodes [inherited.length] = new FilterNode (manager.getComponentsRoot(), this);
-      return newNodes;
-    }
-    else
-      return inherited;
-  } */
-
 
   protected void resolveIcons () {
     FormDataObject fdo = (FormDataObject) getDataObject ();
@@ -91,12 +71,12 @@ public class FormDataNode extends DataNode {
     setIconBase (ICON_BASE + currentIcon);
   }
 
-  /** True, if the subnode for the AWT hierarchy has been added to the children list */
-//  transient private boolean initializedWithForm = false;
 }
 
 /*
  * Log
+ *  5    Gandalf   1.4         4/13/99  Ian Formanek    Fixed problems with form
+ *       node children
  *  4    Gandalf   1.3         3/14/99  Ian Formanek    
  *  3    Gandalf   1.2         3/10/99  Ian Formanek    Gandalf updated
  *  2    Gandalf   1.1         1/7/99   Ian Formanek    
