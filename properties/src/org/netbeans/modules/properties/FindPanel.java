@@ -18,7 +18,6 @@ package org.netbeans.modules.properties;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JTextField;
 
 import org.openide.util.NbBundle;
 

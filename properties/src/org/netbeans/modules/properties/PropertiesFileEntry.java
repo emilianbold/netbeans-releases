@@ -18,16 +18,12 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.ResourceBundle;
 import java.util.TreeSet;
 
-import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
@@ -36,7 +32,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListener;
 
 /**
  * Item in a set of properties files represented by a single
@@ -228,7 +223,6 @@ public class PropertiesFileEntry extends PresentableFileEntry
     }
 
     public FileObject createFromTemplate (FileObject folder, String name) throws IOException {
-        ResourceBundle bundle = NbBundle.getBundle (PropertiesFileEntry.class);
         if (!getFile().getName().startsWith(basicName))
             throw new IllegalStateException("Resource Bundles: error in Properties createFromTemplate"); // NOI18N
         

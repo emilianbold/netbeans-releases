@@ -16,7 +16,6 @@ package org.netbeans.modules.properties;
 
 
 import java.awt.event.*;
-import java.awt.Event;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

@@ -15,7 +15,6 @@ package org.netbeans.modules.search;
 
 import java.lang.ref.Reference;
 import java.lang.reflect.Method;
-import java.util.List;
 import org.openide.ErrorManager;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;

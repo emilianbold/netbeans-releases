@@ -20,8 +20,6 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 
 import org.openide.nodes.Node;
-import org.openide.util.Mutex;
-import org.openide.util.Task;
 import org.openide.util.WeakListeners;
 import org.openidex.search.SearchGroup;
 import org.openidex.search.SearchType;

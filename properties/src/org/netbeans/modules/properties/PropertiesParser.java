@@ -16,12 +16,9 @@ package org.netbeans.modules.properties;
 
 
 import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
@@ -178,7 +175,6 @@ class PropertiesParser {
         Element.KeyElem keyE;
         Element.ValueElem valueE;
 
-        int charRead;
         int begPos = in.position;
 
         // read the comment

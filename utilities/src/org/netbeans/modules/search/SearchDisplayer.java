@@ -19,11 +19,9 @@ import java.awt.EventQueue;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
 import org.openide.ErrorManager;
 
 import org.openide.nodes.Node;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;

@@ -13,16 +13,11 @@
 
 package org.netbeans.modules.pdf;
 
-import java.awt.BorderLayout;
-import java.beans.IntrospectionException;
 import java.io.*;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.cookies.OpenCookie;
-import org.openide.explorer.propertysheet.PropertySheet;
-import org.openide.nodes.BeanNode;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 

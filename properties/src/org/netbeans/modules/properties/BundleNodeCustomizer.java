@@ -16,7 +16,6 @@ package org.netbeans.modules.properties;
 
 
 import java.awt.Component;
-import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;

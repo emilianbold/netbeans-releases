@@ -13,28 +13,10 @@
 
 package org.netbeans.modules.properties;
 
-import java.awt.BorderLayout;
-import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.datatransfer.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.BeanInfo;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.text.MessageFormat;
-import java.util.Enumeration;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.AbstractCollection;
-import java.util.ResourceBundle;
-import java.util.Collections;
-import java.util.Iterator;
 
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
@@ -43,12 +25,8 @@ import javax.swing.event.ChangeEvent;
 import org.openide.loaders.*;
 import org.openide.*;
 import org.openide.util.datatransfer.*;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.util.*;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.actions.Presenter;
 import org.openide.nodes.*;
 
 /** 

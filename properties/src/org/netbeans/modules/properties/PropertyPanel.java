@@ -21,7 +21,6 @@ import javax.swing.*;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.DialogDescriptor;
 
 
 /**

@@ -17,7 +17,6 @@ package org.netbeans.modules.properties;
 
 import java.util.Locale;
 
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.NbBundle;
 
@@ -70,20 +69,6 @@ public final class Util extends Object {
             }
         }
         return result.toString();
-    }
-
-    /**
-     * Returns a primary file for a <code>DataObject</code>'s 
-     * Calling this method with parameter <code>entry</code> is equivalent to
-     * <blockquote>
-     *     <code>entry.getDataObject().getPrimaryFile()</code>
-     * </blockquote>
-     *
-     * @param  <code>FileObject</code> representing the primary file
-     *         of a given entry's <code>DataObject</code>
-     */
-    private static FileObject getPrimaryFileObject(MultiDataObject.Entry fe) {
-        return fe.getDataObject().getPrimaryFile();
     }
 
     /**

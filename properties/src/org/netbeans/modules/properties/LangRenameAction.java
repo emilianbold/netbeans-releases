@@ -15,16 +15,13 @@
 package org.netbeans.modules.properties;
 
 
-import java.net.URL;
 import java.text.MessageFormat;
-import java.util.ResourceBundle;
 
 import org.openide.actions.RenameAction;
 import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
-import org.openide.util.HelpCtx;
 
 
 /** 

@@ -31,12 +31,6 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-
-import org.netbeans.modules.search.types.FullTextType;
-import org.netbeans.modules.search.types.ModificationDateType;
-import org.netbeans.modules.search.types.ObjectNameType;
-import org.netbeans.modules.search.types.ObjectTypeType;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

@@ -19,17 +19,11 @@ import java.beans.*;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.io.OptionalDataException;
 import java.io.Serializable;
-import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.Action;
-import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.*;
-import javax.swing.table.TableColumn;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
@@ -39,21 +33,17 @@ import org.openide.cookies.CloseCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.FileEntry;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.OpenSupport;
 import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.*;
 import org.openide.windows.*;
 import org.openide.util.Utilities;
-import java.io.File;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileUtil;
 
@@ -197,11 +187,6 @@ public class PropertiesOpen extends CloneableOpenSupport
             return undoRedoManager;
         else
             return new CompoundUndoRedoManager(propDataObject);
-    }
-    
-    /** Helper method. Sets <code>allEditors variable</code>. Used by deserialization. */
-    private void setRef(CloneableTopComponent.Ref ref) {
-        allEditors = ref;
     }
 
     /** Helper method. Closes documents. */
@@ -475,7 +460,6 @@ public class PropertiesOpen extends CloneableOpenSupport
         * @exception IOException on I/O error
         */
         public void saveDocument() throws IOException {
-            final FileObject file = propDataObject.getPrimaryEntry().getFile();
             PropertiesFileEntry pfe = (PropertiesFileEntry)propDataObject.getPrimaryEntry();
             SaveCookie save = (SaveCookie)pfe.getCookie(SaveCookie.class);
             if (save != null)

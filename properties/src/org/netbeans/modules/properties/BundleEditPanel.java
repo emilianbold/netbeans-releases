@@ -34,7 +34,6 @@ import javax.swing.table.*;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListener;

@@ -15,16 +15,12 @@
 package org.netbeans.modules.search;
 
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -38,33 +34,20 @@ import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.text.DefaultEditorKit;
 import org.openide.ErrorManager;
-import org.openide.actions.CopyAction;
-import org.openide.actions.CutAction;
-import org.openide.actions.DeleteAction;
-import org.openide.actions.PasteAction;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
-import org.openide.loaders.DataFilter;
-import org.openide.loaders.RepositoryNodeFactory;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.openidex.search.SearchGroup;
 import org.openidex.search.SearchType;
 
 
@@ -238,8 +221,6 @@ final class ResultView extends TopComponent
      * should do.
      */
     private void setupActions() {
-        ExplorerManager manager = explorerManager;
-        
         Object copyActionKey   = DefaultEditorKit.copyAction;
         Object cutActionKey    = DefaultEditorKit.cutAction;
         Object pasteActionKey  = DefaultEditorKit.pasteAction;

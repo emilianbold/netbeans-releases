@@ -17,7 +17,6 @@ package org.netbeans.modules.properties;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -25,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Locale;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;

@@ -15,41 +15,22 @@
 package org.netbeans.modules.url;
 
 
-import java.awt.Component;
-import java.awt.Image;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.BeanInfo;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.MessageFormat;
-import javax.swing.AbstractButton;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JMenuItem;
 import org.openide.DialogDisplayer;
 
-import org.openide.awt.Actions;
-import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
-import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.util.actions.Presenter;
 
 
 /** Data object that represents one bookmark, one .url file containing url.

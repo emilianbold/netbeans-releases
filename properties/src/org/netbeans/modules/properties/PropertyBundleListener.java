@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.properties;
 
-import java.util.EventObject;
 import java.util.EventListener;
 
 /**

@@ -14,12 +14,10 @@
 package org.netbeans.modules.properties;
 
 import java.awt.Image;
-import java.awt.Toolkit;
 import java.beans.*;
 import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.WeakHashMap;
@@ -44,9 +42,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
-import org.openide.NotifyDescriptor;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
@@ -56,7 +52,6 @@ import org.openide.util.WeakListener;
 import org.openide.util.Utilities;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 

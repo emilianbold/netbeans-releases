@@ -20,7 +20,6 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;

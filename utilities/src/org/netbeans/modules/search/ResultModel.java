@@ -15,35 +15,11 @@
 package org.netbeans.modules.search;
 
 
-import java.awt.Image;
 import java.beans.*;
-import java.io.IOException;
-import java.io.CharConversionException;
 import java.util.*;
-import java.text.MessageFormat;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
-import org.openide.actions.DeleteAction;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
-import org.openide.nodes.Node;
 import org.openide.ErrorManager;
-import org.openide.xml.XMLUtil;
-import org.openide.util.RequestProcessor;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.NbBundle;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
-import org.openide.util.WeakListeners;
 import org.openidex.search.SearchGroup;
-import org.openidex.search.SearchType;
-import org.openide.util.Utilities;
 
 
 /**

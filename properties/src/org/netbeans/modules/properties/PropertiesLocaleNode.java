@@ -18,7 +18,6 @@ import java.awt.datatransfer.Transferable;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;

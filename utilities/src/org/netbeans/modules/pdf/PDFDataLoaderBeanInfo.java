@@ -23,7 +23,6 @@ import java.beans.SimpleBeanInfo;
 
 import org.openide.ErrorManager;
 import org.openide.loaders.UniFileLoader;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 

@@ -21,14 +21,12 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import org.openide.actions.OpenAction;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -42,7 +40,6 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.HelpCtx;
@@ -118,8 +115,6 @@ public class PropertiesDataNode extends DataNode {
 
         PropertiesFileEntry entry = (PropertiesFileEntry)((PropertiesLocaleNode)node).getFileEntry();
         types.add(new EntryPasteType(entry, mode));
-
-        return;
     }
     
     /** Notifies an error happened when attempted to create locale which exists already. 
