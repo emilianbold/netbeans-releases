@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
       </classpath>
     </javac>
 
-
+<!--
     <javac srcdir="upgradesrc" destdir="upgradesrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}"> 
       <classpath>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
@@ -43,11 +43,14 @@ Microsystems, Inc. All Rights Reserved.
 	<pathelement location="${binroot}/core/release/lib/ext/${xmlparser}"/>
       </classpath>
     </javac>
+-->
   </target>
 
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/lib/ext"/>
+<!--
     <mkdir dir="netbeans/lib/upgrade"/>
+-->
     <locjar jarfile="netbeans/lib/core.jar"
             basedir="src"
             manifest="src/org/netbeans/core/resources/mf-initializer.txt"
@@ -55,10 +58,15 @@ Microsystems, Inc. All Rights Reserved.
 	    compress="false">
       <locale name="ja"/>
     </locjar>
+  </target>
 
-  <jar jarfile="netbeans/lib/upgrade/upgrade.jar"
+  <target name="upgrade-patch" depends="compile">
+    <jar jarfile="upgrade.jar"
 	    compress="false">
-      <fileset dir="upgradesrc" excludesfile="../nbbuild/standard-jar-excludes.txt">
+      <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt">
+        <include name="org/netbeans/core/upgrade/**"/>
+        <include name="org/netbeans/core/NonGui*.class"/>
+        <exclude name="org/netbeans/core/NonGuiMain*.class"/>
       </fileset>
     </jar>
   </target>
