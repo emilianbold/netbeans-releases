@@ -16,6 +16,17 @@ Microsystems, Inc. All Rights Reserved.
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
 
+  <target name="compile-deprec">
+    <javac srcdir="src" destdir="src" deprecation="on">
+      <classpath>
+	<pathelement location="../openide/openide-13javac-workaround.jar"/>
+        <fileset dir="../openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
+      </classpath>
+    </javac>
+  </target>
+
   <target name="compile">
     <javac srcdir="src" destdir="src">
       <classpath>
