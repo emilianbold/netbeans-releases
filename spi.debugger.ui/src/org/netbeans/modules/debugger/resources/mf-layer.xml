@@ -160,17 +160,16 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-debugger-support-actions-PauseAction.instance" />
             <attr name="org-netbeans-modules-debugger-support-actions-PauseAction.instance/org-netbeans-modules-debugger-support-actions-ContinueAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-ContinueAction.instance"/>
-            
-            <attr name="org-netbeans-modules-debugger-support-actions-ContinueAction.instance/org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance"/>
-            <attr name="org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance/org-netbeans-modules-debugger-support-actions-StepIntoAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-support-actions-StepIntoAction.instance"/>
-            <attr name="org-netbeans-modules-debugger-support-actions-StepIntoAction.instance/org-netbeans-modules-debugger-support-actions-StepOverAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-debugger-support-actions-ContinueAction.instance/org-netbeans-modules-debugger-support-actions-StepOverAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-StepOverAction.instance"/>
-            <attr name="org-netbeans-modules-debugger-support-actions-StepOverAction.instance/org-netbeans-modules-debugger-support-actions-StepOutAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-debugger-support-actions-StepOverAction.instance/org-netbeans-modules-debugger-support-actions-StepIntoAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-StepIntoAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-StepIntoAction.instance/org-netbeans-modules-debugger-support-actions-StepOutAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-StepOutAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-StepOutAction.instance/org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance"/>
 
-            <attr name="org-netbeans-modules-debugger-support-actions-StepOutAction.instance/org-netbeans-modules-debugger-support-actions-FixAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance/org-netbeans-modules-debugger-support-actions-FixAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-FixAction.instance" />
 
             <attr name="org-netbeans-modules-debugger-support-actions-FixAction.instance/org-openide-actions-AddWatchAction.instance" boolvalue="true" />
