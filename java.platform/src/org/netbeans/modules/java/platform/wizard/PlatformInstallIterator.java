@@ -48,7 +48,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
     
     void updatePanelsList (JComponent[] where) {
         Collection c = new LinkedList();
-        c.add(bundle.getString("TITLE_PlatformLocationChooser")); // NOI18N
+        c.add(bundle.getString("TXT_PlatformFolderTitle")); // NOI18N
         if (typeIterator != null) {
             // try to suck stuff out of the iterator's first panel :-(
             WizardDescriptor.Panel p = typeIterator.current();
@@ -118,7 +118,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
     
     public String name() {
         if (firstPanel) {
-            return bundle.getString("TITLE_PlatformLocationChooser");
+            return bundle.getString("TXT_PlatformFolderTitle");
         } else {
             return typeIterator.name();
         }

@@ -198,7 +198,7 @@ public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterato
     }
 
     public String name() {
-        return NbBundle.getMessage(J2SEWizardIterator.class, "TITLE_J2SEWizardIterator_Configure");
+        return NbBundle.getMessage(J2SEWizardIterator.class, "TITLE_PlatformName");
     }
 
     public void nextPanel() {

@@ -63,7 +63,7 @@ public class DetectPanel extends javax.swing.JPanel {
         postInitComponents ();
         putClientProperty("WizardPanel_contentData",
             new String[] {
-                NbBundle.getMessage(DetectPanel.class,"TITLE_J2SEWizardIterator_Configure"),
+                NbBundle.getMessage(DetectPanel.class,"TITLE_PlatformName"),
         });
         this.platform = p;
         this.setName (NbBundle.getMessage(DetectPanel.class,"TITLE_PlatformName"));
@@ -104,13 +104,14 @@ public class DetectPanel extends javax.swing.JPanel {
 
         jLabel3 = new javax.swing.JLabel();
         jdkName = new javax.swing.JTextField();
+        jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        sources = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         javadoc = new javax.swing.JTextField();
+        sources = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -119,56 +120,56 @@ public class DetectPanel extends javax.swing.JPanel {
         jLabel3.setLabelFor(jdkName);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel3, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 6, 12, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         add(jdkName, gridBagConstraints);
+
+        jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("MNE_PlatformSources").charAt(0));
         jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("TXT_Sources"));
         jLabel1.setLabelFor(sources);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(jLabel1, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 6, 6, 6);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        add(sources, gridBagConstraints);
+        jPanel1.add(jLabel1, gridBagConstraints);
 
         jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("MNE_PlatformJavadoc").charAt(0));
         jLabel4.setText(NbBundle.getBundle(DetectPanel.class).getString("TXT_JavaDoc"));
         jLabel4.setLabelFor(javadoc);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(jLabel4, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        jPanel1.add(jLabel4, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        add(javadoc, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
+        jPanel1.add(javadoc, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        jPanel1.add(sources, gridBagConstraints);
 
         jButton1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("LBL_Browse"));
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -179,10 +180,10 @@ public class DetectPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(12, 6, 6, 12);
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(jButton1, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        jPanel1.add(jButton1, gridBagConstraints);
 
         jButton2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("LBL_Browse"));
         jButton2.addActionListener(new java.awt.event.ActionListener() {
@@ -193,20 +194,29 @@ public class DetectPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 12);
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(jButton2, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
+        jPanel1.add(jButton2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
+        add(jPanel1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(jPanel1, gridBagConstraints);
+        add(jPanel2, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -329,6 +339,7 @@ public class DetectPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JTextField javadoc;
     private javax.swing.JTextField jdkName;
     private javax.swing.JTextField sources;
