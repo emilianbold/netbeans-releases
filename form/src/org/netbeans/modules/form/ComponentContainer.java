@@ -24,10 +24,19 @@ public interface ComponentContainer {
   public void initSubComponents (RADComponent[] initComponents);
 
   public void reorderSubComponents (int[] perm);
+
+  public void add (RADComponent comp);
+
+  public void remove (RADComponent comp);
+
+  public int getIndexOf (RADComponent comp);
+
 }
 
 /*
  * Log
+ *  5    Gandalf   1.4         7/5/99   Ian Formanek    methods 
+ *       add/remove/getIndexOf added
  *  4    Gandalf   1.3         6/2/99   Ian Formanek    ToolsAction, Reorder
  *  3    Gandalf   1.2         5/11/99  Ian Formanek    Build 318 version
  *  2    Gandalf   1.1         5/4/99   Ian Formanek    Package change
