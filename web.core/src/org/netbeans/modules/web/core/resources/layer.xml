@@ -139,6 +139,11 @@ Microsystems, Inc. All Rights Reserved.
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />
           </file>
       </folder>
+      <folder name="Javadoc">
+          <file name="org-netbeans-modules-web-core-resources-javadoc_servletjsp.xml" url="javadoc-servletjsp.xml">
+              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />
+          </file>
+      </folder> <!-- Javadoc -->
   </folder>
   <folder name="Services">
     <folder name="Hidden">

@@ -101,7 +101,12 @@ Microsystems, Inc. All Rights Reserved.
     </locjar>
   </target>
 
-  <target name="netbeans" depends="jars">
+  <target name="release">
+    <!-- javadoc -->
+    <copy file="../external/servlet23jsp12-docs.zip" todir="netbeans/docs"/>
+  </target>
+
+  <target name="netbeans" depends="jars,release">
     <genlist targetname="nbm" outputfiledir="netbeans"/>
   </target>
 
