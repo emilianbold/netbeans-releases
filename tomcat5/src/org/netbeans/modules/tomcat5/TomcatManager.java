@@ -1206,9 +1206,9 @@ public class TomcatManager implements DeploymentManager {
                 null, 
                 "</Host>",   // NOI18N
                 "</tomcat-users>",   // NOI18N
-                null, 
-                null, 
                 null,
+                "docBase=\"../server/webapps/admin\"",
+                "docBase=\"../server/webapps/manager\"",
                 "docBase=\"balancer\""
             };
             String passwd = readPassword();
@@ -1226,8 +1226,8 @@ public class TomcatManager implements DeploymentManager {
                 "</Host>",   // NOI18N
                 "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager\"/>\n</tomcat-users>",   // NOI18N
                 null, 
-                null,
-                null,
+                "docBase=\"${catalina.home}/server/webapps/admin\"",   // NOI18N
+                "docBase=\"${catalina.home}/server/webapps/manager\"",   // NOI18N
                 "docBase=\""+new File (homeDir, "webapps/balancer").getAbsolutePath ()+"\""   // NOI18N
             };
             for (int i = 0; i<files.length; i++) {
@@ -1329,7 +1329,7 @@ public class TomcatManager implements DeploymentManager {
             }
             else {
                 // Something unexpected
-                TomcatFactory.getEM ().log (ErrorManager.WARNING, "Pattern "+from+" not found in "+src.getPath ());
+                TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, "Pattern "+from+" not found in "+src.getPath ());
             }
             out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream (dst), "utf-8")); // NOI18N
             out.write (sb.toString ());
