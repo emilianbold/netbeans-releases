@@ -31,6 +31,8 @@ import org.netbeans.spi.viewmodel.ComputingException;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
+
 import org.openide.explorer.view.NodeTableModel;
 import org.openide.explorer.view.TreeTableView;
 import org.openide.nodes.AbstractNode;
@@ -77,7 +79,10 @@ ExplorerManager.Provider, PropertyChangeListener {
         }
         
         // 2) set columns for given model
-        treeTable.setProperties (columns = createColumns (model));
+        columns = createColumns (model);
+        treeTable.setProperties (columns);
+        
+        
 //        try {
 //            treeTable.setToolTipText (model.getShortDescription (
 //                model.getRoot ()
@@ -183,15 +188,11 @@ ExplorerManager.Provider, PropertyChangeListener {
             }
         }
     }
-
-    /** Requests focus for the tree component. Overrides superclass method. */
-    public void requestFocus () {
-        treeTable.requestFocus();
-    }
     
     /** Requests focus for the tree component. Overrides superclass method. */
     public boolean requestFocusInWindow () {
-        return treeTable.requestFocusInWindow();
+        super.requestFocusInWindow ();
+        return treeTable.requestFocusInWindow ();
     }
 
     
