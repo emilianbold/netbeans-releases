@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -39,6 +39,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import org.netbeans.modules.search.types.TextCustomizer;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -93,13 +94,14 @@ public final class SearchTypePanel extends JPanel
     
     
     /** Creates new form <code>SearchTypePanel</code>. */
-    public SearchTypePanel(SearchType searchType) {
+    public SearchTypePanel(SearchType searchType,
+                           final boolean initFromHistory) {
         initComponents();
         initAccessibility();
                 
         this.searchType = searchType;
 
-        customizer = createCustomizer(this.searchType);
+        customizer = createCustomizer(this.searchType, initFromHistory);
         if (customizer != null) {
             customizerComponent = (Component) customizer;
         } else {
@@ -292,7 +294,8 @@ public final class SearchTypePanel extends JPanel
      * @return  customizer object for the search type,
      *          or <code>null</code> if the customizer could not be created
      */
-    private static Customizer createCustomizer(final SearchType searchType) {
+    private static Customizer createCustomizer(final SearchType searchType,
+                                               final boolean initFromHistory) {
         final Class searchTypeClass = searchType.getClass();
         Class clazz = null;
         
@@ -339,7 +342,11 @@ public final class SearchTypePanel extends JPanel
         if (!(o instanceof Component) ||
                 !(o instanceof Customizer)) return null;
 
-        return (Customizer) o;
+        final Customizer customizer = (Customizer) o;
+        if (initFromHistory && (customizer instanceof TextCustomizer)) {
+            ((TextCustomizer) customizer).initFromHistory();
+        }
+        return customizer;
     }
     
     /**

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,6 +37,8 @@ public class Installer extends ModuleInstall {
     public void restored () {
         hook = new FindActionManager(SearchPerformer.getDefault());
         hook.hook();
+        
+        FindDialogMemory.getDefault().initialize();
     }
 
     /** Unistalls module. Overrides superclass method.
@@ -44,6 +46,7 @@ public class Installer extends ModuleInstall {
     public void uninstalled () {
         hook.unhook();
         
+        FindDialogMemory.getDefault().uninitialize();
         Manager.getInstance().doCleanup();
     }
 }

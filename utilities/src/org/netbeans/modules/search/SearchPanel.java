@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -129,7 +129,19 @@ public final class SearchPanel extends JPanel
                 continue;
             }
             processedClassNames.add(className);
-            SearchTypePanel newPanel = new SearchTypePanel(searchType);
+
+            /*
+             * isCustomized is <true> if and only if the constructor call
+             * was initiated by the Modify Search action. We will leverage this
+             * fact for decision whether to pre-fill the search pattern
+             * (with the last entry in the history) or not.
+             */
+            final boolean initFromHistory =
+                   !isCustomized
+                   && FindDialogMemory.getDefault()
+                      .wasSearchTypeUsed(searchType.getClass().getName());
+            SearchTypePanel newPanel = new SearchTypePanel(searchType,
+                                                           initFromHistory);
             Collection savedCriteria = (sortedCriteria == null)
                     ? null
                     : (Collection) sortedCriteria.get(className);
@@ -293,6 +305,10 @@ public final class SearchPanel extends JPanel
         while (it.hasNext()) {
             SearchTypePanel panel = (SearchTypePanel) it.next();
             panel.removePropertyChangeListener(this);
+        }
+        
+        if (returnStatus == RET_OK) {
+            FindDialogMemory.getDefault().clearSearchTypesUsed();
         }
         
         int selectedIndex = tabbedPane.getSelectedIndex();
