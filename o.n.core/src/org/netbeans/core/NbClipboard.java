@@ -48,8 +48,8 @@ public final class NbClipboard extends ExClipboard implements LookupListener, AW
             slowSystemClipboard = Utilities.isUnix();
         
         if (slowSystemClipboard) {
-    //        Toolkit.getDefaultToolkit().addAWTEventListener(
-      //          this, AWTEvent.WINDOW_EVENT_MASK);
+            Toolkit.getDefaultToolkit().addAWTEventListener(
+                this, AWTEvent.WINDOW_EVENT_MASK);
         }
     }
     
