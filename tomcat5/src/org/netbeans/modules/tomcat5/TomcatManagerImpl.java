@@ -318,11 +318,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             try {
 
                 // Create a connection for this command
-                String uri = tm.getUri ();
-                if (uri.indexOf ("http:") > 0) {  // NOI18N
-                    // strip home & base
-                    uri = uri.substring (uri.indexOf ("http:")); // NOI18N
-                }
+                String uri = tm.getPlainUri ();
                 urlToConnectTo = new URL(uri + command);
                 if (Boolean.getBoolean("org.netbeans.modules.tomcat5.LogManagerCommands")) { // NOI18N
                     String message = "Tomcat 5 sending manager command: " + urlToConnectTo;

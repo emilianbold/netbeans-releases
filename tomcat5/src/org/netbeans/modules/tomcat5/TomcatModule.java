@@ -22,12 +22,12 @@ import javax.enterprise.deploy.spi.TargetModuleID;
  */
 public class TomcatModule implements TargetModuleID {
     
-    private Target target;
+    private TomcatTarget target;
     
     private String path;
     
     public TomcatModule (Target target, String path) {
-        this.target = target;
+        this.target = (TomcatTarget) target;
         this.path = path;
     }
     
@@ -52,14 +52,15 @@ public class TomcatModule implements TargetModuleID {
         return path;
     }
     
-    // PENDING
+//    // PENDING
     public String getWebURL () {
-        try {
-            return new java.net.URL ("http", "localhost", 8080, path).toExternalForm ();
-        }
-        catch (java.net.MalformedURLException ex) {
-            return "http://localhost:8080"+path;    // NOI18N
-        }
+        return target.getServerUri () + path;
+//        try {
+//            return new java.net.URL ("http", "localhost", target.getPort (), path).toExternalForm ();
+//        }
+//        catch (java.net.MalformedURLException ex) {
+//            return "http://localhost:8080"+path;    // NOI18N
+//        }
     }
     
     public String toString () {

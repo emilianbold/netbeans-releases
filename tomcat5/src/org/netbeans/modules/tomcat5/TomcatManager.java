@@ -78,6 +78,8 @@ public class TomcatManager implements DeploymentManager {
     /** http server port property */
     public static final String SERVER_PORT = "server_port";
 
+    public static final String HOST = "host";
+    
     /** http server port property */
     public static final String CLASSIC = "classic";
 
@@ -151,24 +153,42 @@ public class TomcatManager implements DeploymentManager {
         this.connected = conn;
         sTomcat = null;
         
-        int uriOffset = uri.indexOf ("http:");  // NOI18N
-        if (uriOffset > 0) {
-            // parse home and base attrs
-            final String home = "home=";
-            final String base = ":base=";
-            int homeOffset = uri.indexOf (home) + home.length ();
-            int baseOffset = uri.indexOf (base, homeOffset);
-            if (homeOffset >= home.length ()) {
-                if (baseOffset > 0) {
-                    catalinaHome = uri.substring (homeOffset, baseOffset);
-                    catalinaBase = uri.substring (baseOffset + base.length (),uriOffset-1);
-                }
-                else {
-                    catalinaHome = uri.substring (homeOffset,uriOffset-1);
-                }
+        // parse home and base attrs
+        final String home = "home=";
+        final String base = ":base=";
+        final String uriString = "http://";  // NOI18N
+        int uriOffset = uri.indexOf (uriString);
+        int homeOffset = uri.indexOf (home) + home.length ();
+        int baseOffset = uri.indexOf (base, homeOffset);
+        if (homeOffset >= home.length ()) {
+            int homeEnd = baseOffset > 0 ? baseOffset : (uriOffset > 0 ? uriOffset - 1 : uri.length ());
+            int baseEnd = uriOffset > 0 ? uriOffset - 1 : uri.length ();
+            catalinaHome= uri.substring (homeOffset, homeEnd);
+            System.out.println("catalinaHome:"+catalinaHome);
+            if (baseOffset > 0) {
+                catalinaBase = uri.substring (baseOffset + base.length (), baseEnd);
+                System.out.println("catalinaBase:"+catalinaBase);
             }
         }
-        this.uri = uri.substring (uriOffset);
+        
+        //parse the old format for backward compatibility
+        if (uriOffset > 0) {
+            String theUri = uri.substring (uriOffset + uriString.length ());
+            int portIndex = theUri.indexOf (':');
+            String host = theUri.substring (0, portIndex - 1);
+            setHost (host);
+            System.out.println("host:"+host);
+            int portEnd = theUri.indexOf ('/');
+            portEnd = portEnd > 0 ? portEnd : theUri.length ();
+            String port = theUri.substring (portIndex, portEnd - 1);
+            System.out.println("port:"+port);
+            try {
+                setServerPort (Integer.valueOf (port));
+            } catch (NumberFormatException nef) {
+                org.openide.ErrorManager.getDefault ().log (nef.getLocalizedMessage ());
+            }
+        }
+        this.uri = uri;
         username = uname;
         password = passwd;
     }
@@ -195,20 +215,25 @@ public class TomcatManager implements DeploymentManager {
         return URLWait.waitForStartup (this, 1000);
     }
     
-    /** Returns URI of TomcatManager.
+    /** Returns identifier of TomcatManager. This is not a real URI!
      * @return URI including home and base specification
      */
     public String getUri () {
-        return ((catalinaHome != null)? "home="+catalinaHome + ":": "") +// NOI18N
-            ((catalinaBase != null)? "base="+catalinaBase + ":": "") +   // NOI18N
-            uri;
+        return uri;
+    }
+    
+    /** Returns URI of TomcatManager (manager application).
+     * @return URI without home and base specification
+     */
+    public String getPlainUri () {
+        return "http://" + getHost () + ":" + getServerPort () + "/manager/"; //NOI18N
     }
     
     /** Returns URI of TomcatManager.
      * @return URI without home and base specification
      */
-    public String getPlainUri () {
-        return uri;
+    public String getServerUri () {
+        return "http://" + getHost () + ":" + getServerPort (); //NOI18N
     }
     
     /** Returns catalinaHome.
@@ -420,7 +445,7 @@ public class TomcatManager implements DeploymentManager {
         
         // PENDING 
         return new TomcatTarget [] { 
-            new TomcatTarget (uri, "Tomcat at "+uri)
+            new TomcatTarget (uri, "Tomcat at "+uri, getServerUri ())
         };
     }
     
@@ -648,7 +673,7 @@ public class TomcatManager implements DeploymentManager {
     
     public Integer getServerPort() {
         
-        boolean upToDate = false;
+        boolean upToDate = true;
         InstanceProperties ip = getInstanceProperties();
         if (ip == null) {
             return null;   
@@ -687,7 +712,7 @@ public class TomcatManager implements DeploymentManager {
     }
     
     public Integer getAdminPort() {
-        boolean upToDate = false;
+        boolean upToDate = true;
         InstanceProperties ip = getInstanceProperties();
         if (ip == null) {
             return null;
@@ -804,7 +829,7 @@ public class TomcatManager implements DeploymentManager {
                 return true;
             }
         }
-        return false;
+        return true;
     }
     
     public void setServerPort(Integer port) {
@@ -813,6 +838,23 @@ public class TomcatManager implements DeploymentManager {
             return;
         }
         ip.setProperty(SERVER_PORT, port.toString());
+    }
+    
+    //PENDING: does not set in server.xml
+    private void setHost (String host) {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip == null) {
+            return;
+        }
+        ip.setProperty(HOST, host);
+    }
+    
+    public String getHost () {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip == null) {
+            return null;
+        }
+        return ip.getProperty(HOST);
     }
     
     public void setAdminPort(Integer port) {

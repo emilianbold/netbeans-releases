@@ -25,9 +25,12 @@ public class TomcatTarget implements Target {
     
     private String desc;
     
-    public TomcatTarget (String name, String desc) {
+    private String uri;
+    
+    public TomcatTarget (String name, String desc, String uri) {
         this.name = name;
         this.desc = desc;
+        this.uri = uri;
     }
     
     public String getName () {
@@ -36,6 +39,10 @@ public class TomcatTarget implements Target {
     
     public String getDescription () {
         return desc;
+    }
+    
+    public String getServerUri () {
+        return uri;
     }
     
     public String toString () {

@@ -99,7 +99,7 @@ public class TomcatFactory implements DeploymentFactory {
      * @return <CODE>true</CODE> for URIs beggining with <CODE>tomcat:</CODE> prefix
      */    
     public boolean handlesURI(String str) {
-        return str != null && str.startsWith (tomcatUriPrefix) && str.indexOf ("http:", tomcatUriPrefix.length ()) >= 0;
+        return str != null && str.startsWith (tomcatUriPrefix);
     }
     
 }
