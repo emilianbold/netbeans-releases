@@ -13,6 +13,8 @@
 
 package search_replace;
 
+import java.awt.Component;
+import java.awt.Window;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.EditorOperator;
 import lib.EditorTestCase;
@@ -20,9 +22,12 @@ import org.netbeans.jellytools.HelpOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.actions.FindAction;
 import org.netbeans.jellytools.modules.editor.Find;
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.netbeans.jemmy.operators.WindowOperator;
 
 /**
  * Test of find functionality in editor.
@@ -68,6 +73,7 @@ public class SearchTest extends EditorTestCase {
             find.btClose().doClick();
             
         } finally {
+            closeFindDialogIfOpened();
             closeFileWithDiscard();
         }
     }
@@ -108,6 +114,7 @@ public class SearchTest extends EditorTestCase {
             waitForLabel("'testFindSelectionRepeated' found at 15:35");
             
         } finally {
+            closeFindDialogIfOpened();
             closeFileWithDiscard();
         }
     }
@@ -154,6 +161,7 @@ public class SearchTest extends EditorTestCase {
                     +"Continuing search from beginning.");
             
         } finally {
+            closeFindDialogIfOpened();
             closeFileWithDiscard();
         }
     }
@@ -181,6 +189,7 @@ public class SearchTest extends EditorTestCase {
             waitForLabel("'cLaSs' found at 13:8");
             
         } finally {
+            closeFindDialogIfOpened();
             closeFileWithDiscard();
         }
     }
@@ -206,6 +215,7 @@ public class SearchTest extends EditorTestCase {
             waitForLabel("'foo' not found");            
             
         } finally {
+            closeFindDialogIfOpened();
             closeFileWithDiscard();
         }        
     }
@@ -244,6 +254,7 @@ public class SearchTest extends EditorTestCase {
             waitForLabel("'package' found at 7:1");
             
         } finally {
+            closeFindDialogIfOpened();
             closeFileWithDiscard();
         }                
     }
@@ -301,6 +312,7 @@ public class SearchTest extends EditorTestCase {
             waitForLabel("'smarttest' not found"); 
             
         } finally {
+            closeFindDialogIfOpened();
             closeFileWithDiscard();
         }        
     }    
@@ -338,6 +350,7 @@ public class SearchTest extends EditorTestCase {
             waitForLabel("'Smarttest' not found"); 
             
         } finally {
+            closeFindDialogIfOpened();
             closeFileWithDiscard();
         }        
     }
@@ -394,6 +407,7 @@ public class SearchTest extends EditorTestCase {
             waitForLabel("'word' not found");
             
         } finally {
+            closeFindDialogIfOpened();
             closeFileWithDiscard();
         }        
     }    
@@ -426,6 +440,7 @@ public class SearchTest extends EditorTestCase {
             find.close();
             
         } finally {
+            closeFindDialogIfOpened();
             closeFileWithDiscard();
         }                
     }
@@ -453,6 +468,7 @@ public class SearchTest extends EditorTestCase {
             find.close();
             
         } finally {
+            closeFindDialogIfOpened();
             closeFileWithDiscard();
         }                
     }
@@ -489,6 +505,7 @@ public class SearchTest extends EditorTestCase {
             find.close();
             
         } finally {
+            closeFindDialogIfOpened();
             closeFileWithDiscard();
         }                
     }    
@@ -524,6 +541,7 @@ public class SearchTest extends EditorTestCase {
             find.close();
             
         } finally {
+            closeFindDialogIfOpened();
             closeFileWithDiscard();
         }                
     }    
@@ -564,6 +582,7 @@ public class SearchTest extends EditorTestCase {
                         +":12");
             }                        
         } finally {
+            closeFindDialogIfOpened();
             closeFileWithDiscard();
         }                
     }
@@ -585,6 +604,7 @@ public class SearchTest extends EditorTestCase {
                         +":12");
             }            
         } finally {
+            closeFindDialogIfOpened();
             closeFileWithDiscard();
         }                
     }
@@ -612,6 +632,7 @@ public class SearchTest extends EditorTestCase {
             find.close();
 
         } finally {
+            closeFindDialogIfOpened();
             closeFileWithDiscard();
         }
     }
@@ -639,6 +660,7 @@ public class SearchTest extends EditorTestCase {
             find2.close();
             
         } finally {
+            closeFindDialogIfOpened();
             closeFileWithDiscard();
         }                
     }
@@ -674,6 +696,7 @@ public class SearchTest extends EditorTestCase {
             find.close();
             
         } finally {
+            closeFindDialogIfOpened();
             closeFileWithDiscard();
         }                
     }    
@@ -707,6 +730,7 @@ public class SearchTest extends EditorTestCase {
             find.close();
             
         } finally {
+            closeFindDialogIfOpened();
             closeFileWithDiscard();
         }                
     }    
@@ -741,4 +765,35 @@ public class SearchTest extends EditorTestCase {
         assertEquals(editor.lblStatusBar().getText(), label);
     }
 
+    
+    /**
+     * Checks if a find dialog is opened and if yes it closes it.
+     */
+    public void closeFindDialogIfOpened() {
+        Window findWindow = WindowOperator.findWindow(
+                new ComponentChooser() {
+            public boolean checkComponent(Component comp) {
+                WindowOperator winOper = new WindowOperator((Window)comp);
+                winOper.setOutput(TestOut.getNullOutput());
+                return null != winOper.findSubComponent(
+                        new ComponentChooser() {
+                    public boolean checkComponent(Component comp) {
+                        log(comp.getClass().getName());
+                        return comp.getClass().getName().startsWith(
+                                "org.netbeans.editor.ext.Find"); //NOI18N
+                    }
+                    public String getDescription() {
+                        return("any find dialog");  //NOI18N
+                    }
+                });
+            }
+            public String getDescription() {
+                return "containing any find dialog";  //NOI18N
+            }
+        });
+        if(findWindow != null) {
+            new Find().close();
+        }
+    }
+    
 }

@@ -13,14 +13,19 @@
 
 package search_replace;
 
+import java.awt.Component;
+import java.awt.Window;
 import java.awt.event.KeyEvent;
 import lib.EditorTestCase;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.HelpOperator;
 import org.netbeans.jellytools.actions.ReplaceAction;
 import org.netbeans.jellytools.modules.editor.Replace;
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.netbeans.jemmy.operators.WindowOperator;
 
 /**
  *
@@ -62,6 +67,7 @@ public class ReplaceTest extends EditorTestCase {
             replace.btClose().doClick();
             
         } finally {
+            closeReplaceDialogIfOpened();
             closeFileWithDiscard();
         }
     }   
@@ -116,6 +122,7 @@ public class ReplaceTest extends EditorTestCase {
             compareReferenceFiles();
             
         } finally {
+            closeReplaceDialogIfOpened();
             closeFileWithDiscard();
         }
     }    
@@ -194,6 +201,7 @@ public class ReplaceTest extends EditorTestCase {
             compareReferenceFiles();
         
         } finally {
+            closeReplaceDialogIfOpened();
             closeFileWithDiscard();
         }
     }
@@ -237,6 +245,7 @@ public class ReplaceTest extends EditorTestCase {
             compareReferenceFiles();
             
         } finally {
+            closeReplaceDialogIfOpened();
             closeFileWithDiscard();
         }
     }
@@ -271,6 +280,7 @@ public class ReplaceTest extends EditorTestCase {
             compareReferenceFiles();
             
         } finally {
+            closeReplaceDialogIfOpened();
             closeFileWithDiscard();
         }
     }
@@ -305,6 +315,7 @@ public class ReplaceTest extends EditorTestCase {
             compareReferenceFiles();
             
         } finally {
+            closeReplaceDialogIfOpened();
             closeFileWithDiscard();
         }
     }      
@@ -338,5 +349,37 @@ public class ReplaceTest extends EditorTestCase {
         }
         assertEquals(editor.lblStatusBar().getText(), label);
     }    
+    
+    /**
+     * Checks if a replace dialog is opened and if yes it closes it.
+     */
+    public void closeReplaceDialogIfOpened() {
+        log("Checking");
+        Window replaceWindow = WindowOperator.findWindow(
+                new ComponentChooser() {
+            public boolean checkComponent(Component comp) {
+                WindowOperator winOper = new WindowOperator((Window)comp);
+                winOper.setOutput(TestOut.getNullOutput());
+                return null != winOper.findSubComponent(
+                        new ComponentChooser() {
+                    public boolean checkComponent(Component comp) {
+                        log(comp.getClass().getName());
+                        return comp.getClass().getName().startsWith(
+                                "org.netbeans.editor.ext.Find"); //NOI18N
+                    }
+                    public String getDescription() {
+                        return("any replace dialog");  //NOI18N
+                    }
+                });
+            }
+            public String getDescription() {
+                return "containing any replace dialog";  //NOI18N
+            }
+        });
+        if(replaceWindow != null) {
+            log("Closing");
+            new Replace().close();
+        }
+    }
     
 }
