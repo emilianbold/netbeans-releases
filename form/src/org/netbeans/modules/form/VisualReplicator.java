@@ -479,6 +479,10 @@ public class VisualReplicator {
                 FakePeerSupport.attachFakePeer((Component)clone);
                 if (clone instanceof Container)
                     FakePeerSupport.attachFakePeerRecursively((Container)clone);
+
+                // turn off double buffering for JComponent in fake peer container
+                if (clone instanceof JComponent && hasAwtParent(metacomp))
+                    ((JComponent)clone).setDoubleBuffered(false);
             }
 
             if ((restrictions & DISABLE_FOCUSING) != 0
@@ -642,6 +646,22 @@ public class VisualReplicator {
             return JMenuItem.class;
 
         return menuClass;
+    }
+
+    private static boolean hasAwtParent(RADComponent metacomp) {
+        RADComponent parent = metacomp.getParentComponent();
+        while (parent != null) {
+            Class beanClass = parent.getBeanClass();
+            if (Component.class.isAssignableFrom(beanClass)
+                && !JComponent.class.isAssignableFrom(beanClass)
+                && !RootPaneContainer.class.isAssignableFrom(beanClass))
+            {   // this is AWT component
+                return true;
+            }
+
+            parent = parent.getParentComponent();
+        }
+        return false;
     }
 
     // -------
