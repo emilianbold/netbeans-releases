@@ -58,10 +58,9 @@ public class Module extends JellyTestCase {
     /** Use for execution inside IDE */ 
     public static void main(java.lang.String[] args) { 
         junit.textui.TestRunner.run(new NbTestSuite(Module.class)); 
-       /* 
+        /*
         NbTestSuite suite = new NbTestSuite("test_temp");
-        suite.addTest(new Module("test_4_5_1"));
-        suite.addTest(new Module("test_4_5_2"));
+        suite.addTest(new Module("test_4_9_3"));
         junit.textui.TestRunner.run(suite);
         */
     } 
@@ -100,7 +99,7 @@ public class Module extends JellyTestCase {
         for (i=1;i<=10;i++) {
             if (serverSettings.isRunning() == running)
                 break;
-            try { Thread.currentThread().sleep(i*100); }
+            try { Thread.currentThread().sleep(i*300); }
             catch (InterruptedException e) {}
         }
         if (i == 11) 
@@ -1025,7 +1024,7 @@ public class Module extends JellyTestCase {
 	value=tf.getValue();
 	if (!value.equals("Selected Hosts: localhost")) {
 		pw.close();
-		fail("Invalid 'Hosts with Granted Access' field value");
+		fail("Invalid 'Hosts with Granted Access' field value ("+value+")");
 	}
 
 	tf.setValue(old_value);
@@ -1061,7 +1060,7 @@ public class Module extends JellyTestCase {
 	value=tf.getValue();
 	if (!value.equals("Selected Hosts: localhost, boo")) {
 		pw.close();
-		fail("Invalid 'Hosts with Granted Access' field value");
+		fail("Invalid 'Hosts with Granted Access' field value ("+value+")");
 	}
 
 	pw.close();
@@ -1091,7 +1090,7 @@ public class Module extends JellyTestCase {
 	if (!value.equals("localhost, boo")) {
 		dop.close();
         	pw.close();
-		fail("Invalid 'Grant Access to:' textarea value");
+		fail("Invalid 'Grant Access to:' textarea value ("+value+")");
 	}
 
 	dop.close();
@@ -1179,7 +1178,7 @@ public class Module extends JellyTestCase {
 	value=tf.getValue();
 	if (!value.equals("/testvalue_cp/")) {	// NOI18N
 		pw.close();
-		fail("Invalid 'Base Class Path URL' field value");
+		fail("Invalid 'Base Class Path URL' field value ("+value+")");
 	}
 
 	pw.close();
@@ -1209,7 +1208,7 @@ public class Module extends JellyTestCase {
 	if (!value.equals("/testvalue_cp/")) {	// NOI18N
 		dop.close();
 		pw.close();
-		fail("Invalid 'Base Class Path URL' field value");
+		fail("Invalid 'Base Class Path URL' field value ("+value+")");
 	}
 
 	dop.close();	
@@ -1244,7 +1243,7 @@ public class Module extends JellyTestCase {
 	if (!value.equals("/classpath/")) {	// NOI18N
 		dop.close();
 		pw.close();
-		fail("Invalid 'Base Class Path URL' field value");
+		fail("Invalid 'Base Class Path URL' field value ("+value+")");
 	}
 
 	pw.close();
@@ -1330,7 +1329,7 @@ public class Module extends JellyTestCase {
 	value=tf.getValue();
 	if (!value.equals("/testvalue_fs/")) {	// NOI18N
 		pw.close();
-		fail("Invalid 'Base Filesystems URL' field value");
+		fail("Invalid 'Base Filesystems URL' field value ("+value+")");
 	}
 
 	pw.close();
@@ -1360,7 +1359,7 @@ public class Module extends JellyTestCase {
 	if (!value.equals("/testvalue_fs/")) {	// NOI18N
 		dop.close();
 		pw.close();
-		fail("Invalid 'Base Filesystems URL' field value");
+		fail("Invalid 'Base Filesystems URL' field value ("+value+")");
 	}
 
 	dop.close();
@@ -1395,7 +1394,7 @@ public class Module extends JellyTestCase {
 	if (!value.equals("/repository/")) {	// NOI18N
 		dop.close();
 		pw.close();
-		fail("Invalid 'Base Filesystems URL' field value");
+		fail("Invalid 'Base Filesystems URL' field value ("+value+")");
 	}
 
 	pw.close();
@@ -1482,7 +1481,7 @@ public class Module extends JellyTestCase {
 	value=tf.getValue();
 	if (!value.equals("/testvalue_jd/")) {	// NOI18N
 		pw.close();
-		fail("Invalid 'Base Javadoc URL' field value");
+		fail("Invalid 'Base Javadoc URL' field value ("+value+")");
 	}
 
 	pw.close();
@@ -1512,7 +1511,7 @@ public class Module extends JellyTestCase {
 	if (!value.equals("/testvalue_jd/")) {	// NOI18N
 		dop.close();
 		pw.close();
-		fail("Invalid 'Base Javadoc URL' field value");
+		fail("Invalid 'Base Javadoc URL' field value ("+value+")");
 	}
 
 	dop.close();
@@ -1547,7 +1546,7 @@ public class Module extends JellyTestCase {
 	if (!value.equals("/javadoc/")) {	// NOI18N
 		dop.close();
 		pw.close();
-		fail("Invalid 'Base Javadoc URL' field value");
+		fail("Invalid 'Base Javadoc URL' field value ("+value+")");
 	}
 
 	pw.close();
@@ -1583,7 +1582,7 @@ public class Module extends JellyTestCase {
 	value=tf.getValue();
 	if (!value.equals("Selected Hosts: boo")) {
 		pw.close();
-		fail("'Selected Hosts: ' isn't set.");
+		fail("'Selected Hosts: ' isn't set. ("+value+")");
 	}
 
 	pw.close();
@@ -1610,10 +1609,8 @@ public class Module extends JellyTestCase {
 		throw new AssertionFailedErrorException("No 'Hosts with Granted Access' dialog appears",ex);
 	}
 
-        pw.pushKey(java.awt.event.KeyEvent.VK_ALT);
-        pw.pushKey(java.awt.event.KeyEvent.VK_N);
-        pw.releaseKey(java.awt.event.KeyEvent.VK_N);
-        pw.releaseKey(java.awt.event.KeyEvent.VK_ALT);
+        dop.pushKey(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.ALT_MASK);
+        dop.releaseKey(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.ALT_MASK);
         
         /*
 	try {
@@ -1625,14 +1622,15 @@ public class Module extends JellyTestCase {
 	} catch (Exception AWTException) {
 		System.out.println("AWTException in test_4_9_1");	// NOI18N
 	}
-        */
+         */
+        
 
 	dop.ok();
 	value=tf.getValue();
 
 	if (!value.equals("Any Host")) {
 		pw.close();
-		fail("Invalid 'Hosts with Granted Access' field value");
+		fail("Invalid 'Hosts with Granted Access' field value ("+value+")");
 	}
 
 	pw.close();
@@ -1657,11 +1655,9 @@ public class Module extends JellyTestCase {
 		throw new AssertionFailedErrorException("No 'Hosts with Granted Access' dialog appears",ex);
 	}
 
-        pw.pushKey(java.awt.event.KeyEvent.VK_ALT);
-        pw.pushKey(java.awt.event.KeyEvent.VK_S);
-        pw.releaseKey(java.awt.event.KeyEvent.VK_S);
-        pw.releaseKey(java.awt.event.KeyEvent.VK_ALT);
-
+        dop.pushKey(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_MASK);
+        dop.releaseKey(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_MASK);
+        
         /*
 	try {
 		Robot rb=new java.awt.Robot();
@@ -1704,29 +1700,30 @@ public class Module extends JellyTestCase {
 		throw new AssertionFailedErrorException("No 'Hosts with Granted Access' dialog appears",ex);
 	}
 
-
-        pw.pushKey(java.awt.event.KeyEvent.VK_ALT);
-        pw.pushKey(java.awt.event.KeyEvent.VK_G);
-        pw.releaseKey(java.awt.event.KeyEvent.VK_G);
-        pw.releaseKey(java.awt.event.KeyEvent.VK_ALT);
-
-        pw.pushKey(java.awt.event.KeyEvent.VK_T);
-        pw.releaseKey(java.awt.event.KeyEvent.VK_T);
-        pw.pushKey(java.awt.event.KeyEvent.VK_E);
-        pw.releaseKey(java.awt.event.KeyEvent.VK_E);
-        pw.pushKey(java.awt.event.KeyEvent.VK_S);
-        pw.releaseKey(java.awt.event.KeyEvent.VK_S);
-        pw.pushKey(java.awt.event.KeyEvent.VK_T);
-        pw.releaseKey(java.awt.event.KeyEvent.VK_T);
-                
+        dop.pushKey(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.ALT_MASK);
+        dop.releaseKey(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.ALT_MASK);
+        
         /*
+        JTextAreaOperator jt = new JTextAreaOperator(dop);
+        jt.pushKey(java.awt.event.KeyEvent.VK_T);
+        jt.releaseKey(java.awt.event.KeyEvent.VK_T);
+        jt.pushKey(java.awt.event.KeyEvent.VK_E);
+        jt.releaseKey(java.awt.event.KeyEvent.VK_E);
+        jt.pushKey(java.awt.event.KeyEvent.VK_S);
+        jt.releaseKey(java.awt.event.KeyEvent.VK_S);
+        jt.pushKey(java.awt.event.KeyEvent.VK_T);
+        jt.releaseKey(java.awt.event.KeyEvent.VK_T);
+        */
+                
+        
         try {
 		Robot rb=new java.awt.Robot();
+                /*
 		rb.keyPress(java.awt.event.KeyEvent.VK_ALT);
 		rb.keyPress(java.awt.event.KeyEvent.VK_G);
 		rb.keyRelease(java.awt.event.KeyEvent.VK_G);
 		rb.keyRelease(java.awt.event.KeyEvent.VK_ALT);
-
+                */
 		rb.keyPress(java.awt.event.KeyEvent.VK_T);
 		rb.keyRelease(java.awt.event.KeyEvent.VK_T);
 		rb.keyPress(java.awt.event.KeyEvent.VK_E);
@@ -1738,14 +1735,14 @@ public class Module extends JellyTestCase {
 	} catch (Exception AWTException) {
 		System.out.println("AWTException in test_4_9_3");	// NOI18N
 	}
-        */
+        
 
 	dop.ok();
 	value=tf.getValue();
 
 	if (!value.equals("Selected Hosts: test")) {
 		pw.close();
-		fail("Invalid 'Hosts with Granted Access' field value");
+		fail("Invalid 'Hosts with Granted Access' field value ("+value+")");
 	}
 
 	pw.close();
