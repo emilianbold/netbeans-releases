@@ -43,6 +43,7 @@ public class BeanInfoSource extends Object {
     private static final String EVENTSETS_SECTION = "Events"; // NOI18N
     private static final String ICONS_SECTION = "Icons"; // NOI18N
     private static final String IDX_SECTION = "Idx"; // NOI18N
+    private static final String METHODS_SECTION = "Methods"; // NOI18N
 
     private ClassElement classElement;
 
@@ -74,10 +75,11 @@ public class BeanInfoSource extends Object {
 
         JavaEditor.InteriorSection pis = javaEditor.findInteriorSection( PROPERTIES_SECTION );
         JavaEditor.InteriorSection eis = javaEditor.findInteriorSection( EVENTSETS_SECTION );
+        JavaEditor.InteriorSection mis = javaEditor.findInteriorSection( METHODS_SECTION );
         JavaEditor.SimpleSection iss = javaEditor.findSimpleSection( ICONS_SECTION );
         JavaEditor.SimpleSection dss = javaEditor.findSimpleSection( IDX_SECTION );
 
-        return ( pis != null && eis != null && iss != null && dss != null );
+        return ( pis != null && eis != null && iss != null && dss != null && mis != null);
     }
 
 
@@ -199,6 +201,28 @@ public class BeanInfoSource extends Object {
     /** Gets the header of properties setion */
     String getPropertiesSection() {
         JavaEditor.InteriorSection is = javaEditor.findInteriorSection( PROPERTIES_SECTION );
+
+        if ( is != null ) {
+            return is.getText();
+        }
+        else
+            return null;
+
+    }
+
+    /** Sets the header and bottom of properties section */
+    void setMethodsSection( String header, String bottom ) {
+        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( METHODS_SECTION );
+
+        if ( is != null ) {
+            is.setHeader( header );
+            is.setBottom( bottom );
+        }
+    }
+
+    /** Gets the header of properties setion */
+    String getMethodsSection() {
+        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( METHODS_SECTION );
 
         if ( is != null ) {
             return is.getText();
