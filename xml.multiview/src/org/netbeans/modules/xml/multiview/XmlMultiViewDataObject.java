@@ -77,6 +77,8 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     */
     protected abstract boolean updateModelFromDocument() throws java.io.IOException ;
     
+    protected void validateSource(){
+    }
     /** Update text document from data model. Called when something is changed in visual editor.
     */
     protected abstract String generateDocumentFromModel();
@@ -229,8 +231,9 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         changedFromUI=true;
         if(getCookie(SaveCookie.class) == null) {
             getCookieSet0().add(getEditorSupport().saveCookie);
-            setModified(true);
         }
+        updateDocument();
+        //setModified(true);
     }
     
     /** Icon Base for MultiView editor

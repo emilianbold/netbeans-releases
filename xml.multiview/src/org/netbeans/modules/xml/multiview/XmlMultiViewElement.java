@@ -39,6 +39,7 @@ public class XmlMultiViewElement implements MultiViewElement {
     public XmlMultiViewElement(TopComponent comp, XmlMultiViewEditorSupport support) {
         this.comp=comp;
         this.support=support;
+        undoRedo = support.getUndoRedo0();
     }
 
     public CloseOperationState canCloseElement() {
@@ -65,10 +66,12 @@ public class XmlMultiViewElement implements MultiViewElement {
     }
 
     public void componentShowing() {
+        /*
         XmlMultiViewDataObject dObj = (XmlMultiViewDataObject)support.getDataObject();
         if (dObj.changedFromUI) {
             dObj.updateDocument();
         }
+         */
     }
 
     public javax.swing.Action[] getActions() {

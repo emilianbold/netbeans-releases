@@ -57,11 +57,28 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
     }
     
     /** Restart the timer which starts source parsing after the specified delay.
+    * The XML file from source editor is parsed, validated for errors and data model is changed
     */
-    public void restartTimer() {
+    private void restartTimer() {
         Runnable r = new Runnable() {
             public void run() {
                 dObj.updateModelFromSource();
+            }
+	};
+        if (parsingDocumentTask==null || parsingDocumentTask.isFinished() || 
+            parsingDocumentTask.cancel()) {
+            parsingDocumentTask = RequestProcessor.getDefault().post(r,PARSING_INIT_DELAY);                 
+        } else {
+            parsingDocumentTask = RequestProcessor.getDefault().post(r,PARSING_DELAY);             
+        }
+    }
+    /** Restart the timer which starts source parsing after the specified delay.
+    * The XML file from source editor is parsed and validated for errors but data model is not updated
+    */
+    private void restartTimer1() {
+        Runnable r = new Runnable() {
+            public void run() {
+                dObj.validateSource();
             }
 	};
         if (parsingDocumentTask==null || parsingDocumentTask.isFinished() || 
@@ -80,7 +97,8 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
         if (!super.notifyModified())
             return false;
         addSaveCookie();
-        if (!dObj.isChangedFromUI()) restartTimer();
+        if (dObj.isChangedFromUI()) restartTimer1(); // validation (without updating model)
+        else restartTimer(); // validation+model update
         return true;
     }
 
@@ -111,8 +129,13 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
 
         if(cookie != null && cookie.equals(saveCookie)) {
             obj.getCookieSet0().remove(saveCookie);
-            obj.setModified(false);
+            //obj.setModified(false);
         }
+    }
+    /** providing an UndoRedo object for XMLMultiViewElement
+     */
+    org.openide.awt.UndoRedo getUndoRedo0() {
+        return super.getUndoRedo();
     }
     
     protected CloneableTopComponent createCloneableTopComponent() {
