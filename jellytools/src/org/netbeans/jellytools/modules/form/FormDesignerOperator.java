@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -40,7 +40,7 @@ import org.netbeans.jemmy.operators.JToggleButtonOperator;
         ComponentPaletteOperator palette = new ComponentPaletteOperator();
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
         //add first panel
-        palette.selectSwingPage();
+        palette.expandSwing();
         palette.selectComponent("JPanel");
         designer.clickOnComponent(designer.fakePane().getSource());
         //set layout to north
@@ -49,7 +49,7 @@ import org.netbeans.jemmy.operators.JToggleButtonOperator;
         //find panel
         Component firstPanel = designer.findComponent(JPanel.class);
         //add something there
-        palette.selectSwingPage();
+        palette.expandSwing();
         palette.selectComponent("JLabel"); // NOI18N
         designer.clickOnComponent(firstPanel);
         // get editor and do editing
