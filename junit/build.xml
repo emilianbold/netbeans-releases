@@ -35,20 +35,18 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compile" depends="init">
     <javac srcdir="src" destdir="src"
            deprecation="${build.compiler.deprecation}"
-           debug="${build.compiler.debug}">
+           debug="${build.compiler.debug}"
+           source="1.4">
       <exclude name="org/netbeans/junit/**"/>
       <classpath>
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
         <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-        <pathelement location="../openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
-        <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
-        <pathelement location="../debuggercore/oldapi/netbeans/modules/autoload/openide-debugger.jar"/>
-        <!-- XXX -->
         <pathelement location="../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
         <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
         <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/>
-        <pathelement location="../java/netbeans/modules/java.jar"/>
+        <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
+        <pathelement location="../debuggercore/oldapi/netbeans/modules/autoload/openide-debugger.jar"/>
         <fileset dir="external">
           <include name="junit*.jar"/>
         </fileset>
