@@ -20,6 +20,7 @@ import java.io.File;
 import javax.swing.*;
 import threaddemo.apps.index.IndexApp;
 import threaddemo.apps.populate.Populate;
+import threaddemo.apps.refactor.Refactor;
 import threaddemo.model.*;
 import threaddemo.views.PhadhailViews;
 
@@ -55,10 +56,15 @@ public final class Main extends JFrame {
         JPanel modelPanel = new JPanel();
         ButtonGroup modelGroup = new ButtonGroup();
         synchButton = new JRadioButton("Synchronous", false);
+        synchButton.setMnemonic('y');
         lockedButton = new JRadioButton("Locked", false);
+        lockedButton.setMnemonic('k');
         eventHybridLockedButton = new JRadioButton("Event-Hybrid-Locked", true);
+        eventHybridLockedButton.setMnemonic('e');
         spunButton = new JRadioButton("Spun", false);
+        spunButton.setMnemonic('u');
         swungButton = new JRadioButton("Swung", false);
+        swungButton.setMnemonic('w');
         modelGroup.add(synchButton);
         modelGroup.add(lockedButton);
         modelGroup.add(eventHybridLockedButton);
@@ -73,9 +79,13 @@ public final class Main extends JFrame {
         JPanel viewPanel = new JPanel();
         ButtonGroup viewGroup = new ButtonGroup();
         nodeButton = new JRadioButton("Node", false);
+        nodeButton.setMnemonic('n');
         lookNodeButton = new JRadioButton("Look Node", true);
+        lookNodeButton.setMnemonic('o');
         lookButton = new JRadioButton("Look", false);
+        lookButton.setMnemonic('l');
         rawButton = new JRadioButton("Raw", false);
+        rawButton.setMnemonic('r');
         viewGroup.add(nodeButton);
         viewGroup.add(lookNodeButton);
         viewGroup.add(lookButton);
@@ -92,9 +102,10 @@ public final class Main extends JFrame {
             }
         });
         JButton popB = new JButton("Populate Test Files");
+        popB.setMnemonic('p');
         popB.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
-                Populate.run(Main.this.root);
+                Populate.run(Main.this.root, Main.this);
             }
         });
         JPanel bPanel = new JPanel();
@@ -157,13 +168,22 @@ public final class Main extends JFrame {
         model.addPhadhailListener(l);
         frame.getContentPane().add(view);
         JButton indexB = new JButton("View Index");
+        indexB.setMnemonic('i');
         indexB.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
                 viewIndex(model);
             }
         });
+        JButton refactorB = new JButton("Refactor");
+        refactorB.setMnemonic('r');
+        refactorB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ev) {
+                Refactor.run(model, frame);
+            }
+        });
         JPanel bPanel = new JPanel();
         bPanel.add(indexB);
+        bPanel.add(refactorB);
         frame.getContentPane().add(bPanel, BorderLayout.SOUTH);
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent ev) {

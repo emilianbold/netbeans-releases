@@ -66,6 +66,12 @@ elements in all XML files in the tree. This is supposed to updated live as chang
 are made. This view can help you test the effect of an app feature that involves a
 fair amount of computation and a lot of background read access to data models.
 
+You can click Refactor to replace every <tag-0> with a <tag-1>, every
+<tag-1> with a <tag-2>, etc. This action (cancellable and using a
+nonmodal dialog) can help you test the effect of an app feature that
+involves some computation as well as heavy background write access to
+data models.
+
 Currently no actions are supported in the Raw view, so you cannot test these. Raw view
 also currently does not listen for changes, so it will not work with the Swung model
 which relies on change events even with a read-only underlying model.

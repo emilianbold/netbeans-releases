@@ -22,6 +22,8 @@ import org.apache.xml.serialize.XMLSerializer;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.*;
 
+// XXX offer a Cancel button
+
 /**
  * Simple app to populate a file tree with some test data.
  * @author Jesse Glick
@@ -34,8 +36,9 @@ public class Populate {
     /**
      * Run the app.
      * @param root root of the phadhail tree to add test data to
+     * @param app application frame (may be null)
      */
-    public static void run(final File root) {
+    public static void run(final File root, Frame app) {
         String msg = "How many files should I create?";
         String title = "Choose Size of Test Data";
         Integer[] sizes = new Integer[] {
@@ -58,13 +61,14 @@ public class Populate {
                                                         null, sizes, def)
                                                        ).intValue();
         final JProgressBar progress = new JProgressBar(0, val);
-        final JDialog dialog = new JDialog((Frame)null, "Creating test files...", true);
+        final JDialog dialog = new JDialog(app, "Creating test files...", true);
         dialog.getContentPane().setLayout(new FlowLayout());
         JLabel label = new JLabel("Creating files:");
         label.setLabelFor(progress);
         dialog.getContentPane().add(label);
         dialog.getContentPane().add(progress);
         dialog.pack();
+        dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         new Thread(new Runnable() {
             public void run() {
                 try {
@@ -72,9 +76,13 @@ public class Populate {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                dialog.setVisible(false);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        dialog.setVisible(false);
+                    }
+                });
             }
-        }).start();
+        }, "Populating test files").start();
         dialog.show();
     }
     
