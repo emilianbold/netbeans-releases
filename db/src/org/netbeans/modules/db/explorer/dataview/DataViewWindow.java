@@ -143,7 +143,7 @@ public class DataViewWindow extends TopComponent {
             // Table with results
             //      TableSorter sorter = new TableSorter();
             jtable = new JTable(dbadaptor/*sorter*/);
-            jtable.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewTableA11yName"));
+//            jtable.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewTableA11yName"));
             jtable.setToolTipText(bundle.getString("ACS_DataViewTableA11yDesc"));
             jtable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             //    	sorter.addMouseListenerToHeaderInTable(table);
@@ -193,6 +193,7 @@ public class DataViewWindow extends TopComponent {
             ((ComboModel)rcmdscombo.getModel()).addElement(rcmd);
             return true;
         } catch (Exception e) {
+//            e.printStackTrace();
             TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DataViewFetchErrorPrefix") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
             return false;
         }
