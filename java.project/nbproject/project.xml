@@ -126,6 +126,7 @@ Microsystems, Inc. All Rights Reserved.
                     <code-name-base>org.netbeans.modules.java</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
+                        <specification-version>1.17</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
