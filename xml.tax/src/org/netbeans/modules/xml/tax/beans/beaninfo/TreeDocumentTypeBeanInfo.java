@@ -36,12 +36,11 @@ public class TreeDocumentTypeBeanInfo extends SimpleBeanInfo {
 
     // Property identifiers //GEN-FIRST:Properties
     private static final int PROPERTY_publicId = 0;
-    private static final int PROPERTY_readOnly = 1;
-    private static final int PROPERTY_systemId = 2;
-    private static final int PROPERTY_elementName = 3;
+    private static final int PROPERTY_systemId = 1;
+    private static final int PROPERTY_elementName = 2;
 
     // Property array 
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[4];
+    private static PropertyDescriptor[] properties = new PropertyDescriptor[3];
 
     static {
         try {
@@ -49,19 +48,16 @@ public class TreeDocumentTypeBeanInfo extends SimpleBeanInfo {
             properties[PROPERTY_publicId].setDisplayName ( Util.THIS.getString ( "PROP_TreeDocumentTypeBeanInfo_publicId" ) );
             properties[PROPERTY_publicId].setShortDescription ( Util.THIS.getString ( "HINT_TreeDocumentTypeBeanInfo_publicId" ) );
             properties[PROPERTY_publicId].setPropertyEditorClass ( NullStringEditor.class );
-            properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeDocumentType.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeDocumentTypeBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeDocumentTypeBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setExpert ( true );
+
             properties[PROPERTY_systemId] = new PropertyDescriptor ( "systemId", TreeDocumentType.class, "getSystemId", "setSystemId" ); // NOI18N
             properties[PROPERTY_systemId].setDisplayName ( Util.THIS.getString ( "PROP_TreeDocumentTypeBeanInfo_systemId" ) );
             properties[PROPERTY_systemId].setShortDescription ( Util.THIS.getString ( "HINT_TreeDocumentTypeBeanInfo_systemId" ) );
             properties[PROPERTY_systemId].setPropertyEditorClass ( NullStringEditor.class );
+
             properties[PROPERTY_elementName] = new PropertyDescriptor ( "elementName", TreeDocumentType.class, "getElementName", "setElementName" ); // NOI18N
             properties[PROPERTY_elementName].setDisplayName ( Util.THIS.getString ( "PROP_TreeDocumentTypeBeanInfo_elementName" ) );
             properties[PROPERTY_elementName].setShortDescription ( Util.THIS.getString ( "HINT_TreeDocumentTypeBeanInfo_elementName" ) );
-        }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
+        } catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
 	// Here you can add code for customizing the properties array.
 

@@ -36,28 +36,22 @@ public class TreeAttlistDeclBeanInfo extends SimpleBeanInfo {
 
     // Property identifiers //GEN-FIRST:Properties
     private static final int PROPERTY_elementName = 0;
-    private static final int PROPERTY_readOnly = 1;
-    private static final int PROPERTY_attributeDefs = 2;
+    private static final int PROPERTY_attributeDefs = 1;
 
     // Property array 
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[3];
+    private static PropertyDescriptor[] properties = new PropertyDescriptor[2];
 
     static {
         try {
             properties[PROPERTY_elementName] = new PropertyDescriptor ( "elementName", TreeAttlistDecl.class, "getElementName", null ); // NOI18N
             properties[PROPERTY_elementName].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttlistDeclBeanInfo_elementName" ) );
             properties[PROPERTY_elementName].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttlistDeclBeanInfo_elementName" ) );
-            properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeAttlistDecl.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttlistDeclBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttlistDeclBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setExpert ( true );
 
             properties[PROPERTY_attributeDefs] = new PropertyDescriptor ( "attributeDefs", TreeAttlistDecl.class, "getAttributeDefs", null ); // NOI18N
             properties[PROPERTY_attributeDefs].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttlistDeclBeanInfo_attributeDefs" ) );
             properties[PROPERTY_attributeDefs].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttlistDeclBeanInfo_attributeDefs" ) );
             properties[PROPERTY_attributeDefs].setPropertyEditorClass ( TreeAttlistDeclAttributeListEditor.class );
-        }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
+        } catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
 	// Here you can add code for customizing the properties array.
 

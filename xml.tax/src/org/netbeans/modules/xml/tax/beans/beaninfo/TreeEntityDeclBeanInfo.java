@@ -39,48 +39,42 @@ public class TreeEntityDeclBeanInfo extends SimpleBeanInfo {
     private static final int PROPERTY_parameter = 1;
     private static final int PROPERTY_notationName = 2;
     private static final int PROPERTY_systemId = 3;
-    private static final int PROPERTY_readOnly = 4;
-    private static final int PROPERTY_internalText = 5;
-    private static final int PROPERTY_publicId = 6;
-//      private static final int PROPERTY_type = 7;
+    private static final int PROPERTY_internalText = 4;
+    private static final int PROPERTY_publicId = 5;
 
     // Property array 
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[7];//8];
+    private static PropertyDescriptor[] properties = new PropertyDescriptor[6];
 
     static {
         try {
             properties[PROPERTY_name] = new PropertyDescriptor ( "name", TreeEntityDecl.class, "getName", null ); // NOI18N
             properties[PROPERTY_name].setDisplayName ( Util.THIS.getString ( "PROP_TreeEntityDeclBeanInfo_name" ) );
             properties[PROPERTY_name].setShortDescription ( Util.THIS.getString ( "HINT_TreeEntityDeclBeanInfo_name" ) );
+
             properties[PROPERTY_parameter] = new PropertyDescriptor ( "parameter", TreeEntityDecl.class, "isParameter", null ); // NOI18N
             properties[PROPERTY_parameter].setDisplayName ( Util.THIS.getString ( "PROP_TreeEntityDeclBeanInfo_parameter" ) );
             properties[PROPERTY_parameter].setShortDescription ( Util.THIS.getString ( "HINT_TreeEntityDeclBeanInfo_parameter" ) );
+
             properties[PROPERTY_notationName] = new PropertyDescriptor ( "notationName", TreeEntityDecl.class, "getNotationName", null ); // NOI18N
             properties[PROPERTY_notationName].setDisplayName ( Util.THIS.getString ( "PROP_TreeEntityDeclBeanInfo_notationName" ) );
             properties[PROPERTY_notationName].setShortDescription ( Util.THIS.getString ( "HINT_TreeEntityDeclBeanInfo_notationName" ) );
             properties[PROPERTY_notationName].setPropertyEditorClass ( NullStringEditor.class );
+
             properties[PROPERTY_systemId] = new PropertyDescriptor ( "systemId", TreeEntityDecl.class, "getSystemId", null ); // NOI18N
             properties[PROPERTY_systemId].setDisplayName ( Util.THIS.getString ( "PROP_TreeEntityDeclBeanInfo_systemId" ) );
             properties[PROPERTY_systemId].setShortDescription ( Util.THIS.getString ( "HINT_TreeEntityDeclBeanInfo_systemId" ) );
             properties[PROPERTY_systemId].setPropertyEditorClass ( NullStringEditor.class );
-            properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeEntityDecl.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeEntityDeclBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeEntityDeclBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setExpert ( true );
+
             properties[PROPERTY_internalText] = new PropertyDescriptor ( "internalText", TreeEntityDecl.class, "getInternalText", null ); // NOI18N
             properties[PROPERTY_internalText].setDisplayName ( Util.THIS.getString ( "PROP_TreeEntityDeclBeanInfo_internalText" ) );
             properties[PROPERTY_internalText].setShortDescription ( Util.THIS.getString ( "HINT_TreeEntityDeclBeanInfo_internalText" ) );
             properties[PROPERTY_internalText].setPropertyEditorClass ( NullStringEditor.class );
+
             properties[PROPERTY_publicId] = new PropertyDescriptor ( "publicId", TreeEntityDecl.class, "getPublicId", null ); // NOI18N
             properties[PROPERTY_publicId].setDisplayName ( Util.THIS.getString ( "PROP_TreeEntityDeclBeanInfo_publicId" ) );
             properties[PROPERTY_publicId].setShortDescription ( Util.THIS.getString ( "HINT_TreeEntityDeclBeanInfo_publicId" ) );
             properties[PROPERTY_publicId].setPropertyEditorClass ( NullStringEditor.class );
-
-//              properties[PROPERTY_type] = new PropertyDescriptor ( "type", TreeEntityDecl.class, "getType", null ); // NOI18N
-//              properties[PROPERTY_type].setDisplayName ( Util.THIS.getString ( "PROP_TreeEntityDeclBeanInfo_type" ) );
-//              properties[PROPERTY_type].setShortDescription ( Util.THIS.getString ( "HINT_TreeEntityDeclBeanInfo_type" ) );
-        }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
+        } catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
 	// Here you can add code for customizing the properties array.
 

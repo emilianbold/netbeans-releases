@@ -34,43 +34,22 @@ public class TreeAttributeBeanInfo extends SimpleBeanInfo {
     }//GEN-LAST:BeanDescriptor
 
     // Property identifiers //GEN-FIRST:Properties
-    private static final int PROPERTY_readOnly = 0;
-    private static final int PROPERTY_QName = 1;
-    private static final int PROPERTY_value = 2;
-//      private static final int PROPERTY_namespacePrefix = 3;
-//      private static final int PROPERTY_localName = 4;
-//      private static final int PROPERTY_specified = 5;
+    private static final int PROPERTY_QName = 0;
+    private static final int PROPERTY_value = 1;
 
     // Property array 
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[3];//6];
+    private static PropertyDescriptor[] properties = new PropertyDescriptor[2];
 
     static {
         try {
-            properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeAttribute.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttributeBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttributeBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setExpert ( true );
             properties[PROPERTY_QName] = new PropertyDescriptor ( "name", TreeAttribute.class, "getQName", "setQName" ); // NOI18N
             properties[PROPERTY_QName].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttributeBeanInfo_QName" ) );
             properties[PROPERTY_QName].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttributeBeanInfo_QName" ) );
+
             properties[PROPERTY_value] = new PropertyDescriptor ( "value", TreeAttribute.class, "getValue", "setValue" ); // NOI18N
             properties[PROPERTY_value].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttributeBeanInfo_value" ) );
             properties[PROPERTY_value].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttributeBeanInfo_value" ) );
-
-//              properties[PROPERTY_namespacePrefix] = new PropertyDescriptor ( "namespacePrefix", TreeAttribute.class, "getNamespacePrefix", null ); // NOI18N
-//              properties[PROPERTY_namespacePrefix].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttributeBeanInfo_namespacePrefix" ) );
-//              properties[PROPERTY_namespacePrefix].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttributeBeanInfo_namespacePrefix" ) );
-
-//              properties[PROPERTY_localName] = new PropertyDescriptor ( "localName", TreeAttribute.class, "getLocalName", null ); // NOI18N
-//              properties[PROPERTY_localName].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttributeBeanInfo_localName" ) );
-//              properties[PROPERTY_localName].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttributeBeanInfo_localName" ) );
-//              properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeAttribute.class, "isReadOnly", null ); // NOI18N
-//              properties[PROPERTY_specified] = new PropertyDescriptor ( "specified", TreeAttribute.class, "isSpecified", null ); // NOI18N
-//              properties[PROPERTY_specified].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttributeBeanInfo_specified" ) );
-//              properties[PROPERTY_specified].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttributeBeanInfo_specified" ) );
-//              properties[PROPERTY_specified].setExpert ( true );
-        }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
+        } catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
 	// Here you can add code for customizing the properties array.
 

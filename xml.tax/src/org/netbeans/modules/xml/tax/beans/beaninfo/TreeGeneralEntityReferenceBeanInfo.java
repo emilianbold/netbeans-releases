@@ -35,22 +35,16 @@ public class TreeGeneralEntityReferenceBeanInfo extends SimpleBeanInfo {
 
     // Property identifiers //GEN-FIRST:Properties
     private static final int PROPERTY_name = 0;
-    private static final int PROPERTY_readOnly = 1;
 
     // Property array 
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[2];
+    private static PropertyDescriptor[] properties = new PropertyDescriptor[1];
 
     static {
         try {
             properties[PROPERTY_name] = new PropertyDescriptor ( "name", TreeGeneralEntityReference.class, "getName", "setName" ); // NOI18N
             properties[PROPERTY_name].setDisplayName ( Util.THIS.getString ( "PROP_TreeGeneralEntityReferenceBeanInfo_name" ) );
             properties[PROPERTY_name].setShortDescription ( Util.THIS.getString ( "HINT_TreeGeneralEntityReferenceBeanInfo_name" ) );
-            properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeGeneralEntityReference.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeGeneralEntityReferenceBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeGeneralEntityReferenceBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setExpert ( true );
-        }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
+        } catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
 	// Here you can add code for customizing the properties array.
 

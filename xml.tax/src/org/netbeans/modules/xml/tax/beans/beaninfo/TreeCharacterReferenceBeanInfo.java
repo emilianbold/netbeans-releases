@@ -36,26 +36,20 @@ public class TreeCharacterReferenceBeanInfo extends SimpleBeanInfo {
     // Property identifiers //GEN-FIRST:Properties
     private static final int PROPERTY_name = 0;
     private static final int PROPERTY_data = 1;
-    private static final int PROPERTY_readOnly = 2;
 
     // Property array 
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[3];
+    private static PropertyDescriptor[] properties = new PropertyDescriptor[2];
 
     static {
         try {
             properties[PROPERTY_name] = new PropertyDescriptor ( "name", TreeCharacterReference.class, "getName", "setName" ); // NOI18N
             properties[PROPERTY_name].setDisplayName ( Util.THIS.getString ( "PROP_TreeCharacterReferenceBeanInfo_name" ) );
             properties[PROPERTY_name].setShortDescription ( Util.THIS.getString ( "HINT_TreeCharacterReferenceBeanInfo_name" ) );
+
             properties[PROPERTY_data] = new PropertyDescriptor ( "data", TreeCharacterReference.class, "getData", null ); // NOI18N
             properties[PROPERTY_data].setDisplayName ( Util.THIS.getString ( "PROP_TreeCharacterReferenceBeanInfo_data" ) );
             properties[PROPERTY_data].setShortDescription ( Util.THIS.getString ( "HINT_TreeCharacterReferenceBeanInfo_data" ) );
-            properties[PROPERTY_data].setExpert ( true );
-            properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeCharacterReference.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeCharacterReferenceBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeCharacterReferenceBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setExpert ( true );
-        }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
+        } catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
 	// Here you can add code for customizing the properties array.
 

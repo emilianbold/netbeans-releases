@@ -36,29 +36,24 @@ public class TreeDocumentFragmentBeanInfo extends SimpleBeanInfo {
     }//GEN-LAST:BeanDescriptor
 
     // Property identifiers //GEN-FIRST:Properties
-    private static final int PROPERTY_readOnly = 0;
-    private static final int PROPERTY_encoding = 1;
-    private static final int PROPERTY_version = 2;
+    private static final int PROPERTY_encoding = 0;
+    private static final int PROPERTY_version = 1;
 
     // Property array 
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[3];
+    private static PropertyDescriptor[] properties = new PropertyDescriptor[2];
 
     static {
         try {
-            properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeDocumentFragment.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeDocumentFragmentBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeDocumentFragmentBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setExpert ( true );
             properties[PROPERTY_encoding] = new PropertyDescriptor ( "encoding", TreeDocumentFragment.class, "getEncoding", "setEncoding" ); // NOI18N
             properties[PROPERTY_encoding].setDisplayName ( Util.THIS.getString ( "PROP_TreeDocumentFragmentBeanInfo_encoding" ) );
             properties[PROPERTY_encoding].setShortDescription ( Util.THIS.getString ( "HINT_TreeDocumentFragmentBeanInfo_encoding" ) );
             properties[PROPERTY_encoding].setPropertyEditorClass ( EncodingEditor.class );
+
             properties[PROPERTY_version] = new PropertyDescriptor ( "version", TreeDocumentFragment.class, "getVersion", "setVersion" ); // NOI18N
             properties[PROPERTY_version].setDisplayName ( Util.THIS.getString ( "PROP_TreeDocumentFragmentBeanInfo_version" ) );
             properties[PROPERTY_version].setShortDescription ( Util.THIS.getString ( "HINT_TreeDocumentFragmentBeanInfo_version" ) );
             properties[PROPERTY_version].setPropertyEditorClass ( VersionEditor.class );
-        }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
+        } catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
 	// Here you can add code for customizing the properties array.
 

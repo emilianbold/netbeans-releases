@@ -37,11 +37,10 @@ public class TreeDTDBeanInfo extends SimpleBeanInfo {
 
     // Property identifiers //GEN-FIRST:Properties
     private static final int PROPERTY_encoding = 0;
-    private static final int PROPERTY_readOnly = 1;
-    private static final int PROPERTY_version = 2;
+    private static final int PROPERTY_version = 1;
 
     // Property array 
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[3];
+    private static PropertyDescriptor[] properties = new PropertyDescriptor[2];
 
     static {
         try {
@@ -49,16 +48,12 @@ public class TreeDTDBeanInfo extends SimpleBeanInfo {
             properties[PROPERTY_encoding].setDisplayName ( Util.THIS.getString ( "PROP_TreeDTDBeanInfo_encoding" ) );
             properties[PROPERTY_encoding].setShortDescription ( Util.THIS.getString ( "HINT_TreeDTDBeanInfo_encoding" ) );
             properties[PROPERTY_encoding].setPropertyEditorClass ( EncodingEditor.class );
-            properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeDTD.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeDTDBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeDTDBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setExpert ( true );
+
             properties[PROPERTY_version] = new PropertyDescriptor ( "version", TreeDTD.class, "getVersion", null ); // NOI18N
             properties[PROPERTY_version].setDisplayName ( Util.THIS.getString ( "PROP_TreeDTDBeanInfo_version" ) );
             properties[PROPERTY_version].setShortDescription ( Util.THIS.getString ( "HINT_TreeDTDBeanInfo_version" ) );
             properties[PROPERTY_version].setPropertyEditorClass ( VersionEditor.class );
-        }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
+        } catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
 	// Here you can add code for customizing the properties array.
 

@@ -34,28 +34,17 @@ public class TreeCommentBeanInfo extends SimpleBeanInfo {
     }//GEN-LAST:BeanDescriptor
 
     // Property identifiers //GEN-FIRST:Properties
-    private static final int PROPERTY_readOnly = 0;
-    private static final int PROPERTY_data = 1;
-    private static final int PROPERTY_length = 2;
+    private static final int PROPERTY_data = 0;
 
     // Property array 
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[3];
+    private static PropertyDescriptor[] properties = new PropertyDescriptor[1];
 
     static {
         try {
-            properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeComment.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeCommentBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeCommentBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setExpert ( true );
             properties[PROPERTY_data] = new PropertyDescriptor ( "data", TreeComment.class, "getData", "setData" ); // NOI18N
             properties[PROPERTY_data].setDisplayName ( Util.THIS.getString ( "PROP_TreeCommentBeanInfo_data" ) );
             properties[PROPERTY_data].setShortDescription ( Util.THIS.getString ( "HINT_TreeCommentBeanInfo_data" ) );
-            properties[PROPERTY_length] = new PropertyDescriptor ( "length", TreeComment.class, "getLength", null ); // NOI18N
-            properties[PROPERTY_length].setDisplayName ( Util.THIS.getString ( "PROP_TreeCommentBeanInfo_length" ) );
-            properties[PROPERTY_length].setShortDescription ( Util.THIS.getString ( "HINT_TreeCommentBeanInfo_length" ) );
-            properties[PROPERTY_length].setExpert ( true );
-        }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
+        } catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
 	// Here you can add code for customizing the properties array.
 

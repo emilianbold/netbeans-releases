@@ -36,13 +36,9 @@ public class TreeAttlistDeclAttributeDefBeanInfo extends SimpleBeanInfo {
     // Property identifiers //GEN-FIRST:Properties
     private static final int PROPERTY_name = 0;
     private static final int PROPERTY_defaultValue = 1;
-    private static final int PROPERTY_readOnly = 2;
-//      private static final int PROPERTY_type = 3;
-//      private static final int PROPERTY_defaultType = 4;
-//      private static final int PROPERTY_enumeratedType = 5;
 
     // Property array 
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[3];//6];
+    private static PropertyDescriptor[] properties = new PropertyDescriptor[2];
 
     static {
         try {
@@ -52,22 +48,7 @@ public class TreeAttlistDeclAttributeDefBeanInfo extends SimpleBeanInfo {
             properties[PROPERTY_defaultValue] = new PropertyDescriptor ( "defaultValue", TreeAttlistDeclAttributeDef.class, "getDefaultValue", null ); // NOI18N
             properties[PROPERTY_defaultValue].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttlistDeclAttributeDefBeanInfo_defaultValue" ) );
             properties[PROPERTY_defaultValue].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttlistDeclAttributeDefBeanInfo_defaultValue" ) );
-            properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeAttlistDeclAttributeDef.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttlistDeclAttributeDefBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttlistDeclAttributeDefBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setExpert ( true );
-
-//              properties[PROPERTY_type] = new PropertyDescriptor ( "type", TreeAttlistDeclAttributeDef.class, "getType", null ); // NOI18N
-//              properties[PROPERTY_type].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttlistDeclAttributeDefBeanInfo_type" ) );
-//              properties[PROPERTY_type].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttlistDeclAttributeDefBeanInfo_type" ) );
-//              properties[PROPERTY_defaultType] = new PropertyDescriptor ( "defaultType", TreeAttlistDeclAttributeDef.class, "getDefaultType", null ); // NOI18N
-//              properties[PROPERTY_defaultType].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttlistDeclAttributeDefBeanInfo_defaultType" ) );
-//              properties[PROPERTY_defaultType].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttlistDeclAttributeDefBeanInfo_defaultType" ) );
-//              properties[PROPERTY_enumeratedType] = new PropertyDescriptor ( "enumeratedType", TreeAttlistDeclAttributeDef.class, "getEnumeratedType", null ); // NOI18N
-//              properties[PROPERTY_enumeratedType].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttlistDeclAttributeDefBeanInfo_enumeratedType" ) );
-//              properties[PROPERTY_enumeratedType].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttlistDeclAttributeDefBeanInfo_enumeratedType" ) );
-        }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
+        } catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
 	// Here you can add code for customizing the properties array.
 

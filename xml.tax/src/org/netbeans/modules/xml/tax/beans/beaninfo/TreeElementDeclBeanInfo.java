@@ -35,27 +35,16 @@ public class TreeElementDeclBeanInfo extends SimpleBeanInfo {
 
     // Property identifiers //GEN-FIRST:Properties
     private static final int PROPERTY_name = 0;
-    private static final int PROPERTY_readOnly = 1;
-//      private static final int PROPERTY_contentType = 2;
 
     // Property array 
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[2];//3];
+    private static PropertyDescriptor[] properties = new PropertyDescriptor[1];
 
     static {
         try {
             properties[PROPERTY_name] = new PropertyDescriptor ( "name", TreeElementDecl.class, "getName", null ); // NOI18N
             properties[PROPERTY_name].setDisplayName ( Util.THIS.getString ( "PROP_TreeElementDeclBeanInfo_name" ) );
             properties[PROPERTY_name].setShortDescription ( Util.THIS.getString ( "HINT_TreeElementDeclBeanInfo_name" ) );
-            properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeElementDecl.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeElementDeclBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeElementDeclBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setExpert ( true );
-
-//              properties[PROPERTY_contentType] = new PropertyDescriptor ( "contentType", TreeElementDecl.class, null, "setContentType" ); // NOI18N
-//              properties[PROPERTY_contentType].setDisplayName ( Util.THIS.getString ( "PROP_TreeElementDeclBeanInfo_contentType" ) );
-//              properties[PROPERTY_contentType].setShortDescription ( Util.THIS.getString ( "HINT_TreeElementDeclBeanInfo_contentType" ) );
-        }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
+        } catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
 	// Here you can add code for customizing the properties array.
 

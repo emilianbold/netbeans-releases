@@ -35,31 +35,21 @@ public class TreeProcessingInstructionBeanInfo extends SimpleBeanInfo {
 
     // Property identifiers //GEN-FIRST:Properties
     private static final int PROPERTY_target = 0;
-    private static final int PROPERTY_readOnly = 1;
-    private static final int PROPERTY_data = 2;
-    private static final int PROPERTY_length = 3;
+    private static final int PROPERTY_data = 1;
 
     // Property array 
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[4];
+    private static PropertyDescriptor[] properties = new PropertyDescriptor[2];
 
     static {
         try {
             properties[PROPERTY_target] = new PropertyDescriptor ( "target", TreeProcessingInstruction.class, "getTarget", "setTarget" ); // NOI18N
             properties[PROPERTY_target].setDisplayName ( Util.THIS.getString ( "PROP_TreeProcessingInstructionBeanInfo_target" ) );
             properties[PROPERTY_target].setShortDescription ( Util.THIS.getString ( "HINT_TreeProcessingInstructionBeanInfo_target" ) );
-            properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeProcessingInstruction.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeProcessingInstructionBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeProcessingInstructionBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setExpert ( true );
+
             properties[PROPERTY_data] = new PropertyDescriptor ( "data", TreeProcessingInstruction.class, "getData", "setData" ); // NOI18N
             properties[PROPERTY_data].setDisplayName ( Util.THIS.getString ( "PROP_TreeProcessingInstructionBeanInfo_data" ) );
             properties[PROPERTY_data].setShortDescription ( Util.THIS.getString ( "HINT_TreeProcessingInstructionBeanInfo_data" ) );
-            properties[PROPERTY_length] = new PropertyDescriptor ( "length", TreeProcessingInstruction.class, "getLength", null ); // NOI18N
-            properties[PROPERTY_length].setDisplayName ( Util.THIS.getString ( "PROP_TreeProcessingInstructionBeanInfo_length" ) );
-            properties[PROPERTY_length].setShortDescription ( Util.THIS.getString ( "HINT_TreeProcessingInstructionBeanInfo_length" ) );
-            properties[PROPERTY_length].setExpert ( true );
-        }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
+        } catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
 	// Here you can add code for customizing the properties array.
 

@@ -38,12 +38,11 @@ public class TreeDocumentBeanInfo extends SimpleBeanInfo {
 
     // Property identifiers //GEN-FIRST:Properties
     private static final int PROPERTY_encoding = 0;
-    private static final int PROPERTY_readOnly = 1;
-    private static final int PROPERTY_version = 2;
-    private static final int PROPERTY_standalone = 3;
+    private static final int PROPERTY_version = 1;
+    private static final int PROPERTY_standalone = 2;
 
     // Property array 
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[4];
+    private static PropertyDescriptor[] properties = new PropertyDescriptor[3];
 
     static {
         try {
@@ -51,20 +50,17 @@ public class TreeDocumentBeanInfo extends SimpleBeanInfo {
             properties[PROPERTY_encoding].setDisplayName ( Util.THIS.getString ( "PROP_TreeDocumentBeanInfo_encoding" ) );
             properties[PROPERTY_encoding].setShortDescription ( Util.THIS.getString ( "HINT_TreeDocumentBeanInfo_encoding" ) );
             properties[PROPERTY_encoding].setPropertyEditorClass ( EncodingEditor.class );
-            properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeDocument.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeDocumentBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeDocumentBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setExpert ( true );
+
             properties[PROPERTY_version] = new PropertyDescriptor ( "version", TreeDocument.class, "getVersion", "setVersion" ); // NOI18N
             properties[PROPERTY_version].setDisplayName ( Util.THIS.getString ( "PROP_TreeDocumentBeanInfo_version" ) );
             properties[PROPERTY_version].setShortDescription ( Util.THIS.getString ( "HINT_TreeDocumentBeanInfo_version" ) );
             properties[PROPERTY_version].setPropertyEditorClass ( VersionEditor.class );
+
             properties[PROPERTY_standalone] = new PropertyDescriptor ( "standalone", TreeDocument.class, "getStandalone", "setStandalone" ); // NOI18N
             properties[PROPERTY_standalone].setDisplayName ( Util.THIS.getString ( "PROP_TreeDocumentBeanInfo_standalone" ) );
             properties[PROPERTY_standalone].setShortDescription ( Util.THIS.getString ( "HINT_TreeDocumentBeanInfo_standalone" ) );
             properties[PROPERTY_standalone].setPropertyEditorClass ( StandaloneEditor.class );
-        }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
+        } catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
 	// Here you can add code for customizing the properties array.
 

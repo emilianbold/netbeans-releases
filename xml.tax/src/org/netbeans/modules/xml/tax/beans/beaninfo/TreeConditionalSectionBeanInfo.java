@@ -36,11 +36,10 @@ public class TreeConditionalSectionBeanInfo extends SimpleBeanInfo {
 
     // Property identifiers //GEN-FIRST:Properties
     private static final int PROPERTY_ignoredContent = 0;
-    private static final int PROPERTY_readOnly = 1;
-    private static final int PROPERTY_include = 2;
+    private static final int PROPERTY_include = 1;
 
     // Property array 
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[3];
+    private static PropertyDescriptor[] properties = new PropertyDescriptor[2];
 
     static {
         try {
@@ -48,15 +47,11 @@ public class TreeConditionalSectionBeanInfo extends SimpleBeanInfo {
             properties[PROPERTY_ignoredContent].setDisplayName ( Util.THIS.getString ( "PROP_TreeConditionalSectionBeanInfo_ignoredContent" ) );
             properties[PROPERTY_ignoredContent].setShortDescription ( Util.THIS.getString ( "HINT_TreeConditionalSectionBeanInfo_ignoredContent" ) );
             properties[PROPERTY_ignoredContent].setPropertyEditorClass ( NullStringEditor.class );
-            properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeConditionalSection.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeConditionalSectionBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeConditionalSectionBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setExpert ( true );
+
             properties[PROPERTY_include] = new PropertyDescriptor ( "include", TreeConditionalSection.class, "isInclude", null ); // NOI18N
             properties[PROPERTY_include].setDisplayName ( Util.THIS.getString ( "PROP_TreeConditionalSectionBeanInfo_include" ) );
             properties[PROPERTY_include].setShortDescription ( Util.THIS.getString ( "HINT_TreeConditionalSectionBeanInfo_include" ) );
-        }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
+        } catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
 	// Here you can add code for customizing the properties array.
 
