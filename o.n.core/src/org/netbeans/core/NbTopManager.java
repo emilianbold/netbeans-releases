@@ -573,12 +573,15 @@ public abstract class NbTopManager /*extends TopManager*/ {
                         }
                     } else {
                         if (cc == sep) {
+                            // [pnejedly] These new String() calls are intentional
+                            // because of memory consumption. Don't touch them
+                            // unless you know what you're doing
                             inkey = true;
                             String k = key.toString();
-                            String v = value.toString();
-                            env.put("Env-" + k, v); // NOI18N
+                            String v = new String(value.toString());
+                            env.put(new String("Env-" + k), v); // NOI18N
                             // E.g. on Turkish Unix, want env-display not env-d\u0131splay:
-                            env.put("env-" + k.toLowerCase(Locale.US), v); // NOI18N
+                            env.put(new String("env-" + k.toLowerCase(Locale.US)), v); // NOI18N
                             key.setLength(0);
                             value.setLength(0);
                         } else {
