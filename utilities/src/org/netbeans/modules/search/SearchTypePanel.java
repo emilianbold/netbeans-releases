@@ -19,6 +19,9 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.beans.BeanInfo;
 import java.beans.Customizer;
 import java.beans.IntrospectionException;
@@ -422,7 +425,7 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
      */
     private void restoreCriterion() {
         JPanel pane = new JPanel();
-        pane.setLayout(new BorderLayout(12,0));
+        pane.setLayout(new GridBagLayout());
         
         ResourceBundle bundle = NbBundle.getBundle(SearchTypePanel.class);
         pane.getAccessibleContext().setAccessibleDescription(
@@ -433,14 +436,18 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
                 resLabel,
                 bundle.getString("TEXT_LABEL_SELECT"));                 //NOI18N
         
-        pane.add(resLabel, BorderLayout.WEST); 
-        
         JComboBox combo = new JComboBox(savedCriteria);
-        Dimension dim = combo.getPreferredSize();
-        dim.width = 160;
-        combo.setPreferredSize(dim);
         resLabel.setLabelFor(combo);
-        pane.add(combo, BorderLayout.CENTER);
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(0, 0, 0, 12);
+        pane.add(resLabel, gbc);
+        
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0d;
+        gbc.insets = new Insets(0, 0, 0, 0);
+        pane.add(combo, gbc);
+        
         pane.setBorder(BorderFactory.createEmptyBorder(12,12,0,11));
         
         DialogDescriptor desc = new DialogDescriptor(
