@@ -18,6 +18,7 @@ import java.util.Properties;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
@@ -28,10 +29,12 @@ import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
 
 /** A custom editor for Properties.
-*
-* @author  Ian Formanek
-*/
-public class PropertiesCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
+ *
+ * @author  Ian Formanek
+ */
+public class PropertiesCustomEditor extends JPanel
+    implements EnhancedCustomPropertyEditor
+{
 
     private PropertiesEditor editor;
 
@@ -52,7 +55,7 @@ public class PropertiesCustomEditor extends javax.swing.JPanel implements Enhanc
             // strange, strange -> ignore
         }
         editorPane.setText (baos.toString ());
-        setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(12, 12, 0, 11)));
+        setBorder (new javax.swing.border.EmptyBorder (new Insets(12, 12, 0, 11)));
         HelpCtx.setHelpIDString (this, PropertiesCustomEditor.class.getName ());
         
         editorPane.getAccessibleContext().setAccessibleName(NbBundle.getBundle(PropertiesCustomEditor.class).getString("ACS_PropertiesEditorPane"));
@@ -95,29 +98,22 @@ public class PropertiesCustomEditor extends javax.swing.JPanel implements Enhanc
     }
     
     /** Returns preferredSize as the preferred height and the width of the panel */
-    public java.awt.Dimension getPreferredSize() {
-        int screenWidth = org.openide.util.Utilities.getScreenSize().width;
-        
-        if (super.getPreferredSize().width >= screenWidth)
-            return new java.awt.Dimension(screenWidth - 50, super.getPreferredSize().height);
-        else
-            return super.getPreferredSize();
+    public Dimension getPreferredSize() {
+        return new Dimension(600, 400);
     }
 
     /** This method is called from within the constructor to
      * initialize the form.
      */
     private void initComponents() {
-        textAreaScroll = new javax.swing.JScrollPane();
-        editorPane = new javax.swing.JEditorPane();
-        setLayout(new java.awt.BorderLayout());
+        textAreaScroll = new JScrollPane();
+        editorPane = new JEditorPane();
+        setLayout(new BorderLayout());
         
-        
-        editorPane.setContentType("text/x-properties");
+        editorPane.setContentType("text/x-properties"); // NOI18N
         textAreaScroll.setViewportView(editorPane);
         
-        
-        add(textAreaScroll, java.awt.BorderLayout.CENTER);
+        add(textAreaScroll, BorderLayout.CENTER);
         
     }
 }
