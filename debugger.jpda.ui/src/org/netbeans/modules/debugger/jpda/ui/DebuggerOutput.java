@@ -93,11 +93,6 @@ PropertyChangeListener {
     }
 
     protected void destroy () {
-        print (
-            "CTL_Debugger_finished",
-            //IOManager.STATUS_OUT + IOManager.STATUS_OUT,
-            null, null
-        );
         debugger.removePropertyChangeListener (
             JPDADebugger.PROP_STATE,
             this
