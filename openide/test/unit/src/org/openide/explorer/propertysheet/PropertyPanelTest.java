@@ -13,6 +13,7 @@
 
 package org.openide.explorer.propertysheet;
 
+import java.awt.Component;
 import java.beans.*;
 import java.lang.reflect.*;
 import javax.swing.*;
@@ -28,6 +29,7 @@ import java.beans.PropertyDescriptor;
 import java.awt.IllegalComponentStateException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
+import javax.swing.JPanel;
 
 /** A test of a property panel.
  */
@@ -68,7 +70,6 @@ public final class PropertyPanelTest extends NbTestCase {
         );
         
         PropertyPanel pp = new PropertyPanel (model, PropertyPanel.PREF_CUSTOM_EDITOR);
-        
         assertTrue ("Ed editor created", pp.getPropertyEditor() instanceof Ed);
         
         Ed ed = (Ed)pp.getPropertyEditor ();
@@ -227,6 +228,21 @@ public final class PropertyPanelTest extends NbTestCase {
         
         public void attachEnv(PropertyEnv env) {
             this.env = env;
+        }
+        
+        //The two methods below are added because, in the property panel
+        //rewrite, the property panel uses polling with a ReusablePropertyEnv
+        //to determine valid state for editors that do not support a custom
+        //editor - and the PropertyPanel cannot be initialized into custom
+        //editor mode for a property editor that doesn't actually support
+        //custom editors
+        public boolean supportsCustomEditor() {
+            return true;
+        }
+        
+        //To avoid NPE when propertypanel tries to add the custom editor
+        public Component getCustomEditor() {
+            return new JPanel();
         }
     }
     
