@@ -13,24 +13,45 @@
 
 package org.apache.tools.ant.module.bridge;
 
-import java.beans.*;
-import java.io.*;
-import java.lang.ref.*;
-import java.net.*;
-import java.security.*;
-import java.util.*;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import javax.swing.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.security.AllPermission;
+import java.security.CodeSource;
+import java.security.PermissionCollection;
+import java.security.Permissions;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.openide.ErrorManager;
 import org.openide.execution.NbClassPath;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
-import org.openide.util.*;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.io.NullOutputStream;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -45,6 +66,8 @@ import org.xml.sax.SAXException;
  * @author Jesse Glick
  */
 public final class AntBridge {
+    
+    private static final ErrorManager err = ErrorManager.getDefault().getInstance(AntBridge.class.getName());
     
     private AntBridge() {}
     
@@ -64,15 +87,15 @@ public final class AntBridge {
             String prop = ev.getPropertyName();
             if (AntSettings.PROP_ANT_HOME.equals(prop) ||
                     AntSettings.PROP_EXTRA_CLASSPATH.equals(prop)) {
-                AntModule.err.log("AntBridge got settings change in " + prop);
+                err.log("AntBridge got settings change in " + prop);
                 fireChange();
             } else if (ModuleInfo.PROP_ENABLED.equals(prop)) {
-                AntModule.err.log("AntBridge got module enablement change on " + ev.getSource());
+                err.log("AntBridge got module enablement change on " + ev.getSource());
                 fireChange();
             }
         }
         public void resultChanged(LookupEvent ev) {
-            AntModule.err.log("AntModule got ModuleInfo change");
+            err.log("AntModule got ModuleInfo change");
             synchronized (this) {
                 if (modules != null) {
                     for (int i = 0; i < modules.length; i++) {
@@ -222,7 +245,7 @@ public final class AntBridge {
     }
     
     private static Map createStuff() {
-        AntModule.err.log("AntBridge.createStuff - loading Ant installation...");
+        err.log("AntBridge.createStuff - loading Ant installation...");
         Map m = new HashMap();
         try {
             ClassLoader main = createMainClassLoader();
@@ -294,7 +317,7 @@ public final class AntBridge {
         Collection/*<URL>*/ cp = new LinkedHashSet();
         File libdir = new File(AntSettings.getDefault().getAntHomeWithDefault(), "lib"); // NOI18N
         if (!libdir.isDirectory()) throw new IOException("No such Ant library dir: " + libdir); // NOI18N
-        AntModule.err.log("Creating main class loader from " + libdir);
+        err.log("Creating main class loader from " + libdir);
         File[] libs = libdir.listFiles(new JarFilter());
         if (libs == null) throw new IOException("Listing: " + libdir); // NOI18N
         for (int i = 0; i < libs.length; i++) {
@@ -327,7 +350,17 @@ public final class AntBridge {
         // with the versions used inside NB, which may cause inefficiencies or more memory usage.
         // On the other hand, if ant.jar is in ${java.class.path} (e.g. from a unit test), we
         // have to explicitly mask it out. What a mess...
-        return new MaskedClassLoader((URL[])cp.toArray(new URL[cp.size()]), ClassLoader.getSystemClassLoader());
+        ClassLoader parent = ClassLoader.getSystemClassLoader();
+        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+            List/*<URL>*/ parentURLs;
+            if (parent instanceof URLClassLoader) {
+                parentURLs = Arrays.asList(((URLClassLoader) parent).getURLs());
+            } else {
+                parentURLs = null;
+            }
+            err.log("AntBridge.createMainClassLoader: cp=" + cp + " parent.urls=" + parentURLs);
+        }
+        return new MaskedClassLoader((URL[])cp.toArray(new URL[cp.size()]), parent);
     }
     
     private static ClassLoader createBridgeClassLoader(ClassLoader main) throws Exception {
@@ -405,14 +438,14 @@ public final class AntBridge {
                 } else if (def.getNodeName().equals("typedef")) { // NOI18N
                     type = true;
                 } else {
-                    AntModule.err.log(ErrorManager.WARNING, "Warning: unrecognized definition " + def + " in " + antlib);
+                    err.log(ErrorManager.WARNING, "Warning: unrecognized definition " + def + " in " + antlib);
                     continue;
                 }
                 String name = def.getAttribute("name"); // NOI18N
                 if (name == null) {
                     // Not a hard error since there might be e.g. <taskdef resource="..."/> here
                     // which we do not parse but which is permitted in antlib by Ant.
-                    AntModule.err.log(ErrorManager.WARNING, "Warning: skipping definition " + def + " with no 'name' in " + antlib);
+                    err.log(ErrorManager.WARNING, "Warning: skipping definition " + def + " with no 'name' in " + antlib);
                     continue;
                 }
                 String classname = def.getAttribute("classname"); // NOI18N
@@ -442,16 +475,16 @@ public final class AntBridge {
             } catch (ClassNotFoundException cnfe) {
                 // This is not normal. If the class is mentioned, it should be there.
                 IOException ioe = new IOException("Could not load class " + clazzname + ": " + cnfe); // NOI18N
-                AntModule.err.annotate(ioe, cnfe);
+                err.annotate(ioe, cnfe);
                 throw ioe;
             } catch (NoClassDefFoundError ncdfe) {
                 // Normal for e.g. tasks dumped there by disabled modules.
                 // Cf. #36702 for possible better solution.
-                AntModule.err.log("AntBridge.loadDefs: skipping " + clazzname + ": " + ncdfe);
+                err.log("AntBridge.loadDefs: skipping " + clazzname + ": " + ncdfe);
             } catch (LinkageError e) {
                 // Not normal; if it is there it ought to be resolvable etc.
                 IOException ioe = new IOException("Could not load class " + clazzname + ": " + e); // NOI18N
-                AntModule.err.annotate(ioe, e);
+                err.annotate(ioe, e);
                 throw ioe;
             }
         }
@@ -480,13 +513,33 @@ public final class AntBridge {
             return super.toString() + "[parent=" + getParent() + ",urls=" + Arrays.asList((Object[])getURLs()) + "]";
         }
 
-        /* Debugging:
         public URL getResource(String name) {
             URL u = super.getResource(name);
-            System.err.println("ACL.gR: " + name + " -> " + u + " [" + this + "]");
+            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                err.log("APURLCL.gR: " + name + " -> " + u + " [" + this + "]");
+            }
             return u;
         }
+        
+        public Enumeration/*<URL>*/ findResources(String name) throws IOException {
+            try {
+                Enumeration/*<URL>*/ us = super.findResources(name);
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    // Make a copy so it can be logged:
+                    List/*<URL>*/ resources = Collections.list(us);
+                    us = Collections.enumeration(resources);
+                    err.log("APURLCL.fRs: " + name + " -> " + resources + " [" + this + "]");
+                }
+                return us;
+            } catch (IOException e) {
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    err.notify(ErrorManager.INFORMATIONAL, e);
+                }
+                throw e;
+            }
+        }
 
+        /*
         public Class loadClass(String name) throws ClassNotFoundException {
             try {
                 Class c = super.loadClass(name);
@@ -514,12 +567,6 @@ public final class AntBridge {
         
         public MaskedClassLoader(URL[] urls, ClassLoader parent) {
             super(urls, parent);
-            /*
-            System.err.println("MaskedClassLoader: delegating to " + parent);
-            if (parent instanceof URLClassLoader) {
-                System.err.println("...which has URLs: " + Arrays.asList(((URLClassLoader) parent).getURLs()));
-            }
-             */
         }
         
         protected synchronized Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
