@@ -612,7 +612,11 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     }
     
     public FileObject getWebInf() {
-        return getDocumentBase().getFileObject(ProjectWebModule.FOLDER_WEB_INF);
+        FileObject documentBase = getDocumentBase();
+        if (documentBase != null)
+            return getFileObject(ProjectWebModule.FOLDER_WEB_INF);
+        else
+            return null;
     }
     
     public FileObject getDocumentBase() {

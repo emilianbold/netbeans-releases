@@ -44,7 +44,7 @@ final class JspSourcePathImplementation implements ClassPathImplementation, Prop
      */
     public JspSourcePathImplementation(FileObject documentBaseDir, SourceRoots sourceRoots) {
         assert sourceRoots != null;
-        assert documentBaseDir != null;
+        // assert documentBaseDir != null;
         this.documentBaseDir = documentBaseDir;
         this.sourceRoots = sourceRoots;
         this.sourceRoots.addPropertyChangeListener (this);
@@ -53,11 +53,13 @@ final class JspSourcePathImplementation implements ClassPathImplementation, Prop
     public synchronized List /*<PathResourceImplementation>*/ getResources() {
         if (this.resources == null) {
             List result = new ArrayList ();
-            try {
-                result.add(ClassPathSupport.createResource(documentBaseDir.getURL()));
-            }
-            catch (FileStateInvalidException e){
-                ErrorManager.getDefault().notify(e);
+            if (documentBaseDir != null) {
+                try {
+                    result.add(ClassPathSupport.createResource(documentBaseDir.getURL()));
+                }
+                catch (FileStateInvalidException e){
+                    ErrorManager.getDefault().notify(e);
+                }
             }
             URL[] roots = this.sourceRoots.getRootURLs();
             for (int i = 0; i < roots.length; i++) {

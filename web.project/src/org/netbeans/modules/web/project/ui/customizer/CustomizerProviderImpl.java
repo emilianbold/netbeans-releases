@@ -31,6 +31,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.openide.filesystems.FileObject;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.ProjectWebModuleProvider;
 import org.netbeans.modules.web.project.WebProject;
@@ -206,13 +207,16 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         List servicesSettings = null;
         List serviceClientsSettings = null;
         ProjectWebModule wm = (ProjectWebModule) uiProperties.getProject().getLookup().lookup(ProjectWebModule.class);
-        WebServicesSupport servicesSupport = WebServicesSupport.getWebServicesSupport(wm.getDocumentBase());
-        if (servicesSupport != null) {
-            servicesSettings = servicesSupport.getServices();
-        }
-        WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(wm.getDocumentBase());
-        if (clientSupport != null) {
-            serviceClientsSettings = clientSupport.getServiceClients();
+        FileObject docBase = wm.getDocumentBase();
+        if (docBase != null) {
+            WebServicesSupport servicesSupport = WebServicesSupport.getWebServicesSupport(docBase);
+            if (servicesSupport != null) {
+                servicesSettings = servicesSupport.getServices();
+            }
+            WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(docBase);
+            if (clientSupport != null) {
+                serviceClientsSettings = clientSupport.getServiceClients();
+            }
         }
                 
         categories = new ProjectCustomizer.Category[] { 
