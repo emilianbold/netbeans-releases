@@ -35,6 +35,7 @@ public class ForEach extends Task {
     
     private List   locations; // List<String>
     private String target;
+    private String startdir;
     
     //
     // init
@@ -68,6 +69,14 @@ public class ForEach extends Task {
 
         target = s;
     }
+
+    /** Where cd first
+     */
+    public void setStartdir (String s) {
+        if ( DEBUG ) log ("SET startdir = " + s);
+
+        startdir = s;
+    }
     
     /** Execute this task. */
     public void execute () throws BuildException {        
@@ -80,8 +89,13 @@ public class ForEach extends Task {
 
             if ( DEBUG ) log ("EXECUTE owningTarget = " + this.getOwningTarget());
         }
+        File baseDir;
+	if ( startdir == null ) {
+          baseDir = project.getBaseDir();
+        } else {
+	  baseDir = new File( project.getBaseDir(), startdir );
+        }
 
-        File baseDir = project.getBaseDir();
         Iterator it = locations.iterator();
         while ( it.hasNext() ) {
             String dirName = (String) it.next();
