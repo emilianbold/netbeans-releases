@@ -27,6 +27,7 @@ Microsystems, Inc. All Rights Reserved.
           <include name="openide*.jar" />
         </fileset>
         <pathelement location="${binroot}/core/release/modules/ext/webserver.jar"/>
+        <pathelement location="${binroot}/webserver/release/modules/ext/webserver.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/servlet.jar"/>
       </classpath>
     </javac>
@@ -45,7 +46,14 @@ Microsystems, Inc. All Rights Reserved.
     </locjar>
   </target>
 
-  <target name="netbeans" depends="jars"/>
+  <target name="netbeans" depends="jars,release"/>
+
+  <target name="release">
+    <mkdir dir="release"/>
+    <copy todir="netbeans" includeEmptyDirs="false">
+      <fileset dir="release"/>
+    </copy>
+  </target>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="httpserver.nbm"
