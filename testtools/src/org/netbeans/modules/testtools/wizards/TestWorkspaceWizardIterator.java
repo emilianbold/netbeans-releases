@@ -26,6 +26,7 @@ import org.openide.TopManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import java.util.HashSet;
+import org.w3c.dom.Document;
 
 /**
  *
@@ -71,6 +72,12 @@ public class TestWorkspaceWizardIterator extends WizardIterator {
         }
         ((javax.swing.JComponent)panels[0]).putClientProperty("WizardPanel_contentData", names); 
         current=0;
+        
+        Document doc=getDOM(wizard.getTemplate());
+        wizard.putProperty(TESTWORKSPACE_TYPE_PROPERTY ,getProperty(doc, "xtest.testtype", "value"));
+        wizard.putProperty(TESTWORKSPACE_ATTRIBUTES_PROPERTY ,getProperty(doc, "xtest.attribs", "value"));
+        wizard.putProperty(TESTWORKSPACE_SOURCE_PROPERTY ,getProperty(doc, "xtest.source.location", "value"));
+
     }
     
     public java.util.Set instantiate(TemplateWizard wizard) throws java.io.IOException {

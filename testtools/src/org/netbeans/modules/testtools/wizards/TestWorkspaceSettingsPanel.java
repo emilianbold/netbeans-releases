@@ -23,6 +23,8 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.loaders.TemplateWizard;
 import java.awt.CardLayout;
+import org.openide.loaders.DataFolder;
+import java.io.File;
 
 /**
  *
@@ -31,6 +33,13 @@ import java.awt.CardLayout;
 public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements WizardDescriptor.FinishPanel {
     
     private boolean stop=true;
+    private static final String netbeansPath="../../../nb_all/nbbuild/netbeans";
+    private static final String xtestPath="../../../nb_all/xtest";
+    private static final String jemmyPath="../../../nbextra/jemmy";
+    private static final String jellyPath="../../../nbextra/jellytools";
+    private String type="qa-functional";
+    private String attr="all, ide";
+    private String source="ide";
     
     /** Creates new form TestWorkspacePanel */
     public TestWorkspaceSettingsPanel() {
@@ -62,6 +71,12 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
         sourceCombo = new javax.swing.JComboBox();
         netbeansButton = new javax.swing.JButton();
         xtestButton = new javax.swing.JButton();
+        jemmyLabel = new javax.swing.JLabel();
+        jemmyField = new javax.swing.JTextField();
+        jemmyButton = new javax.swing.JButton();
+        jellyLabel = new javax.swing.JLabel();
+        jellyField = new javax.swing.JTextField();
+        jellyButton = new javax.swing.JButton();
         stopLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.CardLayout());
@@ -91,10 +106,10 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         panel.add(levelCombo, gridBagConstraints);
 
         typeLabel.setText("Default Test Type: ");
@@ -123,10 +138,10 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         panel.add(typeField, gridBagConstraints);
 
         attrLabel.setText("Default Attributes: ");
@@ -155,10 +170,10 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         panel.add(attrField, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -212,10 +227,10 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
         gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         panel.add(netbeansField, gridBagConstraints);
 
         xtestLabel.setText("XTest Home: ");
@@ -244,10 +259,10 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
         gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         panel.add(xtestField, gridBagConstraints);
 
         sourceLabel.setText("Source Location: ");
@@ -256,18 +271,18 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
         sourceLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 15;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         panel.add(sourceLabel, gridBagConstraints);
 
-        sourceCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "IDE", "SRC", "JAR" }));
+        sourceCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "ide", "src", "jar" }));
         sourceCombo.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 15;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -277,6 +292,7 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
         netbeansButton.setText("...");
         netbeansButton.setPreferredSize(new java.awt.Dimension(30, 20));
         netbeansButton.setMinimumSize(new java.awt.Dimension(30, 20));
+        netbeansButton.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 8;
@@ -290,6 +306,7 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
         xtestButton.setText("...");
         xtestButton.setPreferredSize(new java.awt.Dimension(30, 20));
         xtestButton.setMinimumSize(new java.awt.Dimension(30, 20));
+        xtestButton.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 10;
@@ -300,6 +317,96 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
         panel.add(xtestButton, gridBagConstraints);
 
+        jemmyLabel.setText("Jemmy Home: ");
+        jemmyLabel.setDisplayedMnemonic(74);
+        jemmyLabel.setLabelFor(jemmyField);
+        jemmyLabel.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        panel.add(jemmyLabel, gridBagConstraints);
+
+        jemmyField.setEnabled(false);
+        jemmyField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                jemmyFieldFocusGained(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        panel.add(jemmyField, gridBagConstraints);
+
+        jemmyButton.setText("...");
+        jemmyButton.setPreferredSize(new java.awt.Dimension(30, 20));
+        jemmyButton.setMinimumSize(new java.awt.Dimension(30, 20));
+        jemmyButton.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.01;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
+        panel.add(jemmyButton, gridBagConstraints);
+
+        jellyLabel.setText("Jelly Home: ");
+        jellyLabel.setDisplayedMnemonic(76);
+        jellyLabel.setLabelFor(jellyField);
+        jellyLabel.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        panel.add(jellyLabel, gridBagConstraints);
+
+        jellyField.setEnabled(false);
+        jellyField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                jellyFieldFocusGained(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        panel.add(jellyField, gridBagConstraints);
+
+        jellyButton.setText("...");
+        jellyButton.setPreferredSize(new java.awt.Dimension(30, 20));
+        jellyButton.setMinimumSize(new java.awt.Dimension(30, 20));
+        jellyButton.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.01;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
+        panel.add(jellyButton, gridBagConstraints);
+
         add(panel, "ok");
 
         stopLabel.setText("Test Workspace already exists in selected package.");
@@ -307,6 +414,14 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
         add(stopLabel, "stop");
 
     }//GEN-END:initComponents
+
+    private void jellyFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jellyFieldFocusGained
+        jellyField.selectAll();
+    }//GEN-LAST:event_jellyFieldFocusGained
+
+    private void jemmyFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jemmyFieldFocusGained
+        jemmyField.selectAll();
+    }//GEN-LAST:event_jemmyFieldFocusGained
 
     private void xtestFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_xtestFieldFocusGained
         xtestField.selectAll();
@@ -342,28 +457,45 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
         attrField.setEnabled(advanced);
         netbeansLabel.setEnabled(advanced);
         netbeansField.setEnabled(advanced);
+        netbeansButton.setEnabled(advanced);
         xtestLabel.setEnabled(advanced);
         xtestField.setEnabled(advanced);
+        xtestButton.setEnabled(advanced);
+        jemmyLabel.setEnabled(advanced);
+        jemmyField.setEnabled(advanced);
+        jemmyButton.setEnabled(advanced);
+        jellyLabel.setEnabled(advanced);
+        jellyField.setEnabled(advanced);
+        jellyButton.setEnabled(advanced);
         sourceLabel.setEnabled(advanced);
         sourceCombo.setEnabled(advanced);
-        netbeansButton.setEnabled(advanced);
-        xtestButton.setEnabled(advanced);
         if (!advanced) {
-            typeField.setText("qa-functional");
-            attrField.setText("all, ide");
-            sourceCombo.setSelectedIndex(0);
+            typeField.setText(type);
+            attrField.setText(attr);
+            sourceCombo.setSelectedItem(source);
              switch (levelCombo.getSelectedIndex()) {
-                 case 0:netbeansField.setText("../../../nb_all/nbbuild/netbeans");
-                        xtestField.setText("../../../nb_all/xtest");
+                 case 0:netbeansField.setText(netbeansPath);
+                        xtestField.setText(xtestPath);
+                        jemmyField.setText(jemmyPath);
+                        jellyField.setText(jellyPath);
                         break;
-                 case 1:netbeansField.setText("../../../../nb_all/nbbuild/netbeans");
-                        xtestField.setText("../../../../nb_all/xtest");
+                 case 1:netbeansField.setText("../"+netbeansPath);
+                        xtestField.setText("../"+xtestPath);
+                        jemmyField.setText("../"+jemmyPath);
+                        jellyField.setText("../"+jellyPath);
                         break;
-                 case 2:netbeansField.setText("../../../../../nb_all/nbbuild/netbeans");
-                        xtestField.setText("../../../../../nb_all/xtest");
+                 case 2:netbeansField.setText("../../"+netbeansPath);
+                        xtestField.setText("../../"+xtestPath);
+                        jemmyField.setText("../../"+jemmyPath);
+                        jellyField.setText("../../"+jellyPath);
                         break;
-                 case 3:netbeansField.setText(System.getProperty("netbeans.home").replace('\\','/'));
-                        xtestField.setText(System.getProperty("netbeans.user").replace('\\','/')+"/xtest-distribution");
+                 case 3:String home=System.getProperty("netbeans.home").replace('\\','/');
+                        netbeansField.setText(home);
+                        if (!new File(home+"/xtest-distribution").exists()) 
+                            home=System.getProperty("netbeans.user").replace('\\','/');
+                        xtestField.setText(home+"/xtest-distribution");
+                        jemmyField.setText(home+"/lib/ext");
+                        jellyField.setText(home+"/lib/ext");
                         break;
              }
         }
@@ -382,20 +514,40 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
     
     public void readSettings(Object obj) {
         TemplateWizard wizard=(TemplateWizard)obj;
+        DataFolder df=null;
+        stop=true;
         try {
-            stop=WizardIterator.detectBuildScript(wizard.getTargetFolder());
+            df=wizard.getTargetFolder();
+            stop=WizardIterator.detectBuildScript(df);
         } catch (Exception e) {}
         if (stop)
             ((CardLayout)getLayout()).show(this, "stop");
-        else
+        else {
             ((CardLayout)getLayout()).show(this, "ok");
-        updatePanel();
+            levelCombo.setSelectedIndex(WizardIterator.detectWorkspaceLevel(df));
+            String s;
+            s=(String)wizard.getProperty(WizardIterator.TESTWORKSPACE_TYPE_PROPERTY);
+            if (s!=null) type=s;
+            s=(String)wizard.getProperty(WizardIterator.TESTWORKSPACE_ATTRIBUTES_PROPERTY);
+            if (s!=null) attr=s;
+            s=(String)wizard.getProperty(WizardIterator.TESTWORKSPACE_SOURCE_PROPERTY);
+            if (s!=null) source=s;
+            updatePanel();
+        }
     }
     
     public void removeChangeListener(javax.swing.event.ChangeListener changeListener) {
     }
     
     public void storeSettings(Object obj) {
+        TemplateWizard wizard=(TemplateWizard)obj;
+        wizard.putProperty(WizardIterator.TESTWORKSPACE_NETBEANS_PROPERTY, netbeansField.getText());
+        wizard.putProperty(WizardIterator.TESTWORKSPACE_XTEST_PROPERTY, xtestField.getText());
+        wizard.putProperty(WizardIterator.TESTWORKSPACE_JEMMY_PROPERTY, jemmyField.getText());
+        wizard.putProperty(WizardIterator.TESTWORKSPACE_JELLY_PROPERTY, jellyField.getText());
+        wizard.putProperty(WizardIterator.TESTWORKSPACE_TYPE_PROPERTY, typeField.getText());
+        wizard.putProperty(WizardIterator.TESTWORKSPACE_ATTRIBUTES_PROPERTY, attrField.getText());
+        wizard.putProperty(WizardIterator.TESTWORKSPACE_SOURCE_PROPERTY, sourceCombo.getSelectedItem());
     }
 
     public boolean isValid() {
@@ -406,15 +558,21 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
     private javax.swing.JLabel sourceLabel;
     private javax.swing.JLabel stopLabel;
     private javax.swing.JButton xtestButton;
+    private javax.swing.JButton jemmyButton;
     private javax.swing.JLabel levelLabel;
+    private javax.swing.JLabel jemmyLabel;
     private javax.swing.JLabel xtestLabel;
+    private javax.swing.JTextField jemmyField;
     private javax.swing.JTextField xtestField;
     private javax.swing.JLabel typeLabel;
     private javax.swing.JButton netbeansButton;
     private javax.swing.JCheckBox advancedCheck;
     private javax.swing.JTextField typeField;
     private javax.swing.JPanel panel;
+    private javax.swing.JLabel jellyLabel;
+    private javax.swing.JButton jellyButton;
     private javax.swing.JLabel attrLabel;
+    private javax.swing.JTextField jellyField;
     private javax.swing.JTextField attrField;
     private javax.swing.JComboBox sourceCombo;
     private javax.swing.JLabel netbeansLabel;

@@ -33,7 +33,6 @@ import org.openide.src.Identifier;
 import org.openide.src.ClassElement;
 import org.openide.src.MethodElement;
 import org.openide.src.SourceException;
-import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.filesystems.FileObject;
@@ -55,6 +54,11 @@ import java.io.File;
 import org.netbeans.modules.group.GroupShadow;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
+import org.apache.tools.ant.module.api.AntProjectCookie;
+import org.w3c.dom.Document;
+import org.apache.tools.ant.module.xml.AntProjectSupport;
+import org.w3c.dom.NodeList;
+import org.openide.cookies.EditorCookie;
 
 /**
  *
@@ -75,6 +79,13 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
     public static final String TESTWORKSPACE_TARGET_PROPERTY = "TESTWORKSPACE_TARGET";
     public static final String TESTWORKSPACE_NAME_PROPERTY = "TESTWORKSPACE_NAME";
     public static final String TESTWORKSPACE_TEMPLATE_PROPERTY = "TESTWORKSPACE_TEMPLATE";
+    public static final String TESTWORKSPACE_TYPE_PROPERTY = "TESTWORKSPACE_TYPE";
+    public static final String TESTWORKSPACE_ATTRIBUTES_PROPERTY = "TESTWORKSPACE_ATTRIBUTES";
+    public static final String TESTWORKSPACE_NETBEANS_PROPERTY = "TESTWORKSPACE_NETBEANS";
+    public static final String TESTWORKSPACE_XTEST_PROPERTY = "TESTWORKSPACE_XTEST";
+    public static final String TESTWORKSPACE_JEMMY_PROPERTY = "TESTWORKSPACE_JEMMY";
+    public static final String TESTWORKSPACE_JELLY_PROPERTY = "TESTWORKSPACE_JELLY";
+    public static final String TESTWORKSPACE_SOURCE_PROPERTY = "TESTWORKSPACE_SOURCE";
     public static final String CREATE_TESTTYPE_PROPERTY = "CREATE_TESTTYPE";
     public static final String CREATE_TESTBAG_PROPERTY = "CREATE_TESTBAG";
     
@@ -192,7 +203,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         }
         suite.append("        return suite;\n");
         clel.getMethod(Identifier.create("suite"), null).setBody(suite.toString());
-        ((SaveCookie)source.getCookie(SaveCookie.class)).save();
+        ((EditorCookie)source.getCookie(EditorCookie.class)).saveDocument();
     }
 
     protected static void createGoldenFile(JavaDataObject source, String name) throws IOException {
@@ -222,14 +233,18 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
                (fo.getFileObject("build-"+name,"xml")!=null);
     }
     
-    protected static int detectWorkspaceLevel(DataObject folder) {
+    protected static int detectWorkspaceLevel(DataFolder folder) {
         try {
             BufferedReader br=new BufferedReader(new InputStreamReader(folder.getPrimaryFile().getFileObject("CVS").getFileObject("Repository").getInputStream()));
             StringTokenizer repository=new StringTokenizer(br.readLine(),"/");
             br.close();
-            return repository.countTokens();
-        } catch (Exception e) {}
-        return -1;
+            int i=repository.countTokens();
+            if ((i>0)&&(i<4))
+                return i-1;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
     
     protected static Set instantiateTestSuite(TemplateWizard wizard) throws IOException {
@@ -272,8 +287,9 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
             throw new IOException("Could not create Test Type \""+name+"\" in package \""+targetFolder.getPrimaryFile().getPackageName('/')+"\". Reason is: "+ioe.getMessage());
         }
         set.add(dob);
-        name=dob.getPrimaryFile().getName();
         
+        if (name==null)
+            name=template.getPrimaryFile().getName();
         DataFolder suiteTarget=DataFolder.create(targetFolder, name+"/src");
         File root=FileUtil.toFile(suiteTarget.getPrimaryFile());
         if (root!=null) try {
@@ -291,6 +307,50 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         return set;
     }
     
+    protected static Document getDOM(DataObject o) {
+        AntProjectCookie cookie=(AntProjectCookie)o.getCookie(AntProjectCookie.class);
+        if (cookie!=null)
+            return cookie.getDocument();
+        return new AntProjectSupport(o.getPrimaryFile()).getDocument();
+    }
+    
+    
+    protected static void setProperty(Document doc, String name, String valueName, Object valueValue) {
+        setElement(doc, "property", "name", name, valueName, valueValue);
+    }
+    
+    protected static void setElement(Document doc, String element, String valueName, Object valueValue) {
+        setElement(doc, element, null, null, valueName, valueValue);
+    }
+    
+    protected static void setElement(Document doc, String element, String nameName, String nameValue, String valueName, Object valueValue) {
+        if (valueValue==null) return;
+        NodeList list = doc.getElementsByTagName(element);
+        for (int i=0; i<list.getLength(); i++) try {
+            if ((nameName==null)||(nameValue.equals(list.item(i).getAttributes().getNamedItem(nameName).getNodeValue()))) {
+                list.item(i).getAttributes().getNamedItem(valueName).setNodeValue(valueValue.toString());
+            }
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(e);
+        }
+    }
+    
+    protected static String getProperty(Document doc, String name, String valueName) {
+        return getElement(doc, "property", "name", name, valueName);
+    }
+    
+    protected static String getElement(Document doc, String element, String nameName, String nameValue, String valueName) {
+        NodeList list = doc.getElementsByTagName(element);
+        for (int i=0; i<list.getLength(); i++) try {
+            if ((nameName==null)||(nameValue.equals(list.item(i).getAttributes().getNamedItem(nameName).getNodeValue()))) {
+                return list.item(i).getAttributes().getNamedItem(valueName).getNodeValue();
+            }
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(e);
+        }
+        return null;
+    }
+    
     protected static Set instantiateTestWorkspace(TemplateWizard wizard) throws IOException {
         HashSet set=new HashSet();
         
@@ -303,8 +363,23 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         } catch (IOException ioe) {
             throw new IOException("Could not create Test Workspace in package \""+df.getPrimaryFile().getPackageName('/')+"\". Reason is: "+ioe.getMessage());
         }
-        
         set.add(buildScript);
+        String name=wizard.getTargetName();
+        if (name==null) 
+            name=wizard.getTemplate().getPrimaryFile().getName();
+        
+        Document doc=getDOM(buildScript);
+        setElement(doc, "project", "name", name+" XTest Workspace Script");
+        setProperty(doc, "netbeans.home", "location", wizard.getProperty(TESTWORKSPACE_NETBEANS_PROPERTY));
+        setProperty(doc, "xtest.home", "location", wizard.getProperty(TESTWORKSPACE_XTEST_PROPERTY));
+        setProperty(doc, "jemmy.home", "location", wizard.getProperty(TESTWORKSPACE_JEMMY_PROPERTY));
+        setProperty(doc, "jelly.home", "location", wizard.getProperty(TESTWORKSPACE_JELLY_PROPERTY));
+        setProperty(doc, "xtest.module", "value", name);
+        setProperty(doc, "xtest.testtype", "value", wizard.getProperty(TESTWORKSPACE_TYPE_PROPERTY));
+        setProperty(doc, "xtest.attribs", "value", wizard.getProperty(TESTWORKSPACE_ATTRIBUTES_PROPERTY));
+        setProperty(doc, "xtest.source.location", "value", wizard.getProperty(TESTWORKSPACE_SOURCE_PROPERTY));
+
+        ((EditorCookie)buildScript.getCookie(EditorCookie.class)).saveDocument();
         
         if (((Boolean)wizard.getProperty(CREATE_TESTTYPE_PROPERTY)).booleanValue()) {
             set.addAll(instantiateTestType(wizard));

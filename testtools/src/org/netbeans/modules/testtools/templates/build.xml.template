@@ -7,17 +7,23 @@
     <property name="build.sysclasspath" value="ignore"/>
 
     <!-- Points to directory with IDE to test-->
-    <property name="netbeans.home" location="../../nbbuild/netbeans"/>
+    <property name="netbeans.home" location="../../../nb_all/nbbuild/netbeans"/>
     
     <!-- Name of tested module -->
     <property name="xtest.module" value="MyModule"/>
     
     <!-- Home of XTest -->
-    <property name="xtest.home" location="../../xtest"/>
+    <property name="xtest.home" location="../../../nb_all/xtest"/>
+   
+    <!-- Home of Jemmy -->
+    <property name="jemmy.home" location="../../../nbextra/jemmy"/>
+   
+    <!-- Home of Jelly -->
+    <property name="jelly.home" location="../../../nbextra/jemmy"/>
    
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="qa-functional"/>
-    <property name="xtest.attribs" value="all,code,ide"/>
+    <property name="xtest.attribs" value="all,ide"/>
     
     <!-- Points to antfile with module's harness. 
          Targets from that antfile is called from this build.xml -->
