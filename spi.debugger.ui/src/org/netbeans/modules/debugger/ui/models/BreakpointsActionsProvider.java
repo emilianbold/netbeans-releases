@@ -44,13 +44,15 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
     
     
     private static final Action NEW_BREEAKPOINT_ACTION = new AbstractAction 
-        (NbBundle.getBundle(BreakpointsActionsProvider.class).getString("CTL_BreakpointAction_New_Label")) {
+        (NbBundle.getBundle (BreakpointsActionsProvider.class).getString
+            ("CTL_BreakpointAction_New_Label")) {
             public void actionPerformed (ActionEvent e) {
                 new AddBreakpointAction ().actionPerformed (null);
             }
     };
     private static final Action ENABLE_ALL_ACTION = new AbstractAction 
-        (NbBundle.getBundle(BreakpointsActionsProvider.class).getString("CTL_BreakpointAction_EnableAll_Label")) {
+        (NbBundle.getBundle (BreakpointsActionsProvider.class).getString
+            ("CTL_BreakpointAction_EnableAll_Label")) {
             public void actionPerformed (ActionEvent e) {
                 DebuggerManager dm = DebuggerManager.getDebuggerManager ();
                 Breakpoint[] bs = dm.getBreakpoints ();
@@ -60,7 +62,8 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
             }
     };
     private static final Action DISABLE_ALL_ACTION = new AbstractAction 
-        (NbBundle.getBundle(BreakpointsActionsProvider.class).getString("CTL_BreakpointAction_DisableAll_Label")) {
+        (NbBundle.getBundle (BreakpointsActionsProvider.class).getString
+            ("CTL_BreakpointAction_DisableAll_Label")) {
             public void actionPerformed (ActionEvent e) {
                 DebuggerManager dm = DebuggerManager.getDebuggerManager ();
                 Breakpoint[] bs = dm.getBreakpoints ();
@@ -70,7 +73,8 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
             }
     };
     private static final Action DELETE_ALL_ACTION = new AbstractAction 
-        (NbBundle.getBundle(BreakpointsActionsProvider.class).getString("CTL_BreakpointAction_DeleteAll_Label")) {
+        (NbBundle.getBundle (BreakpointsActionsProvider.class).getString
+            ("CTL_BreakpointAction_DeleteAll_Label")) {
             public void actionPerformed (ActionEvent e) {
                 DebuggerManager dm = DebuggerManager.getDebuggerManager ();
                 Breakpoint[] bs = dm.getBreakpoints ();
@@ -80,7 +84,8 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
             }
     };
     private static final Action ENABLE_ACTION = Models.createAction (
-        NbBundle.getBundle(BreakpointsActionsProvider.class).getString("CTL_BreakpointAction_Enable_Label"),
+        NbBundle.getBundle (BreakpointsActionsProvider.class).getString
+            ("CTL_BreakpointAction_Enable_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
@@ -94,7 +99,8 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
         Models.MULTISELECTION_TYPE_ANY
     );
     private static final Action DISABLE_ACTION = Models.createAction (
-        NbBundle.getBundle(BreakpointsActionsProvider.class).getString("CTL_BreakpointAction_Disable_Label"),
+        NbBundle.getBundle (BreakpointsActionsProvider.class).getString
+            ("CTL_BreakpointAction_Disable_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
@@ -108,7 +114,8 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
         Models.MULTISELECTION_TYPE_ANY
     );
     private static final Action DELETE_ACTION = Models.createAction (
-        NbBundle.getBundle(BreakpointsActionsProvider.class).getString("CTL_BreakpointAction_Delete_Label"),
+        NbBundle.getBundle (BreakpointsActionsProvider.class).getString
+            ("CTL_BreakpointAction_Delete_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
@@ -129,7 +136,8 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
         );
     };
     private static final Action SET_GROUP_NAME_ACTION = Models.createAction (
-        NbBundle.getBundle(BreakpointsActionsProvider.class).getString("CTL_BreakpointAction_SetGroupName_Label"),
+        NbBundle.getBundle (BreakpointsActionsProvider.class).getString
+            ("CTL_BreakpointAction_SetGroupName_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
@@ -141,7 +149,8 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
         Models.MULTISELECTION_TYPE_ALL
     );
     private static final Action DELETE_ALL_ACTION_S = Models.createAction (
-        NbBundle.getBundle(BreakpointsActionsProvider.class).getString("CTL_BreakpointAction_DeleteAll_Label"),
+        NbBundle.getBundle (BreakpointsActionsProvider.class).getString
+            ("CTL_BreakpointAction_DeleteAll_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
@@ -159,7 +168,8 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
     private static final Action ENABLE_ALL_ACTION_S = Models.createAction (
-        NbBundle.getBundle(BreakpointsActionsProvider.class).getString("CTL_BreakpointAction_EnableAll_Label"),
+        NbBundle.getBundle (BreakpointsActionsProvider.class).getString
+            ("CTL_BreakpointAction_EnableAll_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
@@ -177,7 +187,8 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
     private static final Action DISABLE_ALL_ACTION_S = Models.createAction (
-        NbBundle.getBundle(BreakpointsActionsProvider.class).getString("CTL_BreakpointAction_DisableAll_Label"),
+        NbBundle.getBundle (BreakpointsActionsProvider.class).getString
+            ("CTL_BreakpointAction_DisableAll_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
@@ -275,8 +286,10 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
 
     private static void setGroupName (Object[] nodes) {
         NotifyDescriptor.InputLine descriptor = new NotifyDescriptor.InputLine (
-            NbBundle.getBundle(BreakpointsActionsProvider.class).getString("CTL_BreakpointAction_GroupDialog_NameLabel"),
-            NbBundle.getBundle(BreakpointsActionsProvider.class).getString("CTL_BreakpointAction_GroupDialog_Title")
+            NbBundle.getBundle (BreakpointsActionsProvider.class).getString
+                ("CTL_BreakpointAction_GroupDialog_NameLabel"),
+            NbBundle.getBundle (BreakpointsActionsProvider.class).getString
+                ("CTL_BreakpointAction_GroupDialog_Title")
         );
         if (DialogDisplayer.getDefault ().notify (descriptor) == 
             NotifyDescriptor.OK_OPTION
@@ -290,12 +303,16 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
                     if ( ((Breakpoint) bs [j]).getGroupName ().
                          equals (oldName)
                     )
-                        ((Breakpoint) bs [j]).setGroupName (descriptor.getInputText ());
+                        ((Breakpoint) bs [j]).setGroupName (
+                            descriptor.getInputText ()
+                        );
                 return;
             }
             int i, k = nodes.length;
             for (i = 0; i < k; i++)
-                ((Breakpoint) nodes [i]).setGroupName (descriptor.getInputText ());
+                ((Breakpoint) nodes [i]).setGroupName (
+                    descriptor.getInputText ()
+                );
            // fireTreeChanged ();
         }
     }

@@ -24,7 +24,8 @@ import org.openide.util.NbBundle;
 
 /**
  * Defines model for one table view column. Can be used together with 
- * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+ * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
+ * view representation.
  *
  * @author   Jan Jancura
  */
@@ -32,9 +33,11 @@ public class ColumnModels {
     
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
+     * table view representation.
      */
-    public abstract static class AbstractColumn extends ColumnModel implements Constants {
+    public abstract static class AbstractColumn extends ColumnModel 
+    implements Constants {
         
         Properties properties = Properties.getDefault ().
             getProperties ("debugger").getProperties ("views");
@@ -61,11 +64,14 @@ public class ColumnModels {
         /**
          * Set true if column should be sorted by default in descending order.
          *
-         * @param sortedDescending set true if column should be sorted by default 
-         *        in descending order
+         * @param sortedDescending set true if column should be 
+         *        sorted by default in descending order
          */
         public void setSortedDescending (boolean sortedDescending) {
-            properties.setBoolean (getID () + ".sortedDescending", sortedDescending);
+            properties.setBoolean (
+                getID () + ".sortedDescending", 
+                sortedDescending
+             );
         }
     
         /**
@@ -83,7 +89,10 @@ public class ColumnModels {
          * @param newOrderNumber new order number
          */
         public void setCurrentOrderNumber (int newOrderNumber) {
-            properties.setInt (getID () + ".currentOrderNumber", newOrderNumber);
+            properties.setInt (
+                getID () + ".currentOrderNumber",
+                newOrderNumber
+            );
         }
 
         /**
@@ -125,16 +134,21 @@ public class ColumnModels {
         /**
          * True if column should be sorted by default in descending order.
          *
-         * @return true if column should be sorted by default in descending order
+         * @return true if column should be sorted by default in descending 
+         * order
          */
         public boolean isSortedDescending () {
-            return properties.getBoolean (getID () + ".sortedDescending", false);
+            return properties.getBoolean (
+                getID () + ".sortedDescending", 
+                false
+            );
         }
     }
     
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view 
+     * representation.
      */
     public static class DefaultBreakpointsColumn extends AbstractColumn {
 
@@ -153,7 +167,8 @@ public class ColumnModels {
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle(DefaultBreakpointsColumn.class).getString("CTL_BreakpointView_Column_Name_Name");
+            return NbBundle.getBundle (DefaultBreakpointsColumn.class).
+                getString ("CTL_BreakpointView_Column_Name_Name");
         }
 
         /**
@@ -162,7 +177,8 @@ public class ColumnModels {
          * @return  tooltip for given node
          */
         public String getShortDescription () {
-            return NbBundle.getBundle(DefaultBreakpointsColumn.class).getString("CTL_BreakpointView_Column_Name_Desc");
+            return NbBundle.getBundle (DefaultBreakpointsColumn.class).
+                getString ("CTL_BreakpointView_Column_Name_Desc");
         }
 
         /**
@@ -177,7 +193,8 @@ public class ColumnModels {
     
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view 
+     * representation.
      */
     public static class BreakpointEnabledColumn extends AbstractColumn {
 
@@ -196,7 +213,8 @@ public class ColumnModels {
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle(BreakpointEnabledColumn.class).getString("CTL_BreakpointView_Column_Enabled_Name");
+            return NbBundle.getBundle (BreakpointEnabledColumn.class).
+                getString ("CTL_BreakpointView_Column_Enabled_Name");
         }
 
         /**
@@ -205,7 +223,8 @@ public class ColumnModels {
          * @return  tooltip for given node
          */
         public String getShortDescription () {
-            return NbBundle.getBundle(BreakpointEnabledColumn.class).getString("CTL_BreakpointView_Column_Enabled_Desc");
+            return NbBundle.getBundle (BreakpointEnabledColumn.class).
+                getString ("CTL_BreakpointView_Column_Enabled_Desc");
         }
 
         /**
@@ -229,7 +248,8 @@ public class ColumnModels {
     
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view 
+     * representation.
      */
     public static class DefaultCallStackColumn extends AbstractColumn {
 
@@ -248,7 +268,8 @@ public class ColumnModels {
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle(DefaultCallStackColumn.class).getString("CTL_CallstackView_Column_Name_Name");
+            return NbBundle.getBundle (DefaultCallStackColumn.class).
+                getString ("CTL_CallstackView_Column_Name_Name");
         }
 
         /**
@@ -257,7 +278,8 @@ public class ColumnModels {
          * @return  tooltip for given node
          */
         public String getShortDescription () {
-            return NbBundle.getBundle(DefaultCallStackColumn.class).getString("CTL_CallstackView_Column_Name_Desc");
+            return NbBundle.getBundle (DefaultCallStackColumn.class).
+                getString ("CTL_CallstackView_Column_Name_Desc");
         }
 
         /**
@@ -272,7 +294,8 @@ public class ColumnModels {
 
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
+     * view representation.
      */
     public static class CallStackLocationColumn extends AbstractColumn {
 
@@ -291,7 +314,8 @@ public class ColumnModels {
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle(CallStackLocationColumn.class).getString("CTL_CallstackView_Column_Location_Name");
+            return NbBundle.getBundle (CallStackLocationColumn.class).
+                getString ("CTL_CallstackView_Column_Location_Name");
         }
 
         /**
@@ -300,7 +324,8 @@ public class ColumnModels {
          * @return  tooltip for given node
          */
         public String getShortDescription () {
-            return NbBundle.getBundle(CallStackLocationColumn.class).getString("CTL_CallstackView_Column_Location_Desc");
+            return NbBundle.getBundle (CallStackLocationColumn.class)
+            .getString ("CTL_CallstackView_Column_Location_Desc");
         }
 
         /**
@@ -324,7 +349,8 @@ public class ColumnModels {
     
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
+     * view representation.
      */
     public static class DefaultLocalsColumn extends AbstractColumn {
 
@@ -343,7 +369,8 @@ public class ColumnModels {
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle(DefaultLocalsColumn.class).getString("CTL_LocalsView_Column_Name_Name");
+            return NbBundle.getBundle (DefaultLocalsColumn.class).
+                getString ("CTL_LocalsView_Column_Name_Name");
         }
 
         /**
@@ -352,7 +379,8 @@ public class ColumnModels {
          * @return  tooltip for given node
          */
         public String getShortDescription () {
-            return NbBundle.getBundle(DefaultLocalsColumn.class).getString("CTL_LocalsView_Column_Name_Desc");
+            return NbBundle.getBundle (DefaultLocalsColumn.class).
+                getString ("CTL_LocalsView_Column_Name_Desc");
         }
 
         /**
@@ -367,7 +395,8 @@ public class ColumnModels {
 
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
+     * view representation.
      */
     public static class LocalsToStringColumn extends AbstractColumn {
 
@@ -395,7 +424,8 @@ public class ColumnModels {
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle(LocalsToStringColumn.class).getString("CTL_LocalsView_Column_ToString_Name");
+            return NbBundle.getBundle (LocalsToStringColumn.class).
+                getString ("CTL_LocalsView_Column_ToString_Name");
         }
 
         /**
@@ -404,7 +434,8 @@ public class ColumnModels {
          * @return  tooltip for given node
          */
         public String getShortDescription () {
-            return NbBundle.getBundle(LocalsToStringColumn.class).getString("CTL_LocalsView_Column_ToString_Desc");
+            return NbBundle.getBundle (LocalsToStringColumn.class).
+                getString ("CTL_LocalsView_Column_ToString_Desc");
         }
 
         /**
@@ -428,7 +459,8 @@ public class ColumnModels {
 
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
+     * table view representation.
      */
     public static class LocalsTypeColumn extends AbstractColumn {
 
@@ -456,7 +488,8 @@ public class ColumnModels {
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle(LocalsTypeColumn.class).getString("CTL_LocalsView_Column_Type_Name");
+            return NbBundle.getBundle (LocalsTypeColumn.class).
+                getString ("CTL_LocalsView_Column_Type_Name");
         }
 
         /**
@@ -465,7 +498,8 @@ public class ColumnModels {
          * @return  tooltip for given node
          */
         public String getShortDescription () {
-            return NbBundle.getBundle(LocalsTypeColumn.class).getString("CTL_LocalsView_Column_Type_Desc");
+            return NbBundle.getBundle (LocalsTypeColumn.class).
+                getString ("CTL_LocalsView_Column_Type_Desc");
         }
 
         /**
@@ -489,7 +523,8 @@ public class ColumnModels {
 
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
+     * view representation.
      */
     public static class LocalsValueColumn extends AbstractColumn {
 
@@ -526,7 +561,8 @@ public class ColumnModels {
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle(LocalsValueColumn.class).getString("CTL_LocalsView_Column_Value_Name");
+            return NbBundle.getBundle (LocalsValueColumn.class).
+                getString ("CTL_LocalsView_Column_Value_Name");
         }
 
         /**
@@ -535,7 +571,8 @@ public class ColumnModels {
          * @return  tooltip for given node
          */
         public String getShortDescription () {
-            return NbBundle.getBundle(LocalsValueColumn.class).getString("CTL_LocalsView_Column_Value_Desc");
+            return NbBundle.getBundle (LocalsValueColumn.class).
+                getString ("CTL_LocalsView_Column_Value_Desc");
         }
 
         /**
@@ -559,7 +596,8 @@ public class ColumnModels {
     
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
+     * view representation.
      */
     public static class DefaultSessionColumn extends AbstractColumn {
 
@@ -578,7 +616,8 @@ public class ColumnModels {
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle(DefaultSessionColumn.class).getString("CTL_SessionsView_Column_Name_Name");
+            return NbBundle.getBundle (DefaultSessionColumn.class).
+                getString ("CTL_SessionsView_Column_Name_Name");
         }
 
         /**
@@ -587,7 +626,8 @@ public class ColumnModels {
          * @return  tooltip for given node
          */
         public String getShortDescription () {
-            return NbBundle.getBundle(DefaultSessionColumn.class).getString("CTL_SessionsView_Column_Name_Desc");
+            return NbBundle.getBundle (DefaultSessionColumn.class).
+                getString ("CTL_SessionsView_Column_Name_Desc");
         }
 
         /**
@@ -602,7 +642,8 @@ public class ColumnModels {
 
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
+     * view representation.
      */
     public static class SessionHostNameColumn extends AbstractColumn {
 
@@ -630,7 +671,8 @@ public class ColumnModels {
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle(SessionHostNameColumn.class).getString("CTL_SessionsView_Column_HostName_Name");
+            return NbBundle.getBundle (SessionHostNameColumn.class).
+                getString ("CTL_SessionsView_Column_HostName_Name");
         }
 
         /**
@@ -639,7 +681,8 @@ public class ColumnModels {
          * @return  tooltip for given node
          */
         public String getShortDescription () {
-            return NbBundle.getBundle(SessionHostNameColumn.class).getString("CTL_SessionsView_Column_HostName_Desc");
+            return NbBundle.getBundle (SessionHostNameColumn.class).
+                getString ("CTL_SessionsView_Column_HostName_Desc");
         }
 
         /**
@@ -663,7 +706,8 @@ public class ColumnModels {
 
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
+     * table view representation.
      */
     public static class SessionStateColumn extends AbstractColumn {
 
@@ -691,7 +735,8 @@ public class ColumnModels {
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle(SessionStateColumn.class).getString("CTL_SessionsView_Column_State_Name");
+            return NbBundle.getBundle (SessionStateColumn.class).
+                getString ("CTL_SessionsView_Column_State_Name");
         }
 
         /**
@@ -700,7 +745,8 @@ public class ColumnModels {
          * @return  tooltip for given node
          */
         public String getShortDescription () {
-            return NbBundle.getBundle(SessionStateColumn.class).getString("CTL_SessionsView_Column_State_Desc");
+            return NbBundle.getBundle (SessionStateColumn.class).
+                getString ("CTL_SessionsView_Column_State_Desc");
         }
 
         /**
@@ -724,7 +770,8 @@ public class ColumnModels {
 
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
+     * view representation.
      */
     public static class SessionLanguageColumn extends AbstractColumn {
 
@@ -761,7 +808,8 @@ public class ColumnModels {
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle(SessionLanguageColumn.class).getString("CTL_SessionsView_Column_Language_Name");
+            return NbBundle.getBundle (SessionLanguageColumn.class).
+                getString ("CTL_SessionsView_Column_Language_Name");
         }
 
         /**
@@ -770,7 +818,8 @@ public class ColumnModels {
          * @return  tooltip for given node
          */
         public String getShortDescription () {
-            return NbBundle.getBundle(SessionLanguageColumn.class).getString("CTL_SessionsView_Column_Language_Desc");
+            return NbBundle.getBundle (SessionLanguageColumn.class).
+                getString ("CTL_SessionsView_Column_Language_Desc");
         }
 
         /**
@@ -806,7 +855,8 @@ public class ColumnModels {
     
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
+     * table view representation.
      */
     public static class DefaultThreadColumn extends AbstractColumn {
 
@@ -825,7 +875,8 @@ public class ColumnModels {
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle(DefaultThreadColumn.class).getString("CTL_ThreadsView_Column_Name_Name");
+            return NbBundle.getBundle (DefaultThreadColumn.class).
+                getString ("CTL_ThreadsView_Column_Name_Name");
         }
 
         /**
@@ -834,7 +885,8 @@ public class ColumnModels {
          * @return  tooltip for given node
          */
         public String getShortDescription () {
-            return NbBundle.getBundle(DefaultThreadColumn.class).getString("CTL_ThreadsView_Column_Name_Desc");
+            return NbBundle.getBundle (DefaultThreadColumn.class).
+                getString ("CTL_ThreadsView_Column_Name_Desc");
         }
 
         /**
@@ -849,7 +901,8 @@ public class ColumnModels {
 
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
+     * table view representation.
      */
     public static class ThreadStateColumn extends AbstractColumn {
 
@@ -877,7 +930,8 @@ public class ColumnModels {
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle(ThreadStateColumn.class).getString("CTL_ThreadsView_Column_State_Name");
+            return NbBundle.getBundle (ThreadStateColumn.class).
+                getString ("CTL_ThreadsView_Column_State_Name");
         }
 
         /**
@@ -886,7 +940,8 @@ public class ColumnModels {
          * @return  tooltip for given node
          */
         public String getShortDescription () {
-            return NbBundle.getBundle(ThreadStateColumn.class).getString("CTL_ThreadsView_Column_State_Desc");
+            return NbBundle.getBundle (ThreadStateColumn.class).
+                getString ("CTL_ThreadsView_Column_State_Desc");
         }
 
         /**
@@ -910,7 +965,8 @@ public class ColumnModels {
 
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
+     * table view representation.
      */
     public static class ThreadSuspendedColumn extends AbstractColumn {
 
@@ -938,7 +994,8 @@ public class ColumnModels {
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle(ThreadSuspendedColumn.class).getString("CTL_ThreadsView_Column_Suspended_Name");
+            return NbBundle.getBundle (ThreadSuspendedColumn.class).
+                getString ("CTL_ThreadsView_Column_Suspended_Name");
         }
 
         /**
@@ -947,7 +1004,8 @@ public class ColumnModels {
          * @return  tooltip for given node
          */
         public String getShortDescription () {
-            return NbBundle.getBundle(ThreadSuspendedColumn.class).getString("CTL_ThreadsView_Column_Suspended_Desc");
+            return NbBundle.getBundle (ThreadSuspendedColumn.class).
+                getString ("CTL_ThreadsView_Column_Suspended_Desc");
         }
 
         /**
@@ -971,7 +1029,8 @@ public class ColumnModels {
     
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
+     * table view representation.
      */
     public static class DefaultWatchesColumn extends AbstractColumn {
 
@@ -990,7 +1049,8 @@ public class ColumnModels {
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle(DefaultWatchesColumn.class).getString("CTL_WatchesView_Column_Name_Name");
+            return NbBundle.getBundle (DefaultWatchesColumn.class).
+                getString ("CTL_WatchesView_Column_Name_Name");
         }
 
         /**
@@ -999,7 +1059,8 @@ public class ColumnModels {
          * @return  tooltip for given node
          */
         public String getShortDescription () {
-            return NbBundle.getBundle(DefaultWatchesColumn.class).getString("CTL_WatchesView_Column_Name_Desc");
+            return NbBundle.getBundle (DefaultWatchesColumn.class).
+                getString ("CTL_WatchesView_Column_Name_Desc");
         }
 
         /**
@@ -1014,7 +1075,8 @@ public class ColumnModels {
 
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
+     * table view representation.
      */
     public static class WatchToStringColumn extends AbstractColumn {
 
@@ -1042,7 +1104,8 @@ public class ColumnModels {
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle(WatchToStringColumn.class).getString("CTL_WatchesView_Column_ToString_Name");
+            return NbBundle.getBundle (WatchToStringColumn.class).
+                getString ("CTL_WatchesView_Column_ToString_Name");
         }
 
         /**
@@ -1051,7 +1114,8 @@ public class ColumnModels {
          * @return  tooltip for given node
          */
         public String getShortDescription () {
-            return NbBundle.getBundle(WatchToStringColumn.class).getString("CTL_WatchesView_Column_ToString_Desc");
+            return NbBundle.getBundle (WatchToStringColumn.class).
+                getString ("CTL_WatchesView_Column_ToString_Desc");
         }
 
         /**
@@ -1075,7 +1139,8 @@ public class ColumnModels {
 
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
+     * table view representation.
      */
     public static class WatchTypeColumn extends AbstractColumn {
 
@@ -1103,7 +1168,8 @@ public class ColumnModels {
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle(WatchTypeColumn.class).getString("CTL_WatchesView_Column_Type_Name");
+            return NbBundle.getBundle (WatchTypeColumn.class).
+                getString ("CTL_WatchesView_Column_Type_Name");
         }
 
         /**
@@ -1112,7 +1178,8 @@ public class ColumnModels {
          * @return  tooltip for given node
          */
         public String getShortDescription () {
-            return NbBundle.getBundle(WatchTypeColumn.class).getString("CTL_WatchesView_Column_Type_Desc");
+            return NbBundle.getBundle (WatchTypeColumn.class).
+                getString ("CTL_WatchesView_Column_Type_Desc");
         }
 
         /**
@@ -1136,7 +1203,8 @@ public class ColumnModels {
 
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
+     * table view representation.
      */
     public static class WatchValueColumn extends AbstractColumn {
 
@@ -1173,7 +1241,8 @@ public class ColumnModels {
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle(WatchValueColumn.class).getString("CTL_WatchesView_Column_Value_Name");
+            return NbBundle.getBundle (WatchValueColumn.class).
+                getString ("CTL_WatchesView_Column_Value_Name");
         }
 
         /**
@@ -1182,7 +1251,8 @@ public class ColumnModels {
          * @return  tooltip for given node
          */
         public String getShortDescription () {
-            return NbBundle.getBundle(WatchValueColumn.class).getString("CTL_WatchesView_Column_Value_Desc");
+            return NbBundle.getBundle (WatchValueColumn.class).
+                getString ("CTL_WatchesView_Column_Value_Desc");
         }
 
         /**
