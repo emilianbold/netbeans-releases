@@ -74,18 +74,18 @@ public class TomcatInstanceNode extends AbstractNode {
     // Create a property sheet:
     protected Sheet createSheet () {
 	Sheet sheet = super.createSheet ();
-        /*Sheet.Set ssProp = sheet.get (Sheet.PROPERTIES);
+        Sheet.Set ssProp = sheet.get (Sheet.PROPERTIES);
         if (ssProp == null) {
 	    ssProp = Sheet.createPropertiesSet ();
             sheet.put (ssProp);
-	}*/
+	}
         
         // This is workaround for displaying properties in Properties cathegory more times
-        Sheet.Set ssProp = new Sheet.Set ();
+        /*Sheet.Set ssProp = new Sheet.Set ();
         ssProp.setName("_xxproperties");      // NOI18N
         ssProp.setDisplayName("Properties");  // NOI18N
         sheet.put (ssProp);
-        
+        */
         
         Node.Property p;
         p = new PropertySupport.ReadWrite (
