@@ -72,7 +72,7 @@ public class FastScanTest extends NbTestCase {
     private void parseIt(FileObject root, FileObject jspFile) {
         log("calling parseIt, root: " + root + "  file: " + jspFile);
         JspParserAPI api = JspParserFactory.getJspParser();
-        JspParserAPI.JspOpenInfo info = api.getJspOpenInfo(root, jspFile, TestUtil.getWebModule(jspFile));
+        JspParserAPI.JspOpenInfo info = api.getJspOpenInfo(jspFile, TestUtil.getWebModule(root, jspFile));
         log("file: " + jspFile + "   enc: " + info.getEncoding() + "   isXML: " + info.isXmlSyntax());
         assertEquals(new JspParserAPI.JspOpenInfo(false, "ISO-8859-1"), info);
     }

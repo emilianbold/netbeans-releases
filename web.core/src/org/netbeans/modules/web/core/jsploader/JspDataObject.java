@@ -301,8 +301,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                     ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, 
                     new NullPointerException());
                 }
-                result = parser.analyzePage( JspCompileUtil.getContextRoot(getPrimaryFile()), getPrimaryFile(), 
-                    WebModule.getJspParserWM(), JspParserAPI.ERROR_IGNORE );
+                result = parser.analyzePage(getPrimaryFile(), 
+                    WebModule.getJspParserWM(JspCompileUtil.getContextRoot(getPrimaryFile())), JspParserAPI.ERROR_IGNORE );
                 
             }
             if ((result == null) || result.isParsingSuccess()) {

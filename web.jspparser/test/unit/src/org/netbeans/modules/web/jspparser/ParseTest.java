@@ -118,7 +118,7 @@ public class ParseTest extends NbTestCase {
     private void analyzeIt(FileObject root, FileObject jspFile) throws IOException {
         log("calling parseIt, root: " + root + "  file: " + jspFile);
         JspParserAPI api = JspParserFactory.getJspParser();
-        JspParserAPI.ParseResult result = api.analyzePage(root, jspFile, TestUtil.getWebModule(jspFile), JspParserAPI.ERROR_IGNORE);
+        JspParserAPI.ParseResult result = api.analyzePage(jspFile, TestUtil.getWebModule(root, jspFile), JspParserAPI.ERROR_IGNORE);
         
         File goldenF = null;
         File outFile = null;

@@ -25,8 +25,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
@@ -70,8 +68,8 @@ class TestUtil {
         return tempFile;
     }
     
-    static JspParserAPI.WebModule getWebModule(FileObject jspFile) {
-        return WebModule.getJspParserWM();
+    static JspParserAPI.WebModule getWebModule(FileObject wmRoot, FileObject jspFile) {
+        return WebModule.getJspParserWM(wmRoot);
     }
     
 }

@@ -68,21 +68,22 @@ public class JspParserImpl implements JspParserAPI {
         }*/
     }
     
-    public synchronized JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject wmRoot, FileObject jspFile, WebModule wm) {
+    public synchronized JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, WebModule wm) {
+        FileObject wmRoot = wm.getDocumentBase();
         if (wmRoot == null) {
             // PENDING - we could do a better job here in making up a fallback
             return new JspParserAPI.JspOpenInfo(false, "8859_1"); // NOI18N
         }
-        WebAppParseSupport ps = getParseSupport(wm, wmRoot);
+        WebAppParseSupport ps = getParseSupport(wm);
         return ps.getJspOpenInfo(jspFile);
     }
 
-    public synchronized JspParserAPI.ParseResult analyzePage(FileObject wmRoot, FileObject jspFile, WebModule wm,
-        int errorReportingMode) {
+    public synchronized JspParserAPI.ParseResult analyzePage(FileObject jspFile, WebModule wm, int errorReportingMode) {
+        FileObject wmRoot = wm.getDocumentBase();
         if (wmRoot == null) {
             return getNoWebModuleResult(jspFile, wm);
         }
-        WebAppParseSupport ps = getParseSupport(wm, wmRoot);
+        WebAppParseSupport ps = getParseSupport(wm);
         return ps.analyzePage(jspFile, errorReportingMode);
     }
     
@@ -96,26 +97,27 @@ public class JspParserImpl implements JspParserAPI {
      *    [0] The location
      *    [1] If the location is a jar file, this is the location of the tld.
      */
-    public synchronized Map getTaglibMap(FileObject wmRoot, WebModule wm) throws IOException {
+    public synchronized Map getTaglibMap(WebModule wm) throws IOException {
+        FileObject wmRoot = wm.getDocumentBase();
         if (wmRoot == null) {
             throw new IOException();
         }
-        WebAppParseSupport ps = getParseSupport(wm, wmRoot);
+        WebAppParseSupport ps = getParseSupport(wm);
         return ps.getTaglibMap(true);
     }
     
-    private synchronized WebAppParseSupport getParseSupport(WebModule wm, FileObject wmRoot) {
-        JspParserImpl.WAParseSupportKey key = new JspParserImpl.WAParseSupportKey(wm, wmRoot);
+    private synchronized WebAppParseSupport getParseSupport(WebModule wm) {
+        JspParserImpl.WAParseSupportKey key = new JspParserImpl.WAParseSupportKey(wm);
         WebAppParseSupport ps = (WebAppParseSupport)parseSupports.get(key);
         if (ps == null) {
-            ps = new WebAppParseSupport(wmRoot, wm);
+            ps = new WebAppParseSupport(wm);
             parseSupports.put(key, ps);
         }
         return ps;
     }
     
-    public URLClassLoader getModuleClassLoader(FileObject wmRoot, WebModule wm) {
-        WebAppParseSupport ps = getParseSupport(wm, wmRoot);
+    public URLClassLoader getModuleClassLoader(WebModule wm) {
+        WebAppParseSupport ps = getParseSupport(wm);
         return ps.getWAClassLoader();
     }
     
@@ -175,9 +177,9 @@ public class JspParserImpl implements JspParserAPI {
         WebModule wm;
         FileObject wmRoot;
         
-        WAParseSupportKey(WebModule wm, FileObject wmRoot) {
+        WAParseSupportKey(WebModule wm) {
             this.wm = wm;
-            this.wmRoot = wmRoot;
+            this.wmRoot = wm.getDocumentBase();
         }
         
         public boolean equals(Object o) {

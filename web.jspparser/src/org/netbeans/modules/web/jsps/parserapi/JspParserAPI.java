@@ -43,6 +43,12 @@ public interface JspParserAPI {
          */
         public static final String PROP_PACKAGE_ROOTS = "package_roots"; // NOI18N
         
+        /** Returns the document base directory of the web module.
+         * May return null if we are parsing a tag file that is outside a web module
+         * (that will be packaged into a tag library).
+         */
+        public abstract FileObject getDocumentBase();
+        
         /** Returns InputStream for the file open in editor or null
          * if the file is not open.
          */
@@ -94,7 +100,7 @@ public interface JspParserAPI {
      * @param proj project in whose context to compile
      * @return open information
      */    
-    public JspOpenInfo getJspOpenInfo(FileObject wmRoot, FileObject jspFile, WebModule wm);
+    public JspOpenInfo getJspOpenInfo(FileObject jspFile, WebModule wm);
 
     /** Analyzes JSP and returns the parsed data about the page.
      * 
@@ -105,14 +111,14 @@ public interface JspParserAPI {
      * @param errorReportingMode mode for reporting errors, see above
      * @return Parsing results.
      */    
-    public JspParserAPI.ParseResult analyzePage(FileObject wmRoot, FileObject jspFile, WebModule wm,
+    public JspParserAPI.ParseResult analyzePage(FileObject jspFile, WebModule wm,
         int errorReportingMode);
     
     
     /** Returns the classloader which loads classes from the given web module 
      * (within a project context).
      */
-    public URLClassLoader getModuleClassLoader(FileObject wmRoot, WebModule wm);
+    public URLClassLoader getModuleClassLoader(WebModule wm);
     
     /** Creates a description of a tag library. */
     //public TagLibParseSupport.TagLibData createTagLibData(JspInfo.TagLibraryData info, FileSystem fs);
@@ -127,7 +133,7 @@ public interface JspParserAPI {
      *    [0] The location
      *    [1] If the location is a jar file, this is the location of the tld.
      */
-    public Map getTaglibMap(FileObject wmRoot, WebModule wm) throws IOException;
+    public Map getTaglibMap(WebModule wm) throws IOException;
     
     /** This class represents a result of parsing. It indicates either success
      * or failure. In case of success, provides information about the parsed page,

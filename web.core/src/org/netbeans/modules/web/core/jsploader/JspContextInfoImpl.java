@@ -68,7 +68,7 @@ public class JspContextInfoImpl extends JspContextInfo {
     public URLClassLoader getModuleClassLoader(Document doc, FileObject fo){
         try{
             FileObject wmRoot = fo.getFileSystem().getRoot();
-            return JspCompileUtil.getJspParser().getModuleClassLoader(wmRoot, WebModule.getJspParserWM ());
+            return JspCompileUtil.getJspParser().getModuleClassLoader(WebModule.getJspParserWM (wmRoot));
         }
         catch (FileStateInvalidException ex){
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -112,7 +112,7 @@ public class JspContextInfoImpl extends JspContextInfo {
                 new NullPointerException());
             }
             else {
-                return parser.getTaglibMap(wmRoot, WebModule.getJspParserWM ());
+                return parser.getTaglibMap(WebModule.getJspParserWM (wmRoot));
             }
         }
         catch (IOException e) {
