@@ -217,6 +217,52 @@ public class NbKeymapTest extends NbTestCase {
         assertEquals ("No action registered", null, action);
     }
     
+    public void testShortcutsFolderAddAndRemove () throws Exception {
+        DataFolder actions = DataFolder.findFolder (
+            FileUtil.createFolder (Repository.getDefault ().getDefaultFileSystem ().getRoot (), "Actions")
+        );
+        DataFolder shortcuts = DataFolder.findFolder (
+            FileUtil.createFolder (Repository.getDefault ().getDefaultFileSystem ().getRoot (), "Shortcuts")
+        );
+       
+        FileObject dummy = FileUtil.createData (actions.getPrimaryFile (), "Dummy.instance");
+        dummy.setAttribute ("instanceCreate", new DummyAction ("testShortcutsFolder"));
+        
+        DataObject obj = DataObject.find (dummy);
+        InstanceCookie ic = (InstanceCookie)obj.getCookie (InstanceCookie.class);
+        assertNotNull ("Instance cookie is there", ic);
+        assertEquals ("The right class is created", DummyAction.class, ic.instanceClass ());
+        assertTrue ("Name is testShortcutsFolder", ic.instanceCreate ().toString ().indexOf ("testShortcutsFolder") > 0);
+        
+        ShortcutsFolder.initShortcuts ();
+        Keymap globalMap = (Keymap)org.openide.util.Lookup.getDefault().lookup(Keymap.class);
+        assertNotNull ("Global map is registered", globalMap);
+        
+        //
+        // simulate user adding the shortcut
+        //
+        
+        org.openide.loaders.DataShadow shadow = obj.createShadow (shortcuts);
+        shadow.rename ("C-F2");
+        ShortcutsFolder.waitShortcutsFinished ();
+        
+        Action action = globalMap.getAction (org.openide.util.Utilities.stringToKey ("C-F2"));
+        assertNotNull ("Action is registered for C-F2", action);
+        assertEquals ("Is dummy", DummyAction.class, action.getClass ());
+        assertTrue ("Has the right name", action.toString ().indexOf ("testShortcutsFolder") > 0);
+        
+        //
+        // now simulate the delete
+        //
+        shadow.delete ();
+        assertFalse (shadow.isValid ());
+        
+        ShortcutsFolder.waitShortcutsFinished ();
+        
+        action = globalMap.getAction (org.openide.util.Utilities.stringToKey ("C-F2"));
+        assertEquals ("No action registered", null, action);
+    }
+    
     private static final class DummyAction extends AbstractAction {
         private final String name;
         public DummyAction(String name) {
