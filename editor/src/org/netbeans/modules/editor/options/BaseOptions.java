@@ -24,7 +24,7 @@ import javax.swing.text.JTextComponent;
   
 import com.netbeans.editor.Settings;
 import com.netbeans.editor.SettingNames;
-import com.netbeans.editor.BaseSettingsInitializer;
+import com.netbeans.editor.SettingDefaults;
 import com.netbeans.editor.SettingsUtil;
 import com.netbeans.editor.Coloring;
 import com.netbeans.editor.BaseKit;
@@ -276,7 +276,7 @@ public class BaseOptions extends OptionSupport {
   
   public int getFontSize() {
     Coloring dc = SettingsUtil.getColoring(getKitClass(), SettingNames.DEFAULT_COLORING, false);
-    return (dc != null) ? dc.getFont().getSize() : BaseSettingsInitializer.defaultFont.getSize();
+    return (dc != null) ? dc.getFont().getSize() : SettingDefaults.defaultFont.getSize();
   }
   
   public void setFontSize(final int size) {
@@ -436,6 +436,7 @@ public class BaseOptions extends OptionSupport {
 
 /*
  * Log
+ *  20   Jaga      1.14.1.1.1.23/21/00  Miloslav Metelka 
  *  19   Jaga      1.14.1.1.1.13/20/00  Miloslav Metelka 
  *  18   Jaga      1.14.1.1.1.03/15/00  Miloslav Metelka Structural change
  *  17   Gandalf-post-FCS1.14.1.1    2/28/00  Petr Nejedly    

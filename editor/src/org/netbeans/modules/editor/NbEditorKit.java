@@ -21,6 +21,7 @@ import javax.swing.KeyStroke;
 import javax.swing.text.Document;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
+import com.netbeans.editor.EditorUI;
 import com.netbeans.editor.ext.ExtKit;
 import com.netbeans.editor.ext.FindDialogSupport;
 import com.netbeans.editor.ext.GotoDialogSupport;
@@ -51,6 +52,10 @@ public abstract class NbEditorKit extends ExtKit {
 
   public Document createDefaultDocument() {
     return new NbEditorDocument(this.getClass());
+  }
+
+  protected EditorUI createEditorUI() {
+    return new NbEditorUI();
   }
 
   protected void addSystemActionMapping(String editorActionName, Class systemActionClass) {
@@ -91,7 +96,7 @@ public abstract class NbEditorKit extends ExtKit {
     protected JMenuItem getItem(JTextComponent target, String actionName) {
       JMenuItem item = super.getItem(target, actionName);
 
-      if (item == null) { // try if it's an action class name
+      if (item == null && actionName != null) { // try if it's an action class name
         Class saClass;
         try {
           saClass = Class.forName(actionName);
@@ -99,13 +104,17 @@ public abstract class NbEditorKit extends ExtKit {
           saClass = null;
         }
 
-        SystemAction sa = SystemAction.get(saClass);
-        if (sa instanceof Presenter.Popup) {
-          item = ((Presenter.Popup)sa).getPopupPresenter();
-          if (item != null && !(item instanceof JMenu)) {
-            KeyStroke[] keys = TopManager.getDefault().getGlobalKeymap().getKeyStrokesForAction(sa);
-            if (keys != null && keys.length > 0) {
-              item.setAccelerator(keys[0]);
+        if (saClass != null && SystemAction.class.isAssignableFrom(saClass)) {
+          if (TopManager.getDefault() != null) { // IDE initialized
+            SystemAction sa = SystemAction.get(saClass);
+            if (sa instanceof Presenter.Popup) {
+              item = ((Presenter.Popup)sa).getPopupPresenter();
+              if (item != null && !(item instanceof JMenu)) {
+                KeyStroke[] keys = TopManager.getDefault().getGlobalKeymap().getKeyStrokesForAction(sa);
+                if (keys != null && keys.length > 0) {
+                  item.setAccelerator(keys[0]);
+                }
+              }
             }
           }
         }
@@ -153,6 +162,7 @@ public abstract class NbEditorKit extends ExtKit {
 
 /*
  * Log
+ *  2    Jaga      1.1         3/21/00  Miloslav Metelka 
  *  1    Jaga      1.0         3/15/00  Miloslav Metelka 
  * $
  */
