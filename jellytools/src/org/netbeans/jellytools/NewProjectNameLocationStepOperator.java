@@ -28,13 +28,13 @@ import javax.swing.JTextField;
 
 /**
  * Handle "Name And Location" panel of the New Project wizard.
- * Componentson the panel fiffers according to type of project selected.<br><br>
+ * Components on the panel differs according to type of project selected.<br><br>
  * <u>Java Application</u><br>
  * <ol>
  * <li>Label and TextField Project Name: <code>txtProjectName().setText()</code>
  * <li>Label and TextField Project Location: <code>txtProjectLocation().setText()</code>
  * <li>Label and TextField Project Folder: <code>txtProjectFolder().getText()</code>
- * <li>Button for browsing Project Location: <code>btBrowseProjectLocation().push()</code>
+ * <li>Button for browsing Project Location: <code>btBrowseProjectLocation().pushNoBlock()</code>
  * <li>CheckBox Set as Main Project: <code>cbSetAsMainProject().setSelected(true)</code>
  * <li>CheckBox Create Main Class: <code>cbCreateMainClass().setSelected(true)</code>
  * </ol>
@@ -43,7 +43,7 @@ import javax.swing.JTextField;
  * <li>Label and TextField Project Name: <code>txtProjectName().setText()</code>
  * <li>Label and TextField Project Location: <code>txtProjectLocation().setText()</code>
  * <li>Label and TextField Project Folder: <code>txtProjectFolder().getText()</code>
- * <li>Button for browsing Project Location: <code>btBrowseProjectLocation().push()</code>
+ * <li>Button for browsing Project Location: <code>btBrowseProjectLocation().pushNoBlock()</code>
  * </ol>
  * <u>Java Project With Existing Ant script</u><br>
  * <ol>
@@ -51,28 +51,23 @@ import javax.swing.JTextField;
  * <li>Label and TextField Build Script: <code>txtBuildScript().setText()</code>
  * <li>Label and TextField Project Name: <code>txtProjectName().setText()</code>
  * <li>Label and TextField Project Folder: <code>txtProjectFolder().setText()</code>
- * <li>Button Browse... for browsing Location <code>btBrowseLocation().push()</code>
- * <li>Button Browse... for browsing Build Script <code>btBrowseBuildScript().push()</code>
- * <li>Button Browse... for browsing Project Folder <code>btBrowseProjectFolder().push()</code>
+ * <li>Button Browse... for browsing Location <code>btBrowseLocation().pushNoBlock()</code>
+ * <li>Button Browse... for browsing Build Script <code>btBrowseBuildScript().pushNoBlock()</code>
+ * <li>Button Browse... for browsing Project Folder <code>btBrowseProjectFolder().pushNoBlock()</code>
  * <li>CheckBox Set as Main Project <code>cbSetAsMainProject().setSelected(true)</code> 
  * </ol>
  * <u>Java project With Existing Sources</u><br>
  * <ol>
- * <li>Label and TextField Source Packages Folder: <code>txtSourcePackagesFolder().setText()</code>
- * <li>Label and TextField Test Packages Folder: <code>txtTestPackagesFolder().setText()</code>
  * <li>Label and TextField Project Name: <code>txtProjectName().setText()</code>
- * <li>Label and TextField Project Location: <code>txtProjectLocation().setText()</code>
- * <li>Button for browsing Project location: <code>btBrowseLocation().push()</code>
- * <li>Label and TextField Project Folder: <code>txtProjectFolder().getText()</code>
- * <li>Button for browsing Source packages folder: <code>btBrowseSourcePackagesFolder().push()</code>
- * <li>Button for browsing Test packages folder: <code>btBrowseTestPackagesFolder().push()</code>
+ * <li>Label and TextField Project Folder: <code>txtProjectFolder().setText()</code>
+ * <li>Button for browsing Project location: <code>btBrowseProjectLocation().pushNoBlock()</code>
  * </ol>
  * <u>Web Application</u><br>
  * <ol>
  * <li>Label and TextField Project Name: <code>txtProjectName().setText()</code>
  * <li>Label and TextField Project Location: <code>txtProjectLocation().setText()</code>
  * <li>Label and TextField Project Folder: <code>txtProjectFolder().getText()</code>
- * <li>Button for browsing Project Location: <code>btBrowseProjectLocation().push()</code>
+ * <li>Button for browsing Project Location: <code>btBrowseProjectLocation().pushNoBlock()</code>
  * <li>CheckBox Set as Main Project: <code>cbSetAsMainProject().setSelected(true)</code>
  * <li>Label and TextField Context Path: <code>txtContextPath().getText()</code>
  * <li>ComboBox J2EE Specification level <code>cbJ2EESpecificationLevel().selectItem("item")</code>
@@ -102,13 +97,6 @@ public class NewProjectNameLocationStepOperator extends NewProjectWizardOperator
     private JTextFieldOperator  _txtBuildScript;
     private JButtonOperator     _btBrowseBuildScript;
     private JButtonOperator     _btBrowseProjectFolder;
-    //Java Project with Existing Sources
-    private JLabelOperator      _lblSourcePackagesFolder;
-    private JTextFieldOperator  _txtSourcePackagesFolder;
-    private JLabelOperator      _lblTestPackagesFolder;
-    private JTextFieldOperator  _txtTestPackagesFolder;
-    private JButtonOperator     _btBrowseTestPackagesFolder;
-    private JButtonOperator     _btBrowseSourcePackagesFolder;
     //Web Application
     private JLabelOperator      _lblContextPath;
     private JTextFieldOperator  _txtContextPath;
@@ -345,72 +333,6 @@ public class NewProjectNameLocationStepOperator extends NewProjectWizardOperator
         }
         return _btBrowseProjectFolder;
     }
-    
-    
-    
-    /** Returns operator for label SourcePackagesFolder:
-     * @return JLabelOperator
-     */
-    public JLabelOperator lblSourcePackagesFolder() {
-        if(_lblSourcePackagesFolder == null) {
-            _lblSourcePackagesFolder = new JLabelOperator(this,"Source Packages Folder:"); //TODO I18N
-        }
-        return _lblSourcePackagesFolder;
-    }
-    
-    /** Returns operator of Source Packages Folder: text field
-     * @return JTextOperator
-     */
-    public JTextFieldOperator txtSourcePackagesFolder() {
-        if (  lblSourcePackagesFolder().getLabelFor()!=null ) {
-            _txtSourcePackagesFolder = new JTextFieldOperator((JTextField)lblSourcePackagesFolder().getLabelFor());
-      }
-      return _txtSourcePackagesFolder;
-    }
-    
-    
-    /** Returns operator for label TestPackagesFolder:
-     * @return JLabelOperator
-     */
-    public JLabelOperator lblTestPackagesFolder() {
-        if(_lblTestPackagesFolder == null) {
-            _lblTestPackagesFolder = new JLabelOperator(this,"Test Packages Folder:"); //TODO I18N
-        }
-        return _lblTestPackagesFolder;
-    }
-    
-    /** Returns operator of Test Packages Folder: text field
-     * @return JTextOperator
-     */
-    public JTextFieldOperator txtTestPackagesFolder() {
-        if (  lblTestPackagesFolder().getLabelFor()!=null ) {
-            _txtTestPackagesFolder = new JTextFieldOperator((JTextField)lblTestPackagesFolder().getLabelFor());
-      }
-      return _txtTestPackagesFolder;
-    }
-    
-    
-    /** Returns operator for browse Source Packages Folder button
-     * @return JButtonOperator
-     */
-    public JButtonOperator btBrowseSourcePackagesFolder() {
-        if ( _btBrowseSourcePackagesFolder==null ) {
-            _btBrowseSourcePackagesFolder = new JButtonOperator(this, "Browse...",0); //TODO I18N
-        }
-        return _btBrowseSourcePackagesFolder;
-    }
-
-    
-    /** Returns operator for browse Test Packages Folder button
-     * @return JButtonOperator
-     */
-    public JButtonOperator btBrowseTestPackagesFolder() {
-        if ( _btBrowseTestPackagesFolder==null ) {
-            _btBrowseTestPackagesFolder = new JButtonOperator(this, "Browse...",1); //TODO I18N
-        }
-        return _btBrowseTestPackagesFolder;
-    }
-    
     
     /** Returns operator for label ContextPath:
      * @return JLabelOperator
