@@ -41,6 +41,7 @@ import org.w3c.dom.Element;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
+import org.w3c.dom.Node;
 
 /**
  * Reads/writes project.xml.
@@ -533,6 +534,9 @@ public class FreeformProjectGenerator {
                     Element data = h[0].getPrimaryConfigurationData(true);
                     Document doc = data.getOwnerDocument();
 
+                    Node comment = doc.createComment("Do not use Project Properties customizer when editting this file manually."); // NOI18N
+                    data.appendChild(comment);
+                    
                     Element nm = doc.createElementNS(FreeformProjectType.NS_GENERAL, "name"); // NOI18N
                     nm.appendChild(doc.createTextNode(name)); // NOI18N
                     data.appendChild(nm);
