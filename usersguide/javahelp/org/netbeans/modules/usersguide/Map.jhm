@@ -177,17 +177,17 @@
 <mapID target="org.netbeans.modules.refactoring.ui.RefactoringPanelContainer" url="refactor/previewWindow.html" /> <!--Preview Refactoring window-->
 
 <!-- begin XML Online Help IDs -->
+<mapID target="xml_about" url="xml/xml_about.html" />
+<mapID target="xml_overview" url="xml/xml_overview.html" />
+<mapID target="xml_quickref" url="xml/xml_quickref.html" />
 <mapID target="xml_createxml"   url="xml/xml_create.html" />
 <mapID target="xml_editxml"     url="xml/xml_edit.html" />
 <mapID target="xml_validatexml"     url="xml/xml_validate.html" />
 <mapID target="xml_checkxml"     url="xml/xml_check.html" />
 <mapID target="xml_settings"     url="xml/xml_settings.html" />
-<!--<mapID target="xml_nodes"   url="xml/xmlnodes.html" />-->
-<!--<mapID target="xml_parsedentities" url="xml/parsedentities.html" />-->
 <mapID target="xml_createdtd"   url="xml/dtd/dtd_create.html" />
 <mapID target="xml_documentdtd"   url="xml/dtd/dtd_document.html" />
 <mapID target="xml_generatedom"     url="xml/dtd/dtd_generatedom.html" />
-<!--<mapID target="xml_aboutdtd" url="xml/dtd/dtd_editview.html" />-->
 <mapID target="xml_catalogs"     url="xml/catalog/xmlcatalog_about.html" />
 <mapID target="xml_editcatalogs"     url="xml/catalog/xmlcatalog_edit.html" />
 <mapID target="xml_mountcatalogs"     url="xml/catalog/xmlcatalog_mount.html" />
@@ -198,10 +198,8 @@
 <mapID target="xml_aboutsax"     url="xml/sax/sax_about.html" />
 <mapID target="xml_generatesax"     url="xml/sax/sax_generate.html" />
 <mapID target="xml_schemas" url="xml/schema/schemas.html" />
-<!--<mapID target="xml_schemanodes" url="xml/schema/schemanodes.html" />-->
 <mapID target="xml_xslabout"     url="xml/xsl/xsl_about.html" />
 <mapID target="xml_xsltransform"     url="xml/xsl/xsl_transform.html" />
-<!--<mapID target="xml_xslnodes" url="xml/xsl/xslnodes.html" />-->
 
 
 <!-- CSS Help -->
