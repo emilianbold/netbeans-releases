@@ -17,7 +17,6 @@ import java.io.ObjectStreamException;
 import java.text.MessageFormat;
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
 import java.beans.PropertyChangeListener;
@@ -26,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import javax.swing.tree.TreePath;
 
@@ -38,7 +36,6 @@ import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.TopManager;
 import org.openide.nodes.*;
-import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.explorer.view.TreeView;
@@ -47,11 +44,8 @@ import org.openide.explorer.view.TreeTableView;
 import org.openide.awt.SplittedPanel;
 import org.openide.explorer.view.NodeTableModel;
 import org.openide.windows.WindowManager;
-import org.openide.explorer.view.NodeTableModel;
-import org.openide.explorer.view.Visualizer;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
-import org.openide.windows.WindowManager;
 import org.openide.windows.Workspace;
 import org.openide.windows.Mode;
 import org.openide.cookies.InstanceCookie;
@@ -61,6 +55,7 @@ import org.netbeans.core.projects.SessionManager;
 import org.netbeans.core.NbMainExplorer;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.PersistenceManager;
+import org.netbeans.core.windows.WindowManagerImpl;
 
 /** Action that opens explorer view which displays global
 * options of the IDE.
@@ -144,6 +139,9 @@ public class OptionsAction extends CallableSystemAction {
             setRootContext (initRC ());
             // show only name of top component is typical case
             putClientProperty(ModeImpl.NAMING_TYPE, ModeImpl.BOTH_ONLY_COMP_NAME);
+            // Show without tab when alone in container cell.
+            putClientProperty(WindowManagerImpl.TopComponentManager.TAB_POLICY,
+                WindowManagerImpl.TopComponentManager.HIDE_WHEN_ALONE);
         }
         
         public HelpCtx getHelpCtx () {
@@ -234,7 +232,7 @@ public class OptionsAction extends CallableSystemAction {
         public void addNotify () {
             super.addNotify ();
             
-            javax.swing.SwingUtilities.invokeLater(this);
+            SwingUtilities.invokeLater(this);
             org.openide.util.RequestProcessor.getDefault ().post (this, 500);
         }
         
@@ -260,9 +258,9 @@ public class OptionsAction extends CallableSystemAction {
             
         
         public synchronized void run () {
-            if (!javax.swing.SwingUtilities.isEventDispatchThread ()) {
+            if (!SwingUtilities.isEventDispatchThread ()) {
                 prepareNodes ();
-                javax.swing.SwingUtilities.invokeLater(this);
+                SwingUtilities.invokeLater(this);
                 return;
             }
             
@@ -304,7 +302,7 @@ public class OptionsAction extends CallableSystemAction {
 
         /** Expands the node in explorer.
          */
-        private static void expandNodes (Node n, int depth, java.util.Collection list) {
+        private static void expandNodes (Node n, int depth, Collection list) {
             if (depth == 0) {
                 return;
             }
@@ -448,7 +446,7 @@ public class OptionsAction extends CallableSystemAction {
                 if (active_set != new_set) {
                     // setup new columns
                     final Node.Property set [] = new_set;
-                    javax.swing.SwingUtilities.invokeLater (new Runnable () {
+                    SwingUtilities.invokeLater (new Runnable () {
                         public void run () {
                             // change columns
                             setProperties (set);
