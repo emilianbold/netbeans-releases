@@ -527,6 +527,13 @@ public class RADComponent {
 
           public void setValue (Object val) throws IllegalArgumentException {
             if (!(val instanceof HandlerSetChange)) {
+              if (val instanceof String) {
+                HandlerSetChange change = new HandlerSetChange ();
+                change.getRenamedNewNames ().add ((String)val);
+                change.getRenamedOldNames ().add ((String) getValue ());
+                val = change;
+              }
+              else 
               throw new IllegalArgumentException();
             }
             Hashtable handlersByName = new Hashtable ();
@@ -542,7 +549,7 @@ public class RADComponent {
               for (Iterator iter = change.getAdded ().iterator (); iter.hasNext(); ) {
                 String handlerName = (String) iter.next ();
                 if (!Utilities.isJavaIdentifier (handlerName)) {
-                  System.out.println(handlerName +" is not a Java identifier"); // [PENDING I18N]
+                  TopManager.getDefault ().notify (new NotifyDescriptor.Message (java.text.MessageFormat.format(FormEditor.getFormBundle().getString("FMT_MSG_InvalidJavaIdentifier"), new Object [] {handlerName}), NotifyDescriptor.ERROR_MESSAGE));
                   continue;
                 }
                 // adding event handler
@@ -1438,10 +1445,12 @@ public class RADComponent {
       
       public java.awt.Component getCustomEditor () {
         final EventCustomEditor ed = new EventCustomEditor (EventProperty.this);
-        DialogDescriptor dd = new DialogDescriptor (ed, "Handlers for " + event.getName (), true, // [PENDING I18N]
+        DialogDescriptor dd = new DialogDescriptor (ed, 
+        java.text.MessageFormat.format(FormEditor.getFormBundle().getString("FMT_MSG_HandlersFor"), new Object [] {event.getName ()}),
+            true,
           new java.awt.event.ActionListener () {
             public void actionPerformed (java.awt.event.ActionEvent evt) {
-              if (evt.getActionCommand ().equalsIgnoreCase ("ok")) { // [PENDING I18N]
+              if (evt.getSource().equals(DialogDescriptor.OK_OPTION)) {
                 ed.doChanges ();
               }
             }
@@ -1455,6 +1464,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  74   Gandalf   1.73        1/15/00  Pavel Buzek     
  *  73   Gandalf   1.72        1/13/00  Pavel Buzek     enable EventEditor only 
  *       for forms that support advanced features
  *  72   Gandalf   1.71        1/13/00  Pavel Buzek     setText() added to 

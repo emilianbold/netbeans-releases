@@ -192,7 +192,7 @@ public final class BeanInstaller extends Object {
     addJarFileSystem (jar);
 
     if (pal == null) {
-      pal = "Beans"; // default palette category
+      pal = com.netbeans.developer.modules.loaders.form.FormEditor.getFormBundle ().getString ("CTL_Palette_Beans"); // default palette category
     }
 
     FileObject root = TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot();
@@ -744,6 +744,7 @@ static final long serialVersionUID =-6038414545631774041L;
 
 /*
  * Log
+ *  30   Gandalf   1.29        1/15/00  Pavel Buzek     
  *  29   Gandalf   1.28        1/15/00  Ian Formanek    Creates 
  *       beans/libs.properties
  *  28   Gandalf   1.27        1/13/00  Ian Formanek    NOI18N #2

@@ -455,7 +455,7 @@ static final long serialVersionUID =4248268998485315927L;
       Mode ourMode = realWorkspace.findMode(this);
       if ((ourMode == null) && workspace.equals(visualWorkspace)) {
         // create new mode for CI and set the bounds properly
-        ourMode = workspace.createMode(getName (), getName (), null);
+        ourMode = workspace.createMode("ComponentInspector", getName (), null); //NOI18N
         Rectangle workingSpace = workspace.getBounds();
         ourMode.setBounds(new Rectangle (workingSpace.x + (workingSpace.width * 3 / 10), workingSpace.y,
             workingSpace.width * 2 / 10, workingSpace.height / 2));
@@ -620,6 +620,7 @@ static final long serialVersionUID =7424646018839457544L;
 
 /*
  * Log
+ *  46   Gandalf   1.45        1/15/00  Pavel Buzek     
  *  45   Gandalf   1.44        1/15/00  Ian Formanek    I18N
  *  44   Gandalf   1.43        1/13/00  Ian Formanek    NOI18N #2
  *  43   Gandalf   1.42        1/12/00  Pavel Buzek     I18N
