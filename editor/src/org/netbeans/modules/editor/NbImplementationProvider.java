@@ -42,7 +42,7 @@ public class NbImplementationProvider extends ImplementationProvider {
     }
 
     public boolean isPasteEnabled() {
-        Clipboard clipboard = (Clipboard)Lookup.getDefault().lookup(Clipboard.class);
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         Transferable clipData = clipboard.getContents(clipboard);
         return ((clipData != null) && (clipData.isDataFlavorSupported(DataFlavor.stringFlavor)));
     }
