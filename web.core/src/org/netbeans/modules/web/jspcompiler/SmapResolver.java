@@ -102,13 +102,15 @@ public class SmapResolver {
         boolean fileSection = false;        // whether we are in file section
         boolean lineSection = false;        // whether we are in line section
         boolean jspStratumSection = false;  // there may (theoretically) be more stratum sections in a file
-
+        
+        String currentSection = "";
+        
         if (smap == null) return false;
         
         // tokenize the smap file by endlines
         StringTokenizer st = new StringTokenizer(smap, "\n", false);
         
-        int counter = 1;
+        boolean beginning = true;
         int sectionCounter = 0; // counts items in the sections
         
         /** to which file current indexes belong (there are more of them - includes)
@@ -117,52 +119,64 @@ public class SmapResolver {
         
         boolean cont = true;
         
-        while (st.hasMoreTokens()) {
+        while (st.hasMoreTokens() && cont) {
             String token = st.nextToken();
             
             //this tough IF..ELSE is responsible for tracking which section is currently read
-            if (counter == 1) {         // SMAP file begins with 'SMAP' header
-                if (!SMAP_HEADER.equals(token)) return false;
-            } else if (counter == 2) {  // next item is outputFileName 
-                outputFileName = token;  
-            } else if (counter == 3) {  // and defaultStratum follows
-                defaultStratum = token;
+            if (beginning) {         // SMAP file begins with 'SMAP' header
+                if (!SMAP_HEADER.equals(token)) {
+                    return false;
+                }
+                beginning = false;
+                currentSection = SMAP_HEADER;
+                continue;
             } else if (STRATUM_SECTION.equals(token)) {
-                jspStratumSection = true;
-            } else if (FILE_SECTION.equals(token) && (jspStratumSection)) {
-                fileSection = true;
+                currentSection = STRATUM_SECTION;
+                continue;
+            } else if (FILE_SECTION.equals(token)) {
+                currentSection = FILE_SECTION;
                 sectionCounter = 0;
-            } else if (LINE_SECTION.equals(token) && (jspStratumSection)) {
-                fileSection = false;
-                lineSection = true;
+                continue;
+            } else if (LINE_SECTION.equals(token)) {
+                currentSection = LINE_SECTION;
                 sectionCounter = 0;
                 fileIndex = "0";
-            } else if (END_SECTION.equals(token) && (jspStratumSection)) {
+                continue;
+            } else if (END_SECTION.equals(token)) {
+                currentSection = END_SECTION;
                 cont = false;
-                lineSection = false;
-                fileSection = false;
                 sectionCounter = 0;
+                break;
             }
 
-            //read the file section
-            if (fileSection) {
-                if (sectionCounter != 0) { // have to skip the section beginning: *F
-                    storeFile(token);
+            //read info from header
+            if (SMAP_HEADER.equals(currentSection)) {
+                if (sectionCounter == 0) {    // outputFileName
+                    outputFileName = token;
                 }
-                sectionCounter++;
+                if (sectionCounter == 1) {    // defaultStratum follows
+                    defaultStratum = token;
+                }
             }
             
-            if (lineSection) { 
-                if (sectionCounter != 0) {  // have to skip the section beginning: *L
-                    int hashPresent = token.indexOf(FID_DELIM);
-                    if (hashPresent > -1) { // there's a hash => there's a fileid indicator
-                        fileIndex = token.substring(hashPresent + 1, token.indexOf(':'));
-                    }
-                    storeLine(token, fileIndex);
+            //read the file section
+            if (FILE_SECTION.equals(currentSection)) {
+                if (token.startsWith("+")) {
+                    sectionCounter++;
+                    storeFile(token, token = st.nextToken());
+                } else {
+                    storeFile(token, null);
                 }
-                sectionCounter++;
             }
-            counter++;
+            
+            if (LINE_SECTION.equals(currentSection)) { 
+                int hashPresent = token.indexOf(FID_DELIM);
+                if (hashPresent > -1) { // there's a hash => there's a fileid indicator
+                    fileIndex = token.substring(hashPresent + 1, token.indexOf(':'));
+                }
+                storeLine(token, fileIndex);
+            }
+            sectionCounter++;
         }
         
         //perform sanity check - report error (return false) if unsuccessful
@@ -172,7 +186,11 @@ public class SmapResolver {
     
     /** stores file name and file index into the fsection map
      */
-    private void storeFile(String token) {
+    private void storeFile(String token, String token2) {
+//        System.err.println("storeFile: " + token + ", " + token2);
+        if ((token != null) && (token.startsWith("+"))) {
+            token = token.substring(2);
+        }
         int spaceIndex = token.indexOf(" ");
         String id = token.substring(0, spaceIndex);
         String filename = token.substring(spaceIndex+1);
@@ -182,6 +200,7 @@ public class SmapResolver {
     /** stores line mappings into both java->jsp->java maps
      */
     private void storeLine(String token, String fileIndex) {
+//        System.err.println("storeLine: " + token + ", " + fileIndex);
         int delimIndex = token.indexOf(":");
         
         String jspLine = token.substring(0, delimIndex);
@@ -353,4 +372,9 @@ public class SmapResolver {
         return jspline;
     }
     
+//    public static void main(String[] args) {
+//        SmapResolver sr = new SmapResolver(new SmapFileReader(
+//            new java.io.File("/Users/mg116726/WebApplication1/build/generated/src/org/apache/jsp/index_jsp.class.smap")));
+//        System.err.println("resolved: " + sr.isResolved());
+//    }
 }
