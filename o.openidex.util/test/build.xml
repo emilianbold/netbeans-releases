@@ -14,27 +14,57 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="openidex tests" basedir="." default="all">
 
+    <property name="build.sysclasspath" value="ignore"/>
+
     <property name="netbeans.home" location="../../nbbuild/netbeans"/>
     <property name="netbeans.test.home" value="${netbeans.home}"/>
+    
+    <!-- says how to create classpath for code tests --> 
+    <!-- can have values src, jar, ide               -->
+    <property name="xtest.code.classpath" value="src"/>
+    
     <property name="xtest.home" location="../../xtest"/>
     <property name="xtest.results" location="results"/>
     <property name="xtest.build" location="."/>
     <property name="xtest.file.name" value="test.jar"/>
     <property name="xtest.file.location" value="lib"/>
     
-    <!-- default testtypes and attributes -->
+    <!-- Default testtypes and attributes -->
     <property name="xtest.testtype" value="unit"/>
-    <property name="xtest.attributes" value="code,stable"/>
+    <property name="xtest.attributes" value="stable"/>
     
-    <!-- properties just for compiler -->
+    <!-- Properties just for compiler -->
     <property name="build.compiler.deprecation" value="off"/>
-    <property name="build.compiler.debug" value="off"/>
+    <!-- should be default ON, because it helps to find problems -->
+    <property name="build.compiler.debug" value="on"/>
     
     <!-- These in/excludes will be added to xtest.pattern    -->
     <!-- if you want to use these properties, you should use -->
     <!-- config with empty testbag                           -->
     <property name="xtest.includes" value=""/>
     <property name="xtest.excludes" value=""/>
+    
+    <!-- ============== -->
+    <!-- Set classpaths -->
+    <!-- ============== -->
+    
+    <!-- this classpath will be used for executing tests against jars -->
+    <path id="jar.codetest.classpath">        
+        <pathelement location="../netbeans/modules/autoload/openidex.jar"/>
+        <pathelement location="../../openide/netbeans/lib/openide.jar"/>
+    </path>
+    
+    <!-- this classpath will be used for executing tests against sources -->
+    <path id="src.codetest.classpath">        
+        <pathelement location="../src"/>
+        <pathelement location="../../openide/netbeans/lib/openide.jar"/>
+    </path>
+    
+    <!-- this classpath will be used for executing tests against installed IDE -->
+    <path id="ide.codetest.classpath">        
+        <pathelement location="${netbeans.home}/modules/autoload/openidex.jar"/>
+        <pathelement location="${netbeans.home}/lib/openide.jar"/>        
+    </path>
     
     <!-- =========== -->
     <!-- Init target -->
@@ -90,6 +120,17 @@ Microsystems, Inc. All Rights Reserved.
         <property name="tbag.classpath.root" location="${xtest.results}"/>
         <property name="tbag.classpath.work" value="work"/>
         
+        <!-- this "switch" will decide how to create classpath for code tests -->
+        <condition property="jarcode.classpath">
+            <equals arg1="${xtest.code.classpath}" arg2="jar"/>
+        </condition>
+        <condition property="srccode.classpath">
+            <equals arg1="${xtest.code.classpath}" arg2="src"/>
+        </condition>
+        <condition property="idecode.classpath">
+            <equals arg1="${xtest.code.classpath}" arg2="ide"/>
+        </condition>
+        
     </target>
     
     <target name="all" depends="runtests"/>
@@ -98,11 +139,11 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="config" depends="init">
         <!-- This task reads config file cfg-${xtest.testtype}.xml and selects all -->
-        <!-- testbags, which conforms to ${xtest.attributes} - is subset or equals -->
+        <!-- testbags, which conforms to ${xtest.attributes} = is subset or equals -->
         <test-configurator testtype="${xtest.testtype}" testattributes="${xtest.attributes}"/>
     </target>
     
-    <target name="runtests" depends="config,buildtests,cleanresults">
+    <target name="runtests" depends="config,cleanresults">
         <echo message="openidex tests, test type: ${xtest.testtype}, test attributes: ${xtest.attributes}"/>
         <test-executor paramClasspathProp="tbag.classpath"
                        paramPatternsetInProp="tbag.patternset.include"
@@ -120,6 +161,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- this target is executed from test-executor in newly created Project -->
     <target name="runcodetest" depends="init">
+        <echo message="xtest.home = ${xtest.home}"/>
         <property name="xtest.exectype" value="code"/>
         <antcall target="test"/>
     </target>
@@ -130,8 +172,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${xtest.results}/${tbag.testtype}/formaters/${tbag.formater}/html"/>
         
         <antcall target="prepare-tests"/>
-        <antcall target="${xtest.exectype}_test_bootstrap"/>
-        <!-- <antcall target="test_report"/> it will be called by TestExecutor -->
+        <antcall target="${xtest.exectype}_test_bootstrap"/>        
     </target>
     
     <target name="prepare-tests" depends="test-unjared" unless="unjared">
@@ -141,7 +182,8 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Just test whether tests are already unzipped -->
     <target name="test-unjared">
-        <available property="unjared" file="${xtest.results}/${tbag.testtype}/work/Meta-inf/Manifest.mf"/>
+        <available property="unjared" 
+                   file="${xtest.results}/${tbag.testtype}/work/Meta-inf/Manifest.mf"/>
     </target>
     
     <!-- ============== -->
@@ -149,55 +191,41 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ============== -->
     <target name="code_test_bootstrap" depends="init,code_test_init,junit_test"/>
     
-    <target name="code_test_init" depends="prepare-classpath">
-    
+    <target name="code_test_init" depends="prepare-classpath">    
         <property name="junit.fork" value="yes"/>
-    
         <pathdef useid="test.classpath">
             <path refid="test.basepath"/>
             <path>
-                <!-- this classpath is made of directories in testbags -->
+                <!-- this classpath is made of directories in testbags! -->
                 <pathelement path="${tbag.classpath}"/>
             </path>
             <!-- additional path elements needed for tests - sources, libs -->
-            <!--
-            <path>
-                <pathelement location="../src"/>
-                <fileset dir="../../openide/netbeans/lib">
-                    <include name="openide*.jar"/>
-                </fileset>
-            </path>
-            -->
             <path refid="codetest.classpath"/>
-        </pathdef>
-        
+        </pathdef>        
     </target>
     
     <target name="prepare-classpath" 
-            depends="check-jars,jartest-classpath,srctest-classpath"/>
+            depends="jartest-classpath,srctest-classpath,idetest-classpath"/>
     
-    <target name="jartest-classpath" if="jars-available">
+    <target name="jartest-classpath" if="jarcode.classpath">
         <echo message="Using jars classpath."/>
         <pathdef useid="codetest.classpath">
-            <path>
-                <pathelement location="../netbeans/modules/autoload/openidex.jar"/>
-                <pathelement location="../../openide/netbeans/lib/openide.jar"/>
-            </path>
+            <path refid="jar.codetest.classpath"/>
         </pathdef>
     </target>
-    
-    <target name="srctest-classpath" unless="jars-available">
+        
+    <target name="srctest-classpath" if="srccode.classpath">
         <echo message="Using srcs classpath."/>
         <pathdef useid="codetest.classpath">
-            <path>
-                <pathelement location="../src"/>
-                <pathelement location="../../openide/netbeans/lib/openide.jar"/>
-            </path>
+            <path refid="src.codetest.classpath"/>
         </pathdef>
     </target>
     
-    <target name="check-jars">
-        <available property="jars-available" file="../netbeans/modules/autoload/openidex.jar"/>
+    <target name="idetest-classpath" if="idecode.classpath">
+        <echo message="Using IDE classpath."/>
+        <pathdef useid="codetest.classpath">
+            <path refid="ide.codetest.classpath"/>
+        </pathdef>
     </target>
     
     <!-- ============= -->
@@ -242,7 +270,7 @@ Microsystems, Inc. All Rights Reserved.
               failonerror="yes">
             <arg line="runide.sh ${args}"/>
         </exec>
-
+        
         <delete file="${netbeans.test.home}/lib/patches/testmain.jar"/>
         <delete file="${netbeans.test.home}/lib/xtest.jar"/>
         
@@ -305,7 +333,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Compiles all tests -->
     <target name="compile" depends="init">
-        <javac srcdir="." 
+        <javac srcdir="unit/src" 
                deprecation="${build.compiler.deprecation}"
                debug="${build.compiler.debug}">
             <classpath>
@@ -315,8 +343,7 @@ Microsystems, Inc. All Rights Reserved.
                 </fileset>
                 <pathelement path="${junit.path}"/>
 		<pathelement path="${xerces.path}"/>
-            </classpath>
-            <include name="**/src/**/*.java"/>
+            </classpath>            
         </javac>
     </target>
     
@@ -326,7 +353,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${xtest.build}/${xtest.file.location}"/>
         <jar basedir="." jarfile="${xtest.build}/${xtest.file.location}/${xtest.file.name}">
             <include name="**/src/**/*.class"/>
-            <include name="**/data/**"/>
+            <include name="**/src/**/data/**"/>
         </jar>
     </target>
     
@@ -349,6 +376,10 @@ Microsystems, Inc. All Rights Reserved.
     <target name="realclean" depends="clean"
             description="Deletes classes, ${xtest.file.location}/${xtest.file.name} and *all* results.">
         <delete dir="${xtest.results}"/>
+    </target>
+    
+    <target name="printconfig">
+        <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attributes}."/>
     </target>
     
 </project>
