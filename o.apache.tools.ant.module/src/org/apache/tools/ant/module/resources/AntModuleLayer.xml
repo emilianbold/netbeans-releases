@@ -66,4 +66,19 @@ Microsystems, Inc. All Rights Reserved.
       </file>
     </folder>
   </folder>
+  <!-- Mount documentation automatically. -->
+  <folder name="Mount">
+    <folder name="Javadoc">
+      <file name="org-apache-tools-ant-module-javadoc.xml">
+        <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE Javadoc PUBLIC
+          "-//NetBeans IDE//DTD JavadocLibrary//EN"
+          "http://www.netbeans.org/dtds/JavadocLibrary-1_0.dtd">
+<Javadoc>
+  <Archive name="docs/ant-api.zip"/>
+</Javadoc>
+]]>
+      </file>
+    </folder>
+  </folder>
 </filesystem>
