@@ -98,8 +98,8 @@ public class PrintSummary extends Task {
                 log("");
                 log(" Report URL: "+reportIndex.toURI().toString());
                 
-                if (failOnFailure()) {
-                    if (successRate < 100.0) {
+                if (failOnFailure()) {                    
+                    if (successRate < 1.0) {
                         throw new BuildException("Some of the tests failed or there were some errors");
                     }
                 }
