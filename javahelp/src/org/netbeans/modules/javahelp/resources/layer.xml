@@ -38,7 +38,9 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     <folder name="Shortcuts">
-        <file name="F1[org-netbeans-modules-javahelp-HelpAction].instance"/>
+        <file name="F1.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.javahelp.HelpAction"/>
+	</file>
     </folder>
     <folder name="Services">
         <folder name="JavaHelp">
