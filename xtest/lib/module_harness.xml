@@ -301,9 +301,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>    
                 
     <target name="prepare-tests" depends="prepare-tests-init,test-unjared" unless="unjared">
-    
         <unjar dest="${xtest.workdir}/sys/tests" 
                src="${xtest.build}/${xtest.file.location}/${xtest.file.name}"/>
+        <!-- src is added to xtest.netbeans.systemclassloader.patches, so it must exist. -->
+        <mkdir dir="${xtest.workdir}/sys/tests/${xtest.testtype}/src"/>
     </target>
     
     <!-- Just test whether tests are already unzipped -->
