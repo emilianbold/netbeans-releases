@@ -39,6 +39,14 @@ public class NbExecutor extends Task {
     String targetParamTestAttributes = null;
     String mode = null;
     
+    private static final String[] propertiesToPass = {
+                                            "netbeans.home",
+                                            "build.sysclasspath",
+                                            "ant.home",
+                                            "running.mode",
+                                            "basedir",
+                                            "user.dir" };
+
     private static final String ERRORS_PROP = "xtest.errors";
     
     public void setTargetName(String name) {
@@ -133,7 +141,15 @@ public class NbExecutor extends Task {
                 while (enum.hasMoreElements()) {
                     String name = (String) enum.nextElement();
                     String value = (String) ps.get(name);
-                    if (!name.startsWith("java")) callee.createArg().setValue("-D" + name + "=" + value);
+                    if (name.startsWith("xtest")) {
+                        callee.createArg().setValue("-D" + name + "=" + value);
+                    }
+                }
+                for (int i=0; i<propertiesToPass.length; i++) {
+                    String p = project.getProperty(propertiesToPass[i]);
+                    if (p != null) {
+                        callee.createArg().setValue("-D" + propertiesToPass[i] + "=" + p);
+                    }
                 }
                 
                 log("Executing module " + test.getModule() + ", testtype " + test.getType() + " at " + new Date().toLocaleString());
