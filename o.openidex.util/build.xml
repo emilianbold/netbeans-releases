@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 <!--       due to an obscure 1.3 compiler bug                                         -->
 <project name="openidex" default="netbeans" basedir=".">
 
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
 
   <target name="compile">
     <javac srcdir="src" destdir="src">

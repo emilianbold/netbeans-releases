@@ -28,10 +28,10 @@ workspaceswitcher
 
 <project name="nbbuild" default="depucelee" basedir=".">
 
-  <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll"/>
-  <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge"/>
-  <taskdef name="configmods" classname="org.netbeans.nbbuild.ConfigureModules"/>
-  <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc"/>
+  <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
+  <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
+  <taskdef name="configmods" classname="org.netbeans.nbbuild.ConfigureModules" classpath="nbantext.jar"/>
+  <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc" classpath="nbantext.jar"/>
 
   <target name="init">
     <!-- Override this with the Ant command, e.g. -Dmoduleconfig=superslim -->
@@ -77,7 +77,7 @@ workspaceswitcher
     <ant dir="../openide" target="netbeans"/>
   </target>
   <target name="all-openidex" depends="all-openide">
-    <echo message="Building module openidex..."/>
+    <echo message="Building pending API extensions..."/>
     <ant dir="../openidex" target="netbeans"/>
   </target>
   <target name="all-core" depends="all-openide,all-openidex">
@@ -252,8 +252,6 @@ workspaceswitcher
   <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
 
   <!-- XXX zip task not well suited to making final build, as it does not set +x bits -->
-  <!-- should also create empty lib/patches/ dir (but again zip task will ignore it) -->
-  <!-- or just make lib/patches/.exists which is otherwise harmless -->
 
   <target name="virgin" depends="init,build-messaging"
           description="Create a virgin build that has never been started.">
@@ -279,14 +277,13 @@ workspaceswitcher
     <!-- XXX should perhaps preset JAVA_PATH to ${java.home} or something? -->
     <!-- XXX better would be to scan first start log for stacktraces and just show those; -->
     <!-- possibly after filtering for duplicates or something like this. -->
-    <!-- WARNING: W2K fails with Ant 1.1 release, use a newer Ant without this bug: -->
+    <!-- Timeout is ten minutes; should be enough for valid first start, while preventing -->
+    <!-- a deadlock from hanging an automated build: -->
     <!-- missing initial W intentional, to make it case-insensitive: -->
-    <exec os="indows" dir="firststart/bin" command="runide.exe ${firststart.args}" failonerror="yes"/>
-    <exec os="Linux" dir="firststart/bin" command="sh runide.sh ${firststart.args}" failonerror="yes"/>
-    <exec os="SunOS" dir="firststart/bin" command="sh runide.sh ${firststart.args}" failonerror="yes"/>
-    <exec os="Solaris" dir="firststart/bin" command="sh runide.sh ${firststart.args}" failonerror="yes"/>
-    <!-- XXX ideal would be a timeout after which the process would get SIGQUIT then SIGINT then SIGKILL -->
-    <!-- This is possible in newer Ants but not in 1.1 -->
+    <exec os="indows" dir="firststart/bin" command="runide.exe ${firststart.args}" failonerror="yes" timeout="600000"/>
+    <exec os="Linux" dir="firststart/bin" command="sh runide.sh ${firststart.args}" failonerror="yes" timeout="600000"/>
+    <exec os="SunOS" dir="firststart/bin" command="sh runide.sh ${firststart.args}" failonerror="yes" timeout="600000"/>
+    <exec os="Solaris" dir="firststart/bin" command="sh runide.sh ${firststart.args}" failonerror="yes" timeout="600000"/>
     <echo message="Successfully started, cleaning up detritus..."/>
     <move file="firststart/system/ide.log" tofile="NetBeans-${buildnumber}.log"/>
     <delete file="firststart/system/project.basic"/>

@@ -13,7 +13,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="debuggercore" default="netbeans" basedir=".">
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <target name="compile">
     <javac srcdir="src" destdir="src">
       <classpath>

@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="httpserver" default="netbeans" basedir=".">
 
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
 
   <property name="binroot" value=".."/>
 

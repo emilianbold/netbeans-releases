@@ -19,7 +19,7 @@ ToDo:
 -->
 <project name="debuggerjpda" default="netbeans" basedir=".">
 
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <target name="check">
     <available property="jpda" classname="com.sun.jdi.ObjectReference"/>
   </target>
