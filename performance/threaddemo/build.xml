@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project basedir="." default="run" name="performance/threaddemo">
+
+    <!-- Put any overrides here (check for "???" below): -->
+    <property file="user.build.properties"/>
+
+    <property name="nbroot" location="../.."/>
+    <property name="openide.jar" location="${nbroot}/openide/netbeans/lib/openide.jar"/>
+    <property name="naming.jar" location="${nbroot}/core/naming/netbeans/modules/autoload/naming.jar"/>
+    <!-- Must be looks_jul_2002_private_b branch -->
+    <property name="looks" location="???/openidex/looks"/>
+    <property name="looks.jar" location="${looks}/netbeans/modules/autoload/looks.jar"/>
+    <property name="Spin.jar" location="???/spin-1.1/Spin.jar"/>
+    
+    <!-- Root directory of the file browsers: -->
+    <property name="testdir" location="/"/>
+
+    <path id="cp">
+        <pathelement location="${openide.jar}"/>
+        <pathelement location="${naming.jar}"/>
+        <pathelement location="${looks.jar}"/>
+        <pathelement location="${Spin.jar}"/>
+    </path>
+
+    <target name="build">
+        <javac srcdir="src" destdir="src">
+            <classpath refid="cp"/>
+        </javac>
+        <jar jarfile="threaddemo.jar" manifest="manifest.mf">
+            <fileset dir="src">
+                <include name="**/*.class"/>
+            </fileset>
+        </jar>
+    </target>
+
+    <target name="run" depends="build">
+        <java classname="threaddemo.Main" fork="true" failonerror="true">
+            <classpath>
+                <path refid="cp"/>
+                <pathelement location="threaddemo.jar"/>
+            </classpath>
+            <arg file="${testdir}"/>
+        </java>
+    </target>
+    
+    <target name="clean">
+        <delete file="threaddemo.jar"/>
+        <delete>
+            <fileset dir="src">
+                <include name="**/*.class"/>
+            </fileset>
+        </delete>
+    </target>
+    
+</project>
