@@ -55,16 +55,16 @@ public class CheckXMLSupport extends TestXMLSupport implements CheckXMLCookie {
     
     /** 
      * Create new CheckXMLSupport for given data object using DOCUMENT_MODE strategy.
-     * @param dataObject supported data object
+     * @param dataObject Supported data object.
      */    
     public CheckXMLSupport(DataObject dataObject) {
         super(dataObject);
     }
     
     /** 
-     * Create new CheckXMLSupport for given data object
-     * @param dataObject supported data object
-     * @param strategy one of <code>*_MODE</code> constants
+     * Create new CheckXMLSupport for given data object.
+     * @param dataObject Supported data object.
+     * @param strategy One of <code>*_MODE</code> constants.
      */    
     public CheckXMLSupport(DataObject dataObject, int strategy) {
         super(dataObject, strategy);

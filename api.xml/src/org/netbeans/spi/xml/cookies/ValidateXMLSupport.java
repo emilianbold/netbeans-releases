@@ -38,16 +38,16 @@ import org.netbeans.api.xml.cookies.*;
 public class ValidateXMLSupport extends TestXMLSupport implements ValidateXMLCookie {
             
     /** 
-     * Create new ValidateXMLSupport for given data object 
-     * @param dataObject supported data object
+     * Create new ValidateXMLSupport for given data object. 
+     * @param dataObject Supported data object.
      */    
     public ValidateXMLSupport(DataObject dataObject) {
         super(dataObject);
     }
     
     /** 
-     * Create new ValidateXMLSupport for given data object
-     * @param dataObject supported data object
+     * Create new ValidateXMLSupport for given data object.
+     * @param dataObject Supported data object.
      * @param checkStrategy one of <code>CheckXMLSupport.*_MODE</code> constants
      */    
     private ValidateXMLSupport(DataObject dataObject, int checkStrategy) {

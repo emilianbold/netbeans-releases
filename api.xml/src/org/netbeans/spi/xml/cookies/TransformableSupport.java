@@ -63,9 +63,10 @@ public final class TransformableSupport implements TransformableCookie {
     
     /** 
      * Create new TransformableSupport for given data object.
-     * @param dataObject supported data object
+     * @param dataObject Supported data object.
      */    
     public TransformableSupport (DataObject dataObject) {
+        if (dataObject == null) throw new NullPointerException();
         this.dataObject = dataObject;
     }
 

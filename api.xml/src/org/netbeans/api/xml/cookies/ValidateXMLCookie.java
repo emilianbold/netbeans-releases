@@ -19,7 +19,7 @@ import org.openide.nodes.Node;
  * Validate XML document entity (in polyform manner).
  * <p>Implemenmtation must follow XML 1.0 specification for processors
  * conformance. It is allowed to extend the contract to support domain
- * specifics semantics checks. It must not change UI state.
+ * specifics semantics checks (i.e. XML Schema). It must not change UI state.
  * <p>
  * It should be gracefully served by all data objects and explorer nodes
  * representing validateable XML resources.
@@ -41,9 +41,9 @@ public interface ValidateXMLCookie extends Node.Cookie {
 
     /**
      * Validate XML document entity.
-     * @param observer optional listener (<code>null</code> allowed)
+     * @param observer Optional listener (<code>null</code> allowed)
      *               giving judgement details via {@link XMLProcessorDetail}s.
-     * @return true if validity check passes
+     * @return true if validity check passes.
      */
     boolean validateXML(CookieObserver observer);
 

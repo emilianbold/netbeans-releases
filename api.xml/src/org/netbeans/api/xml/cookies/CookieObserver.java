@@ -32,7 +32,7 @@ public interface CookieObserver {
      * allowed to call directly or indirecly any cookie method
      * from handling code. Handling implementation should be as
      * fast as possible.
-     * @param msg Message never <code>null</code>
+     * @param msg Message never <code>null</code>.
      */
     public void receive(Message msg);
     
