@@ -31,7 +31,7 @@ edits in the text of a question, you need not change the version number.
 Also rerun openide/www/tutorial/build.xml#question when you are done and commit
 openide/www/tutorial/questions.html.
 -->
-<api-questions version="1.24">
+<api-questions version="1.25">
     <category id="arch" name="General Information">
         <question id="arch-what" when="init" >
             What is this project good for?
@@ -345,6 +345,17 @@ openide/www/tutorial/questions.html.
             API as well.
             </hint>
         </question>
+        
+        <question id="exec-ant-tasks" when="impl" >
+            Do you define or register any ant tasks that other can use?
+            
+            <hint>
+            If you provide an ant task that users can use, you need to be very
+            careful about its syntax and behaviour, as it most likely forms an
+	          API for end users and as there is a lot of end users, their reaction
+            when such API gets broken can be pretty strong.
+            </hint>
+        </question>
 
         <question id="exec-classloader" when="impl" >
             Does your code create its own class loader(s)?
@@ -431,7 +442,24 @@ openide/www/tutorial/questions.html.
     <category id="format" name="Format of files and protocols">
         <question id="format-types" when="impl" >
             Which protocols and file formats (if any) does your module read or write on disk,
-            or transmit or receive over the network?
+            or transmit or receive over the network? Do you generate an ant build script?
+            Can it be edited and modified? 
+            
+            <hint>
+            <p>
+            Files can be read and written by other programs, modules and users. If they influence
+            your behaviour, make sure you either document the format or claim that it is a private
+            api (using the &lt;api&gt; tag). 
+            </p>
+            
+            <p>
+            If you generate an ant build file, this is very likely going to be seen by end users and
+            they will be attempted to edit it. You should be ready for that and provide here a link
+            to documentation that you have for such purposes and also describe how you are going to
+            understand such files during next release, when you (very likely) slightly change the 
+            format.
+            </p>
+            </hint>
         </question>
         
         <question id="format-dnd" when="impl" >
