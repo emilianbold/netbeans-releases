@@ -16,12 +16,17 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.entres.CallEjbAction;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.entres.CallEjbDialog;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 
 import java.util.Set;
 import java.util.HashSet;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.openide.src.ClassElement;
 
 /**
  * @author pfiala
@@ -53,9 +58,11 @@ class EjbReferencesTableModel extends InnerTableModel {
 
     public int addRow() {
         FileObject ejbJarFile = dataObject.getPrimaryFile();
-        if (new OpenAddReferenceDialog(ejb, createRefNameSet(ejb), ejbJarFile).openDialog()) {
+        Project project = FileOwnerQuery.getOwner(ejbJarFile);
+        ClassElement beanClass = Utils.getClassElement(Utils.getSourceClassPath(ejbJarFile), ejb.getEjbClass());
+        CallEjbDialog callEjbDialog = new CallEjbDialog();
+        if (callEjbDialog.open(ejb, project, beanClass)) {
             modelUpdatedFromUI();
-
         }
         return -1;
     }
