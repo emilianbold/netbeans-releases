@@ -498,12 +498,11 @@ public class Property {
      * @see #SET_RENDERER
      */
     public String getRendererName() {
-        return property.getShortDescription();
-        //return getRenderer().getClass().getName();
+        return getRenderer().getClass().getName();
     }
     
     /** Returns component which represents renderer for this property. */
-    public Component getRenderer() {
+    private Component getRenderer() {
         final JTableOperator table = propertySheetOper.tblSheet();
         for(int row=0;row<table.getRowCount();row++) {
             if(table.getValueAt(row, 1) instanceof Node.Property) {
