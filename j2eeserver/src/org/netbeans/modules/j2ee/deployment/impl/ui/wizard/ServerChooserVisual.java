@@ -15,6 +15,7 @@ package org.netbeans.modules.j2ee.deployment.impl.ui.wizard;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -284,6 +285,7 @@ public class ServerChooserVisual extends javax.swing.JPanel {
                 if (factory != null && factory.getAddInstanceIterator() != null)
                     servers.add(new ServerAdapter(server));
             }
+            Collections.sort(servers);
             selected = (servers.size() > 0) ? (ServerAdapter)servers.get(0) : null;
         }
         
@@ -310,7 +312,7 @@ public class ServerChooserVisual extends javax.swing.JPanel {
         }
     }
     
-    private static class ServerAdapter {
+    private static class ServerAdapter implements Comparable {
         private Server server;
         
         public ServerAdapter(Server server) {
@@ -323,6 +325,10 @@ public class ServerChooserVisual extends javax.swing.JPanel {
         
         public String toString() {
             return server.getDisplayName();
+        }
+        
+        public int compareTo(Object o) {
+            return toString().compareTo(o.toString());
         }
     }
 }
