@@ -80,7 +80,7 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_CFGCREATE_ENABLED, new Boolean(true), true);
         putProperty(PROP_CFGEXEC_ENABLED, new Boolean(true), true);
         putProperty(PROP_EXECUTOR_TYPE, new Integer(EXECUTOR_EXTERNAL), true);
-        putProperty(PROP_GENERATE_EXCEPTION_CLASSES, new Boolean(true), true);
+        putProperty(PROP_GENERATE_EXCEPTION_CLASSES, new Boolean(false), true);
         putProperty(PROP_TEST_RUNNER, "org.netbeans.modules.junit.TestRunner", true);
     }
 
