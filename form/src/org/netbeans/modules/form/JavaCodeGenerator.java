@@ -1058,7 +1058,7 @@ public class JavaCodeGenerator extends CodeGenerator {
   }
 
   private String getEventHandlerFooter (String handlerName, String[] paramTypes) {
-    return "  }\n"; // [PENDING]
+    return "  }\n"; // NOI18N
   }
   
   private String getDefaultEventBody () {
@@ -1457,6 +1457,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  67   Gandalf   1.66        1/15/00  Ian Formanek    NOI18N
  *  66   Gandalf   1.65        1/13/00  Ian Formanek    NOI18N #2
  *  65   Gandalf   1.64        1/12/00  Pavel Buzek     I18N
  *  64   Gandalf   1.63        1/10/00  Ian Formanek    Fixed bug 2880 - I can 
