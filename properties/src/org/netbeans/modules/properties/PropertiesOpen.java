@@ -42,6 +42,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 import org.openide.explorer.propertysheet.PropertyDisplayer;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
 import org.openide.NotifyDescriptor;
@@ -157,6 +158,10 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
         }));
         
       initComponents();
+    }
+
+    public HelpCtx getHelp () {
+      return new HelpCtx (PropertiesCloneableTopComponent.class);
     }
 
     /** Inits the subcomponents. */ 

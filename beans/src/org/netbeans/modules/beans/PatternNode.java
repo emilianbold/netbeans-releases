@@ -23,6 +23,7 @@ import org.openide.src.*;
 import org.openide.src.nodes.*;
 import org.openide.nodes.*;
 import org.openide.actions.*;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.SystemAction;
@@ -134,6 +135,10 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
   */
   protected String[] getIconAffectingProperties() {
     return ICON_AFFECTING_PROPERTIES;
+  }
+
+  public HelpCtx getHelpCtx () {
+    return new HelpCtx (PatternNode.class);
   }
 
   /** Test whether this node can be renamed.

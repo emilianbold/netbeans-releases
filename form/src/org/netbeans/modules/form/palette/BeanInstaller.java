@@ -29,6 +29,7 @@ import javax.swing.border.*;
 import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import com.netbeans.developer.modules.loaders.form.FormLoaderSettings;
 
@@ -88,7 +89,8 @@ public final class BeanInstaller extends Object {
           true,
           null
         );
-        ;
+        desc.setHelpCtx (new HelpCtx (BeanInstaller.class.getName () + ".installBean"));
+        ; // ???
         TopManager.getDefault ().createDialog (desc).show ();
         if (desc.getValue () == NotifyDescriptor.OK_OPTION) {
         
@@ -251,7 +253,8 @@ public final class BeanInstaller extends Object {
       true,
       null
     );
-    ;
+    desc.setHelpCtx (new HelpCtx (BeanInstaller.class.getName () + ".selectPaletteCategory"));
+    ; // ???
     TopManager.getDefault ().createDialog (desc).show ();
     if (desc.getValue () == NotifyDescriptor.OK_OPTION) {
       return sel.getSelectedCategory();
@@ -583,6 +586,7 @@ public final class BeanInstaller extends Object {
 
 /*
  * Log
+ *  11   Gandalf   1.10        7/8/99   Jesse Glick     Context help.
  *  10   Gandalf   1.9         6/22/99  Ian Formanek    Fixed bug 2004 - The 
  *       dialog for selecting JavaBean isn't dialog commonly used in IDE but 
  *       classical MS Windows filedialog. Also after installing bean IDE must be

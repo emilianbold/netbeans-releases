@@ -22,6 +22,7 @@ import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.src.*;
 import org.openide.nodes.*;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -57,6 +58,10 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
     default:
       return null;
     }
+  }
+
+  public HelpCtx getHelpCtx () {
+    return new HelpCtx (PropertyPatternNode.class);
   }
 
   /** Gets the localized string name of property pattern type i.e.
@@ -305,6 +310,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
 
 /*
 * Log
+*  2    Gandalf   1.1         7/8/99   Jesse Glick     Context help.
 *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
 * $
 */

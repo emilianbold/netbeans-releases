@@ -23,6 +23,7 @@ import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.src.*;
 import org.openide.nodes.*;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -56,6 +57,10 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
     default:
       return null;
     }
+  }
+
+  public HelpCtx getHelpCtx () {
+    return new HelpCtx (IdxPropertyPatternNode.class);
   }
 
   /* Creates property set for this node */
@@ -191,6 +196,7 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
 
 /*
 * Log
+*  3    Gandalf   1.2         7/8/99   Jesse Glick     Context help.
 *  2    Gandalf   1.1         6/30/99  Ian Formanek    Reflecting package 
 *       changes of some property editors
 *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    

@@ -23,6 +23,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.util.datatransfer.NewType;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.actions.NewAction;
@@ -87,6 +88,10 @@ public class  PatternGroupNode extends AbstractNode {
 
     CookieSet cs = getCookieSet();
     cs.add( children.getPatternAnalyser() );
+  }
+
+  public HelpCtx getHelpCtx () {
+    return new HelpCtx (PatternGroupNode.class);
   }
 	
   /** Set all actions for this node.
@@ -167,7 +172,7 @@ public class  PatternGroupNode extends AbstractNode {
         NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
         NotifyDescriptor.OK_OPTION,                           // Default
         DialogDescriptor.BOTTOM_ALIGN,                        // Align
-        null,                                                 // Help
+        new HelpCtx (PatternGroupNode.class.getName () + ".dialogProperty"), // Help
         propertyPanel );
        
       dialog = TopManager.getDefault().createDialog( dd );
@@ -192,7 +197,7 @@ public class  PatternGroupNode extends AbstractNode {
         NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
         NotifyDescriptor.OK_OPTION,                           // Default
         DialogDescriptor.BOTTOM_ALIGN,                        // Align
-        null,                                                 // Help
+        new HelpCtx (PatternGroupNode.class.getName () + ".dialogIdxProperty"), // Help
         idxPropertyPanel );
        
       dialog = TopManager.getDefault().createDialog( dd );
@@ -219,7 +224,7 @@ public class  PatternGroupNode extends AbstractNode {
         NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
         NotifyDescriptor.OK_OPTION,                           // Default
         DialogDescriptor.BOTTOM_ALIGN,                        // Align
-        null,                                                 // Help
+        new HelpCtx (PatternGroupNode.class.getName () + ".dialogUniCastES"), // Help
         uEventSetPanel );
        
       dialog = TopManager.getDefault().createDialog( dd );
@@ -242,7 +247,7 @@ public class  PatternGroupNode extends AbstractNode {
         NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
         NotifyDescriptor.OK_OPTION,                           // Default
         DialogDescriptor.BOTTOM_ALIGN,                        // Align
-        null,                                                 // Help
+        new HelpCtx (PatternGroupNode.class.getName () + ".dialogMultiCastES"), // Help
         eventSetPanel );
        
       dialog = TopManager.getDefault().createDialog( dd );
@@ -267,6 +272,7 @@ public class  PatternGroupNode extends AbstractNode {
 
 /* 
  * Log
+ *  2    Gandalf   1.1         7/8/99   Jesse Glick     Context help.
  *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
  * $ 
  */ 
