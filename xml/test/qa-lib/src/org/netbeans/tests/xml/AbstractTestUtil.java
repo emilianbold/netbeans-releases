@@ -316,7 +316,7 @@ public abstract class AbstractTestUtil {
      */
     public DataObject findData(String name) throws DataObjectNotFoundException {
         URL url = this.getClass().getResource("data/" + name);
-        if (url == null) return null;
+        if (url == null) throw new IllegalStateException("'data' folder's URL is null.");
         FileObject fo = findFileObject(url.toExternalForm());
         if (fo == null) {
             if (DEBUG) {
