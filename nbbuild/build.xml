@@ -1203,7 +1203,7 @@ the ${netbeans.dest}/bin/ directory.
     </delete>
     <!-- This step must be last: -->
     <echo message="Cleaning NetBeans-specific Ant extensions..."/>
-    <delete file="nbantext.jar"/>
+    <delete file="nbantext.jar" quiet="true"/>
     <delete>
       <fileset dir="antsrc">
         <include name="**/*.class"/>
