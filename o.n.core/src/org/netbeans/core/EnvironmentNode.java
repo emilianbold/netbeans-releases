@@ -87,7 +87,7 @@ static final long serialVersionUID =-850350968366553370L;
     public Node getNode () {
       return EnvironmentNode.getDefault();
     }
-  };
+  }
   
 
   /** Getter for set of actions that should be present in the
@@ -107,6 +107,8 @@ static final long serialVersionUID =-850350968366553370L;
 
 /*
  * Log
+ *  23   Gandalf   1.22        1/16/00  Ian Formanek    Removed semicolons after
+ *       methods body to prevent fastjavac from complaining
  *  22   Gandalf   1.21        1/13/00  Jaroslav Tulach I18N
  *  21   Gandalf   1.20        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
