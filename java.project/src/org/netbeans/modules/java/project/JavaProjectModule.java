@@ -35,8 +35,10 @@ import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
 
 /**
- * Startup and shutdown hooks for projectui module.
- * @author Jesse Glick
+ * Startup and shutdown hooks for java project support module. It ensures that the
+ * Nodes representing Java classes will have project specific actions (e.g.
+ * compile/run/debug file) in the popup menu.
+ * @author Petr Hrebejk
  */
 public class JavaProjectModule extends ModuleInstall {
     
