@@ -13,28 +13,18 @@
 
 package com.netbeans.developer.modules.loaders.form.actions;
 
-import java.net.URL;
-
 import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.util.HelpCtx;
 import com.netbeans.ide.util.actions.CallableSystemAction;
-
 import com.netbeans.developer.modules.loaders.form.palette.BeanInstaller;
 
 /** This action installs new bean into the system.
 *
-* @author   Petr Hamernik
+* @author Petr Hamernik
 */
 public class InstallBeanAction extends CallableSystemAction {
   /** generated Serialized Version UID */
   static final long serialVersionUID = 7755319389083740521L;
-
-  /** This method is called by one of the "invokers" as a result of
-  * some user's action that should lead to actual "performing" of the action.
-  */
-  public void performAction() {
-    BeanInstaller.installBean();
-  }
 
   /** Human presentable name of the action. This should be
   * presented as an item in a menu.
@@ -48,8 +38,7 @@ public class InstallBeanAction extends CallableSystemAction {
   * @return the help context for this action
   */
   public HelpCtx getHelpCtx() {
-    //PENDING
-    return new HelpCtx("com.netbeans.developer.docs.Users_Guide.usergd-action", "USERGD-ACTION-TABLE-3");
+    return HelpCtx.DEFAULT_HELP;
   }
 
   /** Icon resource.
@@ -59,10 +48,18 @@ public class InstallBeanAction extends CallableSystemAction {
     return "/com/netbeans/developer/modules/loaders/form/resources/installBean.gif";
   }
   
+  /** This method is called by one of the "invokers" as a result of
+  * some user's action that should lead to actual "performing" of the action.
+  */
+  public void performAction() {
+    BeanInstaller.installBean();
+  }
+
 }
 
 /*
  * Log
+ *  2    Gandalf   1.1         5/26/99  Ian Formanek    Actions cleanup
  *  1    Gandalf   1.0         5/17/99  Petr Hamernik   
  * $
  */
