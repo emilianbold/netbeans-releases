@@ -192,7 +192,15 @@ public final class CatalogSettings implements Externalizable {
         
     }
 
-        
+    /**
+     * Tests whether removeCatalog will actualy eliminate it.
+     * @return false for catalogs declared at layer
+     *         true for catalogs added by user using Add action.
+     */
+    public final boolean isRemovable(CatalogReader provider) {
+        return mountedCatalogs.contains(provider);
+    }
+
     /**
      * Return iterator of providers of given class.
      * 

@@ -266,7 +266,17 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
         }
         
         protected boolean enable(Node[] activatedNodes) {
-            return activatedNodes.length > 0;
+            if (activatedNodes.length > 0) {
+                for (int i = 0; i<activatedNodes.length; i++) {
+                    Node me = activatedNodes[i];
+                    CatalogNode self = (CatalogNode) me.getCookie(CatalogNode.class);
+                    CatalogReader reader = (CatalogReader) self.getBean();
+                    if (CatalogSettings.getDefault().isRemovable(reader)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
         
         protected void performAction(Node[] activatedNodes) {
