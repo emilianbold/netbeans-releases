@@ -36,11 +36,10 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
     static final long serialVersionUID =1116033799965380000L;
     /** Initializes the Form */
-    public ParametersPicker(FormModel formModel, /*RADComponent sourceComponent,*/ Class requiredType) {
+    public ParametersPicker(FormModel formModel, Class requiredType) {
         initComponents();
         this.requiredType = requiredType;
         this.formModel = formModel;
-//        this.sourceComponent = sourceComponent;
 
         javax.swing.ButtonGroup bg = new javax.swing.ButtonGroup();
         bg.add(valueButton);
@@ -665,13 +664,10 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
     // End of variables declaration//GEN-END:variables
 
     private FormModel formModel;
-//    private RADComponent sourceComponent;
     private Class requiredType;
 
     private PropertyPicker propertyPicker;
-    private MethodPicker methodPicker;
 
-    private String selectedPropertyText = null;
     private ArrayList listeners;
     private boolean currentFilledState;
     private RADComponent selectedComponent;
@@ -679,7 +675,6 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
     private MethodDescriptor selectedMethod;
 
     private java.util.List beansList;
-    private DefaultComboBoxModel beanComboModel;
 
     // -------
 

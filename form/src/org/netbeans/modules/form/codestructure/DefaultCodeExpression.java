@@ -28,8 +28,6 @@ final class DefaultCodeExpression implements CodeExpression {
 
     protected CodeStructure codeStructure;
 
-    private boolean nameReserved;
-
     private CodeExpressionOrigin expressionOrigin;
 
     private CodeObjectUsage expressionUsage;

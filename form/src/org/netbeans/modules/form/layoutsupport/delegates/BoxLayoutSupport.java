@@ -37,7 +37,6 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
 {
     private int axis = BoxLayout.X_AXIS;
 
-    private Node.PropertySet propertySet;
     private FormProperty[] properties;
 
     private static Constructor boxLayoutConstructor;

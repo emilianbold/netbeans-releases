@@ -209,8 +209,6 @@ public class KeyStrokeEditor extends PropertyEditorSupport
 
     private static String[] _virtualKeys;
 
-    private CustomEditor _customEditor;
-
     private class CustomEditor extends JPanel
     {
         private KeyGrabberField _keyGrabber;
