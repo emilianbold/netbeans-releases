@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -109,13 +109,17 @@ public class ViewDataAction extends DatabaseAction {
 
                 final DataViewWindow win = new DataViewWindow(info, expression);
                 win.open();
-                while (!win.isOpened()) {
-                    try {
-                        Thread.sleep(60);
-                    } catch (InterruptedException e) {
-                        //PENDING
-                    }
-                }
+                win.requestActive();
+                
+// hopefully not necessary anymore
+//                while (!win.isOpened()) {
+//                    try {
+//                        Thread.sleep(60);
+//                    } catch (InterruptedException e) {
+//                        //PENDING
+//                    }
+//                }
+                
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run () {
                         win.executeCommand();
