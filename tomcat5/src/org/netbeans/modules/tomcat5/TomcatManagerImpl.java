@@ -24,6 +24,9 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javax.enterprise.deploy.shared.ActionType;
+import javax.enterprise.deploy.shared.CommandType;
+import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
@@ -33,6 +36,8 @@ import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.tomcat5.config.Context;
+import org.netbeans.modules.tomcat5.progress.ProgressEventSupport;
+import org.netbeans.modules.tomcat5.progress.Status;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 
@@ -52,12 +57,15 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
         }
         return rp;
     }
-    
-    /** List of ProgressListener s. */
-    private List lsnrs = new ArrayList ();
+
+    /** Support for progress notifications. */
+    private ProgressEventSupport pes;
     
     /** Command that is executed on running server. */
     private String command;
+    
+    /** Command type used for events. */
+    private CommandType cmdType;
     
     /** InputStream of application data. */
     private InputStream istream;
@@ -69,6 +77,7 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
 
     public TomcatManagerImpl (TomcatManager tm) {
         this.tm = tm;
+        pes = new ProgressEventSupport (this);
     }
 
     public void deploy (Target t, InputStream is, InputStream deplPlan) {
@@ -77,6 +86,7 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
         tmId = new TomcatModule (t, ctxPath);
         
         command = "deploy?path="+ctxPath; // NOI18N
+        cmdType = CommandType.DISTRIBUTE;
         istream = is;
         rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
@@ -108,6 +118,7 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
             docBase = "jar:"+docBase+"!/"; // NOI18N
         }
         command = "install?context="+ctxPath+"&war="+docBase; // NOI18N
+        cmdType = CommandType.DISTRIBUTE;
         
         try {
             FileInputStream in = new FileInputStream (deplPlan);
@@ -123,6 +134,7 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
     void remove (TomcatModule tmId) {
         this.tmId = tmId;
         command = "remove?path="+tmId.getPath (); // NOI18N
+        cmdType = CommandType.UNDEPLOY;
         rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
     
@@ -164,27 +176,18 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
     
     /** JSR88 method. */
     public void addProgressListener (ProgressListener l) {
-        lsnrs.add (l);
+        pes.addProgressListener (l);
     }
     
     /** JSR88 method. */
     public void removeProgressListener (ProgressListener l) {
-        lsnrs.remove (l);
-    }
-    
-    private void fireProgressEvent (ProgressEvent e) {
-        Iterator it = lsnrs.iterator ();
-        while (it.hasNext ()) {
-            ProgressListener l = (ProgressListener)it.next ();
-            l.handleProgressEvent (e);
-        }
+        pes.removeProgressListener (l);
     }
     
     /** Executes one management task. */
     public synchronized void run () {
         TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, command);
-        System.out.println(tm.getUri () + command);
-        fireProgressEvent (new ProgressEvent (this, tmId, null)); // PENDING
+        pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, "" /* message */, StateType.RUNNING)); // PENDING
         
         // similar to Tomcat's Ant task
         URLConnection conn = null;
@@ -245,6 +248,7 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
             reader = new InputStreamReader(hconn.getInputStream());
             StringBuffer buff = new StringBuffer();
             String error = null;
+            String msg = null;
             boolean first = true;
             while (true) {
                 int ch = reader.read();
@@ -259,6 +263,9 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
                         if (!line.startsWith("OK -")) { // NOI18N
                             error = line;
                         }
+                        else { 
+                            msg = line;
+                        }
                         first = false;
                     }
                 } else {
@@ -271,25 +278,24 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
             if (error != null) {
                 throw new Exception(error);
             }
+            pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, msg, StateType.COMPLETED)); // PENDING
 
         } catch (Exception e) {
-// PENDING report error
-            e.printStackTrace ();
+            TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, e);
+            pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, e.getLocalizedMessage (), StateType.FAILED)); // PENDING
             // throw t;
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
-                } catch (Throwable u) {
-                    ;
+                } catch (java.io.IOException ioe) { // ignore this
                 }
                 reader = null;
             }
             if (istream != null) {
                 try {
                     istream.close();
-                } catch (Throwable u) {
-                    ;
+                } catch (java.io.IOException ioe) { // ignore this
                 }
                 istream = null;
             }

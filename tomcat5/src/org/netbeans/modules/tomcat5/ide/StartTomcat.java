@@ -25,7 +25,9 @@ import java.util.StringTokenizer;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.modules.tomcat5.TomcatFactory;
 import org.netbeans.modules.tomcat5.TomcatManager;
+import org.openide.ErrorManager;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.execution.ProcessExecutor;
 import org.openide.filesystems.FileObject;
@@ -61,6 +63,7 @@ public final class StartTomcat implements StartServer
     public StartTomcat () {
     }
     
+    /** Associates with @see javax.enterprise.deploy.spi.DeploymentManager */
     public void setDeploymentManager (javax.enterprise.deploy.spi.DeploymentManager manager) {
         tm = (TomcatManager)manager;
     }
@@ -116,6 +119,9 @@ public final class StartTomcat implements StartServer
         return null; // PENDING
     }
     
+    /** This implementation does nothing.
+     * Target is already started when Tomcat starts.
+     */
     public ProgressObject startServer (Target target) {
         
         return null; // PENDING
@@ -132,71 +138,89 @@ public final class StartTomcat implements StartServer
     /** Initializes base dir for use with Tomcat 5.0.x. 
      *  @param baseDir directory for base dir.
      *  @param homeDir directory to copy config files from.
-     *  @return File with absolute path for created dir.
+     *  @return File with absolute path for created dir or <CODE>null</CODE> when ther is an error.
      */
     private File createBaseDir (File baseDir, File homeDir) {
         if (!baseDir.isAbsolute ()) {
             baseDir = new File(System.getProperty("netbeans.user")+System.getProperty("file.separator")+baseDir);
         }
         try {
-            baseDir.mkdir ();
+            if (!baseDir.mkdir ()) {
+                TomcatFactory.getEM ().log (ErrorManager.INFORMATIONAL, "Cannot create "+baseDir.getPath ());
+                return null;
+            }
             // create directories
             String [] subdirs = new String [] { "conf", "logs", "work", "temp" /*, "webapps"*/ };
             for (int i = 0; i<subdirs.length; i++) {
-                new File (baseDir, subdirs[i]).mkdir ();
+                if (!new File (baseDir, subdirs[i]).mkdir ()) {
+                    TomcatFactory.getEM ().log (ErrorManager.INFORMATIONAL, "Cannot create "+baseDir.getPath ());
+                    return null;
+                }
             }
             // copy config files
-            File confDir = new File (baseDir, "conf");
+            File confDir = new File (baseDir, "conf");  // NOI18N
             String [] files = new String [] { 
-                "catalina", 
-                "catalina", 
-                "web", 
+                "catalina", // NOI18N
+                "catalina", // NOI18N 
+                "web"       // NOI18N
             };
             String [] exts = new String [] { 
-                "policy", 
-                "properties", 
-                "xml", 
+                "policy",     // NOI18N 
+                "properties", // NOI18N
+                "xml"          // NOI18N
             };
-            File homeConfDir = new File (homeDir, "conf");
+            File homeConfDir = new File (homeDir, "conf"); // NOI18N
             FileObject [] homeFO = FileUtil.fromFile (homeConfDir);
             FileObject [] baseFO = FileUtil.fromFile (confDir);
             if (homeFO.length == 0 || baseFO.length == 0) {
-                throw new IllegalStateException ("Cannot create base dir");
+                TomcatFactory.getEM ().log (ErrorManager.INFORMATIONAL, "Cannot find FileObject for home dir or base dir");
+                return null;
             }       
             for (int i = 0; i<files.length; i++) {
+                FileObject source = homeFO[0].getFileObject (files[i], exts[i]);
+                if (source == null) {
+                    TomcatFactory.getEM ().log (ErrorManager.INFORMATIONAL, "Cannot find config file "+files[i]+"."+exts[i]);
+                    return null;
+                }
                 FileUtil.copyFile (homeFO[0].getFileObject (files[i], exts[i]), baseFO[0], files[i], exts[i]);
             }
             // modify server.xml
-            copyAndPatch (
+            if (!copyAndPatch (
                 new File (homeConfDir, "server.xml"), 
                 new File (confDir, "server.xml"), 
                 "appBase=\"webapps\"",
                 "appBase=\""+new File (homeDir, "webapps").getAbsolutePath ()+"\""
-            );
+                )) {
+                ErrorManager.getDefault ().log (ErrorManager.INFORMATIONAL, "Cannot create config file server.xml");
+                return null;
+            }
             // modify tomcat-users.xml
-            copyAndPatch (
+            if (!copyAndPatch (
                 new File (homeConfDir, "tomcat-users.xml"), 
                 new File (confDir, "tomcat-users.xml"), 
                 "</tomcat-users>",
                 "<user username=\"ide\" password=\"ide_manager\" roles=\"admin,manager\"/>\n</tomcat-users>"
-            );
+                )) {
+                // might not be a bug
+                ErrorManager.getDefault ().log (ErrorManager.INFORMATIONAL, "Cannot create config file tomcat-users.xml");
+            }
         }
         catch (java.io.IOException ioe) {
-            System.err.println("!!! createBaseDir failed");
-            ioe.printStackTrace ();
-            throw new IllegalStateException ("Cannot create base dir");
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
+            return null;
         }
         return baseDir;
     }
     
     /** Copies server.xml file and patches appBase="webapps" to
      * appBase="$CATALINA_HOME/webapps" during the copy.
+     * @return success status.
      */
-    private void copyAndPatch (File src, File dst, String from, String to) {
+    private boolean copyAndPatch (File src, File dst, String from, String to) {
         java.io.Reader r = null;
         java.io.Writer out = null;
         try {
-            r = new BufferedReader (new InputStreamReader (new FileInputStream (src), "utf-8"));
+            r = new BufferedReader (new InputStreamReader (new FileInputStream (src), "utf-8")); // NOI18N
             StringBuffer sb = new StringBuffer ();
             final char[] BUFFER = new char[4096];
             int len;
@@ -210,14 +234,23 @@ public final class StartTomcat implements StartServer
             if (idx >= 0) {
                 sb.replace (idx, idx+from.length (), to);  // NOI18N
             }
-            out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream (dst), "utf-8"));
+            else {
+                // Something unexpected
+                TomcatFactory.getEM ().log (ErrorManager.WARNING, "Pattern "+from+" not found in "+src.getPath ());
+            }
+            out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream (dst), "utf-8")); // NOI18N
             out.write (sb.toString ());
             
         } catch (java.io.IOException ioe) {
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
+            return false;
         } finally {
-            try { if (out != null) out.close (); } catch (java.io.IOException ioe) {}
-            try { if (r != null) r.close (); } catch (java.io.IOException ioe) {}
+            try { if (out != null) out.close (); } catch (java.io.IOException ioe) { // ignore this
+            }
+            try { if (r != null) r.close (); } catch (java.io.IOException ioe) { // ignore this 
+            }
         }
+        return true;
     }
     
     /** Format that provides value usefull for Tomcat execution. 
