@@ -56,19 +56,19 @@ public class NbModuleProjectTest extends TestBase {
         assertEquals("right manifest.mf", "manifest.mf", eval.getProperty("manifest.mf"));
         // Keep the following in synch with java/project/nbproject/project.xml etc.:
         String[] cp = {
-            "ide4/modules/org-apache-tools-ant-module.jar",
-            "platform4/core/openide.jar",
-            "platform4/modules/org-openide-execution.jar",
-            "platform4/modules/org-openide-io.jar",
-            "platform4/core/openide-loaders.jar",
-            "ide4/modules/org-netbeans-modules-java-platform.jar",
-            "ide4/modules/org-netbeans-modules-project-ant.jar",
-            "ide4/modules/org-netbeans-modules-project-libraries.jar",
-            "ide4/modules/org-openidex-util.jar",
-            "ide4/modules/org-netbeans-modules-projectapi.jar",
-            "ide4/modules/org-netbeans-modules-projectuiapi.jar",
-            "platform4/modules/org-netbeans-modules-queries.jar",
-            "ide4/modules/org-netbeans-api-java.jar",
+            "ide5/modules/org-apache-tools-ant-module.jar",
+            "platform5/core/openide.jar",
+            "platform5/modules/org-openide-execution.jar",
+            "platform5/modules/org-openide-io.jar",
+            "platform5/core/openide-loaders.jar",
+            "ide5/modules/org-netbeans-modules-java-platform.jar",
+            "ide5/modules/org-netbeans-modules-project-ant.jar",
+            "ide5/modules/org-netbeans-modules-project-libraries.jar",
+            "ide5/modules/org-openidex-util.jar",
+            "ide5/modules/org-netbeans-modules-projectapi.jar",
+            "ide5/modules/org-netbeans-modules-projectuiapi.jar",
+            "platform5/modules/org-netbeans-modules-queries.jar",
+            "ide5/modules/org-netbeans-api-java.jar",
         };
         StringBuffer cpS = new StringBuffer();
         for (int i = 0; i < cp.length; i++) {
@@ -78,19 +78,19 @@ public class NbModuleProjectTest extends TestBase {
             cpS.append(file("nbbuild/netbeans/" + cp[i]).getAbsolutePath());
         }
         assertEquals("right module.classpath", cpS.toString(), eval.getProperty("module.classpath"));
-        assertEquals("right core.dir", file("nbbuild/netbeans/platform4"),
+        assertEquals("right core.dir", file("nbbuild/netbeans/platform5"),
             javaProjectProject.getHelper().resolveFile(eval.getProperty("core.dir")));
         /* Will not work in branches:
-        assertEquals("right apisupport/project.dir", file("nbbuild/netbeans/ide4"),
+        assertEquals("right apisupport/project.dir", file("nbbuild/netbeans/ide5"),
             javaProjectProject.getHelper().resolveFile(eval.getProperty("apisupport/project.dir")));
          */
-        assertEquals("right module JAR", file("nbbuild/netbeans/ide4/modules/org-netbeans-modules-java-project.jar"),
+        assertEquals("right module JAR", file("nbbuild/netbeans/ide5/modules/org-netbeans-modules-java-project.jar"),
             javaProjectProject.getHelper().resolveFile(eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")));
         // Synch w/ nbbuild/directories.properties:
         assertEquals("right nb.lib/ext.dir", "lib", eval.getProperty("nb.lib/ext.dir"));
         assertEquals("right nb.modules/eager.dir", "modules/eager", eval.getProperty("nb.modules/eager.dir"));
         eval = loadersProject.evaluator();
-        assertEquals("right module JAR", file("nbbuild/netbeans/platform4/core/openide-loaders.jar"),
+        assertEquals("right module JAR", file("nbbuild/netbeans/platform5/core/openide-loaders.jar"),
             loadersProject.getHelper().resolveFile(eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")));
     }
     
