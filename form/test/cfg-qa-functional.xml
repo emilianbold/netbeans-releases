@@ -43,11 +43,23 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
+    <testbag testattribs="validation, full" executor="ide" name="testbag_undo_redo" resultsprocessor="qa-functional">
+        <testset dir="qa-functional/src">
+            <patternset>
+		    <include name="undoredo/BaseTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    
 	<testbag testattribs="unstable" executor="ide" name="testbag_palette" resultsprocessor="qa-functional">
         <testset dir="qa-functional/src">
             <patternset>
+                <!-- 
                 <include name="compatibility/EditForm.class"/>
-		<include name="compatibility/OpenForm.class"/>
+				<include name="compatibility/OpenForm.class"/>                
+                -->
+                <include name="undoredo/BaseTest.class"/>                
                 <!--
 		<include name="compatibility/OpenForm_dbc.class"/>
 		<include name="compatibility/FilesWork.class"/>

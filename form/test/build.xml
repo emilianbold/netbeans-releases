@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
    
     <!-- default testtypes, attributes and executors -->
     <property name="xtest.testtype" value="qa-functional"/>
-    <property name="xtest.attribs" value="stable"/>
+    <property name="xtest.attribs" value="validation"/>
     <property name="xtest.executors" value="ide,code"/>
     
     <!-- These in/excludes will be added to xtest.pattern    -->
