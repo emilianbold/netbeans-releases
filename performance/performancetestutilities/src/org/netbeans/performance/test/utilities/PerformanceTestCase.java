@@ -283,7 +283,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     
                     log("Measured Time ["+performanceDataName+" | "+i+"] = " +measuredTime[i]);
                     
-                    if(measuredTime > 0)
+                    if(measuredTime[i] > 0)
                         reportPerformance(performanceDataName, measuredTime[i], "ms", i, expectedTime);
                     else
                         fail("Measured value ["+measuredTime+"] is not > 0 !");

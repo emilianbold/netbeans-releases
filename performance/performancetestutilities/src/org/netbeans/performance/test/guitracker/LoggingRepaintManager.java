@@ -127,24 +127,29 @@ public class LoggingRepaintManager extends RepaintManager {
      * @param h hieght of the region
      */
     public synchronized void addDirtyRegion(JComponent c, int x, int y, int w, int h) {
+        String log = "addDirtyRegion " + c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h;
+        
         if (w > 10 && h > 18) { // painted region isn't cursor (or painted region is greater than cursor)
             if (onlyExplorer) {  // if you want measure only explorer
                 Class clz = null;
                 for (clz = c.getClass(); clz != null; clz = clz.getSuperclass()) {  // some components as ProjectsView uses own class for View so we are looking for those have superclass explorer.view
                     if (clz.getPackage().getName().equals("org.openide.explorer.view")) { // if it's explorer.view log this paint event
-                        tr.add (ActionTracker.TRACK_APPLICATION_MESSAGE, "addDirtyRegion " + c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h);
+                        tr.add (ActionTracker.TRACK_APPLICATION_MESSAGE, log);
                         hasDirtyMatches = true;
                         break;
                     }
                 }
                 if (clz == null) // if you are here, you were looking for superclass of your view , but it isn't explorer.view so we ignore this paint event
-                    tr.add (ActionTracker.TRACK_APPLICATION_MESSAGE, "ignored addDirtyRegion " + c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h);
+                    tr.add (ActionTracker.TRACK_APPLICATION_MESSAGE, "ignored " + log);
             } else if (onlyEditor) { // if you want measure only editor
                 if (c.getClass().getName().equals("org.openide.text.QuietEditorPane")) { // repainted class has to be QuietEditorPane
-                    tr.add (ActionTracker.TRACK_APPLICATION_MESSAGE, "addDirtyRegion " + c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h);
+                    tr.add (ActionTracker.TRACK_APPLICATION_MESSAGE, log);
                     hasDirtyMatches = true;
                 } else // ignore paints which are not from QuietEditorPane
-                    tr.add (ActionTracker.TRACK_APPLICATION_MESSAGE, "ignored addDirtyRegion " + c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h);
+                    tr.add (ActionTracker.TRACK_APPLICATION_MESSAGE, "ignored " + log);
+            } else if(!onlyEditor && !onlyExplorer) { // if you don't want measure only editor neither only explorer, log this paint
+                tr.add (ActionTracker.TRACK_APPLICATION_MESSAGE, log);
+                hasDirtyMatches = true;
             }
         }
         super.addDirtyRegion (c, x, y, w, h);
