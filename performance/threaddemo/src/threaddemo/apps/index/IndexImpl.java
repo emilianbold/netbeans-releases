@@ -15,6 +15,8 @@ package threaddemo.apps.index;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.util.WeakListeners;
@@ -25,7 +27,6 @@ import threaddemo.locking.Lock;
 import threaddemo.model.*;
 
 // XXX make an IndexImpl be GCable and not hold onto Phadhail's
-// XXX results inaccurate; does not actually find every file
 
 /**
  * Actual implementation of the index.
@@ -33,11 +34,13 @@ import threaddemo.model.*;
  */
 final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListener {
     
+    private static final Logger logger = Logger.getLogger(IndexImpl.class.getName());
+    
     private final Phadhail root;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     private boolean running = false;
     private final LinkedList/*<Phadhail>*/ toProcess = new LinkedList();
-    private final Map/*<Phadhail,Map<String,int>>*/ processed = new WeakHashMap();
+    private final Map/*<Phadhail,Map<String,int>>*/ processed = new /*Weak*/HashMap();
     private final Map/*<DomProvider,Phadhail>*/ domProviders2Phadhails = new WeakHashMap();
     private final Map/*<Phadhail,Phadhail>*/ phadhails2Parents = new WeakHashMap();
     
@@ -169,26 +172,31 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
         ph.addPhadhailListener(this);
     }
     
+    private int count;
     private Map compute(Phadhail ph) {
         assert getLock().canRead();
         assert !ph.hasChildren();
+        logger.log(Level.FINER, "Computing index for {0} [#{1}]", new Object[] {ph, new Integer(++count)});
         DomProvider p = (DomProvider)domProviders2Phadhails.get(ph);
         if (p == null) {
             // XXX technically should listen to lookup changes...
             p = (DomProvider)PhadhailLookups.getLookup(ph).lookup(DomProvider.class);
             if (p == null) {
+                logger.finer("no DomProvider here");
                 return Collections.EMPTY_MAP;
             }
-            p.addChangeListener(WeakListeners.change(this, p));
             domProviders2Phadhails.put(p, ph);
         }
         Document d;
         try {
             d = p.getDocument();
         } catch (IOException e) {
-            System.err.println("Parsing failed for " + ph.getName() + ": " + e.getMessage());
+            logger.log(Level.FINE, "Parsing failed for {0}: {1}", new Object[] {ph.getName(), e.getMessage()});
             return Collections.EMPTY_MAP;
         }
+        // Wait till after p.getDocument(), since that will fire stateChanged
+        // the first time it is called (not ready -> ready)
+        p.addChangeListener(WeakListeners.change(this, p));
         Map/*<String,int>*/ m = new HashMap();
         NodeList l = d.getElementsByTagName("*");
         for (int i = 0; i < l.getLength(); i++) {
@@ -200,12 +208,15 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
                 m.put(name, new Integer(x.intValue() + 1));
             }
         }
+        logger.log(Level.FINER, "Parse succeeded for {0}", ph);
+        logger.log(Level.FINEST, "Parse results: {0}", m);
         return m;
     }
     
     private void bubble(Phadhail ph) {
         assert getLock().canWrite();
-        //System.err.println("bubble: " + ph + " data: " + processed);
+        logger.log(Level.FINER, "bubble: {0} data size: {1}", new Object[] {ph, new Integer(processed.size())});
+        logger.log(Level.FINEST, "bubble: {0} data: {1}", new Object[] {ph, processed});
         if (ph == root) {
             getLock().read(new Runnable() {
                 public void run() {
@@ -259,6 +270,7 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
     
     public void childrenChanged(PhadhailEvent ev) {
         Phadhail ph = ev.getPhadhail();
+        logger.log(Level.FINER, "childrenChanged: {0}", ph);
         invalidate(ph);
     }
     
@@ -270,6 +282,7 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
         DomProvider p = (DomProvider)e.getSource();
         Phadhail ph = (Phadhail)domProviders2Phadhails.get(p);
         assert ph != null;
+        logger.log(Level.FINER, "stateChanged: {0}", ph);
         invalidate(ph);
     }
     
