@@ -40,6 +40,7 @@ import java.util.MissingResourceException;
  */
 public final class LibrariesCustomizer extends javax.swing.JPanel {
     
+    private static final Dimension PREFERRED_SIZE = new Dimension (600,400);
 
     /** Creates new form LibrariesCustomizer */
     public LibrariesCustomizer () {
@@ -78,6 +79,10 @@ public final class LibrariesCustomizer extends javax.swing.JPanel {
     public void addNotify() {
         super.addNotify();
         this.libraries.requestFocus();
+    }
+    
+    public Dimension getPreferredSize () {
+        return PREFERRED_SIZE;
     }
 
 

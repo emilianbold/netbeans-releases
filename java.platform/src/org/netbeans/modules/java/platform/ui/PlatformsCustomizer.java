@@ -57,6 +57,8 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
     private static final String TEMPLATE = "Templates/Services/Platforms/org-netbeans-api-java-Platform/javaplatform.xml";  //NOI18N
     private static final String STORAGE = "Services/Platforms/org-netbeans-api-java-Platform";  //NOI18N
+    
+    private static final Dimension PREFERRED_SIZE = new Dimension (600,400);
 
     private PlatformCategoriesChildren children;
     private ExplorerManager manager;
@@ -78,6 +80,11 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                 selectPlatform (nodes[0]);
             }
         }
+    }
+    
+    
+    public Dimension getPreferredSize () {
+        return PREFERRED_SIZE;
     }
 
     public synchronized ExplorerManager getExplorerManager() {
@@ -490,6 +497,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                         if (platform != null) {
                             String platformType = platform.getSpecification().getName();
                             if (platformType != null) {
+                                platformType = platformType.toUpperCase();
                                 PlatformCategoriesDescriptor platforms = (PlatformCategoriesDescriptor) categories.get (platformType);
                                 if (platforms == null ) {
                                     platforms = new PlatformCategoriesDescriptor (platformType);
