@@ -53,7 +53,7 @@ public class EditorDownButtonPopupMenu extends testUtilities.PerformanceTestCase
     }
     
     public void prepare(){
-        
+        // do nothing
     }
     
     public ComponentOperator open(){
