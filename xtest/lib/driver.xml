@@ -148,28 +148,23 @@ Microsystems, Inc. All Rights Reserved.
          <zip zipfile="${archive.file}">
             <fileset dir="${xtest.results}" excludes="xtr*.zip"/>                          
          </zip>
-         <property name="archive.filename2" value="xtr-nb-${xtest.tested.project}-${ide.build}-${xtest.testing.group}-${xtest.tested.type}-${xtest.machine}.zip"/>
-         <property name="archive.file2" value="${xtest.results}/${archive.filename2}"/>
-         <zip zipfile="${archive.file2}">
-            <fileset dir="${xtest.results}" includes="**/xmlresults/*.xml,**/suites/*.xml"/>
-         </zip>
          <mkdir dir="${xtest.driver.backup}"/>
          <copy file="${archive.file}" toDir="${xtest.driver.backup}"/>
-         <copy file="${archive.file2}" toDir="${xtest.driver.backup}"/>
          <antcall target="ship-results"/>
          <antcall target="ship-nbresults"/>
          <delete file="${xtest.driver.backup}/${archive.filename}"/>
-         <delete file="${xtest.driver.backup}/${archive.filename2}"/>
    </target>
    
    <target name="ship-results" if="xtest.ship.results.to">
         <copy overwrite="yes" file="${archive.file}" todir="${xtest.ship.results.to}"/>
         <chmod perm="ugo+rw" file="${xtest.ship.results.to}/${archive.filename}"/>
+        <copy overwrite="yes" file="${archive.file}" todir="${xtest.ship.results.to}/../backup"/>
+        <chmod perm="ugo+rw" file="${xtest.ship.results.to}/../backup/${archive.filename}"/>
    </target>
 
    <target name="ship-nbresults" if="xtest.ship.nbresults.to">
-        <copy overwrite="yes" file="${archive.file2}" todir="${xtest.ship.nbresults.to}"/>
-        <chmod perm="ugo+rw" file="${xtest.ship.nbresults.to}/${archive.filename2}"/>
+        <copy overwrite="yes" file="${archive.file}" todir="${xtest.ship.nbresults.to}"/>
+        <chmod perm="ugo+rw" file="${xtest.ship.nbresults.to}/${archive.filename}"/>
    </target>
 
 
