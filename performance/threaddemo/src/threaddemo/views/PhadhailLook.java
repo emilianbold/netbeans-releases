@@ -16,7 +16,6 @@ package threaddemo.views;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.Action;
-import org.netbeans.api.looks.*;
 import org.netbeans.spi.looks.*;
 import org.openide.actions.*;
 import org.openide.cookies.*;
@@ -117,18 +116,18 @@ final class PhadhailLook extends DefaultLook implements PhadhailListener, Phadha
     
     public void addSaveCookie(Phadhail ph, SaveCookie s) {
         saveCookies.put(ph, s);
-        fireLookupItemsChange(ph);
+        fireLookupItemsChange(ph, SaveCookie.class);
     }
     
     public void removeSaveCookie(Phadhail ph) {
         saveCookies.remove(ph);
-        fireLookupItemsChange(ph);
+        fireLookupItemsChange(ph, SaveCookie.class);
     }
     
     // cache of editor supports; need to retain identity since they have state
     private final Map editorCookies = new WeakHashMap(); // Map<Phadhail,EditorCookie>
     
-    public Collection getLookupItems(Object o) {
+    public Collection getLookupItems(Object o, Lookup env) {
         Phadhail ph = (Phadhail)o;
         SaveCookie sc = (SaveCookie)saveCookies.get(ph);
         if (sc != null) {
