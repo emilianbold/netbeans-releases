@@ -603,6 +603,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                     break;
                 }
             }
+            i--;
             int index = oldName.lastIndexOf('/',i);     //NOI18N
             String commonPrefix = index == -1 ? null : oldName.substring(0,index);
             String toCreate = (index+1 == name.length()) ? "" : name.substring(index+1);    //NOI18N
@@ -765,6 +766,10 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         }
 
         private static boolean isValidPackageName (String name) {
+            if (name.length() == 0) {
+                //Fast check of default pkg
+                return true;
+            }
             StringTokenizer tk = new StringTokenizer(name,".",true); //NOI18N
             boolean delimExpected = false;
             while (tk.hasMoreTokens()) {

@@ -604,7 +604,6 @@ public class PackageViewTest extends NbTestCase {
     
     
     public void testRename() throws Exception {
-        
         // Prepare test data
         FileObject root = TestUtil.makeScratchDir( this );
         // System.out.println("root " + root.getFileSystem().getClass() );
@@ -680,8 +679,32 @@ public class PackageViewTest extends NbTestCase {
         n.setName( "x.y" );
         assertNodes( ch, 
                      new String[] { "c.d", "c.f", "x.y" },
+                     new int[] { 0, 0, 0 } );                                          
+        n = ch.findChild( "x.y" );                     
+        n.setName( "p.me.tools" );
+        assertNodes( ch, 
+                     new String[] { "c.d", "c.f", "p.me.tools" },
                      new int[] { 0, 0, 0 } );                     
-                     
+        n = ch.findChild( "p.me.tools" );
+        n.setName( "p.metools" );
+        assertNodes( ch, 
+                     new String[] { "c.d", "c.f", "p.metools" },
+                     new int[] { 0, 0, 0 } );                                          
+        n = ch.findChild( "p.metools" );
+        n.setName( "p.me.tools" );
+        assertNodes( ch, 
+                     new String[] { "c.d", "c.f", "p.me.tools" },
+                     new int[] { 0, 0, 0 } );                     
+        n = ch.findChild( "p.me.tools" );
+        n.setName( "p.me.toolsx" );
+        assertNodes( ch, 
+                     new String[] { "c.d", "c.f", "p.me.toolsx" },
+                     new int[] { 0, 0, 0 } );
+        n = ch.findChild( "p.me.toolsx" );
+        n.setName( "p.me.tools" );
+        assertNodes( ch,
+                     new String[] { "c.d", "c.f", "p.me.tools" },
+                     new int[] { 0, 0, 0 } );
     }
         
     public static void assertNodes( Children children, String[] nodeNames ) {
