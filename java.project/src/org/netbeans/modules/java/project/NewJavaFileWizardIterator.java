@@ -60,7 +60,7 @@ public class NewJavaFileWizardIterator implements InstantiatingIterator {
                 Templates.createSimpleTargetChooser( project, groups ),
             };
         }
-        else {            
+        else {
             return new WizardDescriptor.Panel[] {
                 JavaTemplates.createPackageChooser( project, groups ),
             };
@@ -139,8 +139,8 @@ public class NewJavaFileWizardIterator implements InstantiatingIterator {
     }
     
     public String name() {
-        //return "" + (index + 1) + " of " + panels.length; // XXX I18N
-        return "";
+        //return "" + (index + 1) + " of " + panels.length;
+        return ""; // NOI18N
     }
     
     public boolean hasNext() {

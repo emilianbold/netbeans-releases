@@ -128,7 +128,18 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Project">
             <!-- Project type providers should register their templates here -->
             <attr name="simple" boolvalue="false" /> <!-- do not show this in regular temlate wizard -->
-			<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/ProjectTemplates.html"/>
+            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/ProjectTemplates.html"/>
+        </folder>
+        <folder name="Folder_hidden"/>
+        <folder name="Other">
+            <folder name="Folder">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/templatesFolder.html" />
+                <!--create private iterator for Folder?-->
+                <!--<attr name="instantiatingIterator" methodvalue="org.netbeans.modules.project.ui.NewFolderWizardIterator.singleton" />-->
+                <attr name="templateType_Other" boolvalue="true"/>
+            </folder>
         </folder>
     </folder>
     
@@ -170,7 +181,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Menu"> <!-- Hacking menus -->
     
         <folder name="File">
-            <!-- attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" /-->
+            <!-- attr name="SystemFileSystem.localizinggundle" stringvalue="org.netbeans.modules.project.ui.Bundle" /-->
 
             <!-- New actions -->
             
