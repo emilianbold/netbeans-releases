@@ -353,6 +353,7 @@
 <!-- Web apps help -->
 
 <mapID target="intro" url="web/overvw/Intro.html" />
+<mapID target="introwebcomps" url="web/overvw/introwebcomps.html" />
 <mapID target="concepts_jspsyn" url="web/concepts/jspsyntax.html" />
 <mapID target="concepts_deploydes" url="web/concepts/deployd.html" />
 <mapID target="concepts_jsp" url="web/concepts/jsp.html" />

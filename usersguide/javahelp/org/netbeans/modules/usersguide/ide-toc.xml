@@ -374,7 +374,8 @@
    <tocitem text="Where to Put Web Application Files" target="webmod_placefiles" />
 </tocitem> <!-- About Web Applications -->
 
-<tocitem text="Developing Web Applications"> 	
+<tocitem text="Creating Web Components">
+  <tocitem text="About Web Components" target="introwebcomps" />	
   <tocitem text="Applets" >
 	  <tocitem text="Creating an Applet" target="webmod_addapplet"/>
           <tocitem text="Adding an Applet to a WAR File" target="webmod_addcompapplet"/>
