@@ -130,12 +130,13 @@ public final class ConstantPool {
             set.add(ci.getClassName());
         }
         
-        // scan all NameAndType constants for class types
-        c = getAllConstantsImpl(CPNameAndTypeInfo.class);
+	// scan all UTF strings for strings that might be type
+	// descriptors
+	c = getAllConstantsImpl(CPUTF8Info.class);
         for (Iterator i = c.iterator(); i.hasNext();) {
-            CPNameAndTypeInfo cnati = (CPNameAndTypeInfo)i.next();
-            addClassNames(set, cnati.getDescriptor());
-        }
+	    CPUTF8Info utf = (CPUTF8Info)i.next();
+	    addClassNames(set, utf.getName());
+	}
  
         return Collections.unmodifiableSet(set);
     }
@@ -149,7 +150,8 @@ public final class ConstantPool {
                 String classType = type.substring(i + 1, j);
 		set.add(ClassName.getClassName(classType));
                 i = j + 1;
-            }
+            } else
+		break;
         }
     }
 
