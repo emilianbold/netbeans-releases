@@ -12,7 +12,7 @@ package org.netbeans.test.editor.app.core.properties;
  */
 public class BooleanProperty implements Property {
     
-    private static String[] VALUES = {Boolean.toString(true),Boolean.toString(false)};
+    private static String[] VALUES = {Boolean.TRUE.toString(),Boolean.FALSE.toString()};
     private boolean value = false;
     
     /** Creates a new instance of StringProperty */
@@ -29,8 +29,10 @@ public class BooleanProperty implements Property {
     }
     
     public void setProperty(String value) {
-        if (Boolean.toString(this.value).compareTo(value) != 0) {
-            this.value=!this.value;
+        if (Boolean.TRUE.toString().compareTo(value) != 0) {
+            this.value=true;
+        } else {
+            this.value=false;
         }
     }
     
