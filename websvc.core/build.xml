@@ -21,13 +21,13 @@ Microsystems, Inc. All Rights Reserved.
             <include name="ant/extra/wsclientuptodate.jar"/>
             <include name="ant/sources/**/W*.java"/>
         </patternset>
-    </target>    
-    
+    </target>
+
 	<target name="build-init" depends="projectized.build-init"/>
 
 	<property name="s2b_root_wscompile_config" location="src/org/netbeans/modules/websvc/wsdl/config/impl/"/>
 	<property name="s2b_res_root" location="src/org/netbeans/modules/websvc/wsdl/resources"/>
-	
+
 	<target name="s2binit" depends="build-init">
 		<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
 			<classpath>
@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
 			</classpath>
 		</taskdef>
 	</target>
-	
+
 	<target name="dd2beansgen" depends="s2binit">
 		<echo message="Generating DDBeans for wscompile config file"/>
 		<schema2beans schema="${s2b_res_root}/jax-rpc-ri-config_1_1.xsd"
@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
 			attrProp="true"
 			removeUnreferencedNodes="true"
 			rootDir="src"/>
-			
+
 		<replace dir="${s2b_root_wscompile_config}">
 			<include name="**/*.java"/>
 			<replacefilter token="CLASS2" value="ADDITIONAL_CLASS"/>
@@ -60,9 +60,9 @@ Microsystems, Inc. All Rights Reserved.
 		<replace file="${s2b_root_wscompile_config}/Configuration.java" token="javax.xml.namespace.QName" value="java.lang.String(*QName*)"/>
 		<replace file="${s2b_root_wscompile_config}/Entry.java" token="javax.xml.namespace.QName" value="java.lang.String/*QName*/"/>
 	</target>
-	
+
 	<target name="compile" depends="dd2beansgen, projectized.compile"/>
-	
+
 		<!-- !PW This module really needs to split up if it has this many dependencies!
 				 Anyway, I broke them up for now so they are not all on one mega long line.
 				 The names of the properties are just meant as a hint, some don't match
@@ -73,6 +73,7 @@ Microsystems, Inc. All Rights Reserved.
 
 		<property name="wscore.openide.deps" value="org.openide.io, org.openide.loaders, org.openide.src, org.netbeans.modules.schema2beans/1, org.netbeans.libs.xerces/1"/>
 		<property name="wscore.project.deps" value="org.netbeans.api.java/1, org.netbeans.modules.projectapi/1, org.netbeans.modules.projectuiapi/1, org.netbeans.modules.project.ant/1"/>
+		<property name="wscore.java.deps" value="org.netbeans.modules.java.project/1"/>
 		<property name="wscore.xml.deps" value="org.netbeans.api.xml/1, org.netbeans.modules.xml.core/2 = ${xml.common.impl.version}, org.netbeans.modules.xml.catalog/2 = ${xml.common.impl.version}, org.netbeans.modules.xml.tools/2 = ${xml.common.impl.version}"/>
 		<property name="wscore.web.deps" value="org.netbeans.modules.j2eeserver/3, org.netbeans.modules.j2ee.dd/1 > 1.2, org.netbeans.api.web.webmodule > 1.0"/>
 		<property name="wscore.j2ee.deps" value="org.netbeans.modules.j2ee.dd.webservice > 1.0, org.netbeans.modules.websvc.websvcapi > 1.0, org.netbeans.modules.websvc.registry, org.netbeans.modules.j2ee.common/1"/>
@@ -84,8 +85,8 @@ Microsystems, Inc. All Rights Reserved.
 				<attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
 				<attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
 				<attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
-				<attribute name="OpenIDE-Module-Module-Dependencies" 
-					value="${wscore.openide.deps}, ${wscore.project.deps}, ${wscore.xml.deps}, ${wscore.web.deps}, ${wscore.j2ee.deps}"/>
+				<attribute name="OpenIDE-Module-Module-Dependencies"
+					value="${wscore.openide.deps}, ${wscore.project.deps}, ${wscore.java.deps}, ${wscore.xml.deps}, ${wscore.web.deps}, ${wscore.j2ee.deps}"/>
 			</manifest>
 			<fileset dir="${build.classes.dir}"/>
 		</jar>
@@ -113,13 +114,13 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="antsrc" includes="**/*.java"/>
         </copy>
     </target>
-    
-    <target name="netbeans-extra" depends="ant-extra"/>    
-    
+
+    <target name="netbeans-extra" depends="ant-extra"/>
+
 	<target name="clean" depends="build-init, clean-ddgen-src, projectized.clean"/>
-	
+
 	<target name="clean-ddgen-src">
 		<delete dir="${s2b_root_wscompile_config}"/>
 	</target>
-	
+
 </project>
