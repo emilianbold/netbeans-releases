@@ -98,6 +98,8 @@ class LibrariesModel extends javax.swing.AbstractListModel implements PropertyCh
     }
 
     public boolean isLibraryEditable (LibraryImplementation impl) {
+        if (this.addedLibraries.contains(impl))
+            return true;
         LibraryProvider provider = (LibraryProvider) this.storageByLib.get
                 (((ProxyLibraryImplementation)impl).getOriginal());
         //Todo: Currently just one WriteableLibraryProvider
