@@ -105,12 +105,13 @@ public abstract class FormProperty extends Node.Property {
 
     protected FormProperty(FormPropertyContext propertyContext,
                            String name, Class type,
-                           String displayName, String shortDescription) {
+                           String displayName, String shortDescription)
+    {
         super(type);
         setValue("changeImmediate", Boolean.FALSE); // NOI18N
         setName(name);
         setDisplayName(displayName);
-        setShortDescription(shortDescription);
+        setShortDescription(getDescriptionWithType(shortDescription));
 
         this.propertyContext = FormPropertyContext.EmptyImpl.getInstance();
         setPropertyContext(propertyContext);
@@ -127,12 +128,13 @@ public abstract class FormProperty extends Node.Property {
     // constructor of property without PropertyContext
     // setPropertyContext(...) should be called explicitly then
     protected FormProperty(String name, Class type,
-                           String displayName, String shortDescription) {
+                           String displayName, String shortDescription)
+    {
         super(type);
         setValue("changeImmediate", Boolean.FALSE); // NOI18N
         setName(name);
         setDisplayName(displayName);
-        setShortDescription(shortDescription);
+        setShortDescription(getDescriptionWithType(shortDescription));
 
         this.propertyContext = FormPropertyContext.EmptyImpl.getInstance();
     }
@@ -145,6 +147,15 @@ public abstract class FormProperty extends Node.Property {
         setValue("changeImmediate", Boolean.FALSE); // NOI18N
 
         this.propertyContext = FormPropertyContext.EmptyImpl.getInstance();
+    }
+
+    private String getDescriptionWithType(String description) {
+        String type = org.openide.util.Utilities.getClassName(getValueType());
+        return description == null ?
+            FormUtils.getFormattedBundleString("HINT_PropertyType", // NOI18N
+                                               new Object[] { type }) :
+            FormUtils.getFormattedBundleString("HINT_PropertyTypeWithDescription", // NOI18N
+                                               new Object[] { type, description });
     }
 
     // ----------------------------------------
