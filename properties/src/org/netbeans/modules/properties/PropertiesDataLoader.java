@@ -18,7 +18,7 @@ import java.io.IOException;
 
 import org.openide.actions.*;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.MultiFileLoader;
+import org.openide.loaders.UniFileLoader;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.FileEntry;
@@ -30,21 +30,22 @@ import org.openide.util.NbBundle;
 * This class is final only for performance reasons,
 * can be unfinaled if desired.
 *
-* @author Ian Formanek
+* @author Ian Formanek, Petr Jiricka
 */
-public final class PropertiesDataLoader extends MultiFileLoader {
+public final class PropertiesDataLoader extends UniFileLoader {
                                         
   static final String PROPERTIES_EXTENSION = "properties";
                                         
-  /** Table of recognized extensions for this data loader */
-  private ExtensionList extensions;
-
   /** Character used to separate parts of bundle properties file name */                                                                                     
   public static final char PRB_SEPARATOR_CHAR = '_';
 
   /** Creates new PropertiesDataLoader */
   public PropertiesDataLoader() {
     super(PropertiesDataObject.class);
+    ExtensionList ext = new ExtensionList();
+    ext.addExtension("properties");
+    ext.addExtension("impl"); // for CORBA module
+    setExtensions(ext);
   }
 
   /** Does initialization. Initializes display name,
@@ -53,10 +54,6 @@ public final class PropertiesDataLoader extends MultiFileLoader {
     super.initialize();
     setDisplayName(NbBundle.getBundle(PropertiesDataLoader.class).
                    getString("PROP_PropertiesLoader_Name"));
-    ExtensionList ext = new ExtensionList();
-    ext.addExtension("properties");
-    ext.addExtension("impl"); // for CORBA module
-    setExtensions(ext);
 
     setActions(new SystemAction[] {
       SystemAction.get(OpenAction.class),
@@ -133,25 +130,12 @@ public final class PropertiesDataLoader extends MultiFileLoader {
     return pfe;
   }
 
-  /** Set the extension list for this data loader.
-  * @param ext new list of extensions
-  */
-  public void setExtensions(ExtensionList ext) {
-    extensions = ext;
-  }
-
-  /** Get the extension list for this data loader.
-  * @return list of extensions
-  */
-  public ExtensionList getExtensions() {
-    if (extensions == null)
-      extensions = new ExtensionList();
-    return extensions;
-  }
 }
 
 /*
 * <<Log>>
+*  13   Gandalf   1.12        10/8/99  Petr Jiricka    Fixed serialization of 
+*       extensions.
 *  12   Gandalf   1.11        10/1/99  Petr Jiricka    Changes in  initialize()
 *  11   Gandalf   1.10        10/1/99  Jaroslav Tulach Loaders extends 
 *       SharedClassObject
