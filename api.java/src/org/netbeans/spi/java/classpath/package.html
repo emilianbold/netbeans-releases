@@ -18,7 +18,24 @@ SPI permitting new classpaths to be constructed and registered.
 <p>{@link org.netbeans.spi.java.classpath.ClassPathProvider}s can be registered
 to default lookup in order to associate information about classpaths with files.
 For example, a Java-oriented project type would normally indicate that its Java
-sources have a certain classpath associated with them.</p>
+sources have a certain classpath associated with them.<br>
+For a source file the ClassPathProvider has to return a
+{@link org.netbeans.api.java.classpath.ClassPath} of the following ClassPath types:
+<ul>
+<li>ClassPath.SOURCE - the classpath contains the source roots of the project</li>
+<li>ClassPath.BOOT - the classpath contains the jdk runtime libraries</li>
+<li>ClassPath.COMPILE - the classpath contains the project compile libraries (compile classpath)</li>
+</ul>
+it may also return a ClassPath of type ClassPath.EXEC pointing to the build output folder.
+<br>
+For build output the ClassPathProvider has to return a ClassPath of the following
+types:
+<ul>
+<li>ClassPath.BOOT - the classpath contains the jdk runtime libraries</li>
+<li>ClassPath.COMPILE - the classpath contains the project compile libraries (compile classpath)</li>
+<li>ClassPath.EXEC - the classpath contains the build output folder</li>
+</ul>
+</p>
 
 <p>{@link org.netbeans.spi.java.classpath.ClassPathFactory} may be used to
 create new {@link org.netbeans.api.java.classpath.ClassPath} instances.</p>
