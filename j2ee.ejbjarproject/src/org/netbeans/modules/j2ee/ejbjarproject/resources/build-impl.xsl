@@ -581,7 +581,7 @@ is divided into following sections:
     </target>
     
     <target name="run-deploy">
-        <xsl:attribute name="depends">init,init-deploy,compile,library-inclusion-in-archive</xsl:attribute>
+        <xsl:attribute name="depends">init,init-deploy,compile,library-inclusion-in-archive,dist</xsl:attribute>
         <nbdeploy debugmode="false" forceRedeploy="${{forceRedeploy}}"/>
     </target>
     
