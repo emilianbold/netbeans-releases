@@ -51,8 +51,7 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
             EclipseProject project = projects[row];
-            setBackground(UIManager.getColor(isSelected ?
-                "Table.selectionBackground" : "Table.background")); // NOI18N
+            setColors(this, isSelected);
             setText(project.getName());
             setSelected(selectedProjects.contains(project) ||
                     requiredProjects.contains(project));
@@ -71,6 +70,13 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         }
     }
     
+    private void setColors(Component c, boolean isSelected) {
+        c.setBackground(UIManager.getColor(isSelected ?
+            "Table.selectionBackground" : "Table.background")); // NOI18N
+        c.setForeground(UIManager.getColor(isSelected ?
+            "Table.selectionForeground" : "Table.foreground")); // NOI18N
+    }
+    
     private class ProjectCellEditor extends AbstractCellEditor
             implements TableCellEditor {
         
@@ -85,8 +91,7 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
             EclipseProject project = projects[row];
             checkBox = new JCheckBox(project.getName(),
                     ((Boolean) value).booleanValue());
-            checkBox.setBackground(UIManager.getColor(isSelected ?
-                "Table.selectionBackground" : "Table.background")); // NOI18N
+            setColors(checkBox, isSelected);
             checkBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ev) {
                     fireEditingStopped();
@@ -234,8 +239,8 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         }
         selectedProjects = new HashSet();
         requiredProjects = new HashSet();
-//        projectTable.setPreferredScrollableViewportSize(projectTable.getPreferredSize());
-//        projectTableSP.setMinimumSize(projectTableSP.getPreferredSize());
+        //        projectTable.setPreferredScrollableViewportSize(projectTable.getPreferredSize());
+        //        projectTableSP.setMinimumSize(projectTableSP.getPreferredSize());
         updateValidity();
     }
     
