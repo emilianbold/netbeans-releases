@@ -1,0 +1,35 @@
+XTEST_SERVER_HOME=/space/xtest
+export XTEST_SERVER_HOME 
+
+JDK13_HOME=/usr/local/jdk1.3.1
+JDK14_HOME=/usr/local/j2sdk1.4.0
+ANT_HOME=/usr/local/jakarta-ant-1.4.1
+export JDK13_HOME JDK14_HOME ANT_HOME
+
+SHIP_RESULTS=/space/data/xtest-results
+export SHIP_RESULTS
+
+NBDEV_BUILDS=/space/builds/netbeans/dev/builds
+export NBDEV_BUILDS
+
+TEST_CONFIGS="testconfig_nb-dev-dev-jdk14 testconfig_nb-dev-dev-jdk13"
+
+XTEST_MAIL_FROM=user@domain.com
+XTEST_MAIL_TO=user@domain.com
+XTEST_MAILHOST=mail
+XTEST_MAIL_SUBJECT_PREFIX=[XTEST]
+export XTEST_MAIL_FROM XTEST_MAIL_TO XTEST_MAILHOST XTEST_MAIL_SUBJECT_PREFIX
+
+HOST_NAME=mymachine
+DISPLAY=:0.0
+export HOST_NAME DISPLAY
+
+#===========================
+
+LOG_DIR=${XTEST_SERVER_HOME}/logs
+BUILDINFO_DIR=${XTEST_SERVER_HOME}/build-info
+CONF_DIR=${XTEST_SERVER_HOME}/conf
+export LOG_DIR BUILDINFO_DIR CONF_DIR
+mkdir -p ${LOG_DIR}
+mkdir -p ${BUILDINFO_DIR}
+
