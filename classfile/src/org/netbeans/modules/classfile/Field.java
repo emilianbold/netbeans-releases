@@ -49,7 +49,6 @@ public abstract class Field {
         try { // debug
 	    utfName = (CPUTF8Info)pool.get(in.readUnsignedShort());
 	    utfType = (CPUTF8Info)pool.get(in.readUnsignedShort());
-            loadAttributes(in, pool);
         } catch (ClassCastException e) {
             // debug assertion
             System.out.println("error looking up constant pool entry: wanted type CPUTF8Info, got " + entry.getClass().getName() + "; e=" + e);
@@ -58,7 +57,7 @@ public abstract class Field {
         }
     }
     
-    private void loadAttributes(DataInputStream in, ConstantPool pool) throws IOException {       
+    final void loadAttributes(DataInputStream in, ConstantPool pool) throws IOException {       
         int n = in.readUnsignedShort();
         for (int i = 0; i < n; i++) {
             CPUTF8Info entry = (CPUTF8Info)pool.get(in.readUnsignedShort());

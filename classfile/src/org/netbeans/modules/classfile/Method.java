@@ -47,6 +47,7 @@ public final class Method extends Field {
     Method(DataInputStream in, ConstantPool pool, ClassFile cls, boolean includeCode) throws IOException {
         super(in, pool, cls);
         this.includeCode = includeCode;
+        super.loadAttributes(in, pool);
     }
 
     /**

@@ -46,6 +46,7 @@ public final class Variable extends Field {
     /** Creates new Variable */
     Variable(DataInputStream in, ConstantPool pool, ClassFile cls) throws IOException {
         super(in, pool, cls);
+        loadAttributes(in, pool);
     }
 
     /**
