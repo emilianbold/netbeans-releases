@@ -13,17 +13,15 @@
 
 package org.netbeans.api.java.platform;
 
-import java.io.IOException;
 import java.util.*;
-import org.openide.ErrorManager;
-import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 import org.openide.util.Lookup;
+import org.openide.util.LookupListener;
+import org.openide.util.LookupEvent;
 import org.openide.modules.SpecificationVersion;
+import org.netbeans.modules.java.platform.JavaPlatformProvider;
 
 /**
  * JavaPlatformManager provides access to list of installed Java Platforms in the system. It can enumerate them,
@@ -37,6 +35,11 @@ import org.openide.modules.SpecificationVersion;
 public final class JavaPlatformManager {
     
     private static JavaPlatformManager instance = null;
+
+    private Lookup.Result providers;
+    private Collection lastProviders = Collections.EMPTY_SET;
+    private PropertyChangeListener pListener;
+    private Collection cachedPlatforms;
 
     /** Creates a new instance of JavaPlatformManager */
     public JavaPlatformManager() {
@@ -59,38 +62,47 @@ public final class JavaPlatformManager {
     /** Gets an array of JavaPlatfrom objects.
      * @return the array of java platform definitions.
      */
-    public JavaPlatform[] getInstalledPlatforms() {
-        List platforms = new ArrayList ();
-        FileObject storage = Repository.getDefault().getDefaultFileSystem().findResource("Services/Platforms/org-netbeans-api-java-Platform");  //NOI18N
-        if (storage != null) {
-            try {
-            FileObject[] platfomDefinitions = storage.getChildren();
-            for (int i=0; i<platfomDefinitions.length;i++) {
-                DataObject dobj = DataObject.find (platfomDefinitions[i]);
-                InstanceCookie ic = (InstanceCookie) dobj.getCookie(InstanceCookie.class);
-                if (ic == null) {
-                    continue;
-                }
-                else  if (ic instanceof InstanceCookie.Of) {
-                    if (((InstanceCookie.Of)ic).instanceOf(JavaPlatform.class)) {
-                        platforms.add (ic.instanceCreate());
+    public synchronized JavaPlatform[] getInstalledPlatforms() {
+        if (cachedPlatforms == null) {
+            if (this.providers == null) {
+                this.providers = Lookup.getDefault().lookup(new Lookup.Template(JavaPlatformProvider.class));
+                this.providers.addLookupListener (new LookupListener () {
+                    public void resultChanged(LookupEvent ev) {
+                        resetCache ();
                     }
-                }
-                else {
-                    Object instance = ic.instanceCreate();
-                    if (instance instanceof JavaPlatform) {
-                        platforms.add (instance);
+                });
+            }
+            if (this.pListener == null ) {
+                this.pListener = new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        JavaPlatformManager.this.resetCache();
                     }
+                };
+            }
+            Collection instances = this.providers.allInstances();
+            Collection toAdd = new HashSet (instances);
+            toAdd.removeAll (this.lastProviders);
+            Collection toRemove = new HashSet (this.lastProviders);
+            toRemove.removeAll (instances);
+            cachedPlatforms = new HashSet ();
+            for (Iterator it = toRemove.iterator(); it.hasNext();) {
+                JavaPlatformProvider provider = (JavaPlatformProvider) it.next ();
+                provider.removePropertyChangeListener (pListener);
+            }
+            for (Iterator it = instances.iterator(); it.hasNext(); ) {
+                JavaPlatformProvider provider = (JavaPlatformProvider) it.next ();
+                JavaPlatform[] platforms = provider.getInstalledPlatforms();
+                for (int i = 0; i < platforms.length; i++) {
+                    cachedPlatforms.add (platforms[i]);
                 }
             }
-            }catch (ClassNotFoundException cnf) {
-                ErrorManager.getDefault().notify (cnf);
+            for (Iterator it = toAdd.iterator(); it.hasNext();) {
+                JavaPlatformProvider provider = (JavaPlatformProvider) it.next ();
+                provider.addPropertyChangeListener (pListener);
             }
-            catch (IOException ioe) {
-                ErrorManager.getDefault().notify (ioe);
-            }
+            this.lastProviders = instances;
         }
-        return (JavaPlatform[])platforms.toArray(new JavaPlatform[platforms.size()]);
+        return (JavaPlatform[]) cachedPlatforms.toArray(new JavaPlatform[cachedPlatforms.size()]);
     }
 
     /**
@@ -120,6 +132,11 @@ public final class JavaPlatformManager {
         SpecificationVersion version = query.getVersion();
         return ((name == null || name.equalsIgnoreCase (platformSpec.getName())) &&
             (version == null || version.equals (platformSpec.getVersion())));
+    }
+
+
+    private synchronized void resetCache () {
+        JavaPlatformManager.this.cachedPlatforms = null;
     }
 
 }
