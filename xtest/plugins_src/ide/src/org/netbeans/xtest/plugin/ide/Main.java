@@ -13,35 +13,29 @@
 
 package org.netbeans.xtest.plugin.ide;
 
-import java.util.*;
-import java.awt.EventQueue;
-import java.awt.Toolkit;
 import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.event.MouseEvent;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.EventQueue;
+import java.awt.Toolkit;
+import java.awt.event.AWTEventListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-
-import org.openide.*;
-import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem; // override java.io.FileSystem
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.util.*;
-import org.openide.util.actions.*;
-
+import java.util.Date;
+import java.util.StringTokenizer;
 import org.netbeans.TopSecurityManager;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.project.ui.OpenProjectList;
-
-// native kill stuff
+import org.netbeans.core.NbTopManager;
 import org.netbeans.xtest.util.JNIKill;
-// PNGEncoder
 import org.netbeans.xtest.util.PNGEncoder;
+import org.openide.ErrorManager;
+import org.openide.LifecycleManager;
 
 /**
  * Main part of XTest starter. Must not use anything outside lib/*.jar and lib/ext/*.jar.
@@ -221,9 +215,6 @@ public class Main extends Object {
     private static final String TEST_REUSE_IDE = "test.reuse.ide";
     private static final long DEFAULT_TIMEOUT = 2400000;
     
-    private static final String IDE_MOUNTS = "xtest.ide.mounts";
-    private static final String IDE_UMOUNT_DEFAULTS="xtest.ide.umount.defaults";
-    
     // properties used for new project infrastructure
     private static final String IDE_CREATE_PROJECT = "xtest.ide.create.project";
     private static final String IDE_OPEN_PROJECT = "xtest.ide.open.project";
@@ -236,7 +227,7 @@ public class Main extends Object {
         if (System.getProperty(TEST_CLASS) == null)
             return;                
         
-        org.netbeans.core.NbTopManager.get();
+        NbTopManager.get();
         
         final MainWithExecInterface handle;
         try {
@@ -294,14 +285,6 @@ public class Main extends Object {
                     
                     if (System.getProperty(TEST_REUSE_IDE, "false").equals("false")) {
                         
-                        if (System.getProperty(IDE_UMOUNT_DEFAULTS,"false").equals("true")) {
-                            umountFileSystems();
-                        }
-                        
-                        if (!System.getProperty(IDE_MOUNTS,"").equals("")) {
-                            mountFileSystems();
-                        }
-
                         // create an empty Java project
                         if (System.getProperty(IDE_CREATE_PROJECT,"false").equals("true")) {
                             projectsHandle.createProject(System.getProperty(XTEST_USERDIR));
@@ -395,7 +378,7 @@ public class Main extends Object {
            Class param[] = new Class[1];
            param[0] = int.class;
            Class c = TopSecurityManager.class;
-           java.lang.reflect.Method m = c.getMethod("exit",param);
+           Method m = c.getMethod("exit",param);
            Integer intparam[] = {new Integer(1)};
            errMan.log(ErrorManager.USER, new Date().toString() + ": using TopSecurityManager.exit(1) to exit IDE.");
            // exit
@@ -407,54 +390,6 @@ public class Main extends Object {
            System.exit(1);
         }
     }
-    
-    private static void umountFileSystems() {
-        Repository repo = Repository.getDefault();
-        // unmount the currently mounted filesystems
-        // (could be more sofisticated some day)
-        
-        Enumeration all = repo.getFileSystems();
-        while (all.hasMoreElements()) {
-            FileSystem fs = (FileSystem)all.nextElement();
-            // preserve the hidden and default filesystems
-            if (!fs.isHidden() && !fs.isDefault())
-                repo.removeFileSystem(fs);
-        }   
-    }
-    
-    
-    private static void mountFileSystems() {
-        Repository repo = Repository.getDefault();
-        
-        
-        // mount new filesystems as specified in IDE_MOUNTS
-        StringTokenizer stok = new StringTokenizer(System.getProperty(IDE_MOUNTS), System.getProperty("path.separator"));
-        while (stok.hasMoreElements()) {
-            String pathelem = stok.nextToken();
-            try {
-                if (pathelem.endsWith(".jar") || pathelem.endsWith(".zip")) {
-                    JarFileSystem jfs = new JarFileSystem();
-                    jfs.setJarFile(new java.io.File(pathelem));
-                    repo.addFileSystem(jfs);
-                }
-                else {
-                    LocalFileSystem lfs = new LocalFileSystem();
-                    lfs.setRootDirectory(new java.io.File(pathelem));
-                    repo.addFileSystem(lfs);
-                }
-            }
-            catch (Exception ex) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-            }
-        }
-        // sleep for a while, so the filesystem is mounted for sure
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ie) {
-        }
-    }
-    
-    
     
     /*
     private static void setNodeProperties() {
@@ -495,7 +430,7 @@ public class Main extends Object {
     }
     */
 
-    private static class QueueEmpty implements java.awt.event.AWTEventListener {
+    private static class QueueEmpty implements AWTEventListener {
         
         private long eventDelayTime = 100; // 100 millis
         private long lastEventTime;
@@ -507,7 +442,7 @@ public class Main extends Object {
         /** method called every time when AWT Event is dispatched
          * @param event event dispatched from AWT Event Queue
          */
-        public void eventDispatched(java.awt.AWTEvent awtEvent) {
+        public void eventDispatched(AWTEvent awtEvent) {
             lastEventTime = System.currentTimeMillis();
         }
         
@@ -654,7 +589,7 @@ public class Main extends Object {
         public DistributingHierarchyListener() {
         }
         
-        public void eventDispatched(java.awt.AWTEvent aWTEvent) {
+        public void eventDispatched(AWTEvent aWTEvent) {
             HierarchyEvent hevt = null;
             if (aWTEvent instanceof HierarchyEvent) {
                 hevt = (HierarchyEvent) aWTEvent;

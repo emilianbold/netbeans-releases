@@ -56,25 +56,32 @@ Microsystems, Inc. All Rights Reserved.
     
     
     <target name="jar" depends="compile">
+        <!-- ant tasks used in ide_plugin_targets.xml -->
         <jar jarfile="lib/xtest-ide-plugin.jar"            
             basedir="src"
             excludesfile="${nball.cvs.root}/nbbuild/standard-jar-excludes.txt"
             compress="false">
             <include name="org/netbeans/xtest/plugin/ide/Ide*.class"/>
         </jar>
-        
-        <jar jarfile="lib/xtest-ide-testexec.jar"            
+        <!-- load by system classloader (-J-Dnetbeans.systemclassloader.patches) -->
+        <jar jarfile="lib/xtest-ide-testexec.jar"
             basedir="src"
             excludesfile="${nball.cvs.root}/nbbuild/standard-jar-excludes.txt"
             compress="false">
-            <include name="org/netbeans/xtest/plugin/ide/Main*.class"/>
+            <include name=""/>
+            <!-- At the time there is no reason to include anything in this jar. -->
+            <!-- <include name="org/netbeans/xtest/plugin/ide/Main*.class"/> -->
         </jar>
+        <!-- -J-Dnetbeans.classpath or also AKA Dynamic Classpath-->
         <jar jarfile="lib/xtest-ide-main.jar"
             basedir="src"
             excludesfile="${nball.cvs.root}/nbbuild/standard-jar-excludes.txt"
             compress="false">
             <include name="org/netbeans/xtest/plugin/ide/Main*.class"/>
             <include name="org/netbeans/xtest/plugin/ide/MainWithExec*.class"/>
+            <!-- Stuff needed for xtest error manager functionality controled by xtest.ide.error.manager property -->
+            <include name="org/netbeans/xtest/plugin/ide/services/XTestErrorManager.class"/>
+            <include name="META-INF/**"/>
         </jar>        
     </target>
     

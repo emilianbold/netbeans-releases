@@ -31,15 +31,6 @@ Microsystems, Inc. All Rights Reserved.
         <!-- prepare workdir structure for ide executor -->
         <mkdir dir="${xtest.workdir}/sys/ide"/>
         
-        
-        <!-- by default use XTestErrorManager to keep eye on errors notified via ErrorManager -->
-        <property name="xtest.error.manager" value="true"/>
-        <pathdef useid="_old.test.classpath">
-            <!-- this path is mounted to repo in IDE -->
-            <!-- <path refid="test.basepath"/> -->
-            <path path="${tbag.classpath}"/>
-        </pathdef>
-        
         <!--
         <echo message="tbag.classpath = ${tbag.classpath}"/>
         -->
@@ -55,13 +46,13 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.ide.reuse.userdir" value="false"/>
         <property name="xtest.ide.winsys" value="mdi"/>
         <property name="xtest.ide.exit" value="true"/>
-        <property name="xtest.ide.mounts" value=""/>
-        <property name="xtest.ide.umount.defaults" value="false"/>
         <!-- create an empty Java project in IDE -->
         <property name="xtest.ide.create.project" value="false"/>
         <!-- open project at specified location -->
         <property name="xtest.ide.open.project" value=""/>
-        
+        <!-- install xtest error manager to IDE which tracks internal errors. 
+             If exception or error appear, the test is signed as error. -->
+        <property name="xtest.ide.error.manager" value="true"/>
         
         <property name="xtest.ide.use.classloader" value=""/>
         
@@ -149,7 +140,7 @@ Microsystems, Inc. All Rights Reserved.
         <ide-jvmargs jvmargs="${xtest.ide.jvmargs}" property="xtest.ide.commandline.jvmargs"/>
             
         <!--
-        <property name="args" value="-jdkhome ${jdkhome} -userdir &quot;${xtest.userdir}&quot; -nosplash -cp:p &quot;${xtest.ide.path}&quot; -J-Dtest.class=${test.class} -J-Dtest.classpath=&quot;${test.classpath}&quot; -J-Dtest.basedir=&quot;${basedir}&quot; -J-Dtest.ant.file=&quot;${ant.file}&quot; -J-Dtest.target=${test.target} -J-Dtest.reuse.ide=${xtest.ide.reuse.userdir} -J-Dxtest.home=&quot;${xtest.home}&quot; -J-Dtbag.classpath=&quot;${tbag.classpath}&quot; -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.name=&quot;${tbag.name}&quot; -J-Dtbag.executor=${tbag.executor} -J-Dxtest.module=&quot;${xtest.module}&quot; -J-Dxtest.attribs=&quot;${xtest.attribs}&quot; -J-Dxtest.distexec=true -J-Dtest.exit=${xtest.ide.exit} -J-Dtest.propertyfile=&quot;${test.propertyfile}&quot; -J-Dxtest.workdir=&quot;${xtest.workdir}&quot; -J-Dxtest.results=&quot;${xtest.results}&quot; -J-Dxtest.results.testrun.dir=&quot;${xtest.results.testrun.dir}&quot; -J-Dtest.output.redirect=true -J-Dnetbeans.full.hack=true -J-Djunit.properties.file=${junit.properties.file} -J-Dnetbeans.windows=${xtest.ide.winsys} -J-Dxtest.error.manager=${xtest.error.manager} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
+        <property name="args" value="-jdkhome ${jdkhome} -userdir &quot;${xtest.userdir}&quot; -nosplash -cp:p &quot;${xtest.ide.path}&quot; -J-Dtest.class=${test.class} -J-Dtest.classpath=&quot;${test.classpath}&quot; -J-Dtest.basedir=&quot;${basedir}&quot; -J-Dtest.ant.file=&quot;${ant.file}&quot; -J-Dtest.target=${test.target} -J-Dtest.reuse.ide=${xtest.ide.reuse.userdir} -J-Dxtest.home=&quot;${xtest.home}&quot; -J-Dtbag.classpath=&quot;${tbag.classpath}&quot; -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.name=&quot;${tbag.name}&quot; -J-Dtbag.executor=${tbag.executor} -J-Dxtest.module=&quot;${xtest.module}&quot; -J-Dxtest.attribs=&quot;${xtest.attribs}&quot; -J-Dxtest.distexec=true -J-Dtest.exit=${xtest.ide.exit} -J-Dtest.propertyfile=&quot;${test.propertyfile}&quot; -J-Dxtest.workdir=&quot;${xtest.workdir}&quot; -J-Dxtest.results=&quot;${xtest.results}&quot; -J-Dxtest.results.testrun.dir=&quot;${xtest.results.testrun.dir}&quot; -J-Dtest.output.redirect=true -J-Dnetbeans.full.hack=true -J-Djunit.properties.file=${junit.properties.file} -J-Dnetbeans.windows=${xtest.ide.winsys} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
         -->
         
         <condition property="xtest.ide.timeout" value="0">
@@ -205,7 +196,6 @@ Microsystems, Inc. All Rights Reserved.
 -J-Dtest.output.redirect=true 
 -J-Dtbag.classpath=&quot;${tbag.classpath}&quot; 
 
--J-Dxtest.error.manager=${xtest.error.manager} 
 -J-Dxtest.home=&quot;${xtest.home}&quot;         
 -J-Dnbjunit.home=&quot;${nbjunit.home}&quot;
 -J-Dtestrunner.workdir=&quot;${xtest.workdir}/sys&quot;
@@ -219,10 +209,9 @@ Microsystems, Inc. All Rights Reserved.
 -J-Dnbjunit.workdir=&quot;${xtest.workdir}/user&quot;
 -J-Djunit.properties.file=&quot;${junit.properties.file}&quot;
 -J-Dxtest.timeout=${xtest.timeout}
--J-Dxtest.ide.mounts=${xtest.ide.mounts}
--J-Dxtest.ide.umount.defaults=${xtest.ide.umount.defaults}
 -J-Dxtest.ide.create.project=${xtest.ide.create.project}
 -J-Dxtest.ide.open.project=&quot;${xtest.ide.open.project}&quot;
+-J-Dxtest.ide.error.manager=${xtest.ide.error.manager}
 -J-Dxtest.userdir=&quot;${xtest.userdir}&quot;
 -J-Dxtest.ide.use.classloader=${xtest.ide.use.classloader}    
 ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
