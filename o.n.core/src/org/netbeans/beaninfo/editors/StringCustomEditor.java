@@ -38,7 +38,9 @@ public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCu
         
         // bugfix# 9219 sets the text editable or not
         textArea.setEditable(editor.isEditable());
-        textArea.setEnabled(editor.isEditable());
+        if (! editor.isEditable ()) {
+            textArea.setForeground (textArea.getDisabledTextColor ());
+        }
         
         textArea.setText (s);
         setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(8, 8, 8, 8)));
