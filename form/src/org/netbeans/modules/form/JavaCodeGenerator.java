@@ -123,6 +123,9 @@ public class JavaCodeGenerator extends CodeGenerator {
     };
   }
 
+// -----------------------------------------------------------------------------------------------
+// Private Methods
+
   private void regenerateInitializer () {
     if (errorInitializing) return;
     StringBuffer text = new StringBuffer (); 
@@ -130,6 +133,10 @@ public class JavaCodeGenerator extends CodeGenerator {
     RADForm form = formManager.getRADForm ();
     RADComponent top = form.getTopLevelComponent ();
     addInitCode (top, text, "    "); // [PENDING - indentation engine]
+    RADComponent[] nonVisualComponents = formManager.getNonVisualComponents ();
+    for (int i = 0; i < nonVisualComponents.length; i++) {
+      addInitCode (nonVisualComponents[i], text, "    "); // [PENDING - indentation engine]
+    }
     text.append (INIT_COMPONENTS_FOOTER);
     synchronized (GEN_LOCK) {
       initComponentsSection.setText (text.toString ());
@@ -142,8 +149,10 @@ public class JavaCodeGenerator extends CodeGenerator {
     text.append (VARIABLES_HEADER);
     text.append ("\n");
     RADForm form = formManager.getRADForm ();
-    ComponentContainer top = (ComponentContainer)form.getTopLevelComponent (); // [PENDING - illegal cast]
-    addVariables (top, text);
+
+    addVariables ((ComponentContainer)form.getTopLevelComponent (), text); // [PENDING - illegal cast]
+    addVariables (formManager.getNonVisualsContainer (), text);
+    
     text.append (VARIABLES_FOOTER);
     text.append ("\n");
     synchronized (GEN_LOCK) {
@@ -151,6 +160,9 @@ public class JavaCodeGenerator extends CodeGenerator {
     }
   }
 
+  private void addNonVisualsInitCode (RADComponent comp, StringBuffer text, String indent) {
+  }
+  
   private void addInitCode (RADComponent comp, StringBuffer text, String indent) {
     //System.out.println("Adding init code for: "+comp.getName ());
     if (!(comp instanceof FormContainer)) {
@@ -695,6 +707,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  16   Gandalf   1.15        5/24/99  Ian Formanek    Non-Visual components
  *  15   Gandalf   1.14        5/24/99  Ian Formanek    
  *  14   Gandalf   1.13        5/16/99  Ian Formanek    
  *  13   Gandalf   1.12        5/15/99  Ian Formanek    

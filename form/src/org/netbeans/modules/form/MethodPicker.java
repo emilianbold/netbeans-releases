@@ -60,10 +60,10 @@ public class MethodPicker extends javax.swing.JDialog {
  
     Vector allComponents = new Vector ();
     allComponents.addElement (manager.getRADForm ().getTopLevelComponent ());
-/*    RADComponent[] nodes = manager.getComponentsRoot ().getNonVisualsNode ().getSubComponents ();
-    for (int i = 0; i < nodes.length; i++)
-      allComponents.addElement (nodes[i]); */ 
-    // [PENDING]
+    RADComponent[] comps = manager.getNonVisualComponents ();
+    for (int i = 0; i < comps.length; i++) {
+      allComponents.addElement (comps[i]);  
+    }
     
     addComponentsRecursively ((ComponentContainer)manager.getRADForm ().getTopLevelComponent (), allComponents); // [PENDING - incorrect cast]
 
@@ -343,6 +343,7 @@ public class MethodPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  4    Gandalf   1.3         5/24/99  Ian Formanek    Non-Visual components
  *  3    Gandalf   1.2         5/17/99  Ian Formanek    Fixed bug 1810 - 
  *       Connection Wizard: the items in list should be alphabetically sorted.
  *  2    Gandalf   1.1         5/15/99  Ian Formanek    

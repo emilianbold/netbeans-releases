@@ -161,6 +161,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  10   Gandalf   1.9         5/24/99  Ian Formanek    Non-Visual components
  *  9    Gandalf   1.8         5/20/99  Ian Formanek    
  *  8    Gandalf   1.7         5/16/99  Ian Formanek    No canRename
  *  7    Gandalf   1.6         5/16/99  Ian Formanek    
