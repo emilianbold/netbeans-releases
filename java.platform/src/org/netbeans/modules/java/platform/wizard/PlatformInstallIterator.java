@@ -32,7 +32,6 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
     boolean                 firstPanel;
     WizardDescriptor          wizard;
     int                     panelNumber = 0;
-    Collection              origSteps;
 
     ResourceBundle          bundle = NbBundle.getBundle(PlatformInstallIterator.class);
     LocationChooser.Panel   locationPanel = new LocationChooser.Panel();
@@ -46,9 +45,8 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
         return new PlatformInstallIterator();
     }
     
-    void updatePanelsList() {
+    void updatePanelsList (JComponent[] where) {
         Collection c = new LinkedList();
-        c.addAll(origSteps);
         c.add(bundle.getString("TITLE_PlatformLocationChooser")); // NOI18N
         if (typeIterator != null) {
             // try to suck stuff out of the iterator's first panel :-(
@@ -62,10 +60,10 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
         } else {
             c.add(bundle.getString("TITLE_PlatformLocationUnknown")); // NOI18N
         }
-        ((JComponent)current().getComponent()).putClientProperty("WizardPanel_contentData",
-            c.toArray(new String[c.size()]));
-        ((JComponent)current().getComponent()).putClientProperty("WizardPanel_contentSelectedIndex",
-            new Integer(panelNumber));
+        String[] names = (String[])c.toArray(new String[c.size()]);
+        for (int i=0; i< where.length; i++) {
+            where[i].putClientProperty("WizardPanel_contentData",names);
+        }
     }
     
     public void addChangeListener(ChangeListener l) {
@@ -109,11 +107,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
         this.wizard = wiz;
         firstPanel = true;
         String[] steps = (String[])wizard.getProperty("WizardPanel_contentData");
-        if (steps != null) 
-            origSteps = Arrays.asList(steps);
-        else
-            origSteps = Collections.EMPTY_LIST;
-        updatePanelsList();
+        updatePanelsList(new JComponent[]{((JComponent)current().getComponent())});
     }
     
     public java.util.Set instantiate() throws IOException {
@@ -135,9 +129,8 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
             firstPanel = false;
         }
         panelNumber++;
-        wizard.putProperty("WizardPanel_contentSelectedIndex", 
+        wizard.putProperty("WizardPanel_contentSelectedIndex",
             new Integer(panelNumber));
-        updatePanelsList();
     }
     
     public void previousPanel() {
@@ -151,7 +144,6 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
         panelNumber--;
         wizard.putProperty("WizardPanel_contentSelectedIndex", 
             new Integer(panelNumber));
-        updatePanelsList();
     }
     
     public void removeChangeListener(ChangeListener l) {
@@ -172,8 +164,17 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
             typeIterator = it;
             if (this.typeIterator != null) {
                 typeIterator.initialize (this.wizard);
+                updatePanelsList(new JComponent[]{
+                    (JComponent)locationPanel.getComponent(),
+                    (JComponent)typeIterator.current().getComponent(),
+                });
             }
-            updatePanelsList();
+            else {
+                updatePanelsList(new JComponent[]{
+                    (JComponent)locationPanel.getComponent()});
+            }
+            wizard.putProperty("WizardPanel_contentSelectedIndex", new Integer(panelNumber));
+
         }
     }
 }

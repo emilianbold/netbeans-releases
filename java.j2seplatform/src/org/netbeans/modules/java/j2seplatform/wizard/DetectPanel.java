@@ -53,8 +53,9 @@ public class DetectPanel extends javax.swing.JPanel {
         initComponents();
         postInitComponents ();
         putClientProperty("WizardPanel_contentData",
-            new String[] { NbBundle.getMessage(DetectPanel.class,
-                "TITLE_J2SEWizardIterator_Configure")
+            new String[] {
+                NbBundle.getMessage(DetectPanel.class,"TITLE_J2SEWizardIterator_Configure"),
+                NbBundle.getMessage(DetectPanel.class,"TITLE_J2SEWizardIterator_SrcJavadoc")
         });
         this.platform = p;
     }
