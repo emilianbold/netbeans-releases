@@ -14,9 +14,9 @@
 package org.netbeans.modules.html;
 import java.io.IOException;
 
-import org.openide.*;
 import org.openide.actions.OpenAction;
 import org.openide.actions.ViewAction;
+import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.*;
 import org.openide.text.DataEditorSupport;
 import org.openide.loaders.*;
@@ -95,7 +95,7 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
         
          public void view () {
              try {
-                 TopManager.getDefault ().showUrl (primary.getFile ().getURL ());
+                 HtmlBrowser.URLDisplayer.getDefault ().showURL (primary.getFile ().getURL ());
              } catch (FileStateInvalidException e) {
              }
          }
