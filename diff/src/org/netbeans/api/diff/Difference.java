@@ -48,8 +48,8 @@ public class Difference extends Object implements Serializable {
     
     /**
      * Creates a new instance of Difference
-     * @param type The type of the difference. Must be one of the {@link DELETE},
-     *             {@link ADD} or {@link CHANGE}
+     * @param type The type of the difference. Must be one of the <a href="#DELETE">DELETE</a>,
+     *             <a href="#ADD">ADD</a> or <a href="#CHANGE">CHANGE</a>
      * @param firstStart The line number on which the difference starts in the first file.
      * @param firstEnd The line number on which the difference ends in the first file.
      * @param secondStart The line number on which the difference starts in the second file.
@@ -61,8 +61,8 @@ public class Difference extends Object implements Serializable {
     
     /**
      * Creates a new instance of Difference
-     * @param type The type of the difference. Must be one of the {@link DELETE},
-     *             {@link ADD} or {@link CHANGE}
+     * @param type The type of the difference. Must be one of the <a href="#DELETE">DELETE</a>,
+     *             <a href="#ADD">ADD</a> or <a href="#CHANGE">CHANGE</a>
      * @param firstStart The line number on which the difference starts in the first file.
      * @param firstEnd The line number on which the difference ends in the first file.
      * @param secondStart The line number on which the difference starts in the second file.
@@ -77,8 +77,8 @@ public class Difference extends Object implements Serializable {
     
     /**
      * Creates a new instance of Difference
-     * @param type The type of the difference. Must be one of the {@link DELETE},
-     *             {@link ADD} or {@link CHANGE}
+     * @param type The type of the difference. Must be one of the <a href="#DELETE">DELETE</a>,
+     *             <a href="#ADD">ADD</a> or <a href="#CHANGE">CHANGE</a>
      * @param firstStart The line number on which the difference starts in the first file.
      * @param firstEnd The line number on which the difference ends in the first file.
      * @param secondStart The line number on which the difference starts in the second file.
@@ -86,10 +86,10 @@ public class Difference extends Object implements Serializable {
      * @param firstText The text content of the difference in the first file.
      * @param secondText The text content of the difference in the second file.
      * @param firstLineDiffs The list of differences on lines in the first file.
-     *                    The list contains instances of {@link Difference.Line}.
+     *                    The list contains instances of {@link Difference.Part}.
      *                    Can be <code>null</code> when there are no line differences.
      * @param secondLineDiffs The list of differences on lines in the second file.
-     *                    The list contains instances of {@link Difference.Line}.
+     *                    The list contains instances of {@link Difference.Part}.
      *                    Can be <code>null</code> when there are no line differences.
      */
     public Difference(int type, int firstStart, int firstEnd, int secondStart, int secondEnd,
@@ -109,7 +109,8 @@ public class Difference extends Object implements Serializable {
     }
 
     /**
-     * Get the difference type. It's one of {@link DELETE}, {@link ADD} or {@link CHANGE}.
+     * Get the difference type. It's one of <a href="#DELETE">DELETE</a>,
+     * <a href="#ADD">ADD</a> or <a href="#CHANGE">CHANGE</a>.
      */
     public int getType() {
         return this.type;
@@ -145,7 +146,7 @@ public class Difference extends Object implements Serializable {
     
     /**
      * The list of differences on lines in the first file.
-     * The list contains instances of {@link Difference.Line}.
+     * The list contains instances of {@link Difference.Part}.
      * Can be <code>null</code> when there are no line differences.
      */
     public Difference.Part[] getFirstLineDiffs() {
@@ -154,7 +155,7 @@ public class Difference extends Object implements Serializable {
     
     /**
      * The list of differences on lines in the second file.
-     * The list contains instances of {@link Difference.Line}.
+     * The list contains instances of {@link Difference.Part}.
      * Can be <code>null</code> when there are no line differences.
      */
     public Difference.Part[] getSecondLineDiffs() {
@@ -195,8 +196,8 @@ public class Difference extends Object implements Serializable {
     
         /**
           * Creates a new instance of LineDiff
-          * @param type The type of the difference. Must be one of the {@link DELETE},
-          *             {@link ADD} or {@link CHANGE}
+          * @param type The type of the difference. Must be one of the {<a href="#DELETE">DELETE</a>,
+          *             <a href="#ADD">ADD</a> or <a href="#CHANGE">CHANGE</a>
           * @param line The line number
           * @param pos1 The position on which the difference starts on this line.
           * @param pos2 The position on which the difference ends on this line.
@@ -212,7 +213,8 @@ public class Difference extends Object implements Serializable {
         }
         
         /**
-          * Get the difference type. It's one of {@link DELETE}, {@link ADD} or {@link CHANGE}.
+          * Get the difference type. It's one of <a href="#DELETE">DELETE</a>,
+          * <a href="#ADD">ADD</a> or <a href="#CHANGE">CHANGE</a>.
           */
         public int getType() {
             return this.type;

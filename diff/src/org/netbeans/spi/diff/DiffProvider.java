@@ -23,7 +23,7 @@ import org.netbeans.api.diff.Difference;
 /**
  * This class represents a provider of diff algorithm. The implementing class
  * should calculate differences between two sources.
- * <p>The registered Diff Providers can be obtained via Lookup
+ * <p>The registered Diff Providers can be obtained via {@link org.openide.util.Lookup}
  * (e.g. you can get the default diff provider by
  *  <code>Lookup.getDefault().lookup(DiffProvider.class)</code>)
  *

@@ -24,7 +24,7 @@ import org.netbeans.api.diff.Difference;
 /**
  * This class represents a diff visualizer. It's used as a presenter of a visual
  * representation of the source differences to the user.
- * <p>The registered Diff Visualizers can be obtained via Lookup
+ * <p>The registered Diff Visualizers can be obtained via {@link org.openide.util.Lookup}
  * (e.g. you can get the default diff provider by
  *  <code>Lookup.getDefault().lookup(DiffVisualizer.class)</code>)
  *
