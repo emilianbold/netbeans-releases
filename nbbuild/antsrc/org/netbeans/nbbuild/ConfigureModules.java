@@ -27,7 +27,7 @@ import org.apache.tools.ant.Task;
 public class ConfigureModules extends Task {
 
     private String property, config;
-    //private List configs = new LinkedList ();
+    private List configs = new LinkedList ();
 
     /** You must add a <samp>&lt;config&gt;</samp> nested element for each configuration. */
     public class Config {
@@ -35,18 +35,17 @@ public class ConfigureModules extends Task {
         /** Name of the configuration (as used in <samp>-Dmoduleconfig=...</samp>). */
 	public void setName (String n) {
 	    name = n;
-	    checkMyself ();
+	    //checkMyself ();
 	}
         /** Comma-separated list of modules. */
 	public void setModules (String m) {
 	    modules = m;
-	    checkMyself ();
+	    //checkMyself ();
 	}
-	/*
 	public String toString () {
 	    return name;
 	}
-	*/
+        /*
 	private void checkMyself () {
 	    if (name != null && modules != null && config.equals (name)) {
 		if (project0 ().getProperty (property) == null) {
@@ -56,7 +55,9 @@ public class ConfigureModules extends Task {
 		}
 	    }
 	}
+        */
     }
+    /*
     // Javac 1.2 nonsense:
     private void log0 (String m, int l) {
 	log (m, l);
@@ -64,6 +65,7 @@ public class ConfigureModules extends Task {
     private Project project0 () {
 	return project;
     }
+    */
 
     /** Name of the property used to hold the resulting comma-separated list of modules. */
     public void setProperty (String p) {
@@ -76,14 +78,13 @@ public class ConfigureModules extends Task {
 
     public Config createConfig () {
 	Config c = new Config ();
-	//configs.add (c);
+	configs.add (c);
 	return c;
     }
 
-    public void init () throws BuildException {
+    public void execute () throws BuildException {
 	if (property == null || config == null)
 	    throw new BuildException ("Must set both the property and selectedconfig attributes", location);
-	/*
 	Iterator it = configs.iterator ();
 	while (it.hasNext ()) {
 	    Config c = (Config) it.next ();
@@ -100,7 +101,6 @@ public class ConfigureModules extends Task {
 	    }
 	}
 	throw new BuildException ("Unrecognized module configuration: " + config + "; pick from: " + configs, location);
-	*/
     }
 
 }

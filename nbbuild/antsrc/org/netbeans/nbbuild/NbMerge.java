@@ -20,8 +20,9 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
-import org.apache.tools.ant.taskdefs.Deltree;
-import org.apache.tools.ant.taskdefs.Copydir;
+import org.apache.tools.ant.taskdefs.Delete;
+import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.tools.ant.types.FileSet;
 
 /** Pseudo-task to unpack a set of modules.
  * Causes the containing target to both depend on the building of the modules in
@@ -101,22 +102,13 @@ public class NbMerge extends Task {
         project.addTarget (dummy);
         project.executeTarget (dummyName);
         
-        Deltree deltree = (Deltree) project.createTask ("deltree");
-        try {
-            try {
-                Deltree.class.getMethod ("setDir", new Class[] { File.class }).invoke 
-                (deltree, new Object[] { dest });
-            } catch (NoSuchMethodException nsme) {
-                Deltree.class.getMethod ("setDir", new Class[] { String.class }).invoke 
-                (deltree, new Object[] { dest.getAbsolutePath () });
-            }
-            // deltree.setDir (dest.getAbsolutePath ());
-        } catch (Exception e) {
-            throw new BuildException ("Could not set directory for deltree", e, location);
-        }
-        deltree.init ();
-        deltree.setLocation (location);
-        deltree.execute ();
+        Delete delete = (Delete) project.createTask ("delete");
+        FileSet fs = new FileSet ();
+        fs.setDir (dest);
+        delete.addFileset (fs);
+        delete.init ();
+        delete.setLocation (location);
+        delete.execute ();
         
         for (int j = 0; j < topdirs.size (); j++) {
             File topdir = (File) topdirs.get (j);
@@ -127,34 +119,15 @@ public class NbMerge extends Task {
                     log ("Build product dir " + netbeans + " does not exist, skipping...", Project.MSG_WARN);
                     continue;
                 }
-                Copydir copydir = (Copydir) project.createTask ("copydir");
-                try {
-                    try {
-                        Copydir.class.getMethod ("setSrc", new Class[] { File.class }).invoke
-                        (copydir, new Object[] { netbeans });
-                    } catch (NoSuchMethodException nsme) {
-                        Copydir.class.getMethod ("setSrc", new Class[] { String.class }).invoke
-                        (copydir, new Object[] { netbeans.getAbsolutePath () });
-                    }
-                } catch (Exception e) {
-                    throw new BuildException ("Could not set 'src' attribute on copydir task", e, location);
-                }
-                
-                try {
-                    try {
-                        Copydir.class.getMethod ("setDest", new Class[] { File.class }).invoke
-                        (copydir, new Object[] { dest });
-                    } catch (NoSuchMethodException nsme) {
-                        Copydir.class.getMethod ("setDest", new Class[] { String.class }).invoke
-                        (copydir, new Object[] { dest.getAbsolutePath () });
-                    }
-                } catch (Exception e) {
-                    throw new BuildException ("Could not set 'dest' attribute on copydir task", e, location);
-                }
-                
-                copydir.init ();
-                copydir.setLocation (location);
-                copydir.execute ();
+                Copy copy = (Copy) project.createTask ("copy");
+                fs = new FileSet ();
+                fs.setDir (netbeans);
+                copy.addFileset (fs);
+                copy.setTodir (dest);
+                copy.setIncludeEmptyDirs (true);
+                copy.init ();
+                copy.setLocation (location);
+                copy.execute ();
             }
         }
     }
