@@ -347,26 +347,26 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
      *  probably does not belong at this time.
      */
     private static final String [] WSCOMPILE_SEI_SERVICE_FEATURES = {
-//        "datahandleronly", // WSDL
-        "documentliteral", // SEI ONLY
-        "rpcliteral", // SEI ONLY
-//        "explicitcontext", // WSDL
+//        "datahandleronly", // WSDL - portable
+        "documentliteral", // SEI ONLY - portable
+        "rpcliteral", // SEI ONLY - portable
+//        "explicitcontext", // WSDL - portable
 //        "infix:<name>", // difficult handle with current API
 //        "jaxbenumtype", // WSDL
-//        "nodatabinding", // WSDL
+//        "nodatabinding", // WSDL - portable
         "noencodedtypes",
         "nomultirefs",
-//        "norpcstructures", // import only
-//        "novalidation", // WSDL
+//        "norpcstructures", // import only - portable
+//        "novalidation", // WSDL - portable
 //        "resolveidref", // WSDL
-//        "searchschema", // WSDL
+//        "searchschema", // WSDL - portable
         "serializeinterfaces",
-        "strict",
-        "useonewayoperations", // SEI ONLY
-//        "wsi", // WSDL
-//        "unwrap", // WSDL
-        "donotoverride",
-//        "donotunwrap", // WSDL
+        "strict", // - portable
+        "useonewayoperations", // SEI ONLY - portable
+//        "wsi", // WSDL - portable
+//        "unwrap", // WSDL - portable
+        "donotoverride", // - portable
+//        "donotunwrap", // WSDL - portable
     };
 
     private static final List allSeiServiceFeatures = Arrays.asList(WSCOMPILE_SEI_SERVICE_FEATURES);
@@ -374,40 +374,49 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     private static final String [] WSCOMPILE_KEY_SEI_SERVICE_FEATURES = {
         "documentliteral",
         "rpcliteral",
-        "noencodedtypes",
+        "strict",
+        "useonewayoperations",
+        "donotoverride"
     };
-    
+
     private static final List importantSeiServiceFeatures = Arrays.asList(WSCOMPILE_KEY_SEI_SERVICE_FEATURES);
 
     private static final String [] WSCOMPILE_WSDL_SERVICE_FEATURES = {
-        "datahandleronly", // WSDL
-//        "documentliteral", // SEI ONLY
-//        "rpcliteral", // SEI ONLY
-        "explicitcontext", // WSDL
+        "datahandleronly", // WSDL - portable
+//        "documentliteral", // SEI ONLY - portable
+//        "rpcliteral", // SEI ONLY - portable
+        "explicitcontext", // WSDL - portable
 //        "infix:<name>", // difficult handle with current API
         "jaxbenumtype", // WSDL
-        "nodatabinding", // WSDL
+        "nodatabinding", // WSDL - portable
         "noencodedtypes",
         "nomultirefs",
-        "norpcstructures", // import only
-        "novalidation", // WSDL
+        "norpcstructures", // import only - portable
+        "novalidation", // WSDL - portable
         "resolveidref", // WSDL
-        "searchschema", // WSDL
+        "searchschema", // WSDL - portable
         "serializeinterfaces",
-        "strict",
-//        "useonewayoperations", // SEI ONLY
-        "wsi", // WSDL
-        "unwrap", // WSDL
-        "donotoverride",
-        "donotunwrap", // WSDL
+        "strict", // - portable
+//        "useonewayoperations", // SEI ONLY - portable
+        "wsi", // WSDL - portable
+        "unwrap", // WSDL - portable
+        "donotoverride", // - portable
+        "donotunwrap", // WSDL - portable
     };
 
     private static final List allWsdlServiceFeatures = Arrays.asList(WSCOMPILE_WSDL_SERVICE_FEATURES);
 
     private static final String [] WSCOMPILE_KEY_WSDL_SERVICE_FEATURES = {
-        "norpcstructures",
+        "wsi", 
+        "strict",
+        "unwrap", 
         "donotunwrap",
-        "datahandleronly"
+        "donotoverride", 
+        "datahandleronly", 
+        "nodatabinding", 
+        "novalidation", 
+        "searchschema", 
+        "explicitcontext", 
     };
     
     private static final List importantWsdlServiceFeatures = Arrays.asList(WSCOMPILE_KEY_WSDL_SERVICE_FEATURES);
@@ -434,17 +443,18 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                         StubDescriptor stubType = getServiceStubDescriptor(serviceNameElement.getParentNode());
                         WsCompileEditorSupport.ServiceSettings settings;
                         
+                        // !PW The logic for managing wscompile options needs refactoring badly.
                         if(seiServiceStub == stubType) {
                             if(currentFeatures == null) {
                                 // default for SEI generation
-                                currentFeatures = "documentliteral"; // NOI18N
+                                currentFeatures = seiServiceStub.getDefaultFeaturesAsArgument();
                             }
                             settings = new WsCompileEditorSupport.ServiceSettings(
                                 serviceName, stubType, currentFeatures, allSeiServiceFeatures, importantSeiServiceFeatures);
-                        } else {
+                        } else { // Should only ever be wsdl node here.)
                             if(currentFeatures == null) {
                                 // default for WSDL generation
-                                currentFeatures = "norpcstructures,wsi"; // NOI18N
+                                currentFeatures = wsdlServiceStub.getDefaultFeaturesAsArgument();
                             }
                             settings = new WsCompileEditorSupport.ServiceSettings(
                                 serviceName, stubType, currentFeatures, allWsdlServiceFeatures, importantWsdlServiceFeatures);
@@ -563,7 +573,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         // Add property for wscompile features
         {
             String featurePropertyName = "wscompile.client." + serviceName + ".features"; // NOI18N
-            String defaultFeatures = "norpcstructures"; // NOI18N
+            String defaultFeatures = "wsi, strict"; // NOI18N -- defaults if stub descriptor is bad type (should never happen?)
             if(stubDescriptor instanceof JAXRPCStubDescriptor) {
                 JAXRPCStubDescriptor stubDesc = (JAXRPCStubDescriptor) stubDescriptor;
                 defaultFeatures = stubDesc.getDefaultFeaturesAsArgument();
@@ -853,35 +863,41 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
      *  probably does not belong at this time.
      */
     private static final String [] WSCOMPILE_CLIENT_FEATURES = {
-        "datahandleronly",
+        "datahandleronly", // - portable
         //        "documentliteral", // SEI ONLY
         //        "rpcliteral", // SEI ONLY
         "explicitcontext",
         //        "infix:<name>", // difficult to implement.
         "jaxbenumtype",
-        "nodatabinding",
+        "nodatabinding", //  - portable
         "noencodedtypes",
         "nomultirefs",
-        "norpcstructures",
-        "novalidation",
+        "norpcstructures", //  - portable
+        "novalidation", //  - portable
         "resolveidref",
-        "searchschema",
+        "searchschema", //  - portable
         "serializeinterfaces",
-        "strict",
+        "strict", //  - portable
         //        "useonewayoperations", // SEI ONLY
-        "wsi",
-        "unwrap",
-        "donotoverride",
-        "donotunwrap",
+        "wsi", // - portable
+        "unwrap",// - portable
+        "donotoverride", // - portable
+        "donotunwrap", // - portable
     };
     
     private static final List allClientFeatures = Arrays.asList(WSCOMPILE_CLIENT_FEATURES);
     
     private static final String [] WSCOMPILE_KEY_CLIENT_FEATURES = {
-        //        "documentliteral",
-        //        "rpcliteral",
-        "noencodedtypes",
-        "wsi",
+        "wsi", 
+        "strict", 
+        "norpcstructures", 
+        "unwrap", 
+        "donotunwrap",
+        "donotoverride", 
+        "datahandleronly",
+        "nodatabinding",
+        "novalidation", 
+        "searchschema",
     };
     
     private static final List importantClientFeatures = Arrays.asList(WSCOMPILE_KEY_CLIENT_FEATURES);
@@ -906,7 +922,14 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                         String serviceName = n.getNodeValue();
                         String currentFeatures = projectProperties.getProperty("wscompile.client." + serviceName + ".features");
                         if(currentFeatures == null) {
-                            currentFeatures = "documentliteral, wsi, norpcstructures";
+                            // !PW should probably retrieve default features for stub type.  
+                            // For now, this will work because this is the same value we'd get doing that.
+                            //
+                            // Defaults if we can't find any feature property for this client 
+                            // Mostly for upgrading EA1, EA2 projects which did not have
+                            // this property, but also useful if the user deletes it from
+                            // project.properties.
+                            currentFeatures = "wsi, strict"; 
                         }
                         StubDescriptor stubType = getClientStubDescriptor(clientNameElement.getParentNode());
                         WsCompileEditorSupport.ServiceSettings settings = new WsCompileEditorSupport.ServiceSettings(
@@ -1049,26 +1072,26 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     private static final JAXRPCStubDescriptor seiServiceStub = new JAXRPCStubDescriptor(
         StubDescriptor.SEI_SERVICE_STUB,
         NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_SEIServiceStub"),
-        new String [] { "documentliteral" });
+        new String [] { "documentliteral", "strict" });
     
     private static final JAXRPCStubDescriptor wsdlServiceStub = new JAXRPCStubDescriptor(
         StubDescriptor.WSDL_SERVICE_STUB,
         NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_WSDLServiceStub"),
-        new String [] { "norpcstructures" });
+        new String [] { "wsi", "strict" });
     
     
     // Client stub descriptors
     private static final JAXRPCStubDescriptor jsr109ClientStub = new JAXRPCStubDescriptor(
         StubDescriptor.JSR109_CLIENT_STUB,
         NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_JSR109ClientStub"),
-        new String [] { "norpcstructures" });
+        new String [] { "wsi", "strict" });
     
     private static final JAXRPCStubDescriptor jaxrpcClientStub = new JAXRPCStubDescriptor(
         StubDescriptor.JAXRPC_CLIENT_STUB,
         NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_JAXRPCStaticClientStub"),
-        new String [0]);
+        new String [] { "wsi", "strict" });
     
-    /** !PW FIXME add required features, etc. for this stub.
+    /** Stub descriptor for services and clients supported by this project type.
      */
     private static class JAXRPCStubDescriptor extends StubDescriptor {
         
