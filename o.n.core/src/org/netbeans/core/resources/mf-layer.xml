@@ -524,7 +524,7 @@ Microsystems, Inc. All Rights Reserved.
       <file name="org-netbeans-core-ui-IDESettingsPanel.instance">
         <attr name="basic" boolvalue="true" />
       </file>
-      <file name="org-netbeans-core-ModuleSelectionPanel.instance" />
+      <file name="org-netbeans-core-ui-ModuleSelectionPanel.instance" />
     </folder>
   </folder>
 
@@ -552,6 +552,16 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="instanceCreate" methodvalue="org.openide.loaders.XMLDataObject.createEntityCatalog"/>
         </file>
 
+        <!-- Register all ModuleInfo's in the system using lookup. -->
+        <file name="org-netbeans-core-module-lookup-proxy.instance">
+            <attr name="instanceClass" stringvalue="org.openide.util.Lookup"/>
+            <attr name="instanceCreate" methodvalue="org.netbeans.core.modules.ModuleSystem.getModuleLookup"/>
+        </file>
+        <!-- Permit test modules to be (re)deployed. -->
+        <file name="org-netbeans-core-module-tester.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.core.modules.TestModuleDeployer"/>
+            <attr name="instanceCreate" methodvalue="org.netbeans.core.modules.ModuleSystem.getTestModuleDeployer"/>
+        </file>
 
     </folder>
 
@@ -593,7 +603,7 @@ Microsystems, Inc. All Rights Reserved.
     </file>
 
     <file name="Modules.instance">
-        <attr name="instanceCreate" newvalue="org.netbeans.core.ModuleNode" />
+        <attr name="instanceCreate" newvalue="org.netbeans.core.ui.ModuleNode" />
         <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
     </file>
 

@@ -20,7 +20,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 
 import org.openide.*;
-import org.openide.modules.ManifestSection;
 import org.openide.nodes.*;
 import org.openide.util.enum.*;
 import org.openide.util.Mutex;
@@ -41,12 +40,13 @@ import org.netbeans.beaninfo.editors.CompilerTypeEditor;
 import org.netbeans.beaninfo.editors.DebuggerTypeEditor;
 
 import org.netbeans.core.lookup.InstanceLookup;
+import org.netbeans.core.modules.ManifestSection;
 
 /** Works with all service types.
 *
 * @author Jaroslav Tulach
 */
-final class Services extends ServiceType.Registry implements LookupListener {
+public final class Services extends ServiceType.Registry implements LookupListener {
     /** serial */
     static final long serialVersionUID =-7558069607307508327L;
     
@@ -287,8 +287,8 @@ final class Services extends ServiceType.Registry implements LookupListener {
         while (it.hasNext()) {
             ms = (ManifestSection.ServiceSection) it.next();
             try {
-                register(ms.getServiceType(), ms.isDefault());
-            } catch (InstantiationException ex) {
+                register((ServiceType)ms.getInstance(), ms.isDefault());
+            } catch (Exception ex) {
                 TopManager.getDefault ().getErrorManager ().notify (
                   ErrorManager.INFORMATIONAL,
                   ex
@@ -350,13 +350,13 @@ final class Services extends ServiceType.Registry implements LookupListener {
             while (it.hasNext()) {
                 section = (ManifestSection.ServiceSection) it.next();
                 try {
-                    ServiceType st = section.getServiceType();
+                    ServiceType st = (ServiceType)section.getInstance();
                     Class instanceClass = st.getClass();
                     if (clazz.isAssignableFrom(instanceClass) && !added.contains(instanceClass)) {
                       l.add (new NSNT (st));
                       added.add (instanceClass);
                     }
-                } catch (InstantiationException ex) {
+                } catch (Exception ex) {
                     TopManager.getDefault ().getErrorManager ().notify (
                         ErrorManager.INFORMATIONAL,
                         ex
@@ -530,11 +530,22 @@ final class Services extends ServiceType.Registry implements LookupListener {
 
 /*
 * $Log$
+* Revision 1.51  2001/07/16 00:10:59  jglick
+* New module installer.
+*
+* Revision 1.48.2.2  2001/07/13 18:37:12  jglick
+* [merge BLD200106290100 - BLD200107130100]
+*
 * Revision 1.50  2001/07/12 16:27:38  jpokorsky
 * service types declared in manifests are handled as declared in module layers and all moved to the session.
 *
 * Revision 1.49  2001/07/09 14:00:01  jtulach
 * ProxyLookup.getDelegates and setDelegates are protected. ProxyLookup is not final.
+*
+* Revision 1.48.2.1  2001/07/09 08:01:48  jglick
+* New module system now more or less works: can start, load, run
+* modules. Does not yet read/write to disk; module nodes are read-only;
+* full reporting of events unimplemented. autoupdate etc. unconverted.
 *
 * Revision 1.48  2001/06/20 18:09:07  jpokorsky
 * #13034 fixed: deadlock in Services during second startup

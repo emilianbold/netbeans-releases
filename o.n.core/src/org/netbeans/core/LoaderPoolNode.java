@@ -27,7 +27,6 @@ import javax.swing.event.ChangeListener;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.InstanceSupport;
-import org.openide.modules.ManifestSection;
 import org.openide.TopManager;
 import org.openide.ErrorManager;
 import org.openide.actions.*;
@@ -38,6 +37,7 @@ import org.openide.util.*;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.actions.ReorderAction;
 
+import org.netbeans.core.modules.ManifestSection;
 
 /** Node which represents loader pool and its content - all loaders
 * in the system. LoaderPoolNode also supports subnode reordering.<P>
@@ -139,8 +139,8 @@ public final class LoaderPoolNode extends AbstractNode {
     * and replaced with the new one.
     * @param s adds loader section
     */
-    public static synchronized void add (ManifestSection.LoaderSection s) throws InstantiationException {
-        DataLoader l = s.getLoader ();
+    public static synchronized void add (ManifestSection.LoaderSection s) throws Exception {
+        DataLoader l = (DataLoader)s.getInstance ();
         Iterator it = loaders.iterator ();
         while (it.hasNext ())
             if (it.next ().getClass ().equals (l.getClass ()))

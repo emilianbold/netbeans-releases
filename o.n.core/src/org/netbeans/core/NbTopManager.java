@@ -57,7 +57,7 @@ import org.netbeans.core.lookup.InstanceLookup;
 import org.netbeans.core.output.OutputTab;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.compiler.CompilationEngineImpl;
-
+import org.netbeans.core.modules.ModuleSystem;
 
 /** This class is a TopManager for Corona environment.
 *
@@ -85,7 +85,12 @@ public abstract class NbTopManager extends TopManager {
 
 
     /** property for status text */
-    public static final String PROP_STATUS_TEXT = "statusText";
+    public static final String PROP_STATUS_TEXT = "statusText"; // NOI18N
+    
+    /** property for system class loader */
+    public static final String PROP_SYSTEM_CLASS_LOADER = "systemClassLoader"; // NOI18N
+    /** property for current class loader */
+    public static final String PROP_CURRENT_CLASS_LOADER = "currentClassLoader"; // NOI18N
 
     /** stores main shortcut context*/
     private Keymap shortcutContext;
@@ -516,6 +521,7 @@ public abstract class NbTopManager extends TopManager {
     * @param text the text to be shown
     */
     public void setStatusText(String text) {
+        if (Utilities.compareObjects(statusText, text)) return;
         if (text == null || text.length () == 0) {
             text = " ";
         }
@@ -652,7 +658,7 @@ public abstract class NbTopManager extends TopManager {
     public void exit ( ) {
         // save all open files
         if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog() ) {
-            if (ModuleInstaller.exit ()) {
+            if (getModuleSystem().shutDown()) {
                 // save project
                 NbProjectOperation.storeLastProject ();
 
@@ -684,11 +690,28 @@ public abstract class NbTopManager extends TopManager {
         }
         return loaderPool;
     }
+    
+    /** Get the module subsystem. */
+    public abstract ModuleSystem getModuleSystem();
 
     /** Obtains current up-to system classloader
     */
     public ClassLoader systemClassLoader () {
-        return ModuleInstaller.getModuleClassLoader ();
+        ModuleSystem ms = getModuleSystem();
+        if (ms != null) {
+            return ms.getManager().getClassLoader();
+        } else {
+            // This can be called very early: if lookup asks for ClassLoader.
+            // For now, just give the startup classloader.
+            //System.err.println("Warning: giving out bogus systemClassLoader for now");
+            //Thread.dumpStack();
+            return NbTopManager.class.getClassLoader();
+        }
+    }
+    // Access from ModuleSystem and from subclasses when moduleSystem is created:
+    public final void fireSystemClassLoaderChange() {
+        //System.err.println("change: systemClassLoader");
+        firePropertyChange(PROP_SYSTEM_CLASS_LOADER, null, null);
     }
 
     /** Obtains current up-to data te classloader
@@ -696,9 +719,15 @@ public abstract class NbTopManager extends TopManager {
     public ClassLoader currentClassLoader () {
         ClassLoader l = ClassLoaderSupport.currentClassLoader ();
         if (l == null) {
+            System.err.println("SHOULD NEVER HAPPEN: currentClassLoader==null"); // NOI18N
             l = systemClassLoader ();
         }
         return l;
+    }
+    // Access from ClassLoaderSupport:
+    final void fireCurrentClassLoaderChange() {
+        //System.err.println("change: currentClassLoader");
+        firePropertyChange(PROP_CURRENT_CLASS_LOADER, null, null);
     }
 
 
@@ -847,7 +876,7 @@ public abstract class NbTopManager extends TopManager {
         /** When all module classes are accessible thru systemClassLoader, this
          * method is called to initialize the FolderLookup.
          */
-        static final synchronized void modulesClassPathInitialized () {
+        public static final synchronized void modulesClassPathInitialized () {
             // replace the lookup by new one
 
             Lookup lookup = Lookup.getDefault ();

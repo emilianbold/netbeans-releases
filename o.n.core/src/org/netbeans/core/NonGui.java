@@ -47,10 +47,13 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.io.*;
 import org.openide.nodes.*;
 import org.openide.util.Utilities;
+
 import org.netbeans.core.actions.*;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.projects.ModuleLayeredFileSystem;
 import org.netbeans.core.perftool.StartLog;
+import org.netbeans.core.modules.ModuleSystem;
+import org.netbeans.core.xml.XML;
 import org.netbeans.core.execution.ExecutionSettings;
 
 /** This class is a TopManager for Corona environment.
@@ -82,6 +85,9 @@ public class NonGui extends NbTopManager implements Runnable {
 
     /** system file system */
     private static FileSystem systemFileSystem;
+    
+    /** module subsystem */
+    private static ModuleSystem moduleSystem;
 
     /** The flag whether to create the log - can be set via -nologging
     * command line option */
@@ -454,23 +460,34 @@ public class NonGui extends NbTopManager implements Runnable {
             TopManager.getDefault().getErrorManager().notify(e);
         }
         StartLog.logProgress ("Upgrade wizzard consulted"); // NOI18N
+        
+        // 8 1/2 XML stuff
+        XML.init();
 
         // -----------------------------------------------------------------------------------------------------
         // 9. Modules
 
         {
-            File centralModuleDirectory = new File (
-                        homeDir + File.separator + DIR_MODULES
-                    );
-            File userModuleDirectory = new File (
-                        userDir == null ? homeDir : userDir + File.separator + DIR_MODULES
-                    );
-
-            // versions set in step 2 for logger
-            ModuleInstaller.initialize (
-                centralModuleDirectory,
-                userModuleDirectory
-            );
+            FileSystem sfs = getRepository().getDefaultFileSystem();
+            File moduleDirHome = new File(homeDir, DIR_MODULES);
+            File moduleDirUser;
+            if (homeDir.equals(userDir)) {
+                moduleDirUser = null;
+            } else {
+                moduleDirUser = new File(userDir, DIR_MODULES);
+            }
+            try {
+                moduleSystem = new ModuleSystem(getRepository().getDefaultFileSystem(), moduleDirHome, moduleDirUser);
+            } catch (IOException ioe) {
+                // System will be screwed up.
+                IllegalStateException ise = new IllegalStateException("Module system cannot be created"); // NOI18N
+                getErrorManager().annotate(ise, ioe);
+                throw ise;
+            }
+            fireSystemClassLoaderChange();
+            moduleSystem.loadBootModules();
+            moduleSystem.readList();
+            moduleSystem.scanForNewAndRestore();
         }
         StartLog.logProgress ("Modules initialized"); // NOI18N
 
@@ -496,7 +513,7 @@ public class NonGui extends NbTopManager implements Runnable {
 
         // -----------------------------------------------------------------------------------------------------
         // 15. Install new modules
-        ModuleInstaller.autoLoadModules ();
+        moduleSystem.installNew();
         StartLog.logProgress ("New modules installed"); // NOI18N
 
         //-------------------------------------------------------------------------------------------------------
@@ -615,4 +632,9 @@ public class NonGui extends NbTopManager implements Runnable {
         org.openide.actions.ExecuteAction.execute(obj, true);
     }
 
+    /** Get the module subsystem.  */
+    public ModuleSystem getModuleSystem() {
+        return moduleSystem;
+    }
+    
 }

@@ -14,12 +14,15 @@
 package org.netbeans.core;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem;
 
+import org.netbeans.core.modules.ModuleSystem;
 import org.netbeans.core.projects.ModuleLayeredFileSystem;
+import org.netbeans.core.xml.XML;
 
 /** Default implementation of TopManager that is used when 
 * the system is used without initialization.
@@ -31,7 +34,8 @@ public class Plain extends NbTopManager implements Runnable {
   /** Creates new Plain. */
   public Plain() {
   }
-
+  
+    private ModuleSystem moduleSystem;
   
     /** Creates defalt file system.
     */
@@ -84,20 +88,28 @@ public class Plain extends NbTopManager implements Runnable {
     System.out.println(text);
   }
   
-  /** Initializaton of modules if user directory provided.
-  */
-  public void run() {
-    String userDir = System.getProperty("modules.dir");
-    if (userDir != null) {
-      java.io.File f = new java.io.File (userDir);
-      ModuleInstaller.initialize(f, f);
-
-      // and autoload modules
-      ModuleInstaller.autoLoadModules ();
-    } else {
-        ModuleInstaller.initialize (null, null);
+    /** Initializaton of modules if user directory provided.
+     */
+    public void run() {
+        XML.init();
+        String userDir = System.getProperty("modules.dir");
+        try {
+            moduleSystem = new ModuleSystem(getRepository().getDefaultFileSystem(), new File(userDir), null);
+        } catch (IOException ioe) {
+            notifyException(ioe);
+            return;
+        }
+        fireSystemClassLoaderChange();
+        moduleSystem.loadBootModules();
+        moduleSystem.readList();
+        moduleSystem.scanForNewAndRestore();
+        moduleSystem.installNew();
     }
-  }
+  
+    /** Get the module subsystem.  */
+    public ModuleSystem getModuleSystem() {
+        return moduleSystem;
+    }
   
 /* JST: not needed anymore.
   static class ClassLoaderFinder extends SecurityManager implements org.openide.util.NbBundle.ClassLoaderFinder {

@@ -21,7 +21,6 @@ import javax.swing.Action;
 import javax.swing.event.*;
 
 import org.openide.actions.ActionManager;
-import org.openide.modules.ManifestSection;
 import org.openide.nodes.Node;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
@@ -31,7 +30,7 @@ import org.openide.util.*;
 *
 * @author jtulach, jglick
 */
-class ModuleActions extends ActionManager
+public class ModuleActions extends ActionManager
 /*implements PropertyChangeListener*/ {
     /** array of all actions added by modules */
     private static SystemAction[] array;
@@ -141,10 +140,14 @@ class ModuleActions extends ActionManager
     }
     */
 
-    /** Attaches to processing of a module
-    */
-    public static synchronized void attachTo (ModuleItem mi) {
-        module = mi;
+    /** Attaches to processing of a module.
+     * The actual object passed is arbitrary, so long as
+     * it is different for every installed modules (as this
+     * controls the grouping of actions with separators).
+     * Passing null means stop processing a given module.
+     */
+    public static synchronized void attachTo (Object m) {
+        module = m;
         if (module == null) {
             // well known value
             module = INSTANCE;
@@ -153,14 +156,14 @@ class ModuleActions extends ActionManager
 
     /** Adds new action to the list.
     */
-    public synchronized static void add (ManifestSection.ActionSection as) throws InstantiationException {
+    public synchronized static void add (SystemAction a) {
         List list = (List)map.get (module);
         if (list == null) {
             list = new LinkedList ();
             map.put (module, list);
         }
-        list.add (as.getAction ());
-        //as.getAction ().addPropertyChangeListener (INSTANCE);
+        list.add (a);
+        //a.addPropertyChangeListener (INSTANCE);
 
         array = null;
         fireChange (); // PENDING this is too often
@@ -168,13 +171,13 @@ class ModuleActions extends ActionManager
 
     /** Removes new action from the list.
     */
-    public synchronized static void remove (ManifestSection.ActionSection as) throws InstantiationException {
+    public synchronized static void remove (SystemAction a) {
         List list = (List)map.get (module);
         if (list == null) {
             return;
         }
-        list.remove (as.getAction ());
-        //as.getAction ().removePropertyChangeListener (INSTANCE);
+        list.remove (a);
+        //a.removePropertyChangeListener (INSTANCE);
 
         if (list.isEmpty ()) {
             map.remove (module);

@@ -29,8 +29,9 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.LookupEvent;
 import org.openide.util.WeakListener;
+
 import org.netbeans.core.windows.nodes.WorkspacePoolContext;
-import org.openide.modules.ManifestSection.NodeSection;
+import org.netbeans.core.modules.ManifestSection;
 
 /** Important places in the system.
 *
@@ -96,13 +97,13 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     * the IDE.
     */
     public Node environment () {
-        return EnvironmentNode.find (NodeSection.TYPE_ENVIRONMENT);
+        return EnvironmentNode.find (ManifestSection.NodeSection.TYPE_ENVIRONMENT);
     }
 
 
     /** Session node */
     public Node session () {
-        return EnvironmentNode.find (NodeSection.TYPE_SESSION); 
+        return EnvironmentNode.find (ManifestSection.NodeSection.TYPE_SESSION); 
     }
 
     /** Control panel
@@ -140,7 +141,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     /** Root nodes.
     */
     public Node[] roots () {
-        return EnvironmentNode.find (NodeSection.TYPE_ROOTS).getChildren ().getNodes (); 
+        return EnvironmentNode.find (ManifestSection.NodeSection.TYPE_ROOTS).getChildren ().getNodes (); 
     }
 
     /** Default folder for templates.
@@ -257,9 +258,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
         /** Static method to compute a Lookup.Result from a template.
          */
         private static Lookup.Result re (String n) {
-            Lookup.Template t = new Lookup.Template (
-                org.openide.modules.ManifestSection.NodeSection.class
-            );
+            Lookup.Template t = new Lookup.Template (ManifestSection.NodeSection.class);
             return Lookup.getDefault ().lookup (t);
         }
 
@@ -271,7 +270,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
                 updateKeys ();
             }
             
-            if (NodeSection.TYPE_ROOTS.equals (sectionName)) {
+            if (ManifestSection.NodeSection.TYPE_ROOTS.equals (sectionName)) {
                 // notify that the set of nodes has changed (probably)
                 NbTopManager.get ().firePropertyChange (TopManager.PROP_PLACES, null, null);
             }
@@ -292,20 +291,17 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
                 return defaultNodesForType ((String)key);
             }
 
-            NodeSection ns = (NodeSection)key;
+            ManifestSection.NodeSection ns = (ManifestSection.NodeSection)key;
 
             try {
                 String type = ns.getType ();
-                if (type == null || type.equals ("")) {
-                    type = NodeSection.TYPE_ENVIRONMENT;
-                }
                 
-                if (type.equalsIgnoreCase (sectionName)) {
-                    return new Node[] { ns.getNode () };
+                if (type.equals (sectionName)) {
+                    return new Node[] { (Node)ns.getInstance () };
                 } else {
                     return new Node[0];
                 }
-            } catch (InstantiationException ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
                 return new Node[0];
             }
@@ -315,7 +311,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
          */
         private Node[] defaultNodesForType (String section) {
             if (defaultNode == null) {
-                if (NodeSection.TYPE_SESSION.equals (section)) {
+                if (ManifestSection.NodeSection.TYPE_SESSION.equals (section)) {
                     defaultNode = new org.netbeans.core.ui.LookupNode ();
                 } else {
                     defaultNode = Node.EMPTY;
