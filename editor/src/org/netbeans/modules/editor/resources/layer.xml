@@ -363,6 +363,18 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.html.HTMLKit"/>
                 </file>
+
+                <folder name="Popup">
+                    <!--<file name="format"/>
+                    <attr name="format/Separator6.instance" boolvalue="true"/>-->
+                    <attr name="Separator4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+
+                    <file name="org-openide-actions-ToolsAction.instance"/>
+                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
+                    <attr name="org-openide-actions-ToolsAction.instance/generate-gutter-popup" boolvalue="true"/>
+                    <attr name="generate-gutter-popup/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                </folder>
             </folder>
 
             <folder name="plain">
