@@ -416,9 +416,9 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                 }
 
             } catch (Exception e) {
-                TomcatFactory.getEM().log("TomcatManagerImpl connecting to: " + urlToConnectTo); // NOI18N
-                TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, e);
                 if (retries < 0) {
+                    TomcatFactory.getEM().log("TomcatManagerImpl connecting to: " + urlToConnectTo); // NOI18N
+                    TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, e);
                     pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, e.getLocalizedMessage (), StateType.FAILED));
                 }
                 // throw t;
