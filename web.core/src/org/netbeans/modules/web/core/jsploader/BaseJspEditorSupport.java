@@ -71,6 +71,9 @@ import org.openide.text.NbDocument;
 import org.openide.debugger.Debugger;
 import org.openide.debugger.Breakpoint;
 
+import org.openide.loaders.DataObject;
+import org.netbeans.modules.web.context.WebContextObject;
+
 public class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, EditorCookie.Observable, OpenCookie, LineCookie, CloseCookie, PrintCookie {
     
     private static final int AUTO_PARSING_DELAY = 2000;//ms
@@ -402,9 +405,13 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
             }
             
             public boolean isEnabled() {
-                String mimet = ((BaseJspEditorSupport)cloneableEditorSupport()).getDataObject().getPrimaryFile().getMIMEType();
-                if (JspLoader.JSP_MIME_TYPE.equalsIgnoreCase(mimet)) {
-                    return true;
+                DataObject data = ((BaseJspEditorSupport)cloneableEditorSupport()).getDataObject();
+                if ((data instanceof JspDataObject) && (data != null)) {
+                    DataObject module = ((JspDataObject)data).getModule();
+                    if ((module instanceof WebContextObject) && (module != null)) {
+                        System.err.println("module: " + ((WebContextObject)module).getContextPath());
+                        return true;
+                    }
                 }
                 return false;
             }
