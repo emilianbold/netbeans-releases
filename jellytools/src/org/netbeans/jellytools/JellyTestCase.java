@@ -88,10 +88,10 @@ public class JellyTestCase extends NbTestCase {
         try {
             JemmyProperties.getCurrentTimeouts().load(getClass().getClassLoader().
                          getResourceAsStream("org/netbeans/jellytools/timeouts"));
-            if(timeoutsResource != null && !"".equals("")) {
+            if(timeoutsResource != null && !"".equals(timeoutsResource)) {
                 JemmyProperties.getCurrentTimeouts().load(
                     getClass().getClassLoader().getResourceAsStream(timeoutsResource));
-            } else if(timeoutsFile != null && !"".equals("")) {
+            } else if(timeoutsFile != null && !"".equals(timeoutsFile)) {
                 JemmyProperties.getCurrentTimeouts().load(timeoutsFile);
             }
         } catch (Exception e) {
