@@ -91,11 +91,11 @@ Microsystems, Inc. All Rights Reserved.
         </locjar>
     </target>
 
-    <target name="netbeans" depends="jars">
+    <target name="netbeans" depends="jars" description="Build module.">
         <genlist targetname="nbm" outputfiledir="netbeans"/>
     </target>
 
-    <target name="nbm" depends="netbeans">
+    <target name="nbm" depends="netbeans" description="Build NBM.">
         <makenbm file="openide-loaders.nbm"
                  topdir="."
                  module="netbeans/lib/openide-loaders.jar"
@@ -120,7 +120,7 @@ Microsystems, Inc. All Rights Reserved.
         </ant>
     </target>
   
-    <target name="clean">
+    <target name="clean" description="Clean build products.">
         <delete>
             <fileset dir="src">
                 <include name="**/*.class"/>
