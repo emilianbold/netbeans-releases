@@ -59,10 +59,10 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
   private static java.awt.Image iconColor32 = null;
   private static java.awt.Image iconMono16 = null;
   private static java.awt.Image iconMono32 = null; //GEN-END:IconsDef
-  private static String iconNameC16 = "/com/netbeans/developer/modules/filter/res/find.gif";//GEN-BEGIN:Icons // NOI18N
+  private static String iconNameC16 = "/com/netbeans/developer/modules/filter/res/find.gif";
   private static String iconNameC32 = null;
   private static String iconNameM16 = null;
-  private static String iconNameM32 = null;//GEN-END:Icons
+  private static String iconNameM32 = null;
                                                  
   private static int defaultPropertyIndex = -1;//GEN-BEGIN:Idx
   private static int defaultEventIndex = -1;//GEN-END:Idx
@@ -174,6 +174,7 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
   public BeanDescriptor getBeanDescriptor(){
     BeanDescriptor descr = new BeanDescriptor(SearchType.class);
     descr.setDisplayName(org.openide.util.NbBundle.getBundle(SearchTypeBeanInfo.class).getString("CTL_SearchTypes"));
+    descr.setValue ("helpID", SearchType.class.getName ()); // NOI18N
     return descr;
   }
   

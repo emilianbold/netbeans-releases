@@ -19,6 +19,7 @@ import javax.swing.*;
 
 import org.openide.*;
 import org.openide.nodes.*;
+import org.openide.util.HelpCtx;
 
 
 /** A class that represents one search type to the user and 
@@ -86,10 +87,15 @@ public abstract class SearchType extends org.openide.ServiceType implements Clon
     }    
   }
   
+  public HelpCtx getHelpCtx () {
+    return new HelpCtx (SearchType.class);
+  }
+  
 }
 
 /* 
 * Log
+*  6    Gandalf   1.5         1/18/00  Jesse Glick     Context help.
 *  5    Gandalf   1.4         1/14/00  Ian Formanek    I18N
 *  4    Gandalf   1.3         1/4/00   Petr Kuzel      Polymorphism
 *  3    Gandalf   1.2         12/15/99 Martin Balin    Fixed package statement
