@@ -236,6 +236,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="../output/netbeans/modules/autoload/core-output.jar"/>
                 <pathelement location="../execution/netbeans/modules/autoload/core-execution.jar"/>
                 <pathelement location="../compiler/netbeans/modules/autoload/core-compiler.jar"/>
+                <pathelement location="../windows/netbeans/modules/core-windows.jar"/>
     	</path>
     </target>
         
