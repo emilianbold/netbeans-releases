@@ -56,6 +56,7 @@ workspaceswitcher
   </target>
 
   <target name="init" depends="bootstrap,setup-jdkhome-4">
+    <tstamp/>
     <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
     <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
     <taskdef name="configmods" classname="org.netbeans.nbbuild.ConfigureModules" classpath="nbantext.jar"/>
@@ -337,7 +338,11 @@ to make the first user start faster and better.)
     <delete file="netbeans/system/project.last"/>
     <delete file="netbeans/beans/libs.properties"/>
     <echo file="netbeans/build_info">NetBeans dev build
+------------------
+Branch: ${branch}
 Number: ${buildnumber}
+Locale: ${locale}
+Date: ${TODAY}
 </echo>
   </target>
 
