@@ -143,8 +143,16 @@ public class BrokenReferencesSupport {
         SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     try {
+                        JButton closeOption = new JButton (NbBundle.getMessage(BrokenReferencesAlertPanel.class, "CTL_Broken_References_Close"));
+                        closeOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrokenReferencesAlertPanel.class, "AD_Broken_References_Close"));
                         DialogDescriptor dd = new DialogDescriptor(new BrokenReferencesAlertPanel(), 
-                            NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Title")); // NOI18N
+                            NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Title"),
+                            true,
+                            new Object[] {closeOption},
+                            closeOption,
+                            DialogDescriptor.DEFAULT_ALIGN,
+                            null,
+                            null); // NOI18N
                         dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
                         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
                         dlg.setVisible(true);
