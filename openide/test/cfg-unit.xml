@@ -39,7 +39,6 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testRemoveFileChangeListener"/>
                 <include name="org/openide/modules/*.class"/>
                 <include name="org/openide/loaders/*.class"/>
-                <exclude name="org/openide/loaders/InstanceDataObjectTest.class/testCreateFromTemplateForSettingsFile"/>
                 <!-- Why? Looks OK to me. -jglick
                 <exclude name="org/openide/loaders/MultiDataObjectTest.class"/>
                 -->
@@ -80,7 +79,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/filesystems/MultiFileSystem3Test.class/testGetOutputStream"/>
                 <include name="org/openide/filesystems/MultiFileSystem3Test.class/testAddFileChangeListener"/>
                 <include name="org/openide/filesystems/MultiFileSystem3Test.class/testRemoveFileChangeListener"/>
-                <include name="org/openide/loaders/InstanceDataObjectTest.class/testCreateFromTemplateForSettingsFile"/>
             </patternset>
         </testset>      
     </testbag>
