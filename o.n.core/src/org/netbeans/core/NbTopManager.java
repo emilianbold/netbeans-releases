@@ -868,8 +868,7 @@ public abstract class NbTopManager extends TopManager {
                     Lookup[] arr = new org.openide.util.Lookup[] {
                         lkp.getLookups ()[0],
                         NbTopManager.get ().getInstanceLookup (),
-                        folder.getLookup (),
-                        Services.getDefault().getLookup()
+                        folder.getLookup ()
                     };
 
                     lkp.setLookups (arr);

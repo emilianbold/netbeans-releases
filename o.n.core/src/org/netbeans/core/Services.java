@@ -265,18 +265,19 @@ final class Services extends ServiceType.Registry implements LookupListener {
     * @param arr list of ServiceTypes 
     */
     public synchronized void setServiceTypes (java.util.List arr) {
-        lookup = new InstanceLookup();
-        lookupDefTypes = new InstanceLookup();
-        if (arr == null) {
-            Lookup.Result r = getServiceSectionsResult();
-            registerServiceSections(r.allInstances());
-        } else {
-            Iterator it = arr.iterator();
-            while (it.hasNext()) {
-                register((ServiceType) it.next(), false);
-            }
-        }
-        proxyLookup.change (new Lookup[] {lookupDefTypes, lookup});
+        // [PENDING] compatible patch will be provided later
+//        lookup = new InstanceLookup();
+//        lookupDefTypes = new InstanceLookup();
+//        if (arr == null) {
+//            Lookup.Result r = getServiceSectionsResult();
+//            registerServiceSections(r.allInstances());
+//        } else {
+//            Iterator it = arr.iterator();
+//            while (it.hasNext()) {
+//                register((ServiceType) it.next(), false);
+//            }
+//        }
+//        proxyLookup.change (new Lookup[] {lookupDefTypes, lookup});
     }
     
     /** Convert list of ManifestSection.ServiceSections ServiceTypes and register them. */
@@ -529,6 +530,9 @@ final class Services extends ServiceType.Registry implements LookupListener {
 
 /*
 * $Log$
+* Revision 1.50  2001/07/12 16:27:38  jpokorsky
+* service types declared in manifests are handled as declared in module layers and all moved to the session.
+*
 * Revision 1.49  2001/07/09 14:00:01  jtulach
 * ProxyLookup.getDelegates and setDelegates are protected. ProxyLookup is not final.
 *
