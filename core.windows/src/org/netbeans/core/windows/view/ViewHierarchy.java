@@ -406,8 +406,8 @@ final class ViewHierarchy {
         return view;
     }
     
-    public Component getDesktopComponent() {
-        return splitRoot.getComponent();
+    private Component getDesktopComponent() {
+        return splitRoot == null ? null : splitRoot.getComponent();
     }    
 
     public ViewElement getSplitRootElement() {
@@ -465,7 +465,7 @@ final class ViewHierarchy {
         if(maximizedModeView != null) { // PENDING
             return;
         }
-        updateSplitElement(splitRoot, splitRoot.getComponent().getSize());
+        updateSplitElement(splitRoot, getDesktopComponent().getSize());
     }
 
     private static void updateSplitElement(ViewElement view, Dimension realSize) {

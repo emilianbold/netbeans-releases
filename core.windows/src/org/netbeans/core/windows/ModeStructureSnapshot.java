@@ -370,12 +370,16 @@ public class ModeStructureSnapshot {
 
         /** Indicates whether component represented by this node is visible or not. */
         public boolean isVisibleInSplit() {
-            return true;
+            if(Constants.SWITCH_HIDE_EMPTY_DOCUMENT_AREA) {
+                return editorAreaSnapshot.isVisibleInSplit();
+            } else {
+                return true;
+            }
         }
 
         /** Indicates whether there is at least one visible descendant. */
         public boolean hasVisibleDescendant() {
-            return true;
+            return isVisibleInSplit();
         }
         
         public String toString() {

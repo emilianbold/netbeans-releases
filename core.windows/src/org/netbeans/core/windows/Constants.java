@@ -89,6 +89,10 @@ public abstract class Constants {
     /** Gets the image resource to be used in the empty editor area. */
     public static final String  SWITCH_IMAGE_SOURCE         = System.getProperty("netbeans.winsys.imageSource"); // NOI18N
     
+    // XXX #37999
+    /** For view, do not show emty documents area, i.e. when no document is opened. */
+    public static final boolean SWITCH_HIDE_EMPTY_DOCUMENT_AREA = Boolean.getBoolean("netbeans.winsys.hideEmptyDocArea"); // NOI18N
+    
     
     private Constants() {}
 }
