@@ -376,6 +376,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     if (!isRADComponentFlavor) {
       InstanceCookie ic = (InstanceCookie)NodeTransfer.cookie (t, NodeTransfer.COPY, InstanceCookie.class);
       if (ic != null) {
+//        System.out.println("Pasting instance: "+ic.instanceName ());
         s.add (new InstancePaste (ic));        
       }
     }
@@ -524,7 +525,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
       } catch (UnsupportedFlavorException e) {
         return null; // ignore
       }
-      System.out.println ("RADPaste.paste() : fromCut: "+fromCut+", : "+radComponent);
+//      System.out.println ("RADPaste.paste() : fromCut: "+fromCut+", : "+radComponent);
 
 
       // 1. pasting copy of RADComponent
@@ -590,16 +591,15 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     */
     public final Transferable paste () throws java.io.IOException {
       String name = cookie.instanceName ();
-      // [PENDING]
       Class instanceClass = null;
+      Object pasteInstance = null;
       try {
-        instanceClass = cookie.instanceClass ();
-      } catch (ClassNotFoundException e) {
+        pasteInstance = cookie.instanceCreate ();
+        if (pasteInstance == null) return null; // cannot paste in this case
+      } catch (Exception e) {
         TopManager.getDefault ().notifyException (e); // [PENDING - better notification]
       }
-      if (instanceClass == null) {
-        return null;
-      }
+      instanceClass = pasteInstance.getClass ();
 
       if (java.awt.Component.class.isAssignableFrom (instanceClass)) {
         RADVisualComponent newRADVisualComponent;
@@ -615,16 +615,23 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
         else { */
           newRADVisualComponent = new RADVisualComponent();
           newRADVisualComponent.initialize (component.getFormManager ());
-          newRADVisualComponent.setComponent (instanceClass); // [PENDING - how about serialized prototypes and using createInstance on the PaletteItem]
+          newRADVisualComponent.setInstance (pasteInstance);
 //        }
           
         component.getFormManager ().addVisualComponent (newRADVisualComponent, (RADVisualContainer)component, null);
 
         // for some components, we initialize their properties with some non-default values
         // e.g. a label on buttons, checkboxes
-        FormEditor.defaultComponentInit (newRADVisualComponent);
+//        FormEditor.defaultComponentInit (newRADVisualComponent);
         component.getFormManager ().selectComponent (newRADVisualComponent, false);
         component.getFormManager ().getFormTopComponent ().validate();
+        component.getFormManager ().fireFormChange ();
+      } else { // non-visual component
+        RADComponent newRADComponent = new RADVisualComponent();
+        newRADComponent.initialize (component.getFormManager ());
+        newRADComponent.setInstance (pasteInstance);
+        component.getFormManager ().addNonVisualComponent (newRADComponent, null);
+        component.getFormManager ().selectComponent (newRADComponent, false);
         component.getFormManager ().fireFormChange ();
       }
       // preserve clipboard
@@ -669,6 +676,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  33   Gandalf   1.32        8/6/99   Ian Formanek    Pasting InstanceCookie
  *  32   Gandalf   1.31        8/1/99   Ian Formanek    NodeCustomizer and 
  *       FormAwareEditor employed in getCustomizer
  *  31   Gandalf   1.30        7/30/99  Ian Formanek    Flavors are public
