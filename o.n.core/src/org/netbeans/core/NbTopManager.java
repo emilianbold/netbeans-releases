@@ -149,14 +149,33 @@ public abstract class NbTopManager extends TopManager {
         System.setProperty ("netbeans.buildnumber", versions.getProperty ("VERS_Build_Number")); // NOI18N
         */
         Package p = Package.getPackage ("org.openide"); // NOI18N
-        if (null == System.getProperty ("org.openide.specification.version"))
-            System.setProperty ("org.openide.specification.version", p.getSpecificationVersion ());
-        if (null == System.getProperty ("org.openide.version"))
-            System.setProperty ("org.openide.version", p.getImplementationVersion ());
-        if (null == System.getProperty ("org.openide.major.version"))
-            System.setProperty ("org.openide.major.version", p.getSpecificationTitle ());
-        if (null == System.getProperty ("netbeans.buildnumber"))
-            System.setProperty ("netbeans.buildnumber", p.getImplementationVersion ());
+        
+        putSystemProperty ("org.openide.specification.version", p.getSpecificationVersion (), "1.1.3"); // NOI18N
+        putSystemProperty ("org.openide.version", p.getImplementationVersion (), "OwnBuild"); // NOI18N
+        putSystemProperty ("org.openide.major.version", p.getSpecificationTitle (), "IDE/1"); // NOI18N
+        putSystemProperty ("netbeans.buildnumber", p.getImplementationVersion (), "OwnBuild"); // NOI18N
+    }
+    
+    /** Puts a property into the system ones, but only if the value is not null.
+     * @param propName name of property
+     * @param value value to assign or null
+     * @param failbackValue value to assign if the previous value is null
+     */
+    private static void putSystemProperty (
+        String propName, String value, String failbackValue
+    ) {
+        if (System.getProperty (propName) == null) {
+            // only set it if not null
+            if (value != null) {
+                System.setProperty (propName, value);
+            } else {
+                System.err.println(
+                    "Warning: Versioning property \"" + propName + // NOI18N
+                    "\" is not set. Defaulting to \"" + failbackValue + '"' // NOI18N
+                ); 
+                System.setProperty (propName, failbackValue);
+            }
+        }
     }
 
     /** Constructs a new manager.
