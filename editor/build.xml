@@ -23,7 +23,12 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
 
   <target name="compile">
-    <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}"/>
+    <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <!-- We need Openide-util library. Namely RequestProcessor. -->
+      <classpath>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+      </classpath>
+    </javac>
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
        <!-- XXX illegal dependency on core! -->
