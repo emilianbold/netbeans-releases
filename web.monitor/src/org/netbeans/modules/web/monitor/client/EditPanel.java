@@ -220,7 +220,14 @@ public class EditPanel extends javax.swing.JPanel implements
 
 	if(debug) System.out.println("EditPanel got action");
 	 
-	String str = ((JButton)editDialog.getValue()).getText();
+	String str = new String();
+        Object value = editDialog.getValue();
+        if (value == null)
+            return;
+        if (value instanceof JButton)
+            str = ((JButton)value).getText();
+        else
+            str = value.toString();
 	if(str.equals(msgs.getString("MON_Send"))) {
 	 
 	    if(debug) System.out.println("EditPanel got SEND");
