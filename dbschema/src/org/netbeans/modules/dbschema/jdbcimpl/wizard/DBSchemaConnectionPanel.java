@@ -72,6 +72,11 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
         existingConnComboBox.getModel().addListDataListener(this);
     }
 
+    
+    public   javax.swing.JComboBox getComboBox(){
+        return existingConnComboBox;
+    }
+
     private Node[] getConnectionNodes() {
         Node[] n;
         n = dbNode.getChildren().getNodes();
@@ -106,6 +111,8 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
             existingConnComboBox.insertItemAt(bundle.getString("NoConnection"), 0); //NOI18N
         else
             existingConnComboBox.insertItemAt(bundle.getString("SelectFromTheList"), 0); //NOI18N
+        
+        existingConnComboBox.addItem(bundle.getString("NewConnectionButton"));
     }
     
     private void initAccessibility() {
@@ -139,7 +146,6 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
 
         descriptionTextArea = new javax.swing.JTextArea();
         existingConnComboBox = new javax.swing.JComboBox();
-        newConnectionButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -176,36 +182,7 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 5);
         add(existingConnComboBox, gridBagConstraints);
 
-        newConnectionButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/dbschema/jdbcimpl/resources/Bundle").getString("NewConnectionButton_Mnemonic").charAt(0));
-        newConnectionButton.setText(bundle.getString("NewConnectionButton"));
-        newConnectionButton.setToolTipText(bundle.getString("ACS_NewConnectionButtonDesc"));
-        newConnectionButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                newConnectionButtonActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 11);
-        add(newConnectionButton, gridBagConstraints);
-
     }//GEN-END:initComponents
-
-    private void newConnectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newConnectionButtonActionPerformed
-        Node[] n = getDriverNodes();
-
-        DatabaseAction dbAction = (DatabaseAction) SystemAction.get(AddConnectionAction.class);
-        dbAction.performAction (n);
-
-        Vector oldConnections = (Vector) conList.clone();
-        setConnectionCombo(getConnectionNodes());
-        existingConnComboBox.setSelectedItem(getNewConObject(oldConnections));
-    }//GEN-LAST:event_newConnectionButtonActionPerformed
 
     private Object getNewConObject(Vector old) {
         Object ret = null;
@@ -235,16 +212,31 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
         }
         return drvNodes;
     }
-
+    
+     private void newConnectionButtonActionPerformed(java.awt.event.ActionEvent evt) {
+         Node[] n = getDriverNodes();
+ 
+         DatabaseAction dbAction = (DatabaseAction) SystemAction.get(AddConnectionAction.class);
+         dbAction.performAction (n);
+ 
+         Vector oldConnections = (Vector) conList.clone();
+         setConnectionCombo(getConnectionNodes());
+         existingConnComboBox.setSelectedItem(getNewConObject(oldConnections));
+     }
+     
     private void existingConnComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_existingConnComboBoxActionPerformed
-        if(existingConnComboBox.getSelectedIndex() > 0)
+        if(existingConnComboBox.getSelectedIndex() > 0){
+            if (existingConnComboBox.getItemCount() == existingConnComboBox.getSelectedIndex()+1 ){
+                newConnectionButtonActionPerformed( evt);
+            }else{
             data.setConnectionNodeInfo((ConnectionNodeInfo) connInfos.get(existingConnComboBox.getSelectedIndex() - 1));
+            }
+        }
     }//GEN-LAST:event_existingConnComboBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea descriptionTextArea;
     private javax.swing.JComboBox existingConnComboBox;
-    private javax.swing.JButton newConnectionButton;
     // End of variables declaration//GEN-END:variables
 
     private final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"); //NOI18N
@@ -265,7 +257,7 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
         fireChange(this);
     }
 
-    protected void initData() {
+    public void initData() {
         data.setExistingConn(true);
         if(existingConnComboBox.getSelectedIndex() > 0)
             data.setConnectionNodeInfo((ConnectionNodeInfo) connInfos.get(existingConnComboBox.getSelectedIndex() - 1));
