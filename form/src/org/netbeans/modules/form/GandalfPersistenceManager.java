@@ -24,8 +24,10 @@ import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
+import org.openide.TopManager;
 
 import com.netbeans.developerx.loaders.form.formeditor.layouts.*;
+import com.netbeans.developer.modules.loaders.form.forminfo.*;
 
 /** 
 *
@@ -46,8 +48,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
   public static final String XML_EVENT = "EventHandler";
   public static final String XML_PROPERTIES = "Properties";
   public static final String XML_PROPERTY = "Property";
+  public static final String XML_AUX_VALUES = "AuxValues";
+  public static final String XML_AUX_VALUE = "AuxValue";
   
   public static final String ATTR_FORM_VERSION = "version";
+  public static final String ATTR_FORM_TYPE = "version";
   public static final String ATTR_COMPONENT_NAME = "name";
   public static final String ATTR_COMPONENT_CLASS = "class";
   public static final String ATTR_PROPERTY_NAME = "name";
@@ -57,6 +62,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
   public static final String ATTR_PROPERTY_VALUE = "value";
   public static final String ATTR_EVENT_NAME = "event";
   public static final String ATTR_EVENT_HANDLER = "handler";
+  public static final String ATTR_AUX_NAME = "name";
+  public static final String ATTR_AUX_VALUE = "value";
   public static final String ATTR_CONSTRAINT_LAYOUT = "layoutClass";
   public static final String ATTR_CONSTRAINT_VALUE = "value";
 
@@ -64,6 +71,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
   
   private static final String ONE_INDENT =  "  ";
   
+  /** A method which allows the persistence manager to provide infotrmation on whether
+  * is is capable to store info about advanced features provided from Developer 3.0 
+  * - all persistence managers except the one providing backward compatibility with 
+  * Developer 2.X should return true from this method.
+  * @return true if this PersistenceManager is capable to store advanced form features, false otherwise
+  */
+  public boolean supportsAdvancedFeatures () {
+    return true;
+  }
+
   /** A method which allows the persistence manager to check whether it can read
   * given form format.
   * @return true if this PersistenceManager can load form stored in the specified form, false otherwise
@@ -85,10 +102,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
   * @exception IOException if any problem occured when loading the form
   */
   public FormManager2 loadForm (FormDataObject formObject) throws IOException {
-    FileObject formFile = formObject.getFormEntry ().getFile ();
+/*    FileObject formFile = formObject.getFormEntry ().getFile ();
     org.w3c.dom.Document doc = org.openide.loaders.XMLDataObject.parse (formFile.getURL ());
     org.w3c.dom.Element mainElement = doc.getDocumentElement ();
-
+    walkTree (mainElement, "");
 // A. Do various checks
 
   // 1. check the top-level element name
@@ -100,20 +117,127 @@ public class GandalfPersistenceManager extends PersistenceManager {
     if (!CURRENT_VERSION.equals (mainElement.getAttribute (ATTR_FORM_VERSION))) {
       throw new IOException (); // [PENDING - better version checking]
     }
+    String infoClass = mainElement.getAttribute (ATTR_FORM_TYPE);
+    FormInfo formInfo = null;
+    if (infoClass == null) {
+      return null;
+    }
+    try {
+      formInfo = (FormInfo)TopManager.getDefault ().systemClassLoader ().loadClass (infoClass).newInstance ();
+    } catch (Exception e) {
+      // [PENDING - notify problem]
+      return null;
+    }
 
+    RADForm radForm = new RADForm (formInfo);
+    FormManager2 formManager2 = new FormManager2 (formObject, radForm);
+    RADVisualContainer topComp = (RADVisualContainer)radForm.getTopLevelComponent (); // [PENDING - illegal cast]
+    
 // B. process top-element's subnodes (all required)
 
-    org.w3c.dom.NodeList childNodes = mainElement.getChildNodes ();
-    for (int i = 0; i < childNodes.getLength (); i++) {
-      org.w3c.dom.Node node = childNodes.item (i);
-      if (XML_NON_VISUAL_COMPONENTS.equals (node.getNodeName ())) {
-//        nonVisualsPresent = true;
-//        loadNonVisual (node);
-      } else if (false) { //PENDING
+    org.w3c.dom.NodeList childNodes = mainElement.getChildNodes ();   
+    if (childNodes == null) {
+      // [PENDING - notify problem]
+      return null;
+    }
+
+    processNonVisuals (mainElement, formManager2);
+    processContainer (mainElement, formManager2, topComp, null);
+
+    return formManager2;*/
+return null;
+  }
+
+/*  private boolean processNonVisuals (org.w3c.dom.Node node, FormManager2 formManager2) {
+    org.w3c.dom.Node nonVisualsNode = findNode (node, XML_NON_VISUAL_COMPONENTS);
+    org.w3c.dom.NodeList childNodes = (nonVisualsNode == null) ? null : nonVisualsNode.getChildNodes ();
+    ArrayList list = new ArrayList ();
+    if (childNodes != null) {
+      for (int i = 0; i < childNodes.length (); i++) {
+        if (childNodes.item (i).getNodeType () == org.w3c.dom.Node.TEXT_NODE) return true; // ignore text nodes
+        if (XML_COMPONENT.equals (childNodes.item (i).getNodeName ())) {
+          RADComponent comp = new RADComponent ();
+          if (processComponent (childNodes.item (i), formManager2, comp, null)) {
+            list.add (comp);
+          }
+        } else if (XML_CONTAINER.equals (childNodes.item (i).getNodeName ())) {
+          RADContainer cont = new RADContainer ();
+          if (processContainer (childNodes.item (i), formManager2, cont, null)) {
+            list.add (cont);
+          }
+        }
       }
     }
 
-    return null;
+    RADComponent[] nonVisualsComps = new RADComponent[list.size ()];
+    list.copyInto (nonVisualComps);
+    formManager2.initNonVisualComponents (nonVisualsComps);
+  }
+
+  private boolean processComponent (org.w3c.dom.Node node, FormManager2 formManager2, RADComponent comp, ComponentContainer parentContainer) {
+    comp.initialize (formManager2);
+    NamedNodeMap attributes = node.getAttributes ();
+    String className = attributes.getNamedItem (ATTR_COMPONENT_CLASS);
+    Class compClass = null;
+    try {
+      compClass = TopManager.getDefault ().systemClassLoader ().loadClass (className);
+    } catch (Exception e) {
+    }
+    String compName = attributes.getNamedItem (ATTR_COMPONENT_NAME);
+    comp.setComponent (compClass);
+    comp.setName (compName);
+    formManager2.getVariablesPool ().createVariable (compName, compClass);
+    //convertComponent (node, nonVisualsComps[i]);
+    return true;
+  }
+
+  private boolean processContainer (org.w3c.dom.Node node, FormManager2 formManager2, RADComponent comp, ComponentContainer parentContainer) {
+    processComponent (comp);
+
+    if (comp instanceof RADVisualComponent) {
+      processVisualComponent (comp);
+    }
+
+    if (comp instanceof ComponentsContainer) {
+      org.w3c.dom.Node subCompsNode = findSubNode (node, XML_SUB_COMPONENTS);
+      
+    }
+
+    if (comp instanceof RADVisualContainer) {
+      org.w3c.dom.Node layoutNode = findSubNode (node, XML_LAYOUT);
+    }
+  }
+
+  private boolean processNode (org.w3c.dom.Node node, RADComponent component) {
+    if (node.getNodeType () == org.w3c.dom.Node.TEXT_NODE) return true; // ignore text nodes
+    if (XML_NON_VISUAL_COMPONENTS.equals (node.getNodeName ())) {
+      nonVisualsPresent = true;
+      org.w3c.dom.NodeList childNodes = node.getChildNodes ();
+      if (childNodes == null) {
+        return true; // no nonvisual components
+      }
+      loadNonVisual (node);
+    } else if (false) { //[PENDING]
+    }
+  }
+
+  private void walkTree (org.w3c.dom.Node node, String indent) {
+    if (node.getNodeType () == org.w3c.dom.Node.TEXT_NODE) return; // ignore text nodes
+    System.out.println (indent + node.getNodeName ());
+    org.w3c.dom.NamedNodeMap attrs = node.getAttributes ();
+    if (attrs != null) {
+      for (int i = 0; i < attrs.getLength (); i++) {
+        org.w3c.dom.Node attr = attrs.item(i);
+        System.out.println (indent + "  Attribute: "+ attr.getNodeName ()+", value: "+attr.getNodeValue ());
+      }
+    }
+
+    org.w3c.dom.NodeList children = node.getChildNodes ();
+    if (children != null) {
+      for (int i = 0; i < children.getLength (); i++) {
+        walkTree (children.item (i), indent + "  ");
+      }
+    }
   }
 
   /** Called to actually save the form represented by specified FormManager2 into specified formObject.
@@ -129,18 +253,47 @@ public class GandalfPersistenceManager extends PersistenceManager {
       lock = formFile.lock ();
       StringBuffer buf = new StringBuffer ();
       
-      // 1.store header
+      // 1.store XML file header
       buf.append ("<?xml version=\"1.0\"?>\n");
       buf.append ("\n");
       
-      // 2.store body
-      addElementOpenAttr (buf, XML_FORM, new String[] { ATTR_FORM_VERSION }, new String[] { CURRENT_VERSION });
+      // 2.store Form element
+      addElementOpenAttr (
+         buf, 
+         XML_FORM, 
+         new String[] { ATTR_FORM_VERSION, ATTR_FORM_TYPE }, 
+         new String[] { CURRENT_VERSION, manager.getRADForm ().getFormInfo ().getClass ().getName () }
+      );
+
+      // 3.store Non-Visual Components
       buf.append (ONE_INDENT); addElementOpen (buf, XML_NON_VISUAL_COMPONENTS);
       RADComponent[] nonVisuals = manager.getNonVisualComponents ();
       for (int i = 0; i < nonVisuals.length; i++) {
-        saveComponent (nonVisuals[i], buf, ONE_INDENT + ONE_INDENT);
-      }
+        if (nonVisuals[i] instanceof ComponentContainer) {
+          buf.append (ONE_INDENT + ONE_INDENT); 
+          addElementOpenAttr (
+              buf, 
+              XML_CONTAINER, 
+              new String[] { ATTR_COMPONENT_CLASS, ATTR_COMPONENT_NAME }, 
+              new String[] { nonVisuals[i].getBeanClass ().getName (), nonVisuals[i].getName () }
+          );
+          saveContainer ((ComponentContainer)nonVisuals[i], buf, ONE_INDENT + ONE_INDENT + ONE_INDENT);
+          buf.append (ONE_INDENT + ONE_INDENT); addElementClose (buf, XML_CONTAINER);
+        } else {
+          buf.append (ONE_INDENT + ONE_INDENT); 
+          addElementOpenAttr (
+              buf, 
+              XML_COMPONENT, 
+              new String[] { ATTR_COMPONENT_CLASS, ATTR_COMPONENT_NAME }, 
+              new String[] { nonVisuals[i].getBeanClass ().getName (), nonVisuals[i].getName () }
+          );
+          saveComponent (nonVisuals[i], buf, ONE_INDENT + ONE_INDENT + ONE_INDENT);
+          buf.append (ONE_INDENT + ONE_INDENT); addElementClose (buf, XML_COMPONENT);
+        }
+      }  
       buf.append (ONE_INDENT); addElementClose (buf, XML_NON_VISUAL_COMPONENTS);
+
+      // 4.store form and its visual components hierarchy
       buf.append ("\n");
       saveContainer ((ComponentContainer)manager.getRADForm ().getTopLevelComponent (), buf, ONE_INDENT);
       addElementClose (buf, XML_FORM);
@@ -152,12 +305,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
       if (lock != null) lock.releaseLock ();
     }
   }
+
   
   private void saveContainer (ComponentContainer container, StringBuffer buf, String indent) {
     if (container instanceof RADVisualContainer) {
       saveVisualComponent ((RADVisualComponent)container, buf, indent);
       buf.append ("\n");
       buf.append (indent); addElementOpen (buf, XML_LAYOUT);
+      // [PENDING]
       buf.append (indent); addElementClose (buf, XML_LAYOUT);
     } else {
       saveComponent ((RADComponent)container, buf, indent);
@@ -197,20 +352,37 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
   private void saveVisualComponent (RADVisualComponent component, StringBuffer buf, String indent) {
     saveComponent (component, buf, indent);
-    buf.append ("\n");
-    buf.append (indent); addElementOpen (buf, XML_CONSTRAINTS);
-    saveConstraints (component, buf, indent + ONE_INDENT);
-    buf.append (indent); addElementClose (buf, XML_CONSTRAINTS);
+    if (!(component instanceof FormContainer)) {
+      buf.append ("\n");
+      buf.append (indent); addElementOpen (buf, XML_CONSTRAINTS);
+      saveConstraints (component, buf, indent + ONE_INDENT);
+      buf.append (indent); addElementClose (buf, XML_CONSTRAINTS);
+    }
   }
   
   private void saveComponent (RADComponent component, StringBuffer buf, String indent) {
-    buf.append (indent); addElementOpen (buf, XML_PROPERTIES);
-    saveProperties (component.getChangedProperties (), buf, indent + ONE_INDENT);
-    buf.append (indent); addElementClose (buf, XML_PROPERTIES);
-    buf.append ("\n");
-    buf.append (indent); addElementOpen (buf, XML_EVENTS);
-    saveEvents (component.getEventsList ().getEventNames (), buf, indent + ONE_INDENT);
-    buf.append (indent); addElementClose (buf, XML_EVENTS);
+    // 1. Properties
+    if (component.getChangedProperties ().size () > 0) {
+      buf.append (indent); addElementOpen (buf, XML_PROPERTIES);
+      saveProperties (component.getChangedProperties (), buf, indent + ONE_INDENT);
+      buf.append (indent); addElementClose (buf, XML_PROPERTIES);
+      buf.append ("\n");
+    }
+
+    // 2. Events
+    if (component.getEventsList ().getEventNames ().size () > 0) {
+      buf.append (indent); addElementOpen (buf, XML_EVENTS);
+      saveEvents (component.getEventsList ().getEventNames (), buf, indent + ONE_INDENT);
+      buf.append (indent); addElementClose (buf, XML_EVENTS);
+      buf.append ("\n");
+    }
+
+    // 3. Aux Values
+    if (component.getAuxValues ().size () > 0) {
+      buf.append (indent); addElementOpen (buf, XML_AUX_VALUES);
+      saveAuxValues (component.getAuxValues (), buf, indent + ONE_INDENT);
+      buf.append (indent); addElementClose (buf, XML_AUX_VALUES);
+    }
   }
 
   private void saveProperties (Map changedProperties, StringBuffer buf, String indent) {
@@ -264,6 +436,25 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
   }
     
+  private void saveAuxValues (Map auxValues, StringBuffer buf, String indent) {
+    for (Iterator it = auxValues.keySet ().iterator (); it.hasNext (); ) {
+      String valueName = (String) it.next ();
+      Object value = auxValues.get (valueName);
+      buf.append (indent); 
+      addLeafElementOpenAttr (
+          buf, 
+          XML_AUX_VALUE, 
+          new String[] { 
+            ATTR_AUX_NAME, 
+            ATTR_AUX_VALUE },
+          new String[] { 
+            valueName, 
+            encodeValue (value, null) 
+          }
+      );
+    }
+  }
+
   private void saveConstraints (RADVisualComponent component, StringBuffer buf, String indent) {
     Map constraintsMap = component.getConstraintsMap ();
     for (Iterator it = constraintsMap.keySet ().iterator (); it.hasNext (); ) {
@@ -439,6 +630,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  9    Gandalf   1.8         7/11/99  Ian Formanek    
  *  8    Gandalf   1.7         7/8/99   Ian Formanek    
  *  7    Gandalf   1.6         7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
  *        getComponentClass->getBeanClass
