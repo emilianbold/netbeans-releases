@@ -68,6 +68,12 @@ public class EncodingTest extends NbTestCase {
         fs.getRootDirectory().deleteOnExit ();
     }
     
+    /** Loads an empty file.
+     */
+    public void testLoadEmptyFile () throws Exception {
+        checkEncoding (null, "empty.html");
+    }
+    
     /** Loades a file that does not specify an encoding.
      */
     public void testLoadOfNoEncoding () throws Exception {
