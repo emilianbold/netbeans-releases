@@ -13,10 +13,11 @@
 
 package org.apache.tools.ant.module.api.support;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -97,7 +98,7 @@ public final class ActionUtils {
         if (suffix != null && suffix.indexOf('/') != -1) {
             throw new IllegalArgumentException("Cannot includes slashes in suffix: " + suffix); // NOI18N
         }
-        List/*<FileObject>*/ files = new ArrayList();
+        Collection/*<FileObject>*/ files = new LinkedHashSet(); // #50644: remove dupes
         Iterator it = context.lookup(new Lookup.Template(DataObject.class)).allInstances().iterator();
         // XXX this should perhaps also check for FileObject's...
         while (it.hasNext()) {
