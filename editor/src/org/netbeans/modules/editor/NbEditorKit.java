@@ -513,8 +513,16 @@ public class NbEditorKit extends ExtKit {
     
     public static class NbGenerateGoToPopupAction extends BaseAction {
 
+        public String getShortDescription() {
+            return org.openide.util.NbBundle.getBundle (NbEditorKit.class).getString(generateGoToPopupAction); // NOI18N
+        }
+        
         public NbGenerateGoToPopupAction() {
             super(generateGoToPopupAction);
+            String desc = getShortDescription();
+            if (desc != null) {
+                putValue(SHORT_DESCRIPTION, desc);
+            }
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
