@@ -23,14 +23,17 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.awt.Component;
 import java.awt.Cursor;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 import org.openide.*;
 import org.openide.actions.ActionManager;
 import org.openide.loaders.*;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem; // override java.io.FileSystem
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
@@ -759,11 +762,14 @@ public class TemplateWizard extends WizardDescriptor {
                              template.createFromTemplate (folder, n);
 
             // run default action (hopefully should be here)
-            org.openide.nodes.Node node = obj.getNodeDelegate ();
-            org.openide.util.actions.SystemAction sa = node.getDefaultAction ();
-            if (sa != null) {
-                ((ActionManager)Lookup.getDefault ().lookup (ActionManager.class)).invokeAction
-                    (sa, new ActionEvent (node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+            final Node node = obj.getNodeDelegate ();
+            final Action a = node.getPreferredAction();
+            if (a != null) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                    }
+                });
             }
 
             return java.util.Collections.singleton(obj);

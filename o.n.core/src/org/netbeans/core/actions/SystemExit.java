@@ -7,34 +7,27 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.actions;
 
+import org.openide.LifecycleManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-/** SystemExit action.
-* @author   Ian Formanek
-* @version  0.14, Feb 13, 1998
-*/
+/**
+ * Shut down the system.
+ * @author Ian Formanek, Jesse Glick, et al.
+ */
 public class SystemExit extends CallableSystemAction implements Runnable {
+    
     /** generated Serialized Version UID */
-    static final long serialVersionUID = 5198683109749927396L;
+    private static final long serialVersionUID = 5198683109749927396L;
 
-    
-    public SystemExit() {
-        super();
-     
-        // Important flag.
-        // See org.netbeans.core.ModuleActions#addRunningActions into.
-        putValue("ModuleActions.ignore", Boolean.TRUE); // NOI18N
-    }
-    
     /** Human presentable name of the action. This should be
      * presented as an item in a menu.
      * @return the name of the action
@@ -49,15 +42,20 @@ public class SystemExit extends CallableSystemAction implements Runnable {
     public HelpCtx getHelpCtx() {
         return new HelpCtx (SystemExit.class);
     }
+    
+    protected boolean asynchronous() {
+        // Not managed alongside other actions.
+        return false;
+    }
 
     public void performAction() {
-        // The exit is scheduled out of the actions reqeust processor
-        // in order not to kill itself when killing the running actions
+        // Do not run in AWT.
         RequestProcessor.getDefault().post(this);
     }
 
     /* Performs the exit (by calling LifecycleManager).*/
     public void run() {
-        org.openide.LifecycleManager.getDefault().exit();
+        LifecycleManager.getDefault().exit();
     }
+    
 }

@@ -42,7 +42,6 @@ import org.openide.util.actions.SystemAction;
 
 import org.netbeans.TopSecurityManager;
 
-import org.netbeans.core.ModuleActions;
 import org.openide.ErrorManager;
 
 /**
@@ -278,7 +277,8 @@ public class Install extends ModuleInstall {
     private static Collection getPendingTasks() {
         
         ArrayList pendingTasks = new ArrayList( 10 );
-        pendingTasks.addAll(ModuleActions.getDefaultInstance().getRunningActions());
+        // XXX no access to running actions at the moment
+        //pendingTasks.addAll(CallableSystemAction.getRunningActions());
         
         if ( !Boolean.getBoolean( "netbeans.full.hack" ) ) { // NOI18N
             // Avoid showing the tasks in the dialog when running internal tests
@@ -297,12 +297,8 @@ public class Install extends ModuleInstall {
     
     /** Ends penidng tasks. */
     private static void killPendingTasks() {
-        // [PENDING] For actions, here should be tried
-        // to stop the running request processor, create
-        // ans implement ModuleActions.killRunningActions, but be aware
-        // for some specialities, e.g. not to stop task with 
-        // unmounting FS action when actually doing the unmounting.
-        ModuleActions.getDefaultInstance().killRunningActions();
+        // XXX
+        //CallableSystemAction.killRunningActions();
         killRunningExecutors();
         
         // [PENDING] When it'll be added another types of tasks (locks etc.)
@@ -336,6 +332,7 @@ public class Install extends ModuleInstall {
         
         /** Constructs new children. */
         public PendingChildren() {
+            /* XXX no equiv yet in CallableSystemAction
             propertyListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (ModuleActions.PROP_RUNNING_ACTIONS.equals(evt.getPropertyName())) {
@@ -347,6 +344,7 @@ public class Install extends ModuleInstall {
             ModuleActions.getDefault().addPropertyChangeListener(
                 org.openide.util.WeakListeners.propertyChange (propertyListener, ModuleActions.getDefault())
             );
+             */
             
             ExecutionEngine ee = ExecutionEngine.getExecutionEngine();
             if (ee != null) {
