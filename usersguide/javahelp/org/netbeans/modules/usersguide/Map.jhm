@@ -192,13 +192,20 @@
 <mapID target="java.import.configuring" url="java/imt/configuring.html" />
 <mapID target="java.java_sources" url="java/java_sources.html" />
 <!--csh page for Options|IDE Configuration|System|Filesystems Settings|Java Libraries-->
-<mapID target="org.netbeans.modules.java.Filesystem.libraries" url="filesystems/filesystems_mounting.html" />
+<mapID target="org.netbeans.modules.java.Filesystem.libraries" url="filesystems/filesystems_classpath.html" />
 <!--csh page for Options|IDE Configuration|System|Filesystems Settings|Javadoc Documentation-->
 <mapID target="org.netbeans.modules.javadoc.FileSystem.docRoots" url="javadoc/search_path.html" />
 <!--csh page for projects|settings|Java Sources-->
 <mapID target="org.netbeans.modules.java.settings.JavaSettings" url="java/java_sources.html" />
 <!--csh page for projects|settings|Java Source|Import Management Tool Settings-->
 <mapID target="org.netbeans.modules.java.imptool.ImpToolSettings" url="java/imt/configuring.html" />
+
+<!--nodes for filesystems in Filesystem Settings-->
+<mapID target="org.netbeans.core.ExJarFileSystem" url="filesystems/filesystems_settings.html" />
+<mapID target="org.netbeans.core.JarFileSystem" url="filesystems/filesystems_settings.html" />
+<mapID target="org.netbeans.core.ExLocalFileSystem" url="filesystems/filesystems_settings.html" />
+<mapID target="org.netbeans.core.LocalFileSystem" url="filesystems/filesystems_settings.html" />
+
 <!--csh page for Import Management Tool panels-->
 <mapID target="java.import.FqnPanel" url="java/imt/resolve-ids.html" />
 <mapID target="java.import.ImportPanel" url="java/imt/create-imports.html" />
@@ -662,8 +669,8 @@
   <mapID target="org.openide.filesystems.RefreshAction" url="objects/objects_refreshing.html" />
   <mapID target="org.openide.text.PrintSettings" url="pending.html" />
   <mapID target="org.openide.loaders.GroupShadow" url="objects/objects_group.html" />
-  <mapID target="org.openide.loaders.InstanceDataObject" url="pending.html" />
-  <mapID target="org.openide.loaders.XMLDataObject" url="pending.html" />
+  <mapID target="org.openide.loaders.InstanceDataObject" url="objects/objects.html" />
+  <mapID target="org.openide.loaders.XMLDataObject" url="objects/objects.html" />
   <mapID target="org.openide.nodes.BeanNode" url="pending.html" />
   <mapID target="org.openide.src.nodes.ElementNode" url="pending.html" />
   <mapID target="org.openide.src.nodes.SourceOptions" url="objects/objects_elements.html" />
@@ -693,7 +700,6 @@
   <mapID target="org.openide.src.nodes.DefaultFactory$ElementCategoryNode" url="pending.html" /> 
 
 
-   <mapID target="org.netbeans.core.actions.SaveSettingsAction" url="project/project_save-options.html" />
    <mapID target="org.netbeans.core.actions.SettingsAction" url="project/project_settings.html" />
 
    <mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="pending.html" />
@@ -781,7 +787,8 @@
    <mapID target="org.netbeans.modules.clazz.ClassDataObject" url="java/nodes/class.html" />
    <mapID target="org.openide.src.nodes.InterfaceNode" url="java/nodes/interface.html" /> 
 
-   <mapID target="org.netbeans.modules.text.TXTDataObject" url="pending.html" />
+   <mapID target="org.netbeans.modules.text.TXTDataObject" url="objects/objects.html" />
+   <mapID target="org.netbeans.modules.html.HtmlLoader.Obj" url="objects/objects.html" />
    <mapID target="org.netbeans.modules.beans.EventSetPatternNode" url="pending.html" />
    <mapID target="org.netbeans.modules.beans.IdxPropertyPatternNode" url="java/nodes/beanprop.html" />
    <mapID target="org.netbeans.modules.beans.PatternGroupNode" url="java/nodes/beanprop.html" />
@@ -1224,7 +1231,7 @@
   <mapID target="org.openide.actions.UndoAction" url="pending.html" />
 
   <mapID target="org.openide.loaders.DataFolder$NewFolder" url="pending.html" />
-  <mapID target="org.openide.loaders.DefaultDataObject" url="pending.html" />
+  <mapID target="org.openide.loaders.DefaultDataObject" url="objects/objects.html" />
   <mapID target="org.openide.explorer.propertysheet.editors.IconEditor$IconPanel" url="pending.html" />
   <mapID target="org.openide.explorer.propertysheet.editors.StringArrayCustomEditor" url="pending.html" />
    <mapID target="org.openide.awt.MenuBar$MenuFolder.File" url="pending.html" /> 

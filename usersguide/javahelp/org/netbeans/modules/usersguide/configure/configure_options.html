@@ -15,23 +15,21 @@
 <link rel="stylesheet" href="../ide.css" type="text/css"></head>
 <body>
 <h2>Options Window</h2>
-<!--Pending
--What is the difference between having an unused setting and a place where no setting is defined?
--distinction between definition and value
 
-the difference between revert and define?</pre>-->
+<p>You can use the Options window to change any of the IDE's configurable settings. You can have specific settings 
+applied globally or by project.</p>
+
+<p>The left pane of the window contains a tree view of all of the configurable items in the IDE. 
+The column under the Show Levels (&lt;&lt;) button displays the <img src="images/project.gif" alt="Project Setting"> 
+icon for settings that have a configuration specific to the current project. 
+The right pane displays a property sheet, which contains the names and values of the 
+settings for the item selected in the left pane. For some types of settings, 
+there are multiple tabs for distinct categories of properties.</p>
+
 <p><b>To open the Options window:</b></p>
 <ul>
 <li>Choose Tools <img src="../images/arrow.gif" alt="and choose"> Options.</li>
 </ul>
-
-<p>You can use the Options window to change any of the IDE's configurable settings. 
-The left pane of the window contains a tree view of all of the configurable items in the IDE. 
-The Origin of Setting (&lt;&lt;) column displays the <img src="images/project.gif" alt="Project Setting"> 
-icon for settings that have a configuration specific to the current project. 
-The right pane displays a property sheet, which contains the names and values of the 
-settings for the item selected in the left pane. For some types of settings, 
-there multiple tabs for distinct categories of properties (such as Sorting and Execution).</p>
 
 <p>To edit a setting, click the setting's value in the property sheet. 
 <ul>
@@ -43,26 +41,26 @@ value from the combo box.</li>
 </ul>
 
 <p>The IDE can store settings at three levels:</p>
-<!--<p>You can configure settings at User and Project levels:</p>-->
 
 <ul>
-<li>Default - holds the default settings that come with the IDE installation. You can not change 
+<li><b>Default.</b>&nbsp;  Holds the default settings that come with the IDE installation. You can not change 
 the default settings, but you can override the default settings at the user or project level.
 If you modify a setting that is only defined in the default level, a definition with the modified values 
 you provide is moved to the User level.</li>
-<li>User - like default settings, settings defined at the User level apply to all of your projects. Settings 
-defined at the User level override settings at the Default level. </li>
-<li>Project - settings configured at the Project level only apply to the project in which they are configured. 
+<li><b>User.</b>&nbsp;  Like default settings, settings defined at the User level apply to all of your projects. Settings 
+defined at the User level override settings at the Default level.</li>
+<li><b>Default.</b>&nbsp;  Settings configured at the Project level only apply to the project in which they are configured. 
 Any settings configured at the Project level override user settings and default settings. </li>
 </ul>
 
-<p>If the cell in the Origin of Setting (&lt;&lt;) column for the node you are configuring is empty, any changes 
-that you make in the property sheet are applied at the User level. If the cell in the Origin of Setting (&lt;&lt;) 
-column for the node you are configuring displays the <img src="images/project.gif" alt="Project Setting"> 
+<p>The cells in the column under the Show Levels (&lt;&lt;) button indicate whether the corresponding settings 
+are defined at the level of the current project or not. If the cell corresponding to the node you are configuring 
+is empty, any changes that you make in the property sheet are applied at the User level. If the cell 
+contains the <img src="images/project.gif" alt="Project Setting"> 
 icon, any changes that you make in the property sheet are applied only to the current project. </p>
 
 <p>You can see a table view of how the settings are stored by clicking the 
-Origin of Setting (&lt;&lt;) cell. There are columns for project, user, and default settings. Each row 
+Show Levels (&lt;&lt;) cell. There are columns for project, user, and default settings. Each row 
 represents a group of settings.
 
 <table border="1" cellpadding="5" cellspacing="0">
@@ -92,6 +90,17 @@ Define Here.
 Setting (&lt;&lt;) column.</p></li>
 <li>In the property sheet, configure the desired settings.</li>
 </ol>
+
+<table>
+<tr>
+<td valign="top"><img src="../images/tip.gif" alt="Note"></td>
+<td valign="top" align=left>
+If you create a user-level definition for a setting that already has a project-level definition for the current project, 
+the project-level definition is removed. However, the user-level definition does not override project-level definitions 
+for other projects.
+</td>
+</tr>
+</table>
 
 <p><b>To revert from a project setting to a user setting:</b></p>
 <ol>

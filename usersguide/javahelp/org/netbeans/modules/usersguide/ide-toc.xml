@@ -86,7 +86,6 @@
   <tocitem text="Adding a New File to a Project" target="project.adding-new" />
   <tocitem text="Compiling, Running, and Debugging a Project" target="project.comp-run-debug" />
   <tocitem text="Deleting a File in a Project" target="project.delete-file" />
-  <tocitem text="Saving a Project and Adjusting Save Settings" target="project.save-options" />
   <tocitem text="Switching to a Different Project" target="project.switching" />
   <tocitem text="Deleting a Project" target="project.deleting" />  
   <tocitem text="Changing Project Settings" target="project.settings"/>
@@ -229,7 +228,7 @@
     <tocitem text="The Running Workspace" target="run.workspace" />
     <tocitem text="Running a Program" target="run.run" />
     <tocitem text="Running and Debugging an Applet" target="run.debug.applet" />
-    <tocitem text="Specifying the Main Class to Run for a Project" target="run.mainclass" />
+    <tocitem text="Specifying the Main Class to Run" target="run.mainclass" />
     <tocitem text="Running a Class When the IDE Starts" target="run.startup" />
     <tocitem text="Running Java Sources in a Specific Locale" target="run.locale" />
   </tocitem>
@@ -261,7 +260,6 @@
     <tocitem text="Variables View" target="debug.window.variables"></tocitem>
     <tocitem text="Classes View" target="debug.window.classes"></tocitem>
     <tocitem text="Configuring the Debug Toolbar" target="debug.toolbar"></tocitem>
-    <tocitem text="Setting Debugging Options for the Environment" target="debug.options"></tocitem>
   </tocitem>
   <tocitem text="Starting a Debugging Session" target="debug.running.debugger" />
   <tocitem text="Running Your Program in the Debugger" target="debug.running.jump">
@@ -298,7 +296,7 @@
      <tocitem text="Modifying a Variable from the Watches Tab" target="debug.watch.modify" />
      <tocitem text="Deleting a Watch Variable or Expression" target="debug.watch.delete" />
    </tocitem>
-  <tocitem text="Modifying Variables" target="debug.variables.value"/>
+  <tocitem text="Modifying a Variable" target="debug.variables.value"/>
   <tocitem text="Examining Classes" target="debug.environment.classes" />
   <tocitem text="Attaching the Debugger to a Running Process" target="debug.attach" />
   <tocitem text="Debugging Multiple Sessions" target="debug.sessions.jump">
@@ -521,7 +519,7 @@
       <tocitem text="Viewing a Running Registry" target="rmi_registrybrowser_viewing" />
       <tocitem text="RMI Registry Browser Commands" target="rmi_registrybrowser_using" />
     </tocitem>
-    <tocitem text="Specifying RMI Settings for a Project" target="rmi_settings_intro">
+    <tocitem text="Specifying RMI Settings" target="rmi_settings_intro">
       <tocitem text="RMI Module Settings" target="rmi_settings_mod" />
       <tocitem text="RMI Registry Settings" target="rmi_settings_regis" />
       <tocitem text="RMI Activation Settings" target="rmi_settings_activ" />
