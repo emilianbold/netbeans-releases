@@ -17,7 +17,6 @@ import org.apache.tools.ant.types.*;
 /**
  *
  * @author  __USER__
- * @version 
  */
 public class CustomTask extends Task {
 
