@@ -28,6 +28,7 @@ import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsDefaults;
 import org.netbeans.beaninfo.editors.FontEditor;
 import org.netbeans.beaninfo.editors.ColorEditor;
+import java.awt.Dimension;
 
 /**
  * ColoringEditorPanel is custom property editor operating
@@ -311,6 +312,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
                                                  }
                                              } );
             PropertyPanel pp = new PropertyPanel (model, 0);
+            pp.setMinimumSize(new Dimension(50,22));
             pp.getAccessibleContext().setAccessibleName(title);
             pp.getAccessibleContext().setAccessibleDescription(description);
             add (pp, BorderLayout.CENTER);
