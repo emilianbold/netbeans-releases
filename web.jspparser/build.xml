@@ -66,9 +66,11 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="release">
-    <copy todir="netbeans">
-      <fileset dir="${binroot}/web/jspparser/release" excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"/>
-    </copy>
+    <mkdir dir="netbeans/modules/eager/ext"/>
+    <copy file="${binroot}/web/jspparser/release/modules/ext/jasper-compiler.jar"
+          tofile="netbeans/modules/eager/ext/jasper-compiler.jar"/>
+    <copy file="${binroot}/web/jspparser/release/modules/ext/jasper-runtime.jar"
+          tofile="netbeans/modules/eager/ext/jasper-runtime.jar"/>
   </target>
 
   <target name="netbeans" depends="jars,release">
