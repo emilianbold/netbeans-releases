@@ -15,21 +15,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <filesystem>
     <folder name="Services">
-        <file name="httpserver.settings">
-            <![CDATA[<?xml version="1.0"?>
-<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-<settings version="1.0">
-    <module name="org.netbeans.modules.httpserver/1" spec="1.7"/>
-    <instanceof class="org.openide.util.SharedClassObject"/>
-    <instanceof class="java.lang.Object"/>
-    <instanceof class="org.openide.util.HttpServer$Impl"/>
-    <instanceof class="org.openide.options.SystemOption"/>
-    <instanceof class="java.io.Externalizable"/>
-    <instanceof class="org.netbeans.modules.httpserver.HttpServerSettings"/>
-    <instanceof class="java.io.Serializable"/>
-    <instance class="org.netbeans.modules.httpserver.HttpServerSettings"/>
-</settings>
-            ]]>
-        </file>
+        <file name="httpserver.settings" url="httpserver.settings"/>
     </folder>
 </filesystem>
