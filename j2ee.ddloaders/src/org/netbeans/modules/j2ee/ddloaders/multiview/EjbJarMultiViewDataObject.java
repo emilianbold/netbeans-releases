@@ -33,6 +33,7 @@ import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeEvent;
 import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeListener;
 import org.netbeans.modules.j2ee.ddloaders.ejb.EjbJarDDUtils;
 import org.netbeans.modules.j2ee.ddloaders.ejb.EjbJarDataLoader;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.shared.DDEditorNavigator;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
 import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
@@ -70,7 +71,7 @@ import java.util.Map;
  * @author pfiala
  */
 public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
-        implements DDChangeListener, EjbJarProxy.OutputProvider, FileChangeListener, ChangeListener {
+        implements DDChangeListener, EjbJarProxy.OutputProvider, DDEditorNavigator, FileChangeListener, ChangeListener {
 
     private EjbJarProxy ejbJar;
     private FileObject srcRoots[];
