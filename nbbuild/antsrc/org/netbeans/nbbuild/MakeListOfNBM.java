@@ -59,7 +59,6 @@ public class MakeListOfNBM extends Task {
                 FileSet fs = null;
                 try {
                     fs = (FileSet)nbms[i].getClass().getMethod("getFileSet",null).invoke(nbms[i],null);
-                    fs.createExclude().setName( "Info/info.xml" );
                 } catch (Exception ex) {
                     throw new BuildException( "Can't get fileset of NBM", ex, location );
                 }
@@ -83,6 +82,8 @@ public class MakeListOfNBM extends Task {
                 UpdateTracking.Version version = track.addNewModuleVersion( codenamebase, versionSpecNum );
                 
                 DirectoryScanner ds = fs.getDirectoryScanner( this.getProject() );
+		String excludes[]={"Info/info.xml"};
+		ds.setExcludes( excludes );
                 ds.scan();
  
 //                log ("Module: " + codenamebase);
