@@ -239,14 +239,6 @@ Microsystems, Inc. All Rights Reserved.
         <property name="test.class" value="org.netbeans.xtest.AntRunner"/>
         <property name="test.classpath" refid="test.classpath"/>
         <property name="test.target" value="ide_test_helper"/>
-        <property name="xtest.ide.path" refid="xtest.ide.path">
-            <classpath id="xtest.ide.path">
-                <!-- XXX this is bad, it assumes the Ant module is installed! -->
-                <fileset dir="${netbeans.home}/modules/ext">
-                    <include name="ant*.jar"/>
-                </fileset>
-            </classpath>
-        </property>
         
         <property name="xtest.ide.commandline.suffix" value=""/>
         <property name="xtest.jvmargs" value=""/>
@@ -292,29 +284,37 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.workdir.idejars" value="${xtest.workdir}/sys/idejars"/>
         <mkdir dir="${xtest.workdir.idejars}"/>
         
-        <!--        
-        <copy file="${xtest.home}/lib/xtest.jar" todir="${netbeans.home}/lib"/>
-        <copy file="${xtest.home}/lib/xtest-ext.jar" todir="${netbeans.home}/modules/patches/org-apache-tools-ant-module"/>
-        <copy file="${xtest.home}/lib/junit.jar" todir="${netbeans.home}/lib"/>
-        <copy file="${xtest.home}/lib/junit-ext.jar" todir="${netbeans.home}/modules/patches/org-apache-tools-ant-module"/>
-        -->
         
         <copy file="${xtest.home}/lib/xtest.jar" todir="${netbeans.home}/lib"/>
         <copy file="${xtest.home}/lib/xtest-ext.jar" todir="${xtest.workdir.idejars}"/>
-        <copy file="${xtest.home}/lib/junit.jar" todir="${xtest.workdir.idejars}"/>
-        <copy file="${xtest.home}/lib/junit-ext.jar" todir="${xtest.workdir.idejars}"/>
+        
+        <copy file="${xtest.home}/lib/junit.jar" todir="${netbeans.home}/lib/ext"/>
+        <copy file="${xtest.home}/lib/junit-ext.jar" todir="${netbeans.home}/lib/ext"/>
+        
 
         <antcall target="copy-user-jars"/>
         
-        <!-- now create a path to be supplied to ide -->
+        <!-- now create a system classloader path to be supplied to ide -->
         <property name="xtest.netbeans.systemclassloader.patches" refid="xtest.netbeans.systemclassloader.path">
             <classpath id="xtest.netbeans.systemclassloader.path">
-                <!-- XXX this is bad, it assumes the Ant module is installed! -->
                 <fileset dir="${xtest.workdir.idejars}">
                     <include name="*.jar"/>
                 </fileset>
             </classpath>
         </property>
+        
+        <!-- ide classpath - ant and junit -->
+        <property name="xtest.ide.path" refid="xtest.ide.path">
+            <classpath id="xtest.ide.path">
+                <!-- XXX this is bad, it assumes the Ant module is installed! -->
+                <fileset dir="${netbeans.home}/modules/ext">
+                    <include name="ant*.jar"/>
+                </fileset>
+                <fileset dir="${netbeans.home}/lib/ext">
+                    <include name="junit*.jar"/>
+                </fileset>
+            </classpath>
+        </property>        
         
         <!-- temporary only !!!! remove ASAP -->
         <!--
@@ -337,16 +337,10 @@ Microsystems, Inc. All Rights Reserved.
             <arg line="runide.sh ${args}"/>
         </ideexec>
 
-        <!--
-        <delete file="${netbeans.home}/lib/xtest.jar"/>
-        <delete file="${netbeans.home}/modules/patches/org-apache-tools-ant-module/xtest-ext.jar"/>
-        <delete file="${netbeans.home}/lib/junit.jar"/>
-        <delete file="${netbeans.home}/modules/patches/org-apache-tools-ant-module/junit-ext.jar"/>
-        -->
         <delete file="${netbeans.home}/lib/xtest.jar"/>
         <delete file="${xtest.workdir.idejars}/xtest-ext.jar"/>
-        <delete file="${xtest.workdir.idejars}/junit.jar"/>
-        <delete file="${xtest.workdir.idejars}/junit-ext.jar"/>
+        <delete file="${netbeans.home}/lib/ext/junit.jar"/>
+        <delete file="${netbeans.home}/lib/ext/junit-ext.jar"/>
         
                 
         <antcall target="delete-user-jars"/>
