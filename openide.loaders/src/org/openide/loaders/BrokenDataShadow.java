@@ -111,7 +111,7 @@ final class BrokenDataShadow extends MultiDataObject {
         checkQueue();
         Map m = getDataShadowsSet ();
         
-        String prim = ds.url.toExternalForm();
+        String prim = ds.getUrl().toExternalForm();
         Reference ref = DataShadow.createReference(ds, getRqueue());
         Set s = (Set)m.get (prim);
         if (s == null) {
@@ -232,7 +232,7 @@ final class BrokenDataShadow extends MultiDataObject {
     /* Check if link to original file is still broken */    
     public void refresh() {
         try {
-            if (URLMapper.findFileObject(url) != null) {
+            if (URLMapper.findFileObject(getUrl()) != null) {
                 /* Link to original file was repaired */
                 this.setValid(false);
             }
@@ -273,7 +273,11 @@ final class BrokenDataShadow extends MultiDataObject {
     protected Node createNodeDelegate () {
         return new BrokenShadowNode (this);
     }
-    
+
+    URL getUrl() {
+        return url;
+    }
+
     /** Node for a broken shadow object. */
     private static final class BrokenShadowNode extends DataNode {
         
@@ -389,7 +393,7 @@ final class BrokenDataShadow extends MultiDataObject {
             /* Getter */
             public Object getValue () {
                 BrokenDataShadow bds = (BrokenDataShadow)getDataObject();
-                return bds.url.toExternalForm();
+                return bds.getUrl().toExternalForm();
             }
             
             /* Does nothing, property is readonly */
