@@ -87,7 +87,6 @@ Microsystems, Inc. All Rights Reserved.
             <property name="javadoc.title" value="Input/Output API"/>
             <property name="javadoc.packages" value="org.openide.windows"/>
             <property name="javadoc.classpath" value="${_cp}"/>
-            <property name="javadoc.docfiles" location="../../nbbuild/dummy"/>
         </ant>
     </target>
   
