@@ -192,7 +192,7 @@ public class J2SEProjectProperties {
     
     /** XXX to be deleted when introduced in AntPropertyHeleper API
      */    
-    static String getAntPropertyName( String property ) {
+    public static String getAntPropertyName( String property ) {
         if ( property != null && 
              property.startsWith( "${" ) && // NOI18N
              property.endsWith( "}" ) ) { // NOI18N

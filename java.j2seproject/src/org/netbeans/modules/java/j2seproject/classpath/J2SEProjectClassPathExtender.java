@@ -51,13 +51,17 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
     }
 
     public boolean addLibrary(final Library library) throws IOException {
+        return addLibrary(CP_CLASS_PATH, library);
+    }
+
+    public boolean addLibrary(final String classPathId, final Library library) throws IOException {
         assert library != null : "Parameter can not be null";       //NOI18N
         try {
             return ((Boolean)ProjectManager.mutex().writeAccess(
                     new Mutex.ExceptionAction () {
                         public Object run() throws Exception {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                            String raw = props.getProperty(CP_CLASS_PATH);
+                            String raw = props.getProperty(classPathId);
                             J2SEProjectProperties.PathParser parser = new J2SEProjectProperties.PathParser ();
                             List resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
                             VisualClassPathItem item = VisualClassPathItem.create (library);
@@ -65,7 +69,7 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
                                 resources.add (item);
                                 raw = parser.encode (resources, project, helper.getAntProjectHelper(), refHelper);
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties
-                                props.put (CP_CLASS_PATH, raw);
+                                props.put (classPathId, raw);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                                 ProjectManager.getDefault().saveProject(project);
                                 return Boolean.TRUE;
@@ -86,13 +90,17 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
     }
 
     public boolean addArchiveFile(final FileObject archiveFile) throws IOException {
+        return addArchiveFile(CP_CLASS_PATH,archiveFile);
+    }
+
+    public boolean addArchiveFile(final String classPathId, final FileObject archiveFile) throws IOException {
         assert archiveFile != null : "Parameter can not be null";       //NOI18N
         try {
             return ((Boolean)ProjectManager.mutex().writeAccess(
                     new Mutex.ExceptionAction () {
                         public Object run() throws Exception {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                            String raw = props.getProperty(CP_CLASS_PATH);
+                            String raw = props.getProperty(classPathId);
                             J2SEProjectProperties.PathParser parser = new J2SEProjectProperties.PathParser ();
                             List resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
                             File f = FileUtil.toFile (archiveFile);
@@ -104,7 +112,7 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
                                 resources.add (item);
                                 raw = parser.encode (resources, project, helper.getAntProjectHelper(), refHelper);
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
-                                props.put (CP_CLASS_PATH, raw);
+                                props.put (classPathId, raw);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                                 ProjectManager.getDefault().saveProject(project);
                                 return Boolean.TRUE;
@@ -125,13 +133,17 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
     }
 
     public boolean addAntArtifact(final AntArtifact artifact) throws IOException {
+        return addAntArtifact(CP_CLASS_PATH,artifact);
+    }
+
+    public boolean addAntArtifact(final String classPathId, final AntArtifact artifact) throws IOException {
         assert artifact != null : "Parameter can not be null";       //NOI18N
         try {
             return ((Boolean)ProjectManager.mutex().writeAccess(
                     new Mutex.ExceptionAction () {
                         public Object run() throws Exception {
-                            EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);                            
-                            String raw = props.getProperty(CP_CLASS_PATH);
+                            EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            String raw = props.getProperty (classPathId);
                             J2SEProjectProperties.PathParser parser = new J2SEProjectProperties.PathParser ();
                             List resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
                             VisualClassPathItem item = VisualClassPathItem.create (artifact);
@@ -139,8 +151,8 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
                                 resources.add (item);
                                 raw = parser.encode (resources, project, helper.getAntProjectHelper(), refHelper);
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-                                props.put (CP_CLASS_PATH, raw);
-                                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);                                
+                                props.put (classPathId, raw);
+                                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                                 ProjectManager.getDefault().saveProject(project);
                                 return Boolean.TRUE;
                             }
