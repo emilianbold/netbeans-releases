@@ -37,6 +37,7 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.util.actions.SystemAction;
 import java.lang.ClassNotFoundException;
 import java.util.Set;
+import java.awt.Dimension;
 
 /** Various utilities for Editor Options.
  *
@@ -334,6 +335,37 @@ public class OptionUtilities {
         return new Insets(arr[0],arr[1],arr[2],arr[3]);
     }
 
+    /** Coverts Insets to String representation */
+    public static String dimensionToString(Dimension dim){
+        StringBuffer sb = new StringBuffer();
+        sb.append(dim.width);
+        sb.append(',');
+        
+        sb.append(dim.height);
+
+        return sb.toString();
+    }
+
+    /** Converts textual representation of Insets */
+    public static Dimension parseDimension(String s){
+        StringTokenizer st = new StringTokenizer(s, ","); // NOI18N
+        
+        int arr[] = new int[2];
+        int i=0;
+        while (st.hasMoreElements()) {
+            if (i>1) return null;
+            try{
+                arr[i]  = Integer.parseInt(st.nextToken());
+            }catch(NumberFormatException nfe){
+                return null;
+            }
+            i++;
+        }
+        if (i!=2) return null;
+        return new Dimension(arr[0],arr[1]);
+    }
+    
+    
     /** Converts KeyBings List to KeyBindings Map 
      *  Map.key is the textual representation of keystroke(s) */
     public static Map makeKeyBindingsMap(List propList){

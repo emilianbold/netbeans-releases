@@ -30,6 +30,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import java.awt.Dimension;
 
 
 /** MIME Option XML file for Properties settings.
@@ -120,6 +121,13 @@ public class PropertiesMIMEOptionFile extends MIMEOptionFile{
                         properties.put(name, insetsValue );
                     }
 
+                } else if (Dimension.class.isAssignableFrom(clazz)){
+                    Dimension dimensionValue = OptionUtilities.parseDimension(value);
+                    if (dimensionValue!=null){
+                        if (propagate) base.doSetSettingValue(name, dimensionValue, null);
+                        properties.put(name, dimensionValue );
+                    }
+                    
                 } else if (Color.class.isAssignableFrom(clazz)){
                     Color colorValue = OptionUtilities.string2Color(value);
                     if (colorValue!=null){
@@ -165,6 +173,10 @@ public class PropertiesMIMEOptionFile extends MIMEOptionFile{
                     if (!changedProp.get(key).equals(properties.put(key, changedProp.get(key)))){
                         save = true;
                     }
+                } else if (changedProp.get(key) instanceof Dimension){
+                    if (!changedProp.get(key).equals(properties.put(key, changedProp.get(key)))){
+                        save = true;
+                    }
                 } else if (changedProp.get(key) instanceof Color){
                     if (!changedProp.get(key).equals(properties.put(key, changedProp.get(key)))){
                         save = true;
@@ -203,6 +215,10 @@ public class PropertiesMIMEOptionFile extends MIMEOptionFile{
                     className = "java.awt.Insets"; //NOI18N
                     Insets insetsValue = (Insets) properties.get(key);
                     value = OptionUtilities.insetsToString(insetsValue);
+                } else if (properties.get(key) instanceof Dimension){
+                    className = "java.awt.Dimension"; //NOI18N
+                    Dimension dimensionValue = (Dimension) properties.get(key);
+                    value = OptionUtilities.dimensionToString(dimensionValue);
                 } else if (properties.get(key) instanceof Color){
                     className = "java.awt.Color"; //NOI18N
                     Color colorValue = (Color) properties.get(key);
