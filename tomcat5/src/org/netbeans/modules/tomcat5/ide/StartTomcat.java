@@ -20,7 +20,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.StringTokenizer;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
@@ -40,11 +39,11 @@ import org.netbeans.modules.tomcat5.progress.Status;
 import org.openide.ErrorManager;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.execution.ProcessExecutor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.debugger.DebuggerInfo;
+//import org.netbeans.modules.debugger.jpda.RemoteDebuggerInfo;
 
 /** Extension to JSR88 that enables starting of Tomcat.
  *
@@ -59,10 +58,16 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
     public static final String TAG_CATALINA_HOME = "catalina_home"; // NOI18N
     public static final String TAG_CATALINA_BASE = "catalina_base"; // NOI18N
     
+    public static final String TAG_JPDA = "jpda"; // NOI18N
+    public static final String TAG_JPDA_STARTUP = "jpda_startup"; // NOI18N
+    public static final String TAG_JPDA_SHUTDOWN = "jpda_shutdown"; // NOI18N
+
     /** Startup command tag. */
     public static final String TAG_STARTUP_CMD   = "startup"; // NOI18N
     /** Shutdown command tag. */
     public static final String TAG_SHUTDOWN_CMD   = "shutdown"; // NOI18N
+    /** Debug startup/shutdown tag */
+    public static final String TAG_DEBUG_CMD   = "catalina"; // NOI18N
     
     private static NbProcessDescriptor defaultExecDesc(String command) {
         return new NbProcessDescriptor (
@@ -75,11 +80,25 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
             );     
     }
 
+    private static NbProcessDescriptor defaultDebugDesc(String command, String jpdaCommand) {
+        return new NbProcessDescriptor (
+                "{" + StartTomcat.TAG_CATALINA_HOME + "}{" +     // NOI18N
+                ProcessExecutor.Format.TAG_SEPARATOR + "}bin{" + // NOI18N
+                ProcessExecutor.Format.TAG_SEPARATOR + "}{" +     // NOI18N
+                command + "}",  // NOI18N
+                "{" + StartTomcat.TAG_JPDA + "}" + " {" + jpdaCommand + "}",  // NOI18N
+                org.openide.util.NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
+            );     
+    }
+
     private TomcatManager tm;
     
     private ProgressEventSupport pes;
     
     private CommandType command;
+
+    private boolean isDebugMode = false;
+    private boolean startDebugMode = false;
     
     /** Default constructor. */
     public StartTomcat () {
@@ -102,6 +121,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
             TomcatFactory.getEM ().log ("StartTomcat.startDeploymentManager called on "+tm);    // NOI18N
         }
         command = CommandType.START;
+        startDebugMode = false;
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, "", StateType.RUNNING));
         RequestProcessor.getDefault ().post (this, 0, Thread.NORM_PRIORITY);
         return this;
@@ -135,7 +155,8 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
     /**
      * Returns true if this target is in debug mode.
      */
-    public boolean isDebuggable(Target target) { return false; //PENDING 
+    public boolean isDebuggable(Target target) { 
+        return isDebugMode; // TODO
     }
 
     /**
@@ -149,6 +170,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
             TomcatFactory.getEM ().log ("StartTomcat.stopDeploymentManager called on "+tm);    // NOI18N
         }
         command = CommandType.STOP;
+        startDebugMode = false;
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, "", StateType.RUNNING));
         RequestProcessor.getDefault ().post (this, 0, Thread.NORM_PRIORITY);
         return this;
@@ -161,9 +183,20 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
      * @param target the target server
      * @return ServerProgress object to monitor progress on start operation
      */
-    public ProgressObject startDebugging(Target target){ return null; }//PENDING
+    public ProgressObject startDebugging(Target target){
+        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+            TomcatFactory.getEM ().log ("StartTomcat.startDebugging called on "+tm);    // NOI18N
+        }
+        startDebugMode = true;
+        command = CommandType.START;
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, "", StateType.RUNNING));
+        RequestProcessor.getDefault ().post (this, 0, Thread.NORM_PRIORITY);
+        return this;
+    }
 
-    public org.openide.debugger.DebuggerInfo getDebugInfo(Target target) { return null; }//PENDING
+    public DebuggerInfo getDebugInfo(Target target) { 
+        return null;//new RemoteDebuggerInfo("localhost", 8000); // TODO - main build fails with this - don't know why
+    }
     
     public synchronized void run () {
         // PENDING check whether is runs or not
@@ -199,36 +232,72 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
             }
         }
         // XXX check for null's
-        
-        NbProcessDescriptor pd  = defaultExecDesc (command == CommandType.START ? StartTomcat.TAG_STARTUP_CMD : StartTomcat.TAG_SHUTDOWN_CMD);
-        try { 
-            pes.fireHandleProgressEvent (
-                null, 
-                new Status (
-                    ActionType.EXECUTE, 
-                    command,
-                    NbBundle.getMessage (StartTomcat.class, command == CommandType.START ? "MSG_startProcess" : "MSG_stopProcess"), 
-                    StateType.RUNNING
-                )
-            );
-            Process p = pd.exec (
-                new TomcatFormat (homeDir.getAbsolutePath ()), 
-                new String[] { 
-                    "JAVA_HOME="+System.getProperty ("jdk.home"),  // NOI18N 
-                    "CATALINA_HOME="+homeDir.getAbsolutePath (), 
-                    "CATALINA_BASE="+baseDir.getAbsolutePath ()
-                },
-                true,
-                new File (homeDir, "bin")
-            );
-        } catch (java.io.IOException ioe) {
-            if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-                TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, ioe);    // NOI18N
-            }
-            pes.fireHandleProgressEvent (
-                null, 
-                new Status (ActionType.EXECUTE, command, ioe.getLocalizedMessage (), StateType.FAILED)
-            );
+
+        if (startDebugMode) {
+            NbProcessDescriptor pd  = defaultDebugDesc (StartTomcat.TAG_DEBUG_CMD, 
+                                                        command == CommandType.START ? StartTomcat.TAG_JPDA_STARTUP : StartTomcat.TAG_JPDA_SHUTDOWN);
+            try { 
+                pes.fireHandleProgressEvent (
+                    null, 
+                    new Status (
+                        ActionType.EXECUTE, 
+                        command,
+                        NbBundle.getMessage (StartTomcat.class, command == CommandType.START ? "MSG_startProcess" : "MSG_stopProcess"), 
+                        StateType.RUNNING
+                    )
+                );
+                Process p = pd.exec (
+                    new TomcatFormat (homeDir.getAbsolutePath ()), 
+                    new String[] { 
+                        "JAVA_HOME="+System.getProperty ("jdk.home"),  // NOI18N 
+//                        "JPDA_TRANSPORT=" + "dt_socket",               // NOI18N
+//                        "JPDA_ADDRESS="+"8000",                        // NOI18N
+                        "CATALINA_HOME="+homeDir.getAbsolutePath (),   // NOI18N
+                        "CATALINA_BASE="+baseDir.getAbsolutePath ()    // NOI18N
+                    },
+                    true,
+                    new File (homeDir, "bin")
+                );        
+            } catch (java.io.IOException ioe) {
+                if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+                    TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, ioe);    // NOI18N
+                }
+                pes.fireHandleProgressEvent (
+                    null, 
+                    new Status (ActionType.EXECUTE, command, ioe.getLocalizedMessage (), StateType.FAILED)
+                );
+            }        
+        } else {
+            NbProcessDescriptor pd  = defaultExecDesc (command == CommandType.START ? StartTomcat.TAG_STARTUP_CMD : StartTomcat.TAG_SHUTDOWN_CMD);
+            try { 
+                pes.fireHandleProgressEvent (
+                    null, 
+                    new Status (
+                        ActionType.EXECUTE, 
+                        command,
+                        NbBundle.getMessage (StartTomcat.class, command == CommandType.START ? "MSG_startProcess" : "MSG_stopProcess"), 
+                        StateType.RUNNING
+                    )
+                );
+                Process p = pd.exec (
+                    new TomcatFormat (homeDir.getAbsolutePath ()), 
+                    new String[] { 
+                        "JAVA_HOME="+System.getProperty ("jdk.home"),  // NOI18N 
+                        "CATALINA_HOME="+homeDir.getAbsolutePath (), 
+                        "CATALINA_BASE="+baseDir.getAbsolutePath ()
+                    },
+                    true,
+                    new File (homeDir, "bin")
+                );
+            } catch (java.io.IOException ioe) {
+                if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+                    TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, ioe);    // NOI18N
+                }
+                pes.fireHandleProgressEvent (
+                    null, 
+                    new Status (ActionType.EXECUTE, command, ioe.getLocalizedMessage (), StateType.FAILED)
+                );
+            }        
         }
         
         while ((command == CommandType.START && !URLWait.waitForStartup (tm, 1000)) ||  //still no feedback when starting
@@ -237,6 +306,9 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
         }
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, "", StateType.COMPLETED));
         running = command == CommandType.START;
+        if (startDebugMode) {
+            isDebugMode = (command == CommandType.START);
+        }
     }
     
     /** This implementation does nothing.
@@ -248,12 +320,18 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
     }
     
     public boolean supportsDebugging (Target target) {
-        return false;   // PENDING
+        return true;
     }
     
-    public void stopDebugging (Target target) {
-        throw new RuntimeException ("Tomcat debugging not supported yet");    // NOI18N
-    }
+/*    public void stopDebugging (Target target) {
+        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+            TomcatFactory.getEM ().log ("StartTomcat.stopDebugging called on "+tm);    // NOI18N
+        }
+        startDebugMode = Boolean.TRUE.booleanValue();
+        command = CommandType.STOP;
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, "", StateType.RUNNING));
+        RequestProcessor.getDefault ().post (this, 0, Thread.NORM_PRIORITY);
+    }*/
     
     /** Initializes base dir for use with Tomcat 5.0.x. 
      *  @param baseDir directory for base dir.
@@ -273,15 +351,15 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
                 StateType.RUNNING
             )
         );
-        FileObject targetFolder;
+        File targetFolder;
         if (!baseDir.isAbsolute ()) {
             baseDir = new File(System.getProperty("netbeans.user")+System.getProperty("file.separator")+baseDir);
-            FileObject [] targetFO = FileUtil.fromFile (new File(System.getProperty("netbeans.user")));
-            targetFolder = targetFO.length > 0? targetFO[0]: null;
+            targetFolder = new File(System.getProperty("netbeans.user"));
+
         }
         else {
-            FileObject [] targetFO = FileUtil.fromFile (baseDir.getParentFile ());
-            targetFolder = targetFO.length > 0? targetFO[0]: null;
+            targetFolder = baseDir.getParentFile ();
+
         }
         try {
             
@@ -289,7 +367,8 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
                 TomcatFactory.getEM ().log (ErrorManager.INFORMATIONAL, "Cannot find parent folder for base dir "+baseDir.getPath ());
                 return null;
             }
-            FileObject baseDirFO = targetFolder.createFolder (baseDir.getName ());
+            File baseDirFO = new File (targetFolder, baseDir.getName ());
+            baseDirFO.mkdir ();
             // create directories
             String [] subdirs = new String [] { 
                 "conf",   // NOI18N
@@ -301,16 +380,16 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
                 /*, "webapps"*/ 
             };
             for (int i = 0; i<subdirs.length; i++) {
-                StringTokenizer stok = new StringTokenizer (subdirs[i], "/"); // NOI18N
-                FileObject dest = baseDirFO;
-                String folder = null;
-                while (stok.hasMoreTokens ()) {
-                    folder = stok.nextToken ();
-                    if (stok.hasMoreTokens ()) {
-                        dest = dest.getFileObject (folder);
-                    }
-                }
-                dest.createFolder (folder);
+                File dest = new File (baseDirFO, subdirs [i]);
+                dest.mkdirs ();
+
+
+
+
+
+
+
+
             }
             // copy config files
             String [] files = new String [] { 
@@ -349,20 +428,27 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
                 String sext = files[i].substring (dot+1);
                 File fromDir = new File (homeDir, sfolder); // NOI18N
                 File toDir = new File (baseDir, sfolder); // NOI18N
-                FileObject [] fromFO = FileUtil.fromFile (fromDir);
-                FileObject toFO = baseDirFO.getFileObject (sfolder);
-                if (fromFO.length == 0 || toFO == null) {
-                    TomcatFactory.getEM ().log (ErrorManager.INFORMATIONAL, "Cannot find FileObject for home dir or base dir");
-                    return null;
-                }       
-                
-                FileObject source = fromFO[0].getFileObject (sname, sext);
-                if (source == null) {
-                    TomcatFactory.getEM ().log (ErrorManager.INFORMATIONAL, "Cannot find config file "+sname+"."+sext);
-                    return null;
-                }
+
                 if (patternTo[i] == null) {
-                    FileUtil.copyFile (source, toFO, sname, sext);
+                    FileInputStream is = new FileInputStream (new File (fromDir, files[i].substring (slash+1)));
+                    FileOutputStream os = new FileOutputStream (new File (toDir, files[i].substring (slash+1)));
+                    try {
+                        final byte[] BUFFER = new byte[4096];
+                        int len;
+
+                        for (;;) {
+                            len = is.read (BUFFER);
+                            if (len == -1) break;
+                            os.write (BUFFER, 0, len);
+                        }
+                    } catch (java.io.IOException ioe) {
+                        ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
+                    } finally {
+                        try { if (os != null) os.close (); } catch (java.io.IOException ioe) { // ignore this
+                        }
+                        try { if (is != null) is.close (); } catch (java.io.IOException ioe) { // ignore this 
+                        }
+                    }
                 }
                 else {
                     // use patched version
@@ -476,6 +562,10 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
             java.util.Map map = getMap ();
             map.put (TAG_STARTUP_CMD, org.openide.util.Utilities.isWindows ()? "startup.bat": "startup.sh"); // NOI18N
             map.put (TAG_SHUTDOWN_CMD, org.openide.util.Utilities.isWindows ()? "shutdown.bat": "shutdown.sh"); // NOI18N
+            map.put (TAG_DEBUG_CMD, org.openide.util.Utilities.isWindows ()? "catalina.bat": "catalina.sh"); // NOI18N
+            map.put (TAG_JPDA, "jpda"); // NOI18N
+            map.put (TAG_JPDA_STARTUP, "start"); // NOI18N
+            map.put (TAG_JPDA_SHUTDOWN, "stop"); // NOI18N
             map.put (StartTomcat.TAG_CATALINA_HOME, home); // NOI18N
             map.put (ProcessExecutor.Format.TAG_SEPARATOR, File.separator);
         }
