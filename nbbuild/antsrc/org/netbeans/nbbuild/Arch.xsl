@@ -126,10 +126,11 @@ Microsystems, Inc. All Rights Reserved.
     <xsl:template match="api">
         <!-- generates link to given API -->
         <xsl:variable name="name" select="@name" />
+        <xsl:variable name="group" select="@group" />
         
         <a>
             <xsl:attribute name="href" >
-                <xsl:text>#api-</xsl:text><xsl:value-of select="$name" />
+                <xsl:text>#</xsl:text><xsl:value-of select="$group" /><xsl:text>-</xsl:text><xsl:value-of select="$name" />
             </xsl:attribute>
             <xsl:value-of select="$name" />
         </a>
