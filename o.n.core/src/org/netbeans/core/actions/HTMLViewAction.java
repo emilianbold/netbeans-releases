@@ -22,7 +22,6 @@ import com.netbeans.ide.util.actions.CallableSystemAction;
 /** Opens a HTML Browser on the home URL specified in IDESettings.
 *
 * @author Ian Formanek
-* @version 0.10, May 24, 1998
 */
 public class HTMLViewAction extends CallableSystemAction {
   /** generated Serialized Version UID */
@@ -60,6 +59,7 @@ public class HTMLViewAction extends CallableSystemAction {
 
 /*
  * Log
+ *  4    Gandalf   1.3         3/1/99   David Simonek   icons etc..
  *  3    Gandalf   1.2         1/21/99  David Simonek   Removed references to 
  *       "Actions" class
  *  2    Gandalf   1.1         1/7/99   Ian Formanek    fixed resource names
