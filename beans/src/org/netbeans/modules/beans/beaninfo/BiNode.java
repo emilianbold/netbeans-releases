@@ -15,6 +15,9 @@ package org.netbeans.modules.beans.beaninfo;
 
 import java.util.ResourceBundle;
 import java.lang.reflect.InvocationTargetException;
+import java.io.File;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorSupport;
 
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
@@ -56,6 +59,11 @@ public final class BiNode extends AbstractNode {
     // variables ....................................................................................
 
     private BiAnalyser biAnalyser;
+
+    static BiIconEditor ie = null;
+    static {
+        ie = new BiIconEditor();
+    }
 
     private PropertySupport[] descSubnodeDescriptor =  new PropertySupport[] {
                 new PropertySupport.ReadWrite (
@@ -202,84 +210,112 @@ public final class BiNode extends AbstractNode {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = sheet.get(Sheet.PROPERTIES);
 
-        ps.put( new PropertySupport.ReadWrite (
+        ps.put( new ImagePropertySupportRW (
                     PROP_BI_ICON_C16,
                     String.class,
                     GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_ICON_C16 ),
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_ICON_C16 )
                 ) {
-                    public Object getValue () {
-                        return biAnalyser.getIconC16();
-                        //return new Boolean( biAnalyser.isNullProperties () );
+                    public Object getValue () throws
+                        IllegalAccessException, InvocationTargetException {
+                        return biAnalyser.getIconC16();                        
                     }
-                    public void setValue (Object val) throws
+                    
+                    public void setValue (Object value) throws
                         IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                         try {
-                            biAnalyser.setIconC16 ( ((String)val) );
+                            if( value == null )
+                                biAnalyser.setIconC16 ( null );
+                            else {
+                                if (value instanceof BiIconEditor.BiImageIcon) {
+                                    biAnalyser.setIconC16 ( ie.getSourceName() );
+                                }
+                            }
                         } catch (ClassCastException e) {
                             throw new IllegalArgumentException ();
                         }
                     }
                 }
               );
-        ps.put( new PropertySupport.ReadWrite (
+        ps.put( new ImagePropertySupportRW (
                     PROP_BI_ICON_M16,
                     String.class,
                     GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_ICON_M16 ),
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_ICON_M16 )
                 ) {
-                    public Object getValue () {
-                        return biAnalyser.getIconM16();
-                        //return new Boolean( biAnalyser.isNullProperties () );
+                    public Object getValue () throws
+                        IllegalAccessException, InvocationTargetException {
+                        return biAnalyser.getIconM16();                        
                     }
-                    public void setValue (Object val) throws
+                    
+                    public void setValue (Object value) throws
                         IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                         try {
-                            biAnalyser.setIconM16 ( ((String)val) );
+                            if( value == null )
+                                biAnalyser.setIconM16 ( null );
+                            else {
+                                if (value instanceof BiIconEditor.BiImageIcon) {
+                                    biAnalyser.setIconM16 ( ie.getSourceName() );
+                                }
+                            }
                         } catch (ClassCastException e) {
                             throw new IllegalArgumentException ();
                         }
                     }
                 }
               );
-        ps.put( new PropertySupport.ReadWrite (
+        ps.put( new ImagePropertySupportRW (
                     PROP_BI_ICON_C32,
                     String.class,
                     GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_ICON_C32 ),
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_ICON_C32 )
                 ) {
-                    public Object getValue () {
+                    public Object getValue () throws
+                        IllegalAccessException, InvocationTargetException {
                         return biAnalyser.getIconC32();
-                        //return new Boolean( biAnalyser.isNullProperties () );
                     }
-                    public void setValue (Object val) throws
+                    
+                    public void setValue (Object value) throws
                         IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                         try {
-                            biAnalyser.setIconC32 ( ((String)val) );
+                            if( value == null )
+                                biAnalyser.setIconC32 ( null );
+                            else {
+                                if (value instanceof BiIconEditor.BiImageIcon) {
+                                    biAnalyser.setIconC32 ( ie.getSourceName() );
+                                }
+                            }
                         } catch (ClassCastException e) {
                             throw new IllegalArgumentException ();
                         }
-                    }
+                    }                    
                 }
               );
-        ps.put( new PropertySupport.ReadWrite (
+        ps.put( new ImagePropertySupportRW (
                     PROP_BI_ICON_M32,
                     String.class,
                     GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_ICON_M32 ),
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_ICON_M32 )
                 ) {
-                    public Object getValue () {
+                    public Object getValue () throws
+                        IllegalAccessException, InvocationTargetException {
                         return biAnalyser.getIconM32();
-                        //return new Boolean( biAnalyser.isNullProperties () );
                     }
-                    public void setValue (Object val) throws
+                    
+                    public void setValue (Object value) throws
                         IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                         try {
-                            biAnalyser.setIconM32 ( ((String)val) );
+                            if( value == null )
+                                biAnalyser.setIconM32 ( null );
+                            else {
+                                if (value instanceof BiIconEditor.BiImageIcon) {
+                                    biAnalyser.setIconM32 ( ie.getSourceName() );
+                                }
+                            }
                         } catch (ClassCastException e) {
                             throw new IllegalArgumentException ();
                         }
-                    }
+                    }                    
                 }
               );
         ps.put( new PropertySupport.ReadWrite (
@@ -411,7 +447,42 @@ public final class BiNode extends AbstractNode {
 
         }
     }
+    
+    class ImagePropertySupportRW extends PropertySupport.ReadWrite
+    {
+        ImagePropertySupportRW(String name, Class type,
+                              String displayName, String shortDescription) {
+            super(name, type, displayName, shortDescription);
+        }
 
+        public Object getValue () throws
+            IllegalAccessException, InvocationTargetException {
+            return ie.getValue();
+        }
+
+        public void setValue (Object val) throws
+            IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            try {
+                if( val != null ){
+                    ie.setAsText( (String)val );  
+                }
+            } catch (ClassCastException e) {
+                throw new IllegalArgumentException ();
+            }
+        }
+
+        public PropertyEditor getPropertyEditor() {
+            return new PropertyEditorSupport() {
+                public java.awt.Component getCustomEditor() {
+                    return ie.getCustomEditor();
+                }
+                    
+                public boolean supportsCustomEditor() {
+                    return true;
+                }
+            };
+        }
+    }    
 }
 
 
