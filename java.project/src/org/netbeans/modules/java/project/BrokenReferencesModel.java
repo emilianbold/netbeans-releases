@@ -20,7 +20,7 @@ import java.util.Iterator;
 
 import java.util.LinkedHashSet;
 import java.util.Map;
-
+import java.util.List;
 import java.util.Set;
 import javax.swing.AbstractListModel;
 
@@ -44,10 +44,9 @@ public class BrokenReferencesModel extends AbstractListModel {
 
     private String[] props;
     private String[] platformsProps;
-    private String[] brokenReferences;
-    private String[] brokenPlatforms;
     private AntProjectHelper helper;
     private ReferenceHelper resolver;
+    private ArrayList references;
 
     public BrokenReferencesModel(AntProjectHelper helper, 
             ReferenceHelper resolver, String[] props, String[] platformsProps) {
@@ -55,95 +54,89 @@ public class BrokenReferencesModel extends AbstractListModel {
         this.platformsProps = platformsProps;
         this.resolver = resolver;
         this.helper = helper;
+        references = new ArrayList();
         refresh();
     }
     
     public void refresh() {
-        brokenReferences = getReferences(helper.getStandardPropertyEvaluator(), props, false);
-        brokenPlatforms = getPlatforms(helper.getStandardPropertyEvaluator(), platformsProps, false);
+        Set all = new LinkedHashSet();
+        Set s = getReferences(helper.getStandardPropertyEvaluator(), props, false);
+        all.addAll(s);
+        s = getPlatforms(helper.getStandardPropertyEvaluator(), platformsProps, false);
+        all.addAll(s);
+        updateReferencesList(references, all);
         this.fireContentsChanged(this, 0, getSize());
     }
 
     public Object getElementAt(int index) {
-        if (index < brokenReferences.length) {
-            if (isLibrary(index)) {
-                return NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_BrokenLibrary", getLibraryID(index));
-            } else {
-                if (isProjectReference(index)) {
-                    return NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_BrokenProjectReference", getProjectID(index));
-                } else {
-                    return NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_BrokenFileReference", getFileID(index));
-                }
-            }
-        } else {
-            return NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_BrokenPlatform", brokenPlatforms[index-brokenReferences.length]);
+        OneReference or = getOneReference(index);
+        String bundleID;
+        switch (or.type) {
+            case REF_TYPE_LIBRARY:
+                bundleID = "LBL_BrokenLinksCustomizer_BrokenLibrary"; // NOI18N
+                break;
+            case REF_TYPE_PROJECT:
+                bundleID = "LBL_BrokenLinksCustomizer_BrokenProjectReference"; // NOI18N
+                break;
+            case REF_TYPE_FILE:
+                bundleID = "LBL_BrokenLinksCustomizer_BrokenFileReference";
+                break;
+            case REF_TYPE_PLATFORM:
+                bundleID = "LBL_BrokenLinksCustomizer_BrokenPlatform";
+                break;
+            default:
+                assert false;
+                return null;
         }
+        return NbBundle.getMessage(BrokenReferencesCustomizer.class, bundleID, or.getDisplayID());
     }
 
     public String getDesciption(int index) {
-        if (index < brokenReferences.length) {
-            if (isLibrary(index)) {
-                // XXX: if library classpath is defined then just WARN user 
-                // that library is not defined
-                return NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_BrokenLibraryDesc", getLibraryID(index));
-            } else {
-                if (isProjectReference(index)) {
-                    return NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_BrokenProjectReferenceDesc", getProjectID(index));
-                } else {
-                    return NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_BrokenFileReferenceDesc", getFileID(index));
-                }
-            }
-        } else {
-            return NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_BrokenPlatformDesc", brokenPlatforms[index-brokenReferences.length]);
+        OneReference or = getOneReference(index);
+        String bundleID;
+        switch (or.type) {
+            case REF_TYPE_LIBRARY:
+                bundleID = "LBL_BrokenLinksCustomizer_BrokenLibraryDesc"; // NOI18N
+                break;
+            case REF_TYPE_PROJECT:
+                bundleID = "LBL_BrokenLinksCustomizer_BrokenProjectReferenceDesc"; // NOI18N
+                break;
+            case REF_TYPE_FILE:
+                bundleID = "LBL_BrokenLinksCustomizer_BrokenFileReferenceDesc";
+                break;
+            case REF_TYPE_PLATFORM:
+                bundleID = "LBL_BrokenLinksCustomizer_BrokenPlatformDesc";
+                break;
+            default:
+                assert false;
+                return null;
         }
+        return NbBundle.getMessage(BrokenReferencesCustomizer.class, bundleID, or.getDisplayID());
     }
 
+    public OneReference getOneReference(int index) {
+        return (OneReference)references.get(index);
+    }
+    
     public boolean isBroken(int index) {
-        // XXX: at the moment shows only broken references
-        return true;
+        OneReference or = (OneReference)references.get(index);
+        return or.broken;
     }
     
-    boolean isLibrary(int index) {
-        return index < brokenReferences.length ? brokenReferences[index].startsWith("libs.") : false;
-    }
-    
-    private String getLibraryID(int index) {
-        // libs.<name>.classpath
-        return brokenReferences[index].substring(5, brokenReferences[index].length()-10);
-    }
-
-    boolean isPlatform(int index) {
-        return index >= brokenReferences.length && index - brokenReferences.length < brokenPlatforms.length;
-    }
-
-    boolean isProjectReference(int index) {
-        return brokenReferences[index].startsWith("project.");
-    }
-
-    String getProjectID(int index) {
-        // project.<name>
-        return brokenReferences[index].substring(8);
-    }
-
-    String getFileID(int index) {
-        // file.reference.<name>
-        return brokenReferences[index].substring(15);
-    }
-
     public int getSize() {
-        return brokenReferences.length + brokenPlatforms.length;
+        return references.size();
     }
 
     public static boolean isBroken(PropertyEvaluator evaluator, String[] props, String[] platformsProps) {
-        String[] broken = getReferences(evaluator, props, true);
-        if (broken.length > 0) {
+        Set s = getReferences(evaluator, props, true);
+        if (s.size() > 0) {
             return true;
         }
-        broken = getPlatforms(evaluator, platformsProps, true);
-        return broken.length > 0;
+        s = getPlatforms(evaluator, platformsProps, true);
+        return s.size() > 0;
     }
 
-    private static String[] getReferences(PropertyEvaluator evaluator, String[] ps, boolean abortAfterFirstProblem) {
+    private static Set getReferences(PropertyEvaluator evaluator, String[] ps, boolean abortAfterFirstProblem) {
         Set set = new LinkedHashSet();
         StringBuffer all = new StringBuffer();
         for (int i=0; i<ps.length; i++) {
@@ -170,9 +163,14 @@ public class BrokenReferencesModel extends AbstractListModel {
                 if (vals[j].startsWith("${project.")) {
                     // something in the form: "${project.<projID>}/dist/foo.jar"
                     String val = vals[j].substring(2, vals[j].indexOf('}'));
-                    set.add(val);
+                    set.add(new OneReference(REF_TYPE_PROJECT, val, true));
                 } else {
-                    set.add(vals[j].substring(2, vals[j].length()-1));
+                    int type = REF_TYPE_LIBRARY;
+                    if (vals[j].startsWith("${file.reference")) {
+                        type = REF_TYPE_FILE;
+                    }
+                    String val = vals[j].substring(2, vals[j].length()-1);
+                    set.add(new OneReference(type, val, true));
                 }
                 if (abortAfterFirstProblem) {
                     break;
@@ -202,15 +200,13 @@ public class BrokenReferencesModel extends AbstractListModel {
                 if (all.indexOf(value) == -1) {
                     continue;
                 }
-                set.add(key);
+                set.add(new OneReference(REF_TYPE_PROJECT, key, true));
             }
         }
-        
-        
-        return (String[])set.toArray(new String[set.size()]);
+        return set;
     }
 
-    private static String[] getPlatforms(PropertyEvaluator evaluator, String[] platformsProps, boolean abortAfterFirstProblem) {
+    private static Set getPlatforms(PropertyEvaluator evaluator, String[] platformsProps, boolean abortAfterFirstProblem) {
         Set set = new LinkedHashSet();
         for (int i=0; i<platformsProps.length; i++) {
             String prop = evaluator.getProperty(platformsProps[i]);
@@ -226,13 +222,32 @@ public class BrokenReferencesModel extends AbstractListModel {
                     prop = evaluator.getProperty(platformsProps[i]+".description");
                 }
                 
-                set.add(prop);
+                set.add(new OneReference(REF_TYPE_PLATFORM, prop, true));
             }
             if (set.size() > 0 && abortAfterFirstProblem) {
                 break;
             }
         }
-        return (String[])set.toArray(new String[set.size()]);
+        return set;
+    }
+    
+    private static void updateReferencesList(List oldBroken, Set newBroken) {
+        Iterator it = oldBroken.iterator();
+        while (it.hasNext()) {
+            OneReference or = (OneReference)it.next();
+            if (newBroken.contains(or)) {
+                or.broken = true;
+            } else {
+                or.broken = false;
+            }
+        }
+        it = newBroken.iterator();
+        while (it.hasNext()) {
+            OneReference or = (OneReference)it.next();
+            if (!oldBroken.contains(or)) {
+                oldBroken.add(or);
+            }
+        }
     }
     
     private static boolean existPlatform(String platform) {
@@ -252,7 +267,7 @@ public class BrokenReferencesModel extends AbstractListModel {
     // XXX: perhaps could be moved to ReferenceResolver. 
     // But nobody should need it so it is here for now.
     void updateReference(int index, File file) {
-        final String reference = brokenReferences[index];
+        final String reference = getOneReference(index).ID;
         FileObject myProjDirFO = helper.getProjectDirectory();
         File myProjDir = FileUtil.toFile(myProjDirFO);
         final String propertiesFile;
@@ -289,6 +304,70 @@ public class BrokenReferencesModel extends AbstractListModel {
                     }
                 }
             });
+    }
+
+    public static final int REF_TYPE_PROJECT = 1;
+    public static final int REF_TYPE_FILE = 2;
+    public static final int REF_TYPE_LIBRARY = 3;
+    public static final int REF_TYPE_PLATFORM = 4;
+    
+    public static class OneReference {
+        
+        private int type;
+        private boolean broken;
+        private String ID;
+
+        public OneReference(int type, String ID, boolean broken) {
+            this.type = type;
+            this.ID = ID;
+            this.broken = broken;
+        }
+        
+        public int getType() {
+            return type;
+        }
+        
+        public String getDisplayID() {
+            switch (type) {
+                
+                case REF_TYPE_LIBRARY:
+                    // libs.<name>.classpath
+                    return ID.substring(5, ID.length()-10);
+                    
+                case REF_TYPE_PROJECT:
+                    // project.<name>
+                    return ID.substring(8);
+                    
+                case REF_TYPE_FILE:
+                    // file.reference.<name>
+                    return ID.substring(15);
+                    
+                case REF_TYPE_PLATFORM:
+                    return ID;
+                    
+                default:
+                    assert false;
+                    return ID;
+            }
+        }
+
+        public boolean equals(java.lang.Object o) {
+            if (o == this) {
+                return true;
+            }
+            if (!(o instanceof OneReference)) {
+                return false;
+            }
+            OneReference or = (OneReference)o;
+            return (this.type == or.type && this.ID.equals(or.ID));
+        }
+        
+        public int hashCode() {
+            int result = 7*type;
+            result = 31*result + ID.hashCode();
+            return result;
+        }
+        
     }
     
 }

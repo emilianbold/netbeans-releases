@@ -137,21 +137,22 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
     }//GEN-LAST:event_errorListValueChanged
 
     private void fixActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fixActionPerformed
-        if (model.isLibrary(errorList.getSelectedIndex())) {
+        BrokenReferencesModel.OneReference or = model.getOneReference(errorList.getSelectedIndex());
+        if (or.getType() == BrokenReferencesModel.REF_TYPE_LIBRARY) {
             LibrariesCustomizer.showCustomizer(null);
-        } else if (model.isPlatform(errorList.getSelectedIndex())) {
+        } else if (or.getType() == BrokenReferencesModel.REF_TYPE_PLATFORM) {
             PlatformsCustomizer.showCustomizer(null);
         } else {
             JFileChooser chooser;
-            if (model.isProjectReference(errorList.getSelectedIndex())) {
+            if (or.getType() == BrokenReferencesModel.REF_TYPE_PROJECT) {
                 chooser = ProjectChooser.projectChooser();
                 chooser.setDialogTitle(NbBundle.getMessage(BrokenReferencesCustomizer.class, 
-                    "LBL_BrokenLinksCustomizer_Resolve_Project", model.getProjectID(errorList.getSelectedIndex())));
+                    "LBL_BrokenLinksCustomizer_Resolve_Project", or.getDisplayID()));
             } else {
                 chooser = new JFileChooser();
                 chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
                 chooser.setDialogTitle(NbBundle.getMessage(BrokenReferencesCustomizer.class, 
-                    "LBL_BrokenLinksCustomizer_Resolve_File", model.getFileID(errorList.getSelectedIndex())));
+                    "LBL_BrokenLinksCustomizer_Resolve_File", or.getDisplayID()));
             }
             int option = chooser.showOpenDialog(null);
             if (option == JFileChooser.APPROVE_OPTION) {
@@ -164,8 +165,14 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
 
     private void updateSelection() {
         if (errorList.getSelectedIndex() != -1 && errorList.getSelectedIndex() < model.getSize()) {
-            description.setText(model.getDesciption(errorList.getSelectedIndex()));
-            fix.setEnabled(true);
+            if (model.isBroken(errorList.getSelectedIndex())) {
+                description.setText(model.getDesciption(errorList.getSelectedIndex()));
+                fix.setEnabled(true);
+            } else {
+                description.setText(NbBundle.getMessage(BrokenReferencesCustomizer.class, 
+                    "LBL_BrokenLinksCustomizer_Problem_Was_Resolved"));
+                fix.setEnabled(false);
+            }
         } else {
             description.setText("");
             fix.setEnabled(false);
