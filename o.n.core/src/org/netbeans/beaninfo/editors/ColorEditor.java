@@ -49,9 +49,9 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
   public static final int SWING_PALETTE = 3;
 
   private static final String awtColorNames[] = {
-                                    "white", "lightGray", "gray", "darkGray", "black",
-                                    "red", "pink", "orange", "yellow", "green", "magenta",
-                                    "cyan", "blue" };
+                                    "white", "lightGray", "gray", "darkGray", "black", // NOI18N
+                                    "red", "pink", "orange", "yellow", "green", "magenta", // NOI18N
+                                    "cyan", "blue" }; // NOI18N
 
   private static final Color awtColors[] = {
                                     Color.white, Color.lightGray, Color.gray, Color.darkGray,
@@ -59,26 +59,26 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
                                     Color.green, Color.magenta, Color.cyan, Color.blue };
 
   private static final String systemColorNames[] = {
-                                    "Active Caption", "Active Caption Border",
-                                    "Active Caption Text", "Control", "Control Dk Shadow",
-                                    "Control Highlight", "Control Lt Highlight",
-                                    "Control Shadow", "Control Text", "Desktop",
-                                    "Inactive Caption", "Inactive Caption Border",
-                                    "Inactive Caption Text", "Info", "Info Text", "Menu",
-                                    "Menu Text", "Scrollbar", "Text", "Text Highlight",
-                                    "Text Highlight Text", "Text Inactive Text", "Text Text",
-                                    "Window", "Window Border", "Window Text"};
+                                    "Active Caption", "Active Caption Border", // NOI18N
+                                    "Active Caption Text", "Control", "Control Dk Shadow", // NOI18N
+                                    "Control Highlight", "Control Lt Highlight", // NOI18N
+                                    "Control Shadow", "Control Text", "Desktop", // NOI18N
+                                    "Inactive Caption", "Inactive Caption Border", // NOI18N
+                                    "Inactive Caption Text", "Info", "Info Text", "Menu", // NOI18N
+                                    "Menu Text", "Scrollbar", "Text", "Text Highlight", // NOI18N
+                                    "Text Highlight Text", "Text Inactive Text", "Text Text", // NOI18N
+                                    "Window", "Window Border", "Window Text"}; // NOI18N
 
   private static final String systemGenerate[] = {
-                                    "activeCaption", "activeCaptionBorder",
-                                    "activeCaptionText", "control", "controlDkShadow",
-                                    "controlHighlight", "controlLtHighlight",
-                                    "controlShadow", "controlText", "desktop",
-                                    "inactiveCaption", "inactiveCaptionBorder",
-                                    "inactiveCaptionText", "info", "infoText", "menu",
-                                    "menuText", "scrollbar", "text", "textHighlight",
-                                    "textHighlightText", "textInactiveText", "textText",
-                                    "window", "windowBorder", "windowText"};
+                                    "activeCaption", "activeCaptionBorder", // NOI18N
+                                    "activeCaptionText", "control", "controlDkShadow", // NOI18N
+                                    "controlHighlight", "controlLtHighlight", // NOI18N
+                                    "controlShadow", "controlText", "desktop", // NOI18N
+                                    "inactiveCaption", "inactiveCaptionBorder", // NOI18N
+                                    "inactiveCaptionText", "info", "infoText", "menu", // NOI18N
+                                    "menuText", "scrollbar", "text", "textHighlight", // NOI18N
+                                    "textHighlightText", "textInactiveText", "textText", // NOI18N
+                                    "window", "windowBorder", "windowText"}; // NOI18N
 
   private static final Color systemColors[] = {
                                     SystemColor.activeCaption, SystemColor.activeCaptionBorder,
@@ -164,11 +164,11 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
       if (object instanceof SuperColor) color = (SuperColor) object;
       else color = new SuperColor ((Color) object);
     }
-    support.firePropertyChange ("", null, null);
+    support.firePropertyChange ("", null, null); // NOI18N
   }
 
   public String getAsText () {
-    if (color == null) return "null";
+    if (color == null) return "null"; // NOI18N
     return color.getAsText ();
   }
 
@@ -210,10 +210,10 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
   }
 
   public String getJavaInitializationString () {
-    if (color == null) return "null";
+    if (color == null) return "null"; // NOI18N
     if (color.getID () == null)
-      return "new java.awt.Color (" + color.getRed () + ", " + color.getGreen () +
-             ", " + color.getBlue () + ")";
+      return "new java.awt.Color (" + color.getRed () + ", " + color.getGreen () + // NOI18N
+             ", " + color.getBlue () + ")"; // NOI18N
 
     switch (color.getPalette ()) {
     default:
@@ -603,6 +603,7 @@ static final long serialVersionUID =-6230228701104365037L;
 
 /*
  * Log
+ *  22   Gandalf   1.21        1/13/00  Petr Jiricka    i18n
  *  21   Gandalf   1.20        1/13/00  Petr Jiricka    i18n
  *  20   Gandalf   1.19        12/8/99  Petr Nejedly    Enabled setValue(null)
  *  19   Gandalf   1.18        11/26/99 Patrik Knakal   
