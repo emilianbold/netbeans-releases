@@ -24,10 +24,11 @@ import org.netbeans.jmi.javamodel.JavaModelPackage;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.Parameter;
 import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.jmi.javamodel.Type;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.javacore.ClassIndex;
 import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -106,7 +107,7 @@ public class J2SEProjectUtil {
     private static void getMainClasses (FileObject root, List/*<String>*/ addInto) {
         JavaModel.getJavaRepository ().beginTrans (false);
         try {
-            JavaModelPackage mofPackage = JavaMetamodel.getManager().getJavaExtent(root);
+            JavaModelPackage mofPackage = JavaModel.getJavaExtent(root);
             ClassIndex index = ClassIndex.getIndex (mofPackage);
             //Resource[] res = index.findResourcesForIdentifier ("main"); // NOI18N
             Collection col = index.findResourcesForIdent ("main"); // NOI18N
@@ -147,13 +148,14 @@ public class J2SEProjectUtil {
         if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
             return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
         }
-        //XXX, should use the classpath created from roots
-        
         JavaModel.getJavaRepository ().beginTrans (false);
         boolean isMain = false;
         
         try {
-            JavaClass clazz = ClassIndex.getClassByFqn (className, JavaMetamodel.getManager ().getClassPath ());
+            Type clazz;
+            
+            JavaModel.setClassPath(ClassPathSupport.createClassPath(roots));
+            clazz=JavaModel.getDefaultExtent().getType().resolve(className);
             if (clazz != null) {
                 isMain = hasMainMethod (clazz.getResource ());
             }
