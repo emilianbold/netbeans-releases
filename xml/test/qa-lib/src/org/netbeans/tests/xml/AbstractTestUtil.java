@@ -31,7 +31,6 @@ import org.netbeans.tax.TreeNode;
 import org.netbeans.tax.io.XMLStringResult;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
-import org.openide.execution.NbfsURLConnection;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.loaders.DataFolder;
@@ -323,7 +322,7 @@ public abstract class AbstractTestUtil {
         FileObject fo = ClassPath.getClassPath(null, ClassPath.EXECUTE).findResource(resName);
         if (fo == null) {
             if (DEBUG) {
-                System.err.println("I cannot find FileObject: " + resName);
+                System.err.println("Cannot find FileObject: " + resName);
             }
             return null;
         } else {
@@ -339,7 +338,7 @@ public abstract class AbstractTestUtil {
         FileObject fo = findFileObject(name);
         if (fo == null) {
             if (DEBUG) {
-                System.err.println("I cannot find FileObject: " + name);
+                System.err.println("Cannot find FileObject: " + name);
             }
             return null;
         } else {
@@ -355,7 +354,7 @@ public abstract class AbstractTestUtil {
         FileObject fo = null;
         if (name.startsWith("nbfs:")) {
             try {
-                fo = NbfsURLConnection.decodeURL(new URL(name));
+                fo = URLMapper.findFileObject(new URL(name));
             } catch (MalformedURLException mue) {};
         } else {
             fo = Repository.getDefault().findResource(name);
