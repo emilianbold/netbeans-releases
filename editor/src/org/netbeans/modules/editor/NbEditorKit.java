@@ -220,7 +220,7 @@ public class NbEditorKit extends ExtKit {
                     TopComponent tc = NbEditorUtilities.getTopComponent(target);
                     if (tc != null) {
                         // Add all the actions
-                        SystemAction[] actions = tc.getSystemActions();
+                        Action[] actions = tc.getActions();
                         for (int i = 0; i < actions.length; i++) {
                             Action action = actions[i];
                             if(action instanceof org.openide.util.ContextAwareAction) {
@@ -228,8 +228,8 @@ public class NbEditorKit extends ExtKit {
                                         .createContextAwareInstance(tc.getLookup());
                             }
 
-                            if (action instanceof Presenter.Popup) {
-                                JMenuItem item = ((Presenter.Popup)action).getPopupPresenter();
+                            if (action != null){
+                                JMenuItem item = new JMenuItem (action);
                                 if (item != null && !(item instanceof JMenu)) {
                                     Keymap km = (Keymap)Lookup.getDefault().lookup(Keymap.class);
                                     if (km!=null){
@@ -244,8 +244,7 @@ public class NbEditorKit extends ExtKit {
                                 if (item != null) {
                                     popupMenu.add(item);
                                 }
-
-                            } else if (action == null) {
+                            } else {
                                 popupMenu.addSeparator();
                             }
                         }
