@@ -39,9 +39,17 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
 <answer id="arch-what">
-The debuggerjpda module supports debugging of Java applications. 
+The debuggerjpda/api (Debugger JPDA API) defines API for NetBeans Java Debugger. 
 
-<api name="JPDADebuggerAPI" type="export" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" />
+<ul> List of APIs:
+<li><api name="JPDADebuggerAPI" type="export" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" /></li>
+<li><api name="JPDADebuggerSPI" type="import" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" /></li>
+
+<li><api name="Meta-inf/debugger/netbeans-JPDASession/Java/org.netbeans.spi.debugger.jpda.JPDADebugger" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/netbeans-JPDASession/org.netbeans.spi.debugger.jpda.JPDADebugger" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+</ul>
+
+
 See <a href="http://debugger.netbeans.org/">debugger.netbeans.org</a> and
  <a href="http://debuggercore.netbeans.org/">debuggercore.netbeans.org</a>
 for more information.
@@ -156,12 +164,7 @@ We would like to test 100% of our APIs.
 <answer id="dep-nb">
     <api name="OpenAPIs" type="import" category="official" url="http://openide.netbeans.org"/> 
     <api name="DebuggerCoreAPI" type="import" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html"/> 
-    <api name="JavaHierarchyAPI" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/JavaHierarchyAPI/index.html"/>
-    <api name="JavaAPI" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/JavaHierarchyAPI/index.html"/>
-    <api name="ExecutionAPI" url="http://www.netbeans.org/download/dev/javadoc/ExecutionAPI/org/openide/execution/doc-files/api.html"
-      type="import" category="official"
-    />
-    <api name="OpenAPIs" type="import" category="official" url="http://openide.netbeans.org"/> 
+    <api name="ViewModelAPI" type="import" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html"/> 
 </answer>
 
 
@@ -222,13 +225,7 @@ We would like to test 100% of our APIs.
         </question>
 -->
 <answer id="deploy-jar">
-<ul>
-    <li>modules\debuggerjpda-ideint.jar - Integration of JPDA Debugger to NB IDE</li>
-    <li>modules\debuggerjpda-ui.jar - JPDA Debugger UI</li>
-    <li>modules\autoload\debuggerjpda-api.jar - JPDA Debnugger APIs</li>
-    <li>modules\autoload\debuggerjpda-impl.jar - Implementation of JPDA Debugger</li>
-</ul>
-See <a href="http://debuggercore.netbeans.org/docs/api/ProgrammersGuide.html">Programmers Guide</a>.
+    Just module JAR.
 </answer>
 
 
@@ -297,9 +294,7 @@ See <a href="http://debuggercore.netbeans.org/docs/api/ProgrammersGuide.html">Pr
         </question>
 -->
 <answer id="deploy-dependencies">
-OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger/1,
-  org.netbeans.api.viewmodel/1,
-  org.netbeans.api.debugger.jpda/1
+OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger.jpda/1
 </answer>
 
 
@@ -400,9 +395,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger/1,
         </question>
 -->
 <answer id="resources-layer">
-    Yes, files are created for menus, actions, shortcuts, templates, window system layout,
-    settings storage - these are all in standard Open
-    APIs.
+    No.
 </answer>
 
 
@@ -630,7 +623,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger/1,
 -->
 
 <answer id="exec-introspection">
-    debuggercore does not use introspection.
+    debuggerjpda/api does not use introspection.
     The cases when an object is tested on various types are quite common, but not documented.
 </answer>
 
@@ -677,12 +670,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger/1,
         </question>
 -->
 <answer id="format-clipboard">
-    <ul>
-    <li>custom DataFlavor type referencing own structures (for copy/cut/paste)</li>
-    <li>standard Open API's NodeTransfer.cookie for InstanceCookie (just for pasting):
-    <api name="InstanceCookie-paste" type="export" category="private"/>
-    </li>
-    </ul>
+    No interaction with clipboard.
 </answer>
 
 
@@ -830,7 +818,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger/1,
         </question>
 -->
 <answer id="perf-menus">
-    No. Context menu are rather stable once created. Enabling logic is simple.
+    No.
 </answer>
 
 
