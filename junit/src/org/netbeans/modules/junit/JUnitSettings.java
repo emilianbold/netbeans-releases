@@ -7,13 +7,8 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * CreateTestAction.java
- *
- * Created on January 29, 2001, 7:08 PM
  */
 
 package org.netbeans.modules.junit;
@@ -25,9 +20,6 @@ import java.io.OptionalDataException;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-
-
-
 
 /** Options for JUnit module, control behavior of test creation and execution.
  *
@@ -369,10 +361,6 @@ public class JUnitSettings extends SystemOption {
      putProperty(PROP_GENERATE_ABSTRACT_IMPL, newVal ? Boolean.TRUE : Boolean.FALSE, true);
     }
 
-    public boolean isGlobal() {
-        return false;
-    }
-    
     public boolean isGenerateSuiteClasses() {
         return ((Boolean) getProperty(PROP_GENERATE_SUITE_CLASSES)).booleanValue();
     }

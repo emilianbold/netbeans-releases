@@ -72,11 +72,6 @@ public class DocumentationSettings extends SystemOption {
         initializing = false;
     }
 
-    /** This is a project option. */    
-    public boolean isGlobal() {
-        return false;
-    }
-    
     public static DocumentationSettings getDefault(){
         return (DocumentationSettings)DocumentationSettings.findObject(DocumentationSettings.class,true);
     }

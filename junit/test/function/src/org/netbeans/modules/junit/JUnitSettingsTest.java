@@ -421,12 +421,6 @@ public class JUnitSettingsTest extends NbTestCase {
         // this test is done in test of getProperties
     }
 
-    /** Test of isGlobal method, of class org.netbeans.modules.junit.JUnitSettings. */
-    public void testIsGlobal() {
-        System.out.println("testIsGlobal");
-        assertTrue(false == JUnitSettings.getDefault().isGlobal());
-    }
-    
     /** Test of initialize method, of class org.netbeans.modules.junit.JUnitSettings. */
     public void testInitialize() {
         System.out.println("testInitialize");

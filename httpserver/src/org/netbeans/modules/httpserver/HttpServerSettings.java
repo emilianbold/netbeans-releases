@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -47,7 +47,6 @@ import org.openide.DialogDisplayer;
 /** Options for http server
 *
 * @author Ales Novak, Petr Jiricka
-* @version 0.12, May 5, 1999
 */
 public class HttpServerSettings extends SystemOption 
     /*implements HttpServer.Impl*/ {
@@ -134,11 +133,6 @@ public class HttpServerSettings extends SystemOption
         super.initialize ();
     }
     
-    /** This is a project option. */
-    private boolean isGlobal() {
-        return false;
-    }
-
     /** human presentable name */
     public String displayName() {
         return NbBundle.getBundle(HttpServerSettings.class).getString("CTL_HTTP_settings");

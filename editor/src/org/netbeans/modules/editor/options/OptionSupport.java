@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -191,13 +191,6 @@ public class OptionSupport extends SystemOption {
         return NbEditorUtilities.mergeStringArrays(a1, a2);
     }
 
-    /** Editor options are global therefore they return true
-     * from this method.
-     */
-    public boolean isGlobal() {
-        return true;
-    }
-    
     /** Get the name of the <code>Settings.Initializer</code> related
      * to these options.
      */
