@@ -23,6 +23,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
 import org.openide.filesystems.FileObject;
 import org.openide.util.WeakListeners;
+import java.io.File;
 
 /** This object must be implemented by J2EE module support and an instance 
  * added into project lookup.
@@ -121,9 +122,8 @@ public abstract class J2eeModuleProvider {
     }
 
     /**
-     * Returns source deployment configuration file object for the given deployment 
-     * configuration file name.  If the file does not exists, module provider need
-     * to create new file.  
+     * Returns source deployment configuration file path for the given deployment 
+     * configuration file name. 
      *
      * Note: Implementation should override this method and not implement getModuleFolder 
      * and useDirectoryPath.  For backward compatibility, the default implementation
@@ -131,16 +131,23 @@ public abstract class J2eeModuleProvider {
      * to be obsolete.
      *
      * @param name file name of the deployement configuration file.
-     * @return non-null FileObject for the deployment configuration file.
-     * @exception java.io.IOException when file creation failure.
+     * @return non-null absolute path to the deployment configuration file.
      */
-    public FileObject getDeploymentConfigurationFile(String name) throws java.io.IOException {
+    public File getDeploymentConfigurationFile(String name) {
         return getConfigSupportImpl().getConfigurationFO(name);
     }
     
     /**
      * Finds source deployment configuration file object for the given deployment 
-     * configuration file name.  Return null if the file does not exists.
+     * configuration file name.  
+     *
+     * Note: Implementation should override this method and not implement getModuleFolder 
+     * and useDirectoryPath.  For backward compatibility, the default implementation
+     * is based on calls to getModuleFolder and useDirectoryPath which are soon 
+     * to be obsolete.
+     *
+     * @param name file name of the deployement configuration file.
+     * @return FileObject of the configuration descriptor file; null if the file does not exists.
      * 
      */
     public FileObject findDeploymentConfigurationFile (String name) {

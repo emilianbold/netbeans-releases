@@ -243,7 +243,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     /**
      * Note this call is temporary for backward compatibility.  Do not use.
      */
-    public FileObject getConfigurationFO(String name) throws IOException {
+    public File getConfigurationFO(String name) {
         FileObject moduleFolder = getProvider().getModuleFolder();
 
         // should not happen, new project should have ovrridden this method to return non-null.
@@ -255,10 +255,8 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         if (path == null || ! getProvider().useDirectoryPath()) {
             path = name;
         }
-        FileObject configFO = moduleFolder.getFileObject(path);
-        if (configFO == null)
-            configFO = FileUtil.createData(moduleFolder, path);
-        return configFO;
+        File configFolder = FileUtil.toFile(moduleFolder);
+        return new File(configFolder, path);
     }
 
     /**
@@ -358,9 +356,10 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                     for (int i = 0; i < fnames.length; i++) {
                         FileObject fo = getProvider().findDeploymentConfigurationFile(fnames[i]);
                         if (fo == null) {
-                            fo = getProvider().getDeploymentConfigurationFile(fnames[i]);
+                            files[i] = getProvider().getDeploymentConfigurationFile(fnames[i]);
+                        } else {
+                            files[i] = FileUtil.toFile(fo);
                         }
-                        files[i] = FileUtil.toFile(fo);
                         if (files[i].getName().equals(getPrimaryConfigurationFileName()))
                             primary = fo;
                     }
@@ -485,9 +484,10 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             String fname = path.getName();
             FileObject fo = provider.findDeploymentConfigurationFile(fname);
             if (fo == null) {
-                fo = provider.getDeploymentConfigurationFile(fname);
+                files[i] = provider.getDeploymentConfigurationFile(fname);
+            } else {
+                files[i] = FileUtil.toFile(fo);
             }
-            files[i] = FileUtil.toFile(fo);
         }
         return files;
     }
@@ -524,13 +524,9 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
      * Note: mapping root is folder containing primary configuration file.
      */
     public SourceFileMap getDefaultConfigFileMap() {
-        try {
-            FileObject primaryFO = getProvider().getDeploymentConfigurationFile(getPrimaryConfigurationFileName());
-            return new StraightFileMap(primaryFO.getParent());
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-        }
-        return null;
+        // Assumption: by the time the config file map is requested, config files should already exist
+        FileObject primaryFO = getProvider().findDeploymentConfigurationFile(getPrimaryConfigurationFileName());
+        return new StraightFileMap(primaryFO.getParent());
     }
 
     /**
