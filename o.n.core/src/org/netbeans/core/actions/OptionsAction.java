@@ -14,7 +14,6 @@
 package org.netbeans.core.actions;
 
 import java.io.ObjectStreamException;
-import java.text.MessageFormat;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.SwingUtilities;
@@ -128,8 +127,6 @@ public class OptionsAction extends CallableSystemAction {
         public static final String MODE_NAME = "options";
         /** Singleton instance of options panel */
         private static OptionsPanel singleton;
-        /** Formatted title of this view */
-        private static MessageFormat formatTitle;
         
         private static String TEMPLATES_DISPLAY_NAME = NbBundle.getBundle (org.netbeans.core.NbTopManager.class).getString("CTL_Templates_name"); // NOI18N
         

@@ -28,8 +28,6 @@ import org.openide.util.Utilities;
 
 public final class NbClipboard extends ExClipboard implements LookupListener, AWTEventListener
 {
-    private static NbClipboard nbClipboard;
-
     private Clipboard systemClipboard;
     private Convertor[] convertors;
     private Lookup.Result result;

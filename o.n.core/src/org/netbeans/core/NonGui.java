@@ -73,9 +73,6 @@ public class NonGui extends NbTopManager implements Runnable {
     /** The netbeans system dir - it is netbeans.home/system or a folder specified via -system option */
     private static String systemDir;
 
-    /** system file system */
-    private static FileSystem systemFileSystem;
-    
     /** module subsystem */
     private static ModuleSystem moduleSystem;
 

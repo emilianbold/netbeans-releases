@@ -282,8 +282,6 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         /** holder of parsed settings  */
         private XMLSettingsSupport.SettingsRecognizer settings = null;
         
-        private boolean doNotCheckContent = false;
-        
         /** Creates new SettingsInstance   */
         public SettingsInstance(Object instance) {
             setCachedInstance(instance);

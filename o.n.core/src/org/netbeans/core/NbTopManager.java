@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.text.MessageFormat;
 import java.util.List;
 import javax.swing.*;
-import javax.swing.text.Keymap;
 import javax.swing.border.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -81,27 +80,11 @@ public abstract class NbTopManager /*extends TopManager*/ {
     /** Initialize everything.
     */
     public static final int IL_ALL = 0xffff;
-
-
-    /** stores main shortcut context*/
-    private Keymap shortcutContext;
-
+    
     /** inner access to dynamic lookup service for this top mangager */
     private InstanceContent instanceContent;
     /** dynamic lookup service for this top mangager */
     private Lookup instanceLookup;
-
-    /** default repository */
-    private Repository repository;
-
-    /** error manager */
-    private static ErrorManager defaultErrorManager;
-
-    /** repository */
-    private Repository defaultRepository;
-
-    /** loader pool */
-    private DataLoaderPool loaderPool;
 
     /** initializes properties about builds etc. */
     static {

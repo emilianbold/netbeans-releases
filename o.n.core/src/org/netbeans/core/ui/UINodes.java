@@ -42,11 +42,6 @@ public final class UINodes extends Object {
 
     private static java.util.ResourceBundle bundle = NbBundle.getBundle (org.netbeans.core.NbTopManager.class);
 
-    /** Default icons for nodes */
-    private static final String DESKTOP_ICON_BASE = "org/netbeans/core/resources/desktop"; // NOI18N
-    private static final String PROJECT_SETTINGS_ICON_BASE = "org/netbeans/core/resources/controlPanel"; // NOI18N
-
-
     private final static String templatesIconURL = "org/netbeans/core/resources/templates.gif"; // NOI18N
     private final static String templatesIcon32URL = "org/netbeans/core/resources/templates32.gif"; // NOI18N
     private final static String startupIconURL = "org/netbeans/core/resources/startup.gif"; // NOI18N

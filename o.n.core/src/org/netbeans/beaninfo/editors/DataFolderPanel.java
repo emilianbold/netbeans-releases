@@ -254,8 +254,6 @@ class DataFolderPanel extends TopComponent implements
     private javax.swing.JLabel descriptionLabel;
     // End of variables declaration//GEN-END:variables
 
-  private static final java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/beaninfo/editors/Bundle"); // NOI18N
-
     //
     // Filter to accept only folders
     //

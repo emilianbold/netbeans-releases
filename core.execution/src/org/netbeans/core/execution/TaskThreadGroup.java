@@ -20,10 +20,6 @@ package org.netbeans.core.execution;
 * @version 0.10 Mar 19, 1998
 */
 final class TaskThreadGroup extends ThreadGroup {
-
-    /** Class object for Thread */
-    private static final Class threadClass = Thread.class;
-
     /** lock for waitFor/wakeUpProcesses */
     private Object TIMER = new Object();
 

@@ -55,21 +55,13 @@ final class ShortcutsFolder extends FolderInstance {
     static final String SHORTCUTS_FOLDER = "Shortcuts"; // NOI18N
 
     /** Info for old XML file.*/
-    private static final String XML_SHORTCUTS = "Shortcuts"; // NOI18N
-    /** Info for old XML file.*/
-    private static final String XML_DESCRIPTION = "Description"; // NOI18N
-    /** Info for old XML file.*/
     private static final String XML_BINDING = "Binding"; // NOI18N
 
-    /** Info for old XML file.*/
-    private static final String ATTR_DESCRIPTION_NAME = "name"; // NOI18N
     /** Info for old XML file.*/
     private static final String ATTR_BINDING_KEY = "key"; // NOI18N
     /** Info for old XML file.*/
     private static final String ATTR_BINDING_ACTION = "action"; // NOI18N
 
-    private static final String PROP_CURRENT_KEYFILE = "current"; // NOI18N
-    
     /** Creates new ShortcutsFolder */
     public ShortcutsFolder(DataFolder f) {
         super(f);

@@ -34,10 +34,6 @@ import org.netbeans.core.ui.MountNode;
 * @author Jaroslav Tulach
 */
 public final class NbPlaces extends Object {
-    
-    /** A node to return if ProjectDesktop node == null */
-    private static final Node EMPTY_PROJECT_DESKTOP_NODE = new AbstractNode( Children.LEAF );
-    
     private final List listeners = new ArrayList(); // List<ChangeListener>
     
     /** No instance outside this class.

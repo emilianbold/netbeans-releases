@@ -15,7 +15,6 @@ package org.netbeans.core;
 
 import java.awt.*;
 import java.beans.*;
-import java.text.MessageFormat;
 import java.io.ObjectInput;
 import java.io.IOException;
 import java.util.*;
@@ -64,9 +63,6 @@ public final class NbMainExplorer extends CloneableTopComponent
     static final long serialVersionUID=6021472310669753679L;
     //  static final long serialVersionUID=-9070275145808944151L;
 
-    /** The message formatter for Explorer title */
-    private static MessageFormat formatExplorerTitle;
-
     /** holds list of roots (Node) */
     private List prevRoots;
 
@@ -74,13 +70,8 @@ public final class NbMainExplorer extends CloneableTopComponent
     * (Node, ExplorerTab) */
     private Map rootsToTCs;
 
-    /** currently selected node */
-    private Node currentRoot;
-    
     /** Listener which tracks changes on the root nodes (which are displayed as tabs) */
     private transient RootsListener rootsListener;
-    /** true if listener to ide setiings properly initialized */
-    private transient boolean listenerInitialized;
 
     /** Minimal initial height of this top component */
     public static final int MIN_HEIGHT = 150;
