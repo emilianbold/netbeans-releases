@@ -151,10 +151,10 @@ public class NbEditorUI extends ExtEditorUI {
         c.removeFocusListener(focusL);
     }
     
-    public JComponent getExtComponent() {
-        JComponent extComponent = super.getExtComponent();
-        new NbToolbarSupport(extComponent, (JEditorPane)getComponent());
-        
+    protected JComponent createExtComponent() {
+        JComponent ec = super.createExtComponent();
+        NbToolbarSupport.checkToolbar(ec, (JEditorPane)getComponent());
+        return ec;
         
 /*        String toolbarFolderPath = "Editors/" + mimeType + "/Toolbars";
 
@@ -202,7 +202,6 @@ public class NbEditorUI extends ExtEditorUI {
         }
 */
  
-        return extComponent;
     }
 
     public final class SystemActionUpdater
