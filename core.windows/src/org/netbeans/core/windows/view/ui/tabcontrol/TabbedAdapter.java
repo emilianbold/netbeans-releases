@@ -14,12 +14,15 @@
 package org.netbeans.core.windows.view.ui.tabcontrol;
 
 import java.awt.Component;
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
 import java.awt.geom.GeneralPath;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +38,7 @@ import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.view.ui.Tabbed;
 import org.openide.windows.TopComponent;
 import org.openide.ErrorManager;
+import java.awt.Image;
 
 /** Adapter class that implements a pseudo JTabbedPane API on top
  * of the new tab control.  This class should eventually be eliminated
@@ -464,6 +468,13 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
     
     public boolean isPointInCloseButton(Point p) {
         return getTabsDisplayer().isPointInCloseButton(p);
+    }
+    
+    public Image getDragImage(TopComponent tc) {
+        TabbedContainer.TabsDisplayer tabs = getTabsDisplayer();
+        Polygon p;
+        int idx = indexOfTopComponent(tc);
+        return tabs.getDragImage(idx);
     }
     
 }

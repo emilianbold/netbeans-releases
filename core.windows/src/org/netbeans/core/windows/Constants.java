@@ -17,6 +17,7 @@ package org.netbeans.core.windows;
 
 import java.awt.Dimension;
 import javax.swing.JSplitPane;
+import org.openide.util.Utilities;
 
 
 /**
@@ -104,8 +105,12 @@ public abstract class Constants {
     
     // XXX #32920 Older switch, comaptibility.
     public static final boolean SWITCH_START_IN_SEPARATE_MODE = "sdi".equals(System.getProperty("netbeans.windows")); // NOI18N
-    
-    
+
+    //Issue 39166, OS-X will display a strange gray rectangle while dragging - they
+    //really require an image to be suppled.  Leaving this off for other platforms pending
+    //HIE approval and performance impact evaluation - probably safe for Windows, probably
+    //a big performance hit on Linux
+    public static final boolean SWITCH_USE_DRAG_IMAGES = Boolean.getBoolean("useDragImages") || Utilities.getOperatingSystem() == Utilities.OS_MAC;
     
     private Constants() {}
 }

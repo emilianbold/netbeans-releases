@@ -27,6 +27,7 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Stroke;
+import java.awt.Toolkit;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetDragEvent;
@@ -35,6 +36,7 @@ import java.awt.dnd.DropTargetListener;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.core.windows.Constants;
@@ -61,6 +63,8 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
     // XXX PENDING
     private final Informer informer;
     
+    private static boolean isHardwareDoubleBuffer = false;
+    
     /** Current location of cursor in over the glass pane,
      * or <code>null</code> in the case there it is not above
      * this component currently. */
@@ -79,6 +83,7 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
     public DropTargetGlassPane(Observer observer, Informer informer) {
         this.observer = observer;
         this.informer = informer;
+        isHardwareDoubleBuffer = !RepaintManager.currentManager(this).isDoubleBufferingEnabled();
         
         setOpaque(false);
     }
@@ -197,7 +202,6 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
         setDragLocation(null);
     }
 
-    
     /** Overrides superclass method, to indicate the 'drag under' gesture
      * in the case there is cursor drag operation in progress and cursor
      * is above this drop target. */
@@ -383,7 +387,7 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
      * erasing the previous one if necessary.  Note it is important that the
      * Shape objects passed honor the equals() method properly. 
      */
-    private class DragRepaintManager {
+    private static class DragRepaintManager {
         private Shape shape = null;
         private Component lastDropComponent;
         DropTargetGlassPane pane;
@@ -391,10 +395,17 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
         
         public DragRepaintManager (DropTargetGlassPane pane) {
             this.pane = pane;
+            if (isHardwareDoubleBuffer) {
+               //Only way to avoid screen corruption on OS-X
+               RepaintManager.currentManager(pane).setDoubleBufferingEnabled(true);
+            }
         }
         
         public void finalize() {
             if (g != null) g.dispose();
+            if (isHardwareDoubleBuffer) {
+               RepaintManager.currentManager(pane).setDoubleBufferingEnabled(false);
+            }
         }
         
         private Graphics2D getGraphics() {
@@ -459,7 +470,6 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
             }
             pane.setGuidedPaint(true);
             try {
-//                Shape clip= getClipForIndication (s, !erasing);
                 JComponent toPaint;
                 //If we are erasing, we want to paint the root pane so any 
                 //pixels outside the bounds of the component are repainted
@@ -482,6 +492,9 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
                 g.setClip (null);
             } finally {
                 pane.setGuidedPaint(false);
+            }
+            if (isHardwareDoubleBuffer) {
+                Toolkit.getDefaultToolkit().sync();
             }
         }
         
@@ -542,7 +555,6 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
                     
                     p = SwingUtilities.convertPoint(lastDropComponent, p, 
                         pane);
-//                    JComponent realTarget = (JComponent) lastDropComponent;
                     AffineTransform at = AffineTransform.getTranslateInstance(p.x, p.y);
                     a.transform(at);
                 }

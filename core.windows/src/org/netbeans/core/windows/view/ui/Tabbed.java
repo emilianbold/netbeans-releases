@@ -16,6 +16,7 @@ package org.netbeans.core.windows.view.ui;
 
 
 import java.awt.Component;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Shape;
 import java.beans.PropertyChangeListener;
@@ -82,6 +83,8 @@ public interface Tabbed {
             Point startingPoint, boolean attachingPossible);
     
     public Object getConstraintForLocation(Point location, boolean attachingPossible);
+    
+    public Image getDragImage (TopComponent tc);
     
     /** Indicates whether the point is in tab close button.
      @param p <code>Point</code> in coordinates of this component */

@@ -317,7 +317,8 @@ implements AWTEventListener, DragSourceListener {
         } else {
             startPoint = null;
         }
-        
+        //dragSource.startDrag(event, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR) ,image , new Point(-offX, -offY),text, this);
+
         doStartDrag(
             tc, 
             new DragGestureEvent(
@@ -380,9 +381,20 @@ implements AWTEventListener, DragSourceListener {
         addListening(con);
         hackESC = false;
         
+        Tabbed tabbed = (Tabbed) SwingUtilities.getAncestorOfClass (Tabbed.class,
+            firstTC);
+        
+        Image img = null;
+        if (tabbed != null && Constants.SWITCH_USE_DRAG_IMAGES) {
+            img = tabbed.getDragImage(firstTC);
+        }
+        
+        
         try {
             evt.startDrag(
                 cursor,
+                img,
+                new Point (0,0), 
                 (transfer instanceof TopComponent
                         ? (Transferable)new TopComponentTransferable(
                                 (TopComponent)transfer)
