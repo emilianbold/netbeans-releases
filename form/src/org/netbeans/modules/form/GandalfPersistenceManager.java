@@ -24,6 +24,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 import org.openide.TopManager;
+import org.openide.loaders.XMLDataObject;
 
 import com.netbeans.developerx.loaders.form.formeditor.layouts.*;
 import com.netbeans.developer.modules.loaders.form.forminfo.*;
@@ -73,7 +74,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
   private static final String ONE_INDENT =  "  ";
 
-  private org.w3c.dom.Document topDocument = new com.ibm.xml.dom.DocumentImpl ();
+  private org.w3c.dom.Document topDocument = XMLDataObject.createDocument();
   
   /** A method which allows the persistence manager to provide infotrmation on whether
   * is is capable to store info about advanced features provided from Developer 3.0 
@@ -96,6 +97,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
       org.w3c.dom.Document doc = org.openide.loaders.XMLDataObject.parse (formFile.getURL ());
     } catch (IOException e) { // [PENDING - just test whether it is an XML file and in this case return false
       return false;
+    } catch (org.xml.sax.SAXException e) { // [PENDING - just test whether it is an XML file and in this case return false
+      return false;
     }
     return true;
   }
@@ -107,8 +110,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
   */
   public FormManager2 loadForm (FormDataObject formObject) throws IOException {
     FileObject formFile = formObject.getFormEntry ().getFile ();
-    org.w3c.dom.Document doc = org.openide.loaders.XMLDataObject.parse (formFile.getURL ());
-    org.w3c.dom.Element mainElement = doc.getDocumentElement ();
+    org.w3c.dom.Document doc;
+    org.w3c.dom.Element mainElement;
+    try {
+      doc = org.openide.loaders.XMLDataObject.parse (formFile.getURL ());
+      mainElement = doc.getDocumentElement ();
+    } catch (org.xml.sax.SAXException e) {
+      throw new IOException (e.getMessage());
+    }
 //    walkTree (mainElement, "");
 // A. Do various checks
 
@@ -1354,6 +1363,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  37   Gandalf   1.36        9/30/99  Ian Formanek    reflecting XML changes
  *  36   Gandalf   1.35        9/24/99  Ian Formanek    New system of changed 
  *       properties in RADComponent - Fixes bug 3584 - Form Editor should try to
  *       enforce more order in the XML elements in .form.
