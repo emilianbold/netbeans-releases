@@ -38,6 +38,12 @@ class FakeCanvasPeer extends FakeComponentPeer implements CanvasPeer
 
     private class Delegate extends Component
     {
-        // noop
+        Delegate() {
+            this.setForeground(SystemColor.controlText);
+        }
+
+        public void paint(Graphics g) {
+            g.setColor(_target.getForeground());
+        }
     }
 }

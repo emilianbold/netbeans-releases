@@ -45,18 +45,16 @@ abstract class FakeComponentPeer implements FakePeer
         setFont(_target.getFont());
 
         Color color = _target.getBackground();
-        if (color != null)
+        if (color != null && _target.getParent() == null)
             _delegate.setBackground(color);
         else
             _target.setBackground(_delegate.getBackground());
-//        setBackground(_target.getBackground());
 
         color = _target.getForeground();
-        if (color != null)
+        if (color != null && _target.getParent() == null)
             _delegate.setForeground(color);
         else
             _target.setForeground(_delegate.getForeground());
-//        setForeground(_target.getForeground());
 
         _delegate.setName(_target.getName());
         //    _delegate.setLocale(_target.getLocale());

@@ -689,8 +689,11 @@ public class FormDesigner extends TopComponent
 
                 if (designer != null) {
                     if (cb instanceof Component) {
-                        if (!(cb instanceof JComponent))
-                            FakePeerSupport.attachFakePeer((Component) cb);
+                        if (!(cb instanceof JComponent)) {
+                            FakePeerSupport.attachFakePeer((Component)cb);
+                            if (cb instanceof Container)
+                                FakePeerSupport.attachFakePeerRecursively((Container)cb);
+                        }
                         else {
                             ((JComponent)cb).setRequestFocusEnabled(false);
                             ((JComponent)cb).setNextFocusableComponent((JComponent)cb);
