@@ -42,7 +42,6 @@ public class SchemaElementUtil {
      * @return the SchemaElement object for the given schema name
      */
     public static SchemaElement forName(String name, Object obj) {
-        //System.out.println("@@@@LUDOforname="+name);
         SchemaElement se = SchemaElement.getLastSchema();
         
         if (se != null && se.getName().getFullName().equals(name) && schemaFO == null)
@@ -83,7 +82,6 @@ public class SchemaElementUtil {
                     }
                 } else
                     fo = schemaFO;
-                    
                 if (fo != null) {
                     try {
                         org.openide.loaders.DataObject dataObject = org.openide.loaders.DataObject.find(fo);
@@ -93,7 +91,6 @@ public class SchemaElementUtil {
                     } catch (Exception e) {
                         // just find it by unarchiving (below)
                     }
-
                     if (se == null) {
                         try {
                             org.openide.awt.StatusDisplayer.getDefault().setStatusText(ResourceBundle.getBundle("org.netbeans.modules.dbschema.resources.Bundle").getString("RetrievingSchema")); //NOI18N
@@ -140,12 +137,37 @@ public class SchemaElementUtil {
      */
     public static SchemaElement forName(FileObject fo) {
         schemaFO = fo;
-        SchemaElement se = forName(schemaFO.getPackageName('/'), null);
+        SchemaElement se = forName(getPackageName(schemaFO, '/'), null);
         schemaFO = null;
         
         return se;
     }
+    /** Get fully-qualified filename, but without extension.
+    * Like {@link #getPackageNameExt} but omits the extension.
+    * @param separatorChar char to separate folders and files
+    * @return the fully-qualified filename
+    */
+    public static String getPackageName (FileObject fo, char separatorChar) {
+        StringBuffer sb = new StringBuffer ();        
+        if (fo.isRoot () || fo.getParent ().isRoot ())  
+            return (fo.isFolder ()) ? fo.getNameExt() : fo.getName ();        
+        constructName (fo.getParent (),sb, separatorChar);        
+        sb.append (separatorChar).append (fo.getName ());        
+        return sb.toString ();
+    }
 
+    /** Constructs path of file.
+    * @param sb string buffer
+    * @param sepChar separator character
+    */
+    private static void constructName (FileObject fo, StringBuffer sb, char sepChar) {
+        FileObject parent = fo.getParent ();
+        if ((parent != null) && !parent.isRoot ()) {
+            constructName (parent, sb, sepChar);
+            sb.append (sepChar);
+        }
+        sb.append (fo.getNameExt ());
+    }    
     private static FileObject findResource(FileObject sourceRoot, String name) {
         ClassPath cp = ClassPath.getClassPath(sourceRoot, ClassPath.SOURCE);
         return cp.findResource(NameUtil.getSchemaResourceName(name));
