@@ -86,6 +86,13 @@ public class NonGui extends NbTopManager implements Runnable {
 
     /** The Class that logs the IDE events to a log file */
     protected static TopLogging logger;
+    
+    /** Tests need to clear some static variables.
+     */
+    static final void clearForTests () {
+        homeDir = null;
+        userDir = null;
+    }
 
     /** Getter for home directory. */
     protected static String getHomeDir () {
@@ -194,6 +201,87 @@ public class NonGui extends NbTopManager implements Runnable {
         StartLog.logProgress ("PropertyEditors registered"); // NOI18N
         editorsRegistered = true;
     }
+    
+    /** Does import of userdir. Made non-private just for testing purposes.
+     *
+     * @return true if the execution should continue or false if it should
+     *     stop
+     */
+    static boolean handleImportOfUserDir () {
+        class ImportHandler implements Runnable {
+            private File installed = new File (new File (getUserDir (), "var"), "imported"); // NOI18N
+            private String classname;
+            private boolean executedOk; 
+            
+            public boolean shouldDoAnImport () {
+                classname = System.getProperty ("netbeans.importclass"); // NOI18N
+                
+                return classname != null && !installed.exists ();
+            }
+            
+            
+            public void run() {
+                Class clazz = getKlass (classname);
+                
+                // This module is included in our distro somewhere... may or may not be turned on.
+                // Whatever - try running some classes from it anyway.
+                try {
+                    // Method showMethod = wizardClass.getMethod( "handleUpgrade", new Class[] { Splash.SplashOutput.class } ); // NOI18N
+                    Method showMethod = clazz.getMethod( "main", new Class[] { String[].class } ); // NOI18N
+                    showMethod.invoke (null, new Object[] {
+                        new String[0]
+                    });
+                    executedOk = true;
+                } catch (java.lang.reflect.InvocationTargetException ex) {
+                    // canceled by user, all is fine
+                    if (ex.getTargetException () instanceof org.openide.util.UserCancelException) {
+                        executedOk = true;
+                    }
+                } catch (Exception e) {
+                    // If exceptions are thrown, notify them - something is broken.
+                    e.printStackTrace();
+                } catch (LinkageError e) {
+                    // These too...
+                    e.printStackTrace();
+                }
+            }
+            
+            
+            public boolean canContinue () {
+                if (shouldDoAnImport ()) {
+                    try {
+                        SwingUtilities.invokeAndWait (this);
+                        if (executedOk) {
+                            // if the import went fine, then we are fine
+                            // just create the file
+                            installed.getParentFile ().mkdirs ();
+                            installed.createNewFile ();
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    } catch (IOException ex) {
+                        // file was not created a bit of problem but go on
+                        ex.printStackTrace();
+                        return true;
+                    } catch (java.lang.reflect.InvocationTargetException ex) {
+                        return false;
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                        return false;
+                    }
+                } else {
+                    // if there is no need to upgrade that every thing is good
+                    return true;
+                }
+            }
+        }
+        
+        
+        ImportHandler handler = new ImportHandler ();
+
+        return handler.canContinue ();
+    }
 
     /** Initialization of the manager.
     */
@@ -245,52 +333,9 @@ public class NonGui extends NbTopManager implements Runnable {
             }
             
             if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null) && !dontshowisw) {
-                System.setProperty("import.canceled", "false"); // NOI18N
-                
-                
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    public void run() {
-                        // Original code
-                        //boolean canceled = org.netbeans.core.upgrade.UpgradeWizard.showWizard(getSplash());
-                        //System.setProperty("import.canceled", canceled ? "true" : "false"); // NOI18N
-                        
-                        // Let's use reflection
-                        InstalledFileLocator ifl = new InstalledFileLocatorImpl();
-                        File coreide = ifl.locate("modules/org-netbeans-core-ide.jar", "org.netbeans.core.ide", false); // NOI18N
-                        if (coreide != null) {
-                            // This module is included in our distro somewhere... may or may not be turned on.
-                            // Whatever - try running some classes from it anyway.
-                            try {
-                                List urls = new ArrayList();
-                                urls.add(coreide.toURI().toURL());
-                                // #30502: don't forget locale variants!
-                                Iterator it = NbBundle.getLocalizingSuffixes();
-                                while (it.hasNext()) {
-                                    String suffix = (String)it.next();
-                                    File var = ifl.locate("modules/locale/org-netbeans-core-ide" + suffix + ".jar", "org.netbeans.core.ide", false); // NOI18N
-                                    if (var != null) {
-                                        urls.add(var.toURI().toURL());
-                                    }
-                                }
-                                ClassLoader l = new URLClassLoader((URL[])urls.toArray(new URL[urls.size()]), NonGui.class.getClassLoader());
-                                Class wizardClass = Class.forName("org.netbeans.core.upgrade.AutoUpgrade", true, l); // NOI18N
-                                Method showMethod = wizardClass.getMethod( "handleUpgrade", new Class[] { Splash.SplashOutput.class } ); // NOI18N
-
-                                Boolean canceled = (Boolean)showMethod.invoke( null, new Object[] { getSplash() } );
-                                System.setProperty("import.canceled", canceled.toString()); // NOI18N
-                            } catch (Exception e) {
-                                // If exceptions are thrown, notify them - something is broken.
-                                e.printStackTrace();
-                            } catch (LinkageError e) {
-                                // These too...
-                                e.printStackTrace();
-                            }
-                        }
-                        
-                    }
-                });
-                if (Boolean.getBoolean("import.canceled"))
+                if (!handleImportOfUserDir ()) {
                     TopSecurityManager.exit(0);
+                }
             }
         } catch (Exception e) {
             ErrorManager.getDefault().notify(e);

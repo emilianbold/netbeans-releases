@@ -151,7 +151,7 @@ int WINAPI
         }
     }
     sprintf(nbexec, "%s\\platform4\\launcher\\nbexec.exe", topdir);
-    sprintf(cmdline2, "\"%s\" %s --branding nb --clusters \"%s\" --userdir \"%s\" %s %s",
+    sprintf(cmdline2, "\"%s\" %s -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade --branding nb --clusters \"%s\" --userdir \"%s\" %s %s",
             nbexec,
             jdkswitch,
             dirs,

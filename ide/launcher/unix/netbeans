@@ -53,5 +53,6 @@ eval "$progdir"/../platform4/launcher/nbexec \
     --branding nb \
     --clusters "$netbeans_clusters" \
     --userdir "${netbeans_default_userdir}" \
+    -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \
     ${netbeans_default_options} \
     "$@"

@@ -1101,6 +1101,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../ide/branding" target="netbeans"/>
   </target>
 
+  <!-- target for upgrader of NetBeans IDE -->
+  <target name="all-ide/launcher/upgrade" depends="init">
+    <echo message="Building module ide/launcher/upgrade..."/>
+    <ant dir="../ide/launcher/upgrade" target="netbeans"/>
+  </target>
   
   <target name="build-platform" depends="init" unless="platform-is-built">
     <echo message="Building platform modules"/>
