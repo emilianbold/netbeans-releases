@@ -64,6 +64,7 @@ Microsystems, Inc. All Rights Reserved.
 	    excludesfile="../nbbuild/standard-jar-excludes.txt"
 	    compress="false">
       <exclude name="org/netbeans/modules/i18n/form/"/>
+      <exclude name="META-INF/netbeans/"/>
       <locale name="ja"/>
     </locjar>
     <copy file="manifest-form.mf" tofile="manifest-form-subst.mf" filtering="on"/>
@@ -73,6 +74,7 @@ Microsystems, Inc. All Rights Reserved.
 	    excludesfile="../nbbuild/standard-jar-excludes.txt"
 	    compress="false">
       <include name="org/netbeans/modules/i18n/form/"/>
+      <include name="META-INF/netbeans/"/>
       <locale name="ja"/>
     </locjar>
 
