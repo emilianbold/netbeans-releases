@@ -94,7 +94,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             c.gridx = GridBagConstraints.RELATIVE;
             c.gridy = GridBagConstraints.RELATIVE;
             c.gridwidth = GridBagConstraints.REMAINDER;
-            c.insets = new Insets (12,12,6,0);
+            c.insets = new Insets (12,12,2,0);
             c.fill = GridBagConstraints.HORIZONTAL;
             c.weightx = 1.0;
             ((GridBagLayout)this.getLayout()).setConstraints(label,c);
@@ -111,7 +111,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             c.gridy = GridBagConstraints.RELATIVE;
             c.gridwidth = 1;
             c.gridheight = 4;
-            c.insets = new Insets (6,12,12,6);
+            c.insets = new Insets (0,12,12,6);
             c.fill = GridBagConstraints.BOTH;
             c.weightx = 1.0;
             c.weighty = 1.0;
@@ -131,7 +131,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 c.gridwidth = GridBagConstraints.REMAINDER;
                 c.fill = GridBagConstraints.HORIZONTAL;
                 c.anchor = GridBagConstraints.NORTHWEST;
-                c.insets = new Insets (6,6,6,12);
+                c.insets = new Insets (4,6,5,12);
                 ((GridBagLayout)this.getLayout()).setConstraints(addButton,c);
                 this.add (addButton);
                 removeButton = new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_Remove"));
@@ -147,7 +147,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 c.gridwidth = GridBagConstraints.REMAINDER;
                 c.fill = GridBagConstraints.HORIZONTAL;
                 c.anchor = GridBagConstraints.NORTHWEST;
-                c.insets = new Insets (6,6,6,12);
+                c.insets = new Insets (0,6,6,12);
                 ((GridBagLayout)this.getLayout()).setConstraints(removeButton,c);
                 this.add (removeButton);
                 moveUpButton = new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_Up"));
@@ -179,7 +179,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 c.gridwidth = GridBagConstraints.REMAINDER;
                 c.fill = GridBagConstraints.HORIZONTAL;
                 c.anchor = GridBagConstraints.NORTHWEST;
-                c.insets = new Insets (6,6,12,12);
+                c.insets = new Insets (0,6,12,12);
                 ((GridBagLayout)this.getLayout()).setConstraints(moveDownButton,c);
                 this.add (moveDownButton);
             }
