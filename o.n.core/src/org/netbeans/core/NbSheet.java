@@ -103,6 +103,8 @@ public final class NbSheet extends TopComponent {
 
         // #36738 Component has to have a name from begining.
         updateTitle();
+        // XXX - please rewrite to regular API when available - see issue #55955
+        putClientProperty("SlidingName", NbBundle.getMessage(NbSheet.class, "CTL_PropertiesWindow")); //NOI18N 
 
         // name listener and node listener
         listener = new Listener ();
