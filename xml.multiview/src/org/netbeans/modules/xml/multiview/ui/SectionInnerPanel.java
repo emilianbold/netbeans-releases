@@ -184,8 +184,6 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
     }
 
     protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
-        System.out.println(getClass().getName() + "@" + System.identityHashCode(this) + ": " + source + " | " +
-                        propertyName + " | " + oldValue + " | " + newValue);
     }
 
     protected void addRefreshable(Refreshable refreshable) {
