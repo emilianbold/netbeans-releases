@@ -90,7 +90,7 @@ class OpenFile extends Object {
       }
       return false;
     } else {
-      throw new FileNotFoundException (f.toString ());
+      return false;
     }
   }
 
