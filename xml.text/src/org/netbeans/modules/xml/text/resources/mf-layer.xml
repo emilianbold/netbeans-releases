@@ -24,6 +24,10 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder> <!-- IndentEngine -->
 
+        <folder name="Hidden">
+            <file name="org-netbeans-modules-xml-text-completion-ReloadActionPerformer.instance" />
+        </folder>
+        
     </folder> <!-- Services -->
 
 

@@ -61,7 +61,7 @@ import org.openide.util.RequestProcessor;
 class XMLCompletionQuery implements CompletionQuery {
 
     // the name of a property indentifing cached query
-    private static final String DOCUMENT_GRAMMAR_BINDING_PROP = "doc-bind-query";
+    static final String DOCUMENT_GRAMMAR_BINDING_PROP = "doc-bind-query";
     
     // shared context instance, - we are always called from AWT thread
     private DefaultContext ctx = new DefaultContext();
@@ -580,7 +580,7 @@ class XMLCompletionQuery implements CompletionQuery {
     }
     
 
-    private static class GrammarCache {
+    static class GrammarCache {
 
         // last invalidation time
         private long timestamp = System.currentTimeMillis();
