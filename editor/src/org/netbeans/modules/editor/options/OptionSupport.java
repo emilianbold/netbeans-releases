@@ -34,7 +34,7 @@ public class OptionSupport extends SystemOption {
   
   static final long serialVersionUID = 2002899758839584077L;
 
-  static final String OPTIONS_PREFIX = "OPTIONS_";
+  static final String OPTIONS_PREFIX = "OPTIONS_"; // NOI18N
 
   private static ResourceBundle bundle;
 
@@ -132,10 +132,15 @@ public class OptionSupport extends SystemOption {
     return ret;
   }
 
+  public boolean isGlobal() {
+    return false;
+  }
+
 }
 
 /*
  * Log
+ *  11   Gandalf   1.10        1/13/00  Miloslav Metelka Localization
  *  10   Gandalf   1.9         12/28/99 Miloslav Metelka 
  *  9    Gandalf   1.8         11/11/99 Miloslav Metelka SVUID explicitly 
  *       specified

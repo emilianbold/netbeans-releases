@@ -38,7 +38,7 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
   private static PropertyDescriptor[] descriptors;
 
   public BasePrintOptionsBeanInfo() {
-    this("/com/netbeans/developer/modules/text/resources/baseOptions");
+    this("/com/netbeans/developer/modules/text/resources/baseOptions"); // NOI18N
   }
 
   public BasePrintOptionsBeanInfo(String iconPrefix) {
@@ -57,8 +57,8 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
         
         for (int i = 0; i < propNames.length; i++) {
           descriptors[i] = new PropertyDescriptor(propNames[i], getBeanClass());
-          descriptors[i].setDisplayName(getString("PROP_" + propNames[i]));
-          descriptors[i].setShortDescription(getString("HINT_" + propNames[i]));
+          descriptors[i].setDisplayName(getString("PROP_" + propNames[i])); // NOI18N
+          descriptors[i].setShortDescription(getString("HINT_" + propNames[i])); // NOI18N
         }
 
         getPD(BasePrintOptions.PRINT_COLORING_MAP_PROP).setPropertyEditorClass(ColoringArrayEditor.class);
@@ -101,12 +101,12 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
   public Image getIcon(final int type) {
     if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
       if (icon == null)
-        icon = loadImage(iconPrefix + ".gif");
+        icon = loadImage(iconPrefix + ".gif"); // NOI18N
       return icon;
     }
     else {
       if (icon32 == null)
-        icon32 = loadImage(iconPrefix + "32.gif");
+        icon32 = loadImage(iconPrefix + "32.gif"); // NOI18N
       return icon32;
     }
   }
@@ -114,6 +114,7 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  11   Gandalf   1.10        1/13/00  Miloslav Metelka Localization
 *  10   Gandalf   1.9         1/11/00  Petr Nejedly    Fix for missing print 
 *       options
 *  9    Gandalf   1.8         12/28/99 Miloslav Metelka 

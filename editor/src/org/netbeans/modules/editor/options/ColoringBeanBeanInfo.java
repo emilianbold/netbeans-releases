@@ -28,7 +28,7 @@ import java.beans.PropertyDescriptor;
 
 public class ColoringBeanBeanInfo extends SimpleBeanInfo {
   /** Prefix of the icon location. */
-  private String iconPrefix = "/com/netbeans/editor/resources/coloring";
+  private String iconPrefix = "/com/netbeans/editor/resources/coloring"; // NOI18N
 
   /** Icons for compiler settings objects. */
   private Image icon;
@@ -45,7 +45,7 @@ public class ColoringBeanBeanInfo extends SimpleBeanInfo {
     if (descriptors == null) {
       try {
         descriptors = new PropertyDescriptor[] {
-          new PropertyDescriptor("coloring", ColoringBean.class)
+          new PropertyDescriptor("coloring", ColoringBean.class) // NOI18N
         };
         descriptors[0].setPropertyEditorClass(ColoringEditor.class);
       } catch (Exception e) {
@@ -61,12 +61,12 @@ public class ColoringBeanBeanInfo extends SimpleBeanInfo {
   public Image getIcon(final int type) {
     if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
       if (icon == null)
-        icon = loadImage(iconPrefix + ".gif");
+        icon = loadImage(iconPrefix + ".gif"); // NOI18N
       return icon;
     }
     else {
       if (icon32 == null)
-        icon32 = loadImage(iconPrefix + "32.gif");
+        icon32 = loadImage(iconPrefix + "32.gif"); // NOI18N
       return icon32;
     }
   }
@@ -75,6 +75,7 @@ public class ColoringBeanBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  6    Gandalf   1.5         1/13/00  Miloslav Metelka Localization
  *  5    Gandalf   1.4         12/28/99 Miloslav Metelka 
  *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

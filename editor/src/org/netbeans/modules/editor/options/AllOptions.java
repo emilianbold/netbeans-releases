@@ -43,7 +43,7 @@ public class AllOptions extends ContextSystemOption {
   }
 
   public String displayName() {
-    return NbBundle.getBundle(AllOptions.class).getString("OPTIONS_all");
+    return NbBundle.getBundle(AllOptions.class).getString("OPTIONS_all"); // NOI18N
   }
 
   public HelpCtx getHelpCtx () {
@@ -58,10 +58,15 @@ public class AllOptions extends ContextSystemOption {
     baseOptions.setKeyBindingList(list);
   }
 
+  public boolean isGlobal() {
+    return false;
+  }
+
 }
 
 /*
  * Log
+ *  10   Gandalf   1.9         1/13/00  Miloslav Metelka Localization
  *  9    Gandalf   1.8         11/5/99  Jesse Glick     Context help jumbo 
  *       patch.
  *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

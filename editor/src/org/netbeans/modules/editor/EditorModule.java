@@ -48,17 +48,17 @@ import com.netbeans.developer.modules.text.java.NbEditorJavaKit;
 public class EditorModule extends ModuleInstall {
 
 
-  private static final String MIME_PLAIN = "text/plain";
-  private static final String MIME_JAVA = "text/x-java";
-  private static final String MIME_HTML = "text/html";
-  private static final String MIME_PROPERTIES = "text/x-properties";
-  private static final String MIME_JSP = "text/x-jsp";
+  private static final String MIME_PLAIN = "text/plain"; // NOI18N
+  private static final String MIME_JAVA = "text/x-java"; // NOI18N
+  private static final String MIME_HTML = "text/html"; // NOI18N
+  private static final String MIME_PROPERTIES = "text/x-properties"; // NOI18N
+  private static final String MIME_JSP = "text/x-jsp"; // NOI18N
 
   /** Kit replacements that will be installed into JEditorPane */
   KitInfo[] replacements = new KitInfo[] {
-    new KitInfo(MIME_PLAIN, "com.netbeans.developer.modules.text.NbEditorPlainKit"),
-    new KitInfo(MIME_JAVA, "com.netbeans.developer.modules.text.java.NbEditorJavaKit"),
-    new KitInfo(MIME_HTML, "com.netbeans.developer.modules.text.NbEditorHTMLKit"),
+    new KitInfo(MIME_PLAIN, "com.netbeans.developer.modules.text.NbEditorPlainKit"), // NOI18N
+    new KitInfo(MIME_JAVA, "com.netbeans.developer.modules.text.java.NbEditorJavaKit"), // NOI18N
+    new KitInfo(MIME_HTML, "com.netbeans.developer.modules.text.NbEditorHTMLKit"), // NOI18N
   };
 
   private static PropertyChangeListener settingsListener;
@@ -117,13 +117,13 @@ public class EditorModule extends ModuleInstall {
   }
 
   public void uninstalled() {
-    if (Boolean.getBoolean("netbeans.module.test")) {
+    if (Boolean.getBoolean("netbeans.module.test")) { // NOI18N
       /* Reset the hashtable holding the editor kits, so the editor kit
       * can be refreshed. As the JEditorPane.kitRegistryKey is private
       * it must be accessed through the reflection.
       */
       try {
-        java.lang.reflect.Field kitRegistryKeyField = JEditorPane.class.getDeclaredField("kitRegistryKey"); 
+        java.lang.reflect.Field kitRegistryKeyField = JEditorPane.class.getDeclaredField("kitRegistryKey");  // NOI18N
         if (kitRegistryKeyField != null) {
           kitRegistryKeyField.setAccessible(true);
           Object kitRegistryKey = kitRegistryKeyField.get(JEditorPane.class);
@@ -180,6 +180,7 @@ public class EditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  38   Gandalf   1.37        1/13/00  Miloslav Metelka Localization
  *  37   Gandalf   1.36        1/4/00   Miloslav Metelka 
  *  36   Gandalf   1.35        11/27/99 Patrik Knakal   
  *  35   Gandalf   1.34        11/9/99  Miloslav Metelka 

@@ -41,44 +41,44 @@ import org.openide.util.HelpCtx;
 */
 public class BaseOptions extends OptionSupport {
   
-  public static final String ABBREV_MAP_PROP = "abbrevMap";
-  public static final String BASE = "base";
-  public static final String CARET_BLINK_RATE_PROP = "caretBlinkRate";
-  public static final String CARET_COLOR_INSERT_MODE_PROP = "caretColorInsertMode";
-  public static final String CARET_COLOR_OVERWRITE_MODE_PROP = "caretColorOverwriteMode";
-  public static final String CARET_ITALIC_INSERT_MODE_PROP = "caretItalicInsertMode";
-  public static final String CARET_ITALIC_OVERWRITE_MODE_PROP = "caretItalicOverwriteMode";
-  public static final String CARET_TYPE_INSERT_MODE_PROP = "caretTypeInsertMode";
-  public static final String CARET_TYPE_OVERWRITE_MODE_PROP = "caretTypeOverwriteMode";
-  public static final String COLORING_MAP_PROP = "coloringMap";
-  public static final String EXPAND_TABS_PROP = "expandTabs";
-  public static final String FIND_HIGHLIGHT_SEARCH = "findHighlightSearch";
-  public static final String FIND_HISTORY_PROP = "findHistory";
-  public static final String FIND_HISTORY_SIZE_PROP = "findHistorySize";
-  public static final String FIND_INC_SEARCH_DELAY_PROP = "findIncSearchDelay";
-  public static final String FIND_INC_SEARCH_PROP = "findIncSearch";
-  public static final String FIND_MATCH_CASE_PROP = "findMatchCase";
-  public static final String FIND_REG_EXP_PROP = "findRegExp";
-  public static final String FIND_SMART_CASE_PROP = "findSmartCase";
-  public static final String FIND_WHOLE_WORDS_PROP = "findWholeWords";
-  public static final String FIND_WRAP_SEARCH_PROP = "findWrapSearch";
-  public static final String FONT_SIZE_PROP = "fontSize";
-  public static final String HIGHLIGHT_CARET_ROW_PROP = "highlightCaretRow";
-  public static final String HIGHLIGHT_MATCHING_BRACKET_PROP = "highlightMatchingBracket";
-  public static final String KEY_BINDING_LIST_PROP = "keyBindingList";
-  public static final String LINE_HEIGHT_CORRECTION_PROP = "lineHeightCorrection";
-  public static final String LINE_NUMBER_MARGIN_PROP = "lineNumberMargin";
-  public static final String LINE_NUMBER_VISIBLE_PROP = "lineNumberVisible";
-  public static final String MARGIN_PROP = "margin";
-  public static final String SCROLL_FIND_INSETS_PROP = "scrollFindInsets";
-  public static final String SCROLL_JUMP_INSETS_PROP = "scrollJumpInsets";
-  public static final String SPACES_PER_TAB_PROP = "spacesPerTab";
-  public static final String STATUS_BAR_CARET_DELAY_PROP = "statusBarCaretDelay";
-  public static final String STATUS_BAR_VISIBLE_PROP = "statusBarVisible";
-  public static final String TAB_SIZE_PROP = "tabSize";
-  public static final String TEXT_LIMIT_LINE_COLOR_PROP = "textLimitLineColor";
-  public static final String TEXT_LIMIT_LINE_VISIBLE_PROP = "textLimitLineVisible";
-  public static final String TEXT_LIMIT_WIDTH_PROP = "textLimitWidth";
+  public static final String ABBREV_MAP_PROP = "abbrevMap"; // NOI18N
+  public static final String BASE = "base"; // NOI18N
+  public static final String CARET_BLINK_RATE_PROP = "caretBlinkRate"; // NOI18N
+  public static final String CARET_COLOR_INSERT_MODE_PROP = "caretColorInsertMode"; // NOI18N
+  public static final String CARET_COLOR_OVERWRITE_MODE_PROP = "caretColorOverwriteMode"; // NOI18N
+  public static final String CARET_ITALIC_INSERT_MODE_PROP = "caretItalicInsertMode"; // NOI18N
+  public static final String CARET_ITALIC_OVERWRITE_MODE_PROP = "caretItalicOverwriteMode"; // NOI18N
+  public static final String CARET_TYPE_INSERT_MODE_PROP = "caretTypeInsertMode"; // NOI18N
+  public static final String CARET_TYPE_OVERWRITE_MODE_PROP = "caretTypeOverwriteMode"; // NOI18N
+  public static final String COLORING_MAP_PROP = "coloringMap"; // NOI18N
+  public static final String EXPAND_TABS_PROP = "expandTabs"; // NOI18N
+  public static final String FIND_HIGHLIGHT_SEARCH = "findHighlightSearch"; // NOI18N
+  public static final String FIND_HISTORY_PROP = "findHistory"; // NOI18N
+  public static final String FIND_HISTORY_SIZE_PROP = "findHistorySize"; // NOI18N
+  public static final String FIND_INC_SEARCH_DELAY_PROP = "findIncSearchDelay"; // NOI18N
+  public static final String FIND_INC_SEARCH_PROP = "findIncSearch"; // NOI18N
+  public static final String FIND_MATCH_CASE_PROP = "findMatchCase"; // NOI18N
+  public static final String FIND_REG_EXP_PROP = "findRegExp"; // NOI18N
+  public static final String FIND_SMART_CASE_PROP = "findSmartCase"; // NOI18N
+  public static final String FIND_WHOLE_WORDS_PROP = "findWholeWords"; // NOI18N
+  public static final String FIND_WRAP_SEARCH_PROP = "findWrapSearch"; // NOI18N
+  public static final String FONT_SIZE_PROP = "fontSize"; // NOI18N
+  public static final String HIGHLIGHT_CARET_ROW_PROP = "highlightCaretRow"; // NOI18N
+  public static final String HIGHLIGHT_MATCHING_BRACKET_PROP = "highlightMatchingBracket"; // NOI18N
+  public static final String KEY_BINDING_LIST_PROP = "keyBindingList"; // NOI18N
+  public static final String LINE_HEIGHT_CORRECTION_PROP = "lineHeightCorrection"; // NOI18N
+  public static final String LINE_NUMBER_MARGIN_PROP = "lineNumberMargin"; // NOI18N
+  public static final String LINE_NUMBER_VISIBLE_PROP = "lineNumberVisible"; // NOI18N
+  public static final String MARGIN_PROP = "margin"; // NOI18N
+  public static final String SCROLL_FIND_INSETS_PROP = "scrollFindInsets"; // NOI18N
+  public static final String SCROLL_JUMP_INSETS_PROP = "scrollJumpInsets"; // NOI18N
+  public static final String SPACES_PER_TAB_PROP = "spacesPerTab"; // NOI18N
+  public static final String STATUS_BAR_CARET_DELAY_PROP = "statusBarCaretDelay"; // NOI18N
+  public static final String STATUS_BAR_VISIBLE_PROP = "statusBarVisible"; // NOI18N
+  public static final String TAB_SIZE_PROP = "tabSize"; // NOI18N
+  public static final String TEXT_LIMIT_LINE_COLOR_PROP = "textLimitLineColor"; // NOI18N
+  public static final String TEXT_LIMIT_LINE_VISIBLE_PROP = "textLimitLineVisible"; // NOI18N
+  public static final String TEXT_LIMIT_WIDTH_PROP = "textLimitWidth"; // NOI18N
 
   static final String[] BASE_PROP_NAMES = {
     ABBREV_MAP_PROP,
@@ -428,6 +428,7 @@ public class BaseOptions extends OptionSupport {
 
 /*
  * Log
+ *  15   Gandalf   1.14        1/13/00  Miloslav Metelka Localization
  *  14   Gandalf   1.13        1/10/00  Miloslav Metelka 
  *  13   Gandalf   1.12        12/28/99 Miloslav Metelka 
  *  12   Gandalf   1.11        11/11/99 Miloslav Metelka 

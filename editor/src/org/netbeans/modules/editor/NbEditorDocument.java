@@ -37,11 +37,11 @@ NbDocument.Printable, NbDocument.CustomEditor {
   public NbEditorDocument(Class kitClass) {
     super(kitClass);
     addStyleToLayerMapping(NbDocument.BREAKPOINT_STYLE_NAME,
-        NbDocument.BREAKPOINT_STYLE_NAME + "Layer:5000");
+        NbDocument.BREAKPOINT_STYLE_NAME + "Layer:5000"); // NOI18N
     addStyleToLayerMapping(NbDocument.ERROR_STYLE_NAME,
-        NbDocument.ERROR_STYLE_NAME + "Layer:6000");
+        NbDocument.ERROR_STYLE_NAME + "Layer:6000"); // NOI18N
     addStyleToLayerMapping(NbDocument.CURRENT_STYLE_NAME,
-        NbDocument.CURRENT_STYLE_NAME + "Layer:7000");
+        NbDocument.CURRENT_STYLE_NAME + "Layer:7000"); // NOI18N
     setNormalStyleName(NbDocument.NORMAL_STYLE_NAME);
   } 
 
@@ -81,6 +81,7 @@ NbDocument.Printable, NbDocument.CustomEditor {
 
 /*
  * Log
+ *  13   Gandalf   1.12        1/13/00  Miloslav Metelka Localization
  *  12   Gandalf   1.11        11/14/99 Miloslav Metelka 
  *  11   Gandalf   1.10        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

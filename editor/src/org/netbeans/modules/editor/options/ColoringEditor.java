@@ -75,7 +75,7 @@ public class ColoringEditor extends PropertyEditorSupport {
       // register listener, which will propagate editor changes to our interval value with firing
       editor.addPropertyChangeListener(new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          if (evt.getPropertyName() == "value")
+          if (evt.getPropertyName() == "value") // NOI18N
             superSetValue( editor.getValue()); // skip updating editor
         }
       });
@@ -130,6 +130,7 @@ public class ColoringEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  12   Gandalf   1.11        1/13/00  Miloslav Metelka Localization
  *  11   Gandalf   1.10        1/11/00  Petr Nejedly    ScrollPane, distribution
  *       of changes
  *  10   Gandalf   1.9         12/28/99 Miloslav Metelka 

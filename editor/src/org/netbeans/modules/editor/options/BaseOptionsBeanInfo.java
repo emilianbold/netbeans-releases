@@ -81,11 +81,11 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
 
 
   public BaseOptionsBeanInfo() {
-    this("/com/netbeans/developer/modules/text/resources/baseOptions");
+    this("/com/netbeans/developer/modules/text/resources/baseOptions"); // NOI18N
   }
 
   public BaseOptionsBeanInfo(String iconPrefix) {
-    this(iconPrefix, "");
+    this(iconPrefix, ""); // NOI18N
   }
   
   public BaseOptionsBeanInfo(String iconPrefix, String bundlePrefix) {
@@ -105,8 +105,8 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
         
         for (int i = 0; i < propNames.length; i++) {
           descriptors[i] = new PropertyDescriptor(propNames[i], getBeanClass());
-          descriptors[i].setDisplayName(getString("PROP_" + bundlePrefix + propNames[i]));
-          descriptors[i].setShortDescription(getString("HINT_" + bundlePrefix + propNames[i]));
+          descriptors[i].setDisplayName(getString("PROP_" + bundlePrefix + propNames[i])); // NOI18N
+          descriptors[i].setShortDescription(getString("HINT_" + bundlePrefix + propNames[i])); // NOI18N
         }
 
         setPropertyEditor(BaseOptions.ABBREV_MAP_PROP, AbbrevMapEditor.class);
@@ -173,12 +173,12 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
   public Image getIcon(final int type) {
     if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
       if (icon == null)
-        icon = loadImage(iconPrefix + ".gif");
+        icon = loadImage(iconPrefix + ".gif"); // NOI18N
       return icon;
     }
     else {
       if (icon32 == null)
-        icon32 = loadImage(iconPrefix + "32.gif");
+        icon32 = loadImage(iconPrefix + "32.gif"); // NOI18N
       return icon32;
     }
   }
@@ -204,9 +204,9 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
     };
 
     private static String[] locTags = new String[] {
-      getString("LINE_CARET"),
-      getString("THIN_LINE_CARET"),
-      getString("BLOCK_CARET")
+      getString("LINE_CARET"), // NOI18N
+      getString("THIN_LINE_CARET"), // NOI18N
+      getString("BLOCK_CARET") // NOI18N
     };
       
     public String[] getTags() {
@@ -321,7 +321,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
     }
 
     protected void changeInternal(int idx, String[] text) {
-      KeyBinding kb = text2Bind(text[0] + " " + text[1]);
+      KeyBinding kb = text2Bind(text[0] + ' ' + text[1]);
       List list = (List) getValue();
       list.set(idx, kb);
     }
@@ -358,7 +358,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
           if (mkb.keys.length > 0) {
             buff.append(mkb.keys[0].toString());
             for (int i = 1; i < mkb.keys.length; i++) {
-              buff.append(", ").append(key2String(mkb.keys[i]));
+              buff.append(", ").append(key2String(mkb.keys[i])); // NOI18N
             }
           }
           return buff.toString();
@@ -380,7 +380,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
       List strokes = new ArrayList();
 
       s = s.substring(firstSpace);
-      while (s.endsWith(",")) {
+      while (s.endsWith(",")) { // NOI18N
         s = s.substring(0, s.length() - 1);
       }
       
@@ -388,7 +388,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
 
       while ((idx = s.indexOf(',', idx)) > 0) {
         String stroke = s.substring(idx2 + 1, idx).trim();
-        if (! stroke.equals("")) {
+        if (! stroke.equals("")) { // NOI18N
           KeyStroke ks = string2Key(stroke);
           if (ks == null) {
             throw new IllegalArgumentException();
@@ -406,10 +406,9 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
       
       if (idx < s.length()) {
         String stroke = s.substring(idx).trim();
-        if (! stroke.equals("")) {
+        if (! stroke.equals("")) { // NOI18N
           KeyStroke ks = string2Key(stroke);
           if (ks == null) {
-//            System.out.println( "bad binding" );
             throw new IllegalArgumentException();
           }
           strokes.add(ks);
@@ -453,7 +452,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
       int i = 0;
       while (iter.hasNext()) {
         Entry entry = (Entry) iter.next();
-        texts[i++] = entry.getKey() + " " + entry.getValue();
+        texts[i++] = entry.getKey() + " " + entry.getValue(); // NOI18N
       }
 
       return texts;
@@ -510,6 +509,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  12   Gandalf   1.11        1/13/00  Miloslav Metelka Localization
 *  11   Gandalf   1.10        12/28/99 Miloslav Metelka 
 *  10   Gandalf   1.9         11/16/99 Miloslav Metelka throwing of 
 *       IllegalArgumentException

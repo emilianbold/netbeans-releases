@@ -54,7 +54,7 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
   /** Name of the the type of the kit, which coloring we're editing */
   private String typeName;
   
-  /** Names of coloring obtained from HashMap, names[0] is "default" in given locale  */
+  /** Names of coloring obtained from HashMap, names[0] is 'default' in given locale  */
   private String names[];
   
   /** Table of all edited colorings, colorings[0] is default coloring */
@@ -82,14 +82,14 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         try {
           Coloring newColoring = ((ColoringBean)coloringModel.getValue()).coloring;
           if( ! newColoring.equals( value.get( names[actValueIndex] ) ) ) {
-//System.err.println("updating coloring[" + actValueIndex + "] from " + value.get( names[actValueIndex] ) + " to " + newColoring );
+//System.err.println("updating coloring[" + actValueIndex + "] from " + value.get( names[actValueIndex] ) + " to " + newColoring ); // NOI18N
 //Need to recreate value here (because of equals(), then set!
             value = (HashMap)value.clone();           
             value.put( names[actValueIndex], newColoring );
-            support.firePropertyChange( "value", null, null );
+            support.firePropertyChange( "value", null, null ); // NOI18N
           }
         } catch( InvocationTargetException e ) {
-          if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();  
+          if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
         }
       }
     });
@@ -134,10 +134,10 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
     for( i = 0; i < names.length; i++ ) {
       visualNames[i] = names[i];
       try {
-        visualNames[i] = bundle.getString( "NAME_coloring_" + typeName + "_" + names[i] );
+        visualNames[i] = bundle.getString( "NAME_coloring_" + typeName + "_" + names[i] ); // NOI18N
       } catch (MissingResourceException e) {
         try {
-          visualNames[i] = bundle.getString("NAME_coloring_" + BaseOptions.BASE + "_" + names[i] );
+          visualNames[i] = bundle.getString("NAME_coloring_" + BaseOptions.BASE + "_" + names[i] ); // NOI18N
         } catch (MissingResourceException e2) {} 
       }
     }      
@@ -154,10 +154,10 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         
     String example = names[index];
     try {
-      example = bundle.getString( "EXAMPLE_coloring_" + typeName + "_" + names[index] );
+      example = bundle.getString( "EXAMPLE_coloring_" + typeName + "_" + names[index] ); // NOI18N
     } catch (MissingResourceException e) {
       try {
-        example = bundle.getString("EXAMPLE_coloring_" + BaseOptions.BASE + "_" + names[index] );
+        example = bundle.getString("EXAMPLE_coloring_" + BaseOptions.BASE + "_" + names[index] ); // NOI18N
       } catch (MissingResourceException e2) {} 
     }
 
@@ -168,7 +168,7 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
     try {
       coloringModel.setValue( bean );
     } catch( java.lang.reflect.InvocationTargetException e ) {
-      if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();  
+      if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
     }
   }
 
@@ -206,7 +206,7 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
     add (detailPanel, gridBagConstraints1);
 
     masterPanel.setLayout (new java.awt.GridLayout (1, 1));
-    masterPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CAEP_SyntaxLabel" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8))));
+    masterPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CAEP_SyntaxLabel" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)))); // NOI18N
 
   
         syntaxList.addListSelectionListener (new javax.swing.event.ListSelectionListener () {

@@ -44,7 +44,7 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
   }
 
   public String getAsText() {
-    return bundle.getString( "PROP_Coloring" );
+    return bundle.getString( "PROP_Coloring" ); // NOI18N
   }
   
   public java.awt.Component getCustomEditor() {    
@@ -53,7 +53,7 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
       refreshEditor();
       editor.addPropertyChangeListener( new PropertyChangeListener() {
         public void propertyChange( PropertyChangeEvent evt ) {
-          if( "value".equals( evt.getPropertyName() ) ) setValue( editor.getValue() );
+          if( "value".equals( evt.getPropertyName() ) ) setValue( editor.getValue() ); // NOI18N
         }
       });
     }

@@ -31,7 +31,7 @@ public class AllOptionsBeanInfo extends BaseOptionsBeanInfo {
   };
 
   public AllOptionsBeanInfo() {
-    super("/com/netbeans/developer/modules/text/resources/allOptions", "base_");
+    super("/com/netbeans/developer/modules/text/resources/allOptions", "base_"); // NOI18N
   }
 
   protected Class getBeanClass() {
@@ -46,6 +46,7 @@ public class AllOptionsBeanInfo extends BaseOptionsBeanInfo {
 
 /*
 * Log
+*  6    Gandalf   1.5         1/13/00  Miloslav Metelka Localization
 *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  4    Gandalf   1.3         8/27/99  Miloslav Metelka 

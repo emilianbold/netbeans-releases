@@ -65,7 +65,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
   public ColoringEditorPanel() {
     support = new PropertyChangeSupport(this); 
 
-    value = new ColoringBean(DefaultSettings.defaultColoring, "null",
+    value = new ColoringBean(DefaultSettings.defaultColoring, "null", // NOI18N
         DefaultSettings.defaultColoring, true );
     
     initComponents ();
@@ -86,15 +86,15 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         try {
           newFont = (Font)fontEditor.getValue();
         } catch( InvocationTargetException e ) {
-          if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();  
+          if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
         }
 
         if( newFont == null ) return;
         
         // If displayed value is different, user have changed it, not setValue
         if( ! newFont.equals( actFont ) ) {
-//          System.err.println( "Fonts aren't equal, newFont = " + newFont + ", oldFont = " + oldFont );
-//          System.err.println( "newFont.class = " + newFont.getClass() + ", oldFont.class = " + oldFont.getClass() );
+//          System.err.println( "Fonts aren't equal, newFont = " + newFont + ", oldFont = " + oldFont ); // NOI18N
+//          System.err.println( "newFont.class = " + newFont.getClass() + ", oldFont.class = " + oldFont.getClass() ); // NOI18N
           setValueImpl( Coloring.changeFont( value.coloring, newFont ) );
         }
       }
@@ -115,7 +115,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         try {
           newColor = (Color)fgColorEditor.getValue();
         } catch( InvocationTargetException e ) {
-          if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();  
+          if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
         }
 
         if( newColor == null ) return;  // Yep; editor is able to send us null color
@@ -141,7 +141,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         try {
           newColor = (Color)bgColorEditor.getValue();
         } catch( InvocationTargetException e ) {
-          if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();  
+          if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
         }
 
         if( newColor == null ) return; // Yep; editor is able to send us null color
@@ -171,7 +171,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
    */
   public void setValue( ColoringBean value ) {
     if( (value == null) || (value.coloring == null) ) {
-//      System.err.println("null value rejected" );
+//      System.err.println("null value rejected" ); // NOI18N
       return;
     }
     if( this.value != value ) {
@@ -182,10 +182,10 @@ updateUI();
 
       if( !firing ) {
         firing = true;
-        support.firePropertyChange( "value", null, null );
+        support.firePropertyChange( "value", null, null ); // NOI18N
         firing = false;
       } else {
-//        System.err.println( "!!!! Already firing: ColoringEditorPanel[163] !!!!" );
+//        System.err.println( "!!!! Already firing: ColoringEditorPanel[163] !!!!" ); // NOI18N
       }
     }
   }
@@ -200,10 +200,10 @@ updateUI();
 
     if( !firing ) {
       firing = true;
-      support.firePropertyChange( "value", null, null );
+      support.firePropertyChange( "value", null, null ); // NOI18N
       firing = false;
     } else {
-//      System.err.println( "!!!!! Already firing: ColoringEditorPanel[205] !!!!!" );
+//      System.err.println( "!!!!! Already firing: ColoringEditorPanel[205] !!!!!" ); // NOI18N
     }
   }
 
@@ -222,7 +222,7 @@ updateUI();
       fgColorEditor.setValue( (fgInherit ? value.defaultColoring : value.coloring).getForeColor() );            
       bgColorEditor.setValue( (bgInherit ? value.defaultColoring : value.coloring).getBackColor() );
     } catch( InvocationTargetException e ) {
-      if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();  
+      if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
     }
     
 
@@ -295,9 +295,9 @@ updateUI();
     java.awt.GridBagConstraints gridBagConstraints1;
 
     fontPanel.setLayout (new java.awt.BorderLayout ());
-    fontPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_FontTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8))));
+    fontPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_FontTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)))); // NOI18N
 
-      fontCheckBox.setText (bundle.getString("CEP_FontTrans"));
+      fontCheckBox.setText (bundle.getString("CEP_FontTrans")); // NOI18N
       fontCheckBox.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           fontCheckBoxActionPerformed (evt);
@@ -316,9 +316,9 @@ updateUI();
     add (fontPanel, gridBagConstraints1);
 
     fgColorPanel.setLayout (new java.awt.BorderLayout ());
-    fgColorPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_FgTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8))));
+    fgColorPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_FgTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)))); // NOI18N
 
-      fgCheckBox.setText (bundle.getString("CEP_FgTrans"));
+      fgCheckBox.setText (bundle.getString("CEP_FgTrans")); // NOI18N
       fgCheckBox.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           fgCheckBoxActionPerformed (evt);
@@ -338,9 +338,9 @@ updateUI();
     add (fgColorPanel, gridBagConstraints1);
 
     bgColorPanel.setLayout (new java.awt.BorderLayout ());
-    bgColorPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_BgTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8))));
+    bgColorPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_BgTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)))); // NOI18N
 
-      bgCheckBox.setText (bundle.getString("CEP_BgTrans"));
+      bgCheckBox.setText (bundle.getString("CEP_BgTrans")); // NOI18N
       bgCheckBox.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           bgCheckBoxActionPerformed (evt);
@@ -360,7 +360,7 @@ updateUI();
     add (bgColorPanel, gridBagConstraints1);
 
     previewPanel.setLayout (new java.awt.BorderLayout ());
-    previewPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_PreviewTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8))));
+    previewPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_PreviewTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)))); // NOI18N
 
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
@@ -388,7 +388,7 @@ private void bgCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-F
     try {
       bgColorEditor.setValue( editorColor );
     } catch( InvocationTargetException e ) {
-      if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();  
+      if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
     }
     
     // reset editable state
@@ -411,7 +411,7 @@ private void fgCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-F
     try {
       fgColorEditor.setValue( editorColor );
     } catch( InvocationTargetException e ) {
-      if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();  
+      if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
     }
     
     // reset editable state
@@ -434,7 +434,7 @@ private void fontCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN
     try {
       fontEditor.setValue( editorFont );
     } catch( InvocationTargetException e ) {
-      if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();  
+      if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
     }
     
     // reset editable state
