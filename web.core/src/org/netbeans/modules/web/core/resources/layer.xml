@@ -29,54 +29,27 @@ Microsystems, Inc. All Rights Reserved.
       <attr name="Listeners/Html.html" boolvalue="true"/>	    
       <attr name="Listeners/TLD.tld" boolvalue="true"/>	    
 
-      <folder name="JSPs">
-        <attr name="JSP.jsp/JSPX.jspx" boolvalue="true"/>
-        <attr name="JSPX.jspx/JSPF.jspf" boolvalue="true"/>
-	<attr name="templateWizardURL" 
-              urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPfolder.html"/>
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-	<!-- Basic JSP --> 
-        <file name="JSP.jsp" url="templates/JSP.template">
-          <attr name="template" boolvalue="true"/>
-	  <attr name="templateWizardURL" 
-                urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
-	  <attr name="SystemFileSystem.localizingBundle"
-		      stringvalue="org.netbeans.modules.web.core.Bundle"/>
-          <attr name="templateWizardIterator" 
-                methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>
-        </file>
-
-	<!--  JSP Document --> 
-        <file name="JSPX.jspx" url="templates/JSPDoc.template">
-          <attr name="template" boolvalue="true"/>
-          <attr name="templateWizardURL" 
-                urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPDoc.html"/>
-          <attr name="SystemFileSystem.localizingBundle" 
-                stringvalue="org.netbeans.modules.web.core.Bundle"/>
-          <attr name="templateWizardIterator" 
-                methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>
-        </file>
-
-        <!--  JSP Segment --> 
-        <file name="JSPF.jspf" url="templates/JSPF.template">
-          <attr name="template" boolvalue="true"/>
-          <attr name="templateWizardURL" 
-                urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPF.html"/>
-          <attr name="SystemFileSystem.localizingBundle"
-                stringvalue="org.netbeans.modules.web.core.Bundle"/>
-          <attr name="templateWizardIterator" 
-                methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>
-        </file>
+      <file name="JSP.jsp" url="templates/JSP.template">
+        <attr name="template" boolvalue="true"/>
+        <attr name="templateWizardURL" 
+              urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
+        <attr name="SystemFileSystem.localizingBundle"
+                    stringvalue="org.netbeans.modules.web.core.Bundle"/>
+        <attr name="templateWizardIterator" 
+              methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>
+      </file>
+      <!--  JSP Document --> 
+      <file name="JSPX.jspx" url="templates/JSPDoc.template"/>
+      <!--  JSP Segment --> 
+      <file name="JSPF.jspf" url="templates/JSPF.template"/>
       <!-- Tag File --> 
-        <file name="TagFile.tag" url="templates/TagFile.template">
-          <attr name="template" boolvalue="true"/>
-          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/TagFile.html"/>
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-          <attr name="templateWizardIterator" 
-                methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createTagIterator"/>
-        </file>
-      </folder> 
-     
+      <file name="TagFile.tag" url="templates/TagFile.template">
+        <attr name="template" boolvalue="true"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/TagFile.html"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+        <attr name="templateWizardIterator" 
+            methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createTagIterator"/>
+      </file>
       <!-- Servlet --> 
       <file name="Servlet.java" url="templates/Servlet.template">
           <attr name="template" boolvalue="true"/>
