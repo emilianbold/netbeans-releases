@@ -643,7 +643,11 @@ public final class EditableProperties extends AbstractMap implements Cloneable {
                     default:
                         if ((ch < 0x0020) || (ch > 0x007e)) {
                             output.append("\\u");
-                            output.append(Integer.toHexString(ch));
+                            String hex = Integer.toHexString(ch);
+                            for (int i = 0; i < 4 - hex.length(); i++) {
+                                output.append('0');
+                            }
+                            output.append(hex);
                         } else {
                             output.append(ch);
                         }
