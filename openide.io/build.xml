@@ -38,7 +38,12 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Patching -->
         <taskdef name="enhanceclass" classname="org.netbeans.nbbuild.NbEnhanceClass"
              classpath="${nb_all}/nbbuild/nbantext.jar"/>
-        <enhanceclass basedir="src" library="${nb_all}/core/netbeans/lib/ext/boot.jar" >
+        <enhanceclass basedir="src">
+            <classpath>
+                <pathelement location="../../core/netbeans/lib/ext/boot.jar"/>
+                <!-- See xtest/instance/build-clover.xml for explanation: -->
+                <pathelement location="../../core/netbeans/lib/ext/clover.jar"/>
+            </classpath>
             <!-- Making public -->
             <patch class="org/openide/windows/InputOutput$$Null" /> 
             <patch class="org/openide/windows/InputOutput$$NullOutputWriter" /> 

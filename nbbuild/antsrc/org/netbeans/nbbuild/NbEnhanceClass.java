@@ -33,10 +33,14 @@ import org.apache.tools.ant.types.*;
  * @author Jaroslav Tulach
  */
 public class NbEnhanceClass extends Task {
+
     /* Path to library containing the patch method */
-    private File patchLibrary;
-    public void setLibrary (File f) {
-        patchLibrary = f;
+    private Path patchPath;
+    public Path createClasspath() {
+        if (patchPath == null) {
+            patchPath = new Path(getProject());
+        }
+        return patchPath.createPath();
     }
     
     /* Name of class with patch method */
@@ -119,17 +123,7 @@ public class NbEnhanceClass extends Task {
         // Initialize the method
         //
         
-        ClassLoader cl;
-        if (patchLibrary == null) {
-            log ("Loading patch class from task loader");
-            cl = getClass ().getClassLoader();
-        } else {
-            try {
-                cl = new URLClassLoader (new URL[] { patchLibrary.toURL() });
-            } catch (java.net.MalformedURLException ex) {
-                throw new BuildException (ex);
-            }
-        }
+        ClassLoader cl = new AntClassLoader(getProject(), patchPath);
         
         java.lang.reflect.Method m;
         try {

@@ -46,6 +46,11 @@ Microsystems, Inc. All Rights Reserved.
         <include name="xml-apis*.jar"/>
       </fileset>
     </path>
+    <path id="openide-boot-cp">
+      <!-- XXX not nice to use undocumented property here: -->
+      <pathelement path="${sun.boot.class.path}"/>
+      <pathelement location="openide-13javac-workaround.jar"/>
+    </path>
   </target>
 
   <target name="init-14">
@@ -55,11 +60,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compile-regular" depends="init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <exclude name="org/openide/**/*14.java"/>
-      <bootclasspath>
-        <!-- XXX not nice to use undocumented property here: -->
-        <pathelement path="${sun.boot.class.path}"/>
-        <pathelement location="openide-13javac-workaround.jar"/>
-      </bootclasspath>
+      <bootclasspath refid="openide-boot-cp"/>
       <classpath refid="openide-cp"/>
     </javac>
   </target>
@@ -67,22 +68,14 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compile-14" if="jdk14" >
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <include name="org/openide/**/*14.java"/>
-      <bootclasspath>
-        <!-- XXX not nice to use undocumented property here: -->
-        <pathelement path="${sun.boot.class.path}"/>
-        <pathelement location="openide-13javac-workaround.jar"/>
-      </bootclasspath>
+      <bootclasspath refid="openide-boot-cp"/>
       <!-- As needed: <classpath refid="openide-cp"/> -->
     </javac>
   </target>
   
   <target name="compile-compat" depends="compile-regular">
     <javac srcdir="compat/src" destdir="compat/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <bootclasspath>
-        <!-- XXX not nice to use undocumented property here: -->
-        <pathelement path="${sun.boot.class.path}"/>
-        <pathelement location="openide-13javac-workaround.jar"/>
-      </bootclasspath>
+      <bootclasspath refid="openide-boot-cp"/>
       <classpath>
         <pathelement location="src"/>
         <!-- As needed: <path refid="openide-cp"/> -->
@@ -98,7 +91,13 @@ Microsystems, Inc. All Rights Reserved.
   <target name="patchsuper" depends="compile-compat" >
     <ant antfile="../core/build.xml" dir="../core" target="boot" />
   
-    <enhanceclass basedir="src" library="../core/netbeans/lib/ext/boot.jar" >
+    <enhanceclass basedir="src">
+      <classpath>
+        <pathelement location="../core/netbeans/lib/ext/boot.jar"/>
+        <!-- See xtest/instance/build-clover.xml for explanation: -->
+        <pathelement location="../core/netbeans/lib/ext/clover.jar"/>
+      </classpath>
+
             <!-- changes superclass to one that implements Node.Cookie -->
 	    <patch class="org/openide/filesystems/Repository" super="org/openide/filesystems/$$Repository$$Patch$$" /> 
 
