@@ -14,7 +14,6 @@
 package org.netbeans.modules.form;
 
 import org.openide.TopManager;
-import org.openide.windows.*;
 import org.openide.filesystems.*;
 import org.openide.nodes.Node;
 import org.openide.modules.ModuleInstall;
@@ -33,14 +32,16 @@ import java.io.File;
 public class FormEditorModule extends ModuleInstall
 {
     private static final long serialVersionUID = 1573432625099425394L;
-    
+
+    private static RepositoryListener repositoryListener = null;
+
     // XXX(-tdt) hack around failure of loading TimerBean caused by package
     // renaming com.netbeans => org.netbeans AND the need to preserve user's
     // system settings
     
     private static void timerBeanHack() {
-        TopManager.getDefault().getRepository().addRepositoryListener(
-            new RepositoryListener() {
+        if (repositoryListener == null) {
+            repositoryListener = new RepositoryListener() {
                 public void fileSystemRemoved (RepositoryEvent ev) {}
                 public void fileSystemPoolReordered(RepositoryReorderedEvent ev) {}
 
@@ -72,13 +73,11 @@ public class FormEditorModule extends ModuleInstall
                     catch (java.io.IOException ex) { /* ignore */ }
                     catch (PropertyVetoException ex) { /* ignore */ }
                 }
-            });
-    }
+            };
 
-    /** Module installed for the first time. */
-
-    public void installed () {
-        installWorkspace ();
+            TopManager.getDefault().getRepository()
+                .addRepositoryListener(repositoryListener);
+        }
     }
 
     /** Module installed again. */
@@ -114,50 +113,13 @@ public class FormEditorModule extends ModuleInstall
     }
 
     /** Module was uninstalled. */
+
     public void uninstalled() {
-        uninstallWorkspace();
-    }
-
-    private void installWorkspace() {
-        WindowManager wm = TopManager.getDefault().getWindowManager();
-        Workspace guiWorkspace = wm.findWorkspace(FormEditor.GUI_EDITING_WORKSPACE_NAME);
-        if (guiWorkspace != null) return;
-
-        // create the workspace if not found
-        guiWorkspace = wm.createWorkspace(FormEditor.GUI_EDITING_WORKSPACE_NAME,
-            FormEditor.getFormBundle().getString("CTL_GuiEditingWorkspaceName")); // NOI18N
-
-        Workspace[] currWorkspaces = wm.getWorkspaces();
-        Workspace[] newWorkspaces = new Workspace[currWorkspaces.length+1];
-
-        boolean placed = false;
-        for (int i=0, j=0; i < currWorkspaces.length; i++, j++) {
-            newWorkspaces[j] = currWorkspaces[i];
-            if ("Editing".equals(currWorkspaces[i].getName())) { // NOI18N
-                newWorkspaces[++j] = guiWorkspace;
-                placed = true;
-            }
+        if (repositoryListener != null) {
+            TopManager.getDefault().getRepository()
+                .removeRepositoryListener(repositoryListener);
+            repositoryListener = null;
         }
-
-        if (!placed)
-            newWorkspaces[newWorkspaces.length-1] = guiWorkspace;
-
-        wm.setWorkspaces (newWorkspaces);
-    }
-
-    private void uninstallWorkspace() {
-        WindowManager wm = TopManager.getDefault().getWindowManager ();
-        Workspace[] currWorkspaces = wm.getWorkspaces ();
-        Workspace[] newWorkspaces = new Workspace[currWorkspaces.length-1];
-
-        for (int i=0,j=0; i < currWorkspaces.length; i++) {
-            if (!FormEditor.GUI_EDITING_WORKSPACE_NAME.equals(currWorkspaces[i].getName()))
-                if (j < newWorkspaces.length)
-                    newWorkspaces[j++] = currWorkspaces[i];
-                else return;
-        }
-
-        wm.setWorkspaces (newWorkspaces);
     }
 
     // -------
