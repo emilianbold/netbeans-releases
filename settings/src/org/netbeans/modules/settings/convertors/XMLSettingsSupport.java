@@ -434,6 +434,9 @@ final class XMLSettingsSupport {
                     attribs.getValue(ATR_INSTANCEOF_CLASS)));
             } else if (ELM_INSTANCE.equals(qName)) {
                 instanceClass = attribs.getValue(ATR_INSTANCE_CLASS);
+                if (instanceClass == null) {
+                    System.err.println("Hint: NPE is caused by broken settings file: " + source ); // NOI18N
+                }
                 instanceClass = org.openide.util.Utilities.translate(instanceClass);
                 instanceMethod = attribs.getValue(ATR_INSTANCE_METHOD);
             } else if (ELM_SERIALDATA.equals(qName)) {
