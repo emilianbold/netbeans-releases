@@ -14,8 +14,8 @@
 package org.netbeans.modules.editor.data;
 
 /**
- * Data used by robot tests.  <code>//java.awt.Robot</code> denotes robot entry
- * point.
+ * Data used by robot tests.  <code>java.awt.Robot</code> comment denotes
+ * robot entry point.
  *
  * @author  Petr Kuzel
  */
