@@ -1,9 +1,9 @@
 OpenIDE-Module: com.netbeans.developer.modules.loaders.properties/1
 OpenIDE-Module-Name: Resource Bundles Module
-OpenIDE-Module-Specification-Version: 1.0
-OpenIDE-Module-Implementation-Version: 1.0
+OpenIDE-Module-Specification-Version: 0.9
+OpenIDE-Module-Implementation-Version: 0.9
 OpenIDE-Module-Install: com/netbeans/developer/modules/loaders/properties/PropertiesModule.class
-OpenIDE-Module-Update-Location: http://update.netbeans.com/eap/developer30/updateInfoEAP.xml
+OpenIDE-Module-Update-Location: http://update.netbeans.com/developer30/updateInfo?rn={$netbeans.regnum}
 OpenIDE-Module-Description: com.netbeans.developer.modules.loaders.properties.docs.HelpSet
 
 Name: com/netbeans/developer/modules/loaders/properties/PropertiesDataLoader.class
