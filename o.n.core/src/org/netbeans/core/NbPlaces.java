@@ -150,19 +150,6 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     return EnvironmentNode.getDefault ();
   }
 
-  /** Get the Executors node.
-  * @return the node
-  */
-  public Node executors () {
-    return ExecutionEngine.getNode ();
-  }
-  
-  /** Get the Debugger types node.
-  * @return the node
-  */
-  public Node debuggerTypes () {
-    return ExecutionEngine.getDebugNode ();
-  }
 
   /** Session node */
   public Node session () {
@@ -270,6 +257,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  30   Gandalf   1.29        9/10/99  Jaroslav Tulach Services API.
 *  29   Gandalf   1.28        8/3/99   Jaroslav Tulach Project settings node.
 *  28   Gandalf   1.27        8/1/99   Jaroslav Tulach MainExplorer now listens 
 *       to changes in root elements.

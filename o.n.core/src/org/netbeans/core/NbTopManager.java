@@ -264,6 +264,12 @@ public class NbTopManager extends TopManager {
       new com.netbeans.developer.impl.compiler.CompilationEngineImpl();
     return compilationEngine;
   }
+  
+  /** Services.
+  */
+  public org.openide.ServiceType.Registry getServices () {
+    return Services.getDefault ();
+  }
 
   /** Print output writer.
   * @return default system output printer
