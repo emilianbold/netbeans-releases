@@ -110,6 +110,12 @@ public class CreateTestAction extends CookieAction {
         // just replanning test generation to RequestProcessor
     }
 
+    private static void noTemplateMessage(String temp) {
+        String msg = NbBundle.getMessage(CreateTestAction.class, "MSG_template_not_found", temp);
+        NotifyDescriptor descr = new Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+        DialogDisplayer.getDefault().notify(descr);
+    }
+    
     protected void performAction(Node[] nodes) {
         boolean folderSelected = isFolderSelected(nodes);
         
@@ -127,18 +133,19 @@ public class CreateTestAction extends CookieAction {
             temp = NbBundle.getMessage(CreateTestAction.class,
                                        "PROP_testSuiteTemplate");       //NOI18N
             FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(temp);
+            if (fo == null) { noTemplateMessage(temp); return;}
             doSuiteTempl = DataObject.find(fo);
-            
+
             // get the Test class template
             temp = NbBundle.getMessage(CreateTestAction.class,
                                        "PROP_testClassTemplate");       //NOI18N
             fo = Repository.getDefault().getDefaultFileSystem().findResource(temp);
+
+            if (fo == null) { noTemplateMessage(temp); return;}
             doTestTempl = DataObject.find(fo);
         }
         catch (DataObjectNotFoundException e) {
-            String msg = NbBundle.getMessage(CreateTestAction.class, "MSG_template_not_found", temp);
-            NotifyDescriptor descr = new Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(descr);
+            noTemplateMessage(temp);
             return;
         }
         
