@@ -31,8 +31,6 @@ import org.openide.actions.CopyAction;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
-//import org.openide.windows.Workspace;
-//import org.openide.windows.Mode;
 
 import org.netbeans.modules.diff.builtin.visualizer.LinesComponent;
 
@@ -61,9 +59,6 @@ public class MergePanel extends javax.swing.JPanel {
     private int totalHeight = 0;
     private int additionalHeight = 0;
     private int totalLines = 0;
-
-    //private java.awt.Color numBackgroundColor = new java.awt.Color(224, 224, 224);
-    //private java.awt.Color numForegroundColor = new java.awt.Color(128, 64, 64);
 
     private int horizontalScroll1ChangedValue = -1;
     private int horizontalScroll2ChangedValue = -1;
@@ -510,12 +505,6 @@ public class MergePanel extends javax.swing.JPanel {
       }
   }
 
-  /*
-  public void goToNextLine(int line, int diffLength) {
-      if (line > 0) showLine(line, diffLength);      
-  }
-   */
-  
     private void jScrollBar1AdjustmentValueChanged (java.awt.event.AdjustmentEvent evt) {//GEN-FIRST:event_jScrollBar1AdjustmentValueChanged
         // Add your handling code here:
     }//GEN-LAST:event_jScrollBar1AdjustmentValueChanged
@@ -1103,22 +1092,6 @@ public class MergePanel extends javax.swing.JPanel {
         if (line2 < 0) line2 = org.openide.text.NbDocument.findLineNumber(doc1, doc1.getLength());
         int numLines = line2 - line1 + 1;
         //System.out.println("copy("+line1+", "+line2+", "+line3+"): resultLineNumbers.length = "+resultLineNumbers.length);
-        /*
-        if (line3 >= resultLineNumbers.length) {
-            int oldLength = resultLineNumbers.length;
-            int oldLine = resultLineNumbers[oldLength - 1] + 1;
-            assureResultLineNumbersLength(line3 + numLines);
-            for (int i = oldLength; i <= line3; i++, oldLine++) {
-                resultLineNumbers[i] = oldLine;
-            }
-        } else {
-            assureResultLineNumbersLength(line3 + numLines);
-        }
-        int resultLine = resultLineNumbers[line3];
-        System.out.println("resultLine = rln["+line3+"] = "+resultLine);
-        linesComp3.insertNumbers(line3, resultLine, numLines);
-        for (int i = 0; i < numLines; i++) resultLineNumbers[line3 + i] = resultLine + i;
-         */
         assureResultLineNumbersLength(line3 + numLines);
         if (resultLineNumbers[line3] == 0 && line3 > 0) resultLineNumbers[line3] = resultLineNumbers[line3 - 1] + 1;
         int resultLine = resultLineNumbers[line3];
@@ -1512,22 +1485,6 @@ public class MergePanel extends javax.swing.JPanel {
         //System.out.println("addEmptyLines3: line = "+line+", numLines = "+numLines); // NOI18N
         addEmptyLines(doc, line, numLines);
         linesComp3.addEmptyLines(line, numLines);
-/*
-        if (line >= resultLineNumbers.length) {
-            int oldLength = resultLineNumbers.length;
-            int oldLine = resultLineNumbers[oldLength - 1] + 1;
-            assureResultLineNumbersLength(line + numLines);
-            for (int i = oldLength; i <= line; i++, oldLine++) {
-                resultLineNumbers[i] = oldLine;
-            }
-        } else {
-            assureResultLineNumbersLength(line + numLines);
-        }
- 
-        int resultLine = resultLineNumbers[line];
-        assureResultLineNumbersLength(resultLine + numLines);
-        for (int i = 1; i < numLines; i++) resultLineNumbers[line + i] = resultLine;
- */
         assureResultLineNumbersLength(line + numLines);
         if (resultLineNumbers[line] == 0 && line > 0) resultLineNumbers[line] = resultLineNumbers[line - 1];
         int resultLine = resultLineNumbers[line];
@@ -1537,12 +1494,6 @@ public class MergePanel extends javax.swing.JPanel {
     
     private javax.swing.JViewport jViewport1;
     private javax.swing.JViewport jViewport2;
-    //private javax.swing.JScrollBar jScrollBar1 = new javax.swing.JScrollBar();
-    //private javax.swing.JScrollBar jScrollBar2 = new javax.swing.JScrollBar();
-    //private javax.swing.JScrollBar jScrollBar3 = new javax.swing.JScrollBar();
-    //private javax.swing.JEditorPane jEditorPane1 = new JEditorPane();
-    //private javax.swing.JEditorPane jEditorPane2 = new JEditorPane();
-    //    private Boolean lineNumbersVisible = Boolean.FALSE;
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton acceptRightButton;
@@ -1574,99 +1525,4 @@ public class MergePanel extends javax.swing.JPanel {
     private javax.swing.JLabel resultLabel;
     // End of variables declaration//GEN-END:variables
 
-    public static void main1(String[] args) {
-        final MergePanel panel = new MergePanel();
-        panel.setMimeType1("text/x-java");
-        panel.setMimeType2("text/x-java");
-        panel.setMimeType3("text/x-java");
-        try {
-            panel.setSource1(new java.io.BufferedReader(new java.io.InputStreamReader(panel.getClass().getResourceAsStream("/org/netbeans/modules/diff/builtin/visualizer/DiffPanel.java"))));
-            panel.setSource2(new java.io.BufferedReader(new java.io.InputStreamReader(panel.getClass().getResourceAsStream("/org/netbeans/modules/merge/builtin/visualizer/MergePanel.java"))));
-            panel.setResultSource(new java.io.BufferedReader(new java.io.InputStreamReader(panel.getClass().getResourceAsStream("/org/netbeans/modules/merge/builtin/visualizer/MergePanel.java"))));
-        } catch (java.io.IOException ioex) {}
-        //panel.addEmptyLines1(15, 2);
-        //panel.highlightRegion2(16, 17, new java.awt.Color(180, 255, 180));
-        panel.addEmptyLines1(37, 2);
-        panel.highlightRegion2(38, 39, new java.awt.Color(180, 255, 180));
-        panel.highlightRegion1(45, 45, new java.awt.Color(160, 200, 255));
-        panel.highlightRegion2(45, 45, new java.awt.Color(160, 200, 255));
-        panel.addControlActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                if (ACTION_PREVIOUS_CONFLICT.equals(evt.getActionCommand())) {
-                    panel.setCurrentLine(38, 2, -1);
-                } else if (ACTION_NEXT_CONFLICT.equals(evt.getActionCommand())) {
-                    panel.setCurrentLine(45, 1, -1);
-                }
-            }
-        });
-        /*
-        panel.addNextLineButtonListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                panel.setCurrentLine(45, 1);
-            }
-        });
-         */
-        panel.setSource1Title("Working File");
-        panel.setSource2Title("Revision 1.2");
-        panel.setResultSourceTitle("Merge Result");
-        panel.setStatusLabel("Conflict: 2 of 10, Unresolved: 8");
-        javax.swing.JFrame frame = new javax.swing.JFrame();
-        frame.getContentPane().add(panel);
-        frame.setVisible(true);
-        panel.open();
-    }
-
-    public static void main(String[] args) {
-        final MergePanel panel = new MergePanel();
-        panel.setMimeType1("text/x-java");
-        panel.setMimeType2("text/x-java");
-        panel.setMimeType3("text/x-java");
-        try {
-            panel.setSource1(new java.io.BufferedReader(new java.io.InputStreamReader(panel.getClass().getResourceAsStream("/org/netbeans/modules/diff/builtin/visualizer/DiffPanel.java"))));
-            panel.setSource2(new java.io.BufferedReader(new java.io.InputStreamReader(panel.getClass().getResourceAsStream("/org/netbeans/modules/merge/builtin/visualizer/MergePanel.java"))));
-            panel.setResultSource(new java.io.BufferedReader(new java.io.InputStreamReader(panel.getClass().getResourceAsStream("/org/netbeans/modules/merge/builtin/visualizer/MergePanel.java.TEST.txt"))));
-        } catch (java.io.IOException ioex) {}
-        //panel.addEmptyLines1(15, 2);
-        //panel.highlightRegion2(16, 17, new java.awt.Color(180, 255, 180));
-        panel.addEmptyLines1(37, 2);
-        panel.highlightRegion2(38, 39, new java.awt.Color(255, 160, 180));
-        panel.highlightRegion1(45, 45, new java.awt.Color(255, 160, 180));
-        panel.highlightRegion2(45, 45, new java.awt.Color(255, 160, 180));
-        panel.highlightRegion3(45, 45, new java.awt.Color(255, 160, 180));
-        panel.addControlActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                if (ACTION_PREVIOUS_CONFLICT.equals(evt.getActionCommand())) {
-                    panel.setCurrentLine(38, 2, -1);
-                } else if (ACTION_NEXT_CONFLICT.equals(evt.getActionCommand())) {
-                    panel.setCurrentLine(45, 1, -1);
-                }
-            }
-        });
-        /*
-        panel.addPrevLineButtonListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                panel.setCurrentLine(38, 2);
-            }
-        });
-        panel.addNextLineButtonListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                panel.setCurrentLine(45, 1);
-            }
-        });
-         */
-        panel.setSource1Title("Working File");
-        panel.setSource2Title("Revision 1.2");
-        panel.setResultSourceTitle("Merge Result");
-        panel.setStatusLabel("Conflict: 2 of 10, Unresolved: 8");
-        org.openide.DialogDescriptor dlg = new org.openide.DialogDescriptor(
-            panel, "Resolve Conflicts", false, org.openide.DialogDescriptor.OK_CANCEL_OPTION,
-            org.openide.DialogDescriptor.OK_OPTION, 0, new HelpCtx(panel.getClass()), null);
-        java.awt.Dialog dialog = org.openide.TopManager.getDefault().createDialog(dlg);
-        dialog.show();
-        panel.open();
-        //javax.swing.JFrame frame = new javax.swing.JFrame();
-        //frame.getContentPane().add(panel);
-        //frame.setVisible(true);
-        //panel.open();
-    }
 }

@@ -31,7 +31,6 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
-//import org.netbeans.spi.merge.MergeVisualizer.WriterInfo;
 
 /**
  * This class controls the merge process.
@@ -44,7 +43,6 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
     private Color colorResolvedConflict;
     private Color colorOtherConflict;
     
-    //private MergeDialogComponent component;
     private MergePanel panel;
     private Difference[] diffs;
     /** The shift of differences */
@@ -56,18 +54,10 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
     private StreamSource resultSource;
     
     /** Creates a new instance of MergeControl */
-    public MergeControl(/*MergeDialogComponent component, */MergePanel panel) {
-        //this.component = component;
+    public MergeControl(MergePanel panel) {
         this.panel = panel;
     }
     
-    /*
-    public void initialize(Difference[] diffs, String name1, String title1, Reader r1,
-                           String name2, String title2, Reader r2,
-                           StreamSource result, String mimeType,
-                           Color colorUnresolvedConflict, Color colorResolvedConflict,
-                           Color colorOtherConflict) {
-     */
     public void initialize(Difference[] diffs, StreamSource source1,
                            StreamSource source2, StreamSource result,
                            Color colorUnresolvedConflict, Color colorResolvedConflict,
@@ -283,9 +273,6 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
                 }
             }
         });
-    }
-    
-    public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
     }
     
     public void vetoableChange(PropertyChangeEvent propertyChangeEvent) throws PropertyVetoException {

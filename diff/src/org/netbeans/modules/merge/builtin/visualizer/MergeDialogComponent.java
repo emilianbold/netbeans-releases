@@ -14,14 +14,7 @@
 package org.netbeans.modules.merge.builtin.visualizer;
 
 import java.awt.Component;
-//import java.awt.event.ActionListener;
-//import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
-//import java.beans.VetoableChangeListener;
-//import java.beans.VetoableChangeSupport;
-import java.util.HashMap;
-import java.util.Map;
-//import java.util.ArrayList;
 
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
@@ -41,19 +34,12 @@ public class MergeDialogComponent extends TopComponent {
     public static final String PROP_ALL_CLOSED = "allPanelsClosed"; // NOI18N
     public static final String PROP_ALL_CANCELLED = "allPanelsCancelled"; // NOI18N
     
-    //private Map changeListenerMap = new HashMap();
-
-    //private List mergePanels;
-    //private VetoableChangeSupport chSupport;
-    
     /** Creates new form MergeDialogComponent */
     public MergeDialogComponent() {
         initComponents();
         javax.swing.JRootPane root = getRootPane();
         if (root != null) root.setDefaultButton(okButton);
         setName(org.openide.util.NbBundle.getMessage(MergeDialogComponent.class, "MergeDialogComponent.title"));
-        //mergePanels = new ArrayList();
-        //chSupport = new VetoableChangeSupport(this);
     }
     
     /** This method is called from within the constructor to
@@ -140,7 +126,6 @@ public class MergeDialogComponent extends TopComponent {
             if (panel.canClose()) {
                 try {
                     fireVetoableChange(PROP_PANEL_CLOSING, null, panel);
-                    //mergeTabbedPane.remove(panel);
                 } catch (PropertyVetoException pvex) {
                     return ;
                 }
@@ -206,9 +191,8 @@ public class MergeDialogComponent extends TopComponent {
         requestFocus();
     }
     
-    public synchronized void addMergePanel(MergePanel panel/*, VetoableChangeListener changeListener*/) {
+    public synchronized void addMergePanel(MergePanel panel) {
         mergeTabbedPane.addTab(panel.getName(), panel);
-        //changeListenerMap.put(panel, changeListener);
         javax.swing.JRootPane root = getRootPane();
         if (root != null) root.setDefaultButton(okButton);
     }
