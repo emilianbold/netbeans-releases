@@ -43,6 +43,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="boot">
+    <!-- boot sources should be kept in a separate tree for safety -->
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" 
         includes="org/netbeans/*java"
     />    
