@@ -20,10 +20,10 @@ Microsystems, Inc. All Rights Reserved.
         <property file="spec-vers.properties"/>
         <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
             <manifest>
-                <attribute name="OpenIDE-Module-Specification-Version" value="1.0.${multiview.impl.version}"/>
+                <attribute name="OpenIDE-Module-Specification-Version" value="${multiview.spec.version}.${multiview.impl.version}"/>
                 <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
                 <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
-                <!-- <attribute name="OpenIDE-Module-Module-Dependencies" value=""/> ???-->
+                <attribute name="OpenIDE-Module-Module-Dependencies" value="${module.dependencies}"/>
                 <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
             </manifest>
             <fileset dir="${build.classes.dir}"/>
