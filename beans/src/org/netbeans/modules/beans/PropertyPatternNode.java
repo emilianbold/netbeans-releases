@@ -95,6 +95,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
         return mode + " " + getTypeForHint() + " : " + getName(); // NOI18N
     }
 
+
     /** Creates property set for this node
      */
     protected Sheet createSheet () {
@@ -212,6 +213,10 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
                            throw new InvocationTargetException(e);
                        }
 
+                   }
+
+                   public PropertyEditor getPropertyEditor () {
+                       return new org.netbeans.modules.beans.PropertyTypeEditor();
                    }
                };
     }
