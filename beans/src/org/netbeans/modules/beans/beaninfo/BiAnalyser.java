@@ -482,7 +482,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         while( it.hasNext() ) {
             BiFeature bif = ( BiFeature )it.next();
             if( bif.isIncluded() ){
-                sb.append( "\n" + TAB + GenerateBeanInfoAction.getString("COMMENT_BeanDescriptor" ));   // NOI18N
+                sb.append( TAB + GenerateBeanInfoAction.getString("COMMENT_BeanDescriptor" ));   // NOI18N
                 if( !lazyDescriptor ){
                     //this code is used for static init                    
                     sb.append( TAB + "private static BeanDescriptor beanDescriptor = ");    // NOI18N
