@@ -32,7 +32,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Milos Kleint (mkleint@netbeans.org)
  */
-final class Controller implements Runnable {
+final class Controller implements Runnable, ViewController {
     
     private static Controller defaultInstance;
     private static Container defaultContTemp;
@@ -52,36 +52,17 @@ final class Controller implements Runnable {
     public static synchronized Controller getDefault() {
         if (defaultInstance == null) {
             StatusLineComponent component = new StatusLineComponent();
-            //TEMP figure better way of plugging into status line.
-            if (SwingUtilities.isEventDispatchThread()) {
-                defaultContTemp = findStatusComponent();
-            } else {
-                try {
-                    SwingUtilities.invokeAndWait(new Runnable() {
-                        public void run() {
-                            defaultContTemp = findStatusComponent();
-                        }
-                    });
-                } catch (Exception exc) {
-                    
-                }
-            }
-            if (defaultContTemp != null) {
-                defaultContTemp.add(component, BorderLayout.WEST);
-//                defaultContTemp.invalidate();
-//                defaultContTemp.validate();
-//                defaultContTemp.repaint();
-            } else {
-                // this should happen just when doing tests.
-//                throw new IllegalStateException();
-                Thread.dumpStack();
-            }
-            //TEMP -end
             defaultInstance = new Controller(component);
             component.setModel(defaultInstance.getModel());
-            
         }
         return defaultInstance;
+    }
+    
+    Component getVisualComponent() {
+        if (component instanceof Component) {
+            return (Component)component;
+        }
+        return null;
     }
     
     /**
@@ -134,10 +115,17 @@ final class Controller implements Runnable {
         postEvent(event);
     }
     
+    void explicitSelection(InternalHandle handle, int units, int percentage, long estimate) {
+        ProgressEvent event = new ProgressEvent(handle, null, units, percentage, estimate);
+        model.explicitlySelect(handle);
+        postEvent(event);
+    }
+    
     void postEvent(final ProgressEvent event) {
         synchronized (this) {
             eventQueue.add(event);
             if (!dispatchRunning) {
+                //TODO has some kind of timer to  limit the number of runs in AWT.
                 SwingUtilities.invokeLater(this);
                 dispatchRunning = true;
             }
@@ -164,16 +152,16 @@ final class Controller implements Runnable {
                     model.removeHandle(event.getSource());
                 }
                 ProgressEvent lastEvent = (ProgressEvent)map.get(event.getSource());
-                if (lastEvent == null || lastEvent.getType() != ProgressEvent.TYPE_FINISH) {
-                    map.put(event.getSource(), event);
+                if (lastEvent != null && lastEvent.getType() == ProgressEvent.TYPE_FINISH && 
+                        justStarted.contains(event.getSource())) {
+                    // if task quits really fast, ignore..
+                    map.remove(event.getSource());
                 } else {
-                    // finish now..
-                    if (justStarted.contains(event.getSource())) {
-                        // if task quits really fast, ignore..
-                        map.remove(event.getSource());
-                    } else {
-                        map.put(event.getSource(), event);
+                    if (lastEvent != null) {
+                        // preserve last message
+                        event.copyMessageFromEarlier(lastEvent);
                     }
+                    map.put(event.getSource(), event);
                 }
                 it.remove();
             }
@@ -191,5 +179,14 @@ final class Controller implements Runnable {
         }
         
     }
+
+    public void requestCancel(InternalHandle handle) {
+        handle.requestCancel();
+    }
+
+    public void requestExplicitSelection(InternalHandle handle) {
+        model.explicitlySelect(handle);
+    }
     
+
 }
