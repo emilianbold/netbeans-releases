@@ -327,8 +327,27 @@ public class FormModel
 
         if (comp instanceof RADMenuItemComponent)
             ((RADMenuItemComponent)comp).freeMenu();
+        
+        deleteEventHandlersRecursively(comp);
+        eventHandlers.setNeed2Notify(true);
+        deleteVariables(comp);
+    }
 
-        // delete attached events
+    // recursively searches for subcomponents and deletes their attached events
+    void deleteEventHandlersRecursively(RADComponent comp) {
+        if (comp instanceof ComponentContainer) {
+            RADComponent[] subcomps = ((ComponentContainer)comp).getSubBeans();
+            if (subcomps!=null) {
+                for (int i=0; i<subcomps.length; i++) {
+                    deleteEventHandlersRecursively(subcomps[i]);
+                }            
+            }
+        }
+        deleteEventHandlers(comp);
+    }
+    
+    // delete attached events
+    void deleteEventHandlers(RADComponent comp) {
         EventSet[] eventSets = comp.getEventHandlers().getEventSets();
         for (int i = 0; i < eventSets.length; i++) {
             Event[] events = eventSets[i].getEvents();
@@ -338,10 +357,10 @@ public class FormModel
                 }
             }
         }
-
-        deleteVariables(comp);
     }
-
+    
+    
+    
     // }}}
 
     //
