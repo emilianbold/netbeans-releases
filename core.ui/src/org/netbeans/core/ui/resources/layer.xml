@@ -11,6 +11,9 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
+<?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
+<!-- XXX still pointing to core/src/; should someday be core/ui/src/ instead: -->
+<?netbeans-stylesheet-classpath-base href="../../../../../../../src/"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 
 <!-- XML Layer for core-ui -->
@@ -408,12 +411,12 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Templates">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-        <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesRootDescription.html"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/core/resources/templatesRootDescription.html"/>
 
         <folder name="Folder">
             <attr name="template" boolvalue="true"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesFolder.html" />
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/core/resources/templatesFolder.html" />
         </folder>
         
         <folder name="Services">
@@ -432,7 +435,7 @@ Microsystems, Inc. All Rights Reserved.
             <!-- a value to signal that this folder should not be visible in the simple new from template wizard -->
             <attr name="simple" boolvalue="false" />
             <attr name="org-netbeans-core-ExLocalFileSystem.settings/org-netbeans-core-ExJarFileSystem.settings" boolvalue="true" />
-            <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesFileSystems.html"/>
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/core/resources/templatesFileSystems.html"/>
             <attr name="helpID" stringvalue="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeFilesystems"/>
 
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
@@ -441,13 +444,13 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.core.ui.MountNode.createIterator" />
-                <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesLocalFS.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/core/resources/templatesLocalFS.html"/>
             </file>
             <file name="org-netbeans-core-ExJarFileSystem.settings" url="ExJarFileSystem.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.core.ui.MountNode.createIterator" />
-                <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesJarFS.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/core/resources/templatesJarFS.html"/>
             </file>
         </folder>
         

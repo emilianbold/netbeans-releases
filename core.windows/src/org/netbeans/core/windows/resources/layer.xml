@@ -103,35 +103,35 @@ Microsystems, Inc. All Rights Reserved.
 		<folder name="entities">
         	<folder name="NetBeans_IDE">
             	<!-- public ID defined by XMLDataObject -->
-            	<file name="DTD_toolbar" url="nbresboot:/org/netbeans/core/windows/resources/toolbar.dtd" >
+            	<file name="DTD_toolbar" url="nbres:/org/netbeans/core/windows/resources/toolbar.dtd" >
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans IDE//DTD toolbar//EN"/>
             	</file>
         	</folder>
 
         	<folder name="NetBeans">
             	<!-- Core window system -->
-            	<file name="DTD_Workspace_Properties_1_0" url="nbresboot:/org/netbeans/core/windows/resources/workspace-properties1_0.dtd">
+            	<file name="DTD_Workspace_Properties_1_0" url="nbres:/org/netbeans/core/windows/resources/workspace-properties1_0.dtd">
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Workspace Properties 1.0//EN"/>
             	</file>
-            	<file name="DTD_Workspace_Properties_1_1" url="nbresboot:/org/netbeans/core/windows/resources/workspace-properties1_1.dtd">
+            	<file name="DTD_Workspace_Properties_1_1" url="nbres:/org/netbeans/core/windows/resources/workspace-properties1_1.dtd">
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Workspace Properties 1.1//EN"/>
             	</file>
-            	<file name="DTD_Mode_Properties_1_0" url="nbresboot:/org/netbeans/core/windows/resources/mode-properties1_0.dtd">
+            	<file name="DTD_Mode_Properties_1_0" url="nbres:/org/netbeans/core/windows/resources/mode-properties1_0.dtd">
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Mode Properties 1.0//EN"/>
             	</file>
-            	<file name="DTD_Mode_Properties_1_1" url="nbresboot:/org/netbeans/core/windows/resources/mode-properties1_1.dtd">
+            	<file name="DTD_Mode_Properties_1_1" url="nbres:/org/netbeans/core/windows/resources/mode-properties1_1.dtd">
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Mode Properties 1.1//EN"/>
             	</file>
-                <file name="DTD_Mode_Properties_1_2" url="nbresboot:/org/netbeans/core/windows/resources/mode-properties1_2.dtd">
+                <file name="DTD_Mode_Properties_1_2" url="nbres:/org/netbeans/core/windows/resources/mode-properties1_2.dtd">
                         <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Mode Properties 1.2//EN"/>
                 </file>
-            	<file name="DTD_Top_Component_in_Mode_Properties_1_0" url="nbresboot:/org/netbeans/core/windows/resources/tc-ref1_0.dtd">
+            	<file name="DTD_Top_Component_in_Mode_Properties_1_0" url="nbres:/org/netbeans/core/windows/resources/tc-ref1_0.dtd">
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Top Component in Mode Properties 1.0//EN"/>
             	</file>
-            	<file name="DTD_Window_Manager_1_0" url="nbresboot:/org/netbeans/core/windows/resources/windowmanager-properties1_0.dtd">
+            	<file name="DTD_Window_Manager_1_0" url="nbres:/org/netbeans/core/windows/resources/windowmanager-properties1_0.dtd">
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Window Manager 1.0//EN"/>
             	</file>
-                <file name="DTD_Window_Manager_1_1" url="nbresboot:/org/netbeans/core/windows/resources/windowmanager-properties1_1.dtd">
+                <file name="DTD_Window_Manager_1_1" url="nbres:/org/netbeans/core/windows/resources/windowmanager-properties1_1.dtd">
                         <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Window Manager 1.1//EN"/>
                 </file>
         	</folder>

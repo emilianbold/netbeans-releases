@@ -58,7 +58,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="xml">
         <folder name="entities">
             <folder name="NetBeans_org_netbeans_modules_settings_xtest">
-                <file name="DTD_XML_FooSetting_1_0" url="nbresboot:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
+                <file name="DTD_XML_FooSetting_1_0" url="nbres:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans org.netbeans.modules.settings.xtest//DTD XML FooSetting 1.0//EN"/>
                 </file>
                 <file name="DTD_ComposedSetting_1_0"> <!--faked dtd-->
@@ -66,7 +66,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
             <folder name="NetBeans_org_netbeans_modules_settings_testModuleDisabling">
-                <file name="DTD_XML_FooSetting_1_0" url="nbresboot:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
+                <file name="DTD_XML_FooSetting_1_0" url="nbres:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans org.netbeans.modules.settings.testModuleDisabling//DTD XML FooSetting 1.0//EN"/>
                 </file>
             </folder>

@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Templates">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-        <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesRootDescription.html"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/core/resources/templatesRootDescription.html"/>
     </folder>
 
     <folder name="Services">
@@ -82,42 +82,42 @@ Microsystems, Inc. All Rights Reserved.
     	<folder name="entities">
         	<folder name="NetBeans_IDE">
             	<!-- public ID defined by XMLDataObject -->
-            	<file name="DTD_xmlinfo" url="nbresboot:/org/openide/resources/xmlinfo.dtd">
+            	<file name="DTD_xmlinfo" url="nbres:/org/openide/resources/xmlinfo.dtd">
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans IDE//DTD xmlinfo//EN"/>
             	</file>
         	</folder>
 
         	<folder name="NetBeans">
-            	<file name="Entity_Mapping_Registration_1_0" url="nbresboot:/org/openide/xml/EntityCatalog.dtd" >
+            	<file name="Entity_Mapping_Registration_1_0" url="nbres:/org/openide/xml/EntityCatalog.dtd" >
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//Entity Mapping Registration 1.0//EN"/>
             	</file>
-            	<file name="DTD_Filesystem_1_0" url="nbresboot:/org/openide/filesystems/filesystem.dtd">
+            	<file name="DTD_Filesystem_1_0" url="nbres:/org/openide/filesystems/filesystem.dtd">
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Filesystem 1.0//EN"/>
             	</file>
-            	<file name="DTD_Filesystem_1_1" url="nbresboot:/org/openide/filesystems/filesystem1_1.dtd">
+            	<file name="DTD_Filesystem_1_1" url="nbres:/org/openide/filesystems/filesystem1_1.dtd">
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Filesystem 1.1//EN"/>
             	</file>
-            	<file name="DTD_DefaultAttributes_1_0" url="nbresboot:/org/openide/filesystems/attributes.dtd">
+            	<file name="DTD_DefaultAttributes_1_0" url="nbres:/org/openide/filesystems/attributes.dtd">
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD DefaultAttributes 1.0//EN"/>
             	</file>
 
             	<!-- Session settings -->
             	<file name="DTD_Session_settings_1_0"
-                	  url="nbresboot:/org/openide/resources/sessionsettings-1_0.dtd">
+                	  url="nbres:/org/openide/resources/sessionsettings-1_0.dtd">
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Session settings 1.0//EN"/>
             	</file>
 
             	<!-- Modules -->
-            	<file name="DTD_Module_Status_1_0" url="nbresboot:/org/netbeans/core/modules/module-status-1_0.dtd">
+            	<file name="DTD_Module_Status_1_0" url="nbres:/org/netbeans/core/modules/module-status-1_0.dtd">
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Module Status 1.0//EN"/>
             	</file>
 
             	<!-- Declarative MIME resolver -->
-            	<file name="DTD_MIME_Resolver_1_0" url="nbresboot:/org/netbeans/core/filesystems/resolver.dtd">
+            	<file name="DTD_MIME_Resolver_1_0" url="nbres:/org/netbeans/core/filesystems/resolver.dtd">
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD MIME Resolver 1.0//EN"/>
             	</file>
 
-            	<file name="DTD_MIME_Resolver_XML_Rules_1_0" url="nbresboot:/org/netbeans/core/filesystems/xml-rules.dtd">
+            	<file name="DTD_MIME_Resolver_XML_Rules_1_0" url="nbres:/org/netbeans/core/filesystems/xml-rules.dtd">
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD MIME Resolver XML Rules 1.0//EN"/>
             	</file>            
 

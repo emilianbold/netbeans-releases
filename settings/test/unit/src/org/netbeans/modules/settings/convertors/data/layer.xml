@@ -6,16 +6,16 @@
     <folder name="xml">
         <folder name="entities">
             <folder name="NetBeans_org_netbeans_modules_settings">
-                <file name="DTD_XML_FooSetting_1_0" url="nbresboot:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
+                <file name="DTD_XML_FooSetting_1_0" url="nbres:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans org.netbeans.modules.settings//DTD XML FooSetting 1.0//EN"/>
                 </file>
-                <file name="DTD_XML_FooSetting1_1_0" url="nbresboot:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
+                <file name="DTD_XML_FooSetting1_1_0" url="nbres:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans org.netbeans.modules.settings//DTD XML FooSetting1 1.0//EN"/>
                 </file>
-                <file name="DTD_XML_FooSetting2_1_0" url="nbresboot:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
+                <file name="DTD_XML_FooSetting2_1_0" url="nbres:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans org.netbeans.modules.settings//DTD XML FooSetting2 1.0//EN"/>
                 </file>
-                <file name="DTD_XML_FooSetting3_1_0" url="nbresboot:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
+                <file name="DTD_XML_FooSetting3_1_0" url="nbres:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans org.netbeans.modules.settings//DTD XML FooSetting3 1.0//EN"/>
                 </file>
                 
