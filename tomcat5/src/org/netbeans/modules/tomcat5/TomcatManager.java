@@ -33,6 +33,8 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.openide.ErrorManager;
 import org.openide.modules.InstalledFileLocator;
 
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+
 import org.w3c.dom.Document;
 import org.xml.sax.*;
 
@@ -42,8 +44,10 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.openide.xml.XMLUtil;
 
 import org.netbeans.modules.tomcat5.config.*;
-
 import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
+import org.netbeans.modules.tomcat5.nodes.DebuggingTypeEditor;
+
+import org.openide.util.NbBundle;
 
 /** DeploymentManager that can deploy to 
  * Tomcat 5 using manager application.
@@ -64,22 +68,45 @@ public class TomcatManager implements DeploymentManager {
     /** server.xml check timestamp */
     public static final String TIMESTAMP = "timestamp";
 
+    /** admin port property */
+    public static final String ADMIN_PORT = "admin_port";
+
     /** debugger port property */
     public static final String DEBUG_PORT = "debugger_port";
     
     /** http server port property */
     public static final String SERVER_PORT = "server_port";
 
-    /** default value for property for debugger port */
+    /** http server port property */
+    public static final String CLASSIC = "classic";
+
+    /** http server port property */
+    public static final String DEBUG_TYPE = "debug_type";
+
+    /** http server port property */
+    public static final String DEBUG_SHARED = "debug_shared";
+
+    /** default value for property classic */
+    public static final Boolean DEFAULT_CLASSIC = Boolean.FALSE;
+
+    /** default value for property debugger port */
     public static final Integer DEFAULT_DEBUG_PORT = new Integer(11555);
     
-
-    /** default value for property for debugger port */
+    /** default value for property server port */
     public static final Integer DEFAULT_SERVER_PORT = new Integer(8080);
 
+    /** default value for property admin port */
+    public static final Integer DEFAULT_ADMIN_PORT = new Integer(8005);
+
+    /** default value for property debugging type*/
+    public static final String DEFAULT_DEBUG_TYPE = NbBundle.getMessage (DebuggingTypeEditor.class, "SEL_debuggingType_socket");
+
     /** path to server xml */
-    public static final String SERVERXML_PATH = "/conf/server.xml";  // NOI18N
+    public static final String SERVERXML_PATH = File.separator + "conf" + File.separator + "server.xml";  // NOI18N
     
+    /** path to default web.xml */
+    public static final String WEBXML_PATH = File.separator + "conf" + File.separator + "web.xml";  // NOI18N
+
     /** Manager state. */
     private boolean connected;
     
@@ -139,6 +166,11 @@ public class TomcatManager implements DeploymentManager {
         username = uname;
         password = passwd;
     }
+
+    public InstanceProperties getInstanceProperties() {
+        return InstanceProperties.getInstanceProperties(TomcatFactory.tomcatUriPrefix + getUri());
+    }
+    
     
     /** Creates an instance of disconnected TomcatManager * /
     public TomcatManager (String catHome, String catBase) {
@@ -481,63 +513,198 @@ public class TomcatManager implements DeploymentManager {
      * @return Value of property debugPort.
      */
     public java.lang.Integer getDebugPort() {
-        String url = TomcatFactory.tomcatUriPrefix + getUri();
-        FileObject instanceFO = ServerRegistry.getInstance().getInstanceFileObject(url);
-        if (instanceFO == null) {
-            return null;
-        }
-        Object o = instanceFO.getAttribute(DEBUG_PORT);
-        if ((o != null) && (o instanceof Integer)) {
-            return (Integer)o;
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            String prop = ip.getProperty(DEBUG_PORT);
+            if (prop != null) {
+                return Integer.valueOf(prop);
+            }
         }
         return DEFAULT_DEBUG_PORT;
     }
     
     /**
+     * Getter for property debugPort.
+     * @return Value of property debugPort.
+     */
+    public String getDebugType() {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            String prop = ip.getProperty(DEBUG_TYPE);
+            if (prop != null) {
+                return prop;
+            }
+        }
+        return DEFAULT_DEBUG_TYPE;
+    }
+
+    /**
+     * Getter for property debugPort.
+     * @return Value of property debugPort.
+     */
+    public Boolean getClassic() {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            String prop = ip.getProperty(CLASSIC);
+            if (prop != null) {
+                return Boolean.valueOf(prop);
+            }
+        }
+        return DEFAULT_CLASSIC;
+    }
+
+    /**
      * Setter for property debugPort.
      * @param port New value of property debugPort.
      */
     public void setDebugPort(java.lang.Integer port) {
-        String url = TomcatFactory.tomcatUriPrefix + getUri();
-        FileObject instanceFO = ServerRegistry.getInstance().getInstanceFileObject(url);
-        if (instanceFO == null) {
-            return;
-        }
-        try {
-            instanceFO.setAttribute(DEBUG_PORT, port);
-        } catch (IOException e) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.toString());
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            ip.setProperty(DEBUG_PORT, port.toString());
         }
     }    
     
     public Integer getServerPort() {
-        String url = TomcatFactory.tomcatUriPrefix + getUri();
-        FileObject instanceFO = ServerRegistry.getInstance().getInstanceFileObject(url);
-        if (instanceFO == null) { 
+        
+        boolean upToDate = false;
+        InstanceProperties ip = getInstanceProperties();
+        if (ip == null) {
+            return null;   
+        }
+                
+        String time;
+        try {
+            time = ip.getProperty(TIMESTAMP);
+        } catch (IllegalStateException ise) {
+            // TODO - Workaround - should be fixed on j2eeserver side
             return null;
         }
-        boolean upToDate = false;
-        Object timeO = instanceFO.getAttribute(TIMESTAMP);
-        if (timeO != null) {
-            Long t = (Long)timeO;
+        if (time != null) {
+            Long t = Long.valueOf(time);
             upToDate = isPortUpToDate(t);
         }
         if (upToDate) {
-            Object o = instanceFO.getAttribute(SERVER_PORT);
-            if ((o != null) && (o instanceof Integer)) {
-                return (Integer)o;
+            String o;
+            try {
+                o = ip.getProperty(SERVER_PORT);
+            } catch (IllegalStateException ise) {
+                // TODO - Workaround - should be fixed on j2eeserver side
+                return null;
+            }
+            if (o != null) {
+                return Integer.valueOf(o);
             } 
         } else {
             if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
                 TomcatFactory.getEM ().log ("server port not uptodate, gonna read from file"); // NOI18N 
             }
-            Integer p = readPortFromFile(instanceFO);
+            Integer p = readPortFromFile();
             return p;
         }
         return null;
     }
     
-    private Integer readPortFromFile(FileObject inst) {
+    public Integer getAdminPort() {
+
+        boolean upToDate = false;
+        InstanceProperties ip = getInstanceProperties();
+        if (ip == null) {
+            return null;
+        }
+        String time = ip.getProperty(TIMESTAMP);
+        if (time != null) {
+            Long t = Long.valueOf(time);
+            upToDate = isPortUpToDate(t);
+        }
+        if (upToDate) {
+            String o = ip.getProperty(ADMIN_PORT);
+            if (o != null) {
+                return Integer.valueOf(o);
+            }
+        } else {
+            if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+                TomcatFactory.getEM ().log ("admin port not uptodate, gonna read from file"); // NOI18N
+            }
+            Integer p = readAdminPortFromFile();
+            return p;
+        }
+        return null;
+    }
+    
+    private void updatePortsFromFile() {
+        try {
+            InstanceProperties ip = getInstanceProperties();
+            FileInputStream inputStream;
+            File f;
+            if (catalinaBase != null) {
+                f = new File(catalinaBase + SERVERXML_PATH);
+            } else {
+                f = new File(catalinaHome + SERVERXML_PATH);
+            }
+            if (!f.isAbsolute ()) {
+                InstalledFileLocator ifl = InstalledFileLocator.getDefault ();
+                f = ifl.locate (f.getPath(), null, false);
+                if (f == null) {
+                    if (ip != null) {
+                        ip.setProperty(ADMIN_PORT, DEFAULT_ADMIN_PORT.toString());
+                        ip.setProperty(SERVER_PORT, DEFAULT_SERVER_PORT.toString());
+                    }
+                    return;
+                }
+            }
+            
+            inputStream = new FileInputStream(f);
+            
+            Long t;
+            if (f.exists()) {
+                t = new Long(f.lastModified());
+                if (isPortUpToDate(t)) {
+                    return;
+                }
+            } else {
+                return;
+            }
+            
+            Document doc = XMLUtil.parse(new InputSource(inputStream), false, false, null,org.openide.xml.EntityCatalog.getDefault());
+            Server server = Server.createGraph(doc);
+            Service service = server.getService(0);
+            Integer adminPort = new Integer(TomcatInstallUtil.getAdminPort(server));
+            Integer serverPort = new Integer(TomcatInstallUtil.getPort(service));
+            inputStream.close();
+            
+            if (ip != null) {
+                ip.setProperty(TIMESTAMP, t.toString());
+                ip.setProperty(ADMIN_PORT, adminPort.toString());
+                ip.setProperty(SERVER_PORT, serverPort.toString());
+            }
+        } catch (Exception e) {
+            if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+                TomcatFactory.getEM ().log (e.getMessage());
+            }
+        }
+    }
+    
+    private Integer readAdminPortFromFile() {
+        updatePortsFromFile();
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            Integer adminPort = Integer.valueOf(ip.getProperty(ADMIN_PORT));
+            return adminPort;
+        }
+        return null;
+    }
+
+    private Integer readPortFromFile() {
+        updatePortsFromFile();
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            Integer serverPort = Integer.valueOf(ip.getProperty(SERVER_PORT));
+            return serverPort;
+        }
+        return null;
+    }
+
+    /*private Integer readPortFromFile() {
         try {
             FileInputStream inputStream;
             File f;
@@ -554,7 +721,7 @@ public class TomcatManager implements DeploymentManager {
                 }
             }
             
-            inputStream = new FileInputStream(f);            
+            inputStream = new FileInputStream(f);
             
             Long t;
             if (f.exists()) {
@@ -566,10 +733,16 @@ public class TomcatManager implements DeploymentManager {
             Document doc = XMLUtil.parse(new InputSource(inputStream), false, false, null,org.openide.xml.EntityCatalog.getDefault());
             Server server = Server.createGraph(doc);
             Service service = server.getService(0);
-            Integer i = new Integer(TomcatInstallUtil.getPort(service));
-            inst.setAttribute(TIMESTAMP, t);
-            inst.setAttribute(SERVER_PORT, i);
-            return i;
+
+            Integer serverPort = new Integer(TomcatInstallUtil.getPort(service));
+            inputStream.close();
+
+            InstanceProperties ip = getInstanceProperties();
+            if (ip != null) {
+                ip.setProperty(TIMESTAMP, t.toString());
+                ip.setProperty(SERVER_PORT, serverPort.toString());
+                return serverPort;
+            }
 
         } catch (Exception e) {
             if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
@@ -577,7 +750,7 @@ public class TomcatManager implements DeploymentManager {
             }
         }
         return null;
-    }
+    }*/
     
     private boolean isPortUpToDate(Long timestamp) {
         String serverXml;
@@ -597,18 +770,11 @@ public class TomcatManager implements DeploymentManager {
     }
     
     public void setServerPort(Integer port) {
-        // TODO - port needs to be updated everywhere
-        //this.serverPort = port;
-        String url = TomcatFactory.tomcatUriPrefix + getUri();
-        FileObject instanceFO = ServerRegistry.getInstance().getInstanceFileObject(url);
-        if (instanceFO == null) {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip == null) {
             return;
         }
-        try {
-            instanceFO.setAttribute(SERVER_PORT, port);
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ioe.toString());
-        }
+        ip.setProperty(SERVER_PORT, port.toString());
     }
 
     public Server getRoot() {

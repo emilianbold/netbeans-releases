@@ -34,6 +34,7 @@ import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FileDeploymentLayout;
@@ -57,6 +58,7 @@ import org.openide.util.Task;
 import org.openide.debugger.DebuggerInfo;
 import org.netbeans.modules.debugger.jpda.RemoteDebuggerInfo;
 import org.xml.sax.SAXException;
+
 
 /** Extension to JSR88 that enables starting of Tomcat.
  *
@@ -316,18 +318,42 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
                         StateType.RUNNING
                     )
                 );
-                Process p = pd.exec (
-                    new TomcatFormat (homeDir.getAbsolutePath ()), 
-                    new String[] { 
-                        "JAVA_HOME="+System.getProperty ("jdk.home"),  // NOI18N 
-//                        "JPDA_TRANSPORT=" + "dt_socket",               // NOI18N  TODO - this must be taken from customizer of Tomcat node
-                        "JPDA_ADDRESS=" + tm.getDebugPort().toString(),                        // NOI18N
-                        "CATALINA_HOME="+homeDir.getAbsolutePath (),   // NOI18N
-                        "CATALINA_BASE="+baseDir.getAbsolutePath ()    // NOI18N
+                Process p;
+                String transportStr = "JPDA_TRANSPORT=dt_socket";         // NOI18N
+                String addressStr = "JPDA_ADDRESS=11555";
+                
+                if (org.openide.util.Utilities.isWindows()) {
+                    String dbgType = "dt_socket";                                    // NOI18N                    
+                    InstanceProperties ip = tm.getInstanceProperties();
+                    if (ip != null) {
+                        dbgType = ip.getProperty(TomcatManager.DEBUG_TYPE);
+                        if (dbgType.toLowerCase().indexOf("socket") > -1) {         // NOI18N
+                            addressStr = "JPDA_ADDRESS=" + tm.getDebugPort().toString(); // NOI18N
+                        } else {
+                            transportStr = "JPDA_TRANSPORT=dt_shmem";                // NOI18N
+                            addressStr = "JPDA_ADDRESS=" + "shmem";  /* TODO-*/                    // NOI18N
+                        }
+                    }
+                } else {
+                    addressStr = "JPDA_ADDRESS=" + tm.getDebugPort().toString();         // NOI18N
+                }
+                if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+                    TomcatFactory.getEM ().log ("transport: " + transportStr);    // NOI18N
+                    TomcatFactory.getEM ().log ("address: " + addressStr);    // NOI18N
+                }
+                p = pd.exec (
+                    new TomcatFormat (homeDir.getAbsolutePath ()),
+                    new String[] {
+                        "JAVA_HOME="+System.getProperty ("jdk.home"),   // NOI18N
+                        transportStr,
+                        addressStr,
+                        "CATALINA_HOME="+homeDir.getAbsolutePath (),    // NOI18N
+                        "CATALINA_BASE="+baseDir.getAbsolutePath ()     // NOI18N
                     },
                     true,
                     new File (homeDir, "bin")
-                );        
+                );
+
                 if (command == CommandType.START) {
                     ProcessSupport.connectProcessToOutputWindow(p, tm.getUri());
                 }
@@ -384,11 +410,6 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
         if (command == CommandType.START)
         try {
             TargetModuleID modules [] = tm.getAvailableModules (ModuleType.WAR, tm.getTargets ());
-            System.out.println("AVAILABLE MODULES");
-            for (int j = 0; j < modules.length; j++) {
-                System.out.println("module:"+modules [j]);
-            }
-            System.out.println("END OF AVAILABLE MODULES");
         } catch (Exception e) {
             e.printStackTrace();
         }

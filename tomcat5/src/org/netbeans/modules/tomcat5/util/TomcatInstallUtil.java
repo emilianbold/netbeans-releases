@@ -11,9 +11,7 @@ import java.io.FileFilter;
 
 import org.openide.ErrorManager;
 
-import org.netbeans.modules.tomcat5.config.Engine;
-import org.netbeans.modules.tomcat5.config.Host;
-import org.netbeans.modules.tomcat5.config.Service;
+import org.netbeans.modules.tomcat5.config.*;
 import org.netbeans.modules.tomcat5.TomcatFactory;
 
 /**
@@ -82,12 +80,24 @@ public class TomcatInstallUtil {
         }
         return true;
     }    
+
+    public static String getAdminPort(Server server) {
+        
+        String port;
+        
+        port = server.getAttributeValue("port");
+                
+        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+            TomcatFactory.getEM ().log ("T5Util.getAdminPort: " + port);             // NOI18N
+        }
+        return port;
+    }
     
     public static String getPort(Service service) {
         
         int defCon = -1;
         boolean[] connectors = service.getConnector();
-        String port = "8080";   //NOI18N
+        String port;
                 
         for (int i=0; i<service.sizeConnector(); i++) {
             String protocol = service.getAttributeValue("Connector",i,"protocol"); // NOI18N

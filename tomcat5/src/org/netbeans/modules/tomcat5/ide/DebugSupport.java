@@ -143,24 +143,5 @@ public class DebugSupport {
 
         return changed;
     }
-    
-    /** Finds a file inside the IDE installation, given a slash-separated
-     * path relative to the IDE installation. Takes into account the fact that
-     * modules may have been installed by Autoupdate, and reside in the user
-     * home directory.
-     * @param instRelPath file path relative to the inst dir, delimited by '/'
-     * @return file containing the file, or null if it does not exist.
-     */
-    private static File findInstallationFile(String instRelPath) {
-        return InstalledFileLocator.getDefault().locate(instRelPath, null, false);
-    }
-        
-    private static File findFileUnderBase(File base, String fileRelPath) {
-        if (fileRelPath.startsWith("/")) { // NOI18N
-            fileRelPath = fileRelPath.substring(1);
-        }
-        fileRelPath = fileRelPath.replace('/', File.separatorChar);
-        return new File(base, fileRelPath);
-    }
-    
+
 }

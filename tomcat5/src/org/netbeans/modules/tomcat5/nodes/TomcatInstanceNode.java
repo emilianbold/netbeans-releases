@@ -56,7 +56,6 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         this.getChildren().add(new Node[]{new WebModuleNode(new Children.Map())});
         lkp = lookup;
         setIconBase(ICON_BASE);
-
         getCookieSet().add(this);
     }
     
@@ -81,13 +80,13 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     }
     
     private Integer getServerPort () {
-        DeploymentManager m = (DeploymentManager)lkp.lookup(DeploymentManager.class);
+        DeploymentManager m = getDeploymentManager();
         if (m instanceof TomcatManager){
             Integer port = ((TomcatManager)m).getServerPort();
             if (port != null && port.intValue() != iPort){
                 iPort = port.intValue();
-                setDisplayName(NbBundle.getMessage(TomcatInstanceNode.class, "LBL_TomcatInstanceNode",  // NOI18N
-                    new Object []{"" + iPort}));
+//                setDisplayName(NbBundle.getMessage(TomcatInstanceNode.class, "LBL_TomcatInstanceNode",  // NOI18N
+  //                  new Object []{"" + iPort}));
             }
             return port;
         };
@@ -95,7 +94,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     }
     
     private void setServerPort (Integer port) {
-        DeploymentManager m = (DeploymentManager)lkp.lookup(DeploymentManager.class);
+        DeploymentManager m = getDeploymentManager();
         if (m instanceof TomcatManager){
             ((TomcatManager)m).setServerPort(port);
             setDisplayName(NbBundle.getMessage(TomcatInstanceNode.class, "LBL_TomcatInstanceNode",  // NOI18N
@@ -103,15 +102,38 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         };
     }
     
-    private Integer getDebugPort () {
-        DeploymentManager m = (DeploymentManager)lkp.lookup(DeploymentManager.class);
+    private Boolean getClassic() {
+        DeploymentManager m = getDeploymentManager();
         if (m instanceof TomcatManager){
-            Integer port = ((TomcatManager)m).getDebugPort();
-            return port;
+            return  ((TomcatManager)m).getClassic();
+        };
+        return Boolean.FALSE;
+    }
+
+    private String getDebugType() {
+        DeploymentManager m = getDeploymentManager();
+        if (m instanceof TomcatManager){
+            return  ((TomcatManager)m).getDebugType();
+        };
+        return null;
+    }
+
+    private Integer getDebugPort () {
+        DeploymentManager m = getDeploymentManager();
+        if (m instanceof TomcatManager){
+            return  ((TomcatManager)m).getDebugPort();
         };
         return null;
     }
     
+    private Integer getAdminPort () {
+        DeploymentManager m = getDeploymentManager();
+        if (m instanceof TomcatManager){
+            return ((TomcatManager)m).getAdminPort();
+        };
+        return null;
+    }
+
     private void setDebugPort (Integer port) {
         DeploymentManager m = (DeploymentManager)lkp.lookup(DeploymentManager.class);
         if (m instanceof TomcatManager){
@@ -131,7 +153,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     }
 
     private String getHome() {
-        DeploymentManager m = (DeploymentManager)lkp.lookup(DeploymentManager.class);
+        DeploymentManager m = getDeploymentManager();
         if (m instanceof TomcatManager){
             return ((TomcatManager)m).getCatalinaHome();
         }
@@ -139,7 +161,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     }
     
     private String getBase() {
-        DeploymentManager m = (DeploymentManager)lkp.lookup(DeploymentManager.class);
+        DeploymentManager m = getDeploymentManager();
         if (m instanceof TomcatManager) {
             if (((TomcatManager)m).getCatalinaBase() != null) {
                 return ((TomcatManager)m).getCatalinaBase();
@@ -158,14 +180,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
 	    ssProp = Sheet.createPropertiesSet ();
             sheet.put (ssProp);
 	}
-        
-        // This is workaround for displaying properties in Properties cathegory more times
-        /*Sheet.Set ssProp = new Sheet.Set ();
-        ssProp.setName("_xxproperties");      // NOI18N
-        ssProp.setDisplayName("Properties");  // NOI18N
-        sheet.put (ssProp);
-        */
-        
+                
         Node.Property p;
         p = new PropertySupport.ReadWrite (
                    SERVER_PORT,
@@ -174,14 +189,13 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                    NbBundle.getMessage (TomcatInstanceNode.class, "HINT_serverPort")   // NOI18N
                ) {
                    public Object getValue () {
-                       // TODO 
                        return getServerPort();
                    }
                    
                    public void setValue (Object val){
                        // TODO
                    }
-               };    
+               };
         ssProp.put(p);  
         p = new PropertySupport.ReadWrite (
                    ADMIN_PORT,
@@ -190,8 +204,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                    NbBundle.getMessage (TomcatInstanceNode.class, "HINT_adminPort")   // NOI18N
                ) {
                    public Object getValue () {
-                       // TODO 
-                       return new Integer(0);
+                       return getAdminPort();
                    }
                    
                    public void setValue (Object val){
@@ -206,7 +219,6 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                    NbBundle.getMessage (TomcatInstanceNode.class, "HINT_tomcatHome")   // NOI18N
                ) {
                    public Object getValue () {
-                       // TODO
                        return getHome();
                    }
                };    
@@ -218,7 +230,6 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                    NbBundle.getMessage (TomcatInstanceNode.class, "HINT_tomcatBase")   // NOI18N
                ) {
                    public Object getValue () {
-                       //TODO
                        return getBase();
                    }
                };    
@@ -262,7 +273,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                    NbBundle.getMessage (TomcatInstanceNode.class, "HINT_debuggerPort")  // NOI18N
                ) {
                    public Object getValue () {
-                       return getDebugPort(); // NOI18N
+                       return getDebugPort();
                    }
                    
                    public void setValue (Object val){
@@ -278,8 +289,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                    NbBundle.getMessage (TomcatInstanceNode.class, "HINT_classic")  // NOI18N
                ) {
                    public Object getValue () {
-                       //TODO we need obtain this value somewhere
-                       return Boolean.TRUE;
+                       return getClassic();
                    }
                    
                    public void setValue (Object val){
@@ -298,8 +308,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                        NbBundle.getMessage (TomcatInstanceNode.class, "HINT_debuggingType")  // NOI18N
                    ) {
                        public Object getValue () {
-                           //TODO we need obtain this value
-                           return "socket";   // NOI18N
+                           return getDebugType();
                        }
 
                        public void setValue (Object val){
@@ -318,8 +327,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                        NbBundle.getMessage (TomcatInstanceNode.class, "HINT_nameForSharedMemoryAccess")  // NOI18N
                    ) {
                        public Object getValue () {
-                           //TODO we need obtain this value
-                           return DEFAULT_NAME_FOR_SHARED_MEMORY_ACCESS;
+                           return null;//getSharedMemory();
                        }
 
                        public void setValue (Object val){
