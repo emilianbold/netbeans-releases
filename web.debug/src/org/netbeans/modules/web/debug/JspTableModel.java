@@ -71,7 +71,7 @@ public class JspTableModel implements TableModel, Constants {
      * 
      * @param l the listener to add
      */
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
     }
 
     /** 
@@ -79,7 +79,7 @@ public class JspTableModel implements TableModel, Constants {
      *
      * @param l the listener to remove
      */
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
     }
     
 //    private static String getShort (String c) {

@@ -31,8 +31,9 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
@@ -161,11 +162,11 @@ public class WatchesModel implements TreeModel {
         return getLocalsTreeModel ().isLeaf (node);
     }
 
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
         listeners.add (l);
     }
 
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
         listeners.remove (l);
     }
     
@@ -173,14 +174,16 @@ public class WatchesModel implements TreeModel {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
-            ((TreeModelListener) v.get (i)).treeChanged ();
+            ((ModelListener) v.get (i)).modelChanged (null);
     }
     
-    void fireNodeChanged (JPDAWatch w) {
+    void fireTableValueChangedChanged (Object node, String propertyName) {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
-            ((TreeModelListener) v.get (i)).treeNodeChanged (w);
+            ((ModelListener) v.get (i)).modelChanged (
+                new ModelEvent.TableValueChanged (this, node, propertyName)
+            );
     }
     
     

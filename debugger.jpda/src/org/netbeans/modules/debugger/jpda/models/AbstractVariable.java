@@ -113,7 +113,7 @@ public class AbstractVariable implements ObjectVariable {
         // set new value to this model
         setInnerValue (value);
         // refresh tree
-        getModel().fireNodeChanged (this);
+        getModel ().fireTableValueChangedChanged (this, null);
     }
     
     protected void setValue (Value value) throws InvalidExpressionException {

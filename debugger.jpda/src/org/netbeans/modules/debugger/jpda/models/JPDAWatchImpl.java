@@ -114,7 +114,7 @@ public class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
         // set new value to this model
         setInnerValue (value);
         // refresh tree
-        model.fireNodeChanged (this);
+        model.fireTableValueChangedChanged (this, null);
     }
     
     void setInnerValue (Value v) {

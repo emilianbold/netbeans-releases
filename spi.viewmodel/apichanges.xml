@@ -133,6 +133,22 @@ Microsystems, Inc. All Rights Reserved.
         <class package="org.netbeans.spi.viewmodel" name="TreeExpansionModel" />
         <issue number="46167"/>
     </change>
+    <change>
+        <api name="ViewModelAPI"/>
+        <summary>I need to add TreeModelEvent to ViewModelAPI.</summary>
+        <date day="31" month="3" year="2005"/>
+        <author login="jjancura"/>
+        <compatibility binary="incompatible" source="incompatible" deletion="yes" addition="yes" modification="yes"/>
+        <description>
+                ViewModelAPI currently supports two types of changes only:
+                    1) all tree is changed
+                    2) node and all subnodes are changed
+
+                We need more fine grained firing. This change has been already discussed on
+                DevRev - see http://jupiter.czech.sun.com/wiki/view/Devrev/DevRevMeeting050118.
+        </description>
+        <issue number="57273"/>
+    </change>
 
 </changes>
 

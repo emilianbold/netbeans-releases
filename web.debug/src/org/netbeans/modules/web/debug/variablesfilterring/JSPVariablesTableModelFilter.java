@@ -108,10 +108,10 @@ public class JSPVariablesTableModelFilter implements TableModelFilter {
         return ro;
     }
 
-    public void removeTreeModelListener(org.netbeans.spi.viewmodel.TreeModelListener l) {
+    public void removeModelListener(org.netbeans.spi.viewmodel.ModelListener l) {
     }
 
-    public void addTreeModelListener(org.netbeans.spi.viewmodel.TreeModelListener l) {
+    public void addModelListener(org.netbeans.spi.viewmodel.ModelListener l) {
     }
 
 }

@@ -37,7 +37,7 @@ import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 
@@ -150,7 +150,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             throw new UnknownTypeException (node);
         }
         
-        public void addTreeModelListener (TreeModelListener l) {}
-        public void removeTreeModelListener (TreeModelListener l) {}
+        public void addModelListener (ModelListener l) {}
+        public void removeModelListener (ModelListener l) {}
     }
 }

@@ -28,9 +28,11 @@ import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.ui.Constants;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.openide.util.NbBundle;
@@ -372,7 +374,7 @@ public class BreakpointsNodeModel implements NodeModel {
      *
      * @param l the listener to add
      */
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
         listeners.add (l);
     }
 
@@ -380,7 +382,7 @@ public class BreakpointsNodeModel implements NodeModel {
      *
      * @param l the listener to remove
      */
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
         listeners.remove (l);
     }
     
@@ -391,11 +393,14 @@ public class BreakpointsNodeModel implements NodeModel {
 //            ((TreeModelListener) v.get (i)).treeChanged ();
 //    }
 //    
-    private void fireTreeNodeChanged (Object parent) {
+    
+    void fireNodeChanged (JPDABreakpoint b) {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
-            ((TreeModelListener) v.get (i)).treeNodeChanged (parent);
+            ((ModelListener) v.get (i)).modelChanged (
+                new ModelEvent.NodeChanged (this, b)
+            );
     }
     
     static String getShort (String s) {
@@ -419,9 +424,9 @@ public class BreakpointsNodeModel implements NodeModel {
     
     public void setCurrentBreakpoint (JPDABreakpoint currentBreakpoint) {
         if (this.currentBreakpoint != null)
-            fireTreeNodeChanged (this.currentBreakpoint);
+            fireNodeChanged (this.currentBreakpoint);
         this.currentBreakpoint = currentBreakpoint;
         if (currentBreakpoint != null)
-            fireTreeNodeChanged (currentBreakpoint);
+            fireNodeChanged (currentBreakpoint);
     }
 }

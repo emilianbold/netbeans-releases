@@ -29,7 +29,7 @@ import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 
@@ -126,10 +126,10 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
         return vf.isLeaf (original, (Variable) node);
     }
 
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
     }
 
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
     }
     
     

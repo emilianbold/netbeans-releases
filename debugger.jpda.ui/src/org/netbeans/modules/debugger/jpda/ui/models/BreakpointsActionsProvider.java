@@ -27,7 +27,7 @@ import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.viewmodel.Models;
 
@@ -106,10 +106,10 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
             original.performDefaultAction (node);
     }
 
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
     }
 
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
     }
 
     private static void customize (Breakpoint b) {

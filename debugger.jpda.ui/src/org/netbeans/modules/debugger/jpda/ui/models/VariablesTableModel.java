@@ -24,7 +24,7 @@ import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -162,7 +162,7 @@ public class VariablesTableModel implements TableModel, Constants {
      * 
      * @param l the listener to add
      */
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
     }
 
     /** 
@@ -170,7 +170,7 @@ public class VariablesTableModel implements TableModel, Constants {
      *
      * @param l the listener to remove
      */
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
     }
     
     static String getShort (String c) {

@@ -17,7 +17,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 
@@ -74,9 +74,9 @@ public class WatchesNodeModel extends VariablesNodeModel {
         return super.getIconBase (o);
     }
 
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
     }
 
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
     }
 }

@@ -50,12 +50,12 @@ public interface NodeActionsProvider extends Model {
      * 
      * @param l the listener to add
      */
-    public abstract void addTreeModelListener (TreeModelListener l);
+//    public abstract void addModelListener (ModelListener l);
 
     /** 
      * Unregisters given listener.
      *
      * @param l the listener to remove
      */
-    public abstract void removeTreeModelListener (TreeModelListener l);
+//    public abstract void removeModelListener (ModelListener l);
 }

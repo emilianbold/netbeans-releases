@@ -31,7 +31,7 @@ import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -137,11 +137,11 @@ NodeActionsProvider {
         throw new UnknownTypeException (node);
     }
 
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
         listeners.add (l);
     }
 
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
         listeners.remove (l);
     }
     
@@ -149,14 +149,7 @@ NodeActionsProvider {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
-            ((TreeModelListener) v.get (i)).treeChanged ();
-    }
-    
-    public void fireNodeChanged (Breakpoint b) {
-        Vector v = (Vector) listeners.clone ();
-        int i, k = v.size ();
-        for (i = 0; i < k; i++)
-            ((TreeModelListener) v.get (i)).treeNodeChanged (b);
+            ((ModelListener) v.get (i)).modelChanged (null);
     }
     
      

@@ -26,7 +26,7 @@ import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -177,14 +177,14 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
      *
      * @param l the listener to add
      */
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
     }
 
     /** 
      *
      * @param l the listener to remove
      */
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
     }
 
     private static boolean isGoToSourceSupported (JPDAThread t) {

@@ -16,7 +16,7 @@ package org.netbeans.modules.web.debug.watchesfiltering;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -79,9 +79,9 @@ public class JspWatchesTreeFilter implements TreeModelFilter {
         return expression.startsWith("${") && expression.endsWith("}");
     }
     
-    public void addTreeModelListener(TreeModelListener l) {
+    public void addModelListener(ModelListener l) {
     }
 
-    public void removeTreeModelListener(TreeModelListener l) {
+    public void removeModelListener(ModelListener l) {
     }
 }

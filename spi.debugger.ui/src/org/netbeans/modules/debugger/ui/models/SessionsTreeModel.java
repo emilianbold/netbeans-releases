@@ -20,7 +20,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 
@@ -85,11 +85,11 @@ public class SessionsTreeModel implements TreeModel {
         throw new UnknownTypeException (node);
     }
 
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
         listeners.add (l);
     }
 
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
         listeners.remove (l);
     }
     
@@ -97,7 +97,7 @@ public class SessionsTreeModel implements TreeModel {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
-            ((TreeModelListener) v.get (i)).treeChanged ();
+            ((ModelListener) v.get (i)).modelChanged (null);
     }
     
     

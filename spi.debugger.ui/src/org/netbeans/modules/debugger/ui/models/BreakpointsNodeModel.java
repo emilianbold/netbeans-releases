@@ -15,7 +15,7 @@ package org.netbeans.modules.debugger.ui.models;
 
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 
@@ -58,9 +58,9 @@ public class BreakpointsNodeModel implements NodeModel {
         throw new UnknownTypeException (o);
     }
 
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
     }
 
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
     }
 }

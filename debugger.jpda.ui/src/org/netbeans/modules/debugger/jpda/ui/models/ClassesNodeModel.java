@@ -19,7 +19,7 @@ import com.sun.jdi.InterfaceType;
 import com.sun.jdi.ReferenceType;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 
@@ -136,14 +136,14 @@ public class ClassesNodeModel implements NodeModel {
      *
      * @param l the listener to add
      */
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
     }
 
     /** 
      *
      * @param l the listener to remove
      */
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
     }
     
     

@@ -18,7 +18,7 @@ import java.util.Vector;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 
@@ -63,7 +63,7 @@ public class WatchesNodeModel implements NodeModel {
      *
      * @param l the listener to add
      */
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
         listeners.add (l);
     }
 
@@ -71,7 +71,7 @@ public class WatchesNodeModel implements NodeModel {
      *
      * @param l the listener to remove
      */
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
         listeners.remove (l);
     }
     
@@ -79,13 +79,6 @@ public class WatchesNodeModel implements NodeModel {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
-            ((TreeModelListener) v.get (i)).treeChanged ();
-    }
-    
-    private void fireTreeNodeChanged (Object parent) {
-        Vector v = (Vector) listeners.clone ();
-        int i, k = v.size ();
-        for (i = 0; i < k; i++)
-            ((TreeModelListener) v.get (i)).treeNodeChanged (parent);
+            ((ModelListener) v.get (i)).modelChanged (null);
     }
 }

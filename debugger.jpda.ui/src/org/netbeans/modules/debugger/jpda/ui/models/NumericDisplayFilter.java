@@ -75,14 +75,14 @@ NodeActionsProviderFilter, Constants {
         original.setValueAt(node, columnID, value);
     }
 
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
         HashSet newListeners = (listeners == null) ? 
             new HashSet () : (HashSet) listeners.clone ();
         newListeners.add (l);
         listeners = newListeners;
     }
 
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
         if (listeners == null) return;
         HashSet newListeners = (HashSet) listeners.clone();
         newListeners.remove (l);
@@ -338,8 +338,8 @@ NodeActionsProviderFilter, Constants {
     private void fireModelChanged () {
         if (listeners == null) return;
         for (Iterator i = listeners.iterator (); i.hasNext ();) {
-            TreeModelListener listener = (TreeModelListener) i.next ();
-            listener.treeChanged ();
+            ModelListener listener = (ModelListener) i.next ();
+            listener.modelChanged (null);
         }
     }
 }

@@ -112,7 +112,7 @@ ObjectVariable {
         // set new value to this model
         setInnerValue (value);
         // refresh tree
-        model.fireNodeChanged (this);
+        model.fireTableValueChangedChanged (this, null);
     }
     
     protected void setValue (final Value value) 

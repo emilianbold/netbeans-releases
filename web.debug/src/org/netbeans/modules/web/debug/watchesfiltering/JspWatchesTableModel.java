@@ -15,7 +15,7 @@ package org.netbeans.modules.web.debug.watchesfiltering;
 
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.debugger.ui.Constants;
 
 /**
@@ -49,9 +49,9 @@ public class JspWatchesTableModel implements TableModel {
         throw new UnknownTypeException (row);
     }
     
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
     }
 
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
     }
 }

@@ -15,7 +15,7 @@ package org.netbeans.modules.web.debug.watchesfiltering;
 
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 
 /**
@@ -58,9 +58,9 @@ public class JspWatchesNodeModel implements NodeModel {
         }
     }
 
-    public void addTreeModelListener(TreeModelListener l) {
+    public void addModelListener(ModelListener l) {
     }
 
-    public void removeTreeModelListener(TreeModelListener l) {
+    public void removeModelListener(ModelListener l) {
     }
 }

@@ -21,7 +21,8 @@ import javax.swing.SwingUtilities;
 import org.netbeans.spi.viewmodel.Models;
 
 import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelEvent;
+import org.netbeans.spi.viewmodel.ModelListener;
 
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -33,7 +34,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author   Jan Jancura
  */
-public class TreeModelRoot implements TreeModelListener {
+public class TreeModelRoot implements ModelListener {
     /** generated Serialized Version UID */
     static final long                 serialVersionUID = -1259352660663524178L;
 
@@ -49,7 +50,7 @@ public class TreeModelRoot implements TreeModelListener {
     public TreeModelRoot (Models.CompoundModel model, TreeTable treeTable) {
         this.model = model;
         this.treeTable = treeTable;
-        model.addTreeModelListener (this);
+        model.addModelListener (this);
     }
     
     public TreeTable getTreeTable () {
@@ -72,7 +73,7 @@ public class TreeModelRoot implements TreeModelListener {
         return (TreeModelNode) wr.get ();
     }
     
-    public void treeChanged () {
+    public void modelChanged (ModelEvent event) {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 if (model == null) 
@@ -90,19 +91,19 @@ public class TreeModelRoot implements TreeModelListener {
 //        }
     }
     
-    public void treeNodeChanged (Object parent) {
-        final TreeModelNode tmn = findNode (parent);
-        if (tmn == null) return;
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                tmn.refresh (); 
-            }
-        });
-    }
+//    public void treeNodeChanged (Object parent) {
+//        final TreeModelNode tmn = findNode (parent);
+//        if (tmn == null) return;
+//        SwingUtilities.invokeLater (new Runnable () {
+//            public void run () {
+//                tmn.refresh (); 
+//            }
+//        });
+//    }
 
     public void destroy () {
         if (model != null)
-            model.removeTreeModelListener (this);
+            model.removeModelListener (this);
         model = null;
         objectToNode = new WeakHashMap ();
     }

@@ -148,7 +148,7 @@ public class JSPVariablesNodeModelFilter implements NodeModelFilter {
      * 
      * @param l the listener to remove
      */
-    public void removeTreeModelListener(org.netbeans.spi.viewmodel.TreeModelListener l) {
+    public void removeModelListener(org.netbeans.spi.viewmodel.ModelListener l) {
     }
 
     /**
@@ -157,7 +157,7 @@ public class JSPVariablesNodeModelFilter implements NodeModelFilter {
      * 
      * @param l the listener to add
      */
-    public void addTreeModelListener(org.netbeans.spi.viewmodel.TreeModelListener l) {
+    public void addModelListener(org.netbeans.spi.viewmodel.ModelListener l) {
     }
 
     

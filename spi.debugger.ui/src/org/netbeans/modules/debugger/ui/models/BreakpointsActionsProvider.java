@@ -28,7 +28,7 @@ import org.netbeans.modules.debugger.ui.actions.AddBreakpointAction;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -269,11 +269,11 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
         throw new UnknownTypeException (node);
     }
 
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
         //listeners.add (l);
     }
 
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
         //listeners.remove (l);
     }
     

@@ -40,7 +40,7 @@ import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.nodes.Node;
 
@@ -511,9 +511,9 @@ public final class Models {
          * 
          * @param l the listener to add
          */
-        public void addTreeModelListener (TreeModelListener l) {
-            filter.addTreeModelListener (l);
-            model.addTreeModelListener (l);
+        public void addModelListener (ModelListener l) {
+            filter.addModelListener (l);
+            model.addModelListener (l);
         }
 
         /** 
@@ -521,9 +521,9 @@ public final class Models {
          *
          * @param l the listener to remove
          */
-        public void removeTreeModelListener (TreeModelListener l) {
-            filter.removeTreeModelListener (l);
-            model.removeTreeModelListener (l);
+        public void removeModelListener (ModelListener l) {
+            filter.removeModelListener (l);
+            model.removeModelListener (l);
         }
 
         public String toString () {
@@ -603,9 +603,9 @@ public final class Models {
          * 
          * @param l the listener to add
          */
-        public void addTreeModelListener (TreeModelListener l) {
-            filter.addTreeModelListener (l);
-            model.addTreeModelListener (l);
+        public void addModelListener (ModelListener l) {
+            filter.addModelListener (l);
+            model.addModelListener (l);
         }
 
         /** 
@@ -613,9 +613,9 @@ public final class Models {
          *
          * @param l the listener to remove
          */
-        public void removeTreeModelListener (TreeModelListener l) {
-            filter.removeTreeModelListener (l);
-            model.removeTreeModelListener (l);
+        public void removeModelListener (ModelListener l) {
+            filter.removeModelListener (l);
+            model.removeModelListener (l);
         }
 
         public String toString () {
@@ -714,9 +714,9 @@ public final class Models {
          * 
          * @param l the listener to add
          */
-        public void addTreeModelListener (TreeModelListener l) {
-            filter.addTreeModelListener (l);
-            model.addTreeModelListener (l);
+        public void addModelListener (ModelListener l) {
+            filter.addModelListener (l);
+            model.addModelListener (l);
         }
 
         /** 
@@ -724,9 +724,9 @@ public final class Models {
          *
          * @param l the listener to remove
          */
-        public void removeTreeModelListener (TreeModelListener l) {
-            filter.removeTreeModelListener (l);
-            model.removeTreeModelListener (l);
+        public void removeModelListener (ModelListener l) {
+            filter.removeModelListener (l);
+            model.removeModelListener (l);
         }
 
         public String toString () {
@@ -891,10 +891,10 @@ public final class Models {
          * 
          * @param l the listener to add
          */
-        public void addTreeModelListener (TreeModelListener l) {
+        public void addModelListener (ModelListener l) {
             int i, k = models.length;
             for (i = 0; i < k; i++)
-                models [i].addTreeModelListener (l);
+                models [i].addModelListener (l);
         }
 
         /** 
@@ -902,10 +902,10 @@ public final class Models {
          *
          * @param l the listener to remove
          */
-        public void removeTreeModelListener (TreeModelListener l) {
+        public void removeModelListener (ModelListener l) {
             int i, k = models.length;
             for (i = 0; i < k; i++)
-                models [i].removeTreeModelListener (l);
+                models [i].removeModelListener (l);
         }
 
         public String toString () {
@@ -993,26 +993,6 @@ public final class Models {
                     ((DelegatingNodeActionsProvider) model).toString (n + "  ");
             return n + filter + "\n" + 
                    n + "  " + model;
-        }
-
-        /** 
-         * Registers given listener.
-         * 
-         * @param l the listener to add
-         */
-        public void addTreeModelListener (TreeModelListener l) {
-            filter.addTreeModelListener (l);
-            model.addTreeModelListener (l);
-        }
-
-        /** 
-         * Unregisters given listener.
-         *
-         * @param l the listener to remove
-         */
-        public void removeTreeModelListener (TreeModelListener l) {
-            filter.removeTreeModelListener (l);
-            model.removeTreeModelListener (l);
         }
     }
 
@@ -1164,10 +1144,10 @@ public final class Models {
          * 
          * @param l the listener to add
          */
-        public void addTreeModelListener (TreeModelListener l) {
+        public void addModelListener (ModelListener l) {
             int i, k = models.length;
             for (i = 0; i < k; i++)
-                models [i].addTreeModelListener (l);
+                models [i].addModelListener (l);
         }
 
         /** 
@@ -1175,10 +1155,10 @@ public final class Models {
          *
          * @param l the listener to remove
          */
-        public void removeTreeModelListener (TreeModelListener l) {
+        public void removeModelListener (ModelListener l) {
             int i, k = models.length;
             for (i = 0; i < k; i++)
-                models [i].removeTreeModelListener (l);
+                models [i].removeModelListener (l);
         }
 
         public String toString () {
@@ -1447,10 +1427,10 @@ public final class Models {
          * 
          * @param l the listener to add
          */
-        public void addTreeModelListener (TreeModelListener l) {
+        public void addModelListener (ModelListener l) {
             int i, k = models.length;
             for (i = 0; i < k; i++)
-                models [i].addTreeModelListener (l);
+                models [i].addModelListener (l);
         }
 
         /** 
@@ -1458,10 +1438,10 @@ public final class Models {
          *
          * @param l the listener to remove
          */
-        public void removeTreeModelListener (TreeModelListener l) {
+        public void removeModelListener (ModelListener l) {
             int i, k = models.length;
             for (i = 0; i < k; i++)
-                models [i].removeTreeModelListener (l);
+                models [i].removeModelListener (l);
         }
 
         public String toString () {
@@ -1535,7 +1515,7 @@ public final class Models {
          *
          * @param l the listener to be added
          */
-        public void addTreeModelListener (TreeModelListener l) {
+        public void addModelListener (ModelListener l) {
         }
 
         /** 
@@ -1543,7 +1523,7 @@ public final class Models {
          *
          * @param l the listener to be removed
          */
-        public void removeTreeModelListener (TreeModelListener l) {
+        public void removeModelListener (ModelListener l) {
         }
     }
 
@@ -1595,7 +1575,7 @@ public final class Models {
          *
          * @param l the listener to be added
          */
-        public void addTreeModelListener (TreeModelListener l) {
+        public void addModelListener (ModelListener l) {
         }
 
         /** 
@@ -1603,7 +1583,7 @@ public final class Models {
          *
          * @param l the listener to be removed
          */
-        public void removeTreeModelListener (TreeModelListener l) {
+        public void removeModelListener (ModelListener l) {
         }
     }
 
@@ -1673,7 +1653,7 @@ public final class Models {
          *
          * @param l the listener to be added
          */
-        public void addTreeModelListener (TreeModelListener l) {
+        public void addModelListener (ModelListener l) {
         }
 
         /** 
@@ -1681,7 +1661,7 @@ public final class Models {
          *
          * @param l the listener to be removed
          */
-        public void removeTreeModelListener (TreeModelListener l) {
+        public void removeModelListener (ModelListener l) {
         }
     }
 
@@ -1715,22 +1695,6 @@ public final class Models {
         public Action[] getActions (Object node) 
         throws UnknownTypeException {
             throw new UnknownTypeException (node);
-        }
-        
-        /** 
-         * Do nothing.
-         *
-         * @param l the listener to be added
-         */
-        public void addTreeModelListener (TreeModelListener l) {
-        }
-
-        /** 
-         * Do nothing.
-         *
-         * @param l the listener to be removed
-         */
-        public void removeTreeModelListener (TreeModelListener l) {
         }
     }
     
@@ -1849,28 +1813,6 @@ public final class Models {
             sb.append (n);
             sb.append (models [i]);
             return new String (sb);
-        }
-
-        /** 
-         * Registers given listener.
-         * 
-         * @param l the listener to add
-         */
-        public void addTreeModelListener (TreeModelListener l) {
-            int i, k = models.length;
-            for (i = 0; i < k; i++)
-                models [i].addTreeModelListener (l);
-        }
-
-        /** 
-         * Unregisters given listener.
-         *
-         * @param l the listener to remove
-         */
-        public void removeTreeModelListener (TreeModelListener l) {
-            int i, k = models.length;
-            for (i = 0; i < k; i++)
-                models [i].removeTreeModelListener (l);
         }
     }
     
@@ -2160,11 +2102,10 @@ public final class Models {
          * 
          * @param l the listener to add
          */
-        public void addTreeModelListener (TreeModelListener l) {
-            treeModel.addTreeModelListener (l);
-            nodeModel.addTreeModelListener (l);
-            nodeActionsProvider.addTreeModelListener (l);
-            tableModel.addTreeModelListener (l);
+        public void addModelListener (ModelListener l) {
+            treeModel.addModelListener (l);
+            nodeModel.addModelListener (l);
+            tableModel.addModelListener (l);
         }
 
         /** 
@@ -2172,11 +2113,10 @@ public final class Models {
          *
          * @param l the listener to remove
          */
-        public void removeTreeModelListener (TreeModelListener l) {
-            treeModel.removeTreeModelListener (l);
-            nodeModel.removeTreeModelListener (l);
-            nodeActionsProvider.removeTreeModelListener (l);
-            tableModel.removeTreeModelListener (l);
+        public void removeModelListener (ModelListener l) {
+            treeModel.removeModelListener (l);
+            nodeModel.removeModelListener (l);
+            tableModel.removeModelListener (l);
         }
 
         public String toString () {

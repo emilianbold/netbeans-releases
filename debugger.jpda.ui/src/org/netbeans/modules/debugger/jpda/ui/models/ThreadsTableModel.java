@@ -17,8 +17,9 @@ import java.util.Vector;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.spi.debugger.ui.Constants;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TableModel;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 
@@ -123,7 +124,7 @@ public class ThreadsTableModel implements TableModel, Constants {
                     ((JPDAThreadGroup) row).suspend ();
                 else
                     ((JPDAThreadGroup) row).resume ();
-                refresh (row);
+                fireTableValueChanged (row, Constants.THREAD_SUSPENDED_COLUMN_ID);
                 return;
             }
         }
@@ -133,6 +134,7 @@ public class ThreadsTableModel implements TableModel, Constants {
                     ((JPDAThread) row).suspend ();
                 else 
                     ((JPDAThread) row).resume ();
+                fireTableValueChanged (row, Constants.THREAD_SUSPENDED_COLUMN_ID);
                 return;
             }
         }
@@ -144,7 +146,7 @@ public class ThreadsTableModel implements TableModel, Constants {
      * 
      * @param l the listener to add
      */
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
         listeners.add (l);
     }
 
@@ -153,14 +155,16 @@ public class ThreadsTableModel implements TableModel, Constants {
      *
      * @param l the listener to remove
      */
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
         listeners.remove (l);
     }
     
-    private void refresh (Object node) {
+    private void fireTableValueChanged (Object o, String propertyName) {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
-            ((TreeModelListener) v.get (i)).treeNodeChanged (node);
+            ((ModelListener) v.get (i)).modelChanged (
+                new ModelEvent.TableValueChanged (this, o, propertyName)
+            );
     }
 }

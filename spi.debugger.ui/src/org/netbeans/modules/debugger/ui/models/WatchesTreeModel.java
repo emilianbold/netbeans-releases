@@ -21,8 +21,9 @@ import java.util.Vector;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 
@@ -85,11 +86,11 @@ public class WatchesTreeModel implements TreeModel {
         throw new UnknownTypeException (node);
     }
 
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
         listeners.add (l);
     }
 
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
         listeners.remove (l);
     }
     
@@ -97,14 +98,18 @@ public class WatchesTreeModel implements TreeModel {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
-            ((TreeModelListener) v.get (i)).treeChanged ();
+            ((ModelListener) v.get (i)).modelChanged (
+                new ModelEvent.TreeChanged (this)
+            );
     }
     
-    void fireNodeChanged (Watch b) {
+    void fireWatchPropertyChanged (Watch b, String propertyName) {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
-            ((TreeModelListener) v.get (i)).treeNodeChanged (b);
+            ((ModelListener) v.get (i)).modelChanged (
+                new ModelEvent.TableValueChanged (this, b, propertyName)
+            );
     }
     
     
@@ -166,7 +171,7 @@ public class WatchesTreeModel implements TreeModel {
             if (! (evt.getSource () instanceof Watch))
                 return;
             Watch w = (Watch) evt.getSource ();
-            m.fireNodeChanged (w);
+            m.fireWatchPropertyChanged (w, evt.getPropertyName ());
         }
     }
 }

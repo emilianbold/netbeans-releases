@@ -54,7 +54,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
@@ -152,13 +152,13 @@ public class ClassesTreeModel implements TreeModel {
         throw new UnknownTypeException (o);
     }
 
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
         listeners.add (l);
         if (listener == null)
             listener = new Listener (this, debugger);
     }
 
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
         listeners.remove (l);
         if (listeners.size () == 0) {
             listener.destroy ();
@@ -173,7 +173,7 @@ public class ClassesTreeModel implements TreeModel {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
-            ((TreeModelListener) v.get (i)).treeChanged ();
+            ((ModelListener) v.get (i)).modelChanged (null);
     }
 
     

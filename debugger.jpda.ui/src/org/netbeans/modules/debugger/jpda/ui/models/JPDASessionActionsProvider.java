@@ -16,7 +16,7 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -146,13 +146,13 @@ public class JPDASessionActionsProvider implements NodeActionsProviderFilter {
         }
     }
 
-    public void addTreeModelListener(TreeModelListener l) {
+    public void addModelListener(ModelListener l) {
         HashSet newListeners = (listeners == null) ? new HashSet() : (HashSet) listeners.clone();
         newListeners.add(l);
         listeners = newListeners;
     }
 
-    public void removeTreeModelListener(TreeModelListener l) {
+    public void removeModelListener(ModelListener l) {
         if (listeners == null) return;
         HashSet newListeners = (HashSet) listeners.clone();
         newListeners.remove(l);

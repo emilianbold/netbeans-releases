@@ -20,8 +20,9 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.Constants;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TableModel;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 
@@ -29,20 +30,10 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  *
  * @author   Jan Jancura
  */
-public class SessionsTableModel implements TableModel, Constants,
-PropertyChangeListener {
+public class SessionsTableModel implements TableModel, Constants {
 
     private Vector listeners = new Vector ();
 
-    
-    public SessionsTableModel () {
-//        Session session = DebuggerManager.getDebuggerManager ().
-//            getCurrentSession ();
-//        session.addPropertyChangeListener (
-//            Session.PROP_CURRENT_LANGUAGE, 
-//            this
-//        );
-    }
     
     public Object getValueAt (Object row, String columnID) throws 
     UnknownTypeException {
@@ -84,7 +75,7 @@ PropertyChangeListener {
      * 
      * @param l the listener to add
      */
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
         listeners.add (l);
     }
 
@@ -93,7 +84,7 @@ PropertyChangeListener {
      *
      * @param l the listener to remove
      */
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
         listeners.remove (l);
     }
 
@@ -104,18 +95,8 @@ PropertyChangeListener {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
-            ((TreeModelListener) v.get (i)).treeChanged ();
-    }
-    
-    private void fireTreeNodeChanged (Object parent) {
-        Vector v = (Vector) listeners.clone ();
-        int i, k = v.size ();
-        for (i = 0; i < k; i++)
-            ((TreeModelListener) v.get (i)).treeNodeChanged (parent);
-    }
-    
-    public void propertyChange (PropertyChangeEvent ev) {
-        if (ev.getPropertyName () == Session.PROP_CURRENT_LANGUAGE)
-            fireTreeNodeChanged (ev.getSource ());
+            ((ModelListener) v.get (i)).modelChanged (
+                new ModelEvent.TreeChanged (this)
+            );
     }
 }

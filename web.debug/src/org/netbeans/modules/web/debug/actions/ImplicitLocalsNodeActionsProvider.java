@@ -16,7 +16,7 @@ package org.netbeans.modules.web.debug.actions;
 import javax.swing.Action;
 import org.netbeans.modules.web.debug.variablesfilterring.JSPVariablesFilter;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 /**
@@ -38,10 +38,10 @@ public class ImplicitLocalsNodeActionsProvider implements NodeActionsProvider {
         return new Action[0];
     }
 
-    public void removeTreeModelListener(TreeModelListener l) {
+    public void removeModelListener(ModelListener l) {
     }
 
-    public void addTreeModelListener(TreeModelListener l) {
+    public void addModelListener(ModelListener l) {
     }
      
 }

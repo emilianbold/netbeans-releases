@@ -21,7 +21,7 @@ import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 
@@ -238,9 +238,9 @@ public class CallStackFilter implements TreeModelFilter, NodeModel {
         return original.isLeaf (node);
     }
     
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
     }
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
     }
     
     public String getDisplayName (Object node) throws UnknownTypeException {

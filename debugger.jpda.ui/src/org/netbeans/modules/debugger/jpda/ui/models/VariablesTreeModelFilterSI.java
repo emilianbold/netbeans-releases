@@ -28,7 +28,7 @@ import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 //import org.netbeans.modules.debugger.jpda.ui.FixedWatch;
 import org.openide.util.NbBundle;
@@ -196,10 +196,10 @@ NodeModel, TableModel, NodeActionsProvider {
         return (node instanceof SpecialNode) ? false : original.isLeaf(node);
     }
 
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
     }
 
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
     }
     
     

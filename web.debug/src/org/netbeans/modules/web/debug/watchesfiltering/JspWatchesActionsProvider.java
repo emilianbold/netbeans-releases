@@ -98,10 +98,10 @@ public class JspWatchesActionsProvider implements NodeActionsProvider {
         throw new UnknownTypeException (node);
     }
 
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
     }
 
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
     }
 
     private static void customize(Watch w) {
