@@ -46,6 +46,8 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="Services">
             <folder name="SearchType">
+                <attr name="helpID" stringvalue="org.openidex.search.SearchType"/>
+
                 <file name="org-netbeans-modules-search-FullTextType.settings" url="../search/FullTextType.settings">
                     <attr name="template" boolvalue="true"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.search.Bundle"/>
@@ -75,6 +77,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Easy to do; note URLDataObject presenter currently uses OpenCookie vs. URLNodeCookie, could be changed. -->
     <folder name="Bookmarks">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+        <attr name="helpID" stringvalue="org.netbeans.modules.url.BookmarksNode"/>
+
         <file name="jdc.url">
             <![CDATA[http://developer.java.sun.com/developer/]]>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
@@ -212,6 +216,8 @@ Microsystems, Inc. All Rights Reserved.
 
         <!-- Search Services -->
         <folder name="SearchType">
+            <attr name="helpID" stringvalue="org.openidex.search.SearchType"/>
+
             <file name="org-netbeans-modules-search-FullTextType.settings" url="../search/FullTextType.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.search.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/openidex/search/res/find.gif"/>
