@@ -14,6 +14,7 @@
 package org.netbeans.beaninfo.editors;
 
 import java.awt.Point;
+import java.awt.Dimension;
 import java.util.ResourceBundle;
 
 import org.openide.NotifyDescriptor;
@@ -22,7 +23,7 @@ import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
-/**
+/** Custom property editor for Point and Dimension
 *
 * @author   Ian Formanek
 * @version  1.00, 01 Sep 1998
@@ -34,6 +35,9 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
                                        PointCustomEditor.class);
 
     static final long serialVersionUID =-4067033871196801978L;
+    
+    private boolean dimensionMode = false;
+    
     /** Initializes the Form */
     public PointCustomEditor(PointEditor editor) {
         initComponents ();
@@ -48,17 +52,43 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
 
         xField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_X"));
         yField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Y"));
+        
+        commonInit( bundle.getString ("CTL_Point") );
+    }
+    
+    public PointCustomEditor(DimensionEditor editor) {
+        dimensionMode = true;
+        
+        initComponents();
+        this.editor = editor;
+        Dimension dimension = (Dimension)editor.getValue ();
+        if (dimension == null) dimension = new Dimension (0, 0);
+        xField.setText ("" + dimension.width);    // NOI18N
+        yField.setText ("" + dimension.height);  // NOI18N
+        
+        xLabel.setText (bundle.getString("CTL_Width"));
+        xLabel.setDisplayedMnemonic(bundle.getString("CTL_Width_mnemonic").charAt(0));
+        xLabel.setLabelFor(xField);
+        yLabel.setText (bundle.getString("CTL_Height"));
+        yLabel.setDisplayedMnemonic(bundle.getString("CTL_Height_mnemonic").charAt(0));
+        yLabel.setLabelFor(yField);
+
+        xField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Width"));
+        yField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Height"));
+        
+        commonInit( bundle.getString ("CTL_Dimension") );
+    }
+    
+    private void commonInit( String panelTitle ) {
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_PointCustomEditor"));
         
         setBorder (new javax.swing.border.EmptyBorder(12, 12, 0, 11));
         insidePanel.setBorder (new javax.swing.border.CompoundBorder (
                                    new javax.swing.border.TitledBorder (
                                        new javax.swing.border.EtchedBorder (),
-                                       " " + bundle.getString ("CTL_Point") + " "
+                                       " " + panelTitle + " "
                                    ),
                                    new javax.swing.border.EmptyBorder (new java.awt.Insets(5, 5, 5, 5))));
-
-//        HelpCtx.setHelpIDString (this, PointCustomEditor.class.getName ());
     }
 
     public java.awt.Dimension getPreferredSize () {
@@ -76,7 +106,10 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
                     bundle.getString("CTL_NegativeSize"), null, null);
                 throw ise;
             }
-            return new Point (x, y);
+            if ( dimensionMode )
+                return new Dimension (x, y);
+            else
+                return new Point (x, y);
         } catch (NumberFormatException e) {
             IllegalStateException ise = new IllegalStateException();
             TopManager.getDefault().getErrorManager().annotate(
@@ -150,7 +183,10 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
         try {
             int x = Integer.parseInt (xField.getText ());
             int y = Integer.parseInt (yField.getText ());
-            editor.setValue (new Point (x, y));
+            if ( dimensionMode )
+                editor.setValue (new Dimension (x, y));
+            else
+                editor.setValue (new Point (x, y));
         } catch (NumberFormatException e) {
             // [PENDING beep]
         }
@@ -165,7 +201,7 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
     private javax.swing.JTextField yField;
     // End of variables declaration//GEN-END:variables
 
-    private PointEditor editor;
+    private ArrayOfIntSupport editor;
 
 }
 

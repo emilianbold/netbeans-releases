@@ -63,7 +63,7 @@ public class DimensionEditor extends ArrayOfIntSupport {
     }
 
     public java.awt.Component getCustomEditor () {
-        return new DimensionCustomEditor (this);
+        return new PointCustomEditor (this);
     }
 
 
