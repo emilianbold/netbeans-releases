@@ -109,6 +109,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     
     public void setSelectedTemplateByName (final String templateName) {
         final TemplatesPanel tempExplorer = ((TemplatesPanel)this.projectsPanel);
+    
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 if (templateName != null) {
@@ -121,6 +122,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                 }
             }
         });
+
     }
     
     public String getSelectedTemplateName () {
@@ -173,7 +175,12 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                         URL descURL = getDescription (template);
                         if (descURL != null) {
                             try {
-                                this.description.setPage (descURL);                                
+                                // this.description.setPage (descURL);
+                                // Set page does not work well if there are mutiple calls to that
+                                // see issue #49067. This is a hotfix for the bug which causes                                
+                                // synchronous loading of the content. It should be improved later 
+                                // by doing it in request processor.
+                                this.description.read( descURL.openStream(), descURL );
                             } catch (IOException e) {
                                 this.description.setText (NbBundle.getBundle (TemplatesPanelGUI.class).getString ("TXT_NoDescription")); // NOI18N
                             }
@@ -190,7 +197,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             }
         }
     }
-    
+        
     private void postInitComponents () {        
         this.jLabel1.setText (this.firer.getCategoriesName());
         this.jLabel1.setDisplayedMnemonic(this.firer.getCategoriesMnemonic());
@@ -369,6 +376,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             return this.manager;
         }
         
+     
         public void propertyChange (final PropertyChangeEvent event) {
             // workaround of issue 43502, update of Help button set back the focus
             // to component which is active when this change starts
@@ -380,10 +388,11 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
                     firePropertyChange(event.getPropertyName(),
-                        event.getOldValue(), event.getNewValue());                }
+                        event.getOldValue(), event.getNewValue());            
+                     }
             });
-
         }
+        
         
         public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
             if (ExplorerManager.PROP_SELECTED_NODES.equals (evt.getPropertyName())) {
