@@ -25,11 +25,15 @@ import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 import org.openide.*;
 import org.openide.xml.XMLUtil;
-import org.openide.src.*;
 
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.layoutsupport.delegates.*;
 import org.netbeans.modules.form.codestructure.*;
+
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.jmi.javamodel.ClassDefinition;
 
 /**
  * XML persistence manager - responsible for saving/loading forms to/from XML.
@@ -249,21 +253,26 @@ public class GandalfPersistenceManager extends PersistenceManager {
             formInfoName = null; // not available
 
         try { // try declared superclass from java source first
-            ClassElement[] classes = formObject.getSource().getClasses();
-            Identifier superclassId = null;
-            for (int i=0; i < classes.length; i++)
-                if (classes[i].getName().getName().equals(formObject.getName())) {
-                    superclassId = classes[i].getSuperclass();
+            FileObject javaFile = formObject.getPrimaryFile();
+            ClassPath classPath = ClassPath.getClassPath(javaFile, ClassPath.SOURCE);
+            Resource resource = JavaModel.getResource(classPath.findOwnerRoot(javaFile),
+                classPath.getResourceName(javaFile));
+            List classifiers = resource.getClassifiers();
+            Iterator classIter = classifiers.iterator();
+            
+            while (classIter.hasNext()) {
+                ClassDefinition javaClass = (ClassDefinition)classIter.next();
+                String className = javaClass.getName();
+                int dotIndex = className.lastIndexOf('.');
+                className = (dotIndex == -1) ? className : className.substring(dotIndex+1);
+                if (className.equals(formObject.getName())) {
+                    declaredSuperclassName = javaClass.getSuperClass().getName();
                     break;
                 }
-
-            Class superclass;
-            if (superclassId != null) {
-                declaredSuperclassName = superclassId.getFullName();
-                superclass = FormUtils.loadClass(declaredSuperclassName, formFile);
             }
-            else superclass = Object.class;
-
+            
+            Class superclass = (declaredSuperclassName != null) ?
+                FormUtils.loadClass(declaredSuperclassName, formFile) : Object.class;
             formBaseClass = checkDeclaredSuperclass(superclass, formInfoName);
 
             if (formBaseClass != superclass)
