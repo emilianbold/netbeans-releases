@@ -85,9 +85,6 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="netbeans" depends="jars,release,javahelp">
-        <copy todir="../netbeans">
-            <fileset dir="netbeans"/>
-        </copy>
         <genlist targetname="nbm" outputfiledir="${nbext_root}/netbeans"/>
     </target>
 

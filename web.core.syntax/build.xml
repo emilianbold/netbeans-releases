@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
         <pathelement location="${nb_root}/editor/netbeans/modules/ext/nb-editor.jar"/>
         <pathelement location="${nb_root}/editor/netbeans/modules/editor.jar"/>
-        <pathelement location="${nb_root}/xml/netbeans/modules/xml-text-edit.jar"/>
+        <pathelement location="${nb_root}/xml/text-edit/netbeans/modules/xml-text-edit.jar"/>
         <pathelement location="${core_root}/src/"/>
         <pathelement location="../external/servlet-2.3.jar"/>
         <fileset dir="${nb_root}/openide/netbeans/lib">

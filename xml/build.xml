@@ -45,8 +45,6 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="netbeans" depends="jars,release,javahelp">
-        <mkdir dir="netbeans"/>
-
         <for-each locations="${submodules}"/>
     </target>
 
@@ -55,7 +53,6 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="clean">
-        <delete dir="netbeans"/>
         <delete file="xml-nbms.zip"/>
 
         <for-each locations="${submodules}"/>
