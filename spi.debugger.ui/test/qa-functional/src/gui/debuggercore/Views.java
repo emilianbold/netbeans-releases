@@ -51,9 +51,6 @@ public class Views extends JellyTestCase {
     private static String newWatchTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Watch_Title");
     private static String newWatchItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "AddWatch");
     
-    private static String breakpointsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Breakpoints_view");
-    private static String watchesViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Watches_view");    
-    
     public Views(String name) {
         super(name);
     }

@@ -40,6 +40,8 @@ public class Utilities {
     private String  sampleDir = System.getProperty("netbeans.user") + File.separator + "sampledir";
     
     public static String windowItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window");
+    public static String debuggerItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Debug");
+    
     public static String debuggingItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
     
     public static String localVarsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Variables_view");

@@ -54,14 +54,6 @@ public class Breakpoints extends JellyTestCase {
     private static String debuggerItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Debug");
     private static String windowItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window");
     
-    private static String sessionsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Sessions_view");
-    private static String breakpointsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Breakpoints_view");
-    private static String threadsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Threads_view");
-    private static String callStackViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Call_stack_view");
-    private static String watchesViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Watches_view");
-    private static String localVariablesViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Variables_view");
-    private static String classesViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Classes_view");
-    
     private static String editAction = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Edit");
     
     private static String debuggerFinishedMsg = Bundle.getStringTrimmed("org.netbeans.modules.debugger.multisession.Bundle", "CTL_Debugger_end");
@@ -125,8 +117,8 @@ public class Breakpoints extends JellyTestCase {
         new JTextFieldOperator(dialog, 2).typeText("60"); // NOI18N
         dialog.ok();
         
-        Utilities.showDebuggerView(breakpointsViewTitle);
-        TopComponentOperator breakpointsOper = new TopComponentOperator(breakpointsViewTitle);
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
         
         int rowNumber = 0;
@@ -184,8 +176,8 @@ public class Breakpoints extends JellyTestCase {
         new JTextFieldOperator(dialog, 2).typeText("updateCounter"); // NOI18N
         dialog.ok();
         
-        Utilities.showDebuggerView(breakpointsViewTitle);
-        TopComponentOperator breakpointsOper = new TopComponentOperator(breakpointsViewTitle);
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
         
         int rowNumber = 0;
@@ -243,8 +235,8 @@ public class Breakpoints extends JellyTestCase {
         new JComboBoxOperator(dialog, 4).selectItem("Class Prepare or Unload");
         dialog.ok();
         
-        Utilities.showDebuggerView(breakpointsViewTitle);
-        TopComponentOperator breakpointsOper = new TopComponentOperator(breakpointsViewTitle);
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
         
         int rowNumber = 0;
@@ -306,8 +298,8 @@ public class Breakpoints extends JellyTestCase {
         new JComboBoxOperator(dialog, 5).selectItem("Variable Access");
         dialog.ok();
 
-        Utilities.showDebuggerView(breakpointsViewTitle);
-        TopComponentOperator breakpointsOper = new TopComponentOperator(breakpointsViewTitle);
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
         
         int rowNumber = 0;
@@ -363,8 +355,8 @@ public class Breakpoints extends JellyTestCase {
         new JComboBoxOperator(dialog, 2).selectItem("Thread Start or Death");
         dialog.ok();
                 
-        Utilities.showDebuggerView(breakpointsViewTitle);
-        TopComponentOperator breakpointsOper = new TopComponentOperator(breakpointsViewTitle);
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
         
         int rowNumber = 0;
@@ -388,8 +380,8 @@ public class Breakpoints extends JellyTestCase {
         MainWindowOperator mwo = MainWindowOperator.getDefault();
         //mwo.waitStatusText("Debugger running"); ???
         
-        Utilities.showDebuggerView(sessionsViewTitle);
-        TopComponentOperator sessionsOper = new TopComponentOperator(sessionsViewTitle);
+        Utilities.showDebuggerView(Utilities.sessionsViewTitle);
+        TopComponentOperator sessionsOper = new TopComponentOperator(Utilities.sessionsViewTitle);
         jTableOperator = new JTableOperator(sessionsOper);
         assertTrue("There isn't an expected text in the Session view!",
             "DebuggerTestApplication".equals(jTableOperator.getValueAt(0, 0).toString()) );
@@ -436,8 +428,8 @@ public class Breakpoints extends JellyTestCase {
         new JComboBoxOperator(dialog, 4).selectItem("Exception Caught or Uncaught"); 
         dialog.ok();
                 
-        Utilities.showDebuggerView(breakpointsViewTitle);
-        TopComponentOperator breakpointsOper = new TopComponentOperator(breakpointsViewTitle);
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
         
         int rowNumber = 0;
@@ -478,8 +470,8 @@ public class Breakpoints extends JellyTestCase {
         new JTextFieldOperator(dialog, 3).typeText("counter==5"); // NOI18N
         dialog.ok();
         
-        Utilities.showDebuggerView(breakpointsViewTitle);
-        TopComponentOperator breakpointsOper = new TopComponentOperator(breakpointsViewTitle);
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
         
         int rowNumber = 0;
@@ -504,8 +496,8 @@ public class Breakpoints extends JellyTestCase {
         
         new EventTool().waitNoEvent(2000); // XXX
         
-        Utilities.showDebuggerView(localVariablesViewTitle);
-        TopComponentOperator localVarsOper = new TopComponentOperator(localVariablesViewTitle);
+        Utilities.showDebuggerView(Utilities.localVarsViewTitle);
+        TopComponentOperator localVarsOper = new TopComponentOperator(Utilities.localVarsViewTitle);
         jTableOperator = new JTableOperator(localVarsOper);
         TreeTableOperator treeTableOperator = new TreeTableOperator((JTable) jTableOperator.getSource());
         

@@ -40,14 +40,12 @@ public class LocalVariables extends JellyTestCase {
     
     private static String newBreakpointItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_AddBreakpoint");
     private static String newBreakpointTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Breakpoint_Title");
-    private static String localVariablesViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Variables_view");
     private static String finishSessionsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Finish_action_name");
     private static String startSessionItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.resources.Bundle", "Menu/Debug/StartSession");
     private static String runInDebuggerItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Start_action_name");
     
     private static String debuggerItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Debug");
     
-    private static String breakpointsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Breakpoints_view");
     private static String debuggerFinishedMsg = Bundle.getStringTrimmed("org.netbeans.modules.debugger.multisession.Bundle", "CTL_Debugger_end");
     private static String debuggerFinishedTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.multisession.Bundle", "CTL_Finish_debugging_dialog");
     
@@ -101,8 +99,8 @@ public class LocalVariables extends JellyTestCase {
         new JTextFieldOperator(dialog, 2).typeText("60"); // NOI18N
         dialog.ok();
         
-        Utilities.showDebuggerView(breakpointsViewTitle);        
-        TopComponentOperator breakpointsOper = new TopComponentOperator(breakpointsViewTitle);
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);        
+        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
         
         int rowNumber = 0;
@@ -123,8 +121,8 @@ public class LocalVariables extends JellyTestCase {
 
         new EventTool().waitNoEvent(1000); // XXX
         
-        Utilities.showDebuggerView(localVariablesViewTitle);
-        TopComponentOperator localVarsOper = new TopComponentOperator(localVariablesViewTitle);
+        Utilities.showDebuggerView(Utilities.localVarsViewTitle);
+        TopComponentOperator localVarsOper = new TopComponentOperator(Utilities.localVarsViewTitle);
         jTableOperator = new JTableOperator(localVarsOper);
         
         TreeTableOperator treeTableOperator = new TreeTableOperator((JTable) jTableOperator.getSource());

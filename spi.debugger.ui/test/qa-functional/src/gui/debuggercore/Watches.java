@@ -51,9 +51,6 @@ public class Watches extends JellyTestCase {
     private static String newWatchTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Watch_Title");
     private static String newWatchItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "AddWatch");
     
-    private static String breakpointsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Breakpoints_view");
-    private static String watchesViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Watches_view");    
-    
     public Watches(String name) {
         super(name);
     }
@@ -126,8 +123,8 @@ public class Watches extends JellyTestCase {
      
         new EventTool().waitNoEvent(1000);
         
-        Utilities.showDebuggerView(breakpointsViewTitle);
-        TopComponentOperator breakpointsOper = new TopComponentOperator(breakpointsViewTitle);
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
         
         int rowNumber = 0;
@@ -149,8 +146,8 @@ public class Watches extends JellyTestCase {
         // wait till all views are refreshed, ugly!
         new EventTool().waitNoEvent(1000);
         
-        Utilities.showDebuggerView(watchesViewTitle);
-        TopComponentOperator watchesOper = new TopComponentOperator(watchesViewTitle);
+        Utilities.showDebuggerView(Utilities.watchesViewTitle);
+        TopComponentOperator watchesOper = new TopComponentOperator(Utilities.watchesViewTitle);
         jTableOperator = new JTableOperator(watchesOper);
         
         String [] expectedWatches = {"jPanel1", "jButton1", "jButton2"};
