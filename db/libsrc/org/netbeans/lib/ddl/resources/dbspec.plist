@@ -851,7 +851,7 @@
 
     TypeMap = {
       java.sql.Types.BIGINT = BIGINT;
-      java.sql.Types.BLOB = BLOB;  //JDBC 2.0 A type representing an SQL Binary Large Object
+//      java.sql.Types.BLOB = BLOB;  //JDBC 2.0 A type representing an SQL Binary Large Object
       java.sql.Types.CHAR = CHAR;
       java.sql.Types.CLOB = CLOB;  //JDBC 2.0 A type representing an SQL Character Large Object
       java.sql.Types.DATE = DATE;
@@ -859,6 +859,7 @@
       java.sql.Types.DOUBLE = DOUBLE;
       java.sql.Types.FLOAT = FLOAT;
       java.sql.Types.INTEGER = INTEGER;
+      java.sql.Types.LONGVARBINARY = BLOB;
       java.sql.Types.LONGVARCHAR = "LONG VARCHAR";
       java.sql.Types.NUMERIC = NUMERIC;
       java.sql.Types.REAL = REAL;
@@ -867,9 +868,9 @@
       java.sql.Types.TIMESTAMP = TIMESTAMP;
       java.sql.Types.VARCHAR = VARCHAR;
     };
-    SizelessTypes = (BIGINT,BLOB,CLOB,DATE,DOUBLE,INTEGER,"LONG VARCHAR",REAL,SMALLINT,TIME,TIMESTAMP);
+    SizelessTypes = (BIGINT,DATE,DOUBLE,INTEGER,"LONG VARCHAR",REAL,SMALLINT,TIME,TIMESTAMP);
     DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
-    CharacterTypes = (CHAR,VARCHAR);
+    CharacterTypes = (BLOB,CLOB,CHAR,VARCHAR);
 
   };
 
