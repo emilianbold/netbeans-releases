@@ -55,6 +55,7 @@ public class AntProjectNode extends DataNode implements ChangeListener {
         super(obj, new AntProjectChildren(cookie));
         cookie.addChangeListener(WeakListener.change(this, cookie));
         getCookieSet ().add (new ProjectNodeIndex (this));
+        setValue("propertiesHelpID", "org.apache.tools.ant.module.nodes.AntProjectNode.propertysheet"); // NOI18N
     }
     
     public Node.Cookie getCookie(Class c) {
