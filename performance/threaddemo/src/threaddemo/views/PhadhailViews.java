@@ -20,6 +20,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.TreeModel;
 import org.netbeans.api.looks.*;
+import org.netbeans.modules.looks.tree.LookTreeView;
 import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
@@ -59,16 +60,8 @@ public class PhadhailViews {
     
     /** use raw Looks API with a JTree */
     public static Component lookView(Phadhail root) {
-        TreeModel model = new LookTreeModel(root, new PhadhailLookSelector());
-        JTree tree = new JTree(model) {
-            // Could also use a custom TreeCellRenderer, but this is a bit simpler for now.
-            public String convertValueToText(Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-                Look.NodeSubstitute n = (Look.NodeSubstitute)value;
-                return n.getLook().getDisplayName(n);
-            }
-        };
-        tree.setLargeModel(true);
-        return new JScrollPane(tree);
+        // XXX pending a stable API...
+        return new JScrollPane(new LookTreeView(root, new PhadhailLookSelector()));
     }
     
     /** use Phadhail directly in a JTree */
