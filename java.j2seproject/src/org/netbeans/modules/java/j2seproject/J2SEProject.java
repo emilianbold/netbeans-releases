@@ -166,7 +166,7 @@ final class J2SEProject implements Project, AntProjectListener {
             }),
             fileBuilt,
             new RecommendedTemplatesImpl(),
-            new J2SEProjectClassPathExtender(helper, eval,refHelper)
+            new J2SEProjectClassPathExtender(this, helper, eval,refHelper)
         });
     }
 

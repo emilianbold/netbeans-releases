@@ -22,6 +22,7 @@ import org.openide.util.Mutex;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -36,11 +37,13 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
     
     private static final String CP_CLASS_PATH = "javac.classpath"; //NOI18N
 
+    private Project project;
     private AntProjectHelper helper;
     private ReferenceHelper refHelper;
     private PropertyEvaluator eval;
 
-    public J2SEProjectClassPathExtender (AntProjectHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper) {
+    public J2SEProjectClassPathExtender (Project project, AntProjectHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper) {
+        this.project = project;
         this.helper = helper;
         this.eval = eval;
         this.refHelper = refHelper;
@@ -62,6 +65,7 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
                                 raw = parser.encode (resources, helper, refHelper);
                                 props.put (CP_CLASS_PATH, raw);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                                ProjectManager.getDefault().saveProject(project);
                                 return Boolean.TRUE;
                             }
                             return Boolean.FALSE;
@@ -99,6 +103,7 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
                                 raw = parser.encode (resources, helper, refHelper);
                                 props.put (CP_CLASS_PATH, raw);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                                ProjectManager.getDefault().saveProject(project);
                                 return Boolean.TRUE;
                             }
                             return Boolean.FALSE;
@@ -132,6 +137,7 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
                                 raw = parser.encode (resources, helper, refHelper);
                                 props.put (CP_CLASS_PATH, raw);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                                ProjectManager.getDefault().saveProject(project);
                                 return Boolean.TRUE;
                             }
                             return Boolean.FALSE;
