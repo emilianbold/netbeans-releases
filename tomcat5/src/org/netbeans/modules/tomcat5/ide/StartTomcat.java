@@ -38,8 +38,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
-//import org.openide.debugger.DebuggerInfo;
-//import org.netbeans.modules.debugger.jpda.RemoteDebuggerInfo;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.openide.filesystems.*;
 
 import org.w3c.dom.Document;
@@ -196,26 +195,26 @@ public final class StartTomcat extends StartServer implements ProgressObject
         return this;
     }
 
-//    public DebuggerInfo getDebugInfo(Target target) { 
-//        RemoteDebuggerInfo rdi;
-//        String dbgType = tm.getDebugType();
-//        if ((dbgType == null) || (dbgType.toLowerCase().indexOf("socket") > -1)) {
-//            Integer dbgPort = tm.getDebugPort();
-//            if (dbgPort != null) {
-//                rdi = new RemoteDebuggerInfo("localhost", dbgPort.intValue());  // NOI18N
-//            } else {
-//                rdi = new RemoteDebuggerInfo("localhost", TomcatManager.DEFAULT_DEBUG_PORT.intValue());  // NOI18N
-//            }
-//        } else {
-//            String shmem = tm.getSharedMemory();
-//            if (shmem != null) {
-//                rdi = new RemoteDebuggerInfo("localhost", shmem);
-//            } else {
-//                rdi = new RemoteDebuggerInfo("localhost", TomcatManager.DEFAULT_SHARED_MEMORY);
-//            }
-//        }
-//        return rdi;
-//    }
+    public ServerDebugInfo getDebugInfo(Target target) { 
+        ServerDebugInfo sdi;
+        String dbgType = tm.getDebugType();
+        if ((dbgType == null) || (dbgType.toLowerCase().indexOf("socket") > -1)) {
+            Integer dbgPort = tm.getDebugPort();
+            if (dbgPort != null) {
+                sdi = new ServerDebugInfo("localhost", dbgPort.intValue());  // NOI18N
+            } else {
+                sdi = new ServerDebugInfo("localhost", TomcatManager.DEFAULT_DEBUG_PORT.intValue());  // NOI18N
+            }
+        } else {
+            String shmem = tm.getSharedMemory();
+            if (shmem != null) {
+                sdi = new ServerDebugInfo("localhost", shmem);
+            } else {
+                sdi = new ServerDebugInfo("localhost", TomcatManager.DEFAULT_SHARED_MEMORY);
+            }
+        }
+        return sdi;
+    }
     
     private class StartRunnable implements Runnable {
         
@@ -374,7 +373,6 @@ public final class StartTomcat extends StartServer implements ProgressObject
                     );
                 }        
             }
-
             while ((command == CommandType.START && !URLWait.waitForStartup (tm, 1000)) ||  //still no feedback when starting
                    (command == CommandType.STOP && URLWait.waitForStartup (tm, 1000))) {    //still getting feedback when stopping
                 pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, NbBundle.getMessage (StartTomcat.class, "MSG_waiting"), StateType.RUNNING));
@@ -386,7 +384,6 @@ public final class StartTomcat extends StartServer implements ProgressObject
                     e.printStackTrace();
                 }
             }
-
 /*            running = command.equals (CommandType.START);
             if (debug) {
                 if (running) {
