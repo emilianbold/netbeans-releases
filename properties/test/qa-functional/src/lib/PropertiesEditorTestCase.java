@@ -204,7 +204,7 @@ public class PropertiesEditorTestCase extends NbTestCase {
      * @param filesystemNode of mounted directory ( without extension )
      * @param filePath of file in explorer tree
      */
-    public void openExistedPropetiesFileInClassicEditor(FilesystemNode filesystemNode, String filePath) {
+    public void openExistedPropetiesFileInClassicEditor(Node filesystemNode, String filePath) {
         new EditAction().performPopup(new Node(filesystemNode,filePath));
     }
     
@@ -245,7 +245,7 @@ public class PropertiesEditorTestCase extends NbTestCase {
      * @param filesystemNode of tree, where file is stored ( without file name )
      * @param filePath of file to delete
      */
-    public void deletePropertiesFileFromExplorer(FilesystemNode filesystemNode, String filePath) {
+    public void deletePropertiesFileFromExplorer(Node filesystemNode, String filePath) {
         PropertiesNode propNode = new PropertiesNode(filesystemNode, filePath);
         propNode.delete();
         new NbDialogOperator(this.TITLE_DIALOG_CONFIRM_OBJECT_DELETION).yes();
@@ -714,7 +714,7 @@ public class PropertiesEditorTestCase extends NbTestCase {
      * @param filesystemNode is node of filesystem in which is file located in Explorer
      * @param filePath is path to file in tree in Explorer
      */
-    public void openAddLocaleDialogFromExplorer(FilesystemNode filesystemNode,String filePath) {
+    public void openAddLocaleDialogFromExplorer(Node filesystemNode,String filePath) {
         new ActionNoBlock(null,this.POPUP_MENU_ADD_LOCALE).performPopup(new Node(filesystemNode,filePath));
     }
     
@@ -727,7 +727,7 @@ public class PropertiesEditorTestCase extends NbTestCase {
      * @param fileName is name of file
      * @throws Exception if an appeared
      */
-    public void addLocaleDialogFill(String languageCode, String countryCode, String variant, FilesystemNode filesystemNode, String fileName) throws Exception {
+    public void addLocaleDialogFill(String languageCode, String countryCode, String variant, Node filesystemNode, String fileName) throws Exception {
         new EventTool().waitNoEvent(250);
         boolean finished = false;
         do  {
@@ -799,7 +799,7 @@ public class PropertiesEditorTestCase extends NbTestCase {
      * @param filesystemNode node of filesystem in tree in explorer
      * @param path to the object you can customize
      */
-    public void openCustomizeLocalesDialogFromExplorer(FilesystemNode filesystemNode,String path) {
+    public void openCustomizeLocalesDialogFromExplorer(Node filesystemNode,String path) {
         new ActionNoBlock(null,this.POPUP_MENU_CUSTOMIZE).performPopup(new Node(filesystemNode,path));
     }
     
@@ -860,12 +860,12 @@ public class PropertiesEditorTestCase extends NbTestCase {
      * @param filesystemNode is node of tree in explorer
      * @param path of file in tree in explorer
      */
-    public void openAddPropertyDialogFromExplorer(FilesystemNode filesystemNode, String path) {
+    public void openAddPropertyDialogFromExplorer(Node filesystemNode, String path) {
         new ActionNoBlock(null,this.POPUP_MENU_ADD_PROPERTY).performPopup(new Node(filesystemNode,path));
     }
     
     
-    public void openCustomizePropertiesDialogFromExplorer(FilesystemNode fileNode, String path) {
+    public void openCustomizePropertiesDialogFromExplorer(Node fileNode, String path) {
         new ActionNoBlock(null,this.POPUP_MENU_CUSTOMIZE).performPopup(new Node(fileNode,path));
     }
     
@@ -913,7 +913,7 @@ public class PropertiesEditorTestCase extends NbTestCase {
     }
     
     
-    public void deleteLocaleFromExplorer(FilesystemNode fileNode, String path) {
+    public void deleteLocaleFromExplorer(Node fileNode, String path) {
         new ActionNoBlock(null,this.POPUP_MENU_DELETE_LOCALE).performPopup(new Node(fileNode,path));
     }
     
@@ -944,7 +944,7 @@ public class PropertiesEditorTestCase extends NbTestCase {
     }
     
     
-    public void deleteMoreLocalesInExplorer(String[] Languages, String[] Countres, String[] Varians, FilesystemNode fileNode, String path_to_group) {
+    public void deleteMoreLocalesInExplorer(String[] Languages, String[] Countres, String[] Varians, Node fileNode, String path_to_group) {
         
         Node[] nodes = new Node[Languages.length];
         for ( int ii = 0; ii < Languages.length; ii++ ) {
@@ -957,7 +957,7 @@ public class PropertiesEditorTestCase extends NbTestCase {
     }
     
     
-    public void explorerSelectPath(String treePath, FilesystemNode filesystemNode)  {
+    public void explorerSelectPath(String treePath, Node filesystemNode)  {
         Node node = new Node(filesystemNode,treePath);
         node.select();
     }
@@ -980,7 +980,7 @@ public class PropertiesEditorTestCase extends NbTestCase {
     }
     
     
-    public void checkLocalesInExplorer(java.lang.String[] locales, FilesystemNode filesystemNode, java.lang.String fileName) throws Exception {
+    public void checkLocalesInExplorer(java.lang.String[] locales, Node filesystemNode, java.lang.String fileName) throws Exception {
         new EventTool().waitNoEvent(300);
         //org.openide.filesystems.FileSystem fileSytem = org.openide.filesystems.Repository.getDefault().findFileSystem(filesystemNode.getPath());
         ProjectsTabOperator pto = new ProjectsTabOperator();
