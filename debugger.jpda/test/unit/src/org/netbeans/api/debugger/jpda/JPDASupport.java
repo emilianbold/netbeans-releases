@@ -277,6 +277,15 @@ public class JPDASupport implements DebuggerManagerListener {
         }
     }
 
+    public void waitStates(int state1, int state2, int timeoutMillis) {
+        long t0 = System.currentTimeMillis();
+        while (debugger.getState() != state1 && debugger.getState() != state2) {
+            if (System.currentTimeMillis() - t0 > timeoutMillis)
+                throw new TimeoutException("Waitstate timeout: " + debugger.getState());
+            sleep(200);
+        }
+    }
+
     private void sleep(int time) {
         try {
             Thread.sleep(time);

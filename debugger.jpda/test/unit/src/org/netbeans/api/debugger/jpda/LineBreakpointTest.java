@@ -13,7 +13,6 @@
 
 package org.netbeans.api.debugger.jpda;
 
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Breakpoint;
 
 import java.net.URL;
@@ -30,7 +29,6 @@ public class LineBreakpointTest extends DebuggerJPDAApiTestBase {
 
     private JPDASupport     support;
     private JPDADebugger    debugger;
-    private DebuggerManager dm;
     private String          urlString;
 
     public LineBreakpointTest(String s) {
@@ -39,7 +37,6 @@ public class LineBreakpointTest extends DebuggerJPDAApiTestBase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        dm = DebuggerManager.getDebuggerManager();
         ClassLoader cl = this.getClass().getClassLoader();
         URL url = cl.getResource("basic/LineBreakpointApp.class");
         urlString = url.toString();
