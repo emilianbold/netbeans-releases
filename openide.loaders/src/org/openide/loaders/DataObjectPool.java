@@ -80,7 +80,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
         Object prev = FIND.get ();
         try {
             // make sure this thread is allowed to recognize
-            getPOOL ().enterRecognition();
+            getPOOL ().enterRecognition(fo);
             
             FIND.set (loader);
             
@@ -127,15 +127,20 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     //
     private Thread atomic;
     private RequestProcessor priviledged;
+    /** the folder that is being modified */
+    private FileObject blocked;
     public void runAtomicAction (FileObject target, FileSystem.AtomicAction action) 
     throws java.io.IOException {
         Thread prev;
+        FileObject prevBlocked;
         synchronized (this) {
             // make sure that we are the ones that own 
             // the recognition process
-            enterRecognition ();
+            enterRecognition (null);
             prev = atomic;
+            prevBlocked = blocked;
             atomic = Thread.currentThread ();
+            blocked = target;
         }
         
         Object findPrev = FIND.get ();
@@ -146,6 +151,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
             FIND.set (findPrev);
             synchronized (this) {
                 atomic = prev;
+                blocked = prevBlocked;
                 notifyAll ();
                 notifyCreationAll ();
             }
@@ -179,21 +185,30 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     }
     
     /** Checks whether it is safe to enter the recognition. 
+     * @param fo file object we want to recognize or null if we do not know it
+     * @return value that shall be put into the FIND.set on exit
      */
-    private synchronized void enterRecognition () {
+    private synchronized void enterRecognition (FileObject fo) {
         // wait till nobody else stops the recognition
         for (;;) {
             if (atomic == null) {
                 // ok, I am the one who can enter
-                return;
+                break;
             }
             if (atomic == Thread.currentThread()) {
                 // ok, reentering again
-                return;
+                break;
             }
+            
             if (priviledged != null && priviledged.isRequestProcessorThread()) {
                 // ok, we have priviledged request processor thread
-                return;
+                break;
+            }
+            
+            if (fo != null && blocked != null && !blocked.equals (fo.getParent ())) {
+                // access to a file in different folder than it is blocked
+                // => go on
+                break;
             }
             
             try {
@@ -255,7 +270,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     */
     public DataObject find (FileObject fo) {
         synchronized (this) {
-            enterRecognition();
+            enterRecognition(fo);
             
             Item doh = (Item)map.get (fo);
             if (doh == null) {
@@ -403,7 +418,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     public void waitNotified (DataObject obj) {
         try {
             synchronized (this) {
-                enterRecognition ();
+                enterRecognition (null);
                 
                 if (toNotify.isEmpty()) {
                     return;
