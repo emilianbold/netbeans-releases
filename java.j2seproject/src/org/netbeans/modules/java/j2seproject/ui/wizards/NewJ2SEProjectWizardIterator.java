@@ -216,10 +216,6 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
         return sourcesRoot.getFileObject (mainClass, "java"); // NOI18N
     }
 
-    static String getSystemName (String displayName) {
-        return displayName.replace(' ', '-' );      //NOI18N
-    }
-    
     static String getPackageName (String displayName) {
         StringBuffer builder = new StringBuffer ();
         boolean changeCase = false;
