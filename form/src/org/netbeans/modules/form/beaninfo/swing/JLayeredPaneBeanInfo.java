@@ -20,6 +20,6 @@ package org.netbeans.modules.form.beaninfo.swing;
 public class JLayeredPaneBeanInfo extends BISupport {
 
     public JLayeredPaneBeanInfo() {
-        super("JLayeredPane"); // NOI18N
+        super("JLayeredPane", javax.swing.JLayeredPane.class); // NOI18N
     }
 }

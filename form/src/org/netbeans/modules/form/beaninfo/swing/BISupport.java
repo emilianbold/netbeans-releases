@@ -28,11 +28,17 @@ abstract class BISupport extends SimpleBeanInfo {
    
     private PropertyDescriptor[] pds;
     private String icon;
+    private Class beanClass;
     
-    protected BISupport(String iconBaseName) {
+    protected BISupport(String iconBaseName, Class beanClass) {
         icon = iconBaseName;
+        this.beanClass = beanClass;
     }
-    
+
+    public BeanDescriptor getBeanDescriptor() {
+        return new BeanDescriptor(beanClass);
+    }
+
     public synchronized PropertyDescriptor[] getPropertyDescriptors() {
         if (pds == null) {
             try {

@@ -19,7 +19,7 @@ import java.awt.CardLayout;
 public class CardLayoutBeanInfo extends BISupport {
 
     public CardLayoutBeanInfo() {
-        super("cardLayout"); // NOI18N
+        super("cardLayout", java.awt.CardLayout.class); // NOI18N
     }
     
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {

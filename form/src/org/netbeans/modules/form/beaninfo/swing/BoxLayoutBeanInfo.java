@@ -16,6 +16,6 @@ package org.netbeans.modules.form.beaninfo.swing;
 public class BoxLayoutBeanInfo extends BISupport {
 
     public BoxLayoutBeanInfo() {
-        super("boxLayout"); // NOI18N
+        super("boxLayout", javax.swing.BoxLayout.class); // NOI18N
     }
 }

@@ -19,7 +19,7 @@ import javax.swing.border.SoftBevelBorder;
 public class SoftBevelBorderBeanInfo extends BISupport {
     
     public SoftBevelBorderBeanInfo() {
-        super("softBevelBorder"); // NOI18N
+        super("softBevelBorder", javax.swing.border.SoftBevelBorder.class); // NOI18N
     }
 
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {

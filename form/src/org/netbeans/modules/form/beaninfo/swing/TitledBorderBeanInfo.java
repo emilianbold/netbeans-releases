@@ -19,7 +19,7 @@ import javax.swing.border.TitledBorder;
 public class TitledBorderBeanInfo extends BISupport {
 
     public TitledBorderBeanInfo() {
-        super("titledBorder"); // NOI18N
+        super("titledBorder", javax.swing.border.TitledBorder.class); // NOI18N
     }
 
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {

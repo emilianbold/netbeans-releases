@@ -20,7 +20,7 @@ import javax.swing.border.EtchedBorder;
 public class EtchedBorderBeanInfo extends BISupport {
 
     public EtchedBorderBeanInfo() {
-        super("etchedBorder"); // NOI18N
+        super("etchedBorder", javax.swing.border.EtchedBorder.class); // NOI18N
     }
 
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {

@@ -19,7 +19,7 @@ import javax.swing.border.LineBorder;
 public class LineBorderBeanInfo extends BISupport {
     
     public LineBorderBeanInfo() {
-        super("lineBorder"); // NOI18N
+        super("lineBorder", javax.swing.border.LineBorder.class); // NOI18N
     }
 
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {

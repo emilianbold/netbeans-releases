@@ -19,7 +19,7 @@ import javax.swing.border.CompoundBorder;
 public class CompoundBorderBeanInfo extends BISupport {
     
     public CompoundBorderBeanInfo() {
-        super("compoundBorder"); // NOI18N
+        super("compoundBorder", javax.swing.border.CompoundBorder.class); // NOI18N
     }
 
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {

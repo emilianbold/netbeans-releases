@@ -19,7 +19,7 @@ import javax.swing.border.BevelBorder;
 public class BevelBorderBeanInfo extends BISupport {
 
     public BevelBorderBeanInfo() {
-        super("bevelBorder"); // NOI18N
+        super("bevelBorder", javax.swing.border.BevelBorder.class); // NOI18N
     }
 
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {

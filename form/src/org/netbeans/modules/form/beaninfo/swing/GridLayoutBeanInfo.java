@@ -19,7 +19,7 @@ import java.awt.GridLayout;
 public class GridLayoutBeanInfo extends BISupport {
     
     public GridLayoutBeanInfo() {
-        super("gridLayout"); // NOI18N
+        super("gridLayout", java.awt.GridLayout.class); // NOI18N
     }
 
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {

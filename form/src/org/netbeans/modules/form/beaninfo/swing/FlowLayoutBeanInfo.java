@@ -19,7 +19,7 @@ import java.awt.FlowLayout;
 public class FlowLayoutBeanInfo extends BISupport {
 
     public FlowLayoutBeanInfo() {
-        super("flowLayout"); // NOI18N
+        super("flowLayout", java.awt.FlowLayout.class); // NOI18N
     }
 
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {

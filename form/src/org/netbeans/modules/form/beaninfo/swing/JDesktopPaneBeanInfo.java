@@ -20,7 +20,7 @@ package org.netbeans.modules.form.beaninfo.swing;
 public class JDesktopPaneBeanInfo extends BISupport {
 
     public JDesktopPaneBeanInfo() {
-        super("JDesktopPane"); // NOI18N
+        super("JDesktopPane", javax.swing.JDesktopPane.class); // NOI18N
     }
 
 }

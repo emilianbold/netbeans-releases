@@ -19,7 +19,7 @@ import javax.swing.border.MatteBorder;
 public class MatteBorderBeanInfo extends BISupport {
     
     public MatteBorderBeanInfo() {
-        super("matteBorder"); // NOI18N
+        super("matteBorder", javax.swing.border.MatteBorder.class); // NOI18N
     }
 
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {

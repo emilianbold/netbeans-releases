@@ -19,7 +19,7 @@ import javax.swing.border.EmptyBorder;
 public class EmptyBorderBeanInfo extends BISupport {
 
     public EmptyBorderBeanInfo() {
-        super("emptyBorder"); // NOI18N
+        super("emptyBorder", javax.swing.border.EmptyBorder.class); // NOI18N
     }
 
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {

@@ -19,7 +19,7 @@ import java.awt.BorderLayout;
 public class BorderLayoutBeanInfo extends BISupport {
     
     public BorderLayoutBeanInfo() {
-        super("borderLayout"); // NOI18N
+        super("borderLayout", java.awt.BorderLayout.class); // NOI18N
     }
 
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {

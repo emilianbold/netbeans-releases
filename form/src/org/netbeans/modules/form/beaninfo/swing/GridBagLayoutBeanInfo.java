@@ -16,6 +16,6 @@ package org.netbeans.modules.form.beaninfo.swing;
 public class GridBagLayoutBeanInfo extends BISupport {
 
     public GridBagLayoutBeanInfo() {
-        super("gridBagLayout"); // NOI18N
+        super("gridBagLayout", java.awt.GridBagLayout.class); // NOI18N
     }
 }
