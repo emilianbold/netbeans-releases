@@ -84,6 +84,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     private boolean isWarmingUp = false;
     
     public TemplateChooserPanelGUI(Project p /* , String[] recommendedTypes */ ) {
+        assert p != null : "Project cannot be null.";  // NOI18N
         project = p;
         setPreferredSize( PREF_DIM );
         setName (org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_Name")); // NOI18N
@@ -132,7 +133,8 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     
     public Project getProject() {
         if (isWarmingUp) {
-            return null;
+            // during warming return project from constructor
+            return project;
         }
         return (Project)projectsComboBox.getSelectedItem();
     }
