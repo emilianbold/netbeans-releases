@@ -15,6 +15,8 @@ package com.netbeans.developer.modules.httpserver;
 
 import java.util.Enumeration;
 import java.io.*;
+import java.net.URL;
+import java.net.MalformedURLException;
 
 import org.openide.modules.ModuleInstall;
 import org.openide.execution.Executor;
@@ -22,7 +24,10 @@ import org.openide.util.NbBundle;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 
-import com.mortbay.HTTP.HttpServer;
+import com.sun.web.server.HttpServer;
+import com.sun.web.server.HttpServerException;
+import com.sun.web.core.Container;
+import com.sun.web.core.Context;
 
 /**
 * Module installation class for Http Server
@@ -33,7 +38,7 @@ public class HttpServerModule implements ModuleInstall, Externalizable {
 
   
   private static HttpServer server;
-  private static NbServer config;
+//  private static NbServer config;
   private static Thread serverThread;
   private static boolean inSetRunning = false;
   
@@ -118,9 +123,9 @@ public class HttpServerModule implements ModuleInstall, Externalizable {
         if (serverThread == null) {
           serverThread = new Thread("HTTPServer") {
             public void run() {
-              try {                
-                config = new NbServer(HttpServerSettings.OPTIONS);
-                server = new HttpServer(config);
+              try {                   
+                server = buildServer();
+                server.start();
                 HttpServerSettings.OPTIONS.runSuccess();
                 // this is not a debug message, this is a server startup message
                 if (HttpServerSettings.OPTIONS.isStartStopMessages())
@@ -129,6 +134,7 @@ public class HttpServerModule implements ModuleInstall, Externalizable {
               } 
               catch (Exception ex) {
                 // couldn't start
+ex.printStackTrace();                
                 serverThread = null;
                 inSetRunning = false;
                 HttpServerSettings.OPTIONS.runFailure();
@@ -167,13 +173,21 @@ public class HttpServerModule implements ModuleInstall, Externalizable {
       inSetRunning = true;
       try {
         if ((serverThread != null) && (server != null)) {
-          server.close();                                
           try {
+            server.stop();
             serverThread.join();
           }
           catch (InterruptedException e) {
-            serverThread.stop();
+            serverThread.stop(); 
+            /* deprecated, but this really is the last resort,
+               only if everything else failed */
           } 
+          catch (HttpServerException e) {
+e.printStackTrace();
+            serverThread.stop(); 
+            /* deprecated, but this really is the last resort,
+               only if everything else failed */
+          }
           serverThread = null;
           // this is not a debug message, this is a server shutdown message
           if (HttpServerSettings.OPTIONS.isStartStopMessages())
@@ -186,12 +200,38 @@ public class HttpServerModule implements ModuleInstall, Externalizable {
       }  
     }
   }
+  
+  
+  private static HttpServer buildServer() {
+    HttpServerSettings op = HttpServerSettings.OPTIONS;
+    HttpServer server = new HttpServer(op.getPort(), null, null);
+
+    try {
+      server.setDocumentBase(new URL("file:///nonexistingdirectory"));
+    }
+    catch (MalformedURLException e) {
+      throw new InternalError();
+    }  
+    Context context = server.getDefaultContext();
+    context.setClassLoader(TopManager.getDefault().systemClassLoader());
+    
+    Container container = context.getContainer();
+
+    container.addServlet("repositoryHandler", "com.netbeans.developer.modules.httpserver.RepositoryServlet");
+    container.addMapping("repositoryHandler", op.getRepositoryBaseURL());
+    
+    container.addServlet("classpathHandler", "com.netbeans.developer.modules.httpserver.ClasspathServlet");
+    container.addMapping("classpathHandler", op.getClasspathBaseURL());
+    
+    return server;
+  }
 
 
 }
 
 /*
  * Log
+ *  23   Gandalf   1.22        9/30/99  Petr Jiricka    Jetty -> JSWDK (TomCat)
  *  22   Gandalf   1.21        9/8/99   Petr Jiricka    SecurityException fix
  *  21   Gandalf   1.20        9/8/99   Petr Jiricka    Fixed 
  *       NullPointerException at startup
