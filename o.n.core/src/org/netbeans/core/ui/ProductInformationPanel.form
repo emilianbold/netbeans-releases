@@ -8,8 +8,8 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="ideImageLabel">
       <Properties>
-        <Property name="icon" type="javax.swing.Icon" editor="org.openide.explorer.propertysheet.editors.IconEditor">
-          <Image iconType="3" name="/org/netbeans/core/resources/ideImage.gif"/>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="getIcon()" type="code"/>
         </Property>
       </Properties>
       <Constraints>

@@ -5,10 +5,12 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Font;
+import java.awt.Toolkit;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -93,7 +95,7 @@ public class ProductInformationPanel extends JPanel {
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
         
-        ideImageLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/core/resources/ideImage.gif")));
+        ideImageLabel.setIcon(getIcon());
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 0;
@@ -371,6 +373,15 @@ public class ProductInformationPanel extends JPanel {
         if(color != null) {
             label.setForeground(color);
         }
+    }
+
+    private ImageIcon getIcon () {
+        return new ImageIcon(Toolkit.getDefaultToolkit().getImage(
+            NbBundle.getLocalizedFile(
+                "org.netbeans.core.resources.frames.ide48", // NOI18N
+                "gif", // NOI18N
+                Locale.getDefault(),
+                ProductInformationPanel.class.getClassLoader())));
     }
 
     private String getProductVersionValue () {
