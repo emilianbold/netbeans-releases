@@ -32,10 +32,13 @@ class GetJavaWord extends Object {
 
   static String getCurrentJavaWord() {
 
-    if ( TopComponent.getActiveComponent() == null )
-      return null;
 
-    Node[] n = TopComponent.getActiveComponent ().getActivatedNodes ();
+    /*
+    if ( TopComponent.getRegistry().getActivated() == null )
+      return null;
+    */
+    Node[] n = TopComponent.getRegistry ().getActivatedNodes ();
+
     if (n.length == 1) {
       EditorCookie ec = (EditorCookie) n[0].getCookie (EditorCookie.class);
       if (ec != null) {
@@ -75,6 +78,7 @@ class GetJavaWord extends Object {
 
 /* 
  * Log
+ *  4    Gandalf   1.3         7/12/99  Petr Hrebejk    New window system
  *  3    Gandalf   1.2         6/23/99  Petr Hrebejk    Better way to get 
  *       current editor word
  *  2    Gandalf   1.1         6/11/99  Petr Hrebejk    Better support for 

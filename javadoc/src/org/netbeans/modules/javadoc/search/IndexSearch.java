@@ -21,10 +21,13 @@ import javax.swing.DefaultListModel;
 import javax.swing.SwingUtilities;
 import java.awt.Image;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import javax.swing.ImageIcon;
 
 import org.openide.awt.HtmlBrowser;
 import org.openide.windows.TopComponent;
+import org.openide.windows.Mode;
+import org.openide.windows.Workspace;
 import org.openide.util.RequestProcessor;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
@@ -42,6 +45,7 @@ public class IndexSearch extends TopComponent {
   private String quickFind;
   
   /* Button icons */
+  ImageIcon windowIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif"));
   ImageIcon refSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/refSort.gif"));
   ImageIcon typeSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/typeSort.gif"));
   ImageIcon alphaSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/alphaSort.gif"));
@@ -128,8 +132,14 @@ public class IndexSearch extends TopComponent {
     quickBrowser = new HtmlBrowser.BrowserComponent( false, false );
     splitPanel.add( quickBrowser, org.openide.awt.SplittedPanel.ADD_SECOND );
     
-    setName( bundle.getString ("CTL_SEARCH_WindowTitle") );
-    setRequestedSize( new Dimension( 450, 200 ) );
+    Workspace workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();  
+    Mode myMode = workspace.createMode("JavaDocSearch", "JavaDoc Index-Search", null );
+    myMode.setBounds(new Rectangle( 200, 200, 450, 200 ) );
+    myMode.dockInto(this);
+
+    //setName( bundle.getString ("CTL_SEARCH_WindowTitle") );
+   // setBounds( );
+    //setRequestedSize( new Dimension( 450, 200 ) );
     // Customizing the window
     DefaultListModel listModel = new DefaultListModel(); // PENDING: Change to SortedArrayList
     resultsList.setModel( listModel );
