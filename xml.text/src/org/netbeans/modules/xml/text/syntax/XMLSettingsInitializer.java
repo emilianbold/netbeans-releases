@@ -129,7 +129,7 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
 
     Map getXMLAbbrevMap() {
         Map xmlAbbrevMap = getDTDAbbrevMap();
-        xmlAbbrevMap.put ("?xm", "<?xml version=\"1.0\"?>"); // NOI18N
+        xmlAbbrevMap.put ("?xm", "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"); // NOI18N
         xmlAbbrevMap.put ("!do", "<!DOCTYPE "); // NOI18N
         xmlAbbrevMap.put ("!cd", "<![CDATA["); // NOI18N
         return xmlAbbrevMap;
@@ -145,7 +145,7 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
         dtdAbbrevMap.put ("sy", "SYSTEM "); // NOI18N
         dtdAbbrevMap.put ("cd", "CDATA"); // NOI18N
         dtdAbbrevMap.put ("pc", "#PCDATA"); // NOI18N
-        dtdAbbrevMap.put ("an", "ANY"); // NOI18N
+//        dtdAbbrevMap.put ("an", "ANY"); // NOI18N
         dtdAbbrevMap.put ("em", "EMPTY"); // NOI18N
         dtdAbbrevMap.put ("fi", "#FIXED"); // NOI18N
         dtdAbbrevMap.put ("im", "#IMPLIED"); // NOI18N
