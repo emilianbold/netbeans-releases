@@ -565,7 +565,9 @@ class HandleLayer extends JPanel
                || designerResizer != null;
     }
 
-    private ComponentDragger createComponentDragger(Point hotspot) {
+    private ComponentDragger createComponentDragger(Point hotspot,
+                                                    int modifiers)
+    {
         List selectedComponents = formDesigner.getSelectedComponents();
         if (selectedComponents.size() == 0)
             return null;
@@ -586,39 +588,57 @@ class HandleLayer extends JPanel
         iter = selComps.iterator();
         while (iter.hasNext()) {
             RADComponent metacomp = (RADComponent) iter.next();
-
             Iterator iter2 = selComps.iterator();
             while (iter2.hasNext()) {
                 RADComponent metacomp2 = (RADComponent) iter2.next();
                 if (metacomp2 != metacomp
                         && metacomp.isParentComponent(metacomp2))
                     children.add(metacomp2);
-/*                RADVisualComponent metacomp2 = (RADVisualComponent) iter2.next();
-                if (metacomp2 != metacomp
-                        && metacomp2 instanceof RADVisualContainer) {
-                    RADVisualContainer metacont = (RADVisualContainer)
-                                                  metacomp.getParentComponent();
-                    while (metacont != null) {
-                        if (metacont == metacomp2) {
-                            children.add(metacomp);
-                            break;
-                        }
-                        metacont = metacont.getParentContainer();
-                    }
-                } */
             }
         }
         selComps.removeAll(children);
         if (selComps.isEmpty())
             return null;
 
-        return new ComponentDragger(
-            formDesigner,
-            HandleLayer.this,
-            (RADVisualComponent[]) selComps.toArray(
-                new RADVisualComponent[selComps.size()]),
-            hotspot,
-            resizeType);
+        RADVisualComponent[] comps = new RADVisualComponent[selComps.size()];
+        selComps.toArray(comps);
+
+        if (resizeType == 0) { // dragging
+            RADVisualContainer fixedTargetContainer = null;
+
+            if ((modifiers & InputEvent.ALT_MASK) != 0) { // restricted dragging
+                RADVisualContainer parent = comps[0].getParentContainer();
+                if ((modifiers & InputEvent.SHIFT_MASK) != 0
+                    || formDesigner.getTopDesignComponent() == parent)
+                {   // restrict dragging only to the parent container
+                    // (dragging within the same container)
+                    for (int i=1; i < comps.length; i++)
+                        if (comps[i].getParentContainer() != parent) {
+                            parent = null; // not the same parent
+                            break;
+                        }
+                    fixedTargetContainer = parent;
+                }
+                else if ((parent = parent.getParentContainer()) != null) {
+                    // restrict dragging only to the parent of the parent
+                    // container (dragging one level up)
+                    for (int i=1; i < comps.length; i++)
+                        if (comps[i].getParentContainer().getParentContainer()
+                                != parent)
+                        {
+                            parent = null;
+                            break;
+                        }
+                    fixedTargetContainer = parent;
+                }
+            }
+
+            return new ComponentDragger(formDesigner, this,
+                                        comps, hotspot, fixedTargetContainer);
+        }
+        else // resizing
+            return new ComponentDragger(formDesigner, this,
+                                        comps, hotspot, resizeType);
     }
 
     private boolean cancelDragging() {
@@ -963,7 +983,7 @@ class HandleLayer extends JPanel
                 args));
     }
     
-    private boolean mouseOnVisual(Point p) {
+    boolean mouseOnVisual(Point p) {
         Rectangle bounds = formDesigner.getComponentLayer().getDesignerBounds();
         return bounds.contains(p);
     }
@@ -1154,16 +1174,16 @@ class HandleLayer extends JPanel
             }
             else if (CPManager.getDefault().getMode()
                               == PaletteAction.MODE_SELECTION
-                     && !anyDragger())
+                     && !anyDragger()
+                     && !draggingCanceled)
             {
                 if (!viewOnly
-                     && !e.isAltDown() && !e.isControlDown() && !e.isShiftDown()
+                     && !e.isControlDown() && (!e.isShiftDown() || e.isAltDown())
                      && lastLeftMousePoint != null
                      && (resizeType != 0 || lastLeftMousePoint.distance(p) > 8))
                 {   // start components dragging
-                    componentDragger = createComponentDragger(lastLeftMousePoint);
-                    if (componentDragger != null)
-                        draggingCanceled = false;
+                    componentDragger = createComponentDragger(
+                                         lastLeftMousePoint, e.getModifiers());
                 }
                 else if (formDesigner.getTopDesignComponent()
                                                 instanceof RADVisualContainer
@@ -1171,9 +1191,8 @@ class HandleLayer extends JPanel
                          && e.isShiftDown()
                          && lastLeftMousePoint != null
                          && lastLeftMousePoint.distance(p) > 4)
-                {   // start multiselection dragging
+                {   // start selection dragging
                     selectionDragger = new SelectionDragger(lastLeftMousePoint);
-                    draggingCanceled = false;
                 }
             }
 

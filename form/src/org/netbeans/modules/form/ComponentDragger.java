@@ -38,18 +38,41 @@ class ComponentDragger
     private int resizeType;
 
     private RADVisualContainer targetMetaContainer;
+    private boolean fixedTarget;
+
     private Container targetContainer;
     private Container targetContainerDel;
 
     /** The FormLoaderSettings instance */
     private static FormLoaderSettings formSettings = FormEditor.getFormSettings();
 
-
+    // constructor for dragging
     ComponentDragger(FormDesigner formDesigner,
                      HandleLayer handleLayer,
                      RADVisualComponent[] selectedComponents,
                      Point hotspot,
-                     int resizeType) {
+                     RADVisualContainer fixedTargetMetaContainer)
+    {
+        this.formDesigner = formDesigner;
+        this.handleLayer = handleLayer;
+        this.selectedComponents = selectedComponents;
+        this.hotspot = hotspot;
+        this.mousePosition = hotspot;
+        this.resizeType = 0;
+
+        if (fixedTargetMetaContainer != null) {
+            targetMetaContainer = fixedTargetMetaContainer;
+            fixedTarget = true;
+        }
+    }
+
+    // constructor for resizing
+    ComponentDragger(FormDesigner formDesigner,
+                     HandleLayer handleLayer,
+                     RADVisualComponent[] selectedComponents,
+                     Point hotspot,
+                     int resizeType)
+    {
         this.formDesigner = formDesigner;
         this.handleLayer = handleLayer;
         this.selectedComponents = selectedComponents;
@@ -118,83 +141,100 @@ class ComponentDragger
     }
 
     void dropComponents(Point point) {
-        List constraints = new ArrayList(selectedComponents.length);
-        List indices = new ArrayList(selectedComponents.length);
+        List constraints = null; // constraints of the dragged components
+        List indices = null; // indices of the dragged components
 
-        if (!computeConstraints(point, constraints, indices))
+        if (targetMetaContainer != null) {
+            constraints = new ArrayList(selectedComponents.length);
+            indices = new ArrayList(selectedComponents.length);
+            if (!computeConstraints(point, constraints, indices))
+                return;
+        }
+        else if (handleLayer.mouseOnVisual(point))
             return;
-
-        // adjust indices considering that some of dragged components
-        // might be already in target container
-        adjustIndices(indices);
 
         FormModel formModel = formDesigner.getModel();
 
-        LayoutSupportManager layoutSupport =
-                targetMetaContainer.getLayoutSupport();
-        RADVisualComponent[] originalComponents =
-                targetMetaContainer.getSubComponents();
-        LayoutConstraints[] originalConstraints =
+        // LayoutSupportManager of the target container
+        LayoutSupportManager layoutSupport = null;
+        // original components in the target container
+        RADVisualComponent[] originalComponents = null;
+        LayoutConstraints[] originalConstraints = null;
+        // components moved from other containers
+        List movedFromOutside = null;
+        // components moved within the target container
+        List movedWithinTarget = null;
+
+        if (targetMetaContainer != null) { // target is a visual container
+            layoutSupport = targetMetaContainer.getLayoutSupport();
+            originalComponents = targetMetaContainer.getSubComponents();
+            originalConstraints =
                 new LayoutConstraints[originalComponents.length];
 
-        List movedFromOutside = null; // components moved from other containers
-        List movedWithinTarget = null; // components moved within the target container
+            // adjust indices considering that some of dragged components
+            // might be already in target container
+            adjustIndices(indices);
 
-        // collect components being dragged from other containers
-        for (int i=0; i < selectedComponents.length; i++) {
-            if (selectedComponents[i].getParentContainer() != targetMetaContainer) {
-                if (movedFromOutside == null)
-                    movedFromOutside = new ArrayList(selectedComponents.length);
-                movedFromOutside.add(new Integer(i)); // remember index
-            }
-            else {
-                if (movedWithinTarget == null)
-                    movedWithinTarget = new ArrayList(selectedComponents.length);
-                movedWithinTarget.add(selectedComponents[i]);
-            }
-        }
-
-        // test whether target container accepts new components (dragged from
-        // other containers)
-        if (movedFromOutside != null && movedFromOutside.size() > 0) {
-            int count = movedFromOutside.size();
-            RADVisualComponent[] newComps = new RADVisualComponent[count];
-            LayoutConstraints[] newConstr = new LayoutConstraints[count];
-
-            for (int i=0; i < count; i++) {
-                int index = ((Integer)movedFromOutside.get(i)).intValue();
-                newComps[i] = selectedComponents[index];
-                newConstr[i] = (LayoutConstraints) constraints.get(index);
+            // collect components being dragged from other containers
+            for (int i=0; i < selectedComponents.length; i++) {
+                if (selectedComponents[i].getParentContainer()
+                        != targetMetaContainer)
+                {
+                    if (movedFromOutside == null)
+                        movedFromOutside = new ArrayList(selectedComponents.length);
+                    movedFromOutside.add(new Integer(i)); // remember index
+                }
+                else {
+                    if (movedWithinTarget == null)
+                        movedWithinTarget = new ArrayList(selectedComponents.length);
+                    movedWithinTarget.add(selectedComponents[i]);
+                }
             }
 
-            // j - index to selectedComponents for the first new component
-            int j = ((Integer)movedFromOutside.get(0)).intValue();
-            // jj - insertion point of the first component in target container
-            int jj = ((Integer)indices.get(j)).intValue();
+            // test whether target container accepts new components (dragged
+            // from other containers)
+            if (movedFromOutside != null && movedFromOutside.size() > 0) {
+                int count = movedFromOutside.size();
+                RADVisualComponent[] newComps = new RADVisualComponent[count];
+                LayoutConstraints[] newConstr = new LayoutConstraints[count];
 
-            try {
-                layoutSupport.acceptNewComponents(newComps, newConstr, jj);
-            }
-            catch (RuntimeException ex) {
-                // layout support does not accept components
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ex.printStackTrace();
-                return;
-            }
+                for (int i=0; i < count; i++) {
+                    int index = ((Integer)movedFromOutside.get(i)).intValue();
+                    newComps[i] = selectedComponents[index];
+                    newConstr[i] = (LayoutConstraints) constraints.get(index);
+                }
 
-            // layout support might adjust the constraints
-            for (int i=0; i < count; i++) {
-                int index = ((Integer)movedFromOutside.get(i)).intValue();
-                constraints.set(index, newConstr[i]);
-            }
+                // j - index to selectedComponents for the first new component
+                int j = ((Integer)movedFromOutside.get(0)).intValue();
+                // jj - insertion point of the first component in target container
+                int jj = ((Integer)indices.get(j)).intValue();
 
-            movedFromOutside.clear(); // for later use
+                try {
+                    layoutSupport.acceptNewComponents(newComps, newConstr, jj);
+                }
+                catch (RuntimeException ex) {
+                    // layout support does not accept components
+                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                        ex.printStackTrace();
+                    return;
+                }
+
+                // layout support might adjust the constraints
+                for (int i=0; i < count; i++) {
+                    int index = ((Integer)movedFromOutside.get(i)).intValue();
+                    constraints.set(index, newConstr[i]);
+                }
+
+                movedFromOutside.clear(); // for later use
+            }
         }
 
         // create list of components and constraints for target container
-        int n = selectedComponents.length + originalComponents.length;
+        int n = selectedComponents.length
+                + (originalComponents != null ? originalComponents.length : 0);
         List newComponents = new ArrayList(n);
         List newConstraints = new ArrayList(n);
+        int newI = 0;
 
         // fill enough empty space
         for (int i=0; i < n; i++) {
@@ -202,48 +242,50 @@ class ComponentDragger
             newConstraints.add(null);
         }
 
-        // add dragged components requiring exact position (index)
-        for (int i=0; i < selectedComponents.length; i++) {
-            int index = ((Integer)indices.get(i)).intValue();
-            if (index >= 0 && index < n && checkTarget(selectedComponents[i])) {
-                while (newComponents.get(index) != null) // ensure free index
-                    if (++index == n)
-                        index = 0;
+        if (targetMetaContainer != null) {
+            // add dragged components requiring exact position (index)
+            for (int i=0; i < selectedComponents.length; i++) {
+                int index = ((Integer)indices.get(i)).intValue();
+                if (index >= 0 && index < n && checkTarget(selectedComponents[i])) {
+                    while (newComponents.get(index) != null) // ensure free index
+                        if (++index == n)
+                            index = 0;
 
-                newComponents.set(index, selectedComponents[i]);
+                    newComponents.set(index, selectedComponents[i]);
+                }
+            }
+
+            // add all components being already in the target container
+            for (int i=0; i < originalComponents.length; i++) {
+                RADVisualComponent metacomp = originalComponents[i];
+                originalConstraints[i] = layoutSupport.getConstraints(metacomp);
+
+                int index = newComponents.indexOf(metacomp);
+                if (index < 0) { // not yet in newComponents
+                    while (newComponents.get(newI) != null) // ensure free index
+                        newI++;
+
+                    newComponents.set(newI, metacomp);
+                    newConstraints.set(newI, originalConstraints[i]);
+                }
             }
         }
 
-        int newI = 0;
-
-        // add all components being already in the target container
-        for (int i=0; i < originalComponents.length; i++) {
-            RADVisualComponent metacomp = originalComponents[i];
-            originalConstraints[i] = layoutSupport.getConstraints(metacomp);
-
-            int index = newComponents.indexOf(metacomp);
-            if (index < 0) { // not yet in newComponents
-                while (newComponents.get(newI) != null) // ensure free index
-                    newI++;
-
-                newComponents.set(newI, metacomp);
-                newConstraints.set(newI, originalConstraints[i]);
-            }
-        }
-
-        // add the rest of dragged components (driven by constraints)
+        // add the rest of dragged components (driven by constraints typically)
         for (int i=0; i < selectedComponents.length; i++) {
             RADVisualComponent metacomp = selectedComponents[i];
             int index = newComponents.indexOf(metacomp);
             if (index >= 0) { // already in newComponents
-                newConstraints.set(index, constraints.get(i));
+                newConstraints.set(index, constraints != null ?
+                                              constraints.get(i) : null);
             }
             else if (checkTarget(metacomp)) { // not yet in newComponents
                 while (newComponents.get(newI) != null) // ensure free index
                     newI++;
 
                 newComponents.set(newI, metacomp);
-                newConstraints.set(newI, constraints.get(i));
+                newConstraints.set(newI, constraints != null ?
+                                             constraints.get(i) : null);
             }
         }
         // now we have lists of components and constraints in right order
@@ -273,25 +315,35 @@ class ComponentDragger
             return; // dragging not allowed
 
         // turn off undo/redo monitoring in FormModel as we provide our own
-        // undoable edit for the rest of the operation
+        // undoable edit for the rest (adding part) of the operation
         boolean undoRedoOn = formModel.isUndoRedoRecording();
         if (undoRedoOn)
             formModel.setUndoRedoRecording(false);
 
-        // clear the target layout
-        layoutSupport.removeAll();
-
         // prepare arrays of components and constraints (from lists)
         RADVisualComponent[] newCompsArray = new RADVisualComponent[n];
         LayoutConstraints[] newConstrArray = new LayoutConstraints[n];
-        for (int i=0; i < n; i++) {
-            newCompsArray[i] = (RADVisualComponent) newComponents.get(i);
-            newConstrArray[i] = (LayoutConstraints) newConstraints.get(i);
-        }
+        
+        if (targetMetaContainer != null) { // target is a visual container
+            for (int i=0; i < n; i++) {
+                newCompsArray[i] = (RADVisualComponent) newComponents.get(i);
+                newConstrArray[i] = (LayoutConstraints) newConstraints.get(i);
+            }
 
-        // and finally - add all new components to target container
-        targetMetaContainer.initSubComponents(newCompsArray);
-        layoutSupport.addComponents(newCompsArray, newConstrArray, 0);
+            // clear the target layout
+            layoutSupport.removeAll();
+
+            // add all components to the target container
+            targetMetaContainer.initSubComponents(newCompsArray);
+            layoutSupport.addComponents(newCompsArray, newConstrArray, 0);
+        }
+        else { // no visual target, add the components to Other Components
+            ComponentContainer othersMetaCont = formModel.getModelContainer();
+            for (int i=0; i < n; i++) {
+                newCompsArray[i] = (RADVisualComponent) newComponents.get(i);
+                othersMetaCont.add(newCompsArray[i]);
+            }
+        }
 
         // fire changes - adding new components
         RADVisualComponent[] compsMovedFromOutside;
@@ -323,6 +375,7 @@ class ComponentDragger
         // setup undoable edit
         if (undoRedoOn) {
             DropUndoableEdit dropUndo = new DropUndoableEdit();
+            dropUndo.formModel = formModel;
             dropUndo.targetContainer = targetMetaContainer;
             dropUndo.targetComponentsBeforeMove = originalComponents;
             dropUndo.targetConstraintsBeforeMove = originalConstraints;
@@ -352,11 +405,13 @@ class ComponentDragger
         if (selectedComponents == null || selectedComponents.length == 0)
             return false;
 
-        targetMetaContainer = resizeType == 0 ?
-                                handleLayer.getMetaContainerAt(p) :
-                                selectedComponents[0].getParentContainer();
-        if (targetMetaContainer == null)
-            return false; // unknown meta-container
+        if (!fixedTarget) {
+            targetMetaContainer = resizeType == 0 ?
+                                    handleLayer.getMetaContainerAt(p) :
+                                    selectedComponents[0].getParentContainer();
+            if (targetMetaContainer == null)
+                return false; // unknown meta-container
+        }
 
         RADVisualContainer fixTargetContainer = null;
         do {
@@ -549,6 +604,7 @@ class ComponentDragger
 
     private static class DropUndoableEdit extends AbstractUndoableEdit {
 
+        FormModel formModel;
         RADVisualContainer targetContainer;
         RADVisualComponent[] targetComponentsBeforeMove;
         LayoutConstraints[] targetConstraintsBeforeMove;
@@ -560,8 +616,6 @@ class ComponentDragger
         public void undo() throws CannotUndoException {
             super.undo();
 
-            FormModel formModel = targetContainer.getFormModel();
-
             // turn off undo/redo monitoring in FormModel while undoing!
             boolean undoRedoOn = formModel.isUndoRedoRecording();
             if (undoRedoOn)
@@ -571,17 +625,19 @@ class ComponentDragger
                 formModel.removeComponentFromContainer(
                                          componentsMovedFromOutside[i]);
 
-            LayoutSupportManager layoutSupport =
-                targetContainer.getLayoutSupport();
-            layoutSupport.removeAll();
-            targetContainer.initSubComponents(targetComponentsBeforeMove);
-            layoutSupport.addComponents(targetComponentsBeforeMove,
-                                        targetConstraintsBeforeMove,
-                                        0);
+            if (targetContainer != null) {
+                LayoutSupportManager layoutSupport =
+                    targetContainer.getLayoutSupport();
+                layoutSupport.removeAll();
+                targetContainer.initSubComponents(targetComponentsBeforeMove);
+                layoutSupport.addComponents(targetComponentsBeforeMove,
+                                            targetConstraintsBeforeMove,
+                                            0);
 
-            for (int i=0; i < componentsMovedWithinTarget.length; i++)
-                formModel.fireComponentLayoutChanged(
-                    componentsMovedWithinTarget[i], null, null, null);
+                for (int i=0; i < componentsMovedWithinTarget.length; i++)
+                    formModel.fireComponentLayoutChanged(
+                        componentsMovedWithinTarget[i], null, null, null);
+            }
 
             if (undoRedoOn) // turn on undo/redo monitoring again
                 formModel.setUndoRedoRecording(true);
@@ -590,21 +646,26 @@ class ComponentDragger
         public void redo() throws CannotRedoException {
             super.redo();
 
-            FormModel formModel = targetContainer.getFormModel();
-
             // turn off undo/redo monitoring in FormModel while redoing!
             boolean undoRedoOn = formModel.isUndoRedoRecording();
             if (undoRedoOn)
                 formModel.setUndoRedoRecording(false);
 
-            LayoutSupportManager layoutSupport =
-                targetContainer.getLayoutSupport();
-            layoutSupport.removeAll();
-            targetContainer.initSubComponents(targetComponentsAfterMove);
-            layoutSupport.addComponents(targetComponentsAfterMove,
-                                        targetConstraintsAfterMove,
-                                        0);
-            
+            if (targetContainer != null) {
+                LayoutSupportManager layoutSupport =
+                    targetContainer.getLayoutSupport();
+                layoutSupport.removeAll();
+                targetContainer.initSubComponents(targetComponentsAfterMove);
+                layoutSupport.addComponents(targetComponentsAfterMove,
+                                            targetConstraintsAfterMove,
+                                            0);
+            }
+            else {
+                ComponentContainer othersMetaCont = formModel.getModelContainer();
+                for (int i=0; i < targetComponentsAfterMove.length; i++)
+                    othersMetaCont.add(targetComponentsAfterMove[i]);
+            }
+
             for (int i=0; i < componentsMovedFromOutside.length; i++)
                 formModel.fireComponentAdded(componentsMovedFromOutside[i],
                                              false);
