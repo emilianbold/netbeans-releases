@@ -482,8 +482,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
          */
         public void addNotify () {
             super.addNotify();
-            Workspace curWs = WindowManager.getDefault().getCurrentWorkspace();
-            if ((curWs != null) && curWs.findMode(this) != null) {
+            if (WindowManager.getDefault().findMode(this) != null) {
                 return;
             }
             componentShowing();

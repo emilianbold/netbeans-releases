@@ -40,9 +40,7 @@ public class HTMLViewAction extends CallableSystemAction {
         try {
             boolean notFound = true;
             
-            // is browser open on current workspace?
-            Workspace workspace = WindowManager.getDefault().getCurrentWorkspace ();
-            Mode mode = workspace.findMode(MODE_NAME);
+            Mode mode = WindowManager.getDefault().findMode(MODE_NAME);
             if (mode != null) {
                 TopComponent [] comps = mode.getTopComponents ();
                 if (comps.length > 0) {

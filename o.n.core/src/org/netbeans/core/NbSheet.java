@@ -250,8 +250,7 @@ public final class NbSheet extends TopComponent {
     */
     protected void updateTitle () {
         // different naming for global and local sheets
-        Mode ourMode = WindowManager.getDefault().
-                       getCurrentWorkspace().findMode(this);
+        Mode ourMode = WindowManager.getDefault().findMode(this);
         String nodeTitle =  null;
 
         // Fix a bug #12890, copy the nodes to prevent race condition.
