@@ -229,7 +229,10 @@ public class JPDAStart extends Task {
                 if (!isValid(f, project)) {
                     continue;
                 }
-                if (paths[i].toLowerCase().endsWith(".jar")) {
+                String pathString = paths[i].toLowerCase();
+                if (pathString.endsWith(".jar")) {
+                    u = new URL("jar:" + f.toURI() + "!/");
+                } else if (pathString.endsWith(".zip")) {
                     u = new URL("jar:" + f.toURI() + "!/");
                 } else {
                     u = f.toURI().toURL();
