@@ -16,13 +16,20 @@ package org.netbeans.modules.web.project;
 import java.io.IOException;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.project.ActionProvider;
@@ -169,6 +176,13 @@ class WebActionProvider implements ActionProvider {
                     return;
                 }
             }
+            // 51462 - if there's an ejb reference, but no j2ee app, run/deploy will not work
+            if (isEjbRefAndNoJ2eeApp(project)) {
+                NotifyDescriptor nd;                
+                nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
+                Object o = DialogDisplayer.getDefault().notify(nd);
+                return;
+            }
             p = new Properties();
             if (command.equals (WebProjectConstants.COMMAND_REDEPLOY)) {
                 p.setProperty("forceRedeploy", "true"); //NOI18N
@@ -274,6 +288,13 @@ class WebActionProvider implements ActionProvider {
                 } else {
                     return;
                 }
+            }
+            // 51462 - if there's an ejb reference, but no j2ee app, debug will not work
+            if (isEjbRefAndNoJ2eeApp(project)) {
+                NotifyDescriptor nd;                
+                nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
+                Object o = DialogDisplayer.getDefault().notify(nd);
+                return;
             }
             p = new Properties();
         
@@ -795,6 +816,54 @@ class WebActionProvider implements ActionProvider {
         }
         return files;
     }
+    
+    private boolean isEjbRefAndNoJ2eeApp(Project p) {
+
+        WebModule wmod = WebModule.getWebModule(p.getProjectDirectory());
+        if (wmod != null) {
+            WebApp webXml = null;
+            try {
+                webXml = DDProvider.getDefault().getDDRoot(wmod.getDeploymentDescriptor());
+            } catch (IOException ioe) {
+                // ignore
+            }
+            EjbLocalRef[] ejbLocalRefs = webXml.getEjbLocalRef();
+            if ((ejbLocalRefs != null) && (ejbLocalRefs.length > 0)) { // there's an ejb reference in this module                
+                if (!isInJ2eeApp(p)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    private boolean isInJ2eeApp(Project p) {
+        Set globalPath = GlobalPathRegistry.getDefault().getSourceRoots();
+        Iterator iter = globalPath.iterator();
+        while (iter.hasNext()) {
+            FileObject sourceRoot = (FileObject)iter.next();
+            Project project = FileOwnerQuery.getOwner(sourceRoot);
+            if (project != null) {
+                Object j2eeAppProvider = project.getLookup().lookup(J2eeAppProvider.class);
+                if (j2eeAppProvider != null) { // == it is j2ee app
+                    J2eeAppProvider j2eeApp = (J2eeAppProvider)j2eeAppProvider;
+                    J2eeModuleProvider[] j2eeModules = j2eeApp.getChildModuleProviders();
+                    if ((j2eeModules != null) && (j2eeModules.length > 0)) { // == there are some modules in the j2ee app
+                        J2eeModuleProvider affectedPrjProvider = 
+                                (J2eeModuleProvider)p.getLookup().lookup(J2eeModuleProvider.class);
+                        if (affectedPrjProvider != null) {
+                            if (Arrays.asList(j2eeModules).contains(affectedPrjProvider)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    
     private boolean isDebugged() {
         J2eeModuleProvider jmp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
