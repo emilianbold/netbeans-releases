@@ -49,7 +49,7 @@ public class DocumentsDialogOperator extends NbDialogOperator {
     private JListOperator _lstDocuments;
     
     private static final String title = Bundle.getString("org.netbeans.core.windows.actions.Bundle", 
-                                                         "CTL_DocumentsTitle");
+                                                         "CTL_Documents");
     
     /** Waits until dialog with title Documents is found. */
     public DocumentsDialogOperator() {
