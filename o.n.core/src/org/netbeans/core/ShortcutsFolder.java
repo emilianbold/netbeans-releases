@@ -130,9 +130,9 @@ final class ShortcutsFolder extends FolderInstance {
                     return pair;
                 }
             } catch (IOException x) {
-                TopManager.getDefault().getErrorManager().notify(ErrorManager.WARNING, x);
+                TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, x);
             } catch (ClassNotFoundException x) {
-                TopManager.getDefault().getErrorManager().notify(ErrorManager.WARNING, x);
+                TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, x);
             }
         }
         return null;
