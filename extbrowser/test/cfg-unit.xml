@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<mconfig name="Extbrowser unit tests configuration">
+
+	<testbag testattribs="stable" executor="code" compiler="default-compiler" name="Stable extbrowser unit tests">
+ 		<testset dir="unit/src">
+			<patternset>
+				<include name="**/*.class"/>
+			</patternset>
+ 		</testset>
+	</testbag>
+
+	<executor name="code" antfile="build-unit.xml" target="runcodetest"/> 
+	<executor name="ide" antfile="build-unit.xml" target="runidetest"/> 
+
+	<compiler name="default-compiler" default="true" antfile="build-unit.xml" target="default-compiler"/>
+
+	<resultsprocessor name="default" default="true" antfile="build.xml" target="test_report"/> 
+
+</mconfig>

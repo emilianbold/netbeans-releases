@@ -30,7 +30,6 @@ import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
@@ -38,7 +37,6 @@ import org.openide.execution.NbProcessDescriptor;
 import org.openide.options.SystemOption;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
-import org.netbeans.modules.httpserver.*;
 import org.openide.util.NbBundle;
          
 /**

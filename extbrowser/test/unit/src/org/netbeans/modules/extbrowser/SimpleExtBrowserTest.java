@@ -23,7 +23,6 @@ import org.netbeans.junit.*;
 import java.beans.*;
 import java.io.IOException;
 import java.net.URL;
-import org.openide.TopManager;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -31,7 +30,6 @@ import org.openide.execution.ExecInfo;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.httpserver.WrapperServlet;
 import org.openide.util.Utilities;
          
 /**
