@@ -7,77 +7,130 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.junit;
 
+import java.awt.EventQueue;
+import java.lang.reflect.Method;
+import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 
 /** Thread-safe wrapper around JUnitProgress - panel showing progress info
  * and allowing the user to cancel running task. Used in actions creating
  * or executing tests.
+ *
+ * @author  Tomas Pavek
+ * @author  Ondrej Rypacek
+ * @author  Marian Petras
  */
+class ProgressIndicator {
 
-class ProgressIndicator implements Runnable {
-
-    private String message;
+    /**
+     * initial message to be used when GUI is created.
+     * It is only used if setMessage(...) is called sooner than show().
+     */
+    private String initialMessage;
     private JUnitProgress progressPanel;
-    private boolean creatingGUI;
+    /** <code>true</code> if GUI (dialog) creation has passed or is scheduled */
+    private boolean guiCreationScheduled;
 
     synchronized boolean isCanceled() {
         return progressPanel != null ? progressPanel.isCanceled() : false;
     }
 
     void displayStatusText(String statusText) {
-        org.openide.awt.StatusDisplayer.getDefault().setStatusText(statusText);
+        StatusDisplayer.getDefault().setStatusText(statusText);
     }
 
+    /**
+     * Sets a message to be displayed in the progress GUI.
+     * If the GUI already exists (or is scheduled to be created), this method
+     * will cause the message in the GUI to be changed to the given text.
+     * If the GUI neither exists nor is scheduled, this method just remembers
+     * the message so that it will used when the GUI is created.
+     */
     synchronized void setMessage(final String msg, final boolean displayStatus) {
-        if (progressPanel != null)
-            java.awt.EventQueue.invokeLater(new Runnable() {
+        if (guiCreationScheduled) {
+            EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     progressPanel.setMessage(msg, displayStatus);
                 }
             });
-        else
-            message = msg;
+        } else {
+            /*
+             * Set an initial message to be used when GUI is about to be
+             * created:
+             */
+            initialMessage = msg;
+        }
     }
 
     synchronized void show() {
-        if (progressPanel == null && !creatingGUI) {
-            creatingGUI = true;
-            java.awt.EventQueue.invokeLater(this);
+        if (!guiCreationScheduled) {
+            sendToAwtQueue("createAndShowDialog");                      //NOI18N
+            guiCreationScheduled = true;
+        } else {
+            sendToAwtQueue("showDialog");                               //NOI18N
         }
-        else if (progressPanel != null)
-            java.awt.EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    progressPanel.showMe(true);
-                }
-            });
     }
 
     synchronized void hide() {
-        if (progressPanel != null)
-            java.awt.EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    progressPanel.hideMe();
-                }
-            });
-
-        org.openide.awt.StatusDisplayer.getDefault().setStatusText("");
-
+        if (guiCreationScheduled) {
+            sendToAwtQueue("hideDialog");                               //NOI18N
+        }
+        StatusDisplayer.getDefault().setStatusText("");                 //NOI18N
     }
 
-    synchronized public void run() {
+    /**
+     */
+    synchronized void createAndShowDialog() {
         String msg = NbBundle.getMessage(JUnitProgress.class,
                                "LBL_generator_progress_title"); //NOI18N
         progressPanel = new JUnitProgress(msg);
-        if (message != null) {
-            progressPanel.setMessage(message);
-            message = null;
+        
+        if (initialMessage != null) {
+            progressPanel.setMessage(initialMessage);
+            initialMessage = null;
         }
+        
+        showDialog();
+    }
+
+    /**
+     */
+    synchronized void showDialog() {
         progressPanel.showMe(true);
     }
+
+    /**
+     */
+    synchronized void hideDialog() {
+        progressPanel.hideMe();
+    }
+
+    /**
+     */
+    private void sendToAwtQueue(String methodName) {
+        final Method method;
+        try {
+            method = getClass().getDeclaredMethod(methodName, new Class[0]);
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+            return;
+        }
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    method.invoke(ProgressIndicator.this, null);
+                } catch (Exception ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+                }
+            }
+        });
+    }
+
 }
