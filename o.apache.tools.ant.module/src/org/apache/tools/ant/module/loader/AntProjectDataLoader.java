@@ -1,22 +1,21 @@
 /*
- *                         Sun Public License Notice
- *
- * The contents of this file are subject to the Sun Public License Version
- * 1.0 (the "License"). You may not use this file except in compliance with 
- * the License. A copy of the License is available at http://www.sun.com/
- *
- * The Original Code is the Ant module
- * The Initial Developer of the Original Code is Jayme C. Edwards.
- * Portions created by Jayme C. Edwards are Copyright (c) 2000.
- * All Rights Reserved.
- *
- * Contributor(s): Jayme C. Edwards, Jesse Glick
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
- 
+
 package org.apache.tools.ant.module.loader;
 
 import java.io.*;
-
+import org.apache.tools.ant.module.AntModule;
+import org.apache.tools.ant.module.nodes.RunTargetsAction;
 import org.openide.*;
 import org.openide.actions.*;
 import org.openide.filesystems.*;
@@ -26,12 +25,11 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.io.SafeException;
 
-import org.apache.tools.ant.module.AntModule;
-import org.apache.tools.ant.module.nodes.RunTargetsAction;
-
-/** Recognizes single files in the Repository as being of Ant Project type.
+/**
+ * Recognizes Ant project files according to XML signature.
  */
 public class AntProjectDataLoader extends UniFileLoader {
+
     private static final String REQUIRED_MIME = "text/x-ant+xml"; // NOI18N
     private static final String KNOWN_ANT_FILE = "org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE"; // NOI18N
     private static final String KNOWN_ANT_FILE_OLD = "org.apache.tools.ant.module.AntProjectDataLoader.KNOWN_ANT_FILE"; // NOI18N
@@ -48,7 +46,6 @@ public class AntProjectDataLoader extends UniFileLoader {
 
     protected void initialize () {
         super.initialize ();
-        // #9582: use declarative MIME types.
         getExtensions().addMimeType(REQUIRED_MIME);
     }
 
@@ -69,83 +66,6 @@ public class AntProjectDataLoader extends UniFileLoader {
             SystemAction.get (ToolsAction.class),
             SystemAction.get (PropertiesAction.class),
         };
-    }
-
-    // BuildProjectAction etc. were removed. Ignore SafeException.
-    public void readExternal (ObjectInput oi) throws IOException, ClassNotFoundException {
-        try {
-            super.readExternal (oi);
-        } catch (SafeException se) {
-            AntModule.err.annotate(se, ErrorManager.UNKNOWN, "Reading AntProjectDataLoader: resetting action list to default", null, null, null); // NOI18N
-            AntModule.err.notify(ErrorManager.INFORMATIONAL, se);
-        }
-        ExtensionList xl = getExtensions();
-        if (xl.isRegistered(".xml")) { // NOI18N
-            AntModule.err.log("#15547: correcting old Ant object type extension list to be MIME format");
-            if (xl.mimeTypes().hasMoreElements()) {
-                AntModule.err.log("WARNING: old extension list had some MIME types in it, will be kept...");
-            }
-            xl.removeExtension("xml"); // NOI18N
-            if (xl.extensions().hasMoreElements()) {
-                AntModule.err.log("WARNING: old extension list had non-.xml extensions in it, will not be converted...");
-                setExtensions(xl = new ExtensionList());
-            }
-            xl.addMimeType(REQUIRED_MIME);
-        }
-    }
-  
-    /** Determines whether a given file should be handled by this loader.
-     * @param fo the file object to interrogate
-     * @return the fileojbect if we will handle it otherwise null
-     */
-    protected FileObject findPrimaryFile (FileObject fo) {
-        FileObject fo2 = super.findPrimaryFile (fo);
-        if (fo2 == null) {
-            // Incorrect extension or contents.
-            return null;
-        } else {
-            // Ours. Clear any old-style file attributes first.
-            clearAttrs(fo2);
-            return fo2;
-        }
-    }
-
-    /** Delete old, no-longer-used marker attributes when possible.
-     * @param fo the file object to unremember about
-     */
-    private static void clearAttrs(FileObject fo) {
-        if (fo.getAttribute(KNOWN_ANT_FILE) == null && fo.getAttribute(KNOWN_ANT_FILE_OLD) == null) {
-            // Already fine, no need to do anything.
-            // Trying to uselessly clear the attr can cause empty .nbattrs to be written etc.
-            return;
-        }
-        if (!fo.canWrite()) {
-            // Don't even try.
-            return;
-        }
-        try {
-            FileSystem fs = fo.getFileSystem ();
-            if (! fs.isValid ()) {
-                // Unmounted FS; maybe a layer, for example. Skip it.
-                return;
-            }
-            if (fs == Repository.getDefault ().getDefaultFileSystem ()) {
-                // SystemFileSystem. Skip it. We do not want .nbattrs
-                // being written all over the user's system folder just because
-                // there happen to be some XML files there.
-                return;
-            }
-        } catch (FileStateInvalidException fsie) {
-            // Bogus file object, skip it.
-            AntModule.err.notify (ErrorManager.INFORMATIONAL, fsie);
-            return;
-        }
-        try {
-            fo.setAttribute (KNOWN_ANT_FILE, null);
-            fo.setAttribute (KNOWN_ANT_FILE_OLD, null);
-        } catch (IOException ioe) {
-            AntModule.err.notify (ErrorManager.INFORMATIONAL, ioe);
-        }
     }
 
     protected MultiDataObject createMultiObject (FileObject primaryFile) throws DataObjectExistsException, IOException {
