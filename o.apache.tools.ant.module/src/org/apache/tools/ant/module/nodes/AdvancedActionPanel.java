@@ -21,7 +21,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JEditorPane;
 import javax.swing.KeyStroke;
 import javax.swing.text.EditorKit;
-import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
@@ -44,11 +43,20 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
     private static final String ATTR_VERBOSITY = "org.apache.tools.ant.module.preferredVerbosity"; // NOI18N
     
     private static final String[] VERBOSITIES = {
+        /* #45482: this one is really useless:
         NbBundle.getMessage(AdvancedActionPanel.class, "LBL_verbosity_err"),
+         */
         NbBundle.getMessage(AdvancedActionPanel.class, "LBL_verbosity_warn"),
         NbBundle.getMessage(AdvancedActionPanel.class, "LBL_verbosity_info"),
         NbBundle.getMessage(AdvancedActionPanel.class, "LBL_verbosity_verbose"),
         NbBundle.getMessage(AdvancedActionPanel.class, "LBL_verbosity_debug"),
+    };
+    private static final int[] VERBOSITY_LEVELS = {
+        // no Project.MSG_ERR exposed in GUI
+        1 /*Project.MSG_WARN*/,
+        2 /*Project.MSG_INFO*/,
+        3 /*Project.MSG_VERBOSE*/,
+        4 /*Project.MSG_DEBUG*/,
     };
     
     private final AntProjectCookie project;
@@ -118,7 +126,12 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
             verbosity = new Integer(AntSettings.getDefault().getVerbosity());
         }
         verbosityComboBox.setModel(new DefaultComboBoxModel(VERBOSITIES));
-        verbosityComboBox.setSelectedItem(VERBOSITIES[verbosity.intValue()]);
+        for (int i = 0; i < VERBOSITY_LEVELS.length; i++) {
+            if (VERBOSITY_LEVELS[i] == verbosity.intValue()) {
+                verbosityComboBox.setSelectedItem(VERBOSITIES[i]);
+                break;
+            }
+        }
     }
     
     /** This method is called from within the constructor to
@@ -275,8 +288,14 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
         Properties props = new Properties();
         ByteArrayInputStream bais = new ByteArrayInputStream(propertiesPane.getText().getBytes("ISO-8859-1"));
         props.load(bais);
-        int verbosity = Arrays.asList(VERBOSITIES).indexOf(verbosityComboBox.getSelectedItem());
-        assert verbosity != -1 : verbosityComboBox.getSelectedItem();
+        int verbosity = 2;
+        String verbosityString = (String) verbosityComboBox.getSelectedItem();
+        for (int i = 0; i < VERBOSITIES.length; i++) {
+            if (VERBOSITIES[i].equals(verbosityString)) {
+                verbosity = VERBOSITY_LEVELS[i];
+                break;
+            }
+        }
         // Remember these settings for next time.
         // Wherever the values used match the default, remove the attribute.
         FileObject script = project.getFileObject();
