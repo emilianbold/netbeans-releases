@@ -74,6 +74,8 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         btv.setSelectionMode( javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION );
         btv.setBorder( SAMPLE_SCROLL_PANE.getBorder() );        
         btv.setPopupAllowed( false );
+        btv.getAccessibleContext ().setAccessibleName (NbBundle.getMessage(BrowseFolders.class, "ACSN_BrowseFolders_folderPanel"));
+        btv.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(BrowseFolders.class, "ACSD_BrowseFolders_folderPanel"));
         expandSelection( preselectedFileName );
         //expandAllNodes( btv, manager.getRootContext() );
         folderPanel.add( btv, java.awt.BorderLayout.CENTER );        
@@ -100,13 +102,17 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12)));
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "ACSN_BrowseFolders"));
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "ACSN_BrowseFolders"));
         jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "MNE_BrowseFolders_jLabel1").charAt(0));
+        jLabel1.setLabelFor(folderPanel);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "LBL_BrowseFolders_jLabel1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         add(jLabel1, gridBagConstraints);
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "ACSN_BrowseFolders_jLabel1"));
 
         folderPanel.setLayout(new java.awt.BorderLayout());
 
@@ -140,8 +146,12 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         options[ 0 ].setActionCommand( OptionsListener.COMMAND_SELECT );
         options[ 0 ].addActionListener( optionsListener );
         options[ 0 ].setMnemonic (NbBundle.getMessage( BrowseFolders.class, "MNE_BrowseFolders_Select_Option").charAt (0) );
+        options[ 0 ].getAccessibleContext ().setAccessibleName (NbBundle.getMessage( BrowseFolders.class, "ACSN_BrowseFolders_Select_Option"));
+        options[ 0 ].getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage( BrowseFolders.class, "ACSD_BrowseFolders_Select_Option"));
         options[ 1 ].setActionCommand( OptionsListener.COMMAND_CANCEL );
         options[ 1 ].addActionListener( optionsListener );    
+        options[ 1 ].getAccessibleContext ().setAccessibleName (NbBundle.getMessage( BrowseFolders.class, "ACSN_BrowseFolders_Cancel_Option"));
+        options[ 1 ].getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage( BrowseFolders.class, "ACSD_BrowseFolders_Cancel_Option"));
         
         DialogDescriptor dialogDescriptor = new DialogDescriptor( 
             bf,                                     // innerPane
