@@ -42,7 +42,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     private static final Validator VALIDATOR = new Validator ();
     
     /** hashtable that maps FileObject to DataObjectPool.Item */
-    private HashMap map = new HashMap ();
+    private HashMap map = new HashMap (512);
     
     /** Set<FileSystem> covering all FileSystems we're listening on */
     private WeakSet knownFileSystems = new WeakSet();
