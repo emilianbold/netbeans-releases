@@ -28,7 +28,6 @@ import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
@@ -257,7 +256,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
 
     TopComponent getXmlTopComponent() {
         if (xmlTC == null) {
-            xmlTC = new XmlCloneableEditor(this);
+            xmlTC = super.createCloneableTopComponent();
         }
         return xmlTC;
     }
@@ -376,36 +375,5 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     // Accessibility for ToolBarMultiViewElement:  
     protected String messageName() {
         return super.messageName();
-    }
-
-    private static class XmlCloneableEditor extends CloneableEditor {
-        private XmlMultiViewEditorSupport editorSupport;
-        private String displayName;
-
-        public XmlCloneableEditor() {
-            super();
-        }
-
-        public XmlCloneableEditor(XmlMultiViewEditorSupport editorSupport) {
-            super(editorSupport);
-            this.editorSupport = editorSupport;
-        }
-
-        public void setDisplayName(String displayName) {
-            if (editorSupport != null) {
-                this.displayName = editorSupport.messageName();
-                editorSupport.updateDisplayName();
-            } else {
-                this.displayName = displayName;
-            }
-        }
-
-        public String getDisplayName() {
-            if (editorSupport != null) {
-                displayName = editorSupport.messageName();
-            }
-            return displayName;
-        }
-
     }
 }
