@@ -299,6 +299,7 @@
 <mapID target="editing.fastopen" url="editing/fastopen.html" />
 <mapID target="editing.parserdatabase" url="editing/parserdatabase.html" />
 <mapID target="editing.deleting-pdb" url="editing/deleting-pdb.html" />
+<mapID target="editing.xmlsettings" url="editing/xmlsettings.html" />
 <mapID target="editing.configuring" url="editing/configuring/configuring.html" />
 <mapID target="editing.settingkeybdshorts" url="editing/configuring/settingkeybdshorts.html" />
 <mapID target="editing.javaeditor-props" url="editing/configuring/javaeditor-props.html" />
@@ -313,6 +314,7 @@
 
 <!-- Need csh page (and help topic) for Tools->Options, Printing node and subnodes -->
 <mapID target="editing.printing" url="pending.html" />
+
 <!-- These are csh pages for separate indentation engines, currently hooked to same page-->
 <mapID target="editing.indentation.simple" url="editing/configuring/indentation.html" />
 <mapID target="editing.indentation.java" url="editing/configuring/indentation.html" />
@@ -325,6 +327,7 @@
 <mapID target="editing.editor.plain" url="editing/configuring/javaeditor-props.html" />
 <mapID target="editing.editor.jsp" url="editing/configuring/javaeditor-props.html" />
 <mapID target="editing.editor.properties" url="editing/configuring/javaeditor-props.html" />
+
 <!-- Csh pages for scroll insets and Fonts and Color property editors -->
 <mapID target="editing.scrollinsets" url="editing/configuring/insets.html" />
 <mapID target="editing.fonts" url="editing/configuring/fontsandcolors.html" />
