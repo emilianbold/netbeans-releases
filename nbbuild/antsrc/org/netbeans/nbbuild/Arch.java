@@ -90,6 +90,18 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
 
         questions = readElements (q, "question");
         
+        String questionsVersion;
+        {
+            NodeList apiQuestions = q.getElementsByTagName("api-questions");
+            if (apiQuestions.getLength () != 1) {
+                throw new BuildException ("No element api-questions");
+            }
+            questionsVersion = ((Element)apiQuestions.item (0)).getAttribute ("version");
+            if (questionsVersion == null) {
+                throw new BuildException ("Element api-questions does not have attribute version");
+            }
+        }
+        
         if (questions.size () == 0) {
             throw new BuildException ("There are no <question> elements in the file!");
         }
@@ -98,7 +110,7 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
             log ("Input file " + questionsFile + " does not exists. Generating it filled with skeleton answers.");
             try {
                 TreeSet s = new TreeSet (questions.keySet ());
-                generateTemplateFile (s);
+                generateTemplateFile (removeRevisionTags (questionsVersion), s);
             } catch (IOException ex) {
                 throw new BuildException (ex);
             }
@@ -114,23 +126,15 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
             
             // version of answers and version of questions
             NodeList apiAnswers = q.getElementsByTagName("api-answers");
-            NodeList apiQuestions = q.getElementsByTagName("api-questions");
             
             if (apiAnswers.getLength() != 1) {
                 throw new BuildException ("No element api-answers");
             }
-            if (apiQuestions.getLength () != 1) {
-                throw new BuildException ("No element api-questions");
-            }
             
             String answersVersion = ((Element)apiAnswers.item (0)).getAttribute ("question-version");
-            String questionsVersion = ((Element)apiQuestions.item (0)).getAttribute ("version");
             
             if (answersVersion == null) {
                 throw new BuildException ("Element api-answers does not have attribute question-version");
-            }
-            if (questionsVersion == null) {
-                throw new BuildException ("Element api-questions does not have attribute version");
             }
             
             if (!removeRevisionTags (answersVersion).equals (removeRevisionTags (questionsVersion))) {
@@ -201,7 +205,7 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
         }
     }
     
-    private void generateTemplateFile (Set missing) throws IOException {
+    private void generateTemplateFile (String versionOfQuestions, Set missing) throws IOException {
         Writer w = new FileWriter (questionsFile);
         
         w.write ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -211,7 +215,7 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
         w.write ("\n");
         w.write ("<api-answers\n");
         w.write ("  version=\"$Revision$\" date=\"$date$\"\n");
-        w.write ("  question-version=\"1.1\"\n");
+        w.write ("  question-version=\""); w.write (versionOfQuestions); w.write ("\"\n");
         w.write ("  module=\"name of your module\"\n");
         w.write ("  author=\"yourname@netbeans.org\"\n");
         w.write (">\n\n");
