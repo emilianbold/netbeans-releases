@@ -25,6 +25,12 @@ import org.openide.util.Utilities;
 */
 public class SystemFileSystemBeanInfo extends SimpleBeanInfo {
 
+    public BeanDescriptor getBeanDescriptor () {
+        BeanDescriptor descr = new BeanDescriptor (SystemFileSystem.class);
+        descr.setValue ("helpID", SystemFileSystem.class.getName ()); // NOI18N
+        return descr;
+    }
+    
     /** Provides the LocalFileSystem's icon */
     public Image getIcon(int type) {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16))
