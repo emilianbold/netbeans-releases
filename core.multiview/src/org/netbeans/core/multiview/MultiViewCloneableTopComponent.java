@@ -57,13 +57,12 @@ import org.openide.windows.TopComponent;
  */
 
 
-public final class MultiViewTopComponent 
-                            extends TopComponent 
-                            implements ActionRequestObserverFactory {
+public final class MultiViewCloneableTopComponent extends CloneableTopComponent 
+                                                  implements ActionRequestObserverFactory, CloneableEditorSupport.Pane {
 
     MultiViewPeer peer;
                                            
-    public MultiViewTopComponent() {
+    public MultiViewCloneableTopComponent() {
         super();
         peer = new MultiViewPeer(this, this);
         // initializes the multiview component.
@@ -193,6 +192,18 @@ public final class MultiViewTopComponent
         return SpiAccessor.DEFAULT.createCallback(new ActReqObserver(desc));
     }
     
+    public CloneableTopComponent getComponent() {
+        return this;
+    }    
+    
+    public javax.swing.JEditorPane getEditorPane() {
+        MultiViewElement el = peer.model.getActiveElement();
+        if (el.getVisualRepresentation() instanceof CloneableEditorSupport.Pane) {
+            CloneableEditorSupport.Pane pane = (CloneableEditorSupport.Pane)el.getVisualRepresentation();
+            return pane.getEditorPane();
+        }
+        return null;
+    }
     
     public HelpCtx getHelpCtx() {
         return peer.getHelpCtx();
@@ -220,6 +231,13 @@ public final class MultiViewTopComponent
      */
     public boolean canClose() {
         return peer.canClose();
+    }
+    
+    // from CloneableEditor.Pane
+    public void updateName() {
+        if (peer != null) {
+            peer.updateName();
+        }
     }
     
     public Lookup getLookup() {
@@ -255,11 +273,11 @@ public final class MultiViewTopComponent
         }
         
         public Action[] createDefaultActions() {
-            return MultiViewTopComponent.this.getDefaultTCActions();
+            return MultiViewCloneableTopComponent.this.getDefaultTCActions();
         }
         
         public void updateTitle(String title) {
-            MultiViewTopComponent.this.setDisplayName(title);
+            MultiViewCloneableTopComponent.this.setDisplayName(title);
         }
         
         /** replace as null - should not be stored and read..*/
@@ -277,7 +295,7 @@ public final class MultiViewTopComponent
         }
         
         public TopComponent getTopComponent() {
-            return MultiViewTopComponent.this;
+            return MultiViewCloneableTopComponent.this;
         }
         
     }

@@ -49,10 +49,10 @@ import org.openide.windows.*;
  *
  * @author Milos Kleint
  */
-public class MultiViewTopComponentTest extends AbstractMultiViewTopComponentTestCase {
+public class MultiViewCloneableTopComponentTest extends AbstractMultiViewTopComponentTestCase {
     
     /** Creates a new instance of SFSTest */
-    public MultiViewTopComponentTest(String name) {
+    public MultiViewCloneableTopComponentTest(String name) {
         super (name);
     }
     
@@ -64,21 +64,21 @@ public class MultiViewTopComponentTest extends AbstractMultiViewTopComponentTest
     }
     
     public static Test suite() {
-        TestSuite suite = new NbTestSuite(MultiViewTopComponentTest.class);
+        TestSuite suite = new NbTestSuite(MultiViewCloneableTopComponentTest.class);
         
         return suite;
     }
 
     protected TopComponent callFactory(MultiViewDescription[] desc, MultiViewDescription def) {
-        return MultiViewFactory.createMultiView(desc, def);
+        return MultiViewFactory.createCloneableMultiView(desc, def);
     }    
     
     protected TopComponent callFactory(MultiViewDescription[] desc, MultiViewDescription def, CloseOperationHandler close) {
-        return MultiViewFactory.createMultiView(desc, def, close);
+        return MultiViewFactory.createCloneableMultiView(desc, def, close);
     }
     
     protected Class getTopComponentClass() {
-        return MultiViewTopComponent.class;
+        return MultiViewCloneableTopComponent.class;
     }
     
     public void testPersistence() throws Exception {
@@ -105,7 +105,7 @@ public class MultiViewTopComponentTest extends AbstractMultiViewTopComponentTest
         Object obj = mars.get();
         assertNotNull(obj);
         assertEquals(getTopComponentClass(), obj.getClass());
-        tc = (MultiViewTopComponent)obj;
+        tc = (MultiViewCloneableTopComponent)obj;
         
         
         MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
@@ -117,7 +117,7 @@ public class MultiViewTopComponentTest extends AbstractMultiViewTopComponentTest
         assertEquals("desc2", selDesc.getDisplayName());
         tc.open();
         tc.requestActive();
-        MultiViewTopComponent mvtc = (MultiViewTopComponent)tc;
+        MultiViewCloneableTopComponent mvtc = (MultiViewCloneableTopComponent)tc;
         Collection cold = mvtc.getModel().getCreatedElements();
         // expected number of elements is one, because the elem3 was not initialized at all..
         assertEquals(1, cold.size());
@@ -132,6 +132,7 @@ public class MultiViewTopComponentTest extends AbstractMultiViewTopComponentTest
         
         
     }    
+    
     
 }
 

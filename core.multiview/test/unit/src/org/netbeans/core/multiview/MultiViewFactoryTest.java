@@ -92,6 +92,39 @@ public class MultiViewFactoryTest extends NbTestCase {
         assertFalse(close.wasUsed);
         
     }
+    
+   public void testCreateCloneableMultiView () throws Exception {
+        MultiViewDescription desc1 = new MVDesc("desc1", null, 0, new MVElem());
+        MultiViewDescription desc2 = new MVDesc("desc2", null, 0, new MVElem());
+        MultiViewDescription desc3 = new MVDesc("desc3", null, 0, new MVElem());
+        MultiViewDescription[] descs = new MultiViewDescription[] { desc1, desc2, desc3 };
+        CloneableTopComponent tc = MultiViewFactory.createCloneableMultiView(descs, desc1);
+        assertNotNull(tc);
+        
+        tc = MultiViewFactory.createCloneableMultiView(descs, null);
+        assertNotNull(tc);
+        
+        tc = MultiViewFactory.createCloneableMultiView(null, null);
+        assertNull(tc);
+    }
+
+    
+    public void testCreateCloneableMultiView2 () throws Exception {
+        MultiViewDescription desc1 = new MVDesc("desc1", null, 0, new MVElem());
+        MultiViewDescription desc2 = new MVDesc("desc2", null, 0, new MVElem());
+        MultiViewDescription desc3 = new MVDesc("desc3", null, 0, new MVElem());
+        MultiViewDescription[] descs = new MultiViewDescription[] { desc1, desc2, desc3 };
+        MyClose close = new MyClose();
+        TopComponent tc = MultiViewFactory.createCloneableMultiView(descs, desc1, close);
+        assertNotNull(tc);
+        
+        tc.open();
+        // just one element as shown..
+        tc.close();
+        // the close handler is not used, becasue all the elements are in consistent state
+        assertFalse(close.wasUsed);
+        
+    }    
 
 
 //    public void testCreateSafeCloseState () throws Exception {

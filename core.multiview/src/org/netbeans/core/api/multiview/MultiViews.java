@@ -16,6 +16,7 @@ package org.netbeans.core.api.multiview;
 import javax.swing.Action;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
+import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 import org.netbeans.core.multiview.MultiViewTopComponent;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
@@ -34,8 +35,13 @@ public final class MultiViews {
      * For advanced manupulation with Multiview component, the handler can be requested
      */
     public static MultiViewHandler findMultiViewHandler(TopComponent tc) {
-        if ( tc != null && tc instanceof MultiViewTopComponent) {
-            return new MultiViewHandler(((MultiViewTopComponent)tc).getMultiViewHandlerDelegate());
+        if ( tc != null) {
+            if (tc instanceof MultiViewTopComponent) {
+                return new MultiViewHandler(((MultiViewTopComponent)tc).getMultiViewHandlerDelegate());
+            }
+            if (tc instanceof MultiViewCloneableTopComponent) {
+                return new MultiViewHandler(((MultiViewCloneableTopComponent)tc).getMultiViewHandlerDelegate());
+            }
         }
         return null;
     }

@@ -29,12 +29,15 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.text.Document;
+import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 import org.netbeans.core.multiview.MultiViewTopComponent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.text.CloneableEditor;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
+import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 
 /** Factory class for creating top components handling multi views.
@@ -61,13 +64,18 @@ public final class MultiViewFactory {
     }
 
     /** Creates and returns new instance of top component with
-     * multi views */
+     * multi views.
+     * PLEASE NOTE: a non-cloneable TopComponent is not able to embed editors aka subclasses of CloneableEditor correctly.
+     * Use createCloneableMultiView() method in such a case.
+     */
     public static TopComponent createMultiView (MultiViewDescription[] descriptions, MultiViewDescription defaultDesc) {
         return createMultiView(descriptions, defaultDesc, createDefaultCloseOpHandler());
     }
 
     /** Creates and returns new instance of top component with
      * multi views.
+     * PLEASE NOTE: a non-cloneable TopComponent is not able to embed editors aka subclasses of CloneableEditor correctly.
+     * Use createCloneableMultiView() method in such a case.
      * @param CloseOperationHandler handles closing of the multiview component.
      */
     public static TopComponent createMultiView (MultiViewDescription[] descriptions, MultiViewDescription defaultDesc,
@@ -79,6 +87,26 @@ public final class MultiViewFactory {
         tc.setCloseOperationHandler(closeHandler);
         return tc;
     }
+    
+   /** Creates and returns new instance of cloneable top component with
+     * multi views */
+    public static CloneableTopComponent createCloneableMultiView (MultiViewDescription[] descriptions, MultiViewDescription defaultDesc) {
+        return createCloneableMultiView(descriptions, defaultDesc, createDefaultCloseOpHandler());
+    }
+
+    /** Creates and returns new instance of cloneable top component with
+     * multi views.
+     * @param CloseOperationHandler handles closing of the multiview component.
+     */
+    public static CloneableTopComponent createCloneableMultiView (MultiViewDescription[] descriptions, MultiViewDescription defaultDesc,
+                                                CloseOperationHandler closeHandler) {
+        if (descriptions == null) return null;
+        if (closeHandler == null) closeHandler = createDefaultCloseOpHandler();
+        MultiViewCloneableTopComponent tc = new MultiViewCloneableTopComponent();
+        tc.setMultiViewDescriptions(descriptions, defaultDesc);
+        tc.setCloseOperationHandler(closeHandler);
+        return tc;
+    }    
     
     /**
      * Utility method for MultiViewElements to create a CloseOperationState instance that
