@@ -33,7 +33,7 @@ import com.netbeans.ide.loaders.*;
 import com.netbeans.ide.actions.*;
 import com.netbeans.ide.cookies.SaveCookie;
 import com.netbeans.ide.debugger.Debugger;
-import com.netbeans.ide.debugger.DebuggerException;
+import com.netbeans.ide.debugger.DebuggerNotFoundException;
 import com.netbeans.ide.filesystems.*;
 import com.netbeans.ide.filesystems.jar.JarFileSystem;
 import com.netbeans.ide.filesystems.local.*;
@@ -198,12 +198,10 @@ public class NbTopManager extends TopManager {
   *  DebuggerException (when no debugger is installed)
   * @return currently installed  debugger.
   */
-  public Debugger getDebugger () throws DebuggerException {
+  public Debugger getDebugger () throws DebuggerNotFoundException {
     Debugger d = debugger;
     if (d == null) {
-      throw new DebuggerException(
-        NbBundle.getBundle(this).getString("EXC_NoDebugger")
-      );
+      throw new DebuggerNotFoundException();
     }
     return d;
   }
