@@ -430,12 +430,12 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
 //            }
 //        }        
         
-        /** Returns Editor pane for private use.
-         * @return Editor pane for private use.
-         */
-        protected JEditorPane getEditorPane() {
-            return pane;
-        }
+//        /** Returns Editor pane for private use.
+//         * @return Editor pane for private use.
+//         */
+//        protected JEditorPane getEditorPane() {
+//            return pane;
+//        }
         
         /* This method is called when parent window of this component has focus,
          * and this component is preferred one in it.

@@ -60,7 +60,7 @@ implements EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie {
     private boolean listenToModifs = true;
     
     /** delegating support */
-    Del del;
+    private Del del;
 
     /** Support an existing loader entry. The file is taken from the
     * entry and is updated if the entry is moved or renamed.
@@ -373,7 +373,17 @@ implements EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie {
     * @return always non-<code>null</code> editor
     */
     protected Editor openAt(PositionRef pos) {
-        return (Editor)del.openAt (pos, -1);
+        CloneableEditorSupport.Pane p = del.openAt (pos, -1);
+        if (p instanceof Editor) {
+            return (Editor)p;
+        }
+        java.awt.Component c = p.getEditorPane();
+        for (;;) {
+            if (c instanceof Editor) {
+                return (Editor)c;
+            }
+            c = c.getParent();
+        }
     }
 
     /** Should test whether all data is saved, and if not, prompt the user
@@ -552,6 +562,7 @@ implements EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie {
         }
 
         protected CloneableEditor createCloneableEditor() {
+            if (true) throw new IllegalStateException ("Do not call!");
             CloneableTopComponent ctc = createCloneableTopComponent();
             if(ctc instanceof Editor) {
                 return (CloneableEditor)ctc;
@@ -559,7 +570,24 @@ implements EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie {
                 return new Editor(getDataObject());
             }
         }
-
+        
+        
+        protected Pane createPane () {
+            CloneableTopComponent ctc = createCloneableTopComponent();
+            if(ctc instanceof Editor) {
+                return (CloneableEditor)ctc;
+            } else {
+                Pane pan = (Pane)ctc.getClientProperty("CloneableEditorSupport.Pane");
+                if (pan != null) {
+                    return pan;
+                }
+                if (ctc instanceof Pane) {
+                    return (Pane)ctc;
+                }
+                return new Editor(getDataObject());
+            }
+            
+        }
         
         //
         // Messages
