@@ -55,6 +55,6 @@ public interface CreationDescriptor {
         // [this will become useless when we can rely on getCodeOrigin(...)]
         public String getJavaCreationCode(FormProperty[] props);
 
-        public CodeElementOrigin getCodeOrigin(CodeElement[] params);
+        public CodeExpressionOrigin getCodeOrigin(CodeExpression[] params);
     }
 }

@@ -80,33 +80,33 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
         return false;
     }
 
-    protected CodeElement getActiveContainerCodeElement() {
-        return getLayoutContext().getContainerCodeElement();
+    protected CodeExpression getActiveContainerCodeExpression() {
+        return getLayoutContext().getContainerCodeExpression();
     }
 
-    protected CodeElement readComponentCode(CodeConnection connection,
-                                            CodeConnectionGroup componentCode)
+    protected CodeExpression readComponentCode(CodeStatement statement,
+                                               CodeGroup componentCode)
     {
-        if (getSetViewportViewMethod().equals(connection.getConnectingObject())
-            || getSimpleAddMethod().equals(connection.getConnectingObject()))
+        if (getSetViewportViewMethod().equals(statement.getMetaObject())
+            || getSimpleAddMethod().equals(statement.getMetaObject()))
         {
-            componentCode.addConnection(connection);
+            componentCode.addStatement(statement);
             getConstraintsList().add(null); // no constraints
-            return connection.getConnectionParameters()[0];
+            return statement.getStatementParameters()[0];
         }
 
         return null;
     }
 
-    protected void createComponentCode(CodeConnectionGroup componentCode,
-                                       CodeElement componentElement,
+    protected void createComponentCode(CodeGroup componentCode,
+                                       CodeExpression componentExpression,
                                        int index)
     {
-        CodeConnection addConnection = CodeStructure.createConnection(
-                         getLayoutContext().getContainerCodeElement(),
+        CodeStatement addStatement = CodeStructure.createStatement(
+                         getLayoutContext().getContainerCodeExpression(),
                          getSetViewportViewMethod(),
-                         new CodeElement[] { componentElement });
-        componentCode.addConnection(addConnection);
+                         new CodeExpression[] { componentExpression });
+        componentCode.addStatement(addStatement);
     }
 
     private static Method getSetViewportViewMethod() {

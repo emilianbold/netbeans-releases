@@ -204,27 +204,26 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
 
     // ----------
 
-    protected LayoutConstraints readConstraintsCode(
-                                    CodeElement constrElement,
-                                    CodeConnectionGroup constrCode,
-                                    CodeElement compElement)
+    protected LayoutConstraints readConstraintsCode(CodeExpression constrExp,
+                                                    CodeGroup constrCode,
+                                                    CodeExpression compExp)
     {
         BorderConstraints constr = new BorderConstraints(BorderLayout.CENTER);
-        FormCodeSupport.readPropertyElement(constrElement,
-                                            constr.getProperties()[0],
-                                            false);
+        FormCodeSupport.readPropertyExpression(constrExp,
+                                               constr.getProperties()[0],
+                                               false);
         return constr;
     }
 
-    protected CodeElement createConstraintsCode(CodeConnectionGroup constrCode,
-                                                LayoutConstraints constr,
-                                                CodeElement compElement,
-                                                int index)
+    protected CodeExpression createConstraintsCode(CodeGroup constrCode,
+                                                   LayoutConstraints constr,
+                                                   CodeExpression compExp,
+                                                   int index)
     {
         if (!(constr instanceof BorderConstraints))
             return null; // should not happen
 
-        return getCodeStructure().createElement(
+        return getCodeStructure().createExpression(
                    FormCodeSupport.createOrigin(constr.getProperties()[0]));
     }
 
@@ -302,7 +301,6 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
 
                         public void setTargetValue(Object value) {
                             direction = (String)value;
-//                            updateCodeElement();
                         }
 
                         public PropertyEditor getExpliciteEditor() {

@@ -102,7 +102,6 @@ class JavaCodeGenerator extends CodeGenerator {
     private JavaEditor.SimpleSection variablesSection;
 
     private Map containerDependentProperties;
-//    private Map initGeneratedElements;
 
     /** Creates new JavaCodeGenerator */
 
@@ -760,10 +759,10 @@ class JavaCodeGenerator extends CodeGenerator {
 
             if (layoutSupport.isLayoutChanged()) {
                 Iterator it = layoutSupport.getLayoutCode()
-                                                .getConnectionsIterator();
+                                                .getStatementsIterator();
                 while (it.hasNext()) {
-                    CodeConnection connection = (CodeConnection) it.next();
-                    initCodeWriter.write(getConnectionJavaString(connection, "")); // NOI18N
+                    CodeStatement statement = (CodeStatement) it.next();
+                    initCodeWriter.write(getStatementJavaString(statement, "")); // NOI18N
                     initCodeWriter.write("\n"); // NOI18N
                 }
                 initCodeWriter.write("\n"); // NOI18N
@@ -827,20 +826,20 @@ class JavaCodeGenerator extends CodeGenerator {
 
         if (layoutSupport.isLayoutChanged()) {
             Iterator it = layoutSupport.getLayoutCode()
-                                            .getConnectionsIterator();
+                                            .getStatementsIterator();
             while (it.hasNext()) {
-                CodeConnection connection = (CodeConnection) it.next();
-                initCodeWriter.write(getConnectionJavaString(connection, "")); // NOI18N
+                CodeStatement statement = (CodeStatement) it.next();
+                initCodeWriter.write(getStatementJavaString(statement, "")); // NOI18N
                 initCodeWriter.write("\n"); // NOI18N
             }
         }
 
         for (int i=0, n=layoutSupport.getComponentCount(); i < n; i++) {
             Iterator it = layoutSupport.getComponentCode(i)
-                                            .getConnectionsIterator();
+                                            .getStatementsIterator();
             while (it.hasNext()) {
-                CodeConnection connection = (CodeConnection) it.next();
-                initCodeWriter.write(getConnectionJavaString(connection, "")); // NOI18N
+                CodeStatement statement = (CodeStatement) it.next();
+                initCodeWriter.write(getStatementJavaString(statement, "")); // NOI18N
                 initCodeWriter.write("\n"); // NOI18N
             }
         }
@@ -868,13 +867,13 @@ class JavaCodeGenerator extends CodeGenerator {
         throws IOException
     {
         if (comp instanceof RADVisualComponent) {
-            CodeConnectionGroup componentCode = container.getLayoutSupport()
+            CodeGroup componentCode = container.getLayoutSupport()
                                  .getComponentCode((RADVisualComponent)comp);
             if (componentCode != null) {
-                Iterator it = componentCode.getConnectionsIterator();
+                Iterator it = componentCode.getStatementsIterator();
                 while (it.hasNext()) {
-                    CodeConnection connection = (CodeConnection) it.next();
-                    initCodeWriter.write(getConnectionJavaString(connection, "")); // NOI18N
+                    CodeStatement statement = (CodeStatement) it.next();
+                    initCodeWriter.write(getStatementJavaString(statement, "")); // NOI18N
                     initCodeWriter.write("\n"); // NOI18N
                 }
             }
@@ -1079,12 +1078,12 @@ class JavaCodeGenerator extends CodeGenerator {
         throws IOException
     {
         Iterator it = formModel.getCodeStructure().getVariablesIterator(
-                                                   CodeElementVariable.FIELD,
-                                                   CodeElementVariable.SCOPE_MASK,
+                                                   CodeVariable.FIELD,
+                                                   CodeVariable.SCOPE_MASK,
                                                    null);
 
         while (it.hasNext()) {
-            CodeElementVariable var = (CodeElementVariable) it.next();
+            CodeVariable var = (CodeVariable) it.next();
             variablesWriter.write(
                 var.getDeclaration().getJavaCodeString(null, null));
             variablesWriter.write("\n"); // NOI18N
@@ -1122,13 +1121,13 @@ class JavaCodeGenerator extends CodeGenerator {
         throws IOException
     {
         Iterator it = formModel.getCodeStructure().getVariablesIterator(
-            CodeElementVariable.LOCAL | CodeElementVariable.EXPLICIT_DECLARATION,
-            CodeElementVariable.SCOPE_MASK | CodeElementVariable.DECLARATION_MASK,
+            CodeVariable.LOCAL | CodeVariable.EXPLICIT_DECLARATION,
+            CodeVariable.SCOPE_MASK | CodeVariable.DECLARATION_MASK,
             null);
 
         boolean anyVariable = false;
         while (it.hasNext()) {
-            CodeElementVariable var = (CodeElementVariable) it.next();
+            CodeVariable var = (CodeVariable) it.next();
             initCodeWriter.write(
                 var.getDeclaration().getJavaCodeString(null, null));
             initCodeWriter.write("\n"); // NOI18N
@@ -1201,52 +1200,52 @@ class JavaCodeGenerator extends CodeGenerator {
     // ---------
     // generating general code structure
 
-    // java code for a connection
-    private static String getConnectionJavaString(CodeConnection connection,
-                                                  String thisStr)
+    // java code for a statement
+    private static String getStatementJavaString(CodeStatement statement,
+                                                 String thisStr)
     {
-        CodeElement parent = connection.getParentElement();
+        CodeExpression parent = statement.getParentExpression();
         String parentStr;
         if (parent != null) {
-            parentStr = getElementJavaString(parent, thisStr);
+            parentStr = getExpressionJavaString(parent, thisStr);
             if ("this".equals(parentStr)) // NOI18N
                 parentStr = thisStr;
         }
         else parentStr = null;
 
-        CodeElement[] params = connection.getConnectionParameters();
+        CodeExpression[] params = statement.getStatementParameters();
         String[] paramsStr = new String[params.length];
         for (int i=0; i < params.length; i++)
-            paramsStr[i] = getElementJavaString(params[i], thisStr);
+            paramsStr[i] = getExpressionJavaString(params[i], thisStr);
 
-        return connection.getJavaCodeString(parentStr, paramsStr);
+        return statement.getJavaCodeString(parentStr, paramsStr);
     }
 
-    // java code for an element
-    private static String getElementJavaString(CodeElement element,
-                                               String thisStr)
+    // java code for an expression
+    private static String getExpressionJavaString(CodeExpression exp,
+                                                  String thisStr)
     {
-        CodeElementVariable var = element.getVariable();
+        CodeVariable var = exp.getVariable();
         if (var != null)
             return var.getName();
 
-        CodeElementOrigin origin = element.getOrigin();
+        CodeExpressionOrigin origin = exp.getOrigin();
         if (origin == null)
             return null;
 
-        CodeElement parent = origin.getParentElement();
+        CodeExpression parent = origin.getParentExpression();
         String parentStr;
         if (parent != null) {
-            parentStr = getElementJavaString(parent, thisStr);
+            parentStr = getExpressionJavaString(parent, thisStr);
             if ("this".equals(parentStr)) // NOI18N
                 parentStr = thisStr;
         }
         else parentStr = null;
 
-        CodeElement[] params = origin.getCreationParameters();
+        CodeExpression[] params = origin.getCreationParameters();
         String[] paramsStr = new String[params.length];
         for (int i=0; i < params.length; i++)
-            paramsStr[i] = getElementJavaString(params[i], thisStr);
+            paramsStr[i] = getExpressionJavaString(params[i], thisStr);
 
         return origin.getJavaCodeString(parentStr, paramsStr);
     }

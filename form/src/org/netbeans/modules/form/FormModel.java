@@ -297,7 +297,7 @@ public class FormModel
         if (eventHandlers != null)
             removeEventHandlersRecursively(comp);
 
-        removeCodeElementsRecursively(comp);
+        removeCodeExpressionsRecursively(comp);
 
         removeComponentFromContainer(comp);
 
@@ -336,12 +336,12 @@ public class FormModel
         }
     }
 
-    private void removeCodeElementsRecursively(RADComponent comp) {
-        comp.resetCodeElement();
+    private void removeCodeExpressionsRecursively(RADComponent comp) {
+        comp.resetCodeExpression();
         if (comp instanceof ComponentContainer) {
             RADComponent comps[] =((ComponentContainer) comp).getSubBeans();
             for (int i=0, n=comps.length; i<n; i++) {
-                removeCodeElementsRecursively(comps[i]);
+                removeCodeExpressionsRecursively(comps[i]);
             }
         }
     }

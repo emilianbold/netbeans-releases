@@ -39,8 +39,8 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
     private CodeStructure codeStructure;
 
-    private CodeElement containerCodeElement;
-    private CodeElement containerDelegateCodeElement;
+    private CodeExpression containerCodeExpression;
+    private CodeExpression containerDelegateCodeExpression;
 
     // ----------
     // initialization
@@ -54,16 +54,16 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
         layoutDelegate = null;
 
-        containerCodeElement = metaContainer.getCodeElement();
+        containerCodeExpression = metaContainer.getCodeExpression();
 
         java.lang.reflect.Method delegateGetter =
                                    metaContainer.getContainerDelegateMethod();
         if (delegateGetter != null) {
-            containerDelegateCodeElement = codeStructure.createElement(
-                    CodeStructure.createOrigin(containerCodeElement,
+            containerDelegateCodeExpression = codeStructure.createExpression(
+                    CodeStructure.createOrigin(containerCodeExpression,
                                                delegateGetter, null));
         }
-        else containerDelegateCodeElement = containerCodeElement;
+        else containerDelegateCodeExpression = containerCodeExpression;
     }
 
     // initialization for a container restored from XML (or code)
@@ -76,14 +76,14 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
         if (layoutDelegateClass == null) {
             // find a general layout delegate (for given LayoutManager)
-            CodeConnection[] connections =
-                CodeStructure.getConnections(
-                                  containerDelegateCodeElement,
+            CodeStatement[] statements =
+                CodeStructure.getStatements(
+                                  containerDelegateCodeExpression,
                                   AbstractLayoutSupport.getSetLayoutMethod());
 
-            if (connections.length > 0) { // LayoutManager from code
-                CodeElementOrigin layoutOrigin =
-                    connections[0].getConnectionParameters()[0].getOrigin();
+            if (statements.length > 0) { // LayoutManager from code
+                CodeExpressionOrigin layoutOrigin =
+                    statements[0].getStatementParameters()[0].getOrigin();
                 layoutDelegateClass =
                     LayoutSupportRegistry.getLayoutDelegateForLayout(
                                               layoutOrigin.getType());
@@ -92,7 +92,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                     // handle special case of null layout
                     if (layoutOrigin.getType() == LayoutManager.class
                         && layoutOrigin.getCreationParameters().length == 0
-                        && layoutOrigin.getParentElement() == null
+                        && layoutOrigin.getParentExpression() == null
                         && "null".equals(layoutOrigin.getJavaCodeString(null, null))) // NOI18N
                     {
                         layoutDelegateClass = NullLayoutSupport.class;
@@ -142,8 +142,8 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         if (oldDelegate != null
             && (newDelegate != oldDelegate || !initFromCode))
         { // clean the old layout delegate
-            CodeStructure.removeConnections(
-                oldDelegate.getLayoutCode().getConnectionsIterator());
+            CodeStructure.removeStatements(
+                oldDelegate.getLayoutCode().getStatementsIterator());
 
             if (componentCount > 0) {
                 metacomps = metaContainer.getSubComponents();
@@ -157,8 +157,8 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                     metacomps[i].setLayoutConstraints(oldDelegate.getClass(),
                                                       constr);
 
-                CodeStructure.removeConnections(
-                    oldDelegate.getComponentCode(i).getConnectionsIterator());
+                CodeStructure.removeStatements(
+                    oldDelegate.getComponentCode(i).getStatementsIterator());
             }
 
             oldDelegate.removeAll();
@@ -180,7 +180,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         if (componentCount == 0)
             return; // no components in container
 
-        CodeElement[] compElements = new CodeElement[componentCount];
+        CodeExpression[] compExps = new CodeExpression[componentCount];
         Component[] designComps = new Component[componentCount];
         Component[] primaryComps = new Component[componentCount];
         LayoutConstraints[] newConstraints = new LayoutConstraints[componentCount];
@@ -193,7 +193,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
         for (int i=0; i < componentCount; i++) {
             RADVisualComponent metacomp = metacomps[i];
-            compElements[i] = metacomp.getCodeElement();
+            compExps[i] = metacomp.getCodeExpression();
             primaryComps[i] = metacomp.getComponent();
             ensureFakePeerAttached(primaryComps[i]);
             newConstraints[i] = newDelegate == null ? null :
@@ -209,7 +209,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
             newDelegate.convertConstraints(
                             oldConstraints, newConstraints, designComps);
 
-        newDelegate.addComponents(compElements, newConstraints);
+        newDelegate.addComponents(compExps, newConstraints);
 
         newDelegate.addComponentsToContainer(cont, contDel, primaryComps, 0);
     }
@@ -234,8 +234,8 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         RADVisualComponent[] metacomps = null;
 
         if (oldDelegate != null) { // clean the old layout delegate
-            CodeStructure.removeConnections(
-                oldDelegate.getLayoutCode().getConnectionsIterator());
+            CodeStructure.removeStatements(
+                oldDelegate.getLayoutCode().getStatementsIterator());
 
             if (componentCount > 0)
                 metacomps = metaContainer.getSubComponents();
@@ -246,15 +246,15 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                     metacomps[i].setLayoutConstraints(oldDelegate.getClass(),
                                                       constr);
 
-                CodeStructure.removeConnections(
-                    oldDelegate.getComponentCode(i).getConnectionsIterator());
+                CodeStructure.removeStatements(
+                    oldDelegate.getComponentCode(i).getStatementsIterator());
             }
 
             oldDelegate.removeAll();
             oldDelegate.clearContainer(cont, contDel);
         }
 
-        CodeElement[] compElements = new CodeElement[componentCount];
+        CodeExpression[] compExps = new CodeExpression[componentCount];
         Component[] primaryComps = new Component[componentCount];
 
         if (metacomps == null)
@@ -262,14 +262,14 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
         for (int i=0; i < componentCount; i++) {
             RADVisualComponent metacomp = metacomps[i];
-            compElements[i] = metacomp.getCodeElement();
+            compExps[i] = metacomp.getCodeExpression();
             primaryComps[i] = metacomp.getComponent();
             ensureFakePeerAttached(primaryComps[i]);
             metacomp.resetConstraintsProperties();
         }
 
         LayoutSupportDelegate newDelegate =
-            sourceDelegate.cloneLayout(this, compElements);
+            sourceDelegate.cloneLayout(this, compExps);
         newDelegate.setLayoutToContainer(cont, contDel);
         newDelegate.addComponentsToContainer(cont, contDel, primaryComps, 0);
 
@@ -352,15 +352,15 @@ public final class LayoutSupportManager implements LayoutSupportContext {
     }
 
     // code meta data
-    public CodeConnectionGroup getLayoutCode() {
+    public CodeGroup getLayoutCode() {
         return layoutDelegate.getLayoutCode();
     }
 
-    public CodeConnectionGroup getComponentCode(int index) {
+    public CodeGroup getComponentCode(int index) {
         return layoutDelegate.getComponentCode(index);
     }
 
-    public CodeConnectionGroup getComponentCode(RADVisualComponent metacomp) {
+    public CodeGroup getComponentCode(RADVisualComponent metacomp) {
         int index = metaContainer.getIndexOf(metacomp);
         return index >= 0 && index < layoutDelegate.getComponentCount() ?
                layoutDelegate.getComponentCode(index) : null;
@@ -374,21 +374,21 @@ public final class LayoutSupportManager implements LayoutSupportContext {
     public void addComponents(RADVisualComponent[] components,
                               LayoutConstraints[] constraints)
     {
-        CodeElement[] compElements = new CodeElement[components.length];
+        CodeExpression[] compExps = new CodeExpression[components.length];
         Component[] comps = new Component[components.length];
 
         for (int i=0; i < components.length; i++) {
             RADVisualComponent metacomp = components[i];
             metacomp.resetConstraintsProperties();
 
-            compElements[i] = metacomp.getCodeElement();
+            compExps[i] = metacomp.getCodeExpression();
             comps[i] = metacomp.getComponent();
             ensureFakePeerAttached(comps[i]);
         }
 
         int oldCount = layoutDelegate.getComponentCount();
 
-        layoutDelegate.addComponents(compElements, constraints);
+        layoutDelegate.addComponents(compExps, constraints);
 
 //        for (int i=0; i < components.length; i++) {
 //            // store the constraints object in the meta component
@@ -412,8 +412,8 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         int oldCount = layoutDelegate.getComponentCount();
 
         layoutDelegate.addComponents(
-                           new CodeElement[] {metacomp.getCodeElement() },
-                           new LayoutConstraints[] { constraints });
+                         new CodeExpression[] { metacomp.getCodeExpression() },
+                         new LayoutConstraints[] { constraints });
 
         Component primaryComponent = metacomp.getComponent();
         ensureFakePeerAttached(primaryComponent);
@@ -431,8 +431,8 @@ public final class LayoutSupportManager implements LayoutSupportContext {
             metacomp.setLayoutConstraints(layoutDelegate.getClass(), constr);
 
         // remove code
-        CodeStructure.removeConnections(
-            layoutDelegate.getComponentCode(index).getConnectionsIterator());
+        CodeStructure.removeStatements(
+            layoutDelegate.getComponentCode(index).getStatementsIterator());
 
         // remove the component from layout
         layoutDelegate.removeComponent(index);
@@ -458,8 +458,8 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
         // remove code of all components
         for (int i=0, n=layoutDelegate.getComponentCount(); i < n; i++)
-            CodeStructure.removeConnections(
-                layoutDelegate.getComponentCode(i).getConnectionsIterator());
+            CodeStructure.removeStatements(
+                layoutDelegate.getComponentCode(i).getStatementsIterator());
 
         // remove components from layout
         layoutDelegate.removeAll();
@@ -617,12 +617,12 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         return codeStructure;
     }
 
-    public CodeElement getContainerCodeElement() {
-        return containerCodeElement;
+    public CodeExpression getContainerCodeExpression() {
+        return containerCodeExpression;
     }
 
-    public CodeElement getContainerDelegateCodeElement() {
-        return containerDelegateCodeElement;
+    public CodeExpression getContainerDelegateCodeExpression() {
+        return containerDelegateCodeExpression;
     }
 
     // return container instance of meta container

@@ -43,12 +43,12 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
 
     private LayoutSupportContext layoutContext;
 
-    private java.util.List componentCodeElements;
+    private java.util.List componentCodeExpressions;
     private java.util.List componentCodeGroups;
     private java.util.List componentConstraints;
 
-    private BeanCodeManager layoutBeanElement;
-    private CodeConnectionGroup setLayoutCode;
+    private BeanCodeManager layoutBeanExpression;
+    private CodeGroup setLayoutCode;
 
     private MetaLayout metaLayout;
     private Node.PropertySet[] propertySets;
@@ -66,9 +66,9 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
 
         CodeStructure codeStructure = layoutContext.getCodeStructure();
 
-        if (componentCodeElements != null)
-            componentCodeElements.clear();
-        else componentCodeElements = new ArrayList();
+        if (componentCodeExpressions != null)
+            componentCodeExpressions.clear();
+        else componentCodeExpressions = new ArrayList();
 
         if (componentCodeGroups != null)
             componentCodeGroups.clear();
@@ -80,7 +80,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
 
         if (setLayoutCode != null)
             setLayoutCode.removeAll();
-        else setLayoutCode = codeStructure.createConnectionGroup();
+        else setLayoutCode = codeStructure.createCodeGroup();
 
         Class cls = getSupportedClass();
         if (cls != null && LayoutManager.class.isAssignableFrom(cls)) {
@@ -104,22 +104,23 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
         readLayoutCode(setLayoutCode);
 
         if (fromCode) { // read components from code
-            CodeConnectionGroup componentCode = null;
-            Iterator it = CodeStructure.getConnectionsIterator(
-                                            getActiveContainerCodeElement());
+            CodeGroup componentCode = null;
+            Iterator it = CodeStructure.getStatementsIterator(
+                                            getActiveContainerCodeExpression());
             while (it.hasNext()) {
                 if (componentCode == null)
-                    componentCode = codeStructure.createConnectionGroup();
+                    componentCode = codeStructure.createCodeGroup();
 
-                CodeConnection connection = (CodeConnection) it.next();
-                CodeElement compElement = readComponentCode(connection,
+                CodeStatement statement = (CodeStatement) it.next();
+                CodeExpression compExp = readComponentCode(statement,
                                                             componentCode);
-                if (compElement != null) {
-                    componentCodeElements.add(compElement);
+                if (compExp != null) {
+                    componentCodeExpressions.add(compExp);
                     componentCodeGroups.add(componentCode);
                     componentCode = null;
 
-                    if (componentConstraints.size() < componentCodeElements.size())
+                    if (componentConstraints.size()
+                            < componentCodeExpressions.size())
                         componentConstraints.add(null);
                 }
             }
@@ -213,32 +214,32 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
         return null;
     }
 
-    public CodeConnectionGroup getLayoutCode() {
+    public CodeGroup getLayoutCode() {
         return setLayoutCode;
     }
 
-    public CodeConnectionGroup getComponentCode(int index) {
-        return (CodeConnectionGroup) componentCodeGroups.get(index);
+    public CodeGroup getComponentCode(int index) {
+        return (CodeGroup) componentCodeGroups.get(index);
     }
 
-    public CodeElement getComponentCodeElement(int index) {
-        return (CodeElement) componentCodeElements.get(index);
+    public CodeExpression getComponentCodeExpression(int index) {
+        return (CodeExpression) componentCodeExpressions.get(index);
     }
 
     public int getComponentCount() {
-        return componentCodeElements.size();
+        return componentCodeExpressions.size();
     }
 
     // components adding/removing
-    public void addComponents(CodeElement[] newCompElements,
+    public void addComponents(CodeExpression[] newCompExps,
                               LayoutConstraints[] newConstraints)
     {
-        int oldCount = componentCodeElements.size();
+        int oldCount = componentCodeExpressions.size();
         CodeStructure codeStructure = layoutContext.getCodeStructure();
 
-        for (int i=0; i < newCompElements.length; i++) {
-            CodeElement compElement = newCompElements[i];
-            componentCodeElements.add(compElement);
+        for (int i=0; i < newCompExps.length; i++) {
+            CodeExpression compExp = newCompExps[i];
+            componentCodeExpressions.add(compExp);
 
             LayoutConstraints constr = newConstraints != null ?
                                        newConstraints[i] : null;
@@ -247,21 +248,21 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
 
             componentConstraints.add(constr);
 
-            CodeConnectionGroup componentCode =
-                codeStructure.createConnectionGroup();
-            createComponentCode(componentCode, compElement, i + oldCount);
+            CodeGroup componentCode =
+                codeStructure.createCodeGroup();
+            createComponentCode(componentCode, compExp, i + oldCount);
             componentCodeGroups.add(componentCode);
         }
     }
 
     public void removeComponent(int index) {
-        componentCodeElements.remove(index);
+        componentCodeExpressions.remove(index);
         componentCodeGroups.remove(index);
         componentConstraints.remove(index);
     }
 
     public void removeAll() {
-        componentCodeElements.clear();
+        componentCodeExpressions.clear();
         componentCodeGroups.clear();
         componentConstraints.clear();
     }
@@ -402,7 +403,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
 
     // copying
     public LayoutSupportDelegate cloneLayout(LayoutSupportContext targetContext,
-                                             CodeElement[] targetComponents)
+                                             CodeExpression[] targetComponents)
     {
         AbstractLayoutSupport clone;
         try {
@@ -456,169 +457,166 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     }
 
     // can be overriden
-    // This methods returns the code element to be used for layout settings
+    // This methods returns the code expression to be used for layout settings
     // and components - this can be either container, or container delegate
-    // element. In fact, it is container delegate in most cases (so this method
-    // needs to be overriden very rarely). But there's e.g. JScrollPane which
-    // has viewport as the container delegate, but we work with the JScrollPane.
-    protected CodeElement getActiveContainerCodeElement() {
-        return layoutContext.getContainerDelegateCodeElement();
+    // expression. In fact, it is container delegate in most cases (so this
+    // method needs to be overriden very rarely). But there's e.g. JScrollPane
+    // which has viewport as the container delegate, but we work with the
+    // JScrollPane (whole container).
+    protected CodeExpression getActiveContainerCodeExpression() {
+        return layoutContext.getContainerDelegateCodeExpression();
     }
 
     // can be overriden
-    protected void readLayoutCode(CodeConnectionGroup layoutCode) {
+    protected void readLayoutCode(CodeGroup layoutCode) {
         if (isDedicated())
             return;
 
-        CodeConnectionGroup initLayoutCode =
-            getCodeStructure().createConnectionGroup();
-        CodeConnection setLayoutConnection = null;
+        CodeGroup initLayoutCode =
+            getCodeStructure().createCodeGroup();
+        CodeStatement setLayoutStatement = null;
 
-        CodeConnection[] connections = CodeStructure.getConnections(
-                                           getActiveContainerCodeElement(),
+        CodeStatement[] statements = CodeStructure.getStatements(
+                                           getActiveContainerCodeExpression(),
                                            getSetLayoutMethod());
-        if (connections.length > 0) { // read from code
-            setLayoutConnection = connections[0];
-            readInitLayoutCode(setLayoutConnection.getConnectionParameters()[0],
+        if (statements.length > 0) { // read from code
+            setLayoutStatement = statements[0];
+            readInitLayoutCode(setLayoutStatement.getStatementParameters()[0],
                                initLayoutCode);
         }
         else { // create new
-            CodeElement layoutElement = createInitLayoutCode(initLayoutCode);
-            if (layoutElement != null)
-                setLayoutConnection = CodeStructure.createConnection(
-                         getActiveContainerCodeElement(),
+            CodeExpression layoutExp = createInitLayoutCode(initLayoutCode);
+            if (layoutExp != null)
+                setLayoutStatement = CodeStructure.createStatement(
+                         getActiveContainerCodeExpression(),
                          getSetLayoutMethod(),
-                         new CodeElement[] { layoutElement });
+                         new CodeExpression[] { layoutExp });
         }
 
-        if (setLayoutConnection != null) {
+        if (setLayoutStatement != null) {
             layoutCode.addGroup(initLayoutCode);
-            layoutCode.addConnection(setLayoutConnection);
+            layoutCode.addStatement(setLayoutStatement);
         }
     }
 
     // can be overriden
-    protected void readInitLayoutCode(CodeElement layoutElement,
-                                      CodeConnectionGroup initLayoutCode)
+    protected void readInitLayoutCode(CodeExpression layoutExp,
+                                      CodeGroup initLayoutCode)
     {
         if (metaLayout == null)
             return;
 
-        layoutBeanElement = new BeanCodeManager(
+        layoutBeanExpression = new BeanCodeManager(
             getSupportedClass(),
             getAllProperties(),
             CreationDescriptor.PLACE_ALL | CreationDescriptor.CHANGED_ONLY,
             false, // don't force empty constructor
             false, // disable changes firing when properties are restored
-            layoutElement,
+            layoutExp,
             initLayoutCode);
     }
 
     // can be overriden
-    protected CodeElement createInitLayoutCode(
-                              CodeConnectionGroup initLayoutCode)
-    {
+    protected CodeExpression createInitLayoutCode(CodeGroup initLayoutCode) {
         if (metaLayout == null)
             return null;
 
-        layoutBeanElement = new BeanCodeManager(
+        layoutBeanExpression = new BeanCodeManager(
             getSupportedClass(),
             getAllProperties(),
             CreationDescriptor.PLACE_ALL | CreationDescriptor.CHANGED_ONLY,
             false,
             layoutContext.getCodeStructure(),
-            CodeElementVariable.LOCAL,
+            CodeVariable.LOCAL,
             initLayoutCode);
 
-        return layoutBeanElement.getCodeElement();
+        return layoutBeanExpression.getCodeExpression();
     }
 
     // can be overriden
     // called automatically when some property of layout has been changed
     protected void layoutChanged() {
-        if (layoutBeanElement != null)
-            layoutBeanElement.updateCode();
+        if (layoutBeanExpression != null)
+            layoutBeanExpression.updateCode();
     }
 
     // can be overriden
-    protected CodeElement readComponentCode(CodeConnection connection,
-                                            CodeConnectionGroup componentCode)
+    protected CodeExpression readComponentCode(CodeStatement statement,
+                                               CodeGroup componentCode)
     {
-        CodeElement compElement;
-        CodeConnectionGroup constrCode;
+        CodeExpression compExp;
+        CodeGroup constrCode;
         LayoutConstraints constr;
 
-        if (getSimpleAddMethod().equals(connection.getConnectingObject())) {
-            compElement = connection.getConnectionParameters()[0];
+        if (getSimpleAddMethod().equals(statement.getMetaObject())) {
+            compExp = statement.getStatementParameters()[0];
             constrCode = null;
             constr = null;
         }
         else if (getAddWithConstraintsMethod().equals(
-                                 connection.getConnectingObject()))
+                                 statement.getMetaObject()))
         {
-            CodeElement[] params = connection.getConnectionParameters();
+            CodeExpression[] params = statement.getStatementParameters();
 
-            compElement = params[0];
-            constrCode = getCodeStructure().createConnectionGroup();
-            constr = readConstraintsCode(params[1], constrCode, compElement);
+            compExp = params[0];
+            constrCode = getCodeStructure().createCodeGroup();
+            constr = readConstraintsCode(params[1], constrCode, compExp);
         }
         else return null;
 
         componentConstraints.add(constr);
         if (constrCode != null)
             componentCode.addGroup(constrCode);
-        componentCode.addConnection(connection);
+        componentCode.addStatement(statement);
 
-        return compElement;
+        return compExp;
     }
 
     // can be overriden
-    protected LayoutConstraints readConstraintsCode(
-                                    CodeElement constrElement,
-                                    CodeConnectionGroup constrCode,
-                                    CodeElement compElement)
+    protected LayoutConstraints readConstraintsCode(CodeExpression constrExp,
+                                                    CodeGroup constrCode,
+                                                    CodeExpression compExp)
     {
         return null;
     }
 
     // can be overriden
     // creates code for one newly added component
-    protected void createComponentCode(CodeConnectionGroup componentCode,
-                                       CodeElement compElement,
+    protected void createComponentCode(CodeGroup componentCode,
+                                       CodeExpression compExp,
                                        int index)
     {
-        CodeConnectionGroup constrCode =
-            getCodeStructure().createConnectionGroup();
+        CodeGroup constrCode = getCodeStructure().createCodeGroup();
         LayoutConstraints constr = getConstraints(index);
 
         // first create init code for the constraints object
-        CodeElement constrElement = createConstraintsCode(
-                                      constrCode, constr, compElement, index);
+        CodeExpression constrExp = createConstraintsCode(
+                                       constrCode, constr, compExp, index);
 
         // create "add" code for the component
-        CodeConnection compAddConnection;
-        if (constrElement != null) { // add with constraints
-            compAddConnection = CodeStructure.createConnection(
-                    getActiveContainerCodeElement(),
+        CodeStatement compAddStatement;
+        if (constrExp != null) { // add with constraints
+            compAddStatement = CodeStructure.createStatement(
+                    getActiveContainerCodeExpression(),
                     getAddWithConstraintsMethod(),
-                    new CodeElement[] { compElement, constrElement });
+                    new CodeExpression[] { compExp, constrExp });
         }
         else { // add without constraints
-            compAddConnection = CodeStructure.createConnection(
-                    getActiveContainerCodeElement(),
+            compAddStatement = CodeStructure.createStatement(
+                    getActiveContainerCodeExpression(),
                     getSimpleAddMethod(),
-                    new CodeElement[] { compElement });
+                    new CodeExpression[] { compExp });
         }
 
         componentCode.addGroup(constrCode);
-        componentCode.addConnection(compAddConnection);
+        componentCode.addStatement(compAddStatement);
     }
 
     // can be overriden
-    protected CodeElement createConstraintsCode(CodeConnectionGroup constrCode,
-                                                LayoutConstraints constr,
-                                                CodeElement compElement,
-                                                int index)
+    protected CodeExpression createConstraintsCode(CodeGroup constrCode,
+                                                   LayoutConstraints constr,
+                                                   CodeExpression compExp,
+                                                   int index)
     {
         return null;
     }
@@ -690,9 +688,9 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
         addComponentsToContainer(cont, contDel, comps, 0);
     }
 
-    protected final CodeConnection getSetLayoutConnection() {
-        CodeConnection[] found = CodeStructure.getConnections(
-                                     getActiveContainerCodeElement(),
+    protected final CodeStatement getSetLayoutStatement() {
+        CodeStatement[] found = CodeStructure.getStatements(
+                                     getActiveContainerCodeExpression(),
                                      getSetLayoutMethod());
         return found != null && found.length > 0 ? found[0] : null;
     }

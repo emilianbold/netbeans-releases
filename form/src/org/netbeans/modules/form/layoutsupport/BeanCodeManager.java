@@ -27,7 +27,7 @@ final class BeanCodeManager
 {
     private Class beanClass;
     private FormProperty[] properties; // supposing bean has a constant set of properties
-    private CodeElement[] propertyElements;
+    private CodeExpression[] propertyExpressions;
 
     private int creationStyle;
     private boolean forceEmptyConstructor;
@@ -37,22 +37,22 @@ final class BeanCodeManager
 
     private CodeStructure codeStructure;
 
-    private CodeElement beanElement;
-    private CodeConnectionGroup beanCode;
+    private CodeExpression beanExpression;
+    private CodeGroup beanCode;
 
     private boolean isVariableSet;
     private int variableType;
 
     private boolean readingDone;
 
-    // constructor for a new element
+    // constructor for a new expression
     public BeanCodeManager(Class beanClass,
                            FormProperty[] beanProperties,
                            int creationStyle,
                            boolean forceEmptyCtor,
                            CodeStructure codeStructure,
                            int defaultVariableType,
-                           CodeConnectionGroup beanCode)
+                           CodeGroup beanCode)
     {
         this.beanClass = beanClass;
         this.properties = beanProperties;
@@ -66,47 +66,47 @@ final class BeanCodeManager
 
         creationDesc = CreationFactory.getDescriptor(beanClass);
 
-        beanElement = codeStructure.createDefaultElement();
+        beanExpression = codeStructure.createDefaultExpression();
 
         readingDone = true;
         updateCode();
     }
 
-    // constructor for reading the element from code
+    // constructor for reading the expression from code
     public BeanCodeManager(Class beanClass,
                            FormProperty[] beanProperties,
                            int creationStyle,
                            boolean forceEmptyCtor,
                            boolean allowChangesFiring,
-                           CodeElement beanElement,
-                           CodeConnectionGroup beanCode)
+                           CodeExpression beanExpression,
+                           CodeGroup beanCode)
     {
         this.beanClass = beanClass;
         this.properties = beanProperties;
         this.creationStyle = creationStyle | CreationDescriptor.CHANGED_ONLY;
         this.forceEmptyConstructor = forceEmptyCtor;
-        this.beanElement = beanElement;
-        this.codeStructure = beanElement.getCodeStructure();
+        this.beanExpression = beanExpression;
+        this.codeStructure = beanExpression.getCodeStructure();
         this.beanCode = beanCode;
 
         readingDone = false;
 
-        CodeElementVariable var = beanElement.getVariable();
-        CodeConnection variableConnection =
-                       var != null ? var.getAssignment(beanElement) : null;
+        CodeVariable var = beanExpression.getVariable();
+        CodeStatement variableStatement = var != null ?
+                                      var.getAssignment(beanExpression) : null;
 
-        isVariableSet = variableConnection != null;
+        isVariableSet = variableStatement != null;
         variableType = var != null ? var.getType() : 0;
 
         // find creation descriptor
         creationDesc = CreationFactory.getDescriptor(beanClass);
         if (creationDesc != null) {
             // find creator, read creation code
-            CodeElement creationElements[] =
-                beanElement.getOrigin().getCreationParameters();
-            Class[] paramTypes = new Class[creationElements.length];
-            for (int i=0; i < creationElements.length; i++)
-                paramTypes[i] = creationElements[i].getOrigin().getType();
+            CodeExpression creationExpressions[] =
+                beanExpression.getOrigin().getCreationParameters();
+            Class[] paramTypes = new Class[creationExpressions.length];
+            for (int i=0; i < creationExpressions.length; i++)
+                paramTypes[i] = creationExpressions[i].getOrigin().getType();
 
             currentCreator = CreationFactory.findCreator(creationDesc, paramTypes);
 
@@ -116,52 +116,53 @@ final class BeanCodeManager
                     String propName = creatorPropNames[i];
                     for (int j=0; j < properties.length; j++)
                         if (properties[j].getName().equals(propName)) {
-                            FormCodeSupport.readPropertyElement(
-                                                creationElements[i],
+                            FormCodeSupport.readPropertyExpression(
+                                                creationExpressions[i],
                                                 properties[j],
                                                 allowChangesFiring);
-                            setPropertyElement(j, creationElements[i]);
+                            setPropertyExpression(j, creationExpressions[i]);
                             break;
                         }
                 }
-                beanElement.setOrigin(
-                    currentCreator.getCodeOrigin(creationElements));
+                beanExpression.setOrigin(
+                    currentCreator.getCodeOrigin(creationExpressions));
             }
         }
 
         // read properties code
-        Iterator it = CodeStructure.getConnectionsIterator(beanElement);
+        Iterator it = CodeStructure.getStatementsIterator(beanExpression);
         while (it.hasNext()) {
-            CodeConnection connection = (CodeConnection) it.next();
+            CodeStatement statement = (CodeStatement) it.next();
             for (int j=0; j < properties.length; j++) {
                 FormProperty prop = properties[j];
                 if (prop instanceof RADProperty) {
                     Method propMethod = ((RADProperty)prop)
                                 .getPropertyDescriptor().getWriteMethod();
-                    if (propMethod.equals(connection.getConnectingObject())) {
-                        CodeElement propElement =
-                            connection.getConnectionParameters()[0];
-                        FormCodeSupport.readPropertyElement(propElement,
-                                                            prop,
-                                                            allowChangesFiring);
-                        setPropertyElement(j, propElement);
+                    if (propMethod.equals(statement.getMetaObject())) {
+                        CodeExpression propExp =
+                            statement.getStatementParameters()[0];
+                        FormCodeSupport.readPropertyExpression(
+                                            propExp,
+                                            prop,
+                                            allowChangesFiring);
+                        setPropertyExpression(j, propExp);
                         if (beanCode != null)
-                            beanCode.addConnection(connection);
+                            beanCode.addStatement(statement);
                         break;
                     }
                 }
             }
         }
 
-        if (beanCode != null && variableConnection != null)
-            beanCode.addConnection(0, variableConnection);
+        if (beanCode != null && variableStatement != null)
+            beanCode.addStatement(0, variableStatement);
     }
 
-    public CodeElement getCodeElement() {
-        return beanElement;
+    public CodeExpression getCodeExpression() {
+        return beanExpression;
     }
 
-    // creates origin and connections according to state of properties
+    // creates origin and statements according to state of properties
     public void updateCode() {
         if (!readingDone)
             return; // avoid interacting with reading
@@ -172,28 +173,29 @@ final class BeanCodeManager
                 null;
 
         String[] creatorPropNames;
-        CodeElement[] creationElements;
+        CodeExpression[] creationExpressions;
         if (newCreator != null) {
             creatorPropNames = newCreator.getPropertyNames();
-            creationElements = new CodeElement[newCreator.getParameterCount()];
+            creationExpressions =
+                new CodeExpression[newCreator.getParameterCount()];
         }
         else {
             creatorPropNames = null;
-            creationElements = CodeStructure.EMPTY_PARAMS;
+            creationExpressions = CodeStructure.EMPTY_PARAMS;
         }
 
-        boolean anyPropertyConnection = false;
+        boolean anyPropertyStatement = false;
 
         for (int i=0; i < properties.length; i++) {
             FormProperty property = properties[i];
-            boolean removeConnection = !property.isChanged();
+            boolean removeStatement = !property.isChanged();
 
             if (newCreator != null) {
                 String propName = property.getName();
                 for (int j=0; j < creatorPropNames.length; j++)
                     if (creatorPropNames[j].equals(propName)) {
-                        creationElements[j] = getPropertyElement(i);
-                        removeConnection = true;
+                        creationExpressions[j] = getPropertyExpression(i);
+                        removeStatement = true;
                         break;
                     }
             }
@@ -201,30 +203,30 @@ final class BeanCodeManager
             if (!(property instanceof RADProperty))
                 continue;
 
-            Method connectionMethod = ((RADProperty)property)
+            Method statementMethod = ((RADProperty)property)
                              .getPropertyDescriptor().getWriteMethod();
-            CodeConnection[] existingConnections = CodeStructure
-                             .getConnections(beanElement, connectionMethod);
+            CodeStatement[] existingStatements = CodeStructure
+                             .getStatements(beanExpression, statementMethod);
 
-            if (removeConnection) {
-                for (int j=0; j < existingConnections.length; j++) {
-                    CodeConnection toRemove = existingConnections[j];
-                    CodeStructure.removeConnection(toRemove);
+            if (removeStatement) {
+                for (int j=0; j < existingStatements.length; j++) {
+                    CodeStatement toRemove = existingStatements[j];
+                    CodeStructure.removeStatement(toRemove);
                     if (beanCode != null)
                         beanCode.remove(toRemove);
                 }
             }
             else {
-                anyPropertyConnection = true;
-                if (existingConnections.length == 0) {
-                    CodeConnection connection =
-                        CodeStructure.createConnection(
-                            beanElement,
-                            connectionMethod,
-                            new CodeElement[] { getPropertyElement(i) });
+                anyPropertyStatement = true;
+                if (existingStatements.length == 0) {
+                    CodeStatement statement =
+                        CodeStructure.createStatement(
+                            beanExpression,
+                            statementMethod,
+                            new CodeExpression[] { getPropertyExpression(i) });
 
                     if (beanCode != null)
-                        beanCode.addConnection(connection);
+                        beanCode.addStatement(statement);
                 }
             }
         }
@@ -232,18 +234,19 @@ final class BeanCodeManager
         if (newCreator != null) {
             if (newCreator != currentCreator) { // creator has changed
                 currentCreator = newCreator;
-                beanElement.setOrigin(newCreator.getCodeOrigin(creationElements));
+                beanExpression.setOrigin(newCreator.getCodeOrigin(
+                                                        creationExpressions));
             }
         }
         else if (newCreator != currentCreator
-                 || beanElement.getOrigin() == null)
+                 || beanExpression.getOrigin() == null)
         {
             currentCreator = null;
 
-            CodeElementOrigin origin = null;
+            CodeExpressionOrigin origin = null;
             try { // use empty constructor
                 Constructor ctor = beanClass.getConstructor(new Class[0]);
-                origin = CodeStructure.createOrigin(ctor, new CodeElement[0]);
+                origin = CodeStructure.createOrigin(ctor, new CodeExpression[0]);
             }
             catch (NoSuchMethodException ex) {
                 if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
@@ -253,51 +256,51 @@ final class BeanCodeManager
                     return;
                 }
             }
-            beanElement.setOrigin(origin);
+            beanExpression.setOrigin(origin);
         }
 
-        if (anyPropertyConnection) {
+        if (anyPropertyStatement) {
             if (!isVariableSet) {
-                CodeElementVariable var =
-                    codeStructure.createVariableForElement(
-                                      beanElement, variableType, null);
+                CodeVariable var =
+                    codeStructure.createVariableForExpression(
+                                      beanExpression, variableType, null);
                 if (beanCode != null) {
-                    beanCode.addConnection(0, var.getAssignment(beanElement));
+                    beanCode.addStatement(0, var.getAssignment(beanExpression));
                 }
                 isVariableSet = true;
             }
         }
         else if (isVariableSet) {
-            CodeElementVariable var = beanElement.getVariable();
+            CodeVariable var = beanExpression.getVariable();
             if (var != null) {
                 if (beanCode != null)
-                    beanCode.remove(var.getAssignment(beanElement));
+                    beanCode.remove(var.getAssignment(beanExpression));
                 variableType = var.getType();
-                codeStructure.removeElementUsingVariable(beanElement);
+                codeStructure.removeExpressionUsingVariable(beanExpression);
             }
             isVariableSet = false;
         }
     }
 
-    private CodeElement getPropertyElement(int index) {
-        if (propertyElements == null)
+    private CodeExpression getPropertyExpression(int index) {
+        if (propertyExpressions == null)
             // we suppose the bean has a constant set of properties
-            propertyElements = new CodeElement[properties.length];
+            propertyExpressions = new CodeExpression[properties.length];
 
-        CodeElement element = propertyElements[index];
-        if (element == null) {
+        CodeExpression expression = propertyExpressions[index];
+        if (expression == null) {
             FormProperty prop = properties[index];
-            element = codeStructure.createElement(
-                                        FormCodeSupport.createOrigin(prop));
-            propertyElements[index] = element;
+            expression = codeStructure.createExpression(
+                                         FormCodeSupport.createOrigin(prop));
+            propertyExpressions[index] = expression;
         }
 
-        return element;
+        return expression;
     }
 
-    private void setPropertyElement(int index, CodeElement propElement) {
-        if (propertyElements == null)
-            propertyElements = new CodeElement[properties.length];
-        propertyElements[index] = propElement;
+    private void setPropertyExpression(int index, CodeExpression propExp) {
+        if (propertyExpressions == null)
+            propertyExpressions = new CodeExpression[properties.length];
+        propertyExpressions[index] = propExp;
     }
 }

@@ -33,8 +33,8 @@ public interface LayoutSupportContext {
 
     public CodeStructure getCodeStructure();
 
-    public CodeElement getContainerCodeElement();
-    public CodeElement getContainerDelegateCodeElement();
+    public CodeExpression getContainerCodeExpression();
+    public CodeExpression getContainerDelegateCodeExpression();
 
     // getters for instances of container, container delegate, and subcomponents
     public Container getPrimaryContainer();

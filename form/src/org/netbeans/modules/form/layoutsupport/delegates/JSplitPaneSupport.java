@@ -177,16 +177,16 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
 
     // ------
 
-    protected CodeElement readComponentCode(CodeConnection connection,
-                                            CodeConnectionGroup componentCode)
+    protected CodeExpression readComponentCode(CodeStatement statement,
+                                               CodeGroup componentCode)
     {
-        CodeElement[] params = connection.getConnectionParameters();
+        CodeExpression[] params = statement.getStatementParameters();
         if (params.length != 1)
             return null;
 
         String position;
 
-        Object connectingObject = connection.getConnectingObject();
+        Object connectingObject = statement.getMetaObject();
         if (getSetLeftComponentMethod().equals(connectingObject))
             position = JSplitPane.LEFT;
         else if (getSetRightComponentMethod().equals(connectingObject))
@@ -200,13 +200,13 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
         SplitConstraints constr = new SplitConstraints(position);
         getConstraintsList().add(constr);
 
-        componentCode.addConnection(connection);
+        componentCode.addStatement(statement);
 
         return params[0];
     }
 
-    protected void createComponentCode(CodeConnectionGroup componentCode,
-                                       CodeElement componentElement,
+    protected void createComponentCode(CodeGroup componentCode,
+                                       CodeExpression componentExpression,
                                        int index)
     {
         LayoutConstraints constr = getConstraints(index);
@@ -214,9 +214,9 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
             return; // should not happen
 
         ((SplitConstraints)constr).createComponentCode(
-                                   componentCode,
-                                   getLayoutContext().getContainerCodeElement(),
-                                   componentElement);
+                               componentCode,
+                               getLayoutContext().getContainerCodeExpression(),
+                               componentExpression);
     }
 
     protected LayoutConstraints createDefaultConstraints() {
@@ -302,9 +302,9 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
 
         private Node.Property[] properties;
 
-        private CodeElement containerElement;
-        private CodeElement componentElement;
-        private CodeConnectionGroup componentCode;
+        private CodeExpression containerExpression;
+        private CodeExpression componentExpression;
+        private CodeGroup componentCode;
 
         public SplitConstraints(String position) {
             this.position = position;
@@ -348,13 +348,13 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
             return new SplitConstraints(position);
         }
 
-        private void createComponentCode(CodeConnectionGroup compCode,
-                                        CodeElement contElement,
-                                        CodeElement compElement)
+        private void createComponentCode(CodeGroup compCode,
+                                         CodeExpression contExp,
+                                         CodeExpression compExp)
         {
             componentCode = compCode;
-            containerElement = contElement;
-            componentElement = compElement;
+            containerExpression = contExp;
+            componentExpression = compExp;
             updateCode();
         }
 
@@ -362,8 +362,8 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
             if (componentCode == null)
                 return;
 
-            CodeStructure.removeConnections(
-                componentCode.getConnectionsIterator());
+            CodeStructure.removeStatements(
+                componentCode.getStatementsIterator());
             componentCode.removeAll();
 
             Method addMethod;
@@ -377,11 +377,11 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
                 addMethod = getSetBottomComponentMethod();
             else return;
 
-            componentCode.addConnection(
-                    CodeStructure.createConnection(
-                           containerElement,
+            componentCode.addStatement(
+                    CodeStructure.createStatement(
+                           containerExpression,
                            addMethod,
-                           new CodeElement[] { componentElement }));
+                           new CodeExpression[] { componentExpression }));
         }
     }
 

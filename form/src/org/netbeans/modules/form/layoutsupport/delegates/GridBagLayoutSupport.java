@@ -97,25 +97,24 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 
     // --------
 
-    protected LayoutConstraints readConstraintsCode(
-                                    CodeElement constrElement,
-                                    CodeConnectionGroup constrCode,
-                                    CodeElement compElement)
+    protected LayoutConstraints readConstraintsCode(CodeExpression constrExp,
+                                                    CodeGroup constrCode,
+                                                    CodeExpression compExp)
     {
         GridBagLayoutConstraints constr = new GridBagLayoutConstraints();
-        constr.readCodeElement(constrElement, constrCode);
+        constr.readCodeExpression(constrExp, constrCode);
         return constr;
     }
 
-    protected CodeElement createConstraintsCode(CodeConnectionGroup constrCode,
-                                                LayoutConstraints constr,
-                                                CodeElement compElement,
-                                                int index)
+    protected CodeExpression createConstraintsCode(CodeGroup constrCode,
+                                                   LayoutConstraints constr,
+                                                   CodeExpression compExp,
+                                                   int index)
     {
         if (!(constr instanceof GridBagLayoutConstraints))
             return null;
 
-        return ((GridBagLayoutConstraints)constr).createCodeElement(
+        return ((GridBagLayoutConstraints)constr).createCodeExpression(
                                             getCodeStructure(), constrCode);
     }
 
@@ -132,16 +131,16 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 
         private Property[] properties;
 
-        private CodeElement constraintsElement;
-        private CodeConnectionGroup constraintsCode;
-        private CodeConnection[] propertyConnections;
+        private CodeExpression constraintsExpression;
+        private CodeGroup constraintsCode;
+        private CodeStatement[] propertyStatements;
 
         private static Constructor constrConstructor;
 
-        private static final int variableType = CodeElementVariable.LOCAL
-                                   | CodeElementVariable.EXPLICIT_DECLARATION;
-        private static final int variableMask = CodeElementVariable.SCOPE_MASK
-                                   | CodeElementVariable.DECLARATION_MASK;
+        private static final int variableType = CodeVariable.LOCAL
+                                         | CodeVariable.EXPLICIT_DECLARATION;
+        private static final int variableMask = CodeVariable.SCOPE_MASK
+                                         | CodeVariable.DECLARATION_MASK;
         private static final String defaultVariableName = "gridBagConstraints"; // NOI18N
 
         public GridBagLayoutConstraints() {
@@ -170,28 +169,28 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 
         // -------
 
-        private CodeElement createCodeElement(CodeStructure codeStructure,
-                                              CodeConnectionGroup constrCode)
+        private CodeExpression createCodeExpression(CodeStructure codeStructure,
+                                                    CodeGroup constrCode)
         {
             this.constraintsCode = constrCode;
-            propertyConnections = null;
+            propertyStatements = null;
 
-            constraintsElement = codeStructure.createElement(
-                                     getConstraintsConstructor(),
-                                     CodeStructure.EMPTY_PARAMS);
-            updateCodeElement();
+            constraintsExpression = codeStructure.createExpression(
+                                        getConstraintsConstructor(),
+                                        CodeStructure.EMPTY_PARAMS);
+            updateCodeExpression();
 
-            return constraintsElement;
+            return constraintsExpression;
         }
 
-        private void readCodeElement(CodeElement constrElement,
-                                     CodeConnectionGroup constrCode)
+        private void readCodeExpression(CodeExpression constrExp,
+                                        CodeGroup constrCode)
         {
-            constraintsElement = constrElement;
+            constraintsExpression = constrExp;
             constraintsCode = constrCode;
-            propertyConnections = null;
+            propertyStatements = null;
 
-//            constrElement.setOrigin(CodeStructure.createOrigin(
+//            constrExp.setOrigin(CodeStructure.createOrigin(
 //                                        getConstraintsConstructor(),
 //                                        CodeStructure.EMPTY_PARAMS));
 
@@ -199,17 +198,17 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 
             boolean isAnyChanged = false;
 
-            Iterator it = CodeStructure.getConnectionsIterator(constrElement);
+            Iterator it = CodeStructure.getStatementsIterator(constrExp);
             while (it.hasNext()) {
-                CodeConnection connection = (CodeConnection) it.next();
+                CodeStatement statement = (CodeStatement) it.next();
                 for (int j=0; j < properties.length; j++) {
                     Property prop = properties[j];
-                    if (prop.field.equals(connection.getConnectingObject())) {
-                        FormCodeSupport.readPropertyConnection(
-                                            connection, prop, false);
-                        setPropertyConnection(j, connection);
+                    if (prop.field.equals(statement.getMetaObject())) {
+                        FormCodeSupport.readPropertyStatement(
+                                            statement, prop, false);
+                        setPropertyStatement(j, statement);
                         if (prop.isChanged()) {
-                            constrCode.addConnection(connection);
+                            constrCode.addStatement(statement);
                             isAnyChanged = true;
                         }
                         break;
@@ -220,8 +219,8 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             setupVariable(isAnyChanged);
         }
 
-        private void updateCodeElement() {
-            if (constraintsCode == null || constraintsElement == null)
+        private void updateCodeExpression() {
+            if (constraintsCode == null || constraintsExpression == null)
                 return;
 
             constraintsCode.removeAll();
@@ -231,74 +230,77 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             boolean isAnyChanged = false;
             for (int i=0; i < properties.length; i++)
                 if (properties[i].isChanged()) {
-                    constraintsCode.addConnection(getPropertyConnection(i));
+                    constraintsCode.addStatement(getPropertyStatement(i));
                     isAnyChanged = true;
                 }
 
             setupVariable(isAnyChanged);
         }
 
-        private CodeConnection getPropertyConnection(int index) {
-            if (propertyConnections == null)
-                propertyConnections = new CodeConnection[properties.length];
+        private CodeStatement getPropertyStatement(int index) {
+            if (propertyStatements == null)
+                propertyStatements = new CodeStatement[properties.length];
 
-            CodeConnection propConnection = propertyConnections[index];
-            if (propConnection == null) {
-                CodeElement propElement =
-                    constraintsElement.getCodeStructure().createElement(
+            CodeStatement propStatement = propertyStatements[index];
+            if (propStatement == null) {
+                CodeExpression propExp =
+                    constraintsExpression.getCodeStructure().createExpression(
                         FormCodeSupport.createOrigin(properties[index]));
 
-                propConnection = CodeStructure.createConnection(
-                                     constraintsElement,
-                                     properties[index].field,
-                                     propElement);
+                propStatement = CodeStructure.createStatement(
+                                    constraintsExpression,
+                                    properties[index].field,
+                                    propExp);
 
-                propertyConnections[index] = propConnection;
+                propertyStatements[index] = propStatement;
             }
-            return propConnection;
+            return propStatement;
         }
 
-        private void setPropertyConnection(int index,
-                                           CodeConnection propConnection)
+        private void setPropertyStatement(int index,
+                                          CodeStatement propStatement)
         {
-            if (propertyConnections == null)
-                propertyConnections = new CodeConnection[properties.length];
-            propertyConnections[index] = propConnection;
+            if (propertyStatements == null)
+                propertyStatements = new CodeStatement[properties.length];
+            propertyStatements[index] = propStatement;
         }
 
         private void setupVariable(boolean anyChangedProperty) {
-            CodeStructure codeStructure = constraintsElement.getCodeStructure();
-            CodeElementVariable var = constraintsElement.getVariable();
+            CodeStructure codeStructure =
+                constraintsExpression.getCodeStructure();
+            CodeVariable var = constraintsExpression.getVariable();
+
             if (anyChangedProperty) { // there should be a variable
                 if (var == null) { // no variable currently used
                     var = findVariable(); // find and reuse variable
                     if (var == null) { // create a new variable
-                        var = codeStructure.createVariableForElement(
-                                                constraintsElement,
+                        var = codeStructure.createVariableForExpression(
+                                                constraintsExpression,
                                                 variableType,
                                                 defaultVariableName);
                     }
-                    else { // attach the constraints element to the variable
-                        codeStructure.addElementUsingVariable(
-                                          var, constraintsElement);
+                    else { // attach the constraints expression to the variable
+                        codeStructure.addExpressionUsingVariable(
+                                          var, constraintsExpression);
                     }
                 }
                 // add assignment code
-                constraintsCode.addConnection(
-                                  0, var.getAssignment(constraintsElement));
+                constraintsCode.addStatement(
+                                  0, var.getAssignment(constraintsExpression));
             }
             else { // no variable needed
-                codeStructure.removeElementUsingVariable(constraintsElement);
+                codeStructure.removeExpressionUsingVariable(
+                                  constraintsExpression);
             }
         }
 
-        private CodeElementVariable findVariable() {
-            CodeStructure codeStructure = constraintsElement.getCodeStructure();
+        private CodeVariable findVariable() {
+            CodeStructure codeStructure =
+                constraintsExpression.getCodeStructure();
 
             // first try  "gridBagConstraints" name - this succeeds in most
             // cases (unless the name is used elsewhere or not created yet)
-            CodeElementVariable var =
-                codeStructure.getVariable(defaultVariableName);
+            CodeVariable var = codeStructure.getVariable(defaultVariableName);
             if (var != null
                     && (var.getType() & variableMask) == variableType
                     && GridBagConstraints.class.equals(var.getDeclaredType()))
@@ -310,7 +312,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                                             variableMask,
                                             GridBagConstraints.class);
             while (it.hasNext()) {
-                var = (CodeElementVariable) it.next();
+                var = (CodeVariable) it.next();
                 if (var.getName().startsWith(defaultVariableName))
                     return var;
             }
@@ -480,7 +482,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 
             protected void propertyValueChanged(Object old, Object current) {
                 if (isChangeFiring())
-                    updateCodeElement();
+                    updateCodeExpression();
                 super.propertyValueChanged(old, current);
             }
         }

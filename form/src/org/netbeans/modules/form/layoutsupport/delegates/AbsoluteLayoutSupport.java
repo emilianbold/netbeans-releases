@@ -239,35 +239,34 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
 
     // -------
 
-    protected LayoutConstraints readConstraintsCode(
-                                    CodeElement constrElement,
-                                    CodeConnectionGroup constrCode,
-                                    CodeElement compElement)
+    protected LayoutConstraints readConstraintsCode(CodeExpression constrExp,
+                                                    CodeGroup constrCode,
+                                                    CodeExpression compExp)
     {
         AbsoluteLayoutConstraints constr =
             new AbsoluteLayoutConstraints(0, 0, -1, -1);
 
-        CodeElement[] params = constrElement.getOrigin().getCreationParameters();
+        CodeExpression[] params = constrExp.getOrigin().getCreationParameters();
         if (params.length == 4) {
-            constr.readPropertyElements(params, 0);
+            constr.readPropertyExpressions(params, 0);
         }
 
         return constr;
     }
 
-    protected CodeElement createConstraintsCode(CodeConnectionGroup constrCode,
-                                                LayoutConstraints constr,
-                                                CodeElement compElement,
-                                                int index)
+    protected CodeExpression createConstraintsCode(CodeGroup constrCode,
+                                                   LayoutConstraints constr,
+                                                   CodeExpression compExp,
+                                                   int index)
     {
         if (!(constr instanceof AbsoluteLayoutConstraints))
             return null;
 
         CodeStructure codeStructure = getCodeStructure();
         AbsoluteLayoutConstraints absConstr = (AbsoluteLayoutConstraints) constr;
-        return codeStructure.createElement(
+        return codeStructure.createExpression(
                    getConstraintsConstructor(),
-                   absConstr.createPropertyElements(codeStructure, 0));
+                   absConstr.createPropertyExpressions(codeStructure, 0));
     }
 
     protected LayoutConstraints createDefaultConstraints() {
@@ -447,30 +446,30 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
             catch(java.lang.reflect.InvocationTargetException e2) {} // should not happen
         }
 
-        protected final CodeElement[] createPropertyElements(
-                                          CodeStructure codeStructure,
-                                          int shift)
+        protected final CodeExpression[] createPropertyExpressions(
+                                             CodeStructure codeStructure,
+                                             int shift)
         {
             getProperties();
-            CodeElement xEl = codeStructure.createElement(
-                        FormCodeSupport.createOrigin(properties[shift++]));
-            CodeElement yEl = codeStructure.createElement(
-                        FormCodeSupport.createOrigin(properties[shift++]));
-            CodeElement wEl = codeStructure.createElement(
-                        FormCodeSupport.createOrigin(properties[shift++]));
-            CodeElement hEl = codeStructure.createElement(
-                        FormCodeSupport.createOrigin(properties[shift++]));
-            return new CodeElement[] { xEl, yEl, wEl, hEl };
+            CodeExpression xEl = codeStructure.createExpression(
+                           FormCodeSupport.createOrigin(properties[shift++]));
+            CodeExpression yEl = codeStructure.createExpression(
+                           FormCodeSupport.createOrigin(properties[shift++]));
+            CodeExpression wEl = codeStructure.createExpression(
+                           FormCodeSupport.createOrigin(properties[shift++]));
+            CodeExpression hEl = codeStructure.createExpression(
+                           FormCodeSupport.createOrigin(properties[shift++]));
+            return new CodeExpression[] { xEl, yEl, wEl, hEl };
         }
 
-        protected final void readPropertyElements(CodeElement[] elements,
-                                                  int shift)
+        protected final void readPropertyExpressions(CodeExpression[] exps,
+                                                     int shift)
         {
             getProperties();
-            for (int i=0; i < elements.length; i++)
-                FormCodeSupport.readPropertyElement(elements[i],
-                                                    properties[i+shift],
-                                                    false);
+            for (int i=0; i < exps.length; i++)
+                FormCodeSupport.readPropertyExpression(exps[i],
+                                                       properties[i+shift],
+                                                       false);
         }
     }
 

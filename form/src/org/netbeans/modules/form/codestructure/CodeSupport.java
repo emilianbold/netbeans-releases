@@ -26,24 +26,26 @@ class CodeSupport {
     }
 
     // ----------
-    // implementation classes of CodeConnection interface
+    // implementation classes of CodeStatement interface
 
-    static final class MethodConnection extends AbstractCodeConnection {
+    static final class MethodStatement extends AbstractCodeStatement {
         private Method performMethod;
-        private CodeElement[] parameters;
+        private CodeExpression[] parameters;
 
-        public MethodConnection(CodeElement el, Method m, CodeElement[] params)
+        public MethodStatement(CodeExpression exp,
+                               Method m,
+                               CodeExpression[] params)
         {
-            super(el);
+            super(exp);
             performMethod = m;
             parameters = params != null ? params : CodeStructure.EMPTY_PARAMS;
         }
 
-        public Object getConnectingObject() {
+        public Object getMetaObject() {
             return performMethod;
         }
 
-        public CodeElement[] getConnectionParameters() {
+        public CodeExpression[] getStatementParameters() {
             return parameters;
         }
         
@@ -71,22 +73,24 @@ class CodeSupport {
         }
     }
 
-    static final class FieldConnection extends AbstractCodeConnection {
+    static final class FieldStatement extends AbstractCodeStatement {
         private Field assignField;
-        private CodeElement[] parameters;
+        private CodeExpression[] parameters;
 
-        public FieldConnection(CodeElement el, Field f, CodeElement assignedEl)
+        public FieldStatement(CodeExpression exp,
+                              Field f,
+                              CodeExpression assignedExp)
         {
-            super(el);
+            super(exp);
             assignField = f;
-            parameters = new CodeElement[] { assignedEl };
+            parameters = new CodeExpression[] { assignedExp };
         }
 
-        public Object getConnectingObject() {
+        public Object getMetaObject() {
             return assignField;
         }
 
-        public CodeElement[] getConnectionParameters() {
+        public CodeExpression[] getStatementParameters() {
             return parameters;
         }
 
@@ -108,34 +112,29 @@ class CodeSupport {
         }
     }
 
-    static final class AssignVariableConnection extends AbstractCodeConnection {
-        private CodeElementVariable variable;
+    static final class AssignVariableStatement extends AbstractCodeStatement {
+        private CodeVariable variable;
 
-        public AssignVariableConnection(CodeElementVariable var,
-                                        CodeElement element)
-        {
-            super(element);
+        public AssignVariableStatement(CodeVariable var, CodeExpression exp) {
+            super(exp);
             variable = var;
         }
 
-        public Object getConnectingObject() {
+        public Object getMetaObject() {
             return null;
         }
 
-        public CodeElement[] getConnectionParameters() {
-            return parentElement.getOrigin().getCreationParameters();
+        public CodeExpression[] getStatementParameters() {
+            return parentExpression.getOrigin().getCreationParameters();
         }
 
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
-//            CodeElementVariable var = parentElement.getVariable();
-//            if (var == null)
-//                return null;
             StringBuffer buf = new StringBuffer();
             int varType = variable.getType();
 
-            int declareMask = CodeElementVariable.LOCAL |
-                              CodeElementVariable.EXPLICIT_DECLARATION;
-            if ((varType & declareMask) == CodeElementVariable.LOCAL) {
+            int declareMask = CodeVariable.LOCAL |
+                              CodeVariable.EXPLICIT_DECLARATION;
+            if ((varType & declareMask) == CodeVariable.LOCAL) {
                 buf.append(variable.getDeclaredType().getName()
                                                        .replace('$','.'));
                 buf.append(" "); // NOI18N
@@ -143,7 +142,7 @@ class CodeSupport {
 
             buf.append(variable.getName());
             buf.append(" = "); // NOI18N
-            buf.append(parentElement.getOrigin().getJavaCodeString(
+            buf.append(parentExpression.getOrigin().getJavaCodeString(
                                                      parentStr, paramsStr));
             buf.append(";");
 
@@ -151,20 +150,19 @@ class CodeSupport {
         }
     }
 
-    static final class DeclareVariableConnection extends AbstractCodeConnection
-    {
+    static final class DeclareVariableStatement extends AbstractCodeStatement {
         private CodeStructure.Variable variable;
 
-        public DeclareVariableConnection(CodeStructure.Variable var) {
+        public DeclareVariableStatement(CodeStructure.Variable var) {
             super(null);
             variable = var;
         }
 
-        public Object getConnectingObject() {
+        public Object getMetaObject() {
             return null;
         }
 
-        public CodeElement[] getConnectionParameters() {
+        public CodeExpression[] getStatementParameters() {
             return CodeStructure.EMPTY_PARAMS;
         }
 
@@ -172,32 +170,32 @@ class CodeSupport {
             StringBuffer buf = new StringBuffer();
 
             int type = variable.getType();
-            if ((type & CodeElementVariable.SCOPE_MASK) == CodeElementVariable.FIELD) {
-                if ((type & CodeElementVariable.TRANSIENT) == CodeElementVariable.TRANSIENT)
+            if ((type & CodeVariable.SCOPE_MASK) == CodeVariable.FIELD) {
+                if ((type & CodeVariable.TRANSIENT) == CodeVariable.TRANSIENT)
                     buf.append("transient "); // NOI18N
-                if ((type & CodeElementVariable.STATIC) == CodeElementVariable.STATIC)
+                if ((type & CodeVariable.STATIC) == CodeVariable.STATIC)
                     buf.append("static "); // NOI18N
 
-                int access = type & CodeElementVariable.ACCESS_MASK;
-                if (access == CodeElementVariable.DEFAULT_ACCESS)
+                int access = type & CodeVariable.ACCESS_MASK;
+                if (access == CodeVariable.DEFAULT_ACCESS)
                     access = variable.getDefaultAccessType();
 
                 switch (access) {
-                    case CodeElementVariable.PUBLIC:
+                    case CodeVariable.PUBLIC:
                         buf.append("public "); // NOI18N
                         break;
-                    case CodeElementVariable.PROTECTED:
+                    case CodeVariable.PROTECTED:
                         buf.append("protected "); // NOI18N
                         break;
-                    case CodeElementVariable.PACKAGE_PRIVATE:
+                    case CodeVariable.PACKAGE_PRIVATE:
                         break;
-                    case CodeElementVariable.PRIVATE:
+                    case CodeVariable.PRIVATE:
                     default:
                         buf.append("private "); // NOI18N
                         break;
                 }
 
-                if ((type & CodeElementVariable.FINAL) == CodeElementVariable.FINAL)
+                if ((type & CodeVariable.FINAL) == CodeVariable.FINAL)
                     buf.append("final "); // NOI18N
             }
 
@@ -211,13 +209,13 @@ class CodeSupport {
     }
 
     // ------------
-    // implementation classes of CodeElementOrigin interface
+    // implementation classes of CodeExpressionOrigin interface
 
-    static final class ConstructorOrigin implements CodeElementOrigin {
+    static final class ConstructorOrigin implements CodeExpressionOrigin {
         private Constructor constructor;
-        private CodeElement[] parameters;
+        private CodeExpression[] parameters;
 
-        public ConstructorOrigin(Constructor ctor, CodeElement[] params) {
+        public ConstructorOrigin(Constructor ctor, CodeExpression[] params) {
             constructor = ctor;
             parameters = params != null ? params : CodeStructure.EMPTY_PARAMS;
         }
@@ -226,18 +224,18 @@ class CodeSupport {
             return constructor.getDeclaringClass();
         }
 
-        public CodeElement getParentElement() {
+        public CodeExpression getParentExpression() {
             return null;
         }
 
-        public Object getCreatingObject() {
+        public Object getMetaObject() {
             return constructor;
         }
 
         public Object getValue() {
             Object[] params = new Object[parameters.length];
             for (int i=0; i < params.length; i++) {
-                CodeElementOrigin paramOrigin = parameters[i].getOrigin();
+                CodeExpressionOrigin paramOrigin = parameters[i].getOrigin();
                 Object value = paramOrigin.getValue();
                 Class type = paramOrigin.getType();
                 if (value == null && type.isPrimitive())
@@ -255,7 +253,7 @@ class CodeSupport {
             }
         }
 
-        public CodeElement[] getCreationParameters() {
+        public CodeExpression[] getCreationParameters() {
             return parameters;
         }
 
@@ -278,13 +276,16 @@ class CodeSupport {
         }
     }
 
-    static final class MethodOrigin implements CodeElementOrigin {
-        private CodeElement parentElement;
+    static final class MethodOrigin implements CodeExpressionOrigin {
+        private CodeExpression parentExpression;
         private Method creationMethod;
-        private CodeElement[] parameters;
+        private CodeExpression[] parameters;
 
-        public MethodOrigin(CodeElement parent, Method m, CodeElement[] params) {
-            parentElement = parent;
+        public MethodOrigin(CodeExpression parent,
+                            Method m,
+                            CodeExpression[] params)
+        {
+            parentExpression = parent;
             creationMethod = m;
             parameters = params != null ? params : CodeStructure.EMPTY_PARAMS;
         }
@@ -293,11 +294,11 @@ class CodeSupport {
             return creationMethod.getReturnType();
         }
 
-        public CodeElement getParentElement() {
-            return parentElement;
+        public CodeExpression getParentExpression() {
+            return parentExpression;
         }
 
-        public Object getCreatingObject() {
+        public Object getMetaObject() {
             return creationMethod;
         }
 
@@ -305,14 +306,14 @@ class CodeSupport {
             return null;
         }
 
-        public CodeElement[] getCreationParameters() {
+        public CodeExpression[] getCreationParameters() {
             return parameters;
         }
 
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             StringBuffer buf = new StringBuffer();
 
-            if (parentElement != null) {
+            if (parentExpression != null) {
                 if (parentStr != null && !parentStr.equals("")) {
                     buf.append(parentStr);
                     buf.append("."); // NOI18N
@@ -339,12 +340,12 @@ class CodeSupport {
         }
     }
 
-    static final class FieldOrigin implements CodeElementOrigin {
-        private CodeElement parentElement;
+    static final class FieldOrigin implements CodeExpressionOrigin {
+        private CodeExpression parentExpression;
         private Field originField;
 
-        public FieldOrigin(CodeElement parent, Field f) {
-            parentElement = parent;
+        public FieldOrigin(CodeExpression parent, Field f) {
+            parentExpression = parent;
             originField = f;
         }
 
@@ -352,11 +353,11 @@ class CodeSupport {
             return originField.getType();
         }
 
-        public CodeElement getParentElement() {
-            return parentElement;
+        public CodeExpression getParentExpression() {
+            return parentExpression;
         }
 
-        public Object getCreatingObject() {
+        public Object getMetaObject() {
             return originField;
         }
 
@@ -364,14 +365,14 @@ class CodeSupport {
             return null;
         }
 
-        public CodeElement[] getCreationParameters() {
+        public CodeExpression[] getCreationParameters() {
             return CodeStructure.EMPTY_PARAMS;
         }
 
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             StringBuffer buf = new StringBuffer();
 
-            if (parentElement != null) {
+            if (parentExpression != null) {
                 if (parentStr != null && !parentStr.equals("")) {
                     buf.append(parentStr);
                     buf.append("."); // NOI18N
@@ -389,34 +390,34 @@ class CodeSupport {
         }
     }
 
-    static final class ValueOrigin implements CodeElementOrigin {
-        private Class elementType;
-        private Object elementValue;
+    static final class ValueOrigin implements CodeExpressionOrigin {
+        private Class expressionType;
+        private Object expressionValue;
         private String javaString;
 
         public ValueOrigin(Class type, Object value, String javaStr) {
-            elementType = type;
-            elementValue = value;
+            expressionType = type;
+            expressionValue = value;
             javaString = javaStr;
         }
 
         public Class getType() {
-            return elementType;
+            return expressionType;
         }
 
-        public CodeElement getParentElement() {
+        public CodeExpression getParentExpression() {
             return null;
         }
 
-        public Object getCreatingObject() {
+        public Object getMetaObject() {
             return null;
         }
 
         public Object getValue() {
-            return elementValue;
+            return expressionValue;
         }
 
-        public CodeElement[] getCreationParameters() {
+        public CodeExpression[] getCreationParameters() {
             return CodeStructure.EMPTY_PARAMS;
         }
 
@@ -426,61 +427,61 @@ class CodeSupport {
     }
 
     // --------
-    // implementation of CodeConnectionGroup interface
+    // implementation of CodeGroup interface
 
     // temporary reduced implementation
-    static final class DefaultConnectionGroup implements CodeConnectionGroup {
+    static final class DefaultCodeGroup implements CodeGroup {
 
-        private List connections = new ArrayList();
+        private List statements = new ArrayList();
 
-        public void addConnection(CodeConnection connection) {
-            connections.add(connection);
+        public void addStatement(CodeStatement statement) {
+            statements.add(statement);
         }
 
-        public void addConnection(int index, CodeConnection connection) {
-            connections.add(index, connection);
+        public void addStatement(int index, CodeStatement statement) {
+            statements.add(index, statement);
         }
 
-        public void addGroup(CodeConnectionGroup group) {
-            connections.add(group);
+        public void addGroup(CodeGroup group) {
+            statements.add(group);
         }
 
-        public void addGroup(int index, CodeConnectionGroup group) {
-            connections.add(index, group);
+        public void addGroup(int index, CodeGroup group) {
+            statements.add(index, group);
         }
 
-        public CodeConnection getConnection(int index) {
-            Object obj = connections.get(index);
-            if (obj instanceof CodeConnection)
-                return (CodeConnection) obj;
-            if (obj instanceof CodeConnectionGroup)
-                return ((CodeConnectionGroup)obj).getConnection(0);
+        public CodeStatement getStatement(int index) {
+            Object obj = statements.get(index);
+            if (obj instanceof CodeStatement)
+                return (CodeStatement) obj;
+            if (obj instanceof CodeGroup)
+                return ((CodeGroup)obj).getStatement(0);
             return null;
         }
 
         public int indexOf(Object object) {
-            return connections.indexOf(object);
+            return statements.indexOf(object);
         }
 
         public void remove(Object object) {
-            connections.remove(object);
+            statements.remove(object);
         }
 
         public void remove(int index) {
-            connections.remove(index);
+            statements.remove(index);
         }
 
         public void removeAll() {
-            connections.clear();
+            statements.clear();
         }
 
-        public Iterator getConnectionsIterator() {
-            return new ConnectionIterator();
+        public Iterator getStatementsIterator() {
+            return new StatementsIterator();
         }
 
-        class ConnectionIterator implements Iterator {
+        class StatementsIterator implements Iterator {
             int index = 0;
-            int count = connections.size();
+            int count = statements.size();
             Iterator subIter;
 
             public boolean hasNext() {
@@ -492,14 +493,14 @@ class CodeSupport {
                 }
 
                 while (index < count) {
-                    Object item = connections.get(index);
-                    if (item instanceof CodeConnectionGroup) {
-                        subIter = ((CodeConnectionGroup)item).getConnectionsIterator();
+                    Object item = statements.get(index);
+                    if (item instanceof CodeGroup) {
+                        subIter = ((CodeGroup)item).getStatementsIterator();
                         if (subIter.hasNext())
                             return true;
                         subIter = null;
                     }
-                    else if (item instanceof CodeConnection)
+                    else if (item instanceof CodeStatement)
                         return true; 
                     index++;
                 }
@@ -512,7 +513,7 @@ class CodeSupport {
                     throw new NoSuchElementException();
 
                 return subIter != null ? subIter.next() :
-                                         connections.get(index++);
+                                         statements.get(index++);
             }
 
             public void remove() {

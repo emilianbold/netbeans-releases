@@ -476,7 +476,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (component instanceof RADVisualComponent
             && parentComponent instanceof RADVisualContainer)
         { // load layout constraints for visual component
-            CodeElement compElement = component.getCodeElement();
+            CodeExpression compExp = component.getCodeExpression();
             LayoutSupportManager layoutSupport =
                 ((RADVisualContainer)parentComponent).getLayoutSupport();
 
@@ -484,12 +484,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 findSubNodes(constraintsNode, XML_CONSTRAINT) : null;
 
             if (constrNodes == null || constrNodes.length == 0)
-                loadConstraints(null, compElement, layoutSupport);
+                loadConstraints(null, compExp, layoutSupport);
             else { // NB 3.1 used to save all constraints ever set, not only for
                    // the current layout. We must go through all of them, but
                    // only those of current layout will be loaded.
                 for (int i=0; i < constrNodes.length; i++)
-                    loadConstraints(constrNodes[i], compElement, layoutSupport);
+                    loadConstraints(constrNodes[i], compExp, layoutSupport);
             }
         }
 
@@ -570,7 +570,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
 
     private void loadConstraints(org.w3c.dom.Node node,
-                                 CodeElement compElement,
+                                 CodeExpression compExp,
                                  LayoutSupportManager layoutSupport)
     {
         int convIndex = -1;
@@ -616,24 +616,24 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                     "setViewportView", // NOI18N
                                     new Class[] { java.awt.Component.class });
 
-                CodeStructure.createConnection(
-                                  layoutSupport.getContainerCodeElement(),
+                CodeStructure.createStatement(
+                                  layoutSupport.getContainerCodeExpression(),
                                   setViewportViewMethod,
-                                  new CodeElement[] { compElement });
+                                  new CodeExpression[] { compExp });
             }
-            else { // create simple add method connection with no constraints
-                CodeStructure.createConnection(
-                                layoutSupport.getContainerDelegateCodeElement(),
-                                getSimpleAddMethod(),
-                                new CodeElement[] { compElement });
+            else { // create simple add method statement with no constraints
+                CodeStructure.createStatement(
+                        layoutSupport.getContainerDelegateCodeExpression(),
+                        getSimpleAddMethod(),
+                        new CodeExpression[] { compExp });
             }
             return;
         }
 
         CodeStructure codeStructure = layoutSupport.getCodeStructure();
-        CodeElement contCodeElement = layoutSupport.getContainerCodeElement();
-        CodeElement contDelCodeElement =
-            layoutSupport.getContainerDelegateCodeElement();
+        CodeExpression contCodeExp = layoutSupport.getContainerCodeExpression();
+        CodeExpression contDelCodeExp =
+            layoutSupport.getContainerDelegateCodeExpression();
 
         if (convIndex == LAYOUT_BORDER) {
             if (!"BorderConstraints".equals(constrNode.getNodeName())) // NOI18N
@@ -642,13 +642,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
             node = constrAttr.getNamedItem("direction"); // NOI18N
             if (node != null) {
                 String strValue = node.getNodeValue();
-                // create add method connection
-                CodeStructure.createConnection(
-                    contDelCodeElement,
+                // create add method statement
+                CodeStructure.createStatement(
+                    contDelCodeExp,
                     getAddWithConstrMethod(),
-                    new CodeElement[] { compElement,
-                                        codeStructure.createElement(
-                                            String.class, strValue, strValue) });
+                    new CodeExpression[] { compExp,
+                                           codeStructure.createExpression(
+                                                           String.class,
+                                                           strValue,
+                                                           strValue) });
             }
         }
 
@@ -656,16 +658,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
             if (!"GridBagConstraints".equals(constrNode.getNodeName())) // NOI18N
                 return; // should not happen
 
-            // create GridBagConstraints constructor element
+            // create GridBagConstraints constructor expression
             if (gridBagConstrConstructor == null)
                 gridBagConstrConstructor =
                     java.awt.GridBagConstraints.class.getConstructor(
                                                           new Class[0]);
 
-            CodeElement constrElement = codeStructure.createElement(
+            CodeExpression constrExp = codeStructure.createExpression(
                     gridBagConstrConstructor, CodeStructure.EMPTY_PARAMS);
 
-            // create connections for GridBagConstraints fields
+            // create statements for GridBagConstraints fields
             String[] gbcAttrs = new String[] {
                 "gridX", "gridY", "gridWidth", "gridHeight", // NOI18N
                 "fill", "ipadX", "ipadY", // NOI18N
@@ -690,22 +692,22 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         value = Double.valueOf(strValue);
                     }
 
-                    CodeStructure.createConnection(
-                        constrElement,
+                    CodeStructure.createStatement(
+                        constrExp,
                         java.awt.GridBagConstraints.class.getField(gbcFields[i]),
-                        codeStructure.createElement(valueType, value, strValue));
+                        codeStructure.createExpression(valueType, value, strValue));
                 }
             }
 
             // Insets
-            CodeElement[] insetsParams = new CodeElement[4];
+            CodeExpression[] insetsParams = new CodeExpression[4];
             String[] insetsAttrs = new String[] {
                 "insetsTop", "insetsLeft", "insetsBottom", "insetsRight" }; // NOI18N
 
             for (int i=0; i < insetsAttrs.length; i++) {
                 node = constrAttr.getNamedItem(insetsAttrs[i]);
                 String strValue = node != null ? node.getNodeValue() : "0"; // NOI18N
-                insetsParams[i] = codeStructure.createElement(
+                insetsParams[i] = codeStructure.createExpression(
                                                     Integer.TYPE,
                                                     Integer.valueOf(strValue),
                                                     strValue);
@@ -716,17 +718,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     new Class[] { Integer.TYPE, Integer.TYPE,
                                   Integer.TYPE, Integer.TYPE });
 
-            CodeStructure.createConnection(
-                          constrElement,
+            CodeStructure.createStatement(
+                          constrExp,
                           java.awt.GridBagConstraints.class.getField("insets"), // NOI18N
-                          codeStructure.createElement(insetsConstructor,
-                                                      insetsParams));
+                          codeStructure.createExpression(insetsConstructor,
+                                                         insetsParams));
 
-            // create add method connection
-            CodeStructure.createConnection(
-                contDelCodeElement,
+            // create add method statement
+            CodeStructure.createStatement(
+                contDelCodeExp,
                 getAddWithConstrMethod(),
-                new CodeElement[] { compElement, constrElement });
+                new CodeExpression[] { compExp, constrExp });
         }
 
         else if (convIndex == LAYOUT_JTAB) {
@@ -775,19 +777,19 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                                   javax.swing.Icon.class,
                                                   java.awt.Component.class,
                                                   String.class });
-                CodeStructure.createConnection(
-                    contCodeElement,
+                CodeStructure.createStatement(
+                    contCodeExp,
                     addTabMethod1,
-                    new CodeElement[] { codeStructure.createElement(
+                    new CodeExpression[] { codeStructure.createExpression(
                                                       tabName.getClass(),
                                                       tabName,
                                                       tabName.toString()),
-                                        codeStructure.createElement(
+                                        codeStructure.createExpression(
                                                       icon.getClass(),
                                                       icon,
                                                       icon.toString()), // [??]
-                                        compElement,
-                                        codeStructure.createElement(
+                                        compExp,
+                                        codeStructure.createExpression(
                                                       toolTip.getClass(),
                                                       toolTip,
                                                       toolTip.toString()) });
@@ -799,18 +801,18 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                     new Class[] { String.class,
                                                   javax.swing.Icon.class,
                                                   java.awt.Component.class });
-                CodeStructure.createConnection(
-                    contCodeElement,
+                CodeStructure.createStatement(
+                    contCodeExp,
                     addTabMethod2,
-                    new CodeElement[] { codeStructure.createElement(
+                    new CodeExpression[] { codeStructure.createExpression(
                                                       tabName.getClass(),
                                                       tabName,
                                                       tabName.toString()),
-                                        codeStructure.createElement(
+                                        codeStructure.createExpression(
                                                       icon.getClass(),
                                                       icon,
                                                       icon.toString()), // [??]
-                                        compElement });
+                                        compExp });
             }
             else if (tabName != null) {
                 if (addTabMethod3 == null)
@@ -818,14 +820,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                     "addTab", // NOI18N
                                     new Class[] { String.class,
                                                   java.awt.Component.class });
-                CodeStructure.createConnection(
-                    contCodeElement,
+                CodeStructure.createStatement(
+                    contCodeExp,
                     addTabMethod3,
-                        new CodeElement[] { codeStructure.createElement(
+                        new CodeExpression[] { codeStructure.createExpression(
                                                       tabName.getClass(),
                                                       tabName,
                                                       tabName.toString()),
-                                        compElement });
+                                        compExp });
             }
         }
 
@@ -872,9 +874,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 }
                 else return;
 
-                CodeStructure.createConnection(contCodeElement,
-                                               addMethod,
-                                               new CodeElement[] { compElement });
+                CodeStructure.createStatement(contCodeExp,
+                                              addMethod,
+                                              new CodeExpression[] { compExp });
             }
         }
 
@@ -885,13 +887,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
             node = constrAttr.getNamedItem("cardName"); // NOI18N
             if (node != null) {
                 String strValue = node.getNodeValue();
-                // create add method connection
-                CodeStructure.createConnection(
-                    contDelCodeElement,
+                // create add method statement
+                CodeStructure.createStatement(
+                    contDelCodeExp,
                     getAddWithConstrMethod(),
-                    new CodeElement[] { compElement,
-                                        codeStructure.createElement(
-                                            String.class, strValue, strValue) });
+                    new CodeExpression[] { compExp,
+                                           codeStructure.createExpression(
+                                                           String.class,
+                                                           strValue,
+                                                           strValue) });
             }
         }
 
@@ -899,7 +903,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             if (!"JLayeredPaneConstraints".equals(constrNode.getNodeName())) // NOI18N
                 return;
 
-            CodeElement[] boundsParams = new CodeElement[4];
+            CodeExpression[] boundsParams = new CodeExpression[4];
             String[] boundsAttrs = new String[] { "x", "y", "width", "height" }; // NOI18N
 
             for (int i=0; i < boundsAttrs.length; i++) {
@@ -907,7 +911,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 String strValue = node != null ?
                                       node.getNodeValue() :
                                       (i < 2 ? "0" : "-1"); // NOI18N
-                boundsParams[i] = codeStructure.createElement(
+                boundsParams[i] = codeStructure.createExpression(
                                                     Integer.TYPE,
                                                     Integer.valueOf(strValue),
                                                     strValue);
@@ -918,19 +922,21 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                     "setBounds", // NOI18N
                                     new Class[] { Integer.TYPE, Integer.TYPE,
                                                   Integer.TYPE, Integer.TYPE });
-            CodeStructure.createConnection(
-                compElement, setBoundsMethod, boundsParams);
+            CodeStructure.createStatement(
+                            compExp, setBoundsMethod, boundsParams);
 
             node = constrAttr.getNamedItem("layer"); // NOI18N
             if (node != null) {
                 String strValue = node.getNodeValue();
-                // create add method connection
-                CodeStructure.createConnection(
-                    contDelCodeElement,
+                // create add method statement
+                CodeStructure.createStatement(
+                    contDelCodeExp,
                     getAddWithConstrMethod(),
-                    new CodeElement[] { compElement,
-                                        codeStructure.createElement(
-                                            String.class, strValue, strValue) });
+                    new CodeExpression[] { compExp,
+                                           codeStructure.createExpression(
+                                                           String.class,
+                                                           strValue,
+                                                           strValue) });
             }
         }
 
@@ -938,7 +944,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             if (!"AbsoluteConstraints".equals(constrNode.getNodeName())) // NOI18N
                 return;
 
-            CodeElement[] boundsParams = new CodeElement[4];
+            CodeExpression[] boundsParams = new CodeExpression[4];
             String[] boundsAttrs = new String[] { "x", "y", "width", "height" }; // NOI18N
 
             for (int i=0; i < boundsAttrs.length; i++) {
@@ -946,20 +952,20 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 String strValue = node != null ?
                                       node.getNodeValue() :
                                       (i < 2 ? "0" : "-1"); // NOI18N
-                boundsParams[i] = codeStructure.createElement(
+                boundsParams[i] = codeStructure.createExpression(
                                                     Integer.TYPE,
                                                     Integer.valueOf(strValue),
                                                     strValue);
             }
 
-            CodeConnection[] connections = CodeStructure.getConnections(
-                                                         contDelCodeElement,
+            CodeStatement[] statements = CodeStructure.getStatements(
+                                                         contDelCodeExp,
                                                          getSetLayoutMethod());
             boolean nullLayout;
-            if (connections.length > 0) {
-                CodeElement layoutElement =
-                    connections[0].getConnectionParameters()[0];
-                nullLayout = layoutElement.getOrigin().getType()
+            if (statements.length > 0) {
+                CodeExpression layoutExp =
+                    statements[0].getStatementParameters()[0];
+                nullLayout = layoutExp.getOrigin().getType()
                              != org.netbeans.lib.awtextra.AbsoluteLayout.class;
             }
             else nullLayout = true;
@@ -970,13 +976,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                       "setBounds", // NOI18N
                                       new Class[] { Integer.TYPE, Integer.TYPE,
                                                     Integer.TYPE, Integer.TYPE });
-                CodeStructure.createConnection(
-                    compElement, setBoundsMethod, boundsParams);
+                CodeStructure.createStatement(
+                    compExp, setBoundsMethod, boundsParams);
 
-                // create add method connection
-                CodeStructure.createConnection(contDelCodeElement,
-                                               getSimpleAddMethod(),
-                                               new CodeElement[] { compElement });
+                // create add method statement
+                CodeStructure.createStatement(contDelCodeExp,
+                                              getSimpleAddMethod(),
+                                              new CodeExpression[] { compExp });
             }
             else {
                 if (absoluteConstraintsConstructor == null)
@@ -986,12 +992,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
                             new Class[] { Integer.TYPE, Integer.TYPE,
                                           Integer.TYPE, Integer.TYPE });
 
-                // create add method connection
-                CodeStructure.createConnection(
-                    contDelCodeElement,
+                // create add method statement
+                CodeStructure.createStatement(
+                    contDelCodeExp,
                     getAddWithConstrMethod(),
-                    new CodeElement[] { compElement,
-                                        codeStructure.createElement(
+                    new CodeExpression[] { compExp,
+                                        codeStructure.createExpression(
                                             absoluteConstraintsConstructor,
                                             boundsParams) });
             }
@@ -1094,7 +1100,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
 
         CodeStructure codeStructure = layoutSupport.getCodeStructure();
-        CodeElement[] layoutParams = null;
+        CodeExpression[] layoutParams = null;
         Class[] paramTypes = null;
         Class layoutClass = null;
 
@@ -1103,15 +1109,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
             int hgap = findName(layoutPropNames[0], propertyNames);
             int vgap = findName(layoutPropNames[1], propertyNames);
             if (hgap >= 0 || vgap >= 0) {
-                layoutParams = new CodeElement[2];
+                layoutParams = new CodeExpression[2];
                 Object value;
 
                 value = hgap >= 0 ? propertyValues[hgap] : new Integer(0);
-                layoutParams[0] = codeStructure.createElement(
+                layoutParams[0] = codeStructure.createExpression(
                                       Integer.TYPE, value, value.toString());
 
                 value = vgap >= 0 ? propertyValues[vgap] : new Integer(0);
-                layoutParams[1] = codeStructure.createElement(
+                layoutParams[1] = codeStructure.createExpression(
                                       Integer.TYPE, value, value.toString());
 
                 paramTypes = new Class[] { Integer.TYPE, Integer.TYPE };
@@ -1128,33 +1134,33 @@ public class GandalfPersistenceManager extends PersistenceManager {
             int hgap = findName(layoutPropNames[1], propertyNames);
             int vgap = findName(layoutPropNames[2], propertyNames);
             if (alignment >= 0) {
-                layoutParams = new CodeElement[3];
+                layoutParams = new CodeExpression[3];
                 Object value;
 
                 value = alignment >= 0 ? propertyValues[alignment] : new Integer(1);
-                layoutParams[0] = codeStructure.createElement(
+                layoutParams[0] = codeStructure.createExpression(
                                       Integer.TYPE, value, value.toString());
 
                 value = hgap >= 0 ? propertyValues[hgap] : new Integer(5);
-                layoutParams[1] = codeStructure.createElement(
+                layoutParams[1] = codeStructure.createExpression(
                                       Integer.TYPE, value, value.toString());
 
                 value = vgap >= 0 ? propertyValues[vgap] : new Integer(5);
-                layoutParams[2] = codeStructure.createElement(
+                layoutParams[2] = codeStructure.createExpression(
                                       Integer.TYPE, value, value.toString());
 
                 paramTypes = new Class[] { Integer.TYPE, Integer.TYPE, Integer.TYPE };
             }
             else if (hgap >= 0 || vgap >= 0) {
-                layoutParams = new CodeElement[2];
+                layoutParams = new CodeExpression[2];
                 Object value;
 
                 value = hgap >= 0 ? propertyValues[hgap] : new Integer(5);
-                layoutParams[0] = codeStructure.createElement(
+                layoutParams[0] = codeStructure.createExpression(
                                       Integer.TYPE, value, value.toString());
 
                 value = vgap >= 0 ? propertyValues[vgap] : new Integer(5);
-                layoutParams[1] = codeStructure.createElement(
+                layoutParams[1] = codeStructure.createExpression(
                                       Integer.TYPE, value, value.toString());
 
                 paramTypes = new Class[] { Integer.TYPE, Integer.TYPE };
@@ -1179,11 +1185,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                  propertyValues[axis] :
                                  new Integer(javax.swing.BoxLayout.X_AXIS);
 
-            layoutParams = new CodeElement[2];
-            layoutParams[0] = layoutSupport.getContainerCodeElement();
-            layoutParams[1] = codeStructure.createElement(Integer.TYPE,
-                                                          axisObj,
-                                                          axisObj.toString());
+            layoutParams = new CodeExpression[2];
+            layoutParams[0] = layoutSupport.getContainerCodeExpression();
+            layoutParams[1] = codeStructure.createExpression(Integer.TYPE,
+                                                             axisObj,
+                                                             axisObj.toString());
             paramTypes = new Class[] { java.awt.Container.class, Integer.TYPE };
             layoutClass = javax.swing.BoxLayout.class;
         }
@@ -1194,38 +1200,38 @@ public class GandalfPersistenceManager extends PersistenceManager {
             int hgap = findName(layoutPropNames[2], propertyNames);
             int vgap = findName(layoutPropNames[3], propertyNames);
             if (hgap >= 0 || vgap >= 0) {
-                layoutParams = new CodeElement[4];
+                layoutParams = new CodeExpression[4];
                 Object value;
 
                 value = rows >= 0 ? propertyValues[rows] : new Integer(1);
-                layoutParams[0] = codeStructure.createElement(
+                layoutParams[0] = codeStructure.createExpression(
                                       Integer.TYPE, value, value.toString());
 
                 value = columns >= 0 ? propertyValues[columns] : new Integer(0);
-                layoutParams[1] = codeStructure.createElement(
+                layoutParams[1] = codeStructure.createExpression(
                                       Integer.TYPE, value, value.toString());
 
                 value = hgap >= 0 ? propertyValues[hgap] : new Integer(0);
-                layoutParams[2] = codeStructure.createElement(
+                layoutParams[2] = codeStructure.createExpression(
                                       Integer.TYPE, value, value.toString());
 
                 value = vgap >= 0 ? propertyValues[vgap] : new Integer(0);
-                layoutParams[3] = codeStructure.createElement(
+                layoutParams[3] = codeStructure.createExpression(
                                       Integer.TYPE, value, value.toString());
 
                 paramTypes = new Class[] { Integer.TYPE, Integer.TYPE,
                                            Integer.TYPE, Integer.TYPE };
             }
             else if (rows >= 0 || columns >= 0) {
-                layoutParams = new CodeElement[2];
+                layoutParams = new CodeExpression[2];
                 Object value;
 
                 value = rows >= 0 ? propertyValues[rows] : new Integer(1);
-                layoutParams[0] = codeStructure.createElement(
+                layoutParams[0] = codeStructure.createExpression(
                                       Integer.TYPE, value, value.toString());
 
                 value = columns >= 0 ? propertyValues[columns] : new Integer(0);
-                layoutParams[1] = codeStructure.createElement(
+                layoutParams[1] = codeStructure.createExpression(
                                       Integer.TYPE, value, value.toString());
 
                 paramTypes = new Class[] { Integer.TYPE, Integer.TYPE };
@@ -1241,15 +1247,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
             int hgap = findName(layoutPropNames[0], propertyNames);
             int vgap = findName(layoutPropNames[1], propertyNames);
             if (hgap >= 0 && vgap >= 0) {
-                layoutParams = new CodeElement[2];
+                layoutParams = new CodeExpression[2];
                 Object value;
 
                 value = hgap >= 0 ? propertyValues[hgap] : new Integer(0);
-                layoutParams[0] = codeStructure.createElement(
+                layoutParams[0] = codeStructure.createExpression(
                                       Integer.TYPE, value, value.toString());
 
                 value = vgap >= 0 ? propertyValues[vgap] : new Integer(0);
-                layoutParams[1] = codeStructure.createElement(
+                layoutParams[1] = codeStructure.createExpression(
                                       Integer.TYPE, value, value.toString());
 
                 paramTypes = new Class[] { Integer.TYPE, Integer.TYPE };
@@ -1275,7 +1281,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         else return convIndex; // no layout manager
 
-        CodeElement layoutElement;
+        CodeExpression layoutExp;
         if (layoutClass != null) {
             Constructor layoutConstructor;
             try {
@@ -1285,18 +1291,18 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 ex.printStackTrace();
                 return -1;
             }
-            layoutElement = layoutSupport.getCodeStructure().createElement(
+            layoutExp = layoutSupport.getCodeStructure().createExpression(
                                 layoutConstructor, layoutParams);
         }
         else {
-            layoutElement = layoutSupport.getCodeStructure()
-                              .createNullElement(java.awt.LayoutManager.class);
+            layoutExp = layoutSupport.getCodeStructure().createNullExpression(
+                                                 java.awt.LayoutManager.class);
         }
 
-        CodeStructure.createConnection(
-            layoutSupport.getContainerDelegateCodeElement(),
+        CodeStructure.createStatement(
+            layoutSupport.getContainerDelegateCodeExpression(),
             getSetLayoutMethod(),
-            new CodeElement[] { layoutElement });
+            new CodeExpression[] { layoutExp });
 
         return convIndex;
     }

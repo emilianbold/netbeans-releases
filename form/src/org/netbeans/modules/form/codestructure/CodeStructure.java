@@ -24,184 +24,190 @@ import java.lang.reflect.*;
 
 public class CodeStructure {
 
-    public static final CodeElement[] EMPTY_PARAMS = new CodeElement[0];
+    public static final CodeExpression[] EMPTY_PARAMS = new CodeExpression[0];
 
     private static UsingCodeObject globalUsingObject;
 
     private Map namesToVariables = new HashMap(50);
-    private Map elementsToVariables = new HashMap(50);
+    private Map expressionsToVariables = new HashMap(50);
 
-    private int defaultVariableAccessType = CodeElementVariable.PRIVATE;
+    private int defaultVariableAccessType = CodeVariable.PRIVATE;
 
     // -------
-    // elements
+    // expressions
 
-    // creates a new element from a constructor
-    public CodeElement createElement(Constructor ctor, CodeElement[] params) {
-        CodeElementOrigin origin =
+    // Creates a new expression from a constructor.
+    public CodeExpression createExpression(Constructor ctor,
+                                           CodeExpression[] params)
+    {
+        CodeExpressionOrigin origin =
                             new CodeSupport.ConstructorOrigin(ctor, params);
-        return new DefaultCodeElement(this, origin);
+        return new DefaultCodeExpression(this, origin);
     }
 
-    // creates a new element from a method
-    public CodeElement createElement(CodeElement parent,
-                                     Method method,
-                                     CodeElement[] params)
+    // Creates a new expression from a method.
+    public CodeExpression createExpression(CodeExpression parent,
+                                           Method method,
+                                           CodeExpression[] params)
     {
-        CodeElementOrigin origin =
-                        new CodeSupport.MethodOrigin(parent, method, params);
-        return new DefaultCodeElement(this, /*method.getReturnType(),*/ origin);
+        CodeExpressionOrigin origin = new CodeSupport.MethodOrigin(
+                                                      parent, method, params);
+        return new DefaultCodeExpression(this, origin);
     }
 
-    // creates a new element from a field
-    public CodeElement createElement(CodeElement parent, Field field) {
-        CodeElementOrigin origin = new CodeSupport.FieldOrigin(parent, field);
-        return new DefaultCodeElement(this, /*field.getType(),*/ origin);
+    // Creates a new expression from a field.
+    public CodeExpression createExpression(CodeExpression parent, Field field) {
+        CodeExpressionOrigin origin = new CodeSupport.FieldOrigin(parent, field);
+        return new DefaultCodeExpression(this, origin);
     }
 
-    // creates a new element from a value
-    public CodeElement createElement(Class type,
-                                     Object value,
-                                     String javaInitStr)
+    // Creates a new expression from a value.
+    public CodeExpression createExpression(Class type,
+                                           Object value,
+                                           String javaInitStr)
     {
-        return new DefaultCodeElement(this, new CodeSupport.ValueOrigin(
+        return new DefaultCodeExpression(this, new CodeSupport.ValueOrigin(
                                                     type, value, javaInitStr));
     }
 
-    // creates a new element of an arbitrary origin
-    public CodeElement createElement(CodeElementOrigin origin) {
-        return new DefaultCodeElement(this, origin);
+    // Creates a new expression of an arbitrary origin.
+    public CodeExpression createExpression(CodeExpressionOrigin origin) {
+        return new DefaultCodeExpression(this, origin);
     }
 
-    // creates an element representing null value
-    public CodeElement createNullElement(Class type) {
-        return new DefaultCodeElement(this, new CodeSupport.ValueOrigin(
+    // Creates an expression representing null value.
+    public CodeExpression createNullExpression(Class type) {
+        return new DefaultCodeExpression(this, new CodeSupport.ValueOrigin(
                                                     type, null, "null")); // NOI18N
     }
 
-    // creates an element with no origin
-    public CodeElement createDefaultElement() {
-        return new DefaultCodeElement(this);
+    // Creates an expression with no origin.
+    public CodeExpression createDefaultExpression() {
+        return new DefaultCodeExpression(this);
     }
 
-    // prevents element from being removed automatically from structure when
-    // not used (by any UsingCodeObject)
-    public void registerElement(CodeElement element) {
+    // Prevents expression from being removed automatically from structure when
+    // not used (by any UsingCodeObject).
+    public void registerExpression(CodeExpression expression) {
         if (globalUsingObject == null)
             globalUsingObject = new GlobalUsingObject();
 
-        element.addUsingObject(globalUsingObject,
-                               UsedCodeObject.USING,
-                               CodeStructure.class);
+        expression.addUsingObject(globalUsingObject,
+                                  UsedCodeObject.USING,
+                                  CodeStructure.class);
     }
 
-    // removes element from the structure completely
-    public static void removeElement(CodeElement element) {
-        unregisterUsedCodeObject(element);
-        unregisterUsingCodeObject(element);
+    // Removes expression from the structure completely.
+    public static void removeExpression(CodeExpression expression) {
+        unregisterUsedCodeObject(expression);
+        unregisterUsingCodeObject(expression);
 
-        element.getCodeStructure().removeElementUsingVariable(element);
+        expression.getCodeStructure().removeExpressionUsingVariable(expression);
     }
 
     // --------
-    // connections
+    // statements
 
-    // creates a new method connection
-    public static CodeConnection createConnection(CodeElement element,
-                                                  Method m,
-                                                  CodeElement[] params)
+    // Creates a new method statement.
+    public static CodeStatement createStatement(CodeExpression expression,
+                                                Method m,
+                                                CodeExpression[] params)
     {
-        CodeConnection connection =
-                         new CodeSupport.MethodConnection(element, m, params);
-        registerUsingCodeObject(connection);
-        return connection;
+        CodeStatement statement = new CodeSupport.MethodStatement(
+                                                      expression, m, params);
+        registerUsingCodeObject(statement);
+        return statement;
     }
 
-    // creates a new field connection
-    public static CodeConnection createConnection(CodeElement element,
-                                                  Field f,
-                                                  CodeElement assignEl)
+    // Creates a new field statement.
+    public static CodeStatement createStatement(CodeExpression expression,
+                                                Field f,
+                                                CodeExpression assignExp)
     {
-        CodeConnection connection =
-                        new CodeSupport.FieldConnection(element, f, assignEl);
-        registerUsingCodeObject(connection);
-        return connection;
+        CodeStatement statement = new CodeSupport.FieldStatement(
+                                                    expression, f, assignExp);
+        registerUsingCodeObject(statement);
+        return statement;
     }
 
-    // removes connection from the structure completely
-    public static void removeConnection(CodeConnection connection) {
-        unregisterUsingCodeObject(connection);
+    // Removes statement from the structure completely.
+    public static void removeStatement(CodeStatement statement) {
+        unregisterUsingCodeObject(statement);
     }
 
-    public static void removeConnections(Iterator it) {
+    // Removes all statement provided by an Iterator.
+    public static void removeStatements(Iterator it) {
         List list = new ArrayList();
         while (it.hasNext())
             list.add(it.next());
 
         for (int i=0, n=list.size(); i < n; i++)
-            unregisterUsingCodeObject((CodeConnection) list.get(i));
+            unregisterUsingCodeObject((CodeStatement) list.get(i));
     }
 
-    // returns Iterator of all connections of an element
-    public static Iterator getConnectionsIterator(CodeElement element) {
-        return element.getUsingObjectsIterator(UsedCodeObject.DEFINING,
-                                               CodeConnection.class);
+    // Returns Iterator of all statements of given parent expression.
+    public static Iterator getStatementsIterator(CodeExpression expression) {
+        return expression.getUsingObjectsIterator(UsedCodeObject.DEFINING,
+                                                  CodeStatement.class);
     }
 
-    // returns all connections of an element in an array
-    public static CodeConnection[] getConnections(CodeElement element) {
+    // Returns all statements (of an parent expression) in array.
+    public static CodeStatement[] getStatements(CodeExpression expression) {
         ArrayList list = new ArrayList();
-        Iterator it = getConnectionsIterator(element);
+        Iterator it = getStatementsIterator(expression);
         while (it.hasNext())
             list.add(it.next());
 
-        return (CodeConnection[]) list.toArray(new CodeConnection[list.size()]);
+        return (CodeStatement[]) list.toArray(new CodeStatement[list.size()]);
     }
 
-    // returns all connections which use given (or equal) meta object
-    public static CodeConnection[] getConnections(CodeElement element,
-                                                  Object metaObject)
+    // Returns all expression's statements which use given (or equal)
+    // statement meta object.
+    public static CodeStatement[] getStatements(CodeExpression expression,
+                                                Object metaObject)
     {
         ArrayList list = new ArrayList();
-        Iterator it = getConnectionsIterator(element);
+        Iterator it = getStatementsIterator(expression);
         while (it.hasNext()) {
-            CodeConnection connection = (CodeConnection) it.next();
-            if (metaObject.equals(connection.getConnectingObject()))
-                list.add(connection);
+            CodeStatement statement = (CodeStatement) it.next();
+            if (metaObject.equals(statement.getMetaObject()))
+                list.add(statement);
         }
-        return (CodeConnection[]) list.toArray(new CodeConnection[list.size()]);
+        return (CodeStatement[]) list.toArray(new CodeStatement[list.size()]);
     }
 
     // --------
-    // connection group
+    // statements code group
 
-    public CodeConnectionGroup createConnectionGroup(/*CodeElement baseElement*/) {
-        return new CodeSupport.DefaultConnectionGroup();
+    public CodeGroup createCodeGroup() {
+        return new CodeSupport.DefaultCodeGroup();
     }
 
     // --------
     // origins
 
-    public static CodeElementOrigin createOrigin(Constructor ctor,
-                                                 CodeElement[] params)
+    public static CodeExpressionOrigin createOrigin(Constructor ctor,
+                                                    CodeExpression[] params)
     {
         return new CodeSupport.ConstructorOrigin(ctor, params);
     }
 
-    public static CodeElementOrigin createOrigin(CodeElement parent,
-                                                 Method m,
-                                                 CodeElement[] params)
+    public static CodeExpressionOrigin createOrigin(CodeExpression parent,
+                                                    Method m,
+                                                    CodeExpression[] params)
     {
         return new CodeSupport.MethodOrigin(parent, m, params);
     }
 
-    public static CodeElementOrigin createOrigin(CodeElement parent, Field f) {
+    public static CodeExpressionOrigin createOrigin(CodeExpression parent,
+                                                    Field f)
+    {
         return new CodeSupport.FieldOrigin(parent, f);
     }
 
-    public static CodeElementOrigin createOrigin(Class type,
-                                                 Object value,
-                                                 String javaStr)
+    public static CodeExpressionOrigin createOrigin(Class type,
+                                                    Object value,
+                                                    String javaStr)
     {
         return new CodeSupport.ValueOrigin(type, value, javaStr);
     }
@@ -209,34 +215,36 @@ public class CodeStructure {
     // -------
     // managing references between code objects
 
-    // Registers usage of elements used by a connection.
-    static void registerUsingCodeObject(CodeConnection connection) {
-        CodeElement parent = connection.getParentElement();
+    // Registers usage of expressions used by a statement.
+    static void registerUsingCodeObject(CodeStatement statement) {
+        CodeExpression parent = statement.getParentExpression();
         if (parent != null)
             parent.addUsingObject(
-                connection, UsedCodeObject.DEFINING, CodeConnection.class);
+                statement, UsedCodeObject.DEFINING, CodeStatement.class);
 
-        CodeElement[] params = connection.getConnectionParameters();
+        CodeExpression[] params = statement.getStatementParameters();
         if (params != null)
             for (int i=0; i < params.length; i++)
                 params[i].addUsingObject(
-                    connection, UsedCodeObject.USING, CodeConnection.class);
+                    statement, UsedCodeObject.USING, CodeStatement.class);
     }
 
-    // Registers usage of elements used by the origin of an element.
-    static void registerUsingCodeObject(CodeElement element) {
-        CodeElementOrigin origin = element.getOrigin();
-        CodeElement parent = origin.getParentElement();
+    // Registers usage of expressions used by the origin of an expression.
+    static void registerUsingCodeObject(CodeExpression expression) {
+        CodeExpressionOrigin origin = expression.getOrigin();
+        CodeExpression parent = origin.getParentExpression();
 
         if (parent != null)
-            parent.addUsingObject(
-                element, UsedCodeObject.DEFINING, CodeElement.class);
+            parent.addUsingObject(expression,
+                                  UsedCodeObject.DEFINING,
+                                  CodeExpression.class);
 
-        CodeElement[] params = origin.getCreationParameters();
+        CodeExpression[] params = origin.getCreationParameters();
         if (params != null)
             for (int i=0; i < params.length; i++)
-                params[i].addUsingObject(
-                    element, UsedCodeObject.USING, CodeElement.class);
+                params[i].addUsingObject(expression,
+                                         UsedCodeObject.USING,
+                                         CodeExpression.class);
     }
 
     // Unregisters usage of all object used by a using object.
@@ -297,21 +305,25 @@ public class CodeStructure {
     // -------
     // variables
 
-    public CodeElementVariable createVariable(int varType,
-                                              Class declaredType,
-                                              String varName)
+    /** Creates a new variable. It is empty - with no expression attached.
+     */
+    public CodeVariable createVariable(int type,
+                                       Class declaredType,
+                                       String name)
     {
-        if (getVariable(varName) != null)
+        if (getVariable(name) != null)
             return null; // variable already exists, cannot create new one
 
-        if (varType < 0 || varName == null)
+        if (type < 0 || name == null)
             throw new IllegalArgumentException();
 
-        CodeElementVariable var = new Variable(varType, declaredType, varName);
-        namesToVariables.put(varName, var);
+        CodeVariable var = new Variable(type, declaredType, name);
+        namesToVariables.put(name, var);
         return var;
     }
 
+    /** Renames variable of name oldName to newName.
+     */
     public boolean renameVariable(String oldName, String newName) {
         Variable var = (Variable) namesToVariables.get(oldName);
         if (var == null || newName == null
@@ -326,85 +338,95 @@ public class CodeStructure {
         return true;
     }
 
-    public CodeElementVariable releaseVariable(String name) {
+    /** Releases variable of given name.
+     */
+    public CodeVariable releaseVariable(String name) {
         Variable var = (Variable) namesToVariables.remove(name);
         if (var == null)
             return null; // there is no such variable
 
-        Map elementsMap = var.elementsMap;
-        if (elementsMap == null)
+        Map expressionsMap = var.expressionsMap;
+        if (expressionsMap == null)
             return var;
 
-        Iterator it = elementsMap.values().iterator();
+        Iterator it = expressionsMap.values().iterator();
         while (it.hasNext())
-            elementsToVariables.remove(it.next());
+            expressionsToVariables.remove(it.next());
 
         return var;
     }
 
+    /** Checks whether given name is already used for some variable.
+     */
     public boolean isVariableNameReserved(String name) {
         return namesToVariables.get(name) != null;
     }
 
-    public CodeElementVariable createVariableForElement(CodeElement element,
-                                                        int varType,
-                                                        String varName)
+    /** Creates a new variable and attaches given expression to it. If the
+     * requested name is already in use, then a free name is found. If null
+     * is provided as the name, then expression's short class name is used.
+     */
+    public CodeVariable createVariableForExpression(CodeExpression expression,
+                                                    int type,
+                                                    String name)
     {
-        if (element == null)
+        if (expression == null)
             throw new IllegalArgumentException();
 
-        if (getVariable(element) != null)
+        if (getVariable(expression) != null)
             return null; // variable already exists, cannot create new one
 
-        if (varType < 0)
+        if (type < 0)
             throw new IllegalArgumentException();
 
         int n = 0;
         String baseName;
-        if (varName != null) { // a valid name provided
-            baseName = varName; // try it without a suffix first
+        if (name != null) { // a valid name provided
+            baseName = name; // try it without a suffix first
         }
         else { // derive default name from class type, add "1" as suffix
-            String typeName = element.getOrigin().getType().getName();
+            String typeName = expression.getOrigin().getType().getName();
             int i = typeName.lastIndexOf('$');
             if (i < 0)
                 i = typeName.lastIndexOf('.');
             baseName = Character.toLowerCase(typeName.charAt(i+1))
                        + typeName.substring(i+2);
-            varName = baseName + (++n);
+            name = baseName + (++n);
         }
 
         // find a free name
-        while (namesToVariables.get(varName) != null)
-            varName = baseName + (++n);
+        while (namesToVariables.get(name) != null)
+            name = baseName + (++n);
 
-        Variable var = new Variable(varType,
-                                    element.getOrigin().getType(),
-                                    varName);
-        var.addCodeElement(element,
-                           createVariableAssignment(var, element));
+        Variable var = new Variable(type,
+                                    expression.getOrigin().getType(),
+                                    name);
+        var.addCodeExpression(expression,
+                              createVariableAssignment(var, expression));
 
-        namesToVariables.put(varName, var);
-        elementsToVariables.put(element, var);
+        namesToVariables.put(name, var);
+        expressionsToVariables.put(expression, var);
 
         return var;
     }
 
-    public void addElementUsingVariable(CodeElementVariable var,
-                                        CodeElement element)
+    /** Attaches an expression to variable.
+     */
+    public void addExpressionUsingVariable(CodeVariable var,
+                                           CodeExpression expression)
     {
-        if (element == null)
+        if (expression == null)
             return;
-        // [should we check also element type ??]
+        // [should we check also expression type ??]
 
-        if (var.getAssignment(element) != null)
-            return; // element already attached
+        if (var.getAssignment(expression) != null)
+            return; // expression already attached
 
         // check if this variable can have multiple expressions attached
-        int mask = CodeElementVariable.LOCAL
-                   | CodeElementVariable.EXPLICIT_DECLARATION;
-        if ((var.getType() & mask) == CodeElementVariable.LOCAL
-             && var.getAttachedElements().size() > 0)
+        int mask = CodeVariable.LOCAL
+                   | CodeVariable.EXPLICIT_DECLARATION;
+        if ((var.getType() & mask) == CodeVariable.LOCAL
+             && var.getAttachedExpressions().size() > 0)
         {
             // local variable without a standalone declaration can be used
             // only for one expression
@@ -412,37 +434,52 @@ public class CodeStructure {
                       "Standalone local variable declaration required"); // NOI18N
         }
 
-        ((Variable)var).addCodeElement(element,
-                                       createVariableAssignment(var, element));
+        Variable prevVar = (Variable) expressionsToVariables.get(expression);
+        if (prevVar != null && prevVar != var)
+            prevVar.removeCodeExpression(expression);
 
-        elementsToVariables.put(element, var);
+        ((Variable)var).addCodeExpression(expression,
+                                          createVariableAssignment(var,
+                                                                   expression));
+
+        expressionsToVariables.put(expression, var);
     }
 
-    public void removeElementUsingVariable(CodeElement element) {
-        if (element == null)
+    /** Removes an expression from variable.
+     */
+    public void removeExpressionUsingVariable(CodeExpression expression) {
+        if (expression == null)
             return;
 
-        Variable var = (Variable) elementsToVariables.remove(element);
+        Variable var = (Variable) expressionsToVariables.remove(expression);
         if (var == null)
             return;
 
-        var.removeCodeElement(element);
+        var.removeCodeExpression(expression);
     }
 
-    public CodeElementVariable getVariable(String name) {
+    /** Returns variable of given name.
+     */
+    public CodeVariable getVariable(String name) {
         return (Variable) namesToVariables.get(name);
     }
 
-    public CodeElementVariable getVariable(CodeElement element) {
-        return (Variable) elementsToVariables.get(element);
+    /** Returns variable of an expression.
+     */
+    public CodeVariable getVariable(CodeExpression expression) {
+        return (Variable) expressionsToVariables.get(expression);
     }
 
+    /** Returns Iterator of variables of given criterions.
+     */
     public Iterator getVariablesIterator(int type, int typeMask,
                                          Class declaredType)
     {
         return new VariablesIterator(type, typeMask, declaredType);
     }
 
+    /** Returns all variables in this CodeStructure.
+     */
     public Collection getAllVariables() {
         return Collections.unmodifiableCollection(namesToVariables.values());
     }
@@ -453,32 +490,32 @@ public class CodeStructure {
         return namesToVariables;
     }
 
-    protected Map getElementsToVariables() {
-        return elementsToVariables;
+    protected Map getExpressionsToVariables() {
+        return expressionsToVariables;
     }
 
-    private CodeConnection createVariableAssignment(CodeElementVariable var,
-                                                    CodeElement element)
+    private CodeStatement createVariableAssignment(CodeVariable var,
+                                                   CodeExpression expression)
     {
-        CodeConnection connection =
-            new CodeSupport.AssignVariableConnection(var, element);
+        CodeStatement statement =
+            new CodeSupport.AssignVariableStatement(var, expression);
 
-        // important: assignment connection does not register usage of code
-        // elements (assigned element, parameters) - so it does not hold
-        // the elements in the structure
+        // important: assignment statement does not register usage of code
+        // expressions (assigned expression, parameters) - so it does not hold
+        // the expressions in the structure
 
-        return connection;
+        return statement;
     }
 
     // --------
     // inner classes
 
-    final class Variable implements CodeElementVariable {
+    final class Variable implements CodeVariable {
         private int type;
         private Class declaredType;
         private String name;
-        private Map elementsMap;
-        private CodeConnection declarationConnection;
+        private Map expressionsMap;
+        private CodeStatement declarationStatement;
 
         Variable(int type, Class declaredType, String name) {
             this.type = type;
@@ -498,35 +535,35 @@ public class CodeStructure {
             return declaredType;
         }
 
-        public Collection getAttachedElements() {
-            return elementsMap != null ?
-                     Collections.unmodifiableCollection(elementsMap.values()) :
+        public Collection getAttachedExpressions() {
+            return expressionsMap != null ?
+                     Collections.unmodifiableCollection(expressionsMap.values()) :
                      Collections.EMPTY_LIST;
         }
 
-        public CodeConnection getDeclaration() {
-            if (declarationConnection == null)
-                declarationConnection =
-                    new CodeSupport.DeclareVariableConnection(this);
-            return declarationConnection;
+        public CodeStatement getDeclaration() {
+            if (declarationStatement == null)
+                declarationStatement =
+                    new CodeSupport.DeclareVariableStatement(this);
+            return declarationStatement;
         }
 
-        public CodeConnection getAssignment(CodeElement element) {
-            return elementsMap != null ?
-                   (CodeConnection) elementsMap.get(element) : null;
+        public CodeStatement getAssignment(CodeExpression expression) {
+            return expressionsMap != null ?
+                   (CodeStatement) expressionsMap.get(expression) : null;
         }
 
         // -------
 
-        void addCodeElement(CodeElement element, CodeConnection connection) {
-            if (elementsMap == null)
-                elementsMap = new HashMap();
-            elementsMap.put(element, connection);
+        void addCodeExpression(CodeExpression expression, CodeStatement statement) {
+            if (expressionsMap == null)
+                expressionsMap = new HashMap();
+            expressionsMap.put(expression, statement);
         }
 
-        void removeCodeElement(CodeElement element) {
-            if (elementsMap != null)
-                elementsMap.remove(element);
+        void removeCodeExpression(CodeExpression expression) {
+            if (expressionsMap != null)
+                expressionsMap.remove(expression);
         }
 
         int getDefaultAccessType() {
@@ -541,7 +578,7 @@ public class CodeStructure {
 
         private Iterator subIterator;
 
-        private CodeElementVariable currentVar;
+        private CodeVariable currentVar;
 
         public VariablesIterator(int type, int typeMask, Class declaredType) {
             this.type = type;
@@ -556,7 +593,7 @@ public class CodeStructure {
                 return true;
 
             while (subIterator.hasNext()) {
-                CodeElementVariable var = (CodeElementVariable) subIterator.next();
+                CodeVariable var = (CodeVariable) subIterator.next();
                 if ((type < 0
                         || (type & typeMask) == (var.getType() & typeMask))
                     &&
@@ -575,7 +612,7 @@ public class CodeStructure {
             if (!hasNext())
                 throw new NoSuchElementException();
 
-            CodeElementVariable var = currentVar;
+            CodeVariable var = currentVar;
             currentVar = null;
             return var;
         }

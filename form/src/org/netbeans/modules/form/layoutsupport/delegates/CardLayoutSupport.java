@@ -37,10 +37,10 @@ public class CardLayoutSupport extends AbstractLayoutSupport
         return CardLayout.class;
     }
 
-    public void addComponents(CodeElement[] newCompElements,
+    public void addComponents(CodeExpression[] newCompExpressions,
                               LayoutConstraints[] newConstraints)
     {
-        super.addComponents(newCompElements, newConstraints);
+        super.addComponents(newCompExpressions, newConstraints);
 
         int count = getComponentCount();
         if (currentCard == null && count > 0)
@@ -80,27 +80,26 @@ public class CardLayoutSupport extends AbstractLayoutSupport
 
     // ---------
 
-    protected LayoutConstraints readConstraintsCode(
-                                    CodeElement constrElement,
-                                    CodeConnectionGroup constrCode,
-                                    CodeElement compElement)
+    protected LayoutConstraints readConstraintsCode(CodeExpression constrExp,
+                                                    CodeGroup constrCode,
+                                                    CodeExpression compExp)
     {
         CardConstraints constr = new CardConstraints("card"); // NOI18N
-        FormCodeSupport.readPropertyElement(constrElement,
-                                            constr.getProperties()[0],
-                                            false);
+        FormCodeSupport.readPropertyExpression(constrExp,
+                                               constr.getProperties()[0],
+                                               false);
         return constr;
     }
 
-    protected CodeElement createConstraintsCode(CodeConnectionGroup constrCode,
-                                                LayoutConstraints constr,
-                                                CodeElement compElement,
-                                                int index)
+    protected CodeExpression createConstraintsCode(CodeGroup constrCode,
+                                                   LayoutConstraints constr,
+                                                   CodeExpression compExp,
+                                                   int index)
     {
         if (!(constr instanceof CardConstraints))
             return null; // should not happen
 
-        return getCodeStructure().createElement(
+        return getCodeStructure().createExpression(
                    FormCodeSupport.createOrigin(constr.getProperties()[0]));
     }
 

@@ -74,7 +74,7 @@ public class RADComponent implements FormDesignValue {
 
     private RADComponentNode componentNode;
 
-    private CodeElement componentCodeElement;
+    private CodeExpression componentCodeExpression;
 
 //    private String gotoMethod;
 
@@ -101,7 +101,7 @@ public class RADComponent implements FormDesignValue {
             clearProperties();
 
             if (beanClass != null)
-                createCodeElement();
+                createCodeExpression();
 
             return true;
         }
@@ -123,7 +123,7 @@ public class RADComponent implements FormDesignValue {
         if (this.beanClass == null || this.beanClass != beanClass)
             beanInfo = null;
         this.beanClass = beanClass;
-        createCodeElement();
+        createCodeExpression();
         setBeanInstance(createBeanInstance());
 
         return beanInstance;
@@ -148,7 +148,7 @@ public class RADComponent implements FormDesignValue {
         if (this.beanClass == null || this.beanClass != beanClass)
             beanInfo = null;
         this.beanClass = beanClass;
-        createCodeElement();
+        createCodeExpression();
 
         try {
             setBeanInstance(createBeanInstance());
@@ -173,7 +173,7 @@ public class RADComponent implements FormDesignValue {
         if (beanClass == null || beanClass != beanInstance.getClass())
             beanInfo = null;
         beanClass = beanInstance.getClass();
-        createCodeElement();
+        createCodeExpression();
         setBeanInstance(beanInstance);
 
         RADProperty[] props = getAllBeanProperties();
@@ -224,7 +224,7 @@ public class RADComponent implements FormDesignValue {
     protected void setBeanInstance(Object beanInstance) {
         if (beanClass == null) {
             beanClass = beanInstance.getClass();
-            createCodeElement();
+            createCodeExpression();
         }
         this.beanInstance = beanInstance;
     }
@@ -239,26 +239,27 @@ public class RADComponent implements FormDesignValue {
         this.componentNode = node;
     }
 
-    protected void createCodeElement() {
-        resetCodeElement();
+    protected void createCodeExpression() {
+        resetCodeExpression();
 
         CodeStructure codeStructure = formModel.getCodeStructure();
-        componentCodeElement = codeStructure.createElement(
+        componentCodeExpression = codeStructure.createExpression(
                                    FormCodeSupport.createOrigin(this));
-        codeStructure.registerElement(componentCodeElement);
+        codeStructure.registerExpression(componentCodeExpression);
 
         if (formModel.getTopRADComponent() != this)
-            codeStructure.createVariableForElement(
-                componentCodeElement, CodeElementVariable.FIELD, storedName);
+            codeStructure.createVariableForExpression(componentCodeExpression,
+                                                      CodeVariable.FIELD,
+                                                      storedName);
     }
 
-    void resetCodeElement() {
-        if (componentCodeElement != null) {
-            CodeElementVariable var = componentCodeElement.getVariable();
-            if (var != null && var.getType() != CodeElementVariable.NO_VARIABLE)
+    void resetCodeExpression() {
+        if (componentCodeExpression != null) {
+            CodeVariable var = componentCodeExpression.getVariable();
+            if (var != null && var.getType() != CodeVariable.NO_VARIABLE)
                 storedName = var.getName();
-            CodeStructure.removeElement(componentCodeElement);
-            componentCodeElement = null;
+            CodeStructure.removeExpression(componentCodeExpression);
+            componentCodeExpression = null;
         }
     }
 
@@ -363,8 +364,8 @@ public class RADComponent implements FormDesignValue {
         return getBeanInfo().getBeanDescriptor().getValue("hidden-state") != null; // NOI18N
     }
 
-    public CodeElement getCodeElement() {
-        return componentCodeElement;
+    public CodeExpression getCodeExpression() {
+        return componentCodeExpression;
     }
 
     /** Getter for the Name of the component - usually maps to variable
@@ -372,8 +373,8 @@ public class RADComponent implements FormDesignValue {
      * @return current value of the Name property
      */
     public String getName() {
-        if (componentCodeElement != null) {
-            CodeElementVariable var = componentCodeElement.getVariable();
+        if (componentCodeExpression != null) {
+            CodeVariable var = componentCodeExpression.getVariable();
             return var != null ? var.getName() : null;
         }
         return null;
@@ -385,13 +386,13 @@ public class RADComponent implements FormDesignValue {
      * @param value new name of the component
      */
     public void setName(String name) {
-        if (componentCodeElement == null)
+        if (componentCodeExpression == null)
             return;
-        CodeElementVariable var = componentCodeElement.getVariable();
+        CodeVariable var = componentCodeExpression.getVariable();
         if (var != null && name.equals(var.getName())) //&& var.getType() == 0
             return;
         // [maybe we should distinguish between component name and variable
-        //  name when componentCodeElement.getVariableType() == 0]
+        //  name when componentCodeExpression.getVariableType() == 0]
 
         if (!org.openide.util.Utilities.isJavaIdentifier(name)) {
             IllegalArgumentException iae =
@@ -422,8 +423,10 @@ public class RADComponent implements FormDesignValue {
         }
         else {
             oldName = null;
-            formModel.getCodeStructure().createVariableForElement(
-                componentCodeElement, CodeElementVariable.FIELD, name);
+            formModel.getCodeStructure().createVariableForExpression(
+                                             componentCodeExpression,
+                                             CodeVariable.FIELD,
+                                             name);
         }
 
         if (oldName != null)

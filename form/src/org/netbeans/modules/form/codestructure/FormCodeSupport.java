@@ -24,20 +24,20 @@ import org.netbeans.modules.form.*;
 
 public class FormCodeSupport {
 
-    public static CodeElementOrigin createOrigin(Node.Property property) {
+    public static CodeExpressionOrigin createOrigin(Node.Property property) {
         if (property instanceof FormProperty)
             return new FormPropertyValueOrigin((FormProperty)property);
         else
             return new PropertyValueOrigin(property);
     }
 
-    public static CodeElementOrigin createOrigin(RADComponent component) {
+    public static CodeExpressionOrigin createOrigin(RADComponent component) {
         return new RADComponentOrigin(component);
     }
 
-    public static void readPropertyElement(CodeElement element,
-                                           Node.Property property,
-                                           boolean allowChangeFiring)
+    public static void readPropertyExpression(CodeExpression expression,
+                                              Node.Property property,
+                                              boolean allowChangeFiring)
     {
         FormProperty fProperty = null;
         if (!allowChangeFiring && property instanceof FormProperty) {
@@ -49,33 +49,33 @@ public class FormCodeSupport {
         }
 
         try {
-            property.setValue(element.getOrigin().getValue());
+            property.setValue(expression.getOrigin().getValue());
         }
         catch (Exception ex) { // ignore
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                 ex.printStackTrace();
         }
-        element.setOrigin(createOrigin(property));
+        expression.setOrigin(createOrigin(property));
 
         if (fProperty != null)
             fProperty.setChangeFiring(true);
     }
 
-    public static void readPropertyConnection(CodeConnection connection,
-                                              Node.Property property,
-                                              boolean allowChangeFiring)
+    public static void readPropertyStatement(CodeStatement statement,
+                                             Node.Property property,
+                                             boolean allowChangeFiring)
     {
-        // expecting connection with one element parameter
-        CodeElement[] params = connection.getConnectionParameters();
+        // expecting statement with one expression parameter
+        CodeExpression[] params = statement.getStatementParameters();
         if (params.length != 1)
             throw new IllegalArgumentException();
 
-        readPropertyElement(params[0], property, allowChangeFiring);
+        readPropertyExpression(params[0], property, allowChangeFiring);
     }
 
     // --------
 
-    static final class PropertyValueOrigin implements CodeElementOrigin {
+    static final class PropertyValueOrigin implements CodeExpressionOrigin {
         private Node.Property property;
 
         public PropertyValueOrigin(Node.Property property) {
@@ -86,7 +86,7 @@ public class FormCodeSupport {
             return property.getValueType();
         }
 
-        public CodeElement getParentElement() {
+        public CodeExpression getParentExpression() {
             return null;
         }
 
@@ -99,7 +99,7 @@ public class FormCodeSupport {
             return null;
         }
 
-        public Object getCreatingObject() {
+        public Object getMetaObject() {
             return property;
         }
 
@@ -113,13 +113,13 @@ public class FormCodeSupport {
             return null;
         }
 
-        public CodeElement[] getCreationParameters() {
+        public CodeExpression[] getCreationParameters() {
             return CodeStructure.EMPTY_PARAMS;
         }
     }
 
 
-    static final class FormPropertyValueOrigin implements CodeElementOrigin {
+    static final class FormPropertyValueOrigin implements CodeExpressionOrigin {
         private FormProperty property;
 
         public FormPropertyValueOrigin(FormProperty property) {
@@ -130,7 +130,7 @@ public class FormCodeSupport {
             return property.getValueType();
         }
 
-        public CodeElement getParentElement() {
+        public CodeExpression getParentExpression() {
             return null;
         }
 
@@ -144,7 +144,7 @@ public class FormCodeSupport {
             return null;
         }
 
-        public Object getCreatingObject() {
+        public Object getMetaObject() {
             return property;
         }
 
@@ -152,12 +152,12 @@ public class FormCodeSupport {
             return property.getJavaInitializationString();
         }
 
-        public CodeElement[] getCreationParameters() {
+        public CodeExpression[] getCreationParameters() {
             return CodeStructure.EMPTY_PARAMS;
         }
     }
 
-    static final class RADComponentOrigin implements CodeElementOrigin {
+    static final class RADComponentOrigin implements CodeExpressionOrigin {
         private RADComponent component;
 
         public RADComponentOrigin(RADComponent component) {
@@ -168,11 +168,11 @@ public class FormCodeSupport {
             return component.getBeanClass();
         }
 
-        public CodeElement getParentElement() {
+        public CodeExpression getParentExpression() {
             return null;
         }
 
-        public Object getCreatingObject() {
+        public Object getMetaObject() {
             return component;
         }
 
@@ -180,7 +180,7 @@ public class FormCodeSupport {
             return component.getBeanInstance();
         }
 
-        public CodeElement[] getCreationParameters() {
+        public CodeExpression[] getCreationParameters() {
             return CodeStructure.EMPTY_PARAMS;
         }
 

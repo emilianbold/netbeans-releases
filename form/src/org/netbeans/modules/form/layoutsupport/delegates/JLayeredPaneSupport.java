@@ -71,34 +71,33 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
         }
     }
 
-    protected LayoutConstraints readConstraintsCode(
-                                    CodeElement constrElement,
-                                    CodeConnectionGroup constrCode,
-                                    CodeElement compElement)
+    protected LayoutConstraints readConstraintsCode(CodeExpression constrExp,
+                                                    CodeGroup constrCode,
+                                                    CodeExpression compExp)
     {
         LayeredConstraints constr = new LayeredConstraints(0, 0, 0, -1, -1);
 //        constr.refComponent = getLayoutContext().getPrimaryComponent(index);
 
-        CodeConnection[] connections = CodeStructure.getConnections(
-                                           compElement, getSetBoundsMethod());
-        if (connections.length > 0) {
-            CodeConnection boundsConnection = connections[connections.length-1];
-            constr.readPropertyElements(
-                       boundsConnection.getConnectionParameters(), 1);
-            constrCode.addConnection(boundsConnection);
+        CodeStatement[] statements = CodeStructure.getStatements(
+                                         compExp, getSetBoundsMethod());
+        if (statements.length > 0) {
+            CodeStatement boundsStatement = statements[statements.length-1];
+            constr.readPropertyExpressions(
+                       boundsStatement.getStatementParameters(), 1);
+            constrCode.addStatement(boundsStatement);
         }
 
-        FormCodeSupport.readPropertyElement(constrElement,
-                                            constr.getProperties()[0],
-                                            false);
+        FormCodeSupport.readPropertyExpression(constrExp,
+                                               constr.getProperties()[0],
+                                               false);
 
         return constr;
     }
 
-    protected CodeElement createConstraintsCode(CodeConnectionGroup constrCode,
-                                                LayoutConstraints constr,
-                                                CodeElement compElement,
-                                                int index)
+    protected CodeExpression createConstraintsCode(CodeGroup constrCode,
+                                                   LayoutConstraints constr,
+                                                   CodeExpression compExp,
+                                                   int index)
     {
         if (!(constr instanceof LayeredConstraints))
             return null;
@@ -108,13 +107,13 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
 
         CodeStructure codeStructure = getCodeStructure();
 
-        CodeConnection boundsConnection = CodeStructure.createConnection(
-                           compElement,
-                           getSetBoundsMethod(),
-                           layerConstr.createPropertyElements(codeStructure, 1));
-        constrCode.addConnection(boundsConnection);
+        CodeStatement boundsStatement = CodeStructure.createStatement(
+                          compExp,
+                          getSetBoundsMethod(),
+                          layerConstr.createPropertyExpressions(codeStructure, 1));
+        constrCode.addStatement(boundsStatement);
 
-        return codeStructure.createElement(
+        return codeStructure.createExpression(
                  FormCodeSupport.createOrigin(layerConstr.getProperties()[0]));
     }
 

@@ -130,27 +130,28 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
     }
 
     // we must override this because BoxLayout is not a bean
-    protected void readInitLayoutCode(CodeElement layoutElement,
-                                      CodeConnectionGroup layoutCode)
+    protected void readInitLayoutCode(CodeExpression layoutExp,
+                                      CodeGroup layoutCode)
     {
-        CodeElement[] params = layoutElement.getOrigin().getCreationParameters();
+        CodeExpression[] params = layoutExp.getOrigin().getCreationParameters();
         if (params.length == 2) {
-            FormCodeSupport.readPropertyElement(
+            FormCodeSupport.readPropertyExpression(
                                 params[1], getProperties()[0], false);
             updateLayoutInstance();
         }
     }
 
     // we must override this because BoxLayout is not a bean
-    protected CodeElement createInitLayoutCode(CodeConnectionGroup layoutCode) {
+    protected CodeExpression createInitLayoutCode(CodeGroup layoutCode) {
         CodeStructure codeStructure = getCodeStructure();
 
-        CodeElement[] params = new CodeElement[2];
-        params[0] = getLayoutContext().getContainerDelegateCodeElement();
-        params[1] = codeStructure.createElement(
+        CodeExpression[] params = new CodeExpression[2];
+        params[0] = getLayoutContext().getContainerDelegateCodeExpression();
+        params[1] = codeStructure.createExpression(
                         FormCodeSupport.createOrigin(getProperties()[0]));
 
-        return codeStructure.createElement(getBoxLayoutConstructor(), params);
+        return codeStructure.createExpression(getBoxLayoutConstructor(),
+                                              params);
     }
 
     protected void layoutChanged() {

@@ -87,48 +87,48 @@ public class NullLayoutSupport extends AbsoluteLayoutSupport {
 
     // ---------
 
-    protected CodeElement createInitLayoutCode(CodeConnectionGroup layoutCode) {
-        return getCodeStructure().createNullElement(LayoutManager.class);
+    protected CodeExpression createInitLayoutCode(CodeGroup layoutCode) {
+        return getCodeStructure().createNullExpression(LayoutManager.class);
     }
 
-    protected CodeElement readComponentCode(CodeConnection connection,
-                                            CodeConnectionGroup componentCode)
+    protected CodeExpression readComponentCode(CodeStatement statement,
+                                               CodeGroup componentCode)
     {
-        if (getSimpleAddMethod().equals(connection.getConnectingObject())) {
-            CodeElement compElement = connection.getConnectionParameters()[0];
-            componentCode.addConnection(connection);
+        if (getSimpleAddMethod().equals(statement.getMetaObject())) {
+            CodeExpression compExp = statement.getStatementParameters()[0];
+            componentCode.addStatement(statement);
 
             AbsoluteLayoutConstraints constr =
                 new AbsoluteLayoutConstraints(0, 0, -1, -1);
             constr.nullMode = true;
 //            constr.refComponent = getLayoutContext().getPrimaryComponent(index);
 
-            CodeConnection[] connections = CodeStructure.getConnections(
-                                           compElement, getSetBoundsMethod());
-            if (connections.length > 0) {
-                CodeConnection boundsConnection =
-                    connections[connections.length-1];
-                constr.readPropertyElements(
-                    boundsConnection.getConnectionParameters(), 0);
-                componentCode.addConnection(boundsConnection);
+            CodeStatement[] statements = CodeStructure.getStatements(
+                                           compExp, getSetBoundsMethod());
+            if (statements.length > 0) {
+                CodeStatement boundsStatement =
+                    statements[statements.length-1];
+                constr.readPropertyExpressions(
+                    boundsStatement.getStatementParameters(), 0);
+                componentCode.addStatement(boundsStatement);
             }
             getConstraintsList().add(constr);
 
-            return compElement;
+            return compExp;
         }
         return null;
     }
 
-    protected void createComponentCode(CodeConnectionGroup componentCode,
-                                       CodeElement compElement,
+    protected void createComponentCode(CodeGroup componentCode,
+                                       CodeExpression compExp,
                                        int index)
     {
         // create code for "add" method
-        componentCode.addConnection(
-                CodeStructure.createConnection(
-                        getActiveContainerCodeElement(),
+        componentCode.addStatement(
+                CodeStructure.createStatement(
+                        getActiveContainerCodeExpression(),
                         getSimpleAddMethod(),
-                        new CodeElement[] { compElement }));
+                        new CodeExpression[] { compExp }));
 
         // create code for "setBounds" method
         LayoutConstraints constr = getConstraints(index);
@@ -138,11 +138,11 @@ public class NullLayoutSupport extends AbsoluteLayoutSupport {
             absConstr.nullMode = true;
             absConstr.refComponent = getLayoutContext().getPrimaryComponent(index);
 
-            componentCode.addConnection(
-                CodeStructure.createConnection(
-                    compElement,
+            componentCode.addStatement(
+                CodeStructure.createStatement(
+                    compExp,
                     getSetBoundsMethod(),
-                    absConstr.createPropertyElements(getCodeStructure(), 0)));
+                    absConstr.createPropertyExpressions(getCodeStructure(), 0)));
         }
     }
 

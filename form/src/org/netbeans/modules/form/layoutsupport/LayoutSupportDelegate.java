@@ -41,13 +41,13 @@ public interface LayoutSupportDelegate {
     Class getCustomizerClass();
 
     // code meta data
-    CodeConnectionGroup getLayoutCode();
-    CodeConnectionGroup getComponentCode(int index);
-    CodeElement getComponentCodeElement(int index);
+    CodeGroup getLayoutCode();
+    CodeGroup getComponentCode(int index);
+    CodeExpression getComponentCodeExpression(int index);
 
     // components adding/removing
     int getComponentCount();
-    void addComponents(CodeElement[] compElements,
+    void addComponents(CodeExpression[] compExpressions,
                        LayoutConstraints[] constraints);
     void removeComponent(int index);
     void removeAll();
@@ -105,5 +105,5 @@ public interface LayoutSupportDelegate {
 
     // copying
     LayoutSupportDelegate cloneLayout(LayoutSupportContext targetContext,
-                                      CodeElement[] targetComponents);
+                                      CodeExpression[] targetComponents);
 }
