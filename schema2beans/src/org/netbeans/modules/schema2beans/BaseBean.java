@@ -193,10 +193,10 @@ public abstract class BaseBean implements Cloneable, Bean {
     */
     
     protected void init(Vector comps, Version version) {
-        this.propByName = new HashMap();
-        //this.propByDtdName = new HashMap();
-        this.propByOrder = new HashMap();
-        this.comparators = new ArrayList();
+        if (version.getMajor() < 4) {
+            initPropertyTables(13);
+        }
+        this.comparators = new ArrayList(2);
         //this.version = version;
         this.isRoot = false;
         this.propertyOrder = 0;
@@ -213,13 +213,21 @@ public abstract class BaseBean implements Cloneable, Bean {
         }
     }
 
-    /**
-     * Call this to save a little memory if properties are actually
-     * going to be stored elsewhere.
-     */
-    protected void propertiesStoredElsewhere() {
-        propByName = null;
-        propByOrder = null;
+    protected void initPropertyTables(int propertyCount) {
+        //
+        // In order to avoid a rehash, the initial capacity of a HashMap
+        // should be > the number of expected elements / load factor.
+        // If we make the load factor=1, then the initial capacity could be
+        // just the expected elements + 1.  However, if 2 elements map to
+        // the same bucket, then they start getting strung together in
+        // a list, and that slows things down (you lose the O(1) performance).
+        // So, double the expected size to make it less likely that 2
+        // elements will map to the same bucket.
+        //
+        int hashTableSize = propertyCount * 2;
+        this.propByName = new HashMap(hashTableSize, 1.0f);
+        this.propByOrder = new HashMap(hashTableSize, 1.0f);
+        //this.propByDtdName = new HashMap(hashTableSize, 1.0f);
     }
     
     //
