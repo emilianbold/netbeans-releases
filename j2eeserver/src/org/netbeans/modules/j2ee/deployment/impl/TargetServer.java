@@ -41,9 +41,13 @@ import javax.enterprise.deploy.model.DeployableObject;
  * Encapsulates a set of ServerTarget(s), provides a wrapper for deployment
  * help.  This is a throw away object, that get created and used within
  * scope of a deployment execution only.
- * The usage is for executor to call procesLastTargetModules(TargetModule[]) to
- * build a list of TargetModuleID's known by the IDE to have been deployed and
- * their oldest timestamp.
+ *
+ * Typical user are ServerExecutor and Debugger code, with the following general sequence:
+ * 
+ *      TargetServer ts = new TargetServer(deploymentTarget);
+ *      ts.startTargets(deployProgressUI);
+ *      TargetModule[] tms = ts.deploy(deployProgressUI);
+ *      deploymentTarget.setTargetModules(tms);
  */
 public class TargetServer {
     
@@ -419,7 +423,7 @@ public class TargetServer {
                 handler = new DistributeEventHandler(ui, po);
             
             po.addProgressListener(handler);
-            sleep(isIncremental ? DISTRIBUTE_TIMEOUT : DISTRIBUTE_TIMEOUT);
+            sleep(isIncremental ? INCREMENTAL_TIMEOUT : DISTRIBUTE_TIMEOUT);
             po.removeProgressListener(handler);
         }
     }
