@@ -346,14 +346,10 @@ class OpenFile extends Object {
   private static void askForMountPoint (File f, int pkgLevel, final File[] dirToMount, final String[] mountPackage) {
     final Vector dirs = new Vector (); // list of mountable dir names; Vector<File>
     final Vector pkgs = new Vector (); // list of resulting package names; Vector<String>
-    Vector pkgdisplays = new Vector (); // list of displayable package entries; Vector<String>
     String pkg = ""; // NOI18N
     for (File dir = f.getParentFile (); dir != null; dir = dir.getParentFile ()) {
       dirs.add (dir);
       pkgs.add (pkg);
-      pkgdisplays.add (pkg.equals ("") ? // NOI18N
-                       SettingsBeanInfo.getString ("LBL_packageWillBeDefault") :
-                       SettingsBeanInfo.getString ("LBL_packageWillBe", pkg));
       if (! pkg.equals ("")) pkg = "." + pkg; // NOI18N
       pkg = dir.getName () + pkg;
     }
@@ -377,6 +373,9 @@ class OpenFile extends Object {
         dirToMount[0] = (File) dirs.elementAt (pkgLevel);
         mountPackage[0] = guessed;
         return;
+      } else if (! result.equals (noOption)) {
+        // Dialog closed--just stop everything.
+        return;
       }
     }
     
@@ -393,10 +392,36 @@ class OpenFile extends Object {
     textArea.setWrapStyleWord (true);
     panel.add (textArea, BorderLayout.NORTH);
     
-    final JList list = new JList (pkgdisplays);
+    final JList list = new JList (pkgs);
     list.setVisibleRowCount (5);
     list.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
     if (pkgLevel != -1) list.setSelectedIndex (pkgLevel);
+    list.setCellRenderer (new ListCellRenderer () {
+      private Icon folderIcon = new ImageIcon (OpenFile.class.getResource ("folder.gif")); // NOI18N
+      private Icon rootFolderIcon = new ImageIcon (OpenFile.class.getResource ("rootFolder.gif")); // NOI18N
+      public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        String pkg2 = (String) value;
+        JLabel lab = new JLabel ();
+        if (pkg2.equals ("")) { // NOI18N
+          lab.setText (SettingsBeanInfo.getString ("LBL_packageWillBeDefault"));
+          lab.setIcon (rootFolderIcon);
+        } else {
+          lab.setText (SettingsBeanInfo.getString ("LBL_packageWillBe", pkg2));
+          lab.setIcon (folderIcon);
+        }
+        if (isSelected) {
+          lab.setBackground (list.getSelectionBackground ());
+          lab.setForeground (list.getSelectionForeground ());
+        } else {
+          lab.setBackground (list.getBackground ());
+          lab.setForeground (list.getForeground ());
+        }
+        lab.setEnabled (list.isEnabled ());
+        lab.setFont (list.getFont ());
+        lab.setOpaque (true);
+        return lab;
+      }
+     });
     panel.add (new JScrollPane (list), BorderLayout.CENTER);
     
     // Name of mount point:
@@ -459,6 +484,9 @@ class OpenFile extends Object {
 
 /*
  * Log
+ *  32   Gandalf   1.31        1/15/00  Jesse Glick     Somewhat nicer 
+ *       select-mount-point dialog (icons etc.). Also can close quickie dialog 
+ *       to cancel whole open.
  *  31   Gandalf   1.30        1/15/00  Jesse Glick     #5271 - opening multiple
  *       files at once which share a new mount point.
  *  30   Gandalf   1.29        1/13/00  Jesse Glick     NOI18N
