@@ -316,16 +316,9 @@ class AntGrammar implements GrammarQuery {
         return EmptyEnumeration.EMPTY;
     }
     
-    /**
-     * @semantics Navigates through read-only Node tree to determine context and provide right results.
-     * @postconditions Let ctx unchanged
-     * @time Performs fast up to 300 ms.
-     * @stereotype query
-     * @input ctx represents virtual Node that has to be replaced (parent can be either Attr or Element), its own attributes does not name sense, it can be used just as the navigation start point.
-     * @return list of <code>CompletionResult</code>s (TEXT_NODEs) that can be queried on name, and attributes.
-     *        Every list member represents one possibility.
-     */
     public Enumeration queryValues(HintContext ctx) {
+        // #38341: ctx is apparently instanceof Attr or Text
+        // (actually never instanceof Text, just TEXT_NODE: #38339)
         Attr ownerAttr;
         if (canCompleteProperty(ctx.getCurrentPrefix())) {
             return completeProperties(ctx);
@@ -443,8 +436,8 @@ class AntGrammar implements GrammarQuery {
             propPrefix = content.substring(idx + 2);
         }
         String[] props = likelyPropertyNames(ctx);
-        // XXX completion on text works differently from attrs:
-        // the context should not be returned
+        // completion on text works differently from attrs:
+        // the context should not be returned (#38342)
         boolean shortHeader = ctx.getNodeType() == Node.TEXT_NODE;
         QueueEnumeration list = new QueueEnumeration();
         for (int i = 0; i < props.length; i++) {
@@ -504,10 +497,10 @@ class AntGrammar implements GrammarQuery {
     };
     
     private static String[] likelyPropertyNames(HintContext ctx) {
-        // XXX ctx.getOwnerDocument returns some bogus unusable empty thing
+        // #38343: ctx.getOwnerDocument returns some bogus unusable empty thing
         // so find the root element manually
         Element parent;
-        // XXX docs for queryValues says Attr or Element, but really Attr or Text
+        // #38341: docs for queryValues says Attr or Element, but really Attr or Text
         // (and CDataSection never seems to permit completion at all...)
         if (ctx.getNodeType() == Node.ATTRIBUTE_NODE) {
             parent = ((Attr)ctx).getOwnerElement();
@@ -526,7 +519,7 @@ class AntGrammar implements GrammarQuery {
         while (parent.getParentNode() != null && parent.getParentNode().getNodeType() == Node.ELEMENT_NODE) {
             parent = (Element)parent.getParentNode();
         }
-        // XXX getElementsByTagName just throws an exception, you can't use it...
+        // #38343: getElementsByTagName just throws an exception, you can't use it...
         Set/*<String>*/ choices = new TreeSet(Arrays.asList(STOCK_PROPERTY_NAMES));
         visitForLikelyPropertyNames(parent, choices);
         Iterator it = choices.iterator();
@@ -560,7 +553,7 @@ class AntGrammar implements GrammarQuery {
                 String tagname = el.getTagName();
                 if (tagname.equals("property")) {
                     String propname = el.getAttribute("name");
-                    // XXX it seems that the Element impl is broken and can return null from getAttribute
+                    // #38343: Element impl is broken and can return null from getAttribute
                     if (propname != null && propname.length() > 0) {
                         choices.add(propname);
                     }
@@ -639,54 +632,7 @@ class AntGrammar implements GrammarQuery {
     }
     
 
-    /** For debug purposes only. */
-    public String toString() {
-        return "Ant grammar";                                                   // NOI18N
-    }
-
-    /**
-     * Lazy evaluated enumeration of previous element siblings.
-     */
-    private static class PreviousEnumeration implements Enumeration {
-        
-        private final Node parent;
-        private final Node last;
-        private Node next;
-        
-        PreviousEnumeration(Node parent, Node last) {
-            this.parent = parent;
-            this.last = last;
-            
-            // init next
-            
-            next = parent.getFirstChild();
-            while (next != null) {                
-                if (next.getNodeType() == Node.ELEMENT_NODE) break;
-                next = next.getNextSibling();
-            }            
-            if (next == last) next = null;
-        }
-        
-        public boolean hasMoreElements() {
-            return next != null;
-        }
-
-        public Object nextElement() {
-            if (next == null) throw new NoSuchElementException();
-            try {
-                return next;
-            } finally {
-                while (next != null) {
-                    next = next.getNextSibling();
-                    if (next.getNodeType() == Node.ELEMENT_NODE) break;
-                }
-                if (next == last) next = null;
-            }
-        }
-    }
-    
     // Result classes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
     
     private static abstract class AbstractResultNode extends AbstractNode implements GrammarResult {
         
@@ -694,26 +640,12 @@ class AntGrammar implements GrammarQuery {
             return null;
         }
         
-        /**
-         * @output provide additional information simplifiing decision
-         */
         public String getDescription() {
-            return getNodeName() + " desc";
+            return null;
         }
         
-        /**
-         * @output text representing name of suitable entity
-         * //??? is it really needed
-         */
-        public String getText() {
-            return getNodeName();
-        }
-        
-        /**
-         * @output name that is presented to user
-         */
         public String getDisplayName() {
-            return getNodeName() + " disp";
+            return null;
         }
         
     }
@@ -785,24 +717,6 @@ class AntGrammar implements GrammarQuery {
         
     }
 
-    private static class MyNotation extends AbstractResultNode implements Notation {
-        
-        private String name;
-        
-        MyNotation(String name) {
-            this.name = name;
-        }
-        
-        public short getNodeType() {
-            return Node.NOTATION_NODE;
-        }
-        
-        public String getNodeName() {
-            return name;
-        }
-                        
-    }
-    
     private static class MyText extends AbstractResultNode implements Text {
         
         private String data;
