@@ -80,14 +80,7 @@ public class TreeModelNode extends AbstractNode {
         ColumnModel[] columns = model.getColumns ();
         int i, k = columns.length;
         for (i = 0; i < k; i++)
-            try {
-                boolean isRO = model.isReadOnly (object, columns [i].getID ());
-                ps.put (new MyProperty (
-                    columns [i],
-                    isRO
-                ));
-            } catch (UnknownTypeException e) {
-            }
+            ps.put (new MyProperty (columns [i]));
         sheet.put (ps);
         setSheet (sheet);
     }
@@ -136,6 +129,8 @@ public class TreeModelNode extends AbstractNode {
             return model.getShortDescription (object);
         } catch (UnknownTypeException e) {
             e.printStackTrace ();
+            System.out.println (model);
+            System.out.println ();
             return null;
         } catch (ComputingException e) {
             return "Computing";
@@ -159,6 +154,8 @@ public class TreeModelNode extends AbstractNode {
                 setIconBase ("org/openide/resources/actions/empty");
         } catch (UnknownTypeException e) {
             e.printStackTrace ();
+            System.out.println (model);
+            System.out.println ();
         } catch (ComputingException e) {
             setIconBase ("org/openide/resources/actions/empty");
         }
@@ -173,7 +170,9 @@ public class TreeModelNode extends AbstractNode {
         try {
             return model.getActions (object);
         } catch (UnknownTypeException e) {
-            e.printStackTrace();
+//            e.printStackTrace ();
+//            System.out.println (model);
+//            System.out.println ();
             return new Action [0];
         }
     }
@@ -184,7 +183,9 @@ public class TreeModelNode extends AbstractNode {
                 try {
                     model.performDefaultAction (object);
                 } catch (UnknownTypeException ex) {
-                    ex.printStackTrace();
+                    ex.printStackTrace ();
+                    System.out.println (model);
+                    System.out.println ();
                 }
             }
         };
@@ -215,7 +216,9 @@ public class TreeModelNode extends AbstractNode {
             }
             return false;
         } catch (UnknownTypeException e) {
-            e.printStackTrace();
+//            e.printStackTrace ();
+//            System.out.println (model);
+//            System.out.println ();
             return false;
         }
     }
@@ -243,7 +246,9 @@ public class TreeModelNode extends AbstractNode {
                 }
             }
         } catch (UnknownTypeException e) {
-            e.printStackTrace();
+            e.printStackTrace ();
+            System.out.println (model);
+            System.out.println ();
         }
     }
     
@@ -309,6 +314,8 @@ public class TreeModelNode extends AbstractNode {
             } catch (UnknownTypeException e) {
                 setKeys (new Object [0]);
                 e.printStackTrace ();
+                System.out.println (model);
+                System.out.println ();
             } catch (NoInformationException e) {
                 setKeys (new Object[] {e});
             } catch (ComputingException e) {
@@ -348,13 +355,12 @@ public class TreeModelNode extends AbstractNode {
     
     private class MyProperty extends PropertySupport {
         
-        private String id;
+        private String      id;
         private ColumnModel columnModel;
         
         
         MyProperty (
-            ColumnModel columnModel,
-            boolean isRO
+            ColumnModel columnModel
         ) {
             super (
                 columnModel.getID (),
@@ -362,12 +368,28 @@ public class TreeModelNode extends AbstractNode {
                 columnModel.getDisplayName (),
                 columnModel.getShortDescription (), 
                 true,
-                !isRO
+                true
             );
             this.columnModel = columnModel;
             id = columnModel.getID ();
         }
         
+
+        /* Can write the value of the property.
+        * Returns the value passed into constructor.
+        * @return <CODE>true</CODE> if the read of the value is supported
+        */
+        public boolean canWrite () {
+            try {
+                return !model.isReadOnly (object, columnModel.getID ());
+            } catch (UnknownTypeException e) {
+                e.printStackTrace ();
+                System.out.println("  Column id:" + columnModel.getID ());
+                System.out.println (model);
+                System.out.println ();
+                return false;
+            }
+        }
         
         public Object getValue () {
             try {
@@ -375,6 +397,9 @@ public class TreeModelNode extends AbstractNode {
             } catch (ComputingException e) {
             } catch (UnknownTypeException e) {
                 e.printStackTrace ();
+                System.out.println("  Column id:" + columnModel.getID ());
+                System.out.println (model);
+                System.out.println ();
             }
             return null;
         }
@@ -386,6 +411,9 @@ public class TreeModelNode extends AbstractNode {
                 TreeModelNode.this.firePropertyChange (null, null, null);
             } catch (UnknownTypeException e) {
                 e.printStackTrace ();
+                System.out.println("  Column id:" + columnModel.getID ());
+                System.out.println (model);
+                System.out.println ();
             }
         }
         
