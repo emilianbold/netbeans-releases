@@ -95,6 +95,20 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
             });
         }
     }
+
+    /** Opens the specific View
+     */
+    public void openView(final int index) {
+        if (java.awt.EventQueue.isDispatchThread()) {
+            openInAWT(index);
+        } else {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    openInAWT(index);
+                }
+            });
+        }
+    }
     
     /** Overrides superclass method
      */

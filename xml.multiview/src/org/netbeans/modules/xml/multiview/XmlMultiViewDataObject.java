@@ -97,7 +97,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         return editor;
     }
     
-    XmlMultiViewEditorSupport getEditorSupport() {
+    public XmlMultiViewEditorSupport getEditorSupport() {
         return (XmlMultiViewEditorSupport)getCookie(XmlMultiViewEditorSupport.class);
     }
 
@@ -394,5 +394,12 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     
     public org.netbeans.core.api.multiview.MultiViewPerspective getSelectedPerspective() {
         return getEditorSupport().getSelectedPerspective();
+    }
+    
+    /** Enable to focus specific object in Multiview Editor
+     *  The default implementation opens the XML View.
+     */
+    public void showElement(Object element) {
+        getEditorSupport().edit();
     }
 }
