@@ -179,7 +179,7 @@
       <tocitem text="Code Formats for Internationalized Strings" target="internation.replformat" />
       <tocitem text="Adding Arguments for Message Formats" target="internation.addparams" />
       <tocitem text="Configuring Internationalization Settings" target="internation.settings" />
-      <tocitem text="Running Java Sources in a Specific Locale" target="run.locale" />
+      <tocitem text="Running Java Sources in a Specific Locale" target="tbd" />
     </tocitem>
     <tocitem text="Sharing Source Editor Settings" target="editing.xmlsettings"/>
     <tocitem text="Configuring the Source Editor" >

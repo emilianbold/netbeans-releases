@@ -104,7 +104,7 @@
 <mapID target="comp_process" url="compile/comp_process.html" />
 <mapID target="comp_quickref" url="compile/comp_quickref.html" />
 <mapID target="comp_libraries" url="compile/comp_libraries.html" />
-<mapID target="output.window" url="run/output_window.html" />
+<mapID target="output.window" url="pending.html" />
 
 <mapID target="run_about" url="run/run_about.html" />
 <mapID target="run_app" url="run/run_app.html" />
@@ -536,84 +536,17 @@
 
 <!-- Ant CSH -->
 <!-- Add task dialog box -->
-<mapID target="org.apache.tools.ant.module.custom-tasks" url="ant/ant-docs.html" />
-<mapID target="org.apache.tools.ant.module.adv-comp-exec" url="ant/comp-project.html" />
-<mapID target="org.apache.tools.ant.module.settings" url="ant/settings.html" />
+<mapID target="org.apache.tools.ant.module.custom-tasks" url="ant/ant_docs.html" />
+<mapID target="org.apache.tools.ant.module.settings" url="ant/ant_settings.html" />
 <!-- add task dialog box -->
-<mapID target="org.apache.tools.ant.module.node-manip" url="ant/add-task.html" />
-<mapID target="org.netbeans.beaninfo.editors.PropertiesCustomEditor" url="ant/settings.html" />
+<mapID target="org.apache.tools.ant.module.node-manip" url="pending.html" />
+<mapID target="org.netbeans.beaninfo.editors.PropertiesCustomEditor" url="ant/ant_settings.html" />
 
-<!--note: topics no longer
-<mapID target="setupwizard.idesettings" url="configure/setup_1.html" />
-<mapID target="setupwizard.moduleselection" url="configure/setup_2.html" />
-<mapID target="setupwizard.autoupdate" url="configure/setup_3.html" />
--->
 <mapID target="org.netbeans.core.windows.MainWindow" url="pending.html" />
 
 <mapID target="org.netbeans.core.services.Browsers" url="webbrowser/options.html" />
 <mapID target="org.netbeans.modules.extbrowser.ExtWebBrowser" url="webbrowser/options.html" />
 <mapID target="org.openide.awt.SwingBrowser" url="webbrowser/swingbrowser.html" />
-
-<mapID target="NetbeansDebuggerSessionNode" url="debug/environment/sessions_view.html" />
-<mapID target="NetbeansDebuggerBreakpointsRootNode" url="debug/environment/breakpoints_view.html" />
-<mapID target="NetbeansDebuggerCallStackRootNode" url="debug/environment/callstack_view.html" />
-<mapID target="NetbeansDebuggerThreadsRootNode" url="debug/environment/threads_view.html" />
-<mapID target="NetbeansDebuggerVariablesRootNode" url="debug/environment/variables_view.html" />
-<mapID target="NetbeansDebuggerWatchesRootNode" url="debug/environment/watches_view.html" />
-<mapID target="NetbeansDebuggerClassesRootNode" url="debug/environment/classes_view.html" />
-
-<mapID target="NetbeansDebuggerBreakpointNode" url="debug/environment/breakpoints_view.html" />
-
-<mapID target="NetbeansDebuggerSessionThreadNode" url="debug/environment/threads_view.html" />
-<mapID target="NetbeansDebuggerThreadGroupNode" url="debug/environment/threads_view.html" />
-<mapID target="NetbeansDebuggerThreadNode" url="debug/environment/threads_view.html" />
-
-<mapID target="NetbeansDebuggerCallStackLineNode" url="debug/environment/callstack_view.html" />
-<mapID target="NetbeansDebuggerWatchNode" url="debug/environment/watches_view.html" />
-<mapID target="NetbeansDebuggerVariableNode" url="debug/environment/variables_view.html" />
-
-<mapID target="NetbeansDebuggerPackageNode" url="debug/environment/classes_view.html" />
-<mapID target="NetbeansDebuggerClassNode" url="debug/environment/classes_view.html" />
-<mapID target="NetbeansDebuggerFieldNode" url="debug/environment/classes_view.html" />
-<mapID target="NetbeansDebuggerConstructorNode" url="debug/environment/classes_view.html" />
-<mapID target="NetbeansDebuggerMethodsNode" url="debug/environment/classes_view.html" />
-
-<mapID target="NetbeansDebuggerOwnedMonitorsNode " url="debug/environment/threads_view.html" />
-<mapID target="NetbeansDebuggerMonitorNode" url="debug/environment/threads_view.html" />
-<mapID target="NetbeansDebuggerCallStackNode" url="debug/environment/threads_view.html" />
-<mapID target="NetbeansDebuggerLocalsRootNode" url="debug/environment/threads_view.html" />
-<mapID target="debug.add.watch" url="debug/watches/watch_window.html" />
-
-<mapID target="NetbeansDebuggerAllInOneRootNode" url="debug/environment/allinone_view.html" />
-
-<mapID target="NetbeansDebuggerWatchesPropertiesSheet" url="debug/properties/watches_properties.html" />
-<mapID target="NetbeansDebuggerLocalsPropertiesSheet" url="debug/properties/locals_properties.html" />
-<mapID target="NetbeansDebuggerBreakpointsPropertiesSheet" url="pending.html" />
-<mapID target="NetbeansDebuggerBreakpointMethodJPDA" url="debug/properties/brkpt_method.html" />
-<mapID target="NetbeansDebuggerBreakpointThreadJPDA" url="debug/properties/brkpt_thread.html" />
-<mapID target="NetbeansDebuggerBreakpointFieldJPDA" url="debug/properties/brkpt_variable.html" />
-<mapID target="NetbeansDebuggerBreakpointClassJPDA" url="debug/properties/brkpt_class.html" />
-<mapID target="NetbeansDebuggerBreakpointExceptionJPDA" url="debug/properties/brkpt_exception.html" />
-<mapID target="NetbeansDebuggerBreakpointLineJPDA" url="debug/properties/brkpt_line.html" />
-
-<mapID target="NetbeansDebuggerSessionsPropertiesSheet" url="debug/properties/session_properties.html" />
-<mapID target="NetbeansDebuggerCallStackPropertiesSheet" url="debug/properties/callstack_properties.html" />
-<mapID target="NetbeansDebuggerThreadsPropertiesSheet" url="debug/properties/threads_properties.html" />
-<mapID target="NetbeansDebuggerNodePropertiesSheet" url="debug/properties/debug_node_properties.html" />
-<mapID target="NetbeansDebuggerClassesPropertiesSheet" url="debug/properties/classes_properties.html" />
-
-<mapID target="NetbeansDebuggerFieldPropertiesSheet" url="debug/properties/classes_field_properties.html" />
-<mapID target="NetbeansDebuggerConstructorPropertiesSheet" url="debug/properties/classes_cons_properties.html" />
-<mapID target="NetbeansDebuggerMethodPropertiesSheet" url="debug/properties/classes_method_properties.html" />
-
-<mapID target="NetbeansDebuggerJPDAPopOldFrame" url="debug/fix/old_stack_call.html" />
-
-<mapID target="debug.add.breakpoint.java.line" url="debug/breakpoint/breakpoint_line.html" />
-<mapID target="debug.add.breakpoint.java.method" url="debug/breakpoint/breakpoint_method.html" />
-<mapID target="debug.add.breakpoint.java.field" url="debug/breakpoint/breakpoint_variable.html" />
-<mapID target="debug.add.breakpoint.java.class" url="debug/breakpoint/breakpoint_class.html" />
-<mapID target="debug.add.breakpoint.java.exception" url="debug/breakpoint/breakpoint_exception.html" />
-<mapID target="debug.add.breakpoint.java.thread" url="debug/breakpoint/breakpoint_thread.html" />
 
 <mapID target="org.netbeans.modules.httpserver.HttpServerNode_properties" url="webbrowser/httpserver_properties.html" />
 
@@ -640,12 +573,12 @@
   <mapID target="org.openide.actions.GotoAction" url="pending.html" />
   <mapID target="org.openide.actions.GoToCursorAction" url="pending.html" />
   <mapID target="org.openide.actions.InstantiateAction" url="pending.html" />
-  <mapID target="org.openide.actions.NewTemplateAction" url="objects/objects_new.html" />
-  <mapID target="org.openide.actions.NewTemplateAction$From" url="objects/objects_new.html" />
+  <mapID target="org.openide.actions.NewTemplateAction" url="pending.html" />
+  <mapID target="org.openide.actions.NewTemplateAction$From" url="pending.html" />
   <mapID target="org.openide.actions.PasteAction" url="pending.html" />
   <mapID target="org.openide.actions.PropertiesAction" url="pending.html" />
-  <mapID target="org.openide.actions.SaveAction" url="objects/objects_saving.html" />
-  <mapID target="org.openide.actions.SaveAllAction" url="objects/objects_saving.html" />
+  <mapID target="org.openide.actions.SaveAction" url="pending.html" />
+  <mapID target="org.openide.actions.SaveAllAction" url="pending.html" />
   <mapID target="org.openide.actions.SaveAsTemplateAction" url="pending.html" />
   <mapID target="org.openide.actions.StepOutAction" url="pending.html" />
   <mapID target="org.openide.actions.ToggleBreakpointAction" url="pending.html" />
@@ -660,9 +593,9 @@
     <mapID target="org.netbeans.core.execution.Install.pending" url="misc-general/waiting.html" />
     
   <mapID target="org.openide.explorer.propertysheet.SetDefaultValueAction" url="pending.html" />
-  <mapID target="org.openide.filesystems.RefreshAction" url="objects/objects_refreshing.html" />
+  <mapID target="org.openide.filesystems.RefreshAction" url="pending.html" />
   <mapID target="org.openide.text.PrintSettings" url="pending.html" />
-  <mapID target="org.openide.loaders.GroupShadow" url="objects/objects_group.html" />
+  <mapID target="org.openide.loaders.GroupShadow" url="pending.html" />
 
   <!--TODO: future: instance objects could use their own topic-->
   <mapID target="org.openide.loaders.InstanceDataObject" url="pending.html" />
@@ -670,7 +603,7 @@
   <mapID target="org.openide.nodes.BeanNode" url="pending.html" />
   <!--TODO provide reasonable mapping for BeanNode-->
   <mapID target="org.openide.src.nodes.ElementNode" url="pending.html" />
-  <mapID target="org.openide.src.nodes.SourceOptions" url="objects/objects_elements.html" />
+  <mapID target="org.openide.src.nodes.SourceOptions" url="pending.html" />
   <mapID target="org.openide.text.EditorSupport$Editor" url="pending.html" />
   <mapID target="org.openide.loaders.DataFolder$Paste.move" url="pending.html" />
   <mapID target="org.openide.loaders.DataFolder$Paste.instantiate" url="pending.html" />
@@ -706,12 +639,12 @@
 <!--root Options node + category nodes-->
    <mapID target="org.netbeans.core.ControlPanelNode" url="configure/configure_options.html" />
    <mapID target="org.netbeans.core.actions.OptionsAction$OptionsPanel$OptionsFilterNode" url="configure/configure_options.html" />
-   <mapID target="org.netbeans.core.EnvironmentNode" url="objects/objects_runtime.html" />
+   <mapID target="org.netbeans.core.EnvironmentNode" url="files/files_runtime.html" />
    <mapID target="org.netbeans.core.FSPoolNode" url="pending.html" /> 
    <mapID target="org.netbeans.core.FSPoolNode$FSNode" url="pending.html" />
-   <mapID target="org.netbeans.core.LoaderPoolNode" url="objects/objects_object-types.html" /> 
-   <mapID target="org.netbeans.core.LoaderPoolNode$LoaderPoolItemNode" url="objects/objects_object-types.html" /> 
-   <mapID target="objects.object-types" url="objects/objects_object-types.html" /> 
+   <mapID target="org.netbeans.core.LoaderPoolNode" url="files/files_unknown.html" /> 
+   <mapID target="org.netbeans.core.LoaderPoolNode$LoaderPoolItemNode" url="files/files_unknown.html" /> 
+   <mapID target="objects.object-types" url="files/files_unknown.html" /> 
 
 
 
@@ -723,7 +656,7 @@
    <mapID target="org.netbeans.core.actions.ExecutionViewAction$ExecutionView" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.ExplorerViewAction" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.GlobalPropertiesAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.OpenExplorerAction" url="objects/explorer.html" /> 
+   <mapID target="org.netbeans.core.actions.OpenExplorerAction" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.OutputWindowAction" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.OpenedWindowsAction" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.OpenedWindowsAction$WindowAction" url="pending.html" />
@@ -733,23 +666,23 @@
    <mapID target="org.netbeans.core.actions.FocusPreviousWorkspaceAction" url="pending.html" />
    
    <!--nodes for Diff Settings and Diff and Merge Types-->
-   <mapID target="org.netbeans.modules.diff.DiffSettings" url="filesystems/filesystems_diff.html" />
-   <mapID target="org.netbeans.modules.diff.Diff.types" url="filesystems/filesystems_diff.html" />
-   <mapID target="org.netbeans.modules.diff.Diff.providers" url="filesystems/filesystems_diff.html" />
-   <mapID target="org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider" url="filesystems/filesystems_diff.html" />
-   <mapID target="org.netbeans.modules.diff.cmdline.CmdlineDiffProvider" url="filesystems/filesystems_diff.html" />
-   <mapID target="org.netbeans.modules.diff.Diff.visualizers" url="filesystems/filesystems_diff.html" />
-   <mapID target="org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer" url="filesystems/filesystems_diff.html" />
-   <mapID target="org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer" url="filesystems/filesystems_diff.html" />
-   <mapID target="org.netbeans.modules.diff.builtin.DefaultDiff" url="filesystems/filesystems_diff.html" />
+   <mapID target="org.netbeans.modules.diff.DiffSettings" url="files/files_diff.html" />
+   <mapID target="org.netbeans.modules.diff.Diff.types" url="files/files_diff.html" />
+   <mapID target="org.netbeans.modules.diff.Diff.providers" url="files/files_diff.html" />
+   <mapID target="org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider" url="files/files_diff.html" />
+   <mapID target="org.netbeans.modules.diff.cmdline.CmdlineDiffProvider" url="files/files_diff.html" />
+   <mapID target="org.netbeans.modules.diff.Diff.visualizers" url="files/files_diff.html" />
+   <mapID target="org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer" url="files/files_diff.html" />
+   <mapID target="org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer" url="files/files_diff.html" />
+   <mapID target="org.netbeans.modules.diff.builtin.DefaultDiff" url="files/files_diff.html" />
    <mapID target="org.netbeans.modules.merge.Merge.visualizers" url="vcs-nb/vcs-nb/vcs_mergeresolve.html" />
    <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="vcs-nb/vcs-nb/vcs_mergeresolve.html" />
 <!--possibly remap the following target to configure_options.html -->
    <mapID target="org.netbeans.core.IDESettings" url="configure/system_settings.html" /> 
-   <mapID target="org.netbeans.core.NbMainExplorer" url="objects/explorer.html" /> 
+   <mapID target="org.netbeans.core.NbMainExplorer" url="pending.html" /> 
    <mapID target="org.netbeans.core.NbPlaces$SessionNode" url="pending.html" /> 
    <mapID target="org.netbeans.core.ModuleNode$AutoLoadModulesAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.TemplatesExplorer.dialog" url="objects/objects_new.html" /> 
+   <mapID target="org.netbeans.core.TemplatesExplorer.dialog" url="pending.html" /> 
    <mapID target="org.netbeans.core.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
    <mapID target="org.netbeans.core.actions.HTMLViewAction" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.NextWorkspaceAction" url="pending.html" /> 
@@ -758,11 +691,11 @@
    <mapID target="org.netbeans.core.actions.UnmountFSAction" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.SetArgumentsAction" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.StatusLineAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.SystemExit.dialog" url="objects/objects_saving.html" /> 
+   <mapID target="org.netbeans.core.actions.SystemExit.dialog" url="pending.html" /> 
    <mapID target="org.netbeans.core.execution.ExternalExecutionSettings" url="pending.html" /> 
-   <mapID target="org.netbeans.core.execution.ProcessNode" url="objects/objects_runtime.html" /> 
-   <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="objects/objects_runtime.html" /> 
-   <mapID target="org.netbeans.core.execution.ProcessNodeItem$TerminateProcessAction" url="objects/objects_runtime.html" /> 
+   <mapID target="org.netbeans.core.execution.ProcessNode" url="files/files_runtime.html" /> 
+   <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="files/files_runtime.html" /> 
+   <mapID target="org.netbeans.core.execution.ProcessNodeItem$TerminateProcessAction" url="files/files_runtime.html" /> 
    <mapID target="org.netbeans.core.windows.toolbars.ToolbarConfiguration" url="configure/toolbar_customize.html" /> 
 
  <!--TODO: add a CSH topic for these nodes; Look & Feel / Menu Bar; Toobars-->  
@@ -782,22 +715,22 @@
    <mapID target="org.netbeans.modules.debugger.support.actions.SuspendDebuggerAction" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.actions.ResumeDebuggerAction" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.actions.CreateVariableAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.debugger.support.actions.ConnectAction" url="debug/environment/debug_menu.html" />
-  <mapID target="org.netbeans.modules.debugger.support.actions.ContinueAction" url="debug/environment/debug_menu.html" />
-  <mapID target="org.netbeans.modules.debugger.support.actions.FinishAction" url="debug/environment/debug_menu.html" />
-  <mapID target="org.netbeans.modules.debugger.support.actions.StepIntoAction" url="debug/environment/debug_menu.html" />
-  <mapID target="org.netbeans.modules.debugger.support.actions.RunToCursorAction" url="debug/environment/debug_menu.html" />
-  <mapID target="org.netbeans.modules.debugger.support.actions.StepOverAction" url="debug/environment/debug_menu.html" />
-  <mapID target="org.netbeans.modules.debugger.support.actions.StepOutAction" url="debug/environment/debug_menu.html" />
-  <mapID target="org.netbeans.modules.debugger.support.actions.AddBreakpointAction" url="debug/environment/debug_menu.html" />
-  <mapID target="org.netbeans.modules.debugger.support.actions.PauseAction" url="debug/environment/debug_menu.html" />
-  <mapID target="org.netbeans.modules.debugger.support.actions.StartAction" url="debug/environment/debug_menu.html" />
+   <mapID target="org.netbeans.modules.debugger.support.actions.ConnectAction" url="pending.html" />
+  <mapID target="org.netbeans.modules.debugger.support.actions.ContinueAction" url="pending.html" />
+  <mapID target="org.netbeans.modules.debugger.support.actions.FinishAction" url="pending.html" />
+  <mapID target="org.netbeans.modules.debugger.support.actions.StepIntoAction" url="pending.html" />
+  <mapID target="org.netbeans.modules.debugger.support.actions.RunToCursorAction" url="pending.html" />
+  <mapID target="org.netbeans.modules.debugger.support.actions.StepOverAction" url="pending.html" />
+  <mapID target="org.netbeans.modules.debugger.support.actions.StepOutAction" url="pending.html" />
+  <mapID target="org.netbeans.modules.debugger.support.actions.AddBreakpointAction" url="pending.html" />
+  <mapID target="org.netbeans.modules.debugger.support.actions.PauseAction" url="pending.html" />
+  <mapID target="org.netbeans.modules.debugger.support.actions.StartAction" url="pending.html" />
 
-  <mapID target="org.netbeans.modules.debugger.support.actions.DebuggerWindowAction" url="debug/environment/debug_menu.html" />
-  <mapID target="NetbeansDebuggerFixAction" url="debug/environment/debug_menu.html" />
-  <mapID target="NetbeansDebuggerGoToCalledMethodAction" url="debug/environment/debug_menu.html" />
-  <mapID target="NetbeansDebuggerGoToCallingMethodAction" url="debug/environment/debug_menu.html" />
-  <mapID target="NetbeansDebuggerPopTopmostFrameAction" url="debug/environment/debug_menu.html" />
+  <mapID target="org.netbeans.modules.debugger.support.actions.DebuggerWindowAction" url="pending.html" />
+  <mapID target="NetbeansDebuggerFixAction" url="pending.html" />
+  <mapID target="NetbeansDebuggerGoToCalledMethodAction" url="pending.html" />
+  <mapID target="NetbeansDebuggerGoToCallingMethodAction" url="pending.html" />
+  <mapID target="NetbeansDebuggerPopTopmostFrameAction" url="pending.html" />
   
    <mapID target="org.netbeans.modules.debugger.support.actions.ConnectAction.dialog" url="pending.html" /> 
    <mapID target="org.netbeans.modules.debugger.support.actions.AddBreakpointAction.dialog" url="pending.html" />
@@ -936,17 +869,6 @@
    <mapID target="org.netbeans.modules.autoupdate.ModuleAutoUpdater.UpdateAction" url="modules/autoupdate.html" />
    <mapID target="org.netbeans.modules.autoupdate.UpdateAction" url="modules/autoupdate.html" />
    
-   <mapID target="org.netbeans.modules.search.ResultViewTopComponent" url="objects/search/search_results-window.html" />
-   <mapID target="org.netbeans.modules.search.RepositorySearchAction" url="objects/search/search.html" />
-   <mapID target="org.openidex.search.SearchType" url="objects/search/search_predefining.html" />
-   <mapID target="org.netbeans.modules.search.types.ModificationDateType" url="objects/search/search_date.html" />
-   <mapID target="org.netbeans.modules.search.types.FullTextType" url="objects/search/search_text.html" />
-   <mapID target="org.netbeans.modules.search.types.ObjectNameType" url="objects/search/search_name.html" />
-   <mapID target="org.netbeans.modules.search.types.DataObjectType" url="objects/search/search_filetype.html" />
-<!--DataObjectType needs helpID assigned in code??-->
-   <mapID target="org.netbeans.modules.search.types.ObjectTypeType" url="objects/search/search_filetype.html" />
-
-
    <mapID target="org.netbeans.beaninfo.LoaderActionsPanel" url="pending.html" />
    <!--TODO - help topic for Actions dialog; if topic is written, close 39369 -->
    
@@ -992,7 +914,6 @@
   <mapID target="org.netbeans.modules.j2ee.deployment.config.ConfigDataObject" url="j2eeserver/nodes/context_descriptor_node.html" />
   <!--ID used for server nodes if not overridden by ID for specific server-->
   
-  <mapID target="org.netbeans.modules.j2ee.deployment.execution.ServerExecutor" url="run/j2ee_executor.html" />
   
 <!--PENDING - map these IDs if possible-->
 
@@ -1033,7 +954,7 @@
   <mapID target="org.openide.actions.UndoAction" url="pending.html" />
 
   <mapID target="org.openide.loaders.DataFolder$NewFolder" url="pending.html" />
-  <mapID target="org.openide.loaders.DefaultDataObject" url="objects/objects_icons.html" />
+  <mapID target="org.openide.loaders.DefaultDataObject" url="pending.html" />
   <mapID target="org.openide.explorer.propertysheet.editors.IconEditor$IconPanel" url="pending.html" />
   <mapID target="org.openide.explorer.propertysheet.editors.StringArrayCustomEditor" url="pending.html" />
    <mapID target="org.openide.awt.MenuBar$MenuFolder.File" url="pending.html" /> 
