@@ -34,7 +34,7 @@ import org.netbeans.modules.form.layoutsupport.*;
 
 
 public class RADComponentNode extends FormNode
-    implements RADComponentCookie//, FormCookie
+    implements RADComponentCookie, FormPropertyCookie
 {
    private final static MessageFormat nodeNameFormat =
         new MessageFormat(
@@ -359,12 +359,12 @@ public class RADComponentNode extends FormNode
 
         customizer.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                RADProperty[] properties;
+                FormProperty[] properties;
                 if (evt.getPropertyName() != null) {
-                    RADProperty changedProperty = component.getPropertyByName(
+                    FormProperty changedProperty = component.getPropertyByName(
                                                          evt.getPropertyName());
                     if (changedProperty != null)
-                        properties = new RADProperty[] { changedProperty };
+                        properties = new FormProperty[] { changedProperty };
                     else return;
                 }
                 else properties = component.getAllBeanProperties();
@@ -377,7 +377,7 @@ public class RADComponentNode extends FormNode
     }
 
     private void updatePropertiesFromCustomizer(
-                     final RADProperty[] properties,
+                     final FormProperty[] properties,
                      final PropertyChangeEvent evt)
     {
         // we run this as privileged to avoid security problems - because
@@ -385,7 +385,7 @@ public class RADComponentNode extends FormNode
         AccessController.doPrivileged(new PrivilegedAction() {
             public Object run() {
                 for (int i=0; i < properties.length; i++) {
-                    RADProperty prop = properties[i];
+                    FormProperty prop = properties[i];
                     if (FormUtils.isIgnoredProperty(component.getBeanClass(),
                                                     prop.getName()))
                         continue;
@@ -522,6 +522,13 @@ public class RADComponentNode extends FormNode
 
     public RADComponent getRADComponent() {
         return component;
+    }
+
+    // -----------------------------------
+    // FormPropertyCookie implementation
+
+    public FormProperty getProperty(String name) {
+        return component != null ? component.getPropertyByName(name) : null;
     }
 
     // -----------------------------------------------------------------------------

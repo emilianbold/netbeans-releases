@@ -1444,7 +1444,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 String propName = findAttribute(propNodes[i], ATTR_PROPERTY_NAME);
                 String propType = findAttribute(propNodes[i], ATTR_PROPERTY_TYPE);
 
-                RADProperty prop = comp.getPropertyByName(propName);
+                FormProperty prop = comp.getPropertyByName(propName);
                 if (prop == null)
                     continue; // property doesn't exist
 
@@ -3582,7 +3582,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             throw new IOException(); // [PENDING - explanation of problem]
         }
 
-        RADProperty prop = radComponent != null ?
+        FormProperty prop = radComponent != null ?
                radComponent.getPropertyByName(nameNode.getNodeValue()) : null;
 
         if (typeNode == null) {

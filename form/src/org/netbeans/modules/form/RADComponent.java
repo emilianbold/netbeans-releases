@@ -625,10 +625,10 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
      * @return the RADProperty representing the specified property or null
                if property with specified name does not exist
      */
-    public RADProperty getPropertyByName(String name) {
+    public FormProperty getPropertyByName(String name) {
         if (beanProperties == null)
             createBeanProperties();
-        return (RADProperty) nameToProperty.get(name);
+        return (FormProperty) nameToProperty.get(name);
     }
 
     // -----------------------------------------------------------------------------

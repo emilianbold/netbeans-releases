@@ -697,7 +697,7 @@ public class MetaComponentCreator {
                              CreationFactory.InstanceSource source,
                              RADComponent targetComp)
     {
-        RADProperty prop = getBorderProperty(targetComp);
+        FormProperty prop = getBorderProperty(targetComp);
         if (prop == null)
             return null;
 
@@ -717,7 +717,7 @@ public class MetaComponentCreator {
     private void setComponentBorderProperty(Object borderInstance,
                                             RADComponent targetComp)
     {
-        RADProperty prop = getBorderProperty(targetComp);
+        FormProperty prop = getBorderProperty(targetComp);
         if (prop == null)
             return;
 
@@ -757,8 +757,8 @@ public class MetaComponentCreator {
         return targetComp;
     }
 
-    private RADProperty getBorderProperty(RADComponent targetComp) {
-        RADProperty prop;
+    private FormProperty getBorderProperty(RADComponent targetComp) {
+        FormProperty prop;
         if (JComponent.class.isAssignableFrom(targetComp.getBeanClass())
                 && (prop = targetComp.getPropertyByName("border")) != null) // NOI18N
             return prop;
@@ -967,7 +967,7 @@ public class MetaComponentCreator {
         }
 
         if (propName != null) {
-            RADProperty prop = radComp.getPropertyByName(propName);
+            FormProperty prop = radComp.getPropertyByName(propName);
             if (prop != null) {
                 try {
                     prop.setChangeFiring(false);
@@ -1027,7 +1027,7 @@ public class MetaComponentCreator {
         }
 
         if (propName != null) {
-            RADProperty prop = menuComp.getPropertyByName(propName);
+            FormProperty prop = menuComp.getPropertyByName(propName);
             if (prop != null) {
                 try {
                     prop.setChangeFiring(false);

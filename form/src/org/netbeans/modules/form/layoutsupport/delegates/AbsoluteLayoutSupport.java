@@ -445,7 +445,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
 
         protected Node.Property[] createProperties() {
             return new Node.Property[] {
-                new FormProperty("posx", // NOI18N
+                new FormProperty("AbsoluteLayoutConstraints posx", // NOI18N
                                  Integer.TYPE,
                              getBundle().getString("PROP_posx"), // NOI18N
                              getBundle().getString("HINT_posx")) { // NOI18N
@@ -458,7 +458,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
                     }
                 },
 
-                new FormProperty("posy", // NOI18N
+                new FormProperty("AbsoluteLayoutConstraints posy", // NOI18N
                                  Integer.TYPE,
                              getBundle().getString("PROP_posy"), // NOI18N
                              getBundle().getString("HINT_posy")) { // NOI18N
@@ -471,7 +471,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
                     }
                 },
 
-                new FormProperty("width", // NOI18N
+                new FormProperty("AbsoluteLayoutConstraints width", // NOI18N
                                  Integer.TYPE,
                              getBundle().getString("PROP_width"), // NOI18N
                              getBundle().getString("HINT_width")) { // NOI18N
@@ -499,7 +499,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
                     }
                 },
 
-                new FormProperty("height", // NOI18N
+                new FormProperty("AbsoluteLayoutConstraints height", // NOI18N
                                  Integer.TYPE,
                              getBundle().getString("PROP_height"), // NOI18N
                              getBundle().getString("HINT_height")) { // NOI18N

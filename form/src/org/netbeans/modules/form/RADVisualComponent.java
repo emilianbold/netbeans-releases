@@ -187,6 +187,10 @@ public class RADVisualComponent extends RADComponent {
     }
 
     public void resetConstraintsProperties() {
+        if (constraintsProperties != null)
+            for (int i=0; i < constraintsProperties.length; i++)
+                nameToProperty.remove(constraintsProperties[i].getName());
+
         constraintsProperties = null;
         beanPropertySets = null;
 
@@ -232,6 +236,8 @@ public class RADVisualComponent extends RADComponent {
                     int type = prop.getAccessType() | FormProperty.NO_WRITE;
                     prop.setAccessType(type);
                 }
+
+                nameToProperty.put(prop.getName(), prop);
             }
         }
     }

@@ -103,8 +103,11 @@ public class FormModelEvent extends EventObject
     }
 
     public final RADProperty getComponentProperty() {
-        return component != null && propertyName != null ?
-               component.getPropertyByName(propertyName) : null;
+        if (component == null || propertyName == null)
+            return null;
+
+        FormProperty prop = component.getPropertyByName(propertyName);
+        return prop instanceof RADProperty ? (RADProperty) prop : null;
     }
 
     public final Object getPropertyOldValue() {

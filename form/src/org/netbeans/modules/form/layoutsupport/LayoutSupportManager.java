@@ -368,6 +368,18 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         return allProperties;
     }
 
+    Node.Property getLayoutProperty(String name) {
+        if (layoutDelegate instanceof AbstractLayoutSupport)
+            return ((AbstractLayoutSupport)layoutDelegate).getProperty(name);
+
+        Node.Property[] properties = getAllProperties();
+        for (int i=0; i < properties.length; i++)
+            if (name.equals(properties[i].getName()))
+                return properties[i];
+
+        return null;
+    }
+
     public Class getCustomizerClass() {
         return layoutDelegate.getCustomizerClass();
     }

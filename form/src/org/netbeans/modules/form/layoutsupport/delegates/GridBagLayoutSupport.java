@@ -544,10 +544,11 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                      String displayName, String shortDescription,
                      Class propertyEditorClass)
             {
-                super(name, type, displayName, shortDescription);
+                super("GridBagLayoutConstraints "+name, type, // NOI18N
+                      displayName, shortDescription);
                 this.propertyEditorClass = propertyEditorClass;
                 try {
-                    field = GridBagConstraints.class.getField(getName());
+                    field = GridBagConstraints.class.getField(name);
                 }
                 catch (NoSuchFieldException ex) { // should not happen
                     ex.printStackTrace();

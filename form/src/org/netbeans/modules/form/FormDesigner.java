@@ -51,7 +51,7 @@ public class FormDesigner extends TopComponent
     private HandleLayer handleLayer;
     private InPlaceEditLayer textEditLayer;
     private FormDesignerPanel fdPanel;
-    private RADProperty editedProperty;
+    private FormProperty editedProperty;
 
     private RADVisualComponent topDesignComponent;
 
@@ -693,7 +693,7 @@ public class FormDesigner extends TopComponent
             return;
         }
 
-        RADProperty property = metacomp.getPropertyByName("text"); // NOI18N
+        FormProperty property = metacomp.getPropertyByName("text"); // NOI18N
         if (property == null) return; // shoul not happen
 
         String editText = null;

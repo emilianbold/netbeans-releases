@@ -350,21 +350,23 @@ public class FormCustomEditor extends JPanel
                 editor.setCurrentEditor(currentEditor);
             }
             else { // there are more nodes selected
+                String propName = editor.getProperty().getName();
+
                 for (int i=0; i < nodes.length; i++) {
                     if (!(nodes[i] instanceof Node))
                         break; // these are not nodes...
 
                     Node node = (Node) nodes[i];
-                    RADComponentCookie radCookie = (RADComponentCookie)
-                                   node.getCookie(RADComponentCookie.class);
-                    if (radCookie == null)
-                        break; // these are not RADComponents...
+                    FormPropertyCookie propCookie = (FormPropertyCookie)
+                        node.getCookie(FormPropertyCookie.class);
+                    if (propCookie == null)
+                        break; // not form nodes...
 
-                    RADComponent comp = radCookie.getRADComponent();
-                    RADProperty prop = comp.getPropertyByName(
-                                         editor.getProperty().getName());
+                    FormProperty prop = propCookie.getProperty(propName);
+                    if (prop == null)
+                        continue; // property not known
+
                     PropertyEditor pe = prop.getPropertyEditor();
-
                     if (pe instanceof FormPropertyEditor) {
                         prop.setPreCode(preCode);
                         prop.setPostCode(postCode);

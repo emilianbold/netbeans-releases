@@ -226,7 +226,7 @@ public class CardLayoutSupport extends AbstractLayoutSupport {
         public Node.Property[] getProperties() {
             if (properties == null)
                 properties = new Node.Property[] {
-                    new FormProperty("cardName", // NOI18N
+                    new FormProperty("CardConstraints cardName", // NOI18N
                                      String.class,
                                  getBundle().getString("PROP_cardName"), // NOI18N
                                  getBundle().getString("HINT_cardName")) { // NOI18N
