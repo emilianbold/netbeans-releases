@@ -69,7 +69,10 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
      * Note: first item points to proper EditorKit class.
      */
     public void setValue( List l ) {
-        kitClassName = (String)l.get( 0 );
+        if (l != null)
+            kitClassName = (String)l.get( 0 );
+        else
+            return;
         
         Class kitClass = null;
         try {

@@ -63,7 +63,11 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
      */
     public void setValue( Map m ) {
         // Our model is the one and only holding data
-        model.setData( new TreeMap( m ) );
+        if (m != null)
+            model.setData( new TreeMap( m ) );
+        else
+            model.setData( new TreeMap() );
+
         // select first item, just to have something selected
         if( model.getRowCount() > 0 ) abbrevsTable.setRowSelectionInterval( 0, 0 );
     }

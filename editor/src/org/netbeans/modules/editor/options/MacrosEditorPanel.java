@@ -62,7 +62,11 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
      * Fill in editor with initial values
      */
     public void setValue( Map m ) {
-        HashMap hm = new HashMap(m);
+        HashMap hm;
+        if (m != null)
+            hm = new HashMap(m);
+        else
+            hm = new HashMap();
         if (hm.containsKey(null)) {
             hm.remove(null);
         }
