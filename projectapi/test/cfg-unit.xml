@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <include name="**/*Test.class"/>
                 <!-- occasionally failing (#51024): -->
-                <exclude name="org/netbeans/api/project/ProjectManagerTest.clas/testLoadExceptionWithConcurrentLoad"/>
+                <exclude name="org/netbeans/api/project/ProjectManagerTest.class/testLoadExceptionWithConcurrentLoad"/>
             </patternset>
         </testset>
     </testbag>
@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- dsimonek says it fails for him, do not know why (#44273): -->
                 <exclude name="org/netbeans/api/project/TestUtilTest.class/testCreateFileFromContent"/>
                 <!-- occasionally failing (#51024): -->
-                <exclude name="org/netbeans/api/project/ProjectManagerTest.clas/testLoadExceptionWithConcurrentLoad"/>
+                <exclude name="org/netbeans/api/project/ProjectManagerTest.class/testLoadExceptionWithConcurrentLoad"/>
             </patternset>
         </testset>
     </testbag>
