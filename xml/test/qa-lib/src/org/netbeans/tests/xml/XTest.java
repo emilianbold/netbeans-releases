@@ -106,4 +106,13 @@ public abstract class XTest extends JellyTestCase {
     public static void logIntoConsole(boolean console) {
         LOG_INTO_CONSOLE = console;
     }
+    
+    /** Causes the test to sleep for the specified nmuber of milliseconds.
+     *  Does not throw any exception.
+     */
+    protected static void sleepTest(long millis) {
+        try {
+            Thread.currentThread().sleep(millis);
+        } catch (Exception e) { /* do nothig */}
+    }
 }
