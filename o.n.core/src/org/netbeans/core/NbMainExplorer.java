@@ -40,6 +40,7 @@ import org.openide.explorer.view.TreeView;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeListener;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
@@ -481,7 +482,8 @@ public final class NbMainExplorer extends CloneableTopComponent
         /** composited view */
         private TreeView view;
         /** listeners to the root context and IDE settings */
-        private PropertyChangeListener rcListener, weakRcL, weakIdeL;
+        private PropertyChangeListener weakRcL, weakIdeL;
+        private NodeListener rcListener;
         /** validity flag */
         private boolean valid = true;
 
@@ -591,7 +593,7 @@ public final class NbMainExplorer extends CloneableTopComponent
             setName(getExplorerManager ().getRootContext().getDisplayName());
         }
 
-        private PropertyChangeListener rcListener () {
+        private NodeListener rcListener () {
             if (rcListener == null) {
                 rcListener = new RootContextListener();
             }
@@ -612,6 +614,7 @@ public final class NbMainExplorer extends CloneableTopComponent
                 weakRcL = WeakListener.propertyChange(rcListener(), rc);
             }
             rc.addPropertyChangeListener(weakRcL);
+            rc.addNodeListener(WeakListener.node(rcListener(), rc));
         }
         
         // put a request for later validation
@@ -627,7 +630,7 @@ public final class NbMainExplorer extends CloneableTopComponent
         * 1) Changes of name, icon, short description of root context.
         * 2) Changes of IDE settings, namely delete confirmation settings */
         private final class RootContextListener extends Object
-            implements PropertyChangeListener {
+            implements NodeListener {
             public void propertyChange (PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 Object source = evt.getSource();
@@ -645,7 +648,7 @@ public final class NbMainExplorer extends CloneableTopComponent
                     setIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
                 } else if (Node.PROP_SHORT_DESCRIPTION.equals(propName)) {
                     setToolTipText(n.getShortDescription());
-               } else if ("valid".equals(propName)) { // NOI18N
+                } else if ("valid".equals(propName)) { // NOI18N
                     // this if has been added while fixing #15046
                     //    it assumes that the root node will refire
                     //    invalidation event in response to e.g. filesystem
@@ -656,8 +659,16 @@ public final class NbMainExplorer extends CloneableTopComponent
                         }
                     }
                }
-
             }
+            
+            public void nodeDestroyed(org.openide.nodes.NodeEvent nodeEvent) {
+                ExplorerTab.this.close();
+            }            
+            
+            public void childrenRemoved(org.openide.nodes.NodeMemberEvent e) {}
+            public void childrenReordered(org.openide.nodes.NodeReorderEvent e) {}
+            public void childrenAdded(org.openide.nodes.NodeMemberEvent e) {}
+            
         } // end of RootContextListener inner class
 
     } // end of ExplorerTab inner class
