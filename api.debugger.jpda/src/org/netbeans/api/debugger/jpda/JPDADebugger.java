@@ -136,7 +136,9 @@ public abstract class JPDADebugger {
             );
         int i, k = es.length;
         for (i = 0; i < k; i++) {
-            JPDADebugger d = (JPDADebugger) es [i].lookupFirst (null, JPDADebugger.class);
+            JPDADebugger d = (JPDADebugger) es [i].lookupFirst 
+                (null, JPDADebugger.class);
+            if (d == null) continue;
             d.waitRunning ();
             return d;
         }
@@ -198,7 +200,9 @@ public abstract class JPDADebugger {
             );
         int i, k = es.length;
         for (i = 0; i < k; i++) {
-            JPDADebugger d = (JPDADebugger) es [i].lookupFirst (null, JPDADebugger.class);
+            JPDADebugger d = (JPDADebugger) es [i].lookupFirst 
+                (null, JPDADebugger.class);
+            if (d == null) continue;
             d.waitRunning ();
             return d;
         }
@@ -231,8 +235,10 @@ public abstract class JPDADebugger {
             );
         int i, k = es.length;
         for (i = 0; i < k; i++) {
-            JPDADebugger d = (JPDADebugger) es [i].lookupFirst (null, JPDADebugger.class);
+            JPDADebugger d = (JPDADebugger) es [i].lookupFirst 
+                (null, JPDADebugger.class);
             d.waitRunning ();
+            if (d == null) continue;
             return d;
         }
         throw new DebuggerStartException (new InternalError ());
