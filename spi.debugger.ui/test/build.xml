@@ -123,7 +123,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- This target runs tests. You should not change this --> 
     <!-- target unless you realy know what you are doing -->
-    <target name="runtests" depends="cleanresults,buildtests">
+    <target name="runtests" depends="buildtests">
         <echo message="Module: Running tests for ${xtest.module}, testtype ${xtest.testtype}, attribs=${xtest.attribs}"/>
         <ant dir="." antfile="${xtest.module_harness.antfile}"
              target="runtests"/>
