@@ -733,8 +733,6 @@ class ModeParser {
         FileObject moduleFolder = moduleParentFolder.getFileObject(modeName);
         tcRefParser.setModuleParentFolder(moduleFolder);
         tcRefParser.setInModuleFolder(true);
-        FileObject localFolder = localParentFolder.getFileObject(modeName);
-        tcRefParser.setLocalParentFolder(localFolder);
         tcRefParserMap.put(tcRefName, tcRefParser);
         TCRefConfig tcRefConfig = null;
         try {

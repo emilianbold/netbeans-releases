@@ -336,8 +336,6 @@ class GroupParser {
         FileObject moduleFolder = moduleParentFolder.getFileObject(groupName);
         tcGroupParser.setModuleParentFolder(moduleFolder);
         tcGroupParser.setInModuleFolder(true);
-        FileObject localFolder = localParentFolder.getFileObject(groupName);
-        tcGroupParser.setLocalParentFolder(localFolder);
         tcGroupParserMap.put(tcGroupName, tcGroupParser);
         TCGroupConfig tcGroupConfig = null;
         try {
