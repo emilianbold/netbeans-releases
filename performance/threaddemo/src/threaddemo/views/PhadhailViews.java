@@ -19,7 +19,7 @@ import java.beans.PropertyVetoException;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.TreeModel;
-import org.netbeans.modules.looks.tree.LookTreeView;
+import threaddemo.views.looktree.LookTreeView;
 import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;

@@ -4,7 +4,7 @@ large data sets such as massive files.
 Configure paths to various libs; see build.xml and create user.build.properties
 or just pass -D args to ant. Make sure openide.jar is up-to-date (check CVS).
 --> You need openide/src/org/openide/util/Mutex*.java from branch mutex_32439, but rest of openide from trunk
---> You need Looks from branch looks_jul_2002_private_b.
+--> You need Looks from the trunk (openide/looks).
 
 Default build target builds and runs the app. It creates a data model, called
 Phadhail, which is just a thin wrapper over basic aspects of File. You probably
