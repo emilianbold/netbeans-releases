@@ -375,7 +375,7 @@ removed !!!!
         <echo message="${xtest.plugin.home}/lib/xtest-ide-plugin.jar"/>
                  
         <!-- the junit in the task is required, because it is used to prepare testlist -->
-        <nbtaskdef classpath="${xtest.plugin.home}/lib/xtest-ide-plugin.jar:${xtest.home}/lib/xtest-junit-testrunner.jar:${xtest.home}/lib/junit.jar:${xtest.home}/lib/nbjunit.jar">
+        <nbtaskdef classpath="${xtest.plugin.home}/lib/xtest-ide-plugin.jar:${xtest.home}/lib/xtest-junit-testrunner.jar:${xtest.home}/lib/junit.jar:${xtest.home}/lib/nbjunit.jar:${xtest.home}/lib/xtest.jar">
             <taskdef name="ide-jvmargs" classname="org.netbeans.xtest.plugin.ide.IdeJvmArgs"/>
             <taskdef name="ideTestRunner" classname="org.netbeans.xtest.plugin.ide.IdeTestRunnerTask"/>
         </nbtaskdef>
