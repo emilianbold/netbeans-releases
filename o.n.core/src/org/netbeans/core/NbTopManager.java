@@ -458,7 +458,6 @@ public abstract class NbTopManager /*extends TopManager*/ {
                     public void run() {
                         if(windowSystem != null) {
                             //Need to check if save can be called before hide - due to subjective performance
-                            windowSystem.save();
                             windowSystem.hide();
                         }
                         if (Boolean.getBoolean("netbeans.close.when.invisible")) {
@@ -493,7 +492,6 @@ public abstract class NbTopManager /*extends TopManager*/ {
                         // persist its state automaticaly
                         if (!isWinsysSaved) {
                             if(windowSystem != null) {
-                                windowSystem.hide();
                                 windowSystem.save();
                             }
                         }
