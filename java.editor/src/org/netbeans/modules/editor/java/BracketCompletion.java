@@ -205,11 +205,8 @@ class BracketCompletion {
                 // Check whether line ends with '{' ignoring any whitespace
                 // or comments
                 int tokenOffset = caretOffset;
-                if (caretOffset == doc.getLength()) {
-                    tokenOffset--; // should still be >= 0
-                }
                 TokenItem token = ((ExtSyntaxSupport)doc.getSyntaxSupport()).
-                getTokenChain(tokenOffset, tokenOffset + 1);
+                getTokenChain(tokenOffset -1, tokenOffset);
                 
                 addRightBrace = true; // suppose that right brace should be added
                 
