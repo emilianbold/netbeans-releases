@@ -53,6 +53,10 @@ public class DefaultRADAction extends CookieAction {
         return new Class[] { RADComponentCookie.class };
     }
 
+    protected boolean asynchronous() {
+        return false;
+    }
+
     /** Test for enablement based on the cookies of selected nodes.
      * Generally subclasses should not override this except for strange
      * purposes, and then only calling the super method and adding a check.
