@@ -209,6 +209,8 @@ public class BeanSupport {
         (beanObject instanceof List) ||
         (beanObject instanceof Scrollbar) ||
         (beanObject instanceof ScrollPane) ||
+        (beanObject instanceof Frame) ||
+        (beanObject instanceof Dialog) ||
         (beanObject instanceof Panel)) {
       if ("background".equals (propertyName))
         return Color.lightGray;
@@ -224,6 +226,11 @@ public class BeanSupport {
 
 /*
  * Log
+ *  9    Gandalf   1.8         9/2/99   Ian Formanek    Fixed bug 3696 - When 
+ *       connection is copied and pasted into form, the initialization code of 
+ *       the ConnectionSource component is not correctly generated. and 3695 - 
+ *       Modified properties with null value are not restored correctly when a 
+ *       form is reloaded.
  *  8    Gandalf   1.7         8/1/99   Ian Formanek    OutputLevel changes 
  *       reflected
  *  7    Gandalf   1.6         7/30/99  Ian Formanek    changed comment

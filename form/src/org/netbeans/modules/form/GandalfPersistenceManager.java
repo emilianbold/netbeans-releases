@@ -364,10 +364,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (propNodes.length > 0) {
           HashMap propsMap = new HashMap (propNodes.length * 2);
           for (int i = 0; i < propNodes.length; i++) {
-            Object propValue = getEncodedPropertyValue (propNodes[i], null);
-            String propName = findAttribute (propNodes[i], ATTR_PROPERTY_NAME);
-            if ((propName != null) && (propValue != null)) {
-              propsMap.put (propName, propValue);
+            try {
+              Object propValue = getEncodedPropertyValue (propNodes[i], null);
+              String propName = findAttribute (propNodes[i], ATTR_PROPERTY_NAME);
+              if ((propName != null) && (propValue != null)) {
+                propsMap.put (propName, propValue);
+              }
+            } catch (Exception e) {
+              // ignore property with problem
+              // [PENDING - notify problem]
             }
           }
           dl.initChangedProperties (propsMap);
@@ -387,33 +392,35 @@ public class GandalfPersistenceManager extends PersistenceManager {
     org.w3c.dom.Node[] propNodes = findSubNodes (node, XML_PROPERTY);
     if (propNodes.length > 0) {
       for (int i = 0; i < propNodes.length; i++) {
-        Object propValue = getEncodedPropertyValue (propNodes[i], comp);
+        Object propValue;
+        try {
+          propValue = getEncodedPropertyValue (propNodes[i], comp);
+        } catch (Exception e) {
+          // [PENDING - notify error]
+          continue; // ignore this property
+        }
         String propName = findAttribute (propNodes[i], ATTR_PROPERTY_NAME);
         String propType = findAttribute (propNodes[i], ATTR_PROPERTY_TYPE);
 
-        org.openide.nodes.Node.Property prop = comp.getPropertyByName (propName);
+        RADComponent.RADProperty prop = comp.getPropertyByName (propName);
 
-        if (prop instanceof RADComponent.RADProperty) {
-          String propertyEditor = findAttribute (propNodes[i], ATTR_PROPERTY_EDITOR);
-          if (propertyEditor != null) {
-            try {
-              Class editorClass = TopManager.getDefault ().currentClassLoader ().loadClass (propertyEditor);
-              Class propertyClass = findPropertyType (propType);
-              PropertyEditor ed = FormEditor.createPropertyEditor (editorClass, propertyClass, comp);
-              ((RADComponent.RADProperty)prop).setCurrentEditor (ed);
-            } catch (Exception e) {
-              // ignore
-            }
+        String propertyEditor = findAttribute (propNodes[i], ATTR_PROPERTY_EDITOR);
+        if (propertyEditor != null) {
+          try {
+            Class editorClass = TopManager.getDefault ().currentClassLoader ().loadClass (propertyEditor);
+            Class propertyClass = findPropertyType (propType);
+            PropertyEditor ed = FormEditor.createPropertyEditor (editorClass, propertyClass, comp);
+            ((RADComponent.RADProperty)prop).setCurrentEditor (ed);
+          } catch (Exception e) {
+            // ignore
           }
         }
-        if (propValue != null) {
-          try {
-            prop.setValue (propValue);
-          } catch (java.lang.reflect.InvocationTargetException e) {
-            // ignore this property // [PENDING]
-          } catch (IllegalAccessException e) {
-            // ignore this property // [PENDING]
-          }
+        try {
+          prop.setValue (propValue);
+        } catch (java.lang.reflect.InvocationTargetException e) {
+          // ignore this property // [PENDING]
+        } catch (IllegalAccessException e) {
+          // ignore this property // [PENDING]
         }
       }
     }
@@ -905,10 +912,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
 // --------------------------------------------------------------------------------------
 // Value encoding methods
 
-  private Object getEncodedPropertyValue (org.w3c.dom.Node propertyNode, RADComponent radComponent) {
+  /** Obtains value from given propertyNode for specified RADComponent.
+  * @param propertyNode XML node where the property is stored
+  * @param radComponent the RADComponent of which the property is to be loaded
+  * @return the property value decoded from the node or null if [PENDING]
+  */
+  private Object getEncodedPropertyValue (org.w3c.dom.Node propertyNode, RADComponent radComponent) 
+  throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException 
+  {
     org.w3c.dom.NamedNodeMap attrs = propertyNode.getAttributes ();
     if (attrs == null) {
-      return null;
+      throw new IOException (); // [PENDING - explanation of problem]
     }
     org.w3c.dom.Node nameNode = attrs.getNamedItem (ATTR_PROPERTY_NAME);
     org.w3c.dom.Node typeNode = attrs.getNamedItem (ATTR_PROPERTY_TYPE);
@@ -916,56 +930,49 @@ public class GandalfPersistenceManager extends PersistenceManager {
     org.w3c.dom.Node valueNode = attrs.getNamedItem (ATTR_PROPERTY_VALUE);
 
     if ((nameNode == null) || (typeNode == null)) {
-      return null;
+      throw new IOException (); // [PENDING - explanation of problem]
     }
 
-    try {
-      Class propertyType = findPropertyType (typeNode.getNodeValue ());
+    Class propertyType = findPropertyType (typeNode.getNodeValue ());
 
-      PropertyEditor ed = null;
-      if (editorNode != null) {
-        Class editorClass = TopManager.getDefault ().currentClassLoader ().loadClass (editorNode.getNodeValue ());
-        ed = FormEditor.createPropertyEditor (editorClass, propertyType, radComponent);
-      }
-      Object value = null;
+    PropertyEditor ed = null;
+    if (editorNode != null) {
+      Class editorClass = TopManager.getDefault ().currentClassLoader ().loadClass (editorNode.getNodeValue ());
+      ed = FormEditor.createPropertyEditor (editorClass, propertyType, radComponent);
+    }
+    Object value = null;
 
-      if (valueNode != null) {
-        value = decodePrimitiveValue (valueNode.getNodeValue (), propertyType);
-      } else {
-        if ((ed != null) && (ed instanceof XMLPropertyEditor)) {
-          org.w3c.dom.NodeList propChildren = propertyNode.getChildNodes ();
-          if ((propChildren != null) && (propChildren.getLength () > 0)) {
-            for (int i = 0; i < propChildren.getLength (); i++) {
-              if (propChildren.item (i).getNodeType () == org.w3c.dom.Node.ELEMENT_NODE) {
-                ((XMLPropertyEditor)ed).readFromXML (propChildren.item (i));
-                value = ed.getValue ();
-                break;
-              }
+    if (valueNode != null) {
+      value = decodePrimitiveValue (valueNode.getNodeValue (), propertyType);
+    } else {
+      if ((ed != null) && (ed instanceof XMLPropertyEditor)) {
+        org.w3c.dom.NodeList propChildren = propertyNode.getChildNodes ();
+        if ((propChildren != null) && (propChildren.getLength () > 0)) {
+          for (int i = 0; i < propChildren.getLength (); i++) {
+            if (propChildren.item (i).getNodeType () == org.w3c.dom.Node.ELEMENT_NODE) {
+              ((XMLPropertyEditor)ed).readFromXML (propChildren.item (i));
+              value = ed.getValue ();
+              break;
             }
           }
-        } else {
-          org.w3c.dom.NodeList propChildren = propertyNode.getChildNodes ();
-          if ((propChildren != null) && (propChildren.getLength () > 0)) {
-            for (int i = 0; i < propChildren.getLength (); i++) {
-              if (XML_SERIALIZED_PROPERTY_VALUE.equals (propChildren.item (i).getNodeName ())) {
-                String serValue = findAttribute (propChildren.item (i), ATTR_PROPERTY_VALUE);
-                if (serValue != null) {
-                  value = decodeValue (serValue);
-                }
-                break;
+        }
+      } else {
+        org.w3c.dom.NodeList propChildren = propertyNode.getChildNodes ();
+        if ((propChildren != null) && (propChildren.getLength () > 0)) {
+          for (int i = 0; i < propChildren.getLength (); i++) {
+            if (XML_SERIALIZED_PROPERTY_VALUE.equals (propChildren.item (i).getNodeName ())) {
+              String serValue = findAttribute (propChildren.item (i), ATTR_PROPERTY_VALUE);
+              if (serValue != null) {
+                value = decodeValue (serValue);
               }
+              break;
             }
           }
         }
       }
-
-      return value;
-
-    } catch (Exception e) {
-      // if (System.getProperty ("netbeans.debug.exceptions") != null) // [PENDING]
-      e.printStackTrace ();
-      return null; 
     }
+
+    return value;
   }
 
   private Class  findPropertyType (String type) throws ClassNotFoundException {
@@ -990,6 +997,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
   * @return decoded value or null if specified object is not of supported type
   */
   private Object decodePrimitiveValue (String encoded, Class type) {
+    if ("null".equals (encoded)) return null;
+    
     if (Integer.class.isAssignableFrom (type) || Integer.TYPE.equals (type)) {
       return Integer.valueOf (encoded);
     } else if (Short.class.isAssignableFrom (type) || Short.TYPE.equals (type)) {
@@ -1042,6 +1051,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
     if (value instanceof Class) {
       return ((Class)value).getName ();
     }
+    
+    if (value == null) {
+      return "null";
+    }
+    
     return null; // is not a primitive type
   }
 
@@ -1050,36 +1064,37 @@ public class GandalfPersistenceManager extends PersistenceManager {
   * @exception IOException thrown if an error occures during deserializing the object
   */
   private Object decodeValue (String value) throws IOException {
-     if ((value == null) || (value.length () == 0)) return null;
-     char[] bisChars = value.toCharArray ();
-     byte[] bytes = new byte[bisChars.length];
-     String singleNum = "";
-     int count = 0;
-     for (int i = 0; i < bisChars.length; i++) {
-       if (',' == bisChars[i]) {
-         try {
-           bytes[count++] = Byte.parseByte (singleNum);
-         } catch (NumberFormatException e) {
-           e.printStackTrace ();
-           throw new IOException ();
-         }
-         singleNum = "";
-       } else {
-         singleNum += bisChars[i];
-       }
-     }
-     // add the last byte
-     bytes[count++] = Byte.parseByte (singleNum);
+    if ((value == null) || (value.length () == 0)) return null;
+    
+    char[] bisChars = value.toCharArray ();
+    byte[] bytes = new byte[bisChars.length];
+    String singleNum = "";
+    int count = 0;
+    for (int i = 0; i < bisChars.length; i++) {
+      if (',' == bisChars[i]) {
+        try {
+          bytes[count++] = Byte.parseByte (singleNum);
+        } catch (NumberFormatException e) {
+          e.printStackTrace ();
+          throw new IOException ();
+        }
+        singleNum = "";
+      } else {
+        singleNum += bisChars[i];
+      }
+    }
 
-     ByteArrayInputStream bis = new ByteArrayInputStream (bytes, 0, count);
-     try {
-       ObjectInputStream ois = new ObjectInputStream (bis);
-       Object ret = ois.readObject ();
-       return ret;
-     } catch (Exception e) {
-       e.printStackTrace ();
-       throw new IOException ();
-     }
+    // add the last byte
+    bytes[count++] = Byte.parseByte (singleNum);
+    ByteArrayInputStream bis = new ByteArrayInputStream (bytes, 0, count);
+    try {
+      ObjectInputStream ois = new ObjectInputStream (bis);
+      Object ret = ois.readObject ();
+      return ret;
+    } catch (Exception e) {
+      e.printStackTrace ();
+      throw new IOException ();
+    }
   }
 
   /** Encodes specified value to a String containing textual representation of serialized stream.
@@ -1269,6 +1284,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  29   Gandalf   1.28        9/2/99   Ian Formanek    Fixed bug 3696 - When 
+ *       connection is copied and pasted into form, the initialization code of 
+ *       the ConnectionSource component is not correctly generated. and 3695 - 
+ *       Modified properties with null value are not restored correctly when a 
+ *       form is reloaded.
  *  28   Gandalf   1.27        8/19/99  Ian Formanek    No semantic change
  *  27   Gandalf   1.26        8/9/99   Ian Formanek    Used currentClassLoader 
  *       to fix problems with loading beans only present in repository

@@ -33,7 +33,11 @@ import javax.swing.JTextField;
 
 /** RADComponent is a class which represents a single component used and instantiated
 * during design time.  It provides its properties and events.
-*
+* Proper initialization order: <UL>
+* <LI> comp = new RADComponent ();
+* <LI> comp.initialize (formManager);
+* <LI> comp.setComponent (class) or comp.setInstance (instance)
+* </UL>
 * @author Ian Formanek
 */
 public class RADComponent {
@@ -81,22 +85,27 @@ public class RADComponent {
   } // FINALIZE DEBUG METHOD
   
 // -----------------------------------------------------------------------------
-// Constructors
+// Constructors & Initialization
 
+  /** Creates a new RADComponent */
   public RADComponent () {
     changedPropertyValues = new HashMap (30);
     auxValues = new HashMap (10);
   }
 
+  /** Called to initialize the component with specified FormManager .
+  * @param formManager the FormManager of the form into which this component will be added 
+  */
   public void initialize (FormManager2 formManager) {
     this.formManager = formManager;
   }
 
-  /** Used by TuborgPersistenceManager */
-  void initDeserializedEvents (java.util.Hashtable eventHandlers) {
-    eventsList.initEvents (eventHandlers);
-  }
-  
+  /** Called to set the bean to be represented by this RADComponent.
+  * This method creates a new instance of the bean. This RADComponent class is fully initialized after this method returns.
+  * Can be called only once and is mutually exclusive with setInstance ()
+  * @param beanClass the class of the bean to be represented by this class
+  * @see #setInstance
+  */
   public void setComponent (Class beanClass) {
     if (this.beanClass != null) {
       throw new InternalError ("Component already initialized: current: "+this.beanClass +", new: "+beanClass);
@@ -109,6 +118,12 @@ public class RADComponent {
     initInternal ();
   }
 
+  /** Called to set the bean to be represented by this RADComponent.
+  * This method uses the instance provided. This RADComponent class is fully initialized after this method returns.
+  * Can be called only once and is mutually exclusive with setComponent ()
+  * @param beanInstance the bean to be represented by this class
+  * @see #setComponent
+  */
   public void setInstance (Object beanInstance) {
     if (this.beanClass != null) {
       throw new InternalError ("Component already initialized: current: "+this.beanClass +", new: "+beanClass);
@@ -118,7 +133,6 @@ public class RADComponent {
     beanInfo = BeanSupport.createBeanInfo (beanClass);
     
     initInternal ();
-
     PropertyDescriptor[] props = beanInfo.getPropertyDescriptors ();
     for (int i = 0; i < props.length; i++) {
       RADProperty prop = (RADProperty)nameToProperty.get (props[i].getName ());
@@ -126,7 +140,7 @@ public class RADComponent {
         if ((!prop.canRead ()) || (!prop.canWrite ())) continue; // ignore this property
         Object currentValue = prop.getValue ();
         Object defaultValue = defaultPropertyValues.get (props[i].getName ());
-        if ((defaultValue != null) && !Utilities.compareObjects (currentValue, defaultValue)) {
+        if (!Utilities.compareObjects (currentValue, defaultValue)) {
           // add the property to the list of changed properties
           changedPropertyValues.put (prop, currentValue);
         }
@@ -136,6 +150,26 @@ public class RADComponent {
       }
     }
     // [PENDING - initialize changed properties]
+  }
+
+  /** Called to create the instance of the bean. Default implementation simply creates instance 
+  * of the bean's class using the default constructor.  Top-level container (the form object itself) 
+  * will redefine this to use FormInfo to create the instance, as e.g. Dialogs cannot be created using 
+  * the default constructor.
+  * Note: this method is called only if the setComponent method is used, if setInstance is used, no new instance is created.
+  * @return the instance of the bean that will be used during design time 
+  */
+  protected Object createBeanInstance () {
+    return BeanSupport.createBeanInstance (beanClass);
+  }
+  
+  /** Used by TuborgPersistenceManager */
+  void initDeserializedEvents (java.util.Hashtable eventHandlers) {
+    eventsList.initEvents (eventHandlers);
+  }
+  
+  void setNodeReference (RADComponentNode node) {
+    this.componentNode = node;
   }
 
   private void initInternal () {
@@ -151,39 +185,33 @@ public class RADComponent {
     defaultPropertyValues = BeanSupport.getDefaultPropertyValues (beanClass);
   }
 
-  /** Called to create the instance of the bean. Default implementation simply creates instance 
-  * of the bean's class using the default constructor.  Top-level container (the form object itself) 
-  * will redefine this to use FormInfo to create the instance, as e.g. Dialogs cannot be created using 
-  * the default constructor 
-  * @return the instance of the bean that will be used during design time 
-  */
-  protected Object createBeanInstance () {
-    return BeanSupport.createBeanInstance (beanClass);
-  }
-  
-  void setNodeReference (RADComponentNode node) {
-    this.componentNode = node;
-  }
-
-  RADComponentNode getNodeReference () {
-    return componentNode;
-  }
-
 // -----------------------------------------------------------------------------
 // Public interface
 
+  /** Provides access to the Class of the bean represented by this RADComponent
+  * @return the Class of the bean represented by this RADComponent
+  */
   public Class getBeanClass () {
     return beanClass;
   }
 
+  /** Provides access to the real instance of the bean represented by this RADComponent
+  * @return the instance of the bean represented by this RADComponent
+  */
   public Object getBeanInstance () {
     return beanInstance;
   }
   
+  /** Provides access to BeanInfo of the bean represented by this RADComponent
+  * @return the BeanInfo of the bean represented by this RADComponent
+  */
   public BeanInfo getBeanInfo () {
     return beanInfo;
   }
 
+  /** This method can be used to check whether the bean represented by this RADCOmponent has hidden-state.
+  * @return true if the component has hidden state, false otherwise
+  */
   public boolean hasHiddenState () {
     return (getBeanInfo ().getBeanDescriptor ().getValue ("hidden-state") != null);
   }
@@ -236,6 +264,10 @@ public class RADComponent {
     return auxValues.get (key);
   }
   
+  /** Provides access to the FormManager class which manages the form in which this component has been added.
+  * The FormManager is the central class for obtaining informations about the form
+  * @return the FormManager which manages the form into which this component has been added
+  */
   public FormManager2 getFormManager () {
     return formManager;
   }
@@ -310,7 +342,14 @@ public class RADComponent {
     }
     return beanPropertySets;
   }
-  
+
+  /** Provides access to the Node which represents this RADComponent
+  * @return the RADComponentNode which represents this RADComponent
+  */
+  public RADComponentNode getNodeReference () {
+    return componentNode;
+  }
+
 // -----------------------------------------------------------------------------
 // Package-private Access to component Properties
 
@@ -448,26 +487,19 @@ public class RADComponent {
 
   }
   
-  Node.Property getPropertyByName (String name) {
-    return (Node.Property) nameToProperty.get (name);
+  /** Can be used to obtain RADProperty of property with specified name
+  * @param name the name of the property - the same as returned from PropertyDescriptor.getName ()
+  * @return the RADProperty representing the specified property or null if property with specified name does not exist
+  */
+  RADProperty getPropertyByName (String name) {
+    return (RADProperty) nameToProperty.get (name);
   }
   
-  private Node.Property createProperty (final PropertyDescriptor desc) {
-    Node.Property prop;
-    if (desc instanceof IndexedPropertyDescriptor) {
-      prop = new RADIndexedPropertyImpl ((IndexedPropertyDescriptor)desc);
-    } else { 
-      prop = new RADPropertyImpl (desc);
-    }
-
-    prop.setName (desc.getName ());
-    prop.setDisplayName (desc.getDisplayName ());
-    prop.setShortDescription (desc.getShortDescription ());
-
-    nameToProperty.put (desc.getName (), prop);
-    return prop;
-  }
-
+  /** This method can be used to correctly set property value of specified property on the bean represented by this RADComponent. 
+  * Used during deserialization.
+  * @param desc The property to change
+  * @param value the new value of the property
+  */
   void restorePropertyValue (PropertyDescriptor desc, Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
     setPropertyValue (desc, value);
     Object defValue = defaultPropertyValues.get (desc.getName ());
@@ -476,6 +508,9 @@ public class RADComponent {
     changedPropertyValues.put (prop, value);
   }
   
+  /** This method can be used to obtain default property value of the specified property. 
+  * @return the default property value or null, which means that the default value is null or cannot be obtained (write only property, ...)
+  */
   Object getDefaultPropertyValue (RADProperty prop) {
     return changedPropertyValues.get (prop);
   }
@@ -575,7 +610,23 @@ public class RADComponent {
   }
 
 // -----------------------------------------------------------------------------
-// Inner Classes
+// Properties and Inner Classes
+
+  private Node.Property createProperty (final PropertyDescriptor desc) {
+    Node.Property prop;
+    if (desc instanceof IndexedPropertyDescriptor) {
+      prop = new RADIndexedPropertyImpl ((IndexedPropertyDescriptor)desc);
+    } else { 
+      prop = new RADPropertyImpl (desc);
+    }
+
+    prop.setName (desc.getName ());
+    prop.setDisplayName (desc.getDisplayName ());
+    prop.setShortDescription (desc.getShortDescription ());
+
+    nameToProperty.put (desc.getName (), prop);
+    return prop;
+  }
 
   interface RADProperty {
     public String getName ();
@@ -676,14 +727,23 @@ public class RADComponent {
       } catch (InvocationTargetException e) { // no problem -> keep null
       }
       
-      Object defValue = defaultPropertyValues.get (desc.getName ());
-      if ((defValue != null) && (val != null) && (defValue.equals (val))) {
+
+      boolean isChanged = false;
+      if (defaultPropertyValues.containsKey (desc.getName ())) { // if there is reasonable default
+        Object defValue = defaultPropertyValues.get (desc.getName ());
+        isChanged = Utilities.compareObjects (defValue, val);
+      } else { // no default => always treat is as changed
+        isChanged = true;
+      }
+
+      if (isChanged) {
         // resetting to default value
         changedPropertyValues.remove (RADPropertyImpl.this);
       } else {
         // add the property to the list of changed properties
         changedPropertyValues.put (RADPropertyImpl.this, val);
       }
+      
       debugChangedValues ();
       getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), old, val);
     }
@@ -692,7 +752,7 @@ public class RADComponent {
     * @return <code>true</code> if it does
     */
     public boolean supportsDefaultValue () {
-      return true;
+      return defaultPropertyValues.containsKey (desc.getName ()); // true if there is reasonable default
     }
 
     /** Restore this property to its default value, if supported.
@@ -713,8 +773,8 @@ public class RADComponent {
       }
       
       // 2. restore the default property value
-      Object def = defaultPropertyValues.get (desc.getName ());
-      if (def != null) {
+      if (defaultPropertyValues.containsKey (desc.getName ())) { // if there is reasonable default
+        Object def = defaultPropertyValues.get (desc.getName ());
         try {
           setValue (def);
         } catch (IllegalAccessException e) {
@@ -848,14 +908,13 @@ public class RADComponent {
       if (canRead ()) {
         try {
           old = getValue ();
+          if (Utilities.compareObjects(old, val)) return; // no change
         } catch (IllegalArgumentException e) {  // no problem -> keep null
         } catch (IllegalAccessException e) {    // no problem -> keep null
         } catch (InvocationTargetException e) { // no problem -> keep null
         }
       }
       
-      if (old == val) return; // no change
-      if ((old != null) && (val != null) && (val.equals (old))) return; // no change
 
       try {
         setPropertyValue (desc, val);
@@ -864,8 +923,15 @@ public class RADComponent {
       } catch (InvocationTargetException e) { // no problem -> keep null
       }
       
-      Object defValue = defaultPropertyValues.get (desc.getName ());
-      if ((defValue != null) && (val != null) && (defValue.equals (val))) {
+      boolean isChanged = false;
+      if (defaultPropertyValues.containsKey (desc.getName ())) { // if there is reasonable default
+        Object defValue = defaultPropertyValues.get (desc.getName ());
+        isChanged = Utilities.compareObjects (defValue, val);
+      } else { // no default => always treat is as changed
+        isChanged = true;
+      }
+      
+      if (isChanged) {
         // resetting to default value
         changedPropertyValues.remove (RADIndexedPropertyImpl.this);
       } else {
@@ -880,7 +946,7 @@ public class RADComponent {
     * @return <code>true</code> if it does
     */
     public boolean supportsDefaultValue () {
-      return true;
+      return defaultPropertyValues.containsKey (desc.getName ()); // true if there is reasonable default
     }
 
     /** Restore this property to its default value, if supported.
@@ -901,8 +967,8 @@ public class RADComponent {
       }
       
       // 2. restore the default property value
-      Object def = defaultPropertyValues.get (desc.getName ());
-      if (def != null) {
+      if (defaultPropertyValues.containsKey (desc.getName ())) { // if there is reasonable default
+        Object def = defaultPropertyValues.get (desc.getName ());
         try {
           setValue (def);
         } catch (IllegalAccessException e) {
@@ -1113,6 +1179,11 @@ public class RADComponent {
 
 /*
  * Log
+ *  45   Gandalf   1.44        9/2/99   Ian Formanek    Fixed bug 3696 - When 
+ *       connection is copied and pasted into form, the initialization code of 
+ *       the ConnectionSource component is not correctly generated. and 3695 - 
+ *       Modified properties with null value are not restored correctly when a 
+ *       form is reloaded.
  *  44   Gandalf   1.43        8/18/99  Ian Formanek    Fixed bug 3475 - When 
  *       the custom property editor for some properties is cancelled, the setter
  *       code for this property becomes generated.
