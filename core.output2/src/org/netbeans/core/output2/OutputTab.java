@@ -155,7 +155,7 @@ final class OutputTab extends AbstractOutputTab {
             for (int i=0; i < lines.length; i++) {
                 try {
                     String s = out.getLines().getLine(lines[i]);
-                    if (s.indexOf("[deprecation]") == -1 && s.indexOf("warning") == -1) {
+                    if (s.indexOf("[deprecation]") == -1 && s.indexOf("warning") == -1 && s.indexOf("stopped") == -1) {
                         result = lines[i];
                         if (Controller.log) Controller.log ("Line to navigate to" +
                             "is line " + lines[i] + ": " + s);
