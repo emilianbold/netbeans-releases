@@ -53,6 +53,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
   public static final String XML_PROPERTY = "Property";
   public static final String XML_AUX_VALUES = "AuxValues";
   public static final String XML_AUX_VALUE = "AuxValue";
+  public static final String XML_SERIALIZED_PROPERTY_VALUE = "SerializedValue";
   
   public static final String ATTR_FORM_VERSION = "version";
   public static final String ATTR_FORM_TYPE = "type";
@@ -74,6 +75,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
   public static final String VALUE_RAD_CONNECTION = "RADConnection";
   
   private static final String ONE_INDENT =  "  ";
+
+  private org.w3c.dom.Document topDocument = new com.ibm.xml.dom.DocumentImpl ();
   
   /** A method which allows the persistence manager to provide infotrmation on whether
   * is is capable to store info about advanced features provided from Developer 3.0 
@@ -114,12 +117,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
   // 1. check the top-level element name
     if (!XML_FORM.equals (mainElement.getTagName ())) {
-      throw new IOException (); // [PENDING]
+      throw new IOException (FormEditor.getFormBundle ().getString ("ERR_BadXMLFormat"));
     }
 
   // 2. check the form version
     if (!CURRENT_VERSION.equals (mainElement.getAttribute (ATTR_FORM_VERSION))) {
-      throw new IOException (); // [PENDING - better version checking]
+      throw new IOException (FormEditor.getFormBundle ().getString ("ERR_BadXMLVersion"));
     }
     String infoClass = mainElement.getAttribute (ATTR_FORM_TYPE);
     FormInfo formInfo = null;
@@ -129,8 +132,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
     try {
       formInfo = (FormInfo)TopManager.getDefault ().systemClassLoader ().loadClass (infoClass).newInstance ();
     } catch (Exception e) {
-      // [PENDING - notify problem]
-      return null;
+      throw new IOException (java.text.MessageFormat.format (
+        FormEditor.getFormBundle ().getString ("FMT_ERR_FormInfoNotFound"),
+        new String[] { infoClass }
+        )
+      );
     }
 
     RADForm radForm = new RADForm (formInfo);
@@ -141,8 +147,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     org.w3c.dom.NodeList childNodes = mainElement.getChildNodes ();   
     if (childNodes == null) {
-      // [PENDING - notify problem]
-      return null;
+      throw new IOException (FormEditor.getFormBundle ().getString ("ERR_BadXMLFormat"));
     }
 
     processNonVisuals (mainElement, formManager2);
@@ -577,13 +582,20 @@ public class GandalfPersistenceManager extends PersistenceManager {
       if (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {
         valueType = VALUE_RAD_CONNECTION;
       }
-      String encodedValue = encodeValue (value, prop.getCurrentEditor ());
-      if (encodedValue == null) {
-        // [PENDING - notify problem?]
-        continue;
+      String encodedValue = null; 
+      org.w3c.dom.Node valueNode = null;
+      if (prop.getCurrentEditor () instanceof XMLPropertyEditor) {
+        prop.getCurrentEditor ().setValue (value);
+        valueNode = ((XMLPropertyEditor)prop.getCurrentEditor ()).storeToXML (topDocument);
+      } else {
+        encodedValue = encodeValue (value, prop.getCurrentEditor ());
+        if (encodedValue == null) {
+          // [PENDING - notify problem?]
+          continue;
+        }
       }
       buf.append (indent); 
-      addLeafElementOpenAttr (
+      addElementOpenAttr (
           buf, 
           XML_PROPERTY, 
           new String[] { 
@@ -591,15 +603,30 @@ public class GandalfPersistenceManager extends PersistenceManager {
             ATTR_PROPERTY_TYPE, 
             ATTR_PROPERTY_EDITOR, 
             ATTR_PROPERTY_VALUE_TYPE, 
-            ATTR_PROPERTY_VALUE },
+            },
           new String[] { 
             desc.getName (), 
             desc.getPropertyType ().getName (), 
             prop.getCurrentEditor ().getClass ().getName (), 
             valueType, 
-            encodedValue
           }
       );
+      if (valueNode != null) {
+        saveNodeIntoText (buf, valueNode, indent + ONE_INDENT);
+      } else {
+        addLeafElementOpenAttr (
+            buf, 
+            XML_SERIALIZED_PROPERTY_VALUE, 
+            new String[] { 
+              ATTR_PROPERTY_VALUE, 
+              },
+            new String[] {
+              encodedValue,
+            }
+        );
+      }
+      buf.append (indent); 
+      addElementClose (buf, XML_PROPERTY);
     }
   }
 
@@ -665,7 +692,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
           },
           new String[] { 
             layoutName, 
-            "", 
+            "", // [PENDING]
           }
       );
     }
@@ -834,10 +861,51 @@ public class GandalfPersistenceManager extends PersistenceManager {
     buf.append (elementName);
     buf.append (">\n");
   }
+
+  private void saveNodeIntoText (StringBuffer buf, org.w3c.dom.Node valueNode, String indent) {
+    buf.append (indent); 
+    buf.append ("<");
+    buf.append (valueNode.getNodeName ());
+
+    org.w3c.dom.NamedNodeMap attributes = valueNode.getAttributes ();
+
+    for (int i = 0; i < attributes.getLength (); i++) {
+      org.w3c.dom.Node attrNode = attributes.item (i);
+      String attrName = attrNode.getNodeName (); 
+      String attrValue = attrNode.getNodeValue (); 
+      
+      buf.append (" ");
+      buf.append (attrName);
+      buf.append ("=\"");
+      buf.append (attrValue);
+      buf.append ("\"");
+    }
+
+    // [PENDING - CNODES, TEXT NODES, ...]
+
+    org.w3c.dom.NodeList children = valueNode.getChildNodes ();
+    if ((children == null) || (children.getLength () == 0)) {
+      buf.append ("/>\n");
+    } else {
+      buf.append (">\n");
+      for (int i = 0; i < children.getLength (); i++) {
+        if (children.item (i).getNodeType () == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
+        saveNodeIntoText (buf, children.item (i), indent + ONE_INDENT);
+      }
+      buf.append (indent);
+      buf.append ("</");
+      buf.append (valueNode.getNodeName ());
+      buf.append (">\n");
+    }
+  }
+
+
 }
 
 /*
  * Log
+ *  13   Gandalf   1.12        7/12/99  Ian Formanek    Uses XMLPropertyEditor 
+ *       or sub element for serialized property values
  *  12   Gandalf   1.11        7/12/99  Ian Formanek    Second cut - loads/saves
  *       events, properties and aux values
  *  11   Gandalf   1.10        7/12/99  Ian Formanek    First cut of saving
