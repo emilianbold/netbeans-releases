@@ -37,6 +37,7 @@ import org.openide.loaders.DataLoader;
 import org.openide.loaders.UniFileLoader; 
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.ExtensionList;
+import org.openide.ErrorManager;
 
 import org.netbeans.modules.xml.text.syntax.*;
 import org.netbeans.modules.xml.text.syntax.dom.*;
@@ -272,10 +273,14 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
     
     private List queryElements(SyntaxQueryHelper helper, Document doc, XMLSyntaxSupport sup) {
         try {
-            Enumeration res = getPerformer(doc, sup).queryElements(helper.getContext());
-            return translateElements(res);
+            GrammarQuery performer = getPerformer(doc, sup);
+            HintContext ctx = helper.getContext();
+            String typedPrefix = ctx.getCurrentPrefix();
+            Enumeration res = performer.queryElements(ctx);
+            return translateElements(res, typedPrefix, performer);
         } 
         catch(UOException e){
+            ErrorManager.getDefault().notify(e);
             return null;
         }
     }
@@ -306,11 +311,18 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
         }
         return result;
     }
-    
-    private List translateElements(Enumeration els ) {
+
+    /** Translate results perfromer (DOM nodes) format to CompletionQuery.ResultItems format. */
+    private List translateElements(Enumeration els, String prefix, GrammarQuery perfomer) {
         List result = new ArrayList(13);
         while (els.hasMoreElements()) {
             GrammarResult next = (GrammarResult) els.nextElement();
+            if (prefix.equals(next.getNodeName())) {
+// XXX It's probably OK that perfomer has returned it, we just do not want to visualize it                 
+//                ErrorManager err =ErrorManager.getDefault();
+//                err.log(ErrorManager.WARNING, "Grammar " + perfomer.getClass().getName() + " result '"  + prefix + "' eliminated to avoid #28224.");  // NOi18N
+                continue;
+            }
             ElementResultItem ei = new ElementResultItem(next);
             result.add( ei );
         }
