@@ -595,35 +595,35 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                
         ssDebug.put(p);
                 
-        if (org.openide.util.Utilities.isWindows()) {
-            // DEBUGGING TYPE
-            p = new PropertySupport.ReadWrite (
-                       DEBUGGING_TYPE,
-                       String.class,
-                       NbBundle.getMessage (TomcatInstanceNode.class, "PROP_debuggingType"),   // NOI18N
-                       NbBundle.getMessage (TomcatInstanceNode.class, "HINT_debuggingType")  // NOI18N
-                   ) {
-                       public Object getValue () {
-                           return getDebugType();
-                       }
+        // DEBUGGING TYPE
+        p = new PropertySupport.ReadWrite (
+                   DEBUGGING_TYPE,
+                   String.class,
+                   NbBundle.getMessage (TomcatInstanceNode.class, "PROP_debuggingType"),   // NOI18N
+                   NbBundle.getMessage (TomcatInstanceNode.class, "HINT_debuggingType")  // NOI18N
+               ) {
+                   public Object getValue () {
+                       return getDebugType();
+                   }
 
-                       public void setValue (Object val) {
-                           TomcatManager mng = getTomcatManager();
-                           if (mng!=null) {
-                               if (mng.isRunning(false)) {
-                                   TomcatInstallUtil.notifyThatRunning(mng);
-                               } else {
-                                    setDebugType((String)val);
-                               }
+                   public void setValue (Object val) {
+                       TomcatManager mng = getTomcatManager();
+                       if (mng!=null) {
+                           if (mng.isRunning(false)) {
+                               TomcatInstallUtil.notifyThatRunning(mng);
+                           } else {
+                                setDebugType((String)val);
                            }
                        }
+                   }
 
-                       public PropertyEditor getPropertyEditor(){
-                           return new DebuggingTypeEditor();
-                       }
-                   };
-            ssDebug.put(p);
+                   public PropertyEditor getPropertyEditor(){
+                       return new DebuggingTypeEditor();
+                   }
+               };
+        ssDebug.put(p);
             
+        if (org.openide.util.Utilities.isWindows()) {
             // NAME FOR SHARED MEMORY ACCESS
             p = new PropertySupport.ReadWrite (
                        NAME_FOR_SHARED_MEMORY_ACCESS,
