@@ -589,15 +589,9 @@ public class JTreeOperator extends JComponentOperator
 		TreePath path = (TreePath)((Object[])obj)[1];
                 currentPath = path;
 		Object[] result = new Object[2];
-                int count = getChildCount(path.getLastPathComponent());
-		for(int j = 0; j < count; j++) {
-                    Object child = null;
-                    try {
-                        child = getChild(path.getLastPathComponent(), j);
-                    } catch(IndexOutOfBoundsException e) {
-                        return(null);
-                    }
-                    result[0] = path.pathByAddingChild(child);
+                Object[] children = getChildren(path.getLastPathComponent());
+                for(int j = 0; j < children.length; j++) {
+                    result[0] = path.pathByAddingChild(children[j]);
 		    if(chsr.checkPath((TreePath)result[0], j)) {
 			result[1] = Boolean.TRUE;
 			return(result);
