@@ -41,6 +41,7 @@ public abstract class IndexSearchThread extends Thread  {
     protected String reminder="";
     private int tokens=0;
 
+    private String lastAdd ="";
     /** This method must terminate the process of searching */
     abstract void stopSearch();
 
@@ -105,12 +106,24 @@ public abstract class IndexSearchThread extends Thread  {
         }
         
         if( tokens < 2 ){
-            if( diiField.startsWith( lastField ) )
-                ddiConsumer.addDocIndexItem ( dii );
-            else if( diiDeclaringClass.startsWith( lastField ) ) 
-                ddiConsumer.addDocIndexItem ( dii );
-            else if( diiPackage.startsWith( lastField + '.' ) && dii.getIconIndex() == DocSearchIcons.ICON_PACKAGE ) 
-                ddiConsumer.addDocIndexItem ( dii );
+            if( diiField.startsWith( lastField ) ){
+                if( !lastAdd.equals( diiField ) ){
+                    ddiConsumer.addDocIndexItem ( dii );//System.out.println("Field " + diiField + " icon " + dii.getIconIndex() + " remark " + dii.getRemark());
+                    lastAdd = diiField;
+                }
+            }
+            else if( diiDeclaringClass.startsWith( lastField ) && dii.getIconIndex() == DocSearchIcons.ICON_CLASS ) {
+                if( !lastAdd.equals( diiDeclaringClass ) ){
+                    ddiConsumer.addDocIndexItem ( dii );//System.out.println("Declaring class " + diiDeclaringClass + " icon " + dii.getIconIndex() + " remark " + dii.getRemark());
+                    lastAdd = diiDeclaringClass;
+                }
+            }
+            else if( diiPackage.startsWith( lastField + '.' ) && dii.getIconIndex() == DocSearchIcons.ICON_PACKAGE ) {
+                if( !lastAdd.equals( diiPackage ) ){
+                    ddiConsumer.addDocIndexItem ( dii );//System.out.println("Package " + diiPackage + " icon " + dii.getIconIndex() + " remark " + dii.getRemark());
+                    lastAdd = diiPackage;
+                }
+            }
         }
         else{            
             if( tokens == 2 ){
