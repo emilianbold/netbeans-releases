@@ -35,6 +35,9 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.SAXException;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /** A web module implementation on top of project.
  *
@@ -59,6 +62,13 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     public FileObject getDeploymentDescriptor() {
+        FileObject webInfFo = getWebInf();
+        if (webInfFo==null) {
+            DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor.Message(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebInfCorrupted"),
+                                             NotifyDescriptor.ERROR_MESSAGE));
+            return null;
+        }
         return getWebInf ().getFileObject (FILE_DD);
     }
 

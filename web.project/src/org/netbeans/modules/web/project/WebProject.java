@@ -72,6 +72,7 @@ import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
+import org.netbeans.modules.web.project.queries.SourceLevelQueryImpl;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -164,6 +165,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
+            new SourceLevelQueryImpl(helper, evaluator()),
             fileBuilt,
             new RecommendedTemplatesImpl(),
             sourcesHelper.createSources()
