@@ -282,7 +282,12 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   private ExplorerPanel createPanel (Node n) {
     ExplorerPanel panel = new ExplorerTab ();
     ExplorerManager manager = panel.getExplorerManager ();
+
+    manager.addPropertyChangeListener (managersListener);
     manager.setRootContext (n);
+
+    n.addPropertyChangeListener (rootsListener);
+
     return panel;
   }
   
@@ -422,6 +427,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   */
   public void open (Workspace workspace) {
     super.open (workspace);
+    /*
     if (!listenersRegistered) {
       for (int i = 0; i < managers.length; i++) {
         managers[i].addPropertyChangeListener (managersListener); 
@@ -432,7 +438,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
         roots[i].addPropertyChangeListener (rootsListener);
       }
       listenersRegistered = true;
-    }
+      }
+      */
     setActivatedNodes (currentManager.getSelectedNodes ());
     updateTitle ();
   }
@@ -441,6 +448,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   */
   public boolean canClose (Workspace workspace, boolean last) {
     boolean result = super.canClose(workspace, last);
+    /*
     if (result && last) {
       for (int i = 0; i < managers.length; i++) {
         managers[i].removePropertyChangeListener (managersListener);
@@ -449,7 +457,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
        roots[i].removePropertyChangeListener (rootsListener);
       }
       listenersRegistered = false;
-    }
+      }
+      */
     return result;
   }
 
@@ -532,6 +541,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     for (int i = 0; i < roots.length; i++) {
       if (roots[i].equals (selRoot)) {
         tabs.setSelectedIndex (i);
+        currentManager = managers[i];
       }
 
       ExplorerManager man = (ExplorerManager)map.get (roots[i]);
@@ -614,6 +624,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  27   Gandalf   1.26        8/3/99   Jaroslav Tulach Getting better and 
+*       better.
 *  26   Gandalf   1.25        8/3/99   Jaroslav Tulach Serialization of 
 *       NbMainExplorer improved again.
 *  25   Gandalf   1.24        8/2/99   Jaroslav Tulach 
