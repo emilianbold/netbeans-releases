@@ -37,6 +37,7 @@ public class Patch extends Reader {
     
     private static final int CONTEXT_DIFF = 0;
     private static final int NORMAL_DIFF = 1;
+    private static final int UNIFIED_DIFF = 2;
     
     private Difference[] diffs;
     private PushbackReader source;
@@ -88,12 +89,15 @@ public class Patch extends Reader {
                 case CONTEXT_DIFF:
                     diffs = parseContextDiff(patchReader);
                     break;
+                case UNIFIED_DIFF:
+                    diffs = parseUnifiedDiff(patchReader);
+                    break;
                 case NORMAL_DIFF:
                     diffs = parseNormalDiff(patchReader);
                     break;
             }
             if (diffs != null) {
-                fileDifferences.add(new FileDifferences(fileName[0].intern(), diffs));
+                fileDifferences.add(new FileDifferences((fileName[0] != null) ? fileName[0].intern() : null, diffs));
             }
         }
         return (FileDifferences[]) fileDifferences.toArray(new FileDifferences[fileDifferences.size()]);
@@ -172,6 +176,7 @@ public class Patch extends Reader {
     }
     
     private static String convertNewLines(String text, String newLine) {
+        if (text == null) return ""; // NOI18N
         if (newLine == null) return text;
         StringBuffer newText = new StringBuffer();
         for (int i = 0; i < text.length(); i++) {
@@ -412,6 +417,137 @@ public class Patch extends Reader {
         }
     }
     
+    private static final String UNIFIED_MARK = "@@";
+    private static final String UNIFIED_MARK1 = "--- ";
+    private static final String UNIFIED_MARK2 = "+++ ";
+    private static final String LINE_PREP_UNIF_ADD = "+";
+    private static final String LINE_PREP_UNIF_REMOVE = "-";
+    private static final String LINE_PREP_UNIF_CHANGE = null;
+
+    private static Difference[] parseUnifiedDiff(Reader in) throws IOException {
+        BufferedReader br = new BufferedReader(in);
+        ArrayList diffs = new ArrayList();
+        String line;
+        do {
+            do {
+                line = br.readLine();
+            } while (line != null && !(line.startsWith(UNIFIED_MARK) &&
+                                       line.length() > UNIFIED_MARK.length() &&
+                                       line.endsWith(UNIFIED_MARK)));
+            int[] intervals = new int[4];
+            try {
+                readUnifiedNums(line, UNIFIED_MARK.length(), intervals);
+            } catch (NumberFormatException nfex) {
+                throw new IOException(nfex.getLocalizedMessage());
+            }
+            int[] firstInterval = new int[2];
+            int[] secondInterval = new int[2];
+            System.arraycopy(intervals, 0, firstInterval, 0, firstInterval.length);
+            System.arraycopy(intervals, 0, secondInterval, 0, secondInterval.length);
+            line = fillUnidifChanges(intervals, br, diffs);
+        } while (line != null);
+        return (Difference[]) diffs.toArray(new Difference[diffs.size()]);
+    }
+    
+    private static void readUnifiedNums(String str, int off, int[] values) throws NumberFormatException {
+        while (str.charAt(off) == ' ' || str.charAt(off) == '-') off++;
+        int end = str.indexOf(CONTEXT_MARK_DELIMETER, off);
+        if (end > 0) {
+            values[0] = Integer.parseInt(str.substring(off, end).trim());
+        } else throw new NumberFormatException("Missing comma.");
+        off = end + 1;
+        end = str.indexOf(' ', off);
+        if (end > 0) {
+            values[1] = Integer.parseInt(str.substring(off, end).trim());
+        } else throw new NumberFormatException("Missing middle space.");
+        off = end + 1;
+        while (str.charAt(off) == ' ' || str.charAt(off) == '+') off++;
+        end = str.indexOf(CONTEXT_MARK_DELIMETER, off);
+        if (end > 0) {
+            values[2] = Integer.parseInt(str.substring(off, end).trim());
+        } else throw new NumberFormatException("Missing second comma.");
+        off = end + 1;
+        end = str.indexOf(' ', off);
+        if (end > 0) {
+            values[3] = Integer.parseInt(str.substring(off, end).trim());
+        } else throw new NumberFormatException("Missing final space.");
+        values[1] += values[0];
+        values[3] += values[2];
+    }
+
+    private static String fillUnidifChanges(int[] interval, BufferedReader br,
+                                            List diffs) throws IOException {
+        String line = br.readLine();
+        int pos1 = interval[0];
+        int pos2 = interval[2];
+        while (line != null && pos1 <= interval[1] && pos2 <= interval[3]) {
+            if (line.startsWith(LINE_PREP_UNIF_ADD)) {
+                int begin = pos2;
+                StringBuffer changeText = new StringBuffer();
+                changeText.append(line.substring(LINE_PREP_UNIF_ADD.length()));
+                changeText.append('\n');
+                do {
+                    line = br.readLine();
+                    pos2++;
+                    if (line.startsWith(LINE_PREP_UNIF_ADD)) {
+                        changeText.append(line.substring(LINE_PREP_UNIF_ADD.length()));
+                        changeText.append('\n');
+                    } else {
+                        break;
+                    }
+                } while (true);
+                Difference diff = null;
+                if (diffs.size() > 0) {
+                    Difference previousDiff = (Difference) diffs.get(diffs.size() - 1);
+                    if (Difference.DELETE == previousDiff.getType() && previousDiff.getFirstEnd() == (pos1 - 1)) {
+                        diff = new Difference(Difference.CHANGE,
+                            previousDiff.getFirstStart(), previousDiff.getFirstEnd(),
+                            begin, pos2 - 1, previousDiff.getFirstText(), changeText.toString());
+                        diffs.remove(diffs.size() - 1);
+                    }
+                }
+                if (diff == null) {
+                    diff = new Difference(Difference.ADD, pos1 - 1, 0, begin, pos2 - 1, null, changeText.toString());
+                }
+                diffs.add(diff);
+            } else if (line.startsWith(LINE_PREP_UNIF_REMOVE)) {
+                int begin = pos1;
+                StringBuffer changeText = new StringBuffer();
+                changeText.append(line.substring(LINE_PREP_UNIF_REMOVE.length()));
+                changeText.append('\n');
+                do {
+                    line = br.readLine();
+                    pos1++;
+                    if (line.startsWith(LINE_PREP_UNIF_REMOVE)) {
+                        changeText.append(line.substring(LINE_PREP_UNIF_REMOVE.length()));
+                        changeText.append('\n');
+                    } else {
+                        break;
+                    }
+                } while (true);
+                Difference diff = null;
+                if (diffs.size() > 0) {
+                    Difference previousDiff = (Difference) diffs.get(diffs.size() - 1);
+                    if (Difference.ADD == previousDiff.getType() && previousDiff.getSecondEnd() == (pos2 - 1)) {
+                        diff = new Difference(Difference.CHANGE, begin, pos1 - 1,
+                            previousDiff.getFirstStart(), previousDiff.getFirstEnd(),
+                            changeText.toString(), previousDiff.getFirstText());
+                        diffs.remove(diffs.size() - 1);
+                    }
+                }
+                if (diff == null) {
+                    diff = new Difference(Difference.DELETE, begin, pos1 - 1, pos2 - 1, 0, changeText.toString(), null);
+                }
+                diffs.add(diff);
+            } else {
+                line = br.readLine();
+                pos1++;
+                pos2++;
+            }
+        }
+        return line;
+    }
+    
     private static Difference[] parseNormalDiff(Reader in) throws IOException {
         RE normRegexp;
         try {
@@ -521,6 +657,7 @@ public class Patch extends Reader {
             char[] buff = new char[DIFFERENCE_DELIMETER.length()];
             int length;
             RE normRegexp;
+            boolean contextBeginDetected = false;
             try {
                 normRegexp = new RE(CmdlineDiffProvider.DIFF_REGEXP);
             } catch (RESyntaxException rsex) {
@@ -548,6 +685,10 @@ public class Patch extends Reader {
                     diffType[0] = CONTEXT_DIFF;
                     patchSource.unread(buff, 0, length);
                     return true;
+                } else if (input.startsWith(UNIFIED_MARK + " ")) {
+                    diffType[0] = UNIFIED_DIFF;
+                    patchSource.unread(buff, 0, length);
+                    return true;
                 } else if (input.startsWith(FILE_INDEX)) {
                     StringBuffer name = new StringBuffer(input.substring(FILE_INDEX.length()));
                     if (nl < 0) {
@@ -558,8 +699,14 @@ public class Patch extends Reader {
                         }
                     }
                     fileName[0] = name.toString();
-                } else if (input.startsWith(CONTEXT_MARK1B)) {
-                    StringBuffer name = new StringBuffer(input.substring(CONTEXT_MARK1B.length()));
+                } else if (input.startsWith(CONTEXT_MARK1B) || !contextBeginDetected && input.startsWith(UNIFIED_MARK1)) {
+                    StringBuffer name;
+                    if (input.startsWith(CONTEXT_MARK1B)) {
+                        contextBeginDetected = true;
+                        name = new StringBuffer(input.substring(CONTEXT_MARK1B.length()));
+                    } else {
+                        name = new StringBuffer(input.substring(UNIFIED_MARK1.length()));
+                    }
                     String sname = name.toString();
                     int spaceIndex = sname.indexOf('\t');
                     if (spaceIndex > 0) {
