@@ -80,6 +80,7 @@ cause it to fail.
         <property name="javadoc.docs.core/javahelp" value="${javadoc.web.root}/JavaHelpAPI"/>
         <property name="javadoc.docs.core/term" value="${javadoc.web.root}/UnsupportedAPIs/TerminalEmulatorAPI"/>
         <property name="javadoc.docs.java/api" value="${javadoc.web.root}/JavaSupportAPIs"/>
+        <property name="javadoc.docs.java/srcmodel" value="${javadoc.web.root}/JavaHierarchyAPI"/>
         <property name="javadoc.docs.openide/registry" value="${javadoc.web.root}/RegistryAPI"/>
         <property name="javadoc.docs.openide/convertor" value="${javadoc.web.root}/ConvertorAPI"/>
         <property name="javadoc.docs.openide/looks" value="${javadoc.web.root}/LooksAPI"/>
@@ -139,6 +140,7 @@ cause it to fail.
             <link href="${javadoc.docs.core/javahelp}" offline="true" packagelistloc="../../core/javahelp/javadoc/JavaHelpAPI"/>
             <link href="${javadoc.docs.core/term}" offline="true" packagelistloc="../../core/term/javadoc/TerminalEmulatorAPI"/>
             <link href="${javadoc.docs.java/api}" offline="true" packagelistloc="../../java/api/javadoc/JavaSupportAPIs"/>
+            <link href="${javadoc.docs.java/srcmodel}" offline="true" packagelistloc="../../java/srcmodel/javadoc/JavaHierarchyAPI"/>
             <link href="${javadoc.docs.openide/registry}" offline="true" packagelistloc="../../openide/registry/javadoc/RegistryAPI"/>
             <link href="${javadoc.docs.openide/convertor}" offline="true" packagelistloc="../../openide/convertor/javadoc/ConvertorAPI"/>
             <link href="${javadoc.docs.openide/looks}" offline="true" packagelistloc="../../openide/looks/javadoc/LooksAPI"/>
@@ -222,6 +224,7 @@ cause it to fail.
             <replacefilter token="@CORE/JAVAHELP@" value="${javadoc.docs.core/javahelp}"/>
             <replacefilter token="@CORE/TERM@" value="${javadoc.docs.core/term}"/>
             <replacefilter token="@JAVA/API@" value="${javadoc.docs.java/api}"/>
+            <replacefilter token="@JAVA/SRCMODEL@" value="${javadoc.docs.java/srcmodel}"/>
             <replacefilter token="@OPENIDE/REGISTRY@" value="${javadoc.docs.openide/registry}"/>
             <replacefilter token="@OPENIDE/CONVERTOR@" value="${javadoc.docs.openide/convertor}"/>
             <replacefilter token="@OPENIDE/LOOKS@" value="${javadoc.docs.openide/looks}"/>
@@ -254,9 +257,6 @@ cause it to fail.
         <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks">
             <classpath>
                 <pathelement location="../nbantext.jar"/>
-                <fileset dir="../../libs/external">
-                    <include name="regexp*.jar"/>
-                </fileset>
             </classpath>
         </taskdef>
         <checklinks basedir="${javadoc.out.dir}" checkexternal="${javadoc.check.external.links}">
