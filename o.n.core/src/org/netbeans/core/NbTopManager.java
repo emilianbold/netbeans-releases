@@ -433,7 +433,7 @@ public abstract class NbTopManager extends TopManager {
     }
     /** Allows to use another implementation of ErrorManager. 
      *  Configuration is easy and needs add system property: org.openide.ErrorManager.
-     *  For example:  org.openide.ErrorManager="org.netbeans.core.NbTraceErrorManager" 
+     *  For example:  -J-Dorg.openide.ErrorManager=org.netbeans.core.NbTraceErrorManager
      *  @return implementation of ErrorManager
      */
     private ErrorManager initErrorManager () {
@@ -442,7 +442,7 @@ public abstract class NbTopManager extends TopManager {
             return new NbErrorManager();
 
         try {
-            Class c = Class.forName(className,true,currentClassLoader());
+            Class c = Class.forName (className, true, systemClassLoader ());
             return (ErrorManager) c.newInstance();
         } catch(Exception e) {
             System.err.println("Cannot create ErrorManager: "+className);// NOI18N
