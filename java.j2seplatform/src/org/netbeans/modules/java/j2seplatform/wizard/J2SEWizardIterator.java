@@ -33,11 +33,13 @@ import org.openide.ErrorManager;
 import org.openide.modules.SpecificationVersion;
 
 import org.netbeans.api.java.platform.*;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import org.openide.modules.InstalledFileLocator;
 
 /**
@@ -127,13 +129,52 @@ public class J2SEWizardIterator
                             if (props.getProperty(homePropName) != null || props.getProperty(bootClassPathPropName) != null
                                || props.getProperty(compilerType)!=null) {
                                 //Already defined warn user
-                                String msg = NbBundle.getMessage(J2SEWizardIterator.class,"ERROR_InvalidName");
+                                String msg = NbBundle.getMessage(J2SEWizardIterator.class,"ERROR_InvalidName"); //NOI18N
                                 throw (IllegalStateException)ErrorManager.getDefault().annotate(
                                         new IllegalStateException(msg), ErrorManager.USER, null, msg,null, null);
                             }
-                            props.setProperty(homePropName,(String)getPlatform().getProperties().get("platform.home")); //NOI18N
-                            props.setProperty(bootClassPathPropName,((JDKImpl)getPlatform()).getBootstrapLibrariesAsString());   //NOI18N
+                            JavaPlatform platform = getPlatform();
+                            File jdkHome = new File ((String)platform.getProperties().get("platform.home")); //NOI18N
+                            props.setProperty(homePropName, jdkHome.getAbsolutePath());
+                            ClassPath bootCP = getPlatform().getBootstrapLibraries();
+                            StringBuffer sbootcp = new StringBuffer();
+                            for (Iterator it = bootCP.entries().iterator(); it.hasNext();) {
+                                ClassPath.Entry entry = (ClassPath.Entry) it.next();
+                                URL url = entry.getURL();
+                                if ("jar".equals(url.getProtocol())) {              //NOI18N
+                                    url = FileUtil.getArchiveFile(url);
+                                }
+                                File root = new File (URI.create(url.toExternalForm()));
+                                if (sbootcp.length()>0) {
+                                    sbootcp.append(File.pathSeparator);
+                                }
+                                sbootcp.append(normalizePath(root, jdkHome, homePropName));
+                            }
+                            props.setProperty(bootClassPathPropName,sbootcp.toString());   //NOI18N
                             props.setProperty(compilerType,getCompilerType(getPlatform()));
+                            FileObject tool = platform.findTool ("javac");                          //NOI18N
+                            if (tool != null) {
+                                if (!isDefaultLocation(tool,platform.getInstallFolders())) {
+                                    String toolName = createName(systemName,"javac");               //NOI18N
+                                    props.setProperty(toolName,normalizePath(getToolPath(tool),jdkHome, homePropName));
+                                }
+                            }
+                            else {
+                                //TODO: User should be asked about the exact path to javac
+                                throw new IOException ("Can not locate javac command");
+
+                            }
+                            tool = platform.findTool ("java");                                      //NOI18N
+                            if (tool != null) {
+                                if (!isDefaultLocation(tool,platform.getInstallFolders())) {
+                                    String toolName = createName(systemName,"java");
+                                    props.setProperty(toolName,normalizePath(getToolPath(tool),jdkHome, homePropName));
+                                }
+                            }
+                            else {
+                                //TODO: User should be asked about the exact path to java
+                                throw new IOException ("Can not locate java command");
+                            }
                             PropertyUtils.putGlobalProperties (props);
                             return null;
                         }
@@ -186,23 +227,38 @@ public class J2SEWizardIterator
         return platform;
     }
 
-    /**
-     * Returns a path to java executable, starting from the JDK installation
-     * root.
-     * @return File for the java executable, may be null if such thing does
-     * not exist.
-     */
-    static File getJavaExecutablePath(FileObject folder) {
-        File f = new File(FileUtil.toFile(folder), "bin"); // NOI18N
-        if (!f.exists() || !f.isDirectory())
-            return null;
-        // special behaviour for WinOS.
-        if (Utilities.isWindows()) {
-            f = new File(f, "java.exe"); // NOI18N
-        } else {
-            f = new File(f, "java"); // NOI18N
+
+    private static boolean isDefaultLocation (FileObject tool, Collection installFolders) {
+        assert tool != null && installFolders != null;
+        if (installFolders.size()!=1)
+            return false;
+        FileObject root = (FileObject)installFolders.iterator().next();
+        String relativePath = FileUtil.getRelativePath(root,tool);
+        if (relativePath == null) {
+            return false;
         }
-        return f.exists() ? f : null;
+        StringTokenizer tk = new StringTokenizer(relativePath, "/");
+        return (tk.countTokens()== 2 && "bin".equals(tk.nextToken()));
+    }
+
+
+    private static File getToolPath (FileObject tool) throws IOException {
+        assert tool != null;
+        return new File (URI.create(tool.getURL().toExternalForm()));
+    }
+
+    private static String normalizePath (File path,  File jdkHome, String propName) {
+        String jdkLoc = jdkHome.getAbsolutePath();
+        if (!jdkLoc.endsWith(File.separator)) {
+            jdkLoc = jdkLoc + File.separator;
+        }
+        String loc = path.getAbsolutePath();
+        if (loc.startsWith(jdkLoc)) {
+            return "${"+propName+"}"+File.separator+loc.substring(jdkLoc.length());           //NOI18N
+        }
+        else {
+            return loc;
+        }
     }
 
     /**
@@ -211,10 +267,13 @@ public class J2SEWizardIterator
      */
     public void run() {
         try {
-            File java = getJavaExecutablePath(installFolder.getPrimaryFile());
+            FileObject java = Util.findTool("java", Collections.singleton(installFolder.getPrimaryFile()));
             if (java == null)
                 return;
-            String javapath = java.getAbsolutePath();
+            File javaFile = FileUtil.toFile (java);
+            if (javaFile == null)
+                return;
+            String javapath = javaFile.getAbsolutePath();
             String filePath = File.createTempFile("nb-platformdetect", "properties").getAbsolutePath();
             getSDKProperties(javapath, filePath);
             File f = new File(filePath);
@@ -304,10 +363,6 @@ public class J2SEWizardIterator
 
         void loadProperties(Map m) {
             super.setSystemProperties(m);
-        }
-
-        public String getBootstrapLibrariesAsString() {
-            return (String)getSystemProperties().get(J2SEPlatformImpl.SYSPROP_BOOT_CLASSPATH);        //NOI18N
         }
     }
 }

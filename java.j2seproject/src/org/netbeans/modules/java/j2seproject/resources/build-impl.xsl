@@ -32,17 +32,24 @@ Microsystems, Inc. All Rights Reserved.
         <property file="${{user.properties.file}}"/>
         <property file="nbproject/project.properties"/>
         <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-            <!-- XXX Ugly but Ant does not yet support recursive property evaluation: -->
+            <!--Setting java and javac default location -->
+            <property name="platforms.${{platform.active}}.javac" value="${{platform.home}}/bin/javac"/>
+            <property name="platforms.${{platform.active}}.java" value="${{platform.home}}/bin/java"/>
+            <!-- XXX Ugly but Ant does not yet support recursive property evaluation: -->            
             <property name="file.tmp" location="${{java.io.tmpdir}}/platform.properties"/>
             <echo file="${{file.tmp}}">
                 platform.home=$${platforms.${platform.active}.home}
-                platform.bootcp=$${platforms.${platform.active}.bootclasspath}
+                platform.bootcp=$${platforms.${platform.active}.bootclasspath}                
                 build.compiler=$${platforms.${platform.active}.compiler}
+                platform.java=$${platforms.${platform.active}.java}
+                platform.javac=$${platforms.${platform.active}.javac}
             </echo>
             <property file="${{file.tmp}}"/>
             <delete file="${{file.tmp}}"/>
             <fail unless="platform.home">Must set platform.home</fail>
-            <fail unless="platform.bootcp">Must set platform.bootcp</fail>
+            <fail unless="platform.bootcp">Must set platform.bootcp</fail>                        
+            <fail unless="platform.java">Must set platform.java</fail>
+            <fail unless="platform.javac">Must set platform.javac</fail>
         </xsl:if>
         <!-- XXX XSLT 2.0 would make it possible to use a for-each here -->
         <!-- Note that if the properties were defined in project.xml that would be easy -->
@@ -84,7 +91,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${{build.classes.dir}}"/>
         <xsl:choose>
             <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                <javac srcdir="${{src.dir}}" destdir="${{build.classes.dir}}" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" source="${{javac.source}}" includeantruntime="false" fork="yes" executable="${{platform.home}}/bin/javac">
+                <javac srcdir="${{src.dir}}" destdir="${{build.classes.dir}}" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" source="${{javac.source}}" includeantruntime="false" fork="yes" executable="${{platform.javac}}">
                     <classpath>
                         <path path="${{javac.classpath}}"/>
                     </classpath>
@@ -136,7 +143,7 @@ Microsystems, Inc. All Rights Reserved.
                 <javac srcdir="${{task-tmp.src.dir}}" destdir="${{task-tmp.out.dir}}"
                     debug="${{task-tmp.debug}}" deprecation="${{javac.deprecation}}"
                     source="${{javac.source}}" includes="${{javac.includes}}" includeantruntime="false"
-                    fork="yes" executable="${{platform.home}}/bin/javac">
+                    fork="yes" executable="${{platform.javac}}">
                     <classpath>
                         <path path="${{task-tmp.classpath}}"/>
                     </classpath>
@@ -177,7 +184,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="run" depends="init,compile">
         <xsl:choose>
         <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-        <java fork="true" classname="${{main.class}}" jvm="${{platform.home}}/bin/java">
+        <java fork="true" classname="${{main.class}}" jvm="${{platform.java}}">
         <xsl:call-template name="run-java-body"/>
         </java>
         </xsl:when>
@@ -192,7 +199,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="do-debug" depends="init">
         <xsl:choose>
         <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-        <java fork="true" classname="${{main.class}}" jvm="${{platform.home}}/bin/java">
+        <java fork="true" classname="${{main.class}}" jvm="${{platform.java}}">
         <xsl:call-template name="debug-java-body"/>
         </java>
         </xsl:when>
@@ -293,7 +300,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${{build.test.results.dir}}"/>
         <xsl:choose>
         <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" jvm="${{platform.home}}/bin/java">
+        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" jvm="${{platform.java}}">
         <xsl:call-template name="test-junit-body"/>
         </junit>
         </xsl:when>
@@ -325,7 +332,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${{build.test.results.dir}}"/>
         <xsl:choose>
             <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" jvm="${{platform.home}}/bin/java">
+                <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" jvm="${{platform.java}}">
                     <xsl:call-template name="test-single-junit-body"/>
                 </junit>
             </xsl:when>
@@ -346,7 +353,7 @@ Microsystems, Inc. All Rights Reserved.
         <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
         <xsl:choose>
             <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                <java fork="true" classname="junit.textui.TestRunner" jvm="${{platform.home}}/bin/java">
+                <java fork="true" classname="junit.textui.TestRunner" jvm="${{platform.java}}">
                     <xsl:call-template name="debug-test-single-java-body"/>
                 </java>
             </xsl:when>

@@ -108,6 +108,13 @@ public abstract class JavaPlatform {
      */
     public abstract Collection getInstallFolders();
 
+    /**
+     * Returns FileObject of platform tool executable.
+     * @param String toolName the tool platform independent tool name.
+     * @return FileObject representing the tool executable or null, if the tool can not be found.
+     */
+    public abstract FileObject findTool (String toolName);
+
 
     /**
      * Returns the locations of the source of platform

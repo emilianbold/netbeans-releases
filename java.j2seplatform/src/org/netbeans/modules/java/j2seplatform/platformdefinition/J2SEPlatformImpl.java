@@ -24,6 +24,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 
 /**
  * Implementation of the JavaPlatform API class, which serves proper
@@ -156,6 +157,11 @@ public class J2SEPlatformImpl extends JavaPlatform {
             }
         }
         return result;
+    }
+
+
+    public final FileObject findTool(final String toolName) {
+        return Util.findTool (toolName, this.getInstallFolders());
     }
 
 

@@ -15,16 +15,15 @@ package org.netbeans.modules.java.j2seplatform.platformdefinition;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
-import java.util.StringTokenizer;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.io.File;
 import java.net.URL;
 import java.net.MalformedURLException;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Utilities;
 
 public class Util {
 
@@ -110,6 +109,30 @@ public class Util {
             result.add (url);
         }
         return result;
+    }
+
+
+    public static FileObject findTool (String toolName, Collection installFolders) {
+        assert toolName != null;
+        for (Iterator it = installFolders.iterator(); it.hasNext();) {
+            FileObject root = (FileObject) it.next();
+            FileObject bin = null;
+            switch (Utilities.getOperatingSystem()) {
+                case Utilities.OS_MAC:
+                    bin = root.getFileObject("Commands");        //NOI18N
+                    break;
+                default:
+                    bin = root.getFileObject("bin");             //NOI18N
+            }
+            if (bin == null) {
+                continue;
+            }
+            FileObject tool = bin.getFileObject(toolName, Utilities.isWindows() ? "exe" : null);    //NOI18N
+            if (tool!= null) {
+                return tool;
+            }
+        }
+        return null;
     }
 
     // copy pasted from org.openide.modules.Dependency:

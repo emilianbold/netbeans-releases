@@ -339,7 +339,6 @@ public final class ClassPath {
      * @param resource the resource whose visibility should be tested
      * @return true, if the resource is contained in the classpath and visible;
      * false otherwise.
-     * @deprecated Use {@link #contains} instead.
      */
     public final boolean isResourceVisible(FileObject resource) {
         String resourceName = getResourceName(resource);
