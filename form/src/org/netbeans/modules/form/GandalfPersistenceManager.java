@@ -1133,7 +1133,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             int alignment = findName(layoutPropNames[0], propertyNames);
             int hgap = findName(layoutPropNames[1], propertyNames);
             int vgap = findName(layoutPropNames[2], propertyNames);
-            if (alignment >= 0) {
+            if (hgap >= 0 || vgap >= 0) {
                 layoutParams = new CodeExpression[3];
                 Object value;
 
@@ -1151,19 +1151,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
                 paramTypes = new Class[] { Integer.TYPE, Integer.TYPE, Integer.TYPE };
             }
-            else if (hgap >= 0 || vgap >= 0) {
-                layoutParams = new CodeExpression[2];
+            else if (alignment >= 0) {
+                layoutParams = new CodeExpression[1];
                 Object value;
 
-                value = hgap >= 0 ? propertyValues[hgap] : new Integer(5);
+                value = alignment >= 0 ? propertyValues[alignment] : new Integer(1);
                 layoutParams[0] = codeStructure.createExpression(
                                       Integer.TYPE, value, value.toString());
 
-                value = vgap >= 0 ? propertyValues[vgap] : new Integer(5);
-                layoutParams[1] = codeStructure.createExpression(
-                                      Integer.TYPE, value, value.toString());
-
-                paramTypes = new Class[] { Integer.TYPE, Integer.TYPE };
+                paramTypes = new Class[] { Integer.TYPE };
             }
             else {
                 layoutParams = CodeStructure.EMPTY_PARAMS;
