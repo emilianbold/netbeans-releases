@@ -5,6 +5,7 @@ if [ -z "$XTEST_SERVER_HOME" ] ; then
      CYGWIN*) XTEST_SERVER_HOME=`cygpath -w "${XTEST_SERVER_HOME}" | tr '\\\' '/'` ;;
    esac
    echo "XTEST_SERVER_HOME not set. Guessing it is $XTEST_SERVER_HOME"
+   export XTEST_SERVER_HOME
 fi
 
 if [ ! -d "$XTEST_SERVER_HOME" ]; then
