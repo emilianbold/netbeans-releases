@@ -33,6 +33,8 @@ import org.openide.loaders.DataObject;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.CallbackSystemAction;
+import org.openide.windows.TopComponent;
+import org.openide.text.CloneableEditor;
 
 /**
 * Editor UI
@@ -95,7 +97,7 @@ public class NbEditorUI extends ExtEditorUI {
     }
 
     public final class SystemActionUpdater
-        implements PropertyChangeListener, ActionPerformer, FocusListener {
+        implements PropertyChangeListener, ActionPerformer {
 
         private String editorActionName;
 
@@ -128,7 +130,7 @@ public class NbEditorUI extends ExtEditorUI {
             }
         }
 
-        public synchronized void focusGained(FocusEvent evt) {
+        public void editorActivated() {
             Action ea = getEditorAction();
             Action sa = getSystemAction();
             if (ea != null && sa != null) {
@@ -147,7 +149,7 @@ public class NbEditorUI extends ExtEditorUI {
             }
         }
 
-        public void focusLost(FocusEvent evt) {
+        public void editorDeactivated() {
             Action ea = getEditorAction();
             Action sa = getSystemAction();
             if (ea != null && sa != null) {
@@ -197,17 +199,26 @@ public class NbEditorUI extends ExtEditorUI {
         public synchronized void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
 
-            if (EditorUI.COMPONENT_PROPERTY.equals(propName)) {
+            if (TopComponent.Registry.PROP_ACTIVATED.equals (propName)) {
+                TopComponent activated = (TopComponent)evt.getNewValue();
+
+                if(activated instanceof CloneableEditor)
+                    editorActivated();
+                else
+                    editorDeactivated();
+            } else if (EditorUI.COMPONENT_PROPERTY.equals(propName)) {
                 JTextComponent component = (JTextComponent)evt.getNewValue();
+                TopComponent.Registry regs = TopComponent.getRegistry();
+
                 if (component != null) { // just installed
                     component.addPropertyChangeListener(this);
-                    component.addFocusListener(this);
+                    regs.addPropertyChangeListener(this);
 
                 } else { // just deinstalled
                     component = (JTextComponent)evt.getOldValue();
 
                     component.removePropertyChangeListener(this);
-                    component.removeFocusListener(this);
+                    regs.removePropertyChangeListener(this);
                 }
 
                 reset();
