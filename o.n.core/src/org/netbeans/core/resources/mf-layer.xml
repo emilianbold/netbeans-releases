@@ -328,10 +328,10 @@ Microsystems, Inc. All Rights Reserved.
 
         <file name="Standard.xml" url="Standard.xml">
             <!-- Optimization only: -->
-            <attr name="org.apache.tools.ant.module.AntProjectDataLoader.KNOWN_ANT_FILE" boolvalue="false"/>
+            <attr name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE" boolvalue="false"/>
         </file>
         <file name="Debugging.xml" url="Debugging.xml">
-            <attr name="org.apache.tools.ant.module.AntProjectDataLoader.KNOWN_ANT_FILE" boolvalue="false"/>
+            <attr name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE" boolvalue="false"/>
         </file>
 
         <folder name="Build">

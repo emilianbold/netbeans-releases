@@ -25,17 +25,19 @@ import org.openide.util.NbBundle;
 
 import org.apache.tools.ant.Project;
 
+import org.apache.tools.ant.module.api.IntrospectedInfo;
+
 public class AntSettings extends SystemOption {
 
-    public static final String PROP_VERBOSITY = "verbosity";
-    public static final String PROP_PROPERTIES = "properties";
-    public static final String PROP_SAVE_ALL = "saveAll";
-    public static final String PROP_CUSTOM_DEFS = "customDefs";
+    public static final String PROP_VERBOSITY = "verbosity"; // NOI18N
+    public static final String PROP_PROPERTIES = "properties"; // NOI18N
+    public static final String PROP_SAVE_ALL = "saveAll"; // NOI18N
+    public static final String PROP_CUSTOM_DEFS = "customDefs"; // NOI18N
 
-    private static final String DEF_CLASS_PATH = "netbeans.class.path";
-    private static final String DEF_BOOTCLASS_PATH = "netbeans.bootclass.path";
-    private static final String DEF_LIBRARY_PATH = "netbeans.library.path";
-    private static final String DEF_FILESYSTEMS_PATH = "netbeans.filesystems.path";
+    private static final String DEF_CLASS_PATH = "netbeans.class.path"; // NOI18N
+    private static final String DEF_BOOTCLASS_PATH = "netbeans.bootclass.path"; // NOI18N
+    private static final String DEF_LIBRARY_PATH = "netbeans.library.path"; // NOI18N
+    private static final String DEF_FILESYSTEMS_PATH = "netbeans.filesystems.path"; // NOI18N
 
     private static final long serialVersionUID = -4457782585534082966L;
     

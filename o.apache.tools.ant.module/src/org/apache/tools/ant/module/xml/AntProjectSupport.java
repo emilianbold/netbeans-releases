@@ -1,0 +1,512 @@
+/*
+ *                         Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License Version
+ * 1.0 (the "License"). You may not use this file except in compliance with 
+ * the License. A copy of the License is available at http://www.sun.com/
+ *
+ * The Original Code is the Ant module
+ * The Initial Developer of the Original Code is Jayme C. Edwards.
+ * Portions created by Jayme C. Edwards are Copyright (c) 2000.
+ * All Rights Reserved.
+ *
+ * Contributor(s): Jesse Glick.
+ */
+ 
+package org.apache.tools.ant.module.xml;
+
+import java.io.*;
+import java.util.*;
+import javax.swing.event.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.StyledDocument;
+
+import org.xml.sax.*;
+import org.w3c.dom.*;
+import org.w3c.dom.events.*;
+import org.apache.xerces.parsers.*;
+import org.apache.xml.serialize.*;
+
+import org.openide.*;
+import org.openide.cookies.EditorCookie;
+import org.openide.execution.NbClassPath;
+import org.openide.nodes.*;
+import org.openide.loaders.*;
+import org.openide.filesystems.*;
+import org.openide.text.NbDocument;
+import org.openide.util.RequestProcessor;
+
+import org.apache.tools.ant.module.AntModule;
+import org.apache.tools.ant.module.api.AntProjectCookie;
+
+public class AntProjectSupport implements AntProjectCookie, DocumentListener, FileChangeListener, org.w3c.dom.events.EventListener, Runnable {
+  
+    private File file;
+    private FileObject fo;
+
+    private transient Document projDoc = null; // [PENDING] SoftReference
+    private transient Throwable exception = null;
+    private transient boolean parsed = false;
+    private transient Object parseLock = new Object ();
+
+    private transient Set listeners = new HashSet ();
+    private transient EditorCookie editor = null;
+    
+    // milliseconds of quiet time after a textual document change after which
+    // changes will be fired and the XML may be reparsed
+    private static final long REPARSE_DELAY = 3000;
+
+    // Document key; if corresponding value exists, we are expecting an update
+    // to be fired from that document currently, and it should be ignored
+    private static final Object expectingDocUpdates = new Object ();
+
+    private static final long serialVersionUID = 7366509989041657663L;
+    
+    public AntProjectSupport (FileObject fo) {
+        this (fo, NbClassPath.toFile (fo));
+    }
+  
+    public AntProjectSupport (File f) {
+        this (null, f);
+    }
+  
+    private AntProjectSupport (FileObject fo, File f) {
+        this.fo = fo;
+        this.file = f;
+    }
+    
+    private EditorCookie getEditor () {
+        if (fo == null) return null;
+        if (editor == null) {
+            synchronized (this) {
+                if (editor == null) {
+                    try {
+                        editor = (EditorCookie) DataObject.find (fo).getCookie (EditorCookie.class);
+                    } catch (DataObjectNotFoundException donfe) {
+                        AntModule.err.notify (ErrorManager.INFORMATIONAL, donfe);
+                    }
+                }
+            }
+        }
+        return editor;
+    }
+    
+    public File getFile () {
+        return file;
+    }
+    
+    public FileObject getFileObject () {
+        return fo;
+    }
+    
+    public Document getDocument () {
+        if (parsed) {
+            return projDoc;
+        }
+        synchronized (parseLock) {
+            if (parsed) {
+                return projDoc;
+            }
+            parseDocument ();
+            return projDoc;
+        }
+    }
+    
+    public Throwable getParseException () {
+        if (parsed) {
+            return exception;
+        }
+        synchronized (parseLock) {
+            if (parsed) {
+                return exception;
+            }
+            parseDocument ();
+            return exception;
+        }
+    }
+    
+    private void parseDocument () {
+        AntModule.err.log ("AntProjectSupport.parseDocument: fo=" + fo);
+        try {
+            DOMParser parser = new DOMParser ();
+            // Xerces 1.2.1 has an apparent bug that when lazy node expansion is turned on,
+            // when the node finally is expanded (in response to some getter method), the
+            // DOM tree fires a mutation event (though in fact the tree has not been changed).
+            // This causes gratuitous document modification and an endless feedback loop.
+            parser.setFeature ("http://apache.org/xml/features/dom/defer-node-expansion", false); // NOI18N
+            Reader rd;
+            EditorCookie editor = getEditor ();
+            if (editor != null) {
+                StyledDocument doc = editor.openDocument ();
+                rd = new DocumentReader (doc);
+                doc.addDocumentListener (this);
+            } else if (fo != null) {
+                rd = new InputStreamReader (fo.getInputStream ());
+                fo.addFileChangeListener (this);
+            } else {
+                rd = new FileReader (file);
+            }
+            try {
+                InputSource in = new InputSource (rd);
+                parser.parse (in);
+                Document doc = parser.getDocument ();
+                if (editor != null) {
+                    //AntModule.err.log ("doc=" + doc);
+                    // Xerces DOM parser implements DOM event model.
+                    EventTarget targ = (EventTarget) doc;
+                    // This one is generic and should suffice for them all.
+                    // But Xerces seems to have a bug that listening to this one
+                    // *sometimes* fires other changes, sometimes not! Erratic.
+                    //targ.addEventListener ("DOMSubtreeModified", this, false); // NOI18N
+                    // Normal bubbling mutation events:
+                    targ.addEventListener ("DOMNodeInserted", this, false); // NOI18N
+                    targ.addEventListener ("DOMNodeRemoved", this, false); // NOI18N
+                    targ.addEventListener ("DOMAttrModified", this, false); // NOI18N
+                    targ.addEventListener ("DOMCharacterDataModified", this, false); // NOI18N
+                }
+                projDoc = doc;
+                exception = null;
+            } finally {
+                rd.close ();
+            }
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable t) {
+            // leave projDoc the way it is...
+            exception = t;
+        }
+        parsed = true;
+    }
+    
+    public Element getProjectElement () {
+        Document doc = getDocument ();
+        if (doc != null) {
+            return doc.getDocumentElement ();
+        } else {
+            return null;
+        }
+    }
+    
+    public boolean equals (Object o) {
+        if (! (o instanceof AntProjectSupport)) return false;
+        AntProjectSupport other = (AntProjectSupport) o;
+        if (fo != null && other.fo != null) {
+            return fo.equals (other.fo);
+        } else if (file != null && other.file != null) {
+            return file.equals (other.file);
+        } else {
+            return false;
+        }
+    }
+    
+    public int hashCode () {
+        return 27825 ^ (fo == null ? file.hashCode () : fo.hashCode ());
+    }
+    
+    public String toString () {
+        if (fo != null) {
+            try {
+                return DataObject.find (fo).getNodeDelegate ().getDisplayName ();
+            } catch (DataObjectNotFoundException donfe) {
+                return fo.toString ();
+            }
+        } else {
+            return file.getAbsolutePath ();
+        }
+    }
+    
+    private synchronized void regenerate () {
+        AntModule.err.log("AntProjectSupport.regenerate: fo=" + fo);
+        if (projDoc == null) throw new IllegalStateException ();
+        try {
+            EditorCookie editor = getEditor ();
+            if (editor != null) {
+                StyledDocument doc = editor.openDocument ();
+                // Gack. What a mess. Have to regenerate whole document.
+                // XXX replace with XMLDataObject.write when possible....
+                OutputFormat format = new OutputFormat (projDoc);
+                format.setPreserveSpace (true);
+                Writer wr = new DocumentWriter (doc);
+                try {
+                    XMLSerializer ser = new XMLSerializer (wr, format);
+                    ser.serialize (projDoc);
+                    // Apache serializer also fails to include trailing newline, sigh.
+                    wr.write ('\n');
+                } finally {
+                    wr.close ();
+                }
+                exception = null;
+                parsed = true;
+            }
+        } catch (IOException ioe) {
+            exception = ioe;
+        }
+        // Tell listeners the document is now different:
+        fireChangeEvent ();
+    }
+  
+    public void addChangeListener (ChangeListener l) {
+        synchronized (listeners) {
+            listeners.add (l);
+        }
+    }
+    
+    public void removeChangeListener (ChangeListener l) {
+        synchronized (listeners) {
+            listeners.remove (l);
+        }
+    }
+    
+    protected void fireChangeEvent () {
+        AntModule.err.log ("AntProjectSupport.fireChangeEvent: fo=" + fo);
+        Iterator it;
+        synchronized (listeners) {
+            it = new HashSet (listeners).iterator ();
+        }
+        ChangeEvent ev = new ChangeEvent (this);
+        RequestProcessor.postRequest (new ChangeFirer (it, ev));
+    }
+    private static final class ChangeFirer implements Runnable {
+        private final Iterator it; // Iterator<ChangeListener>
+        private final ChangeEvent ev;
+        public ChangeFirer (Iterator it, ChangeEvent ev) {
+            this.it = it;
+            this.ev = ev;
+        }
+        public void run () {
+            AntModule.err.log ("AntProjectSupport.ChangeFirer.run");
+            while (it.hasNext ()) {
+                ChangeListener l = (ChangeListener) it.next ();
+                try {
+                    l.stateChanged (ev);
+                } catch (RuntimeException re) {
+                    AntModule.err.notify (re);
+                }
+            }
+        }
+    }
+    
+    public void removeUpdate (javax.swing.event.DocumentEvent ev) {
+        if (ev.getDocument ().getProperty (expectingDocUpdates) == null) {
+            invalidate ();
+        }
+    }
+    
+    public void changedUpdate (javax.swing.event.DocumentEvent ev) {
+        // Not to worry, just text attributes or something...
+    }
+    
+    public void insertUpdate (javax.swing.event.DocumentEvent ev) {
+        if (ev.getDocument ().getProperty (expectingDocUpdates) == null) {
+            invalidate ();
+        }
+    }
+    
+    public void fileDeleted (org.openide.filesystems.FileEvent p1) {
+        // Hmm, not our problem.
+    }
+    
+    public void fileDataCreated (org.openide.filesystems.FileEvent p1) {
+        // ignore
+    }
+    
+    public void fileFolderCreated (org.openide.filesystems.FileEvent p1) {
+        // ignore
+    }
+    
+    public void fileRenamed (org.openide.filesystems.FileRenameEvent p1) {
+        // ignore
+    }
+    
+    public void fileAttributeChanged (org.openide.filesystems.FileAttributeEvent p1) {
+        // ignore
+    }
+    
+    public void handleEvent (org.w3c.dom.events.Event ev) {
+        AntModule.err.log ("AntProjectSupport.handleEvent: fo=" + fo);
+        //Thread.dumpStack ();
+        AntModule.err.log("\tev=" + ev);
+        AntModule.err.log("\tev.type=" + ev.getType ());
+        AntModule.err.log("\tev.target=" + ev.getTarget ());
+        // Make sure we regenerate from the same DOM tree that is current!
+        if (exception != null || ev.getCurrentTarget () != projDoc) {
+            // Attempt to modify stale DOM tree -> ignore it and return.
+            // Ideally would cancel ev, but DOM2 does not support
+            // cancelling mutation events, so just give up.
+            AntModule.err.log (ErrorManager.WARNING, "AntProjectSupport.handleEvent on stale DOM tree");
+            return;
+        }
+        // Careful! DOMNodeRemoved is fired *before* the removal!
+        // So it is necessary to do updates asynchronously.
+        RequestProcessor.postRequest (this);
+    }
+    
+    public void run () {
+        regenerate ();
+    }
+    
+    public void fileChanged (org.openide.filesystems.FileEvent p1) {
+        invalidate ();
+    }
+    
+    private static class DocumentReader extends PipedReader implements Runnable {
+        private StyledDocument doc;
+        private PipedWriter wr;
+        public DocumentReader (StyledDocument doc) throws IOException {
+            this.doc = doc;
+            wr = new PipedWriter ();
+            connect (wr);
+            new Thread (this).start ();
+        }
+        public void run () {
+            try {
+                doc.render (new Runnable () {
+                        public void run () {
+                            try {
+                                new DefaultEditorKit ().write (wr, doc, 0, doc.getLength ());
+                            } catch (IOException e) {
+                                AntModule.err.notify (ErrorManager.INFORMATIONAL, e);
+                            } catch (BadLocationException e) {
+                                AntModule.err.notify (ErrorManager.INFORMATIONAL, e);
+                            }
+                        }
+                    });
+            } finally {
+                try {
+                    wr.close ();
+                } catch (IOException e) {
+                    AntModule.err.notify (ErrorManager.INFORMATIONAL, e);
+                }
+            }
+        }
+    }
+    
+    private static class DocumentWriter extends PipedWriter implements Runnable {
+        private StyledDocument doc;
+        private PipedReader rd;
+        public DocumentWriter (final StyledDocument doc) throws IOException {
+            this.doc = doc;
+            rd = new PipedReader ();
+            connect (rd);
+            new Thread (this).start ();
+        }
+        public void run () {
+            try {
+                NbDocument.runAtomicAsUser (doc, new Runnable () {
+                        public void run () {
+                            doc.putProperty (expectingDocUpdates, Boolean.TRUE);
+                            try {
+                                doc.remove (0, doc.getLength ());
+                                new DefaultEditorKit ().read (rd, doc, 0);
+                            } catch (IOException e) {
+                                AntModule.err.notify (ErrorManager.INFORMATIONAL, e);
+                            } catch (BadLocationException e) {
+                                AntModule.err.notify (ErrorManager.INFORMATIONAL, e);
+                            } finally {
+                                doc.putProperty (expectingDocUpdates, null);
+                            }
+                        }
+                    });
+            } catch (BadLocationException e) {
+                AntModule.err.notify (ErrorManager.INFORMATIONAL, e);
+            }
+        }
+    }
+    
+    // Firing processor which tells AntProjectSupport's when to fire changes.
+    
+    // when true, processor should be running
+    private static boolean runFiringProcessor = false;
+    
+    // set of supports which should fire changes soon, to times when changes should be fired
+    // also serves as a monitor for thread-safe communication with the processor
+    private static final java.util.Map tofire = new HashMap (); // Map<AntProjectSupport,Date>
+    
+    protected final void invalidate () {
+        AntModule.err.log ("AntProjectSupport.invalidate: fo=" + fo);
+        parsed = false;
+        synchronized (tofire) {
+            if (! runFiringProcessor) throw new IllegalStateException ();
+            if (tofire.put (this, new Date (System.currentTimeMillis () + REPARSE_DELAY)) == null) {
+                // Was not previously enqueued; make sure processor does not wait forever!
+                tofire.notify ();
+            } // else was already enqueued, processor will wake up sometime
+        }
+    }
+
+    // start it; accessible for AntModule
+    public static void startFiringProcessor () {
+        synchronized (tofire) {
+            if (runFiringProcessor) return;
+            runFiringProcessor = true;
+            new FiringProcessor ().start ();
+        }
+    }
+    
+    // stop it; accessible for AntModule
+    public static void stopFiringProcessor () {
+        synchronized (tofire) {
+            if (! runFiringProcessor) return;
+            runFiringProcessor = false;
+            tofire.notify ();
+        }
+    }
+    
+    private static final class FiringProcessor extends Thread {
+        
+        public FiringProcessor () {
+            super ("AntProjectSupport.FiringProcessor"); // NOI18N
+        }
+        
+        public void run () {
+            synchronized (tofire) {
+                // Do not fire changes *while* going through tofire.iterator; for it could happen
+                // that some listener changes something, causing invalidate() to be
+                // called synchronously -> ConcurrentModificationException on the
+                // iterator! Instead, keep track of changes to be fired in this round.
+                Set tofirenow = new HashSet ();
+                while (runFiringProcessor) {
+                    // First, fire any due/overdue changes.
+                    Iterator it = tofire.entrySet ().iterator ();
+                    // Keep track of when the next pending change is.
+                    long next = Long.MAX_VALUE;
+                    long now = System.currentTimeMillis ();
+                    while (it.hasNext ()) {
+                        Map.Entry entry = (Map.Entry) it.next ();
+                        Date d = (Date) entry.getValue ();
+                        long time = d.getTime ();
+                        if (time <= now) {
+                            tofirenow.add (entry.getKey ());
+                            it.remove ();
+                        } else if (time < next) {
+                            next = time;
+                        }
+                    }
+                    // Now actually fire the ones we want.
+                    it = tofirenow.iterator ();
+                    while (it.hasNext ()) {
+                        ((AntProjectSupport) it.next ()).fireChangeEvent ();
+                    }
+                    tofirenow.clear ();
+                    // Now go to sleep until the next one comes up, or
+                    // a new change is added (not moved up).
+                    try {
+                        // While waiting, other threads may enqueue entries or ask
+                        // to shut down the processor.
+                        tofire.wait (next - now);
+                    } catch (InterruptedException ie) {
+                        // Ignore.
+                    }
+                }
+                // Shutting down; fire any remaining changes and exit.
+                Iterator it = tofire.keySet ().iterator ();
+                while (it.hasNext ()) {
+                    ((AntProjectSupport) it.next ()).fireChangeEvent ();
+                }
+            }
+        }
+        
+    }
+    
+}

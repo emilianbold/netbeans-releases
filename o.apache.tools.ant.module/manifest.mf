@@ -1,27 +1,27 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.apache.tools.ant.module/1
+OpenIDE-Module: org.apache.tools.ant.module/2
 OpenIDE-Module-Name: Ant
 OpenIDE-Module-Display-Category: Tools
-OpenIDE-Module-Specification-Version: 1.6
+OpenIDE-Module-Specification-Version: 2.0
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Install: org/apache/tools/ant/module/AntModule.class
-OpenIDE-Module-Layer: org/apache/tools/ant/module/AntModuleLayer.xml
+OpenIDE-Module-Layer: org/apache/tools/ant/module/resources/AntModuleLayer.xml
 OpenIDE-Module-Description: org.apache.tools.ant.module.docs.HelpSet
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.1.1
 OpenIDE-Module-Package-Dependencies: [org.apache.tools.ant.Project], [org.apache.xerces.parsers.DOMParser]
 Class-Path: ext/ant.jar ext/optional.jar
 
-Name: org/apache/tools/ant/module/AntProjectDataLoader.class
+Name: org/apache/tools/ant/module/loader/AntProjectDataLoader.class
 OpenIDE-Module-Class: Loader
 Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
 
-Name: org/apache/tools/ant/module/AntCompilerType.class
+Name: org/apache/tools/ant/module/run/AntCompilerType.class
 OpenIDE-Module-Class: Service
 
-Name: org/apache/tools/ant/module/IndirectAntCompilerType.class
+Name: org/apache/tools/ant/module/run/IndirectAntCompilerType.class
 OpenIDE-Module-Class: Service
 
-Name: org/apache/tools/ant/module/AntExecutor.class
+Name: org/apache/tools/ant/module/run/AntExecutor.class
 OpenIDE-Module-Class: Service
 
 Name: org/apache/tools/ant/module/AntSettings.class

@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<filesystem>
+  <folder name="Templates">
+    <folder name="Ant">
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+      <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntDescription.html"/>
+      <file name="Project.xml" url="Project.xml_">
+        <attr name="template" boolvalue="true"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/ProjectDescription.html"/>
+        <attr name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE" boolvalue="true"/>
+        <attr name="templateWizardIterator" newvalue="org.apache.tools.ant.module.loader.AntTemplateIterator"/>
+      </file>
+      <attr name="Project.xml/SampleProject.xml" boolvalue="true"/>
+      <file name="SampleProject.xml" url="SampleProject.xml_">
+        <attr name="template" boolvalue="true"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/SampleProjectDescription.html"/>
+        <attr name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE" boolvalue="true"/>
+        <attr name="templateWizardIterator" newvalue="org.apache.tools.ant.module.loader.AntTemplateIterator"/>
+      </file>
+      <attr name="SampleProject.xml/CustomTask.java" boolvalue="true"/>
+      <file name="CustomTask.java" url="CustomTask_java">
+        <attr name="template" boolvalue="true"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/CustomTaskDescription.html"/>
+      </file>
+    </folder>
+  </folder>
+</filesystem>

@@ -15,6 +15,7 @@
 
 package org.apache.tools.ant.module;
 
+import java.beans.PropertyEditorManager;
 import java.io.*;
 import java.util.Enumeration;
 
@@ -23,6 +24,10 @@ import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.RequestProcessor;
+
+import org.apache.tools.ant.module.api.AntProjectCookie;
+import org.apache.tools.ant.module.loader.AntProjectCookieEditor;
+import org.apache.tools.ant.module.xml.AntProjectSupport;
 
 // More or less copied from org.netbeans.modules.apisupport.APIModule, which does a similar thing.
 // In the future, can be just a single layer entry...
@@ -33,7 +38,7 @@ public class AntModule extends ModuleInstall {
 
     private static final String PROP_INSTALL_COUNT = "installCount"; // NOI18N
     
-    static final ErrorManager err = TopManager.getDefault ().getErrorManager ().getInstance ("org.apache.tools.ant.module"); // NOI18N
+    public static final ErrorManager err = TopManager.getDefault ().getErrorManager ().getInstance ("org.apache.tools.ant.module"); // NOI18N
     
     public void installed () {
         restored ();
@@ -110,6 +115,7 @@ public class AntModule extends ModuleInstall {
                 System.err.println("Note: ant-api.zip not found to add to Javadoc, ignoring...");
             }
         }
+        PropertyEditorManager.registerEditor (AntProjectCookie.class, AntProjectCookieEditor.class);
         AntProjectSupport.startFiringProcessor ();
     }
 
@@ -146,7 +152,7 @@ public class AntModule extends ModuleInstall {
 
     static File findAPIDocs () {
         try {
-            String suffix = "docs" + File.separator + "ant-api.zip";
+            String suffix = "docs" + File.separator + "ant-api.zip"; // NOI18N
             String user = System.getProperty ("netbeans.user");
             if (user != null) {
                 File f = new File (user, suffix);
