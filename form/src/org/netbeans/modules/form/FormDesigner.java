@@ -557,10 +557,8 @@ public class FormDesigner extends TopComponent
             return null;
 
         Dimension size = (Dimension) metacomp.getAuxValue(PROP_DESIGNER_SIZE);
-        if (size == null) {
+        if (size == null)
             size = new Dimension(400, 300);
-            metacomp.setAuxValue(PROP_DESIGNER_SIZE, size);
-        }
         return size;
     }
 

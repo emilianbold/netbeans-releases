@@ -544,10 +544,8 @@ class JavaCodeGenerator extends CodeGenerator {
                 {
                     Dimension size = (Dimension)
                         component.getAuxValue(FormDesigner.PROP_DESIGNER_SIZE);
-                    if (size == null) {
+                    if (size == null)
                         size = new Dimension(400, 300);
-                        component.setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, size);
-                    }
                     return size;
                 }
 
