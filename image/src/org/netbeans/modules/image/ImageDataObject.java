@@ -41,7 +41,7 @@ public class ImageDataObject extends MultiDataObject {
   public static final String PROP_FILE_PARAMS = "params";
 
   private static final String IMAGE_ICON_BASE =
-    "/com.netbeans.developer.modules/resources/imageObject";
+    "com/netbeans/developer/modules/resources/imageObject";
 
   /** New instance.
   * @param pf primary file object for this data object
@@ -95,6 +95,7 @@ public class ImageDataObject extends MultiDataObject {
 
 /*
  * Log
+ *  5    Gandalf   1.4         1/15/99  Petr Hamernik   image source repaired
  *  4    Gandalf   1.3         1/7/99   Jaroslav Tulach Uses OpenSupport
  *  3    Gandalf   1.2         1/7/99   Ian Formanek    
  *  2    Gandalf   1.1         1/7/99   Ian Formanek    
