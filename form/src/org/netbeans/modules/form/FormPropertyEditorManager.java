@@ -101,7 +101,8 @@ final public class FormPropertyEditorManager extends Object
         ArrayList editorsList = new ArrayList(5);
 
         // 1st - try standard way through PropertyEditorManager
-        PropertyEditor stdPropEd = PropertyEditorManager.findEditor(type);
+        PropertyEditor stdPropEd = type == Object.class ? null :
+                                     PropertyEditorManager.findEditor(type);
         if (stdPropEd != null) {
             editorsList.add(stdPropEd.getClass());
         }
@@ -165,6 +166,8 @@ final public class FormPropertyEditorManager extends Object
 
         edClasses = new Class[editorsList.size()];
         editorsList.toArray(edClasses);
+        editorsCache.put(type, edClasses);
+
         return edClasses;
     }
 
