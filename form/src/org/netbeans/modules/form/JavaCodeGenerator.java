@@ -152,7 +152,7 @@ public class JavaCodeGenerator extends CodeGenerator {
   }
 
   private void addInitCode (RADComponent comp, StringBuffer text, String indent) {
-    System.out.println("Adding init code for: "+comp.getName ());
+    //System.out.println("Adding init code for: "+comp.getName ());
     if (!(comp instanceof FormContainer)) {
       generateComponentCreate (comp, text, indent);
     }
@@ -682,6 +682,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  11   Gandalf   1.10        5/14/99  Ian Formanek    
  *  10   Gandalf   1.9         5/14/99  Ian Formanek    
  *  9    Gandalf   1.8         5/14/99  Ian Formanek    
  *  8    Gandalf   1.7         5/12/99  Ian Formanek    
