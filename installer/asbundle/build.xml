@@ -134,7 +134,7 @@ Microsystems, Inc. All Rights Reserved.
     <exec os="Linux SunOS" executable="unzip">
       <arg line="${as.installer} -d build/scripts/as_setup"/>
     </exec>
-    <!-- Ant 'uunzip' task does not work from unknown reason on AS Installer exe file so we use 'exec' task. -->
+    <!-- Ant 'unzip' task does not work from unknown reason on AS Installer exe file so we use 'exec' task. -->
     <!-- <unzip src="${as.installer}" dest="build/scripts/as_setup"/> -->
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="as-windows.xml" />
