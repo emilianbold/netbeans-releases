@@ -131,7 +131,8 @@ public class PutTransaction extends HttpServlet {
 	    try { fout.close(); }
 	    catch(Exception ex4) { }
 	}
-	if(success) MonitorAction.getController().addTransaction(id); 
+	if(success && MonitorAction.tv != null && MonitorAction.tv.isOpened()) 
+	    MonitorAction.getController().addTransaction(id); 
     }
 
     // PENDING - deal better with this

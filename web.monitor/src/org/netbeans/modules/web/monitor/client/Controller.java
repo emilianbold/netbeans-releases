@@ -21,22 +21,6 @@
  * @version
  */
 
-/* 
- * PENDING: 
-
- * This class currently holds a hashtable full of beans corresponding
- * to the transaction data. I'm not sure what the best thing to do is
- * w.r.t. keeping those beans in memory or not - that might be
- * huge. Need to consort with somebody that's good at that sort of
- * thing. Perhaps like the last five or so that the user has been
- * looking at are a good idea to keep. 
- *
- * The reason for doing that was to have a quick fix w.r.t. reading in 
- * files. Once I have figured out a way to parse the XML file quickly
- * for just the monitor attributes that should be unnecessary. 
- * 
- */
-
 package  org.netbeans.modules.web.monitor.client;
 
 import java.util.*;
@@ -159,6 +143,7 @@ public class Controller  {
      * Adds a transaction to the list of current transactions.
      */
     void addTransaction(String id) {
+
 	if(debug) log("Creating node for " + id);
 	TransactionNode[] nodes = new TransactionNode[1];
 	MonitorData md = retrieveMonitorData(id, currDirStr); 
