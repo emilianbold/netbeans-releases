@@ -270,17 +270,15 @@ public class NbEditorKit extends ExtKit {
         }
         
         protected void addAction(JTextComponent target, JPopupMenu popupMenu, Action a){
-            // XXX because of #48201 ask for isEnabled - it causes actionName refresh
-            boolean isEnabled = a.isEnabled(); 
+
+            if (a instanceof ContextAwareAction){
+                a = ((org.openide.util.ContextAwareAction)a)
+                        .createContextAwareInstance(getContextLookup(target));
+            }
             
             String itemText = (String) a.getValue(Action.NAME);
-
             JMenuItem item = null;
             
-            //if (itemText == null){
-            //    itemText = getItemText(target, actionName, a);
-            //}
-
             if (itemText != null) {
                 item = new JMenuItem();
                 Mnemonics.setLocalizedText(item, itemText);
@@ -293,7 +291,7 @@ public class NbEditorKit extends ExtKit {
                         item.setAccelerator(keys[0]);
                     }
                 }
-                item.setEnabled(isEnabled);
+                item.setEnabled(a.isEnabled());
                 Object helpID = a.getValue ("helpID"); // NOI18N
                 if (helpID != null && (helpID instanceof String))
                     item.putClientProperty ("HelpID", helpID); // NOI18N
