@@ -663,14 +663,14 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
             if (propDataObject != null) {
                 if (propDataObject.getCookie(SaveCookie.class) != null) {
                     saveAwareName = NbBundle.getMessage(
-                        CloneableEditorSupport.class,
-                        "LAB_EditorName_Modified", // NOI18N
+                        PropertiesOpen.class,
+                        "LBL_EditorName_Modified", // NOI18N
                         name
                     );
                 } else {
                     saveAwareName = NbBundle.getMessage(
-                        CloneableEditorSupport.class,
-                        "LAB_EditorName_Uptodate", // NOI18N
+                        PropertiesOpen.class,
+                        "LBL_EditorName_Uptodate", // NOI18N
                         name
                     );
                 }
