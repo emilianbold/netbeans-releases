@@ -37,7 +37,7 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
     private static Vector history = new Vector();
     
     /** Initializes the Form */
-    public FindDialogPanel() {
+    FindDialogPanel() {
         initComponents ();
         getAccessibleContext().setAccessibleName(NbBundle.getBundle(FindDialogPanel.class).getString("ACSN_Find"));
         getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(FindDialogPanel.class).getString("ACSD_Find"));
@@ -90,7 +90,7 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
 
     private class FdFocusTraversalPolicy extends FocusTraversalPolicy {
         private JComponent[] order;
-        public FdFocusTraversalPolicy (JComponent[] order) {
+        FdFocusTraversalPolicy (JComponent[] order) {
             this.order = order;
         }
 
@@ -171,7 +171,7 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 5, 5);
         add(findWhatLabel, gridBagConstraints);
 
         findWhat.setEditable(true);
@@ -180,21 +180,22 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 50;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(7, 11, 9, 10);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 12);
         add(findWhat, gridBagConstraints);
 
     }//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    protected javax.swing.JComboBox findWhat;
-    protected javax.swing.JLabel findWhatLabel;
+    private javax.swing.JComboBox findWhat;
+    private javax.swing.JLabel findWhatLabel;
     // End of variables declaration//GEN-END:variables
 
 
 
-    static FindDialogPanel showFindDialog(ActionListener al) {
+    static void showFindDialog(ActionListener al) {
         java.awt.Dialog dialog = getDialog();
         FindDialogPanel findPanel = getPanel();
         findPanel.acceptButton.putClientProperty ("panel", findPanel);
@@ -202,16 +203,15 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
         if (!Arrays.asList(findPanel.acceptButton.getActionListeners()).contains(al)) {
             findPanel.acceptButton.addActionListener(al);
         }
-        dialog.show();
+        dialog.setVisible(true);
 
         dialog.addWindowListener (new DlgWindowListener(al, findPanel.acceptButton));
-        return findPanel;
     }
     
     private static class DlgWindowListener extends WindowAdapter {
         private ActionListener al;
         private JButton acceptButton;
-        public DlgWindowListener (ActionListener al, JButton acceptButton) {
+        DlgWindowListener (ActionListener al, JButton acceptButton) {
             this.al = al;
             this.acceptButton = acceptButton;
         }

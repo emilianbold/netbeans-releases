@@ -77,7 +77,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
                     pane.add (c);
                     
                     super.addImpl (pane, constraints, idx);
-                    updateSingletonName(null, null);
+                    updateSingletonName(null);
                     revalidate();
                 } else if (pane.getParent() == this) {
                     pane.add (c);
@@ -97,8 +97,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
             super.addImpl(c, constraints, idx);
         }
         if (getComponentCount() == 1 && getComponent(0) instanceof AbstractOutputTab) {
-            updateSingletonName((AbstractOutputTab) getComponent(0), 
-                getComponent(0).getName());
+            updateSingletonName(getComponent(0).getName());
         }
         revalidate();
     }
@@ -141,7 +140,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
                     pane.remove(comp);
                     super.remove(pane);
                     add(comp);
-                    updateSingletonName((AbstractOutputTab) c, c.getName());
+                    updateSingletonName(c.getName());
                     revalidate();
                 }
             } else {
@@ -149,7 +148,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
                     removedSelectedView = (AbstractOutputTab) c;
                 }
                 super.remove(c);
-                updateSingletonName(null, null);
+                updateSingletonName(null);
             }
             if (removedSelectedView != null) {
                 fire(removedSelectedView);
@@ -159,8 +158,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
             removed ((AbstractOutputTab) c);
         } 
         if (getComponentCount() == 1 && getComponent(0) instanceof AbstractOutputTab) {
-            updateSingletonName((AbstractOutputTab) getComponent(0), 
-                getComponent(0).getName());
+            updateSingletonName(getComponent(0).getName());
         }        
         revalidate();
         setFocusable (getComponentCount() == 0);
@@ -198,7 +196,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         if (tab.getParent() == pane) {
             pane.setTitleAt (pane.indexOfComponent(tab), name);
         } else if (tab.getParent() == this) {
-            updateSingletonName(tab, name);
+            updateSingletonName(name);
         }
         tab.setName(name);
     }
@@ -233,10 +231,9 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
      * arguments, should update the name to the default which does not include the
      * tab name.
      *
-     * @param tab A tab
      * @param name A name for the tab
      */
-    protected abstract void updateSingletonName(AbstractOutputTab tab, String name);
+    protected abstract void updateSingletonName(String name);
 
     public void doLayout() {
         Insets ins = getInsets();

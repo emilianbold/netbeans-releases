@@ -28,7 +28,7 @@ import java.awt.*;
  * be calculated, we have this class instead.
  * <p>
  * All position/line calculations this view does are based on the integer array
- * of line offsets kept by OutWriter.
+ * of line offsets kept by the writer's Lines object.
  *
  * @author Tim Boudreau
  */
@@ -131,33 +131,14 @@ public class WrappedTextView extends View {
                     result = getCharsPerLine();
                     break;
                 case Y_AXIS :
-                    result = doc.getLogicalLineCountIfWrappedAt(getCharsPerLine()) * charHeight() + fontDescent();
+                    updateInfo(null);
+                    result = doc.getLines().getLogicalLineCountIfWrappedAt(getCharsPerLine()) * charHeight() + fontDescent();
                     break;
                 default :
                     throw new IllegalArgumentException (Integer.toString(axis));
             }
-//            System.err.println ("Preferred " + a2s(axis) + "=" + result + " for " + doc.getElementCount() + " lines" + l2c(axis, result));
         }
         return result;
-    }
-
-    private String l2c(int axis, float count) {
-        int ct = (int) count;
-        String result = "";
-        switch (axis) {
-            case X_AXIS :
-                result = " = " + (ct * charWidth()) + " pixels width";
-                break;
-            case Y_AXIS :
-                result = " = " + (ct * charHeight()) + " pixels height";
-                break;
-        }
-        result += " logical lines: " + odoc().getLogicalLineCountIfWrappedAt(getCharsPerLine());
-        return result;
-    }
-
-    private static String a2s(int i) {
-        return i == X_AXIS ? "X_AXIS" : "Y_AXIS";
     }
 
     public float getMinimumSpan(int axis) {
@@ -213,10 +194,9 @@ public class WrappedTextView extends View {
      * Set a flag indicating that on the next paint, widths, character widths,
      * etc. need to be recalculated.
      *
-     * @param val Whether to recalculate or not.
      */
-    public void setChanged(boolean val) {
-        changed = val;
+    public void setChanged() {
+        changed = true;
         updateInfo (null);
         preferenceChanged(this, true, true);
     }
@@ -231,7 +211,7 @@ public class WrappedTextView extends View {
         if (charsPerLine == -1) {
             return 80;
         }
-        return charsPerLine;
+        return getWidth() / charWidth();
     }
 
     /**
@@ -240,8 +220,11 @@ public class WrappedTextView extends View {
      * @return The width we should paint into
      */
     private int getWidth() {
-        if (width == -1) {
-            return 1;
+        if (comp.getParent() instanceof JViewport) {
+            JViewport jv = (JViewport) comp.getParent();
+            width = jv.getExtentSize().width - (aa ? 18 : 17);
+        } else {
+            width = comp.getWidth() - (aa ? 18 : 17);
         }
         return width;
     }
@@ -290,21 +273,12 @@ public class WrappedTextView extends View {
     /**
      * Get the left hand margin required for printing line wrap decorations.
      *
-     * @return
+     * @return A margin in pixels
      */
-    public static int margin() {
+    private static int margin() {
         return 9;
     }
 
-    /**
-     * Renders using the given rendering surface and area on that
-     * surface.  The view may need to do layout and create child
-     * views to enable itself to render into the given allocation.
-     *
-     * @param g          the rendering surface to use
-     * @param allocation the allocated region to render into
-     * @see javax.swing.text.View#paint
-     */
     public void paint(Graphics g, Shape allocation) {
         updateInfo(g);
         
@@ -324,28 +298,17 @@ public class WrappedTextView extends View {
             }
 
             int charsPerLine = getCharsPerLine();
-
             int physicalLine = clip.y / charHeight;
-
             ln[0] = physicalLine;
-
-            d.toLogicalLineIndex(ln, charsPerLine);
+            d.getLines().toLogicalLineIndex(ln, charsPerLine);
 
             int firstline = ln[0];
-
-            int count = (lineCount - firstline);          
-
+            int count = (lineCount - firstline);
             g.setColor (comp.getForeground());
-
             Segment seg = SwingUtilities.isEventDispatchThread() ? SEGMENT : new Segment();
-
-            int margin = margin();
 
             int selStart = comp.getSelectionStart();
             int selEnd = comp.getSelectionEnd();
-            
-            int lineHeight = charHeight() + fontDescent();
-            
             int y = (clip.y - (clip.y % charHeight()) + charHeight());
             
             try {
@@ -354,7 +317,7 @@ public class WrappedTextView extends View {
                     int lineEnd = d.getLineEnd (i + firstline);
                     int length = lineEnd - lineStart;
 
-                    g.setColor(getColorForLocation(lineStart, d, true));
+                    g.setColor(getColorForLocation(lineStart, d, true)); //XXX should not always be 'true'
 
                     //Get the text to print into the segment's array
                     d.getText(lineStart, length, seg);
@@ -379,52 +342,9 @@ public class WrappedTextView extends View {
                         if (lenToDraw <= 0) {
                             break;
                         }
-
-                        if (currLogicalLine != logicalLines-1) {
-                            drawArrow (g, y, currLogicalLine == logicalLines-2);
-                        }
-                        int realPos = lineStart + charpos;
-
-                        if (realPos >= selStart && realPos + lenToDraw <= selEnd) {
-                            Color c = g.getColor();
-                            g.setColor (comp.getSelectionColor());
-                            g.fillRect (margin(), y+fontDescent()-charHeight(), lenToDraw * charWidth(), charHeight());
-                            g.setColor (c);
-                        } else if (realPos <= selStart && realPos + lenToDraw >= selStart) {
-                            int selx = margin() + (charWidth() * (selStart - realPos));
-                            int selLen = selEnd > realPos + lenToDraw ? ((lenToDraw + realPos) - selStart) * charWidth() :
-                                    (selEnd - selStart) * charWidth();
-                            Color c = g.getColor();
-                            g.setColor (comp.getSelectionColor());
-                            g.fillRect (selx, y + fontDescent() - charHeight(), selLen, charHeight());
-                            g.setColor (c);
-                        } else if (realPos > selStart && realPos + lenToDraw >= selEnd) {
-                            //we're drawing the tail of a selection
-                            int selLen = (selEnd - realPos) * charWidth();
-                            Color c = g.getColor();
-                            g.setColor (comp.getSelectionColor());
-                            g.fillRect (margin(), y + fontDescent() - charHeight(), selLen, charHeight());
-                            g.setColor (c);
-                        }
-                        g.drawChars(seg.array, charpos, lenToDraw, margin, y);
+                        drawLogicalLine(seg, currLogicalLine, logicalLines, g, y, lineStart, charpos, selStart, lenToDraw, selEnd);
                         if (g.getColor() == unselectedLinkFg) {
-                            int underlineStart = margin();
-                            int underlineEnd = underlineStart + g.getFontMetrics().charsWidth(seg.array, charpos, lenToDraw);
-                            if (currLogicalLine == 0) {
-                                //#47263 - start hyperlink underline at first
-                                //non-whitespace character
-                                for (int k=1; k < lenToDraw; k++) {
-                                    if (Character.isWhitespace(seg.array[charpos + k])) {
-                                        underlineStart += charWidth();
-                                        underlineEnd -= charWidth();
-                                    } else {
-                                        break;
-                                    }
-                                }
-                            } else {
-                                underlineStart = margin();
-                            }
-                            g.drawLine (underlineStart, y+1, underlineEnd, y+1);
+                            underline(g, seg, charpos, lenToDraw, currLogicalLine, y);
                         }
                         y += charHeight();
                     }
@@ -437,7 +357,72 @@ public class WrappedTextView extends View {
             }
         }
     }
-    
+
+    /**
+     * Draw one logical (wrapped) line
+     *
+     * @param seg A Segment object containing the text
+     * @param currLogicalLine Index of the current logical line in the physical line
+     * @param logicalLines Number of logical lines there are
+     * @param g The graphics context
+     * @param y The baseline in the graphics context
+     * @param lineStart The character position at which the line starts
+     * @param charpos The current character position within the segment
+     * @param selStart The character index at which the selected range, if any, starts
+     * @param lenToDraw The number of characters we'll draw before we're outside the clip rectangle
+     * @param selEnd The end of the selected range of text, if any
+     */
+    private void drawLogicalLine(Segment seg, int currLogicalLine, int logicalLines, Graphics g, int y, int lineStart, int charpos, int selStart, int lenToDraw, int selEnd) {
+        if (currLogicalLine != logicalLines-1) {
+            drawArrow (g, y, currLogicalLine == logicalLines-2);
+        }
+        int realPos = lineStart + charpos;
+
+        if (realPos >= selStart && realPos + lenToDraw <= selEnd) {
+            Color c = g.getColor();
+            g.setColor (comp.getSelectionColor());
+            g.fillRect (margin(), y+fontDescent()-charHeight(), lenToDraw * charWidth(), charHeight());
+            g.setColor (c);
+        } else if (realPos <= selStart && realPos + lenToDraw >= selStart) {
+            int selx = margin() + (charWidth() * (selStart - realPos));
+            int selLen = selEnd > realPos + lenToDraw ? ((lenToDraw + realPos) - selStart) * charWidth() :
+                    (selEnd - selStart) * charWidth();
+            Color c = g.getColor();
+            g.setColor (comp.getSelectionColor());
+            g.fillRect (selx, y + fontDescent() - charHeight(), selLen, charHeight());
+            g.setColor (c);
+        } else if (realPos > selStart && realPos + lenToDraw >= selEnd) {
+            //we're drawing the tail of a selection
+            int selLen = (selEnd - realPos) * charWidth();
+            Color c = g.getColor();
+            g.setColor (comp.getSelectionColor());
+            g.fillRect (margin(), y + fontDescent() - charHeight(), selLen, charHeight());
+            g.setColor (c);
+        }
+        g.drawChars(seg.array, charpos, lenToDraw, margin(), y);
+    }
+
+
+    private void underline(Graphics g, Segment seg, int charpos, int lenToDraw, int currLogicalLine, int y) {
+        int underlineStart = margin();
+        int underlineEnd = underlineStart + g.getFontMetrics().charsWidth(seg.array, charpos, lenToDraw);
+        if (currLogicalLine == 0) {
+            //#47263 - start hyperlink underline at first
+            //non-whitespace character
+            for (int k=1; k < lenToDraw; k++) {
+                if (Character.isWhitespace(seg.array[charpos + k])) {
+                    underlineStart += charWidth();
+                    underlineEnd -= charWidth();
+                } else {
+                    break;
+                }
+            }
+        } else {
+            underlineStart = margin();
+        }
+        g.drawLine (underlineStart, y+1, underlineEnd, y+1);
+    }
+
     /**
      * Draw the decorations used with wrapped lines.
      *
@@ -494,7 +479,7 @@ public class WrappedTextView extends View {
      *
      * @return The arrow color
      */
-    private Color arrowColor() {
+    private static Color arrowColor() {
         return arrowColor;
     }
 
@@ -510,10 +495,10 @@ public class WrappedTextView extends View {
 
             int charsPerLine = getCharsPerLine();
 
-            int row = od.getLogicalLineCountAbove(line, charsPerLine);
+            int row = od.getLines().getLogicalLineCountAbove(line, charsPerLine);
             if (column > charsPerLine) {
                 row += (column / charsPerLine);
-                column = column % charsPerLine;
+                column %= charsPerLine;
             }
             result.y = (row * charHeight()) + fontDescent();
             result.x = margin() + (column * charWidth());
@@ -534,7 +519,7 @@ public class WrappedTextView extends View {
             int physicalLine = (iy / charHeight);
 
             ln[0] = physicalLine;
-            od.toLogicalLineIndex(ln, charsPerLine);
+            od.getLines().toLogicalLineIndex(ln, charsPerLine);
             int logicalLine = ln[0];
             int wraps = ln[2] - 1;
 
@@ -547,7 +532,7 @@ public class WrappedTextView extends View {
             }
 
             int lineStart = od.getLineStart(logicalLine);
-            int lineLength = od.getLineLength(logicalLine);
+            int lineLength = od.getLines().length(logicalLine);
 
             int column = (ix / charWidth());
             if (column > lineLength-1) {
@@ -583,8 +568,8 @@ public class WrappedTextView extends View {
     private static Color getColorForLocation (int start, Document d, boolean selected) {
         OutputDocument od = (OutputDocument) d;
         int line = od.getElementIndex (start);
-        boolean hyperlink = od.isHyperlink(line);
-        boolean isErr = od.isErr(line);
+        boolean hyperlink = od.getLines().isHyperlink(line);
+        boolean isErr = od.getLines().isErr(line);
         return hyperlink ? selected ? selectedLinkFg : unselectedLinkFg :
             selected ? isErr ? selectedErr : selectedFg : isErr ? unselectedErr : unselectedFg;
     }

@@ -33,7 +33,7 @@ import java.io.IOException;
 class ErrWriter extends OutputWriter {
     private OutWriter wrapped;
     /** Creates a new instance of ErrWriter */
-    public ErrWriter(OutWriter wrapped) {
+    ErrWriter(OutWriter wrapped) {
         super (new OutWriter.DummyWriter());
         this.wrapped = wrapped;
     }
@@ -42,7 +42,7 @@ class ErrWriter extends OutputWriter {
         closed = false;
         synchronized (wrapped) {
             wrapped.println (s, l);
-            wrapped.markErr();
+            ((AbstractLines) wrapped.getLines()).markErr();
         }
     }
     
@@ -62,10 +62,6 @@ class ErrWriter extends OutputWriter {
         return closed;
     }
 
-    void unclose() {
-        closed = false;
-    }
-
     public void flush() {
         wrapped.flush();
     }
@@ -78,23 +74,23 @@ class ErrWriter extends OutputWriter {
         closed = false;
         synchronized (wrapped) {
             wrapped.write(c);
-            wrapped.markErr();
+            ((AbstractLines) wrapped.getLines()).markErr();
         }
     }
     
     public void write(char buf[], int off, int len) {
         closed = false;
         synchronized (wrapped) {
-            wrapped.write (buf, off, len);
-            wrapped.markErr();
+            wrapped.write(buf, off, len);
+            ((AbstractLines) wrapped.getLines()).markErr();
         }
     }
     
     public void write(String s, int off, int len) {
         closed = false;
         synchronized (wrapped) {
-            wrapped.write (s, off, len);
-            wrapped.markErr();
+            wrapped.write(s, off, len);
+            ((AbstractLines) wrapped.getLines()).markErr();
         }
     }
     
@@ -102,7 +98,7 @@ class ErrWriter extends OutputWriter {
         closed = false;
         synchronized (wrapped) {
             wrapped.println (x);
-            wrapped.markErr();
+            ((AbstractLines) wrapped.getLines()).markErr();
         }
     }
 
@@ -110,7 +106,7 @@ class ErrWriter extends OutputWriter {
         closed = false;
         synchronized (wrapped) {
             wrapped.println(x);
-            wrapped.markErr();
+            ((AbstractLines) wrapped.getLines()).markErr();
         }
     }
     
@@ -118,7 +114,7 @@ class ErrWriter extends OutputWriter {
         closed = false;
         synchronized (wrapped) {
             wrapped.println(x);
-            wrapped.markErr();
+            ((AbstractLines) wrapped.getLines()).markErr();
         }
     }
     
@@ -126,7 +122,7 @@ class ErrWriter extends OutputWriter {
         closed = false;
         synchronized (wrapped) {
             wrapped.println(x);
-            wrapped.markErr();
+            ((AbstractLines) wrapped.getLines()).markErr();
         }
     }
     
@@ -134,7 +130,7 @@ class ErrWriter extends OutputWriter {
         closed = false;
         synchronized (wrapped) {
             wrapped.println(x);
-            wrapped.markErr();
+            ((AbstractLines) wrapped.getLines()).markErr();
         }
     }
     
@@ -142,7 +138,7 @@ class ErrWriter extends OutputWriter {
         closed = false;
         synchronized (wrapped) {
             wrapped.println(x);
-            wrapped.markErr();
+            ((AbstractLines) wrapped.getLines()).markErr();
         }
     }
     
@@ -150,7 +146,7 @@ class ErrWriter extends OutputWriter {
         closed = false;
         synchronized (wrapped) {
             wrapped.println(x);
-            wrapped.markErr();
+            ((AbstractLines) wrapped.getLines()).markErr();
         }
     }
     
@@ -158,7 +154,7 @@ class ErrWriter extends OutputWriter {
         closed = false;
         synchronized (wrapped) {
             wrapped.println(x);
-            wrapped.markErr();
+            ((AbstractLines) wrapped.getLines()).markErr();
         }
     }
     
@@ -166,7 +162,7 @@ class ErrWriter extends OutputWriter {
         closed = false;
         synchronized (wrapped) {
             wrapped.println(x);
-            wrapped.markErr();
+            ((AbstractLines) wrapped.getLines()).markErr();
         }
     }
 }

@@ -33,16 +33,13 @@ import java.awt.*;
  * @author  Tim Boudreau
  */
 class ExtPlainView extends PlainView {
-    private static final Segment SEGMENT = new Segment(); 
-
-    private JTextComponent comp;
+    private final Segment SEGMENT = new Segment(); 
     /** Creates a new instance of ExtPlainView */
-    public ExtPlainView(Element elem, JTextComponent comp) {
+    ExtPlainView(Element elem) {
         super (elem);
-        this.comp = comp;
     }
 
-    protected int drawSelectedText(Graphics g, int x, 
+    protected int drawSelectedText(Graphics g, int x,
                                    int y, int p0, int p1) throws BadLocationException {
                                        
         Document doc = getDocument();
@@ -55,29 +52,7 @@ class ExtPlainView extends PlainView {
             if (g.getColor() == WrappedTextView.selectedLinkFg) {
                 //#47263 - start hyperlink underline at first
                 //non-whitespace character
-                int wid = g.getFontMetrics().charWidth(' '); //NOI18N
-                char[] txt = s.array;
-                int txtOffset = s.offset;
-                int txtCount = s.count;
-                int n = s.offset + s.count;
-                int tabCount = 0;
-                int wsCount = 0;
-                for (int i = s.offset; i < n; i++) {
-                    if (txt[i] == '\t') { //NOI18N
-                        x = (int) nextTabStop((float) x,
-						p0 + i - txtOffset);
-                        tabCount++;
-                    } else if (Character.isWhitespace(txt[i])) {
-                        x += wid;
-                        wsCount++;
-                    } else {
-                        break;
-                    }
-                }
-                int end = x + (wid * (txtCount - (wsCount + tabCount + 1)));
-                if (end > x) {
-                    g.drawLine (x, y+1, end, y+1);
-                }
+                underline(g, s, x, p0, y);
             }
             return ret;
         } else {
@@ -98,30 +73,7 @@ class ExtPlainView extends PlainView {
             if (g.getColor() == WrappedTextView.unselectedLinkFg) {
                 //#47263 - start hyperlink underline at first
                 //non-whitespace character
-                
-                int wid = g.getFontMetrics().charWidth(' '); //NOI18N
-                char[] txt = s.array;
-                int txtOffset = s.offset;
-                int txtCount = s.count;
-                int n = s.offset + s.count;
-                int tabCount = 0;
-                int wsCount = 0;
-                for (int i = s.offset; i < n; i++) {
-                    if (txt[i] == '\t') { //NOI18N
-                        x = (int) nextTabStop((float) x,
-						p0 + i - txtOffset);
-                        tabCount++;
-                    } else if (Character.isWhitespace(txt[i])) {
-                        x += wid;
-                        wsCount++;
-                    } else {
-                        break;
-                    }
-                }
-                int end = x + (wid * (txtCount - (wsCount + tabCount + 1)));
-                if (end > x) {
-                    g.drawLine (x, y+1, end, y+1);
-                }
+                underline(g, s, x, p0, y);
             }
             return ret;
         } else {
@@ -129,11 +81,37 @@ class ExtPlainView extends PlainView {
         }
     }
 
+    private void underline(Graphics g, Segment s, int x, int p0, int y) {
+        int wid = g.getFontMetrics().charWidth(' '); //NOI18N
+        char[] txt = s.array;
+        int txtOffset = s.offset;
+        int txtCount = s.count;
+        int n = s.offset + s.count;
+        int tabCount = 0;
+        int wsCount = 0;
+        for (int i = s.offset; i < n; i++) {
+            if (txt[i] == '\t') { //NOI18N
+                x = (int) nextTabStop((float) x,
+                p0 + i - txtOffset);
+                tabCount++;
+            } else if (Character.isWhitespace(txt[i])) {
+                x += wid;
+                wsCount++;
+            } else {
+                break;
+            }
+        }
+        int end = x + (wid * (txtCount - (wsCount + tabCount + 1)));
+        if (end > x) {
+            g.drawLine (x, y+1, end, y+1);
+        }
+    }
+
     private static Color getColorForLocation (int start, Document d, boolean selected) {
         OutputDocument od = (OutputDocument) d;
         int line = od.getElementIndex (start);
-        boolean hyperlink = od.isHyperlink(line);
-        boolean isErr = od.isErr(line);
+        boolean hyperlink = od.getLines().isHyperlink(line);
+        boolean isErr = od.getLines().isErr(line);
         return hyperlink ? 
             selected ? 
                 WrappedTextView.selectedLinkFg : 

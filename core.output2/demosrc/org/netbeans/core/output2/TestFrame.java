@@ -36,7 +36,7 @@
 //        io.setToolbarActions (new Action[] {new StopAction("STOP!!")});
         validate();
         System.err.println ("Writing content");
-        for (int i=0; i < 100000; i++) {
+        for (int i=0; i < 1000; i++) {
             io.getErr().println("Scroll me " + i);
             if (i %20 == 0) {
                 io.getErr().println("This is a longer line.  A much longer line.  A very long line.  You'd be surprised how long it would be - maybe long enought to wrap - or at least that's the idea and the master plan, right?  Well, we'll hope so");

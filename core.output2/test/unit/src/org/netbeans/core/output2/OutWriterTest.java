@@ -72,19 +72,20 @@ public class OutWriterTest extends TestCase {
         
         ow.println (third);
         
-        int pos = ow.positionOfLine(0);
+        int pos = ow.getLines().getLineStart(0);
         
         assertTrue ("First line position should be 0 but is " + pos, pos == 0);
         
-        int expectedPosition = first.length() + lineSepBytes.length - 1;
-        pos = ow.positionOfLine(1);
+        int expectedPosition = first.length() + 1;
+        pos = ow.getLines().getLineStart(1);
         
         assertTrue ("Second line position should be length of first (" + first.length() + ") + line " +
             "separator length (" + lineSepBytes.length + "), which should be " + 
             expectedPosition + " but is " + pos, 
             pos == expectedPosition);
+         
         
-        pos = ow.positionOfLine (2);
+        pos = ow.getLines().getLineStart (2);
         int targetPos = first.length() + second.length() + (lineSepBytes.length * 2) - 2;
         
         assertTrue ("Third line position should be " + targetPos + " but is " +
@@ -102,23 +103,23 @@ public class OutWriterTest extends TestCase {
         String second ="This is the second string";
         String third = "This is the third string";
         
-        assertTrue (ow.lineCount() == 0);
+        assertTrue (ow.getLines().getLineCount() == 0);
         
         ow.println(first);
         
-        assertTrue (ow.lineCount() == 1);
+        assertTrue (ow.getLines().getLineCount() == 1);
         
         ow.println (second);
         
-        assertTrue (ow.lineCount() == 2);
+        assertTrue (ow.getLines().getLineCount() == 2);
         
         int targetLength = first.length() + second.length() + 2;
 
         assertTrue ( 
             "After printing strings with length " + first.length() + " and " + 
             second.length() + " outfile position should be " + targetLength +
-            " not " + ow.charsWritten(),
-            ow.charsWritten() == targetLength);
+            " not " + ow.getLines().getCharCount(),
+            ow.getLines().getCharCount() == targetLength);
         
         ow.println (third);
         
@@ -126,7 +127,7 @@ public class OutWriterTest extends TestCase {
             3;
         
         assertTrue ("Length should be " + targetLength + " but position is "
-            + ow.charsWritten(), targetLength == ow.charsWritten());        
+            + ow.getLines().getCharCount(), targetLength == ow.getLines().getCharCount());
     }
     
     public void testLine() {
@@ -146,15 +147,15 @@ public class OutWriterTest extends TestCase {
         ow.println (third);
         
         assertTrue ("After writing 3 lines, linecount should be 3, not " + 
-            ow.lineCount(), ow.lineCount() == 3);
+            ow.getLines().getLineCount(), ow.getLines().getLineCount() == 3);
         
         String firstBack = null;
         String secondBack = null;
         String thirdBack = null;
         try {
-            firstBack = ow.line(0);
-            secondBack = ow.line(1);
-            thirdBack = ow.line(2);
+            firstBack = ow.getLines().getLine(0);
+            secondBack = ow.getLines().getLine(1);
+            thirdBack = ow.getLines().getLine(2);
         } catch (IOException ioe) {
             ioe.printStackTrace();
             fail (ioe.getMessage());
@@ -191,13 +192,13 @@ public class OutWriterTest extends TestCase {
         
         ow.println (third);
         
-        int line = ow.lineForPosition (first.length() / 2);
+        int line = ow.getLines().getLineAt (first.length() / 2);
         
         assertTrue ("Position halfway through first line should map to line 0," +
             " not " + line,
             line == 0);
         
-        line = ow.lineForPosition (first.length() + lineSepBytes.length + 
+        line = ow.getLines().getLineAt (first.length() + lineSepBytes.length +
             (second.length() / 2));
         
         assertTrue ("Position halfway through line 1 should map to line 1, not " +
@@ -235,7 +236,7 @@ public class OutWriterTest extends TestCase {
         Thread.currentThread().yield();
         
         assertTrue ("Linecount should be 3 after printing 3 lines, not " +
-            ow.lineCount(), ow.lineCount()==3);
+            ow.getLines().getLineCount(), ow.getLines().getLineCount()==3);
     }
     
     public void testAddChangeListener() {
@@ -272,11 +273,11 @@ public class OutWriterTest extends TestCase {
         OutWriter ow = new OutWriter ();
         String threeLines = "This is\nthree lines of\nText";
         ow.println(threeLines);
-        assertTrue ("Line count should be 3, not " + ow.lineCount(), ow.lineCount() == 3);
+        assertTrue ("Line count should be 3, not " + ow.getLines().getLineCount(), ow.getLines().getLineCount() == 3);
         ow.println("This is another line");
-        assertTrue ("Line count should be 4, not " + ow.lineCount(), ow.lineCount() == 4);
+        assertTrue ("Line count should be 4, not " + ow.getLines().getLineCount(), ow.getLines().getLineCount() == 4);
         ow.println(threeLines);
-        assertTrue ("Line count should be 7, not " + ow.lineCount(), ow.lineCount() == 7);
+        assertTrue ("Line count should be 7, not " + ow.getLines().getLineCount(), ow.getLines().getLineCount() == 7);
     }
     
     public void testRemoveChangeListener() {
@@ -345,7 +346,7 @@ public class OutWriterTest extends TestCase {
         //First test intra-line substrings
         
         String expected = first.substring(5, 15);
-        String gotten = ow.substring (5, 15);
+        String gotten = ow.getLines().getText (5, 15);
         System.err.println("\nGot " + gotten + "\n");
         
         assertEquals ("Should have gotten string \"" + expected + "\" but got \"" + gotten + "\"", expected, gotten);
@@ -365,7 +366,7 @@ public class OutWriterTest extends TestCase {
             ow.flush();
             
             String firstExpected = first + "\n";
-            String firstReceived = ow.line(0);
+            String firstReceived = ow.getLines().getLine(0);
             
             assertEquals ("First line should be \"" + firstExpected + "\" but was \"" + firstReceived + "\"", firstExpected, firstReceived);
         

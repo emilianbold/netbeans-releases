@@ -32,7 +32,7 @@ final class IntList {
     private int lastAdded = Integer.MIN_VALUE;
     
     /** Creates a new instance of IntMap */
-    public IntList(int capacity) {
+    IntList(int capacity) {
         initialCapacity = capacity;
         array = allocArray (initialCapacity);
     }

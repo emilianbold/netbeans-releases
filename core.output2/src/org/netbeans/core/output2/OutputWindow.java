@@ -78,10 +78,10 @@ public class OutputWindow extends AbstractOutputWindow {
                     + " Returned:" + tc.getClass().getName()); // NOI18N
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
                     //Fallback to accessor reserved for window system.
-                    tc = OutputWindow.getDefault();
+                    OutputWindow.getDefault();
                 }
             } else {
-                tc = OutputWindow.getDefault();
+                OutputWindow.getDefault();
             }
         }
         return DEFAULT;
@@ -154,6 +154,7 @@ public class OutputWindow extends AbstractOutputWindow {
             Color col = UIManager.getColor ("controlShadow"); //NOI18N
             //Draw *some* focus indication
             if (col == null) col = Color.GRAY;
+            g.setColor(col);
             g.drawRect (
                 ins.left + 2,
                 ins.top + 2,
@@ -185,13 +186,13 @@ public class OutputWindow extends AbstractOutputWindow {
         if (Controller.log) Controller.log("ComponentDeactivated");
         super.componentDeactivated();
         activated = false;
-        controller.notifyDeactivated (this);
+        controller.notifyDeactivated ();
     }
     
     protected void removed(AbstractOutputTab view) {
         if (Controller.log) Controller.log("Removed tab " + view);
         if (Controller.log) Controller.log ("Tab has been removed.  Notifying controller.");
-        controller.notifyRemoved(this, (OutputTab) view);
+        controller.notifyRemoved((OutputTab) view);
     }
 
     protected void selectionChanged(AbstractOutputTab former, AbstractOutputTab current) {
@@ -207,7 +208,7 @@ public class OutputWindow extends AbstractOutputWindow {
     }
 
     public void caretEnteredLine(OutputTab outputComponent, int line) {
-        controller.caretEnteredLine(this, outputComponent, line);
+        controller.caretEnteredLine(outputComponent, line);
     }
 
     public void documentChanged(OutputTab comp) {
@@ -221,10 +222,8 @@ public class OutputWindow extends AbstractOutputWindow {
         }
         comp.putClientProperty("outputWindow", this); //NOI18N
         hiddenTabs.add(comp);
-        synchronized (getTreeLock()) {
-            if (comp.getParent() != null) {
-                comp.getParent().remove(comp);
-            }
+        if (comp.getParent() != null) {
+            comp.getParent().remove(comp);
         }
     }
 
@@ -234,14 +233,14 @@ public class OutputWindow extends AbstractOutputWindow {
     }
 
     public void setSelectedTab (AbstractOutputTab op) {
-        if (op.getParent() == null && hiddenTabs.contains((OutputTab) op)) {
+        if (op.getParent() == null && hiddenTabs.contains(op)) {
             removeHiddenView ((OutputTab) op);
-            add((OutputTab) op);
+            add(op);
         }
         super.setSelectedTab (op);
     }
 
-    protected void updateSingletonName(AbstractOutputTab tab, String name) {
+    protected void updateSingletonName(String name) {
         String winName = NbBundle.getMessage(OutputWindow.class, "LBL_OUTPUT"); //NOI18N
         if (name != null) {
             String newName = hackHtml(NbBundle.getMessage(OutputWindow.class,
@@ -252,7 +251,7 @@ public class OutputWindow extends AbstractOutputWindow {
         }
     }
 
-    private String hackHtml (String name) {
+    private static String hackHtml (String name) {
         //XXX only until TopComponent.getHtmlDisplayName() in place
         if (name.indexOf ("<html>") != -1) {
             name = Utilities.replaceString(name, "<html>", ""); //NOI18N
@@ -324,7 +323,7 @@ public class OutputWindow extends AbstractOutputWindow {
 
     public void inputEof(OutputTab tab) {
         if (Controller.log) Controller.log ("Input EOF on " + this);
-        controller.inputEof(this, tab);
+        controller.inputEof(tab);
     }
 
     public void inputSent(OutputTab c, String txt) {

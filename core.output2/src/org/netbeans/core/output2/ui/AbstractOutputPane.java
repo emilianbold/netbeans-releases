@@ -58,15 +58,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         textView = createTextView();
         init();
     }
-    
-    public int getFontWidth() {
-        return fontWidth;
-    }
-    
-    public int getFontHeight() {
-        return fontHeight;
-    }
-    
+
     public void requestFocus() {
         textView.requestFocus();
     }
@@ -313,11 +305,8 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             return true;
         }
     }
-    
-    
-    
-    protected abstract int getWrappedHeight();
-    
+
+
     public final void lockScroll() {
         if (!locked) {
             locked = true;
@@ -329,8 +318,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             locked = false;
         }
     }
-
-    protected abstract boolean shouldRelock(int dot);
 
     protected abstract void caretEnteredLine (int line);
     
@@ -358,9 +345,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         }
         super.paint(g);
     }
-
-
-    protected abstract boolean shouldRelockScrollBar(int currVal);
 
 
 //***********************Listener implementations*****************************
@@ -409,27 +393,13 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             if (line != -1 && !sel) {
                 caretEnteredLine(getCaretLine());
             }
-            if (isWrapped()) {
-                //We need to force a repaint to erase all of the old selection
-                //if we're doing our own painting
-                int dot = getCaret().getDot();
-                int mark = getCaret().getMark();
-                if ((((dot > mark) != (lastKnownDot > lastKnownMark)) && !(lastKnownDot == lastKnownMark)) || ((lastKnownDot == lastKnownMark) != (dot == mark))){
-                    int begin = Math.min (Math.min(lastKnownDot, lastKnownMark), Math.min(dot, mark));
-                    int end = Math.max (Math.max(lastKnownDot, lastKnownMark), Math.max (dot, mark));
-                }
-            }
             if (sel != hadSelection) {
                 hadSelection = sel;
                 hasSelectionChanged (sel);
             }
         }
-        lastKnownMark = getCaret().getMark();
-        lastKnownDot = getCaret().getDot();
     }
-    
-    private int lastKnownMark = -1;
-    private int lastKnownDot = -1;
+
 
     private void hasSelectionChanged(boolean sel) {
         ((AbstractOutputTab) getParent()).hasSelectionChanged(sel);
@@ -474,10 +444,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         setMouseLine (line, null);
     }
 
-    public int getMouseLine() {
-        return mouseLine;
-    }
-
 
     public void mouseMoved(MouseEvent e) {
         Point p = e.getPoint();
@@ -488,7 +454,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             int lineLength = getDocument().getDefaultRootElement().getElement(line).getEndOffset() -
                     lineStart;
 
-            int left = getInsets().left;
             try {
                 Rectangle r = textView.modelToView(lineStart + lineLength -1);
                 int maxX = r.x + r.width;

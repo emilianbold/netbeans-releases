@@ -37,21 +37,17 @@ import java.lang.ref.WeakReference;
 class NbIO implements CallbackInputOutput {
 
     private Boolean focusTaken = null;
-    private Boolean errSeparated = null;
-    private Boolean errVisible = null;
-    private Boolean outVisible = null;
-    private Boolean inVisible = null;
     private Boolean closed = null;
     private String name;
     
-    public Action[] actions;
+    private Action[] actions;
 
-    OutWriter out = null;
+    private OutWriter out = null;
     /** Creates a new instance of NbIO 
      * @param name The name of the IO
      * @param toolbarActions an optional set of toolbar actions
      */
-    public NbIO(String name, Action[] toolbarActions) {
+    NbIO(String name, Action[] toolbarActions) {
         this(name);
         this.actions = toolbarActions;
     }
@@ -89,7 +85,6 @@ class NbIO implements CallbackInputOutput {
                 in.eof();
                 in = null;
             }
-            inVisible = null;
             focusTaken = null;
         }
         NbIOProvider.dispose(this);
@@ -124,7 +119,6 @@ class NbIO implements CallbackInputOutput {
     }
     
     boolean isStreamClosed() {
-        //return Boolean.TRUE.equals(streamClosed);
         return out == null ? true : out.isClosed();
     }
     
@@ -148,7 +142,6 @@ class NbIO implements CallbackInputOutput {
     
     public void setInputVisible(boolean value) {
         if (Controller.log) Controller.log(NbIO.this + ": SetInputVisible");
-        inVisible = value ? Boolean.TRUE : Boolean.FALSE;
         post (this, IOEvent.CMD_INPUT_VISIBLE, value);
     }
     
@@ -224,7 +217,7 @@ class NbIO implements CallbackInputOutput {
     
     class IOReader extends Reader {
         private boolean pristine = true;
-        public IOReader() {
+        IOReader() {
             super (new StringBuffer());
         }
         

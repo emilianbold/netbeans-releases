@@ -26,7 +26,7 @@ import org.openide.windows.OutputWriter;
  * @author Jesse Glick, Tim Boudreau
  */
 public final class NbIOProvider extends IOProvider {
-    static final PairMap namesToIos = new PairMap();
+    private static final PairMap namesToIos = new PairMap();
     
     private static final String STDOUT = NbBundle.getMessage(NbIOProvider.class,
         "LBL_STDOUT"); //NOI18N
@@ -65,7 +65,7 @@ public final class NbIOProvider extends IOProvider {
         if (Controller.log) {
             Controller.log("GETIO: " + name + " new:" + newIO);
         }
-        NbIO result = (NbIO) namesToIos.get(name);
+        NbIO result = namesToIos.get(name);
 
         if (result == null || newIO) {
             result = new NbIO(name, toolbarActions);

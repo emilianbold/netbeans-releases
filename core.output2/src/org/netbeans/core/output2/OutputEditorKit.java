@@ -39,7 +39,7 @@ final class OutputEditorKit extends DefaultEditorKit implements javax.swing.text
     private final JTextComponent comp;
 
     /** Creates a new instance of OutputEditorKit */
-    public OutputEditorKit(boolean wrapped, JTextComponent comp) {
+    OutputEditorKit(boolean wrapped, JTextComponent comp) {
         this.comp = comp;
         this.wrapped = wrapped;
     }
@@ -52,7 +52,7 @@ final class OutputEditorKit extends DefaultEditorKit implements javax.swing.text
     public javax.swing.text.View create(Element element) {
         javax.swing.text.View result =
                 wrapped ? (javax.swing.text.View) new WrappedTextView(element, comp) :
-                (javax.swing.text.View) new ExtPlainView (element, comp);
+                (javax.swing.text.View) new ExtPlainView (element);
         lastWrappedView = wrapped ? (WrappedTextView) result : null;
         if (wrapped) {
             lastWrappedView.updateInfo(null);

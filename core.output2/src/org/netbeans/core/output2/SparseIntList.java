@@ -43,8 +43,8 @@ import java.util.Arrays;
  * be > the index argument the last time it was called, and the same for the
  * value argument.
  * <p>
- * This is used to handle caching of logical line lengths in OutWriter - 
- * if we have a 400000 line file, most lines will typically not need to be 
+ * This is used to handle caching of logical line lengths in OutWriter -
+ * if we have a 400000 line file, most lines will typically not need to be
  * word wrapped.  So we don't want to create a 400000 element int[] if most
  * of the time the number of wrapped lines will turn out to be 1 - instead,
  * only lines that are actually wrapped will have a line count added to a
@@ -61,7 +61,7 @@ final class SparseIntList {
     private int lastIndex = Integer.MIN_VALUE;
     
     /** Creates a new instance of IntMap */
-    public SparseIntList(int capacity) {
+    SparseIntList(int capacity) {
         allocArrays (capacity);
     }
     
@@ -175,12 +175,12 @@ final class SparseIntList {
         if (end - start <= 1) {
             return start;
         }
-        int midPoint = start + ((end - start) / 2);
+        int midPoint = start + ((end - start) >> 1);
         int idxAtMidpoint = keys[midPoint];
         if (idxAtMidpoint > val) {
-            return findInRange (val, start, start + ((end - start) / 2));
+            return findInRange (val, start, start + ((end - start) >> 1));
         } else {
-            return findInRange (val, start + ((end - start) / 2), end);
+            return findInRange (val, start + ((end - start) >> 1), end);
         }
     }    
     

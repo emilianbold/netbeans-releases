@@ -114,7 +114,7 @@ public class Controller { //XXX public only for debug access to logging code
 
     Controller() {}
 
-    public OutputTab findOrCreateComponent (OutputWindow win, NbIO io, boolean create, boolean select, boolean showContainer, boolean activateContainer, boolean reuse) {
+    private OutputTab createOutputTab (OutputWindow win, NbIO io, boolean activateContainer, boolean reuse) {
         AbstractOutputTab[] ov = win.getTabs();
         OutputTab result = null;
         if (log) log ("Find or create component for nbio " + io);
@@ -144,16 +144,16 @@ public class Controller { //XXX public only for debug access to logging code
         if (log) log ("FindOrCreate: " + io.getName() + " found=" + (result != 
             null) + " for io " + io);
         
-        if (result == null && create) {
+        if (result == null) {
             if (log) log ("Find or create creating " + io.getName());
             result = createAndInstallView (win, io);
         }
-        if (select && result != null) {
+        if (result != null) {
             win.setSelectedTab(result);
         }
-        if (showContainer && !activateContainer) {
+        if (!activateContainer) {
             win.requestVisibleForNewTab();
-        } else if (activateContainer) {
+        } else {
             win.requestActiveForNewTab();
         }
         return result;
@@ -240,7 +240,7 @@ public class Controller { //XXX public only for debug access to logging code
     private class CoalescedNameUpdater implements Runnable {
         private HashSet components = new HashSet();
         private OutputWindow win;
-        public CoalescedNameUpdater (OutputWindow win) {
+        CoalescedNameUpdater (OutputWindow win) {
             this.win = win;
         }
 
@@ -291,8 +291,8 @@ public class Controller { //XXX public only for debug access to logging code
                 tab.getOutputPane().copy();
                 break;
             case ACTION_WRAP:
-                boolean wrapped = ((OutputPane) tab.getOutputPane()).isWrapped();
-                ((OutputPane) tab.getOutputPane()).setWrapped(!wrapped);
+                boolean wrapped = tab.getOutputPane().isWrapped();
+                tab.getOutputPane().setWrapped(!wrapped);
                 break;
             case ACTION_SAVEAS:
                 saveAs (tab);
@@ -338,9 +338,9 @@ public class Controller { //XXX public only for debug access to logging code
         OutWriter out = tab.getIO().out();
         if (out != null) {
             int line = tab.getOutputPane().getCaretLine();
-            OutputListener lis = out.listenerForLine(line);
+            OutputListener lis = out.getLines().getListenerForLine(line);
             if (lis != null) {
-                if (log) log (" Sending action for line " + line);
+                if (log) log (" Sending action for getLine " + line);
                 ignoreCaretChanges = true;
                 tab.getOutputPane().sendCaretToLine(line, true);
                 ignoreCaretChanges = false;
@@ -355,13 +355,11 @@ public class Controller { //XXX public only for debug access to logging code
      * dialog.
      */
     private static class FindActionListener implements ActionListener {
-        OutputWindow win;
         OutputTab tab;
         Action findNextAction;
         Action findPreviousAction;
         Action copyAction;
-        public FindActionListener (OutputWindow win, OutputTab tab, Action findNextAction, Action findPreviousAction, Action copyAction) {
-            this.win = win;
+        FindActionListener (OutputWindow win, OutputTab tab, Action findNextAction, Action findPreviousAction, Action copyAction) {
             this.tab = tab;
             this.findNextAction = findNextAction;
             this.findPreviousAction = findPreviousAction;
@@ -394,7 +392,7 @@ public class Controller { //XXX public only for debug access to logging code
             }
             OutWriter out = tab.getIO().out();
             if (out != null) {
-                Matcher matcher = out.find(s);
+                Matcher matcher = out.getLines().find(s);
                 if (matcher != null && matcher.find(pos)) {
                     int start = matcher.start();
                     int end = matcher.end();
@@ -418,7 +416,7 @@ public class Controller { //XXX public only for debug access to logging code
     private void findNext (OutputTab tab) {
         OutWriter out = tab.getIO().out();
         if (out != null) {
-            Matcher matcher = out.getMatcher();
+            Matcher matcher = out.getLines().getForwardMatcher();
             int pos = tab.getOutputPane().getCaretPos();
             if (pos >= tab.getOutputPane().getLength() || pos < 0) {
                 pos = 0;
@@ -442,7 +440,7 @@ public class Controller { //XXX public only for debug access to logging code
     private void findPrevious (OutputTab tab) {
         OutWriter out = tab.getIO().out();
         if (out != null) {
-            Matcher matcher = out.getReverseMatcher();
+            Matcher matcher = out.getLines().getReverseMatcher();
 
             int length = tab.getOutputPane().getLength();
             int pos = length - tab.getOutputPane().getSelectionStart();
@@ -476,12 +474,12 @@ public class Controller { //XXX public only for debug access to logging code
             boolean enable = len > 0;
             findAction.setEnabled (enable);
             OutWriter out = tab.getIO().out();
-            findNextAction.setEnabled (out != null && out.getMatcher() != null);
-            findPreviousAction.setEnabled (out != null && out.getMatcher() != null);
+            findNextAction.setEnabled (out != null && out.getLines().getForwardMatcher() != null);
+            findPreviousAction.setEnabled (out != null && out.getLines().getForwardMatcher() != null);
             saveAsAction.setEnabled (enable);
             selectAllAction.setEnabled(enable);
             copyAction.setEnabled(pane.hasSelection());
-            boolean hasErrors = out == null ? false : out.firstListenerLine() != -1;
+            boolean hasErrors = out == null ? false : out.getLines().firstListenerLine() != -1;
             nextErrorAction.setEnabled(hasErrors);
             prevErrorAction.setEnabled(hasErrors);
         }
@@ -500,13 +498,6 @@ public class Controller { //XXX public only for debug access to logging code
         //its output is still open.
         Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
         boolean hadFocus = focusOwner != null && (focusOwner == win || win.isAncestorOf(focusOwner));
-        Container topLevel = win.getTopLevelAncestor();
-        if (topLevel == null) {
-            topLevel = Frame.getFrames().length > 0 ? Frame.getFrames()[0] : null;
-            if (topLevel instanceof JFrame) {
-                topLevel = ((JFrame) topLevel).getRootPane();
-            }
-        }
 
         win.remove(tab);
         if (log) log ("Close received, removing " + tab + " from component");
@@ -547,7 +538,9 @@ public class Controller { //XXX public only for debug access to logging code
         File f = showFileChooser (tab);
         if (f != null) {
             try {
-                out.saveAs(f.getPath(), true);
+                synchronized (out) {
+                    out.getLines().saveAs(f.getPath());
+                }
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
             }
@@ -648,9 +641,8 @@ public class Controller { //XXX public only for debug access to logging code
 
     /**
      * Messaged when the container is deactivated in the netbeans window system
-     * @param win
      */
-    public void notifyDeactivated(OutputWindow win) {
+    public void notifyDeactivated() {
         for (int i=0; i < popupItems.length; i++) {
             if (popupItems[i] instanceof Action && popupItems[i] != nextErrorAction && popupItems[i] != prevErrorAction) {
                 ((ControllerAction) popupItems[i]).detachPerformer();
@@ -680,12 +672,12 @@ public class Controller { //XXX public only for debug access to logging code
             if (line >= tab.getOutputPane().getLineCount()-1) {
                 line = 0;
             }
-            int newline = out.nearestListenerTo(line, backward);
+            int newline = out.getLines().nearestListenerLine(line, backward);
             if (newline == line) {
                 if (!backward && line != tab.getOutputPane().getLineCount()) {
-                    newline = out.nearestListenerTo(line+1, backward);
+                    newline = out.getLines().nearestListenerLine(line+1, backward);
                 } else if (backward && line > 0) {
-                    newline = out.nearestListenerTo(line-1, backward);
+                    newline = out.getLines().nearestListenerLine(line-1, backward);
                 } else {
                     return;
                 }
@@ -695,7 +687,7 @@ public class Controller { //XXX public only for debug access to logging code
                     log("Sending caret to error line " + newline);
                 tab.getOutputPane().sendCaretToLine(newline, true);
                 if (!win.isActivated()) {
-                    OutputListener l = out.listenerForLine(newline);
+                    OutputListener l = out.getLines().getListenerForLine(newline);
                     
                     ControllerOutputEvent ce = new ControllerOutputEvent (tab.getIO(), newline);
                     l.outputLineAction(ce);
@@ -710,7 +702,7 @@ public class Controller { //XXX public only for debug access to logging code
      * tabs, re-showing it on request, or finally disposing its IO and
      * releasing it if it has not been shown again.
      */
-    public void notifyRemoved(OutputWindow win, OutputTab tab) {
+    public void notifyRemoved(OutputTab tab) {
         if (log) log ("Tab " + tab + " has been CLOSED.  Disposing its IO.");
         NbIO io = tab.getIO();
         io.setClosed(true);
@@ -747,7 +739,7 @@ public class Controller { //XXX public only for debug access to logging code
     private OutputListener listenerForLine (OutputTab tab, int line) {
         OutWriter out = tab.getIO().out();
         if (out != null) {
-            return out.listenerForLine(line);
+            return out.getLines().getListenerForLine(line);
         }
         return null;
     }
@@ -806,7 +798,7 @@ public class Controller { //XXX public only for debug access to logging code
                     JCheckBoxMenuItem item = 
                         new JCheckBoxMenuItem((Action) popupItems[i]);
                     
-                    item.setSelected(((OutputPane) tab.getOutputPane()).isWrapped());
+                    item.setSelected(tab.getOutputPane().isWrapped());
                     popup.add (item);
                 }
             }
@@ -821,7 +813,7 @@ public class Controller { //XXX public only for debug access to logging code
      */
     private static class PMListener implements PopupMenuListener {
         private Object[] popupItems;
-        public PMListener (Object[] popupItems) {
+        PMListener (Object[] popupItems) {
             this.popupItems = popupItems;
         }
         
@@ -852,11 +844,10 @@ public class Controller { //XXX public only for debug access to logging code
      * Called when the text caret has changed lines - will call OutputListener.outputLineSelected if
      * there is a listener for that line.
      *
-     * @param win The output window
      * @param tab The output tab
      * @param line The line the caret is in
      */
-    public void caretEnteredLine(OutputWindow win, OutputTab tab, int line) {
+    public void caretEnteredLine(OutputTab tab, int line) {
         if (!ignoreCaretChanges) {
             OutputListener l = listenerForLine (tab, line);
             if (log) {
@@ -922,11 +913,11 @@ public class Controller { //XXX public only for debug access to logging code
 
         switch (command) {
             case IOEvent.CMD_CREATE :
-                findOrCreateComponent(win, io, true, true, true, io.isFocusTaken(), value);
+                createOutputTab(win, io, io.isFocusTaken(), value);
                 break;
             case IOEvent.CMD_INPUT_VISIBLE :
                 if (value && tab == null) {
-                    tab = findOrCreateComponent(win, io, true, true, true, io.isFocusTaken(), value);
+                    tab = createOutputTab(win, io, io.isFocusTaken(), value);
                 }
                 if (tab != null) {
                     tab.setInputVisible(value);
@@ -936,7 +927,7 @@ public class Controller { //XXX public only for debug access to logging code
             case IOEvent.CMD_SELECT :
 
                 if (tab == null) {
-                    tab = findOrCreateComponent(win, io, true, true, true, io.isFocusTaken(), value);
+                    tab = createOutputTab(win, io, io.isFocusTaken(), value);
                 }
                 if (win.getSelectedTab() != tab) {
                     if (tab.getParent() == null) {
@@ -949,7 +940,7 @@ public class Controller { //XXX public only for debug access to logging code
                 break;
             case IOEvent.CMD_SET_TOOLBAR_ACTIONS :
                 if (tab == null && data != null) {
-                    tab = findOrCreateComponent(win, io, true, true, true, io.isFocusTaken(), value);
+                    tab = createOutputTab(win, io, io.isFocusTaken(), value);
                 }
                 Action[] a = (Action[]) data;
                 tab.setToolbarActions(a);
@@ -970,7 +961,7 @@ public class Controller { //XXX public only for debug access to logging code
                     } else if (tab != null) {
                         if (tab.getParent() != null) {
                             updateName(win, tab);
-                            if (tab.getIO().out() != null && tab.getIO().out().firstListenerLine() == -1) {
+                            if (tab.getIO().out() != null && tab.getIO().out().getLines().firstListenerLine() == -1) {
                                 tab.getOutputPane().ensureCaretPosition();
                             }
                             if (tab == win.getSelectedTab()) {
@@ -1014,7 +1005,7 @@ public class Controller { //XXX public only for debug access to logging code
      *
      * @param comp The output component whose IO's stream has been closed.
      */
-    private boolean navigateToFirstErrorLine (OutputTab comp) {
+    private void navigateToFirstErrorLine (OutputTab comp) {
         OutWriter out = comp.getIO().out();
         if (out != null) {
             int line = comp.getFirstNavigableListenerLine();
@@ -1023,7 +1014,6 @@ public class Controller { //XXX public only for debug access to logging code
                 comp.getOutputPane().sendCaretToLine (line, false);
             }
         }
-        return false;
     }
     
     /**
@@ -1064,7 +1054,7 @@ public class Controller { //XXX public only for debug access to logging code
          * @param bundleKey A key for the bundle associated with the Controller class
          * @see org.openide.util.Utilities#stringToKey
          */
-        public ControllerAction (int id, String bundleKey) {
+        ControllerAction (int id, String bundleKey) {
             if (bundleKey != null) {
                 String name = NbBundle.getMessage(Controller.class, bundleKey);
                 KeyStroke accelerator = getAcceleratorFor(bundleKey);
@@ -1082,7 +1072,7 @@ public class Controller { //XXX public only for debug access to logging code
          * @param name A programmatic name for the item
          * @param stroke An accelerator keystroke
          */
-        public ControllerAction (int id, String name, KeyStroke stroke) {
+        ControllerAction (int id, String name, KeyStroke stroke) {
             this.id = id;
             putValue (NAME, name);
             putValue (ACCELERATOR_KEY, stroke);
@@ -1118,7 +1108,7 @@ public class Controller { //XXX public only for debug access to logging code
          * @param name The bundle key for the action
          * @param callbackActionClass
          */
-        public ControllerAction (int id, String name, Class callbackActionClass) {
+        ControllerAction (int id, String name, Class callbackActionClass) {
             this (id, name);
             this.callbackActionClass = callbackActionClass;
         }
@@ -1154,7 +1144,10 @@ public class Controller { //XXX public only for debug access to logging code
                     outComp = (OutputTab) jpm.getClientProperty ("component"); //NOI18N
                 }
             }
-            win.getController().actionPerformed (win, outComp, getID());
+            Controller cont = win.getController();
+            if (cont != null) {
+                cont.actionPerformed (win, outComp, getID());
+            }
         }
 
         /**
@@ -1218,7 +1211,7 @@ public class Controller { //XXX public only for debug access to logging code
      */
     static class ControllerOutputEvent extends OutputEvent {
         private int line;
-        public ControllerOutputEvent (NbIO io, int line) {
+        ControllerOutputEvent (NbIO io, int line) {
             super (io);
             this.line = line;
         }
@@ -1232,7 +1225,7 @@ public class Controller { //XXX public only for debug access to logging code
             OutWriter out = io.out();
             try {
                 if (out != null) {
-                    String s = out.line(line);
+                    String s = out.getLines().getLine(line);
                     //#46892 - newlines should not be appended to returned strings
                     if (s.endsWith("\n")) { //NOI18N
                         s = s.substring(0, s.length()-1);
@@ -1250,7 +1243,7 @@ public class Controller { //XXX public only for debug access to logging code
 
     public static boolean log = Boolean.getBoolean("nb.output.log") || Boolean.getBoolean("nb.output.log.verbose"); //NOI18N
     public static boolean verbose = Boolean.getBoolean("nb.output.log.verbose");
-    static final boolean logStdOut = Boolean.getBoolean("nb.output.log.stdout"); //NOI18N
+    private static final boolean logStdOut = Boolean.getBoolean("nb.output.log.stdout"); //NOI18N
     public static void log (String s) {
         s = Long.toString(System.currentTimeMillis()) + ":" + s + "(" + Thread.currentThread() + ")  ";
         if (logStdOut) {
@@ -1309,15 +1302,8 @@ public class Controller { //XXX public only for debug access to logging code
         }
         return logStream;
     }
-    
-    static void flushLog() throws IOException {
-        if (logStream != null) {
-            logStream.flush();
-            logStream.close();
-        }
-    }
 
-    public void inputEof(OutputWindow win, OutputTab tab) {
+    public void inputEof(OutputTab tab) {
         if (Controller.log) Controller.log ("Input EOF");
         NbIO io = tab.getIO();
         NbIO.IOReader in = io.in();

@@ -46,14 +46,10 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
         findOutputTab().postPopupMenu(p, src);
     }
 
-    protected boolean shouldRelockScrollBar(int currVal) {
-        return findOutputTab().shouldRelockScrollBar(currVal);
-    }
-
     public void setMouseLine (int line, Point p) {
         Document doc = getDocument();
         if (doc instanceof OutputDocument) {
-            boolean link = line != -1 && ((OutputDocument) doc).isHyperlink(line);
+            boolean link = line != -1 && ((OutputDocument) doc).getLines().isHyperlink(line);
             if (link && p != null) {
                 //#47256 - Don't set the cursor if the mouse if over
                 //whitespace
@@ -75,8 +71,8 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
         assert getDocument() instanceof OutputDocument;
         assert p != null;
         OutputDocument doc = (OutputDocument) getDocument();
-        int lineStart = ((OutputDocument) doc).getLineStart(line);
-        int lineEnd = ((OutputDocument) doc).getLineEnd(line);
+        int lineStart = doc.getLineStart(line);
+        int lineEnd = doc.getLineEnd(line);
 
         try {
             doc.getText (lineStart, lineEnd - lineStart, seg);
@@ -119,7 +115,7 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
     public void mouseMoved (MouseEvent evt) {
         Document doc = getDocument();
         if (doc instanceof OutputDocument) {
-            if (((OutputDocument) doc).hasHyperlinks()) {
+            if (((OutputDocument) doc).getLines().hasHyperlinks()) {
                 super.mouseMoved(evt);
             }
         }
@@ -171,6 +167,11 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
             if (getDocument() instanceof OutputDocument && ((OutputDocument) getDocument()).stillGrowing()) {
                 lockScroll();
             }
+            if (!val) {
+                //If there are long lines, it will suddenly get scrolled to the right
+                //with the non-wrapping editor kit, so fix that
+                getHorizontalScrollBar().setValue(getHorizontalScrollBar().getModel().getMinimum());
+            }
             validate();
         }
     }
@@ -201,7 +202,7 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
             if (isWrapped()) {
                 WrappedTextView view = ((OutputEditorKit) getEditorKit()).view();
                 if (view != null) {
-                    view.setChanged(true);
+                    view.setChanged();
                     textView.repaint();
                 }
             }
@@ -219,19 +220,6 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
 
     public void componentHidden(ComponentEvent e) {
         //do nothing
-    }
-    
-    protected int getWrappedHeight() {
-        WrappedTextView view = ((OutputEditorKit) getEditorKit()).view();
-        if (view != null) {
-            return (int) view.getMinimumSpan (WrappedTextView.Y_AXIS);
-        }
-        return textView.getHeight();
-        
-    }
-
-    protected boolean shouldRelock(int dot) {
-        return findOutputTab().shouldRelock(dot);
     }
 
 }

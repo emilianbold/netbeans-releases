@@ -38,7 +38,7 @@ class PairMap {
     private boolean weak = false;
     
     /** Creates a new instance of PairMap */
-    public PairMap() {
+    PairMap() {
     }
     
     public synchronized void clear() {

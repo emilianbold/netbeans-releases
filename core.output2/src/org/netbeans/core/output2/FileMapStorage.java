@@ -25,7 +25,7 @@ import java.nio.channels.FileChannel;
  */
 class FileMapStorage implements Storage {
     /** A file channel for writing the mapped file */
-    protected FileChannel writeChannel;
+    private FileChannel writeChannel;
     /** A file channel for reading the mapped file */
     private FileChannel readChannel;
     /** The base number of bytes to allocate when a getWriteBuffer for writing is
@@ -49,7 +49,7 @@ class FileMapStorage implements Storage {
     /**
      * The currently in use buffer.
      */
-    protected ByteBuffer buffer = null;
+    private ByteBuffer buffer = null;
     /**
      * The number of bytes that have been written.
      */
@@ -59,11 +59,11 @@ class FileMapStorage implements Storage {
      */
     private File outfile = null;
 
-    public FileMapStorage() {
+    FileMapStorage() {
         init();
     }
 
-    protected void init() {
+    private void init() {
         contents = null;
         mappedRange = -1;
         master = ByteBuffer.allocateDirect (BASE_BUFFER_SIZE);
@@ -107,14 +107,6 @@ class FileMapStorage implements Storage {
                 outfile.deleteOnExit();
             }
         }
-    }
-
-    /**
-     * Get the output file, creating it if necessary.
-     */
-    File getFile() throws IOException {
-        ensureFileExists();
-        return outfile;
     }
 
     /**
@@ -169,7 +161,7 @@ class FileMapStorage implements Storage {
         if (buffer == null) {
             buffer = master.slice();
         } else {
-            int charsRemaining = OutWriter.toCharIndex(buffer.capacity() - buffer.position());
+            int charsRemaining = AbstractLines.toCharIndex(buffer.capacity() - buffer.position());
 
             if (charsRemaining < size) {
                 buffer.flip();
@@ -236,12 +228,12 @@ class FileMapStorage implements Storage {
     }
 
     /**
-     * Get a byte buffer representing the a subrange of the contents of the
+     * Get a byte buffer representing the a getText of the contents of the
      * output file.  This is optimized to possibly map more of the output file
      * into memory if it is not already mapped.
      */
     public ByteBuffer getReadBuffer(int start, int byteCount) throws IOException {
-        ByteBuffer contents = null;
+        ByteBuffer contents;
         synchronized (this) {
             //XXX Some optimizations possible here:
             // - Don't map the entire file, just what is requested (perhaps if the mapped

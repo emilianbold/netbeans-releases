@@ -27,18 +27,10 @@ import java.awt.*;
 final class OutputTab extends AbstractOutputTab {
     private NbIO io;
 
-    public OutputTab (NbIO io) {
+    OutputTab (NbIO io) {
         this.io = io;
         if (Controller.log) Controller.log ("Created an output component for " + io);
         setDocument (new OutputDocument((OutWriter) io.getOut()));
-    }
-    
-    public void addNotify() {
-        super.addNotify();
-    }
-    
-    public void removeNotify() {
-        super.removeNotify();
     }
 
     public void setDocument (Document doc) {
@@ -53,7 +45,7 @@ final class OutputTab extends AbstractOutputTab {
         if (io != null) {
             setDocument (new OutputDocument((OutWriter) io.getOut()));
         } else {
-            io = null;
+            this.io = null;
             setDocument(null);
         }
     }
@@ -141,10 +133,10 @@ final class OutputTab extends AbstractOutputTab {
         if (out != null) {
             if (Controller.log) Controller.log ("Looking for first appropriate" +
                 " listener line to send the caret to");
-            int[] lines = out.allListenerLines();
+            int[] lines = out.getLines().allListenerLines();
             for (int i=0; i < lines.length; i++) {
                 try {
-                    String s = out.line(lines[i]);
+                    String s = out.getLines().getLine(lines[i]);
                     if (s.indexOf("[deprecation]") == -1 && s.indexOf("warning") == -1) {
                         result = lines[i];
                         if (Controller.log) Controller.log ("Line to navigate to" +
@@ -174,7 +166,7 @@ final class OutputTab extends AbstractOutputTab {
             if (getFirstNavigableListenerLine() == -1) {
                 return;
             }
-            hasOutputListeners = getIO().out() != null && getIO().out().firstListenerLine() >= 0;
+            hasOutputListeners = getIO().out() != null && getIO().out().getLines().firstListenerLine() >= 0;
             if (hasOutputListeners != hadOutputListeners) {
                 win.hasOutputListenersChanged(this, hasOutputListeners);
             }
@@ -193,17 +185,9 @@ final class OutputTab extends AbstractOutputTab {
         if (io != null) {
             OutWriter w = io.out();
             if (w != null && !w.isClosed()) {
-                int dist =  Math.abs(w.charsWritten() - dot);
+                int dist =  Math.abs(w.getLines().getCharCount() - dot);
                 return dist < 100;
             }
-        }
-        return false;
-    }
-
-    public boolean shouldRelockScrollBar(int currVal) {
-        if (io != null) {
-            OutWriter w = io.out();
-            return !w.isClosed();
         }
         return false;
     }

@@ -104,7 +104,7 @@ class IOEvent extends AWTEvent implements ActiveEvent {
     /**
      * Array of IDs for checking legal values and generating a string representing the event.
      */
-    static final int[] IDS = new int[] {
+    private static final int[] IDS = new int[] {
         CMD_CREATE,
         CMD_OUTPUT_VISIBLE,
         CMD_INPUT_VISIBLE,
@@ -122,7 +122,7 @@ class IOEvent extends AWTEvent implements ActiveEvent {
     /**
      * Strings matching the values in the IDS array for generating a string representing the event.
      */
-    static final String[] CMDS = new String[] { 
+    private static final String[] CMDS = new String[] {
         "CREATE", //NOI18N
         "OUTPUT_VISIBLE", //NOI18N
         "INPUT_VISIBLE", //NOI18N
@@ -136,11 +136,6 @@ class IOEvent extends AWTEvent implements ActiveEvent {
         "SET_TOOLBAR_ACTIONS", //NOI18N
         "DETACH"  //NOI18N
     };
-
-    /**
-     * Last index used by IDs belonging to IOEvent
-     */
-    static final int CMD_LAST = IDS[IDS.length-1];
 
     /**
      * Boolean value associated with this event.
@@ -160,7 +155,7 @@ class IOEvent extends AWTEvent implements ActiveEvent {
      * @param command The ID of what has happened
      * @param value The boolean state for the command to be performed
      */
-    public IOEvent(NbIO source, int command, boolean value) {
+    IOEvent(NbIO source, int command, boolean value) {
         //Null source only for destroying the default instance
         super(source == null ? new Object() : source, command + IO_EVENT_MASK);
         assert Arrays.binarySearch (IDS, command) >= 0 : "Unknown command: " + command; //NOI18N
@@ -175,7 +170,7 @@ class IOEvent extends AWTEvent implements ActiveEvent {
      * @param command The ID of what has happened
      * @param data Data required to process this command (i.e. toolbar actions added)
      */
-    public IOEvent(NbIO source, int command, Object data) {
+    IOEvent(NbIO source, int command, Object data) {
         this (source, command, false);
         this.data = data;
     }

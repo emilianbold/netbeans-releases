@@ -30,7 +30,7 @@ import java.util.Set;
  * use of Arrays.binarySearch() to quickly locate the relevant entry.
  * <p>
  * Used to maintain the mapping between the (relatively few) OutputListeners
- * and their associated line numbers.
+ * and their associated getLine numbers.
  *
  * @author  Tim Boudreau
  */
@@ -42,7 +42,7 @@ final class IntMap {
     private int last = -1;
     
     /** Creates a new instance of IntMap */
-    public IntMap() {
+    IntMap() {
     }
     
     public int first() {
@@ -80,11 +80,7 @@ final class IntMap {
             return keys[idx];
         }
     }
-    
-    public Set valueSet() {
-        return new HashSet (Arrays.asList(vals));
-    }
-    
+
     public int[] getKeys () {
         int[] result = new int[last+1];
         System.arraycopy (keys, 0, result, 0, last+1);

@@ -19,6 +19,7 @@
 package org.netbeans.core.output2;
 
 import org.openide.ErrorManager;
+import org.openide.windows.OutputListener;
 import org.openide.util.Mutex;
 
 import javax.swing.*;
@@ -44,7 +45,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     private OutWriter writer;
    
     /** Creates a new instance of OutputDocument */
-    public OutputDocument(OutWriter writer) {
+    OutputDocument(OutWriter writer) {
         if (Controller.log) {
             Controller.log ("Creating a Document for " + writer);
         }
@@ -77,7 +78,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     }
     
     public Position createPosition(int offset) throws BadLocationException {
-        if (offset < 0 || offset > writer.charsWritten()) {
+        if (offset < 0 || offset > getLines().getCharCount()) {
             throw new BadLocationException ("Bad position", offset); //NOI18N
         }
         return new ODPosition (offset);
@@ -92,7 +93,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     }
     
     public int getLength() {
-        return writer.charsWritten();
+        return getLines().getCharCount();
     }
     
     public Object getProperty(Object obj) {
@@ -108,18 +109,22 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     }
     
     public String getText(int offset, int length) throws BadLocationException {
-        if (offset < 0 || offset > writer.charsWritten() || length < 0) {
+        if (offset < 0 || offset > getLines().getCharCount() || length < 0) {
             throw new BadLocationException ("Bad: " + offset + "," +  //NOI18N
                 length, offset);
         }
         if (length == 0) {
             return ""; //NOI18N
         }
-        String result = writer.substring (offset, offset + length);
+        String result1;
+        synchronized (writer) {
+            result1 = getLines().getText(offset,offset + length);
+        }
+        String result = result1;
         return result;
     }
     
-    private char[] reusableSubrange = new char [2048];
+    private char[] reusableSubrange = new char [256];
     public void getText(int offset, int length, Segment txt) throws BadLocationException {
         if (length < 0) {
             //document is empty
@@ -132,7 +137,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         if (offset < 0) {
             throw new BadLocationException ("Negative offset", offset); //NOI18N
         }
-        if (writer.lineCount() == 0) {
+        if (getLines().getLineCount() == 0) {
             txt.array = new char[] {'\n'};
             txt.offset = 0;
             txt.count = 1;
@@ -141,7 +146,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         if (length > reusableSubrange.length) {
             reusableSubrange = new char[length];
         }
-        char[] chars = writer.subrange (offset, offset + length, reusableSubrange);
+        char[] chars = getLines().getText(offset, offset + length, reusableSubrange);
         txt.array = chars;
         txt.offset = 0;
         txt.count = Math.min(length, chars.length);
@@ -168,215 +173,29 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         }
     }
 
-    /**
-     * Get the length in characters of the longest line in the document
-     *
-     * @return The number of characters in the longest line
-     */
-    public int getLongestLineLength() {
-        return writer.getLongestLineLength();
+    public Lines getLines() {
+        return writer.getLines();
     }
 
-    /**
-     * Get the number of logical lines in this document if wrapped at <code>length</code>
-     * (this assumes a fixed width font).
-     *
-     * @param length The number of characters per line
-     * @return The number of logical lines needed to fit the wrapped text
-     */
-    public int getLogicalLineCountIfWrappedAt (int length) {
-        return writer.getLogicalLineCountIfWrappedAt(length);
-    }
-
-    /**
-     * Get the number of logical lines appearing above a given line if wrapped at
-     * <code>charsPerLine</code> (this assumes a fixed width font).
-     *
-     * @param line The line to calculate for
-     * @param charsPerLine The number of characters per line
-     * @return The number of logical lines above this one
-     */
-    public int getLogicalLineCountAbove (int line, int charsPerLine) {
-        return writer.getLogicalLineCountAbove(line, charsPerLine);
-    }
-    
-    //The original version of this method is left in as it demonstrates clearly
-    //what toLogicalLineIndex should do - convert a physical position when
-    //wrapped at a certain number of characters into the line index in the
-    //document that should appear there.
-    
-    //The version below is quite simple, but for a 300000 line file, it must
-    //loop 300000 times to find the logical position of the last line.
-    
-    //On the contrary, the divide and conquer approach used below is called
-    //recursively an average of 19 times to do the same thing for a 300000 line
-    //file - it is much, much faster.
-/*    
-    public void toLogicalLineIndex (final int[] physIdx, int charsPerLine) {
-        physIdx[1] = 0;
-        if (charsPerLine >= getLongestLineLength() || (writer.lineCount() <= 1)) {
-            physIdx[1] = 0;
-            physIdx[2] = 1;
-            return;
-        }
-        int line = physIdx[0] + 1;
-        int lcount = 0;
-
-        int max = writer.lineCount();
-
-        for (int i=0; i < max; i++) {
-            int len = writer.length(i);
-            int logicalCount = len > charsPerLine ? (len / charsPerLine) + 1 : 1;
-            lcount += logicalCount;
-            if (lcount >= line) {
-                physIdx[0] = i;
-                physIdx[1] = (logicalCount - (lcount - line)) - 1;
-                physIdx[2] = logicalCount;
-                break;
-            }
-        }
-    }
- */    
-
-    /**
-     * Get a logical line index for a given point in the display space.
-     * This is to accomodate word wrapping using fixed width fonts - this
-     * method answers the question "What line of output does the nth row
-     * of lines correspond to, given <code>charsPerLine</code> characters
-     * per line?".  If the logical line in question is itself wrapped, it
-     * will also return how many wrapped lines down from the beginning of
-     * the logical line the passed row index is, and the total number of
-     * wraps for this logical line to fit inside <code>charsPerLine</code>.
-     *
-     * @param physIdx A 3 entry array.  Element 0 should be the physical line
-     *        (the line position if no wrapping were happening) when called;
-     *        the other two elements are ignored.  On return,
-     *        it contains: <ul>
-     *         <li>[0] The logical line index for the passed line</li>
-     *         <li>[1] The number of line wraps below the logical line
-     *             index for this physical line</li>
-     *         <li>[2] The total number of line wraps for the logical line</li>
-     *         </ul>
-     */
-    public void toLogicalLineIndex (final int[] physIdx, int charsPerLine) {
-        int physicalLine = physIdx[0];
-        physIdx[1] = 0;
-        int linecount = writer.lineCount();
-        
-        if (physicalLine == 0) {
-            //First line never has lines above it
-            physIdx[1] = 0;
-            physIdx[2] = (writer.length(physicalLine) / charsPerLine);
-        }
-        
-        if (charsPerLine >= getLongestLineLength() || (writer.lineCount() <= 1)) {
-            //The doc is empty, or there are no lines long enough to wrap anyway
-            physIdx[1] = 0;
-            physIdx[2] = 1;
-            return;
-        }
-        
-        int logicalLine = 
-            findFirstLineWithoutMoreLinesAboveItThan (physicalLine, charsPerLine);
-        
-        int linesAbove = writer.getLogicalLineCountAbove(logicalLine, charsPerLine);
-
-        int len = writer.length(logicalLine);
-        
-        int wrapCount = len > charsPerLine ? (len / charsPerLine) + 1 : 1;
-        
-        physIdx[0] = logicalLine;
-        int lcount = linesAbove + wrapCount;
-        physIdx[1] = (wrapCount - (lcount - physicalLine));
-          
-        physIdx[2] = wrapCount;
-    }
-    
-    /**
-     * Uses a divide-and-conquer approach to quickly locate a line which has
-     * the specified number of logical lines above it.  For large output, this
-     * data is cached in OutWriter in a sparse int array.  This method is called
-     * from viewToModel, so it must be very, very fast - it may be called once
-     * every time the mouse is moved, to determine if the cursor should be 
-     * updated.
-     */
-    private int findFirstLineWithoutMoreLinesAboveItThan (int target, int charsPerLine) {
-        int start = 0;
-        int end = writer.lineCount();
-        int midpoint = start + ((end - start) / 2);
-        int linesAbove = writer.getLogicalLineCountAbove(midpoint, charsPerLine);
-        int result = divideAndConquer (target, start, midpoint, end, charsPerLine, linesAbove);
-        
-        return Math.min(end, result) -1;
-    }
-    /**
-     * Recursively search for the line number with the smallest number of lines
-     * above it, greater than the passed target number of lines.  This is 
-     * effectively a binary search - divides the range of lines in half and
-     * checks if the middle value is greater than the target; then recurses on
-     * itself with whatever half of the range of lines has a better chance at
-     * containing a smaller value.
-     * <p>
-     * It is primed with an initial call with the start, midpoint and end values.
-     */
-    private int divideAndConquer (int target, int start, int midpoint, int end, int charsPerLine, int midValue) {
-        //We have an exact match - we're done
-        if (midValue == target) {
-            return midpoint + 1;
-        }
-        
-        //In any of these conditions, the search has run out of gas - the
-        //end value must be the match
-        if (end - start <= 1 || midpoint == start || midpoint == end) {
-            return end;
-        }
-
-        if (midValue > target) {
-            //The middle value is greater than the target - look for a closer
-            //match between the first and the middle line
-            
-            int upperMidPoint = upperMidPoint = start + ((midpoint - start) / 2);
-            if ((midpoint - start) % 2 != 0) {
-                upperMidPoint++;
-            }
-            int upperMidValue = writer.getLogicalLineCountAbove (upperMidPoint, charsPerLine);
-            return divideAndConquer (target, start, upperMidPoint, midpoint, charsPerLine, upperMidValue);
-        } else {
-            //The middle value is less than the target - look for a match
-            //between the midpoint and the last line
-            
-            int lowerMidPoint = ((end - start) / 4) + midpoint;
-            if ((end - midpoint) % 2 != 0) {
-                lowerMidPoint++;
-            }
-            int lowerMidValue = writer.getLogicalLineCountAbove (lowerMidPoint, charsPerLine);
-            return divideAndConquer (target, midpoint, lowerMidPoint, end, charsPerLine, lowerMidValue);
-        }
-    }
-    
     boolean stillGrowing() {
         return !writer.isClosed();
     }
 
     public int getLineStart (int line) {
-        return writer.lineCount() > 0 ? writer.positionOfLine(line) : 0;
+        return getLines().getLineCount() > 0 ? getLines().getLineStart(line) : 0;
     }
 
     public int getLineEnd (int lineIndex) {
-        if (writer.lineCount() == 0) {
+        if (getLines().getLineCount() == 0) {
             return 0;
         }
         int endOffset;
-        if (lineIndex >= writer.lineCount()-1) {
-            endOffset = writer.charsWritten();
+        if (lineIndex >= getLines().getLineCount()-1) {
+            endOffset = getLines().getCharCount();
         } else {
-            endOffset = writer.positionOfLine (lineIndex+1);
+            endOffset = getLines().getLineStart(lineIndex+1);
         }
         return endOffset;
-    }
-
-    public int getLineLength (int line) {
-        return writer.length(line);
     }
 
     public void removeUndoableEditListener(UndoableEditListener undoableEditListener) {
@@ -405,8 +224,8 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     public Element getElement(int index) {
         //Thanks to Mila Metelka for pointing out that Swing documents always
         //are expected to have a trailing empty element
-        if (writer.lineCount() == 0) {
-            return EMPTY;
+        if (getLines().getLineCount() == 0) {
+            return new EmptyElement(OutputDocument.this);
         }
         synchronized (writer) {
             if (index > lastPostedLine) {
@@ -419,7 +238,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     public int getElementCount() {
         int result;
         synchronized (writer) {
-            result = writer.lineCount();
+            result = getLines().getLineCount();
             lastPostedLine = result;
         }
         if (result == 0) {
@@ -429,7 +248,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     }
     
     public int getElementIndex(int offset) {
-        return writer.lineForPosition (offset);
+        return getLines().getLineAt(offset);
     }
     
     public int getEndOffset() {
@@ -449,11 +268,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     }
     
     public boolean isLeaf() {
-        return writer.lineCount() == 0;
-    }
-    
-    public boolean isLineStart (int chpos) {
-        return writer.isLineStart(chpos);
+        return getLines().getLineCount() == 0;
     }
 
     private volatile DO lastEvent = null;
@@ -469,14 +284,13 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
                 if (Controller.verbose) Controller.log ("Last event not consumed, not firing");
                 return;
             }
-            boolean initial = false; 
-            initial = lastPostedLine == - 1;
-            
-            int lineCount = writer.lineCount();
+            boolean initial = lastPostedLine == - 1;
+
+            int lineCount = getLines().getLineCount();
             int lastLine = lastPostedLine;
             lastPostedLine = lineCount;
             
-            if (Controller.verbose) Controller.log ("Document may fire event - last fired line=" + lastLine + " line count now " + lineCount);
+            if (Controller.verbose) Controller.log ("Document may fire event - last fired getLine=" + lastLine + " getLine count now " + lineCount);
             if (lastLine != lineCount || initial) {
                 lastEvent = new DO (Math.max(0, lastLine), initial);
 //                evts.add (lastEvent);
@@ -556,23 +370,11 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     }
 
     //**************  StyledDocument implementation ****************************
-    
-    public boolean isHyperlink (int line) {
-        return writer.listenerForLine(line) != null;
-    }
-    
-    public boolean hasHyperlinks() {
-        return writer.firstListenerLine() != -1;
-    }
-    
-    public boolean isErr (int line) {
-        return writer.isErr(line);
-    }
-    
-    final class ODPosition implements Position {
+
+    static final class ODPosition implements Position {
         private int offset;
         
-        public ODPosition (int offset) {
+        ODPosition (int offset) {
             this.offset = offset;
         }
         
@@ -592,7 +394,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     
     final class ODEndPosition implements Position {
         public int getOffset() {
-            int result = writer.charsWritten();
+            int result = getLines().getCharCount();
             return result;
         }
         
@@ -633,7 +435,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         private int lineIndex;
         private int startOffset = -1;
         private int endOffset = -1;
-        public ODElement (int lineIndex) {
+        ODElement (int lineIndex) {
             this.lineIndex = lineIndex;
         }
         
@@ -687,14 +489,14 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         void calc() {
             synchronized (writer) {
                 if (startOffset == -1) {
-                    startOffset = writer.lineCount() > 0 ? writer.positionOfLine(lineIndex) : 0;
-                    if (lineIndex >= writer.lineCount()-1) {
-                        endOffset = writer.charsWritten();
+                    startOffset = getLines().getLineCount() > 0 ? getLines().getLineStart(lineIndex) : 0;
+                    if (lineIndex >= getLines().getLineCount()-1) {
+                        endOffset = getLines().getCharCount();
                     } else {
-                        endOffset = writer.positionOfLine (lineIndex+1);
+                        endOffset = getLines().getLineStart(lineIndex+1);
                     }
-                    assert endOffset >= getStartOffset() : "Illogical line #" + lineIndex
-                        + " with lines " + writer.lineStartList + " or writer has been reset";
+                    assert endOffset >= getStartOffset() : "Illogical getLine #" + lineIndex
+                        + " with lines " + getLines() + " or writer has been reset";
                 }
             }
         }
@@ -714,19 +516,23 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         }
     }
     
-    private final Element EMPTY = new EmptyElement();
     /**
      * Bug in javax.swing.text.PlainView - even if the element count is 0,
      * it tries to fetch the 0th element.
      */
-    private class EmptyElement implements Element {
-        
+    private static class EmptyElement implements Element {
+        private final OutputDocument doc;
+
+        EmptyElement (OutputDocument doc) {
+            this.doc = doc;
+        }
+
         public javax.swing.text.AttributeSet getAttributes() {
             return SimpleAttributeSet.EMPTY;
         }
         
         public javax.swing.text.Document getDocument() {
-            return OutputDocument.this;
+            return doc;
         }
         
         public javax.swing.text.Element getElement(int param) {
@@ -746,11 +552,11 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         }
         
         public String getName() {
-            return "foo";
+            return "empty";
         }
         
         public javax.swing.text.Element getParentElement() {
-            return OutputDocument.this;
+            return doc;
         }
         
         public int getStartOffset() {
@@ -770,7 +576,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         private boolean consumed = false;
         private boolean initial = false;
         private int first = -1;
-        public DO (int start, boolean initial) {
+        DO (int start, boolean initial) {
             this.start = start;
             this.initial = initial;
             if (start < 0) {
@@ -783,20 +589,20 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
 //                synchronized (writer) {
                     consumed = true;
                     if (Controller.verbose) Controller.log ("EVENT CONSUMED: " + start);
-                    int charsWritten = writer.charsWritten();
+                int charsWritten = getLines().getCharCount();
                     if (initial) {
                         first = 0;
                         offset = 0;
-                        lineCount = writer.lineCount();
+                        lineCount = getLines().getLineCount();
                         length = charsWritten;
                     } else {
                         first = start;
-                        if (first == writer.lineCount()) {
+                        if (first == getLines().getLineCount()) {
                             throw new IllegalStateException ("Out of bounds");
                         }
 
-                        offset = writer.positionOfLine(first);
-                        lineCount = writer.lineCount() - first;
+                        offset = getLines().getLineStart(first);
+                        lineCount = getLines().getLineCount() - first;
                         length = charsWritten - offset;
                     }
 //                }
@@ -844,11 +650,11 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
             calc();
             Element[] e = new Element[lineCount];
             if (e.length == 0) {
-                return new Element[] { EMPTY };
+                return new Element[] { new EmptyElement(OutputDocument.this) };
             } else {
                 for (int i=0; i < lineCount; i++) {
                     e[i] = new ODElement(first + i);
-                    if (first + i >= writer.lineCount()) {
+                    if (first + i >= getLines().getLineCount()) {
                         throw new IllegalStateException ("UGH!!!");
                     }
                 }
@@ -858,7 +664,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         
         public Element[] getChildrenRemoved() {
             if (start == 0) {
-                return new Element[] { EMPTY };
+                return new Element[] { new EmptyElement(OutputDocument.this) };
             } else {
                 return new Element[0];
             }
