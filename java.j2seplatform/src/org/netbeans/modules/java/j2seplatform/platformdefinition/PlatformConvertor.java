@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -470,9 +470,16 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             for (Iterator it = sortedProps.iterator(); it.hasNext(); ) {
                 String n = (String)it.next();
                 String val = (String)props.get(n);
-                pw.println("    <property name='" +
-                    XMLUtil.toAttributeValue(n) + "' value='" +
-                    XMLUtil.toAttributeValue(val) + "'/>");
+                String xmlName = XMLUtil.toAttributeValue(n);
+                String xmlValue;
+                try {
+                    xmlValue = XMLUtil.toAttributeValue(val);
+                    pw.println("    <property name='" + xmlName + "' value='" + xmlValue + "'/>"); //NOI18N
+                } catch (CharConversionException ce) {
+                    byte[] data = val.getBytes("UTF-8");    //NOI18N
+                    xmlValue = XMLUtil.toHex(data,0,data.length);
+                    pw.println("    <property name='" + xmlName + "' hexvalue='" + xmlValue + "'/>"); //NOI18N
+                }                
             }
         }
     }
@@ -489,6 +496,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     static final String ATTR_PLATFORM_DEFAULT = "default"; // NOI18N
     static final String ATTR_PROPERTY_NAME = "name"; // NOI18N
     static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
+    static final String ATTR_PROPERTY_HEXVALUE = "hexvalue";    //NOI18N
     
     static class H extends org.xml.sax.helpers.DefaultHandler implements EntityResolver {
         Map     properties;
@@ -530,6 +538,22 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 if (name == null || "".equals(name))
                     throw new SAXException("missing name");
                 String val = attrs.getValue(ATTR_PROPERTY_VALUE);
+                if (val == null) {
+                    String hexVal = attrs.getValue(ATTR_PROPERTY_HEXVALUE);
+                    if (hexVal != null) {
+                        try {
+                            char[] chars = hexVal.toCharArray();
+                            byte[] data = XMLUtil.fromHex(chars,0,chars.length);
+                            val = new String (data,"UTF-8");    //NOI18N
+                        } catch (UnsupportedEncodingException unsupportedEncoding) {
+                            //Never should be thrown since UTF-8 is mandatory
+                            ErrorManager.getDefault().notify (unsupportedEncoding);
+                        }
+                        catch (IOException ioe) {
+                            ErrorManager.getDefault().notify (ioe);
+                        }
+                    }
+                }
                 propertyMap.put(name, val);
             }
             else if (ELEMENT_SOURCEPATH.equals(qName)) {
