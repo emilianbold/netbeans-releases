@@ -171,6 +171,8 @@ implements org.openide.cookies.OpenCookie {
             c.isAssignableFrom (org.openide.cookies.PrintCookie.class)
             ||
             c.isAssignableFrom (org.openide.cookies.CloseCookie.class)
+            ||
+            c == DefaultES.class
         ) {
             try {
                 if (!force) {
