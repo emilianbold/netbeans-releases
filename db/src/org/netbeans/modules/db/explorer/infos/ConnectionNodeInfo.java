@@ -17,6 +17,7 @@ import java.sql.*;
 import java.util.*;
 import java.io.*;
 import java.lang.reflect.*;
+import java.net.SocketException;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
 import org.openide.nodes.Node;
@@ -31,6 +32,7 @@ import org.openide.TopManager;
 public class ConnectionNodeInfo extends DatabaseNodeInfo
             implements ConnectionOperations
 {
+    
     static final long serialVersionUID =-8322295510950137669L;
     public void connect(String dbsys)
     throws DatabaseException
@@ -94,7 +96,10 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo
                 connection.close();
                 setConnection(null); // fires change
             } catch (Exception e) {
-                throw new DatabaseException("unable to disconnect; "+e.getMessage());
+                // connection is broken, connection state has been changed
+                setConnection(null); // fires change
+                e.printStackTrace();
+                throw new DatabaseException("connection is broken-down; "+e.getMessage());
             }
         }
     }
