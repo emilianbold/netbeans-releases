@@ -117,23 +117,27 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             checkLoadedClasses (className, false);
         }
     }
-    
+
     protected void classLoaded (ReferenceType referenceType) {
         if (verbose)
             System.out.println ("B class loaded: " + referenceType);
-        
-        Location location = getLocation (
+      
+        List locations = getLocations (
             referenceType,
             breakpoint.getStratum (),
             breakpoint.getSourceName (),
+            breakpoint.getSourcePath(),
             lineNumber
         );
-        if (location == null) return; 
-        try {
-            BreakpointRequest br = getEventRequestManager ().
-                createBreakpointRequest (location);
-            addEventRequest (br);
-        } catch (VMDisconnectedException e) {
+        if (locations.isEmpty()) return; 
+        for (Iterator it = locations.iterator(); it.hasNext();) {
+            Location location = (Location)it.next();
+            try {
+                BreakpointRequest br = getEventRequestManager ().
+                    createBreakpointRequest (location);
+                addEventRequest (br);
+            } catch (VMDisconnectedException e) {
+            }
         }
     }
 
@@ -148,24 +152,43 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         return super.exec (event);
     }
     
-    private static Location getLocation (
+    private static List getLocations (
         ReferenceType referenceType,
         String stratum,
         String sourceName,
+        String bpSourcePath,
         int lineNumber
     ) {
         try {
+            
             List list = new ArrayList (referenceType.locationsOfLine (
                 stratum,
                 sourceName,
                 lineNumber
             ));
+
             if (verbose)
                 System.out.println ("B   get location: referenceType=" + 
                     referenceType + " stratum=" + stratum + 
                     " source name=" + sourceName + " lineNumber " + lineNumber + 
                     " (#" + list.size () + ")");
-            if (!list.isEmpty ()) return (Location) list.get (0);
+            if (!list.isEmpty ()) {
+                if (bpSourcePath == null)
+                    return list;
+                bpSourcePath = bpSourcePath.replace('/', java.io.File.separatorChar);
+                if (verbose)
+                    System.out.println("B   source path: " + bpSourcePath);                
+                ArrayList locations = new ArrayList();
+                for (Iterator it = list.iterator(); it.hasNext();) {
+                    Location l = (Location)it.next();
+                    if (l.sourcePath().equals(bpSourcePath))
+                        locations.add(l);
+                }
+                if (verbose)
+                    System.out.println("B   relevant location(s) for path '" + bpSourcePath + "': " + locations);
+                if (!locations.isEmpty())
+                    return locations;
+            }
 
             // add lines from innerclasses
             Iterator i = referenceType.nestedTypes ().iterator ();
@@ -181,7 +204,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                         referenceType + " stratum=" + stratum + 
                         " source name=" + sourceName + " lineNumber" + lineNumber + 
                         ":= " + list.size ());
-                if (!list.isEmpty ()) return (Location) list.get (0);
+                if (!list.isEmpty()) return list;
             }
         } catch (AbsentInformationException ex) {
             // we are not able to create breakpoint in this situation. 
@@ -195,7 +218,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             // classes only. But...
             ex.printStackTrace ();
         }
-        return null;
+        return new ArrayList();
     }
 }
 
