@@ -266,7 +266,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     
     
     /** Utility method to access pin button instance conveniently */
-    protected final PinButton getPinButton (int index) {
+    protected final PinButton configurePinButton (int index) {
         if (pinButton == null) {
             return null;
         }
@@ -275,11 +275,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             return null;
         }
         Object orientation = locInfo.getOrientation(getDisplayer().getModel().getTab(index).getComponent());
-        if (orientation == TabDisplayer.ORIENTATION_INVISIBLE) {
-            return null;
-        }
         pinButton.setOrientation(orientation);
-        
         return pinButton;
     }
     
@@ -313,7 +309,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     protected void performPinAction() {
         // pin button only active on selected index, so this is safe here
         int index = getSelectionModel().getSelectedIndex();
-        PinButton pinB = getPinButton(index);
+        PinButton pinB = configurePinButton(index);
         if (pinB != null) {
             if (TabDisplayer.ORIENTATION_CENTER.equals(pinB.getOrientation())) {
                 shouldPerformAction(TabDisplayer.COMMAND_DISABLE_AUTO_HIDE, index, null);
@@ -866,14 +862,21 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         
         public void setOrientation (Object orientation) {
             this.orientation = orientation;
-            Icon icon = iconCache.obtainIcon((String)regularIcons.get(orientation));
-            setIcon(icon);
-            setSize(icon.getIconWidth(), icon.getIconHeight());
-            if (pressedIcons != null) {
-                setPressedIcon(iconCache.obtainIcon((String)regularIcons.get(orientation)));
-            }
-            if (rolloverIcons != null) {
-                setRolloverIcon(iconCache.obtainIcon((String)rolloverIcons.get(orientation)));
+            if (orientation != TabDisplayer.ORIENTATION_INVISIBLE) {
+                Icon icon = iconCache.obtainIcon((String)regularIcons.get(orientation));
+                setIcon(icon);
+                setSize(icon.getIconWidth(), icon.getIconHeight());
+                if (pressedIcons != null) {
+                    setPressedIcon(iconCache.obtainIcon((String)regularIcons.get(orientation)));
+                }
+                if (rolloverIcons != null) {
+                    setRolloverIcon(iconCache.obtainIcon((String)rolloverIcons.get(orientation)));
+                }
+            } else {
+                setIcon(null);
+                setPressedIcon(null);
+                setSize(0,0);
+                setRolloverIcon(null);
             }
         }
         

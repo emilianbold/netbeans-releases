@@ -123,8 +123,9 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         g.setFont(getTxtFont());
         int txtWidth = width;
         if (isSelected(index)) {
-            JButton pinButton = getPinButton(index);
-            int space4Pin = pinButton != null ? pinButton.getWidth() + 1 : 0;
+            PinButton pin = configurePinButton(index);
+            boolean showPin = pin != null && pin.getOrientation() != TabDisplayer.ORIENTATION_INVISIBLE;
+            int space4Pin = showPin ? pinButton.getWidth() + 1 : 0;
             int space4Icon = 0;
             if (displayer.isShowCloseButton()) {
                 // selected one is trickier, paint text, bump and close icon
@@ -139,9 +140,9 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             } else {
                 tempRect.x = x + (width - 2);
                 
-                tempRect.y = pinButton == null ? 0 : ((displayer.getHeight() / 2) -
+                tempRect.y = !showPin ? 0 : ((displayer.getHeight() / 2) -
                     (pinButton.getPreferredSize().height / 2));
-                int pinWidth = pinButton == null ? 0 : pinButton.getPreferredSize().width;
+                int pinWidth = showPin ? 0 : pinButton.getPreferredSize().width;
                 txtWidth = (width - 2 * TXT_X_PAD) - pinWidth;
                 space4Icon = pinWidth + 5;
             }
@@ -155,7 +156,7 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                 paintBump(index, g, x + TXT_X_PAD + txtWidth + BUMP_X_PAD,
                           y + BUMP_Y_PAD, bumpWidth, height - 2 * BUMP_Y_PAD);
             }
-            if (pinButton != null) {
+            if (showPin) {
                 // don't activate and draw pin button if tab is too narrow
                 if (tempRect.x - space4Pin < x + TXT_X_PAD - 1) {
                     pinButton.setVisible(false);
@@ -163,6 +164,8 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                     pinButton.setVisible(true);
                     pinButton.setLocation(tempRect.x - space4Pin, tempRect.y);
                 }
+            } else {
+                pinButton.setVisible(false);
             }
         } else {
             txtWidth = width - 2 * TXT_X_PAD;
@@ -343,6 +346,9 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         }
         
         protected boolean inPinButtonRect(Point p) {
+            if (!pinButton.isVisible()) {
+                return false;
+            }
             Point p2 = SwingUtilities.convertPoint(displayer, p, pinButton);
             return pinButton.contains(p2);
         }

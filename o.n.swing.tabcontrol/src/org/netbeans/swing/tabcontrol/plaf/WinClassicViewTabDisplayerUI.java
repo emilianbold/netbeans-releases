@@ -139,8 +139,9 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         if (isSelected(index)) {
             // paint text and close icon
             // close icon has the bigger space priority then text
-            JButton pinButton = getPinButton (index);
-            int space4Pin = pinButton != null ? pinButton.getWidth() + 1 : 0;
+            PinButton pin = configurePinButton (index);
+            boolean showPin = pin != null && pin.getOrientation() != TabDisplayer.ORIENTATION_INVISIBLE;
+            int space4Pin = showPin ? pinButton.getWidth() + 1 : 0;
             if (displayer.isShowCloseButton()) {
                 if (closeIcon == null) {
                     closeIcon = new IconLoader();
@@ -155,12 +156,12 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
             } else {
                 tempRect.x = x + (width - 2);
                 
-                tempRect.y = pinButton == null ? 0 : ((displayer.getHeight() / 2) -
+                tempRect.y = !showPin ? 0 : ((displayer.getHeight() / 2) -
                     (pinButton.getPreferredSize().height / 2));
                 txtWidth = width - 2 * TXT_X_PAD;
                 
             }
-            if (pinButton != null) {
+            if (showPin) {
                 // don't activate and draw pin button if tab is too narrow
                 if (tempRect.x - space4Pin < x + TXT_X_PAD - 1) {
                     pinButton.setVisible(false);
@@ -168,6 +169,8 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
                     pinButton.setVisible(true);
                     pinButton.setLocation(tempRect.x - space4Pin, tempRect.y);
                 }
+            } else {
+                pinButton.setVisible(false);
             }
         } else {
             txtWidth = width - 2 * TXT_X_PAD;
@@ -370,6 +373,9 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         }
         
         protected boolean inPinButtonRect(Point p) {
+            if (!pinButton.isVisible()) {
+                return false;
+            }
             Point p2 = SwingUtilities.convertPoint(displayer, p, pinButton);
             return pinButton.contains(p2);
         }

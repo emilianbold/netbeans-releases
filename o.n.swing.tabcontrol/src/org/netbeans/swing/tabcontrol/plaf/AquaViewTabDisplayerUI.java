@@ -109,7 +109,7 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
 
             int iconY;
             int iconX;
-            JButton pinButton = getPinButton(index);
+            JButton pinButton = configurePinButton(index);
             int gap = 2;
             
             if (displayer.isShowCloseButton()) {
