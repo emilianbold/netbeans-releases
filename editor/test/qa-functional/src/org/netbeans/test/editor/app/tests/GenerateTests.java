@@ -171,7 +171,7 @@ public class GenerateTests extends Object {
             result.println("import org.netbeans.junit.NbTestCase;");
             result.println("import org.netbeans.junit.NbTestSuite;");
             result.println("import java.io.File;");
-            result.println("import org.netbeans.junit.diff.SimpleDiff;");
+            result.println("import org.netbeans.test.editor.LineDiff;");
 
             result.println("public class AppTestPerformer extends NbTestCase {");
             result.println("public AppTestPerformer(String name) {");
@@ -179,7 +179,7 @@ public class GenerateTests extends Object {
             result.println("}");
             result.println("public void tearDown() throws Exception {");
 //            result.println("compareReferenceFiles();");
-	    result.println("    assertFile(\"Output does not match golden file.\", getGoldenFile(), new File(getWorkDir(), this.getName() + \".ref\"), null, new SimpleDiff());");
+	    result.println("    assertFile(\"Output does not match golden file.\", getGoldenFile(), new File(getWorkDir(), this.getName() + \".ref\"), null, new LineDiff(false));");
             result.println("}");
             NodeList nodes = tests.getElementsByTagName("Test");
             

@@ -66,7 +66,7 @@ public class IndentCoreGenerator {
         output.write("        super(testCase);\n");
         output.write("    }\n");
 	output.write("    public void tearDown() throws Exception {\n");
-	output.write("        assertFile(\"Output does not match golden file.\", getGoldenFile(), new File(getWorkDir(), this.getName() + \".ref\"), null, new org.netbeans.junit.diff.SimpleDiff());\n");
+	output.write("        assertFile(\"Output does not match golden file.\", getGoldenFile(), new File(getWorkDir(), this.getName() + \".ref\"), null, new org.netbeans.test.editor.LineDiff(false));\n");
 	output.write("    }\n");
         
         Iterator iterator = cases.iterator();
