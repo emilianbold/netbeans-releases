@@ -276,7 +276,7 @@ public final class DesktopImpl {
                 result.width = splitRootRect.width - (splitRootRect.width / 10);
             }
         } else if (Constants.RIGHT.equals(side)) {
-            int rightLimit = layeredPane.getBounds().x + layeredPane.getBounds().width - Math.max(viewRect.width, viewPreferred.width);
+            int rightLimit = /*layeredPane.getBounds().x  + */ layeredPane.getBounds().width - Math.max(viewRect.width, viewPreferred.width);
             result.x = (view.getSlideBounds().width < MIN_EDITOR_ALIGN_THICK)
                         ? rightLimit - splitRootRect.width / 3 : rightLimit - view.getSlideBounds().width;
             if (result.x < 0) {

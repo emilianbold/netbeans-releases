@@ -110,7 +110,6 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         gestureRecognizer = new SlideGestureRecognizer(this, commandMgr.getResizer());
         buttons = new ArrayList(5);
         
-        setBorder(computeBorder(dataModel.getOrientation()));
         syncWithModel();
         
         dataModel.addComplexListDataListener(this);
@@ -434,24 +433,6 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         repaint();
     }
     
-    /** Builds empty border around slide bar. Computes its correct size
-     * based on given orientation
-     */
-    private static Border computeBorder(int orientation) {
-        int bottom = 0, left = 0, right = 0, top = 0;
-        switch (orientation) {
-            case SlideBarDataModel.WEST:
-                top = 1; left = 1; bottom = 1; right = 1; 
-                break;
-            case SlideBarDataModel.SOUTH:
-                top = 2; left = 1; bottom = 1; right = 1; 
-                break;
-            case SlideBarDataModel.EAST:
-                top = 1; left = 2; bottom = 1; right = 0; 
-                break;
-        }
-        return new EmptyBorder(top, left, bottom, right);
-    }
     
     
 }

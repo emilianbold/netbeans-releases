@@ -21,6 +21,8 @@ import java.awt.Shape;
 import java.awt.Window;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ModeView;
@@ -49,9 +51,14 @@ public final class SlideBarContainer extends AbstractModeContainer {
         super(modeView, windowDnDManager, Constants.MODE_KIND_SLIDING);
         
         panel = new VisualPanel(this);
+        panel.setBorder(computeBorder(getSlidingView().getSide()));
         panel.add(this.tabbedHandler.getComponent(), BorderLayout.CENTER);
     }
     
+    
+    private SlidingView getSlidingView() {
+        return (SlidingView)super.getModeView();
+    }
     public void requestAttention (TopComponent tc) {
         tabbedHandler.requestAttention(tc);
     }
@@ -102,6 +109,24 @@ public final class SlideBarContainer extends AbstractModeContainer {
     protected void updateTitle(String title) {
         // XXX - we have no title?
     }
+    
+    /** Builds empty border around slide bar. Computes its correct size
+     * based on given orientation
+     */
+    private static Border computeBorder(String orientation) {
+        int bottom = 0, left = 0, right = 0, top = 0;
+        if (Constants.LEFT.equals(orientation)) {
+            top = 1; left = 1; bottom = 1; right = 1; 
+        }
+        if (Constants.BOTTOM.equals(orientation)) {
+            top = 2; left = 1; bottom = 1; right = 1; 
+        }
+        if (Constants.RIGHT.equals(orientation)) {
+            top = 1; left = 2; bottom = 1; right = 1; 
+        }
+        return new EmptyBorder(top, left, bottom, right);
+    }
+    
     
     /** Component enclosing slide boxes, implements needed interfaces to talk
      * to rest of winsys
