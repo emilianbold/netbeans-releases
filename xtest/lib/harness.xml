@@ -246,7 +246,7 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="${xtest.basedir}/${xtest.module}/test" includes="cfg-*"/>
         </copy>
         <!-- NetBeans IDE specific - include files from nbproject dir to distribution -->
-        <copy todir="${xtest.distdir}/${xtest.module}/test/nbproject" failonerror="false">
+        <copy todir="${xtest.distdir}/${xtest.module}/nbproject" failonerror="false">
             <fileset dir="${xtest.basedir}/${xtest.module}/nbproject" includes="project.*"/>
         </copy>
     </target>
