@@ -41,31 +41,33 @@ public class CustomZoomPanel extends JPanel {
      */
     private void initComponents() {//GEN-BEGIN:initComponents
         enlargeLabel = new javax.swing.JLabel();
+        enlargeLabel.setDisplayedMnemonic((NbBundle.getBundle(CustomZoomPanel.class).getString("LBL_EnlargeFactor_Mnem")).charAt(0));
+        
         enlargeText = new javax.swing.JTextField();
         decreasingLabel = new javax.swing.JLabel();
+        decreasingLabel.setDisplayedMnemonic((NbBundle.getBundle(CustomZoomPanel.class).getString("LBL_DecreaseFactor_Mnem")).charAt(0));
+        
         decreaseText = new javax.swing.JTextField();
+        
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
         
         enlargeLabel.setText(NbBundle.getBundle(CustomZoomPanel.class).getString("LBL_EnlargeFactor"));
-        
+        enlargeLabel.setLabelFor(enlargeText);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(enlargeLabel, gridBagConstraints1);
         
-        
         enlargeText.setDocument(new WholeNumberDocument());
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints1.insets = new java.awt.Insets(12, 11, 0, 11);
         gridBagConstraints1.weightx = 1.0;
         add(enlargeText, gridBagConstraints1);
         
-        
         decreasingLabel.setText(NbBundle.getBundle(CustomZoomPanel.class).getString("LBL_DecreaseFactor"));
-        
+        decreasingLabel.setLabelFor(decreaseText);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 1;
@@ -73,9 +75,7 @@ public class CustomZoomPanel extends JPanel {
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(decreasingLabel, gridBagConstraints1);
         
-        
         decreaseText.setDocument(new WholeNumberDocument());
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
         gridBagConstraints1.gridy = 1;
