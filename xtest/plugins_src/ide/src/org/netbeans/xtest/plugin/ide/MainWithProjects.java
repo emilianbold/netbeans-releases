@@ -42,12 +42,15 @@ public class MainWithProjects implements Main.MainWithProjectsInterface {
         try {
             // open project
             final Project project = OpenProjectList.fileToProject(projectDir);
+            /* temporarily commented because it doesn't wait until scannning is finished
             // posting the to AWT event thread
             Mutex.EVENT.readAccess(new Runnable() {
                 public void run() {
                     OpenProjectList.getDefault().open(project);
                 }
             });
+             */
+            OpenProjectList.getDefault().open(project);
             // Set main? Probably user should do this if he wants.
             // OpenProjectList.getDefault().setMainProject(project);
             // wait until metadata scanning is finished
