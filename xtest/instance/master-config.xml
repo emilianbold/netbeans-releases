@@ -58,9 +58,6 @@ Microsystems, Inc. All Rights Reserved.
       <testtype name="qa-functional" attributes="validation"
                 modules="xml,xml/catalog,xml/core,xml/text-edit,xml/tools,xml/tax/lib,xml/tree-edit"/>
       <module name="beans"  	testtypes="qa-func"        attributes="validation"/>
-      <module name="jndi"    	testtypes="qa-functional"  attributes="validation">
-          <property file="../../../nbextra/qa/jndi/jndi.properties"/>
-      </module>      
       <module name="qa"       	testtypes="serialization"  attributes="validation"/>
 
       <!-- no longer in validation suite
@@ -74,13 +71,10 @@ Microsystems, Inc. All Rights Reserved.
   <!-- QA functional tests for Netbeans on jdk 1.3 -->
   <config name="qa-functional-nb-jdk13">
       <testtype name="qa-functional" attributes="validation"
-                modules="ant,clazz,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,openide,properties,rmi,vcscore,vcsgeneric"/>
+                modules="ant,clazz,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,openide,properties,vcscore,vcsgeneric"/>
       <testtype name="qa-functional" attributes="validation"
                 modules="xml,xml/catalog,xml/core,xml/text-edit,xml/tools,xml/tax/lib,xml/tree-edit"/>
       <module name="beans"  	testtypes="qa-func"        attributes="validation"/>
-      <module name="jndi"    	testtypes="qa-functional"  attributes="validation">
-          <property file="../../../nbextra/qa/jndi/jndi.properties"/>
-      </module>      
       <module name="qa"       	testtypes="serialization"  attributes="validation"/>  
   
       <!-- no longer in validation suite
@@ -224,9 +218,6 @@ Microsystems, Inc. All Rights Reserved.
       <module name="i18n"   	testtypes="qa-functional"  attributes="validation"/>
       <module name="jarpackager"  	testtypes="qa-functional"  attributes="validation"/>
       <module name="java"   	testtypes="qa-functional"  attributes="validation"/>
-      <module name="jndi"    	testtypes="qa-functional"  attributes="validation">
-          <property file="../../../nbextra/qa/jndi/jndi.properties"/>
-      </module>      
       <module name="openide"  	testtypes="qa-functional"  attributes="validation"/>
       <module name="qa"       	testtypes="serialization"  attributes="validation"/>
       <module name="qa"       	testtypes="qa-functional"  attributes="validation"/>
