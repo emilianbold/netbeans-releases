@@ -122,8 +122,10 @@ public abstract class AbstractTabDisplayerUI extends TabDisplayerUI {
         assert c == displayer;
         ToolTipManager.sharedInstance().unregisterComponent(displayer);
         super.uninstallUI(c);
-        uninstall();
+        // #47644 - first uninstallListeners, then uninstall, so that tabState can't be null while
+        // listeners are active. Only probable fix, but certainly right thing to do.
         uninstallListeners();
+        uninstall();
         layoutModel = null;
         mouseListener = null;
         selectionModel = null;
