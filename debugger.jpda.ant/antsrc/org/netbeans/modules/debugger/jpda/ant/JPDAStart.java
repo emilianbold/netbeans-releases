@@ -421,7 +421,13 @@ public class JPDAStart extends Task implements Runnable {
                 int state = ((Integer) e.getNewValue ()).intValue ();
                 if ( (state == JPDADebugger.STATE_DISCONNECTED) ||
                      (state == JPDADebugger.STATE_STOPPED)
-                ) removeBreakpoint ();
+                ) {
+                    RequestProcessor.getDefault ().post (new Runnable () {
+                        public void run () {
+                            removeBreakpoint ();
+                        }
+                    });
+                }
             }
             return;
         }
