@@ -29,22 +29,33 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
         
     
-    <!-- Editor Test Application's Tests
-    -->
+    <!-- Editor Test Application's Tests -->
+    
+    <!-- Validation tests-->
     
     <testbag testattribs="all,validation,apps" name="TestApplication">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/app/tests/*Performer.class"/>
-                <exclude name="org/netbeans/test/editor/completion/CompletionPerformer.class/" />
+                <exclude name="org/netbeans/test/editor/completion/IndentationPerformer.class/testDoWhile" />
+                <exclude name="org/netbeans/test/editor/completion/IndentationPerformer.class/testTwoBrackets" />
+                <exclude name="org/netbeans/test/editor/completion/CompletionPerformer.class/testRepository" />
+                <exclude name="org/netbeans/test/editor/completion/CompletionPerformer.class/testInstantSubstitution" />
+                <exclude name="org/netbeans/test/editor/completion/CompletionPerformer.class/testCCAfterMethods" />
             </patternset>
         </testset>
     </testbag>
 
-    <testbag testattribs="all,experimental,apps" name="TestApplicationExperimental">
+    <!-- Editor Application non-validation tests -->
+    
+    <testbag testattribs="all,failing,apps" name="TestApplicationFailings">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="org/netbeans/test/editor/completion/CompletionPerformer.class/" />
+                <include name="org/netbeans/test/editor/completion/IndentationPerformer.class/testDoWhile" />
+                <include name="org/netbeans/test/editor/completion/IndentationPerformer.class/testTwoBrackets" />
+                <include name="org/netbeans/test/editor/completion/CompletionPerformer.class/testRepository" />
+                <include name="org/netbeans/test/editor/completion/CompletionPerformer.class/testInstantSubstitution" />
+                <include name="org/netbeans/test/editor/completion/CompletionPerformer.class/testCCAfterMethods" />
             </patternset>
         </testset>
     </testbag>    
@@ -72,7 +83,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- Programmatic indentation tests: -->
     
-    <testbag testattribs="all,full" name="indentation-programmatic">
+    <testbag testattribs="all,validation,full" name="indentation-programmatic">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/indentation/programmatic/*Performer.class"/>
