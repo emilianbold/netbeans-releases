@@ -118,7 +118,6 @@ final class Manager {
             } else {
                 notifySearchPending(state);                     //invariant #1
             }
-            searchDisplayer = null;
         }
     }
     
@@ -130,18 +129,13 @@ final class Manager {
             assert state == NO_TASK;
             pendingTasks |= PRINTING_DETAILS;
             
-            boolean needsReset;
-            if (searchDisplayer != null) {
-                needsReset = true;
-            } else {
+            if (searchDisplayer == null) {
                 searchDisplayer = new SearchDisplayer();
-                needsReset = false;
             }
             pendingPrintDetailsTask = new PrintDetailsTask(
                     children.getNodes(),
                     searchGroup,
-                    searchDisplayer,
-                    needsReset);
+                    searchDisplayer);
             processNextPendingTask();
         }
     }
@@ -287,6 +281,8 @@ final class Manager {
     void searchWindowClosed() {
         synchronized (lock) {
             searchWindowOpen = false;
+            
+            searchDisplayer = null;
             callOnWindowFromAWT("setResultModel", null);                //NOI18N
             if (currentSearchTask != null) {
                 currentSearchTask.stop(false);

@@ -14,6 +14,7 @@
 package org.netbeans.modules.search;
 
 import java.awt.EventQueue;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,9 +38,6 @@ public class PrintDetailsTask implements Runnable {
     /** */
     private final SearchDisplayer displayer;
     /** */
-    private final boolean needsReset;
-    
-    /** */
     private final Node[] buffer = new Node[BUFFER_SIZE];
     /** position of the first free item in the buffer */
     private int bufPos = 0;
@@ -48,25 +46,15 @@ public class PrintDetailsTask implements Runnable {
     /** Creates a new instance of PrintDetailsTask */
     public PrintDetailsTask(final Node[] nodes,
                             final SearchGroup searchGroup,
-                            final SearchDisplayer displayer,
-                            final boolean needsReset) {
+                            final SearchDisplayer displayer) {
         this.nodes = nodes;
         this.searchGroup = searchGroup;
         this.displayer = displayer;
-        this.needsReset = needsReset;
     }
     
     /** */
     public void run() {
-        try {
-            EventQueue.invokeAndWait(new Runnable() {
-                public void run() {
-                    displayer.prepareOutput(needsReset);
-                }
-            });
-        } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
-        }
+        callDisplayerFromAWT("prepareOutput");                    //NOI18N
         
         final SearchType[] searchTypes = searchGroup.getSearchTypes();        
         
@@ -108,6 +96,7 @@ public class PrintDetailsTask implements Runnable {
             System.arraycopy(buffer, 0, smallBuffer, 0, smallBufSize);
             displayer.displayNodes(smallBuffer);
         }
+        callDisplayerFromAWT("finishDisplaying");
     }
 
     /**
@@ -156,6 +145,31 @@ public class PrintDetailsTask implements Runnable {
                          result, arrA.length,
                          arrB.length);
         return result;
+    }
+    
+    /**
+     */
+    private void callDisplayerFromAWT(final String methodName) {
+        try {
+            final Method method = SearchDisplayer.class
+                                  .getDeclaredMethod(methodName, new Class[0]);
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    try {
+                        method.invoke(displayer, null);
+                    } catch (Exception ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+                }
+            };
+            if (EventQueue.isDispatchThread()) {
+                runnable.run();
+            } else {
+                EventQueue.invokeAndWait(runnable);
+            }
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
     }
     
 }

@@ -17,6 +17,7 @@ package org.netbeans.modules.search;
 import java.awt.EventQueue;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import org.openide.ErrorManager;
 
 import org.openide.nodes.Node;
@@ -34,27 +35,45 @@ import org.openide.windows.OutputWriter;
  * @author  Petr Kuzel
  * @author  Marian Petras
  */
-public class SearchDisplayer {
+public final class SearchDisplayer {
 
     /** name of attribute &quot;text to display in the Output Window&quot; */
     public static final String ATTR_OUTPUT_LINE = "output line";        //NOI18N
     /** output tab */
-    private InputOutput searchIO;
+    private final InputOutput searchIO;
     /** writer to that tab */
     private OutputWriter ow = null;
     /** */
     private volatile boolean justPrepared;
 
     /** Creates new SearchDisplayer */
-    public SearchDisplayer() {
+    SearchDisplayer() {
+        String name = NbBundle.getMessage(ResultView.class,
+                                          "TITLE_SEARCH_RESULTS");      //NOI18N
+        searchIO = IOProvider.getDefault().getIO(name, false);
     }
 
+    /**
+     */
+    void prepareOutput() {
+        if (ow != null) {
+            try {
+                ow.reset();
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+        }
+        ow = searchIO.getOut();
+        searchIO.select();
+        justPrepared = true;
+    }
+    
     /**
      * Displays the given nodes.
      *
      * @param  nodes  nodes to display
      */
-    public void displayNodes(final Node[] nodes) {
+    void displayNodes(final Node[] nodes) {
 
         /* Prepare the output lines: */
         final String[] outputLines = new String[nodes.length];
@@ -103,31 +122,9 @@ public class SearchDisplayer {
     
     /**
      */
-    void prepareOutput(boolean reset) {
-        if (reset) {
-            resetOutput();
-        }
-        if (ow == null) {
-            String name = NbBundle.getMessage(ResultView.class,
-                                            "TITLE_SEARCH_RESULTS");//NOI18N
-            searchIO = IOProvider.getDefault().getIO(name, false);
-            ow = searchIO.getOut();
-        }
-        searchIO.select();
-        justPrepared = true;
+    void finishDisplaying() {
+        ow.flush();
+        ow.close();
     }
-        
-    /**
-     */
-    public void resetOutput() {
-        if (ow != null) {
-            try {
-                ow.reset();
-            } catch (IOException ioe) { // it doesn't matter here
-                ioe.printStackTrace();
-            }
-            ow = null;
-        }
-    }
-
+    
 }
