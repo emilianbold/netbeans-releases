@@ -122,6 +122,7 @@ public class FormEditorModule extends ModuleInstall {
       Utilities2.createAction (SelectLayoutAction.class, formActions);
       Utilities2.createAction (ShowGridAction.class, formActions);
       Utilities2.createAction (TestModeAction.class, formActions);
+      Utilities2.createAction (InstallToPaletteAction.class, formActions);
 
     } catch (Exception e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) { // NOI18N
@@ -164,6 +165,7 @@ public class FormEditorModule extends ModuleInstall {
       Utilities2.removeAction (SelectLayoutAction.class, formActions);
       Utilities2.removeAction (ShowGridAction.class, formActions);
       Utilities2.removeAction (TestModeAction.class, formActions);
+      Utilities2.removeAction (InstallToPaletteAction.class, formActions);
 
       if (formActions.getChildren ().length == 0) formActions.delete ();
 
@@ -179,7 +181,7 @@ public class FormEditorModule extends ModuleInstall {
     try {
       FileUtil.extractJar (
         TopManager.getDefault ().getPlaces ().folders().templates ().getPrimaryFile (),
-        getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/developer/modules/loaders/form/resources/templates.jar") // NOI18N
+        NbBundle.getLocalizedFile ("com.netbeans.developer.modules.loaders.form.resources.templates", "jar").openStream () // NOI18N
       );
     } catch (java.io.IOException e) {
       TopManager.getDefault ().notifyException (e);
@@ -447,6 +449,8 @@ public class FormEditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  41   Gandalf   1.40        1/16/00  Jesse Glick     Actions pool; localized 
+ *       jars.
  *  40   Gandalf   1.39        1/5/00   Ian Formanek    NOI18N
  *  39   Gandalf   1.38        1/4/00   Ian Formanek    Proper Removal of 
  *       actions, I18Nzed
