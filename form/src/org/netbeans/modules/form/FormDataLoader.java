@@ -37,10 +37,15 @@ public class FormDataLoader extends JavaDataLoader {
         super("org.netbeans.modules.form.FormDataObject"); // NOI18N
     }
 
-    protected void initialize () {
-        setDisplayName(NbBundle.getBundle(FormDataLoader.class).getString("PROP_FormLoader_Name"));
+    
+    /** Gets default display name. Overides superclass method. */
+    protected String defaultDisplayName() {
+        return NbBundle.getBundle(FormDataLoader.class).getString("PROP_FormLoader_Name");
+    }
 
-        setActions(new SystemAction[] {
+    /** Gets default actions. Overrides superclass method. */
+    protected SystemAction[] defaultActions() {
+        return new SystemAction[] {
             SystemAction.get(OpenAction.class),
             SystemAction.get(EditAction.class),
             null,
@@ -62,7 +67,7 @@ public class FormDataLoader extends JavaDataLoader {
             null,
             SystemAction.get(ToolsAction.class),
             SystemAction.get(PropertiesAction.class),
-        });
+        };
     }
 
     /** finds file with the same name and specified extension in the same folder as param javaFile */
