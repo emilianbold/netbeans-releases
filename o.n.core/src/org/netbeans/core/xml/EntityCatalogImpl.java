@@ -57,7 +57,10 @@ public class EntityCatalogImpl extends EntityCatalog implements LookupListener {
      */
     public InputSource resolveEntity(String publicID, String systemID) {
         synchronized (id2uri) {
+            if (publicID == null) return null;
+
             String res = (String) id2uri.get(publicID);
+
             InputSource ret = null;
             if (res != null) {
                 ret = new InputSource(res);
