@@ -73,7 +73,7 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
     public String getDisplayName () {
         String displayName = super.getDisplayName();
         if (displayName == null) {
-            displayName = NbBundle.getMessage(DefaultPlatformImpl.class,"TXT_DefaultPlatform");
+            displayName = NbBundle.getMessage(DefaultPlatformImpl.class,"TXT_DefaultPlatform", getSpecification().getVersion().toString());
             this.internalSetDisplayName (displayName);
         }
         return displayName;

@@ -212,14 +212,8 @@ public class PlatformUiSupport {
         }
         
         public synchronized String getDisplayName () {
-            if (this.name == null) {
-                if (isDefaultPlatform()) {
-                    this.name = NbBundle.getMessage (PlatformUiSupport.class,"TXT_DefaulPlatform",
-                            this.platform.getSpecification().getVersion().toString());
-                }
-                else {
-                    this.name = this.platform.getDisplayName();
-                }
+            if (this.name == null) {                
+                this.name = this.platform.getDisplayName();
             }
             return this.name;
         }

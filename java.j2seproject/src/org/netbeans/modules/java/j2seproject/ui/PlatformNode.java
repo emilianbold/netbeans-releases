@@ -85,12 +85,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         JavaPlatform plat = pp.getPlatform();
         String name;
         if (plat != null) {
-            if (isDefaultPaltform (plat)) {
-                name = NbBundle.getMessage(PlatformNode.class,"TXT_DefaulPlatform", plat.getSpecification().getVersion().toString());
-            }
-            else {
-                name = plat.getDisplayName();
-            }
+            name = plat.getDisplayName();
         }
         else {
             String platformId = pp.getPlatformId ();
@@ -139,14 +134,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
                 ((PlatformContentChildren)getChildren()).addNotify ();
             }
         });
-    }
-    
-    
-    private static boolean isDefaultPaltform (JavaPlatform platform) {
-        JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
-        return platform.equals(defaultPlatform);
-    }
-    
+    }    
     
     /**
      * Creates new PlatformNode
