@@ -32,7 +32,6 @@ public class IndentEngineBeanInfo extends SimpleBeanInfo {
         ResourceBundle bundle = NbBundle.getBundle(IndentEngineBeanInfo.class);
         descr.setDisplayName (bundle.getString ("LAB_IndentEngine")); // NOI18N
         descr.setShortDescription (bundle.getString ("HINT_IndentEngine")); // NOI18N
-        descr.setValue ("helpID", "editing.indentation"); // NOI18N
         descr.setValue("global", Boolean.TRUE); // NOI18N
         
         return descr;

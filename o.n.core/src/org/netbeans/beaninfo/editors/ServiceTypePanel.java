@@ -95,8 +95,7 @@ public class ServiceTypePanel extends ExplorerPanel {
     }
     
     public HelpCtx getHelpCtx () {
-        return getHelpCtx (getExplorerManager ().getSelectedNodes (),
-                           new HelpCtx (ServiceTypePanel.class));
+        return HelpCtx.DEFAULT_HELP;
     }
 
     /** Sets the selected value of the component.
