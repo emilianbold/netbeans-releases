@@ -21,7 +21,6 @@ import org.netbeans.spi.debugger.jpda.VariablesFilterAdapter;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ComputingException;
 import org.netbeans.spi.viewmodel.NoInformationException;
-import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -36,6 +35,7 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
     public String[] getSupportedTypes () {
         return new String[] {
             "java.lang.String",
+            "java.lang.StringBuffer",
             "java.lang.Character",
             "java.lang.Integer",
             "java.lang.Float",
@@ -78,8 +78,7 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
      * Returns filtered children for given parent on given indexes.
      *
      * @param   original the original tree model
-     * @param   parent a parent of returned nodes
-     * @throws  NoInformationException if the set of children can not be 
+     * @throws  NoInformationException if the set of children can not be
      *          resolved
      * @throws  ComputingException if the children resolving process 
      *          is time consuming, and will be performed off-line 
@@ -198,6 +197,12 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                    ov.getField ("value").getValue ();
         }
         if ( isPrimitiveLikeType (type) &&
+             ( columnID == Constants.LOCALS_VALUE_COLUMN_ID ||
+               columnID == Constants.WATCH_VALUE_COLUMN_ID)
+        ) {
+            return ov.getToStringValue ();
+        }
+        if (type.equals("java.lang.StringBuffer") &&
              ( columnID == Constants.LOCALS_VALUE_COLUMN_ID ||
                columnID == Constants.WATCH_VALUE_COLUMN_ID)
         ) {
