@@ -14,12 +14,10 @@ Microsystems, Inc. All Rights Reserved.
 
 <!--
 ToDo:
-- NbMerge to have option to exclude some locale, e.g. _ja
 - build validator DTD for this build system
 - sanity check that module list actually satisfies module dependencies
 Modules:
 emacs (currently will conflict with editor if installed)
-javacvs (is it stable enough to include?)
 treefs (complete yet?)
 workspaceswitcher
 -->
