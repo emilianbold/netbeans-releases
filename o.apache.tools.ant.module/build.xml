@@ -205,8 +205,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
         <exclude name="api/"/>
       </fileset>
     </copy>
-    <move file="${online-manual}/install.html" tofile="${online-manual}/libdeps.html"/>
-    <property name="libdeps.html" location="${online-manual}/libdeps.html"/>
+    <property name="install.html" location="${online-manual}/install.html"/>
     <property name="ant-docs.zip" location="external/ant-docs-${release-version}.zip"/>
     <property name="here" location="."/>
     <property name="ParserDB" location="docs/release/system/ParserDB"/>
@@ -214,7 +213,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <property name="ant.jar" location="external/ant-${release-version}.jar"/>
     <property name="ant-optional.jar" location="external/ant-optional-${release-version}.jar"/>
     <echo>Now some (currently) manual steps for you:
-4.  Edit ${libdeps.html}:
+4.  Edit ${install.html}:
     - remove everything but Library Dependencies
     - libraries are needed not in classpath, but NBINSTALL/modules/patches/org-apache-tools-ant-module/
     - Jakarta regexp is already available in the IDE by default
