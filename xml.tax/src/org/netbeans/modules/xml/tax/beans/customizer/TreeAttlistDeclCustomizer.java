@@ -46,6 +46,7 @@ public class TreeAttlistDeclCustomizer extends AbstractTreeCustomizer {
         initComponents();
         elemNameLabel.setDisplayedMnemonic(Util.getChar("TreeAttributeDeclCustomizer.elemNameLabel.mne")); // NOI18N
         tableLabel.setDisplayedMnemonic(Util.getChar("MNE_attlistdecl_attributelist_label")); // NOI18N
+        initAccessibility();
     }
 
 
@@ -203,17 +204,12 @@ public class TreeAttlistDeclCustomizer extends AbstractTreeCustomizer {
     private javax.swing.JTextField elemNameField;
     // End of variables declaration//GEN-END:variables
 
-    
-    
-    /** Initilizes accessible contexts
+   
+    /** Initialize accesibility
      */
-    private void initAccessibility(){
-        
-        java.util.ResourceBundle bundle;
-        bundle = org.openide.util.NbBundle.getBundle(this.getClass());
-        
-        //.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_nameLabel"));
-        //.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_nameLabel"));
-        
-    }
+    public void initAccessibility(){
+    
+        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeAttlistDeclCustomizer"));
+        elemNameField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_elemNameField"));
+    }    
 }

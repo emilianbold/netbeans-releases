@@ -46,6 +46,7 @@ public class TreeElementCustomizer extends AbstractTreeCustomizer {
         initComponents();
         nameLabel.setDisplayedMnemonic(Util.getChar("MNE_xmlName")); // NOI18N
         tableLabel.setDisplayedMnemonic(Util.getChar("MNE_element_attributelist_label")); // NOI18N
+        initAccessibility();
     }
 
 
@@ -230,5 +231,13 @@ public class TreeElementCustomizer extends AbstractTreeCustomizer {
     // End of variables declaration//GEN-END:variables
 
     private Component attributesCustomizer;
+   
+    /** Initialize accesibility
+     */
+    public void initAccessibility(){
+    
+        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeElementCustomizer"));
+        nameField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_nameField7"));
+    }    
     
 }
