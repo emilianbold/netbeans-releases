@@ -113,7 +113,7 @@ public final class EclipseProject implements Comparable {
     public boolean hasJavaNature() {
         return javaNature;
     }
-
+    
     void setJavaNature(boolean javaNature) {
         this.javaNature = javaNature;
     }
@@ -155,18 +155,21 @@ public final class EclipseProject implements Comparable {
         return files;
     }
     
-    /** Convenient delegate to <code>ClassPath</code> */
+    /** Returns all libraries on the project classpath. */
     public File[] getAllLibrariesFiles() {
-        // internal libraries
-        Object[] libs = cp.getLibraries().toArray();
-        // external libraries
-        Object[] extLibs = cp.getExternalLibraries().toArray();
-        File[] files = new File[libs.length + extLibs.length];
-        for (int i = 0; i < libs.length; i++) {
-            files[i] = new File(((ClassPathEntry)libs[i]).getAbsolutePath());
+        Collection libs = cp.getLibraries(); // internal libraries
+        Collection extLibs = cp.getExternalLibraries(); // external libraries
+        Collection ulJars = getUserLibrariesJars(); // jars in user libraries
+        File[] files = new File[libs.size() + extLibs.size() + ulJars.size()];
+        int i = 0;
+        for (Iterator it = libs.iterator(); it.hasNext(); ) {
+            files[i++] = new File(((ClassPathEntry)it.next()).getAbsolutePath());
         }
-        for (int i = 0; i < extLibs.length; i++) {
-            files[libs.length + i] = new File(((ClassPathEntry)extLibs[i]).getAbsolutePath());
+        for (Iterator it = extLibs.iterator(); it.hasNext(); ) {
+            files[i++] = new File(((ClassPathEntry)it.next()).getAbsolutePath());
+        }
+        for (Iterator it = ulJars.iterator(); it.hasNext(); ) {
+            files[i++] = new File((String) it.next());
         }
         return files;
     }
@@ -184,6 +187,15 @@ public final class EclipseProject implements Comparable {
     /** Convenient delegate to <code>ClassPath</code> */
     public Collection getExternalLibraries() {
         return cp.getExternalLibraries();
+    }
+    
+    public Collection getUserLibrariesJars() {
+        Collection userLibrariesJars = new HashSet();
+        for (Iterator it = cp.getUserLibraries().iterator(); it.hasNext(); ) {
+            userLibrariesJars.addAll(
+                    workspace.getJarsForUserLibrary((String) it.next()));
+        }
+        return userLibrariesJars;
     }
     
     /** Convenient delegate to <code>ClassPath</code> */

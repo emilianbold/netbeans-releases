@@ -33,12 +33,13 @@ import org.netbeans.modules.projectimport.ProjectImporterException;
  */
 final class WorkspaceParser {
     
-    private static final String VM_XML =
-            "org.eclipse.jdt.launching.PREF_VM_XML";
+    private static final String VM_XML = "org.eclipse.jdt.launching.PREF_VM_XML";
     
-    private static final String VARIABLE_PREFIX =
-            "org.eclipse.jdt.core.classpathVariable.";
+    private static final String VARIABLE_PREFIX = "org.eclipse.jdt.core.classpathVariable.";
     private static final int VARIABLE_PREFIX_LENGTH = VARIABLE_PREFIX.length();
+    
+    private static final String USER_LIBRARY_PREFIX = "org.eclipse.jdt.core.userLibrary.";
+    private static final int USER_LIBRARY_PREFIX_LENGTH = USER_LIBRARY_PREFIX.length();
     
     //    private static final String CP_CONTAINER_PREFIX =
     //            "org.eclipse.jdt.core.classpathContainer.";
@@ -79,7 +80,7 @@ final class WorkspaceParser {
         }
     }
     
-    private void parseCorePreferences() throws IOException {
+    private void parseCorePreferences() throws IOException, ProjectImporterException {
         Properties coreProps = loadProperties(workspace.getCorePreferenceFile());
         for (Iterator it = coreProps.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry entry = (Map.Entry) it.next();
@@ -90,18 +91,11 @@ final class WorkspaceParser {
                 var.setName(key.substring(VARIABLE_PREFIX_LENGTH));
                 var.setLocation(value);
                 workspace.addVariable(var);
-            }
-            //                            else if (key.startsWith(CP_CONTAINER_PREFIX) &&
-            //                                    key.endsWith(CP_CONTAINER_SUFFIX)) {
-            //                                String project = key.substring(CP_CONTAINER_PREFIX_LENGTH,
-            //                                        key.length() - CP_CONTAINER_SUFFIX_LENGTH);
-            //                                String jdkDir = parseJDKDir(ClassPathParser.parse(value));
-            //                                workspace.addJDKDir(project, jdkDir);
-            //                            } else {
-            //                                // we don't use other properties in the meantime
-            //                            }
+            } else if (key.startsWith(USER_LIBRARY_PREFIX)) {
+                String libName = key.substring(USER_LIBRARY_PREFIX_LENGTH);
+                workspace.addUserLibrary(libName, UserLibraryParser.getJars(value));
+            } // else we don't use other properties in the meantime
         }
-        
     }
     
     //    private String parseJDKDir(ClassPath cp) {

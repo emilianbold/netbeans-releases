@@ -14,6 +14,8 @@
 package org.netbeans.modules.projectimport.eclipse;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -92,6 +94,7 @@ public final class Workspace {
     private Set variables;
     private Set projects;
     private Map jreContainers;
+    private Map userLibraries;
     
     /**
      * Returns <code>Workspace</code> instance representing Eclipse Workspace
@@ -155,6 +158,17 @@ public final class Workspace {
             projects = new HashSet();
         }
         projects.add(project);
+    }
+    
+    void addUserLibrary(String libName, Collection jars) {
+        if (userLibraries == null) {
+            userLibraries = new HashMap();
+        }
+        userLibraries.put(libName, jars);
+    }
+    
+    Collection getJarsForUserLibrary(String libRawPath) {
+        return (Collection) userLibraries.get(libRawPath);
     }
     
     EclipseProject getProjectByRawPath(String rawPath) {

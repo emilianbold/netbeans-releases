@@ -14,6 +14,7 @@
 package org.netbeans.modules.projectimport.eclipse;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Collection;
 
@@ -83,6 +84,10 @@ final class ClassPath {
         }
     }
     
+    private static final String USER_LIBRARY_PREFIX
+            = "org.eclipse.jdt.USER_LIBRARY/"; // NOI18N
+    private static final int USER_LIBRARY_PREFIX_LENGTH = USER_LIBRARY_PREFIX.length();
+    
     private ClassPathEntry output;
     private Collection pathEntries;
     
@@ -93,6 +98,7 @@ final class ClassPath {
     private Collection externalLibraries;
     private Collection projects;
     private Collection variables;
+    private Collection userLibraries;
     
     /**
      * Adds a given entry to entries list. If entry is output output member is
@@ -148,7 +154,7 @@ final class ClassPath {
     }
     
     /**
-     * Just provides more convenient access to source entry.
+     * Returns container classpath entry for JRE.
      *
      * @see #getEntries()
      */
@@ -156,8 +162,12 @@ final class ClassPath {
         // lazy initialization
         if (jreContainer == null && pathEntries != null) {
             Collection col = getEntriesByType(ClassPathEntry.TYPE_CONTAINER);
-            if (!col.isEmpty()) {
-                jreContainer = ((ClassPathEntry) col.toArray()[0]).getRawPath();
+            for (Iterator it = col.iterator(); it.hasNext(); ) {
+                ClassPathEntry cpe = (ClassPathEntry) it.next();
+                if (cpe.getRawPath().startsWith(Workspace.DEFAULT_JRE_CONTAINER)) {
+                    jreContainer = cpe.getRawPath();
+                    break;
+                }
             }
         }
         return jreContainer;
@@ -200,6 +210,25 @@ final class ClassPath {
             externalLibraries = getEntriesByType(ClassPathEntry.TYPE_EXTERNAL_LIBRARY);
         }
         return externalLibraries;
+    }
+    
+    /**
+     * Returns collection of names of user defined libraries.
+     */
+    Collection getUserLibraries() {
+        // lazy initialization
+        if (userLibraries == null && pathEntries != null) {
+            Collection col = getEntriesByType(ClassPathEntry.TYPE_CONTAINER);
+            userLibraries = new HashSet();
+            for (Iterator it = col.iterator(); it.hasNext(); ) {
+                ClassPathEntry cpe = (ClassPathEntry) it.next();
+                String rawPath = cpe.getRawPath();
+                if (rawPath.startsWith(USER_LIBRARY_PREFIX)) {
+                    userLibraries.add(rawPath.substring(USER_LIBRARY_PREFIX_LENGTH));
+                }
+            }
+        }
+        return userLibraries;
     }
     
     /**

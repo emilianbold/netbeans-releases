@@ -78,7 +78,7 @@ public final class ClassPathEntry {
         } else if ("var".equals(rawType)) {
             this.type = TYPE_VARIABLE;
         } else {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, 
+            ErrorManager.getDefault().log(ErrorManager.WARNING,
                     "Unkown type encountered in " +
                     "ClassPathEntry.setTypeFromRawtype(): " + rawType);
             this.type = TYPE_UNKNOWN;
