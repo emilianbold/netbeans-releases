@@ -23,8 +23,8 @@ import java.util.List;
 
 import org.openide.util.NbBundle;
 
-import org.netbeans.api.diff.DiffVisualizer;
 import org.netbeans.api.diff.Difference;
+import org.netbeans.spi.diff.DiffVisualizer;
 
 /**
  * The textual visualizer of diffs.
@@ -56,10 +56,11 @@ public class TextDiffVisualizer extends DiffVisualizer {
      * Some diff visualizers may have built-in the diff calculation. In such a case
      * the visualizer does not need any diff provider.
      * @return true when it relies on differences supplied, false if not.
-     */
+     *
     public boolean needsProvider() {
         return true;
     }
+     */
     
     /**
      * Show the visual representation of the diff between two sources.
@@ -76,7 +77,7 @@ public class TextDiffVisualizer extends DiffVisualizer {
      *        or null, when the representation is outside the IDE.
      * @throws IOException when the reading from input streams fails.
      */
-    public Component createDiff(List diffs, String name1, String title1, Reader r1,
+    public Component createView(Difference[] diffs, String name1, String title1, Reader r1,
                                 String name2, String title2, Reader r2, String MIMEType) throws IOException {
         TextDiffEditorSupport.DiffsListWithOpenSupport diff =
             new TextDiffEditorSupport.DiffsListWithOpenSupport(diffs, name1 + " <> " + name2, title1+" <> "+title2);
@@ -84,11 +85,11 @@ public class TextDiffVisualizer extends DiffVisualizer {
         //return null;
     }
     
-    static InputStream differenceToLineDiffText(List diffs) {
+    static InputStream differenceToLineDiffText(Difference[] diffs) {
         StringBuffer content = new StringBuffer();
         int n1, n2, n3, n4;
-        for (Iterator it = diffs.iterator(); it.hasNext(); ) {
-            Difference diff = (Difference) it.next();
+        for (int i = 0; i < diffs.length; i++) {
+            Difference diff = diffs[i];
             switch (diff.getType()) {
                 case Difference.ADD:
                     n3 = diff.getSecondStart();

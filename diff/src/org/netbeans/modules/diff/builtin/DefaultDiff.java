@@ -1,0 +1,252 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.diff.builtin;
+
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.util.Iterator;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.openide.NotifyDescriptor;
+import org.openide.TopManager;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.util.NbBundle;
+import org.openide.util.Lookup;
+import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
+import org.openide.windows.Workspace;
+
+import org.netbeans.api.diff.Diff;
+import org.netbeans.api.diff.DiffWrapperPanel;
+import org.netbeans.api.diff.Difference;
+import org.netbeans.spi.diff.*;
+
+/**
+ *
+ * @author  Martin Entlicher
+ */
+public class DefaultDiff extends Diff {
+    
+    private String name1, name2;
+    private String title1, title2;
+    private String MIMEType;
+    //private Reader r1, r2;
+    private String buffer1, buffer2;
+    private DiffWrapperPanel diffPanel;
+    private DiffTopComponent tp;
+    private Map providersMap;
+    private Map visualizersMap;
+    private String defaultProviderName;
+    private String defaultVisualizerName;
+    
+    /** Creates a new instance of DefaultDiff */
+    public DefaultDiff() {
+    }
+    
+    /**
+     * Show the visual representation of the diff between two sources.
+     * @param name1 the name of the first source
+     * @param title1 the title of the first source
+     * @param r1 the first source
+     * @param name2 the name of the second source
+     * @param title2 the title of the second source
+     * @param r2 the second resource compared with the first one.
+     * @param MIMEType the mime type of these sources
+     * @return The Component representing the diff visual representation
+     *        or null, when the representation is outside the IDE.
+     * @throws IOException when the reading from input streams fails.
+     */
+    public Component createDiff(String name1, String title1, Reader r1,
+                                String name2, String title2, Reader r2,
+                                String MIMEType) throws IOException {
+        this.name1 = name1;
+        this.name2 = name2;
+        this.title1 = title1;
+        this.title2 = title2;
+        this.MIMEType = MIMEType;
+        StringWriter out1 = new StringWriter();
+        StringWriter out2 = new StringWriter();
+        cpStream(r1, out1);
+        cpStream(r2, out2);
+        this.buffer1 = out1.toString();
+        this.buffer2 = out2.toString();
+        diffPanel = new DiffWrapperPanel();
+        tp = new DiffTopComponent(diffPanel);
+        if (!initPanel()) return null;
+        return tp;
+    }
+    
+    private boolean initPanel() throws IOException {
+        Lookup.Result providersResult = Lookup.getDefault().lookup(new Lookup.Template(DiffProvider.class));
+        Lookup.Item[] providers = new Lookup.Item[providersResult.allItems().size()];
+        int i = 0;
+        for (Iterator it = providersResult.allItems().iterator(); it.hasNext(); i++) {
+            providers[i] = (Lookup.Item) it.next();
+        }
+        Lookup.Result visualizersResult = Lookup.getDefault().lookup(new Lookup.Template(DiffVisualizer.class));
+        Lookup.Item[] visualizers = new Lookup.Item[visualizersResult.allInstances().size()];
+        i = 0;
+        for (Iterator it = visualizersResult.allItems().iterator(); it.hasNext(); i++) {
+            visualizers[i] = (Lookup.Item) it.next();
+        }
+        if (providers.length == 0 || visualizers.length == 0) {
+            if (providers.length == 0) {
+                TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(DefaultDiff.class, "MSG_ProvidersMissing")));
+            } else if (visualizers.length == 0) {
+                TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(DefaultDiff.class, "MSG_VisualizersMissing")));
+            }
+            return false;
+        }
+        providersMap = new HashMap();
+        visualizersMap = new HashMap();
+        String[] providersDisplayNames = new String[providers.length];
+        for (i = 0; i < providers.length; i++) {
+            providersDisplayNames[i] = providers[i].getDisplayName();
+            providersMap.put(providersDisplayNames[i], providers[i]);
+        }
+        String[] visualizersDisplayNames = new String[visualizers.length];
+        for (i = 0; i < visualizers.length; i++) {
+            visualizersDisplayNames[i] = visualizers[i].getDisplayName();
+            visualizersMap.put(visualizersDisplayNames[i], visualizers[i]);
+        }
+        defaultProviderName = providersDisplayNames[0];
+        defaultVisualizerName = visualizersDisplayNames[0];
+        diffPanel.showProvidersChooser(true);
+        diffPanel.showVisualizerChooser(true);
+        diffPanel.setProviders(providersDisplayNames);
+        diffPanel.setVisualizers(visualizersDisplayNames);
+        diffPanel.addProvidersChangeListener(new ProvidersChangeListener());
+        diffPanel.addVisualizersChangeListener(new VisualizerChangeListener());
+        showDiff();
+        return true;
+    }
+    
+    private synchronized void showDiff() throws IOException {
+        System.out.println("showDiff("+defaultProviderName+", "+defaultVisualizerName+")");
+        Lookup.Item pItem = (Lookup.Item) providersMap.get(defaultProviderName);
+        Lookup.Item vItem = (Lookup.Item) visualizersMap.get(defaultVisualizerName);
+        DiffProvider p = (DiffProvider) pItem.getInstance();
+        DiffVisualizer v = (DiffVisualizer) vItem.getInstance();
+        Difference[] diffs = p.computeDiff(new StringReader(buffer1),
+                                           new StringReader(buffer2));
+        Component c = v.createView(diffs, name1, title1, new StringReader(buffer1),
+                                   name2, title2, new StringReader(buffer2), MIMEType);
+        System.out.println("visualizer component = "+c);
+        diffPanel.setVisualizer(c);
+        diffPanel.setDefaultProvider(defaultProviderName);
+        diffPanel.setDefaultVisualizer(defaultVisualizerName);
+        tp.setName(c.getName());
+        if (c instanceof TopComponent) {
+            TopComponent vtp = (TopComponent) c;
+            tp.setToolTipText(vtp.getToolTipText());
+            tp.setIcon(vtp.getIcon());
+        }
+        c.requestFocus();
+    }
+    
+    private void cpStream(Reader in, Writer out) throws IOException {
+        char[] buff = new char[1024];
+        int n;
+        while ((n = in.read(buff)) > 0) {
+            out.write(buff, 0, n);
+        }
+        in.close();
+        out.close();
+    }
+    
+    private class ProvidersChangeListener implements ItemListener {
+        
+        /**
+         * Invoked when an item has been selected or deselected.
+         * The code written for this method performs the operations
+         * that need to occur when an item is selected (or deselected).
+         */
+        public void itemStateChanged(ItemEvent e) {
+            if (e.SELECTED == e.getStateChange()) {
+                defaultProviderName = (String) e.getItem();
+                try {
+                    showDiff();
+                } catch (IOException ioex) {
+                    TopManager.getDefault().notifyException(ioex);
+                }
+            }
+        }
+        
+    }
+    
+    private class VisualizerChangeListener implements ItemListener {
+        
+        /**
+         * Invoked when an item has been selected or deselected.
+         * The code written for this method performs the operations
+         * that need to occur when an item is selected (or deselected).
+         */
+        public void itemStateChanged(ItemEvent e) {
+            if (e.SELECTED == e.getStateChange()) {
+                defaultVisualizerName = (String) e.getItem();
+                try {
+                    showDiff();
+                } catch (IOException ioex) {
+                    TopManager.getDefault().notifyException(ioex);
+                }
+            }
+        }
+        
+    }
+    
+    private static class DiffTopComponent extends TopComponent {
+        
+        public DiffTopComponent(Component c) {
+            setLayout(new BorderLayout());
+            add(c, BorderLayout.CENTER);
+            putClientProperty("PersistenceType", "Never");
+        }
+        
+        protected Mode getDockingMode(Workspace workspace) {
+            Mode mode = workspace.findMode(CloneableEditorSupport.EDITOR_MODE);
+            if (mode == null) {
+                mode = workspace.createMode(
+                CloneableEditorSupport.EDITOR_MODE, getName(),
+                CloneableEditorSupport.class.getResource(
+                "/org/openide/resources/editorMode.gif" // NOI18N
+                ));
+            }
+            return mode;
+        }
+        
+        public void open(Workspace workspace) {
+            //System.out.println("workspace = "+workspace);
+            if (workspace == null) {
+                workspace = org.openide.TopManager.getDefault().getWindowManager().getCurrentWorkspace();
+            }
+            Mode editorMode = getDockingMode(workspace);
+            editorMode.dockInto(this);
+            super.open(workspace);
+            //diffPanel.open();
+            requestFocus();
+        }
+        
+    }
+    
+}

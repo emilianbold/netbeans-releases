@@ -42,7 +42,7 @@ public class DiffComponent extends org.openide.windows.TopComponent {
     private static final java.awt.Color colorChanged = new java.awt.Color(160, 200, 255);
     
     //private AbstractDiff diff = null;
-    private List diffs = null;
+    private Difference[] diffs = null;
     /** The shift of differences */
     private int[][] diffShifts;
     private DiffPanel diffPanel = null;
@@ -65,27 +65,27 @@ public class DiffComponent extends org.openide.windows.TopComponent {
     }
     
     /** Creates new DiffComponent from list of Difference objects */
-    public DiffComponent(final List diffs, final String mainTitle, final String mimeType,
+    public DiffComponent(final Difference[] diffs, final String mainTitle, final String mimeType,
                          final String sourceName1, final String sourceName2,
                          final String title1, final String title2,
                          final Reader r1, final Reader r2) {
         this.diffs = diffs;
-        diffShifts = new int[diffs.size()][2];
+        diffShifts = new int[diffs.length][2];
         setLayout(new BorderLayout());
         diffPanel = new DiffPanel();
         diffPanel.addPrevLineButtonListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                if (diffs.size() == 0) return ;
+                if (diffs.length == 0) return ;
                 currentDiffLine--;
-                if (currentDiffLine < 0) currentDiffLine = diffs.size() - 1;
+                if (currentDiffLine < 0) currentDiffLine = diffs.length - 1;
                 showCurrentLine();
             }
         });
         diffPanel.addNextLineButtonListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                if (diffs.size() == 0) return ;
+                if (diffs.length == 0) return ;
                 currentDiffLine++;
-                if (currentDiffLine >= diffs.size()) currentDiffLine = 0;
+                if (currentDiffLine >= diffs.length) currentDiffLine = 0;
                 showCurrentLine();
             }
         });
@@ -105,7 +105,7 @@ public class DiffComponent extends org.openide.windows.TopComponent {
     }
     
     private void showCurrentLine() {
-        Difference diff = (Difference) diffs.get(currentDiffLine);
+        Difference diff = diffs[currentDiffLine];
         int line = diff.getFirstStart() + diffShifts[currentDiffLine][0];
         if (diff.getType() == Difference.ADD) line++;
         int lf1 = diff.getFirstEnd() - diff.getFirstStart() + 1;
@@ -183,6 +183,11 @@ public class DiffComponent extends org.openide.windows.TopComponent {
     public void requestFocus() {
         super.requestFocus();
         diffPanel.requestFocus();
+        if (currentDiffLine < 0) {
+            diffPanel.open();
+            currentDiffLine = 0;
+            showCurrentLine();
+        }
     }
     
     /**
@@ -278,12 +283,12 @@ public class DiffComponent extends org.openide.windows.TopComponent {
     }
     
     private void insertEmptyLines(boolean updateActionLines) {
-        int n = diffs.size();
+        int n = diffs.length;
         //int ins1 = 0;
         //int ins2 = 0;
         //D.deb("insertEmptyLines():"); // NOI18N
         for(int i = 0; i < n; i++) {
-            Difference action = (Difference) diffs.get(i);
+            Difference action = diffs[i];
             int n1 = action.getFirstStart() + diffShifts[i][0];
             int n2 = action.getFirstEnd() + diffShifts[i][0];
             int n3 = action.getSecondStart() + diffShifts[i][1];
@@ -331,10 +336,10 @@ public class DiffComponent extends org.openide.windows.TopComponent {
     }
     
     private void setDiffHighlight(boolean set) {
-        int n = diffs.size();
+        int n = diffs.length;
         //D.deb("Num Actions = "+n); // NOI18N
         for(int i = 0; i < n; i++) {
-            Difference action = (Difference) diffs.get(i);
+            Difference action = diffs[i];
             int n1 = action.getFirstStart() + diffShifts[i][0];
             int n2 = action.getFirstEnd() + diffShifts[i][0];
             int n3 = action.getSecondStart() + diffShifts[i][1];
@@ -365,7 +370,7 @@ public class DiffComponent extends org.openide.windows.TopComponent {
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
         Object obj = in.readObject();
-        diffs = (List) obj;
+        diffs = (Difference[]) obj;
         diffPanel = new DiffPanel();
         //this.diffSetSuccess = diff.setDiffComponent(this);
     }
@@ -385,6 +390,13 @@ public class DiffComponent extends org.openide.windows.TopComponent {
     
        /** Exit the Application */
     private void exitForm(java.awt.event.WindowEvent evt) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                diffPanel = null;
+                diffs = null;
+                removeAll();
+            }
+        });
         /*
         try {
             org.netbeans.editor.Settings.setValue(null, org.netbeans.editor.SettingsNames.LINE_NUMBER_VISIBLE, lineNumbersVisible);

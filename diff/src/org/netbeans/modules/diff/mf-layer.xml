@@ -14,6 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
   <folder name="Services">
+    <file name="org-netbeans-modules-diff-builtin-DefaultDiff.settings" url="DefaultDiff.settings"/>
     <file name="org-netbeans-modules-diff-cmdline-CmdlineDiffProvider.settings" url="CmdlineDiffProvider.settings"/>
     <file name="org-netbeans-modules-diff-builtin-provider-BuiltInDiffProvider.settings" url="BuiltInDiffProvider.settings"/>
     <file name="org-netbeans-modules-diff-builtin-visualizer-GraphicalDiffVisualizer.settings" url="GraphicalDiffVisualizer.settings"/>

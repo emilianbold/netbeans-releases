@@ -29,8 +29,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-import org.netbeans.api.diff.DiffProvider;
 import org.netbeans.api.diff.Difference;
+import org.netbeans.spi.diff.DiffProvider;
 
 /**
  * The parser of an external diff utility compatible with Unix diff output.
@@ -119,7 +119,7 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
      * @return the list of differences found, instances of {@link Difference};
      *        or <code>null</code> when some error occured.
      */
-    public List createDiff(Reader r1, Reader r2) throws IOException {
+    public Difference[] computeDiff(Reader r1, Reader r2) throws IOException {
         File f1 = null;
         File f2 = null;
         try {
@@ -149,7 +149,7 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
      * @return the list of differences found, instances of {@link Difference};
      *        or <code>null</code> when some error occured.
      */
-    public List createDiff(FileObject fo1, FileObject fo2) throws IOException {
+    public Difference[] computeDiff(FileObject fo1, FileObject fo2) throws IOException {
         File f1 = FileUtil.toFile(fo1);
         File f2 = FileUtil.toFile(fo2);
         if (f1 != null && f2 != null) {
@@ -159,7 +159,7 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
         }
     }
     
-    private List createDiff(File f1, File f2) throws IOException {
+    private Difference[] createDiff(File f1, File f2) throws IOException {
         if (pattern == null) {
             try {
                 pattern = new RE(DIFF_REGEXP);
@@ -194,7 +194,7 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
             }
             if (outBuffer.length() > 0) outputLine(outBuffer.toString(), differences);
             setTextOnLastDifference(differences);
-            return differences;
+            return (Difference[]) differences.toArray(new Difference[differences.size()]);
         } catch (IOException ioex) {
             throw (IOException) TopManager.getDefault().getErrorManager().annotate(ioex,
                     NbBundle.getMessage(CmdlineDiffProvider.class, "runtimeError", cmd));

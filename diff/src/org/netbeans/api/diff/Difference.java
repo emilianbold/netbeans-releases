@@ -14,8 +14,6 @@
 package org.netbeans.api.diff;
 
 import java.io.Serializable;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * This class represents a single difference between two files.
@@ -38,8 +36,8 @@ public class Difference extends Object implements Serializable {
     private int firstEnd = 0;
     private int secondStart = 0;
     private int secondEnd = 0;
-    private List firstLineDiffs;
-    private List secondLineDiffs;
+    private Difference.Part[] firstLineDiffs;
+    private Difference.Part[] secondLineDiffs;
     
     /** The text of the difference in the first file. */
     private String firstText;
@@ -95,7 +93,7 @@ public class Difference extends Object implements Serializable {
      *                    Can be <code>null</code> when there are no line differences.
      */
     public Difference(int type, int firstStart, int firstEnd, int secondStart, int secondEnd,
-                      String firstText, String secondText, List firstLineDiffs, List secondLineDiffs) {
+                      String firstText, String secondText, Difference.Part[] firstLineDiffs, Difference.Part[] secondLineDiffs) {
         if (type > 2 || type < 0) {
             throw new IllegalArgumentException("Bad Difference type = "+type);
         }
@@ -150,7 +148,7 @@ public class Difference extends Object implements Serializable {
      * The list contains instances of {@link Difference.Line}.
      * Can be <code>null</code> when there are no line differences.
      */
-    public List getFirstLineDiffs() {
+    public Difference.Part[] getFirstLineDiffs() {
         return firstLineDiffs;
     }
     
@@ -159,7 +157,7 @@ public class Difference extends Object implements Serializable {
      * The list contains instances of {@link Difference.Line}.
      * Can be <code>null</code> when there are no line differences.
      */
-    public List getSecondLineDiffs() {
+    public Difference.Part[] getSecondLineDiffs() {
         return secondLineDiffs;
     }
     

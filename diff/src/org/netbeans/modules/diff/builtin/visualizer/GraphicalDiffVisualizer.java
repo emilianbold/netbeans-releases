@@ -22,7 +22,8 @@ import java.util.List;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-import org.netbeans.api.diff.DiffVisualizer;
+import org.netbeans.api.diff.Difference;
+import org.netbeans.spi.diff.DiffVisualizer;
 
 /**
  * The default graphical visualizer of diffs.
@@ -54,10 +55,11 @@ public class GraphicalDiffVisualizer extends DiffVisualizer {
      * Some diff visualizers may have built-in the diff calculation. In such a case
      * the visualizer does not need any diff provider.
      * @return true when it relies on differences supplied, false if not.
-     */
+     *
     public boolean needsProvider() {
         return true;
     }
+     */
     
     /**
      * Show the visual representation of the diff between two files.
@@ -67,7 +69,7 @@ public class GraphicalDiffVisualizer extends DiffVisualizer {
      * @param fo2 the second FileObject compared with the first one.
      * @return The TopComponent representing the diff visual representation
      *        or null, when the representation is outside the IDE.
-     */
+     *
     public Component showDiff(List diffs, FileObject fo1, FileObject fo2) {
         DiffComponent diff;
         try {
@@ -82,6 +84,7 @@ public class GraphicalDiffVisualizer extends DiffVisualizer {
         }
         return diff;
     }
+     */
     
     /**
      * Show the visual representation of the diff between two sources.
@@ -97,7 +100,7 @@ public class GraphicalDiffVisualizer extends DiffVisualizer {
      * @return The TopComponent representing the diff visual representation
      *        or null, when the representation is outside the IDE.
      */
-    public Component createDiff(List diffs, String name1, String title1, Reader r1,
+    public Component createView(Difference[] diffs, String name1, String title1, Reader r1,
                                 String name2, String title2, Reader r2, String MIMEType) {
         DiffComponent diff;
         diff = new DiffComponent(diffs, name1+" <> "+name2, MIMEType,

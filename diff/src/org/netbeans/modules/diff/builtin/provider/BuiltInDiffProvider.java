@@ -20,7 +20,8 @@ import java.util.List;
 
 import org.openide.util.NbBundle;
 
-import org.netbeans.api.diff.DiffProvider;
+import org.netbeans.api.diff.Difference;
+import org.netbeans.spi.diff.DiffProvider;
 
 import org.netbeans.modules.diff.builtin.provider.io.LineIndexedAccess;
 
@@ -57,7 +58,7 @@ public class BuiltInDiffProvider extends DiffProvider {
      * @return the list of differences found, instances of {@link Difference};
      *        or <code>null</code> when some error occured.
      */
-    public List createDiff(Reader r1, Reader r2) throws IOException {
+    public Difference[] computeDiff(Reader r1, Reader r2) throws IOException {
         /*
         CharArrayWriter w1 = new CharArrayWriter(BUFF_LENGTH);
         CharArrayWriter w2 = new CharArrayWriter(BUFF_LENGTH);

@@ -79,6 +79,8 @@ import org.openide.util.datatransfer.PasteType;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
+import org.netbeans.api.diff.Difference;
+
 /** Support for associating an editor and a Swing {@link Document} to a revision object.
  * This is a modification of org.openide.text.DataEditorSupport
  *
@@ -91,12 +93,12 @@ public class TextDiffEditorSupport extends CloneableEditorSupport implements Edi
     
     public static final class DiffsListWithOpenSupport extends Object {
         
-        private List diffs;
+        private Difference[] diffs;
         private final String name;
         private final String tooltip;
         private CloneableOpenSupport openSupport;
         
-        public DiffsListWithOpenSupport(List diffs, String name, String tooltip) {
+        public DiffsListWithOpenSupport(Difference[] diffs, String name, String tooltip) {
             this.diffs = diffs;
             this.name = name;
             this.tooltip = tooltip;
@@ -107,7 +109,7 @@ public class TextDiffEditorSupport extends CloneableEditorSupport implements Edi
             this.openSupport = openSupport;
         }
          */
-        public List getDiffs() {
+        public Difference[] getDiffs() {
             return diffs;
         }
         
