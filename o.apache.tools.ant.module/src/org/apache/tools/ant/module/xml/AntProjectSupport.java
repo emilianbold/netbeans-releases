@@ -52,7 +52,10 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
     private transient Document projDoc = null; // [PENDING] SoftReference
     private transient Throwable exception = null;
     private transient boolean parsed = false;
+    private transient java.lang.ref.WeakReference styledDocRef = null;
     private transient Object parseLock; // see init()
+    /** File should be regenerated whenever this field is false. */
+    private transient boolean upToDate = false; // see handleEvent (), run ()
 
     private transient Set listeners; // see init(); Set<ChangeListener>
     private transient EditorCookie editor = null;
@@ -177,7 +180,11 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
             if (editor != null) {
                 StyledDocument doc = editor.openDocument ();
                 rd = new DocumentReader (doc, fo);
-                doc.addDocumentListener (this);
+                // add only one Listener (listeners for doc are hold in a List!)
+                if ((styledDocRef != null && styledDocRef.get () != doc) || styledDocRef == null) {
+                    doc.addDocumentListener (this);
+                    styledDocRef = new java.lang.ref.WeakReference (doc);
+                }
             } else if (fo != null) {
                 rd = new InputStreamReader (fo.getInputStream ());
                 fo.addFileChangeListener (this);
@@ -409,11 +416,18 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
             AntModule.err.log (ErrorManager.WARNING, "AntProjectSupport.handleEvent on stale DOM tree");
             return;
         }
+        // Parser fires too many events: Attribute change causes a DOMAttrModified
+        // and a DOMSubtreeModified to be fired, etc. try to filter out unneeded
+        // regenerations. we cannot do more. (see Issue#: 12880)
+        upToDate = false;
         RequestProcessor.postRequest (this);
     }
     
     public void run () {
-        regenerate ();
+        if (! upToDate) {
+            upToDate = true;
+            regenerate ();
+        }
     }
     
     public void fileChanged (org.openide.filesystems.FileEvent p1) {
