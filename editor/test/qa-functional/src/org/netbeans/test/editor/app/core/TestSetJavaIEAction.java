@@ -82,11 +82,13 @@ public class TestSetJavaIEAction extends TestSetIEAction {
     
     public TestSetJavaIEAction(Element node) {
         super(node);
+	System.err.println("TestSetJavaIEAction( " + this + "): <init>: start.");
         setLeadingStarInComment(readBoolean(node, LEADING_STAR_IN_COMMENTS));
         setAddNewLineBeforePar(readBoolean(node, ADD_NEW_LINE_BEFORE_PAR));
         setAddSpaceBeforeBrackets(readBoolean(node, ADD_SPACE_BEFORE_BRACKETS));
         setExpandTabs(readBoolean(node, EXPAND_TABS));
         setTabSize(readInt(node, TAB_SIZE));
+	System.err.println("TestSetJavaIEAction( " + this + "): <init>: end.");
     }
     
     public Element toXML(Element node) {

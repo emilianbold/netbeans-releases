@@ -52,11 +52,15 @@ public class TestSetIEAction extends TestSetAction {
         super(name);
         indentEngine=((BaseOptions)(SystemOption.findObject(JavaOptions.class, true)))
         .getIndentEngine();
+	System.err.println("TestSetIEAction: <init>(String name): indentEngine=" + indentEngine);
+	System.err.println("TestSetIEAction: <init>(String name): indentEngine=" + indentEngine.getName());
     }
     
     public TestSetIEAction(Element node) {
         super(node);
         indentEngine = findIndentEngine(node.getAttribute(INDENT_ENGINE));
+	System.err.println("TestSetIEAction: <init>(Element node): indentEngine=" + indentEngine);
+	System.err.println("TestSetIEAction: <init>(Element node): indentEngine=" + indentEngine.getName());
     }
     
     public Element toXML(Element node) {
@@ -84,33 +88,19 @@ public class TestSetIEAction extends TestSetAction {
                 }
                 
                 Class kitClass = kit.getClass();
-                AllOptions option = (AllOptions)AllOptions.findObject(AllOptions.class, true);
-                SystemOption[] options = option.getOptions();
-                
-                for (int cntr = 0; cntr < options.length; cntr++) {
-                    if (options[cntr] instanceof BaseOptions) {
-                        BaseOptions baseOption = (BaseOptions) options[cntr];
-                        
-                        if (kitClass.equals(baseOption.getKitClass())) {
-                            baseOption.setIndentEngine(getIndentEngine());
-                            return;
-                        }
-                    }
-                }
-                
-                System.err.println("TestSetIEAction: perform: I was not able to find proper options for kit class: " + kitClass);
-/*                BaseOptions op = ((BaseOptions)(SystemOption.findObject(BaseOptions.class)));
-                Enumeration e =IndentEngine.indentEngines();
-                while (e.hasMoreElements()) {
-                    IndentEngine en = (IndentEngine)(e.nextElement());
-                    if (en.getName().compareTo(getIndentEngine().getName()) == 0) {
-                        op.setIndentEngine(en);
-                        return;
-                    }
-                }
-                Main.log("Set Action " + getName() + " couldn't find Indentation Engine "
-                + getIndentEngine());
-                op.setIndentEngine(getIndentEngine());*/
+		System.err.println("TestSetIEAction: perform: kitClass= " + kitClass);
+		
+		BaseOptions options = BaseOptions.getOptions(kitClass);
+		
+		if (options != null) {
+		    options.setIndentEngine(toSet);
+		    System.err.println("TestSetIEAction: perform: options.getIndentEngine()= " + options.getIndentEngine());
+		    System.err.println("TestSetIEAction: perform: options.getIndentEngine().getName()= " + options.getIndentEngine().getName());
+		} else {
+	            System.err.println("TestSetIEAction: perform kit class " + kitClass + " not found.");
+		}
+		
+                System.err.println("TestSetIEAction: perform: I was not able to find proper options for kit class: " + kitClass);*/
             }
         });
     }
@@ -119,6 +109,7 @@ public class TestSetIEAction extends TestSetAction {
      * @return Value of property IndentEngine.
      */
     public IndentEngine getIndentEngine() {
+        System.err.println("TestSetIEAction( " + this + " ): getIndentEngine: indentEngine=" + indentEngine);
         return indentEngine;
     }
     

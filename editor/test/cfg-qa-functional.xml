@@ -13,24 +13,68 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <mconfig name="qa-functional tests config">
-    
-    <testbag testattribs="all,stable" name="completion">
+
+    <!-- Validation: -->
+    <testbag testattribs="all,validation,full" name="validation">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/completion/*Performer.class"/>
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testcomplexsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testcomplexunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIsorted" />
+		<include name="org/netbeans/test/editor/app/tests/*Performer.class/testRoundAdd"/>
+		<include name="org/netbeans/test/editor/app/tests/*Performer.class/testCompoundNext"/>
+            </patternset>
+        </testset>
+    </testbag>
+        
+
+    <!-- Code completion non-validation tests: -->
+
+    <testbag testattribs="all,failing" name="completion-failing">
+        <testset dir="qa-functional/src">
+            <patternset>
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testcomplexsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testcomplexsorted" />
             </patternset>
         </testset>
     </testbag>
 
-    <testbag testattribs="all,stable" name="app-all">
+    <testbag testattribs="all,experimental" name="completion-experimental">
+        <testset dir="qa-functional/src">
+            <patternset>
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIsorted" />
+            </patternset>
+        </testset>
+    </testbag>
+
+    <!-- Editor test application non-validation tests: -->
+    
+    <testbag testattribs="all,full" name="app-all-full">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/app/tests/*Performer.class"/>
+		<exclude name="org/netbeans/test/editor/app/tests/*Performer.class/testRoundAdd"/>
+		<exclude name="org/netbeans/test/editor/app/tests/*Performer.class/testCompoundNext"/>
+		<exclude name="org/netbeans/test/editor/app/tests/*Performer.class/testIfWhile"/>
             </patternset>
         </testset>
     </testbag>
 
-    <testbag testattribs="all" name="indentation-programmatic">
+    <testbag testattribs="all,failing" name="app-all-failing">
+        <testset dir="qa-functional/src">
+            <patternset>
+		<include name="org/netbeans/test/editor/app/tests/*Performer.class/testIfWhile"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+
+    <!-- Programmatic indentation tests: -->
+    
+    <testbag testattribs="all,full" name="indentation-programmatic">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/indentation/programmatic/*Performer.class"/>
@@ -38,6 +82,8 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
+
+    <!-- Experimental tests (not to be runned automaticaly): -->
     <testbag testattribs="all,exper" name="abbrev-gui">
         <testset dir="qa-functional/src">
             <patternset>
@@ -45,6 +91,7 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+    
     
     <resultsprocessor name="qa-functional" antfile="build.xml" target="test_report" default="true"/>
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>

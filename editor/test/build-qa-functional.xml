@@ -139,7 +139,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Using jars classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against jars -->
 	<path id="compiletest.classpath">        
-	    <pathelement location="../netbeans/lib/openide.jar"/>
+	    <pathelement location="../../netbeans/lib/openide.jar"/>
 	    <pathelement location="../netbeans/modules/editor.jar"/>
 	    <pathelement location="../netbeans/modules/ext/nb-editor.jar"/>
 	</path>
@@ -154,6 +154,7 @@ Microsystems, Inc. All Rights Reserved.
 	         If you need e.g. sources of your tested module, write this:
 	           <pathelement location="../src"/>
  	      -->
+             <pathelement location="../netbeans/lib/openide.jar"/>
 	     <pathelement location="../src"/>
 	</path>
     </target>

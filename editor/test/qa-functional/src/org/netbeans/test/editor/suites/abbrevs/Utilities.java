@@ -36,9 +36,7 @@ public class Utilities {
         if (abbrevName.length != abbrevContent.length)
             throw new IllegalArgumentException("The arrays do not have same number of items.");
         
-        MainFrame mainWindow = MainFrame.getMainFrame();
-        mainWindow.pushToolsMenu("Options...");
-        
+        Options.show();
         Options options = Options.find();
         PropertiesWindow properties = options.getPropertiesWindow("Editing" + options.delim + "Editor Settings" + options.delim + editorName + " Editor");
         
@@ -65,9 +63,7 @@ public class Utilities {
     }
 
     public static void removeAbbreviation(String editorName, String[] abbrevName) throws Exception {
-        MainFrame mainWindow = MainFrame.getMainFrame();
-        mainWindow.pushToolsMenu("Options...");
-        
+        Options.show();
         Options options = Options.find();
         PropertiesWindow properties = options.getPropertiesWindow("Editing" + options.delim + "Editor Settings" + options.delim + editorName + " Editor");
         
