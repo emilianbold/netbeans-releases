@@ -28,6 +28,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.util.WeakListener;
+import org.openide.util.HelpCtx;
 
 
 /** Node representing the Editor Settings main node.
@@ -37,6 +38,8 @@ import org.openide.util.WeakListener;
  */
 
 public class AllOptionsNode extends FilterNode {
+    
+    private static final String HELP_ID = "editing.global"; // !!! NOI18N
     
     /** Creates new AllOptionsNode as BeanNode with Children.Array */
     public AllOptionsNode() throws IntrospectionException {
@@ -53,6 +56,9 @@ public class AllOptionsNode extends FilterNode {
         return false;
     }        
     
+    public HelpCtx getHelpCtx () {
+        return new HelpCtx (HELP_ID);
+    }
     
     /** Class representing subnodes of Editor Settings node.*/
     private static class EditorSubnodes extends Children.Keys {
