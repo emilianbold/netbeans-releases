@@ -168,45 +168,6 @@ final class Favorites extends FilterNode {
         }
         
         protected Node[] createNodes(Object key) {
-            InstanceCookie cookie = (InstanceCookie) ((Node) key).getCookie(InstanceCookie.class);
-            Object o = null;
-            if (cookie != null) {
-                try {
-                    o = cookie.instanceCreate();
-                } catch (IOException exc) {
-                } catch (ClassNotFoundException exc) {
-                }
-            }
-            if (o instanceof Repository) {
-                // list all roots
-                File[] roots = File.listRoots();
-                List list = new ArrayList ();
-                for (int i = 0; i < roots.length; i++) {
-                    FileObject r = org.openide.filesystems.FileUtil.toFileObject (roots[i]);
-                    if (r == null) {
-                        continue;
-                    }
-                    try {
-                        DataObject obj = DataObject.find (r);
-                        list.add (
-                            new ProjectFilterNode (obj.getNodeDelegate(), new Chldrn (obj.getNodeDelegate ()))
-                        );
-                    } catch (org.openide.loaders.DataObjectNotFoundException ex) {
-                        org.openide.ErrorManager.getDefault ().notify (ex);
-                    }
-                }
-                if (Utilities.isWindows()) {
-                    Node n = (Node) key;
-                    Node [] nodes = n.getChildren().getNodes();
-                    Children.Array ch = new Children.Array();
-                    ch.add((Node[]) list.toArray(new Node[0]));
-                    n.setName(NbBundle.getBundle(Favorites.class).getString ("CTL_MyComputer"));
-                    return new Node[] { new FilterNode(n, ch) };
-                } else {
-                    return (Node[])list.toArray(new Node[0]);
-                }
-            }
-            
             Node node = (Node)key;
             return new Node[] { new ProjectFilterNode (
                 node,
