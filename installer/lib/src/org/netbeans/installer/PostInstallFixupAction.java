@@ -22,6 +22,7 @@ import com.installshield.util.Log;
 import com.installshield.wizard.platform.win32.Win32RegistryService;
 import com.installshield.wizard.service.ServiceException;
 import com.installshield.wizard.service.file.FileService;
+import java.io.File;
 
 public class PostInstallFixupAction extends ProductAction {
     
@@ -116,9 +117,12 @@ public class PostInstallFixupAction extends ProductAction {
             init(support);
             
             deleteFiles(nbInstallDir, new String[] {"etc" + sep + "netbeans.conf"});
-            deleteFiles(nbInstallDir, new String[] {"_uninst" + sep + "install.log"});
+            deleteFiles(uninstallDir, new String[] {"install.log"});
             deleteFiles(nbInstallDir, new String[] {"nb4.1" + sep + "config" + sep + "productid" });
             deleteFiles(uninstallDir, new String[] {"install.properties"});
+            //MDR storage created by Storage Builder
+            Util.deleteCompletely(new File(nbInstallDir + sep + StorageBuilderAction.STORAGE_BUILDER_DEST_DIR),support);
+            Util.deleteCompletely(new File(uninstallDir + sep + "storagebuilder" + sep + "storagebuilder.log"),support);
             
             if (Util.isUnixOS()) {
                 uninstallGnomeIcon();
@@ -234,7 +238,7 @@ public class PostInstallFixupAction extends ProductAction {
             }
         }
     }
-
+    
     private static final String GNOMEAPPDIR = "/usr/share/applications";
     
     void installGnomeIcon() {

@@ -35,6 +35,9 @@ public class StorageBuilderAction extends ProductAction {
     
     //return code incase an error returns
     public static final int STORAGE_BUILDER_UNHANDLED_ERROR = -200;
+    public static final String STORAGE_BUILDER_TEMP_DIR = "mdrtmpdir";
+    public static final String STORAGE_BUILDER_DEST_DIR = "ide5" + File.separator + "mdrstorage";
+    public static final String STORAGE_BUILDER_TEMP_FILE = "mdrtmpfile";
     
     private int installMode = 0;
     private static final int INSTALL = 0;
@@ -43,7 +46,9 @@ public class StorageBuilderAction extends ProductAction {
     private String statusDesc = "";
     private String nbInstallDir = "";
     private String uninstDir = "";
-    private String tempDir = "";
+    private String tempPath = "";
+    
+    private File mdrTempDir;
 
     private boolean success = false;
     
@@ -77,8 +82,8 @@ public class StorageBuilderAction extends ProductAction {
         uninstDir = nbInstallDir + File.separator + "_uninst";
         logEvent(this, Log.DBG,"uninstDir: " + uninstDir);
         logEvent(this, Log.DBG,"jdkHome: " + Util.getJdkHome());
-        tempDir = resolveString("$J(temp.dir)");
-        logEvent(this, Log.DBG,"Tempdir: " + tempDir);
+        tempPath = resolveString("$J(temp.dir)");
+        logEvent(this, Log.DBG,"TempPath: " + tempPath);
         
         mutableOperationState = support.getOperationState();
     }
@@ -95,15 +100,64 @@ public class StorageBuilderAction extends ProductAction {
             init(support);
             installMode = INSTALL;
             
-	    if (Util.isWindowsOS()) {
-		String runScript = uninstDir + File.separator 
-                + "run-storage-builder-windows.template";
-		createRunScriptWindows(runScript, "run-storage-builder-windows.bat");
-	    } else {
-		String runScript = uninstDir + File.separator 
-                + "run-storage-builder-unix.template";
-		createRunScript(runScript,"run-storage-builder-unix.sh");
+            //Create new temp dir for storage builder
+            mdrTempDir = new File(tempPath + File.separator + STORAGE_BUILDER_TEMP_DIR);
+            int i = 1;
+            while (mdrTempDir.exists()) {
+                mdrTempDir = new File(tempPath + File.separator + STORAGE_BUILDER_TEMP_DIR + i);
+                i++;
             }
+            if (!mdrTempDir.mkdir()) {
+                logEvent(this, Log.ERROR,"# # # # # # # #");
+                logEvent(this, Log.ERROR,"Fatal error: Cannot create temporary directory for Storage Builder.");
+                try {
+                    ExitCodeService ecservice = (ExitCodeService)getService(ExitCodeService.NAME);
+                    ecservice.setExitCode(STORAGE_BUILDER_UNHANDLED_ERROR);
+                } catch (Exception ex) {
+                    logEvent(this, Log.ERROR, "Couldn't set exit code. ");
+                }
+                return;
+            }
+            logEvent(this, Log.DBG,"Created temporary dir for SB: " + mdrTempDir.getAbsolutePath());
+            
+            //Create destination dir for storage builder
+            File mdrDestDir = new File(nbInstallDir + File.separator + STORAGE_BUILDER_DEST_DIR);
+            if (mdrDestDir.exists()) {
+                logEvent(this, Log.ERROR,"# # # # # # # #");
+                logEvent(this, Log.ERROR,"Fatal error: Storage Builder destination directory already exists.");
+                try {
+                    ExitCodeService ecservice = (ExitCodeService)getService(ExitCodeService.NAME);
+                    ecservice.setExitCode(STORAGE_BUILDER_UNHANDLED_ERROR);
+                } catch (Exception ex) {
+                    logEvent(this, Log.ERROR, "Couldn't set exit code. ");
+                }
+                return;
+            }
+            if (!mdrDestDir.mkdir()) {
+                logEvent(this, Log.ERROR,"# # # # # # # #");
+                logEvent(this, Log.ERROR,"Fatal error: Cannot create destination directory for Storage Builder.");
+                try {
+                    ExitCodeService ecservice = (ExitCodeService)getService(ExitCodeService.NAME);
+                    ecservice.setExitCode(STORAGE_BUILDER_UNHANDLED_ERROR);
+                } catch (Exception ex) {
+                    logEvent(this, Log.ERROR, "Couldn't set exit code. ");
+                }
+                return;
+            }
+            logEvent(this, Log.DBG,"Created destination dir for SB: " + mdrDestDir.getAbsolutePath());
+            
+	    if (Util.isWindowsOS()) {
+		String runScript = uninstDir + File.separator + "storagebuilder" + File.separator
+                + "run-storage-builder-windows.template";
+		createRunScriptWindows(runScript, "run-storage-builder-windows.bat",
+                mdrTempDir.getAbsolutePath() + File.separator + STORAGE_BUILDER_TEMP_FILE);
+	    } else {
+		String runScript = uninstDir + File.separator + "storagebuilder" + File.separator
+                + "run-storage-builder-unix.template";
+		createRunScript(runScript,"run-storage-builder-unix.sh",
+                mdrTempDir.getAbsolutePath() + File.separator + STORAGE_BUILDER_TEMP_FILE);
+            }
+            
             String execName;
             String driveName;
             int paramCount;
@@ -118,7 +172,7 @@ public class StorageBuilderAction extends ProductAction {
             }
             
             String cmdArray[] = new String[paramCount];
-            String execPath   = uninstDir + File.separator + execName;
+            String execPath   = uninstDir + File.separator + "storagebuilder" + File.separator + execName;
             
 	    // Put the command and arguments together for windows
             if (Util.isWindowsOS()) {
@@ -132,34 +186,15 @@ public class StorageBuilderAction extends ProductAction {
             logEvent(this, Log.DBG,"Start Invoking Storage Builder: cmdArray -> " + Arrays.asList(cmdArray).toString());
             runCommand(cmdArray, null, support);
             
+            //Delete temporary dir
+            Util.deleteCompletely(mdrTempDir,support);
+            logEvent(this, Log.DBG,"Deleted temporary dir for SB: " + mdrTempDir.getAbsolutePath());
+            
         } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
             logEvent(this, Log.DBG, ex);
         }
         logEvent(this, Log.DBG,"Running Storage Builder took: (ms) " + (System.currentTimeMillis() - currtime));
-    }
-    
-    /** Delete given file/folder completely. It is called recursively when necessary.
-     * @file - name of file/folder to be deleted
-     */
-    private void deleteCompletely (File file) {
-        if (file.isDirectory()) {
-            //Delete content of folder
-            File [] fileArr = file.listFiles();
-            for (int i = 0; i < fileArr.length; i++) {
-                if (fileArr[i].isDirectory()) {
-                    deleteCompletely(fileArr[i]);
-                }
-                logEvent(this, Log.DBG,"Delete file: " + fileArr[i].getPath());
-                if (!fileArr[i].delete()) {
-                    logEvent(this, Log.DBG,"Cannot delete file: " + fileArr[i].getPath());
-                }
-            }
-        }
-        logEvent(this, Log.DBG,"Delete file: " + file.getPath());
-        if (!file.delete()) {
-            logEvent(this, Log.DBG,"Cannot delete file: " + file.getPath());
-        }
     }
     
     /** Does nothing. */
@@ -202,6 +237,9 @@ public class StorageBuilderAction extends ProductAction {
             int status = runCommand.getReturnStatus();
             
             logEvent(this, Log.DBG,"Return status: " + status);
+            if (status != 0) {
+                //Log error
+            }
             
             if((installMode == INSTALL) && doProgress) {
                 stopProgress();
@@ -250,13 +288,13 @@ public class StorageBuilderAction extends ProductAction {
     public RequiredBytesTable getRequiredBytes() throws ProductException {
         //#48948: We must set dirs here because init() is not run yet when getRequiredBytes
         //is called.
-        tempDir = resolveString("$J(temp.dir)");
+        tempPath = resolveString("$J(temp.dir)");
         
         RequiredBytesTable req = new RequiredBytesTable();
-        logEvent(this, Log.DBG, "tempDir: " + tempDir);
+        logEvent(this, Log.DBG, "tempPath: " + tempPath);
         
         //Storage is first built to temp dir then it is copied to destination
-        req.addBytes(tempDir, 50000000L);
+        req.addBytes(tempPath, 50000000L);
 	logEvent(this, Log.DBG, "Total (not necessarily on one disk when tempdir is redirected) Mbytes = " + (req.getTotalBytes()>>20));
         logEvent(this, Log.DBG, "RequiredBytesTable: " + req);
         return req;
@@ -284,6 +322,7 @@ public class StorageBuilderAction extends ProductAction {
     
     public void startProgress() {
         progressThread = new ProgressThread();
+        progressThread.setPriority(Thread.MIN_PRIORITY);
         progressThread.start();
     }
     
@@ -326,7 +365,7 @@ public class StorageBuilderAction extends ProductAction {
      * @template - the script to use as a template
      * @scriptName - the name of the generated script
      */
-    private boolean createRunScript (String template, String scriptName)
+    private boolean createRunScript (String template, String scriptName, String mdrTempPath)
     throws Exception {
 	File templateFile = new File(template);
 	String parent = templateFile.getParent();
@@ -344,8 +383,11 @@ public class StorageBuilderAction extends ProductAction {
                 line = "NB_PATH=" + nbInstallDir;
             } else if (line.startsWith("JAVA_HOME=")) {
                 line = "JAVA_HOME=" + Util.getJdkHome();
-            } else if (line.startsWith("MDR_TMPDIR=")) {
-                line = "MDR_TMPDIR=" + tempDir + File.separator + "mdrtmp" + File.separator + "mdr";
+            } else if (line.startsWith("MDR_TMP_FILE=")) {
+                line = "MDR_TMP_FILE=" + mdrTempPath;
+            } else if (line.startsWith("LOGFILE=")) {
+                line = "LOGFILE=" + uninstDir + File.separator 
+                + "storagebuilder" + File.separator + "storagebuilder.log";
             }
             writer.write(line + System.getProperty("line.separator"));
         }
@@ -367,7 +409,7 @@ public class StorageBuilderAction extends ProductAction {
      * @template - the script to use as a template
      * @scriptName - the name of the generated script
      */
-    private boolean createRunScriptWindows (String template, String scriptName)
+    private boolean createRunScriptWindows (String template, String scriptName, String mdrTempPath)
     throws Exception {
 	File templateFile = new File(template);
 	String parent = templateFile.getParent();
@@ -383,10 +425,13 @@ public class StorageBuilderAction extends ProductAction {
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("SET NB_PATH=")) {
                 line = "SET NB_PATH=" + nbInstallDir;
-            } else if (line.startsWith("JAVA_HOME=")) {
+            } else if (line.startsWith("SET JAVA_HOME=")) {
                 line = "SET JAVA_HOME=" + Util.getJdkHome();
-            } else if (line.startsWith("MDR_TMPDIR=")) {
-                line = "SET MDR_TMPDIR=" + tempDir + File.separator + "mdrtmp" + File.separator + "mdr";
+            } else if (line.startsWith("SET MDR_TMP_FILE=")) {
+                line = "SET MDR_TMP_FILE=" + mdrTempPath;
+            } else if (line.startsWith("SET LOGFILE=")) {
+                line = "SET LOGFILE=" + uninstDir + File.separator 
+                + "storagebuilder" + File.separator + "storagebuilder.log";
             }
             writer.write(line + System.getProperty("line.separator"));
         }
@@ -400,10 +445,10 @@ public class StorageBuilderAction extends ProductAction {
     class ProgressThread extends Thread {
         private boolean loop = true;
         private  MutableOperationState mos;
-        private File storageDir;
         
         //progress bar related variables
         private long percentageCompleted = 0L;
+        private long percentageStart = 0L;
         private long checksum = 0L;
         
         //status detail related variables
@@ -424,19 +469,20 @@ public class StorageBuilderAction extends ProductAction {
         
         public ProgressThread() {
             this.mos = mutableOperationState;
-            storageDir = new File(tempDir + File.separator + "mdrtmp");
             checksum = getCheckSum();
         }
         
         public void run() {
             int sleepTime = 1000;
+            percentageStart = mos.getProgress().getPercentComplete();
+            logEvent(this, Log.DBG,"Starting percentageStart: " + percentageStart);
             while (loop) {
                 logEvent(this, Log.DBG,"looping");
                 try {
                     //logEvent(this, Log.DBG,"going 2 updateProgressBar");
                     updateProgressBar();
 
-                    sleepTime = 1200;
+                    sleepTime = 10000;
                     Thread.currentThread().sleep(sleepTime);
                     if (isCanceled()) return;
                 } catch (InterruptedException ex) {
@@ -460,6 +506,7 @@ public class StorageBuilderAction extends ProductAction {
             logEvent(this, Log.DBG,"Finishing");;
             if(!mos.isCanceled()) {
                 mos.setStatusDescription("");
+                percentageCompleted = mos.getProgress().getPercentComplete();
                 for (; percentageCompleted <= 100; percentageCompleted++) {
                     logEvent(this, Log.DBG,"percentageCompleted = " + percentageCompleted + " updateCounter " + mos.getUpdateCounter());
                     mos.updatePercentComplete(ESTIMATED_TIME, 1L, 100L);
@@ -492,8 +539,8 @@ public class StorageBuilderAction extends ProductAction {
             if (isCanceled()) {
                 return;
             }
-            long size = Util.getFileSize(storageDir);
-            long perc = (size * 100) / checksum;
+            long size = Util.getFileSize(mdrTempDir);
+            long perc = (size * (100 - percentageStart)) / checksum;
             logEvent(this, Log.DBG,"installed size = " + size + " perc = " + perc);
             if (perc <= percentageCompleted) {
                 return;

@@ -525,5 +525,38 @@ public class Util {
             return false;
         }
     }
+    
+    /** Delete given file/folder completely. It is called recursively when necessary.
+     * @file - name of file/folder to be deleted
+     */
+    public static void deleteCompletely (File file, Log log) {
+        deleteCompletely(file,true, log);
+    }
+    
+    /** Delete given file/folder completely. It is called recursively when necessary.
+     * @file - name of file/folder to be deleted
+     * @firstCall - should be true
+     */
+    private static void deleteCompletely (File file, boolean firstCall, Log log) {
+        if (file.isDirectory()) {
+            //Delete content of folder
+            File [] fileArr = file.listFiles();
+            for (int i = 0; i < fileArr.length; i++) {
+                if (fileArr[i].isDirectory()) {
+                    deleteCompletely(fileArr[i],false, log);
+                }
+                log.logEvent(Util.class, Log.DBG,"Delete file: " + fileArr[i].getPath());
+                if (fileArr[i].exists() && !fileArr[i].delete()) {
+                    log.logEvent(Util.class, Log.DBG,"Cannot delete file: " + fileArr[i].getPath());
+                }
+            }
+        }
+        if (firstCall) {
+            log.logEvent(Util.class, Log.DBG,"Delete file: " + file.getPath());
+            if (file.exists() && !file.delete()) {
+                log.logEvent(Util.class, Log.DBG,"Cannot delete file: " + file.getPath());
+            }
+        }
+    }
                                                                                                                                          
 }
