@@ -15,7 +15,9 @@ package examples.imageviewer;
 
 public class ImageViewer extends javax.swing.JFrame {
 
-    /** Creates new form ImageViewer */
+    /** Image Viewer constructor.
+     * It initializes all GUI components [menu bar, menu items, desktop pane, etc.].
+     */
     public ImageViewer() {
         initComponents ();
         pack ();
@@ -86,13 +88,19 @@ public class ImageViewer extends javax.swing.JFrame {
 
     }//GEN-END:initComponents
 
+    /** This method is called when File -> Exit menu item is invoked.
+     * It closes the application.
+     * @param evt ActionEvent instance passed from actionPerformed event.
+     */
     private void exitMenuItemActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
-        // Add your handling code here:
         System.exit( 0 );
     }//GEN-LAST:event_exitMenuItemActionPerformed
 
+    /** This method is called when File -> Open menu item is invoked.
+     * It displays a dialog to choose the image file to be opened and displayed.
+     * @param evt ActionEvent instance passed from actionPerformed event.
+     */
     private void openMenuItemActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
-        // Add your handling code here:
         javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
         chooser.addChoosableFileFilter(new ImageFileFilter());
         int option = chooser.showOpenDialog(this);
@@ -108,14 +116,16 @@ public class ImageViewer extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_openMenuItemActionPerformed
 
-    /** Exit the Application */
+    /** This method is called when the application frame is closed.
+     * @param evt WindowEvent instance passed from windowClosing event.
+     */
     private void exitForm(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_exitForm
         System.exit (0);
     }//GEN-LAST:event_exitForm
 
-    /**
-    * @param args the command line arguments
-    */
+    /** Starts the application.
+     * @param args Application arguments.
+     */    
     public static void main (String args[]) {
         new ImageViewer ().show ();
     }

@@ -15,7 +15,9 @@ package examples.imageviewer;
 
 public class ImageFrame extends javax.swing.JInternalFrame {
 
-    /** Creates new form ImageFrame */
+    /** ImageFrame constructor.
+     * It creates new internal frame containing the given image and displays it.
+     */
     public ImageFrame(String imageName ) {
         initComponents ();
         setTitle (imageName);
