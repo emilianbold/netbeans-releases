@@ -136,10 +136,10 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
         for (int i=0; i<VOLUME_TYPES.length; i++) {
             String propName = LIB_PREFIX + impl.getName() + '.' + VOLUME_TYPES[i];     //NOI18N
             List roots = impl.getContent (VOLUME_TYPES[i]);
-			if (roots == null) {
-				//Non valid library, but try to recover
-				continue;
-			}
+            if (roots == null) {
+                //Non valid library, but try to recover
+                continue;
+            }
             StringBuffer propValue = new StringBuffer();
             boolean first = true;
             for (Iterator rootsIt=roots.iterator(); rootsIt.hasNext();) {
@@ -176,14 +176,8 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
             String oldValue = props.getProperty (propName);
             String newValue = propValue.toString();
             if (!newValue.equals(oldValue)) {
-                if (newValue.length()>0) {
                     props.setProperty (propName, newValue);
                     modified = true;
-                }
-                else if (oldValue != null) {
-                    props.remove(propName);
-                    modified = true;
-                }
             }
         }
         return modified;
