@@ -76,7 +76,7 @@ ToDo:
     <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc" classpath="nbantext.jar"/>
     <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="nbantext.jar"/>
     <taskdef name="check" classname="org.netbeans.nbbuild.CheckValue" classpath="nbantext.jar"/>
-    <taskdef name="xmlvalidate" classname="org.netbeans.nbbuild.XMLValidate" classpath="nbantext.jar;${binroot}/xml/catalog/release/modules/ext/resolver-1_1_nb.jar"/>
+    <taskdef name="validatexml" classname="org.netbeans.nbbuild.XMLValidate" classpath="nbantext.jar;${binroot}/xml/catalog/release/modules/ext/resolver-1_1_nb.jar"/>
 
     <!-- Read the user property file at first -->
     <property file="user.build.properties"/>
@@ -600,10 +600,10 @@ the ${netbeans.dest}/bin/ directory.
   </target>
 
   <target name="checkXMLs" depends="init">
-    <xmlvalidate basedir="../" catalog="../www/www/dtds/catalog">
+    <validatexml basedir="../" catalog="../www/www/dtds/catalog">
         <include name="*/build.xml"/>
 	<include name="*/src/**/*.xml/"/>
-    </xmlvalidate>
+    </validatexml>
   </target>
   
   <target name="delete-and-merge" depends="merge-delete,merge" />   
