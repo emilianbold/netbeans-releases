@@ -230,16 +230,6 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
             }
             removeMergePanel(panel);
         }
-        synchronized (this) {
-            if (mergeTabbedPane.getTabCount() == 0) {
-                try {
-                    fireVetoableChange(PROP_ALL_CLOSED, null, null);
-                } catch (PropertyVetoException pvex) {
-                    return ;
-                }
-                close();
-            }
-        }
     }//GEN-LAST:event_okButtonActionPerformed
     
     private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
