@@ -1,12 +1,8 @@
 OpenIDE-Module: org.netbeans.modules.image/1
-OpenIDE-Module-Name: Image
-OpenIDE-Module-Display-Category: Data Files
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/image/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.7
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/image/Layer.xml
-OpenIDE-Module-Short-Description: Supports viewing of image files.
-OpenIDE-Module-Long-Description: The Image module provides support for viewing image files in the
-  IDE. It includes zoom and grid functions.
 
 Name: org/netbeans/modules/image/ImageDataLoader.class
 OpenIDE-Module-Class: Loader

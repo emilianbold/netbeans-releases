@@ -1,6 +1,5 @@
 OpenIDE-Module: org.netbeans.modules.utilities/1
-OpenIDE-Module-Name: User Utilities
-OpenIDE-Module-Display-Category: Infrastructure
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/utilities/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.7
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Install: org/netbeans/modules/utilities/Installer.class
@@ -8,10 +7,6 @@ OpenIDE-Module-Layer: org/netbeans/modules/utilities/Layer.xml
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.12
 OpenIDE-Module-Module-Dependencies: org.openidex.util/1 > 1.9
 OpenIDE-Module-Package-Dependencies: org.apache.regexp[RE]
-OpenIDE-Module-Short-Description: Support for file searching, bookmarks, and groups of objects.
-OpenIDE-Module-Long-Description: The User Utilities module provides miscellaneous pieces of functionality such as support 
-  for URLs (bookmarks), groups of objects, and file searching. It also provides the open file feature, 
-  which helps you open a file in a previously unmounted filesystem.
 Main-Class: org.netbeans.modules.openfile.Main
 
 Name: org/netbeans/modules/group/GroupShadowLoader.class

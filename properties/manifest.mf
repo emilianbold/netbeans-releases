@@ -1,13 +1,8 @@
 OpenIDE-Module: org.netbeans.modules.properties/1
-OpenIDE-Module-Name: Resource Bundles
-OpenIDE-Module-Display-Category: Data Files
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/properties/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.7
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/properties/Layer.xml
-OpenIDE-Module-Short-Description: Supports editing of .properties files.
-OpenIDE-Module-Long-Description: The Resource Bundles module provides support for browsing
-  .properties files in the Explorer and editing them in the Source Editor
-  or in a table view.
 
 Name: org/netbeans/modules/properties/PropertiesDataLoader.class
 OpenIDE-Module-Class: Loader
