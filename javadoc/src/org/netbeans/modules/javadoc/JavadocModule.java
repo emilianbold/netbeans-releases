@@ -35,7 +35,7 @@ import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.SharedClassObject;
 
-import org.netbeans.modules.javadoc.settings.StdDocletSettings;
+import org.netbeans.modules.javadoc.settings.StdDocletSettingsService;
 import org.netbeans.modules.javadoc.comments.JavaDocPropertySupportFactory;
 import org.netbeans.modules.javadoc.comments.AutoCommentAction;
 import org.netbeans.modules.javadoc.search.SearchDocAction;
@@ -195,9 +195,9 @@ public class JavadocModule extends ModuleInstall {
 
         // Create default directory for JavaDoc
         //StdDocletSettings sdsTemp = (StdDocletSettings) SharedClassObject.findObject (StdDocletSettings.class, true);
-        StdDocletSettings sdsTemp = (StdDocletSettings)TopManager.getDefault ().getServices ().find (StdDocletSettings.class);
+        StdDocletSettingsService sdsTemp = (StdDocletSettingsService)TopManager.getDefault ().getServices ().find (StdDocletSettingsService.class);
         if( sdsTemp == null ) 
-            sdsTemp = new StdDocletSettings(); 
+            sdsTemp = new StdDocletSettingsService(); 
         // Reseting javadoc output directory is necessary for
         // multiuser installation
         String fileSep = System.getProperty ("file.separator");

@@ -24,7 +24,7 @@ import org.openide.util.NbBundle;
 import org.openide.ServiceType;
 
 import org.netbeans.modules.javadoc.comments.AutoCommenter;
-import org.netbeans.modules.javadoc.settings.ExternalJavadocSettings;
+import org.netbeans.modules.javadoc.settings.ExternalJavadocSettingsService;
 import org.netbeans.modules.javadoc.search.Jdk12SearchType;
 import org.netbeans.modules.javadoc.search.JavadocSearchType;
 import org.netbeans.modules.javadoc.*;
@@ -75,7 +75,7 @@ public class DocumentationSettings extends SystemOption {
         if( getProperty( PROP_AUTOCOMENT_ERR_MASK ) == null )
             setAutocommentErrorMask(AutoCommenter.JDC_OK | AutoCommenter.JDC_ERROR | AutoCommenter.JDC_MISSING);
         if( getProperty( PROP_EXECUTOR ) == null )
-            setExecutor( new ExternalJavadocSettings() );
+            setExecutor( new ExternalJavadocSettingsService() );
         if( getProperty( PROP_SEARCH ) == null )
             setSearchEngine( new Jdk12SearchType() );
         if( getProperty( PROP_FS_SETTING ) == null )
@@ -240,7 +240,7 @@ public class DocumentationSettings extends SystemOption {
     }
     
     JavadocType setDefaultJavadocExecutor() {
-        JavadocType javadocType = new ExternalJavadocSettings();
+        JavadocType javadocType = new ExternalJavadocSettingsService();
         setExecutor(javadocType);
         return javadocType;        
     }    
@@ -303,7 +303,7 @@ public class DocumentationSettings extends SystemOption {
 
     public void setAskAfterGenerating( boolean ask ){
         putProperty( PROP_ASK_AFTER_GEN, new Boolean(ask), true );
-    }
+    }    
 }
 
 
