@@ -26,6 +26,7 @@ import org.openide.nodes.Sheet;
 
 import org.netbeans.modules.j2ee.deployment.execution.actions.ConfigureAction;
 import org.netbeans.modules.j2ee.deployment.execution.ServerExecSupport;
+import org.netbeans.modules.j2ee.deployment.impl.projects.JSPServletFinderImpl;
 import org.netbeans.modules.j2ee.deployment.config.ConfigSupportImpl;
 
 /**
@@ -63,6 +64,10 @@ public abstract class J2eeModuleProvider implements Node.Cookie {
 
     public static org.openide.loaders.ExecutionSupport getExecutionSupport (DataObject dobj) {
         return new ServerExecSupport (((MultiDataObject) dobj).getPrimaryEntry ());
+    }
+
+    public static JSPServletFinder getJSPServletFinder(DataObject docBase) {
+        return new JSPServletFinderImpl(docBase);
     }
     
     /**

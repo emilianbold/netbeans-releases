@@ -172,15 +172,20 @@ public class ServerInstance implements Node.Cookie {
         return (ModuleUrlResolver) getManagerWrapper(ModuleUrlResolver.class);
     }
     
+    public FindJSPServlet getFindJSPServlet() {
+        return (FindJSPServlet) getManagerWrapper(FindJSPServlet.class);
+    }
+
     private DeploymentManagerWrapper getManagerWrapper(Class wrapperClass) {
         return (DeploymentManagerWrapper) getManagerWrappers().get(wrapperClass.getName());
     }
     
     static Class[] wrapperClasses = new Class[] {
-        StartServer.class,
-        IncrementalDeployment.class,
-        FileDeploymentLayout.class,
-        ModuleUrlResolver.class
+        StartServer.class, 
+        IncrementalDeployment.class, 
+        FileDeploymentLayout.class, 
+        ModuleUrlResolver.class,
+        FindJSPServlet.class
     };
     private Map getManagerWrappers() {
         if (getDeploymentManager() == null)

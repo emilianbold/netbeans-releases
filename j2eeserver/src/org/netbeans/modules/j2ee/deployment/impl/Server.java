@@ -205,6 +205,8 @@ public class Server implements Node.Cookie {
             return getFileDeploymentLayout();
         else if (ModuleUrlResolver.class.isAssignableFrom(wrapperClass))
             return getModuleUrlResolver();
+        else if (FindJSPServlet.class.isAssignableFrom(wrapperClass))
+            return getFindJSPServlet();
         else 
             throw new IllegalArgumentException("Unknown DeploymentManagerWrapper class " + wrapperClass.getName()); //NOI18N
     }
@@ -243,6 +245,11 @@ public class Server implements Node.Cookie {
         }
         String className = dep.getModuleUrlResolver();
         return (ModuleUrlResolver) getClassFromPlugin(className);
+    }
+    
+    public FindJSPServlet getFindJSPServlet() {
+        String className = dep.getFindJspServlet();
+        return (FindJSPServlet) getClassFromPlugin(className);
     }
     
     public DeploymentPlanSplitter getDeploymentPlanSplitter() {
