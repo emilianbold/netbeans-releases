@@ -28,6 +28,7 @@ To implement:
 - readObject etc. methods with incorrect signature (e.g. returning Object)
 - standalone usage checker for library JARs (all classes must resolvable) (or part of openide test suite)
 - nbrescurr: where nbres: suffices
+- use of org.netbeans.core from modules (except apisupport to reload, autoupdate, maybe projects)
 -->
 
 <project name="Source Monitor" default="all" basedir=".">
