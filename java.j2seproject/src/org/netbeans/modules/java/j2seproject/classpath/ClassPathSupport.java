@@ -83,12 +83,22 @@ public class ClassPathSupport {
                 //Library from library manager
                 String libraryName = pe[i].substring( libraryPrefix.length(), pe[i].lastIndexOf('.') ); //NOI18N
                 Library library = LibraryManager.getDefault().getLibrary( libraryName );
-                item = Item.create( library, pe[i] );
+                if ( library == null ) {
+                    item = Item.createBroken( Item.TYPE_LIBRARY, pe[i] );
+                }
+                else {
+                    item = Item.create( library, pe[i] );
+                }
             } 
             else if ( isAntArtifact( pe[i] ) ) {
                 // Ant artifact from another project
                 Object[] ret = referenceHelper.findArtifactAndLocation(pe[i]);
-                item = Item.create( (AntArtifact)ret[0], (URI)ret[1], pe[i] );
+                if ( ret[0] == null || ret[1] == null ) {
+                    item = Item.createBroken( Item.TYPE_ARTIFACT, pe[i] );
+                }
+                else {
+                    item = Item.create( (AntArtifact)ret[0], (URI)ret[1], pe[i] );
+                }
             } else {
                 // Standalone jar or property
                 String eval = evaluator.evaluate( pe[i] );
@@ -96,7 +106,13 @@ public class ClassPathSupport {
                 if (eval != null) {
                     f = antProjectHelper.resolveFile( eval );
                 }                    
-                item = Item.create( f, pe[i] );
+                
+                if ( f == null || !f.exists() ) {
+                    item = Item.createBroken( Item.TYPE_JAR, pe[i] );
+                }
+                else {
+                    item = Item.create( f, pe[i] );
+                }
             }
             
             items.add( item );
@@ -123,6 +139,9 @@ public class ClassPathSupport {
 
                 case Item.TYPE_JAR:
                     reference = item.getReference();
+                    if ( item.isBroken() ) {
+                        break;
+                    }
                     if (reference == null) {
                         // New file
                         File file = item.getFile();
@@ -131,8 +150,11 @@ public class ClassPathSupport {
                     }
                     break;
                 case Item.TYPE_LIBRARY:
-                    Library library = item.getLibrary();                   
-                    reference = item.getReference();                    
+                    reference = item.getReference();
+                    if ( item.isBroken() ) {
+                        break;
+                    }                    
+                    Library library = item.getLibrary();                                       
                     if (reference == null) {
                         if ( library == null ) {
                             break;
@@ -142,6 +164,9 @@ public class ClassPathSupport {
                     break;    
                 case Item.TYPE_ARTIFACT:
                     reference = item.getReference();
+                    if ( item.isBroken() ) {
+                        break;
+                    }
                     AntArtifact artifact = (AntArtifact)item.getArtifact();                                       
                     if ( reference == null) {
                         if ( artifact == null ) {
@@ -213,6 +238,8 @@ public class ClassPathSupport {
         public static final int TYPE_ARTIFACT = 2;
         public static final int TYPE_CLASSPATH = 3;
 
+        // Reference to a broken object
+        private static final String BROKEN = "BrokenReference"; // NOI18N
         
         private Object object;
         private URI artifactURI;
@@ -264,6 +291,13 @@ public class ClassPathSupport {
             return new Item ( TYPE_CLASSPATH, null, property );
         }
         
+        public static Item createBroken( int type, String property ) {
+            if ( property == null ) {
+                throw new IllegalArgumentException( "property must not be null in broken items" ); // NOI18N
+            }
+            return new Item( type, BROKEN, property );
+        }
+        
         // Instance methods ----------------------------------------------------
         
         public int getType() {
@@ -302,11 +336,19 @@ public class ClassPathSupport {
         public String getReference() {
             return property;
         }
+        
+        public boolean isBroken() {
+            return object == BROKEN;
+        }
                         
         public int hashCode() {
         
             int hash = getType();
 
+            if ( object == BROKEN ) {
+                return BROKEN.hashCode();
+            }
+            
             switch ( getType() ) {
                 case TYPE_ARTIFACT:
                     hash += getArtifact().getType().hashCode();                
@@ -333,6 +375,14 @@ public class ClassPathSupport {
 
             if ( getType() != item.getType() ) {
                 return false;
+            }
+            
+            if ( isBroken() != item.isBroken() ) {
+                return false;
+            }
+            
+            if ( isBroken() ) {
+                return getReference().equals( item.getReference() );
             }
 
             switch ( getType() ) {

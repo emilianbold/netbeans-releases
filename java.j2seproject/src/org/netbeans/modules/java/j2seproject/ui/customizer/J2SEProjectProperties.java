@@ -137,7 +137,7 @@ public class J2SEProjectProperties {
     DefaultListModel RUN_CLASSPATH_MODEL;
     DefaultListModel RUN_TEST_CLASSPATH_MODEL;
     ComboBoxModel PLATFORM_MODEL;
-    ListCellRenderer CLASS_PATH_LIST_RENDERER = new J2SEClassPathUi.ClassPathListCellRenderer();
+    ListCellRenderer CLASS_PATH_LIST_RENDERER;
     
     // CustomizerCompile
     ButtonModel JAVAC_DEPRECATION_MODEL; 
@@ -205,6 +205,8 @@ public class J2SEProjectProperties {
     /** Initializes the visual models 
      */
     private void init() {
+        
+        CLASS_PATH_LIST_RENDERER = new J2SEClassPathUi.ClassPathListCellRenderer( evaluator );
         
         // CustomizerSources
         SOURCE_ROOTS_MODEL = J2SESourceRootsUi.createModel( project.getSourceRoots() );
@@ -468,5 +470,7 @@ public class J2SEProjectProperties {
             return property;
         }
     }
+    
+    
     
 }

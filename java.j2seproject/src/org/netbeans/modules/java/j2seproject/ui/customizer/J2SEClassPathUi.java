@@ -76,14 +76,22 @@ public class J2SEClassPathUi {
         private static String RESOURCE_ICON_LIBRARY = "org/netbeans/modules/java/j2seproject/ui/resources/libraries.gif"; //NOI18N
         private static String RESOURCE_ICON_ARTIFACT = "org/netbeans/modules/java/j2seproject/ui/resources/projectDependencies.gif"; //NOI18N
         private static String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/java/j2seproject/ui/resources/referencedClasspath.gif"; //NOI18N
-
-        private static Icon ICON_JAR = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAR ) );
-        private static Icon ICON_FOLDER = null; 
-        private static Icon ICON_LIBRARY = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_LIBRARY ) );
-        private static Icon ICON_ARTIFACT  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
-        private static Icon ICON_CLASSPATH  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
-
+        private static String RESOURCE_ICON_BROKEN_BADGE = "org/netbeans/modules/java/j2seproject/ui/resources/brokenProjectBadge.gif"; //NOI18N
+        
+        
+        private static ImageIcon ICON_JAR = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAR ) );
+        private static ImageIcon ICON_FOLDER = null; 
+        private static ImageIcon ICON_LIBRARY = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_LIBRARY ) );
+        private static ImageIcon ICON_ARTIFACT  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
+        private static ImageIcon ICON_CLASSPATH  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
+        private static ImageIcon ICON_BROKEN_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_BROKEN_BADGE ) );
+        
+        private static ImageIcon ICON_BROKEN_JAR;
+        private static ImageIcon ICON_BROKEN_LIBRARY;
+        private static ImageIcon ICON_BROKEN_ARTIFACT;
                 
+        private PropertyEvaluator evaluator;
+        
         // Contains well known paths in the J2SEProject
         private static final Map WELL_KNOWN_PATHS_NAMES = new HashMap();
         static {
@@ -94,7 +102,12 @@ public class J2SEClassPathUi {
             WELL_KNOWN_PATHS_NAMES.put( J2SEProjectProperties.BUILD_CLASSES_DIR, NbBundle.getMessage( J2SEProjectProperties.class, "LBL_BuildClassesDir_DisplayName" ) );            
             WELL_KNOWN_PATHS_NAMES.put( J2SEProjectProperties.BUILD_TEST_CLASSES_DIR, NbBundle.getMessage (J2SEProjectProperties.class,"LBL_BuildTestClassesDir_DisplayName") );
         };
-                       
+                
+        public ClassPathListCellRenderer( PropertyEvaluator evaluator ) {
+            super();
+            this.evaluator = evaluator;
+        }
+        
         public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             
             ClassPathSupport.Item item = (ClassPathSupport.Item)value;
@@ -107,22 +120,34 @@ public class J2SEClassPathUi {
         }
         
         
-        static String getDisplayName( ClassPathSupport.Item item ) {
+        private String getDisplayName( ClassPathSupport.Item item ) {
             
             switch ( item.getType() ) {
                 
                 case ClassPathSupport.Item.TYPE_LIBRARY:
-                    return item.getLibrary().getDisplayName();
-                    // return NbBundle.getMessage(VisualClassPathItem.class, "LBL_MISSING_LIBRARY", getLibraryName(getRaw()));
+                    if ( item.isBroken() ) {
+                        return NbBundle.getMessage( J2SEClassPathUi.class, "LBL_MISSING_LIBRARY", getLibraryName( item ) );
+                    }
+                    else { 
+                        return item.getLibrary().getDisplayName();
+                    }
                 case ClassPathSupport.Item.TYPE_CLASSPATH:
                     String name = (String)WELL_KNOWN_PATHS_NAMES.get( J2SEProjectProperties.getAntPropertyName( item.getReference() ) );
                     return name == null ? item.getReference() : name;
                 case ClassPathSupport.Item.TYPE_ARTIFACT:
-                    return item.getArtifactURI().toString();
-                    // return NbBundle.getMessage(VisualClassPathItem.class, "LBL_MISSING_PROJECT", getProjectName(getEvaluated()));
+                    if ( item.isBroken() ) {
+                        return NbBundle.getMessage( J2SEClassPathUi.class, "LBL_MISSING_PROJECT", getProjectName( item ) );
+                    }
+                    else {
+                        return item.getArtifactURI().toString();
+                    }
                 case ClassPathSupport.Item.TYPE_JAR:
-                    return item.getFile().getPath();
-                    // return NbBundle.getMessage(VisualClassPathItem.class, "LBL_MISSING_FILE", getFileRefName(getEvaluated()));
+                    if ( item.isBroken() ) {
+                        return NbBundle.getMessage( J2SEClassPathUi.class, "LBL_MISSING_FILE", getFileRefName( item ) );
+                    }
+                    else {
+                        return item.getFile().getPath();
+                    }
             }
             
             return item.getReference(); // XXX            
@@ -133,16 +158,35 @@ public class J2SEClassPathUi {
             switch ( item.getType() ) {
                 
                 case ClassPathSupport.Item.TYPE_LIBRARY:
-                    return ICON_LIBRARY;
-                case ClassPathSupport.Item.TYPE_ARTIFACT:
-                    return ICON_ARTIFACT;
-                case ClassPathSupport.Item.TYPE_JAR:
-                    File file = item.getFile();
-                    if ( file.isDirectory() ) {
-                        return getFolderIcon();
+                    if ( item.isBroken() ) {
+                        if ( ICON_BROKEN_LIBRARY == null ) {
+                            ICON_BROKEN_LIBRARY = new ImageIcon( Utilities.mergeImages( ICON_LIBRARY.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                        }
+                        return ICON_BROKEN_LIBRARY;
                     }
                     else {
-                        return ICON_JAR;
+                        return ICON_LIBRARY;
+                    }
+                case ClassPathSupport.Item.TYPE_ARTIFACT:
+                    if ( item.isBroken() ) {
+                        if ( ICON_BROKEN_ARTIFACT == null ) {
+                            ICON_BROKEN_ARTIFACT = new ImageIcon( Utilities.mergeImages( ICON_ARTIFACT.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                        }
+                        return ICON_BROKEN_ARTIFACT;
+                    }
+                    else {
+                        return ICON_ARTIFACT;
+                    }
+                case ClassPathSupport.Item.TYPE_JAR:
+                    if ( item.isBroken() ) {
+                        if ( ICON_BROKEN_JAR == null ) {
+                            ICON_BROKEN_JAR = new ImageIcon( Utilities.mergeImages( ICON_JAR.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                        }
+                        return ICON_BROKEN_JAR;
+                    }
+                    else {
+                        File file = item.getFile();
+                        return file.isDirectory() ? getFolderIcon() : ICON_JAR;
                     }
                 case ClassPathSupport.Item.TYPE_CLASSPATH:
                     return ICON_CLASSPATH;
@@ -152,11 +196,17 @@ public class J2SEClassPathUi {
             return null; // XXX 
         }
         
-        static String getToolTipText( ClassPathSupport.Item item ) {
+        private String getToolTipText( ClassPathSupport.Item item ) {
+            if ( item.isBroken() && 
+                 ( item.getType() == ClassPathSupport.Item.TYPE_JAR || 
+                   item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT )  ) {
+                return evaluator.evaluate( item.getReference() );
+            }
+            
             return getDisplayName( item ); // XXX
         }
         
-        private static Icon getFolderIcon() {
+        private static ImageIcon getFolderIcon() {
         
             if ( ICON_FOLDER == null ) {
                 FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
@@ -167,6 +217,25 @@ public class J2SEClassPathUi {
             return ICON_FOLDER;   
         }
         
+        private String getProjectName( ClassPathSupport.Item item ) {
+            String ID = item.getReference();
+            // something in the form of "${reference.project-name.id}"
+            return ID.substring(12, ID.indexOf(".", 12)); // NOI18N
+        }
+
+        private String getLibraryName( ClassPathSupport.Item item ) {
+            String ID = item.getReference();
+            // something in the form of "${libs.junit.classpath}"
+            return ID.substring(7, ID.indexOf(".classpath")); // NOI18N
+        }
+
+        private String getFileRefName( ClassPathSupport.Item item ) {
+            String ID = item.getReference();        
+            // something in the form of "${file.reference.smth.jar}"
+            return ID.substring(17, ID.length()-1);
+        }
+
+
         
     }
     
