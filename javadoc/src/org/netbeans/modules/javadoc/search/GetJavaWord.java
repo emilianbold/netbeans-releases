@@ -31,12 +31,6 @@ import javax.swing.text.JTextComponent;
 class GetJavaWord extends Object {
 
     static String getCurrentJavaWord() {
-
-
-        /*
-        if ( TopComponent.getRegistry().getActivated() == null )
-          return null;
-        */
         Node[] n = TopComponent.getRegistry ().getActivatedNodes ();
 
         if (n.length == 1) {
@@ -76,25 +70,3 @@ class GetJavaWord extends Object {
         return null;
     }
 }
-
-
-/*
- * Log
- *  9    Gandalf   1.8         1/15/00  Petr Hrebejk    Wxeption on first char 
- *       fixed
- *  8    Gandalf   1.7         11/10/99 Petr Hrebejk    Ctrl+F1 now works in the
- *       first line of editor too.
- *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  6    Gandalf   1.5         7/30/99  Petr Hrebejk    Search uses 
- *       FileSystemCapabilities
- *  5    Gandalf   1.4         7/26/99  Petr Hrebejk    AutoComment tool 
- *       implemented
- *  4    Gandalf   1.3         7/12/99  Petr Hrebejk    New window system
- *  3    Gandalf   1.2         6/23/99  Petr Hrebejk    Better way to get 
- *       current editor word
- *  2    Gandalf   1.1         6/11/99  Petr Hrebejk    Better support for 
- *       search from editor; Enter for start searching
- *  1    Gandalf   1.0         5/27/99  Petr Hrebejk    
- * $ 
- */ 
