@@ -9,7 +9,7 @@
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
+ *
 package org.netbeans.test.editor.app;
 
 import org.netbeans.test.editor.app.core.*;
@@ -48,7 +48,7 @@ import org.xml.sax.InputSource;
 /** Static class for execution of Editor Test Application.
  * @author ehucka
  * @version 2.0
- */
+ *
 
 public class Main extends java.lang.Object {
     
@@ -180,7 +180,7 @@ public class Main extends java.lang.Object {
      * For automated test execution <CODE>args</CODE> contains name of the test file
      * and name of called Call Action.
      * @param args test file and call action's name
-     */
+     *
     public static void main(String args[]) {
         //backup completion autopopup option state
         backupAndSettings();
@@ -411,3 +411,4 @@ public class Main extends java.lang.Object {
         return frame.quest(text);
     }
 }
+*/
