@@ -239,10 +239,6 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         }
     }
     
-    public void edit() {
-        System.out.println("edit");
-    }
-    
   /* A method to create a new component. Overridden in subclasses.
    * @return the {@link BaseJspEditor} for this support
    */
