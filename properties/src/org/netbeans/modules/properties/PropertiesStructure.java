@@ -158,13 +158,15 @@ public class PropertiesStructure extends Element {
             Element.ItemElem item = getItem(newKey);
             if (item == null) {
                 item = getItem(oldKey);
-                if (item == null)
-                    return false;
-                item.setKey(newKey);
+                if (item == null) return false;
+                items.remove(oldKey);
+                items.put(newKey, item);
+                item.setKey(newKey); // fires itemKeyChanged()
                 return true;
             }
-            else
+            else {
                 return false;
+            }
         }
     }
 
@@ -178,7 +180,8 @@ public class PropertiesStructure extends Element {
                 return false;
             try {
                 item.getBounds().setText(""); // NOI18N
-                //??? what about items.remove(key);
+                items.remove(key);
+                structureChanged();     //??? fired from under lock
                 return true;
             } catch (IOException e) {
                 // PENDING

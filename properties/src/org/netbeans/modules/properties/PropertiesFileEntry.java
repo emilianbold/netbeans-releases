@@ -395,11 +395,7 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
                             
                         // File underlying this entry changed.
                         mySetKeys();
-                    } else if(changeType == PropertyBundleEvent.CHANGE_ITEM 
-                        && evt.getItemName() != null
-                        && evt.getEntryName().equals(getFile().getName()))
-                        
-                        refreshKey(evt.getItemName());
+                    }
                 }
             }; // End of annonymous class.
 

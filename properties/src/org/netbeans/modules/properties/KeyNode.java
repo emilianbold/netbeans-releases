@@ -17,6 +17,7 @@ package org.netbeans.modules.properties;
 
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
@@ -34,6 +35,7 @@ import org.openide.TopManager;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListener;
 
 
 /** 
@@ -41,7 +43,7 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Jiricka
  */
-public class KeyNode extends AbstractNode {
+public class KeyNode extends AbstractNode implements PropertyChangeListener {
 
     /** Structure on top of which this element lives. */
     private PropertiesStructure propStructure;
@@ -86,13 +88,17 @@ public class KeyNode extends AbstractNode {
         setIconBase("org/netbeans/modules/properties/propertiesKey"); // NOI18N
 
         // Sets short description.
-        setShortDescription();
+        updateShortDescription();
 
         // Sets cookies (Open and Edit).
         PropertiesDataObject pdo = ((PropertiesDataObject)propStructure.getParent().getEntry().getDataObject());
 
         getCookieSet().add(pdo.getOpenSupport().new PropertiesOpenAt(propStructure.getParent().getEntry(), itemKey));
         getCookieSet().add(propStructure.getParent().getEntry().getPropertiesEditor().new PropertiesEditAt(itemKey));
+
+        Element.ItemElem item = getItem();
+        PropertyChangeListener pcl = WeakListener.propertyChange(this, item);
+        item.addPropertyChangeListener(pcl);
     }
 
     /** Gets <code>Element.ItemElem</code> represented by this node.
@@ -261,16 +267,25 @@ public class KeyNode extends AbstractNode {
         return super.getCookie(clazz);
     }
 
-    /** Sets short description. Helper method. Calls superclass <code>setShortDescription(String)</code> method. 
+    /** Sets short description. Helper method. Calls superclass <code>updateShortDescription(String)</code> method.
      * @see java.beans.FeatureDescriptor#setShortDecription(String) */
-    private void setShortDescription() {
+    private void updateShortDescription() {
         String description;
         
         Element.ItemElem item = getItem();
 
-        if(item != null)
-            description = UtilConvert.unicodesToChars(item.getKey() + "=" + item.getValue());
-        else {
+        if(item != null) {
+            String comment = item.getComment();
+            if (comment != null) {
+                int displayLenght = Math.min(comment.length(),72);
+                description = UtilConvert.unicodesToChars(comment).substring(0, displayLenght);
+                if (displayLenght < comment.length()) {
+                    description += "...";           //NOI18N
+                }
+            } else {
+                description = UtilConvert.unicodesToChars(item.getKey() + "=" + item.getValue());
+            }
+        } else {
             description = UtilConvert.unicodesToChars(itemKey);
         }
         
@@ -310,5 +325,20 @@ public class KeyNode extends AbstractNode {
     private void setActions(SystemAction[] actions) {
         systemActions = actions;
     }
-    
+
+    /**
+     * This method gets called when a bound property is changed.
+     * @param evt A PropertyChangeEvent object describing the event source
+     *   	and the property that has changed.
+     */
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (Element.ItemElem.PROP_ITEM_COMMENT.equals(evt.getPropertyName())) {
+            updateShortDescription();
+        }
+        else if (Element.ItemElem.PROP_ITEM_VALUE.equals(evt.getPropertyName())) {
+            updateShortDescription();
+        }
+    }
+
 }
