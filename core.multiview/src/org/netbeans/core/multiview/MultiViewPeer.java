@@ -224,10 +224,14 @@ public final class MultiViewPeer  {
                 model.markAsShown(el);
             }
         }
-        if (peer.isOpened()) {
-            el.componentShowing();
-        }
+        
         if (!calledFromComponentOpened) {
+            if (peer.isOpened()) {
+                el.componentShowing();
+            }
+        // should we really set the stuff only when not called from componentOpened()? maybe it's better to call it twice sometimes.
+            // if we don't call it here for opened but not showing component, then the map, lookup and nodes will not be initialized properly.
+            // is it a problem?
             delegatingMap.setDelegateMap(el.getVisualRepresentation().getActionMap());
             ((MultiViewTopComponentLookup)peer.getLookup()).setElementLookup(el.getLookup());
             setActivatedNodesAccordingToElement(true);
