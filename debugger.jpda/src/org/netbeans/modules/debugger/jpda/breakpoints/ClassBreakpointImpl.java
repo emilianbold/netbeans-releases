@@ -61,14 +61,26 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
     }
 
     public boolean exec (Event event) {
-        return event instanceof ClassPrepareEvent ?
-            perform (
-                null,
-                ((ClassPrepareEvent) event).thread (),
-                ((ClassPrepareEvent) event).referenceType (),
-                ((ClassPrepareEvent) event).referenceType ().classObject ()
-            ) :
-            perform (
+        if (event instanceof ClassPrepareEvent)
+            try {
+                return perform (
+                    null,
+                    ((ClassPrepareEvent) event).thread (),
+                    ((ClassPrepareEvent) event).referenceType (),
+                    ((ClassPrepareEvent) event).referenceType ().classObject ()
+                );
+            } catch (UnsupportedOperationException ex) {
+                // PATCH for KVM. They does not support 
+                // ReferenceType.classObject ()
+                return perform (
+                    null,
+                    ((ClassPrepareEvent) event).thread (),
+                    ((ClassPrepareEvent) event).referenceType (),
+                    null
+                );
+            }
+        else
+            return perform (
                 null,
                 null,
                 null,
