@@ -39,4 +39,7 @@ public final class OptionalFactory extends OptionalDeploymentManagerFactory {
         return new StartTomcat (dm);
     }
     
+    public TargetModuleIDResolver getTargetModuleIDResolver(javax.enterprise.deploy.spi.DeploymentManager dm) {
+        return new TMIDResolver (dm);
+    }
 }
