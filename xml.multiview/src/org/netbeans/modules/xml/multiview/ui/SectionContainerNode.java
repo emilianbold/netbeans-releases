@@ -12,6 +12,7 @@
  */
 
 package org.netbeans.modules.xml.multiview.ui;
+import org.openide.nodes.NodeAdapter;
 
 /** Node for section container
  *
@@ -22,7 +23,21 @@ public class SectionContainerNode extends org.openide.nodes.AbstractNode {
     /** Creates a new instance of SectionContainerNode */
     public SectionContainerNode(org.openide.nodes.Children ch) {
         super(ch);
-        setIconBase("org/netbeans/modules/xml/multiview/resources/folder");
+        int childrenSize = ch.getNodes().length;
+        setIconBase(childrenSize==0?"org/netbeans/modules/xml/multiview/resources/folder": //NOI18N
+                                    "org/netbeans/modules/xml/multiview/resources/folderOpen"); //NOI18N
+        addNodeListener(new NodeAdapter() {
+            public void childrenAdded(org.openide.nodes.NodeMemberEvent ev) {
+                if (SectionContainerNode.this.getChildren().getNodes().length==1) {
+                    setIconBase("org/netbeans/modules/xml/multiview/resources/folderOpen"); //NOI18N
+                }
+            }
+            public void childrenRemoved(org.openide.nodes.NodeMemberEvent ev) {
+                if (SectionContainerNode.this.getChildren().getNodes().length==0) {
+                    setIconBase("org/netbeans/modules/xml/multiview/resources/folder"); //NOI18N
+                }
+            }
+        });
     }
     
 }

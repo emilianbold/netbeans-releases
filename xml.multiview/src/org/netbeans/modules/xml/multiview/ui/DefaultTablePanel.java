@@ -121,8 +121,6 @@ public class DefaultTablePanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.BorderLayout());
 
-        setBackground(new java.awt.Color(255, 255, 255));
-        buttonPanel.setBackground(new java.awt.Color(255, 255, 255));
         addButton.setMnemonic(org.openide.util.NbBundle.getMessage(DefaultTablePanel.class, "LBL_Add_mnem").charAt(0));
         addButton.setText(org.openide.util.NbBundle.getBundle(DefaultTablePanel.class).getString("LBL_Add"));
         buttonPanel.add(addButton);
@@ -141,7 +139,7 @@ public class DefaultTablePanel extends javax.swing.JPanel {
 
         jPanel1.setLayout(new java.awt.BorderLayout());
 
-        jTable1.setBorder(new javax.swing.border.MatteBorder(null));
+        jTable1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0)));
         jPanel1.add(jTable1, java.awt.BorderLayout.CENTER);
 
         add(jPanel1, java.awt.BorderLayout.CENTER);
