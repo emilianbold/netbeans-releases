@@ -497,14 +497,14 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                     }
                  }                                    
                 List keys = new ArrayList (categories.values());
-                if (keys.size() == 1) {
-                    PlatformCategoriesDescriptor desc = (PlatformCategoriesDescriptor) keys.get(0);
-                    this.setKeys (desc.getPlatform());
-                }
-                else {
+//                if (keys.size() == 1) {
+//                    PlatformCategoriesDescriptor desc = (PlatformCategoriesDescriptor) keys.get(0);
+//                    this.setKeys (desc.getPlatform());
+//                }
+//                else {
                     Collections.sort (keys);
                     this.setKeys(keys);
-                }
+//                }
             }
         }
         

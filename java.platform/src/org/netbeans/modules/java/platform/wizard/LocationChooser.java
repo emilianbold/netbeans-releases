@@ -20,6 +20,8 @@ import java.io.File;
 import javax.swing.event.*;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileSystemView;
+import javax.swing.filechooser.FileView;
 
 import org.openide.*;
 import org.openide.filesystems.*;
@@ -29,6 +31,7 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.java.platform.InstallerRegistry;
 import org.netbeans.spi.java.platform.PlatformInstall;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -51,6 +54,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
         this.setAccessory (this.accessory);
         this.firer = firer;
         this.regs = InstallerRegistry.getDefault();
+        this.setFileView( new PlatformFileView( this.getFileSystemView(), this.regs));                
         this.addPropertyChangeListener (this);
     }
 
@@ -215,5 +219,99 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
                 ll[i].stateChanged(ev);
         }
 
+    }
+    
+    private static class MergedIcon implements Icon {
+        
+        private Icon icon1;
+        private Icon icon2;
+        private int xMerge;
+        private int yMerge;
+        
+        MergedIcon( Icon icon1, Icon icon2, int xMerge, int yMerge ) {
+            
+            this.icon1 = icon1;
+            this.icon2 = icon2;
+            
+            if ( xMerge == -1 ) {
+                xMerge = icon1.getIconWidth() - icon2.getIconWidth();
+            }
+            
+            if ( yMerge == -1 ) {
+                yMerge = icon1.getIconHeight() - icon2.getIconHeight();
+            }
+            
+            this.xMerge = xMerge;
+            this.yMerge = yMerge;
+        }
+        
+        public int getIconHeight() {
+            return Math.max( icon1.getIconHeight(), yMerge + icon2.getIconHeight() );
+        }
+        
+        public int getIconWidth() {
+            return Math.max( icon1.getIconWidth(), yMerge + icon2.getIconWidth() );
+        }
+        
+        public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
+            icon1.paintIcon( c, g, x, y );
+            icon2.paintIcon( c, g, x + xMerge, y + yMerge );
+        }
+        
+    }
+    
+    private static class PlatformFileView extends FileView {
+        
+        private static final Icon BADGE = new ImageIcon(Utilities.loadImage("org/netbeans/modules/java/platform/resources/platformBadge.gif")); // NOI18N
+        private static final Icon EMPTY = new ImageIcon(Utilities.loadImage("org/netbeans/modules/java/platform/resources/empty.gif")); // NOI18N
+        
+        private FileSystemView fsv;
+        private Icon lastOriginal;
+        private Icon lastMerged;
+        private InstallerRegistry regs;
+        
+        public PlatformFileView( FileSystemView fsv, InstallerRegistry regs ) {
+            this.fsv = fsv;            
+            this.regs = regs;
+        }
+                
+        public Icon getIcon(File _f) {
+            File f = FileUtil.normalizeFile(_f);
+            Icon original = fsv.getSystemIcon(f);
+            if (original == null) {
+                // L&F (e.g. GTK) did not specify any icon.
+                original = EMPTY;
+            }
+            if ( isPlatformDir( f ) ) {
+                if ( original.equals( lastOriginal ) ) {
+                    return lastMerged;
+                }
+                lastOriginal = original;
+                lastMerged = new MergedIcon(original, BADGE, -1, -1);                
+                return lastMerged;
+            }
+            else {
+                return original;
+            }
+        }
+        
+        
+        private boolean isPlatformDir ( File f ) {
+            if (f.isFile ()) {
+                return false;
+            }
+            FileObject fo = FileUtil.toFileObject(f);
+            if (fo == null) {
+                return false;
+            }
+            for (Iterator it = this.regs.getInstallers().iterator(); it.hasNext();) {
+                PlatformInstall install = (PlatformInstall) it.next();                
+                if (install.accept(fo)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+                
     }
 }
