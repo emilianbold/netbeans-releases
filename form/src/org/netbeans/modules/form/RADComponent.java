@@ -624,7 +624,8 @@ public class RADComponent {
     Object defValue = defaultPropertyValues.get (desc.getName ());
     // add the property to the list of changed properties
     RADProperty prop = (RADProperty)nameToProperty.get (desc.getName ());
-    prop.setChanged (true);
+    if (prop != null)
+      prop.setChanged (true);
   }
   
 // -----------------------------------------------------------------------------
@@ -1488,6 +1489,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  80   Gandalf-post-FCS1.76.1.2    4/6/00   Tran Duc Trung  FIX: NPE when importing 
+ *       forms from Developer2.x
  *  79   Gandalf-post-FCS1.76.1.1    4/4/00   Tran Duc Trung  don't print debugging 
  *       output when setting beans property values
  *  78   Gandalf-post-FCS1.76.1.0    3/30/00  Tran Duc Trung  FIX #6100: double-click 
