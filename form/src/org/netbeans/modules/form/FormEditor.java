@@ -172,8 +172,8 @@ final public class FormEditor extends Object {
     return name.toString ();
   }
 
-  public static void defaultComponentInit (RADVisualComponent radComp) {
-    Component comp = radComp.getComponent ();
+  public static void defaultComponentInit (RADComponent radComp) {
+    Object comp = radComp.getComponentInstance ();
     String varName = radComp.getName ();
     String propName = null;
     Object propValue = null;
@@ -608,6 +608,7 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  18   Gandalf   1.17        6/4/99   Ian Formanek    
  *  17   Gandalf   1.16        6/2/99   Ian Formanek    ToolsAction, Reorder
  *  16   Gandalf   1.15        5/31/99  Ian Formanek    Design/Test Mode
  *  15   Gandalf   1.14        5/24/99  Ian Formanek    
