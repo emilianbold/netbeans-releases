@@ -362,7 +362,6 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
     /** A scratch rectangle to save allocating one for every pixel the mouse
      * is dragged */
     private static final Rectangle scratch = new Rectangle();
-    private static int ct = 0;
     /** Encapsulates the painting logic associated with dragging, and provides
      * optimized repainting services.  Will paint the tab indication onto the
      * glass pane directly in real time.  The trigger method is setShapeAndTarget(),
@@ -384,7 +383,7 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
             }
         }
         
-        public void finalize() {
+        protected void finalize() {
             if (g != null) g.dispose();
             if (isHardwareDoubleBuffer) {
                RepaintManager.currentManager(pane).setDoubleBufferingEnabled(false);
