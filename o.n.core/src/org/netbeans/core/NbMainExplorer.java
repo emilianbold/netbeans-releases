@@ -14,9 +14,15 @@
 package org.netbeans.core;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.*;
+import java.beans.PropertyChangeEvent;
 import java.text.MessageFormat;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -26,8 +32,10 @@ import java.util.*;
 import java.util.List;
 
 import javax.swing.*;
+import javax.swing.JMenuItem;
 import javax.swing.event.*;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.core.IDESettings;
 
 import org.openide.*;
 import org.openide.actions.*;
@@ -54,8 +62,13 @@ import org.openide.windows.TopComponent;
 
 import org.netbeans.core.windows.WellKnownModeNames;
 import org.netbeans.core.windows.DeferredPerformer;
+import org.netbeans.core.windows.MiniStatusBar;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.ModeImpl;
+import org.openide.awt.Actions;
+import org.openide.awt.JPopupMenuPlus;
+import org.openide.awt.MouseUtils;
+import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.WindowManager;
 
 /** Main explorer - the class remains here for backward compatibility
@@ -83,7 +96,7 @@ public final class NbMainExplorer extends CloneableTopComponent
 
     /** currently selected node */
     private Node currentRoot;
-
+    
     /** Listener which tracks changes on the root nodes (which are displayed as tabs) */
     private transient RootsListener rootsListener;
     /** weak roots listener */
@@ -504,9 +517,13 @@ public final class NbMainExplorer extends CloneableTopComponent
         static final long serialVersionUID =-8202452314155464024L;
         /** composited view */
         private TreeView view;
+        /** mini status bar */
+        private MiniStatusBar miniStatusBar;
+        //private MouseListener statusBarPopupInvoker;
         /** listeners to the root context and IDE settings */
         private PropertyChangeListener weakRcL, weakIdeL;
         private NodeListener weakNRcL;
+        private IDESettings ideSettings;
 
         private NodeListener rcListener;
         /** validity flag */
@@ -514,15 +531,21 @@ public final class NbMainExplorer extends CloneableTopComponent
 
         public ExplorerTab () {
             super();
-            view = initGui();
             // complete initialization of composited explorer actions
-            IDESettings ideS = (IDESettings)IDESettings.findObject(IDESettings.class, true);
-            setConfirmDelete(ideS.getConfirmDelete());
+            ideSettings = (IDESettings)IDESettings.findObject(IDESettings.class, true);
+            setConfirmDelete(ideSettings.getConfirmDelete ());
+            
+            //initializes gui of this component
+            view = initGui();
+            
             // attach listener to the changes of IDE settings
-            weakIdeL = WeakListener.propertyChange(rcListener(), ideS);
+            weakIdeL = WeakListener.propertyChange(rcListener(), ideSettings);
             
             view.getAccessibleContext().setAccessibleName(NbBundle.getBundle(NbMainExplorer.class).getString("ACSN_ExplorerBeanTree"));
             view.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(NbMainExplorer.class).getString("ACSD_ExplorerBeanTree"));
+
+            // enhancement 9940, add MiniStatusBarListener a status bar's state
+            ideSettings.addPropertyChangeListener (new MiniStatusBarStateListener ());
         }
 
         /** Initializes gui of this component. Subclasses can override
@@ -532,10 +555,53 @@ public final class NbMainExplorer extends CloneableTopComponent
         protected TreeView initGui () {
             TreeView view = new BeanTreeView();
             setLayout(new BorderLayout());
-            add(view);
+            
+            add (view);
+            
+            // add mini status bar at the bottom of this explorer panel
+            add (getMiniStatusBar(), BorderLayout.SOUTH);
+            getMiniStatusBar ().setVisible (false);
+
             return view;
         }
 
+        private void removeMiniStatusBar () {
+            if (miniStatusBar!=null) {
+                getMiniStatusBar ().setExplorerManager (null);
+                getMiniStatusBar ().setVisible (false);
+                revalidate ();
+            }
+        }
+        
+        private MiniStatusBar getMiniStatusBar () {
+            if (miniStatusBar==null) {
+                miniStatusBar = new MiniStatusBar (getExplorerManager ());
+            }
+            return miniStatusBar;
+        }
+        
+        /** Listensm on the changes in IDESettings about the mini status bar.
+         */
+        private class MiniStatusBarStateListener implements PropertyChangeListener {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (IDESettings.PROP_MINI_STATUS_BAR_STATE.equals (evt.getPropertyName ())) {
+                    if (evt.getNewValue ().equals(evt.getOldValue ()))
+                        // no change
+                        return ;
+                    
+                    // mini status bar will be hidden
+                    if (((Boolean)evt.getOldValue ()).booleanValue ()) {
+                        removeMiniStatusBar ();
+                    }
+                    
+                    // mini status bar will be showed
+                    if (((Boolean)evt.getNewValue ()).booleanValue ()) {
+                        getMiniStatusBar ().setExplorerManager (getExplorerManager ());
+                    }
+                }
+            }
+        }
+        
         void focusView() {
             view.requestFocus();
         }
@@ -636,6 +702,9 @@ public final class NbMainExplorer extends CloneableTopComponent
         /** Initialize this top component properly with information
         * obtained from specified root context node */
         private void initializeWithRootContext (Node rc) {
+            // set explorer manager to mini status bar
+            if (miniStatusBar!=null)
+                miniStatusBar.setExplorerManager (getExplorerManager ());
             // update TC's attributes
             setIcon(rc.getIcon(BeanInfo.ICON_COLOR_16x16));
             setToolTipText(rc.getShortDescription());

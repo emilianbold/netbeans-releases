@@ -18,6 +18,7 @@ import java.beans.*;
 import java.util.Hashtable;
 import java.util.ResourceBundle;
 import java.util.Vector;
+import org.netbeans.core.windows.MiniStatusBar;
 
 import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
@@ -40,6 +41,7 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
         try {
     	    ResourceBundle bundleUIMode = NbBundle.getBundle(UIModePropertyEditor.class);
     	    ResourceBundle bundleTabbedContainerUI = NbBundle.getBundle(TabbedContainerUIPropertyEditor.class);
+            ResourceBundle bundleMiniStatusBar = NbBundle.getBundle(MiniStatusBar.class);
 
             PropertyDescriptor[] desc = new PropertyDescriptor[] {
                        new PropertyDescriptor (IDESettings.PROP_SHOW_TIPS_ON_STARTUP, IDESettings.class,
@@ -69,7 +71,9 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
                        new PropertyDescriptor (IDESettings.PROP_TABBEDCONTAINERUI, IDESettings.class, 
                                                "getTabbedContainerUI", "setTabbedContainerUI"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_SHOW_TOOLTIPS_IN_IDE, IDESettings.class,
-                                               "getShowToolTipsInIDE", "setShowToolTipsInIDE") // NOI18N                                               
+                                               "getShowToolTipsInIDE", "setShowToolTipsInIDE"), // NOI18N                                               
+                       new PropertyDescriptor (IDESettings.PROP_MINI_STATUS_BAR_STATE, IDESettings.class,
+                                               "getMiniStatusBarState", "setMiniStatusBarState") // NOI18N                                               
                    };
 
             desc[0].setDisplayName (Main.getString ("PROP_SHOW_TIPS_ON_STARTUP"));
@@ -114,7 +118,11 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
             desc[13].setDisplayName (Main.getString ("PROP_SHOW_TOOLTIPS_IN_IDE"));
             desc[13].setShortDescription (Main.getString ("HINT_SHOW_TOOLTIPS_IN_IDE"));            
 
-	    return desc;
+            desc[14].setDisplayName (bundleMiniStatusBar.getString("PROP_MINI_STATUS_BAR_STATE"));
+            desc[14].setShortDescription (bundleMiniStatusBar.getString("HINT_MINI_STATUS_BAR_STATE"));
+            //desc[14].setHidden (true);
+
+            return desc;
         } catch (IntrospectionException ex) {
 	    ErrorManager.getDefault().notify(ex);
 	    return null;

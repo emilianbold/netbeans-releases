@@ -85,6 +85,8 @@ public class IDESettings extends SystemOption {
     public static final String KEY_PROXY_PORT = "http.proxyPort"; // NOI18N
     /** non proxy hosts VM property key */
     public static final String KEY_NON_PROXY_HOSTS = "http.nonProxyHosts"; // NOI18N
+    /** The state of mini status bar. If true then these bars are showed. */
+    public static final String PROP_MINI_STATUS_BAR_STATE = "mini_status_bar_state"; // NO18N
     
     public static final int MODULES_SORT_UNSORTED = 0;
     public static final int MODULES_SORT_DISPLAYNAME = 1;
@@ -105,6 +107,7 @@ public class IDESettings extends SystemOption {
     private static Hashtable alreadyLoadedBeans = new Hashtable();
 
     private static boolean useProxy = false;
+    private static boolean isMiniStatusBarEnabled = true;
     private static String proxyHost = System.getProperty(KEY_PROXY_HOST, "");
     private static String proxyPort = System.getProperty(KEY_PROXY_PORT, "");
 
@@ -233,6 +236,25 @@ public class IDESettings extends SystemOption {
     */
     public void setHomePage (String homePage) {
         HtmlBrowser.setHomePage (homePage);
+    }
+
+    /** Getter for mini status bar state.
+    */
+    public boolean getMiniStatusBarState () {
+        return isMiniStatusBarEnabled;
+    }
+
+    /** Setter for mini status bar state.
+    */
+    public void setMiniStatusBarState (boolean state) {
+        if (isMiniStatusBarEnabled != state) {
+            boolean oldValue = isMiniStatusBarEnabled;
+            isMiniStatusBarEnabled = state;
+            // notify listeners
+            firePropertyChange (PROP_MINI_STATUS_BAR_STATE,
+                    new Boolean (oldValue),
+                    new Boolean (isMiniStatusBarEnabled));
+        }
     }
 
     /** Getter for proxy set flag.
