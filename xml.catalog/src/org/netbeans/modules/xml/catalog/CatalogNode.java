@@ -57,7 +57,7 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
 
             // listen on it
             
-            desc.addPropertyChangeListener(WeakListener.propertyChange(this, desc));
+            desc.addPropertyChangeListener(WeakListeners.propertyChange(this, desc));
         }
     }
 
