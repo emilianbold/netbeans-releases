@@ -16,15 +16,16 @@ Microsystems, Inc. All Rights Reserved.
 
    <property name="xtest.driver.config" location="driver.properties"/>
    <property file="${xtest.driver.config}"/>
+   
+   <property name="xtest.execute" value="install-ide,checkout,build,execute"/>
 
    <property name="ide.installto" location="../ide" />
    <property name="java.path" location="${java.home}"/>
    
    <property name="xtest.home" location="../../xtest"/>
-   <property name="xtest.extra.home" location="../../../nbextra/xtest"/>
    
    <property name="driver.classpath" location="${xtest.home}/lib/xtest.jar"/>
-   <property name="xerces.classpath" location="${xtest.extra.home}/lib/xerces.jar"/>
+   <property name="xerces.classpath" location="${xtest.home}/lib/xerces.jar"/>
    
    <!-- ============== -->
    <!-- Initialization -->
@@ -79,34 +80,38 @@ Microsystems, Inc. All Rights Reserved.
    <target name="start" depends="init,install-ide">
      <antcall target="checkout-system"/>
      <antcall target="checkout-modules"/>
-     <for list="${xtest.testrepos}" delimiters="," property="xtest.repositorycfg">
+     <for list="${xtest.instance.list}" delimiters="," property="xtest.instancecfg">
        <antcall target="test-one-repository"/>
      </for>
    </target>
 
    <target name="test-one-repository" depends="splitproperty">
-     <echo message="Testing repository ${xtest.repository} with config ${xtest.config}"/>
+     <echo message="Testing xtest instance ${xtest.instance.dir} with config ${xtest.config}"/>
      <antcall target="build"/>
      <antcall target="execute"/>
    </target>
    
    <target name="splitproperty">
-     <split split="${xtest.repositorycfg}" newproperties="xtest.repository,xtest.config"/>
+     <split split="${xtest.instancecfg}" newproperties="xtest.instance.dir,xtest.config"/>
    </target>
    
   <!-- ======== -->
   <!-- Checkout -->
   <!-- ======== -->
    
-   <target name="checkout-system" depends="init,actionlist" if="xtest.execute_actions.checkout">
+   <target name="checkout-system" if="xtest.driver.sysmodules">
+       <antcall target="checkout-system-modules"/>
+   </target>
+   
+   <target name="checkout-system-modules" depends="init,actionlist" if="xtest.execute_actions.checkout">
         <echo message="Checking out system modules: ${xtest.driver.sysmodules}"/>
-   	<checkout modules="${xtest.driver.sysmodules}" repos="${xtest.cvsrepos}" quiet="true"/>
+   	<checkout modules="${xtest.driver.sysmodules}" repos="${xtest.cvs.repositories}" quiet="true"/>
    </target>
    
    <target name="checkout-modules" depends="init,actionlist" if="xtest.execute_actions.checkout">
-      <mconfig repositories="${xtest.testrepos}"/>
+      <mconfig repositories="${xtest.instance.list}"/>
       <echo message="${xtest.driver.modules}"/>     
-      <checkout modules="${xtest.driver.modules}" repos="${xtest.cvsrepos}" quiet="true"/>
+      <checkout modules="${xtest.driver.modules}" repos="${xtest.cvs.repositories}" quiet="true"/>
    </target>
 
   <!-- ======== -->
@@ -115,9 +120,9 @@ Microsystems, Inc. All Rights Reserved.
      
    <target name="build" depends="actionlist" if="xtest.execute_actions.build">
      <property name="xtest.nobuildxtest" value="true"/>
-     <ant dir="${xtest.repository}" target="cleantests"/>
-     <ant dir="${xtest.repository}" target="cleantestdist"/>
-     <ant dir="${xtest.repository}" target="buildtestdist">
+     <ant dir="${xtest.instance.dir}" target="cleantests"/>
+     <ant dir="${xtest.instance.dir}" target="cleantestdist"/>
+     <ant dir="${xtest.instance.dir}" target="buildtestdist">
         <property name="xtest.source.location" value="ide"/>
         <property name="netbeans.home" value="${ide.home}"/>
      </ant>
@@ -129,12 +134,11 @@ Microsystems, Inc. All Rights Reserved.
    
    <target name="execute" depends="actionlist" if="xtest.execute_actions.execute">
      <property name="xtest.nobuildxtest" value="true"/>
-     <ant dir="${xtest.repository}" target="cleanresults"/>
-     <ant dir="${xtest.repository}" target="localresults-clean"/>
-     <ant dir="${xtest.repository}" target="runtestsfromdist">
+     <ant dir="${xtest.instance.dir}" target="cleanresults"/>
+     <ant dir="${xtest.instance.dir}" target="localresults-clean"/>
+     <ant dir="${xtest.instance.dir}" target="runtestsfromdist">
        	<property name="netbeans.home" value="${ide.home}"/>
       	<property name="xtest.mode" value="ide"/>
-      	<property name="xtest.basedir" location="${xtest.repository}/xtest/dist"/>
       	<property name="xtest.noboot" value="true"/>
  	<property name="xtest.source.location" value="ide"/>
      </ant>
