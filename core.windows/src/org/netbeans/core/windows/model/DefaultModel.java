@@ -623,6 +623,16 @@ final class DefaultModel implements Model {
             return Collections.EMPTY_LIST;
         }
     }
+    
+    // XXX
+    public List getModeClosedTopComponentsIDs(ModeImpl mode) {
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            return modeModel.getClosedTopComponentsIDs();
+        } else {
+            return Collections.EMPTY_LIST;
+        }
+    }
     // End of mode specific.
 
     
@@ -796,6 +806,44 @@ final class DefaultModel implements Model {
             return false;
         }
     }
+    
+    // XXX>>
+    public Set getGroupTopComponentsIDs(TopComponentGroupImpl tcGroup) {
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.getTopComponentsIDs();
+        } else {
+            return Collections.EMPTY_SET;
+        }
+    }
+    
+    public Set getGroupOpeningSetIDs(TopComponentGroupImpl tcGroup) {
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.getOpeningSetIDs();
+        } else {
+            return Collections.EMPTY_SET;
+        }
+    }
+    
+    public Set getGroupClosingSetIDs(TopComponentGroupImpl tcGroup) {
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.getClosingSetIDs();
+        } else {
+            return Collections.EMPTY_SET;
+        }
+    }
+    
+    public Set getGroupOpenedTopComponentsIDs(TopComponentGroupImpl tcGroup) {
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.getOpenedTopComponentsIDs();
+        } else {
+            return Collections.EMPTY_SET;
+        }
+    }
+    // XXX<<
     // TopComponentGroup specific <<
     ////////////////////////////////////
     

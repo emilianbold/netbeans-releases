@@ -82,6 +82,8 @@ interface ModeModel {
     public List getTopComponents();
     /** Gets list of top components in mode. */
     public List getOpenedTopComponents();
+    // XXX
+    public List getClosedTopComponentsIDs();
     
     
 }

@@ -235,6 +235,13 @@ final class TopComponentSubModel {
         return s;
     }
     
+    // XXX
+    public List getClosedTopComponentsIDs() {
+        List closedIDs = new ArrayList(tcID2index.keySet());
+        closedIDs.removeAll(getOpenedIDs());
+        return closedIDs;
+    }
+    
     public TopComponent getSelectedTopComponent() {
         return getTopComponent(selectedTopComponentID);
     }

@@ -109,6 +109,24 @@ public class TopComponentGroupImpl implements TopComponentGroup {
         return getCentral().getGroupOpenedTopComponents(this);
     }
     
+    // XXX>>
+    public Set getTopComponentsIDs() {
+        return getCentral().getGroupTopComponentsIDs(this);
+    }
+    
+    public Set getOpeningSetIDs() {
+        return getCentral().getGroupOpeningSetIDs(this);
+    }
+    
+    public Set getClosingSetIDs() {
+        return getCentral().getGroupClosingSetIDs(this);
+    }
+    
+    public Set getGroupOpenedTopComponentsIDs() {
+        return getCentral().getGroupOpenedTopComponentsIDs(this);
+    }
+    // XXX<<
+    
     private Central getCentral() {
         return WindowManagerImpl.getInstance().getCentral();
     }

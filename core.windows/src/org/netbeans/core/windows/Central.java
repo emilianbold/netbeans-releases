@@ -599,6 +599,11 @@ final class Central implements ControllerHandler {
         model.setModeUnloadedSelectedTopComponent(mode, tcID);
     }
     
+    // XXX
+    public List getModeClosedTopComponentsIDs(ModeImpl mode) {
+        return model.getModeClosedTopComponentsIDs(mode);
+    }
+    
     /** Helper validation. */
     private boolean removeTopComponentFromOtherModes(ModeImpl mode, TopComponent tc) {
         boolean tcRemoved = false;
@@ -873,6 +878,24 @@ final class Central implements ControllerHandler {
     public Set getGroupOpenedTopComponents(TopComponentGroupImpl tcGroup) {
         return model.getGroupOpenedTopComponents(tcGroup);
     }
+    
+    // XXX>>
+    public Set getGroupTopComponentsIDs(TopComponentGroupImpl tcGroup) {
+        return model.getGroupTopComponentsIDs(tcGroup);
+    }
+    
+    public Set getGroupOpeningSetIDs(TopComponentGroupImpl tcGroup) {
+        return model.getGroupOpeningSetIDs(tcGroup);
+    }
+    
+    public Set getGroupClosingSetIDs(TopComponentGroupImpl tcGroup) {
+        return model.getGroupClosingSetIDs(tcGroup);
+    }
+    
+    public Set getGroupOpenedTopComponentsIDs(TopComponentGroupImpl tcGroup) {
+        return model.getGroupOpenedTopComponentsIDs(tcGroup);
+    }
+    // XXX<<
     // TopComponentGroup<<
     //////////////////////////////
     

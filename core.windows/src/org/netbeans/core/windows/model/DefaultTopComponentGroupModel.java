@@ -232,5 +232,30 @@ final class DefaultTopComponentGroupModel implements TopComponentGroupModel {
         return WindowManagerImpl.getInstance().findTopComponentID(tc);
     }
 
+    
+    // XXX>>
+    public Set getTopComponentsIDs() {
+        synchronized(LOCK_TOPCOMPONENTS) {
+            return new HashSet(topComponents);
+        }
+    }
+    
+    public Set getOpeningSetIDs() {
+        synchronized(LOCK_TOPCOMPONENTS) {
+            return new HashSet(openingTopComponents);
+        }
+    }
+    public Set getClosingSetIDs() {
+        synchronized(LOCK_TOPCOMPONENTS) {
+            return new HashSet(closingTopComponents);
+        }
+    }
+    public Set getOpenedTopComponentsIDs() {
+        synchronized(LOCK_TOPCOMPONENTS) {
+            return new HashSet(openedTopComponents);
+        }
+    }
+    // XXX<<
+
 }
 

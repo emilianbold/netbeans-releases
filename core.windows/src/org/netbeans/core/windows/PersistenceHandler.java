@@ -440,12 +440,12 @@ final class PersistenceHandler implements PersistenceObserver {
         modeCfg.frameState = mode.getFrameState();
         debugLog("mode frame state=" + modeCfg.frameState); // NOI18N
         
-        TopComponent tc = mode.getSelectedTopComponent();
-        if (tc != null) {
-            if (pm.isTopComponentPersistent(tc)) {
+        TopComponent selectedTC = mode.getSelectedTopComponent();
+        if(selectedTC != null) {
+            if (pm.isTopComponentPersistent(selectedTC)) {
                 try {
-                    String tc_id = pm.getTopComponentPersistentIDAndSave(tc);
-                    debugLog("selected tc=" + tc.getName()); // NOI18N
+                    String tc_id = pm.getTopComponentPersistentIDAndSave(selectedTC);
+                    debugLog("selected tc=" + selectedTC.getName()); // NOI18N
                     if(tc_id != null) {
                         modeCfg.selectedTopComponentID = tc_id;
                     }
@@ -456,8 +456,8 @@ final class PersistenceHandler implements PersistenceObserver {
                 } catch (IOException ioe) {
                     //Not able to get top component id
                     ErrorManager em = ErrorManager.getDefault();
-                    em.annotate(ioe, "No tc_id for TopComponent:[" + tc.getName() + "] " + tc // NOI18N
-                    + " Class:[" + tc.getClass().getName() + "]"); // NOI18N
+                    em.annotate(ioe, "No tc_id for TopComponent:[" + selectedTC.getName() + "] " + selectedTC // NOI18N
+                    + " Class:[" + selectedTC.getClass().getName() + "]"); // NOI18N
                     em.notify(ErrorManager.INFORMATIONAL, ioe);
                 }
             }
@@ -465,16 +465,16 @@ final class PersistenceHandler implements PersistenceObserver {
         modeCfg.permanent = mode.isPermanent();
         debugLog("mode permanent=" + modeCfg.permanent); // NOI18N
         
-        //TopComponents
-        TopComponent [] tcs = mode.getTopComponents();
-        List tcRefCfgList = new ArrayList(tcs.length);
-        TCRefConfig tcRefCfg;
-        for (int j = 0; j < tcs.length; j++) {
-            if (pm.isTopComponentPersistent(tcs[j])) {
+        // TopComponents:
+        List tcRefCfgList = new ArrayList();
+        // Opened TopComponents:
+        for(Iterator it = mode.getOpenedTopComponents().iterator(); it.hasNext(); ) {
+            TopComponent tc = (TopComponent)it.next();
+            if (pm.isTopComponentPersistent(tc)) {
                 String tc_id;
                 try {
-                    tc_id = pm.getTopComponentPersistentIDAndSave(tcs[j]);
-                    debugLog("tc="+tcs[j].getName()); // NOI18N
+                    tc_id = pm.getTopComponentPersistentIDAndSave(tc);
+                    debugLog("tc="+tc.getName()); // NOI18N
                 } catch (NotSerializableException nse) {
                     //Ignore: Some instances of some TopComponents like for example
                     //OutputTabTerm does not want to be serialized even if they declare
@@ -487,78 +487,61 @@ final class PersistenceHandler implements PersistenceObserver {
                     em.notify(ErrorManager.INFORMATIONAL, ioe);
                     continue;
                 }
-                tcRefCfg = new TCRefConfig();
+                TCRefConfig tcRefCfg = new TCRefConfig();
                 tcRefCfg.tc_id = tc_id;
-                tcRefCfg.opened = tcs[j].isOpened();
-                //XXX previous mode where to get????
+                tcRefCfg.opened = true;
                 tcRefCfgList.add(tcRefCfg);
             }
         }
+        // Closed TopComponents:
+        for(Iterator it = mode.getClosedTopComponentsIDs().iterator(); it.hasNext(); ) {
+            String tcID = (String)it.next();
+                TCRefConfig tcRefCfg = new TCRefConfig();
+                tcRefCfg.tc_id = tcID;
+                tcRefCfg.opened = false;
+                tcRefCfgList.add(tcRefCfg);
+        }
+        
         modeCfg.tcRefConfigs = (TCRefConfig []) tcRefCfgList.toArray(new TCRefConfig[tcRefCfgList.size()]);
         return modeCfg;
     }
     
     private GroupConfig getConfigFromGroup(TopComponentGroupImpl tcGroup) {
-        PersistenceManager pm = PersistenceManager.getDefault();
         GroupConfig groupCfg = new GroupConfig();
         groupCfg.name = tcGroup.getName();
         groupCfg.opened = tcGroup.isOpened();
         debugLog(""); // NOI18N
         debugLog("group name=" + groupCfg.name); // NOI18N
-        Set openSet = tcGroup.getOpeningSet();
-        Set closeSet = tcGroup.getClosingSet();
-        Set wasOpenedSet = tcGroup.getGroupOpenedTopComponents();
+        Set openSet = tcGroup.getOpeningSetIDs();
+        Set closeSet = tcGroup.getClosingSetIDs();
+        Set wasOpenedSet = tcGroup.getGroupOpenedTopComponentsIDs();
         
         Map tcGroupCfgMap = new HashMap();
         
-        for (Iterator it = tcGroup.getTopComponents().iterator(); it.hasNext(); ) {
-            TopComponent tc = (TopComponent) it.next();
-            String tc_id;
+        for (Iterator it = tcGroup.getTopComponentsIDs().iterator(); it.hasNext(); ) {
+            String tcID = (String)it.next();
+            
             TCGroupConfig tcGroupCfg;
-            if (pm.isTopComponentPersistent(tc)) {
-                try {
-                    tc_id = pm.getTopComponentPersistentIDAndSave(tc);
-                } catch (NotSerializableException nse) {
-                    //Ignore: Some instances of some TopComponents like for example
-                    //OutputTabTerm does not want to be serialized even if they declare
-                    //they are serializable so isTopComponentPersistent() return true.
-                    continue;
-                } catch (IOException ioe) {
-                    //Not able to get top component id
-                    ErrorManager em = ErrorManager.getDefault();
-                    em.annotate(ioe, "No tc_id for TopComponent [" + tc.getName() + "] " + tc); // NOI18N
-                    em.notify(ErrorManager.INFORMATIONAL, ioe);
-                    continue;
-                }
-                if (tcGroupCfgMap.containsKey(tc_id)) {
-                    tcGroupCfg = (TCGroupConfig) tcGroupCfgMap.get(tc_id);
-                } else {
-                    tcGroupCfg = new TCGroupConfig();
-                    tcGroupCfg.tc_id = tc_id;
-                    tcGroupCfgMap.put(tc_id, tcGroupCfg);
-                }
-                tcGroupCfg.open  = openSet.contains(tc);
-                tcGroupCfg.close = closeSet.contains(tc);
-                if(groupCfg.opened) {
-                    tcGroupCfg.wasOpened = wasOpenedSet.contains(tc);
-                }
-                debugLog("tc id=" + tcGroupCfg.tc_id // NOI18N
+            if (tcGroupCfgMap.containsKey(tcID)) {
+                tcGroupCfg = (TCGroupConfig) tcGroupCfgMap.get(tcID);
+            } else {
+                tcGroupCfg = new TCGroupConfig();
+                tcGroupCfg.tc_id = tcID;
+                tcGroupCfgMap.put(tcID, tcGroupCfg);
+            }
+
+            tcGroupCfg.open  = openSet.contains(tcID);
+            tcGroupCfg.close = closeSet.contains(tcID);
+            if(groupCfg.opened) {
+                tcGroupCfg.wasOpened = wasOpenedSet.contains(tcID);
+            }
+            debugLog("tc id=" + tcGroupCfg.tc_id // NOI18N
                 + ", open=" + tcGroupCfg.open // NOI18N
                 + ", close=" + tcGroupCfg.close // NOI18N
                 + ", wasOpened=" + tcGroupCfg.wasOpened); // NOI18N
-            } else {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                new IllegalStateException("TopComponent of class=" + tc.getClass() + ", name=" + tc.getName() // NOI18N
-                + " is not persistent. Can't be saved as a member of group name=" + groupCfg.name)); // NOI18N
-            }
         }
         
-        int j = 0;
-        TCGroupConfig [] tcGroupCfgArray = new TCGroupConfig[tcGroupCfgMap.size()];
-        for (Iterator it4 = tcGroupCfgMap.keySet().iterator(); it4.hasNext(); j++) {
-            tcGroupCfgArray[j] = (TCGroupConfig) tcGroupCfgMap.get(it4.next());
-        }
-        groupCfg.tcGroupConfigs = tcGroupCfgArray;
+        groupCfg.tcGroupConfigs = (TCGroupConfig[])tcGroupCfgMap.values().toArray(new TCGroupConfig[0]);
         return groupCfg;
     }
     

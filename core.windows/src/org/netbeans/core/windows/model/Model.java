@@ -186,6 +186,8 @@ public interface Model {
     public List getModeTopComponents(ModeImpl mode);
     /** Gets list of top components in this workspace. */
     public List getModeOpenedTopComponents(ModeImpl mode);
+    // XXX
+    public List getModeClosedTopComponentsIDs(ModeImpl mode);
     // Accessors (mode level) <<
     ////////////////////////////
     // Mode level <<
@@ -224,6 +226,13 @@ public interface Model {
     
     // XXX
     public boolean addGroupUnloadedOpenedTopComponent(TopComponentGroupImpl tcGroup, String tcID);
+    
+    // XXX>>
+    public Set getGroupTopComponentsIDs(TopComponentGroupImpl tcGroup);
+    public Set getGroupOpeningSetIDs(TopComponentGroupImpl tcGroup);
+    public Set getGroupClosingSetIDs(TopComponentGroupImpl tcGroup);
+    public Set getGroupOpenedTopComponentsIDs(TopComponentGroupImpl tcGroup);
+    // XXX<<
     // TopComponentGroup level <<
     ///////////////////////////
 

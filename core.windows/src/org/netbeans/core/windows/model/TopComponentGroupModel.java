@@ -53,4 +53,11 @@ interface TopComponentGroupModel {
     
     // XXX
     public boolean addUnloadedOpenedTopComponent(String tcID);
+    
+    // XXX>>
+    public Set getTopComponentsIDs();
+    public Set getOpeningSetIDs();
+    public Set getClosingSetIDs();
+    public Set getOpenedTopComponentsIDs();
+    // XXX<<
 }
