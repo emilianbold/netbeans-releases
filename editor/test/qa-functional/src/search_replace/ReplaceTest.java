@@ -376,7 +376,7 @@ public class ReplaceTest extends EditorTestCase {
                     public String getDescription() {
                         return("any replace dialog");  //NOI18N
                     }
-                })tre;
+                });
             }
             public String getDescription() {
                 return "containing any replace dialog";  //NOI18N
