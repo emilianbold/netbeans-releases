@@ -110,7 +110,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="release" if="have-catalina" depends="compile-catalina-check">
     <copy file="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" tofile="${nb_root}/tomcatint/tomcat40/netbeans/tomcat404/lib/schema2beans.jar"/>
     <copy file="netbeans/modules/ext/httpmonitor.jar"                      tofile="${nb_root}/tomcatint/tomcat40/netbeans/tomcat404/lib/httpmonitor.jar"/>
-    <copy file="netbeans/modules/ext/monitor-valve.jar"                    tofile="${nb_root}/tomcatint/tomcat40/netbeans/tomcat404/server/lib/monior-valve.jar"/>
+    <copy file="netbeans/modules/ext/monitor-valve.jar"                    tofile="${nb_root}/tomcatint/tomcat40/netbeans/tomcat404/server/lib/monitor-valve.jar"/>
   </target>
 
 
