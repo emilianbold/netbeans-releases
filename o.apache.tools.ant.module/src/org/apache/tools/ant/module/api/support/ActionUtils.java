@@ -191,7 +191,8 @@ public final class ActionUtils {
      * Create an "includes" string such as is accepted by many Ant commands
      * as well as filesets.
      * <samp>/</samp> is always used as the separator in the relative paths.
-     * @param files a list of files to include
+     * @param files a list of files or folders to include, in the case of folder
+     * the generated include contains recursively all files under the folder.
      * @param dir a directory in which all the files reside
      * @return a comma-separated list of relative file paths suitable for use by Ant
      *         (the empty string in case there are no files)
@@ -212,7 +213,10 @@ public final class ActionUtils {
             }
             b.append(path);
             if (files[i].isFolder()) {
-                b.append(File.separatorChar);
+                if (!files[i].equals (dir)) {
+                    b.append('/');
+                }
+                b.append ("**/*");
             }
         }
         return b.toString();

@@ -161,7 +161,7 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertEquals("There must be one target for COMMAND_COMPILE_SINGLE", 1, targets.length);
         assertEquals("Unexpected target name", "compile-single", targets[0]);
         assertEquals("There must be one target parameter", 1, p.keySet().size());
-        assertEquals("There must be be target parameter", "foo/", p.getProperty("javac.includes"));
+        assertEquals("There must be be target parameter", "foo/**/*", p.getProperty("javac.includes"));
         p = new Properties();
         context = Lookups.fixed(new DataObject[] {sourcePkg1, sourcePkg2});
         targets = actionProvider.getTargetNames(ActionProvider.COMMAND_COMPILE_SINGLE, context, p);
@@ -169,7 +169,7 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertEquals("There must be one target for COMMAND_COMPILE_SINGLE", 1, targets.length);
         assertEquals("Unexpected target name", "compile-single", targets[0]);
         assertEquals("There must be one target parameter", 1, p.keySet().size());
-        assertEquals("There must be be target parameter", "foo/,foo2/", p.getProperty("javac.includes"));
+        assertEquals("There must be be target parameter", "foo/**/*,foo2/**/*", p.getProperty("javac.includes"));
         
         // test COMMAND_TEST_SINGLE
         
