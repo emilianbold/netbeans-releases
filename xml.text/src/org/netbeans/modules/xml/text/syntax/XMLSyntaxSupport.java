@@ -97,7 +97,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport {
     }
     
     /** Returns SyntaxElement instance for block of tokens, which is either
-     * surrounding given offset, or is just after the offset.
+     * surrounding given offset, or is just before the offset.
      * @param offset offset in document where to search for SyntaxElement
      * @return SyntaxElement surrounding or laying BEFORE the offset
      * or <CODE>null</CODE> if there is no element there (start of document)
