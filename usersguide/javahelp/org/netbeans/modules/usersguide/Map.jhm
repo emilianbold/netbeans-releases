@@ -121,10 +121,8 @@
 <mapID target="run_quickref" url="run/run_quickref.html" />
 <mapID target="run_jvm_args" url="run/run_jvm_args.html" />
 
-<mapID target="editing.intro" url="editing/intro.html" />
-<mapID target="editing.editorwindow" url="editing/editorwindow.html" />
+<mapID target="editing.about" url="editing/editing_about.html" />
 <mapID target="editing.opening" url="editing/opening.html" />
-<mapID target="editing.newcode" url="editing/newcode.html" />
 <mapID target="editing.find" url="editing/find.html" />
 <mapID target="editing.formatting" url="editing/formatting.html" />
 <mapID target="editing.tabs" url="editing/tabs.html" />
@@ -159,6 +157,9 @@
 
 <mapID target="editing.fontsandcolors" url="editing/configuring/fontsandcolors.html" />
 <mapID target="editing.keybindings" url="editing/configuring/keybindings.html" />
+
+<!--CSH-->
+<mapID target="editing.configuring.annotations" url="editing/configuring/annotations.html" />
 
 
 <mapID target="refactor.aboutRefactoring" url="refactor/aboutRefactoring.html" />
