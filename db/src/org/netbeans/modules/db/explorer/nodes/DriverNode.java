@@ -58,9 +58,6 @@ public class DriverNode extends LeafNode implements PropertyChangeListener {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    //wait a while, hopefully it should ensure that Lookup returns expected results
-                    //it seems it sometimes helps as a workaround for issue #40290
-                    Thread.sleep(200);
                     parent.refreshChildren();
                 } catch (Exception exc) {
                     org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, exc);

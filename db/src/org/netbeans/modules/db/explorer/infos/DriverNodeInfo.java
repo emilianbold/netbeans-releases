@@ -18,7 +18,11 @@ import java.io.IOException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
+import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.driver.JDBCDriver;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
@@ -27,7 +31,26 @@ import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
 public class DriverNodeInfo extends DatabaseNodeInfo {
         
     static final long serialVersionUID =6994829681095273161L;
+
+    private Lookup.Result driversResult = Lookup.getDefault().lookup(new Lookup.Template(JDBCDriver.class));
+    private LookupListener lookupListener = new LookupListener() {
+        public void resultChanged(LookupEvent ev) {
+            try {
+                getParent().refreshChildren();
+            } catch (DatabaseException exc) {
+                //PENDING
+            }
+        }
+    };
     
+    static int counter = 0;
+    public DriverNodeInfo() {
+        if (counter == 0) {
+            driversResult.addLookupListener(lookupListener);
+            counter ++;
+        }
+    }    
+
     public DatabaseDriver getDatabaseDriver() {
         return (DatabaseDriver)get(DatabaseNodeInfo.DBDRIVER);
     }
@@ -52,6 +75,10 @@ public class DriverNodeInfo extends DatabaseNodeInfo {
             try {
                 drv = (JDBCDriver) conv.instanceCreate();
                 if (drv.getName().equals(name)) {
+                    
+                    JDBCDriver dr = JDBCDriverManager.getDefault().getDriver(drv.getClassName())[0];
+                    JDBCDriverManager.getDefault().removeDriver(dr);
+                    
                     DataObject d = DataObject.find(drivers[i]);
                     d.delete();
                 }
