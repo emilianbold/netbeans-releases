@@ -166,10 +166,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return new ServerExecSupport(getPrimaryEntry());
     }
     
-    private boolean shouldParse() {
-        return Boolean.valueOf(System.getProperty("netbeans.jspcompile.shouldparse", "true")).booleanValue();
-    }
-
     public synchronized CompileData getPlugin() {
         if (compileData == null) {
             if ( firstStart ) {
