@@ -101,7 +101,7 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/SimpleFilter.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createFilterIterator"/>
-        <attr name="templateCategory" stringvalue="web-types"/>
+        <attr name="templateCategory" stringvalue="servlet-types"/>
       </file>      
       <file name="AdvancedFilter.java" url="templates/AdvancedFilter.template"/>
       <!-- Tag Handlers --> 
