@@ -22,6 +22,7 @@ import javax.swing.Action;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
+import org.openide.filesystems.FileSystem.HtmlStatus;
 import org.openide.util.datatransfer.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
@@ -174,6 +175,38 @@ public class DataNode extends AbstractNode {
 
         return s;
     }
+
+     
+     /** Get a display name formatted using the limited HTML subset supported
+      * by <code>HtmlRenderer</code>.  If the underlying 
+      * <code>FileSystem.Status</code> is an instance of HmlStatus,
+      * this method will return non-null if status information is added.
+      *
+      * @return a string containing compliant HTML markup or null
+      * @see org.openide.awt.HtmlRenderer
+      * @see org.openide.nodes.Node#getHtmlDisplayName
+      * @since 4.13 
+      */
+     public String getHtmlDisplayName() {
+         try {
+             FileSystem.Status stat = 
+                 obj.getPrimaryFile().getFileSystem().getStatus();
+             if (stat instanceof HtmlStatus) {
+                 HtmlStatus hstat = (HtmlStatus) stat;
+                 
+                 String result = hstat.annotateNameHtml (
+                     super.getDisplayName(), new LazyFilesSet());
+                 
+                 //Make sure the super string was really modified
+                 if (!super.getDisplayName().equals(result)) {
+                     return result;
+                 }
+             }
+         } catch (FileStateInvalidException e) {
+             //do nothing and fall through
+         }
+         return super.getHtmlDisplayName();
+     }    
 
     /** Get the displayed icon for this node.
      * A filesystem may {@link org.openide.filesystems.FileSystem#getStatus specially alter} this.

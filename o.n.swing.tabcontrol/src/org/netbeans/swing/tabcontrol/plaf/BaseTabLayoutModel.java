@@ -20,6 +20,7 @@
 package org.netbeans.swing.tabcontrol.plaf;
 
 import org.netbeans.swing.tabcontrol.TabDataModel;
+import org.openide.awt.HtmlRenderer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -105,10 +106,10 @@ class BaseTabLayoutModel implements TabLayoutModel {
         //dump it if the font changes.
         Integer result = (Integer) widthMap.get(text);
         if (result == null) {
-            double wid = Html.renderString(text, TabListPopup.getOffscreenGraphics(), 0, 0,
+            double wid = HtmlRenderer.renderString(text, TabListPopup.getOffscreenGraphics(), 0, 0,
                                            Integer.MAX_VALUE,
                                            Integer.MAX_VALUE, getFont(),
-                                           Color.BLACK, Html.STYLE_TRUNCATE,
+                                           Color.BLACK, HtmlRenderer.STYLE_TRUNCATE,
                                            false);
             result = new Integer(Math.round(Math.round(wid)));
             widthMap.put(text, result);

@@ -106,7 +106,10 @@ public final class SettingChildren extends FilterNode.Children {
         }        
         public SystemAction[] getActions() {            
             return removeActions(super.getActions(), new SystemAction[] {SystemAction.get(ToolsAction.class)});
-        }        
+        } 
+        public String getHtmlDisplayName() {
+            return null;
+        }
     }
 
     /** Property allowing display/manipulation of setting status for one specific layer. */

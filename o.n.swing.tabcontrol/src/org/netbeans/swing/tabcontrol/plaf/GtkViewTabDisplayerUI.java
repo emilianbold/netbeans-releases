@@ -14,6 +14,7 @@
 package org.netbeans.swing.tabcontrol.plaf;
 
 import org.netbeans.swing.tabcontrol.TabDisplayer;
+import org.openide.awt.HtmlRenderer;
 
 import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
@@ -166,9 +167,9 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             textY = (height / 2) - (textHeight / 2) + fm.getAscent() - 1;
         }
 
-        Html.renderString(text, g, textX, textY, textW, height, getTxtFont(),
+        HtmlRenderer.renderString(text, g, textX, textY, textW, height, getTxtFont(),
                           chiclet.getTextForeground(), //XXX
-                          Html.STYLE_TRUNCATE, true);
+                          HtmlRenderer.STYLE_TRUNCATE, true);
     }
     
     //private static final JButton jb = new JButton();

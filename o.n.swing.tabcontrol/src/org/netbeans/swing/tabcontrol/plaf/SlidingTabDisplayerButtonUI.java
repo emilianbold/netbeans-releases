@@ -20,6 +20,8 @@ package org.netbeans.swing.tabcontrol.plaf;
 
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 
+import org.openide.awt.HtmlRenderer;
+
 import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicToggleButtonUI;
@@ -163,8 +165,8 @@ public class SlidingTabDisplayerButtonUI extends BasicToggleButtonUI {
             txtW -= iconH + b.getIconTextGap();
         }
         
-        Html.renderString(b.getText(), g, txtX, txtY, txtW, txtH, b.getFont(),
-              b.getForeground(), Html.STYLE_TRUNCATE, true);
+        HtmlRenderer.renderString(b.getText(), g, txtX, txtY, txtW, txtH, b.getFont(),
+              b.getForeground(), HtmlRenderer.STYLE_TRUNCATE, true);
     }
 
     private static SlidingTabDisplayerButtonUI AQUA_INSTANCE = null;

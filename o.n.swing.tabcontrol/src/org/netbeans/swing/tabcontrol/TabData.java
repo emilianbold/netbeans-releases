@@ -117,7 +117,7 @@ public final class TabData implements Comparable {
      * @return
      */
     public String toString() {
-        return "[" + txt + "]";
+        return txt;
     }
 
     /**

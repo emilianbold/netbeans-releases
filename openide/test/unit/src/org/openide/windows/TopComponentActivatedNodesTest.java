@@ -62,6 +62,10 @@ public class TopComponentActivatedNodesTest extends NbTestCase {
         return suite;
     }
     
+    protected boolean runInEQ() {
+        return true;
+    }    
+    
     private ExplorerPanel p;
     private ExplorerManager em;
     private Node[] nodes;

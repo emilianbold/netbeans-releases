@@ -718,15 +718,40 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         central.setProjectName(projectName);
     }
 
+    private static final boolean NAME_HACK = Boolean.getBoolean("nb.tabnames.html"); //NOI18N
     
     /** Helper method to retrieve the display name of TopComponent. */
     public String getTopComponentDisplayName(TopComponent tc) {
         if(tc == null) {
             return null;
         }
-        
         String displayName = tc.getDisplayName();
-        return displayName == null ? tc.getName() : displayName;
+        if (displayName == null) {
+            displayName = tc.getName();
+        }
+        if (NAME_HACK) {
+            //THIS IS FOR DEMO PURPOSES ONLY!  A PROPER API IS NEEDED
+            //(TopComponent.getHtmlDisplayName()), OR
+            //HTML SHOULD BE PRE-SUPPLIED
+            if (displayName.endsWith("*")) { 
+                
+                displayName = "<html><b>" + 
+                    displayName.substring(0, displayName.length()-2);
+                
+            } else {
+                
+                int i = displayName.indexOf ("[read only]"); 
+                if (i > 0) {
+                    String nuName = "<html><font color='#555555'><i>" +
+                        displayName.substring (0, i-1);
+                    if (i + 11 < nuName.length()) {
+                        nuName += displayName.substring(i+11);
+                    }
+                    displayName = nuName;
+                }
+            }
+        }
+        return displayName;
     }
     
     // PENDING for ModeImpl only.

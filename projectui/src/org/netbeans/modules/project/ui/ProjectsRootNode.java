@@ -212,6 +212,10 @@ public class ProjectsRootNode extends AbstractNode {
             return isMain() ? MessageFormat.format( badgedNamePattern, new Object[] { original } ) : original;
         }
 
+        public String getHtmlDisplayName() {
+            return isMain() ? "<b>" + super.getDisplayName() + "</b>" : null; //NOI18N
+        }
+
         public Image getIcon( int type ) {
             Image original = super.getIcon( type );                
             return isMain() ? Utilities.mergeImages( original, mainProjectBadge, 5, 10 ) : original;

@@ -21,6 +21,8 @@ package org.netbeans.swing.tabcontrol.plaf;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 
+import org.openide.awt.HtmlRenderer;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
@@ -430,8 +432,8 @@ public abstract class AbstractTabCellRenderer extends JLabel
         if (isClipLeft()) {
             //fiddle with the string to get "...blah"
             String s = preTruncateString(getText(), g, txtW - 4); //subtract 4 so it's not flush w/ tab edge
-            Html.renderString(s, g, txtX, txtY, txtW, txtH, getFont(),
-                              getForeground(), Html.STYLE_CLIP, true);
+            HtmlRenderer.renderString(s, g, txtX, txtY, txtW, txtH, getFont(),
+                              getForeground(), HtmlRenderer.STYLE_CLIP, true);
         } else {
             String s;
             if (isClipRight()) {
@@ -441,8 +443,8 @@ public abstract class AbstractTabCellRenderer extends JLabel
             } else {
                 s = getText();
             }
-            Html.renderString(s, g, txtX, txtY, txtW, txtH, getFont(),
-                              getForeground(), Html.STYLE_TRUNCATE, true);
+            HtmlRenderer.renderString(s, g, txtX, txtY, txtW, txtH, getFont(),
+                              getForeground(), HtmlRenderer.STYLE_TRUNCATE, true);
         }
     }
 

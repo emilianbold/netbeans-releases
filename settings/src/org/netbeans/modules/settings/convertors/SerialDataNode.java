@@ -159,6 +159,10 @@ public final class SerialDataNode extends DataNode {
         return getIcon (type);
     }
     
+    public String getHtmlDisplayName() {
+        return null;
+    }
+    
     /** here should be decided if some change was fired by the setting object
      * or the node should notify convertor about the change. This is just
      * workaround ensuring backward compatibility for archaic settings from

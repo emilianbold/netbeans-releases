@@ -137,6 +137,10 @@ public final class UINodes extends Object {
         public Image getOpenedIcon (int type) {
             return getIcon(type);
         }
+        
+        public String getHtmlDisplayName() {
+            return null;
+        }
 
         public SystemAction[] getActions () {
             if (staticActions == null) {
