@@ -237,18 +237,18 @@ public class DDParser implements Iterator {
 	    return null;
 	}
 	
-	int seekNext() {
-	    //	Seek doesn't move the pos - next() does
-	    if (this.baseProp.isBean()) {
-		while(this.values.length>this.pos
-		&& this.values[this.pos] == null) {
-		    this.pos++;
-		}
-	    }
-	    if (this.values.length == this.pos)
-		return -1;
-	    return this.pos;
-	}
+        int seekNext() {
+            //	Seek doesn't move the pos - next() does
+            if (this.baseProp.isBean()) {
+                while(this.values.length>this.pos
+                      && this.values[this.pos] == null) {
+                    this.pos++;
+                }
+            }
+            if (this.values.length == this.pos)
+                return -1;
+            return this.pos;
+        }
 	
 	static final char WILD_CHAR = '*';
 	private boolean checkValueMatch(Object o1, Object o2) {
@@ -269,133 +269,136 @@ public class DDParser implements Iterator {
 	    }
 	}
 	
-	//  BaseBean is the parent - get our values from it
-	void setValues(BaseBean b) {
-	    this.curParent = b;
-	    if (baseProp.isIndexed()) {
-		this.values = b.getValues(this.name);
-	    } else {
-		this.values = new Object[1];
-		this.values[0] = b.getValue(this.name);
-	    }
+        //  BaseBean is the parent - get our values from it
+        void setValues(BaseBean b) {
+            this.curParent = b;
+            if (baseProp.isIndexed()) {
+                this.values = b.getValues(this.name);
+            } else {
+                this.values = new Object[1];
+                this.values[0] = b.getValue(this.name);
+            }
 	    
-	    //  If any keyName/keyValue is used, apply it to the values
-	    if (this.baseProp.isBean()) {
-		if (this.keyName != null && this.keyValue != null) {
+            //  If any keyName/keyValue is used, apply it to the values
+            if (this.baseProp.isBean()) {
+                if (this.keyName != null && this.keyValue != null) {
 		    
-		    ArrayList arr = new ArrayList();
-		    Object o1 =	Common.getComparableObject(this.keyValue);
-		    for (int i=0; i<this.values.length; i++) {
-			BaseBean bb = (BaseBean)(this.values[i]);
-			if (bb != null) {
-			    Object o2 = Common.
-			    getComparableObject(bb.getValue(this.keyName));
+                    ArrayList arr = new ArrayList();
+                    Object o1 =	Common.getComparableObject(this.keyValue);
+                    for (int i=0; i<this.values.length; i++) {
+                        BaseBean bb = (BaseBean)(this.values[i]);
+                        if (bb != null) {
+                            Object o2 = Common.
+                                getComparableObject(bb.getValue(this.keyName));
 			    
-			    if (this.checkValueMatch(o1, o2)) {
-				arr.add(values[i]);
-			    }
-			}
-		    }
-		    this.values = arr.toArray();
-		}
-	    } else {
-		if (this.keyValue != null) {
-		    ArrayList arr = new ArrayList();
-		    Object o1 =	Common.getComparableObject(this.keyValue);
-		    for (int i=0; i<this.values.length; i++) {
-			if (this.values[i] != null) {
-			    Object o2 =
-			    Common.getComparableObject(this.values[i]);
+                            if (this.checkValueMatch(o1, o2)) {
+                                arr.add(values[i]);
+                            }
+                        }
+                    }
+                    this.values = arr.toArray();
+                }
+            } else {
+                if (this.keyValue != null) {
+                    ArrayList arr = new ArrayList();
+                    Object o1 =	Common.getComparableObject(this.keyValue);
+                    for (int i=0; i<this.values.length; i++) {
+                        if (this.values[i] != null) {
+                            Object o2 =
+                                Common.getComparableObject(this.values[i]);
 			    
-			    if (this.checkValueMatch(o1, o2)) {
-				arr.add(values[i]);
-			    }
-			}
-		    }
-		    this.values = arr.toArray();
-		}
-	    }
+                            if (this.checkValueMatch(o1, o2)) {
+                                arr.add(values[i]);
+                            }
+                        }
+                    }
+                    this.values = arr.toArray();
+                }
+            }
 	    
-	    //	Find out if there is something left
-	    boolean empty = true;
-	    for (int i=0; i<this.values.length; i++)
-		if (this.values[i] != null) {
-		    empty = false;
-		    break;
-		}
+            //	Find out if there is something left
+            boolean empty = true;
+            for (int i=0; i<this.values.length; i++)
+                if (this.values[i] != null) {
+                    empty = false;
+                    break;
+                }
 	    
-	    if (empty && this.autoCreate) {
-		if (this.baseProp.isBean()) {
-		    BaseBean bb = b.newInstance(this.name);
-		    if (this.keyName != null)
-			bb.setValue(this.keyName, this.keyValue);
-		    if (this.baseProp.isIndexed())
-			b.addValue(this.name, bb);
-		    else
-			b.setValue(this.name, bb);
+            if (empty) {
+                if (this.autoCreate) {
+                    if (this.baseProp.isBean()) {
+                        BaseBean bb = b.newInstance(this.name);
+                        if (this.keyName != null)
+                            bb.setValue(this.keyName, this.keyValue);
+                        if (this.baseProp.isIndexed())
+                            b.addValue(this.name, bb);
+                        else
+                            b.setValue(this.name, bb);
 		    
-		    this.values = new Object[] {bb};
-		} else
-		    if (this.keyValue != null) {
-			this.values = new Object[] {this.keyValue};
-			if (this.baseProp.isIndexed()) {
-			    b.setValue(this.name, this.values);
-			} else {
-			    b.setValue(this.name, this.keyValue);
-			}
-		    }
-	    }
+                        this.values = new Object[] {bb};
+                    } else
+                        if (this.keyValue != null) {
+                            this.values = new Object[] {this.keyValue};
+                            if (this.baseProp.isIndexed()) {
+                                b.setValue(this.name, this.values);
+                            } else {
+                                b.setValue(this.name, this.keyValue);
+                            }
+                        }
+                } else {
+                    values = new Object[0];
+                }
+            }
 	    
-	    
-	    this.pos = 0;
-	}
+            this.pos = 0;
+        }
 	
-	//  We already returned everything we have - try to get new ones
-	boolean updateValues() {
-	    if (this.parent != null) {
-		BaseBean b = null;
-		do {
-		    b = (BaseBean)this.parent.next();
-		    if (b != null) {
-			this.setValues(b);
-			return true;
-		    }
-		} while(b == null);
-	    }
-	    return false;
-	}
+        //  We already returned everything we have - try to get new ones
+        boolean updateValues() {
+            if (this.parent != null) {
+                BaseBean b = null;
+                do {
+                    b = (BaseBean)this.parent.next();
+                    if (b != null) {
+                        this.setValues(b);
+                        return true;
+                    }
+                } while (b == null);
+            }
+            return false;
+        }
 	
-	//  If we can populate our cache with a new one, we have a more
-	boolean hasNext() {
-	    if (!this.hasCache) {
-		try {
-		    this.cache = this.next();
-		    this.hasCache = true;
-		} catch(NoSuchElementException e) {
-		    return false;
-		}
-	    }
-	    return true;
-	}
+        //  If we can populate our cache with a new one, we have 1 more
+        boolean hasNext() {
+            if (!this.hasCache) {
+                try {
+                    this.cache = this.next();
+                    this.hasCache = true;
+                } catch(NoSuchElementException e) {
+                    return false;
+                }
+            }
+            return true;
+        }
 	
-	//  Return the next one available
-	Object next() {
-	    if (this.hasCache) {
-		this.hasCache = false;
-		return this.cache;
-	    } else {
-		int p = this.seekNext();
-		if (p != -1) {
-		    this.pos++;
-		    return this.values[p];
-		} else {
-		    if (this.updateValues() == true)
-			return this.next();
-		    else
-			throw new NoSuchElementException();
-		}
-	    }
-	}
+        //  Return the next one available
+        Object next() {
+            if (this.hasCache) {
+                this.hasCache = false;
+                return this.cache;
+            } else {
+                int p = this.seekNext();
+                if (p != -1) {
+                    this.pos++;
+                    return this.values[p];
+                } else {
+                    if (this.updateValues() == true)
+                        return this.next();
+                    else
+                        throw new NoSuchElementException();
+                }
+            }
+        }
     }
     
     //
@@ -413,6 +416,7 @@ public class DDParser implements Iterator {
      *	class does all the work.
      */
     public DDParser(BaseBean root, String parse) {
+        //System.out.println("DDParser: parse="+parse+" root="+root);
 	
 	boolean autoCreate = false; // Force the creation of the path
 	
@@ -451,33 +455,33 @@ public class DDParser implements Iterator {
 	    char c = parse.charAt(i);
 	    
 	    if (c == '"' || c == '\'')	// NOI18N
-		skip = !skip;
+            skip = !skip;
 	    
 	    if (skip)
-		continue;
+            continue;
 	    
 	    boolean last = (i==(parse.length()-1));
 	    if (c == '/' || last) {
-		if (last)
-		    n = parse.substring(pos, i+1);
-		else
-		    n = parse.substring(pos, i);
-		pos = i+1;
-        if (root.getProperty() == null) {
-            System.out.println("root.getProperty="+root.getProperty());
-            System.out.println("parse="+parse);
-            System.out.println("n="+n);
-            System.out.println("!Skipping DDParser search!");
-            continue;
-        }
-		if (!root.getProperty().hasName(n) || last) {
-		    cur = new PropParser(n, autoCreate);
-		    if (prev != null) {
-			prev.child = cur;
-			cur.parent = prev;
-		    }
-		    prev = cur;
-		}
+            if (last)
+                n = parse.substring(pos, i+1);
+            else
+                n = parse.substring(pos, i);
+            pos = i+1;
+            if (root.getProperty() == null) {
+                System.out.println("root.getProperty="+root.getProperty());
+                System.out.println("parse="+parse);
+                System.out.println("n="+n);
+                System.out.println("!Skipping DDParser search!");
+                continue;
+            }
+            if (!root.getProperty().hasName(n) || last) {
+                cur = new PropParser(n, autoCreate);
+                if (prev != null) {
+                    prev.child = cur;
+                    cur.parent = prev;
+                }
+                prev = cur;
+            }
 	    }
 	}
 	
@@ -485,7 +489,7 @@ public class DDParser implements Iterator {
 	
 	if (cur != null) {
 	    while (cur.parent != null)
-		cur = cur.parent;
+            cur = cur.parent;
 	}
 	
 	//
@@ -498,27 +502,29 @@ public class DDParser implements Iterator {
 	    boolean found = false;
 	    
 	    for (int j=0; (j<p.length) && !found; j++) {
-		if (p[j].hasName(name)) {
+            if (p[j].hasName(name)) {
+                //System.out.println("Found name="+name);
 		    
-		    // Structure description of the property
-		    cur.setBaseProperty(p[j]);
-		    // Set the values
-		    cur.setValues(bean);
+                // Structure description of the property
+                cur.setBaseProperty(p[j]);
+                // Set the values
+                cur.setValues(bean);
 		    
-		    if (p[j].isBean())
-			bean = cur.getCurBaseBean(cur.child==null);
-		    else {
-			if (cur.child != null)
-			    throw new IllegalStateException(Common.getMessage(
-			    "FinalPropertyNotDeclaredAtEndOfParsingString_msg",
-			    name));
-		    }
-		    found = true;
-		}
+                if (p[j].isBean())
+                    bean = cur.getCurBaseBean(cur.child==null);
+                else {
+                    if (cur.child != null)
+                        throw new IllegalStateException(Common.getMessage(
+                            "FinalPropertyNotDeclaredAtEndOfParsingString_msg",
+                                                                        name));
+                }
+                found = true;
+            }
 	    }
 	    if (!found) {
-		throw new NoSuchElementException(Common.getMessage(
-		"NotFoundInPropertyList_msg", name, root.dumpBeanNode()));
+            throw new NoSuchElementException(Common.getMessage(
+                             "NotFoundInPropertyList_msg", name,
+                             root.dumpBeanNode()));
 	    }
 	    cur = cur.child;
 	} while (cur != null && bean != null);
@@ -536,32 +542,33 @@ public class DDParser implements Iterator {
     }
     
     public boolean hasNext() {
-	if (!this.empty) {
-	    boolean more;
-	    if (this.singleRoot)
-		more = (this.root != null);
-	    else
-		more = this.parser.hasNext();
-	    if (!more)
-		this.current = null;
-	    return more;
-	}
-	return false;
+        if (!this.empty) {
+            boolean more;
+            if (this.singleRoot)
+                more = (this.root != null);
+            else
+                more = this.parser.hasNext();
+            if (!more)
+                this.current = null;
+            return more;
+        }
+        return false;
     }
     
     public Object next() {
-	if (!this.empty) {
-	    if (this.singleRoot) {
-		if (this.root != null) {
-		    this.current = this.root;
-		    this.root = null;
-		} else
-		    throw new NoSuchElementException();
-	    } else
-		this.current = this.parser.next();
-	    return this.current;
-	}
-	throw new NoSuchElementException();
+        if (!this.empty) {
+            if (this.singleRoot) {
+                if (this.root != null) {
+                    this.current = this.root;
+                    this.root = null;
+                } else
+                    throw new NoSuchElementException();
+            } else
+                this.current = this.parser.next();
+            //System.out.println("next="+current);
+            return this.current;
+        }
+        throw new NoSuchElementException();
     }
     
     public Object current() {
