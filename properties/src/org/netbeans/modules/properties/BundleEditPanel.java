@@ -49,12 +49,6 @@ public class BundleEditPanel extends JPanel {
     /** PropertiesDataObject this panel presents. */
     private PropertiesDataObject obj;
 
-    /** Reference to row selection model for managing editing selected cells, together with #columnSelections. */
-    private ListSelectionModel rowSelections;
-    
-    /** Reference to column selection model for managing editing cells, together with #rowSelections.*/
-    private ListSelectionModel columnSelections;
-
     /** Listener on settings (colors particulary) changes. */
     private PropertyChangeListener settingsListener;
     
@@ -110,6 +104,13 @@ public class BundleEditPanel extends JPanel {
                 if (modelIndex < 0)
                     return;
                 obj.getBundleStructure().sort(modelIndex);
+            }
+        });
+        
+        
+        table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent evt) {
+                removeButton.setEnabled(table.getSelectedRow() >= 0);
             }
         });
     } // End of constructor.
@@ -182,10 +183,13 @@ public class BundleEditPanel extends JPanel {
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         autoResizeCheck = new javax.swing.JCheckBox();
+        
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
+        
         tablePanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints2;
+        
         table.setCellSelectionEnabled(true);
         scrollPane.setViewportView(table);
         
@@ -205,6 +209,7 @@ public class BundleEditPanel extends JPanel {
         
         valuePanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints3;
+        
         commentLabel.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_CommentLabel"));
         gridBagConstraints3 = new java.awt.GridBagConstraints();
         gridBagConstraints3.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -258,14 +263,13 @@ public class BundleEditPanel extends JPanel {
         
         buttonPanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints4;
-        addButton.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_AddPropertyButton"));
         
+        addButton.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_AddPropertyButton"));
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
-        }
-        );
+        });
         
         gridBagConstraints4 = new java.awt.GridBagConstraints();
         gridBagConstraints4.gridx = 0;
@@ -277,13 +281,11 @@ public class BundleEditPanel extends JPanel {
         buttonPanel.add(addButton, gridBagConstraints4);
         
         removeButton.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_RemovePropertyButton"));
-        
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
             }
-        }
-        );
+        });
         
         gridBagConstraints4 = new java.awt.GridBagConstraints();
         gridBagConstraints4.gridx = 0;
@@ -295,13 +297,11 @@ public class BundleEditPanel extends JPanel {
         
         autoResizeCheck.setSelected(true);
         autoResizeCheck.setText(NbBundle.getBundle(BundleEditPanel.class).getString("CTL_AutoResize"));
-        
         autoResizeCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 autoResizeCheckActionPerformed(evt);
             }
-        }
-        );
+        });
         
         gridBagConstraints4 = new java.awt.GridBagConstraints();
         gridBagConstraints4.insets = new java.awt.Insets(12, 12, 0, 11);
@@ -324,11 +324,17 @@ public class BundleEditPanel extends JPanel {
     }//GEN-LAST:event_autoResizeCheckActionPerformed
 
     private void removeButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
-        stopEditing();
-        String key = ((PropertiesTableModel.StringPair)table.getModel().getValueAt(rowSelections.getMinSelectionIndex(), 0)).getValue();
+        int selectedRow = table.getSelectedRow();
         
-        // dont't remove elemnt with key == null ( this is only case -> when there is an empty file with comment only)
-        if(key == null) return; 
+        if(selectedRow == -1)
+            return;
+        
+        stopEditing();
+        String key = ((PropertiesTableModel.StringPair)table.getModel().getValueAt(selectedRow, 0)).getValue();
+        
+        // Don't remove elemnt with key == null ( this is only case -> when there is an empty file with comment only)
+        if(key == null)
+            return; 
         
         NotifyDescriptor.Confirmation msg = new NotifyDescriptor.Confirmation(
             MessageFormat.format(
