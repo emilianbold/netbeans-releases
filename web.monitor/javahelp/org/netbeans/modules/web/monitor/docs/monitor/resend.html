@@ -96,7 +96,12 @@ the browser generates. If the record header does not include a session
 cookie, the browser does not send a cookie.</p>
 
      <p>The following steps show how to edit cookies in the
-      Cookies tab. You can also edit cookies in the Header tab. 
+      Cookies tab. You can also edit cookies in the Header tab.
+	  Note that you can edit session cookies, but the 
+	  changes do not take effect on most servers. 
+	  The reason is because
+	  the session's cookie ID is read before
+	  the request enters the servlet container. 
       Not all servers support the editing of cookies.</p>
 <ol>
   <li>Click the Cookies tab.</li>

@@ -3,7 +3,7 @@
 
   PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN"
 
-         "http://java.sun.com/products/javahelp/toc_1_0.dtd">
+         "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="1.0">
 
@@ -16,8 +16,9 @@
 	<tocitem text="Using the HTTP Monitor Toolbar" target="monitor_sort" />
 	<!-- monitor_resend is csh for Help button on Edit and replay dialog -->
 	<tocitem text="Editing and Replaying Monitor Data Records" target="monitor_resend" /> 
-	<tocitem text="Saving HTTP Monitor Data Records" target="monitor_store">  
-	<tocitem text="Deleting HTTP Monitor Data Records" target="monitor_delete">
+	<tocitem text="Saving HTTP Monitor Data Records" target="monitor_store" />  
+	<tocitem text="Deleting HTTP Monitor Data Records" target="monitor_delete" />
+        <tocitem text="Deploying the HTTP Monitor for a Web Module" target="monitor_servconfig" />
 </tocitem>
 </tocitem>
 </toc>
