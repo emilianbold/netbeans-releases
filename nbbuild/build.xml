@@ -246,7 +246,10 @@ workspaceswitcher
     <echo message="Building module web..."/>
     <ant dir="../web" target="netbeans"/>
   </target>
-
+  <target name="all-cpplite" depends="all-openide,all-openidex,all-core,all-editor">
+    <echo message="Building module cpplite..."/>
+    <ant dir="../cpplite" target="netbeans"/>
+  </target>
   <target name="build-messaging" depends="init">
     <echo message="Starting a build for NetBeans (build ${buildnumber}, config '${moduleconfig}') ..."/>
     <echo message="Selected modules: ${modules}"/>
