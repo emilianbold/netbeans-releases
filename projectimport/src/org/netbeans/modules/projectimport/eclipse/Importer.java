@@ -98,13 +98,13 @@ final class Importer {
     }
     
     private J2SEProject importProject(EclipseProject eclProject) {
-        assert eclProject != null : "Eclipse project cannot be null";
+        assert eclProject != null : "Eclipse project cannot be null"; // NOI18N
         
         // recursivity check
         if (!recursionCheck.add(eclProject.getDirectory().toString())) {
             J2SEProject project = (J2SEProject) loadedProject
                     .get(eclProject.getDirectory().getAbsolutePath());
-            assert project != null : "nbSubProject cannot be null";
+            assert project != null : "nbSubProject cannot be null"; // NOI18N
             return project;
         }
         nOfProcessed++;
@@ -117,10 +117,11 @@ final class Importer {
             final AntProjectHelper helper = J2SEProjectGenerator.createProject(
                     nbProjectDir, eclProject.getName(), srcDirs, testDirs, null);
             // get NB project
-            J2SEProject nbProject = (J2SEProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(nbProjectDir));
+            J2SEProject nbProject = (J2SEProject) ProjectManager.getDefault().
+                    findProject(FileUtil.toFileObject(nbProjectDir));
             ProjectClassPathExtender nbProjectClassPath =
                     (ProjectClassPathExtender) nbProject.getLookup().lookup(ProjectClassPathExtender.class);
-            assert nbProjectClassPath != null : "Cannot lookup ProjectClassPathExtender";
+            assert nbProjectClassPath != null : "Cannot lookup ProjectClassPathExtender"; // NOI18N
             
             // add libraries to classpath
             File[] eclLibs = eclProject.getAllLibrariesFiles();
@@ -130,7 +131,7 @@ final class Importer {
                     nbProjectClassPath.addArchiveFile(eclLib);
                 } else {
                     ErrorManager.getDefault().log(ErrorManager.WARNING,
-                            eclLibs[i] + " doesn't exist. Skipping...");
+                            eclLibs[i] + " doesn't exist. Skipping..."); // NOI18N
                 }
             }
             
@@ -152,7 +153,7 @@ final class Importer {
             return nbProject;
         } catch (IOException e) {
             ErrorManager.getDefault().log(ErrorManager.USER,
-                    "Error occured during project importing: " + e);
+                    "Error occured during project importing: " + e); // NOI18N
         }
         return null;
     }
@@ -161,10 +162,14 @@ final class Importer {
     private void setJavaPlatform(EclipseProject eclProject, final AntProjectHelper helper) {
         progressInfo = "Setting JDK for \"" + eclProject.getName() + "\"";
         JavaPlatform[] plfs = JavaPlatformManager.getDefault().getInstalledPlatforms();
-        boolean isSet = false;
         JavaPlatform defPlf = JavaPlatformManager.getDefault().getDefaultPlatform();
-        // there is always at least one folder
-        String defPlfDir = FileUtil.toFile((FileObject) defPlf.getInstallFolders().toArray()[0]).getAbsolutePath();
+        Collection installFolder = defPlf.getInstallFolders();
+        if (installFolder.isEmpty()) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    "There is not any platform in NetBeans..."); // NOI18N
+            return;
+        }
+        String defPlfDir = FileUtil.toFile((FileObject) installFolder.toArray()[0]).getAbsolutePath();
         String eclPlfDir = eclProject.getJDKDirectory();
         // eclPlfDir can be null in a case when a JDK was set for an eclipse
         // project in Eclipse then the directory with JDK was deleted from
@@ -188,14 +193,10 @@ final class Importer {
                     prop.setProperty(J2SEProjectProperties.JAVAC_TARGET, ver);
                     prop.setProperty(J2SEProjectProperties.JAVA_PLATFORM, normalizedName);
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
-                    isSet = true;
                     break;
                 }
             }
-            
-            if (!isSet) {
-                System.err.println("MK> Cannot find platform: " + eclProject.getJDKDirectory());
-            }
         }
+        // if we are not able to find any platform the default is used
     }
 }
