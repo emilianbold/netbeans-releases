@@ -484,14 +484,15 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         String dialogMsg = "";
         MessageDialog msgDialog = null;
 
-        if (dir.length() == 0) { // if no directory specified
+        if (dir.length() == 0) {
+            //Directory must be specified
             dialogMsg = msgPrefix + " "
             + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNotSpecifiedMessage)");
             msgDialog = new MessageDialog(parent, dialogMsg, dialogTitle, okString);
             msgDialog.setVisible(true);
             return false;
-        }
-	else if (st.countTokens() > 1) {
+        } else if (st.countTokens() > 1) {
+            //Check for spaces in path - it is not supported by JDK installer on Linux/Solaris
 	    if (!Util.isWindowsOS() && installDirType == J2SE_INSTALL_DIR) {
 		dialogMsg = msgPrefix + " "
 		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryHasSpaceMessage)");
@@ -499,12 +500,10 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 		msgDialog.setVisible(true);
 		return false;
 	    }
-	}
-	// check for illegal characters in a windows path name
-	else if ((Util.isWindowsOS() && (dir.indexOf("@") != -1 || dir.indexOf("&") != -1 ||
+	} else if ((Util.isWindowsOS() && (dir.indexOf("@") != -1 || dir.indexOf("&") != -1 ||
 					 dir.indexOf("%") != -1 || dir.indexOf("#") != -1)) ||
 	    dir.indexOf("+") != -1 || dir.indexOf("\"") != -1) {
-
+            //Check for illegal characters in a windows path name
 	    dialogMsg = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryIllegalCharsMessage)");
 	    msgDialog = new MessageDialog(parent, dialogMsg, dialogTitle, okString);
 	    msgDialog.setVisible(true);
