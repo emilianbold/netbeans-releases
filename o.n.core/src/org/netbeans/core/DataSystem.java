@@ -27,7 +27,6 @@ import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.InstanceSupport;
 import org.openide.filesystems.*;
-import org.openide.util.datatransfer.*;
 import org.openide.util.*;
 import org.openide.nodes.*;
 import org.openide.util.actions.SystemAction;
@@ -270,7 +269,7 @@ implements RepositoryListener, NewTemplateAction.Cookie {
         
         private void refreshListRoots(URLMapper mapper) {
             File[] files = File.listRoots();
-            Set rootSet = new HashSet();
+            Set rootSet = new LinkedHashSet();
 
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
@@ -304,9 +303,8 @@ implements RepositoryListener, NewTemplateAction.Cookie {
             called method normalizeFile which causes problems with removeable drives 
             on Windows*/             
             FileObject retVal = null;
-            try {
-                
-                FileObject[] all  = mapper.getFileObjects(new URL ("file:/"+file.getAbsolutePath ().replace('\\', File.separatorChar)));//NOI18N
+            try {                
+                FileObject[] all  = mapper.getFileObjects(toUrl(file));//NOI18N
                 if (all != null && all.length > 0) {
                     retVal = all [0];
                 }
@@ -314,6 +312,10 @@ implements RepositoryListener, NewTemplateAction.Cookie {
                 retVal = null;
             }
             return retVal;
+        }
+
+        private URL toUrl(File file) throws MalformedURLException {
+            return (org.openide.util.Utilities.isWindows()) ? new URL ("file:/"+file.getAbsolutePath ()) : file.toURI().toURL();//NOI18N   
         }
 
     }
