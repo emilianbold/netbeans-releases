@@ -1,7 +1,8 @@
+
 public class TestFile {
     
-    /** Holds value of property _firstName. */
-    private int _firstName;
+    /** Holds value of property firstName. */
+    private int firstName;
     
     /** Utility field used by bound properties. */
     private java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
@@ -9,8 +10,8 @@ public class TestFile {
     /** Utility field used by constrained properties. */
     private java.beans.VetoableChangeSupport vetoableChangeSupport =  new java.beans.VetoableChangeSupport(this);
     
-    /** Holds value of property secondName. */
-    private String secondName;
+    /** Holds value of property _secondName. */
+    private String _secondName;
     
     /** Creates a new instance of TestFile */
     public TestFile() {
@@ -18,6 +19,7 @@ public class TestFile {
     
     /** Adds a PropertyChangeListener to the listener list.
      * @param l The listener to add.
+     *
      */
     public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
         propertyChangeSupport.addPropertyChangeListener(l);
@@ -25,6 +27,7 @@ public class TestFile {
     
     /** Removes a PropertyChangeListener from the listener list.
      * @param l The listener to remove.
+     *
      */
     public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
         propertyChangeSupport.removePropertyChangeListener(l);
@@ -32,6 +35,7 @@ public class TestFile {
     
     /** Adds a VetoableChangeListener to the listener list.
      * @param l The listener to add.
+     *
      */
     public void addVetoableChangeListener(java.beans.VetoableChangeListener l) {
         vetoableChangeSupport.addVetoableChangeListener(l);
@@ -39,6 +43,7 @@ public class TestFile {
     
     /** Removes a VetoableChangeListener from the listener list.
      * @param l The listener to remove.
+     *
      */
     public void removeVetoableChangeListener(java.beans.VetoableChangeListener l) {
         vetoableChangeSupport.removeVetoableChangeListener(l);
@@ -46,39 +51,43 @@ public class TestFile {
     
     /** Getter for property firstName.
      * @return Value of property firstName.
+     *
      */
     public int getFirstName() {
-        return _firstName;
+        return this.firstName;
     }
     
     /** Setter for property firstName.
      * @param firstName New value of property firstName.
      *
      * @throws PropertyVetoException
+     *
      */
     public void setFirstName(int firstName) throws java.beans.PropertyVetoException {
-        int oldFirstName = _firstName;
+        int oldFirstName = this.firstName;
         vetoableChangeSupport.fireVetoableChange("firstName", new Integer(oldFirstName), new Integer(firstName));
-        _firstName = firstName;
+        this.firstName = firstName;
         propertyChangeSupport.firePropertyChange("firstName", new Integer(oldFirstName), new Integer(firstName));
     }
     
     /** Getter for property secondName.
      * @return Value of property secondName.
+     *
      */
     public String getSecondName() {
-        return this.secondName;
+        return _secondName;
     }
     
     /** Setter for property secondName.
      * @param secondName New value of property secondName.
      *
      * @throws PropertyVetoException
+     *
      */
     public void setSecondName(String secondName) throws java.beans.PropertyVetoException {
-        String oldSecondName = this.secondName;
+        String oldSecondName = _secondName;
         vetoableChangeSupport.fireVetoableChange("secondName", oldSecondName, secondName);
-        this.secondName = secondName;
+        _secondName = secondName;
         propertyChangeSupport.firePropertyChange("secondName", oldSecondName, secondName);
     }
     
