@@ -80,8 +80,7 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     }
 
     public File getEnterpriseResourceDirectory() {
-        File projectDir = FileUtil.toFile(helper.getProjectDirectory());
-        return new File(projectDir, EjbJarProjectProperties.RESOURCE_DIR);
+        return getFile(EjbJarProjectProperties.RESOURCE_DIR);
     }
 
     public FileObject findDeploymentConfigurationFile(String name) {
