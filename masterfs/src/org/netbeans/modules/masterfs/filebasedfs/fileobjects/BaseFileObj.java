@@ -14,6 +14,7 @@
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
+import org.netbeans.modules.masterfs.filebasedfs.Statistics;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenCache;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
@@ -291,6 +292,8 @@ public abstract class BaseFileObj extends FileObject {
 
 
     final void fireFileDataCreatedEvent(final boolean expected) {
+        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.LISTENERS_CALLS);
+        stopWatch.start();
         assert getFileName().getFile().exists();
         assert getFileName().getFile().isFile();         
 
@@ -302,10 +305,14 @@ public abstract class BaseFileObj extends FileObject {
         if (parent != null && pListeners != null) {
             parent.fireFileDataCreatedEvent(pListeners, new FileEvent(parent, this, expected));
         }
+        stopWatch.stop();
     }
 
 
     final void fireFileFolderCreatedEvent(final boolean expected) {
+        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.LISTENERS_CALLS);
+        stopWatch.start();
+        
         assert getFileName().getFile().exists();
         assert getFileName().getFile().isDirectory(); 
         
@@ -318,6 +325,7 @@ public abstract class BaseFileObj extends FileObject {
             parent.fireFileFolderCreatedEvent(pListeners, new FileEvent(parent, this, expected));
         }
 
+        stopWatch.stop();
     }
 
     FolderObj getExistingParent() {
@@ -328,6 +336,9 @@ public abstract class BaseFileObj extends FileObject {
 
 
     public final void fireFileChangedEvent(final boolean expected) {
+        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.LISTENERS_CALLS);
+        stopWatch.start();
+        
         assert getFileName().getFile().exists();        
         final BaseFileObj parent = getExistingParent();
         Enumeration pListeners = (parent != null) ? parent.getListeners() : null;
@@ -337,10 +348,14 @@ public abstract class BaseFileObj extends FileObject {
         if (parent != null && pListeners != null) {
             parent.fireFileChangedEvent(pListeners, new FileEvent(parent, this, expected));
         }
+        stopWatch.stop();
     }
 
 
     final void fireFileDeletedEvent(final boolean expected) {
+        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.LISTENERS_CALLS);
+        stopWatch.start();
+        
         assert !getFileName().getFile().exists(); 
         final BaseFileObj parent = getExistingParent();
         Enumeration pListeners = (parent != null) ?parent.getListeners() : null;        
@@ -350,10 +365,14 @@ public abstract class BaseFileObj extends FileObject {
         if (parent != null && pListeners != null) {
             parent.fireFileDeletedEvent(pListeners, new FileEvent(parent, this, expected));
         }
+        stopWatch.stop();
     }
 
 
     private void fireFileRenamedEvent(final String originalName, final String originalExt) {
+        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.LISTENERS_CALLS);
+        stopWatch.start();
+        
         //assert getFileName().getFile().exists();
         final BaseFileObj parent = getExistingParent();
         Enumeration pListeners = (parent != null) ?parent.getListeners() : null;        
@@ -363,6 +382,8 @@ public abstract class BaseFileObj extends FileObject {
         if (parent != null && pListeners != null) {
             parent.fireFileRenamedEvent(pListeners, new FileRenameEvent(parent, this, originalName, originalExt));
         }
+        
+        stopWatch.stop();
     }
 
     private void fireFileAttributeChangedEvent(final String attrName, final Object oldValue, final Object newValue) {

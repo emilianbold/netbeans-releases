@@ -14,6 +14,7 @@
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
+import org.netbeans.modules.masterfs.filebasedfs.Statistics;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenCache;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupport;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileName;
@@ -220,6 +221,9 @@ public final class FolderObj extends BaseFileObj {
 
 
     public final void refresh(final boolean expected) {
+//        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FOLDER);
+//        stopWatch.start();
+        
         isValid(true);
         
         final ChildrenCache cache = getChildrenCache();
@@ -288,6 +292,7 @@ public final class FolderObj extends BaseFileObj {
             }
 
         }
+//        stopWatch.stop();
     }
 
     //TODO: rewrite partly and check FileLocks for existing FileObjects

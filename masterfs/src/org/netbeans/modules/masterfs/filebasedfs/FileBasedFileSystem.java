@@ -19,7 +19,6 @@ import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.SharedClassObject;
 import org.openide.util.actions.SystemAction;
 
 import java.io.File;
@@ -56,6 +55,18 @@ public final class FileBasedFileSystem extends FileSystem {
         return retVal;
     }
 
+    static Collection getInstances() {
+        synchronized (FileBasedFileSystem.allInstances) {
+            return new ArrayList(allInstances.values());
+        }
+    }
+    
+    static int getSize () {
+        synchronized (FileBasedFileSystem.allInstances) {
+            return allInstances.size();
+        }        
+    }
+    
     private FileBasedFileSystem(final File rootFile) {
         this.factory = FileObjectFactory.getInstance(new FileInfo(rootFile));
     }
@@ -100,7 +111,11 @@ public final class FileBasedFileSystem extends FileSystem {
     }
 
     public final void refresh(final boolean expected) {
+        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
+        stopWatch.start();
+        
         getFactory().refreshAll(expected);
+        stopWatch.stop();
     }
 
     public final boolean isReadOnly() {

@@ -37,6 +37,11 @@ public final class FileObjectFactory {
     public final RootObj getRoot() {
         return root;
     }
+    public int getSize() {        
+        synchronized (allInstances) {
+            return allInstances.size();
+        }
+    }
 
     public final FileObject findFileObject(final FileInfo fInfo) {
         FileObject retVal = null;

@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
+import org.netbeans.modules.masterfs.filebasedfs.Statistics;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -144,6 +145,8 @@ final class FileObj extends BaseFileObj {
 
 
     public final void refresh(final boolean expected) {
+//        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FILE);
+//        stopWatch.start();
         boolean isDeleted = (isValid() && !isValid(true));
         if (isValid()) {
             final long oldLastModified = lastModified;
@@ -155,6 +158,7 @@ final class FileObj extends BaseFileObj {
         } else if (isDeleted && getExistingParent() == null) {            
             fireFileDeletedEvent(expected);    
         }
+//        stopWatch.stop();
     }
 
     public final Enumeration getChildren(final boolean rec) {

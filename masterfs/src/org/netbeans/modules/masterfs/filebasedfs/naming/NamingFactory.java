@@ -42,6 +42,10 @@ public final class NamingFactory {
         return fileName;
     }
 
+    public static int getSize () {
+        return nameMap.size();
+    }
+    
     public static synchronized FileNaming fromFile(final FileNaming parentFn, final File file) {            
         return NamingFactory.registerInstanceOfFileNaming(parentFn, file);
     }

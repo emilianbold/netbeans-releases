@@ -229,4 +229,9 @@ public final class FileInfo {
     public void setFObject(FileObject fObject) {
         this.fObject = fObject;
     }
+
+    public String toString() {
+    return getFile().toString();
+    }
+    
 }
