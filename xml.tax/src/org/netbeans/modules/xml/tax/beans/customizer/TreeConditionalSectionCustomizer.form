@@ -61,7 +61,7 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JEditorPane" name="ignoredContentPane">
+        <Component class="javax.swing.JTextArea" name="ignoredContentTextArea">
         </Component>
       </SubComponents>
     </Container>

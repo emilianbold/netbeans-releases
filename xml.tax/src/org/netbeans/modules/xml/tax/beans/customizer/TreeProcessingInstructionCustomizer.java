@@ -86,7 +86,7 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
      */
     protected final void updateProcessingInstructionData () {
         try {
-            getProcessingInstruction ().setData (dataPane.getText ());
+            getProcessingInstruction ().setData (dataTextArea.getText ());
         } catch (TreeException exc) {
             updateDataComponent ();
             Util.notifyTreeException (exc);
@@ -96,7 +96,7 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
     /**
      */
     protected final void updateDataComponent () {
-        dataPane.setText (getProcessingInstruction ().getData ());
+        dataTextArea.setText (getProcessingInstruction ().getData ());
     }
     
     /**
@@ -111,7 +111,7 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
      */
     protected void updateReadOnlyStatus (boolean editable) {
         targetField.setEditable (editable);
-        dataPane.setEditable (editable);
+        dataTextArea.setEditable (editable);
     }
     
     /** This method is called from within the constructor to
@@ -126,7 +126,7 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
         targetField = new javax.swing.JTextField();
         dataPanel = new javax.swing.JPanel();
         dataScroll = new javax.swing.JScrollPane();
-        dataPane = new javax.swing.JEditorPane();
+        dataTextArea = new javax.swing.JTextArea();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -164,19 +164,19 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
         dataPanel.setLayout(new java.awt.BorderLayout());
 
         dataPanel.setPreferredSize(new java.awt.Dimension(350, 230));
-        dataPane.addFocusListener(new java.awt.event.FocusAdapter() {
+        dataTextArea.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
-                dataPaneFocusLost(evt);
+                dataTextAreaFocusLost(evt);
             }
         });
 
-        dataPane.addKeyListener(new java.awt.event.KeyAdapter() {
+        dataTextArea.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
-                dataPaneKeyPressed(evt);
+                dataTextAreaKeyPressed(evt);
             }
         });
 
-        dataScroll.setViewportView(dataPane);
+        dataScroll.setViewportView(dataTextArea);
 
         dataPanel.add(dataScroll, java.awt.BorderLayout.CENTER);
 
@@ -189,12 +189,19 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
         add(dataPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
-    
-    private void dataPaneFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_dataPaneFocusLost
+
+    private void dataTextAreaKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_dataTextAreaKeyPressed
+        // Add your handling code here:
+        if ( applyKeyPressed (evt) ) {
+            updateProcessingInstructionData ();
+        }
+    }//GEN-LAST:event_dataTextAreaKeyPressed
+
+    private void dataTextAreaFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_dataTextAreaFocusLost
         // Add your handling code here:
         updateProcessingInstructionData ();
-    }//GEN-LAST:event_dataPaneFocusLost
-    
+    }//GEN-LAST:event_dataTextAreaFocusLost
+        
     /**
      */
     private void targetFieldFocusLost (java.awt.event.FocusEvent evt) {//GEN-FIRST:event_targetFieldFocusLost
@@ -210,30 +217,22 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
         updateProcessingInstructionTarget ();
     }//GEN-LAST:event_targetFieldActionPerformed
     
-    
-    private void dataPaneKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_dataPaneKeyPressed
-        // Add your handling code here:
-        if ( applyKeyPressed (evt) ) {
-            updateProcessingInstructionData ();
-        }
-    }//GEN-LAST:event_dataPaneKeyPressed
-    
+        
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextArea dataTextArea;
     private javax.swing.JLabel targetLabel;
     private javax.swing.JPanel dataPanel;
     private javax.swing.JTextField targetField;
-    private javax.swing.JEditorPane dataPane;
     private javax.swing.JScrollPane dataScroll;
     // End of variables declaration//GEN-END:variables
     
     /** Initialize accesibility
      */
-    public void initAccessibility (){
-        
+    public void initAccessibility (){        
         this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeProcessingInstructionCustomizer"));
         targetField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_targetField"));
-        dataPane.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_dataPanel1"));
-        dataPane.getAccessibleContext ().setAccessibleName (Util.getString ("ACSN_dataPanel1"));
+        dataTextArea.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_dataPanel1"));
+        dataTextArea.getAccessibleContext ().setAccessibleName (Util.getString ("ACSN_dataPanel1"));
     }
 }

@@ -66,7 +66,7 @@ public class TreeCDATASectionCustomizer extends AbstractTreeCustomizer {
      */
     protected final void updateCDATASectionData () {
         try {
-            getCDATASection ().setData (dataPane.getText ());
+            getCDATASection ().setData (dataTextArea.getText ());
         } catch (TreeException exc) {
             updateDataComponent ();
             Util.notifyTreeException (exc);
@@ -76,7 +76,7 @@ public class TreeCDATASectionCustomizer extends AbstractTreeCustomizer {
     /**
      */
     protected final void updateDataComponent () {
-        dataPane.setText (getCDATASection ().getData ());
+        dataTextArea.setText (getCDATASection ().getData ());
     }
     
     /**
@@ -89,7 +89,7 @@ public class TreeCDATASectionCustomizer extends AbstractTreeCustomizer {
     /**
      */
     protected final void updateReadOnlyStatus (boolean editable) {
-        dataPane.setEditable (editable);
+        dataTextArea.setEditable (editable);
     }
     
     
@@ -103,26 +103,26 @@ public class TreeCDATASectionCustomizer extends AbstractTreeCustomizer {
 
         dataPanel = new javax.swing.JPanel();
         dataScroll = new javax.swing.JScrollPane();
-        dataPane = new javax.swing.JEditorPane();
+        dataTextArea = new javax.swing.JTextArea();
 
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(350, 230));
         dataPanel.setLayout(new java.awt.BorderLayout());
 
-        dataPane.addFocusListener(new java.awt.event.FocusAdapter() {
+        dataTextArea.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
-                dataPaneFocusLost(evt);
+                dataTextAreaFocusLost(evt);
             }
         });
 
-        dataPane.addKeyListener(new java.awt.event.KeyAdapter() {
+        dataTextArea.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
-                dataPaneKeyPressed(evt);
+                dataTextAreaKeyPressed(evt);
             }
         });
 
-        dataScroll.setViewportView(dataPane);
+        dataScroll.setViewportView(dataTextArea);
 
         dataPanel.add(dataScroll, java.awt.BorderLayout.CENTER);
 
@@ -136,22 +136,22 @@ public class TreeCDATASectionCustomizer extends AbstractTreeCustomizer {
         add(dataPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
-    
-    private void dataPaneKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_dataPaneKeyPressed
+
+    private void dataTextAreaKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_dataTextAreaKeyPressed
         // Add your handling code here:
         if ( applyKeyPressed (evt) ) {
             updateCDATASectionData ();
         }
-    }//GEN-LAST:event_dataPaneKeyPressed
-    
-    private void dataPaneFocusLost(java.awt.event.FocusEvent event) {//GEN-FIRST:event_dataPaneFocusLost
+    }//GEN-LAST:event_dataTextAreaKeyPressed
+
+    private void dataTextAreaFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_dataTextAreaFocusLost
         // Add your handling code here:
         updateCDATASectionData ();
-    }//GEN-LAST:event_dataPaneFocusLost
-    
+    }//GEN-LAST:event_dataTextAreaFocusLost
+        
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextArea dataTextArea;
     private javax.swing.JPanel dataPanel;
-    private javax.swing.JEditorPane dataPane;
     private javax.swing.JScrollPane dataScroll;
     // End of variables declaration//GEN-END:variables
     
@@ -160,7 +160,7 @@ public class TreeCDATASectionCustomizer extends AbstractTreeCustomizer {
     public void initAccessibility (){
         
         this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeCDATASectionCustomizer"));
-        dataPane.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_dataPanel2"));
-        dataPane.getAccessibleContext ().setAccessibleName (Util.getString ("ACSN_dataPanel2"));
+        dataTextArea.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_dataPanel2"));
+        dataTextArea.getAccessibleContext ().setAccessibleName (Util.getString ("ACSN_dataPanel2"));
     }
 }

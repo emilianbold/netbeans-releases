@@ -16,7 +16,6 @@ import java.util.*;
 import java.io.*;
 
 import javax.swing.text.Document;
-import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 
 import org.openide.windows.*;

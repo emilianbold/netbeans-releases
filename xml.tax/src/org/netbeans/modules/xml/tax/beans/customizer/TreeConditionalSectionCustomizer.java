@@ -83,12 +83,12 @@ public class TreeConditionalSectionCustomizer extends AbstractTreeCustomizer {
     }
     
     protected void updateIgnoredContentComponent () {
-        ignoredContentPane.setText (null2text (getConditionalSection ().getIgnoredContent ()));
+        ignoredContentTextArea.setText (null2text (getConditionalSection ().getIgnoredContent ()));
     }
     
     protected void updateConditionalSectionIgnoredContent () {
         try {
-            getConditionalSection ().setIgnoredContent (text2null (ignoredContentPane.getText ()));
+            getConditionalSection ().setIgnoredContent (text2null (ignoredContentTextArea.getText ()));
         } catch (TreeException exc) {
             updateIgnoredContentComponent ();
             Util.notifyTreeException (exc);
@@ -108,13 +108,13 @@ public class TreeConditionalSectionCustomizer extends AbstractTreeCustomizer {
     protected void updateReadOnlyStatus (boolean editable) {
         includeRadioButton.setEnabled (editable); //???
         ignoreRadioButton.setEnabled (editable); //???
-        ignoredContentPane.setEditable (editable);
+        ignoredContentTextArea.setEditable (editable);
     }
     
     
     private void initAccessibility() {
         this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeConditionalSectionCustomizer"));
-        ignoredContentPane.getAccessibleContext ().setAccessibleName (Util.getString ("ACSN_ignoredContentPane"));
+        ignoredContentTextArea.getAccessibleContext ().setAccessibleName (Util.getString ("ACSN_ignoredContentPane"));
         includeRadioButton.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_includeRadioButton"));
         ignoreRadioButton.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_ignoreRadioButton"));        
     }
@@ -131,7 +131,7 @@ public class TreeConditionalSectionCustomizer extends AbstractTreeCustomizer {
         includeRadioButton = new javax.swing.JRadioButton();
         ignoreRadioButton = new javax.swing.JRadioButton();
         ignoredContentScrollPane = new javax.swing.JScrollPane();
-        ignoredContentPane = new javax.swing.JEditorPane();
+        ignoredContentTextArea = new javax.swing.JTextArea();
         fillPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -156,7 +156,7 @@ public class TreeConditionalSectionCustomizer extends AbstractTreeCustomizer {
         add(ignoreRadioButton, gridBagConstraints);
 
         ignoredContentScrollPane.setPreferredSize(new java.awt.Dimension(350, 200));
-        ignoredContentScrollPane.setViewportView(ignoredContentPane);
+        ignoredContentScrollPane.setViewportView(ignoredContentTextArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -184,8 +184,8 @@ public class TreeConditionalSectionCustomizer extends AbstractTreeCustomizer {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton ignoreRadioButton;
     private javax.swing.JScrollPane ignoredContentScrollPane;
-    private javax.swing.JEditorPane ignoredContentPane;
     private javax.swing.ButtonGroup includeButtonGroup;
+    private javax.swing.JTextArea ignoredContentTextArea;
     private javax.swing.JRadioButton includeRadioButton;
     private javax.swing.JPanel fillPanel;
     // End of variables declaration//GEN-END:variables

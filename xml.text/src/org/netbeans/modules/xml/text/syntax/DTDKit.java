@@ -13,7 +13,6 @@
 package org.netbeans.modules.xml.text.syntax;
 
 import javax.swing.text.Document;
-import javax.swing.JEditorPane;
 
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.BaseDocument;
