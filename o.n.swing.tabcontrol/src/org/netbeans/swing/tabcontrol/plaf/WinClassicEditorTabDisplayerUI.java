@@ -59,10 +59,8 @@ public final class WinClassicEditorTabDisplayerUI extends BasicScrollingTabDispl
 
     public void install() {
         super.install();
-        Color dark = UIManager.getColor("controlShadow"); //NOI18N
-        Color light = UIManager.getColor("control"); //NOI18N
         if (!isGenericUI) {
-            displayer.setBackground(ColorUtil.adjustTowards(dark, 35, light));
+            displayer.setBackground( UIManager.getColor("tab_unsel_fill") );
             displayer.setOpaque(true);
         }
     }
