@@ -20,6 +20,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.*;
+import javax.swing.event.PopupMenuListener;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -34,7 +35,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 
-public class RecentProjects extends AbstractAction implements Presenter.Menu, PropertyChangeListener {
+public class RecentProjects extends AbstractAction implements Presenter.Menu, PropertyChangeListener, PopupMenuListener {
     
     private static final String ICON = "org/netbeans/modules/project/ui/resources/empty.gif"; //NOI18N    
     
@@ -45,6 +46,8 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     
     private JMenu subMenu;
     
+    private boolean recreate;
+    
     public RecentProjects() {
         super( NbBundle.getMessage(RecentProjects.class, "LBL_RecentProjectsAction_Name"), // NOI18N
               new ImageIcon(Utilities.loadImage(ICON)));
@@ -53,7 +56,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     
         
     public boolean isEnabled() {
-        return !OpenProjectList.getDefault().getRecentProjects().isEmpty();
+        return !OpenProjectList.getDefault().isRecentProjectsEmpty();
     }
     
     /** Perform the action. Tries the performer and then scans the ActionMap
@@ -73,6 +76,14 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
         if ( subMenu == null ) {
             subMenu = new JMenu(this);
             subMenu.setMnemonic (NbBundle.getMessage(RecentProjects.class, "MNE_RecentProjectsAction_Name").charAt (0)); // NOI18N
+            subMenu.getPopupMenu().addPopupMenuListener( this );
+        }
+    }
+        
+    private void fillSubMenu() {
+        
+        if ( subMenu == null ) {
+            createSubMenu();
         }
         
         subMenu.removeAll();
@@ -110,10 +121,26 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     public void propertyChange( PropertyChangeEvent e ) {
         
         if ( OpenProjectList.PROPERTY_RECENT_PROJECTS.equals( e.getPropertyName() ) ) {
-            createSubMenu();
+            recreate = true;
         }
         
     }
+    
+    
+    // Implementation of PopupMenuListener -------------------------------------
+    
+    public void popupMenuWillBecomeVisible( javax.swing.event.PopupMenuEvent e ) {
+        if ( recreate ) {
+            fillSubMenu();
+        }
+    }
+    
+    public void popupMenuWillBecomeInvisible( javax.swing.event.PopupMenuEvent e ) {
+    }
+
+    public void popupMenuCanceled( javax.swing.event.PopupMenuEvent e ) {
+    }
+
     
     // Innerclasses ------------------------------------------------------------
     
@@ -146,7 +173,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     
     private class ProjectDirListener extends FileChangeAdapter {
         public void fileDeleted(FileEvent fe) {
-            createSubMenu();
+            recreate = true;
         }
     }
     

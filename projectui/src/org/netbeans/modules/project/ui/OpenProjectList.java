@@ -219,6 +219,10 @@ public final class OpenProjectList {
     public synchronized List getRecentProjects() {
         return recentProjects.getProjects();
     }
+    
+    public synchronized boolean isRecentProjectsEmpty() {
+        return recentProjects.isEmpty();
+    }
         
     /** As this class is singletnon, which is not GCed it is good idea to 
      *add WeakListeners or remove the listeners properly.
@@ -575,6 +579,10 @@ public final class OpenProjectList {
             return result;
         }
         
+        
+        public boolean isEmpty() {
+            return recentProjects.isEmpty();
+        }
         
         public void load() {
             List URLs = OpenProjectListSettings.getInstance().getRecentProjectsURLs();
