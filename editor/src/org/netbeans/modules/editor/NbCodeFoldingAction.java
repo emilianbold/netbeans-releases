@@ -66,7 +66,7 @@ public  class NbCodeFoldingAction extends SystemAction implements Presenter.Menu
     }
     
     public boolean isEnabled() {
-        JTextComponent component = Utilities.getLastActiveComponent();
+        JTextComponent component = Utilities.getFocusedComponent();
         if (component!=null){
             Document doc = component.getDocument();
             return isOpen(doc);
@@ -82,7 +82,7 @@ public  class NbCodeFoldingAction extends SystemAction implements Presenter.Menu
     }
     
     private static JTextComponent getComponent(){
-        return Utilities.getLastActiveComponent();
+        return Utilities.getFocusedComponent();
     }
     
     public void actionPerformed (java.awt.event.ActionEvent ev){
@@ -112,7 +112,7 @@ public  class NbCodeFoldingAction extends SystemAction implements Presenter.Menu
             pm.removeAll();
             Action action = getKit().getActionByName(NbEditorKit.generateFoldPopupAction);
             if (action instanceof BaseAction){
-                JTextComponent component = Utilities.getLastActiveComponent();
+                JTextComponent component = Utilities.getFocusedComponent();
                 JMenu menu = (JMenu)((BaseAction)action).getPopupMenuItem(component);
                 if (menu!=null){
                     Component comps[] = menu.getMenuComponents();
