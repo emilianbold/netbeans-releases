@@ -18,6 +18,7 @@ import java.awt.datatransfer.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.beans.*;
+import java.security.*;
 
 import org.openide.actions.*;
 import org.openide.cookies.*;
@@ -368,6 +369,21 @@ public class RADComponentNode extends FormNode
                 }
                 else properties = component.getAllBeanProperties();
 
+                updatePropertiesFromCustomizer(properties, evt);
+            }
+        });
+
+        return (Component) customizerObject;
+    }
+
+    private void updatePropertiesFromCustomizer(
+                     final RADProperty[] properties,
+                     final PropertyChangeEvent evt)
+    {
+        // we run this as privileged to avoid security problems - because
+        // the property change is fired from untrusted bean customizer code
+        AccessController.doPrivileged(new PrivilegedAction() {
+            public Object run() {
                 for (int i=0; i < properties.length; i++) {
                     RADProperty prop = properties[i];
                     if (FormUtils.isIgnoredProperty(component.getBeanClass(),
@@ -385,10 +401,9 @@ public class RADComponentNode extends FormNode
                             ex.printStackTrace();
                     }
                 }
+                return null;
             }
         });
-
-        return (Component) customizerObject;
     }
 
     // -----------------------------------------------------------------------------------------
