@@ -57,7 +57,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/lookup/*Test.class"/>
                 <include name="org/netbeans/core/lookup/*Test?.class"/>
                 <exclude name="org/netbeans/core/lookup/InstanceDataObjectModuleTest4.class"/>
-                <exclude name="org/netbeans/core/lookup/LookupClassLoaderTest.class"/>
                 <include name="org/netbeans/PatchByteCodeTest.class"/>
             </patternset>
         </testset>
@@ -68,8 +67,6 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <!-- Under investigation why it fails (probably "as designed"): -->
                 <include name="org/netbeans/core/lookup/InstanceDataObjectModuleTest4.class"/>
-                <!-- XXX fails big time, much work needed, e.g. #26245: -->
-                <include name="org/netbeans/core/lookup/LookupClassLoaderTest.class"/>
             </patternset>
         </testset>
     </testbag>

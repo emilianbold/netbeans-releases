@@ -1,5 +1,7 @@
 package ims;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.URL;
 import org.openide.ServiceType;
 import org.openide.util.HelpCtx;
@@ -8,12 +10,19 @@ import org.openide.util.NbBundle;
 
 public class Foo extends ServiceType {
     private static final long serialVersionUID = 54629387456L;
-    public final transient ClassLoader loader;
-    public final transient String loaderToString;
-    public final transient URL resource;
-    public final transient String text;
+    public transient ClassLoader loader;
+    public transient String loaderToString;
+    public transient URL resource;
+    public transient String text;
     public Foo() {
+        init();
+    }
+    private void init() {
         loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+        if (loader == null) {
+            Thread.dumpStack();
+            System.err.println("Lookup=" + Lookup.getDefault());
+        }
         loaderToString = loader != null ? loader.toString() : null;
         resource = loader != null ? loader.getResource("ims/Bundle.properties") : null;
         text = NbBundle.getMessage(Foo.class, "foo");
@@ -26,5 +35,11 @@ public class Foo extends ServiceType {
     }
     public HelpCtx getHelpCtx() {
         return null;
+    }
+    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        ois.defaultReadObject();
+        //System.err.println("readObject");
+        //Thread.dumpStack();
+        init();
     }
 }
