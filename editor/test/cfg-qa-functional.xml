@@ -24,6 +24,7 @@ Microsystems, Inc. All Rights Reserved.
                <include name="org/netbeans/test/editor/suites/keyboard_shortcuts/Replace*"/>
                <include name="org/netbeans/test/editor/suites/smart_enter/SmartEnter*"/>
                <include name="smart_bracket/SmartBracketTestSuite*"/>
+               <include name="code_folding/CodeFoldingTestSuite*"/>
 
              </patternset>
          </testset>
