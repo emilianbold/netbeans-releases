@@ -12,6 +12,10 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
+<!DOCTYPE xtest [
+  <!ENTITY cfg-default SYSTEM "cfg-default.xml">
+]>
+
 <project name="xtest_master" default="netbeans" basedir=".">
 
     <!-- Properties -->
@@ -57,10 +61,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <!-- Configuration defines modules, tests and patterns to be executed -->
         <xtestconfig config="${xtest.config}">
-            <config name="default" modules="openide,core" testtypes="unit"/>
-            <config name="openide" modules="openide" testtypes="unit"/>
-            <config name="core" modules="core" testtypes="unit"/>
-            <config name="examples" modules="mymodule" testtypes="unit"/>
+          &cfg-default;
         </xtestconfig>
     </target>
 
@@ -152,11 +153,11 @@ Microsystems, Inc. All Rights Reserved.
     <!-- main executor                                                                                      -->
     <!-- Iterate through all modules and tests defined by selected configuration and call specified target. -->
     <target name="executor">
-        <xtest  targetname="${target.name}"
-                targetParamModule="xtest.module"
-                targetParamTesttype="xtest.testtype"
-                targetParamIncludes="xtest.includes"
-                targetParamExcludes="xtest.excludes">
+        <xtest targetname="${target.name}"
+               targetParamModule="xtest.module"
+               targetParamTesttype="xtest.testtype"
+               targetParamIncludes="xtest.includes"
+               targetParamExcludes="xtest.excludes">
         </xtest>
     </target>
 
@@ -203,6 +204,12 @@ Microsystems, Inc. All Rights Reserved.
         <zip zipfile="${xtest.distname}.zip" basedir="${xtest.distdir}"/>
     </target>
 
+    <target name="unzip-distribution" if="distname-zip"
+            description="Unzips distribution to dist folder, you must provide name of zipfile -Ddistname-zip">
+        <delete dir="${xtest.distdir}"/>
+	<unzip src="${distname-zip}" dest="${xtest.distdir}"/>
+    </target>
+
     <!-- =========================================================== -->
     <!-- Run all tests of all modules and create summary of results. -->
     <target name="test-runner" depends="init, clean-results, clean-uploaded-results">
@@ -211,9 +218,9 @@ Microsystems, Inc. All Rights Reserved.
         </antcall>
 
         <!-- make summary  -->
-        <xreport    tofile="summary.xml" 
-                    resultsdir="${xtest.uploaddir}"
-                    statusfailed="xtest.failed">
+        <xreport tofile="summary.xml" 
+                 resultsdir="${xtest.uploaddir}"
+                 statusfailed="xtest.failed">
             <reporter testtype="unit" classname="org.netbeans.xtest.UnitTestReporter"/>
         </xreport>
 
@@ -327,6 +334,52 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="xtest.config  ... test configuration name"/>
         <echo message="xtest.basedir ... absolute path to the root of modules"/>
         <echo message=""/>
+    </target>
+
+    <!-- Creates zipfile with all files needed for running xtest framework -->
+    <target name="build-xtestdist">
+        <delete dir="workdir"/>
+	<delete file="xtestdist.zip"/>
+
+	<ant antfile="xtest.xml"/>
+
+	<!-- 'build-distribution' or 'unzip-distribution' targets should be called -->
+	<!-- before creating xtest distribution explicitly -->
+	<!-- <antcall target="build-distribution"/> -->
+
+	<mkdir dir="workdir/xtest/lib"/>
+	<mkdir dir="workdir/xtest/dist"/>
+	<mkdir dir="workdir/xtest/xslt"/>
+	<copy todir="workdir/xtest/lib">
+	    <fileset dir="lib"/>
+	</copy>
+	<copy todir="workdir/xtest/dist">
+	    <fileset dir="dist"/>
+	</copy>
+	<copy todir="workdir/xtest/xslt">
+	    <fileset dir="xslt"/>
+	</copy>
+	<copy todir="workdir/xtest">
+	  <fileset dir=".">
+	      <include name="build.xml"/>
+	      <include name="cfg-default.xml"/>
+	  </fileset>
+	</copy>
+
+	<exec executable="zip" dir="workdir" os="Linux SunOS Solaris" failonerror="false">
+	    <arg value="-9"/>
+            <arg value="-r"/>
+            <arg value="xtestdist.zip"/>
+            <arg value="."/>
+	    <arg value="-i"/>
+	    <arg value="*"/>
+        </exec>
+	<move todir=".">
+	    <fileset dir="workdir" includes="xtestdist.zip"/>
+	</move>
+
+        <zip zipfile="xtestdist.zip" basedir="workdir"/>
+	<delete dir="workdir"/>
     </target>
 
     <!-- ============================================================================== -->
