@@ -23,6 +23,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
   <target name="compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
+        <pathelement location="../openide/openide-13javac-workaround.jar"/>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
 	<pathelement location="release/modules/ext/ant.jar"/>
 	<pathelement location="release/modules/ext/xerces.jar"/>
