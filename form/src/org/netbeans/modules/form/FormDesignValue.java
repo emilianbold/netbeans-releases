@@ -32,20 +32,23 @@ package com.netbeans.developer.modules.loaders.form;
 * generate correct Java code fro it from the getJavaInitializationString () method).
 * @author Ian Formanek
 */
-public interface FormDesignValue {
+public interface FormDesignValue extends java.io.Serializable {
 
   /** Provides a value which should be used during design-time
   * as the real property value on the bean instance.
   * E.g. the ResourceBundle String would provide the real value
   * of the String from the resource bundle, so that the design-time
   * representation reflects the real code being generated.
+  * @param radComponent the radComponent in which this property is used
   * @return the real property value to be used during design-time
   */
-  public Object getDesignValue ();
+  public Object getDesignValue (RADComponent radComponent);
 }
 
 /*
  * Log
+ *  2    Gandalf   1.1         6/27/99  Ian Formanek    implements serializable,
+ *       getDesignValue has a RADComponent parameter
  *  1    Gandalf   1.0         5/23/99  Ian Formanek    
  * $
  */
