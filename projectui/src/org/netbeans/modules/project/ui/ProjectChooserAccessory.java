@@ -55,7 +55,9 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         // Workaround for strange behavior of FormEditor
         jLabelProjectName.setText( NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_ProjectName_Label" ) ); //NOI18N
         jCheckBoxMain.setText( NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_Main_CheckBox" ) ); //NOI18N
+        jCheckBoxMain.setMnemonic ( NbBundle.getMessage( ProjectChooserAccessory.class, "MNM_PrjChooser_Main_CheckBox" ).charAt (0) ); //NOI18N
         jCheckBoxSubprojects.setText( NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_Subprojects_CheckBox" ) ); //NOI18N
+        jCheckBoxSubprojects.setMnemonic( NbBundle.getMessage( ProjectChooserAccessory.class, "MNM_PrjChooser_Subprojects_CheckBox" ).charAt (0) ); //NOI18N
         
         
         
@@ -366,6 +368,8 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         OpenProjectListSettings opls = OpenProjectListSettings.getInstance();
         JFileChooser chooser = new ProjectFileChooser();
         chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );        
+        chooser.setApproveButtonText( NbBundle.getMessage( ProjectChooserAccessory.class, "BTN_PrjChooser_ApproveButtonText" ) ); // NOI18N
+        chooser.setApproveButtonMnemonic( NbBundle.getMessage( ProjectChooserAccessory.class, "MNM_PrjChooser_ApproveButtonText" ).charAt (0) ); // NOI18N
         chooser.setMultiSelectionEnabled( false );        
         chooser.setDialogTitle( NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_Title" ) ); // NOI18N
         chooser.setFileFilter( ProjectDirFilter.INSTANCE );        
