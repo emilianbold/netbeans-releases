@@ -146,6 +146,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         
         chooser.setControlButtonsAreShown(false);
         chooser.setMultiSelectionEnabled(multiSelection);
+        chooser.setFileSelectionMode(selectionMode);
         chooser.addPropertyChangeListener(this);
         
         //TODO set initial selection

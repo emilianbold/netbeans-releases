@@ -55,6 +55,8 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
     private static final String PROPERTY_DESCRIPTION = "description"; // NOI18N
     /** Name of the custom property that can be passed in PropertyEnv. */
     private static final String PROPERTY_GUI_TYPE = "guitype"; // NOI18N
+    /** Name of the custom property that can be passed in PropertyEnv. */
+    private static final String PROPERTY_SELECTION_MODE = "selectionMode"; // NOI18N
     
     /** This gets lazy initialized in getDataObjectPanel*/
     private DataObjectPanel customEditor;
@@ -85,6 +87,16 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
      * It can be 'TreeView' or 'ListView'. Default is 'ListView'.
      */
     private String guiType;
+    /** A property stored between calls to atachEnv and getCustomEditor()
+     * Valid only for 'ListView' GUI type. It controls selection mode of 
+     * JFileChooser.
+     *
+     * Valid values are:
+     * JFileChooser.FILES_ONLY
+     * JFileChooser.DIRECTORIES_ONLY
+     * JFileChooser.FILES_AND_DIRECTORIES
+     */
+    private Integer selectionMode;
     
     private PropertyChangeSupport supp = new PropertyChangeSupport(this);
     
@@ -143,6 +155,10 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
         newObj = env.getFeatureDescriptor().getValue(PROPERTY_GUI_TYPE);
         if (newObj instanceof String) {
             guiType = (String)newObj;
+        }
+        newObj = env.getFeatureDescriptor().getValue(PROPERTY_SELECTION_MODE);
+        if (newObj instanceof Integer) {
+            selectionMode = (Integer)newObj;
         }
         // fix of 19318
         env.getFeatureDescriptor().setValue( "canEditAsText", Boolean.FALSE );
@@ -216,6 +232,9 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
         }
         if (description != null) {
             customEditor.setDescription(description);
+        }
+        if (selectionMode != null) {
+            customEditor.setSelectionMode(selectionMode.intValue());
         }
         customEditor.setMultiSelection(false);
         return customEditor;

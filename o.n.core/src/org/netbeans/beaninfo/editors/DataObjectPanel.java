@@ -53,6 +53,7 @@ public class DataObjectPanel extends JPanel {
     /** Set to true when panel is used by DataObjectArrayEditor. Relevant only
      * for list view. Tree view allows only single selection. */
     protected boolean          multiSelection;
+    protected int              selectionMode = JFileChooser.FILES_ONLY;
     
     protected PropertyEditorSupport myEditor;
     
@@ -154,6 +155,20 @@ public class DataObjectPanel extends JPanel {
      */
     public void setMultiSelection (boolean multiSelection) {
         this.multiSelection = multiSelection;
+    }
+    
+    /**
+     * Sets selection mode for JFileChooser. It is valid only for list view GUI (JFileChooser).
+     * Valid values are:
+     * JFileChooser.FILES_ONLY
+     * JFileChooser.DIRECTORIES_ONLY
+     * JFileChooser.FILES_AND_DIRECTORIES
+     *
+     * @param selectionMode integer value controling if files, directories or both can be
+     * selected in dialog
+     */
+    public void setSelectionMode (int selectionMode) {
+        this.selectionMode = selectionMode;
     }
     
     /**
