@@ -91,9 +91,13 @@ public class DocumentsDialog extends testUtilities.PerformanceTestCase {
             
         for(int i=0; i<files_path.length; i++) {
                 openFileNodes[i] = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),"Source Packages" + '|' +  files_path[i][0] + '|' + files_path[i][1]);
+                
+                // open file one by one, opening all files at once causes never ending loop (java+mdr)
+                new OpenAction().performAPI(openFileNodes[i]);
         }
             
-        new OpenAction().performAPI(openFileNodes);
+        // try to open each file separately, it causes a very long time wait for try to open 10 big files at once
+        // new OpenAction().performAPI(openFileNodes);
     }
     
 }

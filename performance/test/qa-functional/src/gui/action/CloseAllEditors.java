@@ -71,7 +71,9 @@ public class CloseAllEditors extends testUtilities.PerformanceTestCase {
     }
     
     public void prepare(){
-        new OpenAction().performAPI(openFileNodes);
+        for(int i=0; i<openFileNodes.length; i++) {
+            new OpenAction().performAPI(openFileNodes[i]); // fix for mdr+java, opening all files at once causes never ending loop
+        }
     }
     
     public ComponentOperator open(){
