@@ -144,7 +144,7 @@ implements EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie {
     * @return the undo/redo manager
     */
     protected UndoRedo.Manager createUndoRedoManager () {
-        return new UndoRedo.Manager ();
+        return del.superUndoRedoManager ();
     }
 
     /** Passes the actual opening to internal delegate support.
@@ -719,6 +719,9 @@ implements EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie {
         
         final void superSaveDocument() throws IOException {
             super.saveDocument();
+        }
+        final UndoRedo.Manager superUndoRedoManager() {
+            return super.createUndoRedoManager ();
         }
         
         // 
