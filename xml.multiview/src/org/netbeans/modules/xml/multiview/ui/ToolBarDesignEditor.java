@@ -33,7 +33,7 @@ import org.netbeans.modules.xml.multiview.Error;
  *
  **/
 
-public class ToolBarDesignEditor extends AbstractDesignEditor implements org.openide.cookies.EditCookie {
+public class ToolBarDesignEditor extends AbstractDesignEditor {
     
     protected JComponent designPanel;
     private ErrorPanel errorPanel;
@@ -113,10 +113,6 @@ public class ToolBarDesignEditor extends AbstractDesignEditor implements org.ope
     public JComponent createStructureComponent() {
         JToolBar toolbar = new ToolBarView(getExplorerManager(),getContentView().getRoot());
         return toolbar;
-    }
-    
-    public void edit() {
-        
     }
     
     /**

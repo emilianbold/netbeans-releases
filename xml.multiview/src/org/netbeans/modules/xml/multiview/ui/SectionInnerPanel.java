@@ -17,6 +17,7 @@ import org.netbeans.modules.xml.multiview.cookies.LinkCookie;
 import org.netbeans.modules.xml.multiview.cookies.ErrorLocator;
 import org.netbeans.modules.xml.multiview.Error;
 
+import javax.swing.text.JTextComponent;
 import javax.swing.*;
 import java.awt.event.FocusListener;
 import java.awt.event.FocusEvent;
@@ -41,7 +42,9 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
             processFocusEvent(evt);
         }
     };
-
+    /** Constructor that takes the enclosing SectionView object as its argument
+     * @param sectionView enclosing SectionView object
+     */
     public SectionInnerPanel(SectionView sectionView) {
         this.sectionView = sectionView;
         setBackground(SectionVisualTheme.documentBackgroundColor);
@@ -60,41 +63,67 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
             }
         }
     }
-
-    public abstract JComponent getErrorComponent(String errorId);
-
+    
+    /** Getter for section view
+     * @return sectionView enclosing SectionView object
+     */
+    public SectionView getSectionView() {
+        return sectionView;
+    }
+    
+    /** Callback method called on focus lost event after the value was checked for correctness.
+     * @param source last focused JComponent
+     * @param value the value that has been set (typed) in the component
+     */
     public abstract void setValue(JComponent source, Object value);
-
+    
+    /** Callback method called on document change event. This is called for components that
+     * require just-in-time validation. 
+     * @param source JTextComponent being actually edited
+     * @param value the actual value of the component
+     */
     public void documentChanged(javax.swing.text.JTextComponent source, String value) {
     }
-
+    
+    /** Callback method called on focus lost event after the value was checked for correctness.
+     * and the result is that the value is wrong. The value should be rollbacked from the model.
+     * @param source last focused JComponent
+     */
     public void rollbackValue(javax.swing.text.JTextComponent source) {
     }
-
-    public void addModifier(final JTextField tf) {
-        tf.addFocusListener(new java.awt.event.FocusAdapter() {
+    
+    /** Adds text component to the set of JTextComponents that modifies the model.
+     * After the value in this component is changed the setValue() method is called.
+     * @param tc JTextComponent whose content is related to data model
+     */
+    public final void addModifier(final JTextComponent tc) {
+        tc.addFocusListener(new java.awt.event.FocusAdapter() {
             private String orgValue;
 
             public void focusGained(FocusEvent evt) {
-                orgValue = tf.getText();
+                orgValue = tc.getText();
             }
 
             public void focusLost(FocusEvent evt) {
-                if (!tf.getText().equals(orgValue)) {
-                    setValue(tf, tf.getText());
+                if (!tc.getText().equals(orgValue)) {
+                    setValue(tc, tc.getText());
                 }
             }
         });
     }
-
-    public void addValidatee(final JTextField tf) {
-        tf.getDocument().addDocumentListener(new TextListener(tf));
-        tf.addFocusListener(new java.awt.event.FocusAdapter() {
+    /** Adds text component to the set of JTextComponentc that should be validated correctness.
+     * After the value in this component is changed either setValue() method is called(value is correct)
+     * or rollbackValue() method is called(value is incorrect). Also the documentChanged() method is called during editing.
+     * @param tc JTextComponent whose content is related to data model and should be validated before saving to data model.
+     */
+    public final void addValidatee(final JTextComponent tc) {
+        tc.getDocument().addDocumentListener(new TextListener(tc));
+        tc.addFocusListener(new java.awt.event.FocusAdapter() {
             private String orgValue;
             private boolean viewIsBuggy;
 
             public void focusGained(FocusEvent evt) {
-                orgValue = tf.getText();
+                orgValue = tc.getText();
                 if (sectionView.getErrorPanel().getError() != null) {
                     viewIsBuggy = true;
                 } else {
@@ -104,19 +133,19 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
 
             public void focusLost(FocusEvent evt) {
                 org.netbeans.modules.xml.multiview.Error error = sectionView.getErrorPanel().getError();
-                if (error != null && error.isEditError() && tf == error.getFocusableComponent()) {
+                if (error != null && error.isEditError() && tc == error.getFocusableComponent()) {
                     if (Error.TYPE_WARNING == error.getSeverityLevel()) {
                         org.openide.DialogDescriptor desc = new RefreshSaveDialog(sectionView.getErrorPanel());
                         Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(desc);
                         dialog.show();
                         Integer opt = (Integer) desc.getValue();
                         if (opt.equals(RefreshSaveDialog.OPTION_FIX)) {
-                            tf.requestFocus();
+                            tc.requestFocus();
                         } else if (opt.equals(RefreshSaveDialog.OPTION_REFRESH)) {
-                            rollbackValue(tf);
+                            rollbackValue(tc);
                             sectionView.validateView();
                         } else {
-                            setValue(tf, tf.getText());
+                            setValue(tc, tc.getText());
                             sectionView.validateView();
                         }
                     } else {
@@ -125,15 +154,15 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
                         dialog.show();
                         Integer opt = (Integer) desc.getValue();
                         if (opt.equals(RefreshDialog.OPTION_FIX)) {
-                            tf.requestFocus();
+                            tc.requestFocus();
                         } else if (opt.equals(RefreshDialog.OPTION_REFRESH)) {
-                            rollbackValue(tf);
+                            rollbackValue(tc);
                             sectionView.validateView();
                         }
                     }
                 } else {
-                    if (!tf.getText().equals(orgValue)) {
-                        setValue(tf, tf.getText());
+                    if (!tc.getText().equals(orgValue)) {
+                        setValue(tc, tc.getText());
                         sectionView.validateView();
                     } else {
                         if (viewIsBuggy) {
@@ -146,10 +175,10 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
     }
 
     private class TextListener implements javax.swing.event.DocumentListener {
-        private JTextField tf;
+        private JTextComponent tc;
 
-        TextListener(JTextField tf) {
-            this.tf = tf;
+        TextListener(JTextComponent tc) {
+            this.tc = tc;
         }
 
         /**
@@ -176,7 +205,7 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
         private void update(javax.swing.event.DocumentEvent evt) {
             try {
                 String text = evt.getDocument().getText(0, evt.getDocument().getLength());
-                documentChanged(tf, text);
+                documentChanged(tc, text);
             } catch (javax.swing.text.BadLocationException ex) {
             }
         }
