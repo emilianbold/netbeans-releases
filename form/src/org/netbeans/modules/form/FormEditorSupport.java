@@ -569,8 +569,11 @@ public class FormEditorSupport extends JavaEditor
                 formModel = null;
                 throw ex;
             }
-            catch (Exception ex) { // should not happen
+            catch (Exception ex) { // should not happen, but for sure...
                 ex.printStackTrace();
+                persistenceManager = null;
+                openForms.remove(formModel);
+                formModel = null;
                 return;
             }
         }
