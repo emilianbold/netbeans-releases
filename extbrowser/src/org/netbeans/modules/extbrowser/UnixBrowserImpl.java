@@ -17,16 +17,13 @@ import java.awt.*;
 import java.beans.*;
 import java.io.*;
 import java.net.*;
-import java.util.ResourceBundle;
 import javax.swing.*;
 
 import org.openide.*;
 import org.openide.awt.StatusDisplayer;
-import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.options.SystemOption;
 
 import org.openide.util.RequestProcessor;
 

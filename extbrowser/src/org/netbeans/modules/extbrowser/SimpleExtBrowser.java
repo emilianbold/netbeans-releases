@@ -22,9 +22,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.MapFormat;
 
 import org.openide.util.Utilities;
 

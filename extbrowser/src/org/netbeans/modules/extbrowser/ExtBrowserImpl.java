@@ -17,13 +17,10 @@ import java.awt.*;
 import java.beans.*;
 import java.io.*;
 import java.net.*;
-import java.util.ResourceBundle;
 import javax.swing.*;
 
 import org.openide.*;
 import org.openide.awt.HtmlBrowser;
-import org.openide.util.NbBundle;
-import org.openide.options.SystemOption;
 
 /**
  * The ExtBrowserImpl is generalized external browser.

@@ -18,7 +18,6 @@ import java.awt.event.*;
 import java.beans.*;
 import java.net.*;
 import javax.swing.*;
-import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask; 
 import java.util.Vector;
@@ -26,11 +25,8 @@ import java.util.Vector;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
-import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.execution.NbProcessDescriptor;
-import org.openide.options.SystemOption;
-import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
@@ -101,11 +97,6 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     /** reference to creator */
     private WinWebBrowser winBrowserFactory;
     
-    /** name of DDE server receiving URLEcho notifications */
-    private String  ddeUrlEchoSrvName = "NETBEANSURL";    // NOI18N
-    
-    private Thread  urlEchoThread = null;
-
     /** native thread that displays URLs */
     private static Thread nativeThread = null;
     
@@ -424,7 +415,6 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
          * It is used when WWW_Activate or WWW_OpenURL fail
          */
         private void startBrowser(DisplayTask task) throws NbBrowserException, java.io.IOException, InterruptedException {
-            String b;
             if (task.browser.winBrowserFactory.isStartWhenNotRunning()) {
                 NbProcessDescriptor cmd = task.browser.winBrowserFactory.getBrowserExecutable();
                 StatusDisplayer.getDefault ().setStatusText (NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_startingBrowser"));
