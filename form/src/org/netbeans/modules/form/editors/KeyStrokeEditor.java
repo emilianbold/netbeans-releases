@@ -322,8 +322,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
 
             ItemListener il = new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
-                    if (e.getStateChange() == ItemEvent.SELECTED)
-                        virtualKeyChanged();
+                    virtualKeyChanged();
                 }
             };
             _virtualKey.addItemListener(il);
