@@ -175,7 +175,12 @@ final class J2SEProject implements Project, AntProjectListener {
             }),
             fileBuilt,
             new RecommendedTemplatesImpl(),
-            new J2SEProjectClassPathExtender(this, helper, eval,refHelper)
+            new J2SEProjectClassPathExtender(this, helper, eval,refHelper),
+            new AntProjectHelperProvider () {
+                public AntProjectHelper getAntProjectHelper () {
+                    return helper;
+                }
+            }
         });
     }
 
@@ -260,6 +265,10 @@ final class J2SEProject implements Project, AntProjectListener {
                     }
                 }
             });
+    }
+    
+    interface AntProjectHelperProvider {
+        AntProjectHelper getAntProjectHelper ();
     }
     
     // Private innerclasses ----------------------------------------------------

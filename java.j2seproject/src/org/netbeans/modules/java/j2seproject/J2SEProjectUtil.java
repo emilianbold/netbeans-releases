@@ -14,6 +14,8 @@
 package org.netbeans.modules.java.j2seproject;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 
 /** The util methods for projectui module.
@@ -23,18 +25,43 @@ import org.openide.filesystems.FileObject;
 public class J2SEProjectUtil {
     private J2SEProjectUtil () {}
     
-    /** Returns the J2SEProject source' directory.
+    /** Returns the J2SEProject sources directory.
      *
-     * @param p project (assumed J2SEProject)
-     * @return source directory or null if not set or a wrong type of project
+     * @param p project
+     * @return source directory or null if directory not set or if the project 
+     * doesn't provide AntProjectHelper
      */    
     final public static FileObject getProjectSourceDirectory (Project p) {
-        if (p instanceof J2SEProject) {
-            J2SEProject j2se = (J2SEProject) p;
-            return j2se.getSourceDirectory ();
+        J2SEProject.AntProjectHelperProvider provider = (J2SEProject.AntProjectHelperProvider)p.getLookup ().lookup (J2SEProject.AntProjectHelperProvider.class);
+        if (provider != null) {
+            AntProjectHelper helper = provider.getAntProjectHelper ();
+            assert helper != null : p;
+            String srcDir = helper.getStandardPropertyEvaluator ().getProperty (J2SEProjectProperties.SRC_DIR);
+            if (srcDir == null) {
+                return null;
+            }
+            return helper.resolveFileObject (srcDir);
         } else {
-            // support only J2SEProject, better throw IAE
             return null;
+        }
+    }
+    
+    /**
+     * Returns the property value evaluated by J2SEProject's PropertyEvaluator.
+     *
+     * @param p project
+     * @param properties project's j2seproperties
+     * @param property name of property
+     * @return evaluated value of given property or null if the property not set or
+     * if the project doesn't provide AntProjectHelper
+     */    
+    final public static Object getEvaluatedProperty (Project p, J2SEProjectProperties properties, String property) {
+        J2SEProject.AntProjectHelperProvider provider = (J2SEProject.AntProjectHelperProvider)p.getLookup ().lookup (J2SEProject.AntProjectHelperProvider.class);
+        if (provider != null) {
+            assert provider.getAntProjectHelper () != null : p;
+            return provider.getAntProjectHelper ().getStandardPropertyEvaluator ().getProperty (property);
+        } else {
+            return properties.get (property);
         }
     }
 }

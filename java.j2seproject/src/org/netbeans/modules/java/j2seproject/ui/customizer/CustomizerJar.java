@@ -26,6 +26,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
@@ -46,17 +47,11 @@ public class CustomizerJar extends JPanel implements J2SECustomizer.Panel {
         vps = new VisualPropertySupport( j2seProperties );
     }
     
-    
     public void initValues() {
         
-        vps.register( jTextFieldDistDir, J2SEProjectProperties.DIST_DIR );
+        vps.register( jTextFieldDistDir, J2SEProjectProperties.DIST_JAR );
         vps.register( jTextFieldExcludes, J2SEProjectProperties.BUILD_CLASSES_EXCLUDES );
         vps.register( jCheckBoxCommpress, J2SEProjectProperties.JAR_COMPRESS ); 
-        
-        // XXX Temporarily removing some controls
-        remove( jLabelDistDir );
-        remove( jTextFieldDistDir );
-        remove( jButtonDistDir );
     } 
         
     
@@ -70,7 +65,6 @@ public class CustomizerJar extends JPanel implements J2SECustomizer.Panel {
 
         jLabelDistDir = new javax.swing.JLabel();
         jTextFieldDistDir = new javax.swing.JTextField();
-        jButtonDistDir = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         jTextFieldExcludes = new javax.swing.JTextField();
         jCheckBoxCommpress = new javax.swing.JCheckBox();
@@ -84,30 +78,29 @@ public class CustomizerJar extends JPanel implements J2SECustomizer.Panel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
         add(jLabelDistDir, gridBagConstraints);
 
-        jTextFieldDistDir.setEnabled(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 12);
-        add(jTextFieldDistDir, gridBagConstraints);
-
-        jButtonDistDir.setText(org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_BrowseDistDir_JButton"));
-        jButtonDistDir.setEnabled(false);
+        jTextFieldDistDir.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 12);
-        add(jButtonDistDir, gridBagConstraints);
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 12);
+        gridBagConstraints.weightx = 1.0;
+        add(jTextFieldDistDir, gridBagConstraints);
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_Excludes_JTextField"));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
         add(jLabel2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 12);
         add(jTextFieldExcludes, gridBagConstraints);
 
         jCheckBoxCommpress.setText(org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_Commpres_JCheckBox"));
@@ -116,16 +109,15 @@ public class CustomizerJar extends JPanel implements J2SECustomizer.Panel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
         add(jCheckBoxCommpress, gridBagConstraints);
 
     }//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButtonDistDir;
     private javax.swing.JCheckBox jCheckBoxCommpress;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabelDistDir;
