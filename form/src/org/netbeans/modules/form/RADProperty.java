@@ -18,6 +18,8 @@ import java.beans.*;
 import java.lang.reflect.*;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
+import org.openide.TopManager;
+import org.openide.ErrorManager;
 
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
@@ -94,8 +96,24 @@ public class RADProperty extends FormProperty {
             FakePeerSupport.detachFakePeer((java.awt.Component)beanInstance)
             : null;
 
-        // invoke the setter method
-        writeMethod.invoke(component.getBeanInstance(), new Object[] { value });
+        try {
+            // invoke the setter method
+            writeMethod.invoke(component.getBeanInstance(),
+                               new Object[] { value });
+        }
+        catch (InvocationTargetException ex) {
+            // annotate exception
+            String message = java.text.MessageFormat.format(
+                FormEditor.getFormBundle()
+                                .getString("MSG_ERR_WRITING_TO_PROPERTY"), // NOI18N
+                new Object[] { getDisplayName() });
+
+            TopManager.getDefault ().getErrorManager().annotate(
+                ex, ErrorManager.WARNING, null,
+                message, null, null);
+
+            throw ex;
+        }
 
         if (scrollbarPeerHack != null) // restore the Scrollbar's fake peer
             FakePeerSupport.attachFakePeer((java.awt.Component)beanInstance,

@@ -17,9 +17,6 @@ import java.util.*;
 import java.beans.*;
 import java.lang.reflect.*;
 import org.openide.nodes.Node;
-import org.openide.TopManager;
-import org.openide.ErrorManager;
-
 
 /** 
  * This class provides basic implementation of properties used in form editor.
@@ -170,17 +167,8 @@ public abstract class FormProperty extends Node.Property {
      */
     public void setValue(Object value) throws IllegalAccessException,
                                               IllegalArgumentException,
-                                              InvocationTargetException {
-
-        // NO_VALUE is returned from FormCustomEditor when value wasn't set before and
-        // default value is NO_VALUE (cannot be set into editor) e.g. write-only properties
-        if (value == BeanSupport.NO_VALUE) {
-            setChanged(false);
-            propertyValue = value;
-            lastRealValue = null;
-            return;
-        }
-
+                                              InvocationTargetException
+    {
 //        if (!canWrite())
 //            throw new IllegalAccessException("Not a writeable property: "+getName());
         Object oldValue = null;
@@ -196,6 +184,15 @@ public abstract class FormProperty extends Node.Property {
             }
         }
 
+        if (value == BeanSupport.NO_VALUE) {
+            // special - BeanSupport.NO_VALUE resets change flag
+            setChanged(false);
+            propertyValue = value;
+            lastRealValue = null;
+            firePropertyValueChange(oldValue, value);
+            return;
+        }
+
         Object defValue = supportsDefaultValue() ?
                             getDefaultValue() : BeanSupport.NO_VALUE;
 
@@ -203,26 +200,12 @@ public abstract class FormProperty extends Node.Property {
             // derive real value
             Object realValue = getRealValue(value);
 
-            try {
-                // set the real value to the target object
-                if (realValue != FormDesignValue.IGNORED_VALUE) {
-                    setTargetValue(realValue);
-                }
-                else if (valueSet && defValue != BeanSupport.NO_VALUE) {
-                    setTargetValue(defValue);
-                }
+            // set the real value to the target object
+            if (realValue != FormDesignValue.IGNORED_VALUE) {
+                setTargetValue(realValue);
             }
-            catch (java.lang.Throwable ex) {
-                String message = java.text.MessageFormat.format(
-                            FormEditor.getFormBundle().getString("MSG_ERR_INCORRECT_VALUE_OF_PROPERTY"),
-                            new Object[] { getDisplayName() }
-                        );
-                IllegalArgumentException iae = new IllegalArgumentException(message);
-                TopManager.getDefault ().getErrorManager().annotate(
-                    iae, ErrorManager.USER, null,
-                    message, null, null);
-            
-                throw iae;
+            else if (valueSet && defValue != BeanSupport.NO_VALUE) {
+                setTargetValue(defValue);
             }
 
             if (canReadFromTarget()) {

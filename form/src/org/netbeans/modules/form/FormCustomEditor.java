@@ -48,7 +48,7 @@ public class FormCustomEditor extends JPanel
     private FormPropertyEditor editor;
     private PropertyEditor[] allEditors;
     private Component[] allCustomEditors;
-    private boolean[] valueSet;
+    private boolean[] validValues;
 
     private String preCode;
     private String postCode;
@@ -101,7 +101,7 @@ public class FormCustomEditor extends JPanel
         }
 
         allCustomEditors = new Component[allEditors.length];
-        valueSet = new boolean[allEditors.length];
+        validValues = new boolean[allEditors.length];
 
         Object currentValue = editor.getValue();
 
@@ -109,17 +109,18 @@ public class FormCustomEditor extends JPanel
             PropertyEditor prEd = allEditors[i];
             editor.getPropertyContext().initPropertyEditor(prEd);
 
+            boolean valueSet = false;
             if (i == currentIndex) { // this is the currently used editor
                 prEd.setValue(currentValue);
+                valueSet = true;
             }
             else {
-                valueSet[i] = false;
                 if (currentValue != null) {
                     if (editor.getPropertyType().isAssignableFrom(
                                                    currentValue.getClass())) {
                         // currentValue contains a real property value
                         prEd.setValue(currentValue);
-                        valueSet[i] = true;
+                        valueSet = true;
                     }
                     else if (currentValue instanceof FormDesignValue) {
                         Object realValue =
@@ -127,19 +128,20 @@ public class FormCustomEditor extends JPanel
                         if (realValue != FormDesignValue.IGNORED_VALUE) {
                             // current value is FormDesignValue with known real value
                             prEd.setValue(realValue); 
-                            valueSet[i] = true;
+                            valueSet = true;
                         }
                     }
                 }
-                if (!valueSet[i]) {
+                if (!valueSet) {
                     Object defaultValue = editor.getProperty().getDefaultValue();
                     // we want to pass null e.g. because FontEditor threw NPE
                     if (defaultValue != BeanSupport.NO_VALUE) {
                         prEd.setValue(defaultValue);
-                        valueSet[i] = true;
+                        valueSet = true;
                     }
                 }
             }
+            validValues[i] = valueSet;
 
             String editorName = prEd instanceof NamedPropertyEditor ?
                         ((NamedPropertyEditor)prEd).getDisplayName() :
@@ -281,38 +283,46 @@ public class FormCustomEditor extends JPanel
      *(and thus it should not be set)
      */
     public Object getPropertyValue() throws IllegalStateException {
-        Component currentCustomEditor = getCurrentCustomPropertyEditor();
-        PropertyEditor currentEditor = getCurrentPropertyEditor();
+        int currentIndex = editorsCombo.getSelectedIndex();
+        Component currentCustomEditor = currentIndex > -1 ?
+                                          allCustomEditors[currentIndex] : null;
         Object value;
 
         if (currentCustomEditor instanceof EnhancedCustomPropertyEditor)
             value = ((EnhancedCustomPropertyEditor) currentCustomEditor)
                                                         .getPropertyValue();
-        else if (currentEditor != null) {
-            int j = editorsCombo.getSelectedIndex();
-
-            if (!valueSet[j])
-                value = BeanSupport.NO_VALUE;
-            else
-                value = currentEditor.getValue();
+        else if (currentIndex > -1) {
+            value = validValues[currentIndex] ?
+                      allEditors[currentIndex].getValue() :
+                      BeanSupport.NO_VALUE;
         }
-        else
-            value = editor.getValue(); 
+        else value = editor.getValue();
 
         Node[] nodes = ComponentInspector.getInstance().getSelectedNodes();
-        for(int i=0; i<nodes.length; i++) {
-            PropertyEditor pe = (nodes.length == 1) ? editor : 
-                                 getPropertyEditorFromSelectedNode(((RADComponentNode)nodes[i]).getRADComponent(), 
-                                            ((RADProperty)editor.getProperty()).getName());
-            
-            if (pe != null && pe instanceof FormPropertyEditor) {
-                FormPropertyEditor fpe = (FormPropertyEditor)pe;
-                
+        for (int i=0; i < nodes.length; i++) {
+            PropertyEditor pe;
+            if (nodes.length == 1)
+                pe = editor;
+            else {
+                RADComponentCookie radCookie = (RADComponentCookie)
+                                   nodes[i].getCookie(RADComponentCookie.class);
+                if (radCookie != null) {
+                    RADComponent comp = radCookie.getRADComponent();
+                    RADProperty prop = comp.getPropertyByName(
+                                              editor.getProperty().getName());
+                    pe = prop.getPropertyEditor();
+                }
+                else pe = null;
+            }
+
+            if (pe instanceof FormPropertyEditor) {
+                FormPropertyEditor fpe = (FormPropertyEditor) pe;
+
                 fpe.getProperty().setPreCode(preCode);
                 fpe.getProperty().setPostCode(postCode);
 
-                if (currentEditor != null) {
-                    fpe.setModifiedEditor(currentEditor);
+                if (currentIndex > -1) {
+                    fpe.setModifiedEditor(fpe.getAllEditors()[currentIndex]);
                     fpe.commitModifiedEditor();
                 }
             }
@@ -327,23 +337,8 @@ public class FormCustomEditor extends JPanel
         return (index == -1) ? null : allEditors[index];
     }
 
-    
     public Component getCurrentCustomPropertyEditor() {
         int index = editorsCombo.getSelectedIndex();
         return (index == -1) ? null : allCustomEditors[index];
     }
-
-
-    private PropertyEditor getPropertyEditorFromSelectedNode(RADComponent selectedComponent, String propertyName) {
-        if (selectedComponent == null || propertyName == null)
-            return null;
-        
-        RADProperty property = selectedComponent.getPropertyByName(propertyName);
-        
-        if (property != null)
-            return property.getPropertyEditor();
-        else
-            return null;
-    }
-
 }
