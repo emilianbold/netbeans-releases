@@ -776,7 +776,7 @@
   <mapID target="org.openide.actions.ToolsAction" url="pending.html" />
   <mapID target="org.openide.src.nodes.DefaultFactory$ElementCategoryNode" url="pending.html" /> 
 
-
+   <mapID target="org.netbeans.core.actions.SetupWizardAction" url="configure/setup.html" />
    <mapID target="org.netbeans.core.actions.SettingsAction" url="project/project_settings.html" />
 
    <mapID target="org.netbeans.beaninfo.editors.BeanEditor" url="pending.html" />
