@@ -160,7 +160,7 @@
 	<mapID target="dd_multiview_overview_contextParamsNode" url="web/csh/graphic_editor/dd_multiview_overview_contextParamsNode.html" />
 	<mapID target="dd_multiview_overview_listenersNode" url="web/csh/graphic_editor/dd_multiview_overview_listenersNode.html" />
 	<mapID target="dd_multiview_servlets_servletsNode" url="web/csh/graphic_editor/dd_multiview_servlets_servletsNode.html" />
-	<mapID target="dd_multiview_servlets_servletNode" url="web/csh/graphic_editor/dd_multiview_servlets_servletNode.html" />
+	<mapID target="dd_multiview_servlets_servletNode" url="web/csh/graphic_editor/dd_multiview_servlets_servletsNode.html" />
 	<mapID target="dd_multiview_filters_filtersNode" url="web/csh/graphic_editor/dd_multiview_filters_filtersNode.html" />
 	<mapID target="dd_multiview_filters_filterNode" url="web/csh/graphic_editor/dd_multiview_filters_filtersNode.html" />
 	<mapID target="dd_multiview_filters_filterMappingsNode" url="web/csh/graphic_editor/dd_multiview_filters_filtersNode.html" />
