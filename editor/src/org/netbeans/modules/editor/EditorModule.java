@@ -64,13 +64,6 @@ public class EditorModule extends ModuleInstall {
     static final long serialVersionUID =-929863607593944237L;
 
     public void installed () {
-        try {
-            Utilities2.createAction (JCUpdateAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Tools")); // NOI18N
-        } catch (IOException ioe) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                ioe.printStackTrace ();
-        }
-
         restored ();
     }
 
@@ -129,13 +122,6 @@ public class EditorModule extends ModuleInstall {
         for (int i = 0; i < replacements.length; i++) {
             ao.removeOption((SystemOption)SharedClassObject.findObject(replacements[i].optionsClass, true));
             ps.removeOption((SystemOption)SharedClassObject.findObject(replacements[i].printOptionsClass, true));
-        }
-
-        try {
-            Utilities2.removeAction (JCUpdateAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Tools")); // NOI18N
-        } catch (IOException ioe) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                ioe.printStackTrace ();
         }
 
         if (Boolean.getBoolean("netbeans.module.test")) { // NOI18N
