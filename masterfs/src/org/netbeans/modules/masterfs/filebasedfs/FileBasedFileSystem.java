@@ -32,7 +32,6 @@ import java.util.*;
 public final class FileBasedFileSystem extends FileSystem {
     private static Map allInstances = new HashMap();
     private final FileObjectFactory factory;
-    private static final RefreshAction REFRESH_ACTION = (RefreshAction) SharedClassObject.findObject (RefreshAction.class, true);
 
     //only for tests purposes
     public static void reinitForTests() {
@@ -91,12 +90,12 @@ public final class FileBasedFileSystem extends FileSystem {
         return getFactory().getRoot().getRealRoot().getPath();
     }
 
-    public final org.openide.util.actions.SystemAction[] getActions() {
-        return new SystemAction[]{};
+    public final SystemAction[] getActions() {
+        return new SystemAction[] {};
     }
 
-    public final SystemAction[] getActions(final Set foSet) {
-        return new SystemAction[]{FileBasedFileSystem.REFRESH_ACTION};
+    public final SystemAction[] getActions(final Set/*<FileObject>*/ foSet) {
+        return new SystemAction[] {};
 
     }
 

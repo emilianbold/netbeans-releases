@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
@@ -66,7 +66,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-ViewAction.instance"/>
             <file name="org-openide-actions-NewTemplateAction.instance"/>
             <file name="org-netbeans-core-actions-SetupWizardAction.instance"/>
-            <file name="org-netbeans-core-actions-RefreshAllFilesystemsAction.instance"/>
             <file name="org-netbeans-core-actions-JumpNextAction.instance">
             </file>
             <file name="org-netbeans-core-actions-JumpPrevAction.instance">
@@ -113,9 +112,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-SaveAction.instance"/>
             <attr name="org-openide-actions-SaveAction.instance/org-openide-actions-SaveAllAction.instance" boolvalue="true" />
             <file name="org-openide-actions-SaveAllAction.instance"/>
-            <attr name="org-openide-actions-SaveAllAction.instance/org-netbeans-core-actions-RefreshAllFilesystemsAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-actions-RefreshAllFilesystemsAction.instance"/>
-            <attr name="org-netbeans-core-actions-RefreshAllFilesystemsAction.instance/Separator3.instance" boolvalue="true" />
+            <attr name="org-openide-actions-SaveAllAction.instance/Separator3.instance" boolvalue="true" />
             <file name="Separator3.instance">
 		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>

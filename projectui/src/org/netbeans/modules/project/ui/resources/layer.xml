@@ -292,18 +292,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-project-ui-CustomizeProject.shadow/SeparatorPrj.instance" boolvalue="true" />            
             <attr name="org-netbeans-modules-project-ui-CustomizeProject.shadow/Separator2.instance" boolvalue="true" />            
 
-            <attr name="org-openide-actions-SaveAllAction.instance/org-netbeans-core-actions-RefreshAllFilesystemsAction.instance" boolvalue="true"/>
-            <attr name="org-netbeans-core-actions-RefreshAllFilesystemsAction.instance/Separator3.instance" boolvalue="true"/>
-            
-            
-            <!-- file name="SeparatorRecent.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-            
-            <attr name="SeparatorRecent.instance/org-netbeans-modules-project-ui-RecentProjects.shadow" boolvalue="true" />            
-            
-                        
-            <attr name="org-netbeans-modules-project-ui-RecentProjects.shadow/Separator3.instance" boolvalue="true" /-->
         </folder>
         
         <attr name="View/BuildProject" boolvalue="true" />

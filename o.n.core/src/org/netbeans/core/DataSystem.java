@@ -7,34 +7,47 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core;
 
-import java.awt.Component;
-import java.beans.*;
-import java.util.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import javax.swing.Action;
-
-import org.openide.actions.NewTemplateAction;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataFilter;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.InstanceSupport;
-import org.openide.filesystems.*;
-import org.openide.util.*;
-import org.openide.nodes.*;
-import org.openide.util.actions.SystemAction;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.RepositoryEvent;
+import org.openide.filesystems.RepositoryListener;
+import org.openide.filesystems.RepositoryReorderedEvent;
+import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataFilter;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.InstanceSupport;
 import org.openide.loaders.RepositoryNodeFactory;
-
-import org.netbeans.core.actions.RefreshAllFilesystemsAction;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /** Data system encapsulates logical structure of more file systems.
 * It also allows filtering of content of DataFolders
@@ -109,15 +122,13 @@ implements RepositoryListener {
 
     /** writes this node to ObjectOutputStream and its display name
     */
-    public Handle getHandle() {
+    public Node.Handle getHandle() {
         return filter == DataFilter.ALL ? new DSHandle (null) : new DSHandle(filter);
     }
 
 
     public Action[] getActions(boolean context) {
         return new Action[] {
-                   new RefreshAllFilesystemsAction(), // #31047
-                   null,
                    SystemAction.get (org.openide.actions.FindAction.class),
                    //Problem with ToolsAction as last item and separator. When ToolsAction
                    //is empty separator is displayed as last item.
@@ -299,7 +310,7 @@ implements RepositoryListener {
     
 
     /** Serialization. */
-    private static class DSHandle implements Handle {
+    private static class DSHandle implements Node.Handle {
         DataFilter filter;
 
         static final long serialVersionUID =-2266375092419944364L;
