@@ -17,8 +17,8 @@ import java.beans.PropertyVetoException;
 
 import java.io.File;
 import java.io.IOException;
-import javax.swing.JCheckBoxMenuItem;
 
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 
 import org.netbeans.jellytools.TopComponentOperator;
@@ -29,19 +29,23 @@ import org.netbeans.jemmy.operators.JMenuOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JCheckBoxMenuItemOperator;
 
+import org.netbeans.junit.ide.ProjectSupport;
 
-public class IDESetupTest extends org.netbeans.junit.NbTestCase {
+
+public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
     
     public IDESetupTest(java.lang.String testName) {
         super(testName);
     }
 
     public void testOpenDataProject() {
-        org.netbeans.junit.ide.ProjectSupport.openProject(System.getProperty("xtest.data")+"/PerformanceTestData");
+        ProjectSupport.openProject(System.getProperty("xtest.data")+"/PerformanceTestData");
+        ProjectSupport.waitScanFinished();
     }
 
     public void testOpenWebProject() {
-        org.netbeans.junit.ide.ProjectSupport.openProject(System.getProperty("xtest.data")+"/PerformanceTestWebApplication");
+        ProjectSupport.openProject(System.getProperty("xtest.data")+"/PerformanceTestWebApplication");
+        ProjectSupport.waitScanFinished();
     }
     
     /** 

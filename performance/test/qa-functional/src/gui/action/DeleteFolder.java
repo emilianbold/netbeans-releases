@@ -90,6 +90,7 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
     
     public void initialize(){
         org.netbeans.junit.ide.ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/"+"PerformanceTestFoldersData");
+        org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
         projectTab = new ProjectsTabOperator();
         projectTab.maximize();
         addClassNameToLookFor("explorer.view");

@@ -121,6 +121,7 @@ public class ExpandNodesProjectsView extends testUtilities.PerformanceTestCase {
     
     public void initialize(){
         org.netbeans.junit.ide.ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/"+testDataProject);
+        org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
         projectTab = new ProjectsTabOperator();
         projectTab.maximize();
         turnOff();
