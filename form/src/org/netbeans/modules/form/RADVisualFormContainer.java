@@ -388,7 +388,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
           throw new IllegalArgumentException ();
         }
         getFormManager ().setEncoding ((String) value);
-        //getNodeReference ().notifyPropertiesChange ();
+        getNodeReference ().notifyPropertiesChange ();
       }
       
       public Object getValue () {
@@ -586,6 +586,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
 /*
  * Log
+ *  19   Gandalf   1.18        12/13/99 Pavel Buzek     
  *  18   Gandalf   1.17        11/24/99 Pavel Buzek     list of encodings for 
  *       Encoding property, editor changed to combo box
  *  17   Gandalf   1.16        11/15/99 Pavel Buzek     property for encoding
