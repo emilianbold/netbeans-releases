@@ -23,23 +23,28 @@
         </question>
         
         <question id="arch-overall" when="init">
-            Describe the overall architecture of the module. (Layered/net/none)
+            Describe the overall architecture. 
             <hint>
-            What of it will be API what will be SPI? What parts will be plugable.
+            What will be API for 
+            <a href="http://openide.netbeans.org/tutorial/api-design.html#design.apiandspi">
+                clients and what support API
+            </a>? 
+            What parts will be plugable.
             How the plugins will registrate. If possible please provide 
             simple diagrams. 
             </hint>
         </question>
         
         <question id="arch-usecases" when="init">
-            Describe the main usecases of the new API/SPI who will use it at
+            Describe the main <a href="http://openide.netbeans.org/tutorial/api-design.html#usecase">
+            usecases</a> of the new API. Who will use it at
             what circumstances and what will be the typical code to write
             to use the module.
         </question>
     </category>
     <category id="dep" name="Project and platform dependencies">
         <question id="dep-nb" when="init" >
-            What other NetBeans projects does this one depend on?
+            What other NetBeans projects and modules does this one depend on?
             <hint>
             If you want, describe such projects as imported API using
             the <code>&lt;api name="identification" type="import or export" category="stable" url="where is the description" /&gt;</code>
@@ -391,9 +396,14 @@
 
         <question id="perf-progress" when="final">
             Does your module execute any long-running tasks?
-            <hint>Typically they are tasks like connecting over
-            network, computing huge amount of data, compilation.
-            Such communication should be done asynchronously (for example
+            
+            <hint>Long running tasks should never block 
+            AWT thread as it badly hurts the UI
+            <a href="http://performance.netbeans.org/responsiveness/issues.html">
+            responsiveness</a>.
+            Tasks like connecting over
+            network, computing huge amount of data, compilation
+            be done asynchronously (for example
             using <code>RequestProcessor</code>), definitively it should 
             not block AWT thread.
             </hint>
