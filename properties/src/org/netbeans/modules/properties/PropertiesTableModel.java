@@ -76,13 +76,15 @@ public class PropertiesTableModel extends AbstractTableModel {
 
                 Object[] list = PropertiesTableModel.super.listenerList.getListenerList();
                 for(int i = 0; i < list.length; i++) {
-                    if(list[i] instanceof JTable) {
-                        ((JTable)list[i]).setModel(PropertiesTableModel.this);
+                    if(list[i] instanceof JTable) { 
+                        // Its necessary to create new instance of model otherwise the 'old' model values would remain.
+                        ((JTable)list[i]).setModel(new PropertiesTableModel(PropertiesTableModel.this.obj));
                     }
                 }
                 break;
             // all items changed (keyset)
             case PropertyBundleEvent.CHANGE_ALL:
+                
                 cancelEditingInTables(getDefaultCancelSelector());
                 // reset all header values as well
                 list = PropertiesTableModel.super.listenerList.getListenerList();
