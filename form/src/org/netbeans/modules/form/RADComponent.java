@@ -48,6 +48,7 @@ public class RADComponent {
   public static final String PROP_NAME = SYNTHETIC_PREFIX + "Name";
 
   static final NewType[] NO_NEW_TYPES = {};
+  static final Node.Property[] NO_PROPERTIES = {};
 
 // -----------------------------------------------------------------------------
 // Private variables
@@ -1177,6 +1178,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  47   Gandalf   1.46        9/6/99   Ian Formanek    
  *  46   Gandalf   1.45        9/2/99   Ian Formanek    Fixed bug 3698 - When 
  *       the event handler is added or modified, the focus is not transfered to 
  *       the editor.
