@@ -65,7 +65,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="You should provide target to execute, see 'ant -projecthelp'"/>
     </target>
     
-    <target name="runtests" depends="configuration"
+    <target name="runtests" depends="configuration,buildxtest"
             description="Main target for running tests according to config and creating report.">
     
         <antcall target="executor">
@@ -125,8 +125,10 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="executor">
             <param name="target.name" value="realclean-helper"/>
         </antcall>
-        <antcall target="real-clean"/>
+        <antcall target="localresults-clean"/>
     </target>
+    
+    <target name="real-clean" depends="realclean"/>
     
     <target name="buildtestdist" depends="configuration"
             description="Builds distribution of tests.">
@@ -211,7 +213,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="dist"/>
     </target>
     
-    <target name="real-clean" depends="cleantestdist">
+    <target name="localresults-clean" depends="cleantestdist">
         <delete dir="results"/>
     </target>
     
