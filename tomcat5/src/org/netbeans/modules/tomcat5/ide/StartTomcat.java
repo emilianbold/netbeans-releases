@@ -93,6 +93,7 @@ public final class StartTomcat extends StartServer implements ProgressObject
     public StartTomcat (DeploymentManager manager) {
         pes = new ProgressEventSupport (this);
         tm = (TomcatManager)manager;
+        tm.setStartTomcat (this);
     }
     
     public boolean supportsStartDeploymentManager () {
@@ -137,11 +138,8 @@ public final class StartTomcat extends StartServer implements ProgressObject
     /**
      * Returns true if this admin server is running.
      */
-    boolean running = false;
     public boolean isRunning() {
-        // PENDING should this be cached? see #37937
-        running = URLWait.waitForStartup (tm, 1000);
-        return running;
+        return tm.isRunning ();
     }
 
     /**

@@ -188,6 +188,13 @@ public class TomcatManager implements DeploymentManager {
     }
      */
     
+    /**
+     * Returns true if this admin server is running.
+     */
+    public boolean isRunning() {
+        return URLWait.waitForStartup (this, 1000);
+    }
+    
     /** Returns URI of TomcatManager.
      * @return URI including home and base specification
      */
