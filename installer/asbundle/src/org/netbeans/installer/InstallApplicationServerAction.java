@@ -1254,10 +1254,10 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
             logEvent(this, Log.DBG,"Finishing");
             if(!mos.isCanceled()) {
                 mos.setStatusDescription("");
-                for (; percentageCompleted <= 100; percentageCompleted++) {
+                /*for (; percentageCompleted <= 100; percentageCompleted++) {
                     logEvent(this, Log.DBG,"percentageCompleted = " + percentageCompleted + " updateCounter " + mos.getUpdateCounter());
                     mos.updatePercentComplete(ESTIMATED_TIME, 1L, 100L);
-                }
+                }*/
             }
             else {
                 String statusDesc = resolveString("$L(org.netbeans.installer.Bundle, ProgressPanel.installationCancelled)");

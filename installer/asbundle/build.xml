@@ -63,6 +63,8 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-linux" depends="init, clean-build, compile, create-statefile">
     <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
     <copy file="scripts/as-unix-uninstall.template" tofile="build/scripts/as-unix-uninstall.template"/>
+    <copy file="../lib/scripts/run-storage-builder-unix.template"
+          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="as-linux.xml" />
       <arg value="-build" />
@@ -73,7 +75,11 @@ Microsystems, Inc. All Rights Reserved.
       <arg value="-alias"/>
       <arg value="as.installer=${as.installer}"/>
       <arg value="-alias"/>
-      <arg value="scripts.dir=build/scripts"/>
+      <arg value="as.scripts.dir=build/scripts"/>
+      <arg value="-alias"/>
+      <arg value="storage.builder=${storage.builder}"/>
+      <arg value="-alias"/>
+      <arg value="sb.scripts.dir=build/storagebuilder"/>
       <classpath>
         <pathelement path="build/classes" />      
         <path refid="ismp.cp"/>
@@ -85,6 +91,8 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-solaris-sparc" depends="init, clean-build, compile, create-statefile">
     <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
     <copy file="scripts/as-unix-uninstall.template" tofile="build/scripts/as-unix-uninstall.template"/>
+    <copy file="../lib/scripts/run-storage-builder-unix.template"
+          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="as-solaris-sparc.xml" />
       <arg value="-build" />
@@ -95,7 +103,11 @@ Microsystems, Inc. All Rights Reserved.
       <arg value="-alias"/>
       <arg value="as.installer=${as.installer}"/>
       <arg value="-alias"/>
-      <arg value="scripts.dir=build/scripts"/>
+      <arg value="as.scripts.dir=build/scripts"/>
+      <arg value="-alias"/>
+      <arg value="storage.builder=${storage.builder}"/>
+      <arg value="-alias"/>
+      <arg value="sb.scripts.dir=build/storagebuilder"/>
       <classpath>
         <pathelement path="build/classes" />
         <path refid="ismp.cp"/>
@@ -107,6 +119,8 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-solaris-x86" depends="init, clean-build, compile, create-statefile">
     <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
     <copy file="scripts/as-unix-uninstall.template" tofile="build/scripts/as-unix-uninstall.template"/>
+    <copy file="../lib/scripts/run-storage-builder-unix.template"
+          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="as-solaris-x86.xml" />
       <arg value="-build" />
@@ -117,7 +131,11 @@ Microsystems, Inc. All Rights Reserved.
       <arg value="-alias"/>
       <arg value="as.installer=${as.installer}"/>
       <arg value="-alias"/>
-      <arg value="scripts.dir=build/scripts"/>
+      <arg value="as.scripts.dir=build/scripts"/>
+      <arg value="-alias"/>
+      <arg value="storage.builder=${storage.builder}"/>
+      <arg value="-alias"/>
+      <arg value="sb.scripts.dir=build/storagebuilder"/>
       <classpath>
         <pathelement path="build/classes" />
         <path refid="ismp.cp"/>
@@ -130,6 +148,8 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="build/scripts/as_setup"/>
     <copy file="scripts/as-win-install.template" tofile="build/scripts/as_setup/as-win-install.template"/>
     <copy file="scripts/as-win-uninstall.template" tofile="build/scripts/as-win-uninstall.template"/>
+    <copy file="../lib/scripts/run-storage-builder-windows.template"
+          tofile="build/storagebuilder/run-storage-builder-windows.template"/>
     <move file="build/scripts/statefile" todir="build/scripts/as_setup"/>
     <exec os="Linux SunOS" executable="unzip">
       <arg line="${as.installer} -d build/scripts/as_setup"/>
@@ -144,7 +164,11 @@ Microsystems, Inc. All Rights Reserved.
       <arg value="-alias"/>
       <arg value="nb.dir=${nb.dir}"/>
       <arg value="-alias"/>
-      <arg value="scripts.dir=build/scripts"/>
+      <arg value="as.scripts.dir=build/scripts"/>
+      <arg value="-alias"/>
+      <arg value="storage.builder=${storage.builder}"/>
+      <arg value="-alias"/>
+      <arg value="sb.scripts.dir=build/storagebuilder"/>
       <classpath>
         <pathelement path="build/classes" />
         <path refid="ismp.cp"/>
