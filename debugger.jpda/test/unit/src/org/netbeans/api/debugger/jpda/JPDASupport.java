@@ -116,7 +116,7 @@ public class JPDASupport implements DebuggerManagerListener {
         JPDADebugger.startListening(connector, args, new Object[] { });
 
         DebuggerEngine engine = dm.getCurrentEngine();
-        debugger = (JPDADebugger) engine.lookupFirst(JPDADebugger.class);
+        debugger = (JPDADebugger) engine.lookupFirst(null, JPDADebugger.class);
         if (debugger == null) throw new DebuggerStartException("JPDA debugger was not started");
         debugger.addPropertyChangeListener(this);
 

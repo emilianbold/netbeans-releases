@@ -15,6 +15,7 @@ package org.netbeans.api.debugger.test;
 
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.spi.debugger.SessionProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 
 /**
  * Provider for Test debugger session.
@@ -26,9 +27,9 @@ public class TestSessionProvider extends SessionProvider {
     private DebuggerInfo info;
     private TestDICookie cookie;
     
-    public TestSessionProvider (DebuggerInfo info) {
-        this.info = info;
-        cookie = (TestDICookie) info.lookupFirst(TestDICookie.class);
+    public TestSessionProvider (ContextProvider info) {
+        this.info = (DebuggerInfo) info.lookupFirst(null, DebuggerInfo.class); 
+        cookie = (TestDICookie) info.lookupFirst(null, TestDICookie.class);
     };
     
     public String getSessionName () {

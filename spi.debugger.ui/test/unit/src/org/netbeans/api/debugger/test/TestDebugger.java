@@ -34,7 +34,7 @@ public class TestDebugger {
 
     public TestDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
-        List l = lookupProvider.lookup(DebuggerEngineProvider.class);
+        List l = lookupProvider.lookup(null, DebuggerEngineProvider.class);
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
             if (l.get (i) instanceof TestEngineProvider) testEngineProvider = (TestEngineProvider) l.get (i);

@@ -90,9 +90,7 @@ public class LookupTest  extends DebuggerApiTestBase {
 
     public void testMetainfLookup() throws Exception {
 
-        Object context = new LookupContext();
-
-        Lookup.MetaInf l = new Lookup.MetaInf("unittest", context);
+        Lookup.MetaInf l = new Lookup.MetaInf("unittest");
         List list = l.lookup(null, TestLookupServiceFirst.class);
         assertEquals("Wrong looked up object", 1, list.size());
         assertInstanceOf("Wrong looked up object", list.get(0), TestLookupServiceFirst.class);
@@ -109,9 +107,7 @@ public class LookupTest  extends DebuggerApiTestBase {
 
     public void testEmptyMetainfLookup() throws Exception {
 
-        Object context = new LookupContext();
-
-        Lookup.MetaInf l = new Lookup.MetaInf("baddir", context);
+        Lookup.MetaInf l = new Lookup.MetaInf("baddir");
         List list = l.lookup(null, TestLookupServiceFirst.class);
         assertEquals("Wrong looked up object", 0, list.size());
 

@@ -56,7 +56,7 @@ public class KillActionProvider extends ActionsProvider {
         debugger.finish();
         DebuggerInfo di = (DebuggerInfo) lookupProvider.lookupFirst
             (null, DebuggerInfo.class);
-        TestDICookie tic = (TestDICookie) di.lookupFirst(TestDICookie.class);
+        TestDICookie tic = (TestDICookie) di.lookupFirst(null, TestDICookie.class);
         tic.addInfo(DebuggerManager.ACTION_KILL);
     }
 }

@@ -16,6 +16,7 @@ package org.netbeans.api.debugger.test;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 
 
 /**
@@ -28,8 +29,8 @@ public class TestEngineProvider extends DebuggerEngineProvider {
     private DebuggerEngine.Destructor   destructor;
     private Session                     session;  
     
-    public TestEngineProvider (Session s) {
-        session = s;
+    public TestEngineProvider (ContextProvider s) {
+        session = (Session) s.lookupFirst(null, Session.class);
     }
     
     public String [] getLanguages () {

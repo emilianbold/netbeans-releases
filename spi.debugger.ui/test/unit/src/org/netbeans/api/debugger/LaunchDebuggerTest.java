@@ -14,7 +14,6 @@
 package org.netbeans.api.debugger;
 
 import org.netbeans.api.debugger.test.TestDICookie;
-import org.netbeans.api.debugger.test.TestDebugger;
 import org.netbeans.api.debugger.test.TestDebuggerManagerListener;
 import org.netbeans.api.debugger.test.TestLazyDebuggerManagerListener;
 
@@ -38,7 +37,7 @@ public class LaunchDebuggerTest extends DebuggerApiTestBase {
         TestDebuggerManagerListener dml = new TestDebuggerManagerListener();
         dm.addDebuggerListener(dml);
 
-        TestLazyDebuggerManagerListener ldml = (TestLazyDebuggerManagerListener) dm.lookupFirst(LazyDebuggerManagerListener.class);
+        TestLazyDebuggerManagerListener ldml = (TestLazyDebuggerManagerListener) dm.lookupFirst(null, LazyDebuggerManagerListener.class);
         assertNotNull("Lazy debugger manager listener not loaded", ldml);
 
         Map args = new HashMap();
@@ -54,7 +53,7 @@ public class LaunchDebuggerTest extends DebuggerApiTestBase {
         testStartEvents(ldml, engines);
 
         DebuggerEngine debugger = engines[0];
-        DebuggerInfo dic = (DebuggerInfo) debugger.lookupFirst(DebuggerInfo.class);
+        DebuggerInfo dic = (DebuggerInfo) debugger.lookupFirst(null, DebuggerInfo.class);
         assertSame("Wrong debugger info in engine lookup", dic, di);
         assertTrue("Engine did not start", tdi.hasInfo(DebuggerManager.ACTION_START));
 

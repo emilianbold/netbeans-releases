@@ -34,7 +34,7 @@ public class TestDebuggerActionsProvider extends ActionsProvider {
     private Set             supportedActions;
 
     public TestDebuggerActionsProvider(ContextProvider lookupProvider) {
-        debuggerImpl = (TestDebugger) lookupProvider.lookupFirst(TestDebugger.class);
+        debuggerImpl = (TestDebugger) lookupProvider.lookupFirst(null, TestDebugger.class);
         this.lookupProvider = lookupProvider;
         supportedActions = new HashSet();
         supportedActions.add(DebuggerManager.ACTION_CONTINUE);
@@ -58,7 +58,7 @@ public class TestDebuggerActionsProvider extends ActionsProvider {
 
     public void doAction (Object action) {
         if (debuggerImpl == null) return;
-        final TestDICookie cookie = (TestDICookie) lookupProvider.lookupFirst(TestDICookie.class);
+        final TestDICookie cookie = (TestDICookie) lookupProvider.lookupFirst(null, TestDICookie.class);
         cookie.addInfo(action);
     }
 

@@ -40,13 +40,14 @@ public class DebuggerActionsTest extends DebuggerApiTestBase {
         DebuggerInfo di = DebuggerInfo.create(TestDICookie.ID, services);
 
         DebuggerEngine engines [] = dm.startDebugging(di);
+        assertEquals("Wrong number of engines started", 1, engines.length);
         DebuggerEngine debugger = engines[0];
 
         ActionsManager am = debugger.getActionsManager();
         TestActionsManagerListener tam = new TestActionsManagerListener();
         am.addActionsManagerListener(tam);
 
-        TestLazyActionsManagerListener laml = (TestLazyActionsManagerListener) debugger.lookupFirst(LazyActionsManagerListener.class);
+        TestLazyActionsManagerListener laml = (TestLazyActionsManagerListener) debugger.lookupFirst(null, LazyActionsManagerListener.class);
         assertNotNull("Lazy actions manager listener not loaded", laml);
 
         am.doAction(DebuggerManager.ACTION_CONTINUE);
