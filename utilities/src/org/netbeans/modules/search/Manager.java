@@ -433,12 +433,6 @@ final class Manager {
     
     /**
      */
-    Object getLock() {
-        return lock;
-    }
-    
-    /**
-     */
     private TaskListener getTaskListener() {
         if (taskListener == null) {
             taskListener = new MyTaskListener();
