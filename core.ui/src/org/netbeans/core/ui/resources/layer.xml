@@ -602,9 +602,11 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="debugger">
                 <file name="output.wstcgrp" url="groups/debugger/output.wstcgrp" />
             </folder>
+            <!-- commented out as bugfix #40102
             <folder name="execution">
                 <file name="output.wstcgrp" url="groups/execution/output.wstcgrp" />
             </folder>
+            -->
             <folder name="form">
                 <file name="properties.wstcgrp" url="groups/form/properties.wstcgrp" />
             </folder>
