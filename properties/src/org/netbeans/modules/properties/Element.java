@@ -243,29 +243,42 @@ public abstract class Element implements Serializable {
             else {
                 // insert #s at the beginning of the lines which contain non-blank characters
                 // holds the last position where we might have to insert a # if this line contains non-blanks
-                int candidate = 0;
                 StringBuffer sb = new StringBuffer(value);
-                for (int i=0; i<sb.length(); ) {
-                    char aChar = sb.charAt(i++);
+                // append the \n if missing
+                if (sb.charAt(sb.length() - 1) != '\n') {
+                    sb.append('\n');
+                }
+                int lineStart = 0;
+                boolean hasCommentChar = false;
+                for (int i=0; i<sb.length(); i++) {
+                    char aChar = sb.charAt(i);
                     // new line
                     if (aChar == '\n') {
-                        candidate = i;
-                    }
-                    else {
-                        if ((candidate != -1) && (UtilConvert.whiteSpaceChars.indexOf(aChar) == -1)) {
-                            // nonempty symbol
-                            if ((aChar != '#') && (aChar != '!')) {
-                                // insert a #
-                                sb.insert(candidate, '#');
-                                i++;
-                            }
-                            candidate = -1;
+                        String line = sb.substring(lineStart, i);
+                        String convertedLine = UtilConvert.saveConvert(line);
+                        sb.replace(lineStart, i, convertedLine);
+
+                        // shift the index:
+                        i += convertedLine.length() - line.length();
+
+                        // the next line starts after \n:
+                        lineStart = i + 1;
+
+                        hasCommentChar = false;
+                    } else if (!hasCommentChar
+                          && UtilConvert.whiteSpaceChars.indexOf(aChar) == -1) {
+                        // nonempty symbol
+                        if ((aChar == '#') || (aChar == '!')) {
+                            lineStart = i + 1;
+                        } else {
+                            // insert a #
+                            sb.insert(lineStart, '#');
+                            i++;
+                            lineStart = i;
                         }
+                        hasCommentChar = true;
                     }
                 }
-                // append the \n if missing
-                if (sb.charAt(sb.length() - 1) != '\n')
-                    sb.append('\n');
                 return sb.toString();
             }
         }
