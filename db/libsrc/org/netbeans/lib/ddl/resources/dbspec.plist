@@ -430,7 +430,7 @@
 */
     RemoveColumnCommand = {
       Class = com.netbeans.ddl.impl.RemoveColumn;
-      Format = "alter table [{object.owner}.]{object.name} delete {column}";
+      Format = "alter table [{object.owner}.]{object.name} drop ({column})";
       Binding = {
         COLUMN = ColumnName;
         UNIQUE = UniqueColumnName;
@@ -612,6 +612,93 @@
 
 //  ********************************************************************************
 //
+//  Microsoft SQL Server
+//
+//  ********************************************************************************/
+
+  "Microsoft SQL Server" = {
+    DatabaseProductName = "Microsoft SQL Server";
+    DatabaseProductVersion = 7;
+
+    TypeMap = {
+      java.sql.Types.BINARY = BINARY;
+      java.sql.Types.BIT = BIT;
+      java.sql.Types.BLOB = IMAGE;  //JDBC 2.0 A type representing an SQL Binary Large Object
+      java.sql.Types.CHAR = CHAR;
+      java.sql.Types.DATE = DATETIME;
+      java.sql.Types.DECIMAL = DECIMAL;
+      java.sql.Types.DOUBLE = "DOUBLE PRECISION";
+      java.sql.Types.FLOAT = FLOAT;
+      java.sql.Types.INTEGER = INT;
+      java.sql.Types.NUMERIC = NUMERIC;
+      java.sql.Types.REAL = REAL;
+      java.sql.Types.SMALLINT = SMALINT;
+      java.sql.Types.TIMESTAMP = TIMESTAMP;
+      java.sql.Types.TINYINT = TINYINT;
+      java.sql.Types.VARBINARY = VARBINARY;
+      java.sql.Types.VARCHAR = VARCHAR;
+    };
+  };
+
+//  ********************************************************************************
+//
+//  IBM DB2
+//
+//  ********************************************************************************/
+
+  "DB2/NT" = {
+    DatabaseProductName = "DB2/NT";
+    DatabaseProductVersion = 6;
+  
+    TypeMap = {
+      java.sql.Types.BIGINT = BIGINT;  
+//      java.sql.Types.BINARY = BINARY;  
+//      java.sql.Types.BIT = BOOLEAN;
+      java.sql.Types.BLOB = BLOB;  //JDBC 2.0 A type representing an SQL Binary Large Object
+      java.sql.Types.CHAR = CHAR;    
+      java.sql.Types.CLOB = CLOB;  //JDBC 2.0 A type representing an SQL Character Large Object
+      java.sql.Types.DATE = DATE;
+      java.sql.Types.DECIMAL = DECIMAL;  
+      java.sql.Types.DOUBLE = DOUBLE;
+      java.sql.Types.FLOAT = FLOAT;
+      java.sql.Types.REAL = REAL;    
+//      java.sql.Types.LONGVARBINARY = LONGVARBINARY;
+      java.sql.Types.LONGVARCHAR = "LONG VARCHAR";
+      java.sql.Types.NUMERIC = NUMERIC;      
+      java.sql.Types.SMALLINT = SMALLINT;  
+      java.sql.Types.TIME = TIME;    
+      java.sql.Types.TIMESTAMP = TIMESTAMP;  
+//      java.sql.Types.TINYINT = TINYINT;    
+      java.sql.Types.VARCHAR = VARCHAR;  
+      java.sql.Types.INTEGER = INTEGER;
+    };
+
+    Column = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "{column.name} {column.type}";
+    };
+
+//
+// Definice prikazu
+//
+
+    CreateTableCommand = {
+      Class = com.netbeans.ddl.impl.CreateTable;
+      Format = "create table [{object.owner}.]{object.name}\n(\n\t{columns}\n)";
+      Binding = {
+        COLUMN = Column;
+      };
+    };
+
+    DropTableCommand = {
+      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Format = "drop table [{object.owner}.]{object.name}";
+    };
+    
+  };
+
+//  ********************************************************************************
+//
 //  Hypersonic SQL
 //
 //  ********************************************************************************/
@@ -661,45 +748,5 @@
     };
   };
 
-//  ********************************************************************************
-//
-//  Microsoft SQL Server
-//
-//  ********************************************************************************/
-
-  "Microsoft SQL Server" = {
-    DatabaseProductName = "Microsoft SQL Server";
-    DatabaseProductVersion = 7;
-
-    TypeMap = {
-      java.sql.Types.BINARY = BINARY;
-      java.sql.Types.BIT = BIT;
-      java.sql.Types.BLOB = IMAGE;  //JDBC 2.0 A type representing an SQL Binary Large Object
-      java.sql.Types.CHAR = CHAR;
-      java.sql.Types.DATE = DATETIME;
-      java.sql.Types.DECIMAL = DECIMAL;
-      java.sql.Types.DOUBLE = "DOUBLE PRECISION";
-      java.sql.Types.FLOAT = FLOAT;
-      java.sql.Types.INTEGER = INT;
-      java.sql.Types.NUMERIC = NUMERIC;
-      java.sql.Types.REAL = REAL;
-      java.sql.Types.SMALLINT = SMALINT;
-      java.sql.Types.TIMESTAMP = TIMESTAMP;
-      java.sql.Types.TINYINT = TINYINT;
-      java.sql.Types.VARBINARY = VARBINARY;
-      java.sql.Types.VARCHAR = VARCHAR;
-    };
-  };
-
-//  ********************************************************************************
-//
-//  IBM DB2
-//
-//  ********************************************************************************/
-
-  "DB2/NT" = {
-    DatabaseProductName = "DB2/NT";
-    DatabaseProductVersion = 6;
-  };
   
 }
