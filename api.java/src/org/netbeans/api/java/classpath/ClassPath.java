@@ -803,16 +803,21 @@ public final class ClassPath {
         //http://core.netbeans.org/source/browse/core/src/org/netbeans/core/actions/RefreshAllFilesystemsAction.java
         //http://java.netbeans.org/source/browse/java/api/src/org/netbeans/api/java/classpath/ClassPath.java
         
+        private static FileSystem[] fileSystems;
+        
         private static FileSystem[] getFileSystems() {
+            if (fileSystems != null) {
+                return fileSystems;
+            }
             File[] roots = File.listRoots();
             Set allRoots = new LinkedHashSet();
             assert roots != null && roots.length > 0 : "Could not list file roots"; // NOI18N
-        
+            
             for (int i = 0; i < roots.length; i++) {
                 File root = roots[i];
                 FileObject random = FileUtil.toFileObject(root);
                 if (random == null) continue;
-            
+                
                 FileSystem fs;
                 try {
                     fs = random.getFileSystem();
@@ -833,8 +838,8 @@ public final class ClassPath {
             FileSystem[] retVal = new FileSystem [allRoots.size()];
             allRoots.toArray(retVal);
             assert retVal.length > 0 : "Could not get any filesystem"; // NOI18N
-        
-            return retVal;
+            
+            return fileSystems = retVal;
         }
     }
 
