@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# These uninitialized vars are initialized by the installer and must start in
+# column 1
+J2SE_INSTALL_DIR=
+J2SE_NAME=
+J2SDK=$J2SE_INSTALL_DIR/$J2SE_NAME
+INPUT=$J2SE_INSTALL_DIR/input
+LOGFILE=$J2SE_INSTALL_DIR/install.log
+
+cd $J2SE_INSTALL_DIR
+
+if [ ! -f $LOGFILE ] ; then
+	touch $LOGFILE
+fi
+
+echo "--------------------" >> $LOGFILE
+echo "Installation date: `date`" >> $LOGFILE
+
+cd $J2SE_INSTALL_DIR/..
+
+echo "yes" > $INPUT
+if [ -f $J2SDK ]; then
+    /bin/sh $J2SDK < $INPUT > /dev/null
+else
+    echo "Error: $J2SDK doesn't exist.  Cannot install Java 2 Platform Standard Edition 1.5.0" >> $LOGFILE
+    exit 1
+fi
+/bin/rm $INPUT > /dev/null 2>&1
+
+# Remove the installer binary
+/bin/rm -rf $J2SDK  > /dev/null 2>&1
+
+echo "The installation is completed." >> $LOGFILE
+
+exit 0

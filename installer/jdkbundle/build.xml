@@ -1,0 +1,190 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="NetBeans JDK Bundle Installer" default="build" basedir=".">
+
+  <property file="nbproject/private/private.properties"/>  
+  <property file="build.properties" />
+
+  <property name="nb.dir" location="build/netbeans"/>
+<!--  <property name="ismp.project" value="linux.xml"/>-->
+  
+  <target name="init" depends="set-buildnumber, set-installer.basename, set-nb.dir" unless="inited">
+    <property name="inited" value="true" />
+  </target>
+  
+  <target name="set-nb.dir" unless="nb.dir">
+    <property name="nb.dir" location="../../nbbuild/netbeans" />
+  </target>
+
+  
+  <target name="set-ismp.cp" unless="ismp.cp-set">
+    <path id="ismp.cp">        
+        <pathelement path="${ismp.home}" />
+        <pathelement path="${ismp.home}/i18n" />
+        <fileset dir="${ismp.home}">
+          <include name="lib/*.jar"/>
+          <include name="ppk/*.jar"/>
+          <exclude name="lib/conversion.jar"/>
+        </fileset>        
+    </path>
+    <property name="ismp.cp-set" value="true" />
+  </target>
+
+  <target name="set-buildnumber" unless="buildnumber">
+    <tstamp>
+    	<format property="buildnumber" pattern="yyMMdd"/>
+    </tstamp>
+  </target>
+  
+  <target name="set-installer.basename" unless="unstaller.basename" depends="set-buildnumber">
+    <property name="installer.basename" value="NetBeans-dev-${buildnumber}"/>
+  </target>
+
+  <target name="build-linux" depends="init, compile">
+    <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
+    <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
+    <java classname="com.installshield.isje.ISJE" fork="true">
+      <arg value="linux.xml" />
+      <arg value="-build" />
+      <arg value="-alias"/>
+      <arg value="basedir=${basedir}"/>
+      <arg value="-alias"/>
+      <arg value="nb.dir=${nb.dir}"/>
+      <arg value="-alias"/>
+      <arg value="jdk.installer=${jdk.installer}"/>
+      <arg value="-alias"/>
+      <arg value="scripts.dir=build/scripts"/>
+      <classpath>
+        <pathelement path="build/classes" />      
+        <path refid="ismp.cp"/>
+      </classpath>
+    </java>
+    <delete dir="build/scripts"/>
+    <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
+  </target>
+
+  <target name="build-solaris-sparc" depends="init, compile">
+    <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
+    <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
+    <java classname="com.installshield.isje.ISJE" fork="true">
+      <arg value="solaris-sparc.xml" />
+      <arg value="-build" />
+      <arg value="-alias"/>
+      <arg value="basedir=${basedir}"/>
+      <arg value="-alias"/>
+      <arg value="nb.dir=${nb.dir}"/>
+      <arg value="-alias"/>
+      <arg value="jdk.installer=${jdk.installer}"/>
+      <arg value="-alias"/>
+      <arg value="scripts.dir=build/scripts"/>
+       <classpath>
+        <pathelement path="build/classes" />
+        <path refid="ismp.cp"/>
+      </classpath>
+    </java>
+    <delete dir="build/scripts"/>
+    <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
+  </target>
+
+  <target name="build-solaris-x86" depends="init, compile">
+    <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
+    <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
+    <java classname="com.installshield.isje.ISJE" fork="true">
+      <arg value="solaris-x86.xml" />
+      <arg value="-build" />
+      <arg value="-alias"/>
+      <arg value="basedir=${basedir}"/>
+      <arg value="-alias"/>
+      <arg value="nb.dir=${nb.dir}"/>
+      <arg value="-alias"/>
+      <arg value="jdk.installer=${jdk.installer}"/>
+      <arg value="-alias"/>
+      <arg value="scripts.dir=build/scripts"/>
+       <classpath>
+        <pathelement path="build/classes" />
+        <path refid="ismp.cp"/>
+      </classpath>
+    </java>
+    <delete dir="build/scripts"/>
+    <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
+  </target>
+
+  <target name="build-windows" depends="init, compile">
+    <copy file="scripts/custom-install.template" tofile="build/scripts/_uninst/custom-install.template"/>
+    <copy file="scripts/custom-uninstall.template" tofile="build/scripts/_uninst/custom-uninstall.template"/>
+     <java classname="com.installshield.isje.ISJE" fork="true">
+      <arg value="windows.xml" />
+      <arg value="-build" />
+      <arg value="-alias"/>
+      <arg value="basedir=${basedir}"/>
+      <arg value="-alias"/>
+      <arg value="nb.dir=${nb.dir}"/>
+      <arg value="-alias"/>
+      <arg value="jdk.installer=${jdk.installer}"/>
+      <arg value="-alias"/>
+      <arg value="scripts.dir=build/scripts"/>
+       <classpath>
+        <pathelement path="build/classes" />
+        <path refid="ismp.cp"/>
+      </classpath>
+    </java>
+    <delete dir="build/scripts"/>
+    <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
+  </target>
+ 
+  <target name="compile" depends="init" description="compile custom beans and panels">
+    <mkdir dir="build/classes"/>
+    
+    <javac destdir="build/classes" srcdir="src" source="1.4" target="1.4" debug="true" debuglevel="line" deprecation="true">
+      <classpath>
+        <path refid="ismp.cp"/>
+      </classpath>
+    </javac>
+    <copy todir="build/classes">
+        <fileset dir="src">
+            <include name="**/*.properties"/>
+        </fileset>
+    </copy>
+  </target>
+
+  <target name="run" depends="init" description="run the installer">
+    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${basedir}/dist/${installer.basename}-win.exe" failonerror="yes"/>
+    <exec os="Linux"  executable="${basedir}/dist/${installer.basename}-linux.bin" failonerror="yes"/>
+  </target>
+    
+  <target name="test" depends="init, compile" description="run the installer in debug mode">
+    <java classname="run" fork="true">
+      <sysproperty key="is.debug" value="true" />
+      <classpath>
+        <pathelement path="build/classes" />
+        <pathelement path="dist/${installer.basename}.jar"/>
+      </classpath>
+    </java>
+  </target>
+  
+  <target name="clean" depends="init" description="Clean all build products and temp/backup files.">
+    <delete>
+      <fileset dir=".">
+        <include name="**/*~"/>
+      </fileset>
+    </delete>
+    <delete dir="dist"/>
+    <delete dir="build"/>
+  </target>
+  
+  <target name="ismp" depends="init, compile" description="launch ISMP IDE">
+    <exec os="Linux" command="sh -c &quot;${ismp.home}/ismp &amp;&quot;" />
+  </target>
+  
+</project>
