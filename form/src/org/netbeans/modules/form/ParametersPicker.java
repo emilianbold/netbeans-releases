@@ -26,12 +26,6 @@ import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
-/* Form Note:
-* the source in guarded section has been changes without updating the .form file:
-* - codeArea is instance of JEditorPane (was JTextArea)
-* - codeArea.setContentType ("text/x-java"); was added
-*/
-
 /** The ParametersPicker is a panel which allows to enter a method parameter data.
 *
 * @author  Ian Formanek
@@ -103,6 +97,8 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
       beanButton.setEnabled (false);    // no beans on the form are of the required type
     }
     
+    codeArea.setContentType ("text/x-java");    // allow syntax coloring
+    
     updateParameterTypes ();
     currentFilledState = isFilled ();
 
@@ -119,8 +115,9 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         break;
       case RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_BEAN:
         beanButton.setSelected (true);
-        selectedComponent = value.radComponent;
+        selectedComponent = value.getRADComponent ();
         int index = beansList.indexOf (selectedComponent);
+        System.out.println("Index of :"+selectedComponent+", is: "+index);
         if (index == -1) {
           beanCombo.setSelectedIndex (0); 
         } else {
@@ -129,8 +126,8 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         break;
       case RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_PROPERTY:
         propertyButton.setSelected (true);
-        selectedComponent = value.radComponent;
-        selectedProperty = value.property;
+        selectedComponent = value.getRADComponent ();
+        selectedProperty = value.getProperty ();
         if (selectedComponent instanceof FormContainer) {
           propertyLabel.setText (selectedProperty.getName ());
         } else {
@@ -139,8 +136,8 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         break;
       case RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_METHOD:
         methodButton.setSelected (true);
-        selectedComponent = value.radComponent;
-        selectedMethod = value.method;
+        selectedComponent = value.getRADComponent ();
+        selectedMethod = value.getMethod ();
         if (selectedComponent instanceof FormContainer) {
           methodLabel.setText (selectedMethod.getName ());
         } else {
@@ -171,7 +168,6 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
     if (valueButton.isSelected ()) {
       return new RADConnectionPropertyEditor.RADConnectionDesignValue (requiredType, valueField.getText ());
     } else if (beanButton.isSelected ()) {
-      System.out.println("Returning selectedComponent: "+selectedComponent);
       return new RADConnectionPropertyEditor.RADConnectionDesignValue (selectedComponent);
     } else if (codeButton.isSelected ()) {
       return new RADConnectionPropertyEditor.RADConnectionDesignValue (codeArea.getText ());
@@ -433,8 +429,8 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
       codeScrollPane = new javax.swing.JScrollPane ();
 
-      codeArea = new javax.swing.JTextArea ();
-      codeArea.setEnabled (false);
+      codeArea = new javax.swing.JEditorPane ();
+      codeArea.setEditable (false);
       codeArea.addCaretListener (new javax.swing.event.CaretListener () {
         public void caretUpdate (javax.swing.event.CaretEvent evt) {
           updateState (evt);
@@ -519,7 +515,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
     methodLabel.setEnabled (methodButton.isSelected ());
     methodLabel.repaint ();
     methodDetailsButton.setEnabled (methodButton.isSelected ());
-    codeArea.setEnabled (codeButton.isSelected ());
+    codeArea.setEditable (codeButton.isSelected ());
     fireStateChange ();
   }
   
@@ -536,7 +532,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
   private javax.swing.JButton methodDetailsButton;
   private javax.swing.JRadioButton codeButton;
   private javax.swing.JScrollPane codeScrollPane;
-  private javax.swing.JTextArea codeArea;
+  private javax.swing.JEditorPane codeArea;
   // End of variables declaration//GEN-END:variables
 
   private FormManager2 manager;
@@ -559,6 +555,8 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
 /*
  * Log
+ *  13   Gandalf   1.12        8/15/99  Ian Formanek    Further finetuned last 
+ *       change
  *  12   Gandalf   1.11        8/15/99  Ian Formanek    Extended 
  *       ParametersPicker with "Bean" value
  *  11   Gandalf   1.10        7/31/99  Ian Formanek    Cleaned up comments
