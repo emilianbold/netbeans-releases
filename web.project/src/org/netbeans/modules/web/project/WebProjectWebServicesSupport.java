@@ -692,6 +692,12 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
             projectPropertiesChanged = true;
         }
         
+        // set tools.jar property if not set
+        if(projectProperties.getProperty(WSCOMPILE_TOOLS_CLASSPATH) == null) {
+            projectProperties.setProperty(WSCOMPILE_TOOLS_CLASSPATH, "${java.home}\\..\\lib\\tools.jar"); // NOI18N
+            projectPropertiesChanged = true;
+        }
+        
         if(projectPropertiesChanged) {
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
         }

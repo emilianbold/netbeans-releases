@@ -89,41 +89,41 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         String featurePropertyName = "wscompile.service." + serviceName + ".features"; // NOI18N
         String defaultFeatures = fromWSDL ? wsdlServiceStub.getDefaultFeaturesAsArgument() :
             seiServiceStub.getDefaultFeaturesAsArgument();
-        ep.put(featurePropertyName, defaultFeatures);        
-        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-        
-        //Add web-services information in project.xml
-        Element data = helper.getPrimaryConfigurationData(true);
-        Document doc = data.getOwnerDocument();
-        NodeList nodes = data.getElementsByTagName(WEB_SERVICES); //NOI18N
-        Element webservices = null;
-        if(nodes.getLength() == 0){
-            webservices = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICES); //NOI18N
-            data.appendChild(webservices);
-        }
-        else{
-            webservices = (Element)nodes.item(0);
-        }
-        Element webservice = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE); //NOI18N
-        webservices.appendChild(webservice);
-        Element webserviceName = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE_NAME); //NOI18N
-        webservice.appendChild(webserviceName);
-        webserviceName.appendChild(doc.createTextNode(serviceName));
-        if(fromWSDL) {
-            Element fromWSDLElem = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "from-wsdl");
-            webservice.appendChild(fromWSDLElem);
-        }
-        helper.putPrimaryConfigurationData(data, true);
-        
-        // Update wscompile related properties.  boolean return indicates whether
-        // any changes were made.
-        updateWsCompileProperties(serviceName);
-        
-        try {
-            ProjectManager.getDefault().saveProject(project);
-        }catch(java.io.IOException ioe){
-            throw new RuntimeException(ioe.getMessage());
-        }
+            ep.put(featurePropertyName, defaultFeatures);
+            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+            
+            //Add web-services information in project.xml
+            Element data = helper.getPrimaryConfigurationData(true);
+            Document doc = data.getOwnerDocument();
+            NodeList nodes = data.getElementsByTagName(WEB_SERVICES); //NOI18N
+            Element webservices = null;
+            if(nodes.getLength() == 0){
+                webservices = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICES); //NOI18N
+                data.appendChild(webservices);
+            }
+            else{
+                webservices = (Element)nodes.item(0);
+            }
+            Element webservice = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE); //NOI18N
+            webservices.appendChild(webservice);
+            Element webserviceName = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE_NAME); //NOI18N
+            webservice.appendChild(webserviceName);
+            webserviceName.appendChild(doc.createTextNode(serviceName));
+            if(fromWSDL) {
+                Element fromWSDLElem = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "from-wsdl");
+                webservice.appendChild(fromWSDLElem);
+            }
+            helper.putPrimaryConfigurationData(data, true);
+            
+            // Update wscompile related properties.  boolean return indicates whether
+            // any changes were made.
+            updateWsCompileProperties(serviceName);
+            
+            try {
+                ProjectManager.getDefault().saveProject(project);
+            }catch(java.io.IOException ioe){
+                throw new RuntimeException(ioe.getMessage());
+            }
     }
     
     public  void addServiceEntriesToDD(String serviceName, String serviceEndpointInterface, String servantClassName) {
@@ -250,7 +250,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         if(ep.getProperty(featureProperty) != null) {
             ep.remove(featureProperty);
             needsSave = true;
-        }        
+        }
         if(needsSave){
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         }
@@ -296,7 +296,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
                 ProjectManager.getDefault().saveProject(project);
             } catch(java.io.IOException ex) {
                 String mes = NbBundle.getMessage(this.getClass(), "MSG_ErrorSavingOnWSRemove") + serviceName // NOI18N
-                    + "'\r\n" + ex.getMessage(); // NOI18N
+                + "'\r\n" + ex.getMessage(); // NOI18N
                 NotifyDescriptor desc = new NotifyDescriptor.
                 Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);			}
@@ -323,7 +323,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         catch(java.io.IOException e) {
             NotifyDescriptor ndd =
             new NotifyDescriptor.Message(NbBundle.getMessage(this.getClass(), "MSG_Unable_WRITE_EJB_DD"), // NOI18N
-                NotifyDescriptor.ERROR_MESSAGE);
+            NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(ndd);
         }
         
@@ -347,44 +347,44 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
      *  probably does not belong at this time.
      */
     private static final String [] WSCOMPILE_SEI_SERVICE_FEATURES = {
-//        "datahandleronly", // WSDL
+        //        "datahandleronly", // WSDL
         "documentliteral", // SEI ONLY
         "rpcliteral", // SEI ONLY
-//        "explicitcontext", // WSDL
-//        "infix:<name>", // difficult handle with current API
-//        "jaxbenumtype", // WSDL
-//        "nodatabinding", // WSDL
+        //        "explicitcontext", // WSDL
+        //        "infix:<name>", // difficult handle with current API
+        //        "jaxbenumtype", // WSDL
+        //        "nodatabinding", // WSDL
         "noencodedtypes",
         "nomultirefs",
-//        "norpcstructures", // import only
-//        "novalidation", // WSDL
-//        "resolveidref", // WSDL
-//        "searchschema", // WSDL
+        //        "norpcstructures", // import only
+        //        "novalidation", // WSDL
+        //        "resolveidref", // WSDL
+        //        "searchschema", // WSDL
         "serializeinterfaces",
         "strict",
         "useonewayoperations", // SEI ONLY
-//        "wsi", // WSDL
-//        "unwrap", // WSDL
+        //        "wsi", // WSDL
+        //        "unwrap", // WSDL
         "donotoverride",
-//        "donotunwrap", // WSDL
+        //        "donotunwrap", // WSDL
     };
-
+    
     private static final List allSeiServiceFeatures = Arrays.asList(WSCOMPILE_SEI_SERVICE_FEATURES);
-
+    
     private static final String [] WSCOMPILE_KEY_SEI_SERVICE_FEATURES = {
         "documentliteral",
         "rpcliteral",
         "noencodedtypes",
     };
-
+    
     private static final List importantSeiServiceFeatures = Arrays.asList(WSCOMPILE_KEY_SEI_SERVICE_FEATURES);
     
     private static final String [] WSCOMPILE_WSDL_SERVICE_FEATURES = {
         "datahandleronly", // WSDL
-//        "documentliteral", // SEI ONLY
-//        "rpcliteral", // SEI ONLY
+        //        "documentliteral", // SEI ONLY
+        //        "rpcliteral", // SEI ONLY
         "explicitcontext", // WSDL
-//        "infix:<name>", // difficult handle with current API
+        //        "infix:<name>", // difficult handle with current API
         "jaxbenumtype", // WSDL
         "nodatabinding", // WSDL
         "noencodedtypes",
@@ -395,23 +395,23 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         "searchschema", // WSDL
         "serializeinterfaces",
         "strict",
-//        "useonewayoperations", // SEI ONLY
+        //        "useonewayoperations", // SEI ONLY
         "wsi", // WSDL
         "unwrap", // WSDL
         "donotoverride",
         "donotunwrap", // WSDL
     };
-
+    
     private static final List allWsdlServiceFeatures = Arrays.asList(WSCOMPILE_WSDL_SERVICE_FEATURES);
-
+    
     private static final String [] WSCOMPILE_KEY_WSDL_SERVICE_FEATURES = {
         "norpcstructures",
         "donotunwrap",
         "datahandleronly"
     };
-
+    
     private static final List importantWsdlServiceFeatures = Arrays.asList(WSCOMPILE_KEY_WSDL_SERVICE_FEATURES);
-   
+    
     public List/*WsCompileEditorSupport.ServiceSettings*/ getServices() {
         List serviceList = new ArrayList();
         
@@ -423,7 +423,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         if(nodes.getLength() != 0) {
             Element serviceElements = (Element) nodes.item(0);
             NodeList serviceNameList = serviceElements.getElementsByTagNameNS(
-                EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_NAME);
+            EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_NAME);
             for(int i = 0; i < serviceNameList.getLength(); i++ ) {
                 Element serviceNameElement = (Element) serviceNameList.item(i);
                 NodeList nl = serviceNameElement.getChildNodes();
@@ -434,21 +434,21 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
                         String currentFeatures = projectProperties.getProperty("wscompile.service." + serviceName + ".features"); // NOI18N
                         StubDescriptor stubType = getServiceStubDescriptor(serviceNameElement.getParentNode());
                         WsCompileEditorSupport.ServiceSettings settings;
-
+                        
                         if(seiServiceStub == stubType) {
                             if(currentFeatures == null) {
                                 // default for SEI generation
                                 currentFeatures = "documentliteral"; // NOI18N
                             }
                             settings = new WsCompileEditorSupport.ServiceSettings(
-                                serviceName, stubType, currentFeatures, allSeiServiceFeatures, importantSeiServiceFeatures);
+                            serviceName, stubType, currentFeatures, allSeiServiceFeatures, importantSeiServiceFeatures);
                         } else {
                             if(currentFeatures == null) {
                                 // default for WSDL generation
                                 currentFeatures = "norpcstructures,wsi"; // NOI18N
                             }
                             settings = new WsCompileEditorSupport.ServiceSettings(
-                                serviceName, stubType, currentFeatures, allWsdlServiceFeatures, importantWsdlServiceFeatures);
+                            serviceName, stubType, currentFeatures, allWsdlServiceFeatures, importantWsdlServiceFeatures);
                         }
                         serviceList.add(settings);
                     } else {
@@ -462,14 +462,14 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         
         return serviceList;
     }
-
+    
     private StubDescriptor getServiceStubDescriptor(org.w3c.dom.Node parentNode) {
         StubDescriptor result = null;
         
         if(parentNode instanceof Element) {
             Element parentElement = (Element) parentNode;
             NodeList fromWsdlList = parentElement.getElementsByTagNameNS(
-                EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_FROM_WSDL);
+            EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_FROM_WSDL);
             if(fromWsdlList.getLength() == 1) {
                 result = wsdlServiceStub;
             } else {
@@ -479,7 +479,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         
         return result;
     }
-
+    
     private boolean updateWsCompileProperties(String serviceName) {
         /** Ensure wscompile.classpath and wscompile.tools.classpath are
          *  properly defined.
@@ -549,6 +549,12 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
             projectPropertiesChanged = true;
         }
         
+        // set tools.jar property if not set
+        if(projectProperties.getProperty(WSCOMPILE_TOOLS_CLASSPATH) == null) {
+            projectProperties.setProperty(WSCOMPILE_TOOLS_CLASSPATH, "${java.home}\\..\\lib\\tools.jar"); // NOI18N
+            projectPropertiesChanged = true;
+        }
+        
         if(projectPropertiesChanged) {
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
         }
@@ -556,68 +562,66 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
     }
     
     public void addInfrastructure(String implBeanClass, FileObject pkg){
-		try
-		{
-          ClassElement clazz = ClassElement.forName(implBeanClass, pkg);
-          //remove java.rmi.Remote interface
-          Identifier remote = Identifier.create("java.rmi.Remote");
-          clazz.removeInterface(remote);
-        
-          //add javax.ejb.SessionBean interface
-          Identifier session = Identifier.create("javax.ejb.SessionBean");
-          clazz.addInterface(session);
-        
-          //add javax.ejb.SessionContext field
-          Identifier sessionCtx = Identifier.create("javax.ejb.SessionContext");
-          Type sessionCtxType = Type.createClass(sessionCtx);
-          FieldElement field = new FieldElement();
-          field.setType(sessionCtxType);
-          field.setName(Identifier.create("context"));
-          clazz.addField(field);
-        
-          //add setSessionContext(javax.ejb.SessionContext aContext) method
-          MethodElement sessionCtxMethod = new MethodElement();
-          sessionCtxMethod.setName(Identifier.create("setSessionContext"));
-          MethodParameter ctxParam = new MethodParameter("aContext", sessionCtxType, false);
-          sessionCtxMethod.setParameters(new MethodParameter[] {ctxParam});
-          sessionCtxMethod.setReturn(Type.VOID);
-          sessionCtxMethod.setModifiers(Modifier.PUBLIC);
-          sessionCtxMethod.setBody("context = aContext;");
-          clazz.addMethod(sessionCtxMethod);
-        
-          //add ejbActivate method
-          MethodElement ejbActivateMethod = new MethodElement();
-          ejbActivateMethod.setName(Identifier.create("ejbActivate"));
-          ejbActivateMethod.setReturn(Type.VOID);
-          ejbActivateMethod.setModifiers(Modifier.PUBLIC);
-          clazz.addMethod(ejbActivateMethod);
-        
-          //add ejbPassivate method
-          MethodElement ejbPassivateMethod = new MethodElement();
-          ejbPassivateMethod.setName(Identifier.create("ejbPassivate"));
-          ejbPassivateMethod.setReturn(Type.VOID);
-          ejbPassivateMethod.setModifiers(Modifier.PUBLIC);
-          clazz.addMethod(ejbPassivateMethod);
-        
-          //add ejbRemove method
-          MethodElement ejbRemoveMethod = new MethodElement();
-          ejbRemoveMethod.setName(Identifier.create("ejbRemove"));
-          ejbRemoveMethod.setReturn(Type.VOID);
-          ejbRemoveMethod.setModifiers(Modifier.PUBLIC);
-          clazz.addMethod(ejbRemoveMethod);
-        
-          //add ejbCreate method
-          MethodElement ejbCreateMethod = new MethodElement();
-          ejbCreateMethod.setName(Identifier.create("ejbCreate"));
-          ejbCreateMethod.setReturn(Type.VOID);
-          ejbCreateMethod.setModifiers(Modifier.PUBLIC);
-          clazz.addMethod(ejbCreateMethod);
+        try {
+            ClassElement clazz = ClassElement.forName(implBeanClass, pkg);
+            //remove java.rmi.Remote interface
+            Identifier remote = Identifier.create("java.rmi.Remote");
+            clazz.removeInterface(remote);
+            
+            //add javax.ejb.SessionBean interface
+            Identifier session = Identifier.create("javax.ejb.SessionBean");
+            clazz.addInterface(session);
+            
+            //add javax.ejb.SessionContext field
+            Identifier sessionCtx = Identifier.create("javax.ejb.SessionContext");
+            Type sessionCtxType = Type.createClass(sessionCtx);
+            FieldElement field = new FieldElement();
+            field.setType(sessionCtxType);
+            field.setName(Identifier.create("context"));
+            clazz.addField(field);
+            
+            //add setSessionContext(javax.ejb.SessionContext aContext) method
+            MethodElement sessionCtxMethod = new MethodElement();
+            sessionCtxMethod.setName(Identifier.create("setSessionContext"));
+            MethodParameter ctxParam = new MethodParameter("aContext", sessionCtxType, false);
+            sessionCtxMethod.setParameters(new MethodParameter[] {ctxParam});
+            sessionCtxMethod.setReturn(Type.VOID);
+            sessionCtxMethod.setModifiers(Modifier.PUBLIC);
+            sessionCtxMethod.setBody("context = aContext;");
+            clazz.addMethod(sessionCtxMethod);
+            
+            //add ejbActivate method
+            MethodElement ejbActivateMethod = new MethodElement();
+            ejbActivateMethod.setName(Identifier.create("ejbActivate"));
+            ejbActivateMethod.setReturn(Type.VOID);
+            ejbActivateMethod.setModifiers(Modifier.PUBLIC);
+            clazz.addMethod(ejbActivateMethod);
+            
+            //add ejbPassivate method
+            MethodElement ejbPassivateMethod = new MethodElement();
+            ejbPassivateMethod.setName(Identifier.create("ejbPassivate"));
+            ejbPassivateMethod.setReturn(Type.VOID);
+            ejbPassivateMethod.setModifiers(Modifier.PUBLIC);
+            clazz.addMethod(ejbPassivateMethod);
+            
+            //add ejbRemove method
+            MethodElement ejbRemoveMethod = new MethodElement();
+            ejbRemoveMethod.setName(Identifier.create("ejbRemove"));
+            ejbRemoveMethod.setReturn(Type.VOID);
+            ejbRemoveMethod.setModifiers(Modifier.PUBLIC);
+            clazz.addMethod(ejbRemoveMethod);
+            
+            //add ejbCreate method
+            MethodElement ejbCreateMethod = new MethodElement();
+            ejbCreateMethod.setName(Identifier.create("ejbCreate"));
+            ejbCreateMethod.setReturn(Type.VOID);
+            ejbCreateMethod.setModifiers(Modifier.PUBLIC);
+            clazz.addMethod(ejbCreateMethod);
         }
-		catch(SourceException e)
-		{
-			DialogDisplayer.getDefault().notify(
+        catch(SourceException e) {
+            DialogDisplayer.getDefault().notify(
             new NotifyDescriptor.Message(NbBundle.getMessage(EjbJarWebServicesSupport.class,"MSG_Unable_Add_EJB_Infrastructure"),
-										 NotifyDescriptor.ERROR_MESSAGE));
+            NotifyDescriptor.ERROR_MESSAGE));
         }
     }
     
@@ -664,44 +668,44 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         
         return null;
     }
-
+    
     // Service stub descriptors
     private static final JAXRPCStubDescriptor seiServiceStub = new JAXRPCStubDescriptor(
-        StubDescriptor.SEI_SERVICE_STUB,
-        NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_SEIServiceStub"), // NOI18N
-        new String [0]);
-
+    StubDescriptor.SEI_SERVICE_STUB,
+    NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_SEIServiceStub"), // NOI18N
+    new String [0]);
+    
     private static final JAXRPCStubDescriptor wsdlServiceStub = new JAXRPCStubDescriptor(
-        StubDescriptor.WSDL_SERVICE_STUB,
-        NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_WSDLServiceStub"), // NOI18N
-        new String [] { "norpcstructures" }); // NOI18N
-
+    StubDescriptor.WSDL_SERVICE_STUB,
+    NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_WSDLServiceStub"), // NOI18N
+    new String [] { "norpcstructures" }); // NOI18N
+    
     /** Stub descriptor for services and clients supported by this project type.
      */
     private static class JAXRPCStubDescriptor extends StubDescriptor {
-
+        
         private String [] defaultFeatures;
-
+        
         public JAXRPCStubDescriptor(String name, String displayName, String [] defaultFeatures) {
             super(name, displayName);
-
+            
             this.defaultFeatures = defaultFeatures;
         }
-
+        
         public String [] getDefaultFeatures() {
             return defaultFeatures;
         }
-
+        
         public String getDefaultFeaturesAsArgument() {
             StringBuffer buf = new StringBuffer(defaultFeatures.length*32);
             for(int i = 0; i < defaultFeatures.length; i++) {
                 if(i > 0) {
                     buf.append(",");
                 }
-
+                
                 buf.append(defaultFeatures[i]);
             }
             return buf.toString();
         }
-    }    
+    }
 }
