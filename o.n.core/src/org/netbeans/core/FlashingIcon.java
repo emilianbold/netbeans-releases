@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,18 +26,15 @@ import org.openide.util.RequestProcessor.Task;
 
 /** 
  * A flashing icon to provide visual feedback for the user when something 
- * not-so-important happened in the system.
- * The icon is flashing for a few seconds and then remains visible for some more
- * time. 
- * Overriding classes should provide implementation for methods onMouseClick() 
- * and timeout().
+ * not very important happens in the system.
+ * The icon is flashed for a few seconds and then remains visible for a while longer. 
  *
  * @author saubrecht
  */
-class FlashingIcon extends JComponent implements MouseListener {
+abstract class FlashingIcon extends JComponent implements MouseListener {
     
-    public static final long STOP_FLASHING_DELAY = 5*1000;
-    public static final long DISAPPER_DELAY_MILLIS = STOP_FLASHING_DELAY + 30*1000;
+    private static final long STOP_FLASHING_DELAY = 5 * 1000;
+    private static final long DISAPPEAR_DELAY_MILLIS = STOP_FLASHING_DELAY + 30 * 1000;
     
     private Icon icon;
     
@@ -53,7 +50,7 @@ class FlashingIcon extends JComponent implements MouseListener {
      *
      * @param icon The icon that will be flashing (blinking)
      */
-    public FlashingIcon( Icon icon ) {
+    protected FlashingIcon( Icon icon ) {
         this.icon = icon;
         Dimension d = new Dimension( icon.getIconWidth(), icon.getIconHeight() );
         setMinimumSize( d );
@@ -68,7 +65,7 @@ class FlashingIcon extends JComponent implements MouseListener {
      * Start flashing of the icon. If the icon is already flashing, the timer
      * is reset.
      * If the icon is visible but not flashing, it starts flashing again
-     * and the disapper timer is reset.
+     * and the disappear timer is reset.
      */
     public void startFlashing() {
         synchronized( this ) {
@@ -87,7 +84,7 @@ class FlashingIcon extends JComponent implements MouseListener {
     /**
      * Stop the flashing and hide the icon.
      */
-    public void disapper() {
+    public void disappear() {
         synchronized( this ) {
             keepRunning = false;
             isIconVisible = false;
@@ -102,7 +99,7 @@ class FlashingIcon extends JComponent implements MouseListener {
     
     /**
      * Stop flashing of the icon. The icon remains visible and active (listens 
-     * for mouse clicks and displays tooltip) until the disapper timer expires.
+     * for mouse clicks and displays tooltip) until the disappear timer expires.
      */
     public void stopFlashing() {
         synchronized( this ) {
@@ -129,24 +126,23 @@ class FlashingIcon extends JComponent implements MouseListener {
         }
     }
 
-    public void mouseReleased(java.awt.event.MouseEvent e) {
-    }
+    public void mouseReleased(MouseEvent e) {}
 
-    public void mousePressed(java.awt.event.MouseEvent e) {
+    public void mousePressed(MouseEvent e) {
         stopFlashing();
     }
 
-    public void mouseExited(java.awt.event.MouseEvent e) {
+    public void mouseExited(MouseEvent e) {
         stopFlashing();
     }
 
-    public void mouseEntered(java.awt.event.MouseEvent e) {
+    public void mouseEntered(MouseEvent e) {
         stopFlashing();
     }
 
-    public void mouseClicked(java.awt.event.MouseEvent e) {
+    public void mouseClicked(MouseEvent e) {
         if( isIconVisible ) {
-            disapper();
+            disappear();
             onMouseClick();
         }
     }
@@ -154,14 +150,12 @@ class FlashingIcon extends JComponent implements MouseListener {
     /**
      * Invoked when the user clicks the icon.
      */
-    protected void onMouseClick() {
-    }
+    protected abstract void onMouseClick();
 
     /**
      * Invoked when the disappear timer expired.
      */
-    protected void timeout() {
-    }
+    protected abstract void timeout();
 
     public Cursor getCursor() {
 
@@ -193,8 +187,8 @@ class FlashingIcon extends JComponent implements MouseListener {
                         stopFlashing();
                     }
                 }
-                if( currentTime - startTime >= DISAPPER_DELAY_MILLIS ) {
-                    disapper();
+                if( currentTime - startTime >= DISAPPEAR_DELAY_MILLIS ) {
+                    disappear();
                     timeout();
                 } else {
                     if( null != timerTask )
