@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,14 +16,17 @@ package org.netbeans.beaninfo.editors;
 import java.awt.*;
 import java.beans.*;
 import java.util.*;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
+import org.openide.nodes.Node;
 
 /** A property editor for array of Strings.
-* @author  Ian Formanek
-* @version 0.10, 17 Jun 1998
-*/
-public class StringArrayEditor implements XMLPropertyEditor,
-                                          StringArrayCustomizable {
+ * @author  Ian Formanek
+ */
+public class StringArrayEditor implements XMLPropertyEditor, StringArrayCustomizable, ExPropertyEditor {
 
     // constants for XML persistence
     private static final String XML_STRING_ARRAY = "StringArray"; // NOI18N
@@ -35,6 +38,7 @@ public class StringArrayEditor implements XMLPropertyEditor,
     // private fields
     private String[] strings;
     private PropertyChangeSupport support;
+    private boolean editable = true;
 
     public StringArrayEditor() {
         support = new PropertyChangeSupport (this);
@@ -46,7 +50,9 @@ public class StringArrayEditor implements XMLPropertyEditor,
 
     public void setValue (Object value) {
         strings = (String[]) value;
-        support.firePropertyChange ("", null, null); // NOI18N
+        if (editable) { // XXX cf. #35983
+            support.firePropertyChange("", null, null); // NOI18N
+        }
     }
 
     // -----------------------------------------------------------------------------
@@ -126,7 +132,11 @@ public class StringArrayEditor implements XMLPropertyEditor,
     }
 
     public Component getCustomEditor () {
-        return new StringArrayCustomEditor (this);
+        if (editable) {
+            return new StringArrayCustomEditor(this);
+        } else {
+            return new JScrollPane(new JList(getStringArray()));
+        }
     }
 
     public void addPropertyChangeListener (PropertyChangeListener propertyChangeListener) {
@@ -204,4 +214,16 @@ public class StringArrayEditor implements XMLPropertyEditor,
 
         setValue(stringArray);
     }
+    
+    public void attachEnv(PropertyEnv env) {
+        FeatureDescriptor d = env.getFeatureDescriptor();
+        if (d instanceof Node.Property) {
+            editable = ((Node.Property)d).canWrite();
+        } else if (d instanceof PropertyDescriptor) {
+            editable = ((PropertyDescriptor)d).getWriteMethod() != null;
+        } else {
+            editable = true;
+        }
+    }
+    
 }
