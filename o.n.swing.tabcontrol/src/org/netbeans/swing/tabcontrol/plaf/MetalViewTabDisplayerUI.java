@@ -18,6 +18,7 @@ import org.netbeans.swing.tabcontrol.TabDisplayer;
 import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import java.awt.*;
+import org.openide.awt.HtmlRenderer;
 
 /**
  * User interface of view type tabs designed to be consistent with Swing metal
@@ -143,9 +144,10 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         } else {
             text2Paint = stripTextToFit(text, width - 2 * TXT_X_PAD, fm);
         }
-        // TBD - replace black with L&F color for window titles
-        g.setColor(Color.black);
-        g.drawString(text2Paint, x + TXT_X_PAD, height - fm.getDescent() - 4);
+        HtmlRenderer.renderString(text, g, x + TXT_X_PAD, height - 
+            fm.getDescent() - 4, width, height, getTxtFont(),
+            UIManager.getColor("textText"),
+            HtmlRenderer.STYLE_TRUNCATE, true);
     }
 
     protected void paintTabBorder(Graphics g, int index, int x, int y,
