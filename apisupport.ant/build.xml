@@ -25,12 +25,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="compile" description="Compile source files.">
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>
-                <fileset dir="../../ant/external">
-                    <!-- For 1.5.3; XXX delete when ant160 branch is merged: -->
-                    <include name="ant-1*.jar"/>
-                    <!-- For 1.6: -->
-                    <include name="lib/ant.jar"/>
-                </fileset>
+                <pathelement location="../../ant/external/lib/ant.jar"/>
                 <pathelement location="../../openide/netbeans/lib/openide.jar"/>
                 <pathelement location="../../core/netbeans/lib/core.jar"/>
             </classpath>
