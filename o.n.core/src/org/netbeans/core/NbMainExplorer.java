@@ -25,6 +25,7 @@ import java.util.*;
 import java.util.List;
 
 import javax.swing.*;
+import javax.swing.event.*;
 import javax.swing.border.EmptyBorder;
 
 import org.openide.*;
@@ -33,13 +34,14 @@ import org.openide.awt.SplittedPanel;
 import org.openide.awt.ToolbarToggleButton;
 import org.openide.explorer.*;
 import org.openide.explorer.view.BeanTreeView;
-import org.openide.explorer.propertysheet.PropertySheetView;
+import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListener;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.io.NbMarshalledObject;
-import org.openide.windows.TopComponent;
+import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Workspace;
 import org.openide.windows.Mode;
 
@@ -48,42 +50,40 @@ import com.netbeans.developer.impl.output.OutputTab;
 /** Default explorer which contains toolbar with cut/copy/paste,
 * switchable property sheet and menu view actions in the toolbar.
 *
-* @author Ian Formanek, David Simonek
+* @author Ian Formanek, David Simonek, Jaroslav Tulach
 */
-public final class NbMainExplorer extends TopComponent implements ItemListener {
+public final class NbMainExplorer extends CloneableTopComponent 
+implements ItemListener, Runnable {
   static final long serialVersionUID=6021472310669753679L; 
 //  static final long serialVersionUID=-9070275145808944151L;
   
   /** The message formatter for Explorer title */
   private static MessageFormat formatExplorerTitle;
 
-  /** The root nodes displayed as tabs - acquired from Places.roots() */
-  private transient Node[] roots;
-  /** Explorer panels for roots */
-  private transient ExplorerPanel[] panels;
-  /** ExplorerManagers for roots */
-  private transient ExplorerManager[] managers;
+  /** list of roots (Node) */
+  private List roots;
+  
+  /** assignes to each node one explorer panel (Node, ExplorerTab) */
+  private Map rootsToPanels;
+
+  /** currently selected node */
+  private Node currentRoot;
+  
   /** ExplorerManagers for property sheet */
   private transient ExplorerManager sheetManager;
-  /** ExplorerManagers of the currently selected root (tab) */
-  private transient ExplorerManager currentManager;
-  /** Flag for tracking whether the manager/root listeners are added - used when opening/closing */
-  private transient boolean listenersRegistered = false;
 
   /** Listener which tracks changes on the managers for each tab and provides synchronization
   * of rootContext, exploredContext and selectedNodes with property sheet and updating the title of the Explorer */
-  private transient PropertyChangeListener managersListener;
+  private transient ManagerListener managersListener;
 
   /** Listener which tracks changes on the root nodes (which are displayed as tabs) */
-  private transient PropertyChangeListener rootsListener;
+  private transient RootsListener rootsListener;
 
   /** action handler for cut/copy/paste/delete */
-  private static ExplorerActions actions;
+  private transient ExplorerActions actions;
 
-  /** Boolean flag - true, if this component is currently activated (and attached to ExplorerActions), false otherwise */
-  private boolean activated = false;
   /** Switchable property view panel */
-  private transient ExplorerPanel sheetPanel;
+  private transient PropertySheet propertySheet;
   /** tabbed pane containing explorer panels */
   private transient JTabbedPane tabs;
   /** Splitted panel containing tree view and property view */
@@ -94,6 +94,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   private transient ToolbarToggleButton sheetSwitcher;
   /** Flag specifying if property sheet is visible */
   private boolean sheetVisible = false;
+  
   /** the default width of the property sheet pane */
   private int sheetWidth = 250;
   /** the default height of the property sheet pane */
@@ -111,90 +112,16 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     tabs = new JTabbedPane ();
     tabs.setTabPlacement (SwingConstants.BOTTOM);
 
-    managersListener = new PropertyChangeListener () {
-      public void propertyChange (PropertyChangeEvent evt) {
-        if (evt.getSource () == currentManager) {
-          if (sheetVisible && (sheetManager != null)) {
-            if (ExplorerManager.PROP_ROOT_CONTEXT.equals (evt.getPropertyName ())) {
-              sheetManager.setRootContext (currentManager.getRootContext ());
-            } else if (ExplorerManager.PROP_EXPLORED_CONTEXT.equals (evt.getPropertyName ())) {
-              sheetManager.setExploredContext (currentManager.getExploredContext ());
-            } else if (ExplorerManager.PROP_SELECTED_NODES.equals (evt.getPropertyName ())) {
-              try {
-                sheetManager.setSelectedNodes (currentManager.getSelectedNodes ());
-              } catch (PropertyVetoException e) {
-                throw new InternalError ("Property Sheet must not not veto selection");
-              }
-            }
-          }
-          setActivatedNodes (currentManager.getSelectedNodes ());
-          updateTitle ();
-        }
-      }
-    };
+    managersListener = new ManagerListener ();
+    rootsListener = new RootsListener ();
 
-    rootsListener = new PropertyChangeListener () {
-      public void propertyChange (PropertyChangeEvent evt) {
-        if (TopManager.PROP_PLACES.equals (evt.getPropertyName ())) {
-          // possible change in list of roots
-          refreshRoots ();
-          return;
-        }
-        
-        for (int i = 0; i < roots.length; i++) {
-          if (roots[i] == evt.getSource ()) {
-            if (Node.PROP_DISPLAY_NAME.equals (evt.getPropertyName ())) {
-              tabs.setTitleAt (i, roots[i].getDisplayName ());
-            } else if (Node.PROP_ICON.equals (evt.getPropertyName ())) {
-              tabs.setIconAt (i, new ImageIcon (roots [i].getIcon (BeanInfo.ICON_COLOR_16x16)));
-            }
-/* [IAN] - this is just waiting for Sun to fix bug #4158286 : no way to change ToolTip text on tabs in JTabbedPane
-            else if (PROP_SHORT_DESCRIPTION.equals (evt.getPropertyName ())) {
-              tabs.setTooltipAt (i, roots[i].getShortDescription ());
-            } */
-            break;
-          }
-        }
-      }
-    };
-
-    TopManager.getDefault ().addPropertyChangeListener (rootsListener);
-    
-    roots = new Node[0];
-    refreshRoots ();
-    currentManager = managers[0]; // [PENDING]
-
-    tabs.addChangeListener (new javax.swing.event.ChangeListener () {
-        public void stateChanged (javax.swing.event.ChangeEvent evt) {
-          int index = tabs.getSelectedIndex ();
-          if (index < 0) {
-            currentManager = null;
-            return;
-          }
-          currentManager = managers[index];
-          
-          if (currentManager == null) {
-            return;
-          }
-          
-          if (activated) {
-            actions.attach (currentManager);
-          }
-          if (sheetVisible && (sheetManager != null)) {
-            sheetManager.setRootContext (currentManager.getRootContext ());
-            sheetManager.setExploredContext (currentManager.getExploredContext ());
-            try {
-              sheetManager.setSelectedNodes (currentManager.getSelectedNodes ());
-              } catch (PropertyVetoException e) {
-                throw new InternalError ("Property Sheet must not not veto selection");
-              }
-          }
-          updateTitle ();
-          setActivatedNodes (currentManager.getSelectedNodes ());
-        }
-      }
+    // listening on changes of 
+    TopManager.getDefault ().addPropertyChangeListener (
+      new WeakListener.PropertyChange (rootsListener)
     );
-
+    
+    propertySheet = new PropertySheet ();
+    
     split.add(tabs, SplittedPanel.ADD_LEFT);
     split.setSplitType(SplittedPanel.HORIZONTAL);
     split.setSplitAbsolute(true);
@@ -202,143 +129,171 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     setLayout(new BorderLayout ());
     add(split, BorderLayout.CENTER);
     add(toolbar = createToolbar(), BorderLayout.NORTH);
-
-    updateTitle ();
   }
 
+  /** Clones the explorer 
+  *
+  protected CloneableTopComponent createClonedObject () {
+    NbMainExplorer main = new NbMainExplorer ();
+    Iterator it = rootsToPanels.entrySet ().iterator ();
+    
+    HashMap map = new HashMap (rootsToPanels.size ());
+    
+    while (it.hasNext ()) {
+      Map.Entry me = (Map.Entry)it.next ();
+      Node n = (Node)me.getKey ();
+      ExplorerTab tab = (ExplorerTab)me.getValue ();
+      ExplorerManager man = (ExplorerManager)tab.getExplorerManager ().clone ();
+      
+      main.createPanel (n, man);
+    }
+    
+    main.rootsToPanels = map;
+    
+    return main;
+  }
+  */
+  
   /** Rarely used, only when fresh Expl created & no components selected. */
-  public HelpCtx getHelpCtx () {
+  public org.openide.util.HelpCtx getHelpCtx () {
     return new HelpCtx (NbMainExplorer.class);
   }
+  
+  /** Attaches all listeners.
+  */
+  public void addNotify () {
+    super.addNotify ();
 
+    tabs.addChangeListener (managersListener);
+
+    SwingUtilities.invokeLater (this);
+  }
+  
+  /** Removes all listeners.
+  */
+  public void removeNotify () {
+    super.removeNotify ();
+    
+    actions.detach ();
+    actions = null;
+    tabs.removeChangeListener (managersListener);
+  }
+  
+  /** Updates roots, selected panel, nodes, etc.
+  */
+  public void run () {
+    refreshRoots ();
+    
+    ExplorerManager currentManager = getRootPanel (currentRoot).getExplorerManager ();
+    propertySheet.setNodes (currentManager.getSelectedNodes ());
+    setActivatedNodes (currentManager.getSelectedNodes ());
+    updateTitle ();
+    
+    actions = new ExplorerActions ();
+  }
 
   /** Refreshes current state of components, so they
   * will reflect new nodes.
   */
-  private synchronized void refreshRoots () {
+  final void refreshRoots () {
     List l = getRoots ();
+    
+    if (rootsToPanels == null) {
+      rootsToPanels = new HashMap (7);
+    }
+    
     // first of all we have to remove the roots that
     // are no longer there
     if (roots != null) {
-      HashSet toRemove = new HashSet (Arrays.asList (roots));
+      HashSet toRemove = new HashSet (roots);
       toRemove.removeAll (l);
+      // toRemove now contains only roots that are used no more
 
-
-      for (int i = 0; i < roots.length; i++) {
-        if (toRemove.contains (roots[i])) {
-          tabs.remove (panels[i]);
-          roots[i] = null;
-          panels[i] = null;
-        }
-      }
-    }
-
-    // remember current mapping
-    HashMap map;
-    if (roots != null) {
-      map = new HashMap (roots.length);
-      for (int i = 0; i < roots.length; i++) {
-        if (roots[i] != null) {
-          map.put (roots[i], panels[i]);
+      Iterator it = rootsToPanels.entrySet ().iterator ();
+      while (it.hasNext ()) {
+        Map.Entry me = (Map.Entry)it.next ();
+        Node r = (Node)me.getKey ();
+        
+        if (toRemove.contains (r)) {
+          ExplorerTab tab = (ExplorerTab)me.getValue ();
+          
+          tabs.removeChangeListener (managersListener);
+          tabs.remove (tab);
+          tabs.addChangeListener (managersListener);
+          
+          it.remove ();
         }
       }
     } else {
-      map = null;
+      // initialize roots and map
+      roots = new LinkedList ();
     }
- 
-    // panel list of (ExplorerPanel)
-    List pl = new LinkedList ();
-    // manager list (ExplorerManager)
-    List ml = new LinkedList ();
+    // ^^^ all tabs that should be are removed
     
+
     ListIterator it = l.listIterator ();
     while (it.hasNext ()) {
       Node r = (Node)it.next ();
-      ExplorerPanel p = map == null ? null : (ExplorerPanel)map.get (r);
+      ExplorerTab tab = getRootPanel (r);
 
-      if (p == null) {
+      if (tab == null) {
         // create and insert new tab
-        p = createPanel (r);
+        tab = createPanel (r);
         
         tabs.insertTab (
           r.getDisplayName (), 
           new ImageIcon (r.getIcon (BeanInfo.ICON_COLOR_16x16)), 
-          p, 
+          tab, 
           r.getShortDescription (),
           it.previousIndex ()
         );
       }
-      pl.add (p);
-      ml.add (p.getExplorerManager ());
     }
 
-    managers = (ExplorerManager[])ml.toArray (new ExplorerManager[0]);
-    panels = (ExplorerPanel[])pl.toArray (new ExplorerPanel[0]);
-    roots = (Node[])l.toArray (new Node[0]);
+    roots = l;
+
+    // now select the right component
+    ExplorerTab tab = getRootPanel (currentRoot);
+    if (tab == null) {
+      // root not found
+      currentRoot = (Node)roots.get (0);
+      tabs.setSelectedIndex (0);
+    } else {
+      tabs.setSelectedComponent (tab);
+    }
   }
   
   /** Creates a panel for given node.
   */
-  private ExplorerPanel createPanel (Node n) {
-    ExplorerPanel panel = new ExplorerTab ();
-    ExplorerManager manager = panel.getExplorerManager ();
-
-    manager.addPropertyChangeListener (managersListener);
+  private ExplorerTab createPanel (Node n) {
+    ExplorerManager manager = new ExplorerManager ();
     manager.setRootContext (n);
-
-    n.addPropertyChangeListener (rootsListener);
-
+    
+    return createPanel (n, manager);
+  }
+  
+  /** Creates a panel for given node.
+  */
+  private ExplorerTab createPanel (Node n, ExplorerManager manager) {
+    ExplorerTab panel = createPanel (manager);
+    
     return panel;
   }
   
-  private List getRoots () {
-    Places.Nodes ns = TopManager.getDefault ().getPlaces ().nodes ();
+  /** Creates a panel for given node.
+  */
+  private ExplorerTab createPanel (ExplorerManager manager) {
+    ExplorerTab panel = new ExplorerTab (manager);
     
-    LinkedList list = new LinkedList(
-      Arrays.asList (ns.roots ())
+    rootsToPanels.put (manager.getRootContext (), panel);
+    
+    manager.addPropertyChangeListener (
+      new WeakListener.PropertyChange (managersListener)
     );
-
-//    Node[] roots = new Node[2 + moduleRoots.length];
-//    roots[0] = ns.projectDesktop ();
-//    roots[1] = ns.repository ();
-//    System.arraycopy (moduleRoots, 0, roots, 2, moduleRoots.length);
-
-    list.addFirst (ns.repository ());
-
-    if (NbProjectOperation.hasProjectDesktop ()) {
-      list.addLast (NbProjectOperation.getProjectDesktop ());
-    }
-    
-    list.addLast (ns.environment ());
-    list.addLast (DesktopNode.getProjectSettingsNode ());
-    list.addLast (ns.session ());
-    
-    return list;
-  }
-
-  /** Utility method, creates the explorer's toolbar */
-  JToolBar createToolbar () {
-    JToolBar result = SystemAction.createToolbarPresenter(
-      new SystemAction[] {
-        SystemAction.get(CutAction.class),
-        SystemAction.get(CopyAction.class),
-        SystemAction.get(PasteAction.class),
-        null,
-        SystemAction.get(DeleteAction.class),
-        null
-      }
+    manager.getRootContext ().addPropertyChangeListener (
+      new WeakListener.PropertyChange (rootsListener)
     );
-    // property sheet switch action
-    ImageIcon icon = new ImageIcon (getClass().getResource(
-      "/com/netbeans/developer/impl/resources/actions/properties.gif"));
-    sheetSwitcher = new ToolbarToggleButton (icon, sheetVisible);
-    sheetSwitcher.setMargin (new java.awt.Insets (2, 0, 1, 0));
-    sheetSwitcher.setToolTipText (NbBundle.getBundle (NbMainExplorer.class).getString ("CTL_ToggleProperties"));
-    sheetSwitcher.addItemListener (this);
-    result.add (sheetSwitcher);
-    result.setBorder(new EmptyBorder(2, 0, 2, 2));
-    result.setFloatable (false);
-    return result;
+    return panel;
   }
 
   /** Implementation of the ItemListener interface */
@@ -356,7 +311,6 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     int splitType = split.getSplitType ();
     boolean swapped = split.getPanesSwapped();
     if (sheetVisible) { // showing property sheet pane
-      getSheetPanel();  
       int splitPos;
       if (splitType == SplittedPanel.HORIZONTAL) {
         splitPos = swapped ? sheetWidth : size.width;
@@ -369,20 +323,20 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
       split.setSplitPosition (splitPos);
       if (swapped) {
         split.setKeepFirstSame(true);
-        split.add(sheetPanel, SplittedPanel.ADD_LEFT);
+        split.add(propertySheet, SplittedPanel.ADD_LEFT);
       } else {
         split.setKeepSecondSame(true);
-        split.add(sheetPanel, SplittedPanel.ADD_RIGHT);
+        split.add(propertySheet, SplittedPanel.ADD_RIGHT);
       }
     }
     else {              // hiding property sheet pane
-      split.remove(sheetPanel);
+      split.remove(propertySheet);
       int splitPos = split.getSplitPosition ();
       if (splitType == SplittedPanel.HORIZONTAL) {
-        sheetWidth = sheetPanel.getSize().width;
+        sheetWidth = propertySheet.getSize().width;
         compSize.width -= sheetWidth;
       } else {
-        sheetHeight = sheetPanel.getSize().height;
+        sheetHeight = propertySheet.getSize().height;
         compSize.height -= sheetHeight;
       }
       setRequestedSize (compSize);
@@ -404,7 +358,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   }
 
   private void updateTitle () {
-    String name = currentManager == null ? null : currentManager.getExploredContext().getDisplayName();
+    ExplorerManager currentManager = getRootPanel (currentRoot).getExplorerManager ();
+    String name = currentManager.getExploredContext().getDisplayName();
     if (name == null) {
       name = "";
     }
@@ -418,67 +373,82 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     ));
   }
 
-  public void open () {
-    open(TopManager.getDefault().getWindowManager().getCurrentWorkspace());
-  }
-  
-  /** Adds listener to the explorer panel in addition
-  * to normal behaviour.
-  */
-  public void open (Workspace workspace) {
-    super.open (workspace);
-    /*
-    if (!listenersRegistered) {
-      for (int i = 0; i < managers.length; i++) {
-        managers[i].addPropertyChangeListener (managersListener); 
-        // synchronization of property sheet, activated nodes, title
-      }
-      // add listeners to changes on the roots
-      for (int i = 0; i < roots.length; i++) {
-        roots[i].addPropertyChangeListener (rootsListener);
-      }
-      listenersRegistered = true;
-      }
-      */
-    setActivatedNodes (currentManager.getSelectedNodes ());
-    updateTitle ();
-  }
-
-  /** Removes listeners.
-  */
-  public boolean canClose (Workspace workspace, boolean last) {
-    boolean result = super.canClose(workspace, last);
-    /*
-    if (result && last) {
-      for (int i = 0; i < managers.length; i++) {
-        managers[i].removePropertyChangeListener (managersListener);
-      }
-      for (int i = 0; i < roots.length; i++) {
-       roots[i].removePropertyChangeListener (rootsListener);
-      }
-      listenersRegistered = false;
-      }
-      */
-    return result;
-  }
-
   /** Activates copy/cut/paste actions.
   */
   protected void componentActivated () {
-    if (actions == null) {
-      actions = new ExplorerActions ();
+    if (actions != null) {
+      ExplorerManager currentManager = getRootPanel (currentRoot).getExplorerManager ();
+      actions.attach (currentManager);
     }
-    actions.attach (currentManager);
-    activated = true;
   }
 
   /** Deactivates copy/cut/paste actions.
   */
   protected void componentDeactivated () {
-    activated = false;
-    actions.detach ();
+    if (actions != null) {
+      actions.detach ();
+    }
+  }
+  
+  //
+  // Find methods
+  // 
+  
+  private static List getRoots () {
+    Places.Nodes ns = TopManager.getDefault ().getPlaces ().nodes ();
+    
+    LinkedList list = new LinkedList(
+      Arrays.asList (ns.roots ())
+    );
+
+//    Node[] roots = new Node[2 + moduleRoots.length];
+//    roots[0] = ns.projectDesktop ();
+//    roots[1] = ns.repository ();
+//    System.arraycopy (moduleRoots, 0, roots, 2, moduleRoots.length);
+
+    list.addFirst (ns.repository ());
+
+    if (NbProjectOperation.hasProjectDesktop ()) {
+      list.addLast (NbProjectOperation.getProjectDesktop ());
+    }
+    
+    list.addLast (ns.environment ());
+    list.addLast (ns.project ());
+    list.addLast (ns.session ());
+    
+    return list;
   }
 
+  /** Utility method, creates the explorer's toolbar */
+  private JToolBar createToolbar () {
+    JToolBar result = SystemAction.createToolbarPresenter(
+      new SystemAction[] {
+        SystemAction.get(CutAction.class),
+        SystemAction.get(CopyAction.class),
+        SystemAction.get(PasteAction.class),
+        null,
+        SystemAction.get(DeleteAction.class),
+        null
+      }
+    );
+    // property sheet switch action
+    ImageIcon icon = new ImageIcon (NbMainExplorer.class.getResource(
+      "/com/netbeans/developer/impl/resources/actions/properties.gif"));
+    sheetSwitcher = new ToolbarToggleButton (icon, sheetVisible);
+    sheetSwitcher.setMargin (new java.awt.Insets (2, 0, 1, 0));
+    sheetSwitcher.setToolTipText (NbBundle.getBundle (NbMainExplorer.class).getString ("CTL_ToggleProperties"));
+    sheetSwitcher.addItemListener (this);
+    result.add (sheetSwitcher);
+    result.setBorder(new EmptyBorder(2, 0, 2, 2));
+    result.setFloatable (false);
+    return result;
+  }
+  
+  
+  
+  
+  
+  
   /** Serialize this top component.
   * @param in the stream to serialize to
   */
@@ -487,13 +457,18 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     super.writeExternal(out);
     // write explorer panels and current one
 
-    out.writeInt (managers.length);
-    for (int i = 0; i < managers.length; i++) {
-      out.writeObject(new NbMarshalledObject (managers[i]));
+    int len = roots.size ();
+    out.writeInt (len);
+    Iterator it = roots.iterator ();
+    for (int i = 0; i < len; i++) {
+      Node r = (Node)it.next ();
+      ExplorerManager man = getRootPanel (r).getExplorerManager ();
+
+      out.writeObject(new NbMarshalledObject (man));
     }
 
     // serializes handle to the node
-    Node.Handle h = roots[tabs.getSelectedIndex()].getHandle ();
+    Node.Handle h = currentRoot.getHandle ();
     out.writeObject (new NbMarshalledObject (h));
 
 
@@ -509,7 +484,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   * @param in the stream to deserialize from
   */
   public void readExternal (ObjectInput in)
-              throws IOException, ClassNotFoundException {
+  throws IOException, ClassNotFoundException {
     super.readExternal(in);
     // read and update explorer panels (and managers)
     // and update tabbed pane
@@ -517,47 +492,38 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 
     int cnt = in.readInt ();
-    // root to manager (Node, ExplorerManager)
-    HashMap map = new HashMap (cnt);
+    // root to manager (Node, ExplorerTab)
+    rootsToPanels = new HashMap (cnt);
+    roots = new LinkedList ();
 
     for (int i = 0; i < cnt; i++) {
       NbMarshalledObject obj = (NbMarshalledObject)in.readObject ();
       try {
         ExplorerManager man = (ExplorerManager)obj.get ();
-        map.put (man.getRootContext (), man);
+        Node r = man.getRootContext ();
+        ExplorerTab tab = createPanel (man);
+        
+        tabs.addTab (
+          r.getDisplayName (), 
+          new ImageIcon (r.getIcon (BeanInfo.ICON_COLOR_16x16)), 
+          tab, 
+          r.getShortDescription ()
+        );
+        
+        roots.add (r);
+        
       } catch (IOException e) {
       } catch (ClassNotFoundException e) {
       }
     }
-
-    Node selRoot = roots[tabs.getSelectedIndex ()];
+    
     NbMarshalledObject obj = (NbMarshalledObject)in.readObject ();
     try {
-      selRoot = ((Node.Handle)obj.get ()).getNode ();
+      currentRoot = ((Node.Handle)obj.get ()).getNode ();
     } catch (IOException e) {
     } catch (ClassNotFoundException e) {
     }
-
-    for (int i = 0; i < roots.length; i++) {
-      if (roots[i].equals (selRoot)) {
-        tabs.setSelectedIndex (i);
-        currentManager = managers[i];
-      }
-
-      ExplorerManager man = (ExplorerManager)map.get (roots[i]);
-      if (man != null) {
-        try {
-          managers[i].setExploredContext (man.getExploredContext ());
-          managers[i].setSelectedNodes (man.getSelectedNodes ());
-        } catch (PropertyVetoException e) {
-          // ignore
-        }
-      }
-    }
     
-    
-    // force later reassigning of listeners
-    listenersRegistered = false;
     // read property shhet switcher state...
     sheetVisible = in.readBoolean ();
     boolean swapped = in.readBoolean ();
@@ -565,7 +531,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     split.setSplitType(in.readInt ());
     if (sheetVisible) {
       //split.setKeepFirstSame(true);
-      split.add(getSheetPanel(), SplittedPanel.ADD_RIGHT);
+      split.add(propertySheet, SplittedPanel.ADD_RIGHT);
       if (swapped)
         split.swapPanes();
     }
@@ -575,26 +541,15 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     sheetSwitcher.addItemListener (this);
     explorer = this;
   }
-
-  /** Safe getter for sheet panel */
-  private ExplorerPanel getSheetPanel () {
-    if (sheetPanel == null) {
-      PropertySheetView propertySheet = new PropertySheetView ();
-      sheetPanel = new ExplorerPanel ();
-      sheetPanel.add (propertySheet, BorderLayout.CENTER);
-      sheetManager = sheetPanel.getExplorerManager ();
-      sheetManager.setRootContext (currentManager.getRootContext ());
-      sheetManager.setExploredContext (currentManager.getExploredContext ());
-      try {
-        sheetManager.setSelectedNodes (currentManager.getSelectedNodes ());
-      } catch (PropertyVetoException e) {
-        throw new InternalError ("Property Sheet must not not veto selection");
-      }
-    }
-    return sheetPanel;
+  
+  /** Finds the right panel for given node.
+  * @return the panel or null if no such panel exists
+  */
+  final ExplorerTab getRootPanel (Node root) {
+    return (ExplorerTab)rootsToPanels.get (root);
   }
+  
     
-
 // -----------------------------------------------------------------------------
 // Static methods
 
@@ -611,20 +566,107 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   /** Shared instance of NbMainExplorer */
   private static NbMainExplorer explorer;
   
+  
+  
   /** Class holding the explorer.
   */
   public static final class ExplorerTab extends ExplorerPanel {
-static final long serialVersionUID =-8202452314155464024L;
-    public ExplorerTab () {
+    static final long serialVersionUID =-8202452314155464024L;
+    
+    public ExplorerTab (ExplorerManager m) {
+      super (m);
+      
       BeanTreeView treeView = new BeanTreeView ();
       setLayout (new BorderLayout ());
       add (treeView);
     }
   }
+  
+  /** Manager listener. Attached to currently selected explorer
+  * panel listener. Also listens to changes in tabs.
+  */
+  private final class ManagerListener extends Object 
+  implements PropertyChangeListener, ChangeListener {
+    public void propertyChange (PropertyChangeEvent evt) {
+      ExplorerTab tab = getRootPanel (currentRoot);
+      if (tab == null) return;
+      
+      ExplorerManager currentManager = tab.getExplorerManager ();
+      propertySheet.setNodes (currentManager.getSelectedNodes ());
+      
+      setActivatedNodes (currentManager.getSelectedNodes ());
+      updateTitle ();
+    }
+    
+    public void stateChanged (ChangeEvent evt) {
+      int index = tabs.getSelectedIndex ();
+      if (index < 0 || index >= roots.size ()) {
+        currentRoot = null;
+        return;
+      }
+      currentRoot = (Node)roots.get (index);
+
+      ExplorerManager currentManager = getRootPanel (currentRoot).getExplorerManager ();
+      propertySheet.setNodes (currentManager.getSelectedNodes ());
+      
+      updateTitle ();
+      setActivatedNodes (currentManager.getSelectedNodes ());
+    }
+  }
+  
+  /** Listener on roots, each root is listened for changes of 
+  * name, etc.
+  */
+  private final class RootsListener extends Object 
+  implements PropertyChangeListener {
+    public void propertyChange (PropertyChangeEvent evt) {
+      if (TopManager.PROP_PLACES.equals (evt.getPropertyName ())) {
+        // possible change in list of roots
+        refreshRoots ();
+        return;
+      }
+
+      if (evt.getSource () == TopManager.getDefault ()) {
+        // no notifications from top manager are needed
+        // except PROP_PLACES
+        return;
+      }
+      
+      Node n = (Node)evt.getSource ();
+      ExplorerTab tab = getRootPanel (n);
+      if (tab == null) {
+        return;
+      }
+
+      int i = roots.indexOf (n);
+      
+      if (Node.PROP_DISPLAY_NAME.equals (evt.getPropertyName ())) {
+        tabs.setTitleAt (i, n.getDisplayName ());
+      } else if (Node.PROP_ICON.equals (evt.getPropertyName ())) {
+        tabs.setIconAt (i, new ImageIcon (
+          n.getIcon (BeanInfo.ICON_COLOR_16x16)
+        ));
+      }
+/* [IAN] - this is just waiting for Sun to fix bug #4158286 : no way to change ToolTip text on tabs in JTabbedPane
+          else if (PROP_SHORT_DESCRIPTION.equals (evt.getPropertyName ())) {
+            tabs.setTooltipAt (i, roots[i].getShortDescription ());
+          } *
+          break;
+        }
+      }
+*/      
+    }
+  }
+  
+  public static void main (String[] args) throws Exception {
+    NbMainExplorer e = new NbMainExplorer ();
+    e.open ();
+  }
 }
 
 /*
 * Log
+*  29   Gandalf   1.28        8/13/99  Jaroslav Tulach New Main Explorer
 *  28   Gandalf   1.27        8/9/99   Ian Formanek    Generated Serial Version 
 *       UID
 *  27   Gandalf   1.26        8/3/99   Jaroslav Tulach Getting better and 
