@@ -46,4 +46,9 @@ public interface ActionsFactory {
     public Action mainProjectCommandAction( String command, String name, Icon icon  );
         
     public Action mainProjectSensitiveAction( ProjectActionPerformer performer, String name, Icon icon );
+    
+    // Actions sensitive to file
+    
+    public Action fileCommandAction( String command, String name, Icon icon );
+    
 }

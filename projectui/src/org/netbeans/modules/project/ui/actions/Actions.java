@@ -98,6 +98,10 @@ public class Actions implements ActionsFactory {
     }
 
     
+    public Action fileCommandAction(String command, String name, Icon icon) {
+        return new FileCommandAction( command, name, icon, null );
+    }
+    
     // Project specific actions ------------------------------------------------
     
     public static Action javadocProject() {
