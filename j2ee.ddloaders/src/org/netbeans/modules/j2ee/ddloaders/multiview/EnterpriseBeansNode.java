@@ -36,6 +36,8 @@ import java.util.Map;
 public class EnterpriseBeansNode extends EjbSectionNode {
 
     protected EnterpriseBeans enterpriseBeans;
+    private boolean doCheck = false;
+    private boolean checking = false;
 
     public EnterpriseBeansNode(SectionNodeView sectionNodeView, EnterpriseBeans enterpriseBeans) {
         super(sectionNodeView, enterpriseBeans, Utils.getBundleMessage("LBL_EnterpriseBeans"),
@@ -78,6 +80,34 @@ public class EnterpriseBeansNode extends EjbSectionNode {
     }
 
     private void checkChildren() {
+        doCheck = true;
+        if (setChecking(true)) {
+            try {
+                while (doCheck) {
+                    doCheck = false;
+                    check();
+                }
+            } finally {
+                setChecking(false);
+            }
+        }
+    }
+
+    private synchronized boolean setChecking(boolean value) {
+        if (value) {
+            if (checking) {
+                return false;
+            } else {
+                checking = true;
+                return true;
+            }
+        } else {
+            checking = false;
+            return true;
+        }
+    }
+
+    private void check() {
         Map nodeMap = new HashMap();
         Children children = getChildren();
         Node[] nodes = children.getNodes();
