@@ -83,8 +83,6 @@ public final class MainWindow extends JFrame {
 
     /** Constructs main window. */
     public MainWindow() {
-// ignore the policy - #46922        
-//        setFocusTraversalPolicy(new WrapperFocusTraversalPolicy(getFocusTraversalPolicy()));
     }
     
     /** Overrides superclass method, adds help context to the new root pane. */
@@ -430,42 +428,6 @@ public final class MainWindow extends JFrame {
         }
         
     }
-
-/*    private final class WrapperFocusTraversalPolicy extends FocusTraversalPolicy {
-        private FocusTraversalPolicy w;
-        public WrapperFocusTraversalPolicy (FocusTraversalPolicy w) {
-            this.w = w;
-        }
-        
-        public Component getComponentAfter(Container focusCycleRoot, Component aComponent) {
-            return w.getComponentAfter(focusCycleRoot, aComponent);
-        }
-
-        public Component getComponentBefore(Container focusCycleRoot, Component aComponent) {
-            return w.getComponentBefore (focusCycleRoot, aComponent);
-        }
-
-        public Component getDefaultComponent(Container focusCycleRoot) {
-            Component result = w.getDefaultComponent(focusCycleRoot);
-            
-            ModeImpl mi = WindowManagerImpl.getInstance().getActiveMode();
-            if (mi != null) {
-                TopComponent tc = mi.getSelectedTopComponent();
-                return tc;
-            }
-            return null;
-        }
-
-        public Component getFirstComponent(Container focusCycleRoot) {
-            return w.getFirstComponent (focusCycleRoot);
-        }
-
-        public Component getLastComponent(Container focusCycleRoot) {
-            Component result = w.getLastComponent(focusCycleRoot);
-            return result;
-        }
-    }    
- */
 
     public Graphics getGraphics() {
         // Return the dummy graphics that paint nowhere, until we receive a paint() 
