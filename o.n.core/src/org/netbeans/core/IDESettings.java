@@ -50,6 +50,13 @@ public class IDESettings extends SystemOption {
   public static String PROP_CONFIRM_DELETE = "confirmDelete";
   /** home page property name */
   public static String PROP_HOME_PAGE = "homePage";
+  /** use proxy property name */
+  public static String PROP_USE_PROXY = "homePage";
+  /** proxy host property name */
+  public static String PROP_PROXY_HOST = "proxyHost";
+  /** proxy port property name */
+  public static String PROP_PROXY_PORT = "proxyPort";
+
 
   /** Minimum output detail level */
   public static final int OUTPUT_MINIMUM = 0;
@@ -210,10 +217,58 @@ public class IDESettings extends SystemOption {
   public void setHomePage (String homePage) {
     HtmlBrowser.setHomePage (homePage);
   }
+
+  /** Getter for proxy set flag.
+  */
+  public boolean getUseProxy () {
+    String host = System.getProperty ("proxySet");
+    if ((host != null) && (host.equals ("true"))) return true;
+    else return false;
+  }
+  
+  /** Setter for proxy set flag.
+  */
+  public void setUseProxy (boolean value) {
+    if (value) {
+      System.setProperty ("proxySet", "true");
+    } else {
+      System.setProperty ("proxySet", "false");
+    }
+  }
+
+  /** Getter for proxy host.
+  */
+  public String getProxyHost () {
+    String host = System.getProperty ("proxyHost");
+    if (host == null) host = "";
+    return host;
+  }
+  
+  /** Setter for proxy host.
+  */
+  public void setProxyHost (String value) {
+    System.setProperty ("proxyHost", value);
+  }
+
+  /** Getter for proxy port.
+  */
+  public String getProxyPort () {
+    String port = System.getProperty ("proxyPort");
+    if (port == null) port = "";
+    return port;
+  }
+  
+  /** Setter for proxy port.
+  */
+  public void setProxyPort (String value) {
+    System.setProperty ("proxyPort", value);
+  }
 }
 
 /*
  * Log
+ *  9    Gandalf   1.8         7/21/99  Ian Formanek    settings for proxy, 
+ *       property output detail level hidden
  *  8    Gandalf   1.7         7/20/99  Ian Formanek    Removed 
  *       PropertyEditorSearchPath and BeanInfoSearchPath properties
  *  7    Gandalf   1.6         7/19/99  Jan Jancura     

@@ -51,11 +51,19 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
                                 "getLoadedBeans", "setLoadedBeans"),
         new PropertyDescriptor (IDESettings.PROP_HOME_PAGE, IDESettings.class,
                                 "getHomePage", "setHomePage"),
+        new PropertyDescriptor (IDESettings.PROP_USE_PROXY, IDESettings.class,
+                                "getUseProxy", "setUseProxy"),
+        new PropertyDescriptor (IDESettings.PROP_PROXY_HOST, IDESettings.class,
+                                "getProxtHost", "setProxtHost"),
+        new PropertyDescriptor (IDESettings.PROP_PROXY_PORT, IDESettings.class,
+                                "getProxyPort", "setProxyPort"),
       };
 
       desc[0].setDisplayName (Main.getString ("PROP_OUTPUT_LEVEL"));
       desc[0].setShortDescription (Main.getString ("HINT_OUTPUT_LEVEL"));
       desc[0].setPropertyEditorClass (IDESettingsBeanInfo.OutputLevelEditor.class);
+
+      desc[0].setHidden(true);
 
       desc[1].setDisplayName (Main.getString ("PROP_LOOK_AND_FEEL"));
       desc[1].setShortDescription (Main.getString ("HINT_LOOK_AND_FEEL"));
@@ -74,6 +82,15 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
       desc[6].setDisplayName (Main.getString ("PROP_HOME_PAGE"));
       desc[6].setShortDescription (Main.getString ("HINT_HOME_PAGE"));
       
+      desc[7].setDisplayName (Main.getString ("PROP_USE_PROXY"));
+      desc[7].setShortDescription (Main.getString ("HINT_USE_PROXY"));
+
+      desc[8].setDisplayName (Main.getString ("PROP_PROXY_HOST"));
+      desc[8].setShortDescription (Main.getString ("HINT_PROXY_HOST"));
+
+      desc[9].setDisplayName (Main.getString ("PROP_PROXY_PORT"));
+      desc[9].setShortDescription (Main.getString ("HINT_PROXY_PORT"));
+
     } catch (IntrospectionException ex) {
       ex.printStackTrace ();
     }
@@ -197,6 +214,8 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  7    Gandalf   1.6         7/21/99  Ian Formanek    settings for proxy, 
+ *       property output detail level hidden
  *  6    Gandalf   1.5         7/20/99  Ian Formanek    Removed 
  *       PropertyEditorSearchPath and BeanInfoSearchPath properties
  *  5    Gandalf   1.4         7/19/99  Jan Jancura     
