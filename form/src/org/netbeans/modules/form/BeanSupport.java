@@ -13,7 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import com.netbeans.ide.nodes.Node;
+import com.netbeans.ide.nodes.*;
 
 import java.awt.*;
 import java.beans.*;
@@ -183,32 +183,34 @@ public class BeanSupport {
     else return null; // not found
   }
 
-  public static Node.Property [] createBeanProperties (Object beanInstance) {
+  public static Node.Property [] createEventsProperties (Object beanInstance) {
     BeanInfo beanInfo = createBeanInfo (beanInstance.getClass ());
-    PropertyDescriptor[] props = beanInfo.getPropertyDescriptors ();
-    ArrayList nodeProps = new ArrayList ();
-    for (int i = 0; i < props.length; i++) {
+    EventSetDescriptor[] events = beanInfo.getEventSetDescriptors ();
+    ArrayList eventsProps = new ArrayList ();
+    for (int i = 0; i < events.length; i++) {
     }
 
-    Node.Property[] np = new Node.Property [nodeProps.size ()];
-    nodeProps.toArray (np);
+    Node.Property[] np = new Node.Property [eventsProps.size ()];
+    eventsProps.toArray (np);
 
     return np;
   }
   
-  public static Node.Property [] createBeanExpertProperties (Object beanInstance) {
-    BeanInfo beanInfo = createBeanInfo (beanInstance.getClass ());
-    PropertyDescriptor[] props = beanInfo.getPropertyDescriptors ();
-    ArrayList nodeProps = new ArrayList ();
-    for (int i = 0; i < props.length; i++) {
+  public static PropertyEditor getPropertyEditor (PropertyDescriptor desc) {
+    Class ed = desc.getPropertyEditorClass ();
+    if (ed != null) {
+      try {
+        PropertyEditor editor = (PropertyEditor)ed.newInstance ();
+        return editor;
+      } catch (IllegalAccessException e) {
+        return null;
+      } catch (InstantiationException e) {
+        return null;
+      }
+    } else {
+      return PropertyEditorManager.findEditor (desc.getPropertyType ());
     }
-
-    Node.Property[] np = new Node.Property [nodeProps.size ()];
-    nodeProps.toArray (np);
-
-    return np;
   }
-  
 // -----------------------------------------------------------------------------
 // Private methods
 
@@ -237,6 +239,7 @@ public class BeanSupport {
 
 /*
  * Log
+ *  3    Gandalf   1.2         5/5/99   Ian Formanek    
  *  2    Gandalf   1.1         5/4/99   Ian Formanek    Package change
  *  1    Gandalf   1.0         4/29/99  Ian Formanek    
  * $
