@@ -582,7 +582,7 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
                 break;
             case ClassNameTextField.STATUS_INVALID:
                 //PENDING - polish the message:
-                key = "MSG_InvalidClassname";                           //NOI18N
+                key = "MSG_InvalidClassName";                           //NOI18N
         }
         setMessage((key != null)
                            ? NbBundle.getMessage(getClass(), key)
