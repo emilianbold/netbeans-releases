@@ -58,7 +58,7 @@ import java.util.List;
  */
 public abstract class J2eeModuleProvider {
     
-    private ServerRegistry.InstanceListener il;
+    private InstanceListener il;
     private ConfigSupportImpl confSupp;
     List listeners = new ArrayList();
     private ConfigFilesListener configFilesListener = null;
@@ -67,8 +67,8 @@ public abstract class J2eeModuleProvider {
     public J2eeModuleProvider () {
         il = new IL ();
         ServerRegistry.getInstance ().addInstanceListener (
-            (ServerRegistry.InstanceListener) WeakListeners.create(
-            ServerRegistry.InstanceListener.class, il, ServerRegistry.getInstance ()));
+            (InstanceListener) WeakListeners.create(
+                InstanceListener.class, il, ServerRegistry.getInstance ()));
     }
     
     public abstract J2eeModule getJ2eeModule ();
@@ -323,6 +323,28 @@ public abstract class J2eeModuleProvider {
         listeners.remove(l);
     }
     
+    /**
+     * Register an instance listener that will listen to server instances changes.
+     *
+     * @l listener which should be added.
+     *
+     * @since 1.6
+     */
+    public final void addInstanceListener(InstanceListener l) {
+        ServerRegistry.getInstance ().addInstanceListener(l);
+    }
+
+    /**
+     * Remove an instance listener which has been registered previously.
+     *
+     * @l listener which should be removed.
+     *
+     * @since 1.6
+     */
+    public final void removeInstanceListener(InstanceListener l) {
+        ServerRegistry.getInstance ().removeInstanceListener(l);
+    }
+    
     private void addCFL() {
         //already listen
         if (configFilesListener != null)
@@ -330,9 +352,11 @@ public abstract class J2eeModuleProvider {
         configFilesListener = new ConfigFilesListener(this, listeners);
     }
     
-    private final class IL implements ServerRegistry.InstanceListener {
+    private final class IL implements InstanceListener {
         
-        public void changeDefaultInstance (ServerString oldInstance, ServerString newInstance) {
+        public void changeDefaultInstance (String oldInst, String newInst) {
+            ServerString oldInstance = new ServerString(ServerRegistry.getInstance().getServerInstance(oldInst));
+            ServerString newInstance = new ServerString(ServerRegistry.getInstance().getServerInstance(newInst));
             if (useDefaultServer () && oldInstance == null || ((newInstance != null) && (oldInstance.getPlugin() != newInstance.getPlugin()))) {
                 if (J2eeModule.WAR.equals(getJ2eeModule().getModuleType())) {
                     String oldCtxPath = getConfigSupportImpl().getWebContextRoot();
@@ -349,10 +373,10 @@ public abstract class J2eeModuleProvider {
             }
         }
         
-        public void instanceAdded (org.netbeans.modules.j2ee.deployment.impl.ServerString instance) {
+        public void instanceAdded (String instance) {
         }
         
-        public void instanceRemoved (org.netbeans.modules.j2ee.deployment.impl.ServerString instance) {
+        public void instanceRemoved (String instance) {
         }
         
     }

@@ -80,6 +80,26 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="InstanceListener-and-Deployment-getSrvInstIDs">
+            <api name="j2eeserver"/>
+            <summary>Added InstanceListener. Added Deployment.getServerInstancesIDs methods for getting server instances based on some requirements.</summary>
+            <version major="1" minor="6"/>
+            <date day="25" month="1" year="2005"/>
+            <author login="sherold"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Added <code>InstanceListener</code> that will allow listening to server instance changes (addition,
+		    removal, etc.). Methods for <code>InstanceListener</code> registration were added to <code>J2eeModuleProvider</code>.
+		    To the <code>Deployment</code> class were added <code>getServerInstanceIDs</code> methods for listing
+		    registered server instances based on some requirements - supported module types, J2EE specification
+		    versions and tools.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="Deployment"/>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="InstanceListener"/>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
+         </change>
         <change id="Add-StartServer-needsRestart">
             <api name="plugins"/>
             <summary>StartServer.needsRestart tells j2eeserver a state of the server</summary>

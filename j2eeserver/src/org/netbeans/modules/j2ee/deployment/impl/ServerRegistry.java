@@ -24,6 +24,8 @@ import org.openide.util.NbBundle;
 
 import java.util.*;
 import java.io.*;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.openide.modules.InstalledFileLocator;
 
 //import java.util.logging.*;
@@ -213,12 +215,12 @@ public final class ServerRegistry implements java.io.Serializable {
         
         ServerInstance instance = (ServerInstance) instancesMap().remove(url);
         if (instance != null) {
-            ServerString ss = new ServerString(instance);
-            fireInstanceListeners(ss, false);
-            removeInstanceFromFile(instance.getUrl());
+            fireInstanceListeners(url, false);
+            removeInstanceFromFile(url);
         }
         ServerString newinst = getDefaultInstance(false);
-        fireDefaultInstance(def, newinst);
+        fireDefaultInstance(def != null ? def.getUrl() : null, 
+                newinst != null ? newinst.getUrl() : null);
     }
     
     public ServerInstance[] getServerInstances() {
@@ -321,7 +323,7 @@ public final class ServerRegistry implements java.io.Serializable {
                         writeInstanceToFile(url,username,password);
                         if (displayName != null) instance.getInstanceProperties().setProperty(
                                 InstanceProperties.DISPLAY_NAME_ATTR, displayName);
-                        fireInstanceListeners(str,true);
+                        fireInstanceListeners(url, true);
                         return true;
                     }
                 }
@@ -371,7 +373,7 @@ public final class ServerRegistry implements java.io.Serializable {
 	configNamesByType = null;
     }
     
-    private void fireInstanceListeners(ServerString instance, boolean add) {
+    private void fireInstanceListeners(String instance, boolean add) {
         for(Iterator i = instanceListeners.iterator();i.hasNext();) {
             InstanceListener pl = (InstanceListener)i.next();
             if(add) pl.instanceAdded(instance);
@@ -379,7 +381,7 @@ public final class ServerRegistry implements java.io.Serializable {
         }
     }
     
-    private void fireDefaultInstance(ServerString oldInstance, ServerString newInstance) {
+    private void fireDefaultInstance(String oldInstance, String newInstance) {
         for(Iterator i = instanceListeners.iterator();i.hasNext();) {
             InstanceListener pl = (InstanceListener)i.next();
             pl.changeDefaultInstance(oldInstance, newInstance);
@@ -395,12 +397,13 @@ public final class ServerRegistry implements java.io.Serializable {
             removeDefaultInstanceFile();
             ServerString oldValue = defaultInstance;
             defaultInstance = null;
-            fireDefaultInstance(oldValue, null);
+            fireDefaultInstance(oldValue != null ? oldValue.getUrl() : null, null);
         } else {
             if (ServerStringConverter.writeServerInstance(instance, DIR_INSTALLED_SERVERS, FILE_DEFAULT_INSTANCE)) {
                 ServerString oldValue = defaultInstance;
                 defaultInstance = instance;
-                fireDefaultInstance(oldValue, instance);
+                fireDefaultInstance(oldValue != null ? oldValue.getUrl() : null,
+                        instance != null ? instance.getUrl() : null);
             }
         }
     }
@@ -503,16 +506,6 @@ public final class ServerRegistry implements java.io.Serializable {
         public void serverAdded(Server name);
         
         public void serverRemoved(Server name);
-        
-    }
-    
-    public interface InstanceListener extends EventListener {
-        
-        public void instanceAdded(ServerString instance);
-        
-        public void instanceRemoved(ServerString instance);
-        
-        public void changeDefaultInstance(ServerString oldInstance, ServerString newInstance);
         
     }
 

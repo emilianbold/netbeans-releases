@@ -21,16 +21,16 @@
 package org.netbeans.modules.j2ee.deployment.impl;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import java.beans.PropertyChangeEvent;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 
 /**
  *
  * @author  nn136682
  */
-public class InstancePropertiesImpl extends InstanceProperties implements ServerRegistry.InstanceListener {
+public class InstancePropertiesImpl extends InstanceProperties implements InstanceListener {
     private final String url;
     private transient FileObject fo;
     
@@ -59,13 +59,13 @@ public class InstancePropertiesImpl extends InstanceProperties implements Server
         return fo;
     }
     
-    // ServerRegistry.InstanceListener methods
-    public void instanceRemoved(ServerString instance) {
-        if (instance != null && url.equals(instance.getUrl()))
+    // InstanceListener methods
+    public void instanceRemoved(String instance) {
+        if (instance != null && url.equals(instance))
             fo = null;
     }
-    public void instanceAdded(ServerString instance) {}
-    public void changeDefaultInstance(ServerString oldInstance, ServerString newInstance){
+    public void instanceAdded(String instance) {}
+    public void changeDefaultInstance(String oldInstance, String newInstance){
     }
     
     public String getProperty(String propname) throws IllegalStateException {

@@ -29,6 +29,7 @@ import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.*;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import java.util.*;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 
 /**
  * The server registry node is a node representing the registry in global options.
@@ -37,7 +38,7 @@ import java.util.*;
  */
 
 public class ServerRegistryNode extends AbstractNode
-implements ServerRegistry.PluginListener, ServerRegistry.InstanceListener {
+implements ServerRegistry.PluginListener, InstanceListener {
     
     static final String REGISTRY_ICON_BASE = "org/netbeans/modules/j2ee/deployment/impl/ui/resources/ServerRegistry";//NOI18N
     
@@ -72,14 +73,14 @@ implements ServerRegistry.PluginListener, ServerRegistry.InstanceListener {
         serverNodes.clear();
     }
     
-    public void instanceAdded(ServerString instance) {
+    public void instanceAdded(String instance) {
         updateKeys();
     }
-    public void instanceRemoved(ServerString instance) {
+    public void instanceRemoved(String instance) {
         updateKeys();
     }
-    public void changeDefaultInstance(ServerString oldInstance, ServerString instance) {
-        setDisplayNameWithDefaultServer(instance == null ? null : instance.getServerInstance());
+    public void changeDefaultInstance(String oldInstance, String newInstance) {
+        setDisplayNameWithDefaultServer(newInstance == null ? null : ServerRegistry.getInstance().getServerInstance(newInstance));
     }
     
     private void updateKeys() {
