@@ -4,5 +4,4 @@ monitor/javahelp/org/netbeans/modules/web/monitor/docs/**/*.hs
 monitor/javahelp/org/netbeans/modules/web/monitor/docs/**/*.xml
 monitor/javahelp/org/netbeans/modules/web/monitor/docs/**/*.jhm
 monitor/javahelp/org/netbeans/modules/web/monitor/docs/**/*.css
-monitor/javahelp/org/netbeans/modules/web/monitor/docs/images/cswitch.gif
-monitor/javahelp/org/netbeans/modules/web/monitor/docs/images/webmodule.gif
+monitor/javahelp/org/netbeans/modules/web/monitor/docs/**/*.gif
