@@ -27,7 +27,6 @@ import org.openide.util.Utilities;
 public class FileCommandAction extends ProjectAction {
 
     private String command;
-    private Lookup lookup;
         
     public FileCommandAction( String command, String namePattern, String iconResource, Lookup lookup ) {
         this( command, namePattern, new ImageIcon( Utilities.loadImage( iconResource ) ), lookup );
