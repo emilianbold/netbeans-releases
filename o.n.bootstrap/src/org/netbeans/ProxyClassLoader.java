@@ -31,14 +31,16 @@ public class ProxyClassLoader extends ClassLoader {
     /** empty enumeration */
     private static final Enumeration EMPTY = new ArrayEnumeration (new Object[0]);
     
-    
-    // Map<String,ClassLoader>
-    // packages are given in format "org/netbeans/modules/foo/"
+    /**
+     * All known package owners.
+     * Packages are given in format <samp>org/netbeans/modules/foo/</samp>.
+     * Of type <code>Map&lt;String,ClassLoader&gt;</code>.
+     */
     private final Map domainsByPackage = new HashMap(); 
-    // Map<String,Package>
-    private HashMap packages = new HashMap();
+    /** All known packages, of type <code>Map&lt;String,Package&gt;</code> */
+    private final Map packages = new HashMap();
 
-    // All parentf of this classloader, including their parents recursively
+    /** All parents of this classloader, including their parents recursively */
     private ClassLoader[] parents;
 
     /** if true, we have been destroyed */
@@ -73,7 +75,7 @@ public class ProxyClassLoader extends ClassLoader {
         
         Set check = new HashSet(Arrays.asList(parents)); // Set<ClassLoader>
         if (check.size() < parents.length) throw new IllegalArgumentException("duplicate parents"); // NOI18N
-        if (check.contains(null)) throw new IllegalArgumentException("null parent"); // NOI18N
+        if (check.contains(null)) throw new IllegalArgumentException("null parent in " + check); // NOI18N
 
         this.parents = coalesceParents(parents);
     }
@@ -306,9 +308,7 @@ public class ProxyClassLoader extends ClassLoader {
     protected Package getPackage(String name) {
         zombieCheck(name);
         
-        int idx = name.lastIndexOf('.');
-        if (idx == -1) return null;
-        String spkg = name.substring(0, idx + 1).replace('.', '/');
+        String spkg = name.replace('.', '/') + '/';
         
 	synchronized (packages) {
 	    Package pkg = (Package)packages.get(name);
@@ -317,6 +317,7 @@ public class ProxyClassLoader extends ClassLoader {
             for (int i = 0; i < parents.length; i++) {
                 ClassLoader par = parents[i];
                 if (par instanceof ProxyClassLoader && shouldDelegateResource(spkg, par)) {
+                    // XXX could delegate to some special method that does not check parents too
                     pkg = ((ProxyClassLoader)par).getPackage(name);
                     if(pkg != null) break;
                 }
@@ -415,7 +416,6 @@ public class ProxyClassLoader extends ClassLoader {
         }
         List resulting = new ArrayList(likelySize);
         resulting.addAll(existingL);
-        int fromIdx = resulting.size();
         for (int i = 0; i < appended.length; i++) {
             addRec(resultingUnique, resulting, appended[i]);
         }
