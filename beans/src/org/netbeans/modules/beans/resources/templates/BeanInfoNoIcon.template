@@ -25,7 +25,8 @@ public class BeanInfoNoIcon extends SimpleBeanInfo {
 
     // Properties information will be obtained from introspection.//GEN-FIRST:Properties
     private static PropertyDescriptor[] properties = null;
-    private static PropertyDescriptor[] getPdescriptor(){//GEN-HEADEREND:Properties
+    private static PropertyDescriptor[] getPdescriptor(){
+    //GEN-HEADEREND:Properties
 
     // Here you can add code for customizing the properties array.
 
@@ -33,7 +34,8 @@ public class BeanInfoNoIcon extends SimpleBeanInfo {
 
     // Event set information will be obtained from introspection.//GEN-FIRST:Events
     private static EventSetDescriptor[] eventSets = null;
-    private static EventSetDescriptor[] getEdescriptor(){//GEN-HEADEREND:Events
+    private static EventSetDescriptor[] getEdescriptor(){
+    //GEN-HEADEREND:Events
 
     // Here you can add code for customizing the event sets array.
 
@@ -41,7 +43,8 @@ public class BeanInfoNoIcon extends SimpleBeanInfo {
 
     // Method information will be obtained from introspection.//GEN-FIRST:Methods
     private static MethodDescriptor[] methods = null;
-    private static MethodDescriptor[] getMdescriptor(){//GEN-HEADEREND:Methods
+    private static MethodDescriptor[] getMdescriptor(){
+    //GEN-HEADEREND:Methods
 
     // Here you can add code for customizing the methods array.
     
