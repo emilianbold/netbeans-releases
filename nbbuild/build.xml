@@ -2347,6 +2347,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../j2ee/earproject" target="netbeans"/>
   </target>
+  <target name="all-j2ee/blueprints" depends="init , all-j2ee/ejbapi">
+    <echo message="Building module j2ee/blueprints.."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../j2ee/blueprints" target="netbeans"/>
+  </target>
 <target name="all-j2ee/debug" depends="init">
   <echo message="Building module j2ee/debug.."/>
   <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
