@@ -71,7 +71,7 @@ public class MainWindowOperator extends JFrameOperator {
     /** JMenuBarOperator instance. */
     private JMenuBarOperator _menuBar;
     /** Special tab component for workspace switching */
-    private TabControl _tabControl;
+    private Component _tabControl;
     
     /** Creates new instance of MainWindowOperator. Waits for JFrame with
      * title "NetBeans IDE..." or "Forte...".
@@ -158,7 +158,7 @@ public class MainWindowOperator extends JFrameOperator {
      * @param workspaceName name of workspace
      */
     public void switchToWorkspace(String workspaceName) {
-        getTabControl().setSelectedIndex(getTabIndex(workspaceName));
+        ((TabControl)getTabControl()).setSelectedIndex(getTabIndex(workspaceName));
         new EventTool().waitNoEvent(1000);
     }
     
@@ -188,7 +188,7 @@ public class MainWindowOperator extends JFrameOperator {
      * returns already found instance.
      * @return instance of org.netbeans.core.awt.TabControl
      */
-    public TabControl getTabControl() {
+    public Component getTabControl() {
         if(_tabControl == null) {
             ComponentChooser chooser = new ComponentChooser() {
                 public boolean checkComponent(Component comp) {
@@ -198,7 +198,7 @@ public class MainWindowOperator extends JFrameOperator {
                     return "org.netbeans.core.awt.TabControl";
                 }
             };
-            _tabControl = (TabControl)findComponent((Container)this.getSource(), chooser);
+            _tabControl = findComponent((Container)this.getSource(), chooser);
             if(_tabControl == null) {
                 throw new JemmyException("Component TabControl has not been found.");
             }
@@ -211,14 +211,14 @@ public class MainWindowOperator extends JFrameOperator {
      * @return  number of workspaces
      */
     public int getTabCount() {
-        return getTabControl().getTabCount();
+        return ((TabControl)getTabControl()).getTabCount();
     }
     
     /** Returns index of currently selected workspace.
      * @return  index of selected workspace (starts from 0)
      */
     public int getSelectedIndex() {
-        return getTabControl().getSelectedIndex();
+        return ((TabControl)getTabControl()).getSelectedIndex();
     }
     
     /** Returns index of workspace identified by its name
@@ -227,7 +227,7 @@ public class MainWindowOperator extends JFrameOperator {
      */
     public int getTabIndex(String tabLabel) {
         for(int i=0; i < getTabCount(); i++) {
-            if (getComparator().equals(getTabControl().getTabLabel(i), tabLabel)) {
+            if (getComparator().equals(((TabControl)getTabControl()).getTabLabel(i), tabLabel)) {
                 return i;
             }
         }
@@ -248,7 +248,7 @@ public class MainWindowOperator extends JFrameOperator {
      */
     private int getXForClick(int index) {
         for(int x = 0; x< getTabControl().getWidth(); x++) {
-            if (getTabControl().pointToIndex(x) == index) return x;
+            if (((TabControl)getTabControl()).pointToIndex(x) == index) return x;
         }
         throw new JemmyException("Point to click cannot be found for index="+index);
     }

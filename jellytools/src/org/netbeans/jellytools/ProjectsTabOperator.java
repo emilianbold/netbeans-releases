@@ -20,7 +20,7 @@ import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.openide.windows.TopComponent;
+//import org.openide.windows.TopComponent;
 
 /** Operator handling Projects TopComponent.<p>
  * This operator is child of TopComponentOperator and thus it can be located

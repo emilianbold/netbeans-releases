@@ -120,15 +120,17 @@ public class TopComponentOperator extends JComponentOperator {
     /** Creates new instance from given TopComponent instance.
      * @param topComponent TopComponent instance
      */
+/*
     public TopComponentOperator(TopComponent topComponent) {
         super(topComponent);
     }
-    
+*/  
+  
     /** Creates new instance from given JComponent.
      * This constructor is used in properties.PropertySheetOperator.
      * @param jComponent instance of JComponent
      */
-    protected TopComponentOperator(JComponent jComponent) {
+    public TopComponentOperator(JComponent jComponent) {
         super(jComponent);
     }
     
@@ -178,7 +180,7 @@ public class TopComponentOperator extends JComponentOperator {
      * @param index index of TopComponent
      * @return TopComponent instance or null if noone matching criteria was found
      */
-    protected static TopComponent findTopComponent(String name, int index) {
+    protected static JComponent findTopComponent(String name, int index) {
         Iterator it=TopComponent.getRegistry().getOpened().iterator();
         ComponentChooser chooser=new TopComponentChooser(name, Operator.getDefaultStringComparator());
         TopComponent c;
@@ -201,7 +203,7 @@ public class TopComponentOperator extends JComponentOperator {
      * @return TopComponent instance or throws JemmyException if not found
      * @see #findTopComponent
      */
-    protected static TopComponent waitTopComponent(final String name, final int index) {
+    protected static JComponent waitTopComponent(final String name, final int index) {
         try {
             Waiter waiter = new Waiter(new Waitable() {
                 public Object actionProduced(Object obj) {
@@ -216,7 +218,7 @@ public class TopComponentOperator extends JComponentOperator {
             times.setTimeout("Waiter.WaitingTime", times.getTimeout("ComponentOperator.WaitComponentTimeout"));
             waiter.setTimeouts(times);
             waiter.setOutput(JemmyProperties.getCurrentOutput());
-            return((TopComponent)waiter.waitAction(null));
+            return((JComponent)waiter.waitAction(null));
         } catch(InterruptedException e) {
             return(null);
         }

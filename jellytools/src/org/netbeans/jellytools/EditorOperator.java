@@ -256,14 +256,14 @@ public class EditorOperator extends TopComponentOperator {
      * character
      */
     public String getText(int lineNumber) {
-        return getLine(lineNumber).getText();
+        return ((Line)getLine(lineNumber)).getText();
     }
     
     /** Returns instance of org.openide.text.Line for given line number.
      * @param lineNumber number of line (beggining at 1)
      * @return org.openide.text.Line instance
      */
-    private Line getLine(int lineNumber) {
+    private Object getLine(int lineNumber) {
         Document doc = txtEditorPane().getDocument();
         DataObject od = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
         Set set = ((LineCookie)od.getCookie(LineCookie.class)).getLineSet();
@@ -528,15 +528,15 @@ public class EditorOperator extends TopComponentOperator {
      * @see #getAnnotationShortDescription
      * @see #getAnnotationType
      */
-    public Annotation[] getAnnotations(int lineNumber) {
-        return (Annotation[])getAnnotations(getLine(lineNumber)).toArray(new Annotation[0]);
+    public Object[] getAnnotations(int lineNumber) {
+        return getAnnotations(getLine(lineNumber)).toArray(new Annotation[0]);
     }
     
     /** Gets annotations from given Line object
      * @param line instance of org.openide.text.Line
      * @return list of annotations
      */
-    private List getAnnotations(Line line) {
+    private List getAnnotations(Object line) {
         try {
             Method getAnnotations = Annotatable.class.getDeclaredMethod("getAnnotations", null);
             getAnnotations.setAccessible(true);
@@ -552,7 +552,7 @@ public class EditorOperator extends TopComponentOperator {
      * @see #getAnnotationShortDescription
      * @see #getAnnotationType
      */
-    public Annotation[] getAnnotations() {
+    public Object[] getAnnotations() {
         Document doc = txtEditorPane().getDocument();
         DataObject od = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
         Set set = ((LineCookie)od.getCookie(LineCookie.class)).getLineSet();
@@ -561,7 +561,7 @@ public class EditorOperator extends TopComponentOperator {
         while(iter.hasNext()) {
             result.addAll(getAnnotations((Line)iter.next()));
         }
-        return (Annotation[])result.toArray(new Annotation[0]);
+        return result.toArray(new Annotation[0]);
     }
     
     /** Returns a string uniquely identifying annotation. For editor bookmark
@@ -572,16 +572,16 @@ public class EditorOperator extends TopComponentOperator {
      * @see #getAnnotations()
      *@see #getAnnotations(int)
      */
-    public static String getAnnotationType(Annotation annotation) {
-        return annotation.getAnnotationType();
+    public static String getAnnotationType(Object annotation) {
+        return ((Annotation)annotation).getAnnotationType();
     }
     
     /** Returns a short description of annotation. It is localized.
      * @param annotation instance of org.openide.text.Annotation
      * @return a short description of annotation according to current locale
      */
-    public static String getAnnotationShortDescription(Annotation annotation) {
-        return annotation.getShortDescription();
+    public static String getAnnotationShortDescription(Object annotation) {
+        return ((Annotation)annotation).getShortDescription();
     }
     
     /***************** Methods for toolbar manipulation *******************/
