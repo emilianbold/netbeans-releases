@@ -26,7 +26,8 @@ L10N_LIST="xml/l10n.list"
 echo -n > $L10N_LIST
 
 for module in catalog compat core css tax text-edit tools tree-edit; do
-    MODULE_L10N_LIST="xml/${module}/l10n.list"
+    MODULE_HOME="xml/${module}"
+    MODULE_L10N_LIST="${MODULE_HOME}/l10n.list"
     MODULE_L10N_LIST_TEMP="${MODULE_L10N_LIST}.temp"
 
     rm -f ${MODULE_L10N_LIST_TEMP}
@@ -42,10 +43,10 @@ for module in catalog compat core css tax text-edit tools tree-edit; do
     done
     
     ## javahelp
-    MODULE_JAVAHELP=xml/${module}/javahelp
+    MODULE_JAVAHELP=$MODULE_HOME/javahelp
     if [ -e $MODULE_JAVAHELP ]; then
         for ext in html gif xml hs jhm; do
-            find $MODULE_JAVAHELP -name "*.${ext}" | grep -v "_ja.${ext}" >> ${MODULE_L10N_LIST_TEMP}
+            echo "$MODULE_JAVAHELP/org/netbeans/modules/xml/$module/docs/**/*.$ext" >> ${MODULE_L10N_LIST_TEMP}
         done
     fi
 
