@@ -21,9 +21,11 @@ import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.tomcat5.TomcatModule;
 import org.netbeans.modules.tomcat5.nodes.actions.TomcatWebModuleCookie;
+import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -56,21 +58,40 @@ public class TomcatWebModule extends TomcatModule implements TomcatWebModuleCook
     }
     
     public void undeploy() {
-        ProgressObject po = manager.undeploy(target);
-        po.addProgressListener(new TomcatProgressListener());
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run () {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TomcatWebModule.class, "MSG_START_UNDEPLOY",  // NOI18N
+                    new Object []{getPath()})); 
+                ProgressObject po = manager.undeploy(target);
+                po.addProgressListener(new TomcatProgressListener());
+            }
+        }, 0);
         
     }
 
     public void start() {
-        ProgressObject po = manager.start(target);
-        po.addProgressListener(new TomcatProgressListener());
-        isRunning = true;
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run () {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TomcatWebModule.class, "MSG_START_STARTING",  // NOI18N
+                    new Object []{getPath()}));
+                ProgressObject po = manager.start(target);
+                po.addProgressListener(new TomcatProgressListener());
+                isRunning = true;
+            }
+        }, 0);
     }
 
     public void stop() {
-        ProgressObject po = manager.stop(target);
-        po.addProgressListener(new TomcatProgressListener());
-        isRunning = false;
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run () {
+                
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TomcatWebModule.class, "MSG_START_STOPPING",  // NOI18N
+                    new Object []{getPath()}));
+                ProgressObject po = manager.stop(target);
+                po.addProgressListener(new TomcatProgressListener());
+                isRunning = false;
+            }
+        }, 0);
     }
 
     public boolean isRunning() {
@@ -82,8 +103,8 @@ public class TomcatWebModule extends TomcatModule implements TomcatWebModuleCook
         if (isRunning())
             return getPath();
         else
-            return getPath() + " (" + NbBundle.getMessage(TomcatWebModuleNode.class, "LBL_Stopped")  // NOI18N
-               +  " )";
+            return getPath() + " [" + NbBundle.getMessage(TomcatWebModuleNode.class, "LBL_Stopped")  // NOI18N
+               +  "]";
     }
     
     private class TomcatProgressListener implements ProgressListener {
@@ -93,13 +114,16 @@ public class TomcatWebModule extends TomcatModule implements TomcatWebModuleCook
                 javax.enterprise.deploy.shared.CommandType command = progressEvent.getDeploymentStatus().getCommand();
                 if (command == javax.enterprise.deploy.shared.CommandType.START
                     || command == javax.enterprise.deploy.shared.CommandType.STOP){
+                        StatusDisplayer.getDefault().setStatusText(progressEvent.getDeploymentStatus().getMessage());
                         node.setDisplayName(constructDisplayName());
                 }
                 else {
                     if (command == javax.enterprise.deploy.shared.CommandType.UNDEPLOY){
                         Children children = node.getParentNode().getChildren();
-                        if (children instanceof TomcatWebModuleChildren)
+                        if (children instanceof TomcatWebModuleChildren){
                             ((TomcatWebModuleChildren)children).updateKeys();
+                            StatusDisplayer.getDefault().setStatusText(progressEvent.getDeploymentStatus().getMessage());
+                        }
                     }
                 }
             }

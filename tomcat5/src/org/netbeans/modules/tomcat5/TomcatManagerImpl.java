@@ -409,11 +409,9 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                         if (first) {
                             // hard fix to accept the japanese localization of manager app
                             String japaneseOK="\u6210\u529f"; //NOI18N
+                            msg = line;
                             if (!(line.startsWith("OK -") || line.startsWith(japaneseOK))) { // NOI18N
                                 error = line;
-                            }
-                            else { 
-                                msg = line;
                             }
                             first = false;
                         }
