@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="all,validation,suite1" name="properties_creating">
         <testset dir="qa-fuctional/src">
             <patternset>
-                <include name="org/netbeans/properties/jelly2tests/suites/creating_properties_file/*.class"/>
+                <include name="org/netbeans/properties/jelly2tests/suites/CreatingPropertiesFile.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="all,validation,suite2" name="properties_editing">
         <testset dir="qa-fuctional/src">
             <patternset>
-                <include name="org/netbeans/properties/jelly2tests/suites/editing_properties_file/*"/>
+                <include name="org/netbeans/properties/jelly2tests/suites/EditingPropertiesFile.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -33,17 +33,17 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="all,validation,suite3" name="properties_customizing">
         <testset dir="qa-fuctional/src">
             <patternset>
-                <include name="org/netbeans/properties/jelly2tests/suites/customizing_properties_file/*"/>
+                <include name="org/netbeans/properties/jelly2tests/suites/CustomizingPropertiesFile.class"/>
             </patternset>
         </testset>
     </testbag>
 
-    <testbag testattribs="full" name="Properties TestBag All Test">
+    <testbag testattribs="myfull" name="Properties TestBag All Test">
        <testset dir="qa-fuctional/src">
             <patternset>
-                <include name="org/netbeans/properties/jelly2tests/suites/editing_properties_file/*.class"/>
-                <include name="org/netbeans/properties/jelly2tests/suites/customizing_properties_file/*.class"/>
-                <include name="org/netbeans/properties/jelly2tests/suites/creating_properties_file/*.class"/>
+                <include name="org/netbeans/properties/jelly2tests/suites/CreatingPropertiesFile.class"/>
+                <include name="org/netbeans/properties/jelly2tests/suites/EditingPropertiesFile.class"/>
+                <include name="org/netbeans/properties/jelly2tests/suites/CustomizingPropertiesFile.class"/>
             </patternset>
        </testset>
     </testbag>
@@ -51,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="test" name="Test tesbag - this testbag should be used only for testing purpose! Do not use it!">
         <testset dir="qa-fuctional/src">
             <patternset>
-		 <include name="org/netbeans/properties/jelly2tests/suites/customizing_properties_file/CustomizeBig*.class"/>
+		 <include name="org/netbeans/properties/jelly2tests/suites/editing_properties_file/EditNewFileInPropertyEditorAddProperty1.class"/>
             </patternset>
         </testset>
     </testbag>
