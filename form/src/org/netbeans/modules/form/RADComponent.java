@@ -398,7 +398,11 @@ public class RADComponent {
         public PropertyEditor getPropertyEditor () {
          if (desc.getPropertyEditorClass () != null)
            try {
-             return (PropertyEditor) desc.getPropertyEditorClass ().newInstance ();
+             PropertyEditor ed = (PropertyEditor) desc.getPropertyEditorClass ().newInstance ();
+             if (ed instanceof FormAwareEditor) {
+               ((FormAwareEditor)ed).setRADComponent(RADComponent.this);
+             }
+             return ed;
            } catch (InstantiationException ex) {
            } catch (IllegalAccessException iex) {
            }
@@ -520,7 +524,11 @@ public class RADComponent {
     if (writeMethod == null) {
       throw new IllegalAccessException ();
     }
-    writeMethod.invoke (getComponentInstance (), new Object[] { value });
+    Object valueToSet = value;
+    if (value instanceof FormDesignValue) {
+      valueToSet = ((FormDesignValue)value).getDesignValue ();
+    }
+    writeMethod.invoke (getComponentInstance (), new Object[] { valueToSet });
   }
 
   protected Object getIndexedPropertyValue (IndexedPropertyDescriptor desc, int index) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -653,6 +661,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  13   Gandalf   1.12        5/23/99  Ian Formanek    Support for 
+ *       FormAwareEditor and FormDesignValue
  *  12   Gandalf   1.11        5/15/99  Ian Formanek    
  *  11   Gandalf   1.10        5/15/99  Ian Formanek    
  *  10   Gandalf   1.9         5/14/99  Ian Formanek    
