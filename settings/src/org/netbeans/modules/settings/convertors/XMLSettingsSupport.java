@@ -714,7 +714,7 @@ final class XMLSettingsSupport {
             try {
                 if (header) {
                     in = source.getInputStream();
-                    Set iofs = quickParse(in);
+                    Set iofs = quickParse(new BufferedInputStream(in));
                     if (iofs != null) {
                         instanceOf = iofs;
                         return;
