@@ -309,8 +309,6 @@ public class JarClassLoader extends ProxyClassLoader {
         
         public Source(URL url) {
             this.url = url;
-            CodeSource cs = new CodeSource(url, new Certificate[0]);
-            pd = new ProtectionDomain(cs, getPermissions(cs));
         }
         
         public final URL getURL() {
@@ -318,6 +316,10 @@ public class JarClassLoader extends ProxyClassLoader {
         }
         
         public final ProtectionDomain getProtectionDomain() {
+            if (pd == null) {
+                CodeSource cs = new CodeSource(url, new Certificate[0]);
+                pd = new ProtectionDomain(cs, getPermissions(cs));
+            }
             return pd;
         }
   
