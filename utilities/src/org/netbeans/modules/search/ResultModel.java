@@ -96,9 +96,6 @@ public class ResultModel implements TaskListener {
     /** Search displayer. */
     private SearchDisplayer disp = null;
 
-    /** Porperty change support. */
-    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-
     /** Search group this result shows search results for. */
     private SearchGroup searchGroup;
 
@@ -329,18 +326,6 @@ public class ResultModel implements TaskListener {
             ChangeListener next = (ChangeListener) it.next();
             next.stateChanged(EVENT);
         }
-    }
-
-    /** Adds a <code>PropertyChangeListener</code> to the listener list.
-     * @param l The listener to add. */
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        propertyChangeSupport.addPropertyChangeListener(l);
-    }
-
-    /** Removes a <code>PropertyChangeListener</code> from the listener list.
-     * @param l The listener to remove. */
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        propertyChangeSupport.removePropertyChangeListener(l);
     }
 
     
