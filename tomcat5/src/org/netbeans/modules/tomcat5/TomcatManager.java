@@ -69,6 +69,18 @@ public class TomcatManager implements DeploymentManager {
         password = passwd;
     }
     
+    public String getUri () {
+        return uri;
+    }
+    
+    public String getUsername () {
+        return username;
+    }
+    
+    public String getPassword () {
+        return password;
+    }
+    
     public DeploymentConfiguration createConfiguration (DeployableObject deplObj) 
     throws InvalidModuleException {
         if (!ModuleType.WAR.equals (deplObj.getType ())) {
@@ -236,8 +248,9 @@ public class TomcatManager implements DeploymentManager {
             throw new IllegalStateException ("TomcatManager.distribute called on disconnected instance");   // NOI18N
         }
         
-        // PENDING 
-        return null;
+        TomcatManagerImpl impl = new TomcatManagerImpl (this);
+        impl.install (targets[0], moduleArchive, deplPlan);
+        return impl;
     }
     
     private boolean isConnected () {

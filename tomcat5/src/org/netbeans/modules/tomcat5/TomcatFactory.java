@@ -55,12 +55,18 @@ public class TomcatFactory implements DeploymentFactory {
     
     public DeploymentManager getDeploymentManager(String uri, String uname, String passwd) 
     throws DeploymentManagerCreationException {
-        return new TomcatManager (true, uri, uname, passwd);
+        if (!handlesURI (uri)) {
+            throw new DeploymentManagerCreationException ("Invalid URI");
+        }
+        return new TomcatManager (true, uri.substring (tomcatUriPrefix.length ()), uname, passwd);
     }
     
     public DeploymentManager getDisconnectedDeploymentManager(String uri) 
     throws DeploymentManagerCreationException {
-        return new TomcatManager (false, uri, null, null);
+        if (!handlesURI (uri)) {
+            throw new DeploymentManagerCreationException ("Invalid URI");
+        }
+        return new TomcatManager (false, uri.substring (tomcatUriPrefix.length ()), null, null);
     }
     
     public String getDisplayName() {
@@ -72,7 +78,7 @@ public class TomcatFactory implements DeploymentFactory {
     }
     
     public boolean handlesURI(String str) {
-        return str.startsWith (tomcatUriPrefix);
+        return str != null && str.startsWith (tomcatUriPrefix);
     }
     
 }
