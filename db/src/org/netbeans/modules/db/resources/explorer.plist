@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -44,22 +44,6 @@
 			{
 				name = "DisableDebug";
 				class = org.netbeans.modules.db.explorer.actions.DisableDebugAction;
-			},
-			delimiter,
-			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				system = YES;
 			}
 		);
 	};
@@ -332,30 +316,11 @@
 			},
 			delimiter,
 			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				node = driverlist;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				node = driverlist;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				node = driverlist;
-				system = YES;
-			},
-			delimiter,
-			{
 				name = "RemoveDriver";
 				class = org.openide.actions.DeleteAction;
 				node = driverlist;
 				system = YES;
-			},
+			}
 		);
 	};
 
@@ -418,22 +383,6 @@
 				name = "TestDriver";
 				class = org.netbeans.modules.db.explorer.actions.TestDriverAction;
 				node = driver;
-			},
-			delimiter,
-			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				system = YES;
 			},
 			delimiter,
 			{
@@ -1332,23 +1281,6 @@
 			},
 			delimiter,
 			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				perm = "write";
-				system = YES;
-			},
-			delimiter,
-			{
 				name = "RemoveTable";
 				class = org.openide.actions.DeleteAction;
 				perm = "write";
@@ -1417,23 +1349,6 @@
 			{
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
-			},
-			delimiter,
-			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				perm = "write";
-				system = YES;
 			},
 			delimiter,
 			{
@@ -1527,23 +1442,6 @@
 			{
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
-			},
-			delimiter,
-			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				perm = "write";
-				system = YES;
 			},
 			delimiter,
 			{
@@ -1648,23 +1546,6 @@
 			},
 			delimiter,
 			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				perm = "write";
-				system = YES;
-			},
-			delimiter,
-			{
 				name = "RemoveColumn";
 				class = org.openide.actions.DeleteAction;
 				perm = "write";
@@ -1746,24 +1627,7 @@
 			{
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
-			},
-			delimiter,
-			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				perm = "write";
-				system = YES;
-			},
+			}
 		);
 		properties = (
 			{
@@ -1892,23 +1756,6 @@
 			},
 			delimiter,
 			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				perm = "write";
-				system = YES;
-			},
-			delimiter,
-			{
 				name = "RemoveIndex";
 				class = org.openide.actions.DeleteAction;
 				node = ilist;
@@ -1927,7 +1774,7 @@
 				class = java.lang.String;
 				writable = NO;
 			}
-                );
+        );
 	};
 
 	indexcolumn = {
@@ -1946,23 +1793,6 @@
 			{
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
-			},
-			delimiter,
-			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				perm = "write";
-				system = YES;
 			}
 		);
 		properties = (
@@ -2018,23 +1848,6 @@
 			{
 				name = "Refresh";
 				class = org.netbeans.modules.db.explorer.actions.RefreshChildrenAction;
-			},
-			delimiter,
-			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				perm = "write";
-				system = YES;
 			}
 		);
 		properties = ();
@@ -2048,27 +1861,7 @@
 		resultset = (pcatalog,pschema,pname,pcolname,catalog,schema,name,colname,keyseq,updaterule,deleterule,fkname,pkname,defer);
 		children = ();
 		options = {};
-		actions = (
-			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				node = driverlist;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				node = driverlist;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				node = driverlist;
-				perm = "write";
-				system = YES;
-			}
-		);
+		actions = ();
 		properties = (
 			{
 				code = name;
@@ -2184,23 +1977,6 @@
 			},
 			delimiter,
 			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				perm = "write";
-				system = YES;
-			},
-			delimiter,
-			{
 				name = "RemoveView";
 				class = org.openide.actions.DeleteAction;
 				perm = "write";
@@ -2237,24 +2013,7 @@
 			{
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
-			},
-			delimiter,
-			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				perm = "write";
-				system = YES;
-			},
+			}
 		);
 		properties = (
 			{
@@ -2343,22 +2102,6 @@
 			},
 			delimiter,
 			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				system = YES;
-			},
-			delimiter,
-			{
 				name = "RemoveProcedure";
 				class = org.openide.actions.DeleteAction;
 				system = YES;
@@ -2410,23 +2153,6 @@
 			{
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
-			},
-			delimiter,
-			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				perm = "write";
-				system = YES;
 			},
 			delimiter,
 			{
