@@ -81,7 +81,8 @@ public class NbExecutor extends Task {
             while(tests.hasMoreElements()) {
                 XConfig.Test test = (XConfig.Test)tests.nextElement();
                 CallTarget   callee = (CallTarget)getProject().createTask("antcall");
-
+                String       pattern;
+                
                 callee.setTarget(targetName);
                 callee.setOwningTarget(target);
                 callee.init();
@@ -95,10 +96,18 @@ public class NbExecutor extends Task {
                 paramModule.setValue(module);
                 paramTestType.setName(targetParamTestType);
                 paramTestType.setValue(test.getType());
-                paramIncludes.setName(targetParamIncludes);
-                paramIncludes.setValue(listPatterns(test.getPattern().getIncludePatterns(project)));
-                paramExcludes.setName(targetParamExcludes);
-                paramExcludes.setValue(listPatterns(test.getPattern().getExcludePatterns(project)));
+                
+                pattern = listPatterns(test.getPattern().getIncludePatterns(project));
+                if (pattern.length () > 0) {
+                    paramIncludes.setName(targetParamIncludes);
+                    paramIncludes.setValue(pattern);
+                }
+                
+                pattern = listPatterns(test.getPattern().getExcludePatterns(project));
+                if (pattern.length () > 0) {
+                    paramExcludes.setName(targetParamExcludes);
+                    paramExcludes.setValue(pattern);
+                }
                 
                 callee.execute();
             }
