@@ -6,11 +6,11 @@ OpenIDE-Module-Specification-Version: 1.19
 
 Name: org/netbeans/modules/web/dd/DDDataLoader.class
 OpenIDE-Module-Class: Loader
-Install-Before: org.netbeans.modules.xml.core.XMLDataObject
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
 
 Name: org/netbeans/modules/web/taglib/TLDLoader.class
 OpenIDE-Module-Class: Loader
-Install-Before: org.netbeans.modules.xml.core.XMLDataObject
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
 
 Name: org/netbeans/modules/web/core/jsploader/JspLoader.class
 OpenIDE-Module-Class: Loader
