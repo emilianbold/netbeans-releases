@@ -43,6 +43,11 @@ Microsystems, Inc. All Rights Reserved.
         <description>Upgrade modules to use 3.3 implementation, especially mf-layer advantages -- see <a href="http://www.netbeans.org/unbranded-source/browse/~checkout~/openide/api/doc/org/openide/doc-files/upgrade.html">3.2 -> 3.3 Upgrade Guide</a> for more info.</description>
     </item>
 
+    <item priority="4">
+        <summary>Move all __module__/src/META_INF to __module__/compat/src/META_INF.</summary>
+        <description>Move all __module__/src/META_INF to __module__/<b>compat</b>/src/META_INF -- all backward compatibility stuff should be in <b>compat</b> directory.</description>
+    </item>
+
     &catalog_todo.xml;
     &core_todo.xml;
     &css_todo.xml;
