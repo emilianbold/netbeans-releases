@@ -9,71 +9,110 @@
 <TITLE>Configuring System Settings</TITLE>
 <link rel="StyleSheet" href="../ide.css" type="text/css">
 </HEAD>
-<BODY BGCOLOR="#FFFFFF">
+<BODY>
 
 <h2>Configuring System Settings</h2>
 <ol>
 <li>From the main window, choose Tools <img src="../images/arrow.gif"> Options.
 </li>
-<li>In the Options window, select the System Settings node.
+<li>In the Options window, expand the IDE Configuration node.  Then
+expand the System node.
+</li>
+<li>Select the System Settings node.
 </li>
 <li>Modify the properties to your preferred settings.
-<table cellpadding="3">
+<table cellpadding="3" border="1">
 <tr>
-<td valign="top" width="100">Confirm Delete
+<th align="left">Property</th>
+<th align="left">Description</th>
+</tr>
+<tr>
+<td valign="top" width="100"><b>Confirm Delete</b>
 </td>
 <td valign="top">If True, opens a Confirm Deletion dialog box when
 you attempt to delete an item. 
 </td>
 </tr>
 <tr>
-<td valign="top">Home Page
+<td valign="top"><b>Home Page</b>
 </td>
 <td valign="top">Sets the web page that the web browser displays on startup.
 </td>
-</tr><tr>
-<td valign="top">Proxy Host
+</tr>
+<tr>
+<td valign="top"><b>MultiTab Pool</b>
 </td>
-<td valign="top">Sets the host name of the proxy server.
+<td valign="top">Governs the look of tabs in a multi-tab frame such as the Explorer, Source Editor, and Output window.  You have three choices:
+<ul>
+<li>Basic. Displays a typical tabbed pane with named tabs at the bottom.
+</li>
+<li>Arrow.
+</li>
+<li>Pop-up. Displays a tabbed pane with unmarked tabs at the bottom.  Clicking a tab opens a pop-up menu that lists the content panes you can switch among.
+</li>
+</ul>
 </td>
 </tr><tr>
-<td valign="top">Proxy Port
+<td valign="top"><b>Proxy Host</b>
+</td>
+<td valign="top">Sets the host name or numeric IP address of the proxy server 
+to use to connect to HTTP and FTP sites.  The Use Proxy property must be set to true to use this proxy.
+</td>
+</tr><tr>
+<td valign="top"><b>Proxy Port</b>
 </td>
 <td valign="top">Sets the port number of the proxy server.</td>
 </tr><tr>
-<td valign="top">Show File Extensions
+<td valign="top"><b>Show File Extensions</b>
 </td>
 <td valign="top">If True, displays file extensions 
-in the Explorer and Object Browser.
+in the Explorer.
 </td>
 </tr><tr>
-<td valign="top">Show Tips on Startup
+<td valign="top"><b>Show Tips on Startup</b>
 </td>
 <td valign="top">If True, opens a Welcome window when you start the IDE. 
-This window helps you start working with objects
-and provides over thirty tips on how to use the IDE.   
+This window can help you start working with objects.  This window
+also provides over thirty tips on how to use the IDE.   
 </td>
 </tr><tr>
-<td valign="top">Use Proxy
+<td valign="top"><b>Use Proxy</b>
 </td>
-<td valign="top">If True, uses a proxy for HTTP/FTP connections
+<td valign="top">If True, uses a proxy for HTTP and FTP connections
 in the web browser and Update Center. 
 </td>
 </tr><tr>
-<td valign="top">User Interface
+<td valign="top"><b>User Interface</b>
 </td>
-<td valign="top">Sets the IDE as a 
-single document interface (SDI) or a multiple document interface (MDI).  An SDI uses a single primary
-window with a set of supplemental secondary windows.  
-An MDI confines all of an application's internal frames inside a 
-primary window. 
+<td valign="top">Sets the interface to use to manage your windows.  You
+have two choices: 
+<ul>
+<li>Traditional SDI.  This interfaces uses a single primary
+window with a set of supplemental secondary windows.
+</li>
+<li>One Window MDI.  
+This interface confines all of an application's internal frames inside a 
+primary window.
+</ul>
 </td>
 </tr><tr>
-<td valign="top">Web Browser
+<td valign="top"><b>Web Browser</b>
 </td>
-<td valign="top">Sets the web browser to use when you are viewing Javadoc
-documentation and browsing the web.  If you select &lt;unspecified&gt;, the IDE uses the first 
-accessible browser.</td>
+<td valign="top">Sets the web browser to use when you are browsing the Internet.
+You have three choices:
+<ul>
+<li>External browser (Command Line).
+A simple browser that executes a specified command when asked
+to display a URL.  
+</li>
+<li>External browser (Windows or UNIX). The Internet Explorer browser
+or the Netscape Navigator<sup><small>TM</small></sup> browser, depending on your platform.
+</li>
+<li>Swing HTML Browser.  An internal browser that provides a
+higher level of integration with the IDE than an external browser, but does not provide as much functionality.
+</li>
+</ul>
+</td>
 </tr>
 </table>
 </li>
@@ -84,11 +123,7 @@ accessible browser.</td>
 </tr>
 <tr>
 <td width="23"></td>
-<td><a href="../webbrowser/httpserver-options.html">Configuring HTTP Server Options</a>
-<br>
-<a href="../webbrowser/proxy.html">Setting a Proxy</a>
-<br>
-<a href="configure.html">Configuring the IDE</a></td>
+<td><a href="configure.html">Configuring the IDE</a></td>
 </tr>
 </table>
 <hr>
