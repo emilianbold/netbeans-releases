@@ -1247,8 +1247,9 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         assertEquals("one export was created", 1, exports.size());
         
         cu2.output.add("dist/proj.jar");
+        cu2.output.add("dist/proj2.jar");
         exports = FreeformProjectGenerator.guessExports(evaluator, targets, units);
-        assertEquals("two exports were created", 2, exports.size());
+        assertEquals("two exports were created", 3, exports.size());
         e = (FreeformProjectGenerator.Export)exports.get(0);
         assertEquals("export is properly configured", "jar", e.type);
         assertEquals("export is properly configured", "${outputfile}", e.location);
@@ -1257,6 +1258,11 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         e = (FreeformProjectGenerator.Export)exports.get(1);
         assertEquals("export is properly configured", "jar", e.type);
         assertEquals("export is properly configured", "dist/proj.jar", e.location);
+        assertEquals("export is properly configured", "antScript", e.script);
+        assertEquals("export is properly configured", "target-1", e.buildTarget);
+        e = (FreeformProjectGenerator.Export)exports.get(2);
+        assertEquals("export is properly configured", "jar", e.type);
+        assertEquals("export is properly configured", "dist/proj2.jar", e.location);
         assertEquals("export is properly configured", "antScript", e.script);
         assertEquals("export is properly configured", "target-1", e.buildTarget);
     }

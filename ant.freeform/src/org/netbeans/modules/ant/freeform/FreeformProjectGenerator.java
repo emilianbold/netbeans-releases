@@ -1224,25 +1224,20 @@ public class FreeformProjectGenerator {
         it = javaCompilationUnits.iterator();
         while (it.hasNext()) {
             JavaCompilationUnit cu = (JavaCompilationUnit)it.next();
-            String location = null;
             if (cu.output != null) {
                 Iterator it2 = cu.output.iterator();
                 while (it2.hasNext()) {
                     String output = (String)it2.next();
                     String output2 = evaluator.evaluate(output);
                     if (output2.endsWith(".jar")) { // NOI18N
-                        location = output;
-                        break;
+                        Export e = new Export();
+                        e.type = "jar"; // NOI18N
+                        e.location = output;
+                        e.script = scriptName;
+                        e.buildTarget = targetName;
+                        exports.add(e);
                     }
                 }
-            }
-            if (location != null) {
-                Export e = new Export();
-                e.type = "jar"; // NOI18N
-                e.location = location;
-                e.script = scriptName;
-                e.buildTarget = targetName;
-                exports.add(e);
             }
         }
         return exports;
