@@ -14,6 +14,8 @@
 package org.netbeans.modules.editor;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +24,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.Action;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -51,7 +54,9 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.Annotations;
+import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseTextUI;
+import org.netbeans.editor.LocaleSupport;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.options.BaseOptions;
@@ -111,7 +116,8 @@ public class NbEditorKit extends ExtKit {
                                        new NbToggleBookmarkAction(),
                                        new NbGotoNextBookmarkAction(BaseKit.gotoNextBookmarkAction, false),
                                        new NbBuildToolTipAction(),
-                                       new NbToggleLineNumbersAction()
+                                       new NbToggleLineNumbersAction(),
+                                       new ToggleToolbarAction()
                                    };
         return TextAction.augmentList(super.createActions(), nbEditorActions);
     }
@@ -147,6 +153,33 @@ public class NbEditorKit extends ExtKit {
             (String)contentTypeTable.get(this.getClass().getName()) : "text/"+this.getClass().getName().replace('.','_'); //NOI18N
     }
 
+    
+    
+    public static class ToggleToolbarAction extends BaseAction {
+
+        public ToggleToolbarAction() {
+            super(ExtKit.toggleToolbarAction);
+            putValue ("helpID", ToggleToolbarAction.class.getName ());
+        }
+
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            boolean toolbarVisible = AllOptionsFolder.getDefault().isToolbarVisible();
+            AllOptionsFolder.getDefault().setToolbarVisible(!toolbarVisible);
+        }
+        
+        public JMenuItem getPopupMenuItem(JTextComponent target) {
+            JCheckBoxMenuItem item = new JCheckBoxMenuItem(LocaleSupport.getString("PROP_base_toolbarVisible"), AllOptionsFolder.getDefault().isToolbarVisible());
+            item.addItemListener( new ItemListener() {
+                public void itemStateChanged(ItemEvent e) {
+                    actionPerformed(null,null);
+                }
+            });
+            return item;
+        }
+        
+    }
+    
+    
     public class NbBuildPopupMenuAction extends BuildPopupMenuAction {
 
         static final long serialVersionUID =-8623762627678464181L;

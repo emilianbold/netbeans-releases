@@ -145,6 +145,14 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
                     <attr name="Separator2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
                     <file name="org-openide-actions-DeleteAction.instance"/>
+                    <file name="SeparatorAfterDelete.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    
+                    <attr name="org-openide-actions-DeleteAction.instance/SeparatorAfterDelete.instance" boolvalue="true"/>
+                    <attr name="SeparatorAfterDelete.instance/generate-gutter-popup" boolvalue="true"/>
+                    <file name="generate-gutter-popup"/>
+
                 </folder>
 
                 <folder name="Defaults">
@@ -282,11 +290,9 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="Separator10.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
 
                     <file name="org-openide-actions-ToolsAction.instance"/>
+                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
                     <attr name="org-openide-actions-ToolsAction.instance/generate-gutter-popup" boolvalue="true"/>
-
-                    <file name="generate-gutter-popup"/>
                     <attr name="generate-gutter-popup/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
-
                     <file name="org-openide-actions-PropertiesAction.instance"/>
                 </folder>
                 <folder name="Toolbars">
