@@ -13,41 +13,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="classfile" default="netbeans" basedir=".">
-  <import file="../nbbuild/default.xml"/> 
-
-  <target name="init" depends="default.init">
-    <patternset id="classfile.files">
-      <include name="${nb.modules/autoload.dir}/classfile.jar"/>
-    </patternset>
-    <path id="cp">
-      <!-- Empty -->
-    </path>
-  </target>
-
-  <target name="compile" depends="init">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <classpath refID="cp"/>
-    </javac>
-  </target>
-
-  <target name="jars" depends="compile">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}" />
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/classfile.jar" 
-     manifest="manifest-subst.mf" 
-     basedir="src" 
-     excludesfile="../nbbuild/standard-jar-excludes.txt" 
-     compress="false"/>
-  </target>
-
-  <target name="netbeans" depends="jars">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules/autoload.dir}/classfile.jar">
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="classfile.files"/>
-      </fileset>
-    </genlist>
-  </target>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="classfile.nbm"
@@ -58,49 +24,6 @@ Microsystems, Inc. All Rights Reserved.
       <license file="${license.file}"/>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
-  </target>
-
-  <target name="clean" depends="init">
-    <delete>
-      <fileset dir="src">
-        <include name="**/*.class"/>
-      </fileset>
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="classfile.files"/>
-      </fileset>
-    </delete>
-    <delete file="manifest-subst.mf"/>
-    <delete file="classfile.jar"/>
-    <delete file="classfile.nbm"/>
-    <delete dir="netbeans"/>
-    <delete dir="javadoc"/>
-    <delete dir="Info"/>
-  </target>
-
-  <target name="real-clean" depends="clean">
-    <delete dir="test"/>
-  </target>
-
-  <target name="javadoc" description="Build classfile module API documentation.">
-    <tstamp/>
-    <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
-    <echo message="Build classfile module API documentation..."/>
-    <mkdir dir="javadoc"/>
-    <javadoc destdir="javadoc"
-             packagenames="org.netbeans.modules.classfile"
-             doctitle="NetBeans classfile module APIs"
-             windowtitle="NetBeans classfile module APIs"
-             bottom="${apis-footer}"
-             use="true"
-             splitindex="true"
-             author="false"
-             version="false"
-             maxmemory="384m"
-    >
-      <sourcepath>
-        <pathelement location="src"/>
-      </sourcepath>
-    </javadoc>    
   </target>
 
 </project>
