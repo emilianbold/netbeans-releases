@@ -77,12 +77,9 @@ public class MemoryMeasurement {
     public static long getProcessMemoryFootPrint(long pid) throws MemoryMeasurementFailedException {
         String platform = getPlatform();
         //System.out.println("PLATFORM = "+getPlatform());
-        if (platform.equals(SOLARIS)) {
-            // call solaris method
-            return getProcessMemoryFootPrintOnLinux(pid);
-        } else if (platform.equals(LINUX)) {
-            // call linux method
-            return getProcessMemoryFootPrintOnSolaris(pid);
+        if (platform.equals(SOLARIS)|platform.equals(LINUX)) {
+            // call unix method
+            return getProcessMemoryFootPrintOnUnix(pid);
         } else if (platform.equals(WINDOWS)) {
             // call windows method
             return getProcessMemoryFootPrintOnWindows(pid);
@@ -118,29 +115,90 @@ public class MemoryMeasurement {
         throw new MemoryMeasurementFailedException("MemoryMeasurement does not support this operating system: "+osName);
     }
     
-    // os depednent implementations
-    // linux
-    private static long getProcessMemoryFootPrintOnLinux(long pid) throws MemoryMeasurementFailedException {
-        String command="/bin/sh -c \"cat /proc/"+pid+"status | grep VmSize | sed -e 's/VmSize: *\\t* *//' | sed -e 's/ .*//'\"";
+    
+    private static long getProcessMemoryFootPrintOnUnix(long pid) throws MemoryMeasurementFailedException {
         try {
+            File script = new File(Manager.getNbJUnitHome(),"memory-measurement.unix.sh");
+            if (!script.exists()) {
+                throw new MemoryMeasurementFailedException("Cannot locate script '"+script.getName()
+                    +"', please make sure it is available in nbjunit.home");
+            }
+            String command="/bin/sh "+script.getAbsolutePath()+" "+pid;            
+            //System.out.println("Running command "+command);
             Process process = Runtime.getRuntime().exec(command);
-            return getOutputValue(process);
+            long obtainedValue = getOutputValue(process);
+
+            //OutputReader outputReader = new MemoryMeasurement.OutputReader(process.getInputStream());
+            //System.out.println("Starting thread reader");
+            //Thread readerThread = new Thread(outputReader);
+            //readerThread.start();
+            //process.getOutputStream().close();
+            
+            process.waitFor();
+            
+            //long obtainedValue = outputReader.getReadValue();
+            
+            if (obtainedValue == UNKNOWN_VALUE) {
+                // had problem reading value - why
+                //throw new MemoryMeasurementFailedException("Memory measurement call failed",outputReader.getCaughtException());
+                throw new MemoryMeasurementFailedException("Memory measurement call failed "+obtainedValue);
+            } else {
+                // everything seem to be correct
+                return obtainedValue;
+            }
+        } catch (IOException ioe) {
+            throw new MemoryMeasurementFailedException("MemoryMeasurement failed, reason:"+ioe.getMessage(),ioe);
+        } catch (InterruptedException ie) {
+            throw new MemoryMeasurementFailedException("MemoryMeasurement failed, reason:"+ie.getMessage(),ie);
+        }
+    }
+    
+    // os depednent implementations - not used -> on unix we use the universal script supplied with XTest    
+    // linux
+    //private static long getProcessMemoryFootPrintOnLinux(long pid) throws MemoryMeasurementFailedException {
+        //String command="/bin/sh -c \"cat /proc/"+pid+"status | grep VmSize | sed -e 's/VmSize: *\\t* *//' | sed -e 's/ .*//'\"";
+        /*
+         try {
+            Process process = Runtime.getRuntime().exec(command);
+            //return getOutputValue(process);
+            return UNKNOWN_VALUE;
         } catch (IOException ioe) {
             throw new MemoryMeasurementFailedException("MemoryMeasurement failed, reason:"+ioe.getMessage(),ioe);
         }
     }
-    
+    */
     // solaris
-    private static long getProcessMemoryFootPrintOnSolaris(long pid) throws MemoryMeasurementFailedException {
-        String command="/bin/sh -c \"pmap -x "+pid+" | grep \\^total | sed -e 's/.*Kb *//' | sed -e 's/ .*//'\"";
+    //private static long getProcessMemoryFootPrintOnSolaris(long pid) throws MemoryMeasurementFailedException {
+        //String command="/bin/sh -c \"pmap -x "+pid+" | grep \\^total | sed -e 's/.*Kb *//' | sed -e 's/ .*//'\"";
+        //String command="\"pmap -x "+pid+" | grep \\^total | sed -e 's/.*Kb *//' | sed -e 's/ .*//'\"";
+        //String command="/bin/short -c \"ls -al\"";
+    /*
         try {
+            System.out.println("Running command "+command);
             Process process = Runtime.getRuntime().exec(command);
-            return getOutputValue(process);
+            //long obtainedValue = getOutputValue(process);
+            OutputReader outputReader = new MemoryMeasurement.OutputReader(process.getInputStream());
+            System.out.println("Starting thread reader");
+            Thread readerThread = new Thread(outputReader);
+            readerThread.start();
+            //process.getOutputStream().close();
+            //process.waitFor();
+            long obtainedValue = outputReader.getReadValue();
+            if (obtainedValue == UNKNOWN_VALUE) {
+                // had problem reading value - why
+                //throw new MemoryMeasurementFailedException("Memory measurement call failed",outputReader.getCaughtException());
+                throw new MemoryMeasurementFailedException("Memory measurement call failed 1welnewgb");
+            } else {
+                // everything seem to be correct
+                return obtainedValue;
+            }
         } catch (IOException ioe) {
-             throw new MemoryMeasurementFailedException("MemoryMeasurement failed, reason:"+ioe.getMessage(),ioe);
+            throw new MemoryMeasurementFailedException("MemoryMeasurement failed, reason:"+ioe.getMessage(),ioe);
+        } catch (InterruptedException ie) {
+            throw new MemoryMeasurementFailedException("MemoryMeasurement failed, reason:"+ie.getMessage(),ie);
         }
     }    
-    
+    */
     
     
     // woknous
@@ -158,15 +216,23 @@ public class MemoryMeasurement {
     
     private static native long getProcessMemoryFootPrintNative(long pid);
     
+    
     private static long getOutputValue(Process process) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));        
-        String outputString = br.readLine();
+        BufferedReader br = null;
         try {
-           return Long.parseLong(outputString);
-        } catch (NumberFormatException nfe) {
-            throw new IOException("Process returned value '"+outputString+"', which cannot be converted to a number. Reason: "+nfe.getMessage());
+            br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String outputString = br.readLine();
+            //System.out.println("Outputstring is"+outputString);            
+            try {
+                return Long.parseLong(outputString);
+            } catch (NumberFormatException nfe) {
+                throw new IOException("Received String is not a number: "+outputString);
+            }
+        } finally {
+            if (br != null) {
+                br.close();
+            }
         }
-
     }
     
     // load the library (if applicable) 
@@ -190,5 +256,57 @@ public class MemoryMeasurement {
         }
         
     }
+    
+    // out value reader class - not used - the value is read directly, without necessity to start another thread !!!!
+    /*
+    static class OutputReader implements Runnable {
+        InputStream is;
+        
+        long readValue = UNKNOWN_VALUE;
+        IOException caughtException;
+        
+        public OutputReader(InputStream is) {
+            this.is = is;
+            System.out.println("Reader ready - is = "+is);
+        }
+        
+        public long getReadValue() {
+            return readValue;
+        }
+        
+        public IOException getCaughtException() {
+            return caughtException;
+        }
+        
+        public void run() {
+            System.out.println("Reader Running ...");
+            BufferedReader br = null;
+            try {
+                 br = new BufferedReader(new InputStreamReader(is));                 
+                 String temp = null;
+                 while ((temp = br.readLine()) != null) {
+                     System.out.println("Read: "+temp);
+                     if (temp.length() > 0) {
+                         try {
+                             readValue = Long.parseLong(temp);
+                             System.out.println("Read value:"+readValue);
+                         } catch (NumberFormatException nfe) {
+                             throw new IOException("Process returned value '"+temp+"', which cannot be converted to a number. Reason: "+nfe.getMessage());
+                         }
+                     }
+                 }
+            } catch (IOException ioe) {
+                caughtException = ioe;
+            } finally {
+                if (br != null) {
+                    try {
+                        br.close();
+                    } catch (IOException ioe) {
+                        // who gives a ....
+                    }
+                }
+            }
+        }
+    }*/
     
 }
