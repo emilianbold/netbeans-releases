@@ -101,7 +101,16 @@
 	     manifest="manifest-subst.mf"
 	     homepage="http://ant.netbeans.org/"
 	     distribution="http://www.netbeans.org/downloads/nbms/40/ant.nbm">
-      <license file="../nbbuild/standard-nbm-license.txt"/>
+      <license name="ant-license.txt">
+        For the Ant module itself:
+        <file location="../nbbuild/standard-nbm-license.txt"/>
+	For the Ant runtime:
+	<file location="Ant_License"/>
+	For the Xerces library:
+	<file location="Xerces_License"/>
+	For the Xalan library:
+	<file location="Xalan_License"/>
+      </license>
       <description>
         Support for Ant build scripts.
       </description>

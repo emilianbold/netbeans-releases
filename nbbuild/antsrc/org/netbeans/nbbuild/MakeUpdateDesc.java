@@ -99,7 +99,8 @@ public class MakeUpdateDesc extends Task {
 		Iterator it = groups.iterator ();
 		while (it.hasNext ()) {
 		    Group g = (Group) it.next ();
-		    pw.println ("  <module_group name=\"" + g.name + "\">");
+		    // Don't indent; embedded descriptions would get indented otherwise.
+		    pw.println ("<module_group name=\"" + g.name + "\">");
 		    Iterator it2 = g.nbms.iterator ();
 		    while (it2.hasNext ()) {
 			Nbm n = (Nbm) it2.next ();
@@ -145,7 +146,7 @@ public class MakeUpdateDesc extends Task {
 					} while ((line = r.readLine ()) != null);
 				    } else {
 					// Non-license line.
-					pw.println ("    " + line);
+					pw.println (line);
 				    }
 				}
 			    } finally {
@@ -155,7 +156,7 @@ public class MakeUpdateDesc extends Task {
 			    zip.close ();
 			}
 		    }
-		    pw.println ("  </module_group>");
+		    pw.println ("</module_group>");
 		}
 		pw.print (licenses.toString ());
 		pw.println ("</module_updates>");

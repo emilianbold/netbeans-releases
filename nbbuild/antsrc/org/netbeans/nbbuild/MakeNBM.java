@@ -30,27 +30,11 @@ import org.apache.tools.ant.taskdefs.Java;
 public class MakeNBM extends Task {
 
     public class Blurb {
-	private StringBuffer text = new StringBuffer ();
-	private File file = null;
-	private String name = null;
-	public Blurb () {
-	}
-	public void addText (String text) {
-	    // [PENDING] should also strip initial indentation, probably...
-	    // I.e. if every newline is followed by at least n spaces, then
-	    // strip n spaces after every newline (but leave any extra spaces,
-	    // other than trimming them).
-	    // Needed because of common style:
-	    // <description>
-	    //   Some text here.
-	    //   And another line.
-	    // </description>
-	    this.text.append (text.trim ());
-	}
-	public String getText () throws BuildException {
-	    if (file != null) {
-		if (text.length () > 0)
-		    text.append ("\n\n"); // some sort of separator
+	public class FileInsert {
+	    public void setLocation (File file) throws BuildException {
+		long lmod = file.lastModified ();
+		if (lmod > mostRecentInput) mostRecentInput = lmod;
+		addSeparator ();
 		try {
 		    InputStream is = new FileInputStream (file);
 		    try {
@@ -63,10 +47,67 @@ public class MakeNBM extends Task {
 			is.close ();
 		    }
 		} catch (IOException ioe) {
-		    throw new BuildException ("Exception reading blurb from " + file, ioe, getLocation0 ());
+		    throw new BuildException ("Exception reading blurb from " + file, ioe, getLocation1 ());
 		}
 	    }
-	    return text.toString ();
+	}
+	private StringBuffer text = new StringBuffer ();
+	private String name = null;
+	public void addText (String t) {
+	    addSeparator ();
+	    // Strips indentation. Needed because of common style:
+	    // <description>
+	    //   Some text here.
+	    //   And another line.
+	    // </description>
+	    t = t.trim ();
+	    int min = Integer.MAX_VALUE;
+	    StringTokenizer tok = new StringTokenizer (t, "\n");
+	    boolean first = true;
+	    while (tok.hasMoreTokens ()) {
+		String line = tok.nextToken ();
+		if (first) {
+		    first = false;
+		} else {
+		    int i;
+		    for (i = 0;
+			 i < line.length () &&
+			     Character.isWhitespace (line.charAt (i));
+			 i++)
+			;
+		    if (i < min) min = i;
+		}
+	    }
+	    if (min == 0) {
+		text.append (t);
+	    } else {
+		tok = new StringTokenizer (t, "\n");
+		first = true;
+		while (tok.hasMoreTokens ()) {
+		    String line = tok.nextToken ();
+		    if (first) {
+			first = false;
+		    } else {
+			text.append ('\n');
+			line = line.substring (min);
+		    }
+		    text.append (line);
+		}
+	    }
+	}
+	public FileInsert createFile () {
+	    return new FileInsert ();
+	}
+	private void addSeparator () {
+	    if (text.length () > 0) {
+		// some sort of separator
+		if (text.charAt (text.length () - 1) != '\n')
+		    text.append ('\n');
+		text.append ("-----------------------------------------------------\n");
+	    }
+	}
+	public String getText () {
+	    return "<![CDATA[" + text.toString () + "]]>";
 	}
 	public void setName (String name) {
 	    this.name = name;
@@ -75,10 +116,14 @@ public class MakeNBM extends Task {
 	    return name;
 	}
 	public void setFile (File file) {
-	    this.file = file;
-	    long lmod = file.lastModified ();
-	    if (lmod > mostRecentInput) mostRecentInput = lmod;
-	    name = file.getName ();
+	    // This actually adds the text and so on:
+	    new FileInsert ().setLocation (file);
+	    // Default for the name too, as a convenience.
+	    if (name == null) name = file.getName ();
+	}
+	// Javac 1.2 workaround, maybe:
+	private Location getLocation1 () {
+	    return getLocation0 ();
 	}
     }
     // Javac 1.2 workaround:
@@ -247,6 +292,7 @@ public class MakeNBM extends Task {
 	    if (signature.alias == null)
 		throw new BuildException ("must define alias attribute on <signature/>");
 	    log ("Signing NBM file " + file);
+	    // [PENDING] could also use <signjar> task, but this works
 	    Java java = (Java) project.createTask ("java");
 	    java.setClassname ("sun.security.tools.JarSigner");
 	    java.setArgs ("-keystore " + signature.keystore + " -storepass " + signature.storepass +

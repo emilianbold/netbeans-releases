@@ -357,8 +357,8 @@ treefs (complete yet?)
     <ant dir="../vcscvs" target="nbm"/>
     <echo message="Making NBM for module web..."/>
     <ant dir="../web" target="nbm"/>
-    <!-- [PENDING] not quite ready to do it to the real file yet... -->
-    <makeupdatedesc desc="../www/www/updates/TEST-40_1.1_.xml">
+    <makeupdatedesc desc="../www/www/updates/40_1.1_.xml">
+      <!-- Not for now:
       <group name="Standard">
         <nbm file="../applet/applet.nbm"/>
         <nbm file="../autoupdate/autoupdate.nbm"/>
@@ -385,10 +385,11 @@ treefs (complete yet?)
         <nbm file="../usersguide/usersguide.nbm"/>
         <nbm file="../utilities/utilities.nbm"/>
         <nbm file="../vcscvs/vcscvs.nbm"/>
-	<!-- Careful! -->
+	<!- Careful! ->
         <nbm file="../web/web-jsp.nbm"/>
         <nbm file="../web/web-wizard.nbm"/>
       </group>
+      -->
       <group name="Extensions">
         <nbm file="../apisupport/apisupport.nbm"/>
         <nbm file="../crosscompile/crosscompile.nbm"/>
