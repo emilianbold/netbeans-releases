@@ -25,6 +25,9 @@ import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
+import org.openide.util.LookupListener;
+import org.openide.util.LookupEvent;
+import org.openide.util.WeakListener;
 import org.netbeans.core.windows.nodes.WorkspacePoolContext;
 import org.openide.modules.ManifestSection.NodeSection;
 
@@ -214,7 +217,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     
     
     final static class Ch extends Children.Keys 
-    implements javax.swing.event.ChangeListener, NodeListener {
+    implements LookupListener, NodeListener {
         /** result */
         private Lookup.Result result;
         /** remebmber the section name */
@@ -231,8 +234,8 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
             this.result = re (nodeSectionName);
 
-            result.addChangeListener (
-                org.openide.util.WeakListener.change (this, result)
+            result.addLookupListener (
+                (LookupListener)WeakListener.create (LookupListener.class, this, result)
             );
         }
         
@@ -257,7 +260,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
         /** Method called when we are about to update the keys for 
          * this children. Hopefully never called difectly.
          */
-        public final void stateChanged (javax.swing.event.ChangeEvent ev) {
+        public final void resultChanged (LookupEvent ev) {
             updateKeys ();
             // notify that the set of nodes has changed (probably)
             NbTopManager.get ().firePropertyChange (TopManager.PROP_PLACES, null, null);
