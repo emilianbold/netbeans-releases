@@ -70,6 +70,7 @@ public class WrapperServlet extends NbBaseServlet {
                     if (fsurl != null && "jar".equals (fsurl.getProtocol ()))   // NOI18N
                         fsurl = null;
 
+                    if (fsurl != null)
                         return fsurl;
                 }
             }
