@@ -172,7 +172,9 @@ public class InstanceNode extends AbstractNode implements ServerInstance.Refresh
         }
         protected org.openide.nodes.Node[] createNodes(Object obj) {
             ServerTarget child = (ServerTarget) obj;
-            return new Node[] { new TargetBaseNode(org.openide.nodes.Children.LEAF, child) };
+            //return new Node[] { new TargetBaseNode(org.openide.nodes.Children.LEAF, child) };
+            return new Node[] { serverInstance.getServer().
+                                 getNodeProvider().createTargetNode(child) };
         }
     }
     
