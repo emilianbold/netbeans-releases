@@ -63,6 +63,9 @@
 # may be "X", "Xnest", or "vnc"; default "X"
 # vnc seems stablest; sometimes other servers have bugs
 #
+# vncdisplayargs="-SecurityTypes=none"
+# extra arguments to pass to vnc, depending on which version you run
+#
 # mozbrowser=mozilla
 # display test results automatically in Netscape or Mozilla
 #
@@ -133,6 +136,11 @@ then
     spawndisplaytype=X
 fi
 
+if [ -z "$vncdisplayargs" ]
+then
+    vncdisplayargs="-SecurityTypes=none"
+fi
+
 if [ -z "$testedmodule" ]
 then
     testedmodule=validate
@@ -169,7 +177,7 @@ then
         xpid=$!
     elif [ $spawndisplaytype = vnc ]
     then
-        Xvnc -localhost -SecurityTypes=none -desktop 'NetBeans test display' -geometry 1024x768 -depth 16 $display &
+        Xvnc -localhost $vncdisplayargs -desktop 'NetBeans test display' -geometry 1024x768 -depth 16 $display &
         xpid=$!
     else
         echo "strange \$spawndisplaytype: $spawndisplaytype" >&2
