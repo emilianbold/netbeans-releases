@@ -278,7 +278,10 @@ public class ServerTarget implements Node.Cookie {
     private NotificationListener registerStartJ2eeServerListener(final ServerProgress sp) 
     throws java.rmi.RemoteException, javax.management.InstanceNotFoundException
     {
-        ListenerRegistration registry = getManagement().getListenerRegistry();
+        Management mgnt = getManagement();
+        if (mgnt == null)
+            return null;
+        ListenerRegistration registry = mgnt.getListenerRegistry();
         NotificationListener listener = new NotificationListener() {
             public void handleNotification(Notification notification, Object obj) {
                 //Translating jsr77 event to jsr88 event
@@ -300,7 +303,12 @@ public class ServerTarget implements Node.Cookie {
     private NotificationListener registerStopJ2eeServerListener(final ServerProgress sp) 
     throws java.rmi.RemoteException, javax.management.InstanceNotFoundException
     {
-        ListenerRegistration registry = getManagement().getListenerRegistry();
+        Management mgnt = getManagement();
+        ObjectName j2eeServer = getJ2eeServer();
+        if (mgnt == null || j2eeServer == null)
+            return null;
+        
+        ListenerRegistration registry = mgnt.getListenerRegistry();
         NotificationListener listener = new NotificationListener() {
             public void handleNotification(Notification notification, Object obj) {
                 //Translating jsr77 event to jsr88 event
@@ -322,13 +330,20 @@ public class ServerTarget implements Node.Cookie {
     private void removeJ2eeServerListener(NotificationListener nl) 
     throws java.rmi.RemoteException, javax.management.InstanceNotFoundException, javax.management.ListenerNotFoundException
     {
-        ListenerRegistration registry = getManagement().getListenerRegistry();
-        registry.removeNotificationListener(getJ2eeServer(), nl);
+        Management mgnt = getManagement();
+        ObjectName j2eeServer = getJ2eeServer();
+        if (mgnt == null || j2eeServer == null)
+            return;
+        ListenerRegistration registry = mgnt.getListenerRegistry();
+        registry.removeNotificationListener(j2eeServer, nl);
     }        
 
     public synchronized boolean stop(DeployProgressUI ui) {
         final Management mgmt = getManagement();
         ObjectName j2eeServer = getJ2eeServer();
+        if (mgmt == null || j2eeServer == null)
+            return false;
+
         final ServerProgress sp = new ServerProgress(j2eeServer);
         ui.setProgressObject(sp);
 

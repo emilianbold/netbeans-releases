@@ -126,8 +126,8 @@ implements ServerRegistry.PluginListener, ServerRegistry.InstanceListener {
     public SystemAction[] createActions() {
         return new SystemAction[] {
             SystemAction.get(FindDeploymentManagerAction.class),
-            SystemAction.get(SetDefaultServerAction.class),
-            SystemAction.get(NodeHelpAction.class)};
+            SystemAction.get(SetDefaultServerAction.class)
+        };
     }
     
     public HelpCtx getHelpCtx() {

@@ -127,7 +127,7 @@ public class TargetModule implements TargetModuleID, java.io.Serializable {
     }
     public String toString() {
         if (delegate == null)
-            return super.toString();
+            return id; //issue 37930
         else
             return delegate.toString();
     }
