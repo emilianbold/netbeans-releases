@@ -38,41 +38,41 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ============ -->
     <!-- Main targets -->
     <!-- ============ -->
-    <target name="all" depends="runtests" description="builds and runs tests"/>
+    <target name="all" depends="runtests" description="Builds and runs tests."/>
     
     <!-- This calls target which will call compilers according to cfg file. -->
     <!-- You should not change this target unless you realy know what you are doing. -->
     <target name="buildtests" depends="call-bootstrap,init" 
-            description="builds the test files">
+            description="Builds the test files.">
     	<xtest executeAction="buildTests"/>
     </target>
     
     <!--  This calls common clean process. This cleans the tests. -->
     <!--  You can write your own if you need something special. -->
-    <target name="cleantests" description="deletes the test files">
+    <target name="cleantests" description="Deletes the test files.">
     	<xtest executeAction="cleanTests"/>
     </target>
     
     <!-- This target runs tests. You should not change this -->
     <!-- target unless you realy know what you are doing. -->
-    <target name="runtests" depends="buildtests" description="executes tests">
+    <target name="runtests" depends="buildtests" description="Executes tests.">
     	<echo message="Module: Running tests for ${xtest.module}, testtype ${xtest.testtype}, attribs=${xtest.attribs}"/>
 	<xtest executeAction="runTests"/>
     </target>
     
     <!-- This target cleans test results. -->
-    <target name="cleanresults" description="deletes the results files">
+    <target name="cleanresults" description="Deletes the results files.">
     	<xtest executeAction="cleanResults"/>
     </target>
     
     <!-- This target cleans both tests and results. -->
-    <target name="realclean" description="delete both test and results files">
+    <target name="realclean" description="Delete both test and results files.">
     	<xtest executeAction="cleanAll"/>
     </target>
     
     <!-- This target prints out default xtest configuration which will be used to run the tests. -->
     <target name="printconfig" 
-            description="prints xtest configuration for tests">
+            description="Prints xtest configuration for tests.">
     	<echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
     </target>
     
