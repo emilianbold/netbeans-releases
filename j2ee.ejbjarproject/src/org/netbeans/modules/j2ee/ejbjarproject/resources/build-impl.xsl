@@ -127,6 +127,16 @@ is divided into following sections:
                     <isset property="dist.ear.dir"/>
                 </condition>
                 <property name="classes.dir" value="${{build.classes.dir}}"/>
+                <condition property="no.deps">
+                    <and>
+                        <istrue value="${{no.dependencies}}"/>
+                    </and>
+                </condition>
+                <condition property="no.dist.ear.dir">
+                    <not>
+                        <isset property="dist.ear.dir"/>
+                    </not>
+                </condition>
             </target>
 
             <target name="post-init">
@@ -368,7 +378,6 @@ is divided into following sections:
 
             <target name="deps-jar">
                 <xsl:attribute name="depends">init, deps-module-jar, deps-ear-jar</xsl:attribute>
-                <xsl:attribute name="unless">no.dependencies</xsl:attribute>
             </target>
 
             <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service|/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-service-clients/ejbjarproject2:web-service-client">
@@ -1124,9 +1133,11 @@ to simulate
             <xsl:choose>
                 <xsl:when test="$ear">
                     <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
+                    <xsl:attribute name="unless">no.deps</xsl:attribute>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:attribute name="unless">dist.ear.dir</xsl:attribute>
+                    <xsl:attribute name="if">no.dist.ear.dir</xsl:attribute>
+                    <xsl:attribute name="unless">no.deps</xsl:attribute>
                 </xsl:otherwise>
             </xsl:choose>
             
