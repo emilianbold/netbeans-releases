@@ -539,6 +539,9 @@ final class ViewHierarchy {
         desktop.setMaximizedView(elem);
         
         if (revalidate) {
+            if (elem instanceof SplitView) {
+                ((SplitView)elem).resetToPrefferedSizes();
+            }
             desktop.getDesktopComponent().invalidate();
             ((JComponent)desktop.getDesktopComponent()).revalidate();
             desktop.getDesktopComponent().repaint();
@@ -556,6 +559,9 @@ final class ViewHierarchy {
         }
         
         if (revalidate) {
+            if (root instanceof SplitView) {
+                ((SplitView)root).resetToPrefferedSizes();
+            }
             desktop.getDesktopComponent().invalidate();
             ((JComponent)desktop.getDesktopComponent()).revalidate();
             desktop.getDesktopComponent().repaint();

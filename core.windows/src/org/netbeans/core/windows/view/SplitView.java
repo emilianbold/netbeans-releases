@@ -113,11 +113,12 @@ public class SplitView extends ViewElement {
         Dimension secondDim;
         double location = getLocation();
         int dividerSize = getDividerSize();
+//        debugLog("deviderSize=" + dividerSize);
         if (getOrientation() == javax.swing.JSplitPane.VERTICAL_SPLIT) {
-            firstDim = new Dimension(availableSpace.width, (int)(availableSpace.height  * location - dividerSize));
+            firstDim = new Dimension(availableSpace.width, (int)(availableSpace.height  * location /*- dividerSize*/));
             secondDim = new Dimension(availableSpace.width, (int)(availableSpace.height * (1D - location) - dividerSize));
         } else {
-            firstDim = new Dimension((int)(availableSpace.width * location - dividerSize), availableSpace.height);
+            firstDim = new Dimension((int)(availableSpace.width * location /*- dividerSize*/), availableSpace.height);
             secondDim = new Dimension((int)(availableSpace.width * (1D - location) - dividerSize), availableSpace.height);
         }
 //        debugLog(this.hashCode() + " left=" + firstDim.width + " " + first.getClass());
@@ -147,10 +148,21 @@ public class SplitView extends ViewElement {
 //            debugLog("setting divider");
             result = true;
             splitPane.setDividerLocation(location);
-        } else if (result) { //Check result value - resetToPreferredSizes() will *always* cause a full repaint
+        } /*else if (result) { //Check result value - resetToPreferredSizes() will *always* cause a full repaint
             splitPane.resetToPreferredSizes();
-        }
+            debugLog(this.hashCode() + " resetting to preffered sizes");
+        }*/
         return result;
+    }
+    
+    public void resetToPrefferedSizes() {
+        splitPane.resetToPreferredSizes();
+        if (first instanceof SplitView) {
+            ((SplitView)first).resetToPrefferedSizes();
+        }
+        if (second instanceof SplitView) {
+            ((SplitView)second).resetToPrefferedSizes();
+        }
     }
     
     private boolean assureComponentInSplit(Component comp, boolean left){
@@ -227,7 +239,8 @@ public class SplitView extends ViewElement {
                         } else {
                             relativeLocation = (double)absoluteLocation/(splitPane.getWidth() - splitPane.getDividerSize());
                         }
-                        
+//                        debugLog("userMovedSplit - relative location=" + relativeLocation + " absolute=" + absoluteLocation);
+//                        debugLog("  moved on " + SplitView.this.hashCode() + " current size=" + SplitView.this.getComponent().getSize());
                         getController().userMovedSplit(relativeLocation,
                             SplitView.this, getFirst(), getSecond());
                     }
