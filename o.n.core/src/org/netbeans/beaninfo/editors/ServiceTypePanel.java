@@ -41,6 +41,7 @@ public class ServiceTypePanel extends ExplorerPanel {
   /** @see ServiceTypeEditor#none */
   private ServiceType none;
   
+  static final long serialVersionUID =861345226525021334L;
   /** Creates new Panel PropertyEditor
   * @param clazz the super class of objects that we display
   * @param name string to name the panel with
@@ -221,6 +222,7 @@ public class ServiceTypePanel extends ExplorerPanel {
 
 /*
  * Log
+ *  6    Gandalf   1.5         11/26/99 Patrik Knakal   
  *  5    Gandalf   1.4         11/5/99  Jesse Glick     Context help jumbo 
  *       patch.
  *  4    Gandalf   1.3         10/29/99 Jesse Glick     Added "(no compiler)" 

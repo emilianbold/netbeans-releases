@@ -518,7 +518,7 @@ public final class LoaderPoolNode extends AbstractNode {
   */
   public static final class NbLoaderPool extends DataLoaderPool 
   implements PropertyChangeListener {
-    private static final long serialVersionUID = -3052191556633981161L;
+    private static final long serialVersionUID =-8488524097175567565L;
     
     /** Enumerates all loaders. Loaders are taken from children
     * structure of LoaderPoolNode. */
@@ -628,6 +628,7 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  31   Gandalf   1.30        11/26/99 Patrik Knakal   
 *  30   Gandalf   1.29        11/26/99 Jesse Glick     Fixed a 
 *       ConcurrentModificationException, and also added a proper svuid.
 *  29   Gandalf   1.28        11/25/99 Jesse Glick     Rewrite of 

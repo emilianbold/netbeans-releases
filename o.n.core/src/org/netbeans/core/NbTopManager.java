@@ -463,6 +463,7 @@ public class NbTopManager extends TopManager {
   */
   private static class NbBrowser extends HtmlBrowser.BrowserComponent {
   
+    static final long serialVersionUID =5000673049583700380L;
     /**
     * For externalization.
     */

@@ -473,6 +473,7 @@ static final long serialVersionUID =-6230228701104365037L;
       boolean selected, hasFocus;
       int index;
 
+      static final long serialVersionUID =-8877709520578055594L;
       /** Creates a new MyListCellRenderer */
       public MyListCellRenderer () {
         setOpaque (true);
@@ -602,6 +603,7 @@ static final long serialVersionUID =-6230228701104365037L;
 
 /*
  * Log
+ *  19   Gandalf   1.18        11/26/99 Patrik Knakal   
  *  18   Gandalf   1.17        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  17   Gandalf   1.16        8/9/99   Ian Formanek    Generated Serial Version
