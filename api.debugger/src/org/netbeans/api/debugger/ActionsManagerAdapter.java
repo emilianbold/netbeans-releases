@@ -13,11 +13,8 @@
 
 package org.netbeans.api.debugger;
 
-import java.beans.PropertyChangeEvent;
-
 /**
- * Empty implementation of
- * {@link DebuggerEngineListener}.
+ * Empty implementation of {@link ActionsManagerListener}.
  *
  * @author   Jan Jancura
  */
