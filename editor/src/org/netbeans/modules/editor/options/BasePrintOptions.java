@@ -110,6 +110,7 @@ public class BasePrintOptions extends OptionSupport {
         return cm;
     }
     public void setPrintColoringMap(Map coloringMap) {
+        EditorModule.init();
         if (coloringMap != null) {
             coloringMap.remove(null); // remove kit class
             SettingsUtil.setColoringMap( getKitClass(), coloringMap, true );
