@@ -73,6 +73,14 @@ public class DriverListUtil {
         drivers.add("RmiJdbc.RJDriver");
         urls.add("jdbc:rmi://<HOST>:<PORT>/jdbc:cloudscape:<DB>");
         
+        names.add("Apache Derby (Embedded)");
+        drivers.add("org.apache.derby.jdbc.EmbeddedDriver");
+        urls.add("jdbc:derby:<DB>");
+        
+        names.add("Apache Derby (Net)");
+        drivers.add("com.ibm.db2.jcc.DB2Driver");
+        urls.add("jdbc:derby:net://<HOST>[:<PORT>]/<DB>");
+        
         names.add("Firebird (JCA/JDBC driver)");
         drivers.add("org.firebirdsql.jdbc.FBDriver");
         urls.add("jdbc:firebirdsql:[//<HOST>[:<PORT>]/]<DB>");
