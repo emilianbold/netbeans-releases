@@ -13,11 +13,10 @@
 
 package org.netbeans.modules.web.core.jsploader;
 
-import java.beans.*;
 import java.lang.ref.WeakReference;
 import java.lang.ref.SoftReference;
 import java.util.*;
-import java.io.IOException;
+import org.netbeans.modules.web.core.syntax.spi.ErrorAnnotation;
 
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
@@ -88,6 +87,9 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
     
     private boolean parsingTaskCancelled = false;
     
+    /** Holds reference for annotation errors
+     */
+    private ErrorAnnotation annotations;
     /** Creates new TagLibParseSupport 
      * @param jspFile the resource to parse
      */
@@ -96,6 +98,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
         //allow max 10 requests to run in parallel & have one RP for all taglib parsings
         if(requestProcessor == null) requestProcessor = new RequestProcessor("background jsp parsing", 10); // NOI18N
         //requestProcessor = RequestProcessor.getDefault();
+        annotations = new ErrorAnnotation (jspFile);
     }
 
     /** Gets the tag library data relevant for the editor. */
@@ -326,6 +329,20 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                         //motivation: the editor doesn't always hold a strogref to this object
                         //so the SoftRef is sometime cleaned even if there is an editor pane opened.
                         parseResultSuccessfulRefStrongReference = locResult;
+                        //remove all errors
+                        annotations.annotate(new ErrorAnnotation.ErrorInfo[] {});
+                    }
+                    if (!locResult.isParsingSuccess()){
+                        for (int i = 0; i < locResult.getErrors().length; i ++){
+                            JspParserAPI.ErrorDescriptor err = locResult.getErrors()[i];
+                            annotations.annotate(new ErrorAnnotation.ErrorInfo[] {
+                                    new ErrorAnnotation.ErrorInfo(err.getErrorMessage(), 
+                                            err.getLine(), 
+                                            err.getColumn(),
+                                            ErrorAnnotation.JSP_ERROR)
+                            } );
+                        }
+
                     }
                     PageInfo pageInfo = locResult.getPageInfo();
                     if (pageInfo == null) return;
