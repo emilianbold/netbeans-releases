@@ -15,14 +15,13 @@ import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
 
 /**
- *
- * @author  __USER__
+ * @author __USER__
  */
 public class CustomTask extends Task {
 
     /* For a simple option:
     private boolean opt;
-    public void setOpt (boolean b) {
+    public void setOpt(boolean b) {
         opt = b;
     }
     // <customtask opt="true"/>
@@ -30,7 +29,7 @@ public class CustomTask extends Task {
 
     /* For a simple property based on a string:
     private String myprop;
-    public void setMyprop (String s) {
+    public void setMyprop(String s) {
         myprop = s;
     }
     // <customtask myprop="some text here"/>
@@ -38,7 +37,7 @@ public class CustomTask extends Task {
 
     /* For a simple property based on a file:
     private File myfile;
-    public void setMyfile (File f) {
+    public void setMyfile(File f) {
         // Note: f will automatically be absolute (resolved from project basedir).
         myfile = f;
     }
@@ -48,124 +47,124 @@ public class CustomTask extends Task {
     /* Custom nested elements:
     public static class Nestme {
         String val; // accessible from execute()
-        public void setVal (String s) {
+        public void setVal(String s) {
             val = s;
         }
     }
-    private List nestmes = new LinkedList (); // List<Nestme>
-    public Nestme createNestme () {
-        Nestme n = new Nestme ();
-        nestmes.add (n);
+    private List nestmes = new LinkedList(); // List<Nestme>
+    public Nestme createNestme() {
+        Nestme n = new Nestme();
+        nestmes.add(n);
         return n;
     }
     // Or:
-    public void addNestme (Nestme n) {
-        nestmes.add (n);
+    public void addNestme(Nestme n) {
+        nestmes.add(n);
     }
     // <customtask>
-    //   <nestme val="something"/>
+    //     <nestme val="something"/>
     // </customtask>
     */
 
     /* To add embedded filesets:
-    private List filesets = new LinkedList (); // List<FileSet>
-    public void addFileset (FileSet fs) {
-        filesets.add (fs);
+    private List filesets = new LinkedList(); // List<FileSet>
+    public void addFileset(FileSet fs) {
+        filesets.add(fs);
     }
     // <customtask>
-    //   <fileset dir="foo">
-    //     <include name="*.txt"/>
-    //   </fileset>
+    //     <fileset dir="foo">
+    //         <include name="*.txt"/>
+    //     </fileset>
     // </customtask>
     // In execute() you can do:
-    Iterator it = filesets.iterator ();
-    while (it.hasNext ()) {
-        FileSet fs = (FileSet) it.next ();
-        DirectoryScanner ds = fs.getDirectoryScanner (project);
-        File basedir = ds.getBasedir ();
-        String[] files = ds.getIncludedFiles ();
+    Iterator it = filesets.iterator();
+    while (it.hasNext()) {
+        FileSet fs = (FileSet)it.next();
+        DirectoryScanner ds = fs.getDirectoryScanner(project);
+        File basedir = ds.getBasedir();
+        String[] files = ds.getIncludedFiles();
         // process them...
     }
     */
 
     /* For nested text:
     private StringBuffer text;
-    public void addText (String t) {
-        t = t.trim ();
+    public void addText(String t) {
+        t = t.trim();
         if (text == null) {
-            text = new StringBuffer (t);
+            text = new StringBuffer(t);
         } else {
-            text.append (t);
+            text.append(t);
         }
     }
     // <customtask>
-    //   Some text...
+    //     Some text...
     // </customtask>
     */
 
     /* Some sort of path (like classpath or similar):
     private Path path;
-    public void setPath (Path p) {
+    public void setPath(Path p) {
         if (path == null) {
             path = p;
         } else {
-            path.append (p);
+            path.append(p);
         }
     }
     public Path createPath () {
         if (path == null) {
-            path = new Path (project);
+            path = new Path(project);
         }
-        return path.createPath ();
+        return path.createPath();
     }
-    public void setPathRef (Reference r) {
-        createPath ().setRefid (r);
+    public void setPathRef(Reference r) {
+        createPath().setRefid(r);
     }
     // <customtask path="foo:bar"/>
     // <customtask>
-    //   <path>
-    //     <pathelement location="foo"/>
-    //   </path>
+    //     <path>
+    //         <pathelement location="foo"/>
+    //     </path>
     // </customtask>
     // Etc.
     */
 
     /* One of a fixed set of choices:
     public static class FooBieBletch extends EnumeratedAttribute {
-        public String[] getValues () {
-            return new String[] { "foo", "bie", "bletch" };
+        public String[] getValues() {
+            return new String[] {"foo", "bie", "bletch"};
         }
     }
     private String mode = "foo";
-    public void setMode (FooBieBletch m) {
-        mode = m.getValue ();
+    public void setMode(FooBieBletch m) {
+        mode = m.getValue();
     }
     // <customtask mode="bletch"/>
     */
 
-    public void execute () throws BuildException {
+    public void execute() throws BuildException {
         // What the task actually does:
         // WRITEME
 
         // To log something:
-        // log ("Some message");
-        // log ("Serious message", Project.MSG_WARN);
-        // log ("Minor message", Project.MSG_VERBOSE);
+        // log("Some message");
+        // log("Serious message", Project.MSG_WARN);
+        // log("Minor message", Project.MSG_VERBOSE);
 
         // To signal an error:
-        // throw new BuildException ("Problem", location);
-        // throw new BuildException (someThrowable, location);
-        // throw new BuildException ("Problem", someThrowable, location);
+        // throw new BuildException("Problem", location);
+        // throw new BuildException(someThrowable, location);
+        // throw new BuildException("Problem", someThrowable, location);
 
         // You can call other tasks too:
-        // Zip zip = (Zip) project.createTask ("zip");
-        // zip.setZipfile (zipFile);
-        // FileSet fs = new FileSet ();
-        // fs.setDir (baseDir);
-        // zip.addFileset (fs);
-        // zip.init ();
-        // zip.setLocation (location);
-        // zip.execute ();
+        // Zip zip = (Zip)project.createTask("zip");
+        // zip.setZipfile(zipFile);
+        // FileSet fs = new FileSet();
+        // fs.setDir(baseDir);
+        // zip.addFileset(fs);
+        // zip.init();
+        // zip.setLocation(location);
+        // zip.execute();
     }
 
 }
