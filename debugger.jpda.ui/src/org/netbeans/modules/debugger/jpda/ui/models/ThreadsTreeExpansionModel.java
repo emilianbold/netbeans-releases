@@ -47,7 +47,6 @@ public class ThreadsTreeExpansionModel implements TreeExpansionModel {
      * @param node a expanded node
      */
     public void nodeExpanded (Object node) {
-        System.out.println ("nodeExpanded " + node);
     }
     
     /**
@@ -56,6 +55,5 @@ public class ThreadsTreeExpansionModel implements TreeExpansionModel {
      * @param node a collapsed node
      */
     public void nodeCollapsed (Object node) {
-        System.out.println ("nodeCollapsed " + node);
     }
 }
