@@ -92,6 +92,8 @@
 	<mapID target="run_ws" url="web/webservice/run_ws.html" />
 	<mapID target="about_websvc_client.html" url="web/webserviceclient/about_websvc_client.html" />	
 	<mapID target="create_wsc" url="web/webserviceclient/create_wsc.html" />
+	<mapID target="call_ws_operation" url="web/webserviceclient/call_ws_operation.html" />
+	<mapID target="run_wsc" url="web/webserviceclient/run_wsc.html" />
 <!-- End of web apps help -->
 
 <!-- Start of EJB help -->

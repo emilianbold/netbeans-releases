@@ -95,8 +95,15 @@
        <tocitem text="Web Service Clients">
          <tocitem text="About Web Service Clients" target="about_websvc_client.html" />
 	 <tocitem text="Creating a Web Service Client" target="create_wsc" />
-	 <tocitem text="Invoking a Web Service Operation in a Client" target="tbd" />
-         <tocitem text="Running a Web Service Client" target="tbd" />
+	 <tocitem text="Calling a Web Service Operation" target="call_ws_operation" />
+	<tocitem text="Adding an Enterprise Resource" >
+	 <tocitem text="About Adding an Enterprise Resource" target="add_enterprise_resource" />
+	 	<tocitem text="Calling an EJB" target="call_an_ejb" />
+	 	<tocitem text="Using a Database" target="use_a_database" />
+		<tocitem text="Sending a JMS Message" target="send_JMS_message" />
+	</tocitem>
+	 <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
+         <tocitem text="Running a Web Service Client" target="run_wsc" />
       </tocitem> <!-- Working With Web Service Clients --> 
       <tocitem text="Tags">
           <tocitem text="About Tag Libraries" target="webmod_addtglb"/>
@@ -156,7 +163,8 @@
             <tocitem text="Running a Servlet" target="run_servlet" />
             <tocitem text="Running a Filter" target="filter_run"/>
 	    <tocitem text="Running a Web Application Listener" target="listener_run"/>
- 	    <tocitem text="Running a Web Service" target="run_ws" />
+	    <tocitem text="Running a Web Service" target="run_ws" />
+	    <tocitem text="Running a Web Service Client" target="run_wsc" />
             <tocitem text="Running an Applet" target="webmod_runapplet"/>
             <tocitem text="Changing Web Servers" target="webmod_server_set" />
             <tocitem text="Changing Web Browsers" target="webmod_browser" />
