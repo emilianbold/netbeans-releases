@@ -1387,7 +1387,6 @@ class JavaCodeGenerator extends CodeGenerator {
                             }
                         }
                         catch (Exception ex) {
-                            ex.printStackTrace();
                         }
                     }
                 }
