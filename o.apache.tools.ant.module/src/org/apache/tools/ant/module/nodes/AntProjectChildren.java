@@ -43,27 +43,36 @@ final class AntProjectChildren extends Children.Keys/*<TargetLister.Target>*/ im
     
     protected void addNotify () {
         super.addNotify ();
-        refreshKeys();
+        refreshKeys(true);
         cookie.addChangeListener (this);
     }
 
     protected void removeNotify () {
         super.removeNotify ();
         setKeys(Collections.EMPTY_SET);
-        allTargets = null;
+        synchronized (this) {
+            allTargets = null;
+        }
         cookie.removeChangeListener (this);
     }
 
-    private void refreshKeys() {
+    private void refreshKeys(boolean createKeys) {
         try {
-            allTargets = new TreeSet(this);
-            allTargets.addAll(TargetLister.getTargets(cookie));
-            Iterator it = allTargets.iterator();
-            while (it.hasNext()) {
-                TargetLister.Target t = (TargetLister.Target) it.next();
-                if (t.isOverridden()) {
-                    // Don't include these.
-                    it.remove();
+            Set/*<TargetLister.Target>*/ _allTargets = TargetLister.getTargets(cookie);
+            synchronized (this) {
+                if (allTargets == null && !createKeys) {
+                    // Aynch refresh after removeNotify; ignore. (#44428)
+                    return;
+                }
+                allTargets = new TreeSet(this);
+                allTargets.addAll(_allTargets);
+                Iterator it = allTargets.iterator();
+                while (it.hasNext()) {
+                    TargetLister.Target t = (TargetLister.Target) it.next();
+                    if (t.isOverridden()) {
+                        // Don't include these.
+                        it.remove();
+                    }
                 }
             }
             setKeys(allTargets);
@@ -80,7 +89,7 @@ final class AntProjectChildren extends Children.Keys/*<TargetLister.Target>*/ im
     }
     
     public void stateChanged (ChangeEvent ev) {
-        refreshKeys ();
+        refreshKeys(false);
     }
     
     public int compare(Object o1, Object o2) {
