@@ -727,7 +727,11 @@ public class RADComponent {
       // FormPropertyEditor is one of the advanced features that must be supported bu the 
       // persistence manager to be available
       if (!getFormManager ().getFormEditorSupport ().supportsAdvancedFeatures ()) {
-        return findDefaultEditor (desc);
+        PropertyEditor prEd = findDefaultEditor (desc);
+        if (prEd instanceof FormAwareEditor) {
+          ((FormAwareEditor)prEd).setRADComponent (RADComponent.this);
+        }
+        return prEd;
       }
       // the property editor cannot be reused as it is not reentrant !!! [IAN]
       PropertyEditor defaultEditor = findDefaultEditor (desc);
@@ -898,7 +902,11 @@ public class RADComponent {
       // FormPropertyEditor is one of the advanced features that must be supported bu the 
       // persistence manager to be available
       if (!getFormManager ().getFormEditorSupport ().supportsAdvancedFeatures ()) {
-        return findDefaultIndexedEditor (desc);
+        PropertyEditor prEd = findDefaultIndexedEditor (desc);
+        if (prEd instanceof FormAwareEditor) {
+          ((FormAwareEditor)prEd).setRADComponent (RADComponent.this);
+        }
+        return prEd;
       }
 
       // the property editor cannot be reused as it is not reentrant !!! [IAN]
@@ -1068,6 +1076,9 @@ public class RADComponent {
 
 /*
  * Log
+ *  36   Gandalf   1.35        7/29/99  Ian Formanek    Fixed bug where form 
+ *       aware property editors were not correctly initialized if advanced 
+ *       features were not used.
  *  35   Gandalf   1.34        7/28/99  Ian Formanek    Fixed bug 1851 - One can
  *       use a java keywords as variable names .
  *  34   Gandalf   1.33        7/28/99  Ian Formanek    Fixed problem with 
