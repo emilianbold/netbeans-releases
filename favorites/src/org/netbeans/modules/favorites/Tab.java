@@ -29,9 +29,12 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeView;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.loaders.OperationEvent;
 import org.openide.loaders.OperationListener;
@@ -361,13 +364,31 @@ implements OperationListener, Runnable, ExplorerManager.Provider {
     */
     private static Node findClosestNode (DataObject obj, Node start, boolean useLogicalViews) {
         DataObject original = obj;
-
+        
         Stack stack = new Stack ();
         while (obj != null) {
-            stack.push (obj);
-            obj = obj.getFolder ();
+            stack.push(obj);
+            DataObject tmp = obj.getFolder();
+            if (tmp == null) {
+                //Skip archive file root and do not stop at archive file root
+                //ie. continue to root of filesystem.
+                FileObject fo = FileUtil.getArchiveFile(obj.getPrimaryFile());
+                if (fo != null) {
+                    try {
+                        obj = DataObject.find(fo);
+                        //Remove archive root from stack
+                        stack.pop();
+                    } catch (DataObjectNotFoundException exc) {
+                        obj = null;
+                    }
+                } else {
+                    obj = null;
+                }
+            } else {
+                obj = tmp;
+            }
         }
-
+        
         Node current = start;
         int topIdx = stack.size();
         int i = 0;
