@@ -1733,7 +1733,7 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
         
         private void forward (MouseEvent me) {
             MouseListener[] ml = c.getMouseListeners();
-            if (ml.length == 0) {
+            if (ml.length == 0 || me.isConsumed()) {
                 return;
             }
             MouseEvent me2 = SwingUtilities.convertMouseEvent(

@@ -659,6 +659,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         }
 
         private void performCommand (String command, int idx, MouseEvent evt) {
+            evt.consume();
             if (TabDisplayer.COMMAND_SELECT == command) {
                 if (idx != displayer.getSelectionModel().getSelectedIndex()) {
                     boolean go = shouldPerformAction (command, idx, evt);
