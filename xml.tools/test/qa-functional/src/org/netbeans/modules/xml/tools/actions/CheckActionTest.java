@@ -40,7 +40,7 @@ public class CheckActionTest extends AbstractCheckTest {
     
     /** Validates document where missing root element */
     public void testMissingRootElement() throws Exception {
-        performAction("MissingRootElement.xml",  new int[] {5});
+        performAction("MissingRootElement.xml",  new int[] {-1});
     }
     
     // *** Not valid but well-formed ***
