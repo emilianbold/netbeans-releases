@@ -13,10 +13,27 @@
 
 package org.netbeans.spi.project.support.ant;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.util.AbstractMap;
+import java.util.AbstractSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 // XXX: consider adding getInitialComment() and setInitialComment() methods
+// (useful e.g. for GeneratedFilesHelper)
 
 /**
  * Similar to {@link Properties} but designed to retain additional
@@ -483,16 +500,18 @@ public final class EditableProperties extends AbstractMap implements Cloneable {
         public void setValue(List value) {
             StringBuffer val = new StringBuffer();
             ArrayList l = new ArrayList();
-            l.add(encode(key, true)+"=\\");
-            Iterator it = value.iterator();
-            while (it.hasNext()) {
-                String s = (String)it.next();
-                val.append(s);
-                s = encode(s, false);
-                l.add(it.hasNext() ? INDENT+s+"\\" : INDENT+s);
-            }
-            if (l.size() == 1) {
-                l.add("");
+            if (!value.isEmpty()) {
+                l.add(encode(key, true) + "=\\"); // NOI18N
+                Iterator it = value.iterator();
+                while (it.hasNext()) {
+                    String s = (String)it.next();
+                    val.append(s);
+                    s = encode(s, false);
+                    l.add(it.hasNext() ? INDENT + s + '\\' : INDENT + s); // NOI18N
+                }
+            } else {
+                // #45061: for no vals, use just "prop="
+                l.add(encode(key, true) + '='); // NOI18N
             }
             this.value = val.toString();
             keyValueLines = l;

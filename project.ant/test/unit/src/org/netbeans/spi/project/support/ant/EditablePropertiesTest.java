@@ -211,8 +211,7 @@ public class EditablePropertiesTest extends NbTestCase {
             "    one;\\"+System.getProperty("line.separator")+
             "    more;\\"+System.getProperty("line.separator")+
             "    line;"+System.getProperty("line.separator")+
-            "key=\\"+System.getProperty("line.separator")+
-            ""+System.getProperty("line.separator");
+            "key="+System.getProperty("line.separator"); // #45061
         assertEquals(expected, output);
         assertEquals(ep.getProperty("key1"), "one; two; three");
         assertEquals(ep.getProperty("key2"), "1. line;2. line;3. lineone;more;line;");
