@@ -30,7 +30,17 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copyfile src="manifest.mf" dest="manifest-subst.mf" filtering="on"/>
+    <!-- Make a dummy module file for purposes of dependencies. -->
+    <!-- Note that Ant refuses to make a JAR if there are no contents. -->
+    <mkdir dir="nothing"/>
+    <touch file="nothing/.exists"/>
     <jar jarfile="netbeans/modules/openidex.jar"
+         manifest="manifest-subst.mf"
+	 basedir="nothing"/>
+    <delete dir="nothing"/>
+    <!-- Now the real thing. -->
+    <mkdir dir="netbeans/lib/ext"/>
+    <jar jarfile="netbeans/lib/ext/openidex.jar"
          manifest="manifest-subst.mf"
          basedir="src"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"

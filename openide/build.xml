@@ -124,7 +124,7 @@ Microsystems, Inc. All Rights Reserved.
       <include name="org/netbeans/examples/modules/globalactions/"/>
       <classpath>
         <pathelement location="netbeans/lib/openide.jar"/>
-        <pathelement location="../openidex/netbeans/modules/openidex.jar"/>
+        <pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
       </classpath>
     </javac>
     <mkdir dir="examplemodules"/>

@@ -19,8 +19,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compile">
     <javac srcdir="libsrc" destdir="libsrc">
       <classpath>
-       <pathelement location="../openide/netbeans/lib/openide.jar"/>
-       <pathelement location="../openidex/netbeans/modules/openidex.jar"/>
        <pathelement location="../core/release/lib/ext/regexp.jar"/>
       </classpath>
     </javac>
@@ -30,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
        <pathelement location="../core/netbeans/lib/developer.jar"/>
        <pathelement location="libsrc"/>
        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-       <pathelement location="../openidex/netbeans/modules/openidex.jar"/>
+       <pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
        <pathelement location="../core/release/lib/ext/regexp.jar"/>
       </classpath>
     </javac>

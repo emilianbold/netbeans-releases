@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src">
       <classpath>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
-        <pathelement location="../openidex/netbeans/modules/openidex.jar"/>
+        <pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
       </classpath>
     </javac>
   </target>
