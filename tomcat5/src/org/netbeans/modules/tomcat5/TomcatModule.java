@@ -20,15 +20,27 @@ import javax.enterprise.deploy.spi.TargetModuleID;
  *
  * @author  Radim Kubacki
  */
-public class TomcatModule implements TargetModuleID {
+public final class TomcatModule implements TargetModuleID {
     
     private TomcatTarget target;
     
-    private String path;
+    private final String path;
+    private final String docRoot;
     
     public TomcatModule (Target target, String path) {
         this.target = (TomcatTarget) target;
         this.path = path;
+        this.docRoot = null;
+    }
+    
+    public TomcatModule (Target target, String path, String docRoot) {
+        this.target = (TomcatTarget) target;
+        this.path = path;
+        this.docRoot = docRoot;
+    }
+    
+    public String getDocRoot () {
+        return docRoot;
     }
     
     public TargetModuleID[] getChildTargetModuleID () {

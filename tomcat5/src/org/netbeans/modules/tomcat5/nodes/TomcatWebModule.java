@@ -31,23 +31,28 @@ import org.openide.util.RequestProcessor;
  *
  * @author  Petr Pisl
  */
-public class TomcatWebModule extends TomcatModule implements TomcatWebModuleCookie{
+public class TomcatWebModule implements TomcatWebModuleCookie{
     
-    private DeploymentManager manager;
+    private final TomcatModule tomcatModule;
+    private final DeploymentManager manager;
     
     private boolean isRunning;
     
     private Node node;
     
-    private TargetModuleID[] target;
+    private final TargetModuleID[] target;
+    
     /** Creates a new instance of TomcatWebModule */
-    public TomcatWebModule(DeploymentManager manager, TomcatModule targetModule, boolean isRunning) {
-        super(targetModule.getTarget(), targetModule.getPath());
+    public TomcatWebModule(DeploymentManager manager, TomcatModule tomcatModule, boolean isRunning) {
+        this.tomcatModule = tomcatModule;
         this.manager = manager;
         this.isRunning = isRunning;
-        target = new TargetModuleID[]{(TargetModuleID)this} ;
+        target = new TargetModuleID[]{tomcatModule};
     }
     
+    public TomcatModule getTomcatModule () {
+        return tomcatModule;
+    }
     
     public void setRepresentedNode(Node node){
         this.node = node;
@@ -61,7 +66,7 @@ public class TomcatWebModule extends TomcatModule implements TomcatWebModuleCook
         RequestProcessor.getDefault().post(new Runnable() {
             public void run () {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TomcatWebModule.class, "MSG_START_UNDEPLOY",  // NOI18N
-                    new Object []{getPath()})); 
+                    new Object []{getTomcatModule ().getPath()})); 
                 ProgressObject po = manager.undeploy(target);
                 po.addProgressListener(new TomcatProgressListener());
             }
@@ -73,7 +78,7 @@ public class TomcatWebModule extends TomcatModule implements TomcatWebModuleCook
         RequestProcessor.getDefault().post(new Runnable() {
             public void run () {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TomcatWebModule.class, "MSG_START_STARTING",  // NOI18N
-                    new Object []{getPath()}));
+                    new Object []{getTomcatModule ().getPath()}));
                 ProgressObject po = manager.start(target);
                 po.addProgressListener(new TomcatProgressListener());
                 isRunning = true;
@@ -86,7 +91,7 @@ public class TomcatWebModule extends TomcatModule implements TomcatWebModuleCook
             public void run () {
                 
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TomcatWebModule.class, "MSG_START_STOPPING",  // NOI18N
-                    new Object []{getPath()}));
+                    new Object []{getTomcatModule ().getPath()}));
                 ProgressObject po = manager.stop(target);
                 po.addProgressListener(new TomcatProgressListener());
                 isRunning = false;
@@ -101,9 +106,9 @@ public class TomcatWebModule extends TomcatModule implements TomcatWebModuleCook
     
     private String constructDisplayName(){
         if (isRunning())
-            return getPath();
+            return getTomcatModule ().getPath();
         else
-            return getPath() + " [" + NbBundle.getMessage(TomcatWebModuleNode.class, "LBL_Stopped")  // NOI18N
+            return getTomcatModule ().getPath() + " [" + NbBundle.getMessage(TomcatWebModuleNode.class, "LBL_Stopped")  // NOI18N
                +  "]";
     }
     
@@ -136,7 +141,7 @@ public class TomcatWebModule extends TomcatModule implements TomcatWebModuleCook
             TomcatWebModule wm1 = (TomcatWebModule) o1;
             TomcatWebModule wm2 = (TomcatWebModule) o2;
             
-            return wm1.getModuleID().compareTo(wm2.getModuleID());
+            return wm1.getTomcatModule ().getModuleID().compareTo(wm2.getTomcatModule ().getModuleID());
         }
         
     }

@@ -65,7 +65,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="compile" depends="init,dd2beans_gen">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+    <javac srcdir="src" destdir="src" source="1.4" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath refid="cp"/>
     </javac>
   </target>

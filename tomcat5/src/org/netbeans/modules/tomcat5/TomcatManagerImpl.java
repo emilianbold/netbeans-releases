@@ -153,9 +153,9 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
         try {
             FileInputStream in = new FileInputStream (contextXml);
             Context ctx = Context.createGraph (in);
-            this.tmId = new TomcatModule (t, ctx.getAttributeValue ("path")); //NOI18N
             String docBaseURI = dir.getAbsoluteFile().toURI().toASCIIString();
             String docBase = dir.getAbsolutePath ();
+            this.tmId = new TomcatModule (t, ctx.getAttributeValue ("path"), docBase); //NOI18N
             if (!docBase.equals (ctx.getAttributeValue ("docBase"))) { //NOI18N
                 ctx.setAttributeValue ("docBase", docBase); //NOI18N
                 FileOutputStream fos = new FileOutputStream (contextXml);
@@ -197,17 +197,35 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
         rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
     
-    /** Restarts web module. */
-    public void restart (TomcatModule tmId) {
-        stop(tmId);
-        start(tmId);
-    }
-
     /** Reloads web module. */
     public void reload (TomcatModule tmId) {
         this.tmId = tmId;
         command = "reload?path="+tmId.getPath (); // NOI18N
         cmdType = CommandType.REDEPLOY;
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
+        rp ().post (this, 0, Thread.NORM_PRIORITY);
+    }
+    
+    public void incrementalRedeploy (TomcatModule tmId) {
+        try {
+            this.tmId = tmId;
+            String docBase = tmId.getDocRoot ();
+            assert docBase != null;
+            String docBaseURI = new File (docBase).toURI().toASCIIString();
+            File contextXml = new File (docBase + "/META-INF/context.xml");
+            FileInputStream in = new FileInputStream (contextXml);
+            Context ctx = Context.createGraph (in);
+            if (!docBase.equals (ctx.getAttributeValue ("docBase"))) { //NOI18N
+                ctx.setAttributeValue ("docBase", docBase); //NOI18N
+                FileOutputStream fos = new FileOutputStream (contextXml);
+                ctx.write (fos);
+                fos.close ();
+            }
+            command = "deploy?config=" + contextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
+            cmdType = CommandType.DISTRIBUTE;
+        } catch (java.io.IOException ioex) {
+            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, ioex.getLocalizedMessage (), StateType.FAILED));
+        }
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
         rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
@@ -236,13 +254,15 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     String ctx = ltok.nextToken ();
                     String s = ltok.nextToken ();
                     String tag = ltok.nextToken ();
+                    //take the rest of line as path (it can contain ':')
+                    String path = line.substring (ctx.length () + s.length () + tag.length () + 3);
                     if ("running".equals (s)
                     &&  (state == TomcatManager.ENUM_AVAILABLE || state == TomcatManager.ENUM_RUNNING)) {
-                        modules.add (new TomcatModule (t, ctx));
+                        modules.add (new TomcatModule (t, ctx, path));
                     }
                     if ("stopped".equals (s)
                     &&  (state == TomcatManager.ENUM_AVAILABLE || state == TomcatManager.ENUM_NONRUNNING)) {
-                        modules.add (new TomcatModule (t, ctx));
+                        modules.add (new TomcatModule (t, ctx, path));
                     }
                 }
                 catch (java.util.NoSuchElementException e) {

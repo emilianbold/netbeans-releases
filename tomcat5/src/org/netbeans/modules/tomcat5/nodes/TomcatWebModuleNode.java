@@ -41,7 +41,7 @@ public class TomcatWebModuleNode extends AbstractNode {
         super(Children.LEAF);
         this.module = module;
         setDisplayName(constructName());
-        setShortDescription(module.getWebURL());
+        setShortDescription(module.getTomcatModule ().getWebURL());
         getCookieSet().add(module);
         setIconBase(ICON_BASE);
     }
@@ -58,9 +58,9 @@ public class TomcatWebModuleNode extends AbstractNode {
     
     private String constructName(){
         if (module.isRunning())
-            return module.getPath();
+            return module.getTomcatModule ().getPath();
         else
-            return module.getPath() + " (" +
+            return module.getTomcatModule ().getPath() + " (" +
                 NbBundle.getMessage(TomcatWebModuleNode.class, "LBL_Stopped")  // NOI18N
                 + ")";
     }

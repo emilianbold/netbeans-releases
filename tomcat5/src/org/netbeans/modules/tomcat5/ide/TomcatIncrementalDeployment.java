@@ -75,12 +75,17 @@ public class TomcatIncrementalDeployment extends IncrementalDeployment {
     }
     
     public ProgressObject incrementalDeploy (final TargetModuleID module, org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor changes) {
-        if (changes.descriptorChanged () || changes.classesChanged ()) {
+        if (changes.descriptorChanged () || changes.serverDescriptorChanged () || changes.classesChanged ()) {
             TomcatManagerImpl tmi = new TomcatManagerImpl (tm);
-            if (changes.descriptorChanged())
-                tmi.restart((TomcatModule) module);
-            else
+            if (changes.serverDescriptorChanged ()) {
+                new TomcatManagerImpl (tm).remove ((TomcatModule) module);
+                tmi.incrementalRedeploy ((TomcatModule) module);
+            } else if (changes.descriptorChanged()) {
+                new TomcatManagerImpl (tm).stop((TomcatModule) module);
+                tmi.start ((TomcatModule) module);
+            } else {
                 tmi.reload ((TomcatModule)module);
+            }
             return tmi;
         } else {
             final P p = new P (module);
