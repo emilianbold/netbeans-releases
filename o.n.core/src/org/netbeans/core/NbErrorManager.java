@@ -184,14 +184,38 @@ public final class NbErrorManager extends ErrorManager {
         if (!isNotifiable(ex.getSeverity())) {
             return;
         }
-
-        PrintStream log = getLogWriter ();
         
-        if (prefix != null)
-            log.print ("[" + prefix + "] "); // NOI18N        
-        String level = ex.getSeverity() == INFORMATIONAL ? "INFORMATIONAL " : "";// NOI18N
-        log.println (level + "*********** Exception occurred ************ at " + ex.getDate()); // NOI18N
-        ex.printStackTrace(log);
+        //issue 36878 - printing the stack trace on a user error is
+        //disconcerting because it makes it look like something went wrong
+        //with the software.
+        
+        //Note the algorithm below is different than that of Exc.getSeverity() -
+        //there are cases (e.g. a property editor over a filesystem) where
+        //an exception may be annotated as severe, but in the context
+        //it is not - thus we check if *any* annotation is USER, rather than
+        //that the highest level severity in the annotation is USER
+        boolean wantStackTrace = severity != USER;
+        if (!wantStackTrace) {
+            Annotation[] ann = findAnnotations(t);
+            if (ann != null) {
+                for (int i=0; i < ann.length; i++) {
+                    if (ann[i] instanceof Ann) {
+                        if (((Ann) ann[i]).getSeverity() == USER) {
+                            wantStackTrace = false;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if (wantStackTrace) {
+            PrintStream log = getLogWriter();
+            if (prefix != null)
+                log.print ("[" + prefix + "] "); // NOI18N        
+            String level = ex.getSeverity() == INFORMATIONAL ? "INFORMATIONAL " : "";// NOI18N
+            log.println (level + "*********** Exception occurred ************ at " + ex.getDate()); // NOI18N
+            ex.printStackTrace(log);
+        }
 
         if (ex.getSeverity () > INFORMATIONAL) {
             NotifyException.notify (ex);
