@@ -54,11 +54,11 @@ public class ImageDataLoaderBeanInfo extends SimpleBeanInfo {
     if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
         (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
       if (icon == null)
-        icon = loadImage("/com.netbeans.developer.impl.resources/imageLoader.gif");
+        icon = loadImage("com.netbeans.developer.modules.resources.imageLoader.gif");
       return icon;
     } else {
       if (icon32 == null)
-        icon32 = loadImage ("/com.netbeans.developer.impl.resources/imageLoader32.gif");
+        icon32 = loadImage ("com.netbeans.developer.modules.resources.imageLoader32.gif");
       return icon32;
     }
   }
@@ -86,6 +86,7 @@ public class ImageDataLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  2    Gandalf   1.1         1/22/99  Ian Formanek    
 *  1    Gandalf   1.0         1/5/99   Ian Formanek    
 * $
 */

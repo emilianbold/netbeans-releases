@@ -13,12 +13,6 @@
 
 package com.netbeans.developer.modules.loaders.image;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.util.Enumeration;
-import javax.swing.ImageIcon;
-
 import com.netbeans.ide.*;
 import com.netbeans.ide.cookies.OpenCookie;
 import com.netbeans.ide.filesystems.*;
@@ -37,8 +31,6 @@ import com.netbeans.ide.nodes.*;
 public class ImageDataObject extends MultiDataObject {
   /** generated Serialized Version UID */
   static final long serialVersionUID = -6035788991669336965L;
-
-  public static final String PROP_FILE_PARAMS = "params";
 
   private static final String IMAGE_ICON_BASE =
     "com/netbeans/developer/modules/resources/imageObject";
@@ -63,9 +55,9 @@ public class ImageDataObject extends MultiDataObject {
   }
 
   /**
-  * @return ImageIcon loaded from primary FileObject of this DataObject.
+  * @return Image url loaded from primary FileObject of this DataObject.
   */
-  URL getImageURL() {
+  java.net.URL getImageURL() {
     try {
       return getPrimaryFile().getURL();
     } catch (FileStateInvalidException ex) {
@@ -95,6 +87,7 @@ public class ImageDataObject extends MultiDataObject {
 
 /*
  * Log
+ *  6    Gandalf   1.5         1/22/99  Ian Formanek    
  *  5    Gandalf   1.4         1/15/99  Petr Hamernik   image source repaired
  *  4    Gandalf   1.3         1/7/99   Jaroslav Tulach Uses OpenSupport
  *  3    Gandalf   1.2         1/7/99   Ian Formanek    
