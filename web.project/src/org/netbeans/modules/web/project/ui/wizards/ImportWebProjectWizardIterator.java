@@ -28,33 +28,32 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import javax.swing.JButton;
 
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.ProjectWebModule;
-
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.NbBundle;
-
 import org.netbeans.modules.web.project.WebProjectGenerator;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.WizardValidationException;
 
 /**
  * Wizard to create a new Web project for an existing web module.
@@ -398,7 +397,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
                     return; //invalid file object
                 }
                 if (fo != null)
-                    presetSecondPanel(fo);
+                    presetSecondPanel(fo, moduleLoc);
             }
         }
         
@@ -414,7 +413,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
                 && (srcRoot == null || FileUtil.isParentOf (dir, srcRoot));
         }
     
-        private void presetSecondPanel(FileObject fo) {
+        private void presetSecondPanel(FileObject fo, String sourceRoot) {
             FileObject guessFO;
             String webPages = ""; //NOI18N
             String javaSources = ""; //NOI18N
@@ -430,7 +429,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             if (guessFO != null)
                 libraries = FileUtil.toFile(guessFO).getPath();
             
-            ((ImportWebLocationsVisual) panels[1].getComponent()).initValues(webPages, javaSources, libraries);
+            ((ImportWebLocationsVisual) panels[1].getComponent()).initValues(sourceRoot, webPages, javaSources, libraries);
         }
         
         //extra finish dialog        
