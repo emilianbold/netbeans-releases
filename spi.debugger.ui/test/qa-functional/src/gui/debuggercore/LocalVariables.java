@@ -30,24 +30,25 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 import org.netbeans.junit.NbTestSuite;
 
 public class LocalVariables extends JellyTestCase {
     
-    private String  sampleDir = System.getProperty("netbeans.user") + File.separator + "sampledir";
-    
-    private static String newBreakpointItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_AddBreakpoint");
-    private static String newBreakpointTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Breakpoint_Title");
-    private static String finishSessionsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Finish_action_name");
-    private static String startSessionItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.resources.Bundle", "Menu/Debug/StartSession");
-    private static String runInDebuggerItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Start_action_name");
-    
-    private static String debuggerItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Debug");
-    
-    private static String debuggerFinishedMsg = Bundle.getStringTrimmed("org.netbeans.modules.debugger.multisession.Bundle", "CTL_Debugger_end");
-    private static String debuggerFinishedTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.multisession.Bundle", "CTL_Finish_debugging_dialog");
+//    private String  sampleDir = System.getProperty("netbeans.user") + File.separator + "sampledir";
+//    
+//    private static String newBreakpointItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_AddBreakpoint");
+//    private static String newBreakpointTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Breakpoint_Title");
+//    private static String finishSessionsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Finish_action_name");
+//    private static String startSessionItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.resources.Bundle", "Menu/Debug/StartSession");
+//    private static String runInDebuggerItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Start_action_name");
+//    
+//    private static String debuggerItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Debug");
+//    
+//    private static String debuggerFinishedMsg = Bundle.getStringTrimmed("org.netbeans.modules.debugger.multisession.Bundle", "CTL_Debugger_end");
+//    private static String debuggerFinishedTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.multisession.Bundle", "CTL_Finish_debugging_dialog");
     
     public LocalVariables(String name) {
         super(name);
@@ -81,46 +82,45 @@ public class LocalVariables extends JellyTestCase {
     
     public void testLocalVariablesPresence() {
         
-        Node repositoryRootNode = RepositoryTabOperator.invoke().getRootNode();
-        JavaNode javaNode = new JavaNode(repositoryRootNode.tree(), 
-            Utilities.getApplicationFileSystem() + "|" + "DebuggerTestApplication"); // NOI18N
+        TopComponentOperator projectsTabOper = new TopComponentOperator(Utilities.projectsTitle);
+        Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
+
+        JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
         javaNode.select();
-        javaNode.performPopupActionNoBlock("Edit");
-                
-        EditorOperator editorOperator = new EditorOperator("DebuggerTestApplication"); // NOI18N
-        new EventTool().waitNoEvent(1000); // XXX
-        editorOperator.setCaretPosition(60,1);
+        javaNode.performPopupActionNoBlock("Open");
         
-        new ActionNoBlock(debuggerItem + "|" + newBreakpointItem, null).perform();
-        NbDialogOperator dialog = new NbDialogOperator(newBreakpointTitle);
-        new JComboBoxOperator(dialog, 1).selectItem("Line");
-        new JTextFieldOperator(dialog, 0).typeText(""); // NOI18N
-        new JTextFieldOperator(dialog, 1).typeText("DebuggerTestApplication"); // NOI18N
-        new JTextFieldOperator(dialog, 2).typeText("60"); // NOI18N
-        dialog.ok();
+        EditorOperator editorOperator = new EditorOperator("MemoryView.java");
+        new EventTool().waitNoEvent(1000);
         
-        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);        
+        // create new line breakpoint
+        editorOperator.setCaretPosition(111, 1);
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
+        
+        // test if breakpoint exists in breakpoints view
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
         TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
         
         int rowNumber = 0;
         boolean found = false;
+        
         while ((rowNumber < jTableOperator.getRowCount()) && (!found)) {
-            if ("Line DebuggerTestApplication.java:60".equals(jTableOperator.getValueAt(rowNumber,0).toString()) ) {
+            if ("Line MemoryView.java:111".equals(jTableOperator.getValueAt(rowNumber, 0).toString()) ) {
                 found = true;
             };
             rowNumber++;
         }
         assertTrue("Line breakpoint was not created.", found);
-        // test if debugger stops at an assumed breakpoint line
-        
-        javaNode.select();
-        new Action(debuggerItem + "|" + startSessionItem + "|" + runInDebuggerItem, null).perform();
-        MainWindowOperator mwo = MainWindowOperator.getDefault();
-        mwo.waitStatusText("Breakpoint reached at line 60 in class DebuggerTestApplication by thread main.");
+        breakpointsOper.close();
 
-        new EventTool().waitNoEvent(1000); // XXX
+        // test if debugger stops at an assumed breakpoint line
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
+        MainWindowOperator mwo = MainWindowOperator.getDefault();
+        mwo.waitStatusText("Thread main stopped at MemoryView.java:111.");
+
+        new EventTool().waitNoEvent(1000);
         
+        // show local variables view and check values
         Utilities.showDebuggerView(Utilities.localVarsViewTitle);
         TopComponentOperator localVarsOper = new TopComponentOperator(Utilities.localVarsViewTitle);
         jTableOperator = new JTableOperator(localVarsOper);
@@ -128,12 +128,8 @@ public class LocalVariables extends JellyTestCase {
         TreeTableOperator treeTableOperator = new TreeTableOperator((JTable) jTableOperator.getSource());
         new Node(treeTableOperator.tree(), "this").expand();
 	 	
-        String [] expectedLocalVariablesColumn_0 = {"this", "counter", "counterThread","counterThreadSuspended", 
-            "jButton1", "jButton2", "jLabel1", "jProgressBar1", "super"};
-        String [] expectedLocalVariablesColumn_1 = {"examples.colorpicker.ColorPicker", "javax.swing.JSlider", 
-            "examples.colorpicker.ColorPreview","javax.swing.JPanel", "javax.swing.JSlider", "javax.swing.JSlider", 
-            "javax.swing.JPanel", "javax.swing.JFrame" };
-            
+        String [] expectedLocalVariablesColumn_0 = {"this", "r", "free","total","taken" };
+        String [] expectedLocalVariablesColumn_1 = {"MemoryView", "Runtime", "long", "long", "int"};
         for (int i = 0; i < expectedLocalVariablesColumn_0.length; i++) {
             rowNumber = 0;
             found = false;
@@ -143,20 +139,16 @@ public class LocalVariables extends JellyTestCase {
                 };
                 rowNumber++;
             }
-           assertTrue("Some Local Variable (" + expectedLocalVariablesColumn_0[i] + ") was not displayed", found);
+           assertTrue("Local Variable \"" + expectedLocalVariablesColumn_0[i] + "\" was not displayed", found);
         }                        
 
-        new ActionNoBlock(debuggerItem + "|" + finishSessionsItem, null).perform();
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            dialog = new NbDialogOperator(debuggerFinishedTitle);
-            dialog.ok();
+            mwo.waitStatusText("User program finished");
         } catch (TimeoutExpiredException tee) {
-            System.out.println("Dialog - Finish Debugging Session was not displayed.");
+            System.out.println("Debugging session was not killed.");
             throw(tee);
         }
-        mwo.waitStatusText(debuggerFinishedMsg);
- 
     }
-    
 }

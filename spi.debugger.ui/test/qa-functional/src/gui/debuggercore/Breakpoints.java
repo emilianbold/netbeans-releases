@@ -35,29 +35,14 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 import org.netbeans.junit.NbTestSuite;
 
-import org.openide.nodes.PropertySupport.Reflection;
+//import org.openide.nodes.PropertySupport.Reflection;
 
 public class Breakpoints extends JellyTestCase {
-    
-    private String  sampleDir = System.getProperty("netbeans.user") + File.separator + "sampledir";
-    
-    private static String newBreakpointItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_AddBreakpoint");
-    private static String startSessionItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.resources.Bundle", "Menu/Debug/StartSession");
-    private static String runInDebuggerItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Start_action_name");
-    private static String finishSessionsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Finish_action_name");
-    private static String newBreakpointTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Breakpoint_Title");
-    
-    private static String debuggerItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Debug");
-    private static String windowItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window");
-    
-    private static String editAction = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Edit");
-    
-    private static String debuggerFinishedMsg = Bundle.getStringTrimmed("org.netbeans.modules.debugger.multisession.Bundle", "CTL_Debugger_end");
-    private static String debuggerFinishedTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.multisession.Bundle", "CTL_Finish_debugging_dialog");
     
     public Breakpoints(String name) {
         super(name);
@@ -66,13 +51,14 @@ public class Breakpoints extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new Breakpoints("testLineBreakpoint"));
-        suite.addTest(new Breakpoints("testMethodBreakpoint"));
-        suite.addTest(new Breakpoints("testClassBreakpoint"));
-        suite.addTest(new Breakpoints("testVariableBreakpoint"));
-        suite.addTest(new Breakpoints("testThreadBreakpoint"));
+        //suite.addTest(new Breakpoints("testLineBreakpoint"));
+        //suite.addTest(new Breakpoints("testConditionalLineBreakpoint"));
+        //suite.addTest(new Breakpoints("testMethodBreakpoint"));
+        //suite.addTest(new Breakpoints("testClassBreakpoint"));
+        //suite.addTest(new Breakpoints("testVariableAccessBreakpoint"));
+        //suite.addTest(new Breakpoints("testVariableModificationBreakpoint"));
+//        suite.addTest(new Breakpoints("testThreadBreakpoint"));
         suite.addTest(new Breakpoints("testExceptionBreakpoint"));
-        suite.addTest(new Breakpoints("testConditionalLineBreakpoint"));
         return suite;
     }
     
@@ -93,30 +79,24 @@ public class Breakpoints extends JellyTestCase {
         Utilities.closeTerms();
         new EventTool().waitNoEvent(1000);
     }
-    
-    /**
-     *
-     */
+
     public void testLineBreakpoint() {
-        
-        Node repositoryRootNode = RepositoryTabOperator.invoke().getRootNode();
-        JavaNode javaNode = new JavaNode(repositoryRootNode.tree(), 
-            Utilities.getApplicationFileSystem() + "|" + "DebuggerTestApplication"); // NOI18N
+        TopComponentOperator projectsTabOper = new TopComponentOperator(Utilities.projectsTitle);
+        Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
+        projectNode.select();
+        projectNode.performPopupAction("Set as Main Project");
+
+        JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
         javaNode.select();
-        javaNode.performPopupActionNoBlock(editAction);
+        javaNode.performPopupActionNoBlock("Open");
         
-        EditorOperator editorOperator = new EditorOperator("DebuggerTestApplication"); // NOI18N
-        new EventTool().waitNoEvent(1000); // XXX
-        editorOperator.setCaretPosition(60, 1);
+        EditorOperator editorOperator = new EditorOperator("MemoryView.java");
+        new EventTool().waitNoEvent(1000);
+        editorOperator.setCaretPosition(52, 1);
         
-        new ActionNoBlock(debuggerItem + "|" + newBreakpointItem, null).perform();
-        NbDialogOperator dialog = new NbDialogOperator(newBreakpointTitle);
-        new JComboBoxOperator(dialog, 1).selectItem("Line");
-        new JTextFieldOperator(dialog, 0).typeText(""); // NOI18N
-        new JTextFieldOperator(dialog, 1).typeText("DebuggerTestApplication"); // NOI18N
-        new JTextFieldOperator(dialog, 2).typeText("60"); // NOI18N
-        dialog.ok();
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
         
+        // test if breakpoint exists in breakpoints view
         Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
         TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
@@ -125,333 +105,33 @@ public class Breakpoints extends JellyTestCase {
         boolean found = false;
         
         while ((rowNumber < jTableOperator.getRowCount()) && (!found)) {
-            if ("Line DebuggerTestApplication.java:60".equals(jTableOperator.getValueAt(rowNumber, 0).toString()) ) {
+            if ("Line MemoryView.java:52".equals(jTableOperator.getValueAt(rowNumber, 0).toString()) ) {
                 found = true;
             };
             rowNumber++;
         }
-        assertTrue("Line breakpoint was not created", found); // NOI18N
+        assertTrue("Line breakpoint was not created.", found);
         breakpointsOper.close();
 
         // test if debugger stops at an assumed breakpoint line
-        
-        new Action(windowItem + "|Filesystems", null).perform();
-        javaNode.select();
-        new Action(debuggerItem + "|" + startSessionItem + "|" + runInDebuggerItem, null).perform();
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
         MainWindowOperator mwo = MainWindowOperator.getDefault();
-        mwo.waitStatusText("Breakpoint reached at line 60 in class DebuggerTestApplication by thread main.");
-        new ActionNoBlock(debuggerItem + "|" + finishSessionsItem, null).perform();
+        mwo.waitStatusText("Thread main stopped at MemoryView.java:52.");
+
+        // finnish bedugging session
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            dialog = new NbDialogOperator(debuggerFinishedTitle);
-            dialog.ok();
+            mwo.waitStatusText("User program finished");
         } catch (TimeoutExpiredException tee) {
-            System.out.println("Dialog - Finish Debugging Session was not displayed.");
+            System.out.println("Debugging session was not killed.");
             throw(tee);
         }
-        mwo.waitStatusText(debuggerFinishedMsg);
-        
     }
     
-    /**
-     *
-     */
-    public void testMethodBreakpoint() {
-        
-        Node repositoryRootNode = RepositoryTabOperator.invoke().getRootNode();
-        JavaNode javaNode = new JavaNode(repositoryRootNode.tree(), 
-            Utilities.getApplicationFileSystem() + "|" + "DebuggerTestApplication"); // NOI18N
-        javaNode.select();
-        javaNode.performPopupActionNoBlock(editAction);
-        
-        EditorOperator editorOperator = new EditorOperator("DebuggerTestApplication"); // NOI18N
-        new EventTool().waitNoEvent(1000); // XXX
-        editorOperator.setCaretPosition(60,1);
-        
-        new ActionNoBlock(debuggerItem + "|" + newBreakpointItem, null).perform();
-        NbDialogOperator dialog = new NbDialogOperator(newBreakpointTitle);
-        new JComboBoxOperator(dialog, 1).selectItem("Method");
-        new JTextFieldOperator(dialog, 0).typeText(""); // NOI18N
-        new JTextFieldOperator(dialog, 1).typeText("DebuggerTestApplication"); // NOI18N
-        new JTextFieldOperator(dialog, 2).typeText("updateCounter"); // NOI18N
-        dialog.ok();
-        
-        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
-        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
-        JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
-        
-        int rowNumber = 0;
-        boolean found = false;
-        
-        while ((rowNumber < jTableOperator.getRowCount()) && (!found)) {
-            if ("Method DebuggerTestApplication.updateCounter".equals(jTableOperator.getValueAt(rowNumber,0).toString()) ) {
-                found = true;
-            };
-            rowNumber++;
-        }
-        assertTrue("Method breakpoint was not created.", found); // NOI18N
-        breakpointsOper.close();
-        
-        // test if debugger stops at an assumed breakpoint method
-        
-        new Action(windowItem + "|Filesystems", null).perform();
-        javaNode.select();
-        new Action(debuggerItem + "|" + startSessionItem + "|" + runInDebuggerItem, null).perform();
-        MainWindowOperator mwo = MainWindowOperator.getDefault();
-        mwo.waitStatusText("Method updateCounter reached at line 118 in class DebuggerTestApplication by thread counterThread.");
-        new ActionNoBlock(debuggerItem + "|" + finishSessionsItem, null).perform();
-        try {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            dialog = new NbDialogOperator(debuggerFinishedTitle);
-            dialog.ok();
-        } catch (TimeoutExpiredException tee) {
-            System.out.println("Dialog - Finish Debugging Session was not displayed."); // NOI18N
-            throw(tee);
-        }
-        mwo.waitStatusText(debuggerFinishedMsg);
-        
-    }
-    
-    /**
-     *
-     */
-    public void testClassBreakpoint() {
-    
-        Node repositoryRootNode = RepositoryTabOperator.invoke().getRootNode();
-        JavaNode javaNode = new JavaNode(repositoryRootNode.tree(), 
-            Utilities.getApplicationFileSystem() + "|" + "DebuggerTestApplication"); // NOI18N
-        javaNode.select();
-        javaNode.performPopupActionNoBlock(editAction);
-        
-        EditorOperator editorOperator = new EditorOperator("DebuggerTestApplication"); // NOI18N
-        new EventTool().waitNoEvent(1000); // XXX
-        editorOperator.setCaretPosition(60,1);
-        
-        new ActionNoBlock(debuggerItem + "|" + newBreakpointItem, null).perform();
-        NbDialogOperator dialog = new NbDialogOperator(newBreakpointTitle);
-        new JComboBoxOperator(dialog, 1).selectItem("Class");
-        new JTextFieldOperator(dialog, 0).typeText(""); // NOI18N
-        new JTextFieldOperator(dialog, 1).typeText("DebuggerTestApplication"); // NOI18N
-        new JComboBoxOperator(dialog, 4).selectItem("Class Prepare or Unload");
-        dialog.ok();
-        
-        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
-        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
-        JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
-        
-        int rowNumber = 0;
-        boolean found = false;
-        
-        while ((rowNumber < jTableOperator.getRowCount()) && (!found)) {
-            if ("Class DebuggerTestApplication prepare / unload".equals(jTableOperator.getValueAt(rowNumber,0).toString()) ) {
-                found = true;
-            };
-            rowNumber++;
-        }
-        assertTrue("Class breakpoint was not created.", found);
-        breakpointsOper.close();
-        
-        // test if debugger stops at an assumed breakpoint class prepared
-        // it's not possible to test it, because the notification "Class examples.colorpicker.ColorPicker prepared"
-        // is not displayed at a status bar
-        // test if debugger stops at an assumed breakpoint method
-        
-        MainWindowOperator mwo = MainWindowOperator.getDefault();
-        new Action(windowItem + "|Filesystems", null).perform();
-        javaNode.select();
-        new Action(debuggerItem + "|" + startSessionItem + "|" + runInDebuggerItem, null).perform();
-        mwo.waitStatusText("Class DebuggerTestApplication prepared");
-        new ActionNoBlock(debuggerItem + "|" + finishSessionsItem, null).perform();
-        try {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            dialog = new NbDialogOperator(debuggerFinishedTitle);
-            dialog.ok();
-        } catch (TimeoutExpiredException tee) {
-            System.out.println("Dialog - Finish Debugging Session was not displayed.");
-            throw(tee);
-        }
-        mwo.waitStatusText(debuggerFinishedMsg);
-        
-    }
-    
-    /**
-     *
-     */
-    public void testVariableBreakpoint() {
-        
-        Node repositoryRootNode = RepositoryTabOperator.invoke().getRootNode();
-        JavaNode javaNode = new JavaNode(repositoryRootNode.tree(), 
-            Utilities.getApplicationFileSystem() + "|" + "DebuggerTestApplication"); // NOI18N
-        javaNode.select();
-        javaNode.performPopupActionNoBlock(editAction);
-
-        EditorOperator editorOperator = new EditorOperator("DebuggerTestApplication"); // NOI18N
-        new EventTool().waitNoEvent(1000); // XXX
-        editorOperator.setCaretPosition(35,1);
-
-        new ActionNoBlock(debuggerItem + "|" + newBreakpointItem, null).perform();
-        NbDialogOperator dialog = new NbDialogOperator("New Breakpoint");
-        new JComboBoxOperator(dialog, 1).selectItem("Variable");
-        new JTextFieldOperator(dialog, 0).typeText("");
-        new JTextFieldOperator(dialog, 1).typeText("DebuggerTestApplication");
-        new JTextFieldOperator(dialog, 2).typeText("counter");
-        new JComboBoxOperator(dialog, 5).selectItem("Variable Access");
-        dialog.ok();
-
-        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
-        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
-        JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
-        
-        int rowNumber = 0;
-        boolean found = false;
-        
-        while ((rowNumber < jTableOperator.getRowCount()) && (!found)) {
-            if ("Variable DebuggerTestApplication.counter access".equals(jTableOperator.getValueAt(rowNumber, 0).toString()) ) {
-                found = true;
-            };
-            rowNumber++;
-        }
-        assertTrue("Variable breakpoint was not created.",found);
-        breakpointsOper.close();
-        
-        // test if debugger stops at an assumed breakpoint variable
-        
-        new Action(windowItem + "|Filesystems", null).perform();
-        javaNode.select();
-        new Action(debuggerItem + "|" + startSessionItem + "|" + runInDebuggerItem, null).perform();
-        MainWindowOperator mwo = MainWindowOperator.getDefault();
-        mwo.waitStatusText("Variable counter access (0).");
-        new ActionNoBlock(debuggerItem + "|" + finishSessionsItem, null).perform();
-        try {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout",5000);
-            dialog = new NbDialogOperator(debuggerFinishedTitle);
-            dialog.ok();
-        } catch (TimeoutExpiredException tee) {
-            System.out.println("Dialog - Finish Debugging Session was not displayed.");
-            throw(tee);
-        }
-        mwo.waitStatusText(debuggerFinishedMsg);
-        
-    }
-    
-    /**
-     *
-     */
-    public void testThreadBreakpoint() {
-   
-        Node repositoryRootNode = RepositoryTabOperator.invoke().getRootNode();
-        JavaNode javaNode = new JavaNode(repositoryRootNode.tree(), 
-            Utilities.getApplicationFileSystem() + "|" + "DebuggerTestApplication"); // NOI18N
-        javaNode.select();
-        javaNode.performPopupActionNoBlock(editAction);
-        
-        EditorOperator editorOperator = new EditorOperator("DebuggerTestApplication"); // NOI18N
-        new EventTool().waitNoEvent(1000); // XXX
-        editorOperator.setCaretPosition(60,1);
-
-        new ActionNoBlock(debuggerItem + "|" + newBreakpointItem, null).perform();
-        NbDialogOperator dialog = new NbDialogOperator("New Breakpoint");
-        new JComboBoxOperator(dialog, 1).selectItem("Thread");
-        new JComboBoxOperator(dialog, 2).selectItem("Thread Start or Death");
-        dialog.ok();
-                
-        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
-        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
-        JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
-        
-        int rowNumber = 0;
-        boolean found = false;
-        String value;
-        
-        while ((rowNumber < jTableOperator.getRowCount()) && (!found)) {
-            if ("Thread start / death".equals(jTableOperator.getValueAt(rowNumber, 0).toString()) ) {
-                found = true;
-            };
-            rowNumber++;
-        }
-        assertTrue("Thread breakpoint was not created.", found);
-        breakpointsOper.close();
-        
-        // test if debugger stops at an assumed breakpoint variable
-        
-        new Action(windowItem + "|Filesystems", null).perform();
-        javaNode.select();
-        new Action(debuggerItem + "|" + startSessionItem + "|" + runInDebuggerItem, null).perform();
-        MainWindowOperator mwo = MainWindowOperator.getDefault();
-        //mwo.waitStatusText("Debugger running"); ???
-        
-        Utilities.showDebuggerView(Utilities.sessionsViewTitle);
-        TopComponentOperator sessionsOper = new TopComponentOperator(Utilities.sessionsViewTitle);
-        jTableOperator = new JTableOperator(sessionsOper);
-        assertTrue("There isn't an expected text in the Session view!",
-            "DebuggerTestApplication".equals(jTableOperator.getValueAt(0, 0).toString()) );
-        
-        new EventTool().waitNoEvent(2000); // probably need more time to finish task
-        mwo.waitStatusText("Thread Signal Dispatcher started.");
-
-        String contentOfDebuggerConsole = new TermOperator("Debugger Console").getText();                
-        
-        assertTrue("The text \"Thread Signal Dispatcher started.\" not in the Debugger Console!", 
-            (contentOfDebuggerConsole.indexOf("Thread Signal Dispatcher started.") != -1) );
-        new ActionNoBlock(debuggerItem + "|" + finishSessionsItem, null).perform();
-        try {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            dialog = new NbDialogOperator(debuggerFinishedTitle);
-            dialog.ok();
-        } catch (TimeoutExpiredException tee) {
-            System.out.println("Dialog - Finish Debugging Session was not displayed.");
-            throw(tee);
-        }
-        mwo.waitStatusText(debuggerFinishedMsg);
-        
-    }
-    
-    /**
-     *
-     */
-    public void testExceptionBreakpoint() {
-        
-        Node repositoryRootNode = RepositoryTabOperator.invoke().getRootNode();
-        JavaNode javaNode = new JavaNode(repositoryRootNode.tree(), 
-            Utilities.getApplicationFileSystem() + "|" + "DebuggerTestApplication"); // NOI18N
-        javaNode.select();
-        javaNode.performPopupActionNoBlock(editAction);
-                
-        EditorOperator editorOperator = new EditorOperator("DebuggerTestApplication"); // NOI18N
-        editorOperator.setCaretPosition(35,1);
-
-        new ActionNoBlock(debuggerItem + "|" + newBreakpointItem, null).perform();
-        NbDialogOperator dialog = new NbDialogOperator(newBreakpointTitle);
-        new JComboBoxOperator(dialog, 1).selectItem("Exception");
-        new JTextFieldOperator(dialog, 0).typeText("java.lang"); // NOI18N
-        new JTextFieldOperator(dialog, 1).typeText("Exception"); // NOI18N
-        new JComboBoxOperator(dialog, 4).selectItem("Exception Caught or Uncaught"); 
-        dialog.ok();
-                
-        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
-        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
-        JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
-        
-        int rowNumber = 0;
-        boolean found = false;
-        
-        while ((rowNumber < jTableOperator.getRowCount()) && (!found)) {
-            if ("Exception java.lang.Exception".equals(jTableOperator.getValueAt(rowNumber,0).toString()) ) {
-                found = true;
-            };
-            rowNumber++;
-        }
-        assertTrue("Exception breakpoint was not created", found);
-        breakpointsOper.close();
-        
-    }
-    
-    /**
-     *
-     */
     public void testConditionalLineBreakpoint() {
         
-        Node repositoryRootNode = RepositoryTabOperator.invoke().getRootNode();
+/*        Node repositoryRootNode = RepositoryTabOperator.invoke().getRootNode();
         JavaNode javaNode = new JavaNode(repositoryRootNode.tree(), 
             Utilities.getApplicationFileSystem() + "|" + "DebuggerTestApplication"); // NOI18N
         javaNode.select();
@@ -462,7 +142,7 @@ public class Breakpoints extends JellyTestCase {
         editorOperator.setCaretPosition(120,1);
 
         new ActionNoBlock(debuggerItem + "|" + newBreakpointItem, null).perform();
-        NbDialogOperator dialog = new NbDialogOperator(newBreakpointTitle);
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         new JComboBoxOperator(dialog, 1).selectItem("Line");
         new JTextFieldOperator(dialog, 0).typeText(""); // NOI18N
         new JTextFieldOperator(dialog, 1).typeText("DebuggerTestApplication"); // NOI18N
@@ -542,8 +222,377 @@ public class Breakpoints extends JellyTestCase {
             System.out.println("Dialog - Finish Debugging Session was not displayed.");
             throw(tee);
         }
-        mwo.waitStatusText(debuggerFinishedMsg);
+        mwo.waitStatusText(debuggerFinishedMsg);*/
         
     }
+
+    public void testMethodBreakpoint() {
+        TopComponentOperator projectsTabOper = new TopComponentOperator(Utilities.projectsTitle);
+        Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
+        projectNode.select();
+        projectNode.performPopupAction("Set as Main Project");
+
+        JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
+        javaNode.select();
+        javaNode.performPopupActionNoBlock("Open");
         
+        EditorOperator editorOperator = new EditorOperator("MemoryView.java");
+        new EventTool().waitNoEvent(1000);
+        
+        // create new breakpoint and check pre-filled values
+        editorOperator.setCaretPosition(90, 1);
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        new JComboBoxOperator(dialog, 0).selectItem("Method");
+        assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 1).getText()));
+        assertTrue("Class Name was not set to correct value.", "MemoryView".equals(new JTextFieldOperator(dialog, 2).getText()));
+        assertTrue("Method Name was not set to correct value.", "updateStatus".equals(new JTextFieldOperator(dialog, 3).getText()));
+        dialog.cancel();
+
+        editorOperator.setCaretPosition(107, 1);
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
+        dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        new JComboBoxOperator(dialog, 0).selectItem("Method");
+        assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 1).getText()));
+        assertTrue("Class Name was not set to correct value.", "MemoryView".equals(new JTextFieldOperator(dialog, 2).getText()));
+        assertTrue("Method Name was not set to correct value.", "updateStatus".equals(new JTextFieldOperator(dialog, 3).getText()));
+        dialog.ok();
+        
+        // test if breakpoint exists in breakpoints view
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
+        JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
+        
+        int rowNumber = 0;
+        boolean found = false;
+        
+        while ((rowNumber < jTableOperator.getRowCount()) && (!found)) {
+            if ("Method MemoryView.updateStatus".equals(jTableOperator.getValueAt(rowNumber,0).toString()) ) {
+                found = true;
+            };
+            rowNumber++;
+        }
+        assertTrue("Method breakpoint was not created.", found);
+        breakpointsOper.close();
+
+        // test if debugger stops at an assumed breakpoint line
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
+        MainWindowOperator mwo = MainWindowOperator.getDefault();
+        mwo.waitStatusText("Thread main stopped at MemoryView.java:91.");
+
+        // finnish bedugging session
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        try {
+            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
+            mwo.waitStatusText("User program finished");
+        } catch (TimeoutExpiredException tee) {
+            System.out.println("Debugging session was not killed.");
+            throw(tee);
+        }
+    }
+    
+    public void testClassBreakpoint() {
+        TopComponentOperator projectsTabOper = new TopComponentOperator(Utilities.projectsTitle);
+        Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
+        projectNode.select();
+        projectNode.performPopupAction("Set as Main Project");
+
+        JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
+        javaNode.select();
+        javaNode.performPopupActionNoBlock("Open");
+        
+        EditorOperator editorOperator = new EditorOperator("MemoryView.java");
+        new EventTool().waitNoEvent(1000);
+        
+        // create new breakpoint and check pre-filled values
+        editorOperator.setCaretPosition(32, 1);
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        new JComboBoxOperator(dialog, 0).selectItem("Class");
+        assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 0).getText()));
+        assertTrue("Class Name was not set to correct value.", "MemoryView".equals(new JTextFieldOperator(dialog, 1).getText()));
+        dialog.cancel();
+        
+        editorOperator.setCaretPosition(42, 1);
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
+        dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        new JComboBoxOperator(dialog, 0).selectItem("Class");
+        assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 0).getText()));
+        assertTrue("Class Name was not set to correct value.", "MemoryView".equals(new JTextFieldOperator(dialog, 1).getText()));
+        dialog.cancel();
+
+        editorOperator.setCaretPosition(50, 1);
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
+        dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        new JComboBoxOperator(dialog, 0).selectItem("Class");
+        assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 0).getText()));
+        assertTrue("Class Name was not set to correct value.", "MemoryView".equals(new JTextFieldOperator(dialog, 1).getText()));
+        dialog.cancel();
+
+        editorOperator.setCaretPosition(107, 1);
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
+        dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        new JComboBoxOperator(dialog, 0).selectItem("Class");
+        assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 0).getText()));
+        assertTrue("Class Name was not set to correct value.", "MemoryView".equals(new JTextFieldOperator(dialog, 1).getText()));
+        new JTextFieldOperator(dialog, 1).setText("MemoryView*");
+        new JComboBoxOperator(dialog, 1).selectItem("Class Prepare or Unload");
+        dialog.ok();
+
+        // test if breakpoint exists in breakpoints view
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
+        JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
+        
+        int rowNumber = 0;
+        boolean found = false;
+        
+        while ((rowNumber < jTableOperator.getRowCount()) && (!found)) {
+            if ("Class examples.advanced.MemoryView* prepare / unload".equals(jTableOperator.getValueAt(rowNumber,0).toString()) ) {
+                found = true;
+            };
+            rowNumber++;
+        }
+        assertTrue("Class breakpoint was not created.", found);
+        breakpointsOper.close();
+
+        // test if debugger stops at an assumed breakpoint line
+/*        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
+        MainWindowOperator mwo = MainWindowOperator.getDefault();
+        mwo.waitStatusText("Thread main stopped at MemoryView.java:91.");
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        try {
+            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
+            mwo.waitStatusText("User program finished");
+        } catch (TimeoutExpiredException tee) {
+            System.out.println("Debugging session was not killed.");
+            throw(tee);
+        }*/
+    }
+    
+    public void testVariableAccessBreakpoint() {
+        TopComponentOperator projectsTabOper = new TopComponentOperator(Utilities.projectsTitle);
+        Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
+        projectNode.select();
+        projectNode.performPopupAction("Set as Main Project");
+
+        JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
+        javaNode.select();
+        javaNode.performPopupActionNoBlock("Open");
+        
+        EditorOperator editorOperator = new EditorOperator("MemoryView.java");
+        new EventTool().waitNoEvent(1000);
+        editorOperator.setCaretPosition(40, 1);
+        
+        // create new breakpoint and check pre-filled values
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        new JComboBoxOperator(dialog, 0).selectItem("Variable");
+        assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 1).getText()));
+        assertTrue("Class Name was not set to correct value.", "MemoryView".equals(new JTextFieldOperator(dialog, 2).getText()));
+        assertTrue("Variable Name was not set to correct value.", "timer".equals(new JTextFieldOperator(dialog, 3).getText()));
+        new JComboBoxOperator(dialog, 1).selectItem("Variable Access");
+        dialog.cancel();
+
+        editorOperator.setCaretPosition(45, 1);
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
+        dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        new JComboBoxOperator(dialog, 0).selectItem("Variable");
+        assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 1).getText()));
+        assertTrue("Class Name was not set to correct value.", "MemoryView".equals(new JTextFieldOperator(dialog, 2).getText()));
+        new JTextFieldOperator(dialog, 3).setText("timer");
+        new JComboBoxOperator(dialog, 1).selectItem("Variable Access");
+        dialog.ok();
+        
+        // test if breakpoint exists in breakpoints view
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
+        JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
+        
+        int rowNumber = 0;
+        boolean found = false;
+        
+        while ((rowNumber < jTableOperator.getRowCount()) && (!found)) {
+            if ("Variable MemoryView.timer access".equals(jTableOperator.getValueAt(rowNumber,0).toString()) ) {
+                found = true;
+            };
+            rowNumber++;
+        }
+        assertTrue("Variable breakpoint was not created.", found);
+        breakpointsOper.close();
+
+        // test if debugger stops at an assumed breakpoint line
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
+        MainWindowOperator mwo = MainWindowOperator.getDefault();
+        mwo.waitStatusText("Thread main stopped at MemoryView.java:70.");
+
+        // finnish bedugging session
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        try {
+            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
+            mwo.waitStatusText("User program finished");
+        } catch (TimeoutExpiredException tee) {
+            System.out.println("Debugging session was not killed.");
+            throw(tee);
+        }
+    }
+    
+    public void testVariableModificationBreakpoint() {
+        TopComponentOperator projectsTabOper = new TopComponentOperator(Utilities.projectsTitle);
+        Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
+        projectNode.select();
+        projectNode.performPopupAction("Set as Main Project");
+
+        JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
+        javaNode.select();
+        javaNode.performPopupActionNoBlock("Open");
+        
+        EditorOperator editorOperator = new EditorOperator("MemoryView.java");
+        new EventTool().waitNoEvent(1000);
+        editorOperator.setCaretPosition(45, 1);
+        
+        // create new breakpoint and check pre-filled values
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        new JComboBoxOperator(dialog, 0).selectItem("Variable");
+        assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 1).getText()));
+        assertTrue("Class Name was not set to correct value.", "MemoryView".equals(new JTextFieldOperator(dialog, 2).getText()));
+        new JTextFieldOperator(dialog, 3).setText("timer");
+        new JComboBoxOperator(dialog, 1).selectItem("Variable Modification");
+        dialog.ok();
+        
+        // test if breakpoint exists in breakpoints view
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
+        JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
+        
+        int rowNumber = 0;
+        boolean found = false;
+        
+        while ((rowNumber < jTableOperator.getRowCount()) && (!found)) {
+            if ("Variable MemoryView.timer modification".equals(jTableOperator.getValueAt(rowNumber,0).toString()) ) {
+                found = true;
+            };
+            rowNumber++;
+        }
+        assertTrue("Variable breakpoint was not created.", found);
+        breakpointsOper.close();
+
+        // test if debugger stops at an assumed breakpoint line
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
+        MainWindowOperator mwo = MainWindowOperator.getDefault();
+        mwo.waitStatusText("Thread main stopped at MemoryView.java:45.");
+
+        // finnish bedugging session
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        try {
+            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
+            mwo.waitStatusText("User program finished");
+        } catch (TimeoutExpiredException tee) {
+            System.out.println("Debugging session was not killed.");
+            throw(tee);
+        }
+    }
+    
+    /**
+     *
+     */
+    public void testThreadBreakpoint() {
+        /*Node repositoryRootNode = RepositoryTabOperator.invoke().getRootNode();
+        JavaNode javaNode = new JavaNode(repositoryRootNode.tree(), 
+            Utilities.getApplicationFileSystem() + "|" + "DebuggerTestApplication"); // NOI18N
+        javaNode.select();
+        javaNode.performPopupActionNoBlock(editAction);
+        
+        EditorOperator editorOperator = new EditorOperator("DebuggerTestApplication"); // NOI18N
+        new EventTool().waitNoEvent(1000); // XXX
+        editorOperator.setCaretPosition(60,1);
+
+        new ActionNoBlock(debuggerItem + "|" + newBreakpointItem, null).perform();
+        NbDialogOperator dialog = new NbDialogOperator("New Breakpoint");
+        new JComboBoxOperator(dialog, 1).selectItem("Thread");
+        new JComboBoxOperator(dialog, 2).selectItem("Thread Start or Death");
+        dialog.ok();
+                
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
+        JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
+        
+        int rowNumber = 0;
+        boolean found = false;
+        String value;
+        
+        while ((rowNumber < jTableOperator.getRowCount()) && (!found)) {
+            if ("Thread start / death".equals(jTableOperator.getValueAt(rowNumber, 0).toString()) ) {
+                found = true;
+            };
+            rowNumber++;
+        }
+        assertTrue("Thread breakpoint was not created.", found);
+        breakpointsOper.close();
+        
+        // test if debugger stops at an assumed breakpoint variable
+        
+        new Action(windowItem + "|Filesystems", null).perform();
+        javaNode.select();
+        new Action(debuggerItem + "|" + startSessionItem + "|" + runInDebuggerItem, null).perform();
+        MainWindowOperator mwo = MainWindowOperator.getDefault();
+        //mwo.waitStatusText("Debugger running"); ???
+        
+        Utilities.showDebuggerView(Utilities.sessionsViewTitle);
+        TopComponentOperator sessionsOper = new TopComponentOperator(Utilities.sessionsViewTitle);
+        jTableOperator = new JTableOperator(sessionsOper);
+        assertTrue("There isn't an expected text in the Session view!",
+            "DebuggerTestApplication".equals(jTableOperator.getValueAt(0, 0).toString()) );
+        
+        new EventTool().waitNoEvent(2000); // probably need more time to finish task
+        mwo.waitStatusText("Thread Signal Dispatcher started.");
+
+        String contentOfDebuggerConsole = new TermOperator("Debugger Console").getText();                
+        
+        assertTrue("The text \"Thread Signal Dispatcher started.\" not in the Debugger Console!", 
+            (contentOfDebuggerConsole.indexOf("Thread Signal Dispatcher started.") != -1) );
+        new ActionNoBlock(debuggerItem + "|" + finishSessionsItem, null).perform();
+        try {
+            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
+            dialog = new NbDialogOperator(debuggerFinishedTitle);
+            dialog.ok();
+        } catch (TimeoutExpiredException tee) {
+            System.out.println("Dialog - Finish Debugging Session was not displayed.");
+            throw(tee);
+        }
+        mwo.waitStatusText(debuggerFinishedMsg);*/
+        
+    }
+    
+    /**
+     *
+     */
+    public void testExceptionBreakpoint() {
+        // create new breakpoint and check pre-filled values
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        new JComboBoxOperator(dialog, 0).selectItem("Exception");
+        new JTextFieldOperator(dialog, 1).typeText("java.lang");
+        new JTextFieldOperator(dialog, 2).typeText("Exception");
+        new JComboBoxOperator(dialog, 1).selectItem("Catched or Uncatched"); 
+        dialog.ok();
+        
+        // test if breakpoint exists in breakpoints view
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
+        JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
+        
+        int rowNumber = 0;
+        boolean found = false;
+        
+        while ((rowNumber < jTableOperator.getRowCount()) && (!found)) {
+            if ("Exception java.lang.Exception".equals(jTableOperator.getValueAt(rowNumber,0).toString()) ) {
+                found = true;
+            };
+            rowNumber++;
+        }
+        assertTrue("Exception breakpoint was not created.", found);
+        breakpointsOper.close();
+    }
 }

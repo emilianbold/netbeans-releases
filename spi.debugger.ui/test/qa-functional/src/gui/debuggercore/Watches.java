@@ -30,26 +30,12 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 import org.netbeans.junit.NbTestSuite;
 
 public class Watches extends JellyTestCase {
-    
-    private String  sampleDir = System.getProperty("netbeans.user") + File.separator + "sampledir";
-    
-    private static String newBreakpointItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_AddBreakpoint");
-    private static String newBreakpointTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Breakpoint_Title");
-    private static String debuggerItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Debug");
-    
-    private static String finishSessionsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Finish_action_name");
-    private static String debuggerFinishedMsg = Bundle.getStringTrimmed("org.netbeans.modules.debugger.multisession.Bundle", "CTL_Debugger_end");
-    private static String debuggerFinishedTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.multisession.Bundle", "CTL_Finish_debugging_dialog");
-    private static String startSessionItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.resources.Bundle", "Menu/Debug/StartSession");
-    private static String runInDebuggerItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Start_action_name");
-    
-    private static String newWatchTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Watch_Title");
-    private static String newWatchItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "AddWatch");
     
     public Watches(String name) {
         super(name);
@@ -84,64 +70,61 @@ public class Watches extends JellyTestCase {
      *
      */
     public void testAddWatch() {
-        
-        Node repositoryRootNode = RepositoryTabOperator.invoke().getRootNode();
-        JavaNode javaNode = new JavaNode(repositoryRootNode.tree(), 
-            Utilities.getApplicationFileSystem() + "|" + "DebuggerTestApplication"); // NOI18N
+        TopComponentOperator projectsTabOper = new TopComponentOperator(Utilities.projectsTitle);
+        Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
+        projectNode.select();
+        projectNode.performPopupAction("Set as Main Project");
+
+        JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
         javaNode.select();
-        javaNode.performPopupActionNoBlock("Edit");
+        javaNode.performPopupAction("Open");
         
-        EditorOperator editorOperator = new EditorOperator("DebuggerTestApplication"); // NOI18N
+        EditorOperator editorOperator = new EditorOperator("MemoryView.java");
         new EventTool().waitNoEvent(1000);
-        editorOperator.setCaretPosition(60,1);
+        editorOperator.setCaretPosition(103, 1);
         
-        new ActionNoBlock(debuggerItem + "|" + newWatchItem, null).perform();
-        NbDialogOperator dialog = new NbDialogOperator(newWatchTitle);
-        new JTextFieldOperator(dialog, 0).typeText("jPanel1"); // NOI18N
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
+        
+        // create new watches
+        new ActionNoBlock(Utilities.runMenu + "|" + Utilities.newWatchItem, null).perform();
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.newWatchTitle);
+        new JTextFieldOperator(dialog, 0).typeText("free");
         dialog.ok();
         new EventTool().waitNoEvent(500);
         
-        new ActionNoBlock(debuggerItem + "|" + newWatchItem, null).perform();
-        dialog = new NbDialogOperator(newWatchTitle);
-        new JTextFieldOperator(dialog, 0).typeText("jButton1"); // NOI18N
+        new ActionNoBlock(Utilities.runMenu + "|" + Utilities.newWatchItem, null).perform();
+        dialog = new NbDialogOperator(Utilities.newWatchTitle);
+        new JTextFieldOperator(dialog, 0).typeText("taken");
         dialog.ok();
         new EventTool().waitNoEvent(500);
         
-        new ActionNoBlock(debuggerItem + "|" + newWatchItem, null).perform();
-        dialog = new NbDialogOperator(newWatchTitle);
-        new JTextFieldOperator(dialog, 0).typeText("jButton2"); // NOI18N
+        new ActionNoBlock(Utilities.runMenu + "|" + Utilities.newWatchItem, null).perform();
+        dialog = new NbDialogOperator(Utilities.newWatchTitle);
+        new JTextFieldOperator(dialog, 0).typeText("total");
         dialog.ok();
         new EventTool().waitNoEvent(500);
-        
-        new ActionNoBlock(debuggerItem + "|" + newBreakpointItem, null).perform();
-        dialog = new NbDialogOperator(newBreakpointTitle);
-        new JComboBoxOperator(dialog, 1).selectItem("Line");
-        new JTextFieldOperator(dialog, 0).typeText(""); // NOI18N
-        new JTextFieldOperator(dialog, 1).typeText("DebuggerTestApplication"); // NOI18N
-        new JTextFieldOperator(dialog, 2).typeText("60"); // NOI18N
-        dialog.ok();
-     
-        new EventTool().waitNoEvent(1000);
-        
+
+        // test if breakpoint exists in breakpoints view
         Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
         TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
         
         int rowNumber = 0;
         boolean found = false;
+        
         while ((rowNumber < jTableOperator.getRowCount()) && (!found)) {
-            if ("Line DebuggerTestApplication.java:60".equals(jTableOperator.getValueAt(rowNumber,0).toString()) ) {
+            if ("Line MemoryView.java:103".equals(jTableOperator.getValueAt(rowNumber, 0).toString()) ) {
                 found = true;
             };
             rowNumber++;
         }
         assertTrue("Line breakpoint was not created.", found);
-        // test if debugger stops at an assumed breakpoint line
+        breakpointsOper.close();
         
-        javaNode.select();
-        new Action(debuggerItem + "|" + startSessionItem + "|" + runInDebuggerItem, null).perform();
+        // test if debugger stops at an assumed breakpoint line
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
         MainWindowOperator mwo = MainWindowOperator.getDefault();
-        mwo.waitStatusText("Breakpoint reached at line 60 in class DebuggerTestApplication by thread main.");
+        mwo.waitStatusText("Thread main stopped at MemoryView.java:103.");
         
         // wait till all views are refreshed, ugly!
         new EventTool().waitNoEvent(1000);
@@ -150,7 +133,7 @@ public class Watches extends JellyTestCase {
         TopComponentOperator watchesOper = new TopComponentOperator(Utilities.watchesViewTitle);
         jTableOperator = new JTableOperator(watchesOper);
         
-        String [] expectedWatches = {"jPanel1", "jButton1", "jButton2"};
+        String [] expectedWatches = {"free", "taken", "total"};
         
         for (int i = 0; i < expectedWatches.length; i++) {            
             rowNumber = 0;
@@ -161,19 +144,17 @@ public class Watches extends JellyTestCase {
                 };
                 rowNumber++;
             }
-            assertTrue("Some watch (" + expectedWatches[i] + ") was not created", found); // NOI18N
+            assertTrue("Watch \"" + expectedWatches[i] + "\" was not created", found);
         }                
-        new ActionNoBlock(debuggerItem + "|" + finishSessionsItem, null).perform();
+
+        // finnish bedugging session
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            dialog = new NbDialogOperator(debuggerFinishedTitle);
-            dialog.ok();
+            mwo.waitStatusText("User program finished");
         } catch (TimeoutExpiredException tee) {
-            System.out.println("Dialog - Finish Debugging Session was not displayed.");
+            System.out.println("Debugging session was not killed.");
             throw(tee);
         }
-        mwo.waitStatusText(debuggerFinishedMsg);
-        
     }
-    
 }

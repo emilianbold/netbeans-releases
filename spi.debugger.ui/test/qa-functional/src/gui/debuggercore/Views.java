@@ -36,7 +36,7 @@ import org.netbeans.junit.NbTestSuite;
 
 public class Views extends JellyTestCase {
     
-    private String  sampleDir = System.getProperty("netbeans.user") + File.separator + "sampledir";
+/*    private String  sampleDir = System.getProperty("netbeans.user") + File.separator + "sampledir";
     
     private static String newBreakpointItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_AddBreakpoint");
     private static String newBreakpointTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Breakpoint_Title");
@@ -49,7 +49,7 @@ public class Views extends JellyTestCase {
     private static String runInDebuggerItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Start_action_name");
     
     private static String newWatchTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Watch_Title");
-    private static String newWatchItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "AddWatch");
+    private static String newWatchItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "AddWatch");*/
     
     public Views(String name) {
         super(name);
@@ -83,11 +83,11 @@ public class Views extends JellyTestCase {
         
         String [] actionItems = new String [] { Utilities.localVarsItem, Utilities.watchesItem, 
             Utilities.callStackItem, Utilities.classesItem, Utilities.breakpointsItem, 
-            Utilities.sessionsItem, Utilities.threadsItem, Utilities.allInOneItem };
+            Utilities.sessionsItem, Utilities.threadsItem };
             
         String [] viewTitles = new String [] { Utilities.localVarsViewTitle, Utilities.watchesViewTitle, 
             Utilities.callStackViewTitle, Utilities.classesViewTitle, Utilities.breakpointsViewTitle,
-            Utilities.sessionsViewTitle, Utilities.threadsViewTitle, Utilities.allInOneViewTitle};
+            Utilities.sessionsViewTitle, Utilities.threadsViewTitle };
          
         TopComponentOperator [] viewsOpers = new TopComponentOperator[actionItems.length];
             

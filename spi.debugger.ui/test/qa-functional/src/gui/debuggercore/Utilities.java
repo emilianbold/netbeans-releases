@@ -32,84 +32,83 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+//import org.openide.filesystems.FileSystem;
+//import org.openide.filesystems.Repository;
 
 public class Utilities {
     
-    private String  sampleDir = System.getProperty("netbeans.user") + File.separator + "sampledir";
+    public static String windowMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window");
+    //public static String runMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Run");
+    public static String runMenu = "Run";
+    //public static String debugMenu = Bundle.getStringTrimmed("org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
+    public static String debugMenu = "Debug";
+
+    public static String toggleBreakpointItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Toggle_breakpoint");
+    public static String newBreakpointItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_AddBreakpoint");
+    public static String newWatchItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_New_Watch");
+    //public static String runInDebuggerItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Start_action_name");
+    public static String runInDebuggerItem = "Run Main Project in Debugger";
+    //public static String stepIntoItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "???");
+    public static String stepIntoItem = "Step Into";
+    public static String killSessionsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_KillAction_name");
+    public static String runToCursorItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Run_to_cursor_action_name");
     
-    public static String windowItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window");
-    public static String debuggerItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Debug");
+    public static String localVarsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_LocalVariablesAction");
+    public static String watchesItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_WatchesAction");
+    public static String callStackItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_CallStackAction");
+    //public static String classesItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_ClassesAction");
+    public static String classesItem = "Classes";
+    public static String breakpointsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_BreakpointsAction");
+    public static String sessionsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_SessionsAction");
+    public static String threadsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_ThreadsAction");
     
-    public static String debuggingItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
+    public static String localVarsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Variables_view");
+    public static String watchesViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Watches_view");
+    public static String callStackViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Call_stack_view");
+    public static String classesViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Classes_view");
+    public static String breakpointsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Breakpoints_view");
+    public static String sessionsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Sessions_view");
+    public static String threadsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Threads_view");
     
-    public static String localVarsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Variables_view");
-    public static String watchesViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Watches_view");
-    public static String callStackViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Call_stack_view");
-    public static String classesViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Classes_view");
-    public static String breakpointsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Breakpoints_view");
-    public static String sessionsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Sessions_view");
-    public static String threadsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_Threads_view");
-    public static String allInOneViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.nodes.Bundle", "CTL_All_in_one_view");
+    public static String newBreakpointTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Breakpoint_Title");
+    public static String newWatchTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_WatchDialog_Title");
+
+    public static String projectsTitle = Bundle.getString("org.netbeans.modules.project.ui.Bundle", "LBL_ProjectsLogicalTabAction_Name");
+    public static String testProjectName = "debugTestProject";
     
-    public static String localVarsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_LocalVariablesAction");
-    public static String watchesItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_WatchesAction");
-    public static String callStackItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_CallStackAction");
-    public static String classesItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_ClassesAction");
-    public static String breakpointsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_BreakpointsAction");
-    public static String sessionsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_SessionsAction");
-    public static String threadsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_ThreadsAction");
-    public static String allInOneItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_AllInOneAction");
     
     public Utilities() {}
     
     public static void deleteAllBreakpoints() {
-        
         showDebuggerView(breakpointsViewTitle);
         TopComponentOperator breakpointsOper = new TopComponentOperator(breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
-        
         if (jTableOperator.getRowCount() != 0) {
             jTableOperator.selectAll();
             new EventTool().waitNoEvent(750); // XXX
             JPopupMenu jPopupMenu = jTableOperator.callPopupOnCell(jTableOperator.getRowCount() - 1, 0);
             new EventTool().waitNoEvent(750); // XXX
             new JPopupMenuOperator(jPopupMenu).pushMenuNoBlock(new String [] {"Delete All"});
-            
-            String confirmTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", 
-                "MSG_ConfirmDeleteAllBreakpointsTitle");
-            new NbDialogOperator(confirmTitle).yes();            
         }
-        
         new EventTool().waitNoEvent(750);
         breakpointsOper.close();
-        
     }
     
     public static void deleteAllWatches() {
-        
         showDebuggerView(watchesViewTitle);
         TopComponentOperator watchesOper = new TopComponentOperator(watchesViewTitle);
         JTableOperator jTableOperator = new JTableOperator(watchesOper);
-        
         if (jTableOperator.getRowCount() != 0) {
             jTableOperator.selectAll();
             new EventTool().waitNoEvent(750); // XXX
             JPopupMenu jPopupMenu = jTableOperator.callPopupOnCell(jTableOperator.getRowCount() - 1,0);
             new EventTool().waitNoEvent(750); // XXX
             new JPopupMenuOperator(jPopupMenu).pushMenuNoBlock(new String [] {"Delete All"});
-            
-            String confirmDeleteAll = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", 
-                "MSG_ConfirmDeleteAllWatchesTitle");
-            new NbDialogOperator(confirmDeleteAll).yes();            
         }
-        
         watchesOper.close();
-        
     }
     
-    public static boolean mountSampledir() {
+/*    public static boolean mountSampledir() {
         
         new EventTool().waitNoEvent(1000); // XXX
         String userdir = System.getProperty("netbeans.user"); // NOI18N
@@ -131,9 +130,9 @@ public class Utilities {
         }
         return true;
         
-    }
+    }*/
     
-    public static String getApplicationFileSystem() {
+/*    public static String getApplicationFileSystem() {
         
         Enumeration enumerationFileSystems = Repository.getDefault().fileSystems();
         boolean founded = false;
@@ -147,7 +146,7 @@ public class Utilities {
         }
         return fileSystem.getDisplayName();
         
-    }
+    }*/
 
     public static void closeZombieSessions() {
         
@@ -172,7 +171,7 @@ public class Utilities {
 //                    System.out.println("Dialog - Finish Debugging Session was not displayed.");
 //                    throw(tee);
 //                }
-                mwo.waitStatusText("Debugger finished");
+                mwo.waitStatusText("User program finished");
                 
             }
         }
@@ -182,55 +181,51 @@ public class Utilities {
     }
     
     public static void showDebuggerView(String viewName) {
-        new ActionNoBlock(windowItem + "|" + debuggingItem + "|" + viewName, null).perform();
+        new ActionNoBlock(windowMenu + "|" + debugMenu + "|" + viewName, null).perform();
     }
     
     public static void showLocalVariablesView() {
-        new ActionNoBlock(windowItem + "|" + debuggingItem + "|" + localVarsItem, null).perform();
+        new ActionNoBlock(windowMenu + "|" + debugMenu + "|" + localVarsItem, null).perform();
     }
     
     public static void showWatchesView() {
-        new ActionNoBlock(windowItem + "|" + debuggingItem + "|" + watchesItem, null).perform();
+        new ActionNoBlock(windowMenu + "|" + debugMenu + "|" + watchesItem, null).perform();
     }
     
     public static void showCallStackView() {
-        new ActionNoBlock(windowItem + "|" + debuggingItem + "|" + callStackItem, null).perform();
+        new ActionNoBlock(windowMenu + "|" + debugMenu + "|" + callStackItem, null).perform();
     }
     
     public static void showClassesView() {
-        new ActionNoBlock(windowItem + "|" + debuggingItem + "|" + classesItem, null).perform();
+        new ActionNoBlock(windowMenu + "|" + debugMenu + "|" + classesItem, null).perform();
     }
     
     public static void showBreakpointsView() {
-        new ActionNoBlock(windowItem + "|" + debuggingItem + "|" + breakpointsItem, null).perform();
+        new ActionNoBlock(windowMenu + "|" + debugMenu + "|" + breakpointsItem, null).perform();
     }
     
     public static void showSessionsView() {
-        new ActionNoBlock(windowItem + "|" + debuggingItem + "|" + sessionsItem, null).perform();
+        new ActionNoBlock(windowMenu + "|" + debugMenu + "|" + sessionsItem, null).perform();
     }
     
     public static void showThreadsView() {
-        new ActionNoBlock(windowItem + "|" + debuggingItem + "|" + threadsItem, null).perform();
-    }
-    
-    public static void showAllInOneView() {
-        new ActionNoBlock(windowItem + "|" + debuggingItem + "|" + allInOneItem, null).perform();
+        new ActionNoBlock(windowMenu + "|" + debugMenu + "|" + threadsItem, null).perform();
     }
     
     /* Close terms only if they are opened */
     public static void closeTerms() {
-        try {
-            TermOperator debuggerConsole = new TermOperator("Debugger Console");
+        /*try {
+            OutputTabOperator debuggerConsole = new OutputTabOperator("debugTestProject (debug)");
             debuggerConsole.close();
         } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
             // do nothing
         }
         try {
-            TermOperator processOutput = new TermOperator("Process Output");
+            OutputTabOperator processOutput = new OutputTabOperator("examples.advanced.MemoryView");
             processOutput.close();
         } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
             // do nothing
-        }
+        }*/
     }
     
 }
