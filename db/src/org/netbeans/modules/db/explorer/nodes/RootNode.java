@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -13,17 +13,10 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
-import java.sql.*;
-import java.util.*;
-
-import org.openide.nodes.*;
-import org.openide.NotifyDescriptor;
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 
-import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.PointbasePlus;
@@ -70,7 +63,7 @@ public class RootNode extends DatabaseNode {
     public boolean canRename() {
         return false;
     }
-    
+
     /**
      * Connects the debug property in sfactory and debugMode property in DBExplorer module's option.
      */
@@ -84,11 +77,8 @@ public class RootNode extends DatabaseNode {
                     sfactory.setDebugMode(option.getDebugMode());
                     return;
                 }
-                if (e.getPropertyName().equals(DatabaseOption.PROP_DEBUG_MODE)){
-                    sfactory.setDebugMode(
-                        ((Boolean) e.getNewValue()).booleanValue()
-                    );
-                }
+                if (e.getPropertyName().equals(DatabaseOption.PROP_DEBUG_MODE))
+                    sfactory.setDebugMode(((Boolean) e.getNewValue()).booleanValue());
             }
         });
         sfactory.setDebugMode(option.getDebugMode());

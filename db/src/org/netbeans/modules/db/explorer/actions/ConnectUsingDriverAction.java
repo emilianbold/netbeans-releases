@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -13,142 +13,202 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.util.Vector;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.awt.event.*;
-import javax.swing.event.*;
-import javax.swing.JTabbedPane;
-import java.sql.*;
+import java.util.Vector;
 
+import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.nodes.*;
-import org.openide.DialogDescriptor;
+import org.openide.nodes.Node;
 
-import org.netbeans.lib.ddl.*;
 import org.netbeans.modules.db.DatabaseException;
-import org.netbeans.modules.db.explorer.*;
-import org.netbeans.modules.db.explorer.infos.*;
-import org.netbeans.modules.db.explorer.nodes.RootNode;
-import org.netbeans.modules.db.explorer.actions.DatabaseAction;
-import org.netbeans.modules.db.explorer.dlg.NewConnectionPanel;
+import org.netbeans.modules.db.ExceptionListener;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.PointbasePlus;
 import org.netbeans.modules.db.explorer.dlg.ConnectionDialog;
+import org.netbeans.modules.db.explorer.dlg.NewConnectionPanel;
 import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
+import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
+import org.netbeans.modules.db.explorer.infos.ConnectionOwnerOperations;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.infos.DriverNodeInfo;
+import org.netbeans.modules.db.explorer.nodes.RootNode;
 
 public class ConnectUsingDriverAction extends DatabaseAction {
     static final long serialVersionUID =8245005834483564671L;
-    
-    ConnectionDialog dlg = null;
+
+    ConnectionDialog dlg;
+    ConnectionNodeInfo cni;
+    boolean advancedPanel = false;
+    boolean okPressed = false;
 
     protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes != null && activatedNodes.length == 1)
-            return true;
-        else
-            return false;
+        return (activatedNodes != null && activatedNodes.length == 1);
     }
-    
-    public void performAction(Node[] activatedNodes) {
-        Node node;
-        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-        else return;
 
-        DriverNodeInfo info = (DriverNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-        final ConnectionOwnerOperations nfo = (ConnectionOwnerOperations)info.getParent(nodename);
+    public void performAction(Node[] activatedNodes) {
+        Node node = activatedNodes[0];
+        DriverNodeInfo info = (DriverNodeInfo) node.getCookie(DatabaseNodeInfo.class);
+        final ConnectionOwnerOperations nfo = (ConnectionOwnerOperations) info.getParent(nodename);
         Vector drvs = RootNode.getOption().getAvailableDrivers();
-        DatabaseConnection cinfo = new DatabaseConnection();
+        final DatabaseConnection cinfo = new DatabaseConnection();
         cinfo.setDriverName(info.getName());
         cinfo.setDriver(info.getURL());
 
         final NewConnectionPanel basePanel = new NewConnectionPanel(drvs, cinfo);
-        final SchemaPanel schemaPanel = new SchemaPanel(new Vector(), new String());
-        
-        ActionListener actionListener = new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                if (event.getSource() == DialogDescriptor.OK_OPTION) {
-                    dlg.setException(null);
-                    basePanel.setConnectionInfo();
+        final SchemaPanel schemaPanel = new SchemaPanel(cinfo);
+
+        PropertyChangeListener argumentListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent event) {
+                if (event.getPropertyName().equals("argumentChanged")) { //NOI18N
+                    schemaPanel.setSchemas(new Vector(), ""); //NOI18N
+                    schemaPanel.resetProgress();
                     try {
-                        Class.forName(basePanel.getDriver());
-                        if(schemaPanel.getSchema()==null)
-                            dlg.setSelectedComponent(schemaPanel);
-                        if(dlg.isException()) {
-                            schemaPanel.setComment(bundle.getString("MSG_SchemaPanelWarning")); // NOI18N
-                            return;
-                        }
-                        basePanel.getConnection().setSchema(schemaPanel.getSchema());
-                        nfo.addConnection(basePanel.getConnection());
-                        if(dlg!=null) dlg.close();
-                    } catch (ClassNotFoundException exc) {
-                        String message = MessageFormat.format(bundle.getString("EXC_ClassNotFound"), new String[] {exc.getMessage()}); //NOI18N
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-                    } catch(Exception exc) {
-                        String message = MessageFormat.format(bundle.getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()}); //NOI18N
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                        Connection conn = cinfo.getConnection();
+                        if (conn != null && !conn.isClosed())
+                            conn.close();
+                    } catch (SQLException exc) {
+                        //unable to close the connection
                     }
+
                 }
             }
         };
-              
-        ChangeListener changeTabListener = new ChangeListener() {
-            public void stateChanged (ChangeEvent e) {
-                String schemaTemp;
-                if(schemaPanel.getSchema()!=null)
-                    schemaTemp = schemaPanel.getSchema();
-                else
-                    schemaTemp = basePanel.getUser();
+        basePanel.addPropertyChangeListener(argumentListener);
 
-                if(((JTabbedPane)e.getSource()).getSelectedComponent().equals(schemaPanel)) {
-                    basePanel.setConnectionInfo();
-                    DBConnection con = basePanel.getConnection();
+        final PropertyChangeListener connectionListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent event) {
+                if (event.getPropertyName().equals("connected")) { //NOI18N
+                    if (setSchema(schemaPanel, cinfo))
+                        cinfo.setSchema(schemaPanel.getSchema());
+                    else {
+                        //switch to schema panel
+                        dlg.setSelectedComponent(schemaPanel);
+                        return;
+                    }
+
+                    //connected by "Get Schemas" button in the schema panel => don't create connection node
+                    //and don't close the connect dialog
+                    if (advancedPanel && !okPressed)
+                        return;
 
                     try {
-                        Class.forName(basePanel.getDriver());
-                        Connection connection = con.createJDBCConnection();
-                        if (connection != null) {
-                            ResultSet rs;
-                            Vector items = new Vector();
-                            try {
-                                rs = connection.getMetaData().getSchemas();
-                                while (rs.next())
-                                    items.add(rs.getString(1).trim());
-                                rs.close();
-                            } catch (SQLException exc) {
-                                //hack for databases which don't support schemas
-                            }
-                            connection.close();
-                            if(!schemaPanel.setSchemas(items, schemaTemp))
-                                dlg.setException(new DDLException("User name is not in the list of accessible schemas")); // NOI18N
+                        nfo.addConnection(cinfo);
+                    } catch (DatabaseException exc) {
+                        String message = MessageFormat.format(bundle.getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()}); //NOI18N
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                        try {
+                            cinfo.getConnection().close();
+                        } catch (SQLException e) {
+                            //unable to close db connection
                         }
-                    } catch (SQLException exc) {
-                        // hack for Pointbase Network Server
-                        String message = MessageFormat.format(bundle.getString("ERR_UnableObtainSchemas"), new String[] {exc.getMessage()}); // NOI18N
-                        if(con.getDriver().equals(PointbasePlus.DRIVER))
-                            if(exc.getErrorCode()==PointbasePlus.ERR_SERVER_REJECTED)
-                                message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message, con.getDatabase()}); // NOI18N
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-                        dlg.setSelectedComponent(basePanel);
-                        dlg.setException(new DatabaseException("Unable to obtain schema. "+exc.getMessage())); // NOI18N
-                    } catch(Exception exc) {
-                        String message = MessageFormat.format(bundle.getString("ERR_UnableObtainSchemas"), new String[] {exc.getMessage()}); //NOI18N
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-                        dlg.setSelectedComponent(basePanel);
-                        dlg.setException(new DatabaseException("Unable to obtain schema. "+exc.getMessage())); // NOI18N
+                        return;
                     }
-                    
+
+                    if(dlg != null) {
+                        dlg.close();
+//                        removeListeners(cinfo);
+                    }
                 } else
-                    if(schemaPanel.getSchema()!=null)
-                        schemaTemp = schemaPanel.getSchema();
+                    okPressed = false;
             }
         };
-              
-        dlg = new ConnectionDialog(
-                        basePanel, 
-                        schemaPanel, 
-                        basePanel.getTitle(), 
-                        actionListener,
-                        changeTabListener );
 
+        final ExceptionListener excListener = new ExceptionListener() {
+            public void exceptionOccurred(Exception exc) {
+                if (exc instanceof ClassNotFoundException) {
+                    String message = MessageFormat.format(bundle.getString("EXC_ClassNotFound"), new String[] {exc.getMessage()}); //NOI18N
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                } else {
+                    String message = MessageFormat.format(bundle.getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()}); //NOI18N
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                }
+            }
+        };
+
+        cinfo.addPropertyChangeListener(connectionListener);
+        cinfo.addExceptionListener(excListener);
+
+        ActionListener actionListener = new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                if (event.getSource() == DialogDescriptor.OK_OPTION) {
+                    okPressed = true;
+                    basePanel.setConnectionInfo();
+                    try {
+                        if (cinfo.getConnection() == null || cinfo.getConnection().isClosed())
+                            cinfo.connect();
+                        else {
+                            cinfo.setSchema(schemaPanel.getSchema());
+                            nfo.addConnection(cinfo);
+                            if(dlg != null)
+                                dlg.close();
+                        }
+                    } catch (SQLException exc) {
+                        //isClosed() method failed, try to connect
+                        cinfo.connect();
+                    } catch (DatabaseException exc) {
+                        String message = MessageFormat.format(bundle.getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()}); //NOI18N
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                        try {
+                            cinfo.getConnection().close();
+                        } catch (SQLException e) {
+                            //unable to close db connection
+                        }
+                    }
+                    return;
+                }
+            }
+        };
+
+        ChangeListener changeTabListener = new ChangeListener() {
+            public void stateChanged (ChangeEvent e) {
+                if (((JTabbedPane) e.getSource()).getSelectedComponent().equals(schemaPanel)) {
+                    advancedPanel = true;
+                    basePanel.setConnectionInfo();
+                } else
+                    advancedPanel = false;
+            }
+        };
+
+        dlg = new ConnectionDialog(basePanel, schemaPanel, basePanel.getTitle(), actionListener, changeTabListener);
         dlg.setVisible(true);
+    }
 
+//    private void removeListeners() {
+//        cinfo.removePropertyChangeListener(connectionListener);
+//        cinfo.removeExceptionListener(excListener);
+//    }
+
+    private boolean setSchema(SchemaPanel schemaPanel, DatabaseConnection dbcon) {
+        Vector schemas = new Vector();
+        try {
+            ResultSet rs = dbcon.getConnection().getMetaData().getSchemas();
+            if (rs != null)
+                while (rs.next())
+                    schemas.add(rs.getString(1).trim());
+        } catch (SQLException exc) {
+            // hack for Pointbase Network Server
+            if (dbcon.getDriver().equals(PointbasePlus.DRIVER))
+                if (exc.getErrorCode() == PointbasePlus.ERR_SERVER_REJECTED) {
+                    String message = MessageFormat.format(bundle.getString("ERR_UnableObtainSchemas"), new String[] {exc.getMessage()}); // NOI18N
+                    message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message, dbcon.getDatabase()}); // NOI18N
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+//                    schema will be set to null
+//                    return true;
+                }
+        }
+
+        return schemaPanel.setSchemas(schemas, dbcon.getUser());
     }
 }

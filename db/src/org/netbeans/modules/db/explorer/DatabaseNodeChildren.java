@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -38,13 +38,13 @@ import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 
 public class DatabaseNodeChildren extends Children.Array {
-    
+
     private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
     private TreeSet children;
     private transient PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
     private static Object sync = new Object(); // synchronizing object
-    
+
     private PropertyChangeListener listener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent event) {
             if (event.getPropertyName().equals("finished")) { //NOI18N
@@ -79,7 +79,7 @@ public class DatabaseNodeChildren extends Children.Array {
                         if (sinfo instanceof DatabaseNodeInfo) {
                             DatabaseNodeInfo dni = (DatabaseNodeInfo) sinfo;
 
-                            // aware! in this method is clone of instance dni created    
+                            // aware! in this method is clone of instance dni created
                             snode = createNode(dni);
 
                         }
@@ -89,7 +89,7 @@ public class DatabaseNodeChildren extends Children.Array {
                         if (snode != null)
                             children.add(snode);
                     }
-                    if (getNode() instanceof RootNode) { 
+                    if (getNode() instanceof RootNode) {
                         // open connection (after initCollection done)
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
@@ -111,12 +111,12 @@ public class DatabaseNodeChildren extends Children.Array {
                 propertySupport.firePropertyChange("finished", null, null); //NOI18N
             }
         }, 0);
-        
+
         TreeSet ts = new TreeSet();
         ts.add(createWaitNode());
         return ts;
     }
-    
+
     /* Creates and returns the instance of the node
     * representing the status 'WAIT' of the node.
     * It is used when it spent more time to create elements hierarchy.
@@ -132,15 +132,15 @@ public class DatabaseNodeChildren extends Children.Array {
     private TreeSet getCh() {
         return children;
     }
-    
+
     private void setCh(TreeSet children) {
         this.children = children;
     }
-    
+
     private void removeListener() {
         propertySupport.removePropertyChangeListener(listener);
     }
-    
+
     class NodeComparator implements Comparator {
         private java.util.Map map = null;
         private boolean sort;
@@ -153,12 +153,12 @@ public class DatabaseNodeChildren extends Children.Array {
         public int compare(Object o1, Object o2) {
             if (! sort)
                 return 1;
-            
+
             if (!(o1 instanceof DatabaseNode))
                 return -1;
             if (!(o2 instanceof DatabaseNode))
                 return 1;
-            
+
             int o1val, o2val, diff;
             Integer o1i = (Integer)map.get(o1.getClass().getName());
             if (o1i != null)
@@ -198,7 +198,7 @@ public class DatabaseNodeChildren extends Children.Array {
         if (subnode != null && addToChildrenFlag) {
             DatabaseNodeInfo ninfo = ((DatabaseNode)getNode()).getInfo();
             ninfo.getChildren().add(info);
-            
+
             //workaround for issue #31617, children should be initialized if they are not
 //            getNodes();
 

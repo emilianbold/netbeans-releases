@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -13,131 +13,234 @@
 
 package org.netbeans.modules.db.explorer.dlg;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.text.MessageFormat;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.ResultSet;
+import java.util.Vector;
 
-import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 
-public class SchemaPanel extends JPanel {
-    boolean result = false;
-    Dialog dialog;
-    JComboBox schemas;
-    String schema;
-    JTextArea comment;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
 
+public class SchemaPanel extends javax.swing.JPanel {
+
+    private DatabaseConnection dbcon;
+
+    /** Creates new form SchemaPanel
+     * @deprecated use SchemaPanel(DatabaseConnection dbcon)
+     */
     public SchemaPanel(Vector items, String user) {
-        try {
-            JLabel label;
-            setBorder(new EmptyBorder(new Insets(5,5,5,5)));
-            GridBagLayout layout = new GridBagLayout();
-            GridBagConstraints con = new GridBagConstraints ();
-            setLayout (layout);
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
-
-            label = new JLabel(bundle.getString("SchemaDialogText")); //NOI18N
-            label.setDisplayedMnemonic(bundle.getString("SchemaDialogText_Mnemonic").charAt(0));
-            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_SchemaDialogTextA11yDesc"));
-            con.gridy = 1;
-            con.insets = new Insets(12, 12, 0, 11);
-            con.anchor = GridBagConstraints.WEST;
-            layout.setConstraints(label, con);
-            add(label);
-
-            con = new GridBagConstraints();
-            con.gridy = 1;
-            con.fill = GridBagConstraints.HORIZONTAL;
-            con.insets = new Insets(12, 12, 0, 11);
-            con.weightx = 1.0;
-            schemas = new JComboBox();
-            schemas.setToolTipText(bundle.getString("ACS_SchemaDialogTextComboBoxA11yDesc"));
-            schemas.getAccessibleContext().setAccessibleName(bundle.getString("ACS_SchemaDialogTextComboBoxA11yName"));
-            label.setLabelFor(schemas);
-            setSchemas(items, user);
-            layout.setConstraints(schemas, con);
-            add(schemas);
-
-            comment = new JTextArea();
-            comment.setLineWrap(true);
-            comment.setEditable(false);
-            comment.setBackground(getBackground());
-            comment.setWrapStyleWord(true);
-            comment.setFont(javax.swing.UIManager.getFont("Label.font"));  // NOI18N
-            comment.setEnabled(false);
-            comment.setOpaque(false);
-            comment.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));  // NOI18N
-            comment.getAccessibleContext().setAccessibleName(bundle.getString("ACS_SchemaPanelCommentA11yName"));
-            comment.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_SchemaPanelCommentA11yDesc"));
-
-            String commentMsg = bundle.getString("MSG_SchemaPanelComment"); //NOI18N
-            comment.setText(commentMsg);
-
-            con = new GridBagConstraints();
-            con.gridx = 0;
-            con.gridy = 0;
-            con.gridwidth = 2;
-            con.fill = GridBagConstraints.BOTH;
-            con.insets = new Insets(12, 12, 11, 11);
-            con.weightx = 1.0;
-            con.weighty = 1.0;
-
-            layout.setConstraints(comment, con);
-            add(comment);
-            
-            JLabel gap = new JLabel();
-            con = new GridBagConstraints();
-            con.gridx = 0;
-            con.gridy = 2;
-            con.fill = GridBagConstraints.BOTH;
-            con.insets = new Insets(12, 12, 0, 0);
-            con.weightx = 1.0;
-            con.weighty = 1.0;
-
-            layout.setConstraints(gap, con);
-            add(gap);
-
-        } catch (MissingResourceException e) {
-            System.out.println(e.getMessage());;
-        }
-    }
-
-    public String getSchema() {
-        if(schemas.getSelectedItem()!=null) {
-            return schemas.getSelectedItem().toString();
-        }
-        else {
-            return null;
-        }
     }
     
+    /** Creates new form SchemaPanel
+     * @param dbcon instance of DatabaseConnection object
+     */
+    public SchemaPanel(DatabaseConnection dbcon) {
+        this.dbcon = dbcon;
+        initComponents();
+        connectProgressBar.setBorderPainted(false);
+        initAccessibility();
+
+        PropertyChangeListener connectionListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent event) {
+                if (event.getPropertyName().equals("connecting")) { //NOI18N
+                    startProgress();
+                }
+                if (event.getPropertyName().equals("connected")) { //NOI18N
+                    stopProgress(true);
+                }
+                if (event.getPropertyName().equals("failed")) { //NOI18N
+                    stopProgress(false);
+                }
+            }
+        };
+        this.dbcon.addPropertyChangeListener(connectionListener);
+    }
+
+    private void initAccessibility() {
+        schemaLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_SchemaDialogTextA11yDesc")); //NOI18N
+        schemaComboBox.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_SchemaDialogTextComboBoxA11yName")); //NOI18N
+        commentTextArea.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_SchemaPanelCommentA11yName")); //NOI18N
+        commentTextArea.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_SchemaPanelCommentA11yDesc")); //NOI18N
+    }
+
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    private void initComponents() {//GEN-BEGIN:initComponents
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        commentTextArea = new javax.swing.JTextArea();
+        schemaLabel = new javax.swing.JLabel();
+        schemaComboBox = new javax.swing.JComboBox();
+        schemaButton = new javax.swing.JButton();
+        connectProgressBar = new javax.swing.JProgressBar();
+
+        setLayout(new java.awt.GridBagLayout());
+
+        commentTextArea.setEditable(false);
+        commentTextArea.setFont(javax.swing.UIManager.getFont("Label.font"));
+        commentTextArea.setLineWrap(true);
+        commentTextArea.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("MSG_SchemaPanelComment"));
+        commentTextArea.setWrapStyleWord(true);
+        commentTextArea.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));
+        commentTextArea.setEnabled(false);
+        commentTextArea.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        add(commentTextArea, gridBagConstraints);
+
+        schemaLabel.setDisplayedMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("SchemaDialogText_Mnemonic").charAt(0));
+        schemaLabel.setLabelFor(schemaComboBox);
+        schemaLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("SchemaDialogText"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
+        add(schemaLabel, gridBagConstraints);
+
+        schemaComboBox.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_SchemaDialogTextComboBoxA11yDesc"));
+        schemaComboBox.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
+        add(schemaComboBox, gridBagConstraints);
+
+        schemaButton.setMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("SchemaDialogGetButton_Mnemonic").charAt(0));
+        schemaButton.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("SchemaDialogGetButton"));
+        schemaButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                schemaButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
+        add(schemaButton, gridBagConstraints);
+
+        connectProgressBar.setString("");
+        connectProgressBar.setStringPainted(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
+        add(connectProgressBar, gridBagConstraints);
+
+    }//GEN-END:initComponents
+
+    private void schemaButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_schemaButtonActionPerformed
+        schemaComboBox.setEnabled(false);
+        schemaComboBox.removeAllItems();
+
+        Connection con = dbcon.getConnection();
+        try {
+            if (con == null || con.isClosed())
+                dbcon.connect();
+            else {
+                Vector schemas = new Vector();
+                ResultSet rs = con.getMetaData().getSchemas();
+                if (rs != null)
+                    while (rs.next())
+                        schemas.add(rs.getString(1).trim());
+
+                setSchemas(schemas, dbcon.getSchema());
+            }
+        } catch (SQLException exc) {
+            //isClosed() method failed, try to connect
+            dbcon.connect();
+        }
+    }//GEN-LAST:event_schemaButtonActionPerformed
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextArea commentTextArea;
+    private javax.swing.JProgressBar connectProgressBar;
+    private javax.swing.JButton schemaButton;
+    private javax.swing.JComboBox schemaComboBox;
+    private javax.swing.JLabel schemaLabel;
+    // End of variables declaration//GEN-END:variables
+
+    public String getSchema() {
+        Object schema = schemaComboBox.getSelectedItem();
+        if (schema != null && !schema.toString().equals(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("TXT_NoSchema"))) //NOI18N
+            return schema.toString();
+        else
+            return null;
+    }
+
     public boolean setSchemas(Vector items, String schema) {
-        schemas.removeAllItems();
-        for(int i=0;i<items.size();i++){
-            schemas.addItem(items.elementAt(i));
-        }
-        if((items.size()==0)||(items.size()==1)){
-            // schema in the items is not or is only one
+        schemaComboBox.removeAllItems();
+        for (int i = 0; i < items.size(); i++)
+            schemaComboBox.addItem(items.elementAt(i));
+
+        if (items.size() == 0) {
+            schemaComboBox.addItem(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("TXT_NoSchema")); //NOI18N
+            schemaComboBox.setEnabled(false);
+        } else
+            schemaComboBox.setEnabled(true);
+
+        if (items.size() == 1)
+            //no or only one schema in the items
             return true;
-        }
+
         int idx = items.indexOf(schema);
         if (idx == -1)
             idx = items.indexOf(schema.toLowerCase());
         if (idx == -1)
             idx = items.indexOf(schema.toUpperCase());
         if (idx != -1) {
-            schemas.setSelectedIndex(idx);
+            schemaComboBox.setSelectedIndex(idx);
             // schema has been found in the items
             return true;
         }
-        // schema has not been found in the items then index is set at first item
+
+        // schema has not been found in the items; index is set to the first item
         return false;
     }
 
     public void setComment(String msg) {
-        comment.setText(msg);
+        commentTextArea.setText(msg);
+    }
+
+    private void startProgress() {
+        connectProgressBar.setBorderPainted(true);
+        connectProgressBar.setIndeterminate(true);
+        connectProgressBar.setString(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Connecting")); //NOI18N
+    }
+
+    private void stopProgress(boolean connected) {
+        if (connected) {
+            connectProgressBar.setValue(connectProgressBar.getMaximum());
+            connectProgressBar.setString(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Established")); //NOI18N
+        } else {
+            connectProgressBar.setValue(connectProgressBar.getMinimum());
+            connectProgressBar.setString(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Failed")); //NOI18N
+        }
+        connectProgressBar.setIndeterminate(false);
+    }
+
+    public void resetProgress() {
+        connectProgressBar.setBorderPainted(false);
+        connectProgressBar.setValue(connectProgressBar.getMinimum());
+        connectProgressBar.setString(""); //NOI18N
     }
 }

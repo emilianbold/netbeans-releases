@@ -60,7 +60,39 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             DatabaseConnection con = new DatabaseConnection(drvurl, dburl, getUser(), getPassword());
             Connection connection = con.createJDBCConnection();
             
-            SpecificationFactory factory = (SpecificationFactory)getSpecificationFactory();
+            finishConnect(dbsys, con, connection);
+        } catch (DatabaseProductNotFoundException e) {
+
+            UnsupportedDatabaseDialog dlg = new UnsupportedDatabaseDialog();
+            dlg.show();
+            setReadOnly(false);
+            switch (dlg.getResult()) {
+            case UnsupportedDatabaseDialog.GENERIC: connect("GenericDatabaseSystem"); break; //NOI18N
+            case UnsupportedDatabaseDialog.READONLY: connectReadOnly(); break;
+            default: return;
+            }
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage());
+        }
+    }
+
+    public void connect() throws DatabaseException {
+        connect((String) null);
+    }
+
+    public void connectReadOnly() throws DatabaseException {
+        setReadOnly(true);
+        connect("GenericDatabaseSystem"); //NOI18N
+    }
+
+    public void connect(DBConnection conn) throws DatabaseException {
+        try {
+            String dbsys = null;
+            DatabaseConnection con = (DatabaseConnection) conn;
+            
+            Connection connection = con.getConnection();
+            
+            SpecificationFactory factory = (SpecificationFactory) getSpecificationFactory();
             Specification spec;
             DriverSpecification drvSpec;
 
@@ -99,16 +131,47 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             throw new DatabaseException(e.getMessage());
         }
     }
+    
+    public void finishConnect(String dbsys, DatabaseConnection con, Connection connection) throws DatabaseException {
+        try {
+            SpecificationFactory factory = (SpecificationFactory) getSpecificationFactory();
+            Specification spec;
+            DriverSpecification drvSpec;
 
-    public void connect() throws DatabaseException {
-        connect(null);
+            if (dbsys != null) {
+                spec = (Specification) factory.createSpecification(con, dbsys, connection);
+            } else {
+                setReadOnly(false);
+                spec = (Specification) factory.createSpecification(con, connection);
+            }
+            put(DBPRODUCT, spec.getProperties().get(DBPRODUCT));
+
+            setSpecification(spec);
+
+            drvSpec = factory.createDriverSpecification(spec.getMetaData().getDriverName().trim());
+            if (spec.getMetaData().getDriverName().trim().equals("jConnect (TM) for JDBC (TM)")) //NOI18N
+                //hack for Sybase ASE - I don't guess why spec.getMetaData doesn't work
+                drvSpec.setMetaData(connection.getMetaData());
+            else
+                drvSpec.setMetaData(spec.getMetaData());
+            drvSpec.setCatalog(connection.getCatalog());
+            drvSpec.setSchema(getSchema());
+            setDriverSpecification(drvSpec);
+            setConnection(connection); // fires change
+        } catch (DatabaseProductNotFoundException e) {
+            UnsupportedDatabaseDialog dlg = new UnsupportedDatabaseDialog();
+            dlg.show();
+            setReadOnly(false);
+            switch (dlg.getResult()) {
+                case UnsupportedDatabaseDialog.GENERIC: connect("GenericDatabaseSystem"); break; //NOI18N
+                case UnsupportedDatabaseDialog.READONLY: connectReadOnly(); break;
+                default: return;
+            }
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage());
+        }
     }
-
-    public void connectReadOnly() throws DatabaseException {
-        setReadOnly(true);
-        connect("GenericDatabaseSystem"); //NOI18N
-    }
-
+    
     public void disconnect() throws DatabaseException {
         Connection connection = getConnection();
         if (connection != null) {

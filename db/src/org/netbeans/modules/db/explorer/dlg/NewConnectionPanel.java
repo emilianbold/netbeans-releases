@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -13,280 +13,392 @@
 
 package org.netbeans.modules.db.explorer.dlg;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import org.netbeans.lib.ddl.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.Vector;
+
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataListener;
+
+import org.netbeans.lib.ddl.DBConnection;
+
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DatabaseDriver;
+
 import org.openide.util.NbBundle;
-import org.netbeans.modules.db.explorer.*;
 
-public class NewConnectionPanel extends JPanel {
-    static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
-    DatabaseConnection con;
-    boolean result = false;
-    Dialog dialog = null;
-    JComboBox drvfield;
-    JTextField dbfield, userfield, drvClassField;
-    JPasswordField pwdfield;
-    JCheckBox rememberbox;
+public class NewConnectionPanel extends javax.swing.JPanel implements DocumentListener, ListDataListener {
 
-    public NewConnectionPanel(Vector drivervec,String driver,String database,String loginname)
-    {
-        this(drivervec, new DatabaseConnection(driver, database, loginname, null));
+    private Vector templates;
+    private DatabaseConnection connection;
+
+    /** The support for firing property changes */
+    private PropertyChangeSupport propertySupport;
+
+    public NewConnectionPanel(Vector templates, String driver, String database, String loginname) {
+        this(templates, new DatabaseConnection(driver, database, loginname, null));
     }
 
-    public NewConnectionPanel(Vector drivervec, DatabaseConnection xcon)
-    {
-        con = (DatabaseConnection)xcon;
-        try {
-            JLabel label;
-            setBorder(new EmptyBorder(new Insets(5,5,5,5)));
-            GridBagLayout layout = new GridBagLayout();
-            GridBagConstraints constr = new GridBagConstraints ();
-            setLayout (layout);
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+    public NewConnectionPanel(Vector templates, DatabaseConnection connection) {
+//    public NewConnectionPanel() {
+        propertySupport = new PropertyChangeSupport(this);
+        this.templates = templates;
+        this.connection = connection;
+        initComponents();
+        connectProgressBar.setBorderPainted(false);
+        initAccessibility();
 
-            // Driver name field
-
-            label = new JLabel(bundle.getString("NewConnectionDriverName")); //NOI18N
-            label.setDisplayedMnemonic(bundle.getString("NewConnectionDriverName_Mnemonic").charAt(0));
-            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_NewConnectionDriverNameA11yDesc"));
-            constr.anchor = GridBagConstraints.WEST;
-            constr.insets = new java.awt.Insets (2, 2, 2, 2);
-            constr.gridx = 0;
-            constr.gridy = 0;
-            layout.setConstraints(label, constr);
-            add(label);
-
-            constr.fill = GridBagConstraints.HORIZONTAL;
-            constr.weightx = 1.0;
-            constr.gridx = 1;
-            constr.gridy = 0;
-            constr.insets = new java.awt.Insets (2, 2, 2, 2);
-            drvfield = new JComboBox(drivervec);
-            drvfield.setEditable(false);
-            drvfield.setToolTipText(bundle.getString("ACS_NewConnectionDriverNameComboBoxA11yDesc"));
-            drvfield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_NewConnectionDriverNameComboBoxA11yName"));
-            label.setLabelFor(drvfield);
-            drvfield.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                   JComboBox combo = (JComboBox)e.getSource();
-                   Object drv = combo.getSelectedItem();
-                   String dbprefix = null;
-                   String driver = null;
-                   if (drv != null && drv instanceof DatabaseDriver) {
-                       dbprefix = ((DatabaseDriver)drv).getDatabasePrefix();
-                       driver = ((DatabaseDriver)drv).getURL();
-                   }
-                   if (dbprefix != null)
-                       dbfield.setText(dbprefix);
-                   if (driver != null)
-                       drvClassField.setText(driver);
-               }
-           });
-
-            layout.setConstraints(drvfield, constr);
-            add(drvfield);
-            
-            // Driver class field
-
-            label = new JLabel(bundle.getString("NewConnectionDriverClass")); //NOI18N
-            label.setDisplayedMnemonic(bundle.getString("NewConnectionDriverClass_Mnemonic").charAt(0));
-            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_NewConnectionDriverClassA11yDesc"));
-            constr.anchor = GridBagConstraints.WEST;
-            constr.weightx = 0.0;
-            constr.fill = GridBagConstraints.NONE;
-            constr.insets = new java.awt.Insets (2, 2, 2, 2);
-            constr.gridx = 0;
-            constr.gridy = 1;
-            layout.setConstraints(label, constr);
-            add(label);
-
-            constr.fill = GridBagConstraints.HORIZONTAL;
-            constr.weightx = 1.0;
-            constr.gridx = 1;
-            constr.gridy = 1;
-            constr.insets = new java.awt.Insets (2, 2, 2, 2);
-            drvClassField = new JTextField(35);
-            drvClassField.setText(xcon.getDriver());
-            drvClassField.setEditable(false);
-            drvClassField.setToolTipText(bundle.getString("ACS_NewConnectionDriverClassComboBoxA11yDesc"));
-            drvClassField.getAccessibleContext().setAccessibleName(bundle.getString("ACS_NewConnectionDriverClassComboBoxA11yName"));
-            label.setLabelFor(drvClassField);
-            layout.setConstraints(drvClassField, constr);
-            add(drvClassField);
-
-            // Database field
-
-            label = new JLabel(bundle.getString("NewConnectionDatabaseURL")); //NOI18N
-            label.setDisplayedMnemonic(bundle.getString("NewConnectionDatabaseURL_Mnemonic").charAt(0));
-            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_NewConnectionDatabaseURLA11yDesc"));
-            constr.anchor = GridBagConstraints.WEST;
-            constr.weightx = 0.0;
-            constr.fill = GridBagConstraints.NONE;
-            constr.insets = new java.awt.Insets (2, 2, 2, 2);
-            constr.gridx = 0;
-            constr.gridy = 2;
-            layout.setConstraints(label, constr);
-            add(label);
-
-            constr.fill = GridBagConstraints.HORIZONTAL;
-            constr.weightx = 1.0;
-            constr.gridx = 1;
-            constr.gridy = 2;
-            constr.insets = new java.awt.Insets (2, 2, 2, 2);
-            dbfield = new JTextField(35);
-            dbfield.setText(xcon.getDatabase());
-            dbfield.setToolTipText(bundle.getString("ACS_NewConnectionDatabaseURLTextFieldA11yDesc"));
-            dbfield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_NewConnectionDatabaseURLTextFieldA11yName"));
-            label.setLabelFor(dbfield);
-            layout.setConstraints(dbfield, constr);
-            add(dbfield);
-
-            // Setup driver if found
-
-            String drv = xcon.getDriver();
-            String drvname = xcon.getDriverName();
-            if (drv != null && drvname != null) {
-
-                for (int i = 0; i < drivervec.size(); i++) {
-                    DatabaseDriver dbdrv = (DatabaseDriver)drivervec.elementAt(i);
-                    if (dbdrv.getURL().equals(drv) && dbdrv.getName().equals(drvname)) {
-                        drvfield.setSelectedIndex(i);
-                    }
+        PropertyChangeListener connectionListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent event) {
+                if (event.getPropertyName().equals("connecting")) { //NOI18N
+                    startProgress();
+                }
+                if (event.getPropertyName().equals("connected")) { //NOI18N
+                    stopProgress(true);
+                }
+                if (event.getPropertyName().equals("failed")) { //NOI18N
+                    stopProgress(false);
                 }
             }
+        };
+        this.connection.addPropertyChangeListener(connectionListener);
 
-            // Username field
+        driverTextField.setText(connection.getDriver());
+        urlTextField.setText(connection.getDatabase());
+        userTextField.setText(connection.getUser());
 
-            label = new JLabel(bundle.getString("NewConnectionUserName")); //NOI18N
-            label.setDisplayedMnemonic(bundle.getString("NewConnectionUserName_Mnemonic").charAt(0));
-            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_NewConnectionUserNameA11yDesc"));
-            constr.anchor = GridBagConstraints.WEST;
-            constr.weightx = 0.0;
-            constr.fill = GridBagConstraints.NONE;
-            constr.insets = new java.awt.Insets (2, 2, 2, 2);
-            constr.gridx = 0;
-            constr.gridy = 3;
-            layout.setConstraints(label, constr);
-            add(label);
-
-            constr.fill = GridBagConstraints.HORIZONTAL;
-            constr.weightx = 1.0;
-            constr.gridx = 1;
-            constr.gridy = 3;
-            constr.insets = new java.awt.Insets (2, 2, 2, 2);
-            userfield = new JTextField(35);
-            userfield.setText(xcon.getUser());
-            userfield.setToolTipText(bundle.getString("ACS_NewConnectionUserNameTextFieldA11yDesc"));
-            userfield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_NewConnectionUserNameTextFieldA11yName"));
-            label.setLabelFor(userfield);
-            layout.setConstraints(userfield, constr);
-            add(userfield);
-
-            // Password field
-
-            label = new JLabel(bundle.getString("NewConnectionPassword")); //NOI18N
-            label.setDisplayedMnemonic(bundle.getString("NewConnectionPassword_Mnemonic").charAt(0));
-            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_NewConnectionPasswordA11yDesc"));
-            constr.anchor = GridBagConstraints.WEST;
-            constr.weightx = 0.0;
-            constr.fill = GridBagConstraints.NONE;
-            constr.insets = new java.awt.Insets (2, 2, 2, 2);
-            constr.gridx = 0;
-            constr.gridy = 4;
-            layout.setConstraints(label, constr);
-            add(label);
-
-            constr.fill = GridBagConstraints.HORIZONTAL;
-            constr.weightx = 1.0;
-            constr.gridx = 1;
-            constr.gridy = 4;
-            constr.insets = new java.awt.Insets (2, 2, 2, 2);
-            pwdfield = new JPasswordField(35);
-            pwdfield.setToolTipText(bundle.getString("ACS_NewConnectionPasswordTextFieldA11yDesc"));
-            pwdfield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_NewConnectionPasswordTextFieldA11yName"));
-            label.setLabelFor(pwdfield);
-            layout.setConstraints(pwdfield, constr);
-            add(pwdfield);
-
-            // Remember password checkbox
-
-            rememberbox = new JCheckBox(bundle.getString("NewConnectionRememberPassword")); //NOI18N
-            rememberbox.setMnemonic(bundle.getString("NewConnectionRememberPassword_Mnemonic").charAt(0));
-            rememberbox.setToolTipText(bundle.getString("ACS_NewConnectionRememberPasswordA11yDesc"));
-            constr.anchor = GridBagConstraints.WEST;
-            constr.weightx = 0.0;
-            constr.fill = GridBagConstraints.NONE;
-            constr.insets = new java.awt.Insets (2, 2, 2, 2);
-            constr.gridx = 1;
-            constr.gridy = 5;
-            layout.setConstraints(rememberbox, constr);
-            add(rememberbox);
-
-        } catch (MissingResourceException ex) {
-            ex.printStackTrace();
+        String driver = connection.getDriver();
+        String driverName = connection.getDriverName();
+        if (driver != null && driverName != null) {
+            DatabaseDriver dbDriver;
+            for (int i = 0; i < templates.size(); i++) {
+                dbDriver = (DatabaseDriver) templates.elementAt(i);
+                if (dbDriver.getURL().equals(driver) && dbDriver.getName().equals(driverName)) {
+                    templateComboBox.setSelectedIndex(i);
+                    break;
+                }
+            }
         }
+
+        driverTextField.getDocument().addDocumentListener(this);
+        urlTextField.getDocument().addDocumentListener(this);
+        userTextField.getDocument().addDocumentListener(this);
+        passwordField.getDocument().addDocumentListener(this);
+        templateComboBox.getModel().addListDataListener(this);
     }
 
-    String getSelectedDriver() {
+    private void initAccessibility() {
+        templateLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDriverNameA11yDesc")); //NOI18N
+        templateComboBox.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDriverNameComboBoxA11yName")); //NOI18N
+        driverLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDriverClassA11yDesc")); //NOI18N
+        driverTextField.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDriverClassComboBoxA11yName")); //NOI18N
+        urlLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDatabaseURLA11yDesc")); //NOI18N
+        urlTextField.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDatabaseURLTextFieldA11yName")); //NOI18N
+        userLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionUserNameA11yDesc")); //NOI18N
+        userTextField.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionUserNameTextFieldA11yName")); //NOI18N
+        passwordLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionPasswordA11yDesc")); //NOI18N
+        passwordField.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionPasswordTextFieldA11yName")); //NOI18N
+    }
+
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    private void initComponents() {//GEN-BEGIN:initComponents
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        templateLabel = new javax.swing.JLabel();
+        driverLabel = new javax.swing.JLabel();
+        urlLabel = new javax.swing.JLabel();
+        userLabel = new javax.swing.JLabel();
+        passwordLabel = new javax.swing.JLabel();
+        templateComboBox = new javax.swing.JComboBox(templates);
+        driverTextField = new javax.swing.JTextField();
+        urlTextField = new javax.swing.JTextField();
+        userTextField = new javax.swing.JTextField();
+        passwordField = new javax.swing.JPasswordField();
+        passwordCheckBox = new javax.swing.JCheckBox();
+        connectProgressBar = new javax.swing.JProgressBar();
+
+        setLayout(new java.awt.GridBagLayout());
+
+        templateLabel.setDisplayedMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDriverName_Mnemonic").charAt(0));
+        templateLabel.setLabelFor(templateComboBox);
+        templateLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDriverName"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        add(templateLabel, gridBagConstraints);
+
+        driverLabel.setDisplayedMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDriverClass_Mnemonic").charAt(0));
+        driverLabel.setLabelFor(driverTextField);
+        driverLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDriverClass"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
+        add(driverLabel, gridBagConstraints);
+
+        urlLabel.setDisplayedMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDatabaseURL_Mnemonic").charAt(0));
+        urlLabel.setLabelFor(urlTextField);
+        urlLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDatabaseURL"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
+        add(urlLabel, gridBagConstraints);
+
+        userLabel.setDisplayedMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionUserName_Mnemonic").charAt(0));
+        userLabel.setLabelFor(userTextField);
+        userLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionUserName"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
+        add(userLabel, gridBagConstraints);
+
+        passwordLabel.setDisplayedMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionPassword_Mnemonic").charAt(0));
+        passwordLabel.setLabelFor(passwordField);
+        passwordLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionPassword"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
+        add(passwordLabel, gridBagConstraints);
+
+        templateComboBox.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDriverNameComboBoxA11yDesc"));
+        templateComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                templateComboBoxActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 11);
+        add(templateComboBox, gridBagConstraints);
+
+        driverTextField.setColumns(50);
+        driverTextField.setEditable(false);
+        driverTextField.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDriverClassComboBoxA11yDesc"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
+        add(driverTextField, gridBagConstraints);
+
+        urlTextField.setColumns(50);
+        urlTextField.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDatabaseURLTextFieldA11yDesc"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
+        add(urlTextField, gridBagConstraints);
+
+        userTextField.setColumns(50);
+        userTextField.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionUserNameTextFieldA11yDesc"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
+        add(userTextField, gridBagConstraints);
+
+        passwordField.setColumns(50);
+        passwordField.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionPasswordTextFieldA11yDesc"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
+        add(passwordField, gridBagConstraints);
+
+        passwordCheckBox.setMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionRememberPassword_Mnemonic").charAt(0));
+        passwordCheckBox.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionRememberPassword"));
+        passwordCheckBox.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionRememberPasswordA11yDesc"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
+        add(passwordCheckBox, gridBagConstraints);
+
+        connectProgressBar.setString("");
+        connectProgressBar.setStringPainted(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
+        add(connectProgressBar, gridBagConstraints);
+
+    }//GEN-END:initComponents
+
+    private void templateComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_templateComboBoxActionPerformed
+        javax.swing.JComboBox combo = (javax.swing.JComboBox) evt.getSource();
+        Object drv = combo.getSelectedItem();
+        String urlPrefix = null;
+        String driver = null;
+        if (drv != null && drv instanceof DatabaseDriver) {
+           urlPrefix = ((DatabaseDriver) drv).getDatabasePrefix();
+           driver = ((DatabaseDriver) drv).getURL();
+        }
+        if (urlPrefix != null)
+           urlTextField.setText(urlPrefix);
+        if (driver != null)
+           driverTextField.setText(driver);
+    }//GEN-LAST:event_templateComboBoxActionPerformed
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JProgressBar connectProgressBar;
+    private javax.swing.JLabel driverLabel;
+    private javax.swing.JTextField driverTextField;
+    private javax.swing.JCheckBox passwordCheckBox;
+    private javax.swing.JPasswordField passwordField;
+    private javax.swing.JLabel passwordLabel;
+    private javax.swing.JComboBox templateComboBox;
+    private javax.swing.JLabel templateLabel;
+    private javax.swing.JLabel urlLabel;
+    private javax.swing.JTextField urlTextField;
+    private javax.swing.JLabel userLabel;
+    private javax.swing.JTextField userTextField;
+    // End of variables declaration//GEN-END:variables
+
+    private String getSelectedDriver() {
         String drvval;
-        int idx = drvfield.getSelectedIndex();
-        if (idx != -1) {
-          drvval = ((DatabaseDriver)drvfield.getItemAt(idx)).getURL();
-        } else drvval = (String)drvfield.getSelectedItem();
+        int idx = templateComboBox.getSelectedIndex();
+
+        if (idx != -1)
+            drvval = ((DatabaseDriver) templateComboBox.getItemAt(idx)).getURL();
+        else
+            drvval = (String) templateComboBox.getSelectedItem();
+
         return drvval;
     }
 
     public void setConnectionInfo() {
-        String drvval, pwd;
-        con.setDriver(getSelectedDriver());
-        con.setDatabase(dbfield.getText());
-        con.setUser(userfield.getText());
-        String tmppwd = new String(pwdfield.getPassword());
-        if (tmppwd.length() > 0) pwd = tmppwd;
-        else pwd = null;
-        con.setPassword(pwd);
-        con.setRememberPassword(rememberbox.isSelected());
-    }
-    
-    public DBConnection getConnection()
-    {
-        return con;
+        connection.setDriver(getSelectedDriver());
+        connection.setDatabase(urlTextField.getText());
+        connection.setUser(userTextField.getText());
+        connection.setPassword(getPassword());
+        connection.setRememberPassword(passwordCheckBox.isSelected());
     }
 
-    public String getDriver()
-    {
+    public DBConnection getConnection() {
+        return connection;
+    }
+
+    public String getDriver() {
         return getSelectedDriver();
     }
 
-    public String getDatabase()
-    {
-        return dbfield.getText();
+    public String getDatabase() {
+        return urlTextField.getText();
     }
 
-    public String getUser()
-    {
-        return userfield.getText();
+    public String getUser() {
+        return userTextField.getText();
     }
 
-    public String getPassword()
-    {
-        String pword;
-        String tmppwd = new String(pwdfield.getPassword());
-        if (tmppwd.length() > 0) pword = tmppwd;
-        else pword = null;
-        return pword;
+    public String getPassword() {
+        String password;
+        String tempPassword = new String(passwordField.getPassword());
+        if (tempPassword.length() > 0)
+            password = tempPassword;
+        else
+            password = null;
+
+        return password;
     }
 
-    public boolean rememberPassword()
-    {
-        return rememberbox.isSelected();
+    public boolean rememberPassword() {
+        return passwordCheckBox.isSelected();
     }
-    
+
     public String getTitle() {
-        return bundle.getString("NewConnectionDialogTitle"); // NOI18N
+        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDialogTitle"); //NOI18N
+    }
+
+    private void startProgress() {
+        connectProgressBar.setBorderPainted(true);
+        connectProgressBar.setIndeterminate(true);
+        connectProgressBar.setString(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Connecting")); //NOI18N
+    }
+
+    private void stopProgress(boolean connected) {
+        if (connected) {
+            connectProgressBar.setValue(connectProgressBar.getMaximum());
+            connectProgressBar.setString(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Established")); //NOI18N
+        } else {
+            connectProgressBar.setValue(connectProgressBar.getMinimum());
+            connectProgressBar.setString(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Failed")); //NOI18N
+        }
+        connectProgressBar.setIndeterminate(false);
+    }
+
+    public void changedUpdate(javax.swing.event.DocumentEvent e) {
+        fireChange();
+    }
+
+    public void insertUpdate(javax.swing.event.DocumentEvent e) {
+        fireChange();
+    }
+
+    public void removeUpdate(javax.swing.event.DocumentEvent e) {
+        fireChange();
+    }
+
+    public void contentsChanged(javax.swing.event.ListDataEvent e) {
+        fireChange();
+    }
+
+    public void intervalAdded(javax.swing.event.ListDataEvent e) {
+        fireChange();
+    }
+
+    public void intervalRemoved(javax.swing.event.ListDataEvent e) {
+        fireChange();
+    }
+
+    private void fireChange() {
+        propertySupport.firePropertyChange("argumentChanged", null, null);
+        connectProgressBar.setBorderPainted(false);
+        connectProgressBar.setValue(connectProgressBar.getMinimum());
+        connectProgressBar.setString(""); //NOI18N
+    }
+
+    /** Add property change listener
+    * Registers a listener for the PropertyChange event. The connection object
+    * should fire a PropertyChange event whenever somebody changes driver, database,
+    * login name or password.
+    */
+    public void addPropertyChangeListener (PropertyChangeListener l) {
+        propertySupport.addPropertyChangeListener (l);
+    }
+
+    /** Remove property change listener
+    * Remove a listener for the PropertyChange event.
+    */
+    public void removePropertyChangeListener (PropertyChangeListener l) {
+        propertySupport.removePropertyChangeListener (l);
     }
 }

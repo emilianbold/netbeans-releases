@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -15,28 +15,41 @@ package org.netbeans.modules.db.explorer;
 
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.sql.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import org.openide.util.NbBundle;
+import java.util.Set;
 
-import org.netbeans.lib.ddl.*;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+
+import org.netbeans.lib.ddl.DBConnection;
+import org.netbeans.lib.ddl.DDLException;
+import org.netbeans.modules.db.ExceptionListener;
 
 /**
 * Connection information
 * This class encapsulates all information needed for connection to database
-* (database and driver url, login name, password and schema name). It can create JDBC 
+* (database and driver url, login name, password and schema name). It can create JDBC
 * connection and feels to be a bean (has propertychange support and customizer).
 * Instances of this class uses explorer option to store information about
 * open connection.
 */
 public class DatabaseConnection implements DBConnection {
-    
+
     static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
-    
+
     static final long serialVersionUID =4554639187416958735L;
-    
+
+    private Set exceptionListeners = Collections.synchronizedSet(new HashSet());
+    private Connection con;
+
     /** Driver URL and name */
     private String drv, drvname;
 
@@ -71,8 +84,7 @@ public class DatabaseConnection implements DBConnection {
     public static final String PROP_NAME = "name"; //NOI18N
 
     /** Default constructor */
-    public DatabaseConnection()
-    {
+    public DatabaseConnection() {
         propertySupport = new PropertyChangeSupport(this);
     }
 
@@ -83,8 +95,8 @@ public class DatabaseConnection implements DBConnection {
     * @param user User login name
     * @param password User password
     */
-    public DatabaseConnection(String driver, String database, String user, String password)
-    {
+    public DatabaseConnection(String driver, String database, String user, String password) {
+        this();
         drv = driver;
         db = database;
         usr = user;
@@ -94,8 +106,7 @@ public class DatabaseConnection implements DBConnection {
     }
 
     /** Returns driver URL */
-    public String getDriver()
-    {
+    public String getDriver() {
         return drv;
     }
 
@@ -103,22 +114,23 @@ public class DatabaseConnection implements DBConnection {
     * Fires propertychange event.
     * @param driver DNew driver URL
     */
-    public void setDriver(String driver)
-    {
-        if (driver == null || driver.equals(drv)) return;
+    public void setDriver(String driver) {
+        if (driver == null || driver.equals(drv))
+            return;
+
         String olddrv = drv;
         drv = driver;
         propertySupport.firePropertyChange(PROP_DRIVER, olddrv, drv);
     }
 
-    public String getDriverName()
-    {
+    public String getDriverName() {
         return drvname;
     }
 
-    public void setDriverName(String name)
-    {
-        if (name == null || name.equals(drvname)) return;
+    public void setDriverName(String name) {
+        if (name == null || name.equals(drvname))
+            return;
+
         String olddrv = drvname;
         drvname = name;
         if(propertySupport!=null)
@@ -126,10 +138,10 @@ public class DatabaseConnection implements DBConnection {
     }
 
     /** Returns database URL */
-    public String getDatabase()
-    {
-        if(db==null)
-            db = new String();
+    public String getDatabase() {
+        if (db == null)
+            db = "";
+
         return db;
     }
 
@@ -137,9 +149,10 @@ public class DatabaseConnection implements DBConnection {
     * Fires propertychange event.
     * @param database New database URL
     */
-    public void setDatabase(String database)
-    {
-        if (database == null || database.equals(db)) return;
+    public void setDatabase(String database) {
+        if (database == null || database.equals(db))
+            return;
+
         String olddb = db;
         db = database;
         name = null;
@@ -149,10 +162,10 @@ public class DatabaseConnection implements DBConnection {
     }
 
     /** Returns user login name */
-    public String getUser()
-    {
-        if(usr==null)
-            usr = new String();
+    public String getUser() {
+        if (usr == null)
+            usr = "";
+
         return usr;
     }
 
@@ -160,9 +173,10 @@ public class DatabaseConnection implements DBConnection {
     * Fires propertychange event.
     * @param user New login name
     */
-    public void setUser(String user)
-    {
-        if (user == null || user.equals(usr)) return;
+    public void setUser(String user) {
+        if (user == null || user.equals(usr))
+            return;
+
         String oldusr = usr;
         usr = user;
         name = null;
@@ -172,16 +186,12 @@ public class DatabaseConnection implements DBConnection {
     }
 
     /** Returns name of the connection */
-    public String getName()
-    {
-        if(name==null)
+    public String getName() {
+        if(name == null)
             if((getSchema()==null)||(getSchema().length()==0))
-                name = MessageFormat.format(bundle.getString("ConnectionNodeUniqueName"), // NOI18N
-                        new String[] {getDatabase(), getUser(), 
-                        bundle.getString("SchemaIsNotSet")});
+                name = MessageFormat.format(bundle.getString("ConnectionNodeUniqueName"), new String[] {getDatabase(), getUser(), bundle.getString("SchemaIsNotSet")}); //NOI18N
             else
-                name = MessageFormat.format(bundle.getString("ConnectionNodeUniqueName"), // NOI18N
-                        new String[] {getDatabase(), getUser(), getSchema()});
+                name = MessageFormat.format(bundle.getString("ConnectionNodeUniqueName"), new String[] {getDatabase(), getUser(), getSchema()}); //NOI18N
         return name;
     }
 
@@ -189,9 +199,10 @@ public class DatabaseConnection implements DBConnection {
     * Fires propertychange event.
     * @param value New connection name
     */
-    public void setName(String value)
-    {
-        if (name == null || name.equals(value)) return;
+    public void setName(String value) {
+        if (name == null || name.equals(value))
+            return;
+
         String old = name;
         name = value;
         if(propertySupport!=null)
@@ -199,20 +210,21 @@ public class DatabaseConnection implements DBConnection {
     }
 
     /** Returns user schema name */
-    public String getSchema()
-    {
-        if(schema==null)
-            schema = new String();
+    public String getSchema() {
+        if (schema == null)
+            schema = "";
+
         return schema;
     }
 
     /** Sets user schema name
     * Fires propertychange event.
-    * @param user New login name
+    * @param schema_name New login name
     */
-    public void setSchema(String schema_name)
-    {
-        if (schema_name == null || schema_name.equals(schema)) return;
+    public void setSchema(String schema_name) {
+        if (schema_name == null || schema_name.equals(schema))
+            return;
+
         String oldschema = schema;
         schema = schema_name;
         name = null;
@@ -222,22 +234,19 @@ public class DatabaseConnection implements DBConnection {
     }
 
     /** Returns if password should be remembered */
-    public boolean rememberPassword()
-    {
+    public boolean rememberPassword() {
         return rpwd.equals(Boolean.TRUE);
     }
 
     /** Sets password should be remembered
     * @param flag New flag
     */
-    public void setRememberPassword(boolean flag)
-    {
+    public void setRememberPassword(boolean flag) {
         rpwd = (flag ? Boolean.TRUE : Boolean.FALSE);
     }
 
     /** Returns password */
-    public String getPassword()
-    {
+    public String getPassword() {
         return pwd;
     }
 
@@ -245,9 +254,10 @@ public class DatabaseConnection implements DBConnection {
     * Fires propertychange event.
     * @param password New password
     */
-    public void setPassword(String password)
-    {
-        if (password == null || password.equals(pwd)) return;
+    public void setPassword(String password) {
+        if (password == null || password.equals(pwd))
+            return;
+
         String oldpwd = pwd;
         pwd = password;
         if(propertySupport!=null)
@@ -255,13 +265,11 @@ public class DatabaseConnection implements DBConnection {
     }
 
     /** Creates JDBC connection
-    * Uses DriverManager to create connection to specified database. Throws 
-    * DDLException if none of driver/database/user/password is set or if 
+    * Uses DriverManager to create connection to specified database. Throws
+    * DDLException if none of driver/database/user/password is set or if
     * driver or database does not exist or is inaccessible.
     */
-    public Connection createJDBCConnection()
-    throws DDLException
-    {
+    public Connection createJDBCConnection() throws DDLException {
         if (drv == null || db == null || usr == null || pwd == null )
             throw new DDLException(bundle.getString("EXC_InsufficientConnInfo"));
 
@@ -270,33 +278,86 @@ public class DatabaseConnection implements DBConnection {
         dbprops.put("password", pwd); //NOI18N
 
         try {
-            /*
-            			ClassLoader syscl = Topmanager.getDefault().currentClassLoader();
-            			Class cl = syscl.loadClass("java.sql.DriverManager");
-            			cl = syscl.loadClass(drv);
-            			DriverManager.registerDriver((Driver)cl.newInstance());
-
-            			Method gmet = DriverManager.class.getDeclaredMethod("getConnection", new Class[] {String.class, Properties.class, ClassLoader.class});
-            			gmet.setAccessible(true);
-            			gmet.invoke(DriverManager.class, new Object[] {db, dbprops, syscl});		
-
-            	    	Connection connection = (Connection)gmet.invoke(DriverManager.class, new Object[] {db, dbprops, syscl});
-            */
+            propertySupport.firePropertyChange("connecting", null, null);
             Class.forName(drv);
             Connection connection = DriverManager.getConnection(db, dbprops);
+            propertySupport.firePropertyChange("connected", null, null);
             return connection;
-            
         } catch (SQLException e) {
             // hack for Pointbase Network Server
             String message = MessageFormat.format(bundle.getString("EXC_CannotEstablishConnection"), new String[] {db, drv, e.getMessage()}); // NOI18N
             if(drv.equals(PointbasePlus.DRIVER))
                 if(e.getErrorCode()==PointbasePlus.ERR_SERVER_REJECTED)
                     message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message, db}); // NOI18N
+
+            propertySupport.firePropertyChange("failed", null, null);
             throw new DDLException(message);
         } catch (Exception exc) {
             String message = MessageFormat.format(bundle.getString("EXC_CannotEstablishConnection"), new String[] {db, drv, exc.getMessage()}); // NOI18N
+
+            propertySupport.firePropertyChange("failed", null, null);
             throw new DDLException(message);
         }
+    }
+
+    public void connect() {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                if (drv == null || db == null || usr == null || pwd == null )
+                    sendException(new DDLException(bundle.getString("EXC_InsufficientConnInfo")));
+
+                Properties dbprops = new Properties();
+                dbprops.put("user", usr); //NOI18N
+                dbprops.put("password", pwd); //NOI18N
+
+                try {
+                    propertySupport.firePropertyChange("connecting", null, null);
+                    Class.forName(drv);
+                    Connection connection = DriverManager.getConnection(db, dbprops);
+                    setConnection(connection);
+                    propertySupport.firePropertyChange("connected", null, null);
+                } catch (SQLException e) {
+                    // hack for Pointbase Network Server
+                    String message = MessageFormat.format(bundle.getString("EXC_CannotEstablishConnection"), new String[] {db, drv, e.getMessage()}); // NOI18N
+                    if (drv.equals(PointbasePlus.DRIVER))
+                        if (e.getErrorCode() == PointbasePlus.ERR_SERVER_REJECTED)
+                            message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message, db}); // NOI18N
+
+                    propertySupport.firePropertyChange("failed", null, null);
+                    sendException(new DDLException(message));
+                } catch (ClassNotFoundException exc) {
+                    propertySupport.firePropertyChange("failed", null, null);
+                    sendException(exc);
+                }
+            }
+        }, 0);
+    }
+
+    public void addExceptionListener(ExceptionListener l) {
+        if (l != null)
+            exceptionListeners.add(l);
+    }
+
+    public void removeExceptionListener(ExceptionListener l) {
+        exceptionListeners.remove(l);
+    }
+
+    private void sendException(Exception exc) {
+        synchronized (exceptionListeners) {
+            Iterator it = exceptionListeners.iterator();
+            while (it.hasNext()) {
+                ExceptionListener l = (ExceptionListener) it.next();
+                l.exceptionOccurred(exc);
+            }
+        }
+    }
+
+    private void setConnection(Connection c) {
+        con = c;
+    }
+
+    public Connection getConnection() {
+        return con;
     }
 
     /** Add property change listener
@@ -315,18 +376,16 @@ public class DatabaseConnection implements DBConnection {
         propertySupport.removePropertyChangeListener (l);
     }
 
-    public int hashCode()
-    {
-        return drv.hashCode()+db.hashCode()+usr.hashCode();
+    public int hashCode() {
+        return drv.hashCode() + db.hashCode() + usr.hashCode();
     }
 
     /** Compares two connections.
     * Returns true if driver, database and login name equals.
     */
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (obj instanceof DBConnection) {
-            DBConnection con = (DBConnection)obj;
+            DBConnection con = (DBConnection) obj;
             return toString().equals(con.toString());
         }
 
@@ -334,18 +393,16 @@ public class DatabaseConnection implements DBConnection {
     }
 
     /** Reads object from stream */
-    private void readObject(java.io.ObjectInputStream in)
-    throws java.io.IOException, ClassNotFoundException
-    {
-        drv = (String)in.readObject();
-        db = (String)in.readObject();
-        usr = (String)in.readObject();
-        schema = (String)in.readObject();
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+        drv = (String) in.readObject();
+        db = (String) in.readObject();
+        usr = (String) in.readObject();
+        schema = (String) in.readObject();
         rpwd = Boolean.FALSE;
-        name = (String)in.readObject();
+        name = (String) in.readObject();
 
         // boston setting/pilsen setting?
-        if((name!=null)&&(name.equals(DatabaseConnection.SUPPORT))) {
+        if ((name != null) && (name.equals(DatabaseConnection.SUPPORT))) {
             // pilsen
         } else {
             // boston
@@ -356,9 +413,7 @@ public class DatabaseConnection implements DBConnection {
     }
 
     /** Writes object to stream */
-    private void writeObject(java.io.ObjectOutputStream out)
-    throws java.io.IOException
-    {
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
         out.writeObject(drv);
         out.writeObject(db);
         out.writeObject(usr);
@@ -367,10 +422,7 @@ public class DatabaseConnection implements DBConnection {
     }
 
     public String toString() {
-        return "Driver:" + drv +
-                "Database:" + db.toLowerCase() + 
-                "User:" + usr.toLowerCase() + 
-                "Schema:" + schema.toLowerCase();
+        return "Driver:" + drv + "Database:" + db.toLowerCase() + "User:" + usr.toLowerCase() + "Schema:" + schema.toLowerCase();
     }
 
 }
