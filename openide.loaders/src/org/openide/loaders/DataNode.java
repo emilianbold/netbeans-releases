@@ -503,7 +503,17 @@ public class DataNode extends AbstractNode {
     /** Support for firing property change.
     * @param ev event describing the change
     */
-    void fireChange (PropertyChangeEvent ev) {
+    void fireChange (final PropertyChangeEvent ev) {
+        if (FolderList.isFolderRecognizerThread()) {
+            // never fire into nodes from Recognizer Thread, issue #35847
+            RequestProcessor.getDefault().post (new Runnable () {
+                public void run () {
+                    fireChange (ev);
+                }
+            });
+            return;
+        }
+        
         if (DataFolder.PROP_CHILDREN.equals (ev.getPropertyName ())) {
             // the node is not interested in children changes
             return;
