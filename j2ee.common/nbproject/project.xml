@@ -200,7 +200,8 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages>
 		<package>org.netbeans.modules.j2ee.common</package>
 		<package>org.netbeans.modules.j2ee.common.ui</package>
-        <package>org.netbeans.modules.j2ee.common.ui.nodes</package>
+                <package>org.netbeans.modules.j2ee.common.ui.nodes</package>
+                <package>org.netbeans.modules.j2ee.common.ui.method</package>
                 <!--
 		<package>org.netbeans.modules.j2ee.common.ui.resources</package>
 		<package>org.netbeans.modules.j2ee.common.ui.customizer</package>
