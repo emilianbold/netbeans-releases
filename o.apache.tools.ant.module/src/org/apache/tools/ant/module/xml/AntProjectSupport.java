@@ -46,7 +46,7 @@ import org.apache.tools.ant.module.api.AntProjectCookie;
 
 public class AntProjectSupport implements AntProjectCookie, DocumentListener, FileChangeListener, org.w3c.dom.events.EventListener, Runnable, ChangeListener {
   
-    private final File file;
+    private File file;
     private FileObject fo;
 
     private transient Document projDoc = null; // [PENDING] SoftReference
@@ -121,6 +121,18 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
             fo = null;
         }
         return fo;
+    }
+    
+    public void setFile (File f) { // #11979
+        file = f;
+        fo = null;
+        invalidate ();
+    }
+    
+    public void setFileObject (FileObject fo) { // #11979
+        this.fo = fo;
+        file = NbClassPath.toFile (fo);
+        invalidate ();
     }
     
     public Document getDocument () {

@@ -109,6 +109,9 @@ public class AntProjectDataObject extends MultiDataObject implements PropertyCha
         if (prop == null || prop.equals (DataObject.PROP_TEMPLATE)) {
             checkIterator ();
         }
+        if (prop == null || prop.equals (DataObject.PROP_PRIMARY_FILE)) { // #11979
+            ((AntProjectSupport) getCookie (AntProjectSupport.class)).setFileObject (getPrimaryFile ());
+        }
     }
 
 }
