@@ -19,6 +19,7 @@ import java.awt.event.WindowEvent;
 import java.io.ObjectStreamException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -46,10 +47,12 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
      */
     public JavaHelp() {
         Installer.err.log("JavaHelp created");
-        Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.WINDOW_EVENT_MASK);
+        if (!isModalExcludedSupported()) {
+            Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.WINDOW_EVENT_MASK);
+        }
     }
     void deactivate() {
-        Toolkit.getDefaultToolkit().removeAWTEventListener(this);
+        //Toolkit.getDefaultToolkit().removeAWTEventListener(this);
     }
 
     // [PENDING] hold help sets weakly? softly? try to conserve memory...
@@ -156,6 +159,11 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             frameViewer = new JFrame();
             frameViewer.setIconImage(Utilities.loadImage("org/netbeans/modules/javahelp/resources/help.gif")); // NOI18N
             frameViewer.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavaHelp.class, "ACSD_JavaHelp_viewer"));
+            
+            if (isModalExcludedSupported()) {
+                setModalExcluded(frameViewer);
+                frameViewer.getRootPane().putClientProperty("netbeans.helpframe", Boolean.TRUE); // NOI18N
+            }
         }
     }
     private void ensureDialogViewer() {
@@ -342,12 +350,17 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         }
         JHelp jh = createJHelp(hs);
         if (jh == null) throw new IllegalStateException();
-        if (currentModalDialog() == null) {
-            Installer.err.log("showing as non-dialog");
+
+        if (isModalExcludedSupported()) {
             displayHelpInFrame(jh);
         } else {
-            Installer.err.log("showing as dialog");
-            displayHelpInDialog(jh);
+            if (currentModalDialog() == null) {
+                Installer.err.log("showing as non-dialog");
+                displayHelpInFrame(jh);
+            } else {
+                Installer.err.log("showing as dialog");
+                displayHelpInDialog(jh);
+            }
         }
         displayInJHelp(jh, ctx2.getHelpID(), ctx2.getHelp());
     }
@@ -782,6 +795,46 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         return jh;
     }
 
+    // XXX(ttran) see JDK bug 5092094 for details
+    
+    private static int modalExcludedSupported = -1;
+    
+    private static boolean isModalExcludedSupported() {
+        if (modalExcludedSupported == -1) {
+            modalExcludedSupported = 0;
+            
+            try {
+                Class clazz = Class.forName("sun.awt.SunToolkit"); // NOI18N
+                Method m = clazz.getMethod("isModalExcludedSupported", null); // NOI18N
+                Boolean b = (Boolean) m.invoke(null, null);
+                modalExcludedSupported = b.booleanValue() ? 1 : 0;
+                Installer.err.log("isModalExcludedSupported = " + modalExcludedSupported); // NOI18N
+            } catch (ThreadDeath ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                Installer.err.log("isModalExcludedSupported() failed  " + ex); // NOI18N
+            }
+        }
+        
+        return modalExcludedSupported == 1;
+    }
+
+    private static void setModalExcluded(Window window) {
+        if (modalExcludedSupported == 0)
+            return;
+        
+        try {
+            Class clazz = Class.forName("sun.awt.SunToolkit"); // NOI18N
+            Method m = clazz.getMethod("setModalExcluded", new Class [] { Window.class }); // NOI18N
+            m.invoke(null, new Object[] { window });
+        } catch (ThreadDeath ex) {
+            throw ex;
+        } catch (Throwable ex) {
+            Installer.err.log("setModalExcluded(Window) failed  " + ex); // NOI18N
+            modalExcludedSupported = 0;
+        }
+    }
+    
     /** Obsolete component, only here for deserialization safety.
      * @deprecated do not use
      */
