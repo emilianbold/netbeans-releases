@@ -40,6 +40,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
@@ -267,6 +268,9 @@ implements EditCookie, PrintCookie, Serializable {
             super.notifyClosed();
         }
     }
+
+    // [PENDING] direct use of bundle messages from openide is illegal!
+    // Copy the messages to properties Bundle.properties instead.
     
     /** 
      * Overrides superclass abstract method. 
@@ -345,12 +349,20 @@ implements EditCookie, PrintCookie, Serializable {
         // update tooltip
         FileObject fo = myEntry.getFile();
         
-        return NbBundle.getMessage (
-            CloneableEditorSupport.class,
-            "LAB_EditorToolTip", // NOI18N
-            fo.getPackageName ('.'),
-            fo.getExt ()
-        );
+        try {
+            return NbBundle.getMessage (CloneableEditorSupport.class, "LAB_EditorToolTip_Valid", new Object[] {
+                fo.getPackageName ('.'),
+                fo.getName (),
+                fo.getExt (),
+                fo.getFileSystem ().getDisplayName ()
+            });
+        } catch (FileStateInvalidException fsie) {
+            return NbBundle.getMessage (CloneableEditorSupport.class, "LAB_EditorToolTip_Invalid", new Object[] {
+                fo.getPackageName ('.'),
+                fo.getName (),
+                fo.getExt ()
+            });
+        }
     }
     
     /** Overrides superclass method. Gets <code>UndoRedo</code> manager which maps 
