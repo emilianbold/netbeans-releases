@@ -75,7 +75,7 @@ public class XmlMultiViewElement implements MultiViewElement {
     }
 
     public javax.swing.Action[] getActions() {
-        return comp.getActions();
+        return new javax.swing.Action[]{};
     }
 
     public org.openide.util.Lookup getLookup() {

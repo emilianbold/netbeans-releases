@@ -231,12 +231,13 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         changedFromUI=true;
         if(getCookie(SaveCookie.class) == null) {
             getCookieSet0().add(getEditorSupport().saveCookie);
+            getEditorSupport().getMVTC().setDisplayName(getEditorSupport().getMVTC().getDisplayName()+" *"); // NOI18N
         }
         updateDocument();
         //setModified(true);
     }
     
-    /** Icon Base for MultiView editor
+    /** MultiViewDesc for MultiView editor
      */
     protected abstract DesignMultiViewDesc[] getMultiViewDesc();
     

@@ -38,6 +38,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
     private static final int PARSING_DELAY = 2000;
     private static final int PARSING_INIT_DELAY = 100;
     private RequestProcessor.Task parsingDocumentTask;
+    CloneableTopComponent mvtc;
     
     final SaveCookie saveCookie = new SaveCookie() {
         /** Implements <code>SaveCookie</code> interface. */
@@ -53,7 +54,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
         this.dObj=dObj;
 
         // Set a MIME type as needed, e.g.:
-        setMIMEType ("text/xml");   // NOI18
+        setMIMEType ("text/xml");   // NOI18N
     }
     
     /** Restart the timer which starts source parsing after the specified delay.
@@ -107,6 +108,11 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
         super.notifyUnmodified();
 
         removeSaveCookie();
+        String name = mvtc.getDisplayName();
+        if (name.endsWith(" *")) { // NOI18N
+            name = name.substring(0,name.length()-2);
+            mvtc.setDisplayName(name);
+        }
     }
 
     /** Helper method. Adds save cookie to the data object. */
@@ -170,6 +176,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
         }
         mvtc.setDisplayName(dObj.getDisplayName());
         mvtc.setIcon(org.openide.util.Utilities.loadImage(dObj.getIconBase()+".gif"));
+        this.mvtc=mvtc;
         return mvtc;
     }
 
@@ -277,7 +284,8 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
         }
         
         public java.awt.Image getIcon() {
-            return org.openide.util.Utilities.loadImage("org/netbeans/modules/xml/multiview/resources/xmlObject.gif");
+            return getDataObject().getNodeDelegate().getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
+            //return org.openide.util.Utilities.loadImage("org/netbeans/modules/xml/multiview/resources/xmlObject.gif");
         }
         
         public int getPersistenceType() {
@@ -285,7 +293,11 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
         }
         
         public String preferredID() {
-            return "multiview_xml";
+            return "multiview_xml"; //NOI18N
         }
+    }
+    
+    CloneableTopComponent getMVTC() {
+        return mvtc;
     }
 }
