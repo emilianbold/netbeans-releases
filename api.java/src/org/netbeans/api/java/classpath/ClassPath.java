@@ -456,6 +456,7 @@ public abstract class ClassPath {
      *
      * @param cache True, if a new ClassLoader is requested
      * @return ClassLoader that loads classes
+     * @since 1.2.1
      */
     public final synchronized ClassLoader getClassLoader(boolean cache) {
         Object o = refClassLoader.get();
