@@ -305,7 +305,8 @@ Microsystems, Inc. All Rights Reserved.
       <selector>
         <or>
           <selector refid="${selector}" />
-          <filename name="netbeans/**/*java" />
+          <filename name="${include}" />
+          <filename name="org/netbeans/modules/openide/**/*.java" />
         </or>
       </selector>
       <classpath refid="classpath" />

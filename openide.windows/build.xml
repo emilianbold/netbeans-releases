@@ -32,14 +32,10 @@ Microsystems, Inc. All Rights Reserved.
          <pathelement location="${nbroot}/openide/dialogs/netbeans/lib/openide-dialogs.jar"/>
     </path>
     <ant dir="${nbroot}/openide" target="do-lib-javac" inheritRefs="true" >
+      <property name="include" value="org/openide/awt/HtmlBrowser$$BrowserComponent.java" />
       <property name="localdir" location="src" />
       <property name="selector" value="openide.windows" />
     </ant>
-    <javac srcdir="src" >
-       <classpath refid="classpath" />
-       <classpath location="src" />
-    </javac>
-    
   </target>
 
     <target name="openide-compat" 
@@ -113,6 +109,11 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="netbeans"/>
     <delete dir="Info"/>
     <delete dir="reload"/>
+    <delete>
+      <fileset dir="src" >
+        <include name="**/*class" />
+      </fileset>
+    </delete>
   </target>
 
 </project>
