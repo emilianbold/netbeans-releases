@@ -108,4 +108,13 @@ public class Deploy extends Task implements Deployment.Logger {
         this.clientUrlPart = clientUrlPart;
     }
     
+    /**
+     * Get/setter for task parameter 'contextRoot'
+     */
+    public String getContextRoot() {
+        return this.contextRoot;
+    }
+    public void setContextRoot(String contextRoot) {
+        this.contextRoot = contextRoot;
+    }
 }
