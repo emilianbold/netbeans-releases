@@ -132,7 +132,9 @@ public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCu
     public void addNotify () {
         super.addNotify();
         //force focus to the editable area
-        textArea.requestFocus();
+        if (isEnabled() && isFocusable()) {
+            textArea.requestFocus();
+        }
     }
 
     /**
