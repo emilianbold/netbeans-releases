@@ -106,6 +106,7 @@ public class NonGui extends NbTopManager implements Runnable {
             
             if (userDir == null) {
                 System.err.println(NbBundle.getMessage(NonGui.class, "ERR_no_user_directory"));
+                Thread.dumpStack(); // likely to happen from misbehaving unit tests, etc.
                 doExit(1);
             }
             if (userDir.equals(getHomeDir())) { 
