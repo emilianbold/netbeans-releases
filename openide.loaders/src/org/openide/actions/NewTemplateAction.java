@@ -46,8 +46,6 @@ import org.openide.windows.WindowManager;
 * @author Petr Hamernik, Dafe Simonek
 */
 public class NewTemplateAction extends NodeAction {
-    /** generated Serialized Version UID */
-    static final long serialVersionUID = 5408651725508985475L;
 
     private static DataObject selectedTemplate;
     private static DataFolder targetFolder;
@@ -105,11 +103,12 @@ public class NewTemplateAction extends NodeAction {
             if (selectedTemplate != null && selectedTemplate.isValid())
                 wizard.setTemplate(selectedTemplate);
         }
+        boolean instantiated = false;
         try {
             // clears the name to default
             wizard.setTargetName(null);
             // instantiates
-            wizard.instantiate ();
+            instantiated = wizard.instantiate() != null;
         } catch (IOException e) {
             ErrorManager em = ErrorManager.getDefault();
             em.annotate(e, NbBundle.getMessage(DataObject.class, "EXC_TemplateFailed"));
@@ -118,9 +117,15 @@ public class NewTemplateAction extends NodeAction {
         finally {
             if (wizard instanceof DefaultTemplateWizard) {
                 try {
-                    selectedTemplate = wizard.getTemplate();
-                    // Put the template in the recent list
-                    if (selectedTemplate != null) recentChanged = addRecent (selectedTemplate);
+                    if (instantiated) {
+                        selectedTemplate = wizard.getTemplate();
+                        // Put the template in the recent list
+                        if (selectedTemplate != null) {
+                            recentChanged = addRecent (selectedTemplate);
+                        }
+                    }
+                    // else selectedTemplate might be e.g. Templates folder itself
+                    // which would cause an IOException when trying to make a link
                     targetFolder = wizard.getTargetFolder();
                 }
                 catch (IOException ignore) {
@@ -130,6 +135,10 @@ public class NewTemplateAction extends NodeAction {
             }
             active = false;
         }
+    }
+    
+    protected boolean asynchronous() {
+        return false;
     }
 
     /* Enables itself only when activates node is DataFolder.
@@ -151,30 +160,18 @@ public class NewTemplateAction extends NodeAction {
         return false;
     }
 
-    /* Human presentable name of the action. This should be
-    * presented as an item in a menu.
-    * @return the name of the action
-    */
     public String getName() {
         return NbBundle.getMessage(DataObject.class, "NewTemplate");
     }
 
-    /* Help context where to find more about the action.
-    * @return the help context for this action
-    */
     public HelpCtx getHelpCtx() {
         return new HelpCtx (NewTemplateAction.class);
     }
 
-    /* Resource name for the icon.
-    * @return resource name
-    */
     protected String iconResource () {
         return "org/openide/resources/actions/new.gif"; // NOI18N
     }
     
-    /* Creates presenter that invokes the associated presenter.
-    */
     public JMenuItem getMenuPresenter() {
         return new Actions.MenuItem (this, true) {
                    public void setEnabled (boolean e) {
@@ -183,8 +180,6 @@ public class NewTemplateAction extends NodeAction {
                };
     }
 
-    /* Creates presenter that invokes the associated presenter.
-    */
     public Component getToolbarPresenter() {
         return new Actions.ToolbarButton (this) {
                    public void setEnabled (boolean e) {
