@@ -219,6 +219,7 @@
 	<mapID target="wsc_test" url="webservice/consume/wsc_test.html" />
 	<mapID target="wsc_create" url="webservice/consume/wsc_create.html" />
 	<mapID target="wsc_call_ws" url="webservice/consume/wsc_call_ws.html" />
+	<mapID target="wsc_deploy" url="webservice/consume/wsc_deploy.html" />
 	<!-- End of "Consume" section -->
 	
 <!-- End of "Developing Web Services" help -->

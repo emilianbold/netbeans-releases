@@ -32,6 +32,22 @@ provides features that you can set to optimize the resulting web service client.
 </tr>
 </table>
 <p><b>To build the web service client:</b></p>
+<ol>
+<li>Do one of the following to build the web service client:
+<ul>
+  <li>If the module within which the web service client is implemented
+    is part of a J2EE application, make sure the J2EE application 
+    is set as the main project and choose Build <img src="../../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Build 
+    Main Project (F11).</li>
+  <li>If the project is a stand-alone module, or if you want to build the 
+    module without building the other modules in the J2EE application, right-click 
+    the project's node in the Projects window and choose Build Project.</li>
+</ul></li>
+<li>Analyze the result and, if necessary, customize the <tt>wscompile</tt> tool's features and build the
+web service again.</li>
+</ol>
+
+<p><b>To customize the wscompile tool's features:</b></p>
 <ol><li>Right-click the project node in the Projects window and choose Properties.</li>
 <li>In the Project Properties dialog box, select the Web Service Clients page.</li>
 <li>Type or select the wscompile features that are appropriate for your client:
@@ -113,18 +129,6 @@ provides features that you can set to optimize the resulting web service client.
   </tr>
 </table></li>
 <li>Click OK.</li>
-<li>Do one of the following to build the web service client:
-<ul>
-  <li>If the module within which the web service client is implemented
-    is part of a J2EE application, make sure the J2EE application 
-    is set as the main project and choose Build <img src="../../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Build 
-    Main Project (F11).</li>
-  <li>If the project is a stand-alone module, or if you want to build the 
-    module without building the other modules in the J2EE application, right-click 
-    the project's node in the Projects window and choose Build Project.</li>
-</ul></li>
-<li>Analyze the result and, if necessary, reset the <tt>wscompile</tt> tool's features and build the
-web service again.</li>
 </ol>
 <table cellpadding="3" cellspacing="0" border="0">
 <tr valign="top"> 
@@ -135,7 +139,6 @@ web service again.</li>
 stores the selected features.</td>
 </tr>
 </table>
-
 <table>
 <tr>
 <th colspan=2 align=left><a name="seealso">See Also</a></th>

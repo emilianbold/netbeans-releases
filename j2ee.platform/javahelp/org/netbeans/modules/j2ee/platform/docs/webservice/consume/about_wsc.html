@@ -10,17 +10,18 @@ Use is subject to license terms.  *-->
 <body bgcolor="#FFFFFF">
 <h2>About Web Service Clients</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>A web service client is created to consume (i.e., interact with) a specific <a href="../about/about_ws.html">web service</a>.
+<p>A web service client is created to consume (i.e., use) a specific <a href="../about/about_ws.html">web service</a>.
 The way in which a web service client consumes a web service depends on the way in which the provider makes the web service available:
 <ul> <li>The provider distributes a URL to the <a href="../build/about_wsdl.html">WSDL file</a>
        	of a running web service.</li>
 	<li>The provider distributes a WSDL file, which is available to you on your local filesystem.</li>
 </ul>
 <p>There are two types of web service clients, JSR-109 and JAX-RPC:</p>
-<ul><li><b>JSR-109 (Enterprise Web Services).</b> Enhances JSR-101 by defining the packaging
+<ul><li><b>J2EE 1.4 (JSR-109).</b> Enhances JSR-101 by defining the packaging
 of web services into standard J2EE modules, including a new deployment descriptor,
-and defining web services that are implemented as session beans.</li>
-<li><b>JSR-101 (JAX-RPC).</b> Defines the mapping of WSDL to Java and vice versa.
+and defining web services that are implemented as session beans or servlets.
+This is the recommended and portable (via J2EE 1.4 specification) type.</li>
+<li><b>JAX-RPC Static Stub.</b> Defines the mapping of WSDL to Java and vice versa.
 It also defines a client API to invoke a remote web service and a runtime environment 
 on the server to host a web service.</li></ul>
 <p>For detailed information, refer to the full specifications:</p>

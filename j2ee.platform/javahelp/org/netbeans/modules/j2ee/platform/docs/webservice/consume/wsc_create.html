@@ -17,7 +17,8 @@ Use is subject to license terms.  *-->
 <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
 <td>Later, you will not be able to <a href="wsc_build.html">build</a> the web service client
 	unless the SJS Application Server is the target
-	 server for the project.</td>
+	server for the project. Therefore, take the appropriate steps to 
+	<a href="../create/set_ws_server.html">prepare to develop web services and clients</a>.</td>
 </tr>
 </table>
 </li>
@@ -29,16 +30,29 @@ specify a package where the client is to be generated.</li>
 <li>To generate a client from a WSDL file
 	 on your local filesystem, browse to the WSDL file and 
  specify a package where the client is to be generated.</li></ul>
+<li>Specify a package name for the generated interfaces that will be used by your 
+user code to access and interact with the web service.</li>
+<li>Specify the web service client type:
+<ul><li><b>J2EE 1.4 (JSR-109).</b> Enhances JSR-101 by defining the packaging
+of web services into standard J2EE modules, including a new deployment descriptor,
+and defining web services that are implemented as session beans or servlets.
+This is the recommended and portable (via J2EE 1.4 specification) type.</li>
+<li><b>JAX-RPC Static Stub.</b> Defines the mapping of WSDL to Java and vice versa.
+It also defines a client API to invoke a remote web service and a runtime environment 
+on the server to host a web service.</li></ul>
+</li>
 
 <li>Click Finish.</li>
 
  
-<p>The IDE does the following:
+<p>The IDE creates a node for the web service under the Web Service References node in the Projects window.
+For each web service operation defined in the WSDL file, the IDE creates a sub-node with the 
+operation's name. Right-click an operation node and choose Test Operation to test the operation directly within 
+the IDE, without writing a single line of code. In addition, the IDE does the following:
 <ul><li>Creates a folder, if not already present, named <tt>wsdl</tt> under <tt>web/WEB-INF</tt> to contain the WSDL file.</li>
 <li>Adds a <tt>service-ref</tt> element to the deployment descriptor (the <tt>web.xml</tt> file) for this service.</li>
 <li>Adds a <tt>wscompile</tt> target for this service to the Ant build script (the <tt>build.xml</tt> file).</li>
-<li>Registers the service into the Web Service registry in the Runtime tab, if not already present.</li>
-<li>Creates a node for this service under Web Service References node in the Projects window.</li></ul>
+<li>Registers the service in the Web Service registry in the Runtime tab.</li></ul>
 </ol>
 <table>
 <tr>
