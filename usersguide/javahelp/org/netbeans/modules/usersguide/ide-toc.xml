@@ -13,7 +13,7 @@
   <tocitem text="Key Concepts" target="gs.key" />
   <tocitem text="A Tour of the IDE" target="gs.tour" />
   <tocitem text="Workspaces" target="gs.wkspc" />
-  <tocitem text="Getting Started Tutorials" target="gs.gstutor" />
+  <tocitem text="Getting Started Tutorial" target="gs.gstutor" />
   <tocitem text="Creating the ColorSwitch Application" target="gs.csw">
     <tocitem text="Creating a Container" target="gs.cont" />
     <tocitem text="Choosing a Layout Manager" target="gs.lyt" />
@@ -24,17 +24,6 @@
     <tocitem text="Compiling and Running Your Program" target="gs.run" />
     <tocitem text="Stepping Through the Code" target="gs.step" />
     <tocitem text="Viewing the Class Hierarchy" target="gs.view" />
-  </tocitem>
-  <tocitem text="Creating the LookandFeel Application" target="gs.guis">
-    <tocitem text="Setting Up the Tutorial" target="gs.settingup" />
-    <tocitem text="Creating a Container" target="gs.guicont" />
-    <tocitem text="Adding a Custom JavaBeans Component" target="gs.addjbean" />
-    <tocitem text="Customizing the JavaBeans Component" target="gs.customjbean" />
-    <tocitem text="Adding Swing Components" target="gs.addswing" />
-    <tocitem text="Changing the Layout" target="gs.editlyt" />
-    <tocitem text="Connecting Components using the Connection Wizard" target="gs.connect" />
-    <tocitem text="Compiling and Running a Swing Application" target="gs.runswing" />
-    <tocitem text="Adding a Bean to the Component Palette" target="gs.addpalette" />
   </tocitem>
 </tocitem>
 
