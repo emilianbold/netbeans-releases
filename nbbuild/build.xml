@@ -385,7 +385,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module debuggerjpda/ant..."/>
     <ant dir="../debuggerjpda/ant" target="netbeans"/>
   </target>
-  <target name="all-editor" depends="build-platform,all-java/srcmodel,all-debuggercore/oldapi,all-java/api,all-java/javacore">
+  <target name="all-editor" depends="build-platform,all-java/srcmodel,all-java/api,all-java/javacore">
     <echo message="Building module editor..."/>
     <ant dir="../editor" target="netbeans"/>
   </target>
@@ -731,7 +731,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module text..."/>
     <ant dir="../text" target="netbeans"/>
   </target>
-  <target name="all-tomcatint/tomcat5" depends="build-platform,all-ant,all-schema2beans/rt,all-java/srcmodel,all-debuggercore/oldapi,all-j2eeserver,all-web/ddapi,build-schema2beans/anttask">
+  <target name="all-tomcatint/tomcat5" depends="build-platform,all-ant,all-schema2beans/rt,all-java/srcmodel,all-j2eeserver,all-web/ddapi,build-schema2beans/anttask">
     <echo message="Building module tomcatint/tomcat5..."/>
     <ant dir="../tomcatint/tomcat5" target="netbeans"/>
   </target>
@@ -832,7 +832,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/project..."/>
     <ant dir="../web/project" target="netbeans" />
   </target>
-  <target name="all-web/core" depends="build-platform,all-java,all-editor,all-web/ddapi,all-web/webapi,all-j2eeserver,all-html,all-httpserver,all-debuggercore,all-openidex,all-schema2beans/rt,all-xml/api,all-xml/catalog,all-java/srcmodel,all-java/api,all-debuggercore/oldapi,all-projects/projectapi,all-web/jspsyntax">
+  <target name="all-web/core" depends="build-platform,all-java,all-editor,all-web/ddapi,all-web/webapi,all-j2eeserver,all-html,all-httpserver,all-debuggercore,all-openidex,all-schema2beans/rt,all-xml/api,all-xml/catalog,all-java/srcmodel,all-java/api,all-projects/projectapi,all-web/jspsyntax">
     <echo message="Building module web/core..."/>
     <ant dir="../web/core" target="netbeans"/>
   </target>
