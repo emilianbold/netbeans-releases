@@ -233,7 +233,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             }
 
             public boolean canWrite() {
-                return !isReadOnly() && getGenerateSize();
+                return !isReadOnly()
+                       && getFormSizePolicy() == GEN_BOUNDS
+                       && getGenerateSize();
             }
         };
 
@@ -252,7 +254,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             }
 
             public boolean canWrite() {
-                return !isReadOnly() && getGeneratePosition();
+                return !isReadOnly()
+                        && getFormSizePolicy() == GEN_BOUNDS
+                        && getGeneratePosition();
             }
         };
 
