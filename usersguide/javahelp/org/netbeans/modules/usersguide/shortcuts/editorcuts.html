@@ -37,7 +37,7 @@ Shortcuts for the commands available from the main menu:
 <td>Moves the insertion point one character to the left or right.</td> 
 </tr>
 <tr>
-<td valign="top">Shift-Alt-e</td>
+<td valign="top">Alt-E</td>
 <td>Moves the insertion point to the end of the word.</td> 
 </tr>
 <td valign="top">Ctrl-right arrow</td>
@@ -106,6 +106,10 @@ Shortcuts for the commands available from the main menu:
 <tr>
 <th align="left">Keys</th>
 <th align="left">Action</th>
+</tr>
+<tr>
+<td valign="top">Ctrl-A</td>
+<td valign="top">Selects all text in the file.</td>
 </tr>
 <tr>
 <td valign="top">Shift-right arrow</td>
@@ -194,32 +198,36 @@ document.</td>
 <th align="left">Action</th>
 </tr>
 <tr>
-<td valign="top">Shift-Alt-U, U</td>
+<td valign="top">INSERT</td>
+<td>Switches between insert text and overwrite text mode.</td> 
+</tr>
+<tr>
+<td valign="top">Alt-U, U</td>
 <td>Makes the selected characters or the character to the right of the
 insertion point uppercase.</td>
 </tr>
 <tr>
-<td valign="top">Shift-Alt-U, L</td>
+<td valign="top">Alt-U, L</td>
 <td>Makes the selected characters or the character to the right of the
 insertion point lowercase.</td>
 </tr>
 <tr>
-<td valign="top">Shift-Alt-U, R</td>
+<td valign="top">Alt-U, R</td>
 <td>Reverses the case of the selected characters or the character to
 the right of the insertion point.</td>
 </tr>
 <tr>
-<td valign="top">Shift-Alt-U, F</td>
+<td valign="top">Alt-U, F</td>
 <td>Reverses the case of the first character of the identifier the
 insertion point is on.</td>
 </tr>
 <tr>
-<td valign="top">Shift-Alt-F</td>
+<td valign="top">Alt-F</td>
 <td>Reformat the selected text, else reformat the entire file.</td>
 </tr>
 </table>
 
-<h3>Cutting, Copying, and Pasting Text</h3>
+<h3>Cutting, Copying, Pasting, and Deleting Text</h3>
 
 <table border="1">
 <tr>
@@ -227,27 +235,120 @@ insertion point is on.</td>
 <th align="left">Action</th>
 </tr>
 <tr>
-<td valign="top"></td>
-<td></td>
+<td valign="top">Ctrl-Z</td>
+<td valign="top">(Undo) Reverses (one at a time) a series of editor actions,
+except Save.</td>
 </tr>
 <tr>
-<td valign="top"></td>
-<td>Makes the selected characters or the character to the right of the
-insertion point lowercase.</td>
+<td valign="top">Ctrl-Y</td>
+<td valign="top">(Redo) Reverses (one at a time) a series of Undo commands.</td>
 </tr>
 <tr>
-<td valign="top"></td>
-<td>Reverses the case of the selected characters or the character to
-the right of the insertion point.</td>
+<td valign="top">Alt-J</td>
+<td valign="top">Selects the word the insertion point is on or
+deselects text.</td>
 </tr>
 <tr>
-<td valign="top"></td>
-<td>Reverses the case of the first character of the identifier the
-insertion point is on.</td>
+<td valign="top">Ctrl-X</td>
+<td valign="top">(Cut) Deletes the current selection and places it on the
+clipboard.</td> 
 </tr>
 <tr>
-<td valign="top"></td>
-<td>Reformat the selected text, else reformat the entire file.</td>
+<td valign="top">Ctrl-C</td>
+<td valign="top">(Copy) Copies the current selection to the clipboard.</td>
+</tr>
+<tr>
+<td valign="top">Ctrl-V</td>
+<td valign="top">(Paste) Pastes the contents of the clipbard at the insert
+point.</td> 
+</tr>
+<tr>
+<td valign="top">Delete</td>
+<td valign="top">(Delete) Deletes the current selection.</td>
+</tr>
+<tr>
+<td valign="top">Ctrl-E</td>
+<td valign="top">Deletes the current line.</td>
+</tr>
+<tr>
+<td valign="top">Ctrl-H</td>
+<td valign="top">Deletes the character preceding the insertion point.</td>
+</tr>
+<tr>
+<td valign="top">Ctrl-U</td>
+<td valign="top">Deletes text in the following sequence: 
+<ul>
+<li>text preceding insertion point on same line
+<li>indentation on same line
+<li>line break
+<li>text on previous line
+</ul></td>
+</tr>
+<tr>
+<td valign="top">Ctrl-W</td>
+<td valign="top">Removes the current word or the word preceding the
+insertion point.</td>
+</tr>
+<tr>
+<td valign="top">Ctrl-K</td>
+<td valign="top">Copies the word preceding the insertion
+point and pastes it at the insertion point.
+</tr>
+<tr>
+<td valign="top">Ctrl-L</td>
+<td valign="top">Copies the word following the insertion
+point and pastes it at the insertion point.</td>
+</tr>
+</table>
+
+<h3>Searching for Text</h3>
+
+<table border="1">
+<tr>
+<th align="left">Keys</th>
+<th align="left">Action</th>
+</tr>
+<tr>
+<td valign="top">Ctrl-F3</td>
+<td valign="top">Searches for the word the insertion point is on and
+higlights all occurrences of that word.
+</tr>
+<tr>
+<td valign="top">F3</td>
+<td valign="top">Moves the insertion point to the next found occurrence
+of the word.</td>
+</tr>
+<tr>
+<td valign="top">Shift-F3</td>
+<td valign="top">Moves the insertion point to the previous found
+occurrence of the word.</td>
+</tr>
+<tr>
+<td valign="top">Alt-Shift-H</td>
+<td valign="top">Switches highlighting of words on or off.</td>
+</tr>
+</table>
+
+<h3>Setting Tabs</h3>
+
+<table border="1">
+<tr>
+<th align="left">Keys</th>
+<th align="left">Action</th>
+</tr>
+<tr>
+<td valign="top">Tab</td>
+<td valign="top">Shifts all text to right of insertion point to the right.</td>
+</tr>
+<tr>
+<td valign="top">Ctrl-T</td>
+<td valign="top">Shifts text in line containing the insertion point to
+the right.</td>
+</tr>
+<tr>
+<td valign="top">Ctrl-D</td>
+<td valign="top">Shifts text in line containing the insertion point to
+the left.</td>
 </tr>
 </table>
 
@@ -259,23 +360,75 @@ insertion point is on.</td>
 <th align="left">Action</th>
 </tr>
 <tr>
-<td valign="top">Ctrl-Spacebar</td>
+<td valign="top">Spacebar</td>
 <td>Opens the Java code completion dialog box.</td>
 </tr>
 <tr>
-<td valign="top">Ctrl-Alt-u, G</td>
+<td valign="top">Alt-U, G</td>
 <td>Appends the prefix <tt>get</tt> to the identifier.</td>
 </tr>
 <tr>
-<td valign="top">Ctrl-Alt-u, S</td>
+<td valign="top">Alt-U, S</td>
 <td>Appends the prefix <tt>set</tt> to the identifier.</td>
 </tr>
 <tr>
-<td valign="top">Ctrul=Alt-u, I</td>
+<td valign="top">Alt-U, I</td>
 <td>Appends the prefix <tt>is</tt> to the identifier.</td>
+</tr>
+<tr>
+<td valign="top">Alt-G</td>
+<td>Goes to next variable declaration.</td>
+</tr>
+<tr>
+<td valign="top">Ctrl-Shift-T</td>
+<td>Comments out the current or selected lines.</td>
+</tr>
+<tr>
+<td valign="top">Ctrl-Shift-D</td>
+<td>Removes comment from the current or selected lines.</td>
+</tr>
+<tr>
+<td valign="top">Ctrl-B</td>
+<td>Finds matching bracket.</td>
+</tr>
+<tr>
+<td valign="top">Ctrl-Shift-B</td>
+<td>Selects block between brackets.</td>
+</tr>
+<tr>
+<td valign="top">Alt-K</td>
+<td>Goes to previous entry in jump list.</td>
+</tr>
+<tr>
+<td valign="top">Alt-L</td>
+<td>Goes to next entry in jump list.</td>
+</tr>
+<tr>
+<td valign="top">Shift-Alt-K</td>
+<td>Goes to previous entry in jump list not in the same file.</td>
+</tr>
+<tr>
+<td valign="top">Shift-Alt-L</td>
+<td>Goes to next entry in jump list not in the same file.</td>
 </tr>
 </table>
 
+<h3>Using Bookmarks</h3>
+
+<table border="1">
+<tr>
+<th align="left">Keys</th>
+<th align="left">Action</th>
+</tr>
+<tr>
+<td valign="top">Ctrl-F2</td>
+<td>Sets or unsets a bookmark at current line.</td>
+</tr>
+<tr>
+<td valign="top">F2</td>
+<td>Goes to next bookmark.</td>
+</tr>
+</table>
 
 <hr>
 <font size=-2><a href="../credits.html">Legal Notices</a></font>
