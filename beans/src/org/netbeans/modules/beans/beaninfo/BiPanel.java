@@ -81,7 +81,8 @@ public class BiPanel extends ExplorerPanel  {
 
         setLayout (new BorderLayout());
         add (BorderLayout.CENTER, sp);
-
+        
+        initAccessibility();
     }
 
     public java.awt.Dimension getPreferredSize () {
@@ -104,6 +105,11 @@ public class BiPanel extends ExplorerPanel  {
 
     public HelpCtx getHelpCtx(){
         return new HelpCtx(BiPanel.BEANINFO_HELP);
+    }
+    
+    private void initAccessibility() {
+        btv.getAccessibleContext().setAccessibleName((NbBundle.getBundle("org.netbeans.modules.beans.beaninfo.Bundle")).getString("ACSN_BeanInfoLeftTreeView"));
+        btv.getAccessibleContext().setAccessibleDescription((NbBundle.getBundle("org.netbeans.modules.beans.beaninfo.Bundle")).getString("ACSD_BeanInfoLeftTreeView"));
     }
 }
 
