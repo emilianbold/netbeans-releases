@@ -53,6 +53,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
   /** The root nodes displayed as tabs - acquired from Places.roots() */
   private transient Node[] roots;
+  /** Explorer panels for roots */
+  private transient ExplorerPanel[] panels;
   /** ExplorerManagers for roots */
   private transient ExplorerManager[] managers;
   /** ExplorerManagers for property sheet */
@@ -74,9 +76,10 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
   /** Boolean flag - true, if this component is currently activated (and attached to ExplorerActions), false otherwise */
   private boolean activated = false;
-
   /** Switchable property view panel */
   private transient ExplorerPanel sheetPanel;
+  /** tabbed pane containing explorer panels */
+  private transient JTabbedPane tabs;
   /** Splitted panel containing tree view and property view */
   private transient SplittedPanel split;
   /** Explorer's toolbar */
@@ -99,7 +102,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   public NbMainExplorer () {
     split = new SplittedPanel();
 
-    final JTabbedPane tabs = new JTabbedPane ();
+    tabs = new JTabbedPane ();
     tabs.setTabPlacement (SwingConstants.BOTTOM);
 
     managersListener = new PropertyChangeListener () {
@@ -143,23 +146,33 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
       }
     };
 
-
     roots = getRoots ();
     managers = new ExplorerManager[roots.length];
+    panels = new ExplorerPanel[roots.length];
     for (int i = 0; i < roots.length; i++) {
-      ExplorerPanel panel = new ExplorerPanel ();
-      managers[i] = panel.getExplorerManager ();
+      panels[i] = new ExplorerPanel ();
+      managers[i] = panels[i].getExplorerManager ();
       managers[i].setRootContext (roots[i]);
       BeanTreeView treeView = new BeanTreeView ();
-      panel.setLayout (new BorderLayout ());
-      panel.add (treeView);
-      tabs.addTab (roots[i].getDisplayName (), new ImageIcon (roots [i].getIcon (BeanInfo.ICON_COLOR_16x16)), panel, roots[i].getShortDescription ());
+      panels[i].setLayout (new BorderLayout ());
+      panels[i].add (treeView);
+      tabs.addTab (
+        roots[i].getDisplayName (), 
+        new ImageIcon (roots [i].getIcon (BeanInfo.ICON_COLOR_16x16)), 
+        panels[i], 
+        roots[i].getShortDescription ()
+      );
     }
     currentManager = managers[0]; // [PENDING]
 
     tabs.addChangeListener (new javax.swing.event.ChangeListener () {
         public void stateChanged (javax.swing.event.ChangeEvent evt) {
           int index = tabs.getSelectedIndex ();
+          System.out.println("tabb state change, index:" + index);
+          if (index < 0) {
+            currentManager = null;
+            return;
+          }
           currentManager = managers[index];
           if (activated) {
             actions.attach (currentManager);
@@ -378,6 +391,10 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   public void writeExternal (ObjectOutput out)
               throws IOException {
     super.writeExternal(out);
+    // write explorer panels and current one
+    out.writeObject(panels);
+    out.writeObject(new Integer(tabs.getSelectedIndex()));
+    // write switchable sheet state
     out.writeObject(new Boolean(sheetVisible));
     out.writeObject(new Boolean(split.getPanesSwapped()));
     out.writeObject(new Integer(split.getSplitPosition()));
@@ -391,6 +408,29 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   public void readExternal (ObjectInput in)
               throws IOException, ClassNotFoundException {
     super.readExternal(in);
+    // read and update explorer panels (and managers)
+    // and update tabbed pane
+    panels = (ExplorerPanel[])in.readObject();
+    int selIndex = ((Integer)in.readObject()).intValue();
+    tabs.removeAll();
+    managers = new ExplorerManager[panels.length];
+    for (int i = 0; i < panels.length; i++) {
+      managers[i] = panels[i].getExplorerManager();
+      BeanTreeView treeView = new BeanTreeView ();
+      panels[i].setLayout (new BorderLayout ());
+      panels[i].add (treeView);
+      tabs.addTab (
+        roots[i].getDisplayName (), 
+        new ImageIcon (roots [i].getIcon (BeanInfo.ICON_COLOR_16x16)),
+        panels[i], 
+        roots[i].getShortDescription ()
+      );
+    }
+    currentManager = panels[selIndex].getExplorerManager();
+    tabs.setSelectedIndex(selIndex);
+    // force later reassigning of listeners
+    listenersRegistered = false;
+    // read property shhet switcher state...
     sheetVisible = ((Boolean)in.readObject()).booleanValue();
     boolean swapped = ((Boolean)in.readObject()).booleanValue();
     split.setSplitPosition(((Integer)in.readObject()).intValue());
@@ -446,6 +486,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  22   Gandalf   1.21        7/30/99  David Simonek   serialization fixes
 *  21   Gandalf   1.20        7/28/99  David Simonek   canClose updates
 *  20   Gandalf   1.19        7/21/99  David Simonek   properties switcher fixed
 *  19   Gandalf   1.18        7/19/99  Jesse Glick     Context help.

@@ -70,11 +70,21 @@ final class EnvironmentNode extends AbstractNode {
   }
 
   /** Default instance */
-  public static synchronized Node getDefault () {
+  public static synchronized Node getDefault() {
     if (node == null) {
       node = new EnvironmentNode ();
     }
     return node;
+  }
+  
+  /** For deserialization */
+  public Node.Handle getHandle () {
+    System.out.println("A tady?");
+    return new Node.Handle () {
+      public Node getNode () {
+        return EnvironmentNode.getDefault();
+      }
+    };
   }
 
   /** Getter for set of actions that should be present in the
@@ -94,6 +104,7 @@ final class EnvironmentNode extends AbstractNode {
 
 /*
  * Log
+ *  18   Gandalf   1.17        7/30/99  David Simonek   serialization fixes
  *  17   Gandalf   1.16        7/8/99   Jesse Glick     Context help.
  *  16   Gandalf   1.15        6/9/99   Ian Formanek    ToolsAction
  *  15   Gandalf   1.14        6/8/99   Ian Formanek    ---- Package Change To 
