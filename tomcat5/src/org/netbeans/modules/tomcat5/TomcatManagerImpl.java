@@ -90,6 +90,10 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
     /** TargetModuleID of module that is managed. */
     private TomcatModule tmId;
     
+    /** Temporary copy of context.xml in which docBase attribute will be added
+        and which will be used for deployment. */
+    private File tmpContextXml;
+    
     public TomcatManagerImpl (TomcatManager tm) {
         this.tm = tm;
         pes = new ProgressEventSupport (this);
@@ -171,16 +175,11 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             String docBase = dir.getAbsolutePath ();
             String ctxPath = ctx.getAttributeValue ("path");
             this.tmId = new TomcatModule (t, ctxPath, docBase); //NOI18N
-            if (!docBase.equals (ctx.getAttributeValue ("docBase"))) { //NOI18N
-                ctx.setAttributeValue ("docBase", docBase); //NOI18N
-                FileOutputStream fos = new FileOutputStream (contextXml);
-                ctx.write (fos);
-                fos.close ();
-            }
+            tmpContextXml = createTempContextXml(docBase, ctx);
             if (tm.isTomcat55()) {
-                command = "deploy?config=" + contextXml.toURI ().toASCIIString () + "&path=" + ctxPath; // NOI18N
+                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&path=" + ctxPath; // NOI18N
             } else {
-                command = "deploy?config=" + contextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
+                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
             }
             cmdType = CommandType.DISTRIBUTE;
             pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
@@ -277,17 +276,12 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             File contextXml = new File (docBase + "/META-INF/context.xml"); // NO18N
             FileInputStream in = new FileInputStream (contextXml);
             Context ctx = Context.createGraph (in);
-            if (!docBase.equals (ctx.getAttributeValue ("docBase"))) { //NOI18N
-                ctx.setAttributeValue ("docBase", docBase); //NOI18N
-                FileOutputStream fos = new FileOutputStream (contextXml);
-                ctx.write (fos);
-                fos.close ();
-            }
+            tmpContextXml = createTempContextXml(docBase, ctx);
             if (tm.isTomcat55()) {
                 String ctxPath = ctx.getAttributeValue("path"); // NO18N
-                command = "deploy?config=" + contextXml.toURI ().toASCIIString () + "&path=" + ctxPath; // NOI18N
+                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&path=" + ctxPath; // NOI18N
             } else {
-                command = "deploy?config=" + contextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
+                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
             }
             cmdType = CommandType.DISTRIBUTE;
             pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
@@ -295,6 +289,21 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
         } catch (java.io.IOException ioex) {
             pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, ioex.getLocalizedMessage (), StateType.FAILED));
         }
+    }
+    
+    /**
+     * Create a temporary copy of context.xml and set a docBase attribute 
+     * in it. This does not modify the existing context.xml.
+     */
+    private File createTempContextXml(String docBase, Context ctx) throws IOException {
+        File tmpContextXml = File.createTempFile("context", ".xml"); // NOI18N
+        if (!docBase.equals (ctx.getAttributeValue ("docBase"))) { //NOI18N
+            ctx.setAttributeValue ("docBase", docBase); //NOI18N
+            FileOutputStream fos = new FileOutputStream (tmpContextXml);
+            ctx.write (fos);
+            fos.close ();
+        }
+        return tmpContextXml;
     }
     
     /** Lists web modules.
@@ -567,6 +576,9 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     } catch (java.io.IOException ioe) { // ignore this
                     }
                     istream = null;
+                }
+                if (tmpContextXml != null && tmpContextXml.exists()) {
+                    tmpContextXml.delete();
                 }
             }
             if (retries >=0) {
