@@ -79,6 +79,14 @@ public interface J2eeModule {
      */
     public Iterator getArchiveContents() throws java.io.IOException;
 
+    /** This call is used in in-place deployment. 
+     *  Returns the directory staging the contents of the archive
+     *  This directory is the one from which the content entries returned
+     *  by {@link getArchiveContents} came from.
+     *  @returns FileObject for the content directory
+     */
+    public FileObject getContentDirectory() throws java.io.IOException;
+    
     /** Returns a live bean representing the final deployment descriptor
      * that will be used for deploment of the module. This can be
      * taken from sources, constructed on fly or a combination of these

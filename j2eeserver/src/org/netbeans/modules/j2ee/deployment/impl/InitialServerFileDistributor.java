@@ -63,9 +63,15 @@ public class InitialServerFileDistributor extends ServerProgress {
         File dir = fileLayout.getDirectoryForNewApplication (target, deployable, deployment.getDeploymentConfiguration ());
         try {
             if (dir == null) {
-                //PENDING in-place distribute
-                setStatusDistributeFailed("In-Place deployment not supported yet!");//NOI18N
-                return null;
+                dir = FileUtil.toFile(dtarget.getModule().getContentDirectory());
+                if (dir == null) {
+                    String msg = NbBundle.getMessage(InitialServerFileDistributor.class, "MSG_InPlaceNoSupport");
+                    setStatusDistributeFailed(msg);
+                    return null;
+                } else {
+                    setStatusDistributeCompleted(NbBundle.getMessage(InitialServerFileDistributor.class, "MSG_InPlaceDeployment", dir));//NOI18N
+                    return dir;            
+                }
             }
             
             _distribute(source.getArchiveContents(), dir, null);
