@@ -1,14 +1,17 @@
 /*
- * ide.css      11/20/2001
+ * ide.css      01/07/2003
  *
  * Copyright © 2003 Sun Microsystems, Inc. All rights reserved.
  * Use is subject to license terms.
  *
  * Use only with JH1.1.2 or later release.
  * DO NOT USE WITH JavaHelp 1.1.1.  This CSS triggers a printing 
- * bug with JH1.1.1 that causes printing of multiple blank pages..  
+ * bug with JH 1.1.1 that causes printing of multiple blank pages.  
  *
  * Changes:
+ * Jan. 2003
+ * Added <h6> tag for the heading of a glossary topic.
+ * 
  * Sept. 2001
  * <p> now has margin-top and margin-bottom = 5, instead of margin-top = 10.
  * <h2>, <h3>, and <h4> now use margin-top = 10 instead of margin-top = 15.
@@ -45,6 +48,15 @@ h4 { font-size: small;
      font-weight: bold;
      margin-top: 10;
      margin-bottom: 5}
+/* 
+ * Use the h6 tag for the term in a glossary popup
+ * topic. The term being defined is the heading for 
+ * the topic.
+ */
+h6 { font-size: small;
+     font-weight: bold;
+     margin-top: 0;
+     margin-bottom: 10}
 
 ol {margin-top: 5;
      margin-bottom: 0;
