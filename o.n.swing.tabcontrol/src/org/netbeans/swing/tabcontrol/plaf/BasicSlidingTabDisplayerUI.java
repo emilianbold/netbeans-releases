@@ -18,12 +18,10 @@
 package org.netbeans.swing.tabcontrol.plaf;
 
 import org.netbeans.swing.tabcontrol.TabDisplayer;
-import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.ListDataEvent;
 import javax.swing.plaf.ButtonUI;
 import javax.swing.plaf.ComponentUI;
 import java.awt.*;
@@ -32,6 +30,7 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.util.Arrays;
 import java.util.Comparator;
+import org.netbeans.swing.tabcontrol.TabData;
 
 /** Common UI for sliding tabs.  Simply uses JToggleButtons for displayers,
  * since the contents of the data model are not expected to change often,
@@ -214,25 +213,26 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
 
      /** Paints the rectangle occupied by a tab into an image and returns the result */
     public Image createImageOfTab(int index) {
-        AbstractButton b = findButtonFor(index);
-
-        Rectangle r = new Rectangle(0,0,b.getWidth(), b.getHeight());
-
+        TabData td = displayer.getModel().getTab(index);
+        
+        JLabel lbl = new JLabel(td.getText());
+        int width = lbl.getFontMetrics(lbl.getFont()).stringWidth(td.getText());
+        int height = lbl.getFontMetrics(lbl.getFont()).getHeight();
+        width = width + td.getIcon().getIconWidth() + 6;
+        height = Math.max(height, td.getIcon().getIconHeight()) + 5;
+        
         GraphicsConfiguration config = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                .getDefaultScreenDevice().getDefaultConfiguration();
-
-
-        BufferedImage image = config.createCompatibleImage(r.width, r.height);
+                                        .getDefaultScreenDevice().getDefaultConfiguration();
+        
+        BufferedImage image = config.createCompatibleImage(width, height);
         Graphics2D g = image.createGraphics();
-         /*
-        AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
-                                                       0.5f);
-
-        g.setComposite(ac);
-        */
-
-        b.paint(g);
+        g.setColor(lbl.getForeground());
+        g.setFont(lbl.getFont());
+        td.getIcon().paintIcon(lbl, g, 0, 0);
+        g.drawString(td.getText(), 18, height / 2);
+        
         return image;
+
     }
 
     /**

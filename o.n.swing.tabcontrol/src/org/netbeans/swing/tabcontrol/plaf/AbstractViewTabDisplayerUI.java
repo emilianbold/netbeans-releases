@@ -482,23 +482,25 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
 
     /** Paints the rectangle occupied by a tab into an image and returns the result */
     public Image createImageOfTab(int index) {
-        Rectangle r = new Rectangle();
-        getTabRect(index, r);
-
+        TabData td = displayer.getModel().getTab(index);
+        
+        JLabel lbl = new JLabel(td.getText());
+        int width = lbl.getFontMetrics(lbl.getFont()).stringWidth(td.getText());
+        int height = lbl.getFontMetrics(lbl.getFont()).getHeight();
+        width = width + td.getIcon().getIconWidth() + 6;
+        height = Math.max(height, td.getIcon().getIconHeight()) + 5;
+        
         GraphicsConfiguration config = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                .getDefaultScreenDevice().getDefaultConfiguration();
-
-
-        BufferedImage image = config.createCompatibleImage(r.width, r.height);
+                                        .getDefaultScreenDevice().getDefaultConfiguration();
+        
+        BufferedImage image = config.createCompatibleImage(width, height);
         Graphics2D g = image.createGraphics();
-        AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
-                                                       0.7f);
-
-        g.setComposite(ac);
-        g.translate(-r.x, -r.y);
-
-        displayer.paint(g);
-
+        g.setColor(lbl.getForeground());
+        g.setFont(lbl.getFont());
+        td.getIcon().paintIcon(lbl, g, 0, 0);
+        g.drawString(td.getText(), 18, height / 2);
+        
+        
         return image;
     }
 
