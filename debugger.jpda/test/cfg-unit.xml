@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<mconfig name="java unit test config">
+
+    <testbag testattribs="ide" executor="ide" name="All tests." resultsprocessor="unit">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/test/debugger/basic/ActionsPresenceTestCase.class"/>
+                <include name="org/netbeans/test/debugger/basic/MenusPresenceTestCase.class"/>
+                <include name="org/netbeans/test/debugger/basic/ToolBarsPresenceTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/clazz/ClassicClassBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/clazz/HotspotClassBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/conditional/ClassicConditionalBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/conditional/HotspotConditionalBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/disabled/ClassicDisabledBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/disabled/HotspotDisabledBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/disabled/JDK11DisabledBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/disabled/JDK11ImplDisabledBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/exception/ClassicExceptionBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/exception/HotspotExceptionBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/exception/JDK11ExceptionBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/exception/JDK11ImplExceptionBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/hidden/ClassicHiddenBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/hidden/HotspotHiddenBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/hidden/JDK11HiddenBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/hidden/JDK11ImplHiddenBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/line/ClassicLineBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/line/HotspotLineBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/line/JDK11LineBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/line/JDK11ImplLineBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/method/ClassicMethodBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/method/HotspotMethodBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/method/JDK11MethodBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/method/JDK11ImplMethodBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/suspending/ClassicSuspendingBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/suspending/HotspotSuspendingBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/suspending/JDK11SuspendingBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/suspending/JDK11ImplSuspendingBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/thread/ClassicThreadBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/thread/HotspotThreadBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/variable/ClassicVariableBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/variable/HotspotVariableBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/bugs/ClassicBugsTestCase.class"/>
+                <include name="org/netbeans/test/debugger/bugs/HotspotBugsTestCase.class"/>
+                <include name="org/netbeans/test/debugger/bugs/JDK11BugsTestCase.class"/>
+                <include name="org/netbeans/test/debugger/bugs/JDK11ImplBugsTestCase.class"/>
+                <include name="org/netbeans/test/debugger/watches/ClassicWatchesTestCase.class"/>
+                <include name="org/netbeans/test/debugger/watches/HotspotWatchesTestCase.class"/>
+                <include name="org/netbeans/test/debugger/watches/JDK11WatchesTestCase.class"/>
+                <include name="org/netbeans/test/debugger/watches/JDK11ImplWatchesTestCase.class"/>
+                <include name="org/netbeans/test/debugger/parser/ClassicBasicEvaluationTestCase.class"/>
+                <include name="org/netbeans/test/debugger/parser/HotspotBasicEvaluationTestCase.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    
+    <executor name="ide" antfile="build.xml" target="runidetest"/>
+
+    <compiler name="unit-compiler" antfile="build.xml" target="unit-compiler" default="true"/>
+    
+    <resultsprocessor name="unit" antfile="build.xml" target="test_report" default="true"/>
+    
+</mconfig>
