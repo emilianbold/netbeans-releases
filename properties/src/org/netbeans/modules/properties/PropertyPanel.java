@@ -18,6 +18,7 @@ package org.netbeans.modules.properties;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 
@@ -51,6 +52,8 @@ public class PropertyPanel extends JPanel {
         keyText.setText(UtilConvert.unicodesToChars(element.getKey()));
         valueText.setText(UtilConvert.unicodesToChars(element.getValue()));
         commentText.setText(UtilConvert.unicodesToChars(element.getComment()));
+        
+        HelpCtx.setHelpIDString(this, Util.HELP_ID_ADDING);
     }
 
     /** This method is called from within the constructor to

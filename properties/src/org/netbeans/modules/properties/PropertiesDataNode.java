@@ -94,7 +94,7 @@ public class PropertiesDataNode extends DataNode {
 
                 /** Overrides superclass method.*/
                 public HelpCtx getHelpCtx() {
-                    return new HelpCtx (PropertiesDataNode.class.getName () + ".new_locale"); // NOI18N
+                    return new HelpCtx(Util.HELP_ID_ADDLOCALE);
                 }
 
                 /** Overrides superclass method. */

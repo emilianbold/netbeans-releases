@@ -97,6 +97,12 @@ public final class PropertiesLocaleNode extends FileEntryNode implements CookieS
         };
     }
 
+    
+    /** Gets help context. Overrides superclass method. */ 
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(Util.HELP_ID_ADDLOCALE);
+    }
+
     /** Gets the name. Note: It gets only the local part of the name  (e.g. "de_DE_EURO").
      * Reason is to allow user change only this part of name by renaming (on Node).
      * Overrides superclass method. 
@@ -162,7 +168,7 @@ public final class PropertiesLocaleNode extends FileEntryNode implements CookieS
                 
                 /** Gets help context. */ 
                 public HelpCtx getHelpCtx() {
-                    return new HelpCtx (PropertiesLocaleNode.class.getName () + ".new_property"); // NOI18N
+                    return new HelpCtx(Util.HELP_ID_ADDING);
                 }
 
                 /** Creates new type. */

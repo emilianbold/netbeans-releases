@@ -26,6 +26,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 
@@ -173,6 +174,8 @@ public class LocalePanel extends JPanel {
         variantCombo.setSelectedItem(locale.getVariant());
         
         localeText.setText(locale.toString());
+        
+        HelpCtx.setHelpIDString(this, Util.HELP_ID_ADDLOCALE);
     }
 
     

@@ -212,11 +212,10 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
         return bundleStructure;
     }
 
-    /** Help context for this object.
-    * @return help context
-    */
+    /** Gets help context for this object. Overrides superclass method. 
+     * @return help context */
     public HelpCtx getHelpCtx () {
-        return new HelpCtx (PropertiesDataObject.class);
+        return new HelpCtx(Util.HELP_ID_CREATING);
     }
 
     /** Comparator used for ordering secondary files, works over file names */

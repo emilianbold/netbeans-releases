@@ -333,7 +333,7 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
      * @return help context
      */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx (PropertiesFileEntry.class);
+        return new HelpCtx(Util.HELP_ID_CREATING);
     }
 
     

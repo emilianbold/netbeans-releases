@@ -52,7 +52,11 @@ import org.openide.util.*;
 import org.openide.windows.*;
 
 
-/** Support for opening properties files (OpenCookie) in visual editor */
+/** 
+ * Support for opening bundle of .properties files (OpenCookie) in table view editor. 
+ * 
+ * @author Petr Jiricka, Peter Zavadsky
+ */
 public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
 
     /** Main properties dataobject */
@@ -645,7 +649,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
 
         /** Overrides superclass method. Gets help context. */
         public HelpCtx getHelpCtx () {
-            return new HelpCtx (PropertiesCloneableTopComponent.class);
+            return new HelpCtx(Util.HELP_ID_MODIFYING);
         }
 
         /** Overrides superclass method. Set the name of this top component. Handles saved/not saved state.

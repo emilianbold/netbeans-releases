@@ -50,6 +50,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.TopManager;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListener;
@@ -57,7 +58,12 @@ import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 
 
-/** Support for viewing porperties files (EditCookie) by opening them in a text editor */
+/** 
+ * Support for viewing .properties files (EditCookie) by opening them in a text editor.
+ *
+ * @author Petr Jiricka, Peter Zavadsky 
+ * @see org.openide.text.CloneableEditorSupport
+ */
 public class PropertiesEditorSupport extends CloneableEditorSupport 
 implements EditCookie, PrintCookie, Serializable {
     
@@ -818,6 +824,11 @@ implements EditCookie, PrintCookie, Serializable {
             if (icon == null)
                 icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/netbeans/modules/properties/propertiesLocale.gif")); // NOI18N
             return icon;
+        }
+        
+        /** Overrides superclass method. Gets help context. */
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(Util.HELP_ID_EDITLOCALE);
         }
         
         /**

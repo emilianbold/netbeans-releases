@@ -32,6 +32,7 @@ import org.openide.nodes.Sheet;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 
@@ -101,6 +102,11 @@ public class KeyNode extends AbstractNode {
         return propStructure.getItem(itemKey);
     }
 
+    /** Gets help context. Overrides superclass method. */ 
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(Util.HELP_ID_ADDING);
+    }
+    
     /** Indicates whether the node may be destroyed. Overrides superclass method.
      * @return true.
      */

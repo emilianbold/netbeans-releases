@@ -23,10 +23,21 @@ import org.openide.util.NbBundle;
 
 
 /**
- * Miscellaneous utilities for Properties data loader.
+ * Miscellaneous utilities for properties(reosurce bundles) module.
  * @author Petr Jiricka
  */
 public final class Util extends Object {
+    
+    /** Help ID for properties new from template. */
+    public static final String HELP_ID_CREATING = "propfiles.creating"; // NOI18N
+    /** Help ID for new property dialog. */
+    public static final String HELP_ID_ADDING = "propfiles.adding"; // NOI18N
+    /** Help ID for table view of properties. */
+    public static final String HELP_ID_MODIFYING = "propfiles.modifying"; // NOI18N
+    /** Help ID for new locale dialog. */
+    public static final String HELP_ID_ADDLOCALE = "propfiles.addlocale"; // NOI18N
+    /** Help ID for source editor of .properties file. */
+    public static final String HELP_ID_EDITLOCALE = "propfiles.editlocale"; // NOI18N
 
     /** Character used to separate parts of bundle properties file name */
     public static final char PRB_SEPARATOR_CHAR = PropertiesDataLoader.PRB_SEPARATOR_CHAR;
@@ -54,14 +65,15 @@ public final class Util extends Object {
         return result.toString();
     }
 
-    /** returns the file for the primary entry
-    *   @param fe entry for a properties file
-    */
+    /** Gets the file for the primary entry.
+     * @param <code>FileObject</code> of primary entry
+     */
     private static FileObject getPrimaryFileObject(MultiDataObject.Entry fe) {
         return fe.getDataObject().getPrimaryEntry().getFile();
     }
 
-    /** Assembles a file name for a properties file from its base name and language */
+    /** Assembles a file name for a properties file from its base name and language.
+     * @return assembled name */
     public static String assembleName (String baseName, String lang) {
         if (lang.length() == 0)
             return baseName;
@@ -74,9 +86,10 @@ public final class Util extends Object {
                 return baseName + lang;
         }
     }
-    /** returns a locale part of file name based on the primary file entry for a properties DataObject
-    *   for example for file <code>Bundle_en_US.properties</code> returns <code>_en_US</code>, if Bundle.properties exists
-    */
+    
+    /** Gets a locale part of file name based on the primary file entry for a properties data object,
+     * e.g. for file <code>Bundle_en_US.properties</code> returns <code>_en_US</code>, if Bundle.properties exists.
+     */
     public static String getLocalePartOfFileName(MultiDataObject.Entry fe) {
         String myName   = fe.getFile().getName();
         String baseName = getPrimaryFileObject(fe).getName();
@@ -85,19 +98,19 @@ public final class Util extends Object {
         return myName.substring(baseName.length());
     }
 
-    /** returns a language from a file name based on the primary file entry for a properties DataObject
-    *   for example for file <code>Bundle_en_US.properties</code> returns <code>en</code> (if Bundle.properties exists)
-    *   @return language for this locale or <code>null</code> if no language is present
-    */
+    /** Gets a language from a file name based on the primary file entry for a properties data object,
+     * e.g. for file <code>Bundle_en_US.properties</code> returns <code>en</code> (if Bundle.properties exists).
+     * @return language for this locale or <code>null</code> if no language is present
+     */
     public static String getLanguage(MultiDataObject.Entry fe) {
         String part = getLocalePartOfFileName(fe);
         return getFirstPart(part);
     }
 
-    /** returns a country from a file name based on the primary file entry for a properties DataObject
-    *   for example for file <code>Bundle_en_US.properties</code> returns <code>US</code> (if Bundle.properties exists)
-    *   @return language for this locale or <code>null</code> if no country is present
-    */
+    /** Gets a country from a file name based on the primary file entry for a properties data object,
+     * e.g. for file <code>Bundle_en_US.properties</code> returns <code>US</code> (if Bundle.properties exists).
+     * @return language for this locale or <code>null</code> if no country is present
+     */
     public static String getCountry(MultiDataObject.Entry fe) {
         try {
             String part = getLocalePartOfFileName(fe);
@@ -111,10 +124,10 @@ public final class Util extends Object {
         }
     }
 
-    /** returns a variant from a file name based on the primary file entry for a properties DataObject
-    *   for example for file <code>Bundle_en_US_POSIX.properties</code> returns <code>POSIX</code> (if Bundle.properties exists)
-    *   @return language for this locale or <code>null</code> if no variant is present
-    */
+    /** Gets a variant from a file name based on the primary file entry for a properties data object,
+     * e.g. for file <code>Bundle_en_US_POSIX.properties</code> returns <code>POSIX</code> (if Bundle.properties exists).
+     * @return language for this locale or <code>null</code> if no variant is present
+     */
     public static String getVariant(MultiDataObject.Entry fe) {
         try {
             String part = getLocalePartOfFileName(fe);
@@ -131,7 +144,7 @@ public final class Util extends Object {
         }
     }
 
-    /** Returns first substring enclosed between the leading underscore and the next underscore */
+    /** Gets first substring enclosed between the leading underscore and the next underscore. */
     private static String getFirstPart(String part) {
         try {
             if (part.length() == 0)
@@ -149,7 +162,7 @@ public final class Util extends Object {
         }
     }
 
-    /** Returns a label for properties nodes for individual locales */
+    /** Gets a label for properties nodes for individual locales. */
     public static String getLocaleLabel(MultiDataObject.Entry fe) {
         // locale-specific part of the file name
         String temp = getLocalePartOfFileName(fe);
