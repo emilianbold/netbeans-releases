@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,12 +18,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.net.URL;
 import java.net.MalformedURLException;
-import java.security.Permission;
-import java.security.AllPermission;
-import java.security.PrivilegedExceptionAction;
-import java.security.PrivilegedActionException;
-import java.security.AccessController;
-import java.security.AccessControlContext;
+import java.security.*;
 import java.util.*;
 import java.lang.reflect.Field;
 
@@ -56,7 +51,10 @@ public class TopSecurityManager extends SecurityManager {
                 AccessController.checkPermission(new RuntimePermission("TopSecurityManager.register")); // NOI18N
             } catch (SecurityException se) {
                 // Something is probably wrong; debug it better.
-                System.err.println("Code source of attempted secman: " + sm.getClass().getProtectionDomain().getCodeSource().getLocation().toExternalForm()); // NOI18N
+                ProtectionDomain pd = sm.getClass().getProtectionDomain();
+                CodeSource cs = pd.getCodeSource();
+                System.err.println("Code source of attempted secman: " + (cs != null ? cs.getLocation().toExternalForm() : "<none>")); // NOI18N
+                System.err.println("Its permissions: " + pd); // NOI18N
                 throw se;
             }
         }
