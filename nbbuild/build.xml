@@ -631,7 +631,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../vcsgeneric" target="netbeans"/>
   </target>
 
-  <target name="all-vcsgeneric/profiles/cvsprofiles" depends="all-vcsgeneric,all-openide/deprecated">
+  <target name="all-vcsgeneric/profiles/cvsprofiles" depends="all-vcsgeneric,all-openide/deprecated,all-javacvs/libmodule">
     <echo message="Building module vcsgeneric/profiles/cvsprofiles"/>
     <ant dir="../vcsgeneric/profiles/cvsprofiles" target="netbeans"/>
   </target>
@@ -659,6 +659,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="all-javacvs" depends="all-openide,all-openidex,all-vcscore, all-diff,all-openide/deprecated">
     <echo message="Building module javacvs..."/>
     <ant dir="../javacvs" target="netbeans"/>
+  </target>
+  <target name="all-javacvs/libmodule">
+    <echo message="Building module javacvs/libmodule..."/>
+    <ant dir="../javacvs/libmodule" target="netbeans"/>
   </target>
   <target name="all-web" depends="all-web/servletapi23,all-web/core,all-web/jspparser,all-web/jspsyntax">
     <echo message="Building module web..."/>
