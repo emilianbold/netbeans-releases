@@ -355,7 +355,7 @@ public class BaseOptions extends OptionSupport {
     
     /** Loads default abbreviations from MIMEFolder/Defaults/abbreviations.xml and
      * stores them to defaultAbbrevsMap */
-    private synchronized void loadDefaultAbbreviations(){
+    private void loadDefaultAbbreviations(){
         if (defaultAbbrevsMap!=null) return;
         MIMEOptionFolder mimeFolder = getMIMEFolder();
         if (mimeFolder == null) return;
@@ -532,7 +532,7 @@ public class BaseOptions extends OptionSupport {
     
     /** Loads default abbreviations from MIMEFolder/Defaults/keybindings.xml and
      *  stores them to defaultKeyBindingsMap */
-    private synchronized void loadDefaultKeyBindings(){
+    private void loadDefaultKeyBindings(){
         if (defaultKeyBindingsMap!=null) return;
         MIMEOptionFolder mof;
         if (BASE.equals(getTypeName())){
@@ -735,7 +735,7 @@ public class BaseOptions extends OptionSupport {
     
     /** Loads default abbreviations from MIMEFolder/Defaults/macros.xml and
      *  stores them to defaultMacrosMap */
-    private synchronized void loadDefaultMacros(){
+    private void loadDefaultMacros(){
         if (defaultMacrosMap!=null) return;
         MIMEOptionFolder mimeFolder = getMIMEFolder();
         if (mimeFolder == null) return;
