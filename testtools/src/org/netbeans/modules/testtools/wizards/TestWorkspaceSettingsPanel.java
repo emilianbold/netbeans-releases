@@ -42,6 +42,8 @@ import org.openide.filesystems.FileUtil;
  */
 public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescriptor.FinishPanel {
     
+    static final long serialVersionUID = 6910738027583517330L;
+    
     private boolean stop=true;
     private static final String netbeansPath="../../../nb_all/nbbuild/netbeans";
     private static final String xtestPath="../../../nb_all/xtest";
@@ -54,6 +56,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
 
     /** Creates new form TestWorkspacePanel */
     public TestWorkspaceSettingsPanel() {
+        setName("Test Workspace Settings");
         initComponents();
         DocumentListener list=new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {fireStateChanged();}
@@ -480,7 +483,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         set.typeJellyHome=jellyHome;
     }
 
-    private static File netHome=new File(System.getProperty("netbeans.home"));
+    private static File netHome=new File(System.getProperty("netbeans.home","."));
 
     /** test current Panel state for data validity
      * @return boolean true if data are valid and Wizard can continue */    

@@ -33,10 +33,12 @@ import org.openide.WizardDescriptor;
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.FinishPanel {
 
+    static final long serialVersionUID = 6692306744377282694L;
     private static final String DEFAULT_NAME="<default name>";
     
     /** Creates new form TestBagPanel */
     public TestBagSettingsPanel() {
+        setName("Test Bag Settings");
         initComponents();
         DocumentListener list=new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {fireStateChanged();}

@@ -52,6 +52,8 @@ import org.netbeans.modules.testtools.wizards.WizardIterator;
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class XTestCompilerType extends CompilerType {
 
+    static final long serialVersionUID = -4763744289088576457L;
+
     private static final String compileTarget = "buildtests";
     private static final String cleanTarget = "cleantests";
     private static final String cleanResultsTarget = "cleanresults";
@@ -93,7 +95,7 @@ public class XTestCompilerType extends CompilerType {
         return new HelpCtx (XTestCompilerType.class);
     }
 
-    final static File netHome=new File(System.getProperty("netbeans.home"));
+    final static File netHome=new File(System.getProperty("netbeans.home","."));
     
     /** fills Compiler Job with propper compilers
      * @param job CompilerJob to be filled

@@ -36,12 +36,15 @@ import org.openide.loaders.TemplateWizard;
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
 public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescriptor.Panel {
-    
+
+    static final long serialVersionUID = 2537129285375022017L;
+
     private File baseDir=null;
     private String netbeansHome=null;
     
     /** Creates new form TestTypeAdvancedSettingsPanel */
     public TestTypeAdvancedSettingsPanel() {
+        setName("Test Type Advanced Settings");
         initComponents();
     }
     

@@ -42,10 +42,11 @@ import org.openide.loaders.TemplateWizard;
 public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPanel {
     
     private Vector listData;
-
+    static final long serialVersionUID = 981620069379306317L;
     
     /** Creates new form TestCasesPanel */
     public TestCasesPanel() {
+        setName("Create Test Cases");
         initComponents();
         caseName.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {refreshAdd();}

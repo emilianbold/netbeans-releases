@@ -37,6 +37,8 @@ import org.netbeans.modules.java.JavaDataObject;
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class TestSuiteWizardIterator extends WizardIterator {
     
+    static final long serialVersionUID = -3466297489095246515L;
+    
     private static TestSuiteWizardIterator iterator;
     
     /** Creates a new instance of TestSuiteWizardIterator */
@@ -65,13 +67,10 @@ public class TestSuiteWizardIterator extends WizardIterator {
             wizard.targetChooser(),
             new TestCasesPanel()
         };
-        names = new String[] {
-            "Test Suite "+wizard.targetChooser().getComponent().getName(),
-            "Create Test Cases"
-        };
+        names = new String[panels.length];
         for (int i=0; i<panels.length; i++) {
             ((javax.swing.JComponent)panels[i]).putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
-            ((javax.swing.JComponent)panels[i]).setName(names[i]);
+            names[i]=((javax.swing.JComponent)panels[i]).getName();
         }
         ((javax.swing.JComponent)panels[0]).putClientProperty("WizardPanel_contentData", names); 
         current=0;

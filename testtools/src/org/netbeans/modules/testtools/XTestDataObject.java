@@ -40,10 +40,13 @@ import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.nodes.AntProjectNode;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.apache.tools.ant.module.loader.AntCompilerSupport;
+import org.openide.TopManager;
 
 /** Data Object class representing XTest Workspace Build Script
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class XTestDataObject extends MultiDataObject implements PropertyChangeListener {
+
+    static final long serialVersionUID = -8829236025053170557L;
 
     /** creates new XTestDataObject
      * @param pf FileObject
@@ -125,7 +128,8 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
         /** returns default Executor
          * @return XTestExecutor */        
         protected Executor defaultExecutor () {
-            return new XTestExecutor();
+            Executor e=(Executor)TopManager.getDefault().getServices().find(XTestExecutor.class);
+            return e==null?super.defaultExecutor():e;
         }
     }
     
@@ -142,7 +146,8 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
         /** returns default Compiler Type for XTestDataObject
          * @return XTestCompilerType */        
         protected CompilerType defaultCompilerType () {
-            return new XTestCompilerType();
+            CompilerType c=(CompilerType)TopManager.getDefault().getServices().find(XTestCompilerType.class);
+            return c==null?super.defaultCompilerType():c;
         }
     }
     
@@ -196,6 +201,12 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
                     super.setIconBase("org/netbeans/modules/testtools/XTestIconError");
                 else
                     super.setIconBase("org/netbeans/modules/testtools/XTestIcon");
+            }
+            
+            /** returns Help Context
+             * @return HelpCtx */    
+            public HelpCtx getHelpCtx() {
+                return new HelpCtx(XTestNode.class);
             }
     }
     

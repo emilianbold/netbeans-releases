@@ -39,6 +39,8 @@ import org.apache.tools.ant.module.loader.AntCompilerSupport;
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class XTestDataLoader extends UniFileLoader {
 
+    static final long serialVersionUID = 3860621574863539101L;
+
     /** creates new XTestDataLoader */    
     public XTestDataLoader () {
         super (XTestDataObject.class);

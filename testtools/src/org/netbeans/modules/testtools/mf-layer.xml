@@ -119,18 +119,21 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestSuiteWizardIterator.singleton"/>
         <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/testtools/templates/simpleTest.html"/>
+        <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e00017870740012496e7465726e616c20457865637574696f6e74002c6f72672e6e65746265616e732e6d6f64756c65732e6a6176612e4a6176615468726561644578656375746f7278"/>
       </file>
       <file name="jemmyTest.java" url="templates/jemmyTest.java.template">
         <attr name="template" boolvalue="true"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestSuiteWizardIterator.singleton"/>
         <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/testtools/templates/jemmyTest.html"/>
+        <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e00017870740012496e7465726e616c20457865637574696f6e74002c6f72672e6e65746265616e732e6d6f64756c65732e6a6176612e4a6176615468726561644578656375746f7278"/>
       </file>
       <file name="jellyTest.java" url="templates/jellyTest.java.template">
         <attr name="template" boolvalue="true"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestSuiteWizardIterator.singleton"/>
         <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/testtools/templates/jellyTest.html"/>
+        <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e00017870740012496e7465726e616c20457865637574696f6e74002c6f72672e6e65746265616e732e6d6f64756c65732e6a6176612e4a6176615468726561644578656375746f7278"/>
       </file>
     </folder>
     <folder name="Services">

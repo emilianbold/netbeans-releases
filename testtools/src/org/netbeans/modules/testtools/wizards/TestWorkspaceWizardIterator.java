@@ -34,6 +34,8 @@ import org.openide.filesystems.FileObject;
  */
 public class TestWorkspaceWizardIterator extends WizardIterator {
     
+    static final long serialVersionUID = 4086623721825821549L;
+    
     private static TestWorkspaceWizardIterator iterator;
     
     /** Creates a new instance of TestWorkspaceWizardIterator */
@@ -67,19 +69,10 @@ public class TestWorkspaceWizardIterator extends WizardIterator {
             new TestSuiteTargetPanel(),
             new TestCasesPanel()
         };
-        names = new String[] {
-            "Test Workspace "+wizard.targetChooser().getComponent().getName(),
-            "Test Workspace Settings",
-            "Test Type Name and Template",
-            "Test Type Settings",
-            "Test Type Advanced Settings",
-            "Test Bag Settings",
-            "Test Suite Template and Target Location",
-            "Create Test Cases"
-        };
+        names = new String[panels.length];
         for (int i=0; i<panels.length; i++) {
             ((javax.swing.JComponent)panels[i]).putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
-            ((javax.swing.JComponent)panels[i]).setName(names[i]);
+            names[i]=((javax.swing.JComponent)panels[i]).getName();
         }
         ((javax.swing.JComponent)panels[0]).putClientProperty("WizardPanel_contentData", names); 
         current=0;

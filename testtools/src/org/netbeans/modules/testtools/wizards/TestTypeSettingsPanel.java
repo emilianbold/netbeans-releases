@@ -33,12 +33,15 @@ import org.openide.loaders.TemplateWizard;
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
 public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Panel {
+
+    static final long serialVersionUID = 7939826033813572286L;
     
     private boolean stop=true;
     private String name=null;
     
     /** Creates new form TestTypeSettingsPanel */
     public TestTypeSettingsPanel() {
+        setName("Test Type Settings");
         initComponents();
     }
     

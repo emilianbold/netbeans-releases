@@ -45,12 +45,14 @@ import org.netbeans.modules.java.JavaDataObject;
 */
 public class TestSuiteTargetPanel extends JPanel implements WizardDescriptor.Panel {
 
+    static final long serialVersionUID = 7320115283955775732L;
     private ChangeListener listener=null;
     private static final String DEFAULT_NAME="<default name>";
     private boolean modified=true;
 
     /** Creates new form TestSuiteTargetPanel */
     public TestSuiteTargetPanel() {
+        setName("Test Suite Template and Target Location");
         initComponents();
         templateCombo.setRenderer(new WizardIterator.MyCellRenderer());
         templateCombo.setModel(new DefaultComboBoxModel(WizardIterator.getSuiteTemplates()));

@@ -45,6 +45,8 @@ import org.netbeans.modules.testtools.wizards.WizardIterator;
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class XTestExecutor extends Executor {
     
+    static final long serialVersionUID = -5490616206437129681L;    
+    
     /** Holds value of property netbeansHome. */
     private File netbeansHome;
 

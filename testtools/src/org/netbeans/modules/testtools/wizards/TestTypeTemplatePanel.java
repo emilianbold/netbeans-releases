@@ -44,12 +44,15 @@ import org.openide.loaders.TemplateWizard;
  */
 public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Panel {
     
+    static final long serialVersionUID = 2893559646017815470L;
+    
     private ChangeListener listener=null;
     private static final String DEFAULT_NAME="<default name>";
     boolean modified=true;
     
     /** Creates new form TestTypeTemplatePanel */
     public TestTypeTemplatePanel() {
+        setName("Test Type Name and Template");
         initComponents();
         templateCombo.setRenderer(new WizardIterator.MyCellRenderer());
         templateCombo.setModel(new DefaultComboBoxModel(WizardIterator.getTestTypeTemplates()));
@@ -216,7 +219,7 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
     /** returns Help Context
      * @return HelpCtx */    
     public HelpCtx getHelp() {
-        return new HelpCtx(TestSuiteTargetPanel.class);
+        return new HelpCtx(TestTypeTemplatePanel.class);
     }
     
     /** read settings from given Object

@@ -52,6 +52,7 @@ import org.netbeans.modules.java.JavaDataObject;
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public abstract class WizardIterator implements TemplateWizard.Iterator {
     
+    static final long serialVersionUID = -1496383337413300945L;
     
     static class CaseElement extends Object {
         String name;
@@ -82,6 +83,8 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
     
     static class MyCellRenderer extends DefaultListCellRenderer {
 
+        static final long serialVersionUID = 6764582346511445803L;
+        
         MyCellRenderer() {
             super();
         }
