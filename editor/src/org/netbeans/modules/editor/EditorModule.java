@@ -317,9 +317,9 @@ public class EditorModule extends ModuleInstall {
             try {
                 dobj = DataObject.find(fo);
                 InstanceCookie cookie = (InstanceCookie)dobj.getCookie(InstanceCookie.class);
-                Object instance = cookie.instanceCreate();
-                if(instance instanceof EditorKit) {
-                    return (EditorKit)instance;
+                Class kitClass = cookie.instanceClass();
+                if(EditorKit.class.isAssignableFrom(kitClass)) {
+                    return BaseKit.getKit(kitClass);
                 }
             }
             catch (DataObjectNotFoundException e) {}
