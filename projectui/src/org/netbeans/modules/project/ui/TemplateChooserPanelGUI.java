@@ -156,7 +156,16 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     
     
     public Project getProject() {
-        return (Project)projectsComboBox.getSelectedItem();
+        boolean wf;
+        synchronized (this) {
+            wf = isWarmUp;
+        }
+        if (wf) {
+            return this.project;
+        }
+        else {
+            return (Project)projectsComboBox.getSelectedItem();
+        }
     }
     
     public FileObject getTemplate() {
