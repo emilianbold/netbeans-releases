@@ -96,7 +96,7 @@ public class WebProjectProperties {
     
     public static final String JAVADOC_PREVIEW="javadoc.preview";
     
-    
+    public static final String COMPILE_JSPS = "compile.jsps";
     
     // Properties stored in the PRIVATE.PROPERTIES
     public static final String APPLICATION_ARGS = "application.args";
@@ -124,6 +124,7 @@ public class WebProjectProperties {
         new PropertyDescriptor( DIST_JAR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVAC_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( JSPC_CLASSPATH, PRIVATE, PATH_PARSER ),
+        new PropertyDescriptor( COMPILE_JSPS, PROJECT, BOOLEAN_PARSER ),
         //new PropertyDescriptor( JSP_COMPILER_CLASSPATH, PRIVATE, PATH_PARSER ),
         new PropertyDescriptor( RUN_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( DEBUG_CLASSPATH, PROJECT, PATH_PARSER ),

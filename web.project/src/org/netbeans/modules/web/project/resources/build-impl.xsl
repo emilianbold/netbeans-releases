@@ -73,6 +73,9 @@ Microsystems, Inc. All Rights Reserved.
         <condition property="no.javadoc.preview">
             <isfalse value="${{javadoc.preview}}"/>
         </condition>
+        <condition property="do.compile.jsps">
+            <istrue value="${{compile.jsps}}"/>
+        </condition>
     </target>
 
     <xsl:call-template name="deps.target">
@@ -112,7 +115,7 @@ Microsystems, Inc. All Rights Reserved.
         </xsl:for-each>
     </target>
 
-    <target name="compile-jsps" depends="compile"> 
+    <target name="compile-jsps" depends="compile" if="do.compile.jsps"> 
 
       <taskdef classname="org.apache.jasper.JspC" name="jasper2" > 
         <classpath path="${{jspc.classpath}}"/> 
@@ -120,8 +123,8 @@ Microsystems, Inc. All Rights Reserved.
 
       <jasper2
              validateXml="false" 
-             uriroot="${{build.dir}}" 
-             outputDir="${{build.dir}}/WEB-INF/src" /> 
+             uriroot="${{basedir}}/${{build.dir}}" 
+             outputDir="${{basedir}}/${{build.dir}}/WEB-INF/src" /> 
     </target> 
 
 
@@ -164,7 +167,7 @@ Microsystems, Inc. All Rights Reserved.
         </xsl:choose>        
     </target>
     
-    <target name="dist" depends="init,compile">
+    <target name="dist" depends="init,compile,compile-jsps">
         <dirname property="dist.jar.dir" file="${{dist.war}}"/>
         <mkdir dir="${{dist.jar.dir}}"/>
         <jar jarfile="${{dist.war}}" compress="${{jar.compress}}">
@@ -172,7 +175,7 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
     </target>
 
-    <target name="run" depends="init,compile">
+    <target name="run" depends="init,compile,compile-jsps">
         <nbdeploy debugmode="false" clientUrlPart="${{client.urlPart}}">
 <!--            <xsl:call-template name="run-java-body"/>-->
         </nbdeploy>
@@ -190,7 +193,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 -->
 
-    <target name="debug-nb" depends="init,compile" if="netbeans.home">
+    <target name="debug-nb" depends="init,compile,compile-jsps" if="netbeans.home">
         <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}">
 <!--        <xsl:call-template name="debug-java-body"/>-->
         </nbdeploy>
