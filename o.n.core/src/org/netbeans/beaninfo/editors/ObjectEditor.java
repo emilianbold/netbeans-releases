@@ -103,10 +103,10 @@ implements ExPropertyEditor, PropertyChangeListener {
         }
         
         obj = env.getFeatureDescriptor ().getValue (PROP_LOOKUP);
-        lookup = obj instanceof Lookup ? (Lookup)lookup : null;
+        lookup = obj instanceof Lookup ? (Lookup)obj : null;
         
         obj = env.getFeatureDescriptor ().getValue (PROP_NODE);
-        root = obj instanceof Node ? (Node)root : null;
+        root = obj instanceof Node ? (Node)obj : null;
     }
     
     /** A lookup to work on.
