@@ -16,10 +16,10 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
 
 <project name="ant" default="netbeans" basedir=".">
 
-  <property name="binroot" value=".."/>
+  <property name="binroot" location="../../nbextra"/>
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
+  <property name="license.file" location="../nbbuild/standard-nbm-license.txt"/>
 
   <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
