@@ -41,6 +41,8 @@ public class TreeDTDCustomizer extends AbstractTreeCustomizer {
 	initComponents();
         versionLabel.setDisplayedMnemonic(Util.getChar("MNE_dtd_version")); // NOI18N
         encodingLabel.setDisplayedMnemonic(Util.getChar("MNE_dtd_encoding")); // NOI18N
+        
+        initAccessibility();
     }
     
     
@@ -245,4 +247,13 @@ public class TreeDTDCustomizer extends AbstractTreeCustomizer {
     private javax.swing.JPanel fillPanel;
     // End of variables declaration//GEN-END:variables
 
+    /** Initialize accesibility
+     */
+    public void initAccessibility(){
+
+       cbVersion.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_cbVersion")); 
+       cbEncoding.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_cbEncoding"));
+       
+       this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeDTDCustomizer"));
+    }    
 }

@@ -43,7 +43,9 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         typeLabel.setDisplayedMnemonic(Util.getChar("MNE_dtdAttDefType")); // NOI18N
         enumeratedLabel.setDisplayedMnemonic(Util.getChar("DTDAttDefNode.enumeratedLabel.mne")); // NOI18N
         defaultTypeLabel.setDisplayedMnemonic(Util.getChar("DTDAttDefNode.defaultTypeLabel.mne")); // NOI18N
-        defaultValueLabel.setDisplayedMnemonic(Util.getChar("DTDAttDefNode.defaultValueLabel.mne")); // NOI18N         
+        defaultValueLabel.setDisplayedMnemonic(Util.getChar("DTDAttDefNode.defaultValueLabel.mne")); // NOI18N  
+        
+        initAccessibility();
     }
 
     //
@@ -361,8 +363,8 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(defaultTypeField, gridBagConstraints);
 
         defaultValueLabel.setText(Util.getString ("DTDAttDefNode.defaultValueLabel.text"));
@@ -371,8 +373,8 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(defaultValueLabel, gridBagConstraints);
 
         defaultValueField.addActionListener(new java.awt.event.ActionListener() {
@@ -475,4 +477,19 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
     private javax.swing.JPanel fillPanel;
     // End of variables declaration//GEN-END:variables
 
+
+    /** Initialize accesibility
+     */
+    public void initAccessibility(){
+
+       elementNameLabel.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_elementNameField")); 
+       nameField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_nameField1"));
+       typeField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_typeField"));
+       enumeratedField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_enumeratedField"));
+       defaultTypeField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_defaultTypeField"));
+       defaultValueField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_defaultValueField"));
+       
+       
+       this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeAttlistDeclAttributeDefCustomizer"));
+    }        
 }

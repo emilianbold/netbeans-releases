@@ -39,7 +39,9 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
         initComponents();
         nameLabel.setDisplayedMnemonic(Util.getChar("MNE_dtdNotationName")); // NOI18N
         publicLabel.setDisplayedMnemonic(Util.getChar("MNE_dtdNotationPublicId")); // NOI18N
-        systemLabel.setDisplayedMnemonic(Util.getChar("MNE_dtdNotationSystemId")); // NOI18N        
+        systemLabel.setDisplayedMnemonic(Util.getChar("MNE_dtdNotationSystemId")); // NOI18N   
+        
+        initAccessibility();
     }
 
 
@@ -217,8 +219,8 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(systemLabel, gridBagConstraints);
 
         systemField.addActionListener(new java.awt.event.ActionListener() {
@@ -238,8 +240,8 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(systemField, gridBagConstraints);
 
         fillPanel.setPreferredSize(new java.awt.Dimension(0, 0));
@@ -294,4 +296,14 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
     private javax.swing.JPanel fillPanel;
     // End of variables declaration//GEN-END:variables
  
+    /** Initialize accesibility
+     */
+    public void initAccessibility(){
+    
+        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeNotationDeclCustomizer"));
+        
+        nameField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_nameField3"));
+        publicField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_publicField2"));
+        systemField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_systemField1"));
+    }
 }

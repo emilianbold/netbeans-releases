@@ -10,7 +10,7 @@
     <Component class="javax.swing.JLabel" name="versionLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="tax/src/org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="PROP_dtd_version" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="PROP_dtd_version" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
         </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="cbVersion" type="code"/>
@@ -25,7 +25,7 @@
     <Component class="javax.swing.JLabel" name="encodingLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="tax/src/org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="PROP_dtd_encoding" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="PROP_dtd_encoding" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
         </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="cbEncoding" type="code"/>

@@ -48,6 +48,8 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
         internalRadio.setMnemonic (Util.getChar ("RAD_Internal_mn")); // NOI18N
         externalRadio.setMnemonic (Util.getChar ("RAD_External_mn")); // NOI18N
         unparsedRadio.setMnemonic (Util.getChar ("RAD_Unparsed_mn")); // NOI18N
+        
+        initAccessibility();
     }
 
 
@@ -744,5 +746,24 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
     private javax.swing.JPanel externalPanel;
     private javax.swing.JComboBox typeCombo;
     // End of variables declaration//GEN-END:variables
+ 
+    /** Initialize accesibility
+     */
+    public void initAccessibility(){
     
+        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeEntityDeclCustomizer"));
+
+        nameField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_nameField2")); 
+        typeCombo.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_typeCombo"));
+        
+        internValueField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_internValueField"));
+        
+        externPublicField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_externPublicField"));
+        externSystemField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_externSystemField"));
+        
+        unparsedPublicField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_unparsedPublicField"));
+        unparsedSystemField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_unparsedSystemField"));
+        unparsedNotationField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_unparsedNotationField"));
+       
+       }         
 }

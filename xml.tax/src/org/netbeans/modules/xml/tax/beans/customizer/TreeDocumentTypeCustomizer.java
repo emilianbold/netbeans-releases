@@ -40,6 +40,8 @@ public class TreeDocumentTypeCustomizer extends AbstractTreeCustomizer {
         nameLabel.setDisplayedMnemonic(Util.getChar("MNE_xmlName")); // NOI18N
         systemLabel.setDisplayedMnemonic(Util.getChar("MNE_xmlSystemID")); // NOI18N
         publicLabel.setDisplayedMnemonic(Util.getChar("MNE_xmlPublicID")); // NOI18N
+        
+        initAccessibility();
     }
 
 
@@ -226,8 +228,8 @@ public class TreeDocumentTypeCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(publicLabel, gridBagConstraints);
 
         publicField.addActionListener(new java.awt.event.ActionListener() {
@@ -246,8 +248,8 @@ public class TreeDocumentTypeCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(publicField, gridBagConstraints);
 
         fillPanel.setPreferredSize(new java.awt.Dimension(0, 0));
@@ -313,5 +315,15 @@ public class TreeDocumentTypeCustomizer extends AbstractTreeCustomizer {
     private javax.swing.JTextField systemField;
     private javax.swing.JPanel fillPanel;
     // End of variables declaration//GEN-END:variables
+ 
+    /** Initialize accesibility
+     */
+    public void initAccessibility(){
     
+        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeDocumentTypeCustomizer"));
+        
+        nameField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_nameField4"));
+        systemField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_systemField2"));
+        publicField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_publicField3"));
+    }
 }

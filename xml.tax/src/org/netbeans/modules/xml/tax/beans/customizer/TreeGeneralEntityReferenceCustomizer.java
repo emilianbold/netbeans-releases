@@ -39,6 +39,7 @@ public class TreeGeneralEntityReferenceCustomizer extends AbstractTreeCustomizer
 
         initComponents();
         nameLabel.setDisplayedMnemonic(Util.getChar("MNE_geRef_name")); // NOI18N
+        initAccessibility();
     }
 
 
@@ -111,8 +112,8 @@ public class TreeGeneralEntityReferenceCustomizer extends AbstractTreeCustomizer
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(nameLabel, gridBagConstraints);
 
         nameField.setColumns(23);
@@ -133,8 +134,8 @@ public class TreeGeneralEntityReferenceCustomizer extends AbstractTreeCustomizer
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(nameField, gridBagConstraints);
 
         fillPanel.setPreferredSize(new java.awt.Dimension(0, 0));
@@ -168,5 +169,12 @@ public class TreeGeneralEntityReferenceCustomizer extends AbstractTreeCustomizer
     private javax.swing.JTextField nameField;
     private javax.swing.JPanel fillPanel;
     // End of variables declaration//GEN-END:variables
-
+   
+    /** Initialize accesibility
+     */
+    public void initAccessibility(){
+    
+        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeGeneralEntityReferenceCustomizer"));
+        nameField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_nameField6"));
+    }
 }

@@ -50,6 +50,8 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
         versionLabel.setDisplayedMnemonic(Util.getChar("MNE_document_version")); // NOI18N
         encodingLabel.setDisplayedMnemonic(Util.getChar("MNE_document_encoding")); // NOI18N
         standaloneLabel.setDisplayedMnemonic(Util.getChar("MNE_document_standalone")); // NOI18N
+        
+        initAccessibility();
     }
     
     
@@ -323,5 +325,15 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
     private javax.swing.JLabel encodingLabel;
     private javax.swing.JPanel fillPanel;
     // End of variables declaration//GEN-END:variables
+ 
+    /** Initialize accesibility
+     */
+    public void initAccessibility(){
     
+        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeDocumentCustomizer"));
+        
+        cbVersion.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_cbVersion"));
+        cbEncoding.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_cbEncoding1"));
+        cbStandalone.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_cbStandalone"));
+    }    
 }

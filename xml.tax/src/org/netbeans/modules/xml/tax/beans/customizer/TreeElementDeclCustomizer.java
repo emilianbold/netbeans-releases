@@ -39,6 +39,8 @@ public class TreeElementDeclCustomizer extends AbstractTreeCustomizer {
         initComponents();
         nameLabel.setDisplayedMnemonic(Util.getChar("MNE_xmlName")); // NOI18N
         contentLabel.setDisplayedMnemonic(Util.getChar("MNE_dtdContent")); // NOI18N
+        
+        initAccessibility();
     }
 
     
@@ -138,14 +140,14 @@ public class TreeElementDeclCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(nameLabel, gridBagConstraints);
 
-        nameField.setColumns(23);
+        nameField.setColumns(20);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(nameField, gridBagConstraints);
 
         contentLabel.setText(Util.getString ("PROP_dtdContent"));
@@ -154,16 +156,16 @@ public class TreeElementDeclCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(contentLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(contentField, gridBagConstraints);
 
         fillPanel.setPreferredSize(new java.awt.Dimension(0, 0));
@@ -188,4 +190,14 @@ public class TreeElementDeclCustomizer extends AbstractTreeCustomizer {
     private javax.swing.JPanel fillPanel;
     // End of variables declaration//GEN-END:variables
 
+
+    /** Initialize accesibility
+     */
+    public void initAccessibility(){
+
+       nameField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_nameField")); 
+       contentField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_contentField"));
+       
+       this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeElementDeclCustomizer"));
+    }     
 }

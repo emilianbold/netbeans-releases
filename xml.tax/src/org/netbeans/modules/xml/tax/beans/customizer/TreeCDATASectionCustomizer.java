@@ -38,6 +38,7 @@ public class TreeCDATASectionCustomizer extends AbstractTreeCustomizer {
 	super();
 
         initComponents();
+        initAccessibility();
     }
  
 
@@ -153,5 +154,12 @@ public class TreeCDATASectionCustomizer extends AbstractTreeCustomizer {
     private javax.swing.JScrollPane dataScroll;
     private javax.swing.JEditorPane dataPane;
     // End of variables declaration//GEN-END:variables
-
+ 
+    /** Initialize accesibility
+     */
+    public void initAccessibility(){
+    
+        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeCDATASectionCustomizer"));
+        dataPanel.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_dataPanel2"));
+    }
 }

@@ -38,6 +38,8 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
 
         initComponents();
         targetLabel.setDisplayedMnemonic(Util.getChar("MNE_xmlTarget")); // NOI18N
+        
+        initAccessibility();
     }
 
     
@@ -224,5 +226,13 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
     private javax.swing.JEditorPane dataPane;
     private javax.swing.JScrollPane dataScroll;
     // End of variables declaration//GEN-END:variables
-
+    
+    /** Initialize accesibility
+     */
+    public void initAccessibility(){
+    
+        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeProcessingInstructionCustomizer"));
+        targetField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_targetField"));
+        dataPane.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_dataPane1"));
+    }
 }
