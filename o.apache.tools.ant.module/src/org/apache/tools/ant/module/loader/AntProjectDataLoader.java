@@ -139,7 +139,9 @@ public class AntProjectDataLoader extends UniFileLoader {
                     r.setDTDHandler (h);
                     r.setEntityResolver (h);
                     r.setErrorHandler (h);
-                    r.parse (new InputSource (fo2.getInputStream ()));
+                    InputSource ins = new InputSource(fo2.getInputStream());
+                    ins.setSystemId(fo2.getURL().toExternalForm());   //#9581 work around
+                    r.parse (ins);
                     throw new IllegalStateException ();
                 } catch (ResolvedThrow rt) {
                     recognizeIt (fo2, rt.match);
