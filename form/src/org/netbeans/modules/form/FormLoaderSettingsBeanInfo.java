@@ -29,6 +29,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
   /** Array of property descriptors. */
   private static PropertyDescriptor[] desc;
 
+  private static java.util.ResourceBundle formBundle = com.netbeans.ide.util.NbBundle.getBundle (FormLoaderSettingsBeanInfo.class);
+
   // initialization of the array of descriptors
   static {
     try {
@@ -98,44 +100,44 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
         };
 
       }
-      desc[0].setDisplayName (FormLoaderSettings.formBundle.getString ("PROP_INDENT_AWT_HIERARCHY"));
-      desc[0].setShortDescription (FormLoaderSettings.formBundle.getString ("HINT_INDENT_AWT_HIERARCHY"));
-      desc[1].setDisplayName (FormLoaderSettings.formBundle.getString ("PROP_SORT_EVENT_SETS"));
-      desc[1].setShortDescription (FormLoaderSettings.formBundle.getString ("HINT_SORT_EVENT_SETS"));
+      desc[0].setDisplayName (formBundle.getString ("PROP_INDENT_AWT_HIERARCHY"));
+      desc[0].setShortDescription (formBundle.getString ("HINT_INDENT_AWT_HIERARCHY"));
+      desc[1].setDisplayName (formBundle.getString ("PROP_SORT_EVENT_SETS"));
+      desc[1].setShortDescription (formBundle.getString ("HINT_SORT_EVENT_SETS"));
       desc[1].setExpert (true);
       desc[1].setHidden (true);
-      desc[2].setDisplayName (FormLoaderSettings.formBundle.getString ("PROP_EVENT_VARIABLE_NAME"));
-      desc[2].setShortDescription (FormLoaderSettings.formBundle.getString ("HINT_EVENT_VARIABLE_NAME"));
-      desc[3].setDisplayName (FormLoaderSettings.formBundle.getString ("PROP_SHORT_BEAN_NAMES"));
-      desc[3].setShortDescription (FormLoaderSettings.formBundle.getString ("HINT_SHORT_BEAN_NAMES"));
+      desc[2].setDisplayName (formBundle.getString ("PROP_EVENT_VARIABLE_NAME"));
+      desc[2].setShortDescription (formBundle.getString ("HINT_EVENT_VARIABLE_NAME"));
+      desc[3].setDisplayName (formBundle.getString ("PROP_SHORT_BEAN_NAMES"));
+      desc[3].setShortDescription (formBundle.getString ("HINT_SHORT_BEAN_NAMES"));
       desc[3].setHidden (true);
       desc[3].setExpert (true);
-      desc[4].setDisplayName (FormLoaderSettings.formBundle.getString ("PROP_SELECTION_BORDER_SIZE"));
-      desc[4].setShortDescription (FormLoaderSettings.formBundle.getString ("HINT_SELECTION_BORDER_SIZE"));
+      desc[4].setDisplayName (formBundle.getString ("PROP_SELECTION_BORDER_SIZE"));
+      desc[4].setShortDescription (formBundle.getString ("HINT_SELECTION_BORDER_SIZE"));
       desc[4].setExpert (true);
-      desc[5].setDisplayName (FormLoaderSettings.formBundle.getString ("PROP_SELECTION_BORDER_COLOR"));
-      desc[5].setShortDescription (FormLoaderSettings.formBundle.getString ("HINT_SELECTION_BORDER_COLOR"));
+      desc[5].setDisplayName (formBundle.getString ("PROP_SELECTION_BORDER_COLOR"));
+      desc[5].setShortDescription (formBundle.getString ("HINT_SELECTION_BORDER_COLOR"));
       desc[5].setExpert (true);
-      desc[6].setDisplayName (FormLoaderSettings.formBundle.getString ("PROP_CONNECTION_BORDER_COLOR"));
-      desc[6].setShortDescription (FormLoaderSettings.formBundle.getString ("HINT_CONNECTION_BORDER_COLOR"));
+      desc[6].setDisplayName (formBundle.getString ("PROP_CONNECTION_BORDER_COLOR"));
+      desc[6].setShortDescription (formBundle.getString ("HINT_CONNECTION_BORDER_COLOR"));
       desc[6].setExpert (true);
-      desc[7].setDisplayName (FormLoaderSettings.formBundle.getString ("PROP_DRAG_BORDER_COLOR"));
-      desc[7].setShortDescription (FormLoaderSettings.formBundle.getString ("HINT_DRAG_BORDER_COLOR"));
+      desc[7].setDisplayName (formBundle.getString ("PROP_DRAG_BORDER_COLOR"));
+      desc[7].setShortDescription (formBundle.getString ("HINT_DRAG_BORDER_COLOR"));
       desc[7].setExpert (true);
-      desc[8].setDisplayName (FormLoaderSettings.formBundle.getString ("PROP_SHOW_GRID"));
-      desc[8].setShortDescription (FormLoaderSettings.formBundle.getString ("HINT_SHOW_GRID"));
-      desc[9].setDisplayName (FormLoaderSettings.formBundle.getString ("PROP_GRID_X"));
-      desc[9].setShortDescription (FormLoaderSettings.formBundle.getString ("HINT_GRID_X"));
-      desc[10].setDisplayName (FormLoaderSettings.formBundle.getString ("PROP_GRID_Y"));
-      desc[10].setShortDescription (FormLoaderSettings.formBundle.getString ("HINT_GRID_Y"));
-      desc[11].setDisplayName (FormLoaderSettings.formBundle.getString ("PROP_APPLY_GRID_TO_POSITION"));
-      desc[11].setShortDescription (FormLoaderSettings.formBundle.getString ("HINT_APPLY_GRID_TO_POSITION"));
+      desc[8].setDisplayName (formBundle.getString ("PROP_SHOW_GRID"));
+      desc[8].setShortDescription (formBundle.getString ("HINT_SHOW_GRID"));
+      desc[9].setDisplayName (formBundle.getString ("PROP_GRID_X"));
+      desc[9].setShortDescription (formBundle.getString ("HINT_GRID_X"));
+      desc[10].setDisplayName (formBundle.getString ("PROP_GRID_Y"));
+      desc[10].setShortDescription (formBundle.getString ("HINT_GRID_Y"));
+      desc[11].setDisplayName (formBundle.getString ("PROP_APPLY_GRID_TO_POSITION"));
+      desc[11].setShortDescription (formBundle.getString ("HINT_APPLY_GRID_TO_POSITION"));
       desc[11].setExpert (true);
-      desc[12].setDisplayName (FormLoaderSettings.formBundle.getString ("PROP_APPLY_GRID_TO_SIZE"));
-      desc[12].setShortDescription (FormLoaderSettings.formBundle.getString ("HINT_APPLY_GRID_TO_SIZE"));
+      desc[12].setDisplayName (formBundle.getString ("PROP_APPLY_GRID_TO_SIZE"));
+      desc[12].setShortDescription (formBundle.getString ("HINT_APPLY_GRID_TO_SIZE"));
       desc[12].setExpert (true);
-      desc[13].setDisplayName (FormLoaderSettings.formBundle.getString ("PROP_VARIABLES_MODIFIER"));
-      desc[13].setShortDescription (FormLoaderSettings.formBundle.getString ("HINT_VARIABLES_MODIFIER"));
+      desc[13].setDisplayName (formBundle.getString ("PROP_VARIABLES_MODIFIER"));
+      desc[13].setShortDescription (formBundle.getString ("HINT_VARIABLES_MODIFIER"));
       desc[13].setPropertyEditorClass (ModifierPropertyEditor.class);
       
 
@@ -169,10 +171,10 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
   final public static class ModifierPropertyEditor extends java.beans.PropertyEditorSupport {
     /** Display Names for alignment. */
     private static final String[] names = {
-      FormLoaderSettings.formBundle.getString ("VALUE_PRIVATE"),
-      FormLoaderSettings.formBundle.getString ("VALUE_PACKAGE_PRIVATE"),
-      FormLoaderSettings.formBundle.getString ("VALUE_PROTECTED"),
-      FormLoaderSettings.formBundle.getString ("VALUE_PUBLIC"),
+      formBundle.getString ("VALUE_PRIVATE"),
+      formBundle.getString ("VALUE_PACKAGE_PRIVATE"),
+      formBundle.getString ("VALUE_PROTECTED"),
+      formBundle.getString ("VALUE_PUBLIC"),
     };
 
     /** @return names of the possible directions */
@@ -207,6 +209,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  3    Gandalf   1.2         3/16/99  Ian Formanek    
  *  2    Gandalf   1.1         3/10/99  Ian Formanek    Gandalf updated
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
