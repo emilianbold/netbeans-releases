@@ -12,24 +12,5 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="openide/execution" default="netbeans" basedir=".">
-
     <import file="../../nbbuild/templates/projectized.xml"/>
-
-    <target name="files-init" depends="basic-init">
-        <patternset id="module.files">
-            <include name="${module.jar}"/>
-            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
-            <include name="${nb.system.dir}/ModuleAutoDeps/org-openide-execution.xml"/>
-        </patternset>
-    </target>
-
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}"/>
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}">
-            <fileset dir="release/system"/>
-        </copy>
-    </target>
-
 </project>

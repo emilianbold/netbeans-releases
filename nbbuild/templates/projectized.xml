@@ -43,7 +43,11 @@ Microsystems, Inc. All Rights Reserved.
         <property name="javahelp.jar.dir" value="${nb.modules/docs.dir}"/>
         <property name="javahelp.jar.basename" value="${code.name.base.dashes}.jar"/>
         <property name="javahelp.jar" value="${javahelp.jar.dir}/${javahelp.jar.basename}"/>
-	<property name="javac.source" value="1.4" />
+	<property name="javac.source" value="1.4"/>
+        <property name="module.auto.deps.xml" location="module-auto-deps.xml"/>
+        <condition property="has.module.auto.deps">
+            <available file="${module.auto.deps.xml}"/>
+        </condition>
     </target>
 
     <target name="files-init" depends="basic-init">
@@ -51,6 +55,7 @@ Microsystems, Inc. All Rights Reserved.
             <include name="${module.jar}"/>
             <include name="${javahelp.jar}" if="has.javahelp"/>
             <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
+            <include name="${nb.system.dir}/ModuleAutoDeps/${code.name.base.dashes}.xml" if="has.module.auto.deps"/>
         </patternset>
     </target>
 
@@ -210,7 +215,12 @@ Microsystems, Inc. All Rights Reserved.
         </createmodulexml>
     </target>
 
-    <target name="netbeans" depends="init,jar,netbeans-extra,module-xml-regular,module-xml-autoload,module-xml-eager,javahelp">
+    <target name="module-auto-deps" depends="basic-init" if="has.module.auto.deps">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ModuleAutoDeps"/>
+        <copy file="${module.auto.deps.xml}" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ModuleAutoDeps/${code.name.base.dashes}.xml"/>
+    </target>
+
+    <target name="netbeans" depends="init,jar,netbeans-extra,module-xml-regular,module-xml-autoload,module-xml-eager,javahelp,module-auto-deps">
         <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${module.jar}">
             <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
                 <patternset refid="module.files"/>

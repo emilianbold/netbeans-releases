@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
             <include name="${module.jar}"/>
             <include name="${nb.lib.dir}/ide.ks"/>
             <include name="${nb.bin.dir}/nbexec*"/>
-            <include name="${nb.system.dir}/ModuleAutoDeps/org-netbeans-core.xml"/>
+            <include name="${nb.system.dir}/ModuleAutoDeps/${code-name-base-dashes}.xml"/>
             <include name="CREDITS.html"/>
         </patternset>
         <patternset id="module.files">
@@ -61,9 +61,6 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
         <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}" includeEmptyDirs="false">
             <fileset dir="release/lib" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-        </copy>
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}" includeEmptyDirs="false">
-            <fileset dir="release/system" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
         </copy>
         <fixcrlf srcdir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" eol="crlf">
             <include name="**/*.bat"/>
