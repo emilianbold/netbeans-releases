@@ -932,6 +932,18 @@ public final class NbMainExplorer extends CloneableTopComponent
         }
 
         private void postTask (final DataObject obj) {
+            try {
+                // bugfix #32180, don't select node on hidden filesystem
+                if (obj.getPrimaryFile ().getFileSystem ().isHidden ()) {
+                    // ignore it
+                    return ;
+                }
+            } catch (org.openide.filesystems.FileStateInvalidException fsie) {
+                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, fsie);
+                // don't post task
+                return ;
+            }
+            
             RequestProcessor.Task t = previousTask;
             if (t != null) {
                 t.cancel ();
