@@ -34,11 +34,15 @@ public class ReconfigureReaderPanel extends javax.swing.JPanel {
         this.exceptionMessage = exceptionMessage;
         settings = PDFSettings.getDefault ();
         initComponents ();
-        // accessibility
-        this.getAccessibleContext().setAccessibleDescription(bundle.getString ("LBL_reconfigure"));
-    
+        initAccessibility ();            
     }
 
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(bundle.getString ("LBL_reconfigure"));
+        viewerField.getAccessibleContext().setAccessibleDescription(bundle.getString ("ACS_Field"));
+        chooseButton.getAccessibleContext().setAccessibleDescription(bundle.getString ("ACS_LBL_choose"));
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
