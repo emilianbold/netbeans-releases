@@ -15,13 +15,20 @@
 package org.netbeans.modules.i18n;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.properties.PropertiesDataObject; // PENDING
-import org.netbeans.spi.project.ui.support.LogicalViews;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
@@ -35,13 +42,6 @@ import org.openide.nodes.NodeAcceptor;
 import org.openide.nodes.NodeOperation;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
-import java.awt.event.ActionEvent;
-import java.io.IOException;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.FileOwnerQuery;
 
 
 
@@ -132,7 +132,7 @@ public class SelectorUtils {
    **/
   static public Node sourcesNode(Project prj, FilteredNode.NodeFilter filter) {
       Sources src = ProjectUtils.getSources(prj);
-      SourceGroup[] srcgrps = src.getSourceGroups("java");
+      SourceGroup[] srcgrps = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
       java.util.List nodes = new ArrayList();      
       for (int i = 0 ; i < srcgrps.length; i++) {
 	try {
