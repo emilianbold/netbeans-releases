@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 public class ParamEditor extends javax.swing.JPanel {
 
     private final static boolean debug = false;    
-    private static final Dimension valueSize = new Dimension(300, 50);
+    private static final Dimension valueSize = new Dimension(400, 150);
 
     // Do we need this to close it?
     private Dialog dialog = null;
@@ -135,6 +135,8 @@ public class ParamEditor extends javax.swing.JPanel {
 	taC.gridy = GridBagConstraints.RELATIVE;     
 	taC.gridheight = 3; 
 	taC.gridwidth = 8; 
+        taC.weightx = 1.0;
+        taC.weighty = 1.0;
 	taC.fill = GridBagConstraints.BOTH; 
 	taC.anchor = GridBagConstraints.WEST; 
 	taC.insets = new Insets(0, 15, 4, 15);
@@ -195,7 +197,7 @@ public class ParamEditor extends javax.swing.JPanel {
         valueText.setToolTipText(NbBundle.getMessage(ParamEditor.class, "ACS_MON_ValueTextAreaA11yDesc"));
 	if(editable == Editable.NEITHER) {
 	    valueText.setEditable(false);
-	    valueText.setBackground(this.getBackground().darker()); 
+	    valueText.setBackground(this.getBackground());
 	    valueText.setForeground(Color.BLACK); 
 	    valueText.setBorder(BorderFactory.createLoweredBevelBorder());
 	}
