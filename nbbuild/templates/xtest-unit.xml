@@ -16,13 +16,26 @@ Microsystems, Inc. All Rights Reserved.
 <project name="xtest-unit" basedir="." default="all">
 
     <dirname property="nb_all" file="${ant.file.xtest-unit}/../.."/>
+
+    <condition property="do.we.need.to.parse.project.xml.file" >
+        <or>
+            <not><isset property="code.name.base.dashes" /></not>
+            <not><isset property="module.classpath" /></not>
+        </or>
+    </condition>
     
-    <target name="init">
-        <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <target name="init-read-property-files" >
         <!-- Synch the following property loads with NbModuleProject.makeEvalDefs: -->
         <property file="../nbproject/private/private.properties"/>
         <property file="../nbproject/project.properties"/>
+    </target>
+    
+    <target name="init-parse-project-xml" depends="init-read-property-files" if="do.we.need.to.parse.project.xml.file" >
+        <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         <parseprojectxml project=".." modulesxml="${nb_all}/nbbuild/templates/modules.xml" codenamebasedashesproperty="code.name.base.dashes" moduleclasspathproperty="module.classpath"/>
+    </target>
+        
+    <target name="init" depends="init-parse-project-xml,init-read-property-files">
         <property name="module.jar.dir" value="${nb.modules.dir}"/>
         <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
         <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>
