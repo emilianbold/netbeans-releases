@@ -227,6 +227,10 @@ public abstract class NbTopManager extends TopManager {
     * @return true if such level is enabled
     */
     public abstract boolean isInteractive (int il);
+    
+    /** Creates error logger.
+     */
+    protected abstract PrintWriter createErrorLogger (int minLogSeverity);
 
     /** Allows subclasses to override this method and return different default set of nodes
     * the should be "selected". If no top component is active then this method is called to

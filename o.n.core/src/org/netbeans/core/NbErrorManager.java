@@ -248,11 +248,7 @@ final class NbErrorManager extends ErrorManager {
     /** Lazy getter for the writer */
     private PrintWriter getLogWriter() {
         if (logWriter == null) {
-            if (minLogSeverity < -1) {
-                logWriter = new PrintWriter (System.err);
-            } else {
-                logWriter = new PrintWriter (TopLogging.getLogOutputStream ());
-            }
+            logWriter = NbTopManager.get ().createErrorLogger (minLogSeverity);
         }
         return logWriter;
     }
