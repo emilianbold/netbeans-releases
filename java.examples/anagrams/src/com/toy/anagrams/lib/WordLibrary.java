@@ -1,15 +1,13 @@
-/* Anagram Game Application - Library
- *
- * WordLibrary.java
- *
- * Created on March 12, 2003, 3:08 PM
- */
+/* Anagram Game Application */
 
 package com.toy.anagrams.lib;
 
+/**
+ * Logic for the Anagram Game application.
+ */
 public final class WordLibrary {
-    
-    private static final String WORD_LIST[] = {
+
+    private static final String[] WORD_LIST = {
         "abstraction",
         "ambiguous",
         "arithmetic",
@@ -55,8 +53,8 @@ public final class WordLibrary {
         "vertex",
         "unsigned",
         "traditional"};
-        
-    private static final String SCRAMBLED_WORD_LIST[] = {
+
+    private static final String[] SCRAMBLED_WORD_LIST = {
         "batsartcoin",
         "maibuguos",
         "ratimhteci",
@@ -103,42 +101,47 @@ public final class WordLibrary {
         "nuisngde",
         "rtdatioialn"
     };
-        
-    /** Singleton class
+
+    /**
+     * Singleton class.
      */
     private WordLibrary() {
     }
 
-    /** Gets the word at given index.
-     * @param idx Index of required word
-     * @retrun word at given index
+    /**
+     * Gets the word at a given index.
+     * @param idx index of required word
+     * @return word at that index in its natural form
      */
     public static String getWord(int idx) {
         return WORD_LIST[idx];
     }
 
-    /** Gets the word at given index is its scrambled form.
-     * @param idx Index of required word
-     * @retrun Word at given index in its scrambled form
+    /**
+     * Gets the word at a given index in its scrambled form.
+     * @param idx index of required word
+     * @return word at that index in its scrambled form
      */
     public static String getScrambledWord(int idx) {
         return SCRAMBLED_WORD_LIST[idx];
     }
 
-    /** Gets number of the words in the library.
-     * @retrun Number of the word in the library
+    /**
+     * Gets the number of words in the library.
+     * @return the total number of plain/scrambled word pairs in the library
      */
     public static int getSize() {
         return WORD_LIST.length;
     }
 
-    /** Checks whether the usres guess of word at given index is correct.
-     * @param index Index of the word guessed
-     * @return true if the guess was correct false otherwise
+    /**
+     * Checks whether a user's guess for a word at the given index is correct.
+     * @param idx index of the word guessed
+     * @param userGuess the user's guess for the actual word
+     * @return true if the guess was correct; false otherwise
      */
     public static boolean isCorrect(int idx, String userGuess) {
         return userGuess.equals(getWord(idx));
     }
 
 }
-

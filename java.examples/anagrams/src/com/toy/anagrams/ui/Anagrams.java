@@ -1,9 +1,4 @@
-/* Anagram Game Application
- *
- * Anagrams.java
- *
- * Created on March 12, 2003, 11:12 AM
- */
+/* Anagram Game Application */
 
 package com.toy.anagrams.ui;
 
@@ -11,27 +6,35 @@ import com.toy.anagrams.lib.WordLibrary;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowListener;
+import javax.swing.JFrame;
 
-/** Main window of the Anagram Game Application
+/**
+ * Main window of the Anagram Game application.
  */
-public class Anagrams extends javax.swing.JFrame {
-    
+public class Anagrams extends JFrame implements ActionListener, WindowListener {
+
+    public static void main(String[] args) {
+        new Anagrams().setVisible(true);
+    }
+
     private int wordIdx = 0;
 
     /** Creates new form Anagrams */
     public Anagrams() {
-        initComponents();        
+        initComponents();
         getRootPane().setDefaultButton(guessButton);
         scrambledWord.setText(WordLibrary.getScrambledWord(wordIdx));
         pack();
-        //Center in the screen
+        guessedWord.requestFocusInWindow();
+        // Center in the screen
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension frameSize = getSize();
-        setLocation(new Point((screenSize.width-frameSize.width)/2,
-                              (screenSize.height-frameSize.width)/2));         
-        
+        setLocation(new Point((screenSize.width - frameSize.width) / 2,
+                              (screenSize.height - frameSize.width) / 2));
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -50,16 +53,12 @@ public class Anagrams extends javax.swing.JFrame {
         guessButton = new javax.swing.JButton();
         nextTrial = new javax.swing.JButton();
         mainMenu = new javax.swing.JMenuBar();
-        File = new javax.swing.JMenu();
+        fileMenu = new javax.swing.JMenu();
         aboutMenuItem = new javax.swing.JMenuItem();
         exitMenuItem = new javax.swing.JMenuItem();
 
         setTitle("Anagrams");
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosing(java.awt.event.WindowEvent evt) {
-                exitForm(evt);
-            }
-        });
+        addWindowListener(this);
 
         mainPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -112,11 +111,7 @@ public class Anagrams extends javax.swing.JFrame {
         guessButton.setMnemonic('G');
         guessButton.setText("Guess");
         guessButton.setToolTipText("Guess the scrambled word.");
-        guessButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                guessedWordActionPerformed(evt);
-            }
-        });
+        guessButton.addActionListener(this);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
@@ -129,11 +124,7 @@ public class Anagrams extends javax.swing.JFrame {
         nextTrial.setMnemonic('N');
         nextTrial.setText("New Word");
         nextTrial.setToolTipText("Fetch a new word.");
-        nextTrial.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                nextTrialActionPerformed(evt);
-            }
-        });
+        nextTrial.addActionListener(this);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -151,91 +142,110 @@ public class Anagrams extends javax.swing.JFrame {
 
         getContentPane().add(mainPanel, java.awt.BorderLayout.CENTER);
 
-        File.setMnemonic('F');
-        File.setText("File");
+        fileMenu.setMnemonic('F');
+        fileMenu.setText("File");
         aboutMenuItem.setMnemonic('A');
         aboutMenuItem.setText("About");
         aboutMenuItem.setToolTipText("About");
-        aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                aboutMenuItemActionPerformed(evt);
-            }
-        });
+        aboutMenuItem.addActionListener(this);
 
-        File.add(aboutMenuItem);
+        fileMenu.add(aboutMenuItem);
 
         exitMenuItem.setMnemonic('E');
         exitMenuItem.setText("Exit");
         exitMenuItem.setToolTipText("Quit Team, Quit!");
-        exitMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exitMenuItemActionPerformed(evt);
-            }
-        });
+        exitMenuItem.addActionListener(this);
 
-        File.add(exitMenuItem);
+        fileMenu.add(exitMenuItem);
 
-        mainMenu.add(File);
+        mainMenu.add(fileMenu);
 
         setJMenuBar(mainMenu);
 
+    }
+
+    // Code for dispatching events from components to event handlers.
+
+    public void actionPerformed(java.awt.event.ActionEvent evt) {
+        if (evt.getSource() == aboutMenuItem) {
+            Anagrams.this.aboutMenuItemActionPerformed(evt);
+        }
+        else if (evt.getSource() == exitMenuItem) {
+            Anagrams.this.exitMenuItemActionPerformed(evt);
+        }
+        else if (evt.getSource() == guessButton) {
+            Anagrams.this.guessedWordActionPerformed(evt);
+        }
+        else if (evt.getSource() == nextTrial) {
+            Anagrams.this.nextTrialActionPerformed(evt);
+        }
+    }
+
+    public void windowActivated(java.awt.event.WindowEvent evt) {
+    }
+
+    public void windowClosed(java.awt.event.WindowEvent evt) {
+    }
+
+    public void windowClosing(java.awt.event.WindowEvent evt) {
+        if (evt.getSource() == Anagrams.this) {
+            Anagrams.this.exitForm(evt);
+        }
+    }
+
+    public void windowDeactivated(java.awt.event.WindowEvent evt) {
+    }
+
+    public void windowDeiconified(java.awt.event.WindowEvent evt) {
+    }
+
+    public void windowIconified(java.awt.event.WindowEvent evt) {
+    }
+
+    public void windowOpened(java.awt.event.WindowEvent evt) {
     }//GEN-END:initComponents
 
     private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
-        new About(this).show();
+        new About(this).setVisible(true);
     }//GEN-LAST:event_aboutMenuItemActionPerformed
 
     private void nextTrialActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextTrialActionPerformed
         wordIdx = (wordIdx + 1) % WordLibrary.getSize();
-        
+
         feedbackLabel.setText(" ");
         scrambledWord.setText(WordLibrary.getScrambledWord(wordIdx));
         guessedWord.setText("");
-        getRootPane().setDefaultButton(guessButton);        
-        
-        guessedWord.requestFocus();
+        getRootPane().setDefaultButton(guessButton);
+
+        guessedWord.requestFocusInWindow();
     }//GEN-LAST:event_nextTrialActionPerformed
 
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
         System.exit(0);
     }//GEN-LAST:event_exitMenuItemActionPerformed
-        
+
     private void guessedWordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guessedWordActionPerformed
-        if(WordLibrary.isCorrect(wordIdx, guessedWord.getText())){
+        if (WordLibrary.isCorrect(wordIdx, guessedWord.getText())){
             feedbackLabel.setText("Correct! Try a new word!");
             getRootPane().setDefaultButton(nextTrial);
         } else {
             feedbackLabel.setText("Incorrect! Try again!");
             guessedWord.setText("");
         }
-        
-        guessedWord.requestFocus();
+
+        guessedWord.requestFocusInWindow();
     }//GEN-LAST:event_guessedWordActionPerformed
-    
-    /** Exit the Application */
+
     private void exitForm(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_exitForm
         System.exit(0);
     }//GEN-LAST:event_exitForm
 
-    public void show() {
-        super.show();
-        guessedWord.requestFocus();
-    }
-    
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        new Anagrams().show();
-    }
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenu File;
     private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JPanel buttonsPanel;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JLabel feedbackLabel;
+    private javax.swing.JMenu fileMenu;
     private javax.swing.JButton guessButton;
     private javax.swing.JLabel guessLabel;
     private javax.swing.JTextField guessedWord;
@@ -245,5 +255,5 @@ public class Anagrams extends javax.swing.JFrame {
     private javax.swing.JLabel scrambledLabel;
     private javax.swing.JTextField scrambledWord;
     // End of variables declaration//GEN-END:variables
-    
+
 }
