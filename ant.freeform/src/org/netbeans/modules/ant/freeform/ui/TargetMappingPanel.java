@@ -12,7 +12,7 @@
  */
 
 package org.netbeans.modules.ant.freeform.ui;
-
+import java.awt.Cursor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -26,6 +26,8 @@ import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.modules.ant.freeform.Util;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.ErrorManager;
+import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -60,6 +62,8 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         customTargetsModel = new CustomTargetsModel();
         customTargets.setModel(customTargetsModel);
         
+        link.setCursor(Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
+        
         jLabel7.setVisible(projectType.equals("j2se")); // NOI18N
         testCombo.setVisible(projectType.equals("j2se")); // NOI18N
         jLabel3.setVisible(projectType.equals("webapps")); // NOI18N
@@ -69,7 +73,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
     
     private void showAdvancedPart(boolean show) {
         jLabel8.setVisible(show);
-        jLabel9.setVisible(show);
+        link.setVisible(show);
         jLabel10.setVisible(show);
         jScrollPane1.setVisible(show);
         customTargets.setVisible(show);
@@ -272,7 +276,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         jLabel3 = new javax.swing.JLabel();
         redeployCombo = new javax.swing.JComboBox();
         jPanel1 = new javax.swing.JPanel();
-        jLabel9 = new javax.swing.JLabel();
+        link = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -401,15 +405,21 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel9.setForeground(java.awt.Color.blue);
-        jLabel9.setText("<link-to-help>");
+        link.setForeground(new java.awt.Color(102, 102, 153));
+        link.setText("<link-to-help>");
+        link.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                linkMouseReleased(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        jPanel1.add(jLabel9, gridBagConstraints);
+        jPanel1.add(link, gridBagConstraints);
 
         jLabel8.setText("Read how to write the debug target here:");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -487,6 +497,15 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         add(remainder, gridBagConstraints);
 
     }//GEN-END:initComponents
+
+    private void linkMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linkMouseReleased
+        try {
+            // XXX: define some real URL here!!
+            HtmlBrowser.URLDisplayer.getDefault().showURL(new java.net.URL("http://www.netbeans.org"));
+        } catch (java.net.MalformedURLException exc) {
+            ErrorManager.getDefault().notify(exc);
+        }
+    }//GEN-LAST:event_linkMouseReleased
 
     private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeActionPerformed
         int index = customTargets.getSelectedRow();
@@ -575,10 +594,10 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JComboBox javadocCombo;
+    private javax.swing.JLabel link;
     private javax.swing.JComboBox redeployCombo;
     private javax.swing.JPanel remainder;
     private javax.swing.JButton remove;
