@@ -169,14 +169,19 @@ class WebActionProvider implements ActionProvider {
             p.setProperty("jpda.address", address);
             
         } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            FileObject[] files = findSources( context );
+            FileObject[] files = findJavaSources( context );
             p = new Properties();
             if (files != null) {
                 p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getSourceDirectory())); // NOI18N
             } else {
-                return;
+                files = findJsps (context);
+                if (files != null) {
+                    p.setProperty("jsp.includes", ActionUtils.antIncludesList(files, project.getWebModule ().getDocumentBase ())); // NOI18N
+                    targetNames = new String [] {"compile-single-jsp"};
+                } else {
+                    return;
+                }
             }
-            
         } else {
             p = null;
             if (targetNames == null) {
@@ -198,7 +203,7 @@ class WebActionProvider implements ActionProvider {
             return false;
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            return findSources( context ) != null;
+            return findJavaSources( context ) != null || findJsps (context) != null;
         }
         else {
             // other actions are global
@@ -213,18 +218,27 @@ class WebActionProvider implements ActionProvider {
     
     private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
     
-    /** Find selected sources 
+    /** Find selected java sources 
      */
-    private FileObject[] findSources(Lookup context) {
-        FileObject srcDir = project.getSourceDirectory();
+    private FileObject[] findJavaSources(Lookup context) {
+        FileObject srcDir = project.getSourceDirectory ();
+        FileObject[] files = null;
         if (srcDir != null) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true);
-            return files;
-        } else {
-            return null;
+            files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true);
         }
+        return files;
     }
     
+    /** Find selected jsps
+     */
+    private FileObject[] findJsps(Lookup context) {
+        FileObject webDir = project.getWebModule ().getDocumentBase ();
+        FileObject[] files = null;
+        if (webDir != null) {
+            files = ActionUtils.findSelectedFiles(context, webDir, ".jsp", true);
+        }
+        return files;
+    }
     private boolean isDebugged() {
         
         J2eeModuleProvider jmp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
@@ -255,16 +269,6 @@ class WebActionProvider implements ActionProvider {
         return false;
     }
     
-//    private FileObject[] findJSPs(Lookup context) {
-//        FileObject webDir = project.getWebModule ().getDocumentBase ();
-//        if (webDir != null) {
-//            FileObject[] files = ActionHelper.findSelectedFiles(context, webDir, ".jsp", true);
-//            return files;
-//        } else {
-//            return null;
-//        }
-//    }
-        
     private boolean isSelectedServer () {
         String instance = antProjectHelper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_INSTANCE);
         boolean selected;

@@ -85,11 +85,8 @@ Microsystems, Inc. All Rights Reserved.
         <xsl:with-param name="type" select="'jar'"/>
     </xsl:call-template>
 
-    <target name="compile" depends="init,deps-jar">
+    <target name="compile-classes" depends="init,deps-jar">
         <mkdir dir="${{build.classes.dir}}"/>
-        <copy todir="${{build.web.dir}}">
-          <fileset excludes="WEB-INF/classes/**" dir="${{web.docbase.dir}}"/>
-        </copy>
         <xsl:choose>
             <xsl:when test="/p:project/p:configuration/web:data/web:explicit-platform">
                 <javac srcdir="${{src.dir}}" destdir="${{build.classes.dir}}" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}" source="${{javac.source}}" includeantruntime="false" fork="yes" executable="${{platform.home}}/bin/javac">
@@ -108,6 +105,12 @@ Microsystems, Inc. All Rights Reserved.
         </xsl:choose>
         <copy todir="${{build.classes.dir}}">
             <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
+        </copy>
+    </target>
+    
+    <target name="compile" depends="init,deps-jar,compile-classes">
+        <copy todir="${{build.web.dir}}">
+          <fileset excludes="WEB-INF/classes/**" dir="${{web.docbase.dir}}"/>
         </copy>
         <!-- copy libraries -->
         <xsl:for-each select="/p:project/p:configuration/web:data/web:web-module-libraries/web:library[web:path-in-war]">
@@ -128,6 +131,41 @@ Microsystems, Inc. All Rights Reserved.
              validateXml="false" 
              uriroot="${{basedir}}/${{build.web.dir}}" 
              outputDir="${{basedir}}/${{build.generated.dir}}/src" /> 
+             
+       <mkdir dir="${{build.generated.dir}}/classes"/>
+        <xsl:choose>
+            <xsl:when test="/p:project/p:configuration/web:data/web:explicit-platform">
+                <javac srcdir="${{build.generated.dir}}/src" destdir="${{build.generated.dir}}/classes" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}" source="${{javac.source}}" includeantruntime="false" fork="yes" executable="${{platform.home}}/bin/javac">
+                    <classpath>
+                        <path path="${{javac.classpath}}:${{build.classes.dir}}"/>
+                        <path path="${{jspc.classpath}}"/>
+                    </classpath>
+                </javac>
+            </xsl:when>
+            <xsl:otherwise>
+                <javac srcdir="${{build.generated.dir}}/src" destdir="${{build.generated.dir}}/classes" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}" source="${{javac.source}}" includeantruntime="false">
+                    <classpath>
+                        <path path="${{javac.classpath}}:${{build.classes.dir}}"/>
+                        <path path="${{jspc.classpath}}"/>
+                    </classpath>
+                </javac>
+            </xsl:otherwise>
+        </xsl:choose>
+    </target> 
+
+    <target name="compile-single-jsp" depends="compile"> 
+      <fail unless="jsp.includes">Must select a file in the IDE or set jsp.includes</fail>
+
+      <taskdef classname="org.netbeans.modules.web.project.ant.JspCSingle" name="single-jspc" > 
+        <classpath path="${{libs.copyfiles.classpath}}:${{jspc.classpath}}"/>
+      </taskdef> 
+
+      <mkdir dir="${{build.generated.dir}}/src"/>
+      <single-jspc
+             validateXml="false" 
+             uriroot="${{basedir}}/${{build.web.dir}}" 
+             outputDir="${{basedir}}/${{build.generated.dir}}/src"
+             jspincludes="${{jsp.includes}}" /> 
              
        <mkdir dir="${{build.generated.dir}}/classes"/>
         <xsl:choose>
