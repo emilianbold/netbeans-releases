@@ -130,7 +130,8 @@ public class FormCustomEditor extends JPanel
                 }
                 if (!valueSet) {
                     Object defaultValue = editor.getProperty().getDefaultValue();
-                    if (defaultValue != null)
+                    // we want to pass null e.g. because FontEditor threw NPE
+                    if (defaultValue != BeanSupport.NO_VALUE)
                         prEd.setValue(defaultValue);
                 }
             }
