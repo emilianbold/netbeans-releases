@@ -556,7 +556,7 @@ is divided into following sections:
             </target>
 
             <target name="-do-compile">
-                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest</xsl:attribute>
+                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest, library-inclusion-in-archive,library-inclusion-in-manifest</xsl:attribute>
                 
                 <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
                     <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment> 
@@ -661,13 +661,13 @@ is divided into following sections:
                     <arg value="-d"/>
                     <arg file="${{basedir}}/${{build.generated.dir}}/src"/>
                     <arg value="-die1"/>
-                    <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspc.classpath}}"/>
+                    <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspcompilation.classpath}}"/>
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
                 <webproject2:javac
                     srcdir="${{build.generated.dir}}/src"
                     destdir="${{build.generated.dir}}/classes"
-                    classpath="${{javac.classpath}}:${{j2ee.platform.classpath}}:${{build.classes.dir.real}}:${{jspc.classpath}}"/>
+                    classpath="${{j2ee.platform.classpath}}:${{build.classes.dir.real}}:${{jspcompilation.classpath}}"/>
 
             </target>
 
@@ -688,13 +688,13 @@ is divided into following sections:
                     <arg value="-die1"/>
                     <arg value="-jspc.files"/>
                     <arg path="${{jsp.includes}}"/>
-                    <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspc.classpath}}"/>
+                    <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspcompilation.classpath}}"/>
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
                 <webproject2:javac
                     srcdir="${{build.generated.dir}}/src"
                     destdir="${{build.generated.dir}}/classes"
-                    classpath="${{javac.classpath}}:${{j2ee.platform.classpath}}:${{build.classes.dir.real}}:${{jspc.classpath}}">
+                    classpath="${{j2ee.platform.classpath}}:${{build.classes.dir.real}}:${{jspcompilation.classpath}}">
                     <customize>
                         <patternset includes="${{javac.jsp.includes}}"/>
                     </customize>
@@ -726,7 +726,7 @@ is divided into following sections:
             </target>
 
             <target name="-do-dist-without-manifest" unless="has.custom.manifest">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist,library-inclusion-in-archive,library-inclusion-in-manifest</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
                 <jar jarfile="${{dist.war}}" compress="${{jar.compress}}">
@@ -735,7 +735,7 @@ is divided into following sections:
             </target>
             
             <target name="-do-dist-with-manifest" if="has.custom.manifest">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist,library-inclusion-in-archive,library-inclusion-in-manifest</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
                 <jar manifest="${{build.meta.inf.dir}}/MANIFEST.MF" jarfile="${{dist.war}}" compress="${{jar.compress}}">
@@ -747,7 +747,7 @@ is divided into following sections:
                 <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist,-do-dist-with-manifest,-do-dist-without-manifest</xsl:attribute>
             </target>
             
-            <target name="library-inclusion-in-manifest" depends="compile">
+            <target name="library-inclusion-in-manifest" depends="init">
                 <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
                 <xsl:for-each select="//webproject2:library/webproject2:file">
                     <xsl:variable name="included.prop.name">
@@ -781,7 +781,7 @@ is divided into following sections:
                 </manifest>
             </target>
             
-            <target name="library-inclusion-in-archive" depends="compile">
+            <target name="library-inclusion-in-archive" depends="init">
                 <xsl:attribute name="unless">dist.ear.dir</xsl:attribute>
                   <xsl:for-each select="/p:project/p:configuration/webproject2:data/webproject2:web-module-libraries/webproject2:library[webproject2:path-in-war]">
                     <xsl:variable name="copyto" select=" webproject2:path-in-war"/>
