@@ -93,11 +93,17 @@ public class Utils {
                 uri = new URI(url);
             } catch (Exception e) {};
             if (uri != null) {
-                File f = new File(uri);
-                FileObject fo = FileUtil.toFileObject(f);
-                if (fo != null) {
-                   return "text/x-jsp".equals(fo.getMIMEType());   //NOI18N
-                }                 
+                try {
+                    File f = new File(uri);
+                    FileObject fo = FileUtil.toFileObject(f);
+                    if (fo != null) {
+                       return "text/x-jsp".equals(fo.getMIMEType());   //NOI18N
+                    }    
+                } catch (IllegalArgumentException ex) {
+                    // PENDING - I do not know how to fix it - Martin?
+                    ex.printStackTrace();
+                    return false;
+                }
             }
         }
         return false;
