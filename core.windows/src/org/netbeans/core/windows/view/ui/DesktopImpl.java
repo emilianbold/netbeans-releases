@@ -133,8 +133,8 @@ public final class DesktopImpl {
 //            System.out.println("desktopimpl : adding compl");
             desktop.add(component, BorderLayout.CENTER);
         }
-//        layeredPane.revalidate();
-//        layeredPane.repaint();
+        layeredPane.revalidate();
+        layeredPane.repaint();
     }    
     
     public ViewElement getSplitRoot () {
