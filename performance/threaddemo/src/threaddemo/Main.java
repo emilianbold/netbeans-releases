@@ -97,6 +97,7 @@ public final class Main extends JFrame {
         bPanel.add(b);
         getContentPane().add(bPanel);
         getContentPane().add(new Monitor());
+        getRootPane().setDefaultButton(b);
     }
     
     private void showView() {
