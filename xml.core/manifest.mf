@@ -5,7 +5,7 @@ OpenIDE-Module-Layer: org/netbeans/modules/xml/core/resources/mf-layer.xml
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
 OpenIDE-Module-Specification-Version: 0.1
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.xml.tax/1 > 0.4
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.xml.tax/1 > 0.4, org.openidex.util/1
 Class-Path: docs/xml-core.jar
 
 Name: org/netbeans/modules/xml/core/XMLDataLoader.class

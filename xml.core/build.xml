@@ -51,6 +51,7 @@ Microsystems, Inc. All Rights Reserved.
 	<fileset dir="${nbroot}/openide/netbeans/lib">
 	  <include name="openide*.jar"/>
 	</fileset>
+        <pathelement location="${nbroot}/openidex/netbeans/modules/autoload/openidex.jar" />
 	<pathelement location="${parserimpl}"/>
         <pathelement location="${taxroot}/libsrc/"/>
       </classpath>

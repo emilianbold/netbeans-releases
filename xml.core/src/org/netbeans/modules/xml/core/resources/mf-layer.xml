@@ -82,6 +82,16 @@ Microsystems, Inc. All Rights Reserved.
       -->
 
     </folder>
+    <folder name="Looks">
+      <file name="org.netbeans.modules.xml.core.XMLDefaultLook$Basic.xml">
+	<![CDATA[
+                <!DOCTYPE Look PUBLIC "-//NetBeans IDE//DTD Looks//EN" "http://www.netbeans.org/dtds/Looks-1_0.dtd" >
+                <Look name="XML Basic">
+		  <Standalone class="org.netbeans.modules.xml.core.XMLDataObject"/>
+                </Look>
+        ]]>
+      </file>
+    </folder>
   </folder>
 
   <!-- register actions to action pool -->
