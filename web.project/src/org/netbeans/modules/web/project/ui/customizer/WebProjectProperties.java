@@ -133,7 +133,7 @@ public class WebProjectProperties {
     private static final PropertyParser WAR_CONTENT_ADDITIONAL_PARSER =
             new PathParser(TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
     private static final PlatformParser PLATFORM_PARSER = new PlatformParser();
-    
+
     // Info about the property destination
     private PropertyDescriptor PROPERTY_DESCRIPTORS[] = {
         new PropertyDescriptor( WEB_PROJECT_NAME, null, STRING_PARSER ),
@@ -218,20 +218,32 @@ public class WebProjectProperties {
     }
     
    public void put( String propertyName, Object value ) {
-        assert propertyName != null : "Unknown property " + propertyName; // NOI18N
-        PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
-        pi.setValue( value );
+       PropertyInfo pi = getPropertyInfo(propertyName);
+       pi.setValue( value );
         if (J2EE_SERVER_INSTANCE.equals (propertyName)) {
             put (J2EE_SERVER_TYPE, Deployment.getDefault ().getServerID ((String) value));
         }
     }
     
     public Object get(String propertyName) {
-        assert propertyName != null : "Unknown property " + propertyName; // NOI18N
-        PropertyInfo pi = (PropertyInfo) properties.get(propertyName);
+        PropertyInfo pi = getPropertyInfo(propertyName);
         return pi == null ? null : pi.getValue();
     }
-    
+
+    private PropertyInfo getPropertyInfo(String propertyName) {
+        assert propertyName != null : "Unknown property " + propertyName; // NOI18N
+        return (PropertyInfo) properties.get(propertyName);
+    }
+
+    public String getEncodedProperty(String propertyName) {
+        PropertyInfo pi = getPropertyInfo(propertyName);
+        if (pi == null) {
+            return null;
+        }
+        pi.encode();
+        return pi.getNewValueEncoded();
+    }
+
     public boolean isModified( String propertyName ) {
         PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
         assert propertyName != null : "Unknown property " + propertyName; // NOI18N
