@@ -54,6 +54,9 @@ public class PackageViewTest extends NbTestCase {
         // System.out.println("root " + root.getFileSystem().getClass() );
         
         
+        assertNull( "source folder should not exist yet", root.getFileObject( "src" ) );
+        
+        
 	// Create children
         SourceGroup group = new SimpleSourceGroup( FileUtil.createFolder( root, "src" ) );
         Children ch = PackageView.createPackageView( group ).getChildren();
@@ -87,6 +90,7 @@ public class PackageViewTest extends NbTestCase {
         assertNodes( ch, 
                      new String[] { "a.b.c", "e.f.g", },
                      new int[] { 0, 0 } );
+                                          
                     
         // Create file
         FileUtil.createData( root, "src/e/f/g/Some.java" );
@@ -99,6 +103,13 @@ public class PackageViewTest extends NbTestCase {
         assertNodes( ch, 
                      new String[] { "a.b.c", "e.f.g", },
                      new int[] { 0, 1 } );
+                     
+        // Create file in ignored folder
+        FileUtil.createData( root, "src/e/f/g/KRTEK.folder/Tag" );
+        assertNodes( ch, 
+                     new String[] { "a.b.c", "e.f.g", },
+                     new int[] { 0, 1 } );
+                     
                                   
         // Add empty package and ignored package
         FileUtil.createFolder( root, "src/x/y/z/KRTEK" );        
@@ -161,6 +172,29 @@ public class PackageViewTest extends NbTestCase {
         assertNodes( ch, 
                      new String[] { "a.b.c", "e.f.g" },
                      new int[] { 0, 1 } );
+
+        /*   
+         * Sometime fails in Jarda's DataObject container test
+         *          
+        // Rename ignored file to unignored
+        FileObject e_f_g_krtekFile = root.getFileObject( "src/e/f/g/KRTEK.file" );
+        FileLock krtekLock = e_f_g_krtekFile.lock();
+        e_f_g_krtekFile.rename( krtekLock, "ZIZALA.file", null );
+        krtekLock.releaseLock();
+        assertNodes( ch, 
+                     new String[] { "a.b.c", "e.f.g" },
+                     new int[] { 0, 2 } );
+        
+                             
+        // Rename unignored to ignored file
+        e_f_g_krtekFile = root.getFileObject( "src/e/f/g/ZIZALA.file" );
+        krtekLock = e_f_g_krtekFile.lock();
+        e_f_g_krtekFile.rename( krtekLock, "KRTEK.file", null );
+        krtekLock.releaseLock();
+        assertNodes( ch, 
+                     new String[] { "a.b.c", "e.f.g" },
+                     new int[] { 0, 1 } );             
+        */ 
                      
         // Rename leaf folder
         FileObject e_f_g = root.getFileObject( "src/e/f/g" );
@@ -171,6 +205,25 @@ public class PackageViewTest extends NbTestCase {
                      new String[] { "a.b.c", "e.f.h" },
                      new int[] { 0, 1 } );
         
+                     
+        // Rename ignored folder to unignored folder
+        FileObject e_f_h_krtekFolder = root.getFileObject( "src/e/f/h/KRTEK.folder" );
+        lock = e_f_h_krtekFolder.lock();
+        e_f_h_krtekFolder.rename( lock, "ZIZALA", null );
+        lock.releaseLock();
+        assertNodes( ch, 
+                     new String[] { "a.b.c", "e.f.h", "e.f.h.ZIZALA" },
+                     new int[] { 0, 1, 1 } );
+                     
+        // Rename unignored folder back to ignored folder
+        e_f_h_krtekFolder = root.getFileObject( "src/e/f/h/ZIZALA" );
+        lock = e_f_h_krtekFolder.lock();
+        e_f_h_krtekFolder.rename( lock, "KRTEK.folder", null );
+        lock.releaseLock();
+        assertNodes( ch, 
+                     new String[] { "a.b.c", "e.f.h" },
+                     new int[] { 0, 1 } );
+                     
                                           
         // Rename super folder
         FileUtil.createFolder( root, "src/e/f/g" );

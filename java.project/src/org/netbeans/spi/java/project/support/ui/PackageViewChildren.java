@@ -25,6 +25,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
+import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
@@ -263,6 +264,9 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         FileObject fo = fe.getFile();
         if ( FileUtil.isParentOf( root, fo ) && VisibilityQuery.getDefault().isVisible( fo ) ) {
             FileObject parent = fo.getParent();
+            if ( !VisibilityQuery.getDefault().isVisible( parent ) ) {
+                return; // Adding file into ignored directory
+            }
             PackageNode n = get( parent );
             if ( n == null && !contains( parent ) ) {                
                 add( parent );
@@ -348,14 +352,32 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             String rp = FileUtil.getRelativePath( root, fo.getParent() );
             String oldPath = rp + ( rp.length() == 0 ? "" : "/" ) + fe.getName() + fe.getExt(); // NOI18N
 
+            boolean visible = VisibilityQuery.getDefault().isVisible( fo );
+            boolean doUpdate = false;
+            
             // Find all entries which have to be updated
-            ArrayList needsUpdate = new ArrayList();
+            ArrayList needsUpdate = new ArrayList();            
             for( Iterator it = names2nodes.keySet().iterator(); it.hasNext(); ) {
                 String p = (String)it.next();
                 if ( p.startsWith( oldPath ) ) { 
-                    needsUpdate.add( p );
+                    if ( visible ) {
+                        needsUpdate.add( p );
+                    }
+                    else {
+                        names2nodes.remove( p );
+                        doUpdate = true;
+                    }
                 }    
             }   
+                        
+            // If the node does not exists then there might have been update
+            // from ignored to non ignored
+            if ( get( fo ) == null && visible ) {
+                cleanEmptyKeys( fo );                
+                findNonExcludedPackages( fo );
+                doUpdate = true;  // force refresh
+            }
+            
             int oldPathLen = oldPath.length();
             String newPath = FileUtil.getRelativePath( root, fo );
             for( Iterator it = needsUpdate.iterator(); it.hasNext(); ) {
@@ -368,11 +390,21 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 }
             }
             
-            if ( needsUpdate.size() > 1 ) {
+            if ( needsUpdate.size() > 1 || doUpdate ) {
                 // Sorting might change
                 refreshKeys();
             }
         }
+        /*
+        else if ( FileUtil.isParentOf( root, fo ) && fo.isFolder() ) {
+            FileObject parent = fo.getParent();
+            PackageNode n = get( parent );
+            if ( n != null && VisibilityQuery.getDefault().isVisible( parent ) ) {
+                n.updateChildren();
+            }
+            
+        }
+        */
         
     }
 
@@ -411,6 +443,8 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         private final FileObject root;
         private DataFolder dataFolder;
         private boolean isDefaultPackage;
+        
+        private static Action actions[];
 
         public PackageNode( FileObject root, DataFolder dataFolder ) {
             super( dataFolder.getNodeDelegate(), 
@@ -433,6 +467,32 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         
         public String getName() {
             return FileUtil.getRelativePath(root, dataFolder.getPrimaryFile()).replace('/', '.'); // NOI18N
+        }
+        
+        public Action[] getActions( boolean context ) {
+            
+            if ( actions == null ) {                
+                // Copy actions and leave out the PropertiesAction.                
+                Action superActions[] = super.getActions();            
+                ArrayList actionList = new ArrayList( superActions.length );
+
+                for( int i = 0; i < superActions.length; i++ ) {
+                    if ( superActions[ i ] == null && superActions[i + 1] instanceof org.openide.actions.PropertiesAction ) {
+                        i ++;
+                        continue;
+                    }
+                    else if ( superActions[i] instanceof org.openide.actions.PropertiesAction ) {
+                        continue;
+                    }
+                    else {
+                        actionList.add( superActions[i] );  
+                    }
+                }
+
+                actions = new Action[ actionList.size() ];
+                actionList.toArray( actions );
+            }
+            return actions;            
         }
         
         public boolean canRename() {
