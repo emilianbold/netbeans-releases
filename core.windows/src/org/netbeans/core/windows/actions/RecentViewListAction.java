@@ -113,16 +113,20 @@ public final class RecentViewListAction extends AbstractAction
     private SwitcherTableItem[] createSwitcherItems(TopComponent[] tcs) {
         SwitcherTableItem[] items = new SwitcherTableItem[tcs.length];
         for (int i = 0; i < tcs.length; i++) {
-            String name = tcs[i].getDisplayName();
+            TopComponent tc = tcs[i];
+            String name = tc.getDisplayName();
             if (name == null || name.trim().length() == 0) {
-                name = tcs[i].getName();
+                name = tc.getName();
             }
-            Image image = tcs[i].getIcon();
+            Image image = tc.getIcon();
+            String description = tc.getToolTipText();
             ImageIcon imageIcon = (image != null ? new ImageIcon(image) : null);
             items[i] = new SwitcherTableItem(
-                    new ActivableTC(tcs[i]),
+                    new ActivableTC(tc),
                     name,
-                    imageIcon);
+                    imageIcon,
+                    false,
+                    description != null ? description : name);
         }
         return items;
     }

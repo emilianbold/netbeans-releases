@@ -30,6 +30,7 @@ import javax.swing.Timer;
 import org.netbeans.core.windows.actions.RecentViewListAction;
 import org.netbeans.swing.popupswitcher.SwitcherTable;
 import org.netbeans.swing.popupswitcher.SwitcherTableItem;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Utilities;
 
 /**
@@ -191,7 +192,7 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
         this.y = screen.x + ((screen.height / 2) - (popupDim.height / 2));
         // Set initial selection if there are at least two items in table
         if ((pTable.getRowCount() > 1) && (pTable.getColumnCount() > 0)) {
-            pTable.changeSelection(1, 0, false, false);
+            changeTableSelection(1, 0);
         }
     }
     
@@ -251,7 +252,7 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
                         }
                     }
                     if (row >= 0 && col >= 0) {
-                        pTable.changeSelection(row, col, false, false);
+                        changeTableSelection(row, col);
                     }
                 } else if(code == KeyEvent.VK_ESCAPE) { // XXX see above
                     cancelLast();
@@ -270,6 +271,14 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
         }
     }
     
+    /** Changes table selection and sets status bar appropriately */
+    private void changeTableSelection(int row, int col) {
+        pTable.changeSelection(row, col, false, false);
+        String statusText = pTable.getSelectedItem().getDescription();
+        StatusDisplayer.getDefault().setStatusText(
+                statusText != null ? statusText : "");
+    }
+    
     /**
      * Cancel the popup if present, causing it to close without the active
      * TopComponent being changed.
@@ -278,6 +287,7 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
         if (popup != null) {
             pTable.getSelectedItem().activate();
             hideCurrentPopup();
+            StatusDisplayer.getDefault().setStatusText("");
         }
     }
     

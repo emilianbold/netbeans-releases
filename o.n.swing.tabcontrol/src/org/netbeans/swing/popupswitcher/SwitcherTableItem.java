@@ -24,8 +24,11 @@ import javax.swing.Icon;
  */
 public class SwitcherTableItem implements Comparable {
     
-    /** Item's description */
+    /** Item's name. Base name used by the <code>SwitcherTable</code> */
     private String name;
+    
+    /** Item's description. Text which can be used for arbitrary purpose. */
+    private String description;
     
     /** Item's icon */
     private Icon icon;
@@ -52,10 +55,17 @@ public class SwitcherTableItem implements Comparable {
     /** Creates a new instance of SwitcherTableItem */
     public SwitcherTableItem(Activable activable, String name, Icon icon,
             boolean active) {
+        this(activable, name, icon, active, null);
+    }
+    
+    /** Creates a new instance of SwitcherTableItem */
+    public SwitcherTableItem(Activable activable, String name, Icon icon,
+            boolean active, String description) {
         this.activable = activable;
-        this.icon = icon;
         this.name = name;
+        this.icon = icon;
         this.active = active;
+        this.description = description;
     }
     
     /**
@@ -71,6 +81,15 @@ public class SwitcherTableItem implements Comparable {
     /** Returns item's name */
     public String getName() {
         return name;
+    }
+    
+    /**
+     * Return item's description - the text which can be used for arbitrary
+     * purpose. E.g. </code>KeyboardPopupSwitcher</code> uses it for statusbar
+     * text.
+     */
+    public String getDescription() {
+        return description;
     }
     
     /** Returns item's icon */
