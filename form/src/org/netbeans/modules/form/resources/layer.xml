@@ -347,7 +347,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="BeanForm.form" url="templates/SwingForms/BeanForm_form">
                 <attr name="template" boolvalue="true" />
             </file>
-
+            <file name="Package.shadow">
+                <attr name="originalFile" stringvalue="Templates/Classes/Package"/>
+            </file>
             <folder name="AWTForms">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/AWTForms.html"/>
@@ -402,11 +404,15 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Panel.form" url="templates/AWTForms/Panel_form">
                     <attr name="template" boolvalue="true" />
                 </file>
+                <file name="Package.shadow">
+                    <attr name="originalFile" stringvalue="Templates/Classes/Package"/>
+                </file>
             </folder>
 
             <folder name="Dialogs">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Dialogs.html"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Dialogs.html"/>                                
+                <attr name="templateType_JavaForms" boolvalue="true"/>
 
                 <file name="Application.java" url="templates/Dialogs/Application_java">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
@@ -445,6 +451,9 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
                 <file name="OkCancelDialog.form" url="templates/Dialogs/OkCancelDialog_form">
                     <attr name="template" boolvalue="true" />
+                </file>
+                <file name="Package.shadow">
+                    <attr name="originalFile" stringvalue="Templates/Classes/Package"/>
                 </file>
             </folder>
 

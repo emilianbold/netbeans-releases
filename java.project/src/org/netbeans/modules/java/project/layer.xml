@@ -17,14 +17,14 @@ Microsystems, Inc. All Rights Reserved.
   
   <folder name="Templates">
         
-    <file name="Package" url="nbres:/org/netbeans/modules/java/resources/templates/Package.template">
-        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.project.NewJavaFileWizardIterator.packageWizard"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/spi/java/project/support/ui/package.gif"/>
-        <attr name="templateType_Java" boolvalue="true"/>
-    </file>
-        
+            
     <folder name="Classes">
       <attr name="templateType_Java" boolvalue="true"/>
+      <attr name="Class.java/Empty.java" boolvalue="true"/>
+      <attr name="Empty.java/Interface.java" boolvalue="true"/>
+      <attr name="Interface.java/Exception.java" boolvalue="true"/>
+      <attr name="Exception.java/Main.java" boolvalue="true"/>
+      <attr name="Main.java/Package" boolvalue="true"/>
       
       <!-- XXX Remove the URLs after issue #41716 is fixed -->
       <file name="Applet.java" url="nbres:/org/netbeans/modules/java/resources/templates/Applet.template">
@@ -55,6 +55,11 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="templateType_Java" boolvalue="true"/>
       </file>
+      <file name="Package" url="nbres:/org/netbeans/modules/java/resources/templates/Package.template">
+        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.project.NewJavaFileWizardIterator.packageWizard"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/spi/java/project/support/ui/package.gif"/>
+        <attr name="templateType_Java" boolvalue="true"/>
+    </file>        
     </folder>
     
   </folder>

@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Beans">
       <attr name="instantiatingWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/beans/resources/Beans.html" />
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
-      <attr name="templateType_JavaBeans" boolvalue="true"/>
+      <attr name="templateType_JavaBeans" boolvalue="true"/>     
       
       <file name="Bean.java" url="templates/Bean.template">
          <attr name="template" boolvalue="true" />
@@ -63,6 +63,9 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
          <attr name="templateType_JavaBeans" boolvalue="true"/>
+      </file>
+      <file name="Package.shadow">
+        <attr name="originalFile" stringvalue="Templates/Classes/Package"/>
       </file>
     </folder>
   </folder>

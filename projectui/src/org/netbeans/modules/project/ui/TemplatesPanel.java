@@ -51,11 +51,39 @@ public class TemplatesPanel implements WizardDescriptor.Panel, TemplatesPanelGUI
         wd.putProperty ("WizardPanel_contentData", new String[] { // NOI18N
                 NbBundle.getBundle (TemplatesPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
                 NbBundle.getBundle (TemplatesPanel.class).getString ("LBL_TemplatesPanel_Dots")}); // NOI18N
-        ((TemplatesPanelGUI)this.getComponent()).read (wd);
+        FileObject templatesFolder = (FileObject) wd.getProperty (TemplatesPanelGUI.TEMPLATES_FOLDER);
+        if (templatesFolder != null && templatesFolder.isFolder()) {
+            TemplatesPanelGUI gui = (TemplatesPanelGUI)this.getComponent();
+            gui.setTemplatesFolder (templatesFolder);
+            if (wd.getProperty(TemplatesPanelGUI.TARGET_TEMPLATE) == null) {
+                //First run
+                String selectedCategory = OpenProjectListSettings.getInstance().getLastSelectedProjectCategory ();
+                gui.setSelectedCategoryByName(selectedCategory);
+                String selectedTemplate = OpenProjectListSettings.getInstance().getLastSelectedProjectType ();
+                gui.setSelectedTemplateByName(selectedTemplate);
+            }
+        }
+
+
     }
     
     public void storeSettings (Object settings) {
-        ((TemplatesPanelGUI)this.getComponent()).store ((TemplateWizard)settings);
+        TemplateWizard wd = (TemplateWizard) settings;
+        TemplatesPanelGUI gui = (TemplatesPanelGUI)this.getComponent();
+        FileObject fo = gui.getSelectedTemplate();
+        try {
+            wd.setTemplate (DataObject.find(fo));
+        } catch (DataObjectNotFoundException e) {
+            ErrorManager.getDefault().notify(e);
+        }
+        String path = gui.getSelectedCategoryName();
+        if (path != null) {
+            OpenProjectListSettings.getInstance().setLastSelectedProjectCategory(path);
+        }
+        path = gui.getSelectedTemplateName();
+        if (path != null) {
+            OpenProjectListSettings.getInstance().setLastSelectedProjectType (path);
+        }
     }
     
     public synchronized void addChangeListener(javax.swing.event.ChangeListener l) {
@@ -73,7 +101,7 @@ public class TemplatesPanel implements WizardDescriptor.Panel, TemplatesPanelGUI
     }
     
     public boolean isValid() {
-        return ((TemplatesPanelGUI)this.getComponent()).valid ();
+        return ((TemplatesPanelGUI)this.getComponent()).getSelectedTemplate() != null;
     }
     
     public HelpCtx getHelp() {

@@ -21,6 +21,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,15 +42,19 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.api.project.ProjectInformation;
+import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.DataShadow;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /** If you are looking for the non-GUI part of the panel please look
  * into new file wizard
@@ -59,7 +64,7 @@ import org.openide.nodes.Node;
  * Provides the GUI for the template chooser panel.
  * @author Jesse Glick
  */
-final class TemplateChooserPanelGUI extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener {
+final class TemplateChooserPanelGUI extends javax.swing.JPanel implements PropertyChangeListener {
     
     private static final ListCellRenderer PROJECT_CELL_RENDERER = new ProjectCellRenderer();
     
@@ -68,36 +73,17 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
     
     // private final String[] recommendedTypes = null;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
-    private final ExplorerManager manager;
+    
+    //GUI Builder
+    private TemplatesPanelGUI.Builder builder;
     
     public TemplateChooserPanelGUI(Project p /* , String[] recommendedTypes */ ) {
-        /* this.recommendedTypes = recommendedTypes; */
-        manager = new ExplorerManager();
-        DataFolder templates = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource("Templates")); // NOI18N
-        manager.setRootContext(new FilterNode(templates.getNodeDelegate(), new TemplateChildren(templates)));
-        try {
-            manager.setSelectedNodes(new Node[] {manager.getRootContext()});
-        } catch (PropertyVetoException e) {
-            throw new AssertionError(e);
-        }
-        manager.addPropertyChangeListener(this);
+        this.builder = new FileChooserBuilder ();
         initComponents();        
-        initValues( p );
-        
-        
+        ((TemplatesPanelGUI)this.templatesPanel).setTemplatesFolder (Repository.getDefault().getDefaultFileSystem().findResource("Templates"));  //NOI18N
+        initValues( p );        
         setName (org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_Name")); // NOI18N
-        projectsComboBox.setRenderer( PROJECT_CELL_RENDERER );
-        
-        
-        // Create the templates view
-        BeanTreeView btv = new TemplatesTreeView();
-        btv.setSelectionMode( javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION );        
-        btv.setRootVisible( false );
-        btv.setBorder( descriptionScrollPane.getBorder() );
-        btv.setDefaultActionAllowed(false);
-        btv.setPopupAllowed(false);       
-        templatesPanel.add( btv, java.awt.BorderLayout.CENTER );
-                
+        projectsComboBox.setRenderer( PROJECT_CELL_RENDERER );                
      }
     
     /** Called from readSettings, to initialize the GUI with proper components
@@ -135,31 +121,13 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         }
     }
     
-    public ExplorerManager getExplorerManager() {
-        return manager;
-    }    
     
     public Project getProject() {
         return (Project)projectsComboBox.getSelectedItem();
     }
     
     public FileObject getTemplate() {
-        Node[] sel = manager.getSelectedNodes();
-        if (sel.length == 1) {
-            
-            if ( sel[0].getParentNode() == null ) {
-                return null;
-            }
-            
-            DataObject d = (DataObject)sel[0].getLookup().lookup(DataObject.class);
-                        
-            if (d != null && d.isTemplate() ) {
-                
-                FileObject pf = d.getPrimaryFile();
-                return pf;
-            }
-        }
-        return null;
+        return ((TemplatesPanelGUI)this.templatesPanel).getSelectedTemplate ();
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
@@ -182,12 +150,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
 
         jLabel1 = new javax.swing.JLabel();
         projectsComboBox = new javax.swing.JComboBox();
-        jLabel2 = new javax.swing.JLabel();
-        templatesPanel = new javax.swing.JPanel();
-        showRecommendedTemplatesCheckBox = new javax.swing.JCheckBox();
-        jLabel3 = new javax.swing.JLabel();
-        descriptionScrollPane = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        templatesPanel = new TemplatesPanelGUI (this.builder);
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -203,17 +166,6 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(projectsComboBox, gridBagConstraints);
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_jLabel2"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
-        add(jLabel2, gridBagConstraints);
-
-        templatesPanel.setLayout(new java.awt.BorderLayout());
-
-        templatesPanel.setFocusable(false);
-        templatesPanel.setRequestFocusEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -221,55 +173,18 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         gridBagConstraints.weighty = 1.0;
         add(templatesPanel, gridBagConstraints);
 
-        showRecommendedTemplatesCheckBox.setMnemonic('A');
-        showRecommendedTemplatesCheckBox.setText(org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_showRecommendedTemplatesCheckBox"));
-        showRecommendedTemplatesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 12, 0);
-        add(showRecommendedTemplatesCheckBox, gridBagConstraints);
-
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_jLabel3"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
-        add(jLabel3, gridBagConstraints);
-
-        descriptionScrollPane.setFocusable(false);
-        descriptionScrollPane.setRequestFocusEnabled(false);
-        descriptionScrollPane.setEnabled(false);
-        jTextArea1.setEditable(false);
-        jTextArea1.setText(org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_jTextArea"));
-        jTextArea1.setFocusable(false);
-        descriptionScrollPane.setViewportView(jTextArea1);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.5;
-        add(descriptionScrollPane, gridBagConstraints);
-
     }//GEN-END:initComponents
 
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane descriptionScrollPane;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JComboBox projectsComboBox;
-    private javax.swing.JCheckBox showRecommendedTemplatesCheckBox;
     private javax.swing.JPanel templatesPanel;
     // End of variables declaration//GEN-END:variables
     
     // private static final Comparator NATURAL_NAME_SORT = Collator.getInstance();
     
-    private final class TemplateChildren extends Children.Keys/*<DataObject>*/ implements ChangeListener, ActionListener /*, Comparator/*<DataObject>*/ {
+    private final class TemplateChildren extends Children.Keys/*<DataObject>*/ implements ActionListener {
         
         private final DataFolder folder;
         
@@ -279,14 +194,12 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         
         protected void addNotify() {
             super.addNotify();
-            showRecommendedTemplatesCheckBox.addChangeListener(this);
             projectsComboBox.addActionListener( this );
             updateKeys();
         }
         
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
-            showRecommendedTemplatesCheckBox.removeChangeListener(this);
             projectsComboBox.removeActionListener( this );
             super.removeNotify();
         }
@@ -300,7 +213,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
                 DataObject d = kids[i];
                 FileObject prim = d.getPrimaryFile();
                 if ( acceptTemplate( d, prim ) ) { 
-                    if ( showRecommendedTemplatesCheckBox.isSelected() && recommendedTypes != null) {
+                    if ( recommendedTypes != null) {
                         // XXX assert recommendedTypes != null;
                         boolean ok = false;
                         for (int j = 0; j < recommendedTypes.length; j++) {
@@ -320,25 +233,26 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         }
         
         protected Node[] createNodes(Object key) {
-            DataObject d = (DataObject)key;
-            if (d instanceof DataFolder && !d.isTemplate() ) {
-                return new Node[] {new FilterNode(d.getNodeDelegate(), new TemplateChildren((DataFolder)d))};
+            DataFolder d = (DataFolder)key;
+            DataObject[] chlds = d.getChildren();
+            int state = 0;
+            for (int i=0; i<chlds.length; i++) {
+                if ((chlds[i] instanceof DataFolder) && !isTemplate(chlds[i])) {
+                    state = 1;
+                    break;
+                }
+            }
+            if (state == 0) {
+                return new Node[] {new FilterNode(d.getNodeDelegate(), Children.LEAF )};
             } else {
-                return new Node[] {new FilterNode(d.getNodeDelegate(), Children.LEAF ) };
+                return new Node[] {new FilterNode(d.getNodeDelegate(), new TemplateChildren((DataFolder)d))};
             }
         }
         
-        // State listener ------------------------------------------------------
-        
-        public void stateChanged( ChangeEvent e ) {
-            updateKeys();
+        public void actionPerformed (ActionEvent event) {
+            this.updateKeys ();
         }
-        
-        // ActionListener ------------------------------------------------------
-        
-        public void actionPerformed( ActionEvent e ) {
-            updateKeys();
-        }
+                
         
         /** Uncoment if you want to have the templates sorted alphabeticaly
          
@@ -365,27 +279,78 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
             return rt == null ? null :rt.getRecommendedTypes();
         }
         
-        private boolean acceptTemplate( DataObject d, FileObject primaryFile ) {
-            
-            if (d instanceof DataFolder )  {
+        private boolean acceptTemplate( DataObject d, FileObject primaryFile ) {            
+            if (d instanceof DataFolder && !isTemplate((DataFolder)d))  {
                 Object o = primaryFile.getAttribute ("simple"); // NOI18N
                 return o == null || Boolean.TRUE.equals (o);
             }
-            else {
-                return Boolean.TRUE.equals(primaryFile.getAttribute("template")); // NOI18N
-            }
+            return false;
         }
     }
     
-    // Private innerclasses ----------------------------------------------------
-
-    // Just to make the tree non-editable 
-    private static final class TemplatesTreeView extends BeanTreeView {
+    
+    private static class FileChildren extends Children.Keys {
         
-        TemplatesTreeView() {
-            tree.setEditable(false);
-        }
+        private DataFolder root;
                 
+        public FileChildren (DataFolder folder) {
+            this.root = folder;
+            assert this.root != null : "Root can not be null";  //NOI18N
+        }
+        
+        protected void addNotify () {
+            this.setKeys (this.root.getChildren());
+        }
+        
+        protected void removeNotify () {
+            this.setKeys (new Object[0]);
+        }
+        
+        protected Node[] createNodes(Object key) {
+            if (key instanceof DataObject) {
+                DataObject dobj = (DataObject)key;
+                if (isTemplate(dobj)) {
+                    return new Node[] {
+                        new FilterNode (dobj.getNodeDelegate(),Children.LEAF)
+                    };
+                }
+            }
+            return new Node[0];
+        }        
+        
+    }
+    
+  
+    private final class FileChooserBuilder implements TemplatesPanelGUI.Builder {
+        
+        public Children createCategoriesChildren(FileObject fo) {
+            return new TemplateChildren (DataFolder.findFolder(fo));
+        }
+        
+        public Children createTemplatesChildren(FileObject fo) {
+            return new FileChildren (DataFolder.findFolder(fo));
+        }
+        
+        public void fireChange() {
+            TemplateChooserPanelGUI.this.fireChange();
+        }
+        
+        public char getCategoriesMnemonic() {
+            return NbBundle.getMessage (TemplateChooserPanelGUI.class,"MNE_Categories").charAt(0);
+        }
+        
+        public String getCategoriesName() {
+            return NbBundle.getMessage (TemplateChooserPanelGUI.class,"CTL_Categories");
+        }
+        
+        public char getTemplatesMnemonic() {
+            return NbBundle.getMessage (TemplateChooserPanelGUI.class,"MNE_Files").charAt(0);
+        }
+        
+        public String getTemplatesName() {
+            return NbBundle.getMessage (TemplateChooserPanelGUI.class,"CTL_Files");
+        }
+        
     }
     
     
@@ -426,6 +391,16 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         }
         
     }
-    
-    
+
+
+    private static boolean isTemplate (DataObject dobj) {
+        if (dobj.isTemplate())
+            return true;
+        if (dobj instanceof DataShadow) {
+            return ((DataShadow)dobj).getOriginal().isTemplate();
+        }
+        return false;
+    }
+
+
 }

@@ -60,7 +60,9 @@
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
                 <attr name="templateType_JUnit" boolvalue="true"/>
             </file>
-            
+            <file name="Package.shadow">
+                <attr name="originalFile" stringvalue="Templates/Classes/Package"/>
+            </file>
         </folder>
     </folder>
 

@@ -30,7 +30,8 @@ public abstract class PlatformInstall {
      * and should not involve launching the virtual machine. The framework will
      * call a more detailed check later.
      * @return TemplateWizard.Iterator instance responsible for instantiating
-     * the platform.
+     * the platform. The instantiate method of the returned iterator should
+     * return the Set containing the created JavaPlatform.
      */
     public abstract WizardDescriptor.InstantiatingIterator createIterator(FileObject baseFolder);
 

@@ -32,10 +32,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.ListView;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.TemplateWizard;
-import org.openide.loaders.DataFolder;
+import org.openide.loaders.*;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -71,7 +68,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     private static final String ATTR_INSTANTIATING_DESC = "instantiatingWizardURL"; //NOI18N
     
     private Builder firer;
-    private TemplateWizard wiz;
     
     /** Creates new form TemplatesPanelGUI */
     public TemplatesPanelGUI (Builder firer) {
@@ -80,6 +76,44 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         initComponents();
         postInitComponents ();
         setName (NbBundle.getMessage(TemplatesPanelGUI.class,"TXT_SelectTemplate"));
+    }
+
+
+    public void setTemplatesFolder (FileObject folder) {
+        DataFolder dobj = DataFolder.findFolder (folder);
+        ((ExplorerProviderPanel)this.categoriesPanel).setRootNode(new FilterNode (
+            dobj.getNodeDelegate(), this.firer.createCategoriesChildren(folder)));
+    }
+
+
+    public void setSelectedCategoryByName (String categoryName) {
+         ((ExplorerProviderPanel)this.categoriesPanel).setSelectedNode (categoryName);
+    }
+    
+    public String getSelectedCategoryName () {
+        return ((ExplorerProviderPanel)this.categoriesPanel).getSelectionPath ();
+    }
+    
+    public void setSelectedTemplateByName (String templateName) {
+        ((ExplorerProviderPanel)this.projectsPanel).setSelectedNode (templateName);
+    }
+    
+    public String getSelectedTemplateName () {
+        return ((ExplorerProviderPanel)this.projectsPanel).getSelectionPath ();
+    }
+    
+    public FileObject getSelectedTemplate () {
+        Node[] nodes = (Node[]) ((ExplorerProviderPanel)this.projectsPanel).getSelectedNodes();
+        if (nodes != null && nodes.length == 1) {
+            DataObject dobj = (DataObject) nodes[0].getCookie (DataObject.class);
+            if (dobj != null) {
+                while (dobj instanceof DataShadow) {
+                    dobj = ((DataShadow)dobj).getOriginal();
+                }
+                return dobj.getPrimaryFile();
+            }
+        }
+        return null;
     }
     
     public void propertyChange (PropertyChangeEvent event) {
@@ -100,6 +134,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                         URL descURL = getDescription (template);
                         if (descURL != null) {
                             try {
+                                this.description.setEditorKit(new HTMLEditorKit());
                                 this.description.setPage (descURL);                                                                
                                 return;
                             } catch (IOException e) {
@@ -121,6 +156,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                         URL descURL = getDescription (template);
                         if (descURL != null) {
                             try {
+                                this.description.setEditorKit(new HTMLEditorKit());
                                 this.description.setPage (descURL);                                
                             } catch (IOException e) {
                                 this.description.setText (ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("TXT_NoDescription"));
@@ -135,46 +171,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             }
         }
     }
-    
-    
-    void store (TemplateWizard settings) {
-        Node[] nodes = (Node[]) ((ExplorerProviderPanel)this.projectsPanel).getSelectedNodes();
-        if (nodes != null && nodes.length == 1) {
-            DataObject dobj = (DataObject) nodes[0].getCookie (DataObject.class);
-            settings.setTemplate (dobj);
-        }
-        String path = ((ExplorerProviderPanel)this.categoriesPanel).getSelectionPath ();
-        if (path != null) {
-            OpenProjectListSettings.getInstance().setLastSelectedProjectCategory(path);
-        }
-        path = ((ExplorerProviderPanel)this.projectsPanel).getSelectionPath ();
-        if (path != null) {
-            OpenProjectListSettings.getInstance().setLastSelectedProjectType (path);
-        }
-    }
-    
-    void read (TemplateWizard settings) {        
-        this.wiz = settings;
-        FileObject templatesFolder = (FileObject) settings.getProperty (TEMPLATES_FOLDER);        
-        if (templatesFolder != null && templatesFolder.isFolder()) {
-            DataFolder dobj = DataFolder.findFolder (templatesFolder);
-            ((ExplorerProviderPanel)this.categoriesPanel).setRootNode(new FilterNode (
-                    dobj.getNodeDelegate(), this.firer.createCategoriesChildren(templatesFolder)));
-            if (settings.getProperty(TARGET_TEMPLATE) == null) {
-                //First run
-                String selectedCategory = OpenProjectListSettings.getInstance().getLastSelectedProjectCategory ();
-                String selectedTemplate = OpenProjectListSettings.getInstance().getLastSelectedProjectType ();
-                ((ExplorerProviderPanel)this.categoriesPanel).setSelectedNode (selectedCategory);
-                ((ExplorerProviderPanel)this.projectsPanel).setSelectedNode (selectedTemplate);
-            }
-        }
-    }
-    
-    boolean valid () {
-        Node[] nodes = ((ExplorerProviderPanel)this.projectsPanel).getSelectedNodes ();
-        return nodes != null && nodes.length == 1;
-    }
-    
     
     private void postInitComponents () {        
         this.jLabel1.setText (this.firer.getCategoriesName());
@@ -282,7 +278,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         if (desc != null) {
             return desc;
         }
-        desc = wiz.getDescription (dobj);
+        desc = TemplateWizard.getDescription (dobj);
         return desc;
     }
     
@@ -409,23 +405,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             return this.btv;
         }
         
-        public void propertyChange (PropertyChangeEvent event) {
-            if (event.getPropertyName() == ExplorerManager.PROP_SELECTED_NODES) {
-                Node[] oldNodes = (Node[]) event.getOldValue();
-                Node[] newNodes = (Node[]) event.getNewValue();
-                if (oldNodes != null) {
-                    for (int i=0; i< oldNodes.length; i++) {
-                        this.btv.collapseNode (oldNodes[i]);
-                    }
-                }
-                if (newNodes != null) {
-                    for (int i=0; i< newNodes.length; i++) {
-                        this.btv.expandNode (newNodes[i]);
-                    }
-                }
-            }
-            super.propertyChange (event);
-        }
     }
     
     private static final class TemplatesPanel extends ExplorerProviderPanel {
