@@ -63,6 +63,8 @@ class OutWriter extends PrintWriter {
     static byte[] lineSepBytes = new byte[] { '\0', '\n'};
     private Storage storage;
     private LinesImpl lines;
+    
+    static boolean lowDiskSpace = false;
 
     /** Creates a new instance of OutWriter */
     OutWriter(NbIO owner) {
@@ -82,7 +84,7 @@ class OutWriter extends PrintWriter {
             throw new IllegalStateException ("Output file has been disposed!");
         }
         if (storage == null) {
-            storage = OutWriter.USE_HEAP_STORAGE ? (Storage)new HeapStorage() : (Storage)new FileMapStorage();
+            storage = OutWriter.USE_HEAP_STORAGE || lowDiskSpace ? (Storage)new HeapStorage() : (Storage)new FileMapStorage();
         }
         return storage;
     }
@@ -175,6 +177,18 @@ class OutWriter extends PrintWriter {
             //Execution termination has sent ThreadDeath to the process in the
             //middle of a write
             threadDeathClose();
+        } catch (IOException ioe) {
+            //Out of disk space
+            if (ioe.getMessage().indexOf("There is not enough space on the disk") != -1) { //NOI18N
+                lowDiskSpace = true;
+                String msg = NbBundle.getMessage(OutWriter.class, 
+                    "MSG_DiskSpace", storage); //NOI18N
+                ErrorManager.getDefault().annotate (ioe, ErrorManager.USER, 
+                    ioe.getMessage(), msg, ioe, null);
+                ErrorManager.getDefault().notify(ioe);
+                setError();
+                storage.dispose();
+            }
         }
         if (start >= 0 && !terminated) {
             if (Controller.verbose) Controller.log (this + ": Wrote " +
