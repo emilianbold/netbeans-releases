@@ -59,7 +59,7 @@ public class RuntimeViewPopupMenu extends ValidatePopupMenuOnNodes{
     }
     
     public void testHttpTomcatPopupMenuRuntime(){
-        testMenu(SERVER_REGISTRY + "|" + TOMCAT + "|http://localhost:8084/");
+        testMenu(SERVER_REGISTRY + "|" + TOMCAT + "|Bundled Tomcat (5.0.28)");
     }
     
     private void testMenu(String path){
