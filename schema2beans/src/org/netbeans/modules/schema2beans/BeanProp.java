@@ -81,17 +81,17 @@ public class BeanProp implements BaseProperty {
         public static final int 				REMOVE	= 2;
 	
         int 							action;
-        java.beans.PropertyChangeEvent 	event;
+        //java.beans.PropertyChangeEvent 	event;
 	
 	
         public Action(int action) {
             this.action = action;
-            this.event = null;
+            //this.event = null;
         }
 	
         public Action(int action, java.beans.PropertyChangeEvent event) {
             this(action);
-            this.event = event;
+            //this.event = event;
         }
 	
         public String toString() {

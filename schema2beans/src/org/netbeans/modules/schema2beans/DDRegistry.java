@@ -597,7 +597,7 @@ public class DDRegistry extends Object {
     
     static public String createGraphName(String s) {
 	if (s != null) {
-	    s.trim();
+	    //s = s.trim();
 	    int i = s.indexOf('[');
 	    if (i != -1 && i<s.indexOf(']'))
 		return s;

@@ -28,8 +28,8 @@ public class Common {
     static public final int NONE    		= 0x00000;
     
     static public final int MASK_USER		= 0xFFFF;
-    static public int USE_DEFAULT_VALUES	= 0x0001;
-    static public int NO_DEFAULT_VALUES		= 0x0002;
+    static public final int USE_DEFAULT_VALUES	= 0x0001;
+    static public final int NO_DEFAULT_VALUES		= 0x0002;
     
     static public final int MASK_SEQUENCE	= 0x0000F;
     static public final int SEQUENCE_AND	= 0x00001;

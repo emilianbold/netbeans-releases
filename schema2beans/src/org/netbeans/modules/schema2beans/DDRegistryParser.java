@@ -103,7 +103,7 @@ public class DDRegistryParser implements Iterator {
 	}
 	
 	Object resolvePathVar(DDCursor cur, String path) {
-	    path.trim();
+	    //path = path.trim();
 	    
 	    if (path.indexOf(VARBEGIN) != -1 || path.indexOf(VAREND) != -1) {
 		throw new IllegalArgumentException(Common.getMessage(
@@ -410,7 +410,7 @@ public class DDRegistryParser implements Iterator {
 	//	scope and not from the parent parser or cursor 
 	//	(if any specified).
 	//
-	path.trim();	
+	//path = path.trim();	
 	
 	DDCursor cur = cursor;
 	if (cur == null && regParser != null)

@@ -58,7 +58,7 @@ public class DOMBinding {
 	java.lang.reflect.Array.newInstance(java.lang.Character.TYPE, 0).getClass();
     
     class BeanProperty {
-	boolean 	changed;
+        //boolean 	changed;
 	// BeanProp object containing the property
 	BeanProp	beanProp;
 	
@@ -73,7 +73,7 @@ public class DOMBinding {
 	BeanProperty(BeanProp b) {
 	    this.beanProp = b;
 	    this.value = null;
-	    this.changed = false;
+	    //this.changed = false;
 	    this.lastIndex = -1;
 	    this.attributes = null;
 	}

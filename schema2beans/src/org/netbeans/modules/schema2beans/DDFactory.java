@@ -239,8 +239,8 @@ public class DDFactory extends Object {
 	    
 	    if (value == null)
 		value = "";			// NOI18N
-	    else
-		value.trim();
+	    //else
+            //value = value.trim();
 	    
 	    if (!value.equals(""))			// NOI18N
 		tmp += "=" + value;		// NOI18N
