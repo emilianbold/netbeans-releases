@@ -27,6 +27,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.impl.CreateTable;
@@ -231,95 +232,100 @@ public class CreateTableDialog {
             });
 
             ActionListener listener = new ActionListener() {
-              public void actionPerformed(ActionEvent event) {
-                  if (event.getSource() == DialogDescriptor.OK_OPTION) {
-                      result = validate();
+                public void actionPerformed(ActionEvent event) {
+                    final ActionEvent evt = event;
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run () {
+                          if (evt.getSource() == DialogDescriptor.OK_OPTION) {
+                              result = validate();
 
-                      CommandBuffer cbuff = new CommandBuffer();
-                      Vector idxCommands = new Vector();
+                              CommandBuffer cbuff = new CommandBuffer();
+                              Vector idxCommands = new Vector();
 
-                      if (result) {
-                          try {
-                              String tablename = getTableName();
-                              DataModel dataModel = (DataModel)table.getModel();
-                              Vector data = dataModel.getData();
-                              CreateTable cmd = spec.createCommandCreateTable(tablename);
-                              
-                              cmd.setObjectOwner((String)ownercombo.getSelectedItem());
-                              
-                              /* this variables and operation provide support for
-                               * creating indexes for primary or unique keys,
-                               * most of database are creating indexes by myself,
-                               * support was removed */
-                              org.netbeans.lib.ddl.impl.TableColumn cmdcol = null;
-                              CreateIndex xcmd = null;
-                              Enumeration enu = data.elements();
-                              while (enu.hasMoreElements()) {
-                                  ColumnItem enuele = (ColumnItem)enu.nextElement();
-                                  String name = enuele.getName();
-                                  if (enuele.isPrimaryKey()&&!dataModel.isTablePrimaryKey())
-                                      cmdcol = cmd.createPrimaryKeyColumn(name);
-                                  else if (enuele.isUnique()&&!enuele.isPrimaryKey())
-                                      cmdcol = cmd.createUniqueColumn(name);
-                                  else cmdcol = cmd.createColumn(name);
-                                  
-                                  //bugfix for #31064
-                                  combo.setSelectedItem(combo.getSelectedItem());
+                              if (result) {
+                                  try {
+                                      String tablename = getTableName();
+                                      DataModel dataModel = (DataModel)table.getModel();
+                                      Vector data = dataModel.getData();
+                                      CreateTable cmd = spec.createCommandCreateTable(tablename);
 
-                                  cmdcol.setColumnType(Specification.getType(enuele.getType().getType()));
-                                  cmdcol.setColumnSize(enuele.getSize());
-                                  cmdcol.setDecimalSize(enuele.getScale());
-                                  cmdcol.setNullAllowed(enuele.allowsNull());
-                                  String defval = enuele.getDefaultValue();
-                                  if (defval != null && defval.length() > 0)
-                                      cmdcol.setDefaultValue(defval);
-                                  if (enuele.hasCheckConstraint())
-                                      // add the TABLE check constraint
-                                      cmd.createCheckConstraint(name, enuele.getCheckConstraint());
-                                  if (enuele.isIndexed()&&!enuele.isPrimaryKey()&&!enuele.isUnique()) {
-                                      xcmd = spec.createCommandCreateIndex(tablename);
-                                      xcmd.setIndexName(tablename+ "_" + name + "_idx"); // NOI18N
-                                      xcmd.setIndexType(new String());
-                                      xcmd.setObjectOwner((String)ownercombo.getSelectedItem());
-                                      xcmd.specifyColumn(name);
-                                      idxCommands.add(xcmd);
+                                      cmd.setObjectOwner((String)ownercombo.getSelectedItem());
+
+                                      /* this variables and operation provide support for
+                                       * creating indexes for primary or unique keys,
+                                       * most of database are creating indexes by myself,
+                                       * support was removed */
+                                      org.netbeans.lib.ddl.impl.TableColumn cmdcol = null;
+                                      CreateIndex xcmd = null;
+                                      Enumeration enu = data.elements();
+                                      while (enu.hasMoreElements()) {
+                                          ColumnItem enuele = (ColumnItem)enu.nextElement();
+                                          String name = enuele.getName();
+                                          if (enuele.isPrimaryKey()&&!dataModel.isTablePrimaryKey())
+                                              cmdcol = cmd.createPrimaryKeyColumn(name);
+                                          else if (enuele.isUnique()&&!enuele.isPrimaryKey())
+                                              cmdcol = cmd.createUniqueColumn(name);
+                                          else cmdcol = cmd.createColumn(name);
+
+                                          //bugfix for #31064
+                                          combo.setSelectedItem(combo.getSelectedItem());
+
+                                          cmdcol.setColumnType(Specification.getType(enuele.getType().getType()));
+                                          cmdcol.setColumnSize(enuele.getSize());
+                                          cmdcol.setDecimalSize(enuele.getScale());
+                                          cmdcol.setNullAllowed(enuele.allowsNull());
+                                          String defval = enuele.getDefaultValue();
+                                          if (defval != null && defval.length() > 0)
+                                              cmdcol.setDefaultValue(defval);
+                                          if (enuele.hasCheckConstraint())
+                                              // add the TABLE check constraint
+                                              cmd.createCheckConstraint(name, enuele.getCheckConstraint());
+                                          if (enuele.isIndexed()&&!enuele.isPrimaryKey()&&!enuele.isUnique()) {
+                                              xcmd = spec.createCommandCreateIndex(tablename);
+                                              xcmd.setIndexName(tablename+ "_" + name + "_idx"); // NOI18N
+                                              xcmd.setIndexType(new String());
+                                              xcmd.setObjectOwner((String)ownercombo.getSelectedItem());
+                                              xcmd.specifyColumn(name);
+                                              idxCommands.add(xcmd);
+                                          }
+                                      }
+                                      if(dataModel.isTablePrimaryKey()) {
+                                          cmdcol = cmd.createPrimaryKeyConstraint(tablename);
+                                          cmdcol.setTableConstraintColumns(dataModel.getTablePrimaryKeys());
+                                          cmdcol.setColumnType(0);
+                                          cmdcol.setColumnSize(0);
+                                          cmdcol.setDecimalSize(0);
+                                          cmdcol.setNullAllowed(true);
+
+                                      }
+                                      cbuff.add(cmd);
+                                      for(int i=0;i<idxCommands.size();i++)
+                                          cbuff.add((CreateIndex)idxCommands.elementAt(i));
+                                      // index support removed!
+                                      //if (icmd.getColumns().size()>0) cbuff.add(icmd);
+
+                                      //execute DDL command
+                                      cbuff.execute();
+
+                                      // was execution of commands with or without exception?
+                                      if(!cbuff.wasException()) {
+                                          // dialog is closed after successfully create table
+                                          dialog.setVisible(false);
+                                          dialog.dispose();
+                                      }
+                                      //dialog is not closed after unsuccessfully create table
+
+                                  } catch (Exception e) {
+                                      e.printStackTrace();
+
                                   }
+                              } else {
+                                  String msg = bundle.getString("EXC_InsufficientCreateTableInfo");
+                                  DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
                               }
-                              if(dataModel.isTablePrimaryKey()) {
-                                  cmdcol = cmd.createPrimaryKeyConstraint(tablename);
-                                  cmdcol.setTableConstraintColumns(dataModel.getTablePrimaryKeys());
-                                  cmdcol.setColumnType(0);
-                                  cmdcol.setColumnSize(0);
-                                  cmdcol.setDecimalSize(0);
-                                  cmdcol.setNullAllowed(true);
-
-                              }
-                              cbuff.add(cmd);
-                              for(int i=0;i<idxCommands.size();i++)
-                                  cbuff.add((CreateIndex)idxCommands.elementAt(i));
-                              // index support removed!
-                              //if (icmd.getColumns().size()>0) cbuff.add(icmd);
-
-                              //execute DDL command
-                              cbuff.execute();
-
-                              // was execution of commands with or without exception?
-                              if(!cbuff.wasException()) {
-                                  // dialog is closed after successfully create table
-                                  dialog.setVisible(false);
-                                  dialog.dispose();
-                              }
-                              //dialog is not closed after unsuccessfully create table
-
-                          } catch (Exception e) {
-                              e.printStackTrace();
-                              
                           }
-                      } else {
-                          String msg = bundle.getString("EXC_InsufficientCreateTableInfo");
-                          DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
-                      }
-                  }
+                        }
+                    }, 0);       
                }
             };
 
