@@ -6,50 +6,61 @@
 -->
 <HTML>
 <HEAD>
-<TITLE>Displaying Help in an Alternate Browser</TITLE>
+<TITLE>Displaying Help in a Web Browser</TITLE>
 <link rel="StyleSheet" href="../ide.css" type="text/css">
 </HEAD>
 <BODY>
 
-<h2>Displaying Help in an Alternate Browser</h2>
+<h2>Displaying Help in a Web Browser</h2>
 <p>
 The online help is designed to be viewed in the JavaHelp<sup><small>TM</small></sup> viewer, which
 is integrated into the IDE.  If you prefer, you can view the online help
-in the IDE's web browser or in another browser.
+in the IDE's web browser or in another HTML browser.
 </p>
 <p>
 The online help is divided into several help sets.  Most help sets
 are packaged in a JAR file, while a few help sets are packaged in a zip file.  
+The file <tt>usersguide.jar</tt> includes the core online help.
 Help sets are
-typically stored in the <tt>modules/docs</tt> directory in your installation directory.  The file <tt>usersguide.jar</tt> includes the core online help.
-This help set describes how to manage project and files, how to design a user interface, how to compile, and debug and run Java programs, and so on.
-</p>
+typically stored in the <tt>modules/docs</tt> directory in your installation directory.</p>
 <p>
 <b>To extract the online help from a JAR file:</b>
 <ol>
-<li>Change to the <tt>modules/docs</tt> directory
-in your installation directory and view the JAR files in that directory.
+<li>In a command window, change to the <tt>modules/docs</tt> directory
+in your installation directory and list the JAR files in that directory.
 </li>
-<li>Type the command:
+<li>Use the jar command-line utility to unpack the JAR file in which you
+are interested.  On Microsoft Windows and UNIX systems, the command is
+as follows:
 <p>
 <tt>jar xf </tt><i>jar-file</i>
 </p>
 <p>
 For <i>jar-file,</i> use the file name of the JAR file from which you want to extract
-files. 
-</p>
+files. </p>
 <p>
-The Jar tool makes copies of the desired files and writes them to the current directory, reproducing the directory structure that the files have in the archive.  
+The Jar tool makes copies of the files and writes them to the 
+current directory.  The directory structure is reproduced according to the package structure in the archive.  
 </p>
 </li>
 </ol>
-For example, to extract the core online help, change directory to
-your <i>installation-dir</i>/<tt>modules/docs</tt> and type the command
-<tt>jar xf usersguide.jar</tt>.
-The core help files are reproduced in <tt>org/netbeans/modules/usersguide</tt>
-under <tt>modules/docs</tt>.  The following table provides pointers 
+<p>
+<b>To view the online help in a web browser:</b>
+</p>
+<ul>
+<li>
+Go to the extracted hierarchy for a listing
+of directories and files in the help set.  This location provides
+a starting point for
+browsing the help.
+
+<p>
+For example,
+the core help files are reproduced under <tt>modules/docs</tt> in <tt>org/netbeans/modules/usersguide</tt>.  The following table 
+provides pointers 
 on where to start browsing the core help.</p>
-<table border="1" cellpadding="5" cellspacing="0">
+</li>
+</ul><table border="1" cellpadding="5" cellspacing="0">
 <tr>
 <th align="left" scope="col" valign="top"><b>Topical information</b></th>
 <th align="left" scope="col" valign="top"><b>File Within 

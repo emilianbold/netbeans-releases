@@ -630,8 +630,8 @@
 </tocitem>
 
 <tocitem text="Accessibility" target="accessibility.home">
-    <tocitem text="Displaying Help in an Alternate Browser" target="accessibility.alternate.browser" />
-    <tocitem text="Specifying a Style Sheet for HTML Documentation" target="accessibility.stylesheet"/>
+    <tocitem text="Setting Fonts and Colors for the Help Viewer" target="accessibility.stylesheet"/>
+    <tocitem text="Displaying Help in a Web Browser" target="accessibility.alternate.browser" />
 
 </tocitem>
 </tocitem>
