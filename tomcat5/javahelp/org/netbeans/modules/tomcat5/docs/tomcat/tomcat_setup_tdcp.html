@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+
+<html>
+<head>
+<meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+
+<title>Setting Up a Tomcat Database Connection Pool</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Setting Up a Tomcat Database Connection Pool</h2>
+<p><small> 
+<a href="#seealso">See Also</a> 
+</small></p> 
+
+<p><b>To add a data source using the Tomcat Admintool:</b>
+<ol><li>Access the Tomcat Admintool as described in <a href="tomcat_edit_config.html">Reconfiguring a Tomcat Server</a>.</li>
+<li>In the Admin tool, click Data Sources.</li>
+<li>Choose Create New Data Source from the Data Source Actions drop down on the right.</li>
+<li>Type values such as the following to define your data source:
+   <ul>
+   <li>JNDI Name: <tt>jdbc/poolDB</tt></li>
+   <li>Data Source URL: <tt>jdbc:mysql://localhost:3306/employees</tt></li>
+   <li>JDBC Driver Class: <tt>org.gjt.mm.mysql.Driver</tt></li>
+   <li>User Name: <tt>root</tt></li>
+   <li>Password:</li>
+   </ul>
+</li>
+<li>Click Save. Then click Commit Changes. Then click Log Out.</li>
+</ol>
+<p><b>To create a link from your web application's web.xml file 
+(the deployment descriptor) and context.xml file to the data 
+source that you created in the server.xml file:</b>
+<ul><li><p>Expand the project node in the Projects window. Then expand the
+Web Pages node and the WEB-INF node. Double-click the web.xml node and use the
+Source Editor to add your resource reference to the <tt>web.xml</tt> file as follows:
+</p><blockquote>
+<pre>    	  &lt;resource-ref&gt;<br>              &lt;description&gt;Tomcat DBCP&lt;/description&gt;<br>              &lt;res-ref-name&gt;jdbc/poolDB&lt;/res-ref-name&gt;<br>              &lt;res-type&gt;javax.sql.DataSource&lt;/res-type&gt;<br>              &lt;res-auth&gt;Container&lt;/res-auth&gt;<br>    	  &lt;/resource-ref&gt;</pre>
+
+</blockquote>
+</li>
+<li>Expand the project node in the Projects window. Then expand the
+Web Pages node and the META-INF node. Right-click the context.xml node, choose Edit from
+the contextual menu and use the Source Editor to add the
+following resource link between the <tt>&lt;context&gt;</tt> tags in the <tt>context.xml</tt> file:
+<blockquote>
+	<pre>          &lt;ResourceLink name="jdbc/poolDB" type="javax.sql.DataSource" global="jdbc/poolDB"/&gt;</pre>
+
+</blockquote>
+<b>Note:</b> Do not double-click the <tt>context.xml</tt> file. If you do so, the IDE opens
+the <tt>context.xml</tt> file in the Context Editor instead of the Source Editor. You cannot add a resource link
+in the Context Editor. As you cannot open the <tt>context.xml</tt>
+file in both the Source Editor and the Context Editor at the same time, the IDE disables Edit in the contextual menu
+if the <tt>context.xml</tt> file is opened in the Context Editor. <p>Your web application's
+	       <tt>META-INF/context.xml</tt> file should now look similar to the following:</p>
+
+		<blockquote>
+	<pre>    	  &lt;Context path="/Employees"&gt;<br>              &lt;ResourceLink name="jdbc/poolDB" type="javax.sql.DataSource" <br>               global="jdbc/poolDB"/&gt;<br>              &lt;Logger className="org.apache.catalina.logger.FileLogger" <br>               prefix="Employees" suffix=".log" timestamp="true"/&gt;<br>    	  &lt;/Context&gt;</pre>
+
+		</blockquote></li></ul>
+<p><b>To use the data source in a web application:</b>
+<p>There are many ways of using a data source in a web application. The simplest 
+way is to access your data source directly from a JSP file. You are recommended
+ to use this method for
+ testing purposes and in small web applications only.
+ <ol>
+	<li>
+Modify the JSP file to enable the selection of database records. 
+Make sure to specify the same JNDI name as specified in the data source above. 
+To do so, paste or type code similar to the following below the taglib directives in a JSP file:
+
+    <pre>    	       &lt;sql:query var="queryresults" dataSource="jdbc/poolDB"&gt;<br>                   SELECT * FROM employee_data ORDER BY upper(f_name)<br>    	       &lt;/sql:query&gt;</pre>
+
+</li>
+<li><p>Make the database driver available to Tomcat connection pooling 
+by copying the database driver's JAR file
+into Tomcat's <tt>common/lib</tt> folder. By default, this 
+folder is within the <tt>C:\Program Files\netbeans-4.0\nb4.0 folder</tt>.</p>
+<p>If you have already started the Tomcat Server, make sure that you restart it after you copy the database
+driver's JAR file to Tomcat's <tt>common/lib</tt> folder, so that the Tomcat Server can load the JAR file.</p></li>
+</li>
+</ol>
+
+
+<table>
+
+  <tr> 
+
+    <th colspan=2 align=left><a name="seealso">See Also</a></th>
+
+  </tr>
+
+  <tr> 
+
+    <td width="23"></td>
+<td><a href="tomcat_plugintro.html">About the Tomcat Server</a><br>
+<a href="tomcat_top_node.html">Viewing a Tomcat Server in the IDE</a><br>
+<a href="tomcat_context_add.html">Setting a Context Path for a Web Application</a><br>
+<a href="tomcat_start.html">Starting and Stopping a Tomcat Server</a><br>
+<a href="tomcat_internal_props.html">Customizing a Tomcat Server</a><br>
+<a href="tomcat_edit_config.html">Reconfiguring a Tomcat Server</a><br>
+<a href="tomcat_addinstall.html">Adding a Tomcat Server</a><br></td>
+  </tr>
+
+</table>
+<hr>
+<small><a href="../credits.html">Legal Notices</a> 
+<table cellpadding="20" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+
+</small></body></html>

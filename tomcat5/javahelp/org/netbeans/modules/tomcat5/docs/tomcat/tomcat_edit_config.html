@@ -59,10 +59,7 @@ Open in Browser. The Tomcat
 Server Administration Tool opens in the IDE's default web browser.</li>
 <li>Type a User Name and Password for a Tomcat user to whom the "admin" role has been assigned. Click login.
 The "Tomcat Web Server Administration Tool" (the Admin tool) should open
-in the IDE's default web browser.</li>
-<li>Make your changes. For example, add a data source to a context.</li>
-<li>Click Save. Then click Commit Changes. Then click Log Out.</li>
-</ol>
+in the IDE's default web browser.
 
 <table>
   <tr> 
@@ -71,14 +68,19 @@ in the IDE's default web browser.</li>
 open, or if you don't have a user name or password, check the <tt>tomcat-users.xml</tt> file
 in Tomcat's base directory. To identify the location of this directory, right-click
 the Tomcat Server instance node in the Runtime window and select Properties.
-In the Properties dialog box, the Base Directory property points to the
-<i>base-dir</i><tt></tt> directory.</p><p>In the <tt>tomcat-users.xml</tt> file, check 
+In the Properties dialog box, the Base Directory property points to 
+Tomcat's base directory.</p><p>In the <tt>tomcat-users.xml</tt> file in Tomcat's base
+ directory, check 
 that a role called "admin" exists and that the role is assigned
 to a user. If necessary, define the "admin" role, assign the "admin" role to a user, save the file,
 and, using the Runtime tab, stop and restart the Tomcat instance.</p></td>
   </tr>
 </table>
 
+</li>
+<li>Make your changes. For example, add a data source to a context.</li>
+<li>Click Save. Then click Commit Changes. Then click Log Out.</li>
+</ol>
 
 <table>
 
@@ -97,6 +99,7 @@ and, using the Runtime tab, stop and restart the Tomcat instance.</p></td>
 <a href="tomcat_context_add.html">Setting a Context Path for a Web Application</a><br>
 <a href="tomcat_start.html">Starting and Stopping a Tomcat Server</a><br>
 <a href="tomcat_internal_props.html">Customizing a Tomcat Server</a><br>
+<a href="tomcat_setup_tdcp.html ">Setting Up a Tomcat Database Connection Pool</a><br>
 <a href="tomcat_addinstall.html">Adding a Tomcat Server</a><br></td>
   </tr>
 
