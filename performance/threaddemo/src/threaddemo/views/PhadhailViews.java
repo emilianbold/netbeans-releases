@@ -32,6 +32,7 @@ import threaddemo.model.Phadhail;
 import org.netbeans.api.nodes2looks.Nodes;
 import org.netbeans.spi.looks.Selectors;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.NodeMemberEvent;
@@ -179,14 +180,16 @@ public class PhadhailViews {
     private static final class ExpPanel extends JPanel implements ExplorerManager.Provider, Lookup.Provider {
         
         private final ExplorerManager manager;
+        private final Lookup lookup;
         
         public ExpPanel() {
             manager = new ExplorerManager();
             ActionMap map = getActionMap();
-            map.put(DefaultEditorKit.copyAction, ExplorerManager.actionCopy(manager));
-            map.put(DefaultEditorKit.cutAction, ExplorerManager.actionCut(manager));
-            map.put(DefaultEditorKit.pasteAction, ExplorerManager.actionPaste(manager));
-            map.put("delete", ExplorerManager.actionDelete(manager, true));
+            map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
+            map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
+            map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
+            map.put("delete", ExplorerUtils.actionDelete(manager, true));
+            lookup = ExplorerUtils.createLookup(manager, map);
             InputMap keys = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
             keys.put(KeyStroke.getKeyStroke("control c"), DefaultEditorKit.copyAction);
             keys.put(KeyStroke.getKeyStroke("control x"), DefaultEditorKit.cutAction);
@@ -194,16 +197,22 @@ public class PhadhailViews {
             keys.put(KeyStroke.getKeyStroke("DELETE"), "delete");
         }
         
+        public void addNotify() {
+            super.addNotify();
+            ExplorerUtils.activateActions(manager, true);
+        }
+        
+        public void removeNotify() {
+            ExplorerUtils.activateActions(manager, false);
+            super.removeNotify();
+        }
+        
         public ExplorerManager getExplorerManager() {
             return manager;
         }
         
         public Lookup getLookup() {
-            Node[] ns = manager.getSelectedNodes();
-            Object[] stuff = new Object[ns.length + 1];
-            stuff[0] = getActionMap();
-            System.arraycopy(ns, 0, stuff, 1, ns.length);
-            return Lookups.fixed(stuff);
+            return lookup;
         }
         
     }
