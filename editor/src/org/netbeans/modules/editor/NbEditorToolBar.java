@@ -136,22 +136,6 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
             }
             
             protected void showPopup(MouseEvent evt) {
-                if (evt.isPopupTrigger()) {
-                    JPopupMenu pm = new JPopupMenu();
-                    JCheckBoxMenuItem item = new JCheckBoxMenuItem(
-                        LocaleSupport.getString("PROP_base_toolbarVisible"),
-                        isToolBarVisible()
-                    );
-                    // Turn off the global toolbars visible option
-                    item.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent evt2) {
-                            AllOptionsFolder.getDefault().setToolbarVisible(
-                                ((JCheckBoxMenuItem)evt2.getSource()).isSelected());
-                        }
-                    });
-                    pm.add(item);
-                    pm.show((Component)evt.getSource(), evt.getX(), evt.getY());
-                }
             }
         };
        
