@@ -119,7 +119,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 if (type != CHANGE_TOPCOMPONENT_DISPLAY_NAME_CHANGED &&
                     type != CHANGE_TOPCOMPONENT_DISPLAY_NAME_ANNOTATION_CHANGED &&
                     type != CHANGE_TOPCOMPONENT_TOOLTIP_CHANGED && 
-                    type != CHANGE_TOPCOMPONENT_ICON_CHANGED &&
+                    type != CHANGE_TOPCOMPONENT_ICON_CHANGED && 
                     type != CHANGE_PROJECT_NAME) {
                         isDangerous = true;
                         break;
@@ -479,6 +479,13 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         if(DEBUG) {
             debugLog("ShowWindowSystem--"); // NOI18N
         }
+//        java.awt.Toolkit.getDefaultToolkit().addAWTEventListener(new java.awt.event.AWTEventListener() {
+//                public void eventDispatched(java.awt.event.AWTEvent event) {
+////                    debugLog("" + event.getID() + " "  + event.getSource().getClass() + event.toString());
+//                    Debug.log(org.netbeans.core.windows.Constants.class, event.toString());  
+//                    Debug.log(org.netbeans.core.windows.Constants.class, "keyboard focus=" + java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());  
+//                }
+//        }, AWTEvent.FOCUS_EVENT_MASK);
         
         hierarchy.getMainWindow().initializeComponents();
         // Init toolbar.
@@ -546,6 +553,11 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
 //                updateSeparateBoundsForView(hierarchy.getSplitRootElement());
             }
         }
+        
+        // setting activate mode had to be done in Swing.invokeLater() because of split recalculations. (#40501)
+        // since the JSplitPane.resetToPrefferedSizes() rewrite, it's no longer necessary
+        // also should fix 
+        hierarchy.activateMode(wsa.getActiveModeAccessor());
 
         //#39238 in maximazed mode swing posts a lot of stuff to Awt thread using SwingUtilities.invokeLater
         // for that reason the installation of window listeners and the update of splits kicked in too early when
@@ -556,9 +568,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 if (DEBUG) {
                     debugLog("Installing main window listeners.");
                 }
-                //#40501 it seems that activating mode needs to be done after the splits are recalculated.
-                //otherwise it possibly failes.
-                hierarchy.activateMode(wsa.getActiveModeAccessor());
                 hierarchy.installMainWindowListeners();
             }
         });
