@@ -16,27 +16,32 @@ Microsystems, Inc. All Rights Reserved.
     <!ENTITY master-config SYSTEM "master-config.xml">
 ]>
 
-<project basedir="." default="all" name="changeme">
+<project basedir="." default="all" name="xtest-master">
 
+    <property name="build.sysclasspath" value="ignore"/>
+
+    <property name="xtest.home" location="."/>
     <property name="xtest.basedir" location=".."/>
     <property name="xtest.uploaddir" location="results"/>
+    <property name="xtest.distdir" location="dist"/>
     
     <property name="xtest.hostname" location="amos.czech"/>
 
     <property name="xtest.mail.all" value=""/>
     <property name="xtest.mail.failed" value=""/>
     
-    <target name="init" depends="check">
+    <target name="init" depends="check" unless="tasks-defined">
         <taskdef name="nbtaskdef" classname="org.netbeans.xtest.NbMultiTaskDef" 
                  classpath="lib/xtest.jar"/>
         <nbtaskdef classpath="lib/xtest.jar">
             <taskdef name="master-config" classname="org.netbeans.xtest.NbTestConfig2"/>
             <taskdef name="xtest-runner" classname="org.netbeans.xtest.NbExecutor2"/>
-            <taskdef name="xreport" classname="org.netbeans.xtest.NbReport"/>            
-        </nbtaskdef>        
-        <nbtaskdef classpath="lib/xtest.jar;lib/xalan.jar;lib/old/xerces.jar">                                    
+            <taskdef name="xreport" classname="org.netbeans.xtest.NbReport"/>
+        </nbtaskdef>
+        <nbtaskdef classpath="lib/xtest.jar;lib/xalan.jar;lib/xerces.jar">
             <taskdef name="xalan" classname="org.netbeans.xtest.XalanLauncher"/>
-        </nbtaskdef>        
+        </nbtaskdef>
+        <property name="tasks-defined" value="true"/>
     </target>
     
     <target name="check" depends="check-for-xtest" unless="xtest-ready">
@@ -86,6 +91,14 @@ Microsystems, Inc. All Rights Reserved.
                
     </target>
 
+    <target name="runtestsfromdist">
+        <ant antfile="build.xml" target="runtests">
+            <property name="xtest.basedir" value="dist"/>
+            <property name="xtest.code.classpath" value="ide"/>
+            <property name="netbeans.home" location="ide/netbeans"/>
+        </ant>
+    </target>
+    
     <target name="buildtests" depends="configuration"
             description="Main target for building all tests according to config.">
         <antcall target="executor">
@@ -114,6 +127,17 @@ Microsystems, Inc. All Rights Reserved.
         </antcall>
         <antcall target="real-clean"/>
     </target>
+    
+    <target name="buildtestdist" depends="configuration"
+            description="Builds distribution of tests.">
+        <antcall target="executor">
+            <param name="target.name" value="buildtestdist-helper"/>
+        </antcall>
+    </target>
+    
+    <!-- ======= -->
+    <!-- Helpers -->
+    <!-- ======= -->
     
     <!-- helper can be executed only by target executor -->
     <target name="runtest-helper">
@@ -152,6 +176,20 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="${xtest.basedir}/${xtest.module}/test" target="realclean"/>
     </target>
     
+    <!-- helper can be executed only by target executor -->
+    <target name="buildtestdist-helper">
+        <echo message="Building distribution for ${xtest.module}"/>
+        <ant dir="${xtest.basedir}/${xtest.module}/test" target="buildtests">
+            <property name="xtest.build" 
+                      value="${xtest.distdir}/${xtest.module}/test"/>
+        </ant>
+        <copy file="${xtest.basedir}/${xtest.module}/test/build.xml" 
+              todir="${xtest.distdir}/${xtest.module}/test"/>
+        <copy todir="${xtest.distdir}/${xtest.module}/test">
+            <fileset dir="${xtest.basedir}/${xtest.module}/test" includes="cfg-*"/>
+        </copy>
+    </target>
+    
     <target name="executor">
         <xtest-runner targetname="${target.name}"
                       targetParamModule="xtest.module"
@@ -169,7 +207,11 @@ Microsystems, Inc. All Rights Reserved.
         <ant antfile="xtest.xml" target="clean"/>
     </target>
     
-    <target name="real-clean" depends="cleanxtest">
+    <target name="cleantestdist">
+        <delete dir="dist"/>
+    </target>
+    
+    <target name="real-clean" depends="cleantestdist">
         <delete dir="results"/>
     </target>
     
