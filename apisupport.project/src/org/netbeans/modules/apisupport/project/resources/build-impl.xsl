@@ -21,6 +21,22 @@ Microsystems, Inc. All Rights Reserved.
     
     <xsl:variable name="modules" select="document('modules.xml')/modules"/>
     <xsl:variable name="deps" select="/p:project/p:configuration/nbm:data/nbm:module-dependencies"/>
+    <xsl:variable name="public.packages">
+        <xsl:variable name="pkgs" select="/p:project/p:configuration/nbm:data/nbm:public-packages"/>
+        <xsl:choose>
+            <xsl:when test="count($pkgs) &gt; 0">
+                <xsl:for-each select="$pkgs/nbm:package">
+                    <xsl:if test="position() &gt; 1">
+                        <xsl:text>, </xsl:text>
+                    </xsl:if>
+                    <xsl:value-of select="."/>
+                </xsl:for-each>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:text>-</xsl:text>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:variable>
     
     <xsl:template match="/">
 
@@ -30,10 +46,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="init">
         <property file="nbproject/private/private.properties"/>
-        <!--
         <property name="user.properties.file" location="${{netbeans.user}}/build.properties"/>
         <property file="${{user.properties.file}}"/>
-        -->
         <property file="nbproject/project.properties"/>
         <property name="code.name.base.dashes" value="{translate(/p:project/p:name, '.', '-')}"/>
         <property name="domain" value="{substring-before(/p:project/p:configuration/nbm:data/nbm:path, '/')}"/>
@@ -70,7 +84,24 @@ Microsystems, Inc. All Rights Reserved.
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:for-each>
+            <pathelement path="${{cp.extra}}"/>
         </path>
+        <xsl:if test="/p:project/p:configuration/nbm:data/nbm:unit-tests">
+            <property name="test.src.dir" location="test/unit/src"/>
+            <property name="build.test.classes.dir" location="build/test/classes"/>
+            <property name="build.test.results.dir" location="build/test/results"/>
+            <path id="test.cp">
+                <path refid="cp"/>
+                <pathelement location="${{src.dir}}"/>
+                <pathelement location="${{libs.junit.classpath}}"/>
+                <pathelement path="${{test.cp.extra}}"/>
+            </path>
+            <path id="test.run.cp">
+                <path refid="test.cp"/>
+                <pathelement location="${{build.test.classes.dir}}"/>
+                <pathelement path="${{test.run.cp.extra}}"/>
+            </path>
+        </xsl:if>
     </target>
 
     <target name="compile" depends="init">
@@ -83,7 +114,6 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
     </target>
 
-    <!--
     <target name="compile-single" depends="init">
         <fail unless="selected.files">Must select some files in the IDE or set selected.files</fail>
         <property name="src.dir.absolute" location="${{src.dir}}"/>
@@ -93,14 +123,11 @@ Microsystems, Inc. All Rights Reserved.
         </pathconvert>
         <mkdir dir="${{build.classes.dir}}"/>
         <javac srcdir="${{src.dir}}" destdir="${{build.classes.dir}}"
-               debug="${{javac.debug}}" optimize="${{javac.optimize}}" deprecation="${{javac.deprecation}}"
-               source="${{javac.source}}" includes="${{javac.includes}}" includeantruntime="false">
-            <classpath>
-                <path path="${{javac.classpath}}"/>
-            </classpath>
+               debug="${{build.compiler.debug}}" deprecation="${{build.compiler.deprecation}}"
+               source="1.4" includes="${{javac.includes}}" includeantruntime="false">
+            <classpath refid="cp"/>
         </javac>
     </target>
-    -->
 
     <target name="jar" depends="init,compile">
         <mkdir dir="netbeans/${{module.jar.dir}}"/>
@@ -109,24 +136,7 @@ Microsystems, Inc. All Rights Reserved.
         </tstamp>
         <jar jarfile="netbeans/${{module.jar}}" compress="false" manifest="${{manifest.mf}}">
             <manifest>
-                <attribute name="OpenIDE-Module-Public-Packages">
-                    <xsl:attribute name="value">
-                        <xsl:variable name="pkgs" select="/p:project/p:configuration/nbm:data/nbm:public-packages"/>
-                        <xsl:choose>
-                            <xsl:when test="count($pkgs) &gt; 0">
-                                <xsl:for-each select="$pkgs/nbm:package">
-                                    <xsl:if test="position() &gt; 1">
-                                        <xsl:text>, </xsl:text>
-                                    </xsl:if>
-                                    <xsl:value-of select="."/>
-                                </xsl:for-each>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:text>-</xsl:text>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:attribute>
-                </attribute>
+                <attribute name="OpenIDE-Module-Public-Packages" value="{$public.packages}"/>
                 <xsl:variable name="openide.dep" select="$deps/nbm:dependency[nbm:code-name-base = 'org.openide' and nbm:run-dependency]"/>
                 <xsl:if test="$openide.dep">
                     <!-- Special-cased. -->
@@ -159,6 +169,10 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
     </target>
     
+    <target name="reload" depends="jar">
+        <nbinstaller module="netbeans/${{module.jar}}" action="reinstall"/>
+    </target>
+
     <target name="netbeans" depends="init,jar">
         <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${{nbroot}}/nbbuild/nbantext.jar"/>
         <genlist targetname="nbm" outputfiledir="netbeans"/>
@@ -177,123 +191,127 @@ Microsystems, Inc. All Rights Reserved.
         </makenbm>
     </target>
 
-    <!--
-    <target name="javadoc" depends="init">
-    </target>
+    <xsl:if test="/p:project/p:configuration/nbm:data/nbm:javadoc">
+        <target name="javadoc" depends="init">
+            <ant dir="${nbroot}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
+                <property name="javadoc.base" location="."/>
+                <property name="javadoc.packages" value="{$public.packages}"/>
+                <property name="javadoc.classpath" refid="cp"/>
+            </ant>
+        </target>
 
-    <target name="javadoc-nb" depends="init,javadoc" if="netbeans.home">
-        <nbbrowse file="${{dist.javadoc.dir}}/index.html"/>
-    </target>
-    -->
+        <target name="javadoc-nb" depends="init,javadoc" if="netbeans.home">
+            <pathconvert property="index.html" pathsep=" ">
+                <path>
+                    <fileset dir="javadoc">
+                        <include name="javadoc/*/index.html"/>
+                    </fileset>
+                </path>
+            </pathconvert>
+            <nbbrowse file="${{index.html}}"/>
+        </target>
+    </xsl:if>
 
-    <!--
-    <target name="test-build" depends="init,compile" if="have.tests">
-        <mkdir dir="${{build.test.classes.dir}}"/>
-        <javac srcdir="test" destdir="${{build.test.classes.dir}}"
-               debug="true" optimize="false" deprecation="${{javac.deprecation}}"
-               source="${{javac.source}}" includeantruntime="false">
-            <classpath>
-                <path path="${{javac.test.classpath}}"/>
-            </classpath>
-        </javac>
-        <copy todir="${{build.test.classes.dir}}">
-            <fileset dir="${{test.src.dir}}">
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-    </target>
+    <xsl:if test="/p:project/p:configuration/nbm:data/nbm:unit-tests">
+        <target name="test-build" depends="init,compile">
+            <mkdir dir="${{build.test.classes.dir}}"/>
+            <javac srcdir="${{test.src.dir}}" destdir="${{build.test.classes.dir}}"
+                   debug="true" deprecation="${{build.compile.deprecation}}"
+                   source="1.4" includeantruntime="false">
+                <classpath refid="test.cp"/>
+            </javac>
+            <copy todir="${{build.test.classes.dir}}">
+                <fileset dir="${{test.src.dir}}">
+                    <exclude name="**/*.java"/>
+                </fileset>
+            </copy>
+        </target>
 
-    <target name="test" depends="init,test-build" if="have.tests">
-        <mkdir dir="${{build.test.results.dir}}"/>
-        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
-            <xsl:call-template name="test-junit-body"/>
-        </junit>
-        <fail if="tests.failed">Some tests failed; see details above.</fail>
-    </target>
+        <target name="test" depends="init,test-build">
+            <mkdir dir="${{build.test.results.dir}}"/>
+            <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
+                <xsl:call-template name="test-junit-body"/>
+            </junit>
+            <fail if="tests.failed">Some tests failed; see details above.</fail>
+        </target>
 
-    <target name="test-single" depends="init,test-build" if="have.tests">
-        <fail unless="selected.files">Must select some files in the IDE or set selected.files</fail>
-        <property name="test.src.dir.absolute" location="${{test.src.dir}}"/>
-        <pathconvert property="test.includes" pathsep=",">
-            <path path="${{selected.files}}"/>
-            <map from="${{test.src.dir.absolute}}${{file.separator}}" to=""/>
-        </pathconvert>
-        <mkdir dir="${{build.test.results.dir}}"/>
-        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
-        <xsl:call-template name="test-single-junit-body"/>
-        </junit>
-        <fail if="tests.failed">Some tests failed; see details above.</fail>
-    </target>
+        <target name="test-single" depends="init,test-build">
+            <fail unless="selected.files">Must select some files in the IDE or set selected.files</fail>
+            <property name="test.src.dir.absolute" location="${{test.src.dir}}"/>
+            <pathconvert property="test.includes" pathsep=",">
+                <path path="${{selected.files}}"/>
+                <map from="${{test.src.dir.absolute}}${{file.separator}}" to=""/>
+            </pathconvert>
+            <mkdir dir="${{build.test.results.dir}}"/>
+            <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
+                <xsl:call-template name="test-single-junit-body"/>
+            </junit>
+            <fail if="tests.failed">Some tests failed; see details above.</fail>
+        </target>
 
-    <target name="init-test-class" unless="test.class">
-        <fail unless="selected.files">Must select one file in the IDE or set selected.files</fail>
-        <property name="test.src.dir.absolute" location="${{test.src.dir}}"/>
-        <pathconvert property="test.class.tmp" dirsep=".">
-            <path path="${{selected.files}}"/>
-            <map from="${{test.src.dir.absolute}}${{file.separator}}" to=""/>
-        </pathconvert>
-        <basename file="${{test.class.tmp}}" property="test.class" suffix=".java"/>
-    </target>
-    
-    <target name="do-debug-test-single" depends="init,init-test-class" if="have.tests">
-        <java fork="true" classname="junit.textui.TestRunner">
-        <xsl:call-template name="debug-test-single-java-body"/>
-        </java>
-    </target>
+        <target name="init-test-class" unless="test.class">
+            <fail unless="selected.files">Must set selected.files</fail>
+            <property name="test.src.dir.absolute" location="${{test.src.dir}}"/>
+            <pathconvert property="test.class.tmp" dirsep=".">
+                <path path="${{selected.files}}"/>
+                <map from="${{test.src.dir.absolute}}${{file.separator}}" to=""/>
+            </pathconvert>
+            <basename file="${{test.class.tmp}}" property="test.class" suffix=".java"/>
+        </target>
 
-    <target name="debug-test-single" depends="init,init-test-class,test-build,do-debug-test-single" if="have.tests">
-    </target>
+        <target name="do-debug-test-single" depends="init,init-test-class">
+            <java fork="true" classname="junit.textui.TestRunner">
+                <xsl:call-template name="debug-test-single-java-body"/>
+            </java>
+        </target>
 
-    <target name="debug-test-single-nb" depends="init,init-test-class,test-build" if="netbeans.home+have.tests">
-        <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${{test.class}}"/>
-        <antcall target="do-debug-test-single"/>
-    </target>
+        <target name="debug-test-single" depends="init,init-test-class,test-build,do-debug-test-single"/>
+
+        <target name="debug-test-single-nb" depends="init,init-test-class,test-build" if="netbeans.home">
+            <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${{test.class}}"/>
+            <antcall target="do-debug-test-single"/>
+        </target>
+    </xsl:if>
 
     <target name="clean" depends="init">
-        <delete dir="${{build.dir}}"/>
-        <delete dir="${{netbeans.dir}}"/>
+        <delete dir="build"/>
+        <delete dir="netbeans"/>
+        <delete dir="Info"/>
+        <xsl:if test="/p:project/p:configuration/nbm:data/nbm:javadoc">
+            <delete dir="javadoc"/>
+        </xsl:if>
     </target>
-    -->
 
 </project>
 
     </xsl:template>
-
-    <!--
+    
     <xsl:template name="test-junit-body">
-            <batchtest todir="${{build.test.results.dir}}">
-                <fileset dir="${{test.src.dir}}">
-                    <!- - XXX could include only out-of-date tests... - ->
-                    <include name="**/*Test.java"/>
-                </fileset>
-            </batchtest>
-            <classpath>
-                <path path="${{run.test.classpath}}"/>
-            </classpath>
-            <formatter type="brief" usefile="false"/>
+        <batchtest todir="${{build.test.results.dir}}">
+            <fileset dir="${{test.src.dir}}">
+                <!-- XXX could include only out-of-date tests... -->
+                <include name="**/*Test.java"/>
+            </fileset>
+        </batchtest>
+        <classpath refid="test.run.cp"/>
+        <formatter type="brief" usefile="false"/>
     </xsl:template>
 
     <xsl:template name="test-single-junit-body">
-            <batchtest todir="${{build.test.results.dir}}">
-                <fileset dir="${{test.src.dir}}" includes="${{test.includes}}"/>
-            </batchtest>
-            <classpath>
-                <path path="${{run.test.classpath}}"/>
-            </classpath>
-            <formatter type="brief" usefile="false"/>
+        <batchtest todir="${{build.test.results.dir}}">
+            <fileset dir="${{test.src.dir}}" includes="${{test.includes}}"/>
+        </batchtest>
+        <classpath refid="test.run.cp"/>
+        <formatter type="brief" usefile="false"/>
     </xsl:template>
 
     <xsl:template name="debug-test-single-java-body">
-            <jvmarg value="-Xdebug"/>
-            <jvmarg value="-Xnoagent"/>
-            <jvmarg value="-Djava.compiler=none"/>
-            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
-            <classpath>
-                <path path="${{debug.test.classpath}}"/>
-            </classpath>
-            <arg line="${{test.class}}"/>
-            <arg line="${{application.args}}"/>
+        <jvmarg value="-Xdebug"/>
+        <jvmarg value="-Xnoagent"/>
+        <jvmarg value="-Djava.compiler=none"/>
+        <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
+        <classpath refid="test.run.cp"/>
+        <arg line="${{test.class}}"/>
     </xsl:template>
-    -->
 
 </xsl:stylesheet>
