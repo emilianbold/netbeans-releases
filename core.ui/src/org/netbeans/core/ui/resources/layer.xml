@@ -78,7 +78,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-openide-actions-CloseViewAction.instance"/>
             <file name="org-openide-actions-CustomizeAction.instance"/>
-            <file name="org-netbeans-core-actions-EditorViewAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-EditorViewAction.instance"/>
             <file name="org-openide-actions-OpenLocalExplorerAction.instance"/>
             <file name="org-netbeans-core-actions-ViewFilesystemsTabAction.instance"/>
             <file name="org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
@@ -189,9 +189,9 @@ Microsystems, Inc. All Rights Reserved.
             <!-- #22758 Just a placeholder for old roots menu items -->
             <attr name="oldRootsStart.txt/oldRootsEnd.txt" boolvalue="true" />
             <file name="oldRootsEnd.txt"/>
-            <attr name="oldRootsEnd.txt/org-netbeans-core-actions-EditorViewAction.instance" boolvalue="true" />            
-            <file name="org-netbeans-core-actions-EditorViewAction.instance"/>
-            <attr name="org-netbeans-core-actions-EditorViewAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true"/>
+            <attr name="oldRootsEnd.txt/org-netbeans-core-windows-actions-EditorViewAction.instance" boolvalue="true" />            
+            <file name="org-netbeans-core-windows-actions-EditorViewAction.instance"/>
+            <attr name="org-netbeans-core-windows-actions-EditorViewAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true"/>
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
         </folder>
         
@@ -372,7 +372,7 @@ Microsystems, Inc. All Rights Reserved.
 	</file>
     
         <file name="C-3.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.core.actions.EditorViewAction"/>
+	    <attr name="instanceClass" stringvalue="org.netbeans.core.windows.actions.EditorViewAction"/>
 	</file>
 
         <file name="C-H.instance">
@@ -428,7 +428,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="Services">
             <attr name="simple" boolvalue="false" />
-            <attr name="helpID" stringvalue="org.netbeans.core.windows.actions.OptionsAction$TemplatesSubnodeServices"/>
+            <attr name="helpID" stringvalue="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeServices"/>
             
             <folder name="Browsers">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/webbrowsercateg.gif" />
@@ -458,7 +458,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="simple" boolvalue="false" />
             <attr name="org-netbeans-core-ExLocalFileSystem.settings/org-netbeans-core-ExJarFileSystem.settings" boolvalue="true" />
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/core/resources/templatesFileSystems.html"/>
-            <attr name="helpID" stringvalue="org.netbeans.core.windows.actions.OptionsAction$TemplatesSubnodeFilesystems"/>
+            <attr name="helpID" stringvalue="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeFilesystems"/>
 
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/repository.gif" />
