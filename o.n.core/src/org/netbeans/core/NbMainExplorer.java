@@ -111,15 +111,22 @@ public final class NbMainExplorer extends CloneableTopComponent
     WindowManagerImpl.deferredPerformer().putRequest(this, workspace);
   }
 
-  /** Implementation of DeferredPerformer.DeferredCommand */
+  /** Implementation of DeferredPerformer.DeferredCommand.
+  * Serves both for refresh roots and old explorer open requests */
   public void performCommand (Object context) {
-    Workspace workspace = (Workspace)context;
-    System.out.println("Opening old main explorer on " + workspace.getName());
-    super.open(workspace);
-    close(workspace);
-    // now open new main explorer top components 
-    NbMainExplorer singleton = NbMainExplorer.getExplorer();
-    singleton.openRoots(workspace);
+    if (context == null) {
+      // refresh roots request
+      refreshRoots ();
+    } else {
+      // old explorer open request
+      Workspace workspace = (Workspace)context;
+      System.out.println("Opening old main explorer on " + workspace.getName());
+      super.open(workspace);
+      close(workspace);
+      // now open new main explorer top components 
+      NbMainExplorer singleton = NbMainExplorer.getExplorer();
+      singleton.openRoots(workspace);
+    }
   }
   
   /** Open all main explorer's top components on current workspace */
@@ -172,8 +179,8 @@ public final class NbMainExplorer extends CloneableTopComponent
         }
       }
     } else {
-      // initialize roots and map
-      prevRoots = new LinkedList();
+      // initialize previous roots list
+      prevRoots();
     }
     
     // create and open top components for newly added roots
@@ -265,13 +272,20 @@ public final class NbMainExplorer extends CloneableTopComponent
     return panel;
   }
 
-  /** Safe accessor for root context - top component map.
-  */
+  /** Safe accessor for root context - top component map. */
   private Map rootsToTCs () {
     if (rootsToTCs == null) {
       rootsToTCs = new HashMap(7);
     }
     return rootsToTCs;
+  }
+  
+  /** Safe accessor for list of previous root nodes */
+  private List prevRoots () {
+    if (prevRoots == null) {
+      prevRoots = new LinkedList();
+    }
+    return prevRoots;
   }
 
   /** Deserialize this top component, sets as default.
@@ -422,8 +436,11 @@ public final class NbMainExplorer extends CloneableTopComponent
         valid = true;
         Node rc = getExplorerManager().getRootContext();
         initializeWithRootContext(rc);
-        // add itself to the map of main explorer's top components
-        NbMainExplorer.getExplorer().rootsToTCs().put(rc, this);
+        // add itself to the map of main explorer's top
+        // components and nodes
+        NbMainExplorer explorer = NbMainExplorer.getExplorer();
+        explorer.prevRoots().add(rc);
+        explorer.rootsToTCs().put(rc, this);
       }
     }
     
@@ -551,7 +568,9 @@ public final class NbMainExplorer extends CloneableTopComponent
     public void propertyChange (PropertyChangeEvent evt) {
       if (TopManager.PROP_PLACES.equals(evt.getPropertyName())) {
         // possible change in list of roots
-        refreshRoots ();
+        // defer refresh request if window system is in inconsistent state
+        WindowManagerImpl.deferredPerformer().
+          putRequest(NbMainExplorer.getExplorer(), null);
       }
     }
   } // end of RootsListener inner class
@@ -564,6 +583,7 @@ public final class NbMainExplorer extends CloneableTopComponent
 
 /*
 * Log
+*  46   Gandalf   1.45        12/17/99 David Simonek   #4886
 *  45   Gandalf   1.44        12/3/99  David Simonek   
 *  44   Gandalf   1.43        11/30/99 David Simonek   neccessary changes needed
 *       to change main explorer to new UI style  (tabs are full top components 
