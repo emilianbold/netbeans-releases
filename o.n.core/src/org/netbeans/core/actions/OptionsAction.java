@@ -60,7 +60,7 @@ public class OptionsAction extends CallableSystemAction {
   }
   
   /** Options panel. Uses singleton pattern. */
-  private static final class OptionsPanel extends NbMainExplorer.SettingsTab {
+  public static final class OptionsPanel extends NbMainExplorer.SettingsTab {
 
     /** Singleton instance of options panel */
     private static OptionsPanel singleton;
@@ -97,6 +97,8 @@ public class OptionsAction extends CallableSystemAction {
 
 /* 
 * Log
+*  2    Gandalf   1.1         12/7/99  David Simonek   top component inner class
+*       made public
 *  1    Gandalf   1.0         12/3/99  David Simonek   
 * $ 
 */ 
