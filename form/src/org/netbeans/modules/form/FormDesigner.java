@@ -576,7 +576,7 @@ public class FormDesigner extends TopComponent
                         Container cont = createTopContainer(
                             topDesignContainer,
                             null,
-                            new Class[] { Window.class, Applet.class, JInternalFrame.class }
+                            new Class[] { Window.class, Applet.class, RootPaneContainer.class }
                         );
                         if (!(cont instanceof JComponent))
                             FakePeerSupport.attachFakePeer(cont);
@@ -620,10 +620,7 @@ public class FormDesigner extends TopComponent
         }
         else if (requiredClass == null) // required class not specified
             requiredClass = JComponent.class.isAssignableFrom(beanClass)
-                            || JApplet.class.isAssignableFrom(beanClass)
-                            || JFrame.class.isAssignableFrom(beanClass)
-                            || JDialog.class.isAssignableFrom(beanClass)
-                            || JWindow.class.isAssignableFrom(beanClass)
+                            || RootPaneContainer.class.isAssignableFrom(beanClass)
                             || (!Window.class.isAssignableFrom(beanClass)
                                 && !Panel.class.isAssignableFrom(beanClass)) ?
                 JPanel.class : Panel.class;
@@ -632,8 +629,10 @@ public class FormDesigner extends TopComponent
             CreationFactory.createDefaultInstance(requiredClass);
 
         if (container instanceof RootPaneContainer
-                && !Window.class.isAssignableFrom(beanClass)
-                && !Applet.class.isAssignableFrom(beanClass)) {
+            && !RootPaneContainer.class.isAssignableFrom(beanClass) // Swing
+            && !Window.class.isAssignableFrom(beanClass) // AWT
+            && !Applet.class.isAssignableFrom(beanClass)) // AWT
+        {
             Container contentCont = (Container) metacont.cloneBeanInstance();
             ((RootPaneContainer)container).setContentPane(contentCont);
         }
