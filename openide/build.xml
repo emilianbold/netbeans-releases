@@ -165,6 +165,8 @@ Microsystems, Inc. All Rights Reserved.
            <include name="org/openide/**" />
       	   <exclude name="org/openide/filesystems/**" />
            <exclude name="org/openide/util/**"/>
+           <exclude name="org/openide/nodes/**"/>
+           <exclude name="org/openide/cookies/**"/>
            
            <!-- Part of openide-util.jar -->
            <exclude name="org/openide/ErrorManager*class"/> 
@@ -193,7 +195,7 @@ Microsystems, Inc. All Rights Reserved.
   
   <!-- Build separate libraries for the IDE -->
   
-  <target name="libs" depends="lib-util,lib-fs" />
+  <target name="libs" depends="lib-util,lib-fs,lib-nodes" />
   
   <target name="lib-util" depends="compile,13javac-workaround">
 	<mkdir dir="netbeans/lib" />
@@ -262,6 +264,25 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
   </target>        
              	
+  <target name="lib-nodes" depends="compile,13javac-workaround">
+	<mkdir dir="netbeans/lib" />
+        
+        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+        <copy file="openide-nodes.mf" tofile="openide-nodes-subst.mf" filtering="on"/>
+        
+  	<jar jarfile="netbeans/lib/openide-nodes.jar"
+	     manifest="openide-nodes-subst.mf"
+	     compress="false">
+             <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
+                  <include name="org/openide/nodes/*"/>
+                  <include name="org/openide/cookies/*"/>
+                  
+                  <!-- exlude localized resources, they are part of openide.jar -->
+                  <exclude name="org/openide/nodes/*_*" />
+                  <exclude name="org/openide/cookies/*_*" />
+             </fileset>
+        </jar>
+  </target>        
 
   <!-- Open API documentation. -->
   <target name="open-apis-check-timestamps" unless="open-apis-force-rebuild">
