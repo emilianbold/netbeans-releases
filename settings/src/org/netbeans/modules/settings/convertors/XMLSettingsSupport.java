@@ -629,16 +629,21 @@ final class XMLSettingsSupport {
             Class clazz = loadClass(targetClass);
 
             try {
-                Method method;
+                Object instance;
                 try {
-                    method = clazz.getMethod(targetMethod, new Class[]{FileObject.class});
+                    Method method = clazz.getMethod(targetMethod, new Class[]{FileObject.class});
                     method.setAccessible(true);
-                    return method.invoke(null, new FileObject[] {source});
+                    instance = method.invoke(null, new FileObject[] {source});
                 } catch (NoSuchMethodException ex) {
-                    method = clazz.getMethod(targetMethod, null);
+                    Method method = clazz.getMethod(targetMethod, null);
                     method.setAccessible(true);
-                    return method.invoke(null, new Object[0]);
+                    instance = method.invoke(null, new Object[0]);
                 }
+                if (instance == null) {
+                    // Strictly verboten. Cf. BT #4827173 for example.
+                    throw new IOException("Null return not permitted from " + targetClass + "." + targetMethod); // NOI18N
+                }
+                return instance;
             } catch (Exception ex) {
                 IOException ioe = new IOException("Wrong settings format."); // NOI18N
                 ErrorManager emgr = ErrorManager.getDefault();
