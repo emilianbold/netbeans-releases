@@ -218,7 +218,7 @@ final public class FormEditor extends Object {
     }
 
     if (propName != null) {
-      Node.Property prop = radComp.getPropertyByName (propName);
+      RADComponent.RADProperty prop = radComp.getPropertyByName (propName);
       if (prop != null) {
         try {
           prop.setValue (propValue);
@@ -278,7 +278,7 @@ final public class FormEditor extends Object {
       }
     }
     if (propName != null) {
-      Node.Property prop = menuComp.getPropertyByName (propName);
+      RADComponent.RADProperty prop = menuComp.getPropertyByName (propName);
       if (prop != null) {
         try {
           prop.setValue (propValue);
@@ -608,6 +608,8 @@ static final long serialVersionUID =7424646018839457544L;
 
 /*
  * Log
+ *  32   Gandalf   1.31        9/2/99   Ian Formanek    Reflecting changes in 
+ *       RADComponent.getPropertyByName
  *  31   Gandalf   1.30        8/10/99  Ian Formanek    Generated Serial Version
  *       UID
  *  30   Gandalf   1.29        8/3/99   Ian Formanek    Default JTable model 
