@@ -331,7 +331,22 @@ final class Services extends ServiceType.Registry {
     */
     public final boolean remove (ManifestSection.ServiceSection section) 
     throws InstantiationException {
-      Object key = key (section.getServiceType ());
+
+      ServiceType stype;
+      
+      try {
+        stype = section.getServiceType();
+      } catch (InstantiationException e) {
+        if (e.getMessage().indexOf("java.lang.RuntimeException: Platform") >= 0) { // NOI18N
+          ///// [PENDING] hack
+          return true;
+        } else {
+          throw e;
+        }
+      }
+      
+      
+      Object key = key (stype);
       
       Node subNode = (Node)map.get (key);
       Level l = (Level)subNode.getChildren ();
@@ -720,6 +735,7 @@ final class Services extends ServiceType.Registry {
 
 /*
 * Log
+*  18   Jaga      1.16.2.0    2/24/00  Ian Formanek    Changes for Jaga
 *  17   Gandalf   1.16        1/14/00  Martin Ryzl     bug in setting new 
 *       services fixed
 *  16   Gandalf   1.15        1/13/00  Jaroslav Tulach I18N
