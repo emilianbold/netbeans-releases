@@ -13,14 +13,20 @@
 
 package org.netbeans.core.windows.view.ui;
 
+import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Frame;
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.event.PaintEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.text.Format;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -184,19 +190,6 @@ public final class MainWindow extends JFrame {
             }
         });
         //#38810 end
-    }
-    
-    private boolean hackFirst = Boolean.getBoolean("netbeans.winsys.flashhack"); //NOI18N
-    /** Workaround for main window flashing during startup problem on Windows.
-     * Depends on the main window being laid out twice during startup, so may
-     * not be safe enough for producting use, but including for testing.  Can't
-     * find any platform it causes a problem on thus far. */
-    public void doLayout() {
-        if (hackFirst) {
-            hackFirst = false;
-            return;
-        }
-        super.doLayout();
     }
     
     /** Creates and returns border for desktop which is visually aligned
@@ -388,7 +381,6 @@ public final class MainWindow extends JFrame {
         } 
         invalidate();
         validate();
-        repaint();        
     }
 
     // XXX PENDING used in DnD only.
@@ -471,5 +463,64 @@ public final class MainWindow extends JFrame {
         }
     }    
  */
+
+    public Graphics getGraphics() {
+        // Return the dummy graphics that paint nowhere, until we receive a paint() 
+        if (waitingForPaintDummyGraphic != null) {
+            // If we are the PaintEvent we are waiting for is being dispatched
+            // we better return the correct graphics.
+            AWTEvent event = EventQueue.getCurrentEvent();
+            if (event == null || (event.getID() != PaintEvent.PAINT && event.getSource() != this)) {
+                return waitingForPaintDummyGraphic;
+	        }
+	        releaseWaitingForPaintDummyGraphic();
+        }
+        return super.getGraphics();
+    }
+
+    public void paint(Graphics g) {
+        // As a safeguard, always release the dummy graphic when we get a paint
+        if (waitingForPaintDummyGraphic != null) {
+            releaseWaitingForPaintDummyGraphic();
+            // Since the release did not occur before the getGraphics() call,
+            // I need to get the actual graphics now that I've released
+            g = getGraphics();
+        }
+        super.paint(g);
+    }
+    
+
+    protected Image waitingForPaintDummyImage; 
+    protected Graphics waitingForPaintDummyGraphic; 
+    
+    public void setVisible( boolean flag ) {
+        waitingForPaintDummyImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+        waitingForPaintDummyGraphic = waitingForPaintDummyImage.getGraphics();
+        super.setVisible(flag);
+    }
+    
+    protected void releaseWaitingForPaintDummyGraphic() {
+        if (waitingForPaintDummyGraphic != null) {
+            waitingForPaintDummyGraphic.dispose();
+            waitingForPaintDummyGraphic = null;
+            waitingForPaintDummyImage = null;
+        }
+    }
+
+    boolean firstTimeHack = true;
+    public void setExtendedState(int state) {
+
+        int prevState = getExtendedState();
+        
+        super.setExtendedState(state);
+        
+        if( firstTimeHack && state != prevState && state == Frame.MAXIMIZED_BOTH ) {
+            //we're switching to the maximized mode for the first time upon startup
+            //so the main window must repaint now (instead of repainting from the
+            //setDesktop method)
+            firstTimeHack = false;
+            repaint();        
+        }
+    }
 }
 
