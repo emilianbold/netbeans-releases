@@ -210,7 +210,7 @@ Microsystems, Inc. All Rights Reserved.
   </config>
   
   <config name="qa-web-performance">
- 	<module name="web"   testtypes="qa-performance"  attributes="measure_ide"/>  
+ 	<module name="web"   testtypes="qa-performance"  attributes="measure_ui"/>  
   </config>
   
   <config name="david">
