@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+XML Schema to define the main parts of project.xml for a freeform project.
+Cf. http://projects.netbeans.org/buildsys/design.html#freeform
+-->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://www.netbeans.org/ns/freeform-project/1"
+            xmlns="http://www.netbeans.org/ns/freeform-project/1"
+            elementFormDefault="qualified">
+    
+    <xsd:element name="general-data">
+        <xsd:complexType>
+            <xsd:sequence>
+                <!-- Display name of project. -->
+                <xsd:element name="name" type="xsd:token"/>
+                <!-- Declaration of properties. -->
+                <xsd:element name="properties" minOccurs="0" type="properties"/>
+                <!-- List of sources. Default: just project directory. -->
+                <xsd:element name="folders" minOccurs="0" type="folders"/>
+                <!-- List of actions to run. -->
+                <xsd:element name="actions" minOccurs="0" type="actions"/>
+                <!-- XXX logical view items, actions -->
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <!-- Some text that might be substituted with Ant property references. -->
+    <xsd:simpleType name="substitutable-text">
+        <xsd:restriction base="xsd:string">
+            <!-- XXX limit by regexp, perhaps -->
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:complexType name="properties">
+        <xsd:sequence>
+            <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                <xsd:element name="property">
+                    <xsd:complexType>
+                        <xsd:derivation base="xsd:substitutable-text"/>
+                        <xsd:attribute name="name" type="xsd:NMTOKEN"/>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="property-file" type="substitutable-text"/>
+            </xsd:choice>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="folders">
+        <xsd:sequence>
+            <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                <!-- Generic and typed source roots (default: just project directory). -->
+                <xsd:element name="source-folder" type="maybe-typed-source-root"/>
+                <!-- Other roots of build files (internal or external). -->
+                <xsd:element name="build-folder" type="root"/>
+            </xsd:choice>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <!-- A root of files. Has an ID and location. -->
+    <xsd:complexType name="root">
+        <xsd:sequence>
+            <xsd:element name="location" type="substitutable-text"/>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:ID"/>
+    </xsd:complexType>
+    
+    <!-- A typed or generic source root. Also has a display name and maybe a type parameter (e.g. 'java'). -->
+    <xsd:complexType name="maybe-typed-source-root">
+        <xsd:derivation base="root">
+            <xsd:sequence>
+                <xsd:element name="name" type="xsd:token"/>
+                <xsd:element name="type" type="xsd:NMTOKEN" minOccurs="0"/>
+            </xsd:sequence>
+        </xsd:derivation>
+    </xsd:complexType>
+    
+    <xsd:complexType name="actions">
+        <xsd:sequence>
+            <xsd:element name="action" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="script" minOccurs="0" type="substitutable-text"/>
+                        <xsd:element name="target" minOccurs="0" maxOccurs="unbounded" type="xsd:token"/>
+                        <!-- XXX optional properties too? -->
+                        <xsd:element name="context" minOccurs="0" maxOccurs="unbounded">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element name="property" type="xsd:token"/>
+                                    <xsd:element name="format" type="context-format"/>
+                                    <xsd:element name="folder" type="substitutable-text"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:sequence>
+                    <xsd:attribute name="name" type="xsd:NMTOKEN" use="required"/>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:simpleType name="context-format">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <!-- XXX enum... can it be extended? -->
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+</xsd:schema>
