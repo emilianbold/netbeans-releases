@@ -59,8 +59,9 @@ public final class AutoUpgrade {
         }
     }
     
-    // XXX: the versions will be read from properties files to allow branding
-    final static private List VERSION_TO_CHECK = Arrays.asList (new String[] { "3.6" });
+    // the order of VERSION_TO_CHECK here defines the precedence of imports
+    // the first one will be choosen for import
+    final static private List VERSION_TO_CHECK = Arrays.asList (new String[] { "4.0beta2", "3.6" });
     final static private String USER_DIR_PREFIX = ".netbeans"; // NOI18N
     
     static private File checkPrevious (String[] version) {
@@ -171,6 +172,40 @@ public final class AutoUpgrade {
             return;
         }
         
-        throw new IOException ("Cannot import from version: " + oldVersion);
+
+        File userdir = new File(System.getProperty ("netbeans.user", "")); // NOI18N
+
+        
+        java.util.Set includeExclude;
+        try {
+                Reader r = new InputStreamReader (
+                AutoUpgrade.class.getResourceAsStream ("copy" + oldVersion), // NOI18N
+                "utf-8"
+            );
+            includeExclude = IncludeExclude.create (r);
+            r.close ();
+        } catch (IOException ex) {
+            IOException e = new IOException ("Cannot import from version: " + oldVersion);
+            e.initCause (ex);
+            throw e;
+        }
+
+        ErrorManager.getDefault ().log (
+            ErrorManager.USER, "Import: Old version: " // NOI18N
+            + oldVersion + ". Importing from " + source + " to " + userdir // NOI18N
+        );
+
+        File oldConfig = new File (source, "config"); // NOI18N
+        org.openide.filesystems.FileSystem old;
+        {
+            LocalFileSystem lfs = new LocalFileSystem ();
+            lfs.setRootDirectory (oldConfig);
+            old = new org.openide.filesystems.MultiFileSystem (
+                new org.openide.filesystems.FileSystem[] { lfs }
+            );
+        }
+        org.openide.filesystems.FileSystem mine = Repository.getDefault ().getDefaultFileSystem ();
+        
+        Copy.copyDeep (old.getRoot (), mine.getRoot (), includeExclude);
     }
 }
