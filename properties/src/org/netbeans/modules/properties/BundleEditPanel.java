@@ -19,6 +19,7 @@ import java.awt.Color;
 import java.awt.SystemColor;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
@@ -30,12 +31,21 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.SwingUtilities;
 import javax.swing.JTable;
 
+import org.netbeans.editor.Coloring;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsChangeEvent;
+import org.netbeans.editor.SettingsChangeListener;
+
+import org.netbeans.modules.properties.syntax.PropertiesOptions;
+import org.netbeans.modules.properties.syntax.PropertiesTokenContext;
+
 import org.openide.util.NbBundle;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObject;
-import org.openide.TopManager;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
+import org.openide.options.SystemOption;
+import org.openide.TopManager;
 
 
 /**
@@ -53,6 +63,16 @@ public class BundleEditPanel extends javax.swing.JPanel {
     private ListSelectionModel columnSelections;
 
     static final long serialVersionUID =-843810329041244483L;
+
+    // colors for table view 
+    private static Color keyColor;
+    private static Color valueColor;
+    private static Color shadowColor;
+    private static Color keyBackground;
+    private static Color valueBackground;
+    
+    private SettingsChangeListener settingsListener;
+
     
     /** Creates new form BundleEditPanel */
     public BundleEditPanel(final DataObject obj, PropertiesTableModel ptm) {
@@ -99,6 +119,19 @@ public class BundleEditPanel extends javax.swing.JPanel {
         theTable.setDefaultEditor(PropertiesTableModel.StringPair.class,
                                   new PropertiesTableCellEditor(textField, textComment, textValue));
 
+        // set listening on changes of color settings
+        Settings.addSettingsChangeListener(settingsListener = new SettingsChangeListener() {
+                public void settingsChange(SettingsChangeEvent evt) {
+                    // maybe could be refined
+                    updateColors((PropertiesOptions)SystemOption.findObject(PropertiesOptions.class, true));
+                    BundleEditPanel.this.repaint();
+                }
+            }
+        );
+        
+        // set colors
+        updateColors((PropertiesOptions)SystemOption.findObject(PropertiesOptions.class, true));
+        
         // set renderer
         theTable.setDefaultRenderer(PropertiesTableModel.StringPair.class, new javax.swing.table.DefaultTableCellRenderer() {
             public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table,
@@ -109,10 +142,22 @@ public class BundleEditPanel extends javax.swing.JPanel {
                     isSelected, hasFocus, row, column);
          
                 PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)value;
-                if( (!sp.isKeyType()) && sp.getValue() == null) {
-                    c.setBackground(new Color(SystemColor.controlHighlight.getRGB()));
-                } else
-                    c.setBackground(Color.white);
+                
+                // set backgound
+                if(sp.isKeyType())
+                    c.setBackground(keyBackground);
+                else {
+                    if( sp.getValue() != null)
+                        c.setBackground(valueBackground);
+                    else
+                        c.setBackground(shadowColor);
+                }
+
+                // set foregound
+                if(sp.isKeyType())
+                    c.setForeground(keyColor);
+                else
+                    c.setForeground(valueColor);
                 
                 return c;
             }
@@ -147,6 +192,27 @@ public class BundleEditPanel extends javax.swing.JPanel {
 
     }
 
+    /** Updates colors from properties options. */
+    private void updateColors(PropertiesOptions options) {
+        Map map = options.getColoringMap();
+        Coloring keyColoring = (Coloring)map.get(PropertiesTokenContext.contextPath.getFullTokenName(
+            PropertiesTokenContext.KEY));
+        keyColor = keyColoring.getForeColor();
+        keyBackground = keyColoring.getBackColor();
+        Coloring valueColoring = (Coloring)map.get(PropertiesTokenContext.contextPath.getFullTokenName(
+            PropertiesTokenContext.VALUE));
+        valueColor = valueColoring.getForeColor();
+        valueBackground = valueColoring.getBackColor();
+
+        shadowColor = options.getShadowTableCell();
+
+        if(keyColor == null) keyColor = ((Coloring)map.get("default")).getBackColor(); // NOI18N
+        if(keyBackground == null) keyBackground = ((Coloring)map.get("default")).getBackColor(); // NOI18N
+        if(valueColor == null) valueColor = ((Coloring)map.get("default")).getBackColor(); // NOI18N
+        if(valueBackground == null) valueBackground = ((Coloring)map.get("default")).getBackColor(); // NOI18N
+        if(shadowColor == null) shadowColor = new Color(SystemColor.controlHighlight.getRGB());                    
+    }
+    
     // see above setting of table column model
     /** Calculates width of columns from the width of table component. */
     private void setColumnWidths(int entireWidth) {
@@ -418,14 +484,22 @@ public class BundleEditPanel extends javax.swing.JPanel {
                                                 NotifyDescriptor.OK_CANCEL_OPTION);
                                                     
         if (TopManager.getDefault().notify(msg).equals(NotifyDescriptor.OK_OPTION)) {
-            for (int i=0; i < ((PropertiesDataObject)dobj).getBundleStructure().getEntryCount(); i++) {
-                PropertiesFileEntry entry = ((PropertiesDataObject)dobj).getBundleStructure().getNthEntry(i);
-                if (entry != null) {
-                    PropertiesStructure ps = entry.getHandler().getStructure();
-                    if (ps != null) {
-                        ps.deleteItem(key);
+            try {
+                // starts "atomic" acion for special undo redo manager of opend support
+                ((PropertiesDataObject)dobj).getOpenSupport().atomicUndoRedoFlag = new Object();
+
+                for (int i=0; i < ((PropertiesDataObject)dobj).getBundleStructure().getEntryCount(); i++) {
+                    PropertiesFileEntry entry = ((PropertiesDataObject)dobj).getBundleStructure().getNthEntry(i);
+                    if (entry != null) {
+                        PropertiesStructure ps = entry.getHandler().getStructure();
+                        if (ps != null) {
+                            ps.deleteItem(key);
+                        }
                     }
                 }
+            } finally {
+                // finishes "atomic" undo redo action for special undo redo manager of open support
+                ((PropertiesDataObject)dobj).getOpenSupport().atomicUndoRedoFlag = null;
             }
         }
     }//GEN-LAST:event_removeButtonActionPerformed
@@ -439,18 +513,26 @@ public class BundleEditPanel extends javax.swing.JPanel {
         boolean okPressed = TopManager.getDefault ().notify (descr).equals (NotifyDescriptor.OK_OPTION);
 
         if (okPressed) {
-            String key = UtilConvert.charsToUnicodes(UtilConvert.escapePropertiesSpecialChars(descr.getInputText()));
-            // add key to all entries
-            for (int i=0; i < ((PropertiesDataObject)dobj).getBundleStructure().getEntryCount(); i++) {            
-                PropertiesFileEntry entry = ((PropertiesDataObject)dobj).getBundleStructure().getNthEntry(i);
-                if (!entry.getHandler().getStructure().addItem(key, "", "")) {
-                    NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                                                       java.text.MessageFormat.format(
-                                                           NbBundle.getBundle(BundleEditPanel.class).getString("MSG_KeyExists"),
-                                                           new Object[] {UtilConvert.charsToUnicodes(UtilConvert.escapePropertiesSpecialChars(descr.getInputText()))}),
-                                                       NotifyDescriptor.ERROR_MESSAGE);
-                    TopManager.getDefault().notify(msg);
+            try {
+                // starts "atomic" acion for special undo redo manager of opend support
+                ((PropertiesDataObject)dobj).getOpenSupport().atomicUndoRedoFlag = new Object();
+
+                String key = UtilConvert.charsToUnicodes(UtilConvert.escapePropertiesSpecialChars(descr.getInputText()));
+                // add key to all entries
+                for (int i=0; i < ((PropertiesDataObject)dobj).getBundleStructure().getEntryCount(); i++) {            
+                    PropertiesFileEntry entry = ((PropertiesDataObject)dobj).getBundleStructure().getNthEntry(i);
+                    if (!entry.getHandler().getStructure().addItem(key, "", "")) {
+                        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                                                           java.text.MessageFormat.format(
+                                                               NbBundle.getBundle(BundleEditPanel.class).getString("MSG_KeyExists"),
+                                                               new Object[] {UtilConvert.charsToUnicodes(UtilConvert.escapePropertiesSpecialChars(descr.getInputText()))}),
+                                                           NotifyDescriptor.ERROR_MESSAGE);
+                        TopManager.getDefault().notify(msg);
+                    }
                 }
+            } finally {
+                // finishes "atomic" undo redo action for special undo redo manager of open support
+                ((PropertiesDataObject)dobj).getOpenSupport().atomicUndoRedoFlag = null;
             }
         }
     }//GEN-LAST:event_addButtonActionPerformed
