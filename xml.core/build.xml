@@ -71,7 +71,7 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </javac>
 
-        <for-each locations="xalan, jaxp, compat"/>
+        <for-each locations="compat"/>
     </target>
 
     <target name="jars" depends="init,compile">
@@ -86,7 +86,6 @@ Microsystems, Inc. All Rights Reserved.
             <locale name="ja"/>
         </locjar>    
 
-        <for-each locations="xalan, jaxp"/>
         <for-each locations="../compat"/>
         <copy todir="netbeans">
             <fileset dir="../compat/netbeans"/>
@@ -94,7 +93,6 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="release">
-        <for-each locations="xalan, jaxp"/>
     </target>
 
     <target name="javahelp">
@@ -119,8 +117,6 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="netbeans"/>
         </copy>
         <genlist targetname="nbm" outputfiledir="${nbext_root}/netbeans"/>
-
-        <for-each locations="xalan, jaxp"/>
     </target>
 
     
@@ -146,8 +142,6 @@ Microsystems, Inc. All Rights Reserved.
             <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
-
-        <for-each locations="xalan, jaxp"/>
     </target>
 
     <target name="clean">
@@ -162,7 +156,6 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="Info"/>
         <delete dir="javahelp/org/netbeans/modules/xml/core/docs/JavaHelpSearch"/>
 
-        <for-each locations="xalan, jaxp, compat"/>
         <for-each locations="../compat"/>
     </target>
 

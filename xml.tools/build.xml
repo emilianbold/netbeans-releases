@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
     <property name="parserimpl" value="${binroot}/xml/tax/release/modules/ext/xerces2.jar"/> <!-- parser implementation used internally by module -->
-    <property name="jaxp-transform" value="${binroot}/xml/core/xalan/release/modules/autoload/ext/jaxp-transform-1.1.2.jar"/>
+    <property name="jaxp-transform" value="${binroot}/xml/libs/xalan/release/modules/autoload/ext/jaxp-transform-1.1.2.jar"/>
 
     <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
     <property name="homepage.base" value="xml.netbeans.org"/>
@@ -73,7 +73,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!--Servlet API-->
                 <pathelement location="${binroot}/httpserver/servletapi/release/modules/ext/servlet-2.2.jar" />
                 <!--TransformServlet: HttpServerSettings-->
-                <pathelement location="${nbroot}/httpserver/netbeans/modules/httpserver.jar" />
+<!--                <pathelement location="${nbroot}/httpserver/netbeans/modules/httpserver.jar" />-->
             </classpath>
         </javac>
     </target>

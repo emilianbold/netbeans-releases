@@ -45,7 +45,7 @@ public final class TransformableSupport implements TransformableCookie {
     
     
     /** 
-     * Create new TransformableSupport for given data object in DOCUMENT_MODE.
+     * Create new TransformableSupport for given data object.
      * @param dataObject supported data object
      */    
     public TransformableSupport (DataObject dataObject) {
