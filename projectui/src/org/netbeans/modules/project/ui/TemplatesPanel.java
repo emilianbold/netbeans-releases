@@ -78,20 +78,20 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
         TemplateWizard wd = (TemplateWizard) settings;
         
         // WelcomeScreen hack, XXX Delete after WS is redesigned
-        String preselectedCategory = (String)wd.getProperty( "PRESELECT_CATEGORY" );            
-        if ( preselectedCategory == null ) {
-        
-            TemplatesPanelGUI gui = (TemplatesPanelGUI)this.getComponent();
-            FileObject fo = gui.getSelectedTemplate();
-            if (fo != null) {
-                try {
-                    wd.setTemplate (DataObject.find(fo));
-                } catch (DataObjectNotFoundException e) {
-                    ErrorManager.getDefault().notify(e);
-                }
+        String preselectedCategory = (String)wd.getProperty( "PRESELECT_CATEGORY" );
+
+        TemplatesPanelGUI gui = (TemplatesPanelGUI)this.getComponent();
+        FileObject fo = gui.getSelectedTemplate();
+        if (fo != null) {
+            try {
+                wd.setTemplate (DataObject.find(fo));
+            } catch (DataObjectNotFoundException e) {
+                ErrorManager.getDefault().notify(e);
             }
-                
-            String path = gui.getSelectedCategoryName();        
+        }
+        if ( preselectedCategory == null ) {
+
+            String path = gui.getSelectedCategoryName();
             if (path != null) {
                 OpenProjectListSettings.getInstance().setLastSelectedProjectCategory(path);
             }
