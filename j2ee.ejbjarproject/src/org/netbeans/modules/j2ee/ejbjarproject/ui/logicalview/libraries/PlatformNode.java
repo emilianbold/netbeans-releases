@@ -16,7 +16,9 @@ package org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.libraries;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.CharConversionException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -38,6 +40,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.ErrorManager;
@@ -48,6 +51,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
+import org.openide.xml.XMLUtil;
 
 
 
@@ -66,7 +70,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
 
     private final PlatformProvider pp;
 
-    private PlatformNode (PlatformProvider pp) {
+    private PlatformNode(PlatformProvider pp) {
         super (new PlatformContentChildren (), Lookups.singleton (new JavadocProvider(pp)));        
         this.pp = pp;
         this.pp.addChangeListener(this);
@@ -78,7 +82,37 @@ class PlatformNode extends AbstractNode implements ChangeListener {
     }
 
     public String getDisplayName () {
-        return pp.getPlatform().getDisplayName();
+        JavaPlatform plat = pp.getPlatform();
+        String name;
+        if (plat != null) {
+            name = plat.getDisplayName();
+        }
+        else {
+            String platformId = pp.getPlatformId ();
+            if (platformId == null) {
+                name = NbBundle.getMessage(PlatformNode.class,"TXT_BrokenPlatform");
+            }
+            else {
+                name = MessageFormat.format(NbBundle.getMessage(PlatformNode.class,"FMT_BrokenPlatform"), new Object[] {platformId});
+            }
+        }
+        return name;
+    }
+    
+    public String getHtmlDisplayName () {
+        if (pp.getPlatform() == null) {
+            String displayName = this.getDisplayName();
+            try {
+                displayName = XMLUtil.toElementContent(displayName);
+            } catch (CharConversionException ex) {
+                // OK, no annotation in this case
+                return null;
+            }
+            return "<font color=\"#A40000\">" + displayName + "</font>"; //NOI18N
+        }
+        else {
+            return null;
+        }                                
     }
 
     public boolean canCopy() {
@@ -100,8 +134,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
                 ((PlatformContentChildren)getChildren()).addNotify ();
             }
         });
-    }
-    
+    }    
     
     /**
      * Creates new PlatformNode
@@ -133,8 +166,11 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             return new Node[] {ActionFilterNode.create(PackageView.createPackageView(sg), null,null,null,null,null,null)};
         }
 
-        private List getKeys () {
+        private List getKeys () {            
             JavaPlatform platform = ((PlatformNode)this.getNode()).pp.getPlatform();
+            if (platform == null) {
+                return Collections.EMPTY_LIST;
+            }
             //Todo: Should listen on returned classpath, but now the bootstrap libraries are read only
             FileObject[] roots = platform.getBootstrapLibraries().getRoots();
             List result = new ArrayList (roots.length);
@@ -177,20 +213,26 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             this.evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this,evaluator));
         }
         
+        public String getPlatformId () {
+            return this.evaluator.getProperty(this.platformPropName);
+        }
+        
         public JavaPlatform getPlatform () {
             if (platformCache == null) {
-                String platformSystemName = this.evaluator.getProperty(this.platformPropName);
-                if (platformSystemName != null) {
+                String platformSystemName = getPlatformId();
+                if (platformSystemName == null) {
+                    platformCache = JavaPlatformManager.getDefault().getDefaultPlatform();
+                }
+                else {
                     JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
                     for (int i=0; i<platforms.length; i++) {
                         if (platformSystemName.equals(platforms[i].getProperties().get("platform.ant.name"))) { //NOI18N
-                            platformCache = platforms[i];
+                            if (platforms[i].getInstallFolders().size()>0) {
+                                platformCache = platforms[i];
+                            }
                             break;
                         }
                     }
-                }
-                if (platformCache == null) {
-                    platformCache = JavaPlatformManager.getDefault().getDefaultPlatform();
                 }
             }
             return platformCache;
@@ -243,18 +285,23 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         
         public boolean hasJavadoc() {
             JavaPlatform platform = platformProvider.getPlatform();            
+            if (platform == null) {
+                return false;
+            }
             URL[] javadocRoots = getJavadocRoots(platform);
             return javadocRoots.length > 0;
         }
 
         public void showJavadoc() {
             JavaPlatform platform = platformProvider.getPlatform();            
-            URL[] javadocRoots = getJavadocRoots(platform);
-            URL pageURL = ShowJavadocAction.findJavadoc("/overview-summary.html",javadocRoots);
-            if (pageURL == null) {
-                pageURL = ShowJavadocAction.findJavadoc("/index.html",javadocRoots);
+            if (platform != null) {                            
+                URL[] javadocRoots = getJavadocRoots(platform);
+                URL pageURL = ShowJavadocAction.findJavadoc("/overview-summary.html",javadocRoots);
+                if (pageURL == null) {
+                    pageURL = ShowJavadocAction.findJavadoc("/index.html",javadocRoots);
+                }
+                ShowJavadocAction.showJavaDoc(pageURL, platform.getDisplayName());
             }
-            ShowJavadocAction.showJavaDoc(pageURL, platform.getDisplayName());
         }
         
         
@@ -272,7 +319,5 @@ class PlatformNode extends AbstractNode implements ChangeListener {
     }
 
 }
-
-
 
 
