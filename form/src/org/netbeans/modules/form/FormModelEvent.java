@@ -132,6 +132,7 @@ public class FormModelEvent extends EventObject
                   String bodyText,
                   boolean createdNew)
     {
+        component = event.getComponent();
         componentEvent = event;
         propertyName = handler.getName();
         newPropertyValue = bodyText;
@@ -604,33 +605,85 @@ public class FormModelEvent extends EventObject
         }
 
         private void undoEventHandlerAddition() {
-            getFormModel().getFormEventHandlers().removeEventHandler(
-                componentEvent, propertyName);
+            FormEventHandlers handlers = getFormModel().getFormEventHandlers();
+            newPropertyValue = handlers.getEventHandler(propertyName)
+                                                            .getHandlerText();
+
+            handlers.removeEventHandler(componentEvent, propertyName);
+
+            // fire property change on node explicitly to update event in
+            // Component Inspector
+            component.getNodeReference().firePropertyChangeHelper(
+                FormEditor.EVENT_PREFIX + componentEvent.getName(), null, null);
         }
 
         private void redoEventHandlerAddition() {
             getFormModel().getFormEventHandlers().addEventHandler(
                 componentEvent, propertyName, (String) newPropertyValue);
+
+            // fire property change on node explicitly to update event in
+            // Component Inspector
+            component.getNodeReference().firePropertyChangeHelper(
+                FormEditor.EVENT_PREFIX + componentEvent.getName(), null, null);
         }
 
         private void undoEventHandlerRemoval() {
             getFormModel().getFormEventHandlers().addEventHandler(
                 componentEvent, propertyName, (String) newPropertyValue);
+
+            // fire property change on node explicitly to update event in
+            // Component Inspector
+            component.getNodeReference().firePropertyChangeHelper(
+                FormEditor.EVENT_PREFIX + componentEvent.getName(), null, null);
         }
 
         private void redoEventHandlerRemoval() {
-            getFormModel().getFormEventHandlers().removeEventHandler(
-                componentEvent, propertyName);
+            FormEventHandlers handlers = getFormModel().getFormEventHandlers();
+            newPropertyValue = handlers.getEventHandler(propertyName)
+                                                            .getHandlerText();
+
+            handlers.removeEventHandler(componentEvent, propertyName);
+
+            // fire property change on node explicitly to update event in
+            // Component Inspector
+            component.getNodeReference().firePropertyChangeHelper(
+                FormEditor.EVENT_PREFIX + componentEvent.getName(), null, null);
         }
 
         private void undoEventHandlerRenaming() {
-            getFormModel().getFormEventHandlers().renameEventHandler(
-                (String) newPropertyValue, (String) oldPropertyValue);
+            FormEventHandlers handlers = getFormModel().getFormEventHandlers();
+            handlers.renameEventHandler((String) newPropertyValue,
+                                        (String) oldPropertyValue);
+
+            // fire property change on nodes explicitly to update events in
+            // Component Inspector
+            java.util.Iterator events =
+                handlers.getEventHandler((String)oldPropertyValue)
+                    .getAttachedEvents().iterator();
+            while (events.hasNext()) {
+                Event event = (Event) events.next();
+                event.getComponent().getNodeReference()
+                    .firePropertyChangeHelper(
+                        FormEditor.EVENT_PREFIX + event.getName(), null, null);
+            }
         }
 
         private void redoEventHandlerRenaming() {
-            getFormModel().getFormEventHandlers().renameEventHandler(
-                (String) oldPropertyValue, (String) newPropertyValue);
+            FormEventHandlers handlers = getFormModel().getFormEventHandlers();
+            handlers.renameEventHandler((String) oldPropertyValue,
+                                        (String) newPropertyValue);
+
+            // fire property change on nodes explicitly to update events in
+            // Component Inspector
+            java.util.Iterator events =
+                handlers.getEventHandler((String)newPropertyValue)
+                    .getAttachedEvents().iterator();
+            while (events.hasNext()) {
+                Event event = (Event) events.next();
+                event.getComponent().getNodeReference()
+                    .firePropertyChangeHelper(
+                        FormEditor.EVENT_PREFIX + event.getName(), null, null);
+            }
         }
     }
 }
