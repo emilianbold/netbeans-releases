@@ -98,6 +98,7 @@ Microsystems, Inc. All Rights Reserved.
       <include name="org/openide/filesystems/JarFileSystem.java"/>
       <include name="org/openide/filesystems/AbstractFileSystem.java"/>
       <include name="org/openide/explorer/propertysheet/PropertyDialogManager.java"/>
+      <include name="org/openide/awt/Toolbar.java"/>
     </preprocess>
   </target>
   
