@@ -18,7 +18,9 @@ Microsystems, Inc. All Rights Reserved.
   <property name="binroot" location="../../nbextra"/>
   <property name="xmlparser" value="xerces.jar"/>
 
-    <path id="extclasspath">
+  <target name="compile">
+    <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">    
+      <classpath>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
@@ -27,18 +29,19 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/${xmlparser}"/>
         <pathelement location="${binroot}/core/release/lib/ext/jh.jar"/>
-    </path>
-
-  <target name="compile">
-    <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">    
-      <classpath>
-            <path refid="extclasspath"/>
       </classpath>
     </javac>
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">    
       <classpath>
-            <path refid="extclasspath"/>
-            <pathelement location="libsrc"/>
+        <pathelement location="../openide/openide-13javac-workaround.jar"/>
+        <fileset dir="../openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
+        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/${xmlparser}"/>
+        <pathelement location="${binroot}/core/release/lib/ext/jh.jar"/>
+        <pathelement location="libsrc"/>
       </classpath>
     </javac>
   </target>
