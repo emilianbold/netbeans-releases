@@ -55,12 +55,13 @@ Microsystems, Inc. All Rights Reserved.
 <!ELEMENT public-id EMPTY>
 <!ATTLIST public-id id CDATA #REQUIRED>
 
+<!-- ??? "It matches root element name and ." -->
 <!---
-  It matches root element name and . 
+  Matches a root element, for which the name may be specified.
   <p>
-  Namespace <code>ns</code> attribute or presence of <code>ns</code> subelements 
-  implies that <code>name</code> attribute represents local element name,
-  otherwise the <code>name</code> attribute represents full element name ("QName").
+  The namespace <code>ns</code> attribute or the presence of any <code>ns</code> subelements 
+  implies that the <code>name</code> attribute represents a local element name,
+  otherwise the <code>name</code> attribute represents a full element name ("QName").
   One of the namespaces must match.
   </p>
 -->
@@ -75,24 +76,12 @@ Microsystems, Inc. All Rights Reserved.
 <!ATTLIST ns ns CDATA #REQUIRED>
 
 
-<!--
-XXX unclear:
-    <element name="root"><attr name="ns" text="http://..."/><attr name="localname"/></element>
-or
-    <element ns="http://..." name="root"><attr name="localname"/></element>
-?
-
-A:
-    Attribute in above comment stays for <tt>element</tt> declaration attribute
-    so the second option is correct.
-
--->
-
 <!---
   Element attribute template, also used for pseudo-attributes in processing instructions.
   <p>
-  <code>name</code> attribute contains the full element name (QName), unless
-  reserved attribute <code>ns</code> for namespace URI is used, in which case
+  The <code>name</code> attribute contains the full element name (QName), unless
+  this <code>attr</code> is enclosed in an <code>element</code> for which one or
+  more namespace URIs were specified, in which case
   the <code>name</code> attribute contains just the local element name. 
   </p>
   If <code>text</code> is specified then the attribute's normalized text must

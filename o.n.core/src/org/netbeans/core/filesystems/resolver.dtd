@@ -73,8 +73,9 @@ Microsystems, Inc. All Rights Reserved.
 
 <!--- 
   Look at initial bytes of the file and test for a complete match of masked
-  bits. Default mask is <tt>"FF"</tt> repeated <tt>hex.length</tt> times.
-  E.g. <samp>&lt;magic hex="0a0001"/&gt; mask="FF00FF"</samp>
+  bits. The default mask is the hexadecimal byte <samp>FF</samp> repeated as
+  many times as the <code>hex</code> attribute is long.
+  E.g. <samp>&lt;magic hex="0a0001" mask="FF00FF"/&gt;</samp>
 -->
 <!ELEMENT magic EMPTY>
 <!ATTLIST magic hex CDATA #REQUIRED>
