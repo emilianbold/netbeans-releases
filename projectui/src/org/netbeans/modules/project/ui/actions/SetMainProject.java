@@ -17,6 +17,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
@@ -63,6 +64,8 @@ public class SetMainProject extends AbstractAction implements Presenter.Menu, Pr
     private void createSubMenu() {
         
         Project projects[] = OpenProjectList.getDefault().getOpenProjects();
+        
+        Arrays.sort( projects, OpenProjectList.PROJECT_BY_DISPLAYNAME );
         
         // Enable disable the action according to number of open projects
         if ( projects == null || projects.length == 0 ) {
