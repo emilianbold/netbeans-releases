@@ -13,11 +13,13 @@
 
 package org.netbeans.modules.diff;
 
-import java.awt.Dialog;
+import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.io.FileReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -33,6 +35,7 @@ import java.util.Map;
 import javax.swing.JDialog;
 
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -51,8 +54,8 @@ import org.openide.util.io.ReaderInputStream;
 import org.netbeans.api.diff.Difference;
 
 import org.netbeans.modules.diff.builtin.Patch;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.DialogDescriptor;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -161,9 +164,14 @@ public class PatchAction extends NodeAction {
         chooser.setApproveButtonText(NbBundle.getMessage(PatchAction.class, "BTN_Patch"));
         chooser.setApproveButtonMnemonic(NbBundle.getMessage(PatchAction.class, "BTN_Patch_mnc").charAt(0));
         chooser.setApproveButtonToolTipText(NbBundle.getMessage(PatchAction.class, "BTN_Patch_tooltip"));
-        DialogDescriptor descriptor = new DialogDescriptor( chooser, title, true, new Object[0], null, 0, null, null );
-        final Dialog dialog = DialogDisplayer.getDefault().createDialog( descriptor );
+        JFrame parent = new JFrame();
+        final JDialog dialog = new JDialog(parent, title, true);
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PatchAction.class, "ACSD_PatchDialog"));
+        Container contentPane = dialog.getContentPane();
+        contentPane.setLayout(new BorderLayout());
+        contentPane.add(chooser, BorderLayout.CENTER);
+        dialog.pack();
+        dialog.setLocationRelativeTo(parent);
 
         ChooserListener listener = new PatchAction.ChooserListener(dialog,chooser);
 	chooser.addActionListener(listener);
@@ -352,11 +360,11 @@ public class PatchAction extends NodeAction {
     }
 
     class ChooserListener implements ActionListener{
-        private Dialog dialog;
+        private JDialog dialog;
         private JFileChooser chooser;
         private File file = null;
 
-        public ChooserListener(Dialog dialog,JFileChooser chooser){
+        public ChooserListener(JDialog dialog,JFileChooser chooser){
             super();
             this.dialog = dialog;
             this.chooser = chooser;
