@@ -397,26 +397,40 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   /** Requests access for address addr. If necessary asks the user. Returns true it the access 
   * has been granted. */  
   public boolean allowAccess(InetAddress addr) {
+    if (accessAllowedNow(addr))
+      return true;
+    
+    // now ask the user       
+    synchronized (HttpServerSettings.class) {
+      // one more test in the synchronized block
+      if (accessAllowedNow(addr))
+        return true;
+    
+      MessageFormat format = new MessageFormat(NbBundle.getBundle(HttpServerSettings.class).getString("MSG_AddAddress"));
+        String msg = format.format(new Object[] { addr.getHostAddress() });
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
+        Object ret = TopManager.getDefault().notify(nd);
+  
+        if (NotifyDescriptor.YES_OPTION.equals(ret)) {
+          appendAddressToGranted(addr.getHostAddress());
+          return true;
+        }
+        else
+          return false;
+    } // end synchronized
+  }     
+   
+  /** Checks whether access to the server is now allowed. */ 
+  private boolean accessAllowedNow(InetAddress addr) {
     if (getHost().equals(HttpServerSettings.ANYHOST))
       return true;
       
     HashSet hs = getGrantedAddressesSet();
     if (hs.contains(addr.getHostAddress()))
       return true;
-    
-    // now ask the user
-    MessageFormat format = new MessageFormat(NbBundle.getBundle(HttpServerSettings.class).getString("MSG_AddAddress"));
-      String msg = format.format(new Object[] { addr.getHostAddress() });
-      NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
-      Object ret = TopManager.getDefault().notify(nd);
-  
-      if (NotifyDescriptor.YES_OPTION.equals(ret)) {
-        appendAddressToGranted(addr.getHostAddress());
-        return true;
-      }
-      else
-        return false;
-  }     
+      
+    return false;
+  }
    
   /** Appends the address to the list of addresses which have been granted access. */
   private void appendAddressToGranted(String addr) {                                 
@@ -460,6 +474,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  26   Gandalf   1.25        1/3/00   Petr Jiricka    Bugfix 5133
  *  25   Gandalf   1.24        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  24   Gandalf   1.23        10/9/99  Petr Jiricka    Fixed serialization of 
