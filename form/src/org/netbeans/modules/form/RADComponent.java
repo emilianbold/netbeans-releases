@@ -848,13 +848,14 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
                               RADComponent.this, propName, oldValue, newValue);
 
                 if (getNodeReference() != null) { // propagate the change to node
-                    if (FormProperty.PROP_VALUE_AND_EDITOR.equals(eventName)) {
-                        oldValue = ((FormProperty.ValueWithEditor)oldValue).getValue();
-                        newValue = ((FormProperty.ValueWithEditor)newValue).getValue();
-                    } // [does this conversion need to be done??]
+//                    if (FormProperty.PROP_VALUE_AND_EDITOR.equals(eventName)) {
+//                        oldValue = ((FormProperty.ValueWithEditor)oldValue).getValue();
+//                        newValue = ((FormProperty.ValueWithEditor)newValue).getValue();
+//                    } // [does this conversion need to be done??]
 
                     getNodeReference().firePropertyChangeHelper(
-                                           propName, oldValue, newValue);
+                                                null, null, null);
+//                                           propName, oldValue, newValue);
                 }
             }
             else if (FormProperty.CURRENT_EDITOR.equals(eventName)) {
