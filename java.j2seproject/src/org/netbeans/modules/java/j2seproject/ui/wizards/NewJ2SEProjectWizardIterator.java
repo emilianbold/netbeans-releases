@@ -224,13 +224,20 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
     
     static String getPackageName (String displayName) {
         StringBuffer builder = new StringBuffer ();
+        boolean changeCase = false;
         for (int i=0; i< displayName.length(); i++) {
             char c = displayName.charAt(i);            
             if ((i != 0 && Character.isJavaIdentifierPart (c)) || (i == 0 && Character.isJavaIdentifierStart(c))) {
+                if (changeCase) {
+                    if (Character.isLetter(c)) {
+                        c = Character.toUpperCase(c);
+                    }
+                    changeCase = false;
+                }
                 builder.append(c);
             }
             else {
-                builder.append ('_');       //NOI18N
+                changeCase = true;
             }
         }
         return builder.toString();
