@@ -17,10 +17,10 @@ import java.util.*;
 import java.sql.*;
 import java.io.Serializable;
 import java.text.ParseException;
-import com.netbeans.ide.*;
+import org.openide.*;
 import com.netbeans.ddl.*;
 import com.netbeans.ddl.util.*;
-import com.netbeans.ide.windows.OutputWriter;
+import org.openide.windows.OutputWriter;
 
 /** 
 * Basic implementation of DDLCommand. This class can be used for really simple
@@ -215,6 +215,8 @@ implements Serializable, DDLCommand
 
 /*
 * <<Log>>
+*  7    Gandalf   1.6         6/8/99   Ian Formanek    ---- Package Change To 
+*       org.openide ----
 *  6    Gandalf   1.5         5/21/99  Slavek Psenicka System.out changed to 
 *       Output window for debug prints.
 *  5    Gandalf   1.4         5/14/99  Slavek Psenicka new version

@@ -20,7 +20,7 @@ import java.text.NumberFormat;
 import java.text.DateFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
-import com.netbeans.ide.util.MapFormat;
+import org.openide.util.MapFormat;
 
 /**
 * The message formatter, It handles [] brackets as optional keys.
@@ -125,6 +125,8 @@ public class CommandFormatter
 
 /*
 * <<Log>>
+*  3    Gandalf   1.2         6/8/99   Ian Formanek    ---- Package Change To 
+*       org.openide ----
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
 * $
