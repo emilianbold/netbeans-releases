@@ -31,6 +31,8 @@ import com.netbeans.developer.modules.loaders.url.*;
 
 import com.netbeans.developer.modules.openfile.*;
 
+import com.netbeans.enterprise.modules.group.CreateGroupAction;
+
 /** ModuleInstall class for Utilities module
 *
 * @author Jesse Glick, Petr Kuzel, Martin Ryzl
@@ -108,7 +110,7 @@ public class Installer extends ModuleInstall {
     try {
       FileUtil.extractJar (
         TopManager.getDefault ().getPlaces ().folders().templates ().getPrimaryFile (),
-        getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/developer/modules/loaders/url/templates.jar") // NOI18N
+        NbBundle.getLocalizedFile ("com.netbeans.developer.modules.loaders.url.templates", "jar").openStream () // NOI18N
       );
     } catch (IOException e) {
       TopManager.getDefault ().notifyException (e);
@@ -119,7 +121,7 @@ public class Installer extends ModuleInstall {
     try {
       FileUtil.extractJar (
         TopManager.getDefault ().getPlaces ().folders().templates ().getPrimaryFile (),
-        getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/enterprise/modules/group/toinstall/templates.jar") // NOI18N
+        NbBundle.getLocalizedFile ("com.netbeans.enterprise.modules.group.toinstall.templates", "jar").openStream () // NOI18N
       );
     } catch (IOException e) {
       TopManager.getDefault ().notifyException (e);
@@ -130,7 +132,7 @@ public class Installer extends ModuleInstall {
     try {
       FileUtil.extractJar (
         TopManager.getDefault ().getPlaces ().folders().bookmarks ().getPrimaryFile (),
-        getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/developer/modules/loaders/url/bookmarks.jar") // NOI18N
+        NbBundle.getLocalizedFile ("com.netbeans.developer.modules.loaders.url.bookmarks", "jar").openStream () // NOI18N
       );
     } catch (IOException e) {
       TopManager.getDefault ().notifyException (e);
@@ -141,6 +143,7 @@ public class Installer extends ModuleInstall {
     try {
       // install into actions pool
       Utilities2.createAction (BookmarksAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); // NOI18N
+      Utilities2.createAction (OpenInNewWindowAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "System")); // NOI18N
 
       // install into menu
       Utilities2.createAction (BookmarksAction.class, 
@@ -158,6 +161,9 @@ public class Installer extends ModuleInstall {
       Utilities2.createAction (OpenFileAction.class,
         DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "System")); // NOI18N
 
+      // Group:
+      Utilities2.createAction (CreateGroupAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Tools")); // NOI18N
+      
     } catch (Exception e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) { // NOI18N
         e.printStackTrace ();
@@ -170,11 +176,14 @@ public class Installer extends ModuleInstall {
     try {
       // remove from actions pool and menu
       Utilities2.removeAction (BookmarksAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); // NOI18N
+      Utilities2.removeAction (OpenInNewWindowAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "System")); // NOI18N
       Utilities2.removeAction (BookmarksAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders().menus (), "Help")); // NOI18N
       // OpenFile:
       Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().menus (), "File")); // NOI18N
       Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().toolbars (), "System")); // NOI18N
       Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "System")); // NOI18N
+      // Group:
+      Utilities2.removeAction (CreateGroupAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Tools")); // NOI18N
     } catch (Exception e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) { // NOI18N
         e.printStackTrace ();
@@ -186,6 +195,8 @@ public class Installer extends ModuleInstall {
 
 /*
  * Log
+ *  10   Gandalf   1.9         1/16/00  Jesse Glick     Actions pool; localized 
+ *       jars.
  *  9    Gandalf   1.8         1/10/00  Jesse Glick     OpenFile server now 
  *       started differently.
  *  8    Gandalf   1.7         1/5/00   Ian Formanek    NOI18N
