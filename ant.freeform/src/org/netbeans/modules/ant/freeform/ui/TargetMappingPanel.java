@@ -202,7 +202,8 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         }
     }
 
-    static String getListAsString(List list) {
+    private static String getListAsString(List list) {
+        assert list != null;
         StringBuffer sb = new StringBuffer();
         Iterator it = list.iterator();
         while (it.hasNext()) {
@@ -722,13 +723,20 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         
         public Object getValueAt(int rowIndex, int columnIndex) {
             if (columnIndex == 0) {
-                return TargetMappingPanel.getListAsString(getItem(rowIndex).targets);
+                if ((getItem(rowIndex) == null) || (getItem(rowIndex).targets == null)) {
+                    return ""; // NOI18N
+                } else {
+                    return TargetMappingPanel.getListAsString(getItem(rowIndex).targets);
+                }
             } else {
                 return getItem(rowIndex).label;
             }
         }
         
         public void setValueAt(Object val, int rowIndex, int columnIndex) {
+            if (rowIndex >= custTargets.size ()) {
+                return ;
+            }
             FreeformProjectGenerator.CustomTarget ct = getItem(rowIndex);
             if (columnIndex == 0) {
                 if (((String)val).length() > 0) {
