@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -29,7 +29,7 @@ import java.io.IOException;
  * @version 0.1
  */
 public class TreeException extends Exception {
-
+    
     /** Serial Version UID */
     private static final long serialVersionUID =1949769568282926780L;
     
@@ -39,7 +39,7 @@ public class TreeException extends Exception {
     //
     // init
     //
-
+    
     /** Create new TreeException. */
     public TreeException (String msg, Exception exception) {
         super (msg);
@@ -47,30 +47,30 @@ public class TreeException extends Exception {
         this.exception = exception;
     }
     
-
+    
     /** Creates new TreeException with specified detail message.
      * @param msg detail message
      */
     public TreeException (String msg) {
         this (msg, null);
     }
-
+    
     
     /** Creates new TreeException with specified encapsulated exception.
      * @param exc encapsulated exception
-     */    
+     */
     public TreeException (Exception exc) {
-        this (exc.getMessage(), exc);
+        this (exc.getMessage (), exc);
     }
-
-
+    
+    
     //
     // itself
     //
     
     /** Get the encapsulated exception.
      * @return encapsulated encapsulated
-     */    
+     */
     public Exception getException () {
         return exception;
     }
@@ -78,11 +78,11 @@ public class TreeException extends Exception {
     /**
      */
     public void printStackTrace () {
-        super.printStackTrace();
+        super.printStackTrace ();
         if (exception != null) {
-            System.err.println (Util.getString ("PROP_Wrapped_exception") + exception.getMessage());
-            exception.printStackTrace();
+            System.err.println (Util.getString ("PROP_Wrapped_exception") + exception.getMessage ());
+            exception.printStackTrace ();
         }
     }
-
+    
 }

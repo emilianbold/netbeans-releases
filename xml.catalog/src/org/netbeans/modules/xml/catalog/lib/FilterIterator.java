@@ -15,19 +15,19 @@ package org.netbeans.modules.xml.catalog.lib;
 import java.util.*;
 
 /**
- * Filter backend iterator by appling filter rule. 
+ * Filter backend iterator by appling a filter rule.
  *
  * @author  Petr Kuzel
  * @version 1.0
  */
-public class FilterIterator implements Iterator {
+public final class FilterIterator implements Iterator {
 
-    /** Creates new FilterIterator */
-    public FilterIterator() {
-    }
-
-    private Iterator peer;
-    private Filter filter;
+    private final Iterator peer;
+    private final Filter filter;
+    
+    /*
+     * Holds candidate for next() call. It is nulledt by the next() call.
+     */
     private Object next;
 
     public FilterIterator(Iterator it, Filter filter) {
@@ -41,8 +41,11 @@ public class FilterIterator implements Iterator {
         throw new UnsupportedOperationException();
     }
 
+    /*
+     * Retunr <code>next</code> element if available and reset it.
+     */
     public Object next() {
-        if (next != null || hasNext()) {
+        if (hasNext()) {
            Object ret = next;
            next = null;
            return ret;
@@ -51,6 +54,9 @@ public class FilterIterator implements Iterator {
         }
     }
 
+    /*
+     * Determine if there is a next element. Put it in <code>next</code> field.
+     */
     public boolean hasNext() {
         if (next != null) return true;
 

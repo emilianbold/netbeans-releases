@@ -70,9 +70,7 @@ public class ValidateAction extends CookieAction implements CollectXMLAction.XML
 
     /** Provide accurate help. */
     public HelpCtx getHelpCtx () {
-        return HelpCtx.DEFAULT_HELP;
-        // If you will provide context help then use:
-        // return new HelpCtx (CheckActionAction.class);
+        return new HelpCtx (ValidateAction.class);
     }
 
 }

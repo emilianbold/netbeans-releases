@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -25,14 +25,14 @@ import java.util.LinkedList;
 public abstract class TreeParentNode extends TreeChild {
     /** */
     private static final boolean DEBUG = false;
-
+    
     /** */
     public static final String PROP_CHILD_LIST = "childList"; // NOI18N
-
+    
     /** */
     private TreeObjectList childList;
     
-
+    
     //
     // init
     //
@@ -40,44 +40,44 @@ public abstract class TreeParentNode extends TreeChild {
     /** Creates new TreeParentNode. */
     protected TreeParentNode () {
         super ();
-
-	this.childList = new TreeObjectList (createChildListContentManager());
+        
+        this.childList = new TreeObjectList (createChildListContentManager ());
     }
-
+    
     /** Creates new TreeParentNode -- copy constructor. */
     protected TreeParentNode (TreeParentNode parentNode, boolean deep) {
-	super (parentNode);
-
-	this.childList = new TreeObjectList (createChildListContentManager());
-	if (deep) {
-	    this.childList.addAll ((TreeObjectList)parentNode.childList.clone());
-	}
+        super (parentNode);
+        
+        this.childList = new TreeObjectList (createChildListContentManager ());
+        if (deep) {
+            this.childList.addAll ((TreeObjectList)parentNode.childList.clone ());
+        }
     }
-
-
+    
+    
     //
     // from TreeObject
     //
-
+    
     /** Clone depply tree object.
      * @return deep clone of this node
      */
     public abstract Object clone (boolean deep);
-
-
+    
+    
     /** Call clone (true).
      * @return deep clone of this node.
      */
     public final Object clone () {
-	return clone (true);
+        return clone (true);
     }
-
+    
     /**
      */
     public boolean equals (Object object, boolean deep) {
         if (!!! super.equals (object, deep))
             return false;
-
+        
         TreeParentNode peer = (TreeParentNode) object;
         if (!!! Util.equals (this.childList, peer.childList)) {
             return false;
@@ -85,19 +85,19 @@ public abstract class TreeParentNode extends TreeChild {
         
         return true;
     }
-
+    
     /*
      * Merges childlist.
      */
     public void merge (TreeObject treeObject) throws CannotMergeException {
-	super.merge (treeObject);
-
+        super.merge (treeObject);
+        
         TreeParentNode peer = (TreeParentNode) treeObject;
-
-	childList.merge (peer.childList);
+        
+        childList.merge (peer.childList);
     }
-
-
+    
+    
     //
     // itself
     //
@@ -107,29 +107,29 @@ public abstract class TreeParentNode extends TreeChild {
     public boolean isAssignableChild (TreeChild child) {
         return childList.isAssignableObject (child);
     }
-
+    
     /**
      * @return <b>reference</b> to kids
      */
     public final TreeObjectList getChildNodes () {
         return childList;
     }
-
-
+    
+    
     //
     // read only
     //
-
-
+    
+    
     /**
      */
     protected void setReadOnly (boolean newReadOnly) {
-	super.setReadOnly (newReadOnly);
-
-	childList.setReadOnly (newReadOnly);
+        super.setReadOnly (newReadOnly);
+        
+        childList.setReadOnly (newReadOnly);
     }
-
-
+    
+    
     //
     // Children manipulation
     //
@@ -137,34 +137,34 @@ public abstract class TreeParentNode extends TreeChild {
     /**
      */
     public final TreeChild getFirstChild () {
-	if ( childList.size() == 0 ) {
-	    return null;
-	}
-	return (TreeChild)childList.get (0);
+        if ( childList.size () == 0 ) {
+            return null;
+        }
+        return (TreeChild)childList.get (0);
     }
-
+    
     /**
      */
     public final TreeChild getLastChild () {
-	if ( childList.size() == 0 ) {
-	    return null;
-	}
-	return (TreeChild)childList.get (childList.size() - 1);
+        if ( childList.size () == 0 ) {
+            return null;
+        }
+        return (TreeChild)childList.get (childList.size () - 1);
     }
-
-
+    
+    
     /**
      * @throws ReadOnlyException
      */
     public final void insertBefore (TreeChild newChild, TreeChild refChild) throws ReadOnlyException {
-	childList.checkReadOnly();
+        childList.checkReadOnly ();
         int index = childList.indexOf (refChild);
         if (index < 0) {
             return;
         }
         childList.add (index, newChild);
     }
-
+    
     /**
      * @throws ReadOnlyException
      */
@@ -173,90 +173,90 @@ public abstract class TreeParentNode extends TreeChild {
             Util.debug ("\nTreeParentNode::replaceChild: oldChild = " + oldChild); // NOI18N
             Util.debug ("              ::replaceChild: newChild = " + newChild); // NOI18N
         }
-
-	childList.checkReadOnly();
+        
+        childList.checkReadOnly ();
         int index = childList.indexOf (oldChild);
-
+        
         if ( DEBUG ) {
             Util.debug ("              ::replaceChild: childList [oldChild]  = " + index); // NOI18N
         }
-
+        
         if (index < 0) {
             return;
         }
         childList.set (index, newChild);
     }
-
+    
     /**
      * @throws ReadOnlyException
      */
     public final void removeChild (TreeChild oldChild) throws ReadOnlyException {
-	childList.checkReadOnly();
+        childList.checkReadOnly ();
         childList.remove (oldChild);
     }
-
+    
     /**
      * @throws ReadOnlyException
      */
     public final void appendChild (TreeChild newChild) throws ReadOnlyException {
-	childList.checkReadOnly();
+        childList.checkReadOnly ();
         childList.add (newChild);
     }
-
-
+    
+    
     /**
      * Insert child at specified position and set its parent and owner document.
      * @throws ReadOnlyException
      */
     public final void insertChildAt (TreeChild child, int index) throws ReadOnlyException {
-	childList.checkReadOnly();
+        childList.checkReadOnly ();
         childList.add (index, child);
     }
-
-
+    
+    
     /**
      */
     public final int indexOf (TreeChild node) {
         return childList.indexOf (node);
     }
-
-
+    
+    
     /**
      */
     public final TreeChild item (int index) {
         return (TreeChild)childList.get (index);
     }
-
+    
     /**
      */
     public final int getChildrenNumber () {
-	return (childList.size());
+        return (childList.size ());
     }
-
+    
     /**
      */
     public final boolean hasChildNodes () {
-	return (!!! childList.isEmpty());
+        return (!!! childList.isEmpty ());
     }
-
+    
     /**
      */
     public final boolean hasChildNodes (Class childClass) {
-	return hasChildNodes (childClass, false);
+        return hasChildNodes (childClass, false);
     }
-
+    
     /**
      */
     public boolean hasChildNodes (Class childClass, boolean recursive) {
-	Iterator it = getChildNodes().iterator();
-	while (it.hasNext()) {
-	    TreeChild child = (TreeChild)it.next();
-
+        Iterator it = getChildNodes ().iterator ();
+        while (it.hasNext ()) {
+            TreeChild child = (TreeChild)it.next ();
+            
             // add matching leaf node
             
-	    if (childClass == null || childClass.isAssignableFrom (child.getClass())) {
+            if (childClass == null || childClass.isAssignableFrom (child.getClass ())) {
                 return true;
-  	    } 
+            }
             
             // do recursive descent into kids
             
@@ -264,86 +264,86 @@ public abstract class TreeParentNode extends TreeChild {
                 if ( ((TreeParentNode)child).hasChildNodes (childClass, true) == true ) {
                     return true;
                 }
-	    }
-	}
+            }
+        }
         return false;
     }
-
+    
     /**
      * @return copy collection containing references
      */
     public final Collection getChildNodes (Class childClass) {
-	return getChildNodes (childClass, false);
+        return getChildNodes (childClass, false);
     }
-
+    
     /**
      * @return copy collection containing references
      */
     public Collection getChildNodes (Class childClass, boolean recursive) {
         
-//        new RuntimeException(getClass().toString() + ".getChildNodes(" + childClass.toString() + "," + recursive + ")").printStackTrace(); // NOI18N
+        //        new RuntimeException(getClass().toString() + ".getChildNodes(" + childClass.toString() + "," + recursive + ")").printStackTrace(); // NOI18N
         
-	Collection allChildNodes = new LinkedList();
-	Iterator it = getChildNodes().iterator();
-	while (it.hasNext()) {
-	    TreeChild child = (TreeChild)it.next();
-
+        Collection allChildNodes = new LinkedList ();
+        Iterator it = getChildNodes ().iterator ();
+        while (it.hasNext ()) {
+            TreeChild child = (TreeChild)it.next ();
+            
             // add matching leaf node
             
-	    if (childClass == null || childClass.isAssignableFrom(child.getClass())) {
-		allChildNodes.add (child);
-  	    } 
+            if (childClass == null || childClass.isAssignableFrom (child.getClass ())) {
+                allChildNodes.add (child);
+            }
             
             // do recursive descent into kids
             
             if ( recursive && (child instanceof TreeParentNode) ) {
-  		allChildNodes.addAll (((TreeParentNode)child).getChildNodes (childClass, true));
-	    }
-	}
-	return allChildNodes;
+                allChildNodes.addAll (((TreeParentNode)child).getChildNodes (childClass, true));
+            }
+        }
+        return allChildNodes;
     }
-
-
+    
+    
     //
     // TreeObjectList.ContentManager
     //
-
+    
     /**
      */
     protected abstract TreeObjectList.ContentManager createChildListContentManager ();
-
+    
     /**
      *
      */
     protected abstract class ChildListContentManager extends TreeObjectList.ContentManager {
         
-	/**
-	 */
-	public void checkAssignableObject (Object obj) {
-	    super.checkAssignableObject (obj);
-	    checkAssignableClass (TreeChild.class, obj);
-	}
-
-	/**
-	 */
-	public void objectInserted (TreeObject obj) {
-	    ((TreeChild)obj).setParentNode (TreeParentNode.this);
-	    TreeParentNode.this.firePropertyChange (TreeParentNode.PROP_CHILD_LIST, TreeParentNode.this.childList, obj);
-	}
-	
-	/**
-	 */
-	public void objectRemoved (TreeObject obj) {
-	    ((TreeChild)obj).setParentNode (null);
-	    TreeParentNode.this.firePropertyChange (TreeParentNode.PROP_CHILD_LIST, TreeParentNode.this.childList, obj);
-	}
-
-	/**
-	 */
-	public void orderChanged (int[] permutation) {
-	    TreeParentNode.this.firePropertyChange (TreeParentNode.PROP_CHILD_LIST, TreeParentNode.this.childList, permutation);
-	}
-	
+        /**
+         */
+        public void checkAssignableObject (Object obj) {
+            super.checkAssignableObject (obj);
+            checkAssignableClass (TreeChild.class, obj);
+        }
+        
+        /**
+         */
+        public void objectInserted (TreeObject obj) {
+            ((TreeChild)obj).setParentNode (TreeParentNode.this);
+            TreeParentNode.this.firePropertyChange (TreeParentNode.PROP_CHILD_LIST, TreeParentNode.this.childList, obj);
+        }
+        
+        /**
+         */
+        public void objectRemoved (TreeObject obj) {
+            ((TreeChild)obj).setParentNode (null);
+            TreeParentNode.this.firePropertyChange (TreeParentNode.PROP_CHILD_LIST, TreeParentNode.this.childList, obj);
+        }
+        
+        /**
+         */
+        public void orderChanged (int[] permutation) {
+            TreeParentNode.this.firePropertyChange (TreeParentNode.PROP_CHILD_LIST, TreeParentNode.this.childList, permutation);
+        }
+        
     } // end: class ChildListContentManager
-
+    
 }

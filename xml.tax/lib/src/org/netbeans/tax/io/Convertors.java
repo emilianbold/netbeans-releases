@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -34,28 +34,28 @@ import org.netbeans.tax.TreeDocumentRoot;
  * @version 0.9
  */
 public final class Convertors {
-
-
+    
+    
     /**
      * @return current state of Document as string
      */
-    public static String documentToString(final Document doc) {
+    public static String documentToString (final Document doc) {
         
         final String[] str = new String[1];
-
+        
         // safely take the text from the document
-        Runnable run = new Runnable() {
+        Runnable run = new Runnable () {
             public void run () {
                 try {
-                    str[0] = doc.getText(0, doc.getLength());
+                    str[0] = doc.getText (0, doc.getLength ());
                 } catch (javax.swing.text.BadLocationException e) {
                     // impossible
-                    e.printStackTrace();
+                    e.printStackTrace ();
                 }
             }
         };
-
-        doc.render(run);
+        
+        doc.render (run);
         return str[0];
         
     }
@@ -63,52 +63,52 @@ public final class Convertors {
     /**
      * @return InputSource, a callie SHOULD set systemId if available
      */
-    public static InputSource documentToInputSource(Document doc) {
-        String text = documentToString(doc); 
-        Reader reader = new StringReader(text);
-        InputSource in = new InputSource("StringReader"); // NOI18N
-        in.setCharacterStream(reader);
+    public static InputSource documentToInputSource (Document doc) {
+        String text = documentToString (doc);
+        Reader reader = new StringReader (text);
+        InputSource in = new InputSource ("StringReader"); // NOI18N
+        in.setCharacterStream (reader);
         return in;
     }
-
-
+    
+    
     /**
      * Wrap reader into buffered one and start reading returning
      * String as a EOF is reached.
      */
-    public static String readerToString(Reader reader) throws IOException {
+    public static String readerToString (Reader reader) throws IOException {
         
-        BufferedReader fastReader = new BufferedReader(reader);
-        StringBuffer buf = new StringBuffer(1024);
+        BufferedReader fastReader = new BufferedReader (reader);
+        StringBuffer buf = new StringBuffer (1024);
         try {
-            for (int i = fastReader.read(); i >= 0; i = fastReader.read()) {
-                buf.append((char)i);                            
+            for (int i = fastReader.read (); i >= 0; i = fastReader.read ()) {
+                buf.append ((char)i);
             }
         } catch (EOFException eof) {
             //expected
         }
-
-        return buf.toString();        
+        
+        return buf.toString ();
     }
     
     /*
      *
      */
-    public static String treeToString(TreeDocumentRoot doc) throws IOException {
+    public static String treeToString (TreeDocumentRoot doc) throws IOException {
         
-        StringWriter out = new StringWriter();        
-        TreeStreamResult result = new TreeStreamResult(out);
-        TreeWriter writer = result.getWriter(doc);
+        StringWriter out = new StringWriter ();
+        TreeStreamResult result = new TreeStreamResult (out);
+        TreeWriter writer = result.getWriter (doc);
         
         try {
-            writer.writeDocument();
-            return out.toString();
+            writer.writeDocument ();
+            return out.toString ();
         } catch (TreeException ex) {
-            throw new IOException("Cannot read tree " +  ex.getMessage()); // NOI18N
+            throw new IOException ("Cannot read tree " +  ex.getMessage ()); // NOI18N
             
         } finally {
             try {
-                out.close();
+                out.close ();
             } catch (IOException ioex) {
                 // do not know
             }
@@ -116,25 +116,25 @@ public final class Convertors {
         
     }
     
-    public static byte[] treeToByteArray(TreeDocumentRoot doc) throws IOException {
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream(1024 * 8);        
-        TreeStreamResult result = new TreeStreamResult(out);
-        TreeWriter writer = result.getWriter(doc);
+    public static byte[] treeToByteArray (TreeDocumentRoot doc) throws IOException {
+        
+        ByteArrayOutputStream out = new ByteArrayOutputStream (1024 * 8);
+        TreeStreamResult result = new TreeStreamResult (out);
+        TreeWriter writer = result.getWriter (doc);
         
         try {
-            writer.writeDocument();
-            byte[] array = out.toByteArray();
+            writer.writeDocument ();
+            byte[] array = out.toByteArray ();
             return array;
         } catch (TreeException ex) {
-            throw new IOException("Cannot read tree " +  ex.getMessage()); // NOI18N
+            throw new IOException ("Cannot read tree " +  ex.getMessage ()); // NOI18N
             
         } finally {
             try {
-                out.close();
+                out.close ();
             } catch (IOException ioex) {
                 // do not know
             }
-        }    
+        }
     }
 }

@@ -107,22 +107,41 @@ class XMLCompletionQuery implements CompletionQuery {
             int itemOffset = token.getOffset();
             String preText = null;
             int erase = 0;
-            
+
+            //??? both branches seems to be teribly similar!
             if ( boundary == false ) {
                 preText = token.getImage().substring( 0, offset - token.getOffset() );
                 if ("".equals(preText)) throw new IllegalStateException("Cannot get token prefix at " + offset);
+                
+                int id = token.getTokenID().getNumericID();
+                switch (id)  {
+                    case  XMLDefaultTokenContext.TAG_ID:
+                    case XMLDefaultTokenContext.CHARACTER_ID:
+                        erase = preText.length() - 1;
+                        break;
+                        
+                    case XMLDefaultTokenContext.ARGUMENT_ID:
+                        erase = preText.length();
+                }
+                
             } else {
 //                System.err.println("Adjusting: " + token + " " + token.getImage());
                 int id = token.getTokenID().getNumericID();
-                if (id == XMLDefaultTokenContext.TAG_ID)  {
-                    preText = token.getImage();
-                    erase = preText.length() - 1;
-                } else if (id == XMLDefaultTokenContext.ARGUMENT_ID) {
-                    preText = token.getImage();
-                    erase = preText.length();
-                } else {
-                    preText = "";
-                    erase = 0;
+                switch (id) {
+                    case XMLDefaultTokenContext.TAG_ID:
+                    case XMLDefaultTokenContext.CHARACTER_ID:
+                        preText = token.getImage();
+                        erase = preText.length() - 1;
+                        break;
+                    
+                    case XMLDefaultTokenContext.ARGUMENT_ID:
+                        preText = token.getImage();
+                        erase = preText.length();
+                        break;
+                        
+                    default:
+                        preText = "";
+                        erase = 0;
                 }
             }
 
@@ -313,8 +332,7 @@ class XMLCompletionQuery implements CompletionQuery {
                     ctx.init(element, "");
                     return queryElements();
                 } else if ( text.endsWith("</" )) {
-                    ctx.init(element, "");
-                    return queryElements();  //??? pairing
+                    return findStartTag((SyntaxNode)element);
                 } else if ( text.startsWith("&")) {
                     ctx.init(element, text.substring(1));
                     return queryEntities();
@@ -410,8 +428,8 @@ class XMLCompletionQuery implements CompletionQuery {
                     ctx.initVirtualAttr((Element)element, "");
                     return queryAttributes();
                 } else {
-                    // end tag no WS and no attributes
-                    throw new IllegalArgumentException("No whitespace allowed in end tag!");
+                    // end tag no attributes to complete
+                    return null;
                 }
 //                break;
                 
@@ -516,6 +534,24 @@ class XMLCompletionQuery implements CompletionQuery {
         return result;
     }
 
+    
+    /**
+     * User just typed <sample>&lt;/</sample> so we must locate
+     * paing start tag.
+     */
+    private static List findStartTag(SyntaxNode text) {
+        Node parent = text.getParentNode();
+        if (parent == null) return Collections.EMPTY_LIST;
+        List list = new ArrayList(1);
+        String name = parent.getNodeName();
+        XMLResultItem res = new ElementResultItem(name);
+        list.add(res);
+        return list;
+    }
+    
+    
+    // Grammar binding ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
     /**
      * Obtain reqistered query, cache results in document property 
      * <code>PROP_DOCUMENT_QUERY</code>. It is always called from single
@@ -534,7 +570,7 @@ class XMLCompletionQuery implements CompletionQuery {
         return desc.getGrammar(300);
     }
     
-    //??? should listen on internal DTD at least
+
     private static class GrammarCache {
 
         // last invalidation time

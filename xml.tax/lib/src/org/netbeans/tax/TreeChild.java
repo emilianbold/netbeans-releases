@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -24,12 +24,12 @@ public abstract class TreeChild extends TreeNode {
     
     /** */
     public static final String PROP_PARENT_NODE = "parentNode"; // NOI18N
-
-
+    
+    
     /** -- can be null. */
     private TreeParentNode parentNode;
-
-
+    
+    
     //
     // init
     //
@@ -37,52 +37,52 @@ public abstract class TreeChild extends TreeNode {
     /** Creates new TreeChild. */
     protected TreeChild () {
     }
-
-
-    /** 
-     * Creates new TreeChild -- copy constructor. 
+    
+    
+    /**
+     * Creates new TreeChild -- copy constructor.
      * (parentNode information is lost)
      */
     protected TreeChild (TreeChild child) {
         super (child);
     }
-
+    
     
     //
     // from TreeNode
     //
-
+    
     /**
      */
     public final TreeDocumentRoot getOwnerDocument () {
-	if ( this instanceof TreeDocumentRoot ) {
-	    return (TreeDocumentRoot)this;
-	}
-	if ( getParentNode() == null ) {
-	    return null;
-	}
-	return getParentNode().getOwnerDocument();
+        if ( this instanceof TreeDocumentRoot ) {
+            return (TreeDocumentRoot)this;
+        }
+        if ( getParentNode () == null ) {
+            return null;
+        }
+        return getParentNode ().getOwnerDocument ();
     }
-
-
+    
+    
     //
     // context
     //
-
+    
     /**
      */
     public final boolean isInContext () {
-        return ( getParentNode() != null );
+        return ( getParentNode () != null );
     }
     
     /**
      */
     public final void removeFromContext () throws ReadOnlyException {
-        if ( isInContext() ) {
-            getParentNode().removeChild (this);
+        if ( isInContext () ) {
+            getParentNode ().removeChild (this);
         }
     }
-
+    
     
     //
     // itself
@@ -91,33 +91,33 @@ public abstract class TreeChild extends TreeNode {
     /**
      */
     public final TreeParentNode getParentNode () {
-	return parentNode;
+        return parentNode;
     }
-
+    
     /**
      */
     protected final void setParentNode (TreeParentNode newParentNode) {
-	if ( DEBUG ) {
-	    Util.debug ("TreeChild::setParentNode [ " + this + " ] : newParentNode = " + newParentNode); // NOI18N
-	}
-
-	//
-	// check new value
-	//
-	if ( Util.equals (this.parentNode, newParentNode) )
-	    return;
-	
-	//
-	// set new value
-	//
-	TreeParentNode oldParentNode = this.parentNode;
-
-	this.parentNode = newParentNode;
-
-	firePropertyChange (PROP_PARENT_NODE, oldParentNode, newParentNode);
+        if ( DEBUG ) {
+            Util.debug ("TreeChild::setParentNode [ " + this + " ] : newParentNode = " + newParentNode); // NOI18N
+        }
+        
+        //
+        // check new value
+        //
+        if ( Util.equals (this.parentNode, newParentNode) )
+            return;
+        
+        //
+        // set new value
+        //
+        TreeParentNode oldParentNode = this.parentNode;
+        
+        this.parentNode = newParentNode;
+        
+        firePropertyChange (PROP_PARENT_NODE, oldParentNode, newParentNode);
     }
-
-
+    
+    
     //
     // Children manipulation
     //
@@ -125,70 +125,70 @@ public abstract class TreeChild extends TreeNode {
     /**
      */
     public final TreeChild getPreviousSibling () {
-	int index = index();
-	if ( index == -1 ) { // does not have parent node
-	    return null;
-	}
-	if ( index == 0 ) { // it is first node of parent node
-	    return null;
-	}
-	return (TreeChild)getParentNode().getChildNodes().get (index - 1);
+        int index = index ();
+        if ( index == -1 ) { // does not have parent node
+            return null;
+        }
+        if ( index == 0 ) { // it is first node of parent node
+            return null;
+        }
+        return (TreeChild)getParentNode ().getChildNodes ().get (index - 1);
     }
-
+    
     /**
      */
     public final TreeChild getNextSibling () {
-	if ( DEBUG ) {
-	    Util.debug ("TreeChild [ " + this + " ] ::getNextSibling: parentNode = " + getParentNode()); // NOI18N
-	}	
-
-	int index = index();
-
-	if ( DEBUG ) {
-	    Util.debug ("    index : " + index); // NOI18N
-	}
-
-	if ( index == -1 ) { // does not have parent node
-	    return null;
-	}
-
-	if ( DEBUG ) {
-	    Util.debug ("    parentNode.childNodes.size : " + getParentNode().getChildNodes().size()); // NOI18N
-	}
-
-	if ( (index + 1) == getParentNode().getChildNodes().size() ) { // it is last node of parent node
-	    return null;
-	}
-	return (TreeChild)getParentNode().getChildNodes().get (index + 1);
+        if ( DEBUG ) {
+            Util.debug ("TreeChild [ " + this + " ] ::getNextSibling: parentNode = " + getParentNode ()); // NOI18N
+        }
+        
+        int index = index ();
+        
+        if ( DEBUG ) {
+            Util.debug ("    index : " + index); // NOI18N
+        }
+        
+        if ( index == -1 ) { // does not have parent node
+            return null;
+        }
+        
+        if ( DEBUG ) {
+            Util.debug ("    parentNode.childNodes.size : " + getParentNode ().getChildNodes ().size ()); // NOI18N
+        }
+        
+        if ( (index + 1) == getParentNode ().getChildNodes ().size () ) { // it is last node of parent node
+            return null;
+        }
+        return (TreeChild)getParentNode ().getChildNodes ().get (index + 1);
     }
-
+    
     /**
      * @return index of this node in parent node child list or -1 if it does not have parent node.
      */
     public final int index () {
-	if ( getParentNode() == null ) {
-	    return -1;
-	}
-	return getParentNode().indexOf (this);
+        if ( getParentNode () == null ) {
+            return -1;
+        }
+        return getParentNode ().indexOf (this);
     }
-
-
+    
+    
     //
     // util
     //
-
+    
     /**
      */
     public final boolean isDescendantOf (TreeParentNode testParentNode) {
-        TreeParentNode ancestor = getParentNode();
-
+        TreeParentNode ancestor = getParentNode ();
+        
         while ( ancestor != null ) {
             if ( ancestor == testParentNode )
                 return true;
-            ancestor = ancestor.getParentNode();
+            ancestor = ancestor.getParentNode ();
         }
-
+        
         return false;
     }
-
+    
 }

@@ -37,4 +37,9 @@ Microsystems, Inc. All Rights Reserved.
         <summary>MOF Model of TAX</summary>
         <description>Create <b>MOF Model</b> of TAX to support prepared MDR module and next generation of data modules.</description>
     </item>
+
+    <item priority="1">
+        <summary>ParserLoader should be moved from core module to tax module.</summary>
+        <description>Class org.netbeans.modules.xml.core.tree.ParserLoader should be moved from to tax module.</description>
+    </item>
 </list>

@@ -30,7 +30,10 @@ public class XCatalogCustomizer extends javax.swing.JPanel implements Customizer
     /** Creates new customizer XCatalogCustomizer */
     public XCatalogCustomizer() {
         initComponents ();
+
+        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_XCatalogCustomizer"));
         locationLabel.setDisplayedMnemonic((Util.getString("XCatalogCustomizer.locationLabel.mne")).charAt(0));
+        locationTextField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_locationTextField"));
     }
 
     /** This method is called from within the constructor to

@@ -33,7 +33,7 @@ public class CommentImpl extends SyntaxNode implements Comment {
     }
     
     public String getNodeValue() throws org.w3c.dom.DOMException {
-        return getData();  //??? strip delimiters
+        return getData();  
     }
     
     public String getNodeName() {
@@ -48,8 +48,11 @@ public class CommentImpl extends SyntaxNode implements Comment {
         throw new ROException();
     }
  
+    /**
+     * @return data without delimiters
+     */
     public String getData() {
-        String data = first.getImage();
+        String data = first.getImage();  //??? it is always one image
         return data.substring(("<!--".length() - 1) , (data.length() - "-->".length() -1 ));  //NOI18N        
     }
 

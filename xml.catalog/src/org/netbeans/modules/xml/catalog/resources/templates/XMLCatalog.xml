@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- OASIS XML Catalog file creted  by __USER__ on __DATE__ -->
+
+<!-- see http://www.oasis-open.org/committees/entity/spec.html -->
+
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">                
+
+    <!-- Sample publid ID mapping regitration. -->
+    <public publicId="-//Company//Entity ID//EN" uri="file:/path/entity"/>
+
+</catalog>
+

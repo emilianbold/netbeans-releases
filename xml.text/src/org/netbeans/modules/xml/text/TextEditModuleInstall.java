@@ -92,12 +92,12 @@ public class TextEditModuleInstall extends ModuleInstall {
         // editor options
         
         AllOptions ao = (AllOptions)AllOptions.findObject (AllOptions.class, true);
-        ao.addOption (new XMLOptions());
-        ao.addOption (new DTDOptions());
+        ao.addOption ((XMLOptions)XMLOptions.findObject(XMLOptions.class, true));
+        ao.addOption ((DTDOptions)DTDOptions.findObject(DTDOptions.class, true));
         
         PrintSettings ps = (PrintSettings)PrintSettings.findObject (PrintSettings.class, true);
-        ps.addOption (new XMLPrintOptions());
-        ps.addOption (new DTDPrintOptions());
+        ps.addOption ((XMLPrintOptions)XMLPrintOptions.findObject(XMLPrintOptions.class, true));
+        ps.addOption ((DTDPrintOptions)DTDPrintOptions.findObject(DTDPrintOptions.class, true));
     }
     
     /**

@@ -24,14 +24,15 @@ Microsystems, Inc. All Rights Reserved.
     <property name="parserimpl" value="${binroot}/xml/tax/release/modules/ext/xerces2.jar"/> <!-- parser implementation used internally by module -->
 
     <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
-    <property name="homepage.base" value="http://xml.netbeans.org"/>
-    <property name="dist.base" value="http://www.netbeans.org/download/nbms/40"/>
+    <property name="homepage.base" value="xml.netbeans.org"/>
+    <property name="dist.base" value="http://www.netbeans.org/download/nbms/40/xml"/>
     <property name="storepass" value="?"/>
     <property name="release" value="dev"/>
 
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext_root}/nbantext.jar"/>
+    <taskdef name="genjavadoc" classname="org.netbeans.nbbuild.GenerateJavadoc" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext_root}/nbantext.jar"/>
 
     <property name="build.compiler.debug" value="on"/>
@@ -55,6 +56,8 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${lib_root}/src"/>
             </classpath>
         </javac>
+
+        <for-each locations="compat"/>
     </target>
 
     <target name="jars" depends="init,compile">
@@ -67,6 +70,7 @@ Microsystems, Inc. All Rights Reserved.
                 manifest="manifest-subst.mf"
                 compress="false">
             <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
+            <fileset dir="compat/src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
             <locale name="ja"/>
         </locjar>
     </target>
@@ -108,7 +112,7 @@ Microsystems, Inc. All Rights Reserved.
         <makenbm file="../xml-tax-${release}.nbm"
                  topdir="."
                  module="netbeans/modules/autoload/xml-tax.jar"
-                 homepage="${homepage.base}/tax/"
+                 homepage="http://${homepage.base}/tax/"
                  distribution="${dist.base}/xml-tax-${release}.nbm">
             <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
@@ -127,10 +131,25 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="../xml-tax-${release}.nbm"/>
         <delete dir="netbeans"/>
         <delete dir="Info"/>
+
+        <for-each locations="compat"/>
+    </target>
+
+    <target name="real-clean" depends="clean">
+        <for-each locations="lib"/>
+
         <delete dir="javadoc"/>
     </target>
 
     <target name="all" depends="clean,nbm"/>
+
+    <target name="javadoc">
+        <delete dir="javadoc"/>
+        <mkdir dir="javadoc"/>
+        <genjavadoc destdir="javadoc" modules="openide,xml/tax,xml/tax/lib">
+            <topdir path="${nbroot}"/>
+        </genjavadoc>
+    </target>
 
 
     <!-- This target compile all XML sub-modules. -->

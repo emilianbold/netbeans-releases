@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -33,18 +33,18 @@ public class TreeElementDecl extends TreeNodeDecl implements DTD.Child, Paramete
     public static final String PROP_NAME         = "name"; // NOI18N
     /** */
     public static final String PROP_CONTENT_TYPE = "contentType"; // NOI18N
-
-
+    
+    
     /** */
     private String name;
     
     /** */
     private ContentType contentType;
-
-//      /** */
-//      private String contentTypeString;
-
-
+    
+    //      /** */
+    //      private String contentTypeString;
+    
+    
     //
     // init
     //
@@ -54,71 +54,71 @@ public class TreeElementDecl extends TreeNodeDecl implements DTD.Child, Paramete
      */
     public TreeElementDecl (String name, ContentType contentType) throws InvalidArgumentException {
         super ();
-
-	checkName (name);
-	checkContentType (contentType);
-
-	this.name        = name;
-	this.contentType = contentType;
-	this.contentType.setNodeDecl (this);
+        
+        checkName (name);
+        checkContentType (contentType);
+        
+        this.name        = name;
+        this.contentType = contentType;
+        this.contentType.setNodeDecl (this);
     }
-
-
-    /** Creates new TreeElementDecl.
-     * @throws InvalidArgumentException
-     */
-    public TreeElementDecl (String name, String contentType) throws InvalidArgumentException {
-        this (name, new ContentSpecParser().parseModel (new ParserReader (contentType)));
-    }
-
+    
+    
+    //     /** Creates new TreeElementDecl.
+    //      * @throws InvalidArgumentException
+    //      */
+    //     public TreeElementDecl (String name, String contentType) throws InvalidArgumentException {
+    //         this (name, new ContentSpecParser().parseModel (new ParserReader (contentType)));
+    //     }
+    
     /** Creates new TreeElementDecl -- copy constructor. */
     protected TreeElementDecl (TreeElementDecl elementDecl) {
-	super (elementDecl);
-
-	this.name        = elementDecl.name;
-	this.contentType = (ContentType)elementDecl.contentType.clone();
+        super (elementDecl);
+        
+        this.name        = elementDecl.name;
+        this.contentType = (ContentType)elementDecl.contentType.clone ();
     }
-
+    
     
     //
     // from TreeObject
     //
-
+    
     /**
      */
     public Object clone () {
-	return new TreeElementDecl (this);
+        return new TreeElementDecl (this);
     }
-
+    
     /**
      */
     public boolean equals (Object object, boolean deep) {
         if (!!! super.equals (object, deep))
             return false;
-
+        
         TreeElementDecl peer = (TreeElementDecl) object;
-        if (!!! Util.equals (this.getName(), peer.getName()))
+        if (!!! Util.equals (this.getName (), peer.getName ()))
             return false;
         if (!!! Util.equals (this.contentType, peer.contentType))
             return false;
-
+        
         return true;
     }
-
+    
     /*
      * Merges name and content type properties.
      */
     public void merge (TreeObject treeObject) throws CannotMergeException {
         super.merge (treeObject);
-	    
+        
         TreeElementDecl peer = (TreeElementDecl) treeObject;
         
-        setNameImpl (peer.getName());
-        setContentTypeImpl(peer.getContentType());
-//        contentType.merge (peer.contentType);
+        setNameImpl (peer.getName ());
+        setContentTypeImpl (peer.getContentType ());
+        //        contentType.merge (peer.contentType);
     }
-
-
+    
+    
     //
     // itself
     //
@@ -132,116 +132,116 @@ public class TreeElementDecl extends TreeNodeDecl implements DTD.Child, Paramete
     /**
      */
     private final void setNameImpl (String newName) {
-	String oldName = this.name;
-
-	this.name = newName;
-
-	firePropertyChange (PROP_NAME, oldName, newName);
-    }    
-
+        String oldName = this.name;
+        
+        this.name = newName;
+        
+        firePropertyChange (PROP_NAME, oldName, newName);
+    }
+    
     /**
      * @throws ReadOnlyException
      * @throws InvalidArgumentException
      */
     public final void setName (String newName) throws ReadOnlyException, InvalidArgumentException {
-	//
-	// check new value
-	//
-	if ( Util.equals (this.name, newName) )
-	    return;
-        checkReadOnly();
-	checkName (newName);
-
-	//
-	// set new value
-	//
-	setNameImpl (newName);
-    }    
-
+        //
+        // check new value
+        //
+        if ( Util.equals (this.name, newName) )
+            return;
+        checkReadOnly ();
+        checkName (newName);
+        
+        //
+        // set new value
+        //
+        setNameImpl (newName);
+    }
+    
     /**
      */
     protected final void checkName (String name) throws InvalidArgumentException {
-	TreeUtilities.checkElementDeclName (name);
+        TreeUtilities.checkElementDeclName (name);
     }
-
+    
     /**
      */
     public final ContentType getContentType () {
         return contentType;
     }
-  
+    
     /**
      */
     private final void setContentTypeImpl (ContentType newContentType) {
-	ContentType oldContentType = this.contentType;
-
-	this.contentType = newContentType;
-
-	firePropertyChange (PROP_CONTENT_TYPE, oldContentType, newContentType);
-    }    
-
+        ContentType oldContentType = this.contentType;
+        
+        this.contentType = newContentType;
+        
+        firePropertyChange (PROP_CONTENT_TYPE, oldContentType, newContentType);
+    }
+    
     /**
      * @throws ReadOnlyException
      * @throws InvalidArgumentException
      */
     public final void setContentType (ContentType newContentType) throws ReadOnlyException, InvalidArgumentException {
-	//
-	// check new value
-	//
-	if ( Util.equals (this.contentType, newContentType) )
-	    return;
-        checkReadOnly();
-	checkContentType (newContentType);
-
-	//
-	// set new value
-	//
-	setContentTypeImpl (newContentType);
-    }    
-
+        //
+        // check new value
+        //
+        if ( Util.equals (this.contentType, newContentType) )
+            return;
+        checkReadOnly ();
+        checkContentType (newContentType);
+        
+        //
+        // set new value
+        //
+        setContentTypeImpl (newContentType);
+    }
+    
     /**
      * @throws ReadOnlyException
      * @throws InvalidArgumentException
      */
     public final void setContentType (String newContentType) throws ReadOnlyException, InvalidArgumentException {
-        setContentType (new ContentSpecParser().parseModel (new ParserReader (newContentType)));
+        setContentType (new ContentSpecParser ().parseModel (new ParserReader (newContentType)));
     }
     
     /**
      */
     protected final void checkContentType (ContentType contentType) throws InvalidArgumentException {
-	TreeUtilities.checkElementDeclContentType (contentType);
+        TreeUtilities.checkElementDeclContentType (contentType);
     }
-
+    
     /** @return true for mixed model. */
     public boolean isMixed () {
-        return getContentType().isMixed();              
+        return getContentType ().isMixed ();
     }
-
+    
     /** */
     public boolean isEmpty () {
-        return ! (allowText() || allowElements());
+        return ! (allowText () || allowElements ());
     }
-
+    
     /** */
     public boolean allowText () {
-        return getContentType().allowText();
+        return getContentType ().allowText ();
     }
-
+    
     /** */
     public boolean allowElements () {
-        return getContentType().allowElements();
+        return getContentType ().allowElements ();
     }
-
-
+    
+    
     /** */
     public Collection getAttributeDefs () {
-	if ( getOwnerDTD() == null ) {
-	    return null;
-	}
-	return getOwnerDTD().getAttributeDeclarations (getName());
+        if ( getOwnerDTD () == null ) {
+            return null;
+        }
+        return getOwnerDTD ().getAttributeDeclarations (getName ());
     }
-
+    
     
     //
     // ContentType
@@ -251,27 +251,27 @@ public class TreeElementDecl extends TreeNodeDecl implements DTD.Child, Paramete
      *
      */
     public abstract static class ContentType extends Content implements Comparable {
-//  	public static final short TYPE_EMPTY    = 0; // EMPTY
-//  	public static final short TYPE_ANY      = 1; // ANY
-//  	public static final short TYPE_MIXED    = 2; // (#PCDATA|xxx)*
-//  	public static final short TYPE_CHILDREN = 3; // (xxx?,(yyy|zzz*))+
-
-//  	public static final short SEPARATOR_CHOICE   = 10; // xxx|yyy
-//  	public static final short SEPARATOR_SEQUENCE = 11; // xxx,yyy
-
-//  	public static final short OCCURS_ZERO_OR_ONE  = 20; // xxx?
-//  	public static final short OCCURS_EXACTLY_ONE  = 21; // xxx
-//  	public static final short OCCURS_ZERO_OR_MORE = 22; // xxx*
-//  	public static final short OCCURS_ONE_OR_MORE  = 23; // xxx+
-
-	/** */
-	private String multiplicity;
-
-	private int index;  // sample value of counter at creation time
-
-	private static int counter = 0; // to be able to create ordered collections
-
-
+        //  	public static final short TYPE_EMPTY    = 0; // EMPTY
+        //  	public static final short TYPE_ANY      = 1; // ANY
+        //  	public static final short TYPE_MIXED    = 2; // (#PCDATA|xxx)*
+        //  	public static final short TYPE_CHILDREN = 3; // (xxx?,(yyy|zzz*))+
+        
+        //  	public static final short SEPARATOR_CHOICE   = 10; // xxx|yyy
+        //  	public static final short SEPARATOR_SEQUENCE = 11; // xxx,yyy
+        
+        //  	public static final short OCCURS_ZERO_OR_ONE  = 20; // xxx?
+        //  	public static final short OCCURS_EXACTLY_ONE  = 21; // xxx
+        //  	public static final short OCCURS_ZERO_OR_MORE = 22; // xxx*
+        //  	public static final short OCCURS_ONE_OR_MORE  = 23; // xxx+
+        
+        /** */
+        private String multiplicity;
+        
+        private int index;  // sample value of counter at creation time
+        
+        private static int counter = 0; // to be able to create ordered collections
+        
+        
         //
         // init
         //
@@ -279,153 +279,153 @@ public class TreeElementDecl extends TreeNodeDecl implements DTD.Child, Paramete
         /** Creates new ContentType. */
         protected ContentType (TreeElementDecl elementDecl) {
             super (elementDecl);
-
-            this.multiplicity = new String();
-
-	    this.index = counter++;
+            
+            this.multiplicity = new String ();
+            
+            this.index = counter++;
         }
-
-
+        
+        
         /** Creates new ContentType. */
         protected ContentType () {
             this ((TreeElementDecl) null);
         }
-
+        
         /** Creates new ContentType -- copy constructor. */
         protected ContentType (ContentType contentType) {
             super (contentType);
-
+            
             this.multiplicity = contentType.multiplicity;
-
-	    this.index = counter++;
+            
+            this.index = counter++;
         }
-
+        
         //
         // from TreeObject
         //
-
+        
         /**
          */
         public boolean equals (Object object, boolean deep) {
             if (!!! super.equals (object, deep))
                 return false;
             
-	    ContentType peer = (ContentType) object;
+            ContentType peer = (ContentType) object;
             if (this.index != peer.index)
                 return false;
-            if (!!! Util.equals (this.getMultiplicity(), peer.getMultiplicity()))
+            if (!!! Util.equals (this.getMultiplicity (), peer.getMultiplicity ()))
                 return false;
             
             return true;
         }
-
-	/*
-	 * Merges changes from passed object to actual object.
-	 * @param node merge peer (TreeAttributeDecl)
-	 * @throws CannotMergeException if can not merge with given node (invalid class)
-	 */
-	public void merge (TreeObject treeObject) throws CannotMergeException {
-	    super.merge (treeObject);
         
-	    ContentType peer = (ContentType) treeObject;
-
-	    index = peer.index;       
-	    setMultiplicity (peer.getMultiplicity());
-	} 
+        /*
+         * Merges changes from passed object to actual object.
+         * @param node merge peer (TreeAttributeDecl)
+         * @throws CannotMergeException if can not merge with given node (invalid class)
+         */
+        public void merge (TreeObject treeObject) throws CannotMergeException {
+            super.merge (treeObject);
+            
+            ContentType peer = (ContentType) treeObject;
+            
+            index = peer.index;
+            setMultiplicity (peer.getMultiplicity ());
+        }
         
-
+        
         //
         // context
         //
-
+        
         /**
          */
         public final void removeFromContext () throws ReadOnlyException {
-            if ( isInContext() ) {
-                getOwnerElementDecl().setContentTypeImpl (new EMPTYType());
+            if ( isInContext () ) {
+                getOwnerElementDecl ().setContentTypeImpl (new EMPTYType ());
             }
         }
         
-    
-	//
-	// itself
-	//
-
+        
+        //
+        // itself
+        //
+        
         /**
          */
         public final TreeElementDecl getOwnerElementDecl () {
-            return (TreeElementDecl)getNodeDecl();
+            return (TreeElementDecl)getNodeDecl ();
         }
         
-
-	/**
-	 */
-	public void setMultiplicity (char s) {
-	    multiplicity = new String (new char[] {s});
-	}
-
-	/**
-	 */
-	public void setMultiplicity (String s) {
-	    multiplicity = s;
-	}
-	
-	/** Combines existing multiplicity with new one. 
-	 * <pre>
-	 *   | 1 | ? | + | *
-	 * --+---+---+---+---
-	 * 1 | 1 | ? | + | *
-	 * --+---+---+---+---
-	 * ? | ? | ? | * | *
-	 * --+---+---+---+---
-	 * + | + | * | + | *
-	 * --+---+---+---+---
-	 * * | * | * | * | * 
-	 * </pre>
-	 */
-	public void addMultiplicity (String s) {
-	    if (multiplicity.equals (s))
-		return;
-
-	    if ("".equals (multiplicity)) { // NOI18N
-		multiplicity = s;
-	    } else if ("".equals (s)) { // NOI18N
-		// stay intact
-	    } else {
-		multiplicity = "*"; // NOI18N
-	    }                          
-	}
-    
-
-	/** @return multiplicity of given type */
-	public String getMultiplicity () {
-	    return multiplicity;
-	}
-
-	/** @return true if element itself can contain mixed content. */
-	public boolean isMixed () {
-	    return allowText() && allowElements();
-	}
-
-	/** @return true if sub elements are allowed. */
-	public abstract boolean allowElements ();
-
-	/** @return true if text value is allowed. */        
-	public abstract boolean allowText ();
-
-	/** @return String representation of type. */
-	public abstract String toString ();
-
-	/** Natural ordering by index. */
-	public int compareTo (final Object obj) {
-	    if (this.equals (obj))
-		return 0;
-
-	    ContentType type = (ContentType) obj;
-
-	    return index - type.index;
-	}
-
+        
+        /**
+         */
+        public void setMultiplicity (char s) {
+            multiplicity = new String (new char[] {s});
+        }
+        
+        /**
+         */
+        public void setMultiplicity (String s) {
+            multiplicity = s;
+        }
+        
+        /** Combines existing multiplicity with new one.
+         * <pre>
+         *   | 1 | ? | + | *
+         * --+---+---+---+---
+         * 1 | 1 | ? | + | *
+         * --+---+---+---+---
+         * ? | ? | ? | * | *
+         * --+---+---+---+---
+         * + | + | * | + | *
+         * --+---+---+---+---
+         * * | * | * | * | *
+         * </pre>
+         */
+        public void addMultiplicity (String s) {
+            if (multiplicity.equals (s))
+                return;
+            
+            if ("".equals (multiplicity)) { // NOI18N
+                multiplicity = s;
+            } else if ("".equals (s)) { // NOI18N
+                // stay intact
+            } else {
+                multiplicity = "*"; // NOI18N
+            }
+        }
+        
+        
+        /** @return multiplicity of given type */
+        public String getMultiplicity () {
+            return multiplicity;
+        }
+        
+        /** @return true if element itself can contain mixed content. */
+        public boolean isMixed () {
+            return allowText () && allowElements ();
+        }
+        
+        /** @return true if sub elements are allowed. */
+        public abstract boolean allowElements ();
+        
+        /** @return true if text value is allowed. */
+        public abstract boolean allowText ();
+        
+        /** @return String representation of type. */
+        public abstract String toString ();
+        
+        /** Natural ordering by index. */
+        public int compareTo (final Object obj) {
+            if (this.equals (obj))
+                return 0;
+            
+            ContentType type = (ContentType) obj;
+            
+            return index - type.index;
+        }
+        
     } // end: class ContentType
-
+    
 }

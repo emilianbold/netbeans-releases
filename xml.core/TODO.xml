@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
+
 <!--
                 Sun Public License Notice
 
@@ -22,8 +23,9 @@ Microsystems, Inc. All Rights Reserved.
         <description>Clear XML- and DTD- DataObject and XMLDataObjectLook, use cookies model mainly.</description>
     </item>
 
-    <item>
-        <summary>XML API</summary>
+    <!-- APIs now -->
+    <item>        
+        <summary>XML APIs</summary>
         <description>We could create 'xml-api' module which will specify API for other xml module; 'xml-core' will implement xml-api. See <a href="http://openide.netbeans.org/versioning-policy.html">API &amp; Module Versioning Policy</a> -- <b>org.netbeans.modules.xml.api</b> and <b>org.netbeans.api.xml</b>.</description>
     </item>
 
@@ -37,3 +39,4 @@ Microsystems, Inc. All Rights Reserved.
         <description>Instead of static fields in CoreSettings, use methods <b>putProperty</b>, <b>getProperty</b> (from SharedClassObject).</description>
     </item>
 </list>
+

@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -28,7 +28,7 @@ import org.netbeans.modules.xml.tax.beans.editor.StandaloneEditor;
 public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
     /** */
     private static final boolean DEBUG = false;
-
+    
     /** Serial Version UID */
     private static final long serialVersionUID = 8592875472261625357L;
     
@@ -38,20 +38,20 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
     //
     
     /** */
-    public TreeDocumentCustomizer() {
-        super();
+    public TreeDocumentCustomizer () {
+        super ();
         
-        initComponents();
+        initComponents ();
         
         if ( DEBUG ) {
             Util.debug ("TreeDocumentCustomizer::init"); // NOI18N
         }
         
-        versionLabel.setDisplayedMnemonic(Util.getChar("MNE_document_version")); // NOI18N
-        encodingLabel.setDisplayedMnemonic(Util.getChar("MNE_document_encoding")); // NOI18N
-        standaloneLabel.setDisplayedMnemonic(Util.getChar("MNE_document_standalone")); // NOI18N
+        versionLabel.setDisplayedMnemonic (Util.getChar ("MNE_document_version")); // NOI18N
+        encodingLabel.setDisplayedMnemonic (Util.getChar ("MNE_document_encoding")); // NOI18N
+        standaloneLabel.setDisplayedMnemonic (Util.getChar ("MNE_document_standalone")); // NOI18N
         
-        initAccessibility();
+        initAccessibility ();
     }
     
     
@@ -61,106 +61,106 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
     
     /**
      */
-    protected final TreeDocument getDocument() {
-        return (TreeDocument)getTreeObject();
+    protected final TreeDocument getDocument () {
+        return (TreeDocument)getTreeObject ();
     }
     
     /**
      */
-    protected final void safePropertyChange(PropertyChangeEvent pche) {
-        super.safePropertyChange(pche);
+    protected final void safePropertyChange (PropertyChangeEvent pche) {
+        super.safePropertyChange (pche);
         
-        if (pche.getPropertyName().equals(TreeDocument.PROP_VERSION)) {
-            updateVersionComponent();
-        } else if (pche.getPropertyName().equals(TreeDocument.PROP_ENCODING)) {
-            updateEncodingComponent();
-        } else if (pche.getPropertyName().equals(TreeDocument.PROP_STANDALONE)) {
-            updateStandaloneComponent();
+        if (pche.getPropertyName ().equals (TreeDocument.PROP_VERSION)) {
+            updateVersionComponent ();
+        } else if (pche.getPropertyName ().equals (TreeDocument.PROP_ENCODING)) {
+            updateEncodingComponent ();
+        } else if (pche.getPropertyName ().equals (TreeDocument.PROP_STANDALONE)) {
+            updateStandaloneComponent ();
         }
     }
     
     
     /**
      */
-    protected final void updateDocumentVersion() {
-        if ( cbVersion.getSelectedItem() == null ) {
-            return;
-        }
-
-        try {
-            getDocument().setVersion(text2null((String) cbVersion.getSelectedItem()));
-        } catch (TreeException exc) {
-            updateVersionComponent();
-            Util.notifyTreeException(exc);
-        }
-        
-    }
-    
-    /**
-     */
-    protected final void updateVersionComponent() {
-        cbVersion.setSelectedItem(null2text(getDocument().getVersion()));
-    }
-    
-    /**
-     */
-    protected final void updateDocumentEncoding() {
-        if ( cbEncoding.getSelectedItem() == null ) {
+    protected final void updateDocumentVersion () {
+        if ( cbVersion.getSelectedItem () == null ) {
             return;
         }
         
         try {
-            getDocument().setEncoding(text2null((String) cbEncoding.getSelectedItem()));
+            getDocument ().setVersion (text2null ((String) cbVersion.getSelectedItem ()));
         } catch (TreeException exc) {
-            updateEncodingComponent();
-            Util.notifyTreeException(exc);
+            updateVersionComponent ();
+            Util.notifyTreeException (exc);
         }
         
     }
     
     /**
      */
-    protected final void updateEncodingComponent() {
-        cbEncoding.setSelectedItem(null2text(getDocument().getEncoding()));
+    protected final void updateVersionComponent () {
+        cbVersion.setSelectedItem (null2text (getDocument ().getVersion ()));
     }
     
     /**
      */
-    protected final void updateDocumentStandalone() {
-        if ( cbStandalone.getSelectedItem() == null ) {
+    protected final void updateDocumentEncoding () {
+        if ( cbEncoding.getSelectedItem () == null ) {
             return;
         }
-
+        
         try {
-            getDocument().setStandalone(text2null((String) cbStandalone.getSelectedItem()));
+            getDocument ().setEncoding (text2null ((String) cbEncoding.getSelectedItem ()));
         } catch (TreeException exc) {
-            updateStandaloneComponent();
-            Util.notifyTreeException(exc);
+            updateEncodingComponent ();
+            Util.notifyTreeException (exc);
+        }
+        
+    }
+    
+    /**
+     */
+    protected final void updateEncodingComponent () {
+        cbEncoding.setSelectedItem (null2text (getDocument ().getEncoding ()));
+    }
+    
+    /**
+     */
+    protected final void updateDocumentStandalone () {
+        if ( cbStandalone.getSelectedItem () == null ) {
+            return;
+        }
+        
+        try {
+            getDocument ().setStandalone (text2null ((String) cbStandalone.getSelectedItem ()));
+        } catch (TreeException exc) {
+            updateStandaloneComponent ();
+            Util.notifyTreeException (exc);
         }
     }
     
     /**
      */
-    protected final void updateStandaloneComponent() {
-        cbStandalone.setSelectedItem(null2text(getDocument().getStandalone()));
+    protected final void updateStandaloneComponent () {
+        cbStandalone.setSelectedItem (null2text (getDocument ().getStandalone ()));
     }
     
     /**
      */
-    protected final void initComponentValues() {
-        updateVersionComponent();
-        updateEncodingComponent();
-        updateStandaloneComponent();
+    protected final void initComponentValues () {
+        updateVersionComponent ();
+        updateEncodingComponent ();
+        updateStandaloneComponent ();
     }
     
     
     /**
      */
-    protected final void updateReadOnlyStatus(boolean editable) {
- 
-        cbVersion.setEnabled(editable);
-        cbEncoding.setEnabled(editable);
-        cbStandalone.setEnabled(editable);
+    protected final void updateReadOnlyStatus (boolean editable) {
+        
+        cbVersion.setEnabled (editable);
+        cbEncoding.setEnabled (editable);
+        cbStandalone.setEnabled (editable);
     }
     
     /** This method is called from within the constructor to
@@ -288,34 +288,34 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
     
     private void cbStandaloneFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_cbStandaloneFocusLost
         // Add your handling code here:
-        updateDocumentStandalone();
+        updateDocumentStandalone ();
     }//GEN-LAST:event_cbStandaloneFocusLost
     
     private void cbStandaloneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbStandaloneActionPerformed
         // Add your handling code here:
-        updateDocumentStandalone();
+        updateDocumentStandalone ();
     }//GEN-LAST:event_cbStandaloneActionPerformed
     
     private void cbEncodingFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_cbEncodingFocusLost
         // Add your handling code here:
-        updateDocumentEncoding();
+        updateDocumentEncoding ();
     }//GEN-LAST:event_cbEncodingFocusLost
     
     private void cbEncodingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbEncodingActionPerformed
         // Add your handling code here:
-        updateDocumentEncoding();
+        updateDocumentEncoding ();
     }//GEN-LAST:event_cbEncodingActionPerformed
     
     private void cbVersionFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_cbVersionFocusLost
         // Add your handling code here:
-        updateDocumentVersion();
+        updateDocumentVersion ();
     }//GEN-LAST:event_cbVersionFocusLost
     
     private void cbVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbVersionActionPerformed
         // Add your handling code here:
-        updateDocumentVersion();
+        updateDocumentVersion ();
     }//GEN-LAST:event_cbVersionActionPerformed
-                            
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel standaloneLabel;
     private javax.swing.JComboBox cbVersion;
@@ -325,15 +325,15 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
     private javax.swing.JLabel encodingLabel;
     private javax.swing.JPanel fillPanel;
     // End of variables declaration//GEN-END:variables
- 
+    
     /** Initialize accesibility
      */
-    public void initAccessibility(){
-    
-        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeDocumentCustomizer"));
+    public void initAccessibility (){
         
-        cbVersion.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_cbVersion"));
-        cbEncoding.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_cbEncoding1"));
-        cbStandalone.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_cbStandalone"));
-    }    
+        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeDocumentCustomizer"));
+        
+        cbVersion.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_cbVersion"));
+        cbEncoding.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_cbEncoding1"));
+        cbStandalone.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_cbStandalone"));
+    }
 }

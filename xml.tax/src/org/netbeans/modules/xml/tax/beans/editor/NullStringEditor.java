@@ -89,6 +89,12 @@ public class NullStringEditor extends PropertyEditorSupport implements ExPropert
 
     /**
      */
+    public boolean supportsCustomEditor () {
+        return true;
+    }
+
+    /**
+     */
     public Component getCustomEditor () {
         return new NullStringCustomEditor (this);
     }

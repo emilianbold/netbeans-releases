@@ -10,47 +10,77 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.xml.catalog.impl;
 
 import java.beans.*;
 
 public class XCatalogBeanInfo extends SimpleBeanInfo {
 
-  // Property identifiers //GEN-FIRST:Properties
-  private static final int PROPERTY_displayName = 0;
-  private static final int PROPERTY_source = 1;
-  private static final int PROPERTY_shortDescription = 2;
 
-  // Property array 
-  private static PropertyDescriptor[] properties = new PropertyDescriptor[3];
+    // Bean descriptor //GEN-FIRST:BeanDescriptor
+    private static BeanDescriptor beanDescriptor = new BeanDescriptor  ( XCatalog.class , XCatalogCustomizer.class );
 
-  static {
-    try {
-      properties[PROPERTY_displayName] = new PropertyDescriptor ( "displayName", XCatalog.class, "getDisplayName", null ); // NOI18N
-      properties[PROPERTY_source] = new PropertyDescriptor ( "source", XCatalog.class, "getSource", "setSource" ); // NOI18N
-      properties[PROPERTY_source].setExpert ( true );
-      properties[PROPERTY_shortDescription] = new PropertyDescriptor ( "shortDescription", XCatalog.class, "getShortDescription", null ); // NOI18N
+    private static BeanDescriptor getBdescriptor(){
+        return beanDescriptor;
     }
-    catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
+
+    static {
+        beanDescriptor.setDisplayName ( Util.getString("NAME_x_catalog") );
+        beanDescriptor.setShortDescription ( Util.getString("TEXT_x_catalog_desc") );//GEN-HEADEREND:BeanDescriptor
+
+    // Here you can add code for customizing the BeanDescriptor.
+
+}//GEN-LAST:BeanDescriptor
+
+
+    // Property identifiers //GEN-FIRST:Properties
+    private static final int PROPERTY_displayName = 0;
+    private static final int PROPERTY_shortDescription = 1;
+    private static final int PROPERTY_source = 2;
+
+    // Property array 
+    private static PropertyDescriptor[] properties = new PropertyDescriptor[3];
+
+    private static PropertyDescriptor[] getPdescriptor(){
+        return properties;
+    }
+
+    static {
+        try {
+            properties[PROPERTY_displayName] = new PropertyDescriptor ( "displayName", XCatalog.class, "getDisplayName", null );
+            properties[PROPERTY_shortDescription] = new PropertyDescriptor ( "shortDescription", XCatalog.class, "getShortDescription", null );
+            properties[PROPERTY_source] = new PropertyDescriptor ( "source", XCatalog.class, "getSource", "setSource" );
+            properties[PROPERTY_source].setExpert ( true );
+        }
+        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
     // Here you can add code for customizing the properties array.
 
 }//GEN-LAST:Properties
 
-  // EventSet identifiers//GEN-FIRST:Events
+    // EventSet identifiers//GEN-FIRST:Events
 
-  // EventSet array
-  private static EventSetDescriptor[] eventSets = new EventSetDescriptor[0];
+    // EventSet array
+    private static EventSetDescriptor[] eventSets = new EventSetDescriptor[0];
+
+    private static EventSetDescriptor[] getEdescriptor(){
+        return eventSets;
+    }
 //GEN-HEADEREND:Events
 
     // Here you can add code for customizing the event sets array.
 
   //GEN-LAST:Events
 
-  // Method identifiers //GEN-FIRST:Methods
+    // Method identifiers //GEN-FIRST:Methods
 
-  // Method array 
-  private static MethodDescriptor[] methods = new MethodDescriptor[0];
+    // Method array 
+    private static MethodDescriptor[] methods = new MethodDescriptor[0];
+
+    private static MethodDescriptor[] getMdescriptor(){
+        return methods;
+    }
 //GEN-HEADEREND:Methods
 
     // Here you can add code for customizing the methods array.
@@ -61,14 +91,31 @@ public class XCatalogBeanInfo extends SimpleBeanInfo {
     private static java.awt.Image iconColor32 = null;
     private static java.awt.Image iconMono16 = null;
     private static java.awt.Image iconMono32 = null; //GEN-END:IconsDef
-  private static String iconNameC16 = null;//GEN-BEGIN:Icons
-  private static String iconNameC32 = null;
-  private static String iconNameM16 = null;
-  private static String iconNameM32 = null;//GEN-END:Icons
+    private static String iconNameC16 = "/org/netbeans/modules/xml/catalog/impl/xmlCatalog.gif";//GEN-BEGIN:Icons
+    private static String iconNameC32 = null;
+    private static String iconNameM16 = null;
+    private static String iconNameM32 = null;//GEN-END:Icons
 
-  private static int defaultPropertyIndex = -1;//GEN-BEGIN:Idx
-  private static int defaultEventIndex = -1;//GEN-END:Idx
+    private static final int defaultPropertyIndex = -1;//GEN-BEGIN:Idx
+    private static final int defaultEventIndex = -1;//GEN-END:Idx
 
+    
+ //GEN-FIRST:Superclass
+
+    // Here you can add code for customizing the Superclass BeanInfo.
+
+ //GEN-LAST:Superclass
+	
+    /**
+     * Gets the bean's <code>BeanDescriptor</code>s.
+     * 
+     * @return BeanDescriptor describing the editable
+     * properties of this bean.  May return null if the
+     * information should be obtained by automatic analysis.
+     */
+    public BeanDescriptor getBeanDescriptor() {
+	return getBdescriptor();
+    }
 
     /**
      * Gets the bean's <code>PropertyDescriptor</code>s.
@@ -83,7 +130,7 @@ public class XCatalogBeanInfo extends SimpleBeanInfo {
      * if a given PropertyDescriptor is an IndexedPropertyDescriptor.
      */
     public PropertyDescriptor[] getPropertyDescriptors() {
-        return properties;
+	return getPdescriptor();
     }
 
     /**
@@ -94,7 +141,7 @@ public class XCatalogBeanInfo extends SimpleBeanInfo {
      * should be obtained by automatic analysis.
      */
     public EventSetDescriptor[] getEventSetDescriptors() {
-        return eventSets;
+	return getEdescriptor();
     }
 
     /**
@@ -105,7 +152,7 @@ public class XCatalogBeanInfo extends SimpleBeanInfo {
      * should be obtained by automatic analysis.
      */
     public MethodDescriptor[] getMethodDescriptors() {
-        return methods;
+	return getMdescriptor();
     }
 
     /**
@@ -128,7 +175,7 @@ public class XCatalogBeanInfo extends SimpleBeanInfo {
      * <P>	Returns -1 if there is no default event.
      */
     public int getDefaultEventIndex() {
-        return defaultPropertyIndex;
+        return defaultEventIndex;
     }
 
     /**
@@ -186,17 +233,9 @@ public class XCatalogBeanInfo extends SimpleBeanInfo {
                     iconMono32 = loadImage( iconNameM32 );
                 return iconMono32;
             }
+	default: return null;
         }
-        return null;
     }
 
-    public BeanDescriptor getBeanDescriptor(){
-        BeanDescriptor desc = new BeanDescriptor(XCatalog.class, XCatalogCustomizer.class);        
-        desc.setName("XML Catalog"); // NOI18N
-        desc.setDisplayName(Util.getString ("NAME_x_catalog")); // NOI18N
-        desc.setShortDescription(Util.getString ("TEXT_x_catalog_desc")); // NOI18N
-        
-        return desc;
-    }
-    
 }
+

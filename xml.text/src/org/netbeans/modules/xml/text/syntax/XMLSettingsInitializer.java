@@ -70,8 +70,10 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
              ( kitClass == DTDKit.class ) ) {
             commonActionNames = new ArrayList
                 (Arrays.asList (new String[] {
-                    BaseKit.formatAction,
-                    null,
+// <comment> Wait for indentation engine.
+//                     BaseKit.formatAction,
+//                     null,
+// </comment>
                     TopComponent.class.getName(),
                     null,
                     BaseKit.cutAction,
@@ -301,7 +303,7 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
                         return new Coloring(null, Color.green.darker().darker(), null);
                         
                     case XMLDefaultTokenContext.VALUE_ID:
-                        return new Coloring(null, Color.magenta, null);
+                        return new Coloring(null, new Color (153,0,107) /*Color.magenta*/, null);
                         
                     case XMLDefaultTokenContext.BLOCK_COMMENT_ID:
                         return new Coloring(italicFont, Coloring.FONT_MODE_APPLY_STYLE,
@@ -312,6 +314,14 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
                         
                     case XMLDefaultTokenContext.CHARACTER_ID:
                         return new Coloring(null, Color.red.darker(), null);
+                        
+                    case XMLDefaultTokenContext.PI_START_ID:
+                    case XMLDefaultTokenContext.PI_TARGET_ID:
+                    case XMLDefaultTokenContext.PI_END_ID:
+                        return new Coloring(boldFont, Color.blue.darker().darker(), null);
+                        
+                    case XMLDefaultTokenContext.PI_CONTENT_ID:
+                        return new Coloring(null, Color.blue.darker().darker(), null);
                 }
                 
                                 
@@ -362,6 +372,8 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
             } else { // printing set
                 switch (tokenIDOrCategory.getNumericID()) {
 
+                    case XMLDefaultTokenContext.BLOCK_COMMENT_ID:
+                        return italicSubst;
                     default:
                          return SettingsUtil.defaultPrintColoringEvaluator;
                 }
@@ -422,7 +434,7 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
                         return new Coloring(null, Color.red, null);
 
                     case DTDTokenContext.STRING_ID:
-                        return new Coloring (null, Color.magenta, null);
+                        return new Coloring (null, new Color (153,0,107) /*Color.magenta*/, null);
 
                 }
 

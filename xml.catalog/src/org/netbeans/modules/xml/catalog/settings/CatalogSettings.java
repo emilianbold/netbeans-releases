@@ -53,7 +53,9 @@ public final class CatalogSettings implements Externalizable {
     private Set mountedCatalogs = new HashSet();
 
     private PropertyChangeSupport listeners = null;; 
-        
+
+    private final CatalogListener catalogListener = new CL();
+    
     private static ErrorManager err = null;
 
     // active result of lookup for this setting
@@ -117,6 +119,15 @@ public final class CatalogSettings implements Externalizable {
             mountedCatalogs.add(provider);
         }
         firePropertyChange(PROP_MOUNTED_CATALOGS, null, null);
+        
+        // add listener to the catalog
+        try {
+            provider.addCatalogListener(catalogListener);
+        } catch (UnsupportedOperationException ex) {
+            // ignore it, we just can not listen at it and save it on change
+            // it is fully OK until the catalog instance supports data source
+            // change
+        }
     }
     
     /** 
@@ -127,6 +138,14 @@ public final class CatalogSettings implements Externalizable {
             mountedCatalogs.remove(provider);
         }
         firePropertyChange(PROP_MOUNTED_CATALOGS, null, null);
+        
+        // add listener to the catalog
+        try {
+            provider.removeCatalogListener(catalogListener);
+        } catch (UnsupportedOperationException ex) {
+            // ignore it
+        }
+        
     }
 
         
@@ -172,7 +191,6 @@ try_next_provider:
     
     public void addPropertyChangeListener(PropertyChangeListener l){
         listeners.addPropertyChangeListener(l);
-        
     }
     
     public void removePropertyChangeListener(PropertyChangeListener l) {
@@ -289,7 +307,33 @@ try_next_provider:
             buf.append(", " + it.next());
         }
         return buf.toString();
-    }
+    }        
     
+    
+    /**
+     * Private catalog listener exposing all changes at catalogs
+     * as a change at this bean, so it get saved later.
+     */
+    private class CL implements CatalogListener {
+    
+        /** Given public ID has changed - disappeared.  */
+        public void notifyRemoved(String publicID) {
+        }
+
+        /** Given public ID has changed - created.  */
+        public void notifyNew(String publicID) {
+        }
+
+        /** Given public ID has changed.  */
+        public void notifyUpdate(String publicID) {
+        }
+
+        /*
+         * It is typical data source change.
+         */
+        public void notifyInvalidate() {
+            firePropertyChange("settings changed!", null, CatalogSettings.this);
+        }
+    }
     
 }

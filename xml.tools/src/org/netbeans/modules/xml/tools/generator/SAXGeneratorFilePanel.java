@@ -14,6 +14,8 @@ package org.netbeans.modules.xml.tools.generator;
 
 import java.awt.*;
 import javax.swing.*;
+import java.net.URL;
+import java.net.MalformedURLException;
 
 /**
  * A panel allowing to customize SAX generator i.e. setting file locations and element mapping.
@@ -23,7 +25,7 @@ import javax.swing.*;
  * @author  Petr Kuzel
  * @version 1.0
  */
-public class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel implements java.awt.event.ActionListener {
+public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel implements java.awt.event.ActionListener {
 
     /** Serial Version UID */
     private static final long serialVersionUID =-8950908568784619306L;  
@@ -32,6 +34,10 @@ public class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel implements 
     
     /** Creates new form SAXGeneratorCustomizer */
     public SAXGeneratorFilePanel() {
+//        try {
+//            this.putClientProperty("WizardPanel_helpURL", new URL("nbresloc:/org/netbeans/modules/xml/tools/generator/SAXGeneratorFilePanel.html"));  //NOI18N
+//        } catch (MalformedURLException ex) {
+//        }
     }
     
     private final ValidatingTextField.Validator NAME_VALIDATOR = new ValidatingTextField.Validator() {
@@ -77,6 +83,7 @@ public class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel implements 
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(480, 350));
+        setName(Util.getString ("SAXGeneratorFilePanel.Form.name"));
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentHidden(java.awt.event.ComponentEvent evt) {
                 formComponentHidden(evt);
@@ -117,8 +124,8 @@ public class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel implements 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(handlerImplTextField, gridBagConstraints);
 
         stubLabel.setText(Util.getString ("SAXGeneratorCustomizer.stubLabel.text"));
@@ -158,39 +165,39 @@ public class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel implements 
         parsletImplLabel.setLabelFor(parsletImplTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(parsletImplLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(parsletImplTextField, gridBagConstraints);
 
         saveCheckBox.setText(Util.getString("PROP_save_it"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(saveCheckBox, gridBagConstraints);
 
         saveLabel.setText(Util.getString("PROP_bindings_label"));
         saveLabel.setLabelFor(saveTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(saveLabel, gridBagConstraints);
 
         saveTextField.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(saveTextField, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -230,6 +237,7 @@ public class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel implements 
         handlerImplLabel.setDisplayedMnemonic(Util.getChar("SAXGeneratorFilePanel.handlerImplLabel.mne")); // NOI18N
         parsletLabel.setDisplayedMnemonic(Util.getChar("SAXGeneratorCustomizer.parsletLabel.mne")); // NOI18N
         parsletImplLabel.setDisplayedMnemonic(Util.getChar("SAXGeneratorFilePanel.parsletImplLabel.mne")); // NOI18N
+        saveLabel.setDisplayedMnemonic(Util.getChar("SAXGeneratorCustomizer.saveLabel.mne")); // NOI18N
         //****
               
         interfaceTextField.setText(model.getHandler());
@@ -314,6 +322,7 @@ public class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel implements 
         
         saveCheckBox.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_saveCheckBox"));
         saveCheckBox.getAccessibleContext().setAccessibleName(Util.getString("ACSN_saveCheckBox"));
+        saveCheckBox.setMnemonic((Util.getString("PROP_save_it_mnem")).charAt(0));
         
         this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_SAXGeneratorFilePanel"));
     }    

@@ -21,7 +21,7 @@ import org.openide.util.actions.NodeAction;
  *
  * @author  Petr Kuzel
  */
-public final class RefreshAction extends NodeAction {
+final class RefreshAction extends NodeAction {
 
     /** Serial Version UID */
     private static final long serialVersionUID =4798470042774935554L;
@@ -40,13 +40,11 @@ public final class RefreshAction extends NodeAction {
     }
 
     protected String iconResource () {
-        return "RefreshActionActionIcon.gif"; // NOI18N
+        return null;
     }
 
     public HelpCtx getHelpCtx () {
-        return HelpCtx.DEFAULT_HELP;
-        // If you will provide context help then use:
-        // return new HelpCtx (RefreshActionAction.class);
+        return new HelpCtx(getClass());
     }
 
     /** Perform extra initialization of this action's singleton.

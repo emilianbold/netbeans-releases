@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -23,97 +23,97 @@ import org.netbeans.tax.TreeException;
  * @version 0.1
  */
 public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer {
-
+    
     /** Serial Version UID */
     private static final long serialVersionUID = 1151841201717291218L;
     
-
+    
     //
     // init
     //
-
+    
     /** */
     public TreeProcessingInstructionCustomizer () {
-	super();
-
-        initComponents();
-        targetLabel.setDisplayedMnemonic(Util.getChar("MNE_xmlTarget")); // NOI18N
+        super ();
         
-        initAccessibility();
+        initComponents ();
+        targetLabel.setDisplayedMnemonic (Util.getChar ("MNE_xmlTarget")); // NOI18N
+        
+        initAccessibility ();
     }
-
+    
     
     //
     // itself
     //
-
+    
     /**
      */
     protected final TreeProcessingInstruction getProcessingInstruction () {
-        return (TreeProcessingInstruction)getTreeObject();
+        return (TreeProcessingInstruction)getTreeObject ();
     }
-
+    
     /**
      */
     protected final void safePropertyChange (PropertyChangeEvent pche) {
         super.safePropertyChange (pche);
         
-	if (pche.getPropertyName().equals (TreeProcessingInstruction.PROP_TARGET)) {
-	    updateTargetComponent();
-	} else if (pche.getPropertyName().equals (TreeProcessingInstruction.PROP_DATA)) {
-	    updateDataComponent();
-	}
+        if (pche.getPropertyName ().equals (TreeProcessingInstruction.PROP_TARGET)) {
+            updateTargetComponent ();
+        } else if (pche.getPropertyName ().equals (TreeProcessingInstruction.PROP_DATA)) {
+            updateDataComponent ();
+        }
     }
-
+    
     /**
      */
     protected final void updateProcessingInstructionTarget () {
-	try {
-	    getProcessingInstruction().setTarget (targetField.getText());
-	} catch (TreeException exc) {
-	    updateTargetComponent();
-	    Util.notifyTreeException (exc);
-	}
+        try {
+            getProcessingInstruction ().setTarget (targetField.getText ());
+        } catch (TreeException exc) {
+            updateTargetComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
     /**
      */
     protected final void updateTargetComponent () {
-        targetField.setText (getProcessingInstruction().getTarget());
+        targetField.setText (getProcessingInstruction ().getTarget ());
     }
     
     /**
      */
     protected final void updateProcessingInstructionData () {
-	try {
-	    getProcessingInstruction().setData (dataPane.getText());
-	} catch (TreeException exc) {
-	    updateDataComponent();
-	    Util.notifyTreeException (exc);
-	}
+        try {
+            getProcessingInstruction ().setData (dataPane.getText ());
+        } catch (TreeException exc) {
+            updateDataComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
     /**
      */
     protected final void updateDataComponent () {
-        dataPane.setText (getProcessingInstruction().getData());
+        dataPane.setText (getProcessingInstruction ().getData ());
     }
     
     /**
      */
     protected final void initComponentValues () {
-        updateTargetComponent();
-        updateDataComponent();
+        updateTargetComponent ();
+        updateDataComponent ();
     }
-
-
+    
+    
     /**
      */
     protected void updateReadOnlyStatus (boolean editable) {
         targetField.setEditable (editable);
         dataPane.setEditable (editable);
-    }    
-
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -189,36 +189,36 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
         add(dataPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
-
+    
     private void dataPaneFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_dataPaneFocusLost
         // Add your handling code here:
-	updateProcessingInstructionData();
+        updateProcessingInstructionData ();
     }//GEN-LAST:event_dataPaneFocusLost
-
+    
     /**
      */
     private void targetFieldFocusLost (java.awt.event.FocusEvent evt) {//GEN-FIRST:event_targetFieldFocusLost
-	// Add your handling code here:
-	updateProcessingInstructionTarget();
+        // Add your handling code here:
+        updateProcessingInstructionTarget ();
     }//GEN-LAST:event_targetFieldFocusLost
-
-
+    
+    
     /**
      */
     private void targetFieldActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_targetFieldActionPerformed
-	// Add your handling code here:
-	updateProcessingInstructionTarget();
+        // Add your handling code here:
+        updateProcessingInstructionTarget ();
     }//GEN-LAST:event_targetFieldActionPerformed
-
-
+    
+    
     private void dataPaneKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_dataPaneKeyPressed
         // Add your handling code here:
-	if ( applyKeyPressed (evt) ) {
-	    updateProcessingInstructionData();
-	}
+        if ( applyKeyPressed (evt) ) {
+            updateProcessingInstructionData ();
+        }
     }//GEN-LAST:event_dataPaneKeyPressed
-
-
+    
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel targetLabel;
     private javax.swing.JPanel dataPanel;
@@ -229,10 +229,11 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
     
     /** Initialize accesibility
      */
-    public void initAccessibility(){
-    
-        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeProcessingInstructionCustomizer"));
-        targetField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_targetField"));
-        dataPane.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_dataPane1"));
+    public void initAccessibility (){
+        
+        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeProcessingInstructionCustomizer"));
+        targetField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_targetField"));
+        dataPane.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_dataPanel1"));
+        dataPane.getAccessibleContext ().setAccessibleName (Util.getString ("ACSN_dataPanel1"));
     }
 }

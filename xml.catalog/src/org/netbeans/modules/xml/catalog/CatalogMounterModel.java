@@ -31,7 +31,7 @@ import org.netbeans.modules.xml.catalog.spi.*;
  * @author  Petr Kuzel
  * @version 
  */
-public class CatalogMounterModel extends Object {
+final class CatalogMounterModel extends Object {
     
     private Object catalog = null;  // selected & customized catalog instance
     

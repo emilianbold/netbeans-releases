@@ -20,6 +20,8 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 import org.openide.util.*;
+import java.net.URL;
+import java.net.MalformedURLException;
 
 
 /**
@@ -28,7 +30,7 @@ import org.openide.util.*;
  * @author  Petr Kuzel
  * @version 
  */
-public class SAXGeneratorMethodPanel extends SAXGeneratorAbstractPanel {
+public final class SAXGeneratorMethodPanel extends SAXGeneratorAbstractPanel {
 
     /** Serial Version UID */
     private static final long serialVersionUID =-4925652670676144240L;    
@@ -66,7 +68,10 @@ public class SAXGeneratorMethodPanel extends SAXGeneratorAbstractPanel {
     
     /** Creates new form SAXGeneratorMethodPanel */
     public SAXGeneratorMethodPanel() {
-        
+//        try {
+//            this.putClientProperty("WizardPanel_helpURL", new URL("nbresloc:/org/netbeans/modules/xml/tools/generator/SAXGeneratorMethodPanel.html"));  //NOI18N
+//        } catch (MalformedURLException ex) {
+//        }            
     }
 
     /** This method is called from within the constructor to
@@ -235,5 +240,7 @@ public class SAXGeneratorMethodPanel extends SAXGeneratorAbstractPanel {
     public void initAccessibility(){
 
         this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_SAXGeneratorMethodPanel"));
+        table.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_table"));
+        table.getAccessibleContext().setAccessibleName(Util.getString("ACSN_table"));
     }    
 }

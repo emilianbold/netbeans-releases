@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -27,7 +27,7 @@ import org.netbeans.tax.spec.ConditionalSection;
  * @version 0.1
  */
 public class TreeComment extends TreeData implements Document.Child, DocumentFragment.Child, Element.Child, GeneralEntityReference.Child, DTD.Child, ParameterEntityReference.Child, DocumentType.Child, ConditionalSection.Child {
-
+    
     //
     // init
     //
@@ -38,23 +38,23 @@ public class TreeComment extends TreeData implements Document.Child, DocumentFra
     public TreeComment (String data) throws InvalidArgumentException {
         super (data);
     }
-
+    
     /** Creates new TreeComment -- copy constructor. */
     protected TreeComment (TreeComment comment) {
         super (comment);
     }
-
-
+    
+    
     //
     // from TreeObject
     //
-
+    
     /**
      */
     public Object clone () {
-	return new TreeComment (this);
+        return new TreeComment (this);
     }
-
+    
     /**
      */
     public boolean equals (Object object, boolean deep) {
@@ -62,15 +62,15 @@ public class TreeComment extends TreeData implements Document.Child, DocumentFra
             return false;
         return true;
     }
-
+    
     /*
      * Checks instance and delegates to superclass.
      */
     public void merge (TreeObject treeObject) throws CannotMergeException {
-	super.merge (treeObject);
+        super.merge (treeObject);
     }
-
-
+    
+    
     //
     // from TreeData  //??? what is this
     //
@@ -78,14 +78,14 @@ public class TreeComment extends TreeData implements Document.Child, DocumentFra
     /**
      */
     protected final void checkData (String data) throws InvalidArgumentException {
-	TreeUtilities.checkCommentData (data);
+        TreeUtilities.checkCommentData (data);
     }
-
+    
     /**
      * @throws InvalidArgumentException
      */
     protected TreeData createData (String data) throws InvalidArgumentException {
         return new TreeComment (data);
     }
-        
+    
 }

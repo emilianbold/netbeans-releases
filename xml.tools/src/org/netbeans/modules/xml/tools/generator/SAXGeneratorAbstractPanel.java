@@ -19,6 +19,8 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 import org.openide.*;
+import org.openide.util.HelpCtx;
+import java.net.URL;
 
 /**
  * Base class of Generator Wizard panels. <code>updateModel</code>
@@ -54,8 +56,15 @@ public abstract class SAXGeneratorAbstractPanel extends JPanel implements Wizard
         updateView();
     }
     
-    public org.openide.util.HelpCtx getHelp() {
-        return null;
+    /**
+     * Cunstruct help ctx from WizardPanel_helpURL property.
+     */
+    public final HelpCtx getHelp() {
+//        URL url = (URL) getClientProperty("WizardPanel_helpURL");
+//        if (url != null) {
+            return new HelpCtx(getClass());  // warning getClass(0 returns a subclass
+//        }
+//        return null;
     }
     
     public void addChangeListener(javax.swing.event.ChangeListener l) {

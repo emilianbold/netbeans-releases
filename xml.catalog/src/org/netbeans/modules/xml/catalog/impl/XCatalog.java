@@ -33,7 +33,7 @@ import org.netbeans.modules.xml.catalog.lib.*;
  *
  * @author  Petr Kuzel
  */
-public class XCatalog extends AbstractCatalog
+public final class XCatalog extends AbstractCatalog
        implements CatalogReader, CatalogDescriptor, Serializable, EntityResolver {
     
     /** Serial Version UID MUST NOT change. */
@@ -222,7 +222,23 @@ public class XCatalog extends AbstractCatalog
     public String toString() {
         return super.toString() + ":" + catalogSrc; // NOI18N
     }
+
+/* We must behave like immutable key!
+    public boolean equals(Object obj) {
+        if (obj instanceof XCatalog) {
+            XCatalog cat = (XCatalog) obj;
+            if (catalogSrc == null) return false;
+            return catalogSrc.equals(cat.catalogSrc);
+        }
+        return false;
+    }
     
+
+    public int hashCode() {
+        return catalogSrc != null ? catalogSrc.hashCode() : 0;
+    }
+    
+*/
     
     // Entity resolver interface ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
@@ -289,8 +305,6 @@ public class XCatalog extends AbstractCatalog
         return null;
         
     }
-    
-
     
 
     

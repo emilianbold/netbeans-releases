@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -29,18 +29,18 @@ public class TreeNotationDecl extends TreeNodeDecl implements DTD.Child, Paramet
     public static final String PROP_PUBLIC_ID = "publicId"; // NOI18N
     /** */
     public static final String PROP_SYSTEM_ID = "systemId"; // NOI18N
-
-
+    
+    
     /** */
     private String name;
-
+    
     /** -- can be null. */
     private String systemId;
-
+    
     /** -- can be null. */
     private String publicId;
-
-
+    
+    
     //
     // init
     //
@@ -50,71 +50,71 @@ public class TreeNotationDecl extends TreeNodeDecl implements DTD.Child, Paramet
      */
     public TreeNotationDecl (String name, String publicId, String systemId) throws InvalidArgumentException {
         super ();
-
-	checkName (name);
-	this.name     = name;
-
-	checkPublicId (publicId);
-	checkSystemId (systemId);
-	checkExternalId (publicId, systemId);
-	this.systemId = systemId;
-	this.publicId = publicId;
+        
+        checkName (name);
+        this.name     = name;
+        
+        checkPublicId (publicId);
+        checkSystemId (systemId);
+        checkExternalId (publicId, systemId);
+        this.systemId = systemId;
+        this.publicId = publicId;
     }
-
-
+    
+    
     /** Creates new TreeNotationDecl -- copy constructor. */
     protected TreeNotationDecl (TreeNotationDecl notationDecl) {
-	super (notationDecl);
-
-	this.name     = notationDecl.name;
-	this.publicId = notationDecl.publicId;
-	this.systemId = notationDecl.systemId;
+        super (notationDecl);
+        
+        this.name     = notationDecl.name;
+        this.publicId = notationDecl.publicId;
+        this.systemId = notationDecl.systemId;
     }
-
-
+    
+    
     //
     // from TreeObject
     //
-
+    
     /**
      */
     public Object clone () {
-	return new TreeNotationDecl (this);
+        return new TreeNotationDecl (this);
     }
-
+    
     /**
      */
     public boolean equals (Object object, boolean deep) {
         if (!!! super.equals (object, deep))
             return false;
-
+        
         TreeNotationDecl peer = (TreeNotationDecl) object;
-        if (!!! Util.equals (this.getName(), peer.getName())) {
+        if (!!! Util.equals (this.getName (), peer.getName ())) {
             return false;
         }
-        if (!!! Util.equals (this.getSystemId(), peer.getSystemId())) {
+        if (!!! Util.equals (this.getSystemId (), peer.getSystemId ())) {
             return false;
         }
-        if (!!! Util.equals (this.getPublicId(), peer.getPublicId())) {
+        if (!!! Util.equals (this.getPublicId (), peer.getPublicId ())) {
             return false;
         }
         
         return true;
     }
-
+    
     /*
      * Merges properties: name, system ID and public ID.
      */
     public void merge (TreeObject treeObject) throws CannotMergeException {
-	super.merge (treeObject);
-
+        super.merge (treeObject);
+        
         TreeNotationDecl peer = (TreeNotationDecl) treeObject;
         
-	setNameImpl (peer.getName());
-        setSystemIdImpl (peer.getSystemId());
-        setPublicIdImpl (peer.getPublicId());
+        setNameImpl (peer.getName ());
+        setSystemIdImpl (peer.getSystemId ());
+        setPublicIdImpl (peer.getPublicId ());
     }
-
+    
     
     //
     // itself
@@ -129,38 +129,38 @@ public class TreeNotationDecl extends TreeNodeDecl implements DTD.Child, Paramet
     /**
      */
     private final void setNameImpl (String newName) {
-	String oldName = this.name;
-
-	this.name = newName;
-
-	firePropertyChange (PROP_NAME, oldName, newName);
+        String oldName = this.name;
+        
+        this.name = newName;
+        
+        firePropertyChange (PROP_NAME, oldName, newName);
     }
-
+    
     /**
      * @throws ReadOnlyException
      * @throws InvalidArgumentException
      */
     public final void setName (String newName) throws ReadOnlyException, InvalidArgumentException {
-	//
-	// check new value
-	//
-	if ( Util.equals (this.name, newName) )
-	    return;
-        checkReadOnly();
-	checkName (newName);
-
-	//
-	// set new value
-	//
-	setNameImpl (newName);
+        //
+        // check new value
+        //
+        if ( Util.equals (this.name, newName) )
+            return;
+        checkReadOnly ();
+        checkName (newName);
+        
+        //
+        // set new value
+        //
+        setNameImpl (newName);
     }
-
+    
     /**
      */
     protected final void checkName (String name) throws InvalidArgumentException {
-	TreeUtilities.checkNotationDeclName (name);
+        TreeUtilities.checkNotationDeclName (name);
     }
-
+    
     /**
      */
     public String getPublicId () {
@@ -170,11 +170,11 @@ public class TreeNotationDecl extends TreeNodeDecl implements DTD.Child, Paramet
     /**
      */
     private final void setPublicIdImpl (String newPublicId) {
-	String oldPublicId = this.publicId;
-
-	this.publicId = newPublicId;
-
-	firePropertyChange (PROP_PUBLIC_ID, oldPublicId, newPublicId);
+        String oldPublicId = this.publicId;
+        
+        this.publicId = newPublicId;
+        
+        firePropertyChange (PROP_PUBLIC_ID, oldPublicId, newPublicId);
     }
     
     /**
@@ -182,19 +182,19 @@ public class TreeNotationDecl extends TreeNodeDecl implements DTD.Child, Paramet
      * @throws InvalidArgumentException
      */
     public final void setPublicId (String newPublicId) throws ReadOnlyException, InvalidArgumentException {
-	//
-	// check new value
-	//
-	if ( Util.equals (this.publicId, newPublicId) )
-	    return;
-        checkReadOnly();
-	checkPublicId (newPublicId);
-	checkExternalId (newPublicId, this.systemId);
-
-	//
-	// set new value
-	//
-	setPublicIdImpl (newPublicId);
+        //
+        // check new value
+        //
+        if ( Util.equals (this.publicId, newPublicId) )
+            return;
+        checkReadOnly ();
+        checkPublicId (newPublicId);
+        checkExternalId (newPublicId, this.systemId);
+        
+        //
+        // set new value
+        //
+        setPublicIdImpl (newPublicId);
     }
     
     /**
@@ -202,7 +202,7 @@ public class TreeNotationDecl extends TreeNodeDecl implements DTD.Child, Paramet
     protected final void checkPublicId (String publicId) throws InvalidArgumentException {
         TreeUtilities.checkNotationDeclPublicId (publicId);
     }
-
+    
     /**
      */
     public String getSystemId () {
@@ -212,11 +212,11 @@ public class TreeNotationDecl extends TreeNodeDecl implements DTD.Child, Paramet
     /**
      */
     private final void setSystemIdImpl (String newSystemId) {
-	String oldSystemId = this.systemId;
-
-	this.systemId = newSystemId;
-
-	firePropertyChange (PROP_SYSTEM_ID, oldSystemId, newSystemId);
+        String oldSystemId = this.systemId;
+        
+        this.systemId = newSystemId;
+        
+        firePropertyChange (PROP_SYSTEM_ID, oldSystemId, newSystemId);
     }
     
     /**
@@ -224,19 +224,19 @@ public class TreeNotationDecl extends TreeNodeDecl implements DTD.Child, Paramet
      * @throws InvalidArgumentException
      */
     public final void setSystemId (String newSystemId) throws ReadOnlyException, InvalidArgumentException {
-	//
-	// check new value
-	//
-	if ( Util.equals (this.systemId, newSystemId) )
-	    return;
-        checkReadOnly();
-	checkSystemId (newSystemId);
-	checkExternalId (this.publicId, newSystemId);
-
-	//
-	// set new value
-	//
-	setSystemIdImpl (newSystemId);
+        //
+        // check new value
+        //
+        if ( Util.equals (this.systemId, newSystemId) )
+            return;
+        checkReadOnly ();
+        checkSystemId (newSystemId);
+        checkExternalId (this.publicId, newSystemId);
+        
+        //
+        // set new value
+        //
+        setSystemIdImpl (newSystemId);
     }
     
     /**
@@ -244,15 +244,15 @@ public class TreeNotationDecl extends TreeNodeDecl implements DTD.Child, Paramet
     protected final void checkSystemId (String systemId) throws InvalidArgumentException {
         TreeUtilities.checkNotationDeclSystemId (systemId);
     }
-
+    
     
     /**
      */
     protected final void checkExternalId (String publicId, String systemId) throws InvalidArgumentException {
-	if ( (publicId == null) && (systemId == null) ) {
-	    throw new InvalidArgumentException (Util.getString ("EXC_invalid_nulls"),
-						new NullPointerException());
-	}
+        if ( (publicId == null) && (systemId == null) ) {
+            throw new InvalidArgumentException (Util.getString ("EXC_invalid_nulls"),
+            new NullPointerException ());
+        }
     }
-
+    
 }

@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -23,169 +23,177 @@ import org.netbeans.tax.TreeAttlistDeclAttributeDef;
  * @version 0.1
  */
 public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomizer {
-
+    
     /** Serial Version UID */
-    private static final long serialVersionUID =2877621716093964464L;    
-
+    private static final long serialVersionUID =2877621716093964464L;
+    
     
     //
     // init
     //
-
+    
     /** */
     public TreeAttlistDeclAttributeDefCustomizer () {
-	super();
-
-        initComponents();
-
-        elementNameLabel.setDisplayedMnemonic(Util.getChar("TreeAttributeDeclCustomizer.elemNameLabel.mne")); // NOI18N
-        nameLabel.setDisplayedMnemonic(Util.getChar("MNE_xmlName")); // NOI18N
-        typeLabel.setDisplayedMnemonic(Util.getChar("MNE_dtdAttDefType")); // NOI18N
-        enumeratedLabel.setDisplayedMnemonic(Util.getChar("DTDAttDefNode.enumeratedLabel.mne")); // NOI18N
-        defaultTypeLabel.setDisplayedMnemonic(Util.getChar("DTDAttDefNode.defaultTypeLabel.mne")); // NOI18N
-        defaultValueLabel.setDisplayedMnemonic(Util.getChar("DTDAttDefNode.defaultValueLabel.mne")); // NOI18N  
+        super ();
         
-        initAccessibility();
+        initComponents ();
+        
+        elementNameLabel.setDisplayedMnemonic (Util.getChar ("TreeAttributeDeclCustomizer.elemNameLabel.mne")); // NOI18N
+        nameLabel.setDisplayedMnemonic (Util.getChar ("MNE_xmlName")); // NOI18N
+        typeLabel.setDisplayedMnemonic (Util.getChar ("MNE_dtdAttDefType")); // NOI18N
+        enumeratedLabel.setDisplayedMnemonic (Util.getChar ("DTDAttDefNode.enumeratedLabel.mne")); // NOI18N
+        defaultTypeLabel.setDisplayedMnemonic (Util.getChar ("DTDAttDefNode.defaultTypeLabel.mne")); // NOI18N
+        defaultValueLabel.setDisplayedMnemonic (Util.getChar ("DTDAttDefNode.defaultValueLabel.mne")); // NOI18N
+        
+        initAccessibility ();
     }
-
+    
     //
     // itself
     //
-
+    
     /**
      */
     protected final TreeAttlistDeclAttributeDef getAttributeDef () {
-        return (TreeAttlistDeclAttributeDef)getTreeObject();
+        return (TreeAttlistDeclAttributeDef)getTreeObject ();
     }
-
+    
     /**
      */
     protected final void safePropertyChange (PropertyChangeEvent pche) {
         super.safePropertyChange (pche);
         
-	if (pche.getPropertyName().equals (TreeAttlistDeclAttributeDef.PROP_NAME)) {
-	    updateNameComponent();
-	} else if (pche.getPropertyName().equals (TreeAttlistDeclAttributeDef.PROP_TYPE)) {
-	    updateTypeComponent();
-	} else if (pche.getPropertyName().equals (TreeAttlistDeclAttributeDef.PROP_ENUMERATED_TYPE)) {
-	    updateEnumeratedTypeComponent();
-	} else if (pche.getPropertyName().equals (TreeAttlistDeclAttributeDef.PROP_DEFAULT_TYPE)) {
-	    updateDefaultTypeComponent();
-	} else if (pche.getPropertyName().equals (TreeAttlistDeclAttributeDef.PROP_DEFAULT_VALUE)) {
-	    updateDefaultValueComponent();
-	}
+        if (pche.getPropertyName ().equals (TreeAttlistDeclAttributeDef.PROP_NAME)) {
+            updateNameComponent ();
+        } else if (pche.getPropertyName ().equals (TreeAttlistDeclAttributeDef.PROP_TYPE)) {
+            updateTypeComponent ();
+        } else if (pche.getPropertyName ().equals (TreeAttlistDeclAttributeDef.PROP_ENUMERATED_TYPE)) {
+            updateEnumeratedTypeComponent ();
+        } else if (pche.getPropertyName ().equals (TreeAttlistDeclAttributeDef.PROP_DEFAULT_TYPE)) {
+            updateDefaultTypeComponent ();
+        } else if (pche.getPropertyName ().equals (TreeAttlistDeclAttributeDef.PROP_DEFAULT_VALUE)) {
+            updateDefaultValueComponent ();
+        }
     }
-
+    
     
     /**
      */
     protected final void updateElementNameComponent () {
-        elementNameField.setText (getAttributeDef().getElementName());
+        elementNameField.setText (getAttributeDef ().getElementName ());
     }
-
+    
     /**
      */
     protected final void updateNameComponent () {
-        nameField.setText (getAttributeDef().getName());
+        nameField.setText (getAttributeDef ().getName ());
     }
-
+    
     /**
      */
     protected final void updateAttributeDefName () {
-	try {
-	    getAttributeDef().setName (nameField.getText());
-	} catch (TreeException exc) {
-	    updateNameComponent();
-	    Util.notifyTreeException (exc);
-	}
+        try {
+            getAttributeDef ().setName (nameField.getText ());
+        } catch (TreeException exc) {
+            updateNameComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
     /**
      */
     protected final void updateTypeComponent () {
-        typeField.setText (getAttributeDef().getTypeName());
+        typeField.setText (getAttributeDef ().getTypeName ());
     }
-
+    
     /**
      */
     protected final void updateAttributeDefType () {
-	try {
-	    getAttributeDef().setType
-		(TreeAttlistDeclAttributeDef.findType (typeField.getText()),
-		 getAttributeDef().getEnumeratedType());
-	} catch (TreeException exc) {
-	    updateTypeComponent();
-	    Util.notifyTreeException (exc);
-	}
+        try {
+            getAttributeDef ().setType
+                (TreeAttlistDeclAttributeDef.findType (text2null (typeField.getText ())),
+                 getAttributeDef ().getEnumeratedType ());
+        } catch (TreeException exc) {
+            updateTypeComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
     /**
      */
     protected final void updateEnumeratedTypeComponent () {
-        enumeratedField.setText (null2text (getAttributeDef().getEnumeratedTypeString()));
+        enumeratedField.setText (null2text (getAttributeDef ().getEnumeratedTypeString ()));
     }
-
+    
     /**
      */
     protected final void updateAttributeDefEnumeratedType () {
-	try {
-	    getAttributeDef().setType
-		(getAttributeDef().getType(),
-		 TreeAttlistDeclAttributeDef.createEnumeratedType (text2null (enumeratedField.getText())));
-	} catch (TreeException exc) {
-	    updateEnumeratedTypeComponent();
-	    Util.notifyTreeException (exc);
-	}
+        try {
+            getAttributeDef ().setType
+                (getAttributeDef ().getType (),
+                 TreeAttlistDeclAttributeDef.createEnumeratedType (text2null (enumeratedField.getText ())));
+        } catch (TreeException exc) {
+            updateEnumeratedTypeComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
     /**
      */
     protected final void updateDefaultTypeComponent () {
-        defaultTypeField.setText (null2text (getAttributeDef().getDefaultTypeName()));
+        defaultTypeField.setText (null2text (getAttributeDef ().getDefaultTypeName ()));
     }
-
+    
     /**
      */
     protected final void updateAttributeDefDefaultType () {
-	try {
-	    getAttributeDef().setDefaultType
-		(TreeAttlistDeclAttributeDef.findDefaultType (text2null (defaultTypeField.getText())),
-		 getAttributeDef().getDefaultValue());
-	} catch (TreeException exc) {
-	    updateDefaultTypeComponent();
-	    Util.notifyTreeException (exc);
-	}
+        try {
+            getAttributeDef ().setDefaultType
+                (TreeAttlistDeclAttributeDef.findDefaultType (text2null (defaultTypeField.getText ())),
+                 getAttributeDef ().getDefaultValue ());
+        } catch (TreeException exc) {
+            updateDefaultTypeComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
     /**
      */
     protected final void updateDefaultValueComponent () {
-        defaultValueField.setText (null2text (getAttributeDef().getDefaultValue()));
+        defaultValueField.setText (null2text (getAttributeDef ().getDefaultValue ()));
     }
-        
+    
     /**
      */
     protected final void updateAttributeDefDefaultValue () {
-	try {
-	    getAttributeDef().setDefaultType (getAttributeDef().getDefaultType(), text2null (defaultValueField.getText()));
-	} catch (TreeException exc) {
-	    updateDefaultValueComponent();
-	    Util.notifyTreeException (exc);
-	}
+        try {
+            short defaultType = getAttributeDef ().getDefaultType ();
+            String defaultValue = text2null (defaultValueField.getText ());
+            if ( defaultValue == null ) {
+                if ( ( defaultType == TreeAttlistDeclAttributeDef.DEFAULT_TYPE_NULL ) ||
+                     ( defaultType == TreeAttlistDeclAttributeDef.DEFAULT_TYPE_FIXED ) ) {
+                    defaultValue = "";
+                }
+            }
+            getAttributeDef ().setDefaultType (defaultType, defaultValue);
+        } catch (TreeException exc) {
+            updateDefaultValueComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
     
     /**
      */
     protected final void initComponentValues () {
-	updateElementNameComponent();
-        updateNameComponent();
-        updateTypeComponent();
-        updateEnumeratedTypeComponent();
-        updateDefaultTypeComponent();
-        updateDefaultValueComponent();
+        updateElementNameComponent ();
+        updateNameComponent ();
+        updateTypeComponent ();
+        updateEnumeratedTypeComponent ();
+        updateDefaultTypeComponent ();
+        updateDefaultValueComponent ();
     }
-
+    
     
     /**
      */
@@ -195,8 +203,8 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         enumeratedField.setEditable (editable);
         defaultTypeField.setEditable (editable);
         defaultValueField.setEditable (editable);
-    }    
-
+    }
+    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -234,6 +242,12 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
 
         elementNameField.setEditable(false);
         elementNameField.setColumns(23);
+        elementNameField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                elementNameFieldFocusGained(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -261,6 +275,9 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         });
 
         nameField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                nameFieldFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 nameFieldFocusLost(evt);
             }
@@ -292,6 +309,9 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         });
 
         typeField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                typeFieldFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 typeFieldFocusLost(evt);
             }
@@ -323,6 +343,9 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         });
 
         enumeratedField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                enumeratedFieldFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 enumeratedFieldFocusLost(evt);
             }
@@ -353,6 +376,9 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         });
 
         defaultTypeField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                defaultTypeFieldFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 defaultTypeFieldFocusLost(evt);
             }
@@ -384,6 +410,9 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         });
 
         defaultValueField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                defaultValueFieldFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 defaultValueFieldFocusLost(evt);
             }
@@ -410,57 +439,87 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         add(fillPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
-
+    
+    private void defaultValueFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_defaultValueFieldFocusGained
+        // Accessibility:
+        defaultValueField.selectAll ();
+    }//GEN-LAST:event_defaultValueFieldFocusGained
+    
+    private void defaultTypeFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_defaultTypeFieldFocusGained
+        // Accessibility:
+        defaultTypeField.selectAll ();
+    }//GEN-LAST:event_defaultTypeFieldFocusGained
+    
+    private void enumeratedFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_enumeratedFieldFocusGained
+        // Accessibility:
+        enumeratedField.selectAll ();
+    }//GEN-LAST:event_enumeratedFieldFocusGained
+    
+    private void typeFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_typeFieldFocusGained
+        // Accessibility:
+        typeField.selectAll ();
+    }//GEN-LAST:event_typeFieldFocusGained
+    
+    private void nameFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_nameFieldFocusGained
+        // Accessibility:
+        nameField.selectAll ();
+    }//GEN-LAST:event_nameFieldFocusGained
+    
+    private void elementNameFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_elementNameFieldFocusGained
+        // Accessibility:
+        elementNameField.selectAll ();
+    }//GEN-LAST:event_elementNameFieldFocusGained
+    
     private void defaultValueFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_defaultValueFieldActionPerformed
         // Add your handling code here:
-        updateAttributeDefDefaultValue();
+        updateAttributeDefDefaultValue ();
     }//GEN-LAST:event_defaultValueFieldActionPerformed
-
+    
     private void defaultValueFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_defaultValueFieldFocusLost
         // Add your handling code here:
-        updateAttributeDefDefaultValue();
+        updateAttributeDefDefaultValue ();
     }//GEN-LAST:event_defaultValueFieldFocusLost
-
+    
     private void defaultTypeFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_defaultTypeFieldFocusLost
         // Add your handling code here:
-        updateAttributeDefDefaultType();
+        updateAttributeDefDefaultType ();
     }//GEN-LAST:event_defaultTypeFieldFocusLost
-
+    
     private void defaultTypeFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_defaultTypeFieldActionPerformed
         // Add your handling code here:
-        updateAttributeDefDefaultType();
+        updateAttributeDefDefaultType ();
     }//GEN-LAST:event_defaultTypeFieldActionPerformed
-
+    
     private void enumeratedFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enumeratedFieldActionPerformed
         // Add your handling code here:
-        updateAttributeDefEnumeratedType();
+        updateAttributeDefEnumeratedType ();
     }//GEN-LAST:event_enumeratedFieldActionPerformed
-
+    
     private void enumeratedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_enumeratedFieldFocusLost
         // Add your handling code here:
-        updateAttributeDefEnumeratedType();
+        updateAttributeDefEnumeratedType ();
     }//GEN-LAST:event_enumeratedFieldFocusLost
-
+    
     private void typeFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_typeFieldFocusLost
         // Add your handling code here:
-        updateAttributeDefType();
+        updateAttributeDefType ();
     }//GEN-LAST:event_typeFieldFocusLost
-
+    
     private void typeFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeFieldActionPerformed
         // Add your handling code here:
-        updateAttributeDefType();
+        updateAttributeDefType ();
     }//GEN-LAST:event_typeFieldActionPerformed
-
+    
     private void nameFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_nameFieldFocusLost
         // Add your handling code here:
-        updateAttributeDefName();
+        updateAttributeDefName ();
     }//GEN-LAST:event_nameFieldFocusLost
-
+    
     private void nameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nameFieldActionPerformed
         // Add your handling code here:
-        updateAttributeDefName();
+        updateAttributeDefName ();
     }//GEN-LAST:event_nameFieldActionPerformed
-
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel nameLabel;
     private javax.swing.JLabel enumeratedLabel;
@@ -476,20 +535,30 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
     private javax.swing.JTextField elementNameField;
     private javax.swing.JPanel fillPanel;
     // End of variables declaration//GEN-END:variables
-
-
+    
+    
     /** Initialize accesibility
      */
-    public void initAccessibility(){
-
-       elementNameLabel.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_elementNameField")); 
-       nameField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_nameField1"));
-       typeField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_typeField"));
-       enumeratedField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_enumeratedField"));
-       defaultTypeField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_defaultTypeField"));
-       defaultValueField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_defaultValueField"));
-       
-       
-       this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeAttlistDeclAttributeDefCustomizer"));
-    }        
+    public void initAccessibility (){
+        
+        elementNameField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_elementNameField"));
+        elementNameField.selectAll ();
+        
+        nameField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_nameField1"));
+        nameField.selectAll ();
+        
+        typeField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_typeField"));
+        typeField.selectAll ();
+        
+        enumeratedField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_enumeratedField"));
+        enumeratedField.selectAll ();
+        
+        defaultTypeField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_defaultTypeField"));
+        defaultTypeField.selectAll ();
+        
+        defaultValueField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_defaultValueField"));
+        defaultValueField.selectAll ();
+        
+        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeAttlistDeclAttributeDefCustomizer"));
+    }
 }

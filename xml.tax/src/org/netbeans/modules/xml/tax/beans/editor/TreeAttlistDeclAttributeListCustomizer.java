@@ -237,7 +237,11 @@ public class TreeAttlistDeclAttributeListCustomizer extends JPanel implements Cu
             case COL_DEFAULT_TYPE:
                 return attr.getDefaultTypeName();
             case COL_DEFAULT_VALUE:
-                return attr.getDefaultValue();
+                String defVal = attr.getDefaultValue();
+                if ( defVal == null ) {
+                    defVal = ""; // NOI18N
+                }
+                return defVal;
             default:
                 return null;
             }

@@ -52,6 +52,8 @@ import org.netbeans.tax.*;
  * The generator is driven by {@link SAXGeneratorModel}.
  * It contains all properties driving this code generator.
  *  
+ * @author  Petr Kuzel
+ * @version 1.0, 12/7/2001
  */
 public final class SAXGeneratorSupport implements XMLGenerateCookie {
     
@@ -204,6 +206,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             
             descriptor.setTitle(Util.getString ("SAXGeneratorSupport.title"));            
             descriptor.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
+//            descriptor.putProperty("WizardPanel_helpDisplayed", Boolean.TRUE); // NOI18N
             descriptor.putProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
             descriptor.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
             descriptor.putProperty("WizardPanel_leftDimension", new Dimension(500,400)); // NOI18N
@@ -223,7 +226,10 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             Dialog dlg = TopManager.getDefault().createDialog(descriptor);
             dlg.show();
             
-            if (descriptor.CANCEL_OPTION.equals(descriptor.getValue())) return;
+            if ( ( descriptor.CANCEL_OPTION.equals (descriptor.getValue()) ) ||
+                 ( descriptor.CLOSED_OPTION.equals (descriptor.getValue()) ) ) {
+                return;
+            }
            
             // wizard finished
             
@@ -238,11 +244,11 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             DataObject stubDataObject = createDataObject(folder, model.getStub(), JAVA_EXT, true);
             SourceElement stubSrc = openSource(stubDataObject);
 
-            DataObject interfaceDataObject = createDataObject( folder, model.getHandler(), JAVA_EXT, true);
-            SourceElement interfaceSrc = openSource(interfaceDataObject);
-
             DataObject interfaceImplDataObject = createDataObject( folder, model.getHandlerImpl(), JAVA_EXT, false);
             SourceElement interfaceImplSrc = openSource(interfaceImplDataObject);
+            
+            DataObject interfaceDataObject = createDataObject( folder, model.getHandler(), JAVA_EXT, true);
+            SourceElement interfaceSrc = openSource(interfaceDataObject);
 
             DataObject parsletsDataObject = null;
             DataObject parsletsImplDataObject = null;
@@ -252,11 +258,11 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             
             if (model.hasParslets()) {
 
-                parsletsDataObject = createDataObject( folder, model.getParslet(), JAVA_EXT, true);
-                parsletsSrc = openSource(parsletsDataObject);
-
                 parsletsImplDataObject = createDataObject( folder, model.getParsletImpl(), JAVA_EXT, false);
                 parsletsImplSrc = openSource(parsletsImplDataObject);
+                
+                parsletsDataObject = createDataObject( folder, model.getParslet(), JAVA_EXT, true);
+                parsletsSrc = openSource(parsletsDataObject);
                 
             }
 
@@ -318,13 +324,17 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             GenerateSupportUtils.performDefaultAction (folder.getFileObject(model.getHandlerImpl(), JAVA_EXT));
 
         } catch (FileStateInvalidException e) {
-            Util.debug ("Ignoring:", e);  // NOI18N
+            String msg = Util.getString("MSG_wizard_fail", e);
+            Util.notifyWarning(msg);
         } catch (SourceException e) {
-            Util.debug ("Ignoring:", e);  // NOI18N
+            String msg = Util.getString("MSG_wizard_fail", e);
+            Util.notifyWarning(msg);
         } catch (TreeException e) {
-            Util.debug ("Ignoring:", e);  // NOI18N
+            String msg = Util.getString("MSG_wizard_fail", e);
+            Util.notifyWarning(msg);
         } catch (IOException e) {
-            Util.debug ("Ignoring:", e);  // NOI18N
+            String msg = Util.getString("MSG_wizard_fail", e);
+            Util.notifyWarning(msg);
         } finally {
             String msg = org.openide.util.NbBundle.getMessage(SAXGeneratorSupport.class, "MSG_sax_progress_done");
             GuiUtil.setStatusText(msg); // NOI18N
@@ -509,27 +519,45 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
         
         if (model.hasParslets()) {
             constructor.setParameters( new MethodParameter[] {
-                new MethodParameter("handler", Type.parse(face), true),  // NOI18N            
-                new MethodParameter("parslet", Type.parse(let), true)  // NOI18N
+                new MethodParameter("handler", Type.parse(face), true),  // NOI18N
+                new MethodParameter("resolver", Type.parse("EntityResolver"), true),  // NOI18N
+                new MethodParameter("parslet", Type.parse(let), true),  // NOI18N
             });
         } else {
             constructor.setParameters( new MethodParameter[] {
-                new MethodParameter("handler", Type.parse(face), true)  // NOI18N            
-            });
-            
+                new MethodParameter("handler", Type.parse(face), true),  // NOI18N            
+                new MethodParameter("resolver", Type.parse("EntityResolver"), true),  // NOI18N
+            });            
         }
 
         String parsletInit = model.hasParslets() ? "\nthis.parslet = parslet;" : ""; // NOI18N
         
         constructor.setBody(parsletInit + "\nthis.handler = handler;\n" + // NOI18N
+            "this.resolver = resolver;\n" + // NOI18N
             "buffer = new StringBuffer(111);\ncontext = new java.util.Stack();\n"    // NOI18N
         );
+        
+        String docText =
+            "\nCreates a parser instance.\n" +  // NOI18N       
+            "@param handler handler interface implementation (never <code>null</code>\n" +  // NOI18N
+            "@param resolver SAX entity resolver implementation or <code>null</code>.\n" +  // NOI18N
+            "It is recommended that it could be able to resolve at least the DTD.";  // NOI18N
+                               
+        if (model.hasParslets()) {
+            docText += "@param parslet convertors implementation (never <code>null</code>\n"; //NOI18N
+        }
+        
+        constructor.getJavaDoc().setRawText(docText);
+        
         clazz.addConstructor(constructor);
 
+        // add private class fields
+        
         clazz.addField(createField("buffer", StringBuffer.class.getName()));    // NOI18N        
         if (model.hasParslets()) clazz.addField(createField("parslet", let));                            // NOI18N
         clazz.addField(createField("handler", face));                           // NOI18N
         clazz.addField(createField("context", java.util.Stack.class.getName()));// NOI18N
+        clazz.addField(createField("resolver", "EntityResolver"));// NOI18N
 
         genStubClass(clazz);
         
@@ -857,7 +885,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
     private MethodElement genStartElementMethod() throws SourceException {
         MethodElement method = null;
         if (sax == 1) {
-            method = createInterfaceMethod (
+            method = createImplementationMethod (
                 M_START_ELEMENT,
                 new MethodParameter [] {
                     new MethodParameter ("name", Type_STRING, false), // NOI18N
@@ -881,7 +909,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             method.setBody(code.toString());
                 
         } else if (sax == 2) {
-            method = createInterfaceMethod (
+            method = createImplementationMethod (
                 M_START_ELEMENT,
                 new MethodParameter [] {
                     new MethodParameter ("ns", Type_STRING, false),       // NOI18N
@@ -916,7 +944,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
     private MethodElement genEndElementMethod() throws SourceException  {
         MethodElement method = null;
         if (sax == 1) {
-            method = createInterfaceMethod (
+            method = createImplementationMethod (
                 M_END_ELEMENT,
                 new MethodParameter [] { 
                     new MethodParameter ("name", Type_STRING, false) // NOI18N
@@ -938,7 +966,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             
         } else if (sax == 2) {
 
-            method = createInterfaceMethod (
+            method = createImplementationMethod (
                 M_END_ELEMENT,
                 new MethodParameter [] { 
                     new MethodParameter ("ns", Type_STRING, false),     // NOI18N
@@ -1004,7 +1032,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
     private MethodElement genStartPrefixMappingMethod() throws SourceException  {
         MethodElement method = null;
         if (sax == 2) {
-            method = createInterfaceMethod (
+            method = createImplementationMethod (
                 M_START_PREFIX_MAPPING,
                 new MethodParameter [] { 
                     new MethodParameter ("prefix", Type_STRING, true), // NOI18N
@@ -1026,7 +1054,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
     private MethodElement genEndPrefixMappingMethod() throws SourceException  {
         MethodElement method = null;
         if (sax == 2) {
-            method= createInterfaceMethod (
+            method= createImplementationMethod (
                 M_END_PREFIX_MAPPING,
                 new MethodParameter [] { 
                     new MethodParameter ("prefix", Type_STRING, true) // NOI18N
@@ -1047,7 +1075,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
     private MethodElement genSkippedEntityMethod() throws SourceException  {
         MethodElement method = null;
         if (sax == 2) {
-            method= createInterfaceMethod (
+            method= createImplementationMethod (
                 M_SKIPPED_ENTITY,
                 new MethodParameter [] { 
                     new MethodParameter ("name", Type_STRING, false) // NOI18N
@@ -1070,7 +1098,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 
         // setDocumentLocator() method
         
-        method = createInterfaceMethod (
+        method = createImplementationMethod (
             M_SET_DOCUMENT_LOCATOR,
             new MethodParameter [] { 
                 new MethodParameter ("locator", Type.parse (SAX_LOCATOR), false) // NOI18N
@@ -1084,14 +1112,14 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 
         // startDocument() method
         
-        method = createInterfaceMethod (M_START_DOCUMENT, null, SAX_EXCEPTION);
+        method = createImplementationMethod (M_START_DOCUMENT, null, SAX_EXCEPTION);
         if (model.isPropagateSAX())        
             method.setBody("\nhandler." + M_START_DOCUMENT + "();\n"); // NOI18N
         clazz.addMethod (method);
 
         // endDocument() method
         
-        method = createInterfaceMethod (M_END_DOCUMENT, null, SAX_EXCEPTION);
+        method = createImplementationMethod (M_END_DOCUMENT, null, SAX_EXCEPTION);
         if (model.isPropagateSAX())
             method.setBody("\nhandler." + M_END_DOCUMENT + "();\n"); // NOI18N
         clazz.addMethod (method);
@@ -1108,7 +1136,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 
         // characters() method
         
-        method = createInterfaceMethod (
+        method = createImplementationMethod (
             M_CHARACTERS,
             new MethodParameter [] {
                 new MethodParameter ("chars", Type.createArray (Type.CHAR), false), // NOI18N
@@ -1128,7 +1156,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 
         // ignorableWhitespace() method
         
-        method = createInterfaceMethod (
+        method = createImplementationMethod (
             M_IGNORABLE_WHITESPACE,
             new MethodParameter [] {
                 new MethodParameter ("chars", Type.createArray (Type.CHAR), false), // NOI18N
@@ -1144,7 +1172,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 
         // processingInstruction() method
         
-        method = createInterfaceMethod (
+        method = createImplementationMethod (
             M_PROCESSING_INSTRUCTION,
             new MethodParameter [] {
                 new MethodParameter ("target", Type_STRING, false),     // NOI18N
@@ -1284,6 +1312,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             parser + " parser = factory.newSAXParser().get" + parser + "();\n" + // NOI18N
             "parser.set" + (sax == 1 ? "Document" : "Content") + "Handler(recognizer);\n" + // NOI18N
             "parser.setErrorHandler(recognizer.getDefaultErrorHandler());\n" + // NOI18N
+            "if (recognizer.resolver != null) parser.setEntityResolver(recognizer.resolver);\n" + // NOI18N
             "parser.parse(input);" + // NOI18N
             "\n" // NOI18N
         );
@@ -1297,7 +1326,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
         MethodElement method = new MethodElement();
         
         method.setName(Identifier.create("getDefaultErrorHandler")); // NOI18N
-        method.setModifiers(Modifier.PRIVATE);
+        method.setModifiers(Modifier.PROTECTED);
         method.setReturn(Type.parse("ErrorHandler")); // NOI18N
         
         method.setBody("\n" + // NOI18N
@@ -1317,6 +1346,12 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             "};\n" + // NOI18N
             "\n" // NOI18N
         );
+
+        String docText =
+            "\nCreates default error handler used by this parser.\n" + // NOI18N
+            "@return org.xml.sax.ErrorHandler implementation\n";  //NOI18N  
+
+        method.getJavaDoc().setRawText(docText);
         
         return method;         
     }
@@ -1345,7 +1380,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 
         String parsletParam = model.hasParslets() ? ", parslet" : ""; // NOI18N
         method.setBody("\n" + // NOI18N
-            M_PARSE + "(input, new " + model.getStub() + "(handler" + parsletParam + "));\n" // NOI18N
+            M_PARSE + "(input, new " + model.getStub() + "(handler, null" + parsletParam + "));\n" // NOI18N
         );
         method.setExceptions(JAXP_PARSE_EXCEPTIONS);
 
@@ -1450,7 +1485,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
     
     
     /** Create specified field as private. */
-    private FieldElement createField(String name, String clzz) throws SourceException {
+    private static FieldElement createField(String name, String clzz) throws SourceException {
         FieldElement field = new FieldElement();
         field.setName(Identifier.create(name));
         field.setModifiers(Modifier.PRIVATE);
@@ -1460,7 +1495,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
     }
 
     /** Utility method creating common MethodElement. */
-    private MethodElement createInterfaceMethod (String name, MethodParameter[] params, String exception) throws SourceException {
+    private static MethodElement createInterfaceMethod (String name, MethodParameter[] params, String exception) throws SourceException {
         MethodElement method = new MethodElement ();
         method.setModifiers (Modifier.PUBLIC);
         method.setReturn (Type.VOID);
@@ -1470,6 +1505,15 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
         if (exception != null)
             method.setExceptions (new Identifier[] { org.openide.src.Identifier.create (exception) });
         method.setBody ("\n"); // NOI18N
+        return method;
+    }
+
+    /** Utility method creating common implementation MethodElement. */
+    private static MethodElement createImplementationMethod (String name, MethodParameter[] params, String exception) throws SourceException {
+        MethodElement method = createInterfaceMethod(name, params, exception);
+        method.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
+        String docText = "\nThis SAX interface method is implemented by the parser.\n"; // NOI18N
+        method.getJavaDoc().setRawText(docText);
         return method;
     }
     

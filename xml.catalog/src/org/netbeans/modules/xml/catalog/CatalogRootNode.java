@@ -30,6 +30,7 @@ import org.openide.actions.*;
 import org.netbeans.modules.xml.catalog.spi.*;
 import org.netbeans.modules.xml.catalog.impl.*;
 import org.netbeans.modules.xml.catalog.settings.CatalogSettings;
+import org.openide.util.HelpCtx;
 
 /**
  * Node representing catalog root in the Runtime tab. It retrieves all
@@ -48,7 +49,7 @@ import org.netbeans.modules.xml.catalog.settings.CatalogSettings;
  * @author  Petr Kuzel
  * @version 1.0
  */
-public class CatalogRootNode extends AbstractNode {
+public final class CatalogRootNode extends AbstractNode {
 
     private static final boolean DEBUG = false;
     
@@ -97,6 +98,7 @@ public class CatalogRootNode extends AbstractNode {
             if (ae.getSource() == DialogDescriptor.OK_OPTION) {
                 
                 Object catalog = model.getCatalog();
+                if (catalog == null) return;
                 CatalogSettings mounted = CatalogSettings.getDefault();
                 mounted.addCatalog((CatalogReader)catalog);
                 
@@ -124,7 +126,10 @@ public class CatalogRootNode extends AbstractNode {
         if (DEBUG) Util.trace("Writing " + this); // NOI18N
         out.defaultWriteObject();        
     }
-
+    
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CatalogRootNode.class);
+    }
     
     // ~~~~~~~~~~~~~~~~~~~~~~ NODE KIDS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
@@ -197,8 +202,10 @@ public class CatalogRootNode extends AbstractNode {
             if (mounted != null) {
                 Iterator it = mounted.getCatalogs(new Class[] {CatalogReader.class});
                 while (it.hasNext()) {
-                    keys.add(it.next());
-                }                
+                    keys.add(it.next());    //!!! use immutable key wrappers, some
+                                            // instances may overwrite equals() so
+                                            // it cannot be aused as a children key
+                }
             }
             setKeys(keys);
         }
@@ -215,16 +222,21 @@ public class CatalogRootNode extends AbstractNode {
          * Other catalogs sort by display name if available.
          */
         public int compare(java.lang.Object one,java.lang.Object two) {
+            if (one == two) return 0;
             if (one instanceof SystemCatalogReader) return -1;
             if (two instanceof SystemCatalogReader) return 1;
             if (one instanceof CatalogDescriptor && two instanceof CatalogDescriptor) {
-                return (((CatalogDescriptor)one).getDisplayName()).compareTo(
+                int test = (((CatalogDescriptor)one).getDisplayName()).compareTo(
                     ((CatalogDescriptor)two).getDisplayName()
                 );
+                if (test != 0) return test;
+                
+            } else {
+                if (one instanceof CatalogDescriptor) return -1;
+                if (two instanceof CatalogDescriptor) return 1;
             }
-            if (one instanceof CatalogDescriptor) return -1;
-            if (two instanceof CatalogDescriptor) return 1;            
-            return 0;
+            // show all catalogs never return 0
+            return (long)one.hashCode() - (long)two.hashCode() > 0L ? 1 : -1;
         }
         
     }

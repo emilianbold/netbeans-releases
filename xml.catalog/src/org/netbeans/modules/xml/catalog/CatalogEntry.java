@@ -12,24 +12,44 @@
  */
 package org.netbeans.modules.xml.catalog;
 
+import org.xml.sax.*;
+
+import org.netbeans.modules.xml.catalog.spi.CatalogReader;
+
 /**
+ * Represents catalog entry keyed by a public ID.
+ * The implementation is not cached it queries underlaying catalog.
  *
  * @author  Petr Kuzel
  * @version 1.0
  */
-public class CatalogEntry extends Object {
+public final class CatalogEntry extends Object {
 
-    private String systemID;
-    private String publicID;
+    private final String publicID;
+    private final CatalogReader catalog;
             
     /** Creates new CatalogEntry */
-    public CatalogEntry(String publicID, String systemID) {
-        this.systemID = systemID;
+    public CatalogEntry(String publicID, CatalogReader catalog) {
         this.publicID = publicID;
+        this.catalog = catalog;
     }
-    
+
+    /**
+     * Use CatalogReader or alternatively EntityResolver interface to resolve the PID.
+     */
     public String getSystemID() {
-        return systemID;
+        String sid = catalog.getSystemID(publicID);
+        if (sid != null) return sid;
+        
+        if (catalog instanceof EntityResolver) {
+            try {
+                InputSource in = ((EntityResolver) catalog).resolveEntity(publicID, null);
+                if (in != null) return in.getSystemId();
+            } catch (Exception ex) {
+                // return null;
+            }
+        }
+        return null;
     }
     
     public String getPublicID() {
@@ -41,6 +61,6 @@ public class CatalogEntry extends Object {
     }
     
     public String toString() {
-        return publicID + " => " + systemID; // NOI18N
+        return publicID + " => " + getSystemID(); // NOI18N
     }
 }

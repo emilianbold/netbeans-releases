@@ -181,8 +181,8 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
         acceptRejectLabel.setLabelFor(rbPanel);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         acceptPolicyPanel.add(acceptRejectLabel, gridBagConstraints);
 
         rbPanel.setLayout(new java.awt.GridBagLayout());
@@ -193,8 +193,8 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         rbPanel.add(acceptRadioButton, gridBagConstraints);
 
         rejectRadioButton.setText(Util.getString ("LBL_hideItRadioButton"));
@@ -203,17 +203,17 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         rbPanel.add(rejectRadioButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 11);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 11);
         acceptPolicyPanel.add(rbPanel, gridBagConstraints);
 
         add(acceptPolicyPanel, java.awt.BorderLayout.NORTH);
@@ -726,10 +726,18 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
     public void initAccessibility(){
         
        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeNodeFilterCustomEditor"));
-       acceptRejectLabel.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_acceptRejectLabel"));
+       
+       acceptRadioButton.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_acceptRejectLabel"));
+       acceptRadioButton.setMnemonic((Util.getString ("LBL_showItRadioButton_Mnem")).charAt(0));
+       
        rejectRadioButton.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_rejectRadioButton"));
+       rejectRadioButton.setMnemonic((Util.getString ("LBL_hideItRadioButton_Mnem")).charAt(0));       
+       
        addButton.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_addButton1"));
+       addButton.setMnemonic((Util.getString ("LBL_addButton_Mnem")).charAt(0));       
+       
        removeButton.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_removeButton1"));
+       removeButton.setMnemonic((Util.getString ("LBL_removeButton_Mnem")).charAt(0));              
        
        nodeTypesTable.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_nodeTypesTable"));
        nodeTypesTable.getAccessibleContext().setAccessibleName(Util.getString("ACSN_nodeTypesTable"));

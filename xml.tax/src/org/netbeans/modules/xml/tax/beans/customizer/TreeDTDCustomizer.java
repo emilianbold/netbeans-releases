@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -25,10 +25,10 @@ import org.netbeans.modules.xml.tax.beans.editor.EncodingEditor;
  * @version 0.1
  */
 public class TreeDTDCustomizer extends AbstractTreeCustomizer {
-
+    
     /** Serial Version UID */
     private static final long serialVersionUID = -6359067211795222437L;
-
+    
     
     //
     // init
@@ -36,13 +36,13 @@ public class TreeDTDCustomizer extends AbstractTreeCustomizer {
     
     /** */
     public TreeDTDCustomizer () {
-        super();
-
-	initComponents();
-        versionLabel.setDisplayedMnemonic(Util.getChar("MNE_dtd_version")); // NOI18N
-        encodingLabel.setDisplayedMnemonic(Util.getChar("MNE_dtd_encoding")); // NOI18N
+        super ();
         
-        initAccessibility();
+        initComponents ();
+        versionLabel.setDisplayedMnemonic (Util.getChar ("MNE_dtd_version")); // NOI18N
+        encodingLabel.setDisplayedMnemonic (Util.getChar ("MNE_dtd_encoding")); // NOI18N
+        
+        initAccessibility ();
     }
     
     
@@ -50,82 +50,82 @@ public class TreeDTDCustomizer extends AbstractTreeCustomizer {
     // itself
     //
     
-    /** 
+    /**
      */
     protected final TreeDTD getDTD () {
-        return (TreeDTD)getTreeObject();
+        return (TreeDTD)getTreeObject ();
     }
     
-    /** 
+    /**
      */
     protected final void safePropertyChange (PropertyChangeEvent pche) {
         super.safePropertyChange (pche);
         
-        if (pche.getPropertyName().equals (TreeDTD.PROP_VERSION)) {
-            updateVersionComponent();
-        } else if (pche.getPropertyName().equals (TreeDTD.PROP_ENCODING)) {
-            updateEncodingComponent();
+        if (pche.getPropertyName ().equals (TreeDTD.PROP_VERSION)) {
+            updateVersionComponent ();
+        } else if (pche.getPropertyName ().equals (TreeDTD.PROP_ENCODING)) {
+            updateEncodingComponent ();
         }
     }
     
-    /** 
+    /**
      */
     protected final void updateDTDVersion () {
-        if ( cbVersion.getSelectedItem() == null ) {
+        if ( cbVersion.getSelectedItem () == null ) {
             return;
         }
-
+        
         try {
-            getDTD().setVersion (text2null ((String) cbVersion.getSelectedItem()));
-	} catch (TreeException exc) {
-	    updateVersionComponent();
-	    Util.notifyTreeException (exc);
-	}
+            getDTD ().setVersion (text2null ((String) cbVersion.getSelectedItem ()));
+        } catch (TreeException exc) {
+            updateVersionComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
-    /** 
+    /**
      */
     protected final void updateVersionComponent () {
-        cbVersion.setSelectedItem(null2text (getDTD().getVersion()));
+        cbVersion.setSelectedItem (null2text (getDTD ().getVersion ()));
     }
     
-    /** 
+    /**
      */
     protected final void updateDTDEncoding () {
-        if ( cbEncoding.getSelectedItem() == null ) {
+        if ( cbEncoding.getSelectedItem () == null ) {
             return;
         }
-
+        
         try {
-            getDTD().setEncoding (text2null ((String) cbEncoding.getSelectedItem()));
-	} catch (TreeException exc) {
-	    updateEncodingComponent();
-	    Util.notifyTreeException (exc);
-	}
+            getDTD ().setEncoding (text2null ((String) cbEncoding.getSelectedItem ()));
+        } catch (TreeException exc) {
+            updateEncodingComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
-    /** 
+    /**
      */
     protected final void updateEncodingComponent () {
-       cbEncoding.setSelectedItem(null2text (getDTD().getEncoding()));
+        cbEncoding.setSelectedItem (null2text (getDTD ().getEncoding ()));
     }
     
-    /** 
+    /**
      */
     protected void initComponentValues () {
-        updateVersionComponent();
-        updateEncodingComponent();
+        updateVersionComponent ();
+        updateEncodingComponent ();
     }
-        
+    
     
     /**
      */
     protected void updateReadOnlyStatus (boolean editable) {
-        cbVersion.setEnabled(editable);
-        cbEncoding.setEnabled(editable);
-    }    
+        cbVersion.setEnabled (editable);
+        cbEncoding.setEnabled (editable);
+    }
     
-        
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -218,27 +218,27 @@ public class TreeDTDCustomizer extends AbstractTreeCustomizer {
         add(fillPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
-
+    
     private void cbEncodingFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_cbEncodingFocusLost
         // Add your handling code here:
-        updateDTDEncoding();
+        updateDTDEncoding ();
     }//GEN-LAST:event_cbEncodingFocusLost
-
+    
     private void cbEncodingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbEncodingActionPerformed
         // Add your handling code here:
-        updateDTDEncoding();
+        updateDTDEncoding ();
     }//GEN-LAST:event_cbEncodingActionPerformed
-
+    
     private void cbVersionFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_cbVersionFocusLost
         // Add your handling code here:
-        updateDTDVersion();
+        updateDTDVersion ();
     }//GEN-LAST:event_cbVersionFocusLost
-
+    
     private void cbVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbVersionActionPerformed
         // Add your handling code here:
-        updateDTDVersion();
+        updateDTDVersion ();
     }//GEN-LAST:event_cbVersionActionPerformed
-            
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbVersion;
     private javax.swing.JLabel versionLabel;
@@ -246,14 +246,14 @@ public class TreeDTDCustomizer extends AbstractTreeCustomizer {
     private javax.swing.JLabel encodingLabel;
     private javax.swing.JPanel fillPanel;
     // End of variables declaration//GEN-END:variables
-
+    
     /** Initialize accesibility
      */
-    public void initAccessibility(){
-
-       cbVersion.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_cbVersion")); 
-       cbEncoding.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_cbEncoding"));
-       
-       this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeDTDCustomizer"));
-    }    
+    public void initAccessibility (){
+        
+        cbVersion.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_cbVersion"));
+        cbEncoding.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_cbEncoding"));
+        
+        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeDTDCustomizer"));
+    }
 }

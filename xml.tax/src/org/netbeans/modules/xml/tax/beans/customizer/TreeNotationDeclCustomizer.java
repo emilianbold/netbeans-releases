@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -23,121 +23,121 @@ import org.netbeans.tax.TreeException;
  * @version 0.1
  */
 public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
-
+    
     /** Serial Version UID */
     private static final long serialVersionUID = 844910700645886601L;
-
+    
     
     //
     // init
     //
-
+    
     /** */
     public TreeNotationDeclCustomizer () {
-	super();
-
-        initComponents();
-        nameLabel.setDisplayedMnemonic(Util.getChar("MNE_dtdNotationName")); // NOI18N
-        publicLabel.setDisplayedMnemonic(Util.getChar("MNE_dtdNotationPublicId")); // NOI18N
-        systemLabel.setDisplayedMnemonic(Util.getChar("MNE_dtdNotationSystemId")); // NOI18N   
+        super ();
         
-        initAccessibility();
+        initComponents ();
+        nameLabel.setDisplayedMnemonic (Util.getChar ("MNE_dtdNotationName")); // NOI18N
+        publicLabel.setDisplayedMnemonic (Util.getChar ("MNE_dtdNotationPublicId")); // NOI18N
+        systemLabel.setDisplayedMnemonic (Util.getChar ("MNE_dtdNotationSystemId")); // NOI18N
+        
+        initAccessibility ();
     }
-
-
+    
+    
     //
     // itself
     //
-
+    
     /**
      */
     protected final TreeNotationDecl getNotationDecl () {
-        return (TreeNotationDecl)getTreeObject();
+        return (TreeNotationDecl)getTreeObject ();
     }
-
+    
     /**
      */
     protected final void safePropertyChange (PropertyChangeEvent pche) {
         super.safePropertyChange (pche);
         
-	if (pche.getPropertyName().equals (TreeNotationDecl.PROP_NAME)) {
-	    updateNameComponent();
-	} else if (pche.getPropertyName().equals (TreeNotationDecl.PROP_PUBLIC_ID)) {
-	    updatePublicIdComponent();
-	} else if (pche.getPropertyName().equals (TreeNotationDecl.PROP_SYSTEM_ID)) {
-	    updateSystemIdComponent();
-	}
+        if (pche.getPropertyName ().equals (TreeNotationDecl.PROP_NAME)) {
+            updateNameComponent ();
+        } else if (pche.getPropertyName ().equals (TreeNotationDecl.PROP_PUBLIC_ID)) {
+            updatePublicIdComponent ();
+        } else if (pche.getPropertyName ().equals (TreeNotationDecl.PROP_SYSTEM_ID)) {
+            updateSystemIdComponent ();
+        }
     }
-
+    
     /**
      */
     protected final void updateNotationDeclName () {
-	try {
-	    getNotationDecl().setName (nameField.getText());
-	} catch (TreeException exc) {
-	    updateNameComponent();
-	    Util.notifyTreeException (exc);
-	}
+        try {
+            getNotationDecl ().setName (nameField.getText ());
+        } catch (TreeException exc) {
+            updateNameComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
     /**
      */
     protected final void updateNameComponent () {
-        nameField.setText (getNotationDecl().getName());
+        nameField.setText (getNotationDecl ().getName ());
     }
     
     /**
      */
     protected final void updateNotationDeclPublicId () {
-	try {
-	    getNotationDecl().setPublicId (text2null (publicField.getText()));
-	} catch (TreeException exc) {
-	    updatePublicIdComponent();
-	    Util.notifyTreeException (exc);
-	}
+        try {
+            getNotationDecl ().setPublicId (text2null (publicField.getText ()));
+        } catch (TreeException exc) {
+            updatePublicIdComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
     /**
      */
     protected final void updatePublicIdComponent () {
-        publicField.setText (null2text (getNotationDecl().getPublicId()));
+        publicField.setText (null2text (getNotationDecl ().getPublicId ()));
     }
     
     /**
      */
     protected final void updateNotationDeclSystemId () {
-	try {
-	    getNotationDecl().setSystemId (text2null (systemField.getText()));
-	} catch (TreeException exc) {
-	    updateSystemIdComponent();
-	    Util.notifyTreeException (exc);
-	}
+        try {
+            getNotationDecl ().setSystemId (text2null (systemField.getText ()));
+        } catch (TreeException exc) {
+            updateSystemIdComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
     /**
      */
     protected final void updateSystemIdComponent () {
-        systemField.setText (null2text (getNotationDecl().getSystemId()));
+        systemField.setText (null2text (getNotationDecl ().getSystemId ()));
     }
     
     /**
      */
     protected final void initComponentValues () {
-        updateNameComponent();
-        updatePublicIdComponent();
-        updateSystemIdComponent();
+        updateNameComponent ();
+        updatePublicIdComponent ();
+        updateSystemIdComponent ();
     }
-
-
+    
+    
     /**
      */
     protected void updateReadOnlyStatus (boolean editable) {
         nameField.setEditable (editable);
         systemField.setEditable (editable);
         publicField.setEditable (editable);
-    }    
-
-
+    }
+    
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -173,6 +173,9 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
         });
 
         nameField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                nameFieldFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 nameFieldFocusLost(evt);
             }
@@ -201,6 +204,9 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
         });
 
         publicField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                publicFieldFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 publicFieldFocusLost(evt);
             }
@@ -230,6 +236,9 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
         });
 
         systemField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                systemFieldFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 systemFieldFocusLost(evt);
             }
@@ -255,37 +264,52 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
         add(fillPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
-
+    
+    private void systemFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_systemFieldFocusGained
+        // Accessibility:
+        systemField.selectAll ();
+    }//GEN-LAST:event_systemFieldFocusGained
+    
+    private void publicFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_publicFieldFocusGained
+        // Accessibility:
+        publicField.selectAll ();
+    }//GEN-LAST:event_publicFieldFocusGained
+    
+    private void nameFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_nameFieldFocusGained
+        // Accessibility:
+        nameField.selectAll ();
+    }//GEN-LAST:event_nameFieldFocusGained
+    
     private void systemFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_systemFieldFocusLost
         // Add your handling code here:
-        updateNotationDeclSystemId();
+        updateNotationDeclSystemId ();
     }//GEN-LAST:event_systemFieldFocusLost
-
+    
     private void systemFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_systemFieldActionPerformed
         // Add your handling code here:
-        updateNotationDeclSystemId();
+        updateNotationDeclSystemId ();
     }//GEN-LAST:event_systemFieldActionPerformed
-
+    
     private void publicFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_publicFieldFocusLost
         // Add your handling code here:
-        updateNotationDeclPublicId();
+        updateNotationDeclPublicId ();
     }//GEN-LAST:event_publicFieldFocusLost
-
+    
     private void publicFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_publicFieldActionPerformed
         // Add your handling code here:
-        updateNotationDeclPublicId();
+        updateNotationDeclPublicId ();
     }//GEN-LAST:event_publicFieldActionPerformed
-
+    
     private void nameFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_nameFieldFocusLost
         // Add your handling code here:
-        updateNotationDeclName();
+        updateNotationDeclName ();
     }//GEN-LAST:event_nameFieldFocusLost
-
+    
     private void nameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nameFieldActionPerformed
         // Add your handling code here:
-        updateNotationDeclName();
+        updateNotationDeclName ();
     }//GEN-LAST:event_nameFieldActionPerformed
-
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel nameLabel;
     private javax.swing.JLabel publicLabel;
@@ -295,15 +319,20 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
     private javax.swing.JTextField systemField;
     private javax.swing.JPanel fillPanel;
     // End of variables declaration//GEN-END:variables
- 
+    
     /** Initialize accesibility
      */
-    public void initAccessibility(){
-    
-        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeNotationDeclCustomizer"));
+    public void initAccessibility (){
         
-        nameField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_nameField3"));
-        publicField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_publicField2"));
-        systemField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_systemField1"));
+        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeNotationDeclCustomizer"));
+        
+        nameField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_nameField3"));
+        nameField.selectAll ();
+        
+        publicField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_publicField2"));
+        publicField.selectAll ();
+        
+        systemField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_systemField1"));
+        systemField.selectAll ();
     }
 }

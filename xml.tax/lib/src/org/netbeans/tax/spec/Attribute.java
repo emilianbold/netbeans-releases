@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -23,7 +23,7 @@ import org.netbeans.tax.InvalidArgumentException;
  * @version 0.1
  */
 public interface Attribute {
-
+    
     //
     // Constraints
     //
@@ -32,60 +32,60 @@ public interface Attribute {
      *
      */
     public static interface Constraints {
-
+        
         public void checkAttributeName (TreeName treeName) throws InvalidArgumentException;
-    
+        
         public boolean isValidAttributeName (TreeName treeName);
-
-    
+        
+        
         public void checkAttributeValue (String value) throws InvalidArgumentException;
-    
+        
         public boolean isValidAttributeValue (String value);
-    
+        
     } // end: interface Constraints
-
-
+    
+    
     //
     // Creator
     //
-
+    
     /**
      *
      */
     public static interface Creator {
-	
-	/**
-	 * @throws InvalidArgumentException
-	 */
-  	public TreeAttribute createAttribute (String name, String value);
-
-
+        
+        /**
+         * @throws InvalidArgumentException
+         */
+        public TreeAttribute createAttribute (String name, String value);
+        
+        
     } // end: interface Creator
-
+    
     
     //
     // Writer
     //
-
+    
     /**
      *
      */
     public static interface Writer {
-	
-	public void writeAttribute (TreeAttribute attribute) throws TreeException;
-
+        
+        public void writeAttribute (TreeAttribute attribute) throws TreeException;
+        
     } // end: interface Writer
-
-
+    
+    
     //
     // Value
     //
-
+    
     /**
      *
      */
     public static interface Value {
-
+        
     } // end: intereface Value
-
+    
 }

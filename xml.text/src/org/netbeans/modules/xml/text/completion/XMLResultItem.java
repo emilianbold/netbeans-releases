@@ -42,7 +42,10 @@ class XMLResultItem implements CompletionQuery.ResultItem {
     public Color selectionBackground = new Color(204, 204, 255);
     
     private static JLabel rubberStamp = new JLabel();
-    
+    static {
+        rubberStamp.setOpaque( true );
+    }
+        
     /** Default constructor
      */    
     public XMLResultItem(){}

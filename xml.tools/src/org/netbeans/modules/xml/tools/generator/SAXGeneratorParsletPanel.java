@@ -21,6 +21,8 @@ import org.openide.util.*;
 
 import javax.swing.*;
 import javax.swing.table.*;
+import java.net.URL;
+import java.net.MalformedURLException;
 
 /**
  * Allows to define mapping element name => (method identifier, return type)
@@ -30,7 +32,7 @@ import javax.swing.table.*;
  * @author  Petr Kuzel
  * @version 
  */
-public class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
+public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
 
     /** Serial Version UID */
     private static final long serialVersionUID =6038099487791703339L;    
@@ -78,7 +80,10 @@ public class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
     
     /** Creates new form SAXGeneratorParsletPanel */
     public SAXGeneratorParsletPanel() {
-        
+//        try {
+//            this.putClientProperty("WizardPanel_helpURL", new URL("nbresloc:/org/netbeans/modules/xml/tools/generator/SAXGeneratorParsletPanel.html"));  //NOI18N
+//        } catch (MalformedURLException ex) {
+//        }            
     }
 
     /** This method is called from within the constructor to
@@ -337,5 +342,7 @@ public class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
     public void initAccessibility(){
 
         this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_SAXGeneratorParsletPanel"));
+        table.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_ParsletsTable"));
+        table.getAccessibleContext().setAccessibleName(Util.getString("ACSN_ParsletsTable"));        
     }
 }

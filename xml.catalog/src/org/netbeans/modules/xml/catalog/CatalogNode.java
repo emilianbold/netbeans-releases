@@ -35,7 +35,7 @@ import org.netbeans.modules.xml.catalog.settings.CatalogSettings;
  * @author  Petr Kuzel
  * @version 1.0
  */
-public class CatalogNode extends BeanNode implements Refreshable, PropertyChangeListener {
+final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeListener {
 
     //class debug switch
     private static final boolean DEBUG = false;
@@ -53,7 +53,7 @@ public class CatalogNode extends BeanNode implements Refreshable, PropertyChange
             setName(desc.getDisplayName());
             setDisplayName(desc.getDisplayName());
             setShortDescription(desc.getShortDescription());
-            fireIconChange();
+            fireIconChange();  
 
             // listen on it
             
@@ -173,11 +173,12 @@ public class CatalogNode extends BeanNode implements Refreshable, PropertyChange
         
         public Node[] createNodes(Object key) {        
             try {
+                CatalogEntry catalogEntry = new CatalogEntry((String) key, peer);
                 return new Node[] { 
-                    new CatalogEntryNode((String)key, peer.getSystemID((String)key)) 
-                }; 
+                    new CatalogEntryNode(catalogEntry)
+                };
             } catch (IntrospectionException ex) {
-                return new Node[] {};
+                return null;
             }
         }
 
@@ -192,8 +193,8 @@ public class CatalogNode extends BeanNode implements Refreshable, PropertyChange
                 while (it.hasNext()) {
                     keys.add(it.next());
                 }
-                setKeys(keys);
-            }            
+            }    
+            setKeys(keys);
         }
         
         private class Lis implements CatalogListener {

@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -23,72 +23,73 @@ import org.netbeans.tax.TreeConditionalSection;
  * @version 0.1
  */
 public class TreeConditionalSectionCustomizer extends AbstractTreeCustomizer {
-
+    
     /** Serial Version UID */
-    private static final long serialVersionUID =-396968653847909885L;    
-
-
+    private static final long serialVersionUID =-396968653847909885L;
+    
+    
     //
     // init
     //
     
     /** Creates new customizer TreeConditionalSectionCustomizer. */
     public TreeConditionalSectionCustomizer () {
-	super();
-	
+        super ();
+        
         initComponents ();
+        initAccessibility();
     }
-
+    
     
     //
     // itself
     //
-
-    /** 
+    
+    /**
      */
     protected final TreeConditionalSection getConditionalSection () {
-        return (TreeConditionalSection)getTreeObject();
+        return (TreeConditionalSection)getTreeObject ();
     }
-
+    
     /**
      * It will be called from AWT thread and it will never be caller during init stage.
      */
     protected final void safePropertyChange (PropertyChangeEvent pche) {
         super.safePropertyChange (pche);
         
-	if (pche.getPropertyName().equals (TreeConditionalSection.PROP_INCLUDE)) {
-	    updateIncludeIgnoreComponent();
-	} else if (pche.getPropertyName().equals (TreeConditionalSection.PROP_IGNORED_CONTENT)) {
-	    updateIgnoredContentComponent();
-	}
-    }    
-
+        if (pche.getPropertyName ().equals (TreeConditionalSection.PROP_INCLUDE)) {
+            updateIncludeIgnoreComponent ();
+        } else if (pche.getPropertyName ().equals (TreeConditionalSection.PROP_IGNORED_CONTENT)) {
+            updateIgnoredContentComponent ();
+        }
+    }
+    
     
     protected void updateIncludeIgnoreComponent () {
-        includeRadioButton.setSelected (getConditionalSection().isInclude());
-        ignoreRadioButton.setSelected (!!! getConditionalSection().isInclude());
-
-        ignoredContentScrollPane.setVisible (!!! getConditionalSection().isInclude());
+        includeRadioButton.setSelected (getConditionalSection ().isInclude ());
+        ignoreRadioButton.setSelected (!!! getConditionalSection ().isInclude ());
+        
+        ignoredContentScrollPane.setVisible (!!! getConditionalSection ().isInclude ());
     }
     
     protected void updateConditionalSectionInclude () {
         try {
-            getConditionalSection().setInclude (includeRadioButton.isSelected());
+            getConditionalSection ().setInclude (includeRadioButton.isSelected ());
         } catch (TreeException exc) {
-	    updateIncludeIgnoreComponent();
+            updateIncludeIgnoreComponent ();
             Util.notifyTreeException (exc);
         }
     }
     
     protected void updateIgnoredContentComponent () {
-        ignoredContentPane.setText (null2text (getConditionalSection().getIgnoredContent()));
+        ignoredContentPane.setText (null2text (getConditionalSection ().getIgnoredContent ()));
     }
-        
+    
     protected void updateConditionalSectionIgnoredContent () {
         try {
-            getConditionalSection().setIgnoredContent (text2null (ignoredContentPane.getText()));
+            getConditionalSection ().setIgnoredContent (text2null (ignoredContentPane.getText ()));
         } catch (TreeException exc) {
-	    updateIgnoredContentComponent();
+            updateIgnoredContentComponent ();
             Util.notifyTreeException (exc);
         }
     }
@@ -97,71 +98,79 @@ public class TreeConditionalSectionCustomizer extends AbstractTreeCustomizer {
     /**
      */
     protected void initComponentValues () {
-        updateIncludeIgnoreComponent();
-        updateIgnoredContentComponent();
-    }    
-
+        updateIncludeIgnoreComponent ();
+        updateIgnoredContentComponent ();
+    }
+    
     /**
      */
     protected void updateReadOnlyStatus (boolean editable) {
         includeRadioButton.setEnabled (editable); //???
         ignoreRadioButton.setEnabled (editable); //???
         ignoredContentPane.setEditable (editable);
-    }    
-
+    }
+    
+    
+    private void initAccessibility() {
+        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeConditionalSectionCustomizer"));
+        ignoredContentPane.getAccessibleContext ().setAccessibleName (Util.getString ("ACSN_ignoredContentPane"));
+        includeRadioButton.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_includeRadioButton"));
+        ignoreRadioButton.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_ignoreRadioButton"));        
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the FormEditor.
      */
     private void initComponents() {//GEN-BEGIN:initComponents
+        java.awt.GridBagConstraints gridBagConstraints;
+
         includeButtonGroup = new javax.swing.ButtonGroup();
         includeRadioButton = new javax.swing.JRadioButton();
         ignoreRadioButton = new javax.swing.JRadioButton();
         ignoredContentScrollPane = new javax.swing.JScrollPane();
         ignoredContentPane = new javax.swing.JEditorPane();
-        
-        
+
         setLayout(new java.awt.GridBagLayout());
-        java.awt.GridBagConstraints gridBagConstraints1;
-        
+
         includeRadioButton.setSelected(true);
-        includeRadioButton.setText(Util.getString("PROP_condSection_include"));
+        includeRadioButton.setText(Util.getString ("PROP_condSection_include"));
         includeButtonGroup.add(includeRadioButton);
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(includeRadioButton, gridBagConstraints1);
-        
-        ignoreRadioButton.setText(Util.getString("PROP_condSection_ignore"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        add(includeRadioButton, gridBagConstraints);
+
+        ignoreRadioButton.setText(Util.getString ("PROP_condSection_ignore"));
         includeButtonGroup.add(ignoreRadioButton);
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 11);
-        add(ignoreRadioButton, gridBagConstraints1);
-        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        add(ignoreRadioButton, gridBagConstraints);
+
         ignoredContentScrollPane.setPreferredSize(new java.awt.Dimension(320, 200));
         ignoredContentScrollPane.setViewportView(ignoredContentPane);
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 1;
-        gridBagConstraints1.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints1.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 11);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints1.weightx = 1.0;
-        gridBagConstraints1.weighty = 1.0;
-        add(ignoredContentScrollPane, gridBagConstraints1);
-        
-    }//GEN-END:initComponents
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        add(ignoredContentScrollPane, gridBagConstraints);
+
+    }//GEN-END:initComponents
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.ButtonGroup includeButtonGroup;
-    private javax.swing.JRadioButton includeRadioButton;
     private javax.swing.JRadioButton ignoreRadioButton;
     private javax.swing.JScrollPane ignoredContentScrollPane;
     private javax.swing.JEditorPane ignoredContentPane;
+    private javax.swing.ButtonGroup includeButtonGroup;
+    private javax.swing.JRadioButton includeRadioButton;
     // End of variables declaration//GEN-END:variables
-
+    
 }

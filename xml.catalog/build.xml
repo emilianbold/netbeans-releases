@@ -22,8 +22,8 @@ Microsystems, Inc. All Rights Reserved.
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
     <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
-    <property name="homepage.base" value="http://xml.netbeans.org"/>
-    <property name="dist.base" value="http://www.netbeans.org/download/nbms/40"/>
+    <property name="homepage.base" value="xml.netbeans.org"/>
+    <property name="dist.base" value="http://www.netbeans.org/download/nbms/40/xml"/>
     <property name="storepass" value="?"/>
     <property name="release" value="dev"/>
 
@@ -55,6 +55,7 @@ Microsystems, Inc. All Rights Reserved.
                     <include name="openide*.jar"/>
                 </fileset>
                 <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
+                <pathelement location="${binroot}/xml/catalog/release/modules/ext/resolver-1_1_nb.jar"/>
                 <pathelement location="${core_root}/src/"/>
             </classpath>
         </javac>
@@ -77,9 +78,13 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="release">
+        <copy todir="netbeans">
+            <fileset dir="${binroot}/xml/catalog/release"/>
+        </copy>
     </target>
 
     <target name="javahelp">
+<!-- It is a part of core module now
         <mkdir dir="javahelp/org/netbeans/modules/xml/catalog/docs/JavaHelpSearch"/>
         <jhindexer basedir="javahelp/org/netbeans/modules/xml/catalog/docs/"
                    db="javahelp/org/netbeans/modules/xml/catalog/docs/JavaHelpSearch"
@@ -94,6 +99,7 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="javahelp" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
             <locale name="ja"/>
         </locjar>
+-->	
     </target>
 
     <target name="netbeans" depends="jars,release,javahelp">
@@ -119,7 +125,7 @@ Microsystems, Inc. All Rights Reserved.
         <makenbm file="../xml-catalog-${release}.nbm"
                  topdir="."
                  module="netbeans/modules/xml-catalog.jar"
-                 homepage="${homepage.base}/catalog/"
+                 homepage="http://${homepage.base}/catalog/"
                  distribution="${dist.base}/xml-catalog-${release}.nbm">
             <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
@@ -139,6 +145,10 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="javahelp/org/netbeans/modules/xml/catalog/docs/JavaHelpSearch"/>
 
         <for-each locations="compat"/>
+    </target>
+
+    <target name="real-clean" depends="clean">
+        <delete dir="javadoc"/>
     </target>
 
     <target name="all" depends="clean,nbm"/>

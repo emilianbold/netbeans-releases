@@ -14,17 +14,21 @@ package org.netbeans.modules.xml.text.syntax;
 
 import java.util.Vector;
 
+import org.netbeans.tax.UnicodeClasses;
+
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenID;
 
 /**
- * Lexical anlyzer for XML source files.
+ * Gracefull lexical analyzer for XML source files. It rather returns <code>ERROR</code>
+ * token than terminates scanning. In such case is stays in current state.
  *
  * @author Petr Nejedly
  * @author Miloslav Metelka
- * @version 1.00
- * @contributor(s) XML Modifications Sandeep Singh Randhawa
- * @integrator Petr Kuzel
+ * @author Sandeep Singh Randhawa
+ * @author Petr Kuzel
+ *
+ * @version 1.10 XML spec aware
  */
 
 public class XMLDefaultSyntax extends Syntax {
@@ -52,9 +56,8 @@ public class XMLDefaultSyntax extends Syntax {
     private static final int ISP_ARG_WS = 13; // Inside WS after argument awaiting '='
     private static final int ISP_EQ = 14;     // X-switch after '=' in TAG's ARGUMENT
     private static final int ISP_EQ_WS = 15;  // In WS after '='
-    private static final int ISI_VAL = 16;    // Non-quoted value
-    private static final int ISI_VAL_QUOT = 17;   // Single-quoted value - may contain " chars
-    private static final int ISI_VAL_DQUOT = 18;  // Double-quoted value - may contain ' chars
+    private static final int ISI_VAL_APOS = 17;   // Single-quoted value - may contain " chars
+    private static final int ISI_VAL_QUOT = 18;  // Double-quoted value - may contain ' chars
     private static final int ISA_SGML_ESCAPE = 19;  // After "<!"
     private static final int ISA_SGML_DASH = 20;    // After "<!-"
     private static final int ISI_XML_COMMENT = 21; // Somewhere after "<!--"
@@ -73,10 +76,17 @@ public class XMLDefaultSyntax extends Syntax {
     
     private static final int ISI_XML_DECL_CONTENT = 34;
     
+    private static final int ISI_PI = 35;  //after <?...
+    private static final int ISI_PI_TARGET = 36;  //in <?..|..
+    private static final int ISP_PI_TARGET_WS = 37; //after <?...|
+    private static final int ISI_PI_CONTENT = 38;   //in PI content
+    private static final int ISA_PI_CONTENT_QMARK = 39;  //after ? in content
+    private static final int ISP_PI_CONTENT_QMARK = 40;  //spotet ? in content
+    
     public XMLDefaultSyntax() {
         tokenContextPath = XMLDefaultTokenContext.contextPath;
     }
-        
+    
     protected TokenID parseToken() {
         
         char actChar;
@@ -114,7 +124,7 @@ public class XMLDefaultSyntax extends Syntax {
                     
                 case ISA_LT:         // PENDING other transitions - e.g '<?'
                     
-                    if( isAZ( actChar ) ) {   // <'a..Z'
+                    if( UnicodeClasses.isXMLNameStartChar( actChar ) ) {   // <'a..Z'
                         state = ISI_TAG;
                         break;
                     }
@@ -125,15 +135,60 @@ public class XMLDefaultSyntax extends Syntax {
                         case '!':
                             state = ISA_SGML_ESCAPE;
                             break;
+                        case '?':
+                            state = ISI_PI;
+                            offset++;
+                            return XMLDefaultTokenContext.PI_START;
                         default:
                             state = ISI_TEXT;  //RELAXED to allow editing in the  middle of document
                             continue;             // don't eat the char, maybe its '&'
                     }
                     break;
+
+                case ISI_PI:
+                    if ( UnicodeClasses.isXMLNameStartChar( actChar )) {
+                        state = ISI_PI_TARGET;
+                        break;
+                    }
+                    state = ISI_ERROR;
+                    break;
+                    
+                case ISI_PI_TARGET:
+                    if ( UnicodeClasses.isXMLNameChar( actChar )) break;
+                    if (isWS( actChar )) {
+                        state = ISP_PI_TARGET_WS;
+                        return XMLDefaultTokenContext.PI_TARGET;
+                    }
+                    state = ISI_ERROR;
+                    break;
+                    
+                case ISP_PI_TARGET_WS:
+                    if (isWS( actChar)) break;
+                    state = ISI_PI_CONTENT;
+                    return XMLDefaultTokenContext.WS;
+
+                case ISI_PI_CONTENT:
+                    if (actChar != '?') break;  // eat content
+                    state = ISP_PI_CONTENT_QMARK;
+                    return XMLDefaultTokenContext.PI_CONTENT;  // may do extra break
+                    
+                case ISP_PI_CONTENT_QMARK:
+                    if (actChar != '?') throw new IllegalStateException ("'?' expected in ISP_PI_CONTENT_QMARK");
+                    state = ISA_PI_CONTENT_QMARK;
+                    break;
+
+                case ISA_PI_CONTENT_QMARK:
+                    if (actChar != '>') {
+                        state = ISI_PI_CONTENT;
+                        break;
+                    }
+                    state = INIT;
+                    offset++;
+                    return XMLDefaultTokenContext.PI_END;                    
                     
                 case ISA_SLASH:        // DONE
                     
-                    if( isAZ( actChar )){
+                    if( UnicodeClasses.isXMLNameStartChar( actChar )){
                         state = ISI_ENDTAG;
                         break;
                     }
@@ -154,7 +209,7 @@ public class XMLDefaultSyntax extends Syntax {
                     //break;
                     
                 case ISI_ENDTAG:        // DONE
-                    if( isName( actChar )){
+                    if( UnicodeClasses.isXMLNameChar( actChar )){
                         break;    // Still in endtag identifier, eat next char
                     }
                     
@@ -185,9 +240,7 @@ public class XMLDefaultSyntax extends Syntax {
                     
                     
                 case ISI_TAG:        // DONE
-                    if( isName( actChar ) ){
-                        break;    // Still in tag identifier, eat next char
-                    }
+                    if( UnicodeClasses.isXMLNameChar( actChar ) ) break; // Still in tag identifier, eat next char
                     state = ISP_TAG_X;
                     return XMLDefaultTokenContext.TAG;
                     
@@ -196,7 +249,7 @@ public class XMLDefaultSyntax extends Syntax {
                         state = ISP_TAG_WS;
                         break;
                     }
-                    if( isAZ( actChar ) ) {
+                    if( UnicodeClasses.isXMLNameStartChar( actChar ) ) {
                         state = ISI_ARG;
                         break;
                     }
@@ -224,7 +277,7 @@ public class XMLDefaultSyntax extends Syntax {
                     return XMLDefaultTokenContext.WS;
                     
                 case ISI_ARG:           // DONE
-                    if( isName( actChar ) ) break; // eat next char
+                    if( UnicodeClasses.isXMLNameChar( actChar ) ) break; // eat next char
                     state = ISP_ARG_X;
                     return XMLDefaultTokenContext.ARGUMENT;
                     
@@ -256,31 +309,23 @@ public class XMLDefaultSyntax extends Syntax {
                     }
                     switch( actChar ) {
                         case '\'':
-                            offset++;
-                            state = ISI_VAL_QUOT;
-                            return XMLDefaultTokenContext.VALUE;
+                            state = ISI_VAL_APOS;
+                            break;
                         case '"':
-                            offset++;
-                            state = ISI_VAL_DQUOT;
-                            return XMLDefaultTokenContext.VALUE;
+                            state = ISI_VAL_QUOT;
+                            break;
                         default:
                             state = ISI_ERROR;
                             continue;
                     }
-                    
+                    break;
                     
                 case ISP_EQ_WS:
                     if( isWS( actChar ) ) break;    // Consume all WS
                     state = ISP_EQ;
                     return XMLDefaultTokenContext.WS;
-                    
-                    
-                case ISI_VAL:
-                    if( isName( actChar ) ) break;  // Consume whole value
-                    state = ISP_TAG_X;
-                    return XMLDefaultTokenContext.VALUE;
-                    
-                case ISI_VAL_QUOT:
+                                        
+                case ISI_VAL_APOS:
                     switch( actChar ) {
                         case '\'':
                             offset++;
@@ -297,7 +342,7 @@ public class XMLDefaultSyntax extends Syntax {
                     }
                     break;  // else simply consume next char of VALUE
                     
-                case ISI_VAL_DQUOT:
+                case ISI_VAL_QUOT:
                     switch( actChar ) {
                         case '"':
                             offset++;
@@ -424,7 +469,7 @@ public class XMLDefaultSyntax extends Syntax {
                         }
                     
                 case ISA_REF:
-                    if( isAZ( actChar ) ) {
+                    if( UnicodeClasses.isXMLNameStartChar( actChar ) ) {
                         state = ISI_REF_NAME;
                         break;
                     }
@@ -436,7 +481,7 @@ public class XMLDefaultSyntax extends Syntax {
                     continue;
                     
                 case ISI_REF_NAME:
-                    if( isName( actChar ) ) break;
+                    if( UnicodeClasses.isXMLNameChar( actChar ) ) break;
                     if( actChar == ';' ) offset++;
                     state = subState;
                     return XMLDefaultTokenContext.CHARACTER;
@@ -535,9 +580,8 @@ public class XMLDefaultSyntax extends Syntax {
                 case ISP_EQ:
                     return XMLDefaultTokenContext.WS;
                     
-                case ISI_VAL:
+                case ISI_VAL_APOS:
                 case ISI_VAL_QUOT:
-                case ISI_VAL_DQUOT:
                     return XMLDefaultTokenContext.VALUE;
                     
                 case ISI_SGML_DECL:
@@ -553,6 +597,20 @@ public class XMLDefaultSyntax extends Syntax {
                 case ISA_REF_X:
                 case ISI_REF_HEX:
                     return XMLDefaultTokenContext.CHARACTER;
+                    
+                case ISI_PI:
+                    return XMLDefaultTokenContext.PI_START;
+                case ISI_PI_TARGET:
+                    return XMLDefaultTokenContext.PI_TARGET;
+                case ISP_PI_TARGET_WS:
+                    return XMLDefaultTokenContext.WS;
+                case ISI_PI_CONTENT:
+                    return XMLDefaultTokenContext.PI_CONTENT;
+                case ISA_PI_CONTENT_QMARK:                    
+                case ISP_PI_CONTENT_QMARK:
+                    // we are at end of the last buffer and expect that next char will be '>'
+                    return XMLDefaultTokenContext.PI_END;  
+                    
             }
         }
         
@@ -602,12 +660,10 @@ public class XMLDefaultSyntax extends Syntax {
                 return "ISP_ENDTAG_X";// NOI18N
             case ISP_EQ:
                 return "ISP_EQ";// NOI18N
-            case ISI_VAL:
-                return "ISI_VAL";// NOI18N
+            case ISI_VAL_APOS:
+                return "ISI_VAL_APOS";// NOI18N
             case ISI_VAL_QUOT:
                 return "ISI_VAL_QUOT";// NOI18N
-            case ISI_VAL_DQUOT:
-                return "ISI_VAL_DQUOT";// NOI18N
             case ISI_SGML_DECL:
                 return "ISI_SGML_DECL";// NOI18N
             case ISA_SGML_DECL_DASH:
@@ -627,7 +683,20 @@ public class XMLDefaultSyntax extends Syntax {
             case ISA_REF_X:
                 return "ISA_REF_X";// NOI18N
             case ISI_REF_HEX:
-                return "ISI_REF_HEX";// NOI18N
+                return "ISI_REF_HEX";// NOI18N                
+            case ISI_PI:
+                return "ISI_PI"; // NOI18N                
+            case ISI_PI_TARGET:
+                return "ISI_PI_TARGET";// NOI18N                
+            case ISP_PI_TARGET_WS:
+                return "ISP_PI_TARGET_WS";// NOI18N                
+            case ISI_PI_CONTENT:
+                return "ISI_PI_CONTENT";// NOI18N                
+            case ISA_PI_CONTENT_QMARK:
+                return "ISA_PI_CONTENT_QMARK";// NOI18N                
+            case ISP_PI_CONTENT_QMARK:
+                return "ISP_PI_CONTENT_QMARK";// NOI18N                
+                
             default:
                 return super.getStateName(stateNumber);
         }
@@ -676,7 +745,7 @@ public class XMLDefaultSyntax extends Syntax {
     }
     
     /**
-     * Resolves if given char is whitespace in terms of XML4.0 specs
+     * Resolves if given char is whitespace in terms of XML 1.0 specs
      * According to specs, following characters are treated as whitespace:
      * Space - <CODE>'\u0020'</CODE>, Tab - <CODE>'\u0009'</CODE>,
      * Formfeed - <CODE>'\u000C'</CODE>,Zero-width space - <CODE>'\u200B'</CODE>,
@@ -686,7 +755,7 @@ public class XMLDefaultSyntax extends Syntax {
     
     private boolean isWS( char ch ) {
         return ( ch == '\u0020' || ch == '\u0009' || ch == '\u000c'
-        || ch == '\u200b' || ch == '\n' || ch == '\r' );
+        /*|| ch == '\u200b'*/ || ch == '\n' || ch == '\r' );
     }
     
     

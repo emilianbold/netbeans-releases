@@ -15,15 +15,13 @@ package org.netbeans.modules.xml.tools.generator;
 import java.util.*;
 
 /**
+ * Utility class generating XML document content holding model data.
  *
- * @author  pkuzel
+ * @author  Petr Kuzel
  * @version 
  */
-class SAXBindingsGenerator {
+final class SAXBindingsGenerator {
 
-    /** Creates new SAXBindingsGenerator */
-    public SAXBindingsGenerator() {
-    }
 
     public static String toXML(SAXGeneratorModel model) {
         StringBuffer s = new StringBuffer();

@@ -80,12 +80,12 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Hidden">
             <file name="org.netbeans-modules-xml-core-cookies.xml">
                 <![CDATA[<?xml version="1.0"?>
-<!DOCTYPE cookies PUBLIC "-//DTD apisupport cookie class list 1.0//EN" "http://www.netbeans.org/dtds/apisupport-cookie-classlist-1_0.dtd">
-<catalog>
+<!DOCTYPE cookies PUBLIC "-//NetBeans//DTD apisupport cookie class list 1.0//EN" "http://www.netbeans.org/dtds/apisupport-cookie-class-list-1_0.dtd">
+<cookies>
     <class name="org.netbeans.modules.xml.core.cookies.CookieManagerCookie" />
     <class name="org.netbeans.modules.xml.core.cookies.TreeDocumentCookie" />
     <class name="org.netbeans.modules.xml.core.cookies.TreeEditorCookie" />
-</catalog>
+</cookies>
 ]]>
             </file>
         </folder> <!-- Hidden -->
@@ -116,7 +116,7 @@ Microsystems, Inc. All Rights Reserved.
           "-//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN"
           "http://www.netbeans.org/dtds/helpsetref-1_0.dtd">
 
-<helpsetref url="nbresloc:/org/netbeans/modules/xml/core/docs/helpset.hs"/>
+<helpsetref url="nbresloc:/org/netbeans/modules/xml/core/docs/xml.hs"/>
 ]]></file>
         </folder> <!-- JavaHelp -->
 

@@ -76,6 +76,9 @@ public class DTDDoclet {
         
     }
 
+    /**
+     * @return a String representing XHTML content
+     */
     public String createDoclet (TreeDTD dtd) {
         if (dtd == null)
             return ""; // NOI18N
@@ -85,7 +88,9 @@ public class DTDDoclet {
         
         s.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"); // NOI18N
         
-        s.appendStartTag(ROOT).append("\n<head><title>" + Util.getString("PAGE_TITLE") + "</title></head>\n"); // NOI18N
+        s.appendStartTag(ROOT).append("\n<head>\n<title>" + Util.getString("PAGE_TITLE") + "</title>\n"); // NOI18N
+        s.append("<meta http-equiv=\"Content-Type\" content=\"text/xhtml; charset=UTF-8\" />\n");
+        s.append("</head>\n");
         s.append("\n<!-- Generated on " + DateFormat.getDateInstance().format(new Date()) + " by NetBeans XML module. -->\n"); // NOI18N
         s.appendStartTag(BODY);
         
@@ -192,7 +197,12 @@ public class DTDDoclet {
             TreeAttlistDeclAttributeDef next = (TreeAttlistDeclAttributeDef) it.next();
             
             String defVal  = next.getDefaultValue();
-            defVal = defVal.length() == 0 ? "" : " = " + defVal; // NOI18N
+            if ( ( defVal == null ) ||
+                 ( defVal.length() == 0 ) ) {
+                defVal = "";
+            } else {
+                defVal = " = " + defVal; // NOI18N
+            }
             
             String defType = next.getDefaultTypeName() == null ? "#DEFAULT" : next.getDefaultTypeName(); // NOI18N
             

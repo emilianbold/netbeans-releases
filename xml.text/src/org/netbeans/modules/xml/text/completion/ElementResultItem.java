@@ -20,22 +20,35 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Caret;
 
 /**
- * Represent element attribute name (or its part for namespace prefix).
+ * Represent element name (or its part for namespace prefix).
  *
  * @author  sands
  * @author  Petr Kuzel
  */
 class ElementResultItem extends XMLResultItem {
 
-    public ElementResultItem(){
-        foreground = Color.blue;
-    }
+    // does it represent start element name?
+    // then there is more possibilities how to complete it
+    private final boolean startElement;
     
+    /**
+     * Create a start element result item.
+     */
     public ElementResultItem(GrammarResult res){
         super(res.getNodeName());
         foreground = Color.blue;
+        startElement = true;
     }
 
+    /**
+     * Create an end element result item.
+     */
+    public ElementResultItem(String name) {
+        super(name);
+        foreground = Color.blue;
+        startElement = false;
+    }
+    
     /**
      * Replacenment text can be cutomized to retun pairs, empty tag or
      * just name of element.
@@ -43,10 +56,12 @@ class ElementResultItem extends XMLResultItem {
     public String getReplacementText(int modifiers) {
         boolean shift = (modifiers & java.awt.event.InputEvent.SHIFT_MASK) != 0;
         
-        if (shift) {
+        if (shift && startElement) {
             return displayText + "></" + displayText + '>';
-        } else {
+        } else if (startElement) {
             return displayText;
+        } else {
+            return displayText + '>';
         }
     }
     
@@ -61,7 +76,7 @@ class ElementResultItem extends XMLResultItem {
 
         boolean shift = (modifiers & java.awt.event.InputEvent.SHIFT_MASK) != 0;
         
-        if (shift) {
+        if (shift && startElement) {
             Caret caret = c.getCaret();  // it is at the end of replacement            
             int dot = caret.getDot();
             int rlen = replacementText.length();            
@@ -72,10 +87,9 @@ class ElementResultItem extends XMLResultItem {
     }
     
     /**
-     *
+     * @deprecated we use startElement flag
      */
-    static class EndTag extends ElementResultItem {
-        
-    }
+//    static class EndTag extends ElementResultItem {        
+//    }
     
 }

@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -22,7 +22,7 @@ import org.netbeans.tax.InvalidArgumentException;
  * @version 0.1
  */
 public interface ElementDecl {
-
+    
     //
     // Constraints
     //
@@ -31,47 +31,47 @@ public interface ElementDecl {
      *
      */
     public static interface Constraints {
-
-    	public void checkElementDeclName (String name) throws InvalidArgumentException;
-    
-    	public boolean isValidElementDeclName (String name);
-    
-
-    	public void checkElementDeclContentType (TreeElementDecl.ContentType contentType) throws InvalidArgumentException;
-    
-    	public boolean isValidElementDeclContentType (TreeElementDecl.ContentType contentType);
-    
+        
+        public void checkElementDeclName (String name) throws InvalidArgumentException;
+        
+        public boolean isValidElementDeclName (String name);
+        
+        
+        public void checkElementDeclContentType (TreeElementDecl.ContentType contentType) throws InvalidArgumentException;
+        
+        public boolean isValidElementDeclContentType (TreeElementDecl.ContentType contentType);
+        
     } // end: interface Constraints
-
-
+    
+    
     //
     // Creator
     //
-
+    
     /**
      *
      */
     public static interface Creator {
-	
-	/**
-	 * @throws InvalidArgumentException
-	 */
-  	public TreeElementDecl createElementDecl (String name, TreeElementDecl.ContentType contentType);
-
+        
+        /**
+         * @throws InvalidArgumentException
+         */
+        public TreeElementDecl createElementDecl (String name, TreeElementDecl.ContentType contentType);
+        
     } // end: interface Creator
-
-
+    
+    
     //
     // Writer
     //
-
+    
     /**
      *
      */
     public static interface Writer {
-	
-	public void writeElementDecl (TreeElementDecl elementDecl) throws TreeException;
-
+        
+        public void writeElementDecl (TreeElementDecl elementDecl) throws TreeException;
+        
     } // end: interface Writer
-
+    
 }

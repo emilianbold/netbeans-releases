@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -23,32 +23,32 @@ import org.netbeans.tax.TreeCharacterReference;
  * @version 0.1
  */
 public class TreeCharacterReferenceCustomizer extends AbstractTreeCustomizer {
-
+    
     /** Serial Version UID */
-    private static final long serialVersionUID =-7799211701822931611L;    
-
-
+    private static final long serialVersionUID =-7799211701822931611L;
+    
+    
     //
     // init
     //
     
     /** Creates new customizer TreeCharacterReferenceCustomizer. */
     public TreeCharacterReferenceCustomizer () {
-	super();
-
-        initComponents();
-        nameLabel.setDisplayedMnemonic(Util.getChar("MNE_CharRef_name")); // NOI18N
+        super ();
         
-        initAccessibility();
+        initComponents ();
+        nameLabel.setDisplayedMnemonic (Util.getChar ("MNE_CharRef_name")); // NOI18N
+        
+        initAccessibility ();
     }
-
+    
     
     //
     // itself
     //
-
+    
     protected TreeCharacterReference getCharacterReference () {
-        return (TreeCharacterReference)getTreeObject();
+        return (TreeCharacterReference)getTreeObject ();
     }
     
     /**
@@ -57,40 +57,40 @@ public class TreeCharacterReferenceCustomizer extends AbstractTreeCustomizer {
     protected final void safePropertyChange (PropertyChangeEvent pche) {
         super.safePropertyChange (pche);
         
-	if (pche.getPropertyName().equals (TreeCharacterReference.PROP_NAME)) {
-	    updateNameComponent();
-	}
-    }    
-
+        if (pche.getPropertyName ().equals (TreeCharacterReference.PROP_NAME)) {
+            updateNameComponent ();
+        }
+    }
+    
     /**
      */
     protected void updateNameComponent () {
-        nameField.setText (getCharacterReference().getName());
+        nameField.setText (getCharacterReference ().getName ());
     }
-        
+    
     /**
      */
     protected void updateCharacterReferenceName () {
         try {
-            getCharacterReference().setName (nameField.getText());
+            getCharacterReference ().setName (nameField.getText ());
         } catch (TreeException exc) {
-	    updateNameComponent();
+            updateNameComponent ();
             Util.notifyTreeException (exc);
         }
     }
-        
+    
     /**
      */
     protected void initComponentValues () {
-        updateNameComponent();
-    }    
-
+        updateNameComponent ();
+    }
+    
     /**
      */
     protected void updateReadOnlyStatus (boolean editable) {
         nameField.setEditable (editable);
-    }    
-
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -147,28 +147,28 @@ public class TreeCharacterReferenceCustomizer extends AbstractTreeCustomizer {
         add(fillPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
-
+    
     private void nameFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_nameFieldFocusLost
         // Add your handling code here:
-        updateCharacterReferenceName();
+        updateCharacterReferenceName ();
     }//GEN-LAST:event_nameFieldFocusLost
-
+    
     private void nameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nameFieldActionPerformed
         // Add your handling code here:
-        updateCharacterReferenceName();
+        updateCharacterReferenceName ();
     }//GEN-LAST:event_nameFieldActionPerformed
-
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel nameLabel;
     private javax.swing.JTextField nameField;
     private javax.swing.JPanel fillPanel;
     // End of variables declaration//GEN-END:variables
-  
+    
     /** Initialize accesibility
      */
-    public void initAccessibility(){
-    
-        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeCharacterReferenceCustomizer"));
-        nameField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_nameField5"));
+    public void initAccessibility (){
+        
+        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeCharacterReferenceCustomizer"));
+        nameField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_nameField5"));
     }
 }

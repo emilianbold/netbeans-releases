@@ -127,13 +127,13 @@ public class SelectFileDialog extends JPanel {
     // check for errors and signalize them
     private void updateDialogUI() {
 
-        if (!!! check.checkName(fileField.getText())) {
-            fileField.setForeground(Color.red);        
-            enableOkOption (false);
-        } else {
-            fileField.setForeground(Color.black);
-            enableOkOption (true);
-        }
+//         if (!!! check.checkName(fileField.getText())) {
+//             fileField.setForeground(Color.red);        
+//             enableOkOption (false);
+//         } else {
+//             fileField.setForeground(Color.black);
+//             enableOkOption (true);
+//         }
     }
 
     private void enableOkOption(boolean enable) {
@@ -184,7 +184,7 @@ public class SelectFileDialog extends JPanel {
     /** Initialize accesibility
      */
     public void initAccessibility(){
-
+        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_SelectFileDialog"));        
         fileField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_fileField"));        
     }
     

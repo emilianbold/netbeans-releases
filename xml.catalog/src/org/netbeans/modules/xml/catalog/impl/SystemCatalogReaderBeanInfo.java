@@ -10,36 +10,66 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.xml.catalog.impl;
 
 import java.beans.*;
 
 public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
 
-  // Property identifiers //GEN-FIRST:Properties
 
-  // Property array 
-  private static PropertyDescriptor[] properties = new PropertyDescriptor[0];
+    // Bean descriptor //GEN-FIRST:BeanDescriptor
+    private static BeanDescriptor beanDescriptor = new BeanDescriptor  ( SystemCatalogReader.class , SystemCatalogCustomizer.class );
+
+    private static BeanDescriptor getBdescriptor(){
+        return beanDescriptor;
+    }
+
+    static {
+        beanDescriptor.setDisplayName ( Util.getString("NAME_system_catalog") );
+        beanDescriptor.setShortDescription ( Util.getString("TEXT_system_catalog_desc") );//GEN-HEADEREND:BeanDescriptor
+
+    // Here you can add code for customizing the BeanDescriptor.
+
+}//GEN-LAST:BeanDescriptor
+
+
+    // Property identifiers //GEN-FIRST:Properties
+
+    // Property array 
+    private static PropertyDescriptor[] properties = new PropertyDescriptor[0];
+
+    private static PropertyDescriptor[] getPdescriptor(){
+        return properties;
+    }
 //GEN-HEADEREND:Properties
 
     // Here you can add code for customizing the properties array.
 
   //GEN-LAST:Properties
 
-  // EventSet identifiers//GEN-FIRST:Events
+    // EventSet identifiers//GEN-FIRST:Events
 
-  // EventSet array
-  private static EventSetDescriptor[] eventSets = new EventSetDescriptor[0];
+    // EventSet array
+    private static EventSetDescriptor[] eventSets = new EventSetDescriptor[0];
+
+    private static EventSetDescriptor[] getEdescriptor(){
+        return eventSets;
+    }
 //GEN-HEADEREND:Events
 
     // Here you can add code for customizing the event sets array.
 
   //GEN-LAST:Events
 
-  // Method identifiers //GEN-FIRST:Methods
+    // Method identifiers //GEN-FIRST:Methods
 
-  // Method array 
-  private static MethodDescriptor[] methods = new MethodDescriptor[0];
+    // Method array 
+    private static MethodDescriptor[] methods = new MethodDescriptor[0];
+
+    private static MethodDescriptor[] getMdescriptor(){
+        return methods;
+    }
 //GEN-HEADEREND:Methods
 
     // Here you can add code for customizing the methods array.
@@ -50,14 +80,31 @@ public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
     private static java.awt.Image iconColor32 = null;
     private static java.awt.Image iconMono16 = null;
     private static java.awt.Image iconMono32 = null; //GEN-END:IconsDef
-  private static String iconNameC16 = null;//GEN-BEGIN:Icons
-  private static String iconNameC32 = null;
-  private static String iconNameM16 = null;
-  private static String iconNameM32 = null;//GEN-END:Icons
+    private static String iconNameC16 = "/org/netbeans/modules/xml/catalog/impl/sysCatalog.gif";//GEN-BEGIN:Icons
+    private static String iconNameC32 = null;
+    private static String iconNameM16 = null;
+    private static String iconNameM32 = null;//GEN-END:Icons
 
-  private static int defaultPropertyIndex = -1;//GEN-BEGIN:Idx
-  private static int defaultEventIndex = -1;//GEN-END:Idx
+    private static final int defaultPropertyIndex = -1;//GEN-BEGIN:Idx
+    private static final int defaultEventIndex = -1;//GEN-END:Idx
 
+    
+ //GEN-FIRST:Superclass
+
+    // Here you can add code for customizing the Superclass BeanInfo.
+
+ //GEN-LAST:Superclass
+	
+    /**
+     * Gets the bean's <code>BeanDescriptor</code>s.
+     * 
+     * @return BeanDescriptor describing the editable
+     * properties of this bean.  May return null if the
+     * information should be obtained by automatic analysis.
+     */
+    public BeanDescriptor getBeanDescriptor() {
+	return getBdescriptor();
+    }
 
     /**
      * Gets the bean's <code>PropertyDescriptor</code>s.
@@ -72,7 +119,7 @@ public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
      * if a given PropertyDescriptor is an IndexedPropertyDescriptor.
      */
     public PropertyDescriptor[] getPropertyDescriptors() {
-        return properties;
+	return getPdescriptor();
     }
 
     /**
@@ -83,7 +130,7 @@ public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
      * should be obtained by automatic analysis.
      */
     public EventSetDescriptor[] getEventSetDescriptors() {
-        return eventSets;
+	return getEdescriptor();
     }
 
     /**
@@ -94,7 +141,7 @@ public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
      * should be obtained by automatic analysis.
      */
     public MethodDescriptor[] getMethodDescriptors() {
-        return methods;
+	return getMdescriptor();
     }
 
     /**
@@ -117,7 +164,7 @@ public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
      * <P>	Returns -1 if there is no default event.
      */
     public int getDefaultEventIndex() {
-        return defaultPropertyIndex;
+        return defaultEventIndex;
     }
 
     /**
@@ -175,19 +222,9 @@ public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
                     iconMono32 = loadImage( iconNameM32 );
                 return iconMono32;
             }
+	default: return null;
         }
-        return null;
     }
 
-    public BeanDescriptor getBeanDescriptor(){
-        BeanDescriptor desc = new BeanDescriptor(
-            SystemCatalogReader.class, 
-            SystemCatalogCustomizer.class
-        );
-        desc.setName("Netbeans Catalog");  // NOI18N
-        desc.setDisplayName(Util.getString ("NAME_system_catalog")); // NOI18N
-        desc.setShortDescription(Util.getString ("TEXT_system_catalog_desc")); // NOI18N
-        return desc;
-    }
-        
 }
+

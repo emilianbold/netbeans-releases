@@ -16,6 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <property name="xml_root" location=".."/>
     <property name="tax_root" location="../tax"/>
+    <property name="tax_lib_root" location="${tax_root}/lib"/>
     <property name="core_root" location="../core"/>
 
     <property name="nbroot" location="${xml_root}/.."/>
@@ -23,8 +24,8 @@ Microsystems, Inc. All Rights Reserved.
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
     <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
-    <property name="homepage.base" value="http://xml.netbeans.org"/>
-    <property name="dist.base" value="http://www.netbeans.org/download/nbms/40"/>
+    <property name="homepage.base" value="xml.netbeans.org"/>
+    <property name="dist.base" value="http://www.netbeans.org/download/nbms/40/xml"/>
     <property name="storepass" value="?"/>
     <property name="release" value="dev"/>
 
@@ -59,7 +60,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${nbroot}/editor/netbeans/modules/ext/nb-editor.jar"/>
                 <pathelement location="${nbroot}/editor/netbeans/modules/editor.jar"/>
         	<pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>  <!-- DOM -->
-                <pathelement location="${tax_root}/lib/src/"/>
+                <pathelement location="${tax_lib_root}/src/"/>
                 <pathelement location="${core_root}/src/"/>
             </classpath>
         </javac>
@@ -85,6 +86,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="javahelp">
+<!-- It is a part of core now
         <mkdir dir="javahelp/org/netbeans/modules/xml/text/docs/JavaHelpSearch"/>
         <jhindexer basedir="javahelp/org/netbeans/modules/xml/text/docs/"
                    db="javahelp/org/netbeans/modules/xml/text/docs/JavaHelpSearch"
@@ -99,6 +101,7 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="javahelp" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
             <locale name="ja"/>
         </locjar>
+-->
     </target>
 
     <target name="netbeans" depends="jars,release,javahelp">
@@ -114,7 +117,7 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
         <jar jarfile="test/xml-text-test.jar" manifest="manifest-subst.mf" compress="false">
             <fileset dir="src" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
-            <fileset dir="javahelp" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
+<!--            <fileset dir="javahelp" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>-->
         </jar>
         <nbinstaller module="test/xml-text-test.jar" action="reinstall"/>
     </target>
@@ -125,7 +128,7 @@ Microsystems, Inc. All Rights Reserved.
         <makenbm file="../xml-text-edit-${release}.nbm"
                  topdir="."
                  module="netbeans/modules/xml-text-edit.jar"
-                 homepage="${homepage.base}/text-edit/"
+                 homepage="http://${homepage.base}/text-edit/"
                  distribution="${dist.base}/xml-text-edit-${release}.nbm">
             <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
@@ -147,12 +150,16 @@ Microsystems, Inc. All Rights Reserved.
         <for-each locations="compat"/>
     </target>
 
+    <target name="real-clean" depends="clean">
+        <delete dir="javadoc"/>
+    </target>
+
     <target name="all" depends="clean,nbm"/>
 
     <target name="javadoc">
         <delete dir="javadoc"/>
         <mkdir dir="javadoc"/>
-        <genjavadoc destdir="javadoc" modules="openide,xml/text-edit">
+        <genjavadoc destdir="javadoc" modules="openide,editor,xml/text-edit">
             <topdir path="${nbroot}"/>
         </genjavadoc>
     </target>

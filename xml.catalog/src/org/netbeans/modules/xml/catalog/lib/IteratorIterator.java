@@ -15,35 +15,38 @@ package org.netbeans.modules.xml.catalog.lib;
 import java.util.*;
 
 /**
- * Let list of iterators behave as single iterator.
- * The implementation supports just usage where
- * hasNext() precedes next().
- * <pre>
- * Iterator it = .. // some instance
- * while (it.hasNext()) it.next();
- * </pre>
+ * Let a list of iterators behave as a single iterator.
+ *
+ * @author  Petr Kuzel
  */
-public class IteratorIterator implements Iterator {
+public final class IteratorIterator implements Iterator {
 
     private Vector iterators = new Vector();
 
     private Iterator current = null;  //current iterator;
     private Iterator it = null;       //iterators.iterator();
+    
+    /*
+     * It is set by hasNext() and cleared by next() call.
+     */
     private Object next = null;       //current element
 
     /**
-     * New iterators can be added if hasNext() or prior its first call.
+     * New iterators can be added while hasNext() or prior its first call.
      */
     public void add(Iterator it) {
         iterators.add(it);
     }
 
+    /**
+     * Unsupported operation.
+     */
     public void remove() {
         throw new UnsupportedOperationException(); 
     }
 
     public Object next() {
-       if (next != null) {
+       if (hasNext()) {
            Object tmp = next;
            next = null;
            return tmp;
@@ -53,15 +56,25 @@ public class IteratorIterator implements Iterator {
     }
 
     public boolean hasNext() {
-        if (it == null) it = iterators.iterator();
         if (next != null) return true;
-
-        while (it.hasNext()){
-            if (current == null || current.hasNext() == false) {
+        
+        if (it == null) it = iterators.iterator();
+        if (current == null) {
+            if (it.hasNext()) {
                 current = (Iterator) it.next();
+            } else {
+                return false;
             }
-            if (current.hasNext()) {
-                next = current.next(); 
+        }
+        
+        while (current.hasNext() || it.hasNext()) {
+            
+            // fetch next iterator if necessary
+            if (current.hasNext() == false) {
+                current = (Iterator) it.next();
+                continue;
+            } else {           
+                next = current.next();
                 return true;
             }
         }

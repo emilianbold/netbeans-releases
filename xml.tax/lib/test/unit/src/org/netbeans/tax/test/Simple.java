@@ -33,14 +33,15 @@ public class Simple {
     */
     public static void main (String args[]) throws Exception {
         
-        System.err.println ("Runnig_tests...");
+        System.out.println ("Runnig_tests...");
         testEncodings();
 //          testMerge("tests/merge/merge", "tests/merge/peer", "tests/merge/out"); // NOI18N
 //        testDTDBuilder ("XMLsamples/ParserTest.dtd"); // NOI18N
 //        testDTDBuilder ("xml/simple.dtd"); // NOI18N
 //        testTree();
 //  	  testAllTree();
-        
+
+        testUtilities();
     }
 
     private static boolean testEncodings () {
@@ -100,9 +101,9 @@ public class Simple {
         TreeElement elem = new TreeElement ("xxx"); // NOI18N
         doc.setDocumentElement (elem);
 
-        elem.setAttribute (new TreeAttribute("attr", "value")); // NOI18N
-        elem.setAttribute (new TreeAttribute("attr", "value2")); // NOI18N
-        elem.setAttribute (new TreeAttribute("attr3", "value3")); // NOI18N
+        elem.addAttribute (new TreeAttribute("attr", "value")); // NOI18N
+        elem.addAttribute (new TreeAttribute("attr", "value2")); // NOI18N
+        elem.addAttribute (new TreeAttribute("attr3", "value3")); // NOI18N
         System.out.println ("CYCLE: elem.appendChild (elem);"); // NOI18N
         
         elem.appendChild (new TreeComment ("Chtel bych vyzkouset get[Previous|Next]Sibling")); // NOI18N
@@ -123,12 +124,12 @@ public class Simple {
         // TreeDTD
         //
         TreeDTD dtd = new TreeDTD (null, null);
-        dtd.appendChild (new TreeElementDecl ("elem", "(xxx,yyy?)")); // NOI18N
+//         dtd.appendChild (new TreeElementDecl ("elem", "(xxx,yyy?)")); // NOI18N
         TreeAttlistDecl attlist = new TreeAttlistDecl ("elem"); // NOI18N
         attlist.setAttributeDef (new TreeAttlistDeclAttributeDef ("attr", TreeAttlistDeclAttributeDef.TYPE_ID, null, TreeAttlistDeclAttributeDef.DEFAULT_TYPE_REQUIRED, "bla")); // NOI18N
         dtd.appendChild (attlist);
 
-        dtd.appendChild (new TreeElementDecl ("elem2", "ANY")); // NOI18N
+//         dtd.appendChild (new TreeElementDecl ("elem2", "ANY")); // NOI18N
         attlist = new TreeAttlistDecl ("elem2"); // NOI18N
         attlist.setAttributeDef (new TreeAttlistDeclAttributeDef ("attr2", TreeAttlistDeclAttributeDef.TYPE_NOTATION, new String[] { "abc", "def" }, TreeAttlistDeclAttributeDef.DEFAULT_TYPE_NULL, "bla")); // NOI18N
         dtd.appendChild (attlist);
@@ -181,30 +182,30 @@ public class Simple {
 
         it = tree.getChildNodes().iterator();
         while (it.hasNext()) {
-            System.err.println (">" + it.next());
+            System.out.println (">" + it.next());
         }
 
         it = tree.getElementDeclarations().iterator();
         while (it.hasNext()) {
-            System.err.println("#" + ((TreeNode)it.next()).toString()); // NOI18N
+            System.out.println("#" + ((TreeNode)it.next()).toString()); // NOI18N
         }
 
-        System.err.println("Listing Any attributes"); // NOI18N
+        System.out.println("Listing Any attributes"); // NOI18N
 
 //          TreeElementDecl elemDecl = tree.findElementDecl("Any"); // NOI18N
 //          it = elemDecl.getDeclAttrs();
 //          while (it.hasNext()) {
 //              TreeAttributeDecl next = (TreeAttributeDecl) it.next();
-//              System.err.println(next.toString());
+//              System.out.println(next.toString());
 //          }
 
-        System.err.println("-------------------"); // NOI18N
+        System.out.println("-------------------"); // NOI18N
         println (tree);
         TreeChild child = tree.getFirstChild();
         println (child);
         child = child.getNextSibling();
         println (child);
-        System.err.println("==================="); // NOI18N
+        System.out.println("==================="); // NOI18N
     }
 
     /**
@@ -416,4 +417,25 @@ public class Simple {
         }
     }
 
+
+    public static void testUtilities () {
+        System.out.println ("\nTest TreeUtilities ...");
+
+        char[] PUBLIC_ID = "\n\r -'()+,./:=?;!*#@$_%0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray();
+        char ac = (char) 0;
+        for (int i = 0; i < PUBLIC_ID.length; i++) {
+            char nc = PUBLIC_ID[i];
+            if ( ac > nc ) {
+                System.out.println ("    Precondiction failed: '" + ac + "' > '" + nc + "' !!!");
+            }
+            if ( UnicodeClasses.isXMLPubidLiteral (nc) == false ) {
+                System.out.println ("    Char '" + nc + "' is not correct Pubid Literal !!!");
+            } else {            
+                ac = nc;
+                continue;
+            }
+            break;
+        }
+    }
+    
 }

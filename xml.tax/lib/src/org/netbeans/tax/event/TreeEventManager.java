@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -20,25 +20,25 @@ import java.util.*;
  * @version 0.1
  */
 public final class TreeEventManager {
-
+    
     /** Event will never be fired out. */
-//      private static final short FIRE_NEVER = 0; // This is dangerous to cancel firing while old fire policy is not in stack
+    //      private static final short FIRE_NEVER = 0; // This is dangerous to cancel firing while old fire policy is not in stack
     
     /** Event will be fired immediately. */
     public static final short FIRE_NOW   = 1;
     
     /** Event will be fired later, when state is FIRE_NOW again. */
     public static final short FIRE_LATER = 2;
-
-
+    
+    
     /** Fire policy = FIRE_NEVER, FIRE_NOW or FIRE_LATER. */
     private short firePolicy;
-
-    /* 
+    
+    /*
      * Holds all supports that fired in fire FIRE_LATER mode.
      */
-    private Set cachedSupports = new HashSet();
-
+    private Set cachedSupports = new HashSet ();
+    
     //
     // init
     //
@@ -47,22 +47,22 @@ public final class TreeEventManager {
     public TreeEventManager (short policy) {
         firePolicy = policy;
     }
-
+    
     /** Creates new TreeEventManager. */
     public TreeEventManager () {
         this (FIRE_NOW);
     }
-
+    
     /** Creates new TreeEventManager -- copy constructor. */
     public TreeEventManager (TreeEventManager eventManager) {
         this.firePolicy = eventManager.firePolicy;
     }
-
-
+    
+    
     //
     // itself
     //
-
+    
     /** Get fire policy.
      * @return fire policy.
      */
@@ -76,51 +76,51 @@ public final class TreeEventManager {
     public final /* synchronized */ void setFirePolicy (short firePolicy) {
         if (this.firePolicy == firePolicy)
             return;
-	this.firePolicy = firePolicy;
-        if (firePolicy == FIRE_NOW) 
-            fireCached();
+        this.firePolicy = firePolicy;
+        if (firePolicy == FIRE_NOW)
+            fireCached ();
         
     }
     
     /*
      * Now it may fire out of order
      */
-    private void fireCached() {
-        Iterator it = cachedSupports.iterator();
-        while (it.hasNext()) {
-            TreeEventChangeSupport next = (TreeEventChangeSupport) it.next();
-            next.firePropertyChangeCache();
-            it.remove();
+    private void fireCached () {
+        Iterator it = cachedSupports.iterator ();
+        while (it.hasNext ()) {
+            TreeEventChangeSupport next = (TreeEventChangeSupport) it.next ();
+            next.firePropertyChangeCache ();
+            it.remove ();
         }
     }
     
-    /*     
+    /*
      * Add passed support to cache. the cache is then fired in any order!
      * It can be a BOTTLENECK method because it is called for every event change.
      */
-    private void addToCache(TreeEventChangeSupport support) {
-        cachedSupports.add(support);
+    private void addToCache (TreeEventChangeSupport support) {
+        cachedSupports.add (support);
     }
     
     /**
      */
     public final void firePropertyChange (TreeEventChangeSupport eventChangeSupport, TreeEvent evt) {
-//          if (firePolicy == FIRE_NEVER) {
-//              eventChangeSupport.clearPropertyChangeCache();
-//              return;
-//          }
+        //          if (firePolicy == FIRE_NEVER) {
+        //              eventChangeSupport.clearPropertyChangeCache();
+        //              return;
+        //          }
         if (firePolicy == FIRE_NOW) {
-	    eventChangeSupport.firePropertyChangeCache();
+            eventChangeSupport.firePropertyChangeCache ();
             eventChangeSupport.firePropertyChangeNow (evt);
             return;
         }
         if (firePolicy == FIRE_LATER) {
             eventChangeSupport.firePropertyChangeLater (evt);
-            addToCache(eventChangeSupport);
+            addToCache (eventChangeSupport);
             return;
         }
     }
-
+    
     
     /**
      */
@@ -138,5 +138,5 @@ public final class TreeEventManager {
             setFirePolicy (oldFirePolicy);
 //        }
     }*/
-        
+    
 }

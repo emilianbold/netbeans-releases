@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -23,129 +23,129 @@ import org.netbeans.tax.TreeDocumentType;
  * @version 0.1
  */
 public class TreeDocumentTypeCustomizer extends AbstractTreeCustomizer {
-
+    
     /** Serial Version UID */
     private static final long serialVersionUID = -6111125131099262050L;
-
+    
     
     //
     // init
     //
-
+    
     /** */
     public TreeDocumentTypeCustomizer () {
-	super();
-
-        initComponents();
-        nameLabel.setDisplayedMnemonic(Util.getChar("MNE_xmlName")); // NOI18N
-        systemLabel.setDisplayedMnemonic(Util.getChar("MNE_xmlSystemID")); // NOI18N
-        publicLabel.setDisplayedMnemonic(Util.getChar("MNE_xmlPublicID")); // NOI18N
+        super ();
         
-        initAccessibility();
+        initComponents ();
+        nameLabel.setDisplayedMnemonic (Util.getChar ("MNE_xmlName")); // NOI18N
+        systemLabel.setDisplayedMnemonic (Util.getChar ("MNE_xmlSystemID")); // NOI18N
+        publicLabel.setDisplayedMnemonic (Util.getChar ("MNE_xmlPublicID")); // NOI18N
+        
+        initAccessibility ();
     }
-
-
+    
+    
     //
     // itself
     //
-
+    
     /**
      */
     protected final TreeDocumentType getDocumentType () {
-        return (TreeDocumentType)getTreeObject();
+        return (TreeDocumentType)getTreeObject ();
     }
-
+    
     /**
      */
     protected final void safePropertyChange (PropertyChangeEvent pche) {
         if (initializing)
-	    return;
-
+            return;
+        
         super.safePropertyChange (pche);
         
-	if (pche.getPropertyName().equals (TreeDocumentType.PROP_ELEMENT_NAME)) {
-	    updateNameComponent();
-	} else if (pche.getPropertyName().equals (TreeDocumentType.PROP_PUBLIC_ID)) {
-	    updatePublicIdComponent();
-	} else if (pche.getPropertyName().equals (TreeDocumentType.PROP_SYSTEM_ID)) {
-	    updateSystemIdComponent();
-	}
+        if (pche.getPropertyName ().equals (TreeDocumentType.PROP_ELEMENT_NAME)) {
+            updateNameComponent ();
+        } else if (pche.getPropertyName ().equals (TreeDocumentType.PROP_PUBLIC_ID)) {
+            updatePublicIdComponent ();
+        } else if (pche.getPropertyName ().equals (TreeDocumentType.PROP_SYSTEM_ID)) {
+            updateSystemIdComponent ();
+        }
     }
-
+    
     /**
      */
     protected final void updateDocumentTypeName () {
-	try {
-	    getDocumentType().setElementName (nameField.getText());
-	} catch (TreeException exc) {
-	    updateNameComponent();
-	    Util.notifyTreeException (exc);
-	}
+        try {
+            getDocumentType ().setElementName (nameField.getText ());
+        } catch (TreeException exc) {
+            updateNameComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
     /**
      */
     protected final void updateNameComponent () {
-	nameField.setText (getDocumentType().getElementName());
+        nameField.setText (getDocumentType ().getElementName ());
     }
     
     /**
      */
     protected final void updateDocumentTypePublicId () {
-	try {
-	    getDocumentType().setPublicId (text2null (publicField.getText()));
-	} catch (TreeException exc) {
-	    updatePublicIdComponent();
-	    Util.notifyTreeException (exc);
-	}
+        try {
+            getDocumentType ().setPublicId (text2null (publicField.getText ()));
+        } catch (TreeException exc) {
+            updatePublicIdComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
     /**
      */
     protected final void updatePublicIdComponent () {
-	publicField.setText (null2text (getDocumentType().getPublicId()));
+        publicField.setText (null2text (getDocumentType ().getPublicId ()));
     }
-
+    
     /**
      */
     protected final void updateDocumentTypeSystemId () {
-	try {
-            String systemId = systemField.getText();
-            if ( ( getDocumentType().getPublicId() == null ) &&
-                 ( "".equals (systemId) == false ) ) { // NOI18N
+        try {
+            String systemId = systemField.getText ();
+            if ( ( getDocumentType ().getPublicId () == null ) &&
+            ( "".equals (systemId) == false ) ) { // NOI18N
                 systemId = text2null (systemId);
             }
-	    getDocumentType().setSystemId (systemId);
-	} catch (TreeException exc) {
-	    updateSystemIdComponent();
-	    Util.notifyTreeException (exc);
-	}
+            getDocumentType ().setSystemId (systemId);
+        } catch (TreeException exc) {
+            updateSystemIdComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
     /**
      */
     protected final void updateSystemIdComponent () {
-	systemField.setText (null2text (getDocumentType().getSystemId()));
+        systemField.setText (null2text (getDocumentType ().getSystemId ()));
     }
-
-
+    
+    
     /**
      */
     protected final void initComponentValues () {
-        updateNameComponent();
-        updatePublicIdComponent();
-        updateSystemIdComponent();
+        updateNameComponent ();
+        updatePublicIdComponent ();
+        updateSystemIdComponent ();
     }
-
+    
     /**
      */
     protected void updateReadOnlyStatus (boolean editable) {
         nameField.setEditable (editable);
         publicField.setEditable (editable);
         systemField.setEditable (editable);
-    }    
-
-
+    }
+    
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -263,49 +263,49 @@ public class TreeDocumentTypeCustomizer extends AbstractTreeCustomizer {
         add(fillPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
-
+    
     /**
      */
     private void publicFieldFocusLost (java.awt.event.FocusEvent evt) {//GEN-FIRST:event_publicFieldFocusLost
-	// Add your handling code here:
-        updateDocumentTypePublicId();
+        // Add your handling code here:
+        updateDocumentTypePublicId ();
     }//GEN-LAST:event_publicFieldFocusLost
-
+    
     /**
      */
     private void systemFieldFocusLost (java.awt.event.FocusEvent evt) {//GEN-FIRST:event_systemFieldFocusLost
-	// Add your handling code here:
-        updateDocumentTypeSystemId();
+        // Add your handling code here:
+        updateDocumentTypeSystemId ();
     }//GEN-LAST:event_systemFieldFocusLost
-
+    
     /**
      */
     private void nameFieldFocusLost (java.awt.event.FocusEvent evt) {//GEN-FIRST:event_nameFieldFocusLost
-	// Add your handling code here:
-        updateDocumentTypeName();
+        // Add your handling code here:
+        updateDocumentTypeName ();
     }//GEN-LAST:event_nameFieldFocusLost
-
+    
     /**
      */
     private void publicFieldActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_publicFieldActionPerformed
-	// Add your handling code here:
-        updateDocumentTypePublicId();
+        // Add your handling code here:
+        updateDocumentTypePublicId ();
     }//GEN-LAST:event_publicFieldActionPerformed
-
+    
     /**
      */
     private void systemFieldActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_systemFieldActionPerformed
-	// Add your handling code here:
-        updateDocumentTypeSystemId();
+        // Add your handling code here:
+        updateDocumentTypeSystemId ();
     }//GEN-LAST:event_systemFieldActionPerformed
-
+    
     /**
      */
     private void nameFieldActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nameFieldActionPerformed
-	// Add your handling code here:
-        updateDocumentTypeName();
+        // Add your handling code here:
+        updateDocumentTypeName ();
     }//GEN-LAST:event_nameFieldActionPerformed
-
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel nameLabel;
     private javax.swing.JLabel publicLabel;
@@ -315,15 +315,15 @@ public class TreeDocumentTypeCustomizer extends AbstractTreeCustomizer {
     private javax.swing.JTextField systemField;
     private javax.swing.JPanel fillPanel;
     // End of variables declaration//GEN-END:variables
- 
+    
     /** Initialize accesibility
      */
-    public void initAccessibility(){
-    
-        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeDocumentTypeCustomizer"));
+    public void initAccessibility (){
         
-        nameField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_nameField4"));
-        systemField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_systemField2"));
-        publicField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_publicField3"));
+        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeDocumentTypeCustomizer"));
+        
+        nameField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_nameField4"));
+        systemField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_systemField2"));
+        publicField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_publicField3"));
     }
 }

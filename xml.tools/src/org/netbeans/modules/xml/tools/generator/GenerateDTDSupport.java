@@ -74,7 +74,7 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
                 return;
 
             FileObject primFile = DO.getPrimaryFile();
-            String name = primFile.getName() + "_" + element.getQName(); // NOI18N
+            String name = primFile.getName() + "_" + element.getLocalName(); // NOI18N
             FileObject folder = primFile.getParent();
 
             FileObject generFile = (new SelectFileDialog (folder, name, DTD_EXT)).getFileObject();
@@ -153,8 +153,7 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
         
         // fill table of dtd declarations
         
-        HashMap table = new HashMap();
-        
+        TreeMap table = new TreeMap();
         fillTable (element, table);
         
         // generate DTD contaent by the table
@@ -165,12 +164,20 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
             sb.append ("\n"); // NOI18N
             elem = (DTDElement)I.next();
             // <!ELEMENT ...
-            sb.append ("  <!ELEMENT ").append (elem.name).append (" "); // NOI18N
-            if ((elem.pcdata == false) && (elem.children.size() == 0)) {
+            sb.append ("<!ELEMENT ").append (elem.name).append (" "); // NOI18N
+
+            System.out.println ("\n GenerateDTDSupport.xml2dtd: name = " + elem.name);
+            System.out.println ("                  .xml2dtd: pcdata = " + elem.pcdata);
+            System.out.println ("                  .xml2dtd: empty  = " + elem.empty);
+            System.out.println ("                  .xml2dtd: children.size() = " +
+                                elem.children.size());
+
+            if ( elem.empty ) {
                 sb.append ("EMPTY"); // NOI18N
             } else {
                 Collection collect = elem.children.values();
-                if (elem.pcdata) {
+                if ( ( elem.pcdata == true ) ||
+                     ( collect.size() == 0 ) ) {
                     Vector vect = new Vector (collect);
                     vect.insertElementAt (new String ("#PCDATA"), 0); // NOI18N
                     collect = vect;
@@ -195,7 +202,7 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
             
             // <!ATTLIST ...
             if (elem.attributes.size() != 0) {
-                sb.append ("  <!ATTLIST ").append (elem.name).append ("\n"); // NOI18N
+                sb.append ("<!ATTLIST ").append (elem.name).append ("\n"); // NOI18N
                 Iterator I3 = elem.attributes.values().iterator();
                 String attName;
                 while (I3.hasNext()) {
@@ -213,7 +220,7 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
      * Fills table by parameters got from element. 
      * <p>Recursive method!
      */
-    void fillTable (TreeElement element, HashMap table) {
+    void fillTable (TreeElement element, Map table) {
         String name = element.getQName();
         Iterator nodes = element.getChildNodes().iterator();
         TreeNamedObjectMap attrs = element.getAttributes();
@@ -233,28 +240,32 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
         }
         
         // check content
-        
-        while (nodes.hasNext()) {
-            TreeNode node = (TreeNode)nodes.next();
 
-            if (node instanceof TreeElement) {
-		TreeElement elem = (TreeElement)node;
-		dtdElem.addChild(elem.getQName());
-		fillTable (elem, table);  // recursion entry point
-	    } else if (node instanceof TreeCDATASection) {
-                dtdElem.hasPCDATA();
-            } else if (node instanceof TreeEntityReference) {
-                dtdElem.hasPCDATA();
-	    } else if (node instanceof TreeText) {
-		if (!!! dtdElem.isTextAllowed()) {
-		    // perform check for PCDATA
+        if ( nodes.hasNext() ) {
+            dtdElem.notEmpty();
+        
+            while (nodes.hasNext()) {
+                TreeNode node = (TreeNode)nodes.next();
+
+                if (node instanceof TreeElement) {
+                    TreeElement elem = (TreeElement)node;
+                    dtdElem.addChild(elem.getQName());
+                    fillTable (elem, table);  // recursion entry point
+                } else if (node instanceof TreeCDATASection) {
+                    dtdElem.hasPCDATA();
+                } else if (node instanceof TreeEntityReference) {
+                    dtdElem.hasPCDATA();
+                } else if (node instanceof TreeText) {
+                    if (!!! dtdElem.isTextAllowed()) {
+                        // perform check for PCDATA
                     
-		    TreeText text = (TreeText) node;
-		    String data = text.getData();
-		    if (!!! wsOnly(data)) {  //!!! could be ui parametrized
-			dtdElem.hasPCDATA();
-		    }
-		}
+                        TreeText text = (TreeText) node;
+                        String data = text.getData();
+                        if (!!! wsOnly(data)) {  //!!! could be ui parametrized
+                            dtdElem.hasPCDATA();
+                        }
+                    }
+                }
             }
         }
     }
@@ -283,16 +294,22 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
         HashMap children;
         HashMap attributes;
         boolean pcdata;
+        boolean empty;
 
         public DTDElement (String name) {
             this.name = name;
             children = new HashMap();
             attributes = new HashMap();
             pcdata = false;
+            empty = true;
         }
 
         public void hasPCDATA () {
             pcdata = true;
+        }
+
+        public void notEmpty () {
+            empty = false;
         }
 
         public boolean isTextAllowed() {

@@ -134,8 +134,8 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport {
             do {
                 item = item.getPrevious();      // Can't get null here, there IS TAG before WS|ARGUMENT|OPERATOR|VALUE
                 id = item.getTokenID();
+                if (isInPI(id, false)) break;
             } while( id != XMLDefaultTokenContext.TAG );
-            return createElement( item );       // TAGC
         }
         
         if( id == XMLDefaultTokenContext.TEXT ) {
@@ -185,9 +185,28 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport {
             }
             return createElement( first ); 
         }
+
+        // PI detection
+        
+        if (isInPI(id, false)) {
+            do {
+                item = item.getPrevious();
+                id = item.getTokenID();
+            } while (id != XMLDefaultTokenContext.PI_START);
+        }
+        
+        if (id == XMLDefaultTokenContext.PI_START) {
+            return createElement(item);
+        }
+                
         return null;
     }
         
+    // return if in PI exluding PI_START and including WSes
+    private boolean isInPI(TokenID id, boolean includeWS) {
+        return id == XMLDefaultTokenContext.PI_TARGET || id == XMLDefaultTokenContext.PI_CONTENT || id == XMLDefaultTokenContext.PI_END || (includeWS && id == XMLDefaultTokenContext.WS);
+    }
+    
     /** 
      * Create elements starting with given item. 
      * 
@@ -306,12 +325,21 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport {
                         return new StartTag( this, first, lastOffset, name, attrs );
                     }
                 }
-                    
+
+            case XMLDefaultTokenContext.PI_START_ID:
+                do {
+                    lastOffset = getTokenEnd( item );
+                    item = item.getNext();
+                    if( item == null ) break; //EoD
+                    id = item.getTokenID();
+                } while( isInPI(id, true));
+                return new ProcessingInstructionImpl( this, first, lastOffset);
+                
             default:
-            
+                // BadLocationException
         }
         
-        throw new BadLocationException( "Misuse at " + item, item.getOffset() );  //NOI18N
+        throw new BadLocationException( "Cannot create SyntaxElement at " + item, item.getOffset() );  //NOI18N
     }
     
     private String resolveID(StringTokenizer tokenizer){
@@ -521,7 +549,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport {
                 case '<':
                 case '&':
                     retVal = COMPLETION_POPUP;
-                    break;
+                    break;                    
             }
             return retVal;
         } else { // the pane is already visible

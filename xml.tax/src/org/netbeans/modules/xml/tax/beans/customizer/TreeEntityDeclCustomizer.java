@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -24,83 +24,90 @@ import org.netbeans.tax.TreeException;
  * @version 0.1
  */
 public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
-
+    
     /** Serial Version UID */
     private static final long serialVersionUID = -4905667144375255810L;
-
-
+    
+    
     /** */
     private static final String TYPE_GENERAL   = "General"; // NOI18N
     /** */
     private static final String TYPE_PARAMETER = "Parameter"; // NOI18N
     /** */
-    private static final String[] typeItems = { TYPE_GENERAL, TYPE_PARAMETER }; 
-
+    private static final String[] typeItems = { TYPE_GENERAL, TYPE_PARAMETER };
+    
     
     
     /** */
     public TreeEntityDeclCustomizer () {
-	super();
-
-        initComponents();
+        super ();
+        
+        initComponents ();
         nameLabel.setDisplayedMnemonic (Util.getChar ("LAB_ElementName_mn")); // NOI18N
         typeLabel.setDisplayedMnemonic (Util.getChar ("LAB_EntityType_mn")); // NOI18N
         internalRadio.setMnemonic (Util.getChar ("RAD_Internal_mn")); // NOI18N
         externalRadio.setMnemonic (Util.getChar ("RAD_External_mn")); // NOI18N
         unparsedRadio.setMnemonic (Util.getChar ("RAD_Unparsed_mn")); // NOI18N
+
+        internValueLabel.setDisplayedMnemonic (Util.getChar ("LAB_internValue_mn")); // NOI18N
+        externPublicLabel.setDisplayedMnemonic (Util.getChar ("LAB_externPublic_mn")); // NOI18N
+        externSystemLabel.setDisplayedMnemonic (Util.getChar ("LAB_externSystem_mn")); // NOI18N
+        unparsedPublicLabel.setDisplayedMnemonic (Util.getChar ("LAB_unparsedPublic_mn")); // NOI18N
+        unparsedSystemLabel.setDisplayedMnemonic (Util.getChar ("LAB_unparsedSystem_mn")); // NOI18N
+        unparsedNotationLabel.setDisplayedMnemonic (Util.getChar ("LAB_unparsedNotation_mn")); // NOI18N
         
-        initAccessibility();
+        initAccessibility ();
     }
-
-
+    
+    
     /**
      */
     protected final TreeEntityDecl getEntityDecl () {
-        return (TreeEntityDecl)getTreeObject();
+        return (TreeEntityDecl)getTreeObject ();
     }
-
-
+    
+    
     /**
      */
     protected void safePropertyChange (PropertyChangeEvent pche) {
         super.safePropertyChange (pche);
         
-        if (pche.getPropertyName().equals (TreeEntityDecl.PROP_PARAMETER)) {
-            updateParameterComponent();
-        } else if (pche.getPropertyName().equals (TreeEntityDecl.PROP_NAME)) {
-            updateNameComponent();
-        } else if (pche.getPropertyName().equals (TreeEntityDecl.PROP_INTERNAL_TEXT)) {
-            updateInternalTextComponent();
-        } else if (pche.getPropertyName().equals (TreeEntityDecl.PROP_PUBLIC_ID)) {
-            updatePublicIdComponent();
-        } else if (pche.getPropertyName().equals (TreeEntityDecl.PROP_SYSTEM_ID)) {
-            updateSystemIdComponent();
-        } else if (pche.getPropertyName().equals (TreeEntityDecl.PROP_NOTATION_NAME)) {
-            updateNotationComponent();
-        } else if (pche.getPropertyName().equals (TreeEntityDecl.PROP_TYPE)) {
-            updateTypeComponent();
+        if (pche.getPropertyName ().equals (TreeEntityDecl.PROP_PARAMETER)) {
+            updateParameterComponent ();
+        } else if (pche.getPropertyName ().equals (TreeEntityDecl.PROP_NAME)) {
+            updateNameComponent ();
+        } else if (pche.getPropertyName ().equals (TreeEntityDecl.PROP_INTERNAL_TEXT)) {
+            updateInternalTextComponent ();
+        } else if (pche.getPropertyName ().equals (TreeEntityDecl.PROP_PUBLIC_ID)) {
+            updatePublicIdComponent ();
+        } else if (pche.getPropertyName ().equals (TreeEntityDecl.PROP_SYSTEM_ID)) {
+            updateSystemIdComponent ();
+        } else if (pche.getPropertyName ().equals (TreeEntityDecl.PROP_NOTATION_NAME)) {
+            updateNotationComponent ();
+        } else if (pche.getPropertyName ().equals (TreeEntityDecl.PROP_TYPE)) {
+            updateTypeComponent ();
         }
     }
-
+    
     /**
      */
     protected final void updateEntityDeclParameter () {
-        if ( typeCombo.getSelectedItem() == null ) {
+        if ( typeCombo.getSelectedItem () == null ) {
             return;
         }
-
-  	try {
-  	    getEntityDecl().setParameter (typeCombo.getSelectedItem() == TYPE_PARAMETER);
-  	} catch (TreeException exc) {
-	    updateParameterComponent();
-  	    Util.notifyTreeException (exc);
-  	}
+        
+        try {
+            getEntityDecl ().setParameter (typeCombo.getSelectedItem () == TYPE_PARAMETER);
+        } catch (TreeException exc) {
+            updateParameterComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
     /**
      */
     protected final void updateParameterComponent () {
-        if (getEntityDecl().isParameter()) {
+        if (getEntityDecl ().isParameter ()) {
             typeCombo.setSelectedItem (TYPE_PARAMETER);
         } else {
             typeCombo.setSelectedItem (TYPE_GENERAL);
@@ -110,109 +117,109 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
     /**
      */
     protected final void updateEntityDeclName () {
-	try {
-	    getEntityDecl().setName (nameField.getText());
-	} catch (TreeException exc) {
-	    updateNameComponent();
-	    Util.notifyTreeException (exc);
-	}
+        try {
+            getEntityDecl ().setName (nameField.getText ());
+        } catch (TreeException exc) {
+            updateNameComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
     /**
      */
     protected final void updateNameComponent () {
-        nameField.setText (getEntityDecl().getName());
+        nameField.setText (getEntityDecl ().getName ());
     }
     
-
- 
+    
+    
     /**
      */
     protected final void updateEntityDeclInternalText () {
-  	try {
-            getEntityDecl().setInternalText (text2null (internValueField.getText()));
-  	} catch (TreeException exc) {
-	    updateInternalTextComponent();
-  	    Util.notifyTreeException (exc);
-  	}
+        try {
+            getEntityDecl ().setInternalText (text2null (internValueField.getText ()));
+        } catch (TreeException exc) {
+            updateInternalTextComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
     /**
      */
     protected final void updateInternalTextComponent () {
-        internValueField.setText (null2text (getEntityDecl().getInternalText()));
+        internValueField.setText (null2text (getEntityDecl ().getInternalText ()));
     }
-
+    
     /**
      */
     protected final void updateEntityDeclPublicId () {
         try {
-            if ( externalRadio.isSelected() ) {
-                getEntityDecl().setPublicId (text2null (externPublicField.getText()));
-            } else if ( unparsedRadio.isSelected() ) {
-                getEntityDecl().setPublicId (text2null (unparsedPublicField.getText()));
+            if ( externalRadio.isSelected () ) {
+                getEntityDecl ().setPublicId (text2null (externPublicField.getText ()));
+            } else if ( unparsedRadio.isSelected () ) {
+                getEntityDecl ().setPublicId (text2null (unparsedPublicField.getText ()));
             }
-  	} catch (TreeException exc) {
-	    updatePublicIdComponent();
-  	    Util.notifyTreeException (exc);
-  	}
+        } catch (TreeException exc) {
+            updatePublicIdComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
     /**
      */
     protected final void updatePublicIdComponent () {
-        externPublicField.setText (null2text (getEntityDecl().getPublicId()));
-        unparsedPublicField.setText (null2text (getEntityDecl().getPublicId()));
+        externPublicField.setText (null2text (getEntityDecl ().getPublicId ()));
+        unparsedPublicField.setText (null2text (getEntityDecl ().getPublicId ()));
     }
-
+    
     /**
      */
     protected final void updateEntityDeclSystemId () {
         try {
-            if ( externalRadio.isSelected() ) {
-                getEntityDecl().setSystemId (text2null (externSystemField.getText()));
-            } else if ( unparsedRadio.isSelected() ) {
-                getEntityDecl().setSystemId (text2null (unparsedSystemField.getText()));
+            if ( externalRadio.isSelected () ) {
+                getEntityDecl ().setSystemId (text2null (externSystemField.getText ()));
+            } else if ( unparsedRadio.isSelected () ) {
+                getEntityDecl ().setSystemId (text2null (unparsedSystemField.getText ()));
             }
-  	} catch (TreeException exc) {
-	    updateSystemIdComponent();
-  	    Util.notifyTreeException (exc);
-  	}
+        } catch (TreeException exc) {
+            updateSystemIdComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
     /**
      */
     protected final void updateSystemIdComponent () {
-        externSystemField.setText (null2text (getEntityDecl().getSystemId()));
-        unparsedSystemField.setText (null2text (getEntityDecl().getSystemId()));
+        externSystemField.setText (null2text (getEntityDecl ().getSystemId ()));
+        unparsedSystemField.setText (null2text (getEntityDecl ().getSystemId ()));
     }
-
+    
     
     /**
      */
     protected final void updateEntityDeclNotationName () {
-  	try {
-            getEntityDecl().setNotationName (text2null (unparsedNotationField.getText()));
-  	} catch (TreeException exc) {
-	    updateNotationComponent();
-  	    Util.notifyTreeException (exc);
-  	}
+        try {
+            getEntityDecl ().setNotationName (text2null (unparsedNotationField.getText ()));
+        } catch (TreeException exc) {
+            updateNotationComponent ();
+            Util.notifyTreeException (exc);
+        }
     }
     
     /**
      */
     protected final void updateNotationComponent () {
-        unparsedNotationField.setText (null2text (getEntityDecl().getNotationName()));
+        unparsedNotationField.setText (null2text (getEntityDecl ().getNotationName ()));
     }
     
     /**
      */
     protected final void updateTypeComponent () {
-        CardLayout cl = (CardLayout)typeCardPanel.getLayout();
-        if ( getEntityDecl().getType() == TreeEntityDecl.TYPE_INTERNAL ) {
+        CardLayout cl = (CardLayout)typeCardPanel.getLayout ();
+        if ( getEntityDecl ().getType () == TreeEntityDecl.TYPE_INTERNAL ) {
             internalRadio.setSelected (true);
             cl.show (typeCardPanel, "internalPanel"); // NOI18N
-        } else if ( getEntityDecl().getType() == TreeEntityDecl.TYPE_EXTERNAL ) {
+        } else if ( getEntityDecl ().getType () == TreeEntityDecl.TYPE_EXTERNAL ) {
             externalRadio.setSelected (true);
             cl.show (typeCardPanel, "externalPanel"); // NOI18N
         } else {
@@ -221,20 +228,20 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
         }
     }
     
-  
+    
     /**
      */
     protected final void initComponentValues () {
-        updateParameterComponent();
-        updateNameComponent();
-        updateInternalTextComponent();
-        updatePublicIdComponent();
-        updateSystemIdComponent();
-        updateNotationComponent();
-        updateTypeComponent();
+        updateParameterComponent ();
+        updateNameComponent ();
+        updateInternalTextComponent ();
+        updatePublicIdComponent ();
+        updateSystemIdComponent ();
+        updateNotationComponent ();
+        updateTypeComponent ();
     }
-
-
+    
+    
     /**
      */
     protected void updateReadOnlyStatus (boolean editable) {
@@ -249,9 +256,9 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
         unparsedPublicField.setEditable (editable);
         unparsedSystemField.setEditable (editable);
         unparsedNotationField.setEditable (editable);
-    }    
-
-
+    }
+    
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -305,6 +312,9 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
         });
 
         nameField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                nameFieldFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 nameFieldFocusLost(evt);
             }
@@ -422,6 +432,9 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
         });
 
         internValueField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                internValueFieldFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 internValueFieldFocusLost(evt);
             }
@@ -621,104 +634,114 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
         add(typeCardPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
-
+    
+    private void internValueFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_internValueFieldFocusGained
+        // Accessibility:
+        internValueField.selectAll ();
+    }//GEN-LAST:event_internValueFieldFocusGained
+    
+    private void nameFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_nameFieldFocusGained
+        // Accessibility:
+        nameField.selectAll ();
+    }//GEN-LAST:event_nameFieldFocusGained
+    
     private void unparsedNotationFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_unparsedNotationFieldFocusLost
         // Add your handling code here:
-        updateEntityDeclNotationName();
+        updateEntityDeclNotationName ();
     }//GEN-LAST:event_unparsedNotationFieldFocusLost
-
+    
     private void unparsedNotationFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unparsedNotationFieldActionPerformed
         // Add your handling code here:
-        updateEntityDeclNotationName();
+        updateEntityDeclNotationName ();
     }//GEN-LAST:event_unparsedNotationFieldActionPerformed
-
+    
     private void unparsedSystemFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_unparsedSystemFieldFocusLost
         // Add your handling code here:
-        updateEntityDeclSystemId();
+        updateEntityDeclSystemId ();
     }//GEN-LAST:event_unparsedSystemFieldFocusLost
-
+    
     private void unparsedSystemFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unparsedSystemFieldActionPerformed
         // Add your handling code here:
-        updateEntityDeclSystemId();
+        updateEntityDeclSystemId ();
     }//GEN-LAST:event_unparsedSystemFieldActionPerformed
-
+    
     private void unparsedPublicFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_unparsedPublicFieldFocusLost
         // Add your handling code here:
-        updateEntityDeclPublicId();
+        updateEntityDeclPublicId ();
     }//GEN-LAST:event_unparsedPublicFieldFocusLost
-
+    
     private void unparsedPublicFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unparsedPublicFieldActionPerformed
         // Add your handling code here:
-        updateEntityDeclPublicId();
+        updateEntityDeclPublicId ();
     }//GEN-LAST:event_unparsedPublicFieldActionPerformed
-
+    
     private void externSystemFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_externSystemFieldFocusLost
         // Add your handling code here:
-        updateEntityDeclSystemId();
+        updateEntityDeclSystemId ();
     }//GEN-LAST:event_externSystemFieldFocusLost
-
+    
     private void externSystemFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_externSystemFieldActionPerformed
         // Add your handling code here:
-        updateEntityDeclSystemId();
+        updateEntityDeclSystemId ();
     }//GEN-LAST:event_externSystemFieldActionPerformed
-
+    
     private void externPublicFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_externPublicFieldActionPerformed
         // Add your handling code here:
-        updateEntityDeclPublicId();
+        updateEntityDeclPublicId ();
     }//GEN-LAST:event_externPublicFieldActionPerformed
-
+    
     private void externPublicFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_externPublicFieldFocusLost
         // Add your handling code here:
-        updateEntityDeclPublicId();
+        updateEntityDeclPublicId ();
     }//GEN-LAST:event_externPublicFieldFocusLost
-
+    
     private void internValueFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_internValueFieldFocusLost
         // Add your handling code here:
-        updateEntityDeclInternalText();
+        updateEntityDeclInternalText ();
     }//GEN-LAST:event_internValueFieldFocusLost
-
+    
     private void internValueFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_internValueFieldActionPerformed
         // Add your handling code here:
-        updateEntityDeclInternalText();
+        updateEntityDeclInternalText ();
     }//GEN-LAST:event_internValueFieldActionPerformed
-
+    
     private void nameFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_nameFieldFocusLost
         // Add your handling code here:
-        updateEntityDeclName();
+        updateEntityDeclName ();
     }//GEN-LAST:event_nameFieldFocusLost
-
+    
     private void nameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nameFieldActionPerformed
         // Add your handling code here:
-        updateEntityDeclName();
+        updateEntityDeclName ();
     }//GEN-LAST:event_nameFieldActionPerformed
-
+    
     private void unparsedRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unparsedRadioActionPerformed
         // Add your handling code here:
-        CardLayout cl = (CardLayout)typeCardPanel.getLayout();
+        CardLayout cl = (CardLayout)typeCardPanel.getLayout ();
         cl.show (typeCardPanel, "unparsedPanel"); // NOI18N
     }//GEN-LAST:event_unparsedRadioActionPerformed
-
+    
     private void externalRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_externalRadioActionPerformed
         // Add your handling code here:
-        CardLayout cl = (CardLayout)typeCardPanel.getLayout();
+        CardLayout cl = (CardLayout)typeCardPanel.getLayout ();
         cl.show (typeCardPanel, "externalPanel"); // NOI18N
     }//GEN-LAST:event_externalRadioActionPerformed
-
+    
     private void internalRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_internalRadioActionPerformed
         // Add your handling code here:
-        CardLayout cl = (CardLayout)typeCardPanel.getLayout();
+        CardLayout cl = (CardLayout)typeCardPanel.getLayout ();
         cl.show (typeCardPanel, "internalPanel"); // NOI18N
     }//GEN-LAST:event_internalRadioActionPerformed
-
+    
     private void typeComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeComboActionPerformed
-        unparsedRadio.setEnabled (typeCombo.getSelectedIndex() != 1);
-        if (unparsedRadio.isSelected()) {
+        unparsedRadio.setEnabled (typeCombo.getSelectedIndex () != 1);
+        if (unparsedRadio.isSelected ()) {
             internalRadio.setSelected (true);
             internalRadioActionPerformed (evt);
         }
-        updateEntityDeclParameter();
+        updateEntityDeclParameter ();
     }//GEN-LAST:event_typeComboActionPerformed
-
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField unparsedSystemField;
     private javax.swing.JLabel nameLabel;
@@ -746,24 +769,25 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
     private javax.swing.JPanel externalPanel;
     private javax.swing.JComboBox typeCombo;
     // End of variables declaration//GEN-END:variables
- 
+    
     /** Initialize accesibility
      */
-    public void initAccessibility(){
-    
-        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeEntityDeclCustomizer"));
-
-        nameField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_nameField2")); 
-        typeCombo.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_typeCombo"));
+    public void initAccessibility (){
         
-        internValueField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_internValueField"));
+        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeEntityDeclCustomizer"));
         
-        externPublicField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_externPublicField"));
-        externSystemField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_externSystemField"));
+        nameField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_nameField2"));
+        typeCombo.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_typeCombo"));
         
-        unparsedPublicField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_unparsedPublicField"));
-        unparsedSystemField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_unparsedSystemField"));
-        unparsedNotationField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_unparsedNotationField"));
-       
-       }         
+        internValueField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_internValueField"));
+        internValueField.selectAll ();
+        
+        externPublicField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_externPublicField"));
+        externSystemField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_externSystemField"));
+        
+        unparsedPublicField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_unparsedPublicField"));
+        unparsedSystemField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_unparsedSystemField"));
+        unparsedNotationField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_unparsedNotationField"));
+        
+    }
 }

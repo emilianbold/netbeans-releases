@@ -69,9 +69,7 @@ public class CheckAction extends CookieAction implements CollectXMLAction.XMLAct
 
     /** Provide accurate help. */
     public HelpCtx getHelpCtx () {
-        return HelpCtx.DEFAULT_HELP;
-        // If you will provide context help then use:
-        // return new HelpCtx (CheckActionAction.class);
+        return new HelpCtx (CheckAction.class);
     }
 
 }

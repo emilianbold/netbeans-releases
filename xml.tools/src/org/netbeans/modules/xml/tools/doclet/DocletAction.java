@@ -38,7 +38,7 @@ import org.netbeans.modules.xml.tools.generator.*;
  * @author  Petr Kuzel
  * @version 1.0
  */
-public class DocletAction extends CookieAction implements CollectDTDAction.DTDAction {
+public final class DocletAction extends CookieAction implements CollectDTDAction.DTDAction {
 
     /** Stream serialVersionUID. */
     private static final long serialVersionUID = -4037098165368211623L;
@@ -93,7 +93,7 @@ public class DocletAction extends CookieAction implements CollectDTDAction.DTDAc
 
             try {
 
-                // ask for data object location
+                // ask for file object location
 
                 FileObject primFile = dtdo.getPrimaryFile();
                 String name = primFile.getName() + Util.getString("NAME_SUFFIX_Documentation");
@@ -103,42 +103,48 @@ public class DocletAction extends CookieAction implements CollectDTDAction.DTDAc
                 FileObject generFile = (new SelectFileDialog (folder, name, "html")).getFileObject(); // NOI18N
                 name = generFile.getName();
 
-                //wait until documentation generated            
+                // wait until documentation generated            
                 thread.join();
 
-                // create and view data object
+                // fill result file
 
-                DataObject targeto;
-
-
+                FileLock lock = null;
                 try {
-                    targeto = TopManager.getDefault().getLoaderPool().findDataObject(generFile);
-                } catch (DataObjectExistsException eex) {
-                    targeto = eex.getDataObject();
-                }
+                     lock = generFile.lock();
+                     OutputStream fout = generFile.getOutputStream(lock);
+                     try {
+                         OutputStream out = new BufferedOutputStream(fout);
+                         Writer writer = new OutputStreamWriter(out, "UTF8");  //NOI18N
+                         writer.write(text.toString());
+                         writer.flush();
+                     } finally {
+                         if (fout != null) fout.close();
+                     }
+                     
+                } catch (IOException ex) {
+                    emgr.annotate(ex, Util.getString("MSG_error_leaving_in_clipboard"));
+                    emgr.notify(ex);
 
-                EditorCookie ec = (EditorCookie) targeto.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    Document doc = ec.openDocument();
-
-                    try {
-                        doc.remove(0, doc.getLength());
-                        doc.insertString(0, text.toString(), null);
-                        ec.saveDocument();
-                    } catch (BadLocationException locex) {
-                        emgr.annotate(locex, Util.getString("MSG_error_leaving_in_clipboard"));
-                        emgr.notify(locex);                    
-
-                        StringSelection ss = new StringSelection(text.toString());
-                        TopManager.getDefault().getClipboard().setContents(ss, null);
-                        TopManager.getDefault().setStatusText(Util.getString("MSG_documentation_in_clipboard"));
-
+                    leaveInClipboard(text.toString());
+                    return;
+                    
+                } finally {
+                    if (lock != null) {
+                        lock.releaseLock();
                     }
-
-                    ViewCookie vc = (ViewCookie) targeto.getCookie(ViewCookie.class);
-                    if (vc != null) vc.view();
-
                 }
+
+                // open results in a browser if exists
+                
+                try {
+                    DataObject html = DataObject.find(generFile);
+                
+                    ViewCookie vc = (ViewCookie) html.getCookie(ViewCookie.class);
+                    if (vc != null) vc.view();
+                } catch (DataObjectNotFoundException dex) {
+                    // just do not show
+                }
+
                 
             } catch (UserCancelException ex) {
                 //user cancelled do nothing
@@ -161,14 +167,18 @@ public class DocletAction extends CookieAction implements CollectDTDAction.DTDAc
         } finally {
             if (thread != null) thread.interrupt();
         }
-            
-                        
-
+                                    
     }
 
 
+    private void leaveInClipboard(String text) {
+        StringSelection ss = new StringSelection(text);
+        TopManager.getDefault().getClipboard().setContents(ss, null);
+        TopManager.getDefault().setStatusText(Util.getString("MSG_documentation_in_clipboard"));        
+    }
+    
     public HelpCtx getHelpCtx() {
-        return null;
+        return new HelpCtx(getClass());;
     }
 
     public String getName() {

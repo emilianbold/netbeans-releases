@@ -33,11 +33,16 @@ import org.netbeans.modules.xml.catalog.lib.*;
  * @author  Petr Kuzel
  * @version 1.0
  */
-public class CatalogEntryNode extends BeanNode {
+final class CatalogEntryNode extends BeanNode {
 
+    // following cached view is valid 
+    // if cached URL is the same as one a new view is requested for
+    private String cachedURL;
+    private ViewCookie view;
+    
     /** Creates new CatalogNode */
-    public CatalogEntryNode(String publicID, String systemID) throws IntrospectionException {        
-        super(new CatalogEntry(publicID, systemID));
+    public CatalogEntryNode(CatalogEntry entry) throws IntrospectionException {        
+        super(entry);
     }
     
     protected SystemAction[] createActions() {
@@ -48,19 +53,29 @@ public class CatalogEntryNode extends BeanNode {
         };
     }
     
+    /**
+     * Provide <code>ViewCookie</code>. Always provide same instance for
+     * entry until its system ID changes.
+     */
     public Node.Cookie getCookie(Class clazz) {
         
         if (ViewCookie.class.equals(clazz)) {
             
-            try {         
-                CatalogEntry cat = (CatalogEntry) getBean();
+            try {
+                String sys = getSystemID();
+                if (sys == null) return null;
                 
-                URL url = new URL(cat.getSystemID());
-                InputStream in = url.openStream();  //??? encoding, let kit takes care ??? what kit
-//                FileObject fo = new StreamFileObject(in);
-//                MultiDataObject.Entry entry = new FileEntry.Numb(fo);
-                MyEnv env = new MyEnv(in);
-                return new ViewCookieImpl(env, cat.getPublicID(), cat.getSystemID());
+                // do not attach the cookie if can not open stream
+                // ??? it may block for a while
+                URL url = new URL(sys);
+                InputStream in = url.openStream();
+                
+                if (view == null || sys.equals(cachedURL) == false) {
+                    MyEnv env = new MyEnv(in);
+                    view = new ViewCookieImpl(env);
+                    cachedURL = sys;
+                }
+                return view;                
                 
             } catch (MalformedURLException ex) {
                 ErrorManager emgr = TopManager.getDefault().getErrorManager();
@@ -80,42 +95,49 @@ public class CatalogEntryNode extends BeanNode {
     
     /**
      * OpenSupport that is able to open an input stream.
+     * Encoding, coloring, ..., let editor kit takes care
      */
     private class ViewCookieImpl extends CloneableEditorSupport implements ViewCookie {
                     
-        private String loc;  //name of Entity that will be opened
-        private String uri;
-        
-        ViewCookieImpl(Env env, String id, String uri) {
+        ViewCookieImpl(Env env) {
             super(env);
-            loc = id;
-            this.uri = uri;
         }
                                 
         protected String messageName() {
-            return loc;
+            return getPublicID();
         }
         
         protected String messageSave() {
-            return Util.getString ("MSG_ENTITY_SAVE", loc);  // NOI18N
+            return Util.getString ("MSG_ENTITY_SAVE", getPublicID());  // NOI18N
         }
         
         protected java.lang.String messageToolTip() {
-            return Util.getString ("MSG_ENTITY_TOOLTIP", uri); // NOI18N
+            return Util.getString ("MSG_ENTITY_TOOLTIP", getSystemID()); // NOI18N
         }
 
         protected java.lang.String messageOpening() {
-            return Util.getString ("MSG_ENTITY_OPENING", loc); // NOI18N
+            return Util.getString ("MSG_ENTITY_OPENING", getPublicID()); // NOI18N
         }
         
         protected java.lang.String messageOpened() {
-            return Util.getString ("MSG_ENTITY_OPENED", loc); // NOI18N
+            return Util.getString ("MSG_ENTITY_OPENED", getPublicID()); // NOI18N
         }
                 
     }    
     
+    private String getPublicID() {
+        return ((CatalogEntry)getBean()).getPublicID();
+    }
+    
+    private String getSystemID() {
+        return ((CatalogEntry)getBean()).getSystemID();
+    }
+    
     // ~~~~~~~~~~~~~~~~~ environment ~~~~~~~~~~~~~~~~~~~
 
+    /**
+     * text/xml stream environment.
+     */
     private class MyEnv extends StreamEnvironment {
 
         /** Serial Version UID */

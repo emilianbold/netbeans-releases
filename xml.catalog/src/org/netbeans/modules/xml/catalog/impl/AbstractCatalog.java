@@ -48,7 +48,7 @@ public abstract class AbstractCatalog {
 
     private String location;
     
-    private CatalogListener catalogListener = null;
+    private Vector listeners;
     
     // catalog delegation and chaining
     
@@ -81,22 +81,33 @@ public abstract class AbstractCatalog {
      * Optional operation allowing to listen at catalog for changes.
      * @throws UnsupportedOpertaionException if not supported by the implementation.
      */
-    public void addCatalogListener(CatalogListener l) {
-        catalogListener = l;
+    public synchronized void addCatalogListener(CatalogListener l) {
+        if (listeners == null) listeners = new Vector(2);
+        listeners.add(l);
     }
     
     /**
      * Optional operation couled with addCatalogListener.
      * @see addCatalogListener
      */
-    public void removeCatalogListener(CatalogListener l) {
-        catalogListener = null;
+    public synchronized void removeCatalogListener(CatalogListener l) {
+        if (listeners == null) return;
+        if (listeners != null) listeners.remove(l);
+        if (listeners.isEmpty()) listeners = null;
     }
     
 
     protected void notifyInvalidate() {
-        if (catalogListener != null) {                
-            catalogListener.notifyInvalidate();                
+        
+        CatalogListener[] lis = null;
+        
+        synchronized (this) {
+            if (listeners == null || listeners.isEmpty()) return;       
+            lis = (CatalogListener[]) listeners.toArray(new CatalogListener[0]);
+        }
+        
+        for (int i = 0; i<lis.length; i++) {
+            lis[i].notifyInvalidate();
         }            
     }
     
@@ -196,7 +207,7 @@ public abstract class AbstractCatalog {
     /** 
      * Obtain public IDs that starts with given prefix.
      */
-    private Iterator getPublicIDs(String prefix) {        
+    private Iterator getPublicIDs(String prefix) {
 
         if (prefix == null) throw new IllegalArgumentException();
 

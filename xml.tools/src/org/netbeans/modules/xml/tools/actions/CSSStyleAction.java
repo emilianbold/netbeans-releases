@@ -39,7 +39,7 @@ import org.netbeans.modules.xml.core.actions.CollectDTDAction;
  * @author  Petr Kuzel
  * @version 1.0
  */
-public class CSSStyleAction extends CookieAction implements CollectDTDAction.DTDAction {
+public final class CSSStyleAction extends CookieAction implements CollectDTDAction.DTDAction {
 
     /** Serial Version UID */
     private static final long serialVersionUID = 7867855746468L;
@@ -151,7 +151,7 @@ public class CSSStyleAction extends CookieAction implements CollectDTDAction.DTD
     }
 
     public HelpCtx getHelpCtx() {
-        return null;
+        return new HelpCtx(getClass());
     }
 
     public String getName() {

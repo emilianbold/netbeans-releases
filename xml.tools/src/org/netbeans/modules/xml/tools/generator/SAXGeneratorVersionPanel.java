@@ -15,13 +15,15 @@ package org.netbeans.modules.xml.tools.generator;
 import java.awt.event.*;
 import java.beans.*;
 import javax.swing.*;
+import java.net.URL;
+import java.net.MalformedURLException;
 
 /**
  *
  * @author  Petr Kuzel
  * @version
  */
-public class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel implements ActionListener {
+public final class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel implements ActionListener {
 
     /** Serial Version UID */
     private static final long serialVersionUID =-3731567998368428526L;    
@@ -29,6 +31,10 @@ public class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel implemen
     
     /** Creates new form SAXGeneratorVersionPanel */
     public SAXGeneratorVersionPanel() {
+//        try {
+//            this.putClientProperty("WizardPanel_helpURL", new URL("nbresloc:/org/netbeans/modules/xml/tools/generator/SAXGeneratorVersionPanel.html"));  //NOI18N        
+//        } catch (MalformedURLException ex) {
+//        }            
     }
     
     /** This method is called from within the constructor to
@@ -48,6 +54,7 @@ public class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel implemen
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(480, 350));
+        setName(Util.getString ("SAXGeneratorVersionPanel.Form.name"));
         jaxpLabel.setText(Util.getString ("SAXGeneratorVersionPanel.jaxpLabel.text"));
         jaxpLabel.setLabelFor(jaxpVersionComboBox);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -143,6 +150,8 @@ public class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel implemen
         
         jaxpVersionComboBox.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_jaxpVersionComboBox"));
         propagateSAXCheckBox.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_propagateSAXCheckBox"));
+        
+        versionComboBox.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_versionComboBox"));
         
         this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_SAXGeneratorVersionPanel"));
     }    
