@@ -220,49 +220,69 @@ public class JHIndexer extends MatchingTask {
         mkdir.execute ();
         String maxbranding = null;
         if (!brandings.isEmpty()) {
-            try { 
-                // Copy all files, overriding by branding, to a fresh dir somewhere.
-                // Does not suffice to simply use IndexRemove to strip off the basedirs
-                // of files in branded filesets, since their filenames will also include
-                // the branding token, and this will mess up the search database: it needs
-                // to store just the simple file name with no branding infix.
-                File tmp = File.createTempFile( "jhindexer", ".tmp", new File( System.getProperty("java.io.tmpdir")));
-                tmp.mkdir();
-                // Start with the base files.
-                Copy copy = (Copy)project.createTask("copy");
-                copy.setTodir(tmp);
-                copy.addFileset(fileset);
-                copy.init();
-                copy.setLocation(location);
-                copy.execute();
-                // Now branded filesets. Must be done in order of branding, so that
-                // more specific files override generic ones.
-                class BrandingLengthComparator implements Comparator {
-                    public int compare(Object a, Object b) {
-                        return ((BrandedFileSet)a).branding.length() - ((BrandedFileSet)b).branding.length();
-                    }
+            // Copy all files, overriding by branding, to a fresh dir somewhere.
+            // Does not suffice to simply use IndexRemove to strip off the basedirs
+            // of files in branded filesets, since their filenames will also include
+            // the branding token, and this will mess up the search database: it needs
+            // to store just the simple file name with no branding infix.
+            File tmp = new File(System.getProperty("java.io.tmpdir"), "jhindexer-branding-merge");
+            delete = (Delete)project.createTask("delete");
+            delete.setDir(tmp);
+            delete.init();
+            delete.setLocation(location);
+            delete.execute();
+            tmp.mkdir();
+            // Start with the base files.
+            Copy copy = (Copy)project.createTask("copy");
+            copy.setTodir(tmp);
+            copy.addFileset(fileset);
+            copy.init();
+            copy.setLocation(location);
+            copy.execute();
+            // Now branded filesets. Must be done in order of branding, so that
+            // more specific files override generic ones.
+            class BrandingLengthComparator implements Comparator {
+                public int compare(Object a, Object b) {
+                    return ((BrandedFileSet)a).branding.length() - ((BrandedFileSet)b).branding.length();
                 }
-                Collections.sort(brandings, new BrandingLengthComparator());
-                Iterator it = brandings.iterator();
-                while (it.hasNext()) {
-                    BrandedFileSet s = (BrandedFileSet)it.next();
-                    if (maxbranding != null && !s.branding.startsWith(maxbranding + "_")) throw new BuildException("Illegal branding: " + s.branding, location);
-                    maxbranding = s.branding; // only last one will be kept
-                    String[] suffixes = {
-                        ".html",
-                        ".htm",
-                        ".xhtml",
-                        // XXX any others? unpleasant to hardcode but this is easiest,
-                        // since glob mappers do not permit *_x* -> ** syntax.
-                    };
-                    for (int i = 0; i < suffixes.length; i++) {
-                        String suffix = suffixes[i];
+            }
+            Collections.sort(brandings, new BrandingLengthComparator());
+            Iterator it = brandings.iterator();
+            while (it.hasNext()) {
+                BrandedFileSet s = (BrandedFileSet)it.next();
+                if (maxbranding != null && !s.branding.startsWith(maxbranding + "_")) throw new BuildException("Illegal branding: " + s.branding, location);
+                maxbranding = s.branding; // only last one will be kept
+                String[] suffixes = {
+                    ".html",
+                    ".htm",
+                    ".xhtml",
+                    // XXX any others? unpleasant to hardcode but this is easiest,
+                    // since glob mappers do not permit *_x* -> ** syntax.
+                };
+                for (int i = 0; i < suffixes.length; i++) {
+                    String suffix = suffixes[i];
+                    copy = (Copy)project.createTask("copy");
+                    copy.setTodir(tmp);
+                    copy.setOverwrite(true);
+                    copy.addFileset(s);
+                    Mapper m = copy.createMapper();
+                    Mapper.MapperType mt = new Mapper.MapperType();
+                    mt.setValue("glob");
+                    m.setType(mt);
+                    m.setFrom("*_" + s.branding + suffix);
+                    m.setTo("*" + suffix);
+                    copy.init();
+                    copy.setLocation(location);
+                    copy.execute();
+                    if (locale != null) {
+                        // Possibly have e.g. x_f4j_ja.html.
+                        suffix = "_" + locale + suffix;
                         copy = (Copy)project.createTask("copy");
                         copy.setTodir(tmp);
                         copy.setOverwrite(true);
                         copy.addFileset(s);
-                        Mapper m = copy.createMapper();
-                        Mapper.MapperType mt = new Mapper.MapperType();
+                        m = copy.createMapper();
+                        mt = new Mapper.MapperType();
                         mt.setValue("glob");
                         m.setType(mt);
                         m.setFrom("*_" + s.branding + suffix);
@@ -270,34 +290,15 @@ public class JHIndexer extends MatchingTask {
                         copy.init();
                         copy.setLocation(location);
                         copy.execute();
-                        if (locale != null) {
-                            // Possibly have e.g. x_f4j_ja.html.
-                            suffix = "_" + locale + suffix;
-                            copy = (Copy)project.createTask("copy");
-                            copy.setTodir(tmp);
-                            copy.setOverwrite(true);
-                            copy.addFileset(s);
-                            m = copy.createMapper();
-                            mt = new Mapper.MapperType();
-                            mt.setValue("glob");
-                            m.setType(mt);
-                            m.setFrom("*_" + s.branding + suffix);
-                            m.setTo("*" + suffix);
-                            copy.init();
-                            copy.setLocation(location);
-                            copy.execute();
-                        }
                     }
                 }
-                // Now replace basedir & files with this temp dir.
-                basedir = tmp;
-                FileSet tmpf = new FileSet();
-                tmpf.setProject(project);
-                tmpf.setDir(tmp);
-                files = tmpf.getDirectoryScanner(project).getIncludedFiles();
-            } catch (IOException ioe) {
-                throw new BuildException ("Could not make temporary directory", ioe, location);
             }
+            // Now replace basedir & files with this temp dir.
+            basedir = tmp;
+            FileSet tmpf = new FileSet();
+            tmpf.setProject(project);
+            tmpf.setDir(tmp);
+            files = tmpf.getDirectoryScanner(project).getIncludedFiles();
         }
         log ("Running JavaHelp search database indexer...");
         try {
