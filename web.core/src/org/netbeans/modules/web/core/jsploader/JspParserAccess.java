@@ -18,6 +18,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import org.netbeans.api.java.classpath.ClassPath;
 
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -36,7 +38,7 @@ public class JspParserAccess {
     // PENDING - will also need this:
     //public static JspParserAPI.WebModule getParserWMOutsideWM (FileObject packageRoot) { }
     
-    private static final class WM extends JspParserAPI.WebModule {
+    private static final class WM extends JspParserAPI.WebModule implements PropertyChangeListener {
         
         WebModule webModule;
         PropertyChangeSupport pcs;
@@ -48,6 +50,10 @@ public class JspParserAccess {
         private WM (WebModule webModule) {
             this.webModule = webModule;
             pcs = new PropertyChangeSupport(this);
+            //Listen on the changes for libraries
+            if (webModule != null){
+                ClassPath.getClassPath(webModule.getDocumentBase (), ClassPath.EXECUTE).addPropertyChangeListener(this);
+            }
         }
         
         
@@ -100,8 +106,21 @@ public class JspParserAccess {
         }
         
         public FileObject[] getLibraries() {
-            // PENDING - really return libraries when needed
-            return new FileObject[0];
+            // PENDING - better implementation when we will be able distinguish the libraries.
+            FileObject[] roots = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.EXECUTE).getRoots();
+            ArrayList lib = new ArrayList();
+            try{
+                for (int i = 0; i < roots.length; i++){
+                    if (roots[i].getURL().getProtocol().equals("jar")) { //NOI18N
+                        lib.add(roots[i]);
+                    }
+                }
+            }
+            catch(org.openide.filesystems.FileStateInvalidException e){
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+            return (FileObject[])lib.toArray(new FileObject[lib.size()]);
+            
         }
        
         public void removePropertyChangeListener(PropertyChangeListener l) {
@@ -111,5 +130,12 @@ public class JspParserAccess {
         public void addPropertyChangeListener(PropertyChangeListener l) {
             pcs.addPropertyChangeListener(l);
         }
+        
+        public void propertyChange(java.beans.PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(ClassPath.PROP_ENTRIES)){
+                fireLibraries();
+            }
+        }
+        
     }
 }
