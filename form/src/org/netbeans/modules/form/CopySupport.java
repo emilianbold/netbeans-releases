@@ -151,7 +151,11 @@ class CopySupport {
 
             // pasting cut
             FormModel sourceForm = sourceComponent.getFormModel();
-            if (sourceForm != targetForm) { // cut from another form
+            if (sourceForm != targetForm
+                || (targetComponent != null
+                    && !sourceComponent.getClass().isAssignableFrom(
+                                         targetComponent.getClass())))
+            {   // cut from another form or pasting to an incompatible container
                 if (targetForm.getComponentCreator()
                                 .copyComponent(sourceComponent, targetComponent)
                     != null)
@@ -214,6 +218,8 @@ class CopySupport {
                     // add the component to the target container
                     targetForm.addComponent(sourceComponent, targetContainer);
                 }
+
+                targetForm.getFormDesigner().setSelectedComponent(sourceComponent);
             }
 
             return ExTransferable.EMPTY;
