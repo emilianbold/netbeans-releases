@@ -28,7 +28,7 @@ public interface FormInfo {
   
   public EventSetDescriptor[] getFormEvents ();
 
-  public String getTopContainerString ();
+  public String getContainerGenName ();
   
   public Container getTopContainer ();
 
@@ -40,6 +40,7 @@ public interface FormInfo {
 
 /*
  * Log
+ *  2    Gandalf   1.1         5/10/99  Ian Formanek    
  *  1    Gandalf   1.0         5/3/99   Ian Formanek    
  * $
  */

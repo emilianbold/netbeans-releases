@@ -34,6 +34,9 @@ import com.netbeans.developer.modules.loaders.form.FormBCObjectInputStream;
 */
 public class FormUtils extends Object {
 
+// -----------------------------------------------------------------------------
+// Static variables
+  
   private static final boolean debug = (System.getProperty ("netbeans.debug.form") != null);
 
   /** The IDESettings - useed for output details level */
@@ -83,17 +86,9 @@ public class FormUtils extends Object {
       jComponentIgnored.put (jComponentIgnoredList[i], jComponentIgnoredList[i]);
   }
 
-  /** A utility method for checking whether specified component is
-  * heavyweight or lightweight.
-  * @param comp The component to check
-  */
-  public static boolean isHeavyweight(java.awt.Component comp) {
-    for (int i=0; i < heavyweightComponents.length; i++)
-      if (heavyweightComponents[i].isAssignableFrom(comp.getClass()))
-        return true;
-    return false;
-  }
-
+// -----------------------------------------------------------------------------
+// Utility methods
+  
   public static void notifyPropertyException (Class beanClass, String propertyName, String displayName, Throwable t, boolean reading) {
     boolean dontPrint = false;
     // if it is a subclass of Applet, we ignore InvocationTargetException
@@ -122,16 +117,6 @@ public class FormUtils extends Object {
     }
   }
 
-
-  public static boolean isIgnoredProperty (Class beanClass, String propertyName) {
-    if (JComponent.class.isAssignableFrom (beanClass)) {
-      if (jComponentIgnored.get (propertyName) != null)
-        return true;
-    }
-    if (javax.swing.JDesktopPane.class.isAssignableFrom (beanClass) && "desktopManager".equals (propertyName))
-      return true;
-    return false;
-  }
 
   /** A utility method that returns the string that should be used for indenting
   * the generated text. It is a String that is a tabSize of spaces
@@ -182,20 +167,45 @@ public class FormUtils extends Object {
     return buf.toString();
   }
 
+// -----------------------------------------------------------------------------
+// JavaBeans helper mthods
+
+  /** A utility method for checking whether specified component is
+  * heavyweight or lightweight.
+  * @param comp The component to check
+  */
+  public static boolean isHeavyweight(java.awt.Component comp) {
+    for (int i=0; i < heavyweightComponents.length; i++)
+      if (heavyweightComponents[i].isAssignableFrom(comp.getClass()))
+        return true;
+    return false;
+  }
+
+  public static boolean isIgnoredProperty (Class beanClass, String propertyName) {
+    if (JComponent.class.isAssignableFrom (beanClass)) {
+      if (jComponentIgnored.get (propertyName) != null)
+        return true;
+    }
+    if (javax.swing.JDesktopPane.class.isAssignableFrom (beanClass) && "desktopManager".equals (propertyName))
+      return true;
+    return false;
+  }
+
   /** @return a default name for event handling method - it is a concatenation of
   * the component name and the name of the listener method (with first letter capital)
   * (e.g. button1MouseReleased).
   */
-/*  public static String getDefaultEventName (RADComponent component, Method listenerMethod) {
+  public static String getDefaultEventName (RADComponent component, Method listenerMethod) {
     String componentName = component.getName ();
-    if (component instanceof RADFormNode)
+    if ((component instanceof RADFormContainer) || (component instanceof RADVisualFormContainer)) {
       componentName = "form";
+    }
     StringBuffer sb = new StringBuffer (componentName);
     String lm = listenerMethod.getName ();
     sb.append (lm.substring (0, 1).toUpperCase ());
     sb.append (lm.substring (1));
     return sb.toString ();
-  } */
+  } 
 
   /** @return a formatted name of specified method
   */
@@ -215,6 +225,34 @@ public class FormUtils extends Object {
 
     return sb.toString ();
   }
+
+  /** A utility method that returns a class of event adapter for
+  * specified listener. It works only on known listeners from java.awt.event.
+  * Null is returned for unknown listeners.
+  * @return class of an adapter for specified listener or null if
+  *               unknown/does not exist
+  */
+  public static Class getAdapterForListener (Class listener) {
+    if (java.awt.event.ComponentListener.class.equals (listener))
+      return java.awt.event.ComponentAdapter.class;
+    else if (java.awt.event.ContainerListener.class.equals (listener))
+      return java.awt.event.ContainerAdapter.class;
+    else if (java.awt.event.FocusListener.class.equals (listener))
+      return java.awt.event.FocusAdapter.class;
+    else if (java.awt.event.KeyListener.class.equals (listener))
+      return java.awt.event.KeyAdapter.class;
+    else if (java.awt.event.MouseListener.class.equals (listener))
+      return java.awt.event.MouseAdapter.class;
+    else if (java.awt.event.MouseMotionListener.class.equals (listener))
+      return java.awt.event.MouseMotionAdapter.class;
+    else if (java.awt.event.WindowListener.class.equals (listener))
+      return java.awt.event.WindowAdapter.class;
+    else return null; // not found
+
+  }
+
+// -----------------------------------------------------------------------------
+// Visual utility methods
 
   /**
   * This method is intended to be started from container's paint method to do all the
@@ -290,33 +328,6 @@ public class FormUtils extends Object {
   }
 
 
-  /** Allows to read multi-line strings from resource bundle.
-  * The key, value pairs in the bundle must be: <UL>
-  * <LI>SAMPLE=2
-  * <LI>SAMPLE1=Text line 1
-  * <LI>SAMPLE2=Text line 2 </UL>
-  * I.e. the value for the String key passed to this method is expected to be the number of lines
-  * of the multi-line string, and each line is undek key "key"+line number
-  * @param bundle The ResourceBundle to get the multi line string from
-  * @param key    The key for the multi-line string
-  * @return       The multi-line string acquired from the bundle.
-  */
-  public static String getMultiLineString (java.util.ResourceBundle bundle, String key) {
-    String len = bundle.getString (key);
-    try {
-      int length = Integer.parseInt (len);
-      StringBuffer ret = new StringBuffer ();
-      for (int i = 1; i <= length; i++) {
-        ret.append (bundle.getString (key+i));
-        if (i < length)
-          ret.append ("\n");
-      }
-      return ret.toString ();
-    } catch (NumberFormatException e) {
-      throw new java.util.MissingResourceException ("", bundle.getClass ().getName (),key);
-    }
-  }
-
 // -----------------------------------------------------------------------------
 // DEBUG utilities
 
@@ -365,6 +376,7 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  8    Gandalf   1.7         5/10/99  Ian Formanek    
  *  7    Gandalf   1.6         5/4/99   Ian Formanek    Package change
  *  6    Gandalf   1.5         4/29/99  Ian Formanek    
  *  5    Gandalf   1.4         4/7/99   Ian Formanek    Debug finalized, 

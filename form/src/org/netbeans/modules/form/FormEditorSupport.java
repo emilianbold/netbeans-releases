@@ -143,7 +143,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
         
         // create form hierarchy node and add it to SourceChildren
         SourceChildren sc = (SourceChildren)formObject.getNodeDelegate ().getChildren ();
-        formRootNode = new RADComponentNode ((RADComponent)formManager.getRADForm ().getTopLevelComponent ());
+        formRootNode = new RADComponentNode (formManager.getRADForm ().getTopLevelComponent ());
         sc.add (new RADComponentNode [] { formRootNode });
         
       } else return false;
@@ -188,6 +188,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  11   Gandalf   1.10        5/10/99  Ian Formanek    
  *  10   Gandalf   1.9         5/4/99   Ian Formanek    package change 
  *       (formeditor -> ..)
  *  9    Gandalf   1.8         5/2/99   Ian Formanek    

@@ -1,5 +1,7 @@
 NetBeans-Module: com.netbeans.developer.modules.loaders.form/1
 NetBeans-Module-Name: Form Editor
+NetBeans-Module-Specification-Version: 1.0
+NetBeans-Module-Implementation-Version: 1.0
 NetBeans-Module-Install: com/netbeans/developer/modules/loaders/form/FormEditorModule.class
 NetBeans-Module-Module-Dependencies: com.netbeans.developer.modules.loaders.java/1
 

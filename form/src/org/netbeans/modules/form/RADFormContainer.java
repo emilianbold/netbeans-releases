@@ -13,31 +13,31 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
+import com.netbeans.developer.modules.loaders.form.forminfo.FormInfo;
+
 /** 
 *
 * @author Ian Formanek
 */
-public class RADContainer extends RADComponent implements ComponentContainer {
-  private RADComponent[] subComponents;
+public class RADFormContainer extends RADContainer implements FormContainer {
 
-  public RADComponent[] getSubComponents () {
-    return subComponents;
+  private FormInfo formInfo;
+  
+  public RADFormContainer (FormInfo formInfo) {
+    this.formInfo = formInfo;
   }
-
-  public void initSubComponents (RADComponent[] initComponents) {
-    subComponents = initComponents;
-  }
-
+  
   public String getContainerGenName () {
-    return "";
+    return formInfo.getContainerGenName ();
+  }
+  
+  public FormInfo getFormInfo () {
+    return formInfo;
   }
 }
 
 /*
  * Log
- *  4    Gandalf   1.3         5/10/99  Ian Formanek    
- *  3    Gandalf   1.2         5/4/99   Ian Formanek    Package change
- *  2    Gandalf   1.1         4/29/99  Ian Formanek    
- *  1    Gandalf   1.0         4/26/99  Ian Formanek    
+ *  1    Gandalf   1.0         5/10/99  Ian Formanek    
  * $
  */

@@ -13,7 +13,9 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
+import com.netbeans.ide.explorer.propertysheet.SpecialPropertyEditor;
 import com.netbeans.ide.nodes.*;
+import com.netbeans.ide.util.Utilities;
 
 import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
@@ -21,6 +23,12 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.JTextField;
+
+/* TODO
+ - gotoMethod - jumping to newly created event handlers
+ - indexed properties
+*/
 
 /** RADComponent is a class which represents a single component used and instantiated
 * during design time.  It provides its properties and events.
@@ -30,12 +38,17 @@ import java.util.Map;
 public class RADComponent {
 
 // -----------------------------------------------------------------------------
+// Static variables
+
+  public static final String SYNTHETIC_PREFIX = "synthetic_";
+  public static final String PROP_NAME = SYNTHETIC_PREFIX + "Name";
+
+// -----------------------------------------------------------------------------
 // Private variables
 
   private Class beanClass;
   private Object beanInstance;
   private BeanInfo beanInfo;
-
   private String componentName;
   
   private Node.PropertySet[] beanPropertySets;
@@ -48,6 +61,7 @@ public class RADComponent {
   private Map defaultPropertyValues;
 
   private FormManager formManager;
+  private EventsList eventsList;
 
 // -----------------------------------------------------------------------------
 // Constructors
@@ -61,14 +75,16 @@ public class RADComponent {
     this.formManager = formManager;
   }
 
-// -----------------------------------------------------------------------------
-// Public interface
-
-  public FormManager getFormManager () {
-    return formManager;
+  /** USed by TuborgPersistenceManager */
+  void initDeserializedEvents (java.util.Hashtable eventHandlers) {
+    eventsList.initEvents (eventHandlers);
   }
   
-  public void setComponent (Class beanClass) {
+  void setComponent (Class beanClass) {
+    if (this.beanClass != null) {
+      throw new InternalError ("Component already initialized: current: "+this.beanClass +", new: "+beanClass);
+    }
+
     this.beanClass = beanClass;
     beanInstance = BeanSupport.createBeanInstance (beanClass);
     beanInfo = BeanSupport.createBeanInfo (beanClass);
@@ -76,16 +92,28 @@ public class RADComponent {
     beanProperties = createBeanProperties ();
     beanExpertProperties = createBeanExpertProperties ();
 
-    beanEvents = BeanSupport.createEventsProperties (beanInstance);
+    beanEvents = createEventsProperties ();
 
     changedPropertyValues = new HashMap ();
     defaultPropertyValues = BeanSupport.getDefaultPropertyValues (beanClass);
   }
   
+// -----------------------------------------------------------------------------
+// Public interface
+
   public Class getComponentClass () {
     return beanClass;
   }
 
+  public Object getComponentInstance () {
+    return beanInstance;
+  }
+  
+  public BeanInfo getBeanInfo () {
+    return beanInfo;
+  }
+
+  
   /** Getter for the Name property of the component - usually maps to variable declaration for holding the 
   * instance of the component
   * @return current value of the Name property
@@ -99,10 +127,31 @@ public class RADComponent {
   * @param value new value of the Name property
   */
   public void setName (String value) {
+    String oldValue = componentName;
     componentName = value;
-    // [PENDING - fire change]
+    getFormManager ().fireComponentChanged (this, PROP_NAME, oldValue, componentName);
   }
   
+  public Map getChangedProperties () {
+    return changedPropertyValues;
+  }
+  
+  public void setAuxiliaryValue (String key, Object value) {
+    auxValues.put (key, value);
+  }
+
+  public Object getAuxiliaryValue (String key) {
+    return auxValues.get (key);
+  }
+  
+  public FormManager getFormManager () {
+    return formManager;
+  }
+  
+  public EventsList getEventsList () {
+    return eventsList;
+  }
+
   public Node.PropertySet[] getProperties () {
     if (beanPropertySets == null) {
       if (beanExpertProperties.length != 0) {
@@ -125,10 +174,10 @@ public class RADComponent {
           }, 
         };
       } else {
+        // With expert properties
         beanPropertySets = new Node.PropertySet [] {
           new Node.PropertySet ("synthetic", "Synthetic", "Synthetic Properties") {
             public Node.Property[] getProperties () {
-              
               return getSyntheticProperties ();
             }
           },
@@ -153,21 +202,6 @@ public class RADComponent {
     return beanPropertySets;
   }
   
-  public Map getChangedProperties () {
-    return changedPropertyValues;
-  }
-  
-  public void setAuxiliaryValue (String key, Object value) {
-    auxValues.put (key, value);
-  }
-
-  public Object getAuxiliaryValue (String key) {
-    return auxValues.get (key);
-  }
-  
-// -----------------------------------------------------------------------------
-// Parent-child
-
 // -----------------------------------------------------------------------------
 // Protected interface
 
@@ -326,19 +360,101 @@ public class RADComponent {
           }
           // [PENDING - test]
         }
+
+        /* Returns property editor for this property.
+        * @return the property editor or <CODE>null</CODE> if there should not be
+        *    any editor.
+        */
+        public PropertyEditor getPropertyEditor () {
+         if (desc.getPropertyEditorClass () != null)
+           try {
+             return (PropertyEditor) desc.getPropertyEditorClass ().newInstance ();
+           } catch (InstantiationException ex) {
+           } catch (IllegalAccessException iex) {
+           }
+         return super.getPropertyEditor ();
+        }
+
       };
       
 
       prop.setName (desc.getName ());
       prop.setDisplayName (desc.getDisplayName ());
       prop.setShortDescription (desc.getShortDescription ());
-//      prop.setPropertyEditorClass (desc.getPropertyEditorClass ());
     }
     return prop;
   }
 
+  protected Node.Property[] createEventsProperties () {
+    eventsList = new EventsList (this);
+
+    Node.Property[] nodeEvents = new Node.Property[eventsList.getEventCount ()];
+    int idx = 0;
+    EventsList.EventSet[] eventSets = eventsList.getEventSets ();
+
+    for (int i = 0; i < eventSets.length; i++) {
+      EventsList.Event[] events = eventSets[i].getEvents();
+      for (int j = 0; j < events.length; j++) {
+        Node.Property ep = new EventProperty (events[j]) {
+
+          public Object getValue () {
+            if (event.getHandler () == null)
+              return FormEditor.getFormBundle().getString("CTL_NoEvent");
+            else
+              return event.getHandler ().getName ();
+          }
+
+          public void setValue (Object val) throws IllegalArgumentException {
+            if (!(val instanceof String))
+              throw new IllegalArgumentException();
+
+            if ((!("".equals (val))) && (!Utilities.isJavaIdentifier ((String)val)))
+              return;
+
+            EventsManager.EventHandler oldValue = event.getHandler ();
+
+            if ("".equals (val)) {  
+              
+              // removing event hanlder
+              if (oldValue == null) return; // no change
+              formManager.getEventsManager ().removeEventHandler (event);
+              formManager.fireEventRemoved (RADComponent.this, oldValue);
+              
+            } else {
+              
+              // adding/changing event handler
+              String handlerName = (String) val;
+              if (oldValue != null) { // renaming
+                if (handlerName.equals (oldValue)) return; // no change
+                String oldName = oldValue.getName ();
+                formManager.getEventsManager ().renameEventHandler (event.getHandler (), handlerName);
+                formManager.fireEventRenamed (RADComponent.this, oldValue, oldName);
+                
+              } else {
+                
+                // adding event handler
+                formManager.getEventsManager ().addEventHandler (event, handlerName);
+                formManager.fireEventRemoved (RADComponent.this, event.getHandler ());
+                
+              }
+
+//              if ((gotoMethod != null) && gotoMethod.equals (handlerName)) {
+//                gotoMethod = null;
+//                event.gotoEventHandler ();
+//              }
+            } 
+          } 
+
+        };
+        nodeEvents[idx++] = ep;
+      }
+    }
+    return nodeEvents;
+
+  }
+  
   public void debugChangedValues () {
-    if (System.getProperty ("netbeans.debug.form") != null) {
+    if (System.getProperty ("netbeans.debug.form.full") != null) {
       System.out.println("-- debug.form: Changed property values in: "+this+" -------------------------");
       for (java.util.Iterator it = changedPropertyValues.keySet ().iterator (); it.hasNext ();) {
         PropertyDescriptor next = (PropertyDescriptor)it.next ();
@@ -347,10 +463,87 @@ public class RADComponent {
       System.out.println("--------------------------------------------------------------------------------------");
     }
   }
+
+// -----------------------------------------------------------------------------
+// Inner Classes
+
+  abstract class EventProperty extends PropertySupport.ReadWrite {
+    EventsList.Event event;
+
+    EventProperty (EventsList.Event event) {
+      super (FormEditor.EVENT_PREFIX + event.getName(),
+            String.class,
+            event.getName(),
+            event.getName());
+      this.event = event;
+/*      event.addPropertyChangeListener (new PropertyChangeListener () {
+          public void propertyChange (PropertyChangeEvent evt) {
+            firePropertyChangeHelper (EventProperty.this.getName (), evt.getOldValue (), evt.getNewValue ());
+          }
+        }
+      ); */ // [PENDING]
+    }
+
+    /** Returns property editor for this property.
+    * @return the property editor or <CODE>null</CODE> if there should not be
+    *    any editor.
+    */
+    public java.beans.PropertyEditor getPropertyEditor () {
+      return new EventEditor ();
+    }                               
+    
+    class EventEditor extends PropertyEditorSupport implements SpecialPropertyEditor {
+      public void setAsText (String string) {
+        setValue(string);
+//        gotoMethod = string; // [PENDING]
+      }
+                                   
+      private String getEditText () {
+        if (event.getHandler () == null)
+          return FormUtils.getDefaultEventName (RADComponent.this, event.getListenerMethod ());
+        else 
+        return event.getHandler ().getName (); // [PENDING]
+      }
+      
+      /**
+      * @return Returns custom property editor to be showen inside the property
+      *         sheet.
+      */
+      public java.awt.Component getInPlaceCustomEditor () {
+        final JTextField eventField = new JTextField ();
+        eventField.setText (getEditText ());
+        eventField.addActionListener (new java.awt.event.ActionListener () {
+            public void actionPerformed (java.awt.event.ActionEvent e) {
+              setAsText (eventField.getText ());
+            }
+          }
+        );
+        return eventField;
+      }
+    
+      /**
+      * @return true if this PropertyEditor provides a special in-place custom 
+      *              property editor, false otherwise
+      */
+      public boolean hasInPlaceCustomEditor () {
+        return true;
+      }
+    
+      /**
+      * @return true if this property editor provides tagged values and
+      * a custom strings in the choice should be accepted too, false otherwise
+      */
+      public boolean supportsEditingTaggedValues () {
+        return false;
+      }
+    }
+  }
+
 }
 
 /*
  * Log
+ *  6    Gandalf   1.5         5/10/99  Ian Formanek    
  *  5    Gandalf   1.4         5/5/99   Ian Formanek    
  *  4    Gandalf   1.3         5/4/99   Ian Formanek    Package change
  *  3    Gandalf   1.2         4/29/99  Ian Formanek    
