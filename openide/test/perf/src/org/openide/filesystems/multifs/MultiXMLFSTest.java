@@ -15,6 +15,8 @@ package org.openide.filesystems.multifs;
 import java.io.*;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Enumeration;
 
 import org.openide.*;
 import org.openide.filesystems.*;
@@ -23,14 +25,17 @@ import org.openide.filesystems.xmlfs.XMLFSTest;
 import org.openide.filesystems.xmlfs.XMLFSTest.ResourceComposer;
 
 /**
- * Base class for simulation of module layers.
+ * Base class for simulation of module layers. It creates several layers, each filled
+ * with some number of .instance files. Each layer is zipped into one jar. 
+ * The jars also contain class files.
  */
 public class MultiXMLFSTest extends FSTest {
     
-    private FSWrapper[] filesystems;
-    private static final int MAGIC = 50;
+    private FSWrapper[] wrappers;
+    private static final int MAGIC = 10;
     private static final String RES_EXT = ".instance";
     private static final String RES_NAME = LocalFSTest.PACKAGE.replace('/', '-').concat(LocalFSTest.RES_NAME);
+    private MultiFileSystem mfs;
     
     /** Creates new XMLFSGenerator */
     public MultiXMLFSTest(String name) {
@@ -38,21 +43,21 @@ public class MultiXMLFSTest extends FSTest {
     }
 
     /** Set up given number of FileObjects */
-    protected FileObject[] setUpFileObjects(int foCount) throws Exception {
+    public FileObject[] setUpFileObjects(int foCount) throws Exception {
         int foChunk = foCount / MAGIC;
         int delta = foCount - (foCount / MAGIC) * MAGIC;
-        filesystems = new FSWrapper[MAGIC];
-        int last = filesystems.length;
+        wrappers = new FSWrapper[MAGIC];
+        int last = wrappers.length;
         for (int i = 1; i < last; i++) {
-            filesystems[i] = createXMLFSinJar(foChunk, i * foChunk);
+            wrappers[i] = createXMLFSinJar(foChunk, i * foChunk);
         }
-        filesystems[0] = createLocalFS(foChunk + delta, 0);
+        wrappers[0] = createLocalFS(foChunk + delta, 0);
         FileSystem[] fss = new FileSystem[last];
-        for (int i = 1; i < last; i++) {
-            fss[i] = filesystems[i].getFS();
+        for (int i = 0; i < last; i++) {
+            fss[i] = wrappers[i].getFS();
         }
         
-        MultiFileSystem mfs = new MultiFileSystem(fss);
+        mfs = new MultiFileSystem(fss);
         FileObject res = mfs.findResource(LocalFSTest.PACKAGE);
         return res.getChildren();
         //return null;
@@ -64,9 +69,19 @@ public class MultiXMLFSTest extends FSTest {
     
     /** Free resources */
     protected void tearDownFileObjects(FileObject[] fos) throws Exception {
-        for (int i = 0; i < filesystems.length; i++) {
-            delete(filesystems[i].getFile());
+        for (int i = 0; i < wrappers.length; i++) {
+            delete(wrappers[i].getFile());
         }
+    }
+    
+    /** @return this mfs */
+    public MultiFileSystem getMultiFileSystem() {
+        return mfs;
+    }
+    
+    /** @return wrappers array */
+    public FSWrapper[] getFSWrappers() {
+        return wrappers;
     }
     
     private static FSWrapper createLocalFS(int foCount, int foBase) throws Exception {
@@ -75,13 +90,15 @@ public class MultiXMLFSTest extends FSTest {
         
         LocalFileSystem localFS = new LocalFileSystem();
         localFS.setRootDirectory(mnt);
+        URLClassLoader cloader = new URLClassLoader(new URL[] { mnt.toURL() });
         
-        return new FSWrapper(localFS, mnt);
+        return new FSWrapper(cloader, localFS, mnt);
     }
     
     private static FSWrapper createXMLFSinJar(int foCount, int foBase) throws Exception {
         File tmp = createTempFolder();
         File destFolder = LocalFSTest.createFiles(foCount, foBase, tmp);
+        compileFolder(tmp, destFolder);
         File xmlbase = XMLFSTest.generateXMLFile(destFolder, new ResourceComposer(RES_NAME, RES_EXT, foCount, foBase));
         File jar = Utilities.createJar(tmp, "jarxmlfs.jar");
         URLClassLoader cloader = new URLClassLoader(new URL[] { jar.toURL() });
@@ -89,18 +106,79 @@ public class MultiXMLFSTest extends FSTest {
         XMLFileSystem xmlfs = new XMLFileSystem();
         xmlfs.setXmlUrl(res, false);
         
-        return new FSWrapper(xmlfs, tmp);
+        return new FSWrapper(cloader, xmlfs, tmp);
+    }
+    
+    private static void compileFolder(File root, File destFolder) throws Exception {
+        File[] files = destFolder.listFiles();
+        //StringBuffer sb = new StringBuffer(3000);
+        String[] args = new String[files.length + 3];
+        args[0] = "javac";
+        args[1] = "-classpath";
+        args[2] = System.getProperty("java.class.path");
+        
+        for (int i = 3; i < args.length; i++) {
+            args[i] = files[i - 3].getCanonicalPath();
+        }
+        
+        File stdlog = new File(root, "stdcompilerlog.txt");
+        File errlog = new File(root, "errcompilerlog.txt");
+        
+        PrintStream stdps = new PrintStream(new FileOutputStream(stdlog));
+        PrintStream errps = new PrintStream(new FileOutputStream(errlog));
+        
+        Process p = Runtime.getRuntime().exec(args);
+        CopyMaker cma, cmb;
+        Thread tha = new Thread(cma = new CopyMaker(p.getInputStream(), stdps));
+        tha.start();
+        Thread thb = new Thread(cmb = new CopyMaker(p.getErrorStream(), errps));
+        thb.start();
+        
+        p.waitFor();
+        tha.join();
+        thb.join();
+        
+        stdps.close();
+        errps.close();
+        
+        if (cma.e != null) {
+            throw cma.e;
+        }
+        if (cmb.e != null) {
+            throw cmb.e;
+        }
+    }
+    
+    static final class CopyMaker implements Runnable {
+        InputStream is;
+        PrintStream os;
+        Exception e;
+        
+        CopyMaker(InputStream is, PrintStream os) {
+            this.is = is;
+            this.os = os;
+        }
+        
+        public void run() {
+            try {
+                Utilities.copyIS(is, os);
+            } catch (Exception ee) {
+                e = ee;
+            }
+        }
     }
     
     /** Wrapper for FS and its disk location */
-    private static final class FSWrapper {
+    public static final class FSWrapper {
         private FileSystem fs;
         private File tmp;
+        private URLClassLoader cloader;
         
         /** new FSWrapper */
-        public FSWrapper(FileSystem fs, File tmp) {
+        public FSWrapper(URLClassLoader cl, FileSystem fs, File tmp) {
             this.fs = fs;
             this.tmp = tmp;
+            this.cloader = cl;
         }
         
         public FileSystem getFS() {
@@ -109,6 +187,10 @@ public class MultiXMLFSTest extends FSTest {
         
         public File getFile() {
             return tmp;
+        }
+        
+        public URLClassLoader getClassLoader() {
+            return cloader;
         }
     }
     

@@ -17,7 +17,6 @@ import java.net.URLClassLoader;
 import java.net.URL;
 
 import org.openide.*;
-import org.openide.loaders.*;
 import org.openide.filesystems.*;
 import org.openide.filesystems.localfs.LocalFSTest;
 import org.openide.filesystems.data.SerialData;

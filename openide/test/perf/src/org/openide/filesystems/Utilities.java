@@ -60,7 +60,7 @@ public abstract class Utilities {
     }
     
     /** Copy content of a stream to a PrintStream */
-    private static void copyIS(InputStream is, PrintStream out) throws Exception {
+    public static void copyIS(InputStream is, PrintStream out) throws Exception {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         String str;
         while ((str = reader.readLine()) != null) {

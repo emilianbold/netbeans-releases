@@ -16,7 +16,6 @@ import java.io.*;
 import java.util.*;
 
 import org.openide.*;
-import org.openide.loaders.*;
 import org.openide.filesystems.*;
 
 /**

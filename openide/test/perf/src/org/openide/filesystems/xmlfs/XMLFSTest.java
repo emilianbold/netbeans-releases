@@ -15,7 +15,6 @@ package org.openide.filesystems.xmlfs;
 import java.io.*;
 
 import org.openide.*;
-import org.openide.loaders.*;
 import org.openide.filesystems.*;
 import org.openide.filesystems.localfs.LocalFSTest;
 import org.openide.filesystems.data.SerialData;
