@@ -31,7 +31,7 @@ edits in the text of a question, you need not change the version number.
 Also rerun openide/www/tutorial/build.xml#question when you are done and commit
 openide/www/tutorial/questions.html.
 -->
-<api-questions version="1.23">
+<api-questions version="1.24">
     <category id="arch" name="General Information">
         <question id="arch-what" when="init" >
             What is this project good for?
@@ -396,6 +396,22 @@ openide/www/tutorial/questions.html.
             </hint>
         </question>
         
+        <question id="security-policy" when="final">
+            Does your functionality require standard policy file modification?
+            <hint>Your code may pass control to third party code not
+            coming from trusted domain. It covers code downloaded over
+            network or code coming from libraries that are not bundled
+            with NetBeans. Which permissions it needs to grant to which domain?</hint>
+        </question> 
+
+        <question id="security-grant" when="final">
+            Does your code grant addition rights to some code?
+            <hint>Avoid using a classloder that adds some extra
+            permissions to loaded code unless realy necessary.
+            Also note that your API implementation
+            can also expose unneeded permissions to enemy code by
+            AccessController.doPrilileged() calls.</hint>
+        </question>
     </category>
     
     <category id="format" name="Format of files and protocols">
