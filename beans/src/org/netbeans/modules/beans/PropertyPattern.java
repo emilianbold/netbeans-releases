@@ -216,11 +216,11 @@ public class PropertyPattern extends Pattern {
         }
 
         if ( mode == READ_WRITE || mode == READ_ONLY )
-            pp.generateGetterMethod( BeanPatternGenerator.propertyGetterBody( name, withReturn ), true );
+            pp.generateGetterMethod( BeanPatternGenerator.propertyGetterBody( name, withReturn, !fromField ), true );
 
         if ( mode == READ_WRITE || mode == WRITE_ONLY )
             pp.generateSetterMethod( BeanPatternGenerator.propertySetterBody( name, pp.getType(),
-                                     bound, constrained, withSet, withSupport, supportName, vetoSupportName ), constrained, true );
+                                     bound, constrained, withSet, withSupport, supportName, vetoSupportName, !fromField ), constrained, true );
 
         return pp;
     }

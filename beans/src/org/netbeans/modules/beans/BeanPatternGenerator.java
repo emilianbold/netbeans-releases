@@ -26,13 +26,30 @@ import org.openide.src.*;
  * @author Petr Hrebejk
  */
 class BeanPatternGenerator extends Object {
-
+    private static final String THIS_QUALIFIER = "this."; // NOI18N
     /** Constant for one Tab */
     private static final String TAB = "  "; // NOI18N
     /** Constant for two Tabs */
     private static final String TABx2 = TAB + TAB;
     /** Constant for three Tabs */
     private static final String TABx3 = TABx2 + TAB;
+
+    /**
+     * Helper method; creates a suitable string for referencing an instance field.
+     * @param base the base name to create the string from
+     * @param adjustName 
+     */
+    static String createFieldName(String base, boolean adjustName, boolean paramClash) {
+        if (!adjustName) {
+            if (!paramClash)
+                return base;
+            else
+                return new StringBuffer(THIS_QUALIFIER).append(base).toString();
+        } else {
+            String propertyStyle = PropertyActionSettings.getDefault().getPropStyle();
+            return  new StringBuffer(propertyStyle).append(base).toString();
+        }
+    }
 
     /** Generates the body of the setter method of Property.
      * @param name Name of the property
@@ -49,9 +66,17 @@ class BeanPatternGenerator extends Object {
                                      boolean bound, boolean constrained,
                                      boolean withSet, boolean withSupport,
                                      String supportName, String vetoSupportName) {
-
+         return propertySetterBody(name, type, bound, constrained, withSet, withSupport, supportName,
+            vetoSupportName, true);
+    }
+    
+    static String propertySetterBody(String name, Type type,
+                                     boolean bound, boolean constrained,
+                                     boolean withSet, boolean withSupport,
+                                     String supportName, String vetoSupportName, boolean adjustName) {
         StringBuffer setterBody = new StringBuffer( 200 );
-        String propertyStyle = PropertyActionSettings.getDefault().getPropStyle();
+        String decoratedName = createFieldName(name, adjustName, true);
+        
         setterBody.append( "\n" ); // NOI18N
         if ( withSupport ) {
             /* Generates body in the form:
@@ -62,7 +87,7 @@ class BeanPatternGenerator extends Object {
 
             setterBody.append( TAB + type.toString() );
             setterBody.append( " old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
-            setterBody.append( " = " ).append( propertyStyle ).append( name ).append( ";\n"); // NOI18N
+            setterBody.append( " = " ).append( decoratedName ).append( ";\n"); // NOI18N
 
             if ( constrained ) {
                 setterBody.append( TAB + vetoSupportName ).append( ".fireVetoableChange(\"").append( name ).append( "\", " ); // NOI18N
@@ -79,12 +104,12 @@ class BeanPatternGenerator extends Object {
                     setterBody.append( ", " ).append( name ).append( ");\n" ); // NOI18N
                 }
                 if ( !bound ) {
-                    setterBody.append( TAB ).append( propertyStyle ).append( name ); // NOI18N
+                    setterBody.append( TAB ).append( decoratedName ); // NOI18N
                     setterBody.append( " = " ).append( name ).append( ";\n"); // NOI18N
                 }
             }
             if ( bound ) {
-                setterBody.append( TAB ).append( propertyStyle ).append( name ); // NOI18N
+                setterBody.append( TAB ).append( decoratedName ); // NOI18N
                 setterBody.append( " = " ).append( name ).append( ";\n"); // NOI18N
                 setterBody.append( TAB + supportName ).append( ".firePropertyChange (\"").append( name ).append( "\", " ); // NOI18N
 
@@ -105,8 +130,7 @@ class BeanPatternGenerator extends Object {
             /* Generates body in the form:
                this.propName = propName;
              */
-            setterBody.append( TAB ).append( propertyStyle ); // NOI18N
-            setterBody.append( name );
+            setterBody.append( TAB ).append( decoratedName ); // NOI18N
             setterBody.append( " = " ).append( name ).append( ";\n" ); // NOI18N
         }
         return setterBody.toString();
@@ -128,15 +152,24 @@ class BeanPatternGenerator extends Object {
                                          boolean withSet, boolean withSupport,
                                          String supportName,
                                          String vetoSupportName ) {
+        return idxPropertySetterBody(name, indexedType, bound, constrained,
+            withSet, withSupport, supportName, vetoSupportName, true);
+    }
+    
+    static String idxPropertySetterBody( String name, Type indexedType,
+                                         boolean bound, boolean constrained,
+                                         boolean withSet, boolean withSupport,
+                                         String supportName,
+                                         String vetoSupportName, boolean adjustName ) {
         StringBuffer setterBody = new StringBuffer( 200 );
-        String propertyStyle = PropertyActionSettings.getDefault().getPropStyle();
+        String decoratedName = createFieldName(name, adjustName, true);
         setterBody.append( "\n" ); // NOI18N
 
         if ( withSupport && constrained ) {
 
             setterBody.append( TAB + indexedType.toString() );
             setterBody.append( " old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
-            setterBody.append( " = " ).append( propertyStyle ).append( name ); // NOI18N
+            setterBody.append( " = " ).append( decoratedName ); // NOI18N
             setterBody.append( "[index];\n"); // NOI18N
         }
 
@@ -144,8 +177,7 @@ class BeanPatternGenerator extends Object {
             /* Generates body in the form:
                this.propName = propName;
             */
-            setterBody.append( TAB ).append( propertyStyle ); // NOI18N
-            setterBody.append( name );
+            setterBody.append( TAB ).append( decoratedName ); // NOI18N
             setterBody.append( "[index] = " ).append( name ).append( ";\n" ); // NOI18N
         }
 
@@ -155,8 +187,7 @@ class BeanPatternGenerator extends Object {
             setterBody.append( "null, null );\n" ); // NOI18N
             setterBody.append( TAB + "}\n" ); // NOI18N
             setterBody.append( TAB + "catch(java.beans.PropertyVetoException vetoException ) {\n" ); //NOI18N
-            setterBody.append( TABx2 ).append( propertyStyle ); // NOI18N
-            setterBody.append( name );
+            setterBody.append( TABx2 ).append( decoratedName ); // NOI18N
             setterBody.append( "[index] = old").append( Pattern.capitalizeFirstLetter( name ) ).append( ";\n" ) ; // NOI18N
             setterBody.append( TABx2 + "throw vetoException;\n" ); //NOI18N
             setterBody.append( TAB  + "}\n" ); //NOI18N
@@ -169,41 +200,49 @@ class BeanPatternGenerator extends Object {
 
         return setterBody.toString();
     }
+    
+    static String propertyGetterBody( String name, boolean withReturn ) {
+        return propertyGetterBody(name, withReturn, true);
+    }
 
     /** Generates the body of the getter method of Property.
      * @param name Name of the property.
      * @param withReturn Should be the return command with property private field generated?
      * @return Sring containing the body of the getter method.
      */
-    static String propertyGetterBody( String name, boolean withReturn ) {
+    static String propertyGetterBody( String name, boolean withReturn, boolean adjustName ) {
         StringBuffer getterBody = new StringBuffer( 50 );
-        String propertyStyle = PropertyActionSettings.getDefault().getPropStyle();
+        String decorated = createFieldName(name, adjustName, false);
         getterBody.append( "\n"); // NOI18N
         if ( withReturn ) {
             /* Generates body in the form:
                return propName;
              */
             getterBody.append( TAB + "return " ); // NOI18N
-            getterBody.append( propertyStyle ).append( name ).append( ";\n" ); // NOI18N
+            getterBody.append( decorated ).append( ";\n" ); // NOI18N
         }
         return getterBody.toString();
     }
-
+    
     /** Generates the body of the getter method of IndexedProperty.
      * @param name Name of the property.
      * @param withReturn Should be the return command with property private field generated?
      * @return Sring containing the body of the getter method.
      */
     static String idxPropertyGetterBody( String name, boolean withReturn ) {
+        return idxPropertyGetterBody(name, withReturn, true);
+    }
+
+    static String idxPropertyGetterBody( String name, boolean withReturn, boolean adjustName ) {
         StringBuffer getterBody = new StringBuffer( 50 );
-        String propertyStyle = PropertyActionSettings.getDefault().getPropStyle();
+        String decorated = createFieldName(name, adjustName, false);
         getterBody.append( "\n"); // NOI18N
         if ( withReturn ) {
             /* Generates body in the form:
                return propName;
              */
             getterBody.append( TAB + "return " ); // NOI18N
-            getterBody.append( propertyStyle ).append( name ).append( "[index];\n" ); // NOI18N
+            getterBody.append( decorated ).append( "[index];\n" ); // NOI18N
         }
         return getterBody.toString();
     }
