@@ -16,8 +16,8 @@ Microsystems, Inc. All Rights Reserved.
   PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
          "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 <toc version="2.0">
-<tocitem text="IDE Configuration">
-<tocitem text="Using the Database Explorer">
+<tocitem text="Servers and Databases">
+<tocitem text="Database Explorer">
 <tocitem text="About the Database Explorer" target="dbexpovew" />
 	
 <tocitem text="Setting Up a Database Connection">
