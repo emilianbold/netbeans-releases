@@ -357,6 +357,7 @@ is divided into following sections:
                      nonClassDir="${{build.classes.dir}}/META-INF/wsdl" 
                      verbose="true" 
                      xPrintStackTrace="true" 
+                     xSerializable="true"
                      base="${{src.dir}}" 
                      sourceBase="${{src.dir}}" 
                      keep="true" 
