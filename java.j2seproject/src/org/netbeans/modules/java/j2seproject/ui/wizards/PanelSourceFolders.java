@@ -179,7 +179,14 @@ public class PanelSourceFolders extends SettingsPanel {
             return false; // Display name not specified
         }
 
-        File projLoc = new File (this.projectLocation.getText());
+        File projLoc = new File (this.projectLocation.getText()).getAbsoluteFile();
+
+        if (PanelProjectLocationVisual.getCanonicalFile(projLoc) == null) {
+            String message = NbBundle.getMessage (PanelProjectLocationVisual.class,"MSG_IllegalProjectLocation");
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            return false;
+        }
+
         while (projLoc != null && !projLoc.exists()) {
             projLoc = projLoc.getParentFile();
         }

@@ -14,6 +14,7 @@
 package org.netbeans.modules.java.j2seproject.ui.wizards;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
@@ -180,7 +181,19 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_IllegalProjectName"));
             return false; // Display name not specified
         }
-        final File destFolder = new File( createdFolderTextField.getText() );
+        File f = new File (projectLocationTextField.getText()).getAbsoluteFile();
+        if (getCanonicalFile (f)==null) {
+            String message = NbBundle.getMessage (PanelProjectLocationVisual.class,"MSG_IllegalProjectLocation");
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            return false;
+        }
+        final File destFolder = getCanonicalFile(new File( createdFolderTextField.getText() ).getAbsoluteFile());
+        if (destFolder == null) {
+            String message = NbBundle.getMessage (PanelProjectLocationVisual.class,"MSG_IllegalProjectName");
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            return false;
+        }
+
         File projLoc = destFolder;
         while (projLoc != null && !projLoc.exists()) {
             projLoc = projLoc.getParentFile();
@@ -316,7 +329,14 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             
         }                
         panel.fireChangeEvent(); // Notify that the panel changed        
-    }    
+    }
 
-    
+    static File getCanonicalFile(File file) {
+        try {
+            return file.getCanonicalFile();
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
 }
