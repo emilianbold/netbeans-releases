@@ -17,18 +17,11 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -66,6 +59,41 @@ NodeActionsProvider {
             lookupFirst (null, SourcePath.class);
          debugger = (JPDADebugger) lookupProvider.
             lookupFirst (null, JPDADebugger.class);
+        loadSourcePreferences();
+    }
+
+    private void loadSourcePreferences() {
+        Properties properties = Properties.getDefault().getProperties ("debugger").getProperties("sourcefilter");
+        Collection stopIn = properties.getCollection("stop", Collections.EMPTY_SET);
+        Collection skipThrough = properties.getCollection("skip", Collections.EMPTY_SET);
+
+        String [] sr = context.getSourceRoots ();
+        Set allRoots = new HashSet(Arrays.asList(context.getOriginalSourceRoots()));
+        Set s = new HashSet(Arrays.asList(sr));
+
+        for (Iterator i = stopIn.iterator(); i.hasNext();) {
+            String root = (String) i.next();
+            if (root.startsWith(FILTER_PREFIX)) {
+                root = root.substring(FILTER_PREFIX.length());
+                filters.add(root);
+                debugger.getSmartSteppingFilter().removeExclusionPatterns(Collections.singleton(root));
+            } else {
+                if (allRoots.contains(root)) s.add(root);
+            }
+        }
+        for (Iterator i = skipThrough.iterator(); i.hasNext();) {
+            String root = (String) i.next();
+            if (root.startsWith(FILTER_PREFIX)) {
+                root = root.substring(FILTER_PREFIX.length());
+                filters.add(root);
+                enabledFilters.add(root);
+                debugger.getSmartSteppingFilter().addExclusionPatterns(Collections.singleton(root));
+            } else {
+                s.remove(root);
+            }
+        }
+        String[] ss = new String [s.size ()];
+        context.setSourceRoots ((String[]) s.toArray (ss));
     }
     
     
@@ -344,8 +372,23 @@ NodeActionsProvider {
                         Collections.singleton (filter)
                 );
             }
+            saveFilters();
             return;
         }
+
+        Properties properties = Properties.getDefault().getProperties ("debugger").getProperties("sourcefilter");
+        Set stopIn = new HashSet(properties.getCollection("stop", Collections.EMPTY_SET));
+        Set skipThrough = new HashSet(properties.getCollection("skip", Collections.EMPTY_SET));
+        if (enabled) {
+            stopIn.add(root);
+            skipThrough.remove(root);
+        } else {
+            skipThrough.add(root);
+            stopIn.remove(root);
+        }
+        properties.setCollection("stop", stopIn);
+        properties.setCollection("skip", skipThrough);
+
         String[] sr = context.getSourceRoots ();
         Set s = new HashSet (Arrays.asList (sr));
         if (enabled)
@@ -356,6 +399,23 @@ NodeActionsProvider {
         context.setSourceRoots ((String[]) s.toArray (ss));
     }
 
+    private void saveFilters() {
+        Properties properties = Properties.getDefault().getProperties ("debugger").getProperties("sourcefilter");
+        Set stopIn = new HashSet(properties.getCollection("stop", Collections.EMPTY_SET));
+        Set skipThrough = new HashSet(properties.getCollection("skip", Collections.EMPTY_SET));
+        for (Iterator i = filters.iterator(); i.hasNext();) {
+            String filter = (String) i.next();
+            if (enabledFilters.contains(filter)) {
+                skipThrough.add(FILTER_PREFIX + filter);
+                stopIn.remove(FILTER_PREFIX + filter);
+            } else {
+                stopIn.add(FILTER_PREFIX + filter);
+                skipThrough.remove(FILTER_PREFIX + filter);
+            }
+        }
+        properties.setCollection("stop", stopIn);
+        properties.setCollection("skip", skipThrough);
+    }
     
     // innerclasses ............................................................
     
@@ -375,6 +435,7 @@ NodeActionsProvider {
                     debugger.getSmartSteppingFilter ().addExclusionPatterns (
                         Collections.singleton (filter)
                     );
+                    saveFilters();
                     fireTreeChanged ();
                 }
             }
@@ -391,6 +452,7 @@ NodeActionsProvider {
                     filters.remove (((String) nodes [i]).substring (
                         FILTER_PREFIX.length ()
                     ));
+                saveFilters();
                 fireTreeChanged ();
             }
         },
