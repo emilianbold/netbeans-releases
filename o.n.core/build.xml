@@ -68,6 +68,9 @@ Microsystems, Inc. All Rights Reserved.
       <include name="**/*.bat"/>
       <include name="**/*.cmd"/>
     </fixcrlf>
+    <fixcrlf srcdir="netbeans/bin" eol="lf">
+      <include name="**/*.sh"/>
+    </fixcrlf>
   </target>
 
   <target name="netbeans" depends="jars,release" description="Build everything.">
