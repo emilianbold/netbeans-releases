@@ -143,10 +143,13 @@ public class DataModel extends AbstractTableModel
         }
     }
 
-    public void setValueAt(Object val, int row, int col)
-    {
-        if( ( row < getRowCount() ) && ( col < getColumnCount() ) ){
-            String pname = (String)ColumnItem.getColumnNames().elementAt(col);
+    public void setValueAt(Object val, int row, int col) {
+        //fixed bug 23788 (http://db.netbeans.org/issues/show_bug.cgi?id=23788)
+        if (row == -1 || col == -1)
+            return;
+        
+        if (row < getRowCount() && col < getColumnCount()) {
+            String pname = (String) ColumnItem.getColumnNames().elementAt(col);
             setValue(val, pname, row);
         }
     }
