@@ -59,9 +59,6 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
                jhall="${binroot}/nbbuild/lib/jhall.jar">
       <include name="**/*.html"/>
       <exclude name="JavaHelpSearch2/"/>
-      <exclude name="config-dep.html"/>
-      <exclude name="config-prop.html"/>
-      <exclude name="config-targ.html"/>
       <exclude name="credits.html"/>
     </jhindexer>
     <mkdir dir="netbeans"/>

@@ -28,6 +28,7 @@ public class AntSettings extends SystemOption {
     public static final String PROP_VERBOSITY = "verbosity";
     public static final String PROP_PROPERTIES = "properties";
     public static final String PROP_SAVE_ALL = "saveAll";
+    public static final String PROP_CUSTOM_DEFS = "customDefs";
 
     private static final long serialVersionUID = -4457782585534082966L;
     
@@ -38,6 +39,7 @@ public class AntSettings extends SystemOption {
         p.setProperty ("build.compiler.emacs", "true"); // NOI18N
         setProperties (p);
         setSaveAll (true);
+        setCustomDefs (new IntrospectedInfo ());
     }
 
     public String displayName () {
@@ -74,6 +76,14 @@ public class AntSettings extends SystemOption {
     
     public void setSaveAll (boolean sa) {
         putProperty (PROP_SAVE_ALL, new Boolean (sa), true);
+    }
+    
+    public IntrospectedInfo getCustomDefs () {
+        return (IntrospectedInfo) getProperty (PROP_CUSTOM_DEFS);
+    }
+    
+    public void setCustomDefs (IntrospectedInfo ii) {
+        putProperty (PROP_CUSTOM_DEFS, ii, true);
     }
 
 }
