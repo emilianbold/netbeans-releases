@@ -451,6 +451,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
                     currentPrimaryButtons[i] = (Component) primaryOptions [i];
                 } else if (primaryOptions [i] instanceof Icon) {
                     JButton button = new JButton((Icon)primaryOptions [i]);
+                    // ??? Why cannot be default capable ?
                     button.setDefaultCapable(false);
                     currentPrimaryButtons[i] = button;
                 } else {
@@ -622,6 +623,15 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
     /** Checks default button and updates it
      */
     private void updateDefaultButton() {
+        // bugfix 37083, respects DialogDescriptor's initial value ?
+        if (descriptor.getValue () != null && descriptor.getValue () instanceof JButton) {
+            JButton b = (JButton)descriptor.getValue ();
+            if (b.isVisible() && b.isEnabled () && b.isDefaultCapable ()) {
+                getRootPane ().setDefaultButton (b);
+            }
+        } else {
+            // ??? unset default button if descriptor.getValue() is null
+        }
         if (currentPrimaryButtons != null) {
             // finds default button
             for (int i = 0; i < currentPrimaryButtons.length; i++) {
@@ -634,6 +644,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
                 }
             }
         }
+        // no default capable button found
         getRootPane().setDefaultButton(null);
     }
     
