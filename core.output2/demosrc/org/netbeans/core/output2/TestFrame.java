@@ -30,10 +30,11 @@
         System.err.println ("Writing content");
         io.getOut().println("This is an output window");
         for (int i=0; i < 100; i++) {
-            out.println ("Wow, we will write a long line of text here.  Very long in fact - who knows just how long it" +
+            out.println (i +  ": Wow, we will write a long line of text here.  Very long in fact - who knows just how long it" +
                 " might end up being?  Well, we'll have to see.");
-            io.getErr().println ("This is a not so long line");
-            out.println ("This, on the other hand, is a relatively short line");
+
+            io.getErr().println (i + ": This is a not so long line");
+//            out.println (i + ": This, on the other hand, is a relatively short line");
         }
         out.println("And now we are done");
         out.flush();
@@ -56,21 +57,26 @@
 
     private OutputWindow win;
     private NbIO io;
-    private OutWriter out;
+    private OutWriter out = null;
     private void init() {
         win = Controller.createOutputWindow();
         Controller.DEFAULT = win;
         getContentPane().setLayout (new BorderLayout());
         getContentPane().add (win, BorderLayout.CENTER);
-        setBounds (20, 20, 500, 300);
+        setBounds (20, 20, 300, 300);
         io = (NbIO) new NbIOProvider().getIO ("Test", false);
-        out = (OutWriter) io.getOut();
     }
 
     public void run () {
         if (SwingUtilities.isEventDispatchThread()) {
+            out = (OutWriter) io.getOut();
            new Thread(this).start();
+           out.println ("This is the first text");
+           ((OutputPane) win.getSelectedTab().getOutputPane()).setWrapped(true);
         } else {
+        try {
+            Thread.currentThread().sleep(3000);
+            } catch (Exception e) {}
             writeContent();
         }
     }
