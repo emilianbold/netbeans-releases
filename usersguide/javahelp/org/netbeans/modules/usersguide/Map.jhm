@@ -5,10 +5,10 @@
 -->
 
 <!DOCTYPE map
-  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
-         "http://java.sun.com/products/javahelp/map_2_0.dtd">
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"
+         "http://java.sun.com/products/javahelp/map_1_0.dtd">
 
-<map version="2.0">
+<map version="1.0">
 
 <mapID target="ide.credits" url="credits.html" />
 <mapID target="ide.welcome" url="workspace/welcome.html" />
@@ -189,13 +189,6 @@
 <mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="beans/settings.html" />
 
 
-
-
-
-
-
-
-
 <mapID target="java.intro" url="java/intro.html" />
 <mapID target="java.sync.intro" url="java/synchronizing/intro.html" />
 <mapID target="java.sync.properties" url="java/synchronizing/properties.html" />
@@ -311,7 +304,6 @@
 <mapID target="run.run" url="run/run.html" />
 <mapID target="run.debugmode" url="run/run_debug.html" />
 <mapID target="run.debug.applet" url="run/run_applet.html" />
-
 <mapID target="run.arguments" url="run/arguments.html" />
 <mapID target="run.options.jump" url="run/run_options_jump.html" />
 <mapID target="run.options" url="run/options.html" />
@@ -750,7 +742,6 @@
 <mapID target="org.netbeans.modules.extbrowser.UnixWebBrowser" url="webbrowser/unixwebbrowser.html" />
 <mapID target="org.netbeans.modules.extbrowser.SimpleExtBrowser" url="webbrowser/simpleextbrowser.html" />
 <mapID target="org.openide.awt.SwingBrowser" url="webbrowser/swingbrowser.html" />
-
 
 
 <mapID target="NetbeansDebuggerDebuggerNode" url="objects/objects_runtime.html" />
@@ -1255,7 +1246,6 @@
    <mapID target="org.netbeans.modules.editor.options.BasePrintOptions" url="pending.html" />
    <mapID target="org.netbeans.modules.form.PropertyPicker" url="pending.html" />
    <mapID target="org.netbeans.core.NbNodeOperation$Sheet" url="pending.html" /> 
-
    <mapID target="org.netbeans.modules.projects.ProjectManagerAction" url="project/project.html" />
    <mapID target="org.netbeans.modules.projects.settings.ProjectOption" url="project/project_adding-new.html" />
    <mapID target="org.netbeans.modules.projects.settings.OptionsAction" url="project/project_adding-new.html" />
@@ -1337,31 +1327,6 @@
    <mapID target="VCS_CommandEditor" url="vcs-nb/vcsgeneric/vcsgeneric_command-props.html" />
    <mapID target="org.netbeans.modules.vcs.advanced.VcsCustomizer" url="vcs-nb/vcsgeneric/vcsgeneric_customizer.html" />
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
    <mapID target="org.netbeans.modules.vcs.RetrievingDialog" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.nodes.DebuggerView" url="pending.html" />
    <mapID target="org.netbeans.modules.group.CreateGroupAction" url="pending.html" />
@@ -1439,9 +1404,6 @@
    <mapID target="org.netbeans.editor.REFORMAT_CODE" url="pending.html" />
 
 
-
-
-
    <mapID target="org.netbeans.modules.editor.java.NbEditorJavaKit$ToggleBreakpointAction" url="pending.html" />
    <mapID target="org.netbeans.modules.editor.java.NbEditorJavaKit$AddWatchAction" url="pending.html" />
    <mapID target="org.netbeans.modules.editor.java.NbEditorJavaKit$GotoDeclarationAction" url="pending.html" />
@@ -1455,15 +1417,6 @@
    <mapID target="org.netbeans.editor.BaseKit$PasteAction" url="pending.html" />
 
 
-
-
-
-
-
-
-
-
-
    <mapID target="org.netbeans.modules.search.ResultViewTopComponent" url="objects/search/search_results-window.html" />
    <mapID target="org.netbeans.modules.search.RepositorySearchAction" url="objects/search/search.html" />
    <mapID target="org.openidex.search.SearchType" url="objects/search/search_predefining.html" />
@@ -1473,9 +1426,6 @@
    <mapID target="org.netbeans.modules.search.types.DataObjectType" url="objects/search/search_filetype.html" />
 <!--DataObjectType needs helpID assigned in code??-->
    <mapID target="org.netbeans.modules.search.types.ObjectTypeType" url="objects/search/search_filetype.html" />
-
-
-
 
 
    <mapID target="org.netbeans.beaninfo.LoaderActionsPanel" url="pending.html" />
@@ -1500,13 +1450,11 @@
 <!--was used for root node of a Javadoc filesystem on the javadoc tab in the Explorer-->
    <mapID target="org.netbeans.modules.javadoc.search.JavaDocNode" url="pending.html" />
 
-
    <mapID target="org.openide.windows.TopComponent" url="pending.html" /> 
    <mapID target="org.openide.text.NbDocument$Colors" url="pending.html" />
    <mapID target="org.netbeans.core.ServicesNode$MakeDefaultAction" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.DebuggerTypeEditor$NoDebugger" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.ExecutorEditor$NoExecutor" url="pending.html" />
-
    <mapID target="org.netbeans.core.ui.LookupNode" url="pending.html" />
 <!--for Filesystems Settings in customizer and in Options window-->
    <mapID target="org.netbeans.core.ui.MountNode" url="filesystems/filesystems_settings.html" />
@@ -1519,7 +1467,6 @@
    <mapID target="org.netbeans.core.ui.NewTemplateWizard1" url="pending.html" />
    <mapID target="org.openide.text.CloneableEditor" url="pending.html" />
    <mapID target="org.openide.actions.ClassNamePanel" url="pending.html" />
-
 
    <mapID target="org.netbeans.core.ui.WelcomeFolderNode" url="configure/welcome_node.html" />
 
@@ -1572,13 +1519,7 @@
 
 <!--PENDING - map these IDs if possible-->
 
-
-
-
-
   <mapID target="org.netbeans.modules.pdf.PDFSettings" url="pending.html" />
-
-
 
 
  <!--Options | Source Creation and Management | Templates-->  
@@ -1630,10 +1571,6 @@
    <mapID target="org.netbeans.beaninfo.editors.DimensionCustomEditor" url="pending.html" /> 
    <mapID target="org.netbeans.core.MainWindow" url="pending.html" />
    <mapID target="org.netbeans.core.ActionsPoolNode" url="pending.html" />
-
-
-
-
    <mapID target="org.openide.actions.FindAction" url="pending.html" />
    <mapID target="org.openide.actions.ReplaceAction" url="pending.html" />
  
@@ -1693,7 +1630,6 @@
    <mapID target="javax.swing.JLayeredPane" url="pending.html" />
    <mapID target="javax.swing.JDesktopPane" url="pending.html" />
    <mapID target="javax.swing.JOptionPane" url="pending.html" />
-
 
  
 </map>

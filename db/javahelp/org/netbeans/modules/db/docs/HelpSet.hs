@@ -13,10 +13,10 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <!DOCTYPE helpset
-  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 2.0//EN"
-         "http://java.sun.com/products/javahelp/helpset_2_0.dtd">
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 1.0//EN"
+         "http://java.sun.com/products/javahelp/helpset_1_0.dtd">
 
-<helpset version="2.0">
+<helpset version="1.0">
 
  <title>Database Explorer Module Documentation</title>
 

@@ -3,11 +3,11 @@
 *     Copyright © 2003 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
-<!DOCTYPE helpset 
-  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 2.0//EN" 
-         "http://java.sun.com/products/javahelp/helpset_2_0.dtd">
-         
-<helpset version="2.0">
+<!DOCTYPE helpset
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 1.0//EN"
+         "http://java.sun.com/products/javahelp/helpset_1_0.dtd">
+
+<helpset version="1.0">
 
  <title>Core IDE Help</title>
 

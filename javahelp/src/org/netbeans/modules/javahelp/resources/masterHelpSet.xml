@@ -35,11 +35,9 @@ Microsystems, Inc. All Rights Reserved.
     <label>Search</label>
     <type>javax.help.SearchView</type>
   </view>
-<!--  
-Disabling because the implementation is still not polished enough for use
   <view>
     <name>Favorites</name>
     <label>Favorites</label>
     <type>javax.help.FavoritesView</type>
-  </view> -->
+  </view> 
 </helpset>

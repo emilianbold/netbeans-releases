@@ -5,14 +5,12 @@
 -->
 
 <!DOCTYPE toc
-  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
-         "http://java.sun.com/products/javahelp/toc_2_0.dtd">
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN"
+         "http://java.sun.com/products/javahelp/toc_1_0.dtd">
 
-<toc version="2.0">
+<toc version="1.0">
 
-<tocitem text="IDE Online Help" >
-<tocitem text="Welcome to the IDE" target="ide.welcome" />
-
+<tocitem text="Core IDE Help" target="ide.welcome" >
 
 <tocitem text="Legal Notices" target="ide.credits" />
 
@@ -189,7 +187,6 @@
     <tocitem text="Running a Program in Debug Mode" target="run.debugmode" />
     <tocitem text="Running and Debugging an Applet" target="run.debug.applet" />
     <tocitem text="Specifying the Main Class to Run" target="run.mainclass" />
-
     <tocitem text="Running Java Sources in a Specific Locale" target="run.locale" />
     <tocitem text="Running a Program on a 64-Bit Java Virtual Machine" target="run.64bit.jvm" />
   </tocitem>
@@ -651,5 +648,5 @@
 
 </tocitem>
 </tocitem>
-
 </toc>
+
