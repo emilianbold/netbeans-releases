@@ -731,6 +731,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             "ant-task",             // NOI18N
             "servlet-types",        // NOI18N
             "web-types",            // NOI18N
+            "junit",                // NOI18N
             "simple-files"          // NOI18N
         };
         
