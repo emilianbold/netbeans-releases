@@ -310,7 +310,8 @@ public class ProjectTab extends TopComponent
                         }
                         else {
                             StatusDisplayer.getDefault().setStatusText( 
-                                NbBundle.getMessage( ProjectTab.class, "MSG_NodeNotFound" ) ); // NOI18N
+                                NbBundle.getMessage( ProjectTab.class,  
+                                                     ID_LOGICAL.equals( id ) ? "MSG_NodeNotFound_ProjectsTab" : "MSG_NodeNotFound_FilesTab" ) ); // NOI18N
                         }
                         setCursor( null );        
                     }
