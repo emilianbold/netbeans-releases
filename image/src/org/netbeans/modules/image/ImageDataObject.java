@@ -15,18 +15,23 @@
 package org.netbeans.modules.image;
 
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.net.URL;
 
-import org.openide.*;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.CompilerCookie;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.util.actions.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
+import org.openide.nodes.CookieSet;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
-import org.openide.windows.*;
 
 
 /** 
@@ -102,9 +107,12 @@ public class ImageDataObject extends MultiDataObject {
     
     /** Overrides superclass method. */
     public CookieSet getCookieSet() {
-        if (!cookiesInitialized) {
-            initCookieSet();
+        synchronized(this) {
+            if (!cookiesInitialized) {
+                initCookieSet();
+            }
         }
+        
         return super.getCookieSet();
     }
 
@@ -120,25 +128,23 @@ public class ImageDataObject extends MultiDataObject {
             return null;
         }
         
-        if(!cookiesInitialized) {
-            initCookieSet();
+        synchronized(this) { 
+            if(!cookiesInitialized) {
+                initCookieSet();
+            }
         }
+        
         return super.getCookie(type);
     }
     
     /** Initializes cookie set. */
     private synchronized void initCookieSet() {
-        if(cookiesInitialized) {
-            return;
-        }
-        CookieSet cookies = super.getCookieSet();
-        
         // Necessary to set flag before add cookieSet method, cause
         // it fires property event change and some Cookie action in its
         // enable method could call initCookieSet again. 
         
         cookiesInitialized = true;
-        cookies.add(new ImageOpenSupport(getPrimaryEntry()));
+        super.getCookieSet().add(new ImageOpenSupport(getPrimaryEntry()));
     }
     
 }
