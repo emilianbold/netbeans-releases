@@ -136,7 +136,7 @@ public class PatternChildren extends ClassChildren {
         // Method is added or removed ve have to re-analyze the pattern abd to
         // registrate Children as listener
         synchronized (this) {
-	        elementListener.unregisterAll();
+	    elementListener.unregisterAll();
             elementListener.reassignMethodListener(element);
             elementListener.reassignFieldListener(element);
         }
@@ -161,12 +161,16 @@ public class PatternChildren extends ClassChildren {
         return patternAnalyser;
     }
 
-
+    public void removeAll() {
+        elementListener.unregisterAll();
+        setKeys(new Object[0]);
+    }
+    
     // Children.keys implementation -------------------------------------------------------
 
     /** Creates node for given key.
     */
-    protected Node[] createNodes (Object key ) {
+    protected Node[] createNodes (Object key) {
 
         if (key instanceof IdxPropertyPattern)
             return new Node[] { new IdxPropertyPatternNode((IdxPropertyPattern)key, wri) };
@@ -240,66 +244,66 @@ public class PatternChildren extends ClassChildren {
 	    return null;
 	}
 	
-    /** Method for removing method listener */
-    private void reassignMethodListener(ClassElement el) {
-        MethodElement[] methods = el.getMethods();
-        for ( int i = 0; i < methods.length ; i++ ) {
-            methods[i].addPropertyChangeListener(this);
+        /** Method for removing method listener */
+        private void reassignMethodListener(ClassElement el) {
+            MethodElement[] methods = el.getMethods();
+            for ( int i = 0; i < methods.length ; i++ ) {
+                methods[i].addPropertyChangeListener(this);
+            }
+            knownMethods = methods;
         }
-        knownMethods = methods;
-    }
 
-    /** Method for removing field listener */
-    private void reassignFieldListener(ClassElement el) {
-        FieldElement[] fields = el.getFields();
-        for ( int i = 0; i < fields.length ; i++ ) {
-            fields[i].addPropertyChangeListener(this);
+        /** Method for removing field listener */
+        private void reassignFieldListener(ClassElement el) {
+            FieldElement[] fields = el.getFields();
+            for ( int i = 0; i < fields.length ; i++ ) {
+                fields[i].addPropertyChangeListener(this);
+            }
+            knownFields = fields;
         }
-        knownFields = fields;
-    }
 
-    synchronized void unregisterAll() {
-        // unregister us from everywhere:
-        Element[] els = knownFields;
-        if (els != null) {
-            for (int i = 0; i < els.length; i++)
-                els[i].removePropertyChangeListener(this);
-            knownFields = null;
+        synchronized void unregisterAll() {
+            // unregister us from everywhere:
+            Element[] els = knownFields;
+            if (els != null) {
+                for (int i = 0; i < els.length; i++)
+                    els[i].removePropertyChangeListener(this);
+                knownFields = null;
+            }
+            els = knownMethods;
+            if (els != null) {
+                for (int i = 0; i < els.length; i++)
+                    els[i].removePropertyChangeListener(this);
+                knownMethods = null;
+            }
         }
-        els = knownMethods;
-        if (els != null) {
-            for (int i = 0; i < els.length; i++)
-                els[i].removePropertyChangeListener(this);
-            knownMethods = null;
+
+        public void propertyChange ( PropertyChangeEvent e ) {
+            Object src = e.getSource();
+            String name = e.getPropertyName();
+
+            if( src instanceof org.netbeans.modules.java.JavaDataObject ) //ignore
+                return;
+            if(PropertyActionSettings.getDefault() == src &&
+                !PropertyActionSettings.PROP_STYLE.equals(name) ) {
+                return;
+            }
+            if (name.equals(ElementProperties.PROP_JAVADOC) ||
+                name.equals(ElementProperties.PROP_INIT_VALUE) ||
+                name.equals(ElementProperties.PROP_EXCEPTIONS) ||
+                name.equals(ElementProperties.PROP_BODY))
+                return;
+
+            PatternChildren pch = getChildren();
+            if (pch != null)
+                pch.scheduleRefresh();
         }
-    }
-
-    public void propertyChange ( PropertyChangeEvent e ) {
-        Object src = e.getSource();
-        String name = e.getPropertyName();
-
-        if( src instanceof org.netbeans.modules.java.JavaDataObject ) //ignore
-            return;
-        if(PropertyActionSettings.getDefault() == src &&
-            !PropertyActionSettings.PROP_STYLE.equals(name) ) {
-            return;
-        }
-        if (name.equals(ElementProperties.PROP_JAVADOC) ||
-            name.equals(ElementProperties.PROP_INIT_VALUE) ||
-            name.equals(ElementProperties.PROP_EXCEPTIONS) ||
-            name.equals(ElementProperties.PROP_BODY))
-            return;
-
-    PatternChildren pch = getChildren();
-    if (pch != null)
-        pch.scheduleRefresh();
-    }
         
 	/**
 	 * This method is called from either scheduled refresh, or from
 	 * the Active Reference Queue, when the owning children are GCed.
 	 */
-    public void run() {
+        public void run() {
 	    PatternChildren pch = getChildren();
 	    if (pch != null)
         	pch.refreshKeys(PatternFilter.ALL);

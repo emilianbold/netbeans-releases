@@ -14,22 +14,30 @@
 package org.netbeans.modules.beans;
 
 import java.awt.Dialog;
-import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.ResourceBundle;
+import java.lang.ref.WeakReference;
+import java.util.HashSet;
 import java.util.Collection;
 import java.util.Iterator;
 import java.beans.Introspector;
+import java.util.Set;
+import java.util.WeakHashMap;
+
+import org.netbeans.modules.javacore.internalapi.ParsingListener;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.modules.javacore.jmiimpl.javamodel.ResourceImpl;
+import org.openide.loaders.DataObject;
+import org.openide.src.ClassElement;
 
 import org.openide.src.SourceException;
 import org.openide.src.Type;
-import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
+import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.actions.NewAction;
 import org.openide.actions.PropertiesAction;
@@ -66,7 +74,7 @@ public class  PatternGroupNode extends AbstractNode {
     private static DialogDescriptor newMcEventSetDialog = null;
 
     // Is the node writable?
-    private boolean wri = true;
+    private boolean isWritable = true;
 
     /** Array of the actions of the java methods, constructors and fields. */
     private static final SystemAction[] DEFAULT_ACTIONS = new SystemAction[] {
@@ -90,21 +98,41 @@ public class  PatternGroupNode extends AbstractNode {
     public static final String ICON_BASE =
         "org/netbeans/modules/beans/resources/patternGroup"; // NOI18N
 
-    public PatternGroupNode( PatternChildren children ) {
-        super( (Children)children );
-        setName( PatternNode.getString( "Patterns" ) );
-        setShortDescription ( PatternNode.getString( "Patterns_HINT" ) );
-        setIconBase( ICON_BASE );
+    private static BeanParsingListener beanParsingListener;
+    
+    boolean isJDK15 = false;
+    
+    private ClassElement classElement;
+    
+    private PatternFilter filter;
+    
+    
+    public PatternGroupNode(Children children, ClassElement clsElem, PatternFilter filter) {
+        super(children);
+        setName(PatternNode.getString("Patterns"));
+        setShortDescription (PatternNode.getString("Patterns_HINT"));
+        setIconBase(ICON_BASE);
         setActions(DEFAULT_ACTIONS);
+        this.classElement = clsElem;
+        this.filter = filter;
+        
+        DataObject dobj = (DataObject)clsElem.getCookie(DataObject.class);
+        addParsingListener(dobj, new ParsListener(dobj, this));
 
-        CookieSet cs = getCookieSet();
-        cs.add( children.getPatternAnalyser() );
+        if (children instanceof PatternChildren) {
+            CookieSet cs = getCookieSet();
+            cs.add(((PatternChildren)children).getPatternAnalyser());
+        } else {
+            isJDK15 = true;
+            if (isWritable)
+                setActions(DEFAULT_ACTIONS_NON_WRITEABLE);
+        }
     }
 
-    public PatternGroupNode( PatternChildren children, boolean isWriteable ) {
-        this( children );
-        wri = isWriteable;
-        if ( !wri ) {
+    public PatternGroupNode(Children children, ClassElement clsElem, PatternFilter filter, boolean isWriteable) {
+        this(children, clsElem, filter);
+        isWritable = isWriteable;
+        if (!isWritable) {
             setActions(DEFAULT_ACTIONS_NON_WRITEABLE);
         }
     }
@@ -134,7 +162,6 @@ public class  PatternGroupNode extends AbstractNode {
 
     /** Create one new type with the given name and the kind.
     */
-
     private NewType createNewType(final String name, final int kind) {
         return new NewType() {
                    /** Get the name of the new type.
@@ -209,8 +236,8 @@ public class  PatternGroupNode extends AbstractNode {
             IdxPropertyPatternPanel idxPropertyPanel;
 
             dd = new DialogDescriptor( (idxPropertyPanel = new IdxPropertyPatternPanel()),
-                                       PatternNode.getString( "CTL_TITLE_NewIdxProperty"),     // Title
-                                       true,                                                       // Modal
+                                       PatternNode.getString( "CTL_TITLE_NewIdxProperty"),   // Title
+                                       true,                                                 // Modal
                                        NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
                                        NotifyDescriptor.OK_OPTION,                           // Default
                                        DialogDescriptor.BOTTOM_ALIGN,                        // Align
@@ -269,7 +296,7 @@ public class  PatternGroupNode extends AbstractNode {
             EventSetPatternPanel eventSetPanel;
 
             dd = new DialogDescriptor( (eventSetPanel = new EventSetPatternPanel( ((PatternChildren)getChildren()).getPatternAnalyser() )),
-                                       PatternNode.getString( "CTL_TITLE_NewMultiCastES"),     // Title
+                                       PatternNode.getString( "CTL_TITLE_NewMultiCastES"),   // Title
                                        true,                                                 // Modal
                                        NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
                                        NotifyDescriptor.OK_OPTION,                           // Default
@@ -342,5 +369,121 @@ public class  PatternGroupNode extends AbstractNode {
 
         return false;
     }
-}
+    
+    public void updateChildren(Resource resource) {
+        boolean b = hasJDK15Features(resource);
+        if (b != isJDK15) {
+            isJDK15 = b;        
+            if (isJDK15) {
+                Children ch = getChildren();
+                if (ch instanceof PatternChildren) {
+                    CookieSet cs = getCookieSet();
+                    cs.remove(((PatternChildren) ch).getPatternAnalyser());
+                    ((PatternChildren) ch).removeAll();
+                }
+                setChildren(Children.LEAF);
+                if (isWritable) {
+                    setActions(DEFAULT_ACTIONS_NON_WRITEABLE);
+                }
+            } else {
+                PatternChildren children = new PatternChildren(classElement, isWritable);
+                children.setFilter(filter);
+                setChildren(children);
+                CookieSet cs = getCookieSet();
+                cs.add(children.getPatternAnalyser());
+                if (isWritable) {
+                    setActions(DEFAULT_ACTIONS);
+                }
+            }
+        } // if
+    }
+    
+    public static boolean hasJDK15Features(Resource resource) {
+        int s = resource.getStatus();
+        return ((s & ResourceImpl.HAS_ANNOTATION) > 0 || (s & ResourceImpl.HAS_ANNOTATIONTYPES) > 0 
+            || (s & ResourceImpl.HAS_ENUMS) > 0 || (s & ResourceImpl.HAS_GENERICS) > 0);
+    }
 
+    public static synchronized void addParsingListener(DataObject dobj, ParsingListener listener) {
+        if (beanParsingListener == null) {
+            beanParsingListener = new BeanParsingListener();
+        }
+        beanParsingListener.addListener(dobj, listener);
+    }
+    
+    public static synchronized void removeParsingListener(DataObject dobj, ParsingListener listener) {
+        if (beanParsingListener == null)
+            return;
+        beanParsingListener.removeListener(dobj, listener);
+    }
+    
+    // ..........................................................................
+    
+    static class ParsListener extends WeakReference implements ParsingListener, Runnable {
+        
+        private WeakReference dobjRef;
+        
+        ParsListener(DataObject dobj, PatternGroupNode node) {
+            super(node, Utilities.activeReferenceQueue());
+            dobjRef = new WeakReference(dobj);
+        }
+        
+        public void resourceParsed(Resource resource) {
+            PatternGroupNode node = (PatternGroupNode) get();
+            if (node == null) {
+                run();
+                return;
+            }
+            node.updateChildren(resource);
+        }
+        
+        public void run() {
+            Object dobj = dobjRef.get();
+            if (dobj != null) {
+                removeParsingListener((DataObject)dobj, this);
+            }
+        }
+        
+    }
+    
+    static class BeanParsingListener implements ParsingListener {
+
+        private WeakHashMap map = new WeakHashMap();
+
+        public BeanParsingListener() {
+            // [PENDING] remove listener on module uninstallation
+            JavaMetamodel.getManager().addParsingListener(this);
+        }
+        
+        public synchronized void addListener(DataObject dobj, ParsingListener listener) {
+            Set set = (Set) map.get(dobj);
+            if (set == null) {
+                set = new HashSet();
+                map.put(dobj, set);
+            }
+            set.add(listener);
+        }
+        
+        public synchronized void removeListener(DataObject dobj, ParsingListener listener) {
+            Set set = (Set) map.get(dobj);
+            if (set != null) {
+                set.remove(listener);
+                if (set.isEmpty())
+                    map.remove(dobj);
+            }
+        }
+        
+        public synchronized void resourceParsed(Resource resource) {
+            DataObject dobj = JavaMetamodel.getManager().getDataObject(resource);
+            Set set = (Set)map.get(dobj);
+            if (set == null)
+                return;
+            for (Iterator iter = set.iterator(); iter.hasNext(); ) {
+                ParsingListener listener = (ParsingListener) iter.next();
+                listener.resourceParsed(resource);
+            }
+        }
+        
+    }
+    
+}
