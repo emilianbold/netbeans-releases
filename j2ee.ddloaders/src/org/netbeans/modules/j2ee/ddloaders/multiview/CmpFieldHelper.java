@@ -109,10 +109,12 @@ public class CmpFieldHelper {
         for (int i = 0; i < methods.length; i++) {
             MethodElement method = methods[i];
             String name = method.getName().getName();
-            if ("ejbCreate".equals(name) || "ejbPostCreate".equals(name)) {
-                if (primary) {
-                    changeReturnType(method, newType);
-                }
+            boolean isCreate = "ejbCreate".equals(name);
+            boolean isPostCreate = "ejbPostCreate".equals(name);
+            if (isCreate && primary) {
+                changeReturnType(method, newType);
+            }
+            if (isCreate || isPostCreate) {
                 MethodParameter[] parameters = method.getParameters();
                 for (int j = 0; j < parameters.length; j++) {
                     MethodParameter parameter = parameters[j];
