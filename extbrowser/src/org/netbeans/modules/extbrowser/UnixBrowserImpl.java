@@ -120,7 +120,6 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
      */
     public void setURL(URL url) {
         try {
-            super.setURL (url);
             // internal protocols cannot be displayed in external viewer
             if (isInternalProtocol (url.getProtocol ())) {
                 url = WrapperServlet.createHttpURL (url);
