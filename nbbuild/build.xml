@@ -81,20 +81,27 @@ fixedmodules=$${config.fixedmodules.${moduleconfig}}
     <property name="allmodules" value="${fixedmodules},${modules}"/>
   </target>
 
-  <target name="maybe-pre-unscramble" depends="init-module-list" unless="netbeans.no.pre.unscramble">
-    <!-- To make things more pleasant for the user, unscramble available modules now. -->
+  <target name="check-whether-to-pre-unscramble" depends="init-module-list">
+    <property name="moduleconfig-is-${moduleconfig}" value="true"/>
+  </target>
+  <target name="maybe-pre-unscramble" depends="check-whether-to-pre-unscramble" if="moduleconfig-is-stable" unless="netbeans.no.pre.unscramble">
+    <!-- To make things more pleasant for the user, unscramble standard modules now. -->
     <!-- Otherwise the user would be prompted at intervals and it would get annoying. -->
+    <!-- bootstrap already did nbbuild, xml -->
     <echo>About to unscramble additional third-party files you will probably need.
 If you do not plan to use them and wish to avoid accepting their licenses,
 try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
-    <subant target="unscramble" >
-    	<fileset dir="..">
-        <include name="*/external/build.xml" />
-        <!-- these are unscrambled by bootstrap -->
-        <exclude name="nbbuild/external/build.xml"/>
-        <exclude name="xml/external/build.xml"/>
-      </fileset>
-    </subant>
+    <ant dir="../ant/external" target="unscramble"/>
+    <ant dir="../core/external" target="unscramble"/>
+    <ant dir="../httpserver/external" target="unscramble"/>
+    <ant dir="../j2eeserver/external" target="unscramble"/>
+    <ant dir="../java/external" target="unscramble"/>
+    <ant dir="../junit/external" target="unscramble"/>
+    <ant dir="../libs/external" target="unscramble"/>
+    <ant dir="../mdr/external" target="unscramble"/>
+    <ant dir="../tomcatint/external" target="unscramble"/> 
+    <ant dir="../web/external" target="unscramble"/>
+    <ant dir="../xml/external" target="unscramble"/>
   </target>
 
   <target name="set-buildnumber" unless="buildnumber">
