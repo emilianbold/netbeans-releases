@@ -22,7 +22,9 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 
 
-/** Data loader which recognizes url files.
+/**
+ * Data loader which recognizes URL files.
+ *
  * @author Ian Formanek
  */
 public class URLDataLoader extends UniFileLoader {
@@ -31,27 +33,31 @@ public class URLDataLoader extends UniFileLoader {
     static final long serialVersionUID =-7407252842873642582L;
     
     
-    /** Creates new URLDataLoader without the extension. */
+    /** Creates a new URLDataLoader without the extension. */
     public URLDataLoader() {
-        super("org.netbeans.modules.url.URLDataObject"); // NOI18N
+        super("org.netbeans.modules.url.URLDataObject");                //NOI18N
     }
 
     
-    /** Initializes loader. */
+    /**
+     * Initializes this loader. This method is called only once the first time
+     * this loader is used (not for each instance).
+     */
     protected void initialize () {
         super.initialize();
 
         ExtensionList ext = new ExtensionList();
-        ext.addExtension("url"); // NOI18N
+        ext.addExtension("url");                                        //NOI18N
         setExtensions(ext);
     }
 
-    /** Gets default display name. Overrides superclass method. */
+    /** */
     protected String defaultDisplayName() {
-        return NbBundle.getBundle(URLDataLoader.class).getString("PROP_URLLoader_Name");
+        return NbBundle.getMessage(URLDataLoader.class,
+                                   "PROP_URLLoader_Name");              //NOI18N
     }
     
-    /** Gets default system actions. Overrides superclass method. */
+    /** */
     protected SystemAction[] defaultActions() {
         return new SystemAction[] {
             SystemAction.get(OpenAction.class),
@@ -73,15 +79,11 @@ public class URLDataLoader extends UniFileLoader {
         };
     }
     
-    /** Creates the right data object for given primary file.
-     * It is guaranteed that the provided file is realy primary file
-     * returned from the method findPrimaryFile.
-     * @param primaryFile the primary file
-     * @return the data object for this file
-     * @exception DataObjectExistsException if the primary file already has data object
+    /**
+     * @return  <code>URLDataObject</code> for the specified file
      */
-    protected MultiDataObject createMultiObject (FileObject primaryFile)
-    throws DataObjectExistsException, java.io.IOException {
+    protected MultiDataObject createMultiObject(FileObject primaryFile)
+            throws DataObjectExistsException, java.io.IOException {
         return new URLDataObject(primaryFile, this);
     }
 
