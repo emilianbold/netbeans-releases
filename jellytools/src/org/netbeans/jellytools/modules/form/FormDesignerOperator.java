@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,8 +16,11 @@ package org.netbeans.jellytools.modules.form;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Point;
+import javax.swing.JComponent;
 
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 
 import org.netbeans.jemmy.ComponentChooser;
@@ -28,15 +31,47 @@ import org.netbeans.jemmy.operators.JFrameOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 
 /**
- * Handles access to org.netbeans.modules.form.FormDesigner component.
+ * Handle editing of forms in IDE. It enables to design components and also
+ * modify source code.
+ * <p>
+ * Usage:<br>
+ * <pre>
+        FormDesignerOperator designer = new FormDesignerOperator("MyForm");
+        ComponentPaletteOperator palette = new ComponentPaletteOperator();
+        ComponentInspectorOperator inspector = new ComponentInspectorOperator();
+        //add first panel
+        palette.selectSwingPage();
+        palette.selectComponent("JPanel");
+        designer.clickOnComponent(designer.fakePane().getSource());
+        //set layout to north
+        inspector.selectComponent("JFrame|jPanel1"); // NOI18N
+        new Property(inspector.properties(), "Direction").setValue("North"); // NOI18N
+        //find panel
+        Component firstPanel = designer.findComponent(JPanel.class);
+        //add something there
+        palette.selectSwingPage();
+        palette.selectComponent("JLabel"); // NOI18N
+        designer.clickOnComponent(firstPanel);
+        // get editor and do editing
+        EditorOperator editor = designer.editor();
+        editor.insert("my code", 23, 1);
+ * </pre>
+ *
+ * @see ComponentInspectorOperator
+ * @see ComponentPaletteOperator
+ *
+ * @author Jiri.Skrivanek@sun.com
  */
 public class FormDesignerOperator extends TopComponentOperator {
     private ComponentOperator _handleLayer;
     private ContainerOperator _componentLayer;
     private ContainerOperator _fakePane;
+    private JToggleButtonOperator _tbSource;
+    private JToggleButtonOperator _tbDesign;
     private JToggleButtonOperator _tbSelectionMode;
     private JToggleButtonOperator _tbConnectionMode;
     private JButtonOperator _btTestForm;
+    private JButtonOperator _btPaletteManager;
 
     /** Waits for the form Designer appearence and creates operator for it.
      * It is activated by defalt.
@@ -61,13 +96,39 @@ public class FormDesignerOperator extends TopComponentOperator {
         super(waitTopComponent(contOper, null, 0, new FormDesignerChooser()));
         copyEnvironment(contOper);
     }
+    
+    /** Returns JToggleButtonOperator instance of Source button
+     * @return JToggleButtonOperator instance
+     */
+    public JToggleButtonOperator tbSource() {
+        if(_tbSource == null) {
+            _tbSource = new JToggleButtonOperator(this, 
+                                    Bundle.getString("org.netbeans.modules.form.Bundle", 
+                                                     "CTL_SourceTabCaption"));
+        }
+        return _tbSource;
+    }
+    
+    /** Returns JToggleButtonOperator instance of Design button
+     * @return JToggleButtonOperator instance
+     */
+    public JToggleButtonOperator tbDesign() {
+        if(_tbDesign == null) {
+            _tbDesign = new JToggleButtonOperator(this, 
+                                    Bundle.getString("org.netbeans.modules.form.Bundle", 
+                                                     "CTL_DesignTabCaption"));
+        }
+        return _tbDesign;
+    }
 
     /** Getter for the "Selection Mode" toggle button.
      * @return JToggleButtonOperator instance
      */
     public JToggleButtonOperator tbSelectionMode() {
         if(_tbSelectionMode == null) {
-            _tbSelectionMode = new JToggleButtonOperator(this, 0);
+            _tbSelectionMode = new JToggleButtonOperator(this, new ToolTipChooser(
+                                    Bundle.getString("org.netbeans.modules.form.Bundle", 
+                                                     "CTL_SelectionMode")));
         }
         return(_tbSelectionMode);
     }
@@ -77,21 +138,71 @@ public class FormDesignerOperator extends TopComponentOperator {
      */
     public JToggleButtonOperator tbConnectionMode() {
         if(_tbConnectionMode == null) {
-            _tbConnectionMode = new JToggleButtonOperator(this, 1);
+            _tbConnectionMode = new JToggleButtonOperator(this, new ToolTipChooser(
+                                    Bundle.getString("org.netbeans.modules.form.Bundle", 
+                                                     "CTL_ConnectionMode")));
         }
         return(_tbConnectionMode);
     }
-    
+
+   /** Getter for the "Palette Manager" button.
+     * @return JButtonOperator instance
+     */
+    public JButtonOperator btPaletteManager() {
+        if(_btPaletteManager == null) {
+            _btPaletteManager = new JButtonOperator(this, new ToolTipChooser(
+                                   Bundle.getString("org.netbeans.modules.form.palette.Bundle",
+                                                    "CTL_PaletteManager_Title")));
+        }
+        return _btPaletteManager;
+    }
+
     /** Getter for the "Test Form" button.
      * @return JButtonOperator instance
      */
     public JButtonOperator btTestForm() {
         if(_btTestForm == null) {
-            _btTestForm = new JButtonOperator(this);
+            _btTestForm = new JButtonOperator(this, new ToolTipChooser(
+                                   Bundle.getString("org.netbeans.modules.form.actions.Bundle", 
+                                                    "ACT_TestMode")));
         }
         return _btTestForm;
     }
 
+    /** Switches to the source editor. It pushes Source toggle button if we
+     * are not in source editor already.
+     */
+    public void source() {
+        if(!tbSource().isSelected()) {
+            tbSource().push();
+        }
+        waitState(new ComponentChooser() {
+            public boolean checkComponent(Component comp) {
+                return tbSource().isSelected();
+            }
+            public String getDescription() {
+                return("Source toggle button is selected");
+            }
+        });
+    }
+    
+    /** Switches to the form designer. It pushes Design toggle button if we
+     * are not in form designer already.
+     */
+    public void design() {
+        if(!tbDesign().isSelected()) {
+            tbDesign().push();
+        }
+        waitState(new ComponentChooser() {
+            public boolean checkComponent(Component comp) {
+                return tbDesign().isSelected();
+            }
+            public String getDescription() {
+                return("Design toggle button is selected");
+            }
+        });
+    }
+    
     /**
      * Switches to the selection mode.
      */
@@ -124,6 +235,15 @@ public class FormDesignerOperator extends TopComponentOperator {
         btTestForm().push();
         return(new JFrameOperator(Bundle.getStringTrimmed("org.netbeans.modules.form.actions.Bundle",
                                                           "FMT_TestingForm")));
+    }
+    
+    /** Pushes "Palette Manager" button and waits for the Palette Manager dialog opened.
+     * @return NbDialogOperator instance of "Palette Manager" window
+     */
+    public NbDialogOperator paletteManager() {
+        btPaletteManager().push();
+        return new NbDialogOperator(Bundle.getString("org.netbeans.modules.form.palette.Bundle",
+                                                     "CTL_PaletteManager_Title"));
     }
     
     /** Returns component which actually handles all events happening
@@ -267,12 +387,29 @@ public class FormDesignerOperator extends TopComponentOperator {
         return(findComponent(clzz, 0));
     }
 
+    /** Clicks Source button and returns EditorOperator to handle form source
+     * code.
+     * @return EditorOperator instance
+     */
+    public EditorOperator editor() {
+        source();
+        return new EditorOperator((JComponent)this.waitSubComponent(new EditorOperator.EditorSubchooser()));
+    }
+    
     private static class FormDesignerChooser implements ComponentChooser {
         public boolean checkComponent(Component comp) {
-            return comp.getClass().getName().equals("org.netbeans.modules.form.FormDesigner");
+            return null != new ContainerOperator((Container)comp).findSubComponent(new ComponentChooser() {
+                public boolean checkComponent(Component comp) {
+                    return comp.getClass().getName().equals("org.netbeans.modules.form.FormDesigner") ||
+                           comp.getClass().getName().equals("org.netbeans.modules.form.FormEditorSupport$JavaEditorTopComponent");
+                }
+                public String getDescription() {
+                    return("FormDesigner or Form Java Editor");
+                }
+            });
         }
         public String getDescription() {
-            return("Any FormDesigner");
+            return("FormDesigner or Form Java Editor");
         }
     }
     
@@ -302,6 +439,19 @@ public class FormDesignerOperator extends TopComponentOperator {
             return("Any FakePeerContainer");
         }
     }
+    
+    private static class ToolTipChooser implements ComponentChooser {
+        private String tooltip;
+        public ToolTipChooser(String tooltip) {
+            this.tooltip = tooltip;
+        }
+        public boolean checkComponent(Component comp) {
+            return ((JComponent)comp).getToolTipText().equals(tooltip);
+        }
+        public String getDescription() {
+            return("ToolTip equals to "+tooltip);
+        }
+    }
 
     /** Performs verification by accessing all sub-components */    
     public void verify() {
@@ -311,6 +461,8 @@ public class FormDesignerOperator extends TopComponentOperator {
         btTestForm();
         tbConnectionMode();
         tbSelectionMode();
+        tbSource();
+        tbDesign();
     }
     
 }

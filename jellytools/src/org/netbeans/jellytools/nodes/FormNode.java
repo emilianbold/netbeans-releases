@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -45,9 +45,6 @@ public class FormNode extends Node {
     static final OpenAction openAction = new OpenAction();
     static final EditAction editAction = new EditAction();
     static final CompileAction compileAction = new CompileAction();
-    static final BuildAction buildAction = new BuildAction();
-    static final ExecuteAction executeAction = new ExecuteAction();
-    static final CleanAction cleanAction = new CleanAction();
     static final CutAction cutAction = new CutAction();
     static final CopyAction copyAction = new CopyAction();
     static final PasteAction pasteAction = new PasteAction();
@@ -64,9 +61,6 @@ public class FormNode extends Node {
             openAction,
             editAction,
             compileAction,
-            buildAction,
-            executeAction,
-            cleanAction,
             cutAction,
             copyAction,
             pasteAction,
@@ -84,8 +78,6 @@ public class FormNode extends Node {
         copyAction,
         deleteAction,
         compileAction,
-        buildAction,
-        executeAction
     };
     
     Action[] getActions() {
@@ -105,21 +97,6 @@ public class FormNode extends Node {
     /** performs CompileAction with this node */    
     public void compile() {
         compileAction.perform(this);
-    }
-
-    /** performs BuildAction with this node */    
-    public void build() {
-        buildAction.perform(this);
-    }
-
-    /** performs ExecuteAction with this node */    
-    public void execute() {
-        executeAction.perform(this);
-    }
-
-    /** performs CleanAction with this node */    
-    public void clean() {
-        cleanAction.perform(this);
     }
 
     /** performs CutAction with this node */    
