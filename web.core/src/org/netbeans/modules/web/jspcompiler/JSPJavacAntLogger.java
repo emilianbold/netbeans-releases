@@ -41,18 +41,18 @@ import org.openide.windows.OutputListener;
  */
 public final class JSPJavacAntLogger extends AntLogger {
     
-/*    private static PrintWriter debugwriter = null;
-    private static void debug(String s) {
-        if (debugwriter == null) {
-            try {
-                debugwriter = new PrintWriter(new java.io.FileWriter("c:\\temp\\AntOutputParser.log")); // NOI18N
-            } catch (java.io.IOException ioe) {
-                return;
-            }
-        }
-        debugwriter.println(s);
-        debugwriter.flush();
-    }*/
+//    private static PrintWriter debugwriter = null;
+//    private static void debug(String s) {
+//        if (debugwriter == null) {
+//            try {
+//                debugwriter = new PrintWriter(new java.io.FileWriter("/local/repo/trunk/nb_all/nbbuild/AntOutputParser.log")); // NOI18N
+//            } catch (java.io.IOException ioe) {
+//                return;
+//            }
+//        }
+//        debugwriter.println(s);
+//        debugwriter.flush();
+//    }
     
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(JSPJavacAntLogger.class.getName());
     private static final boolean LOGGABLE = ERR.isLoggable(ErrorManager.INFORMATIONAL);
@@ -220,10 +220,26 @@ public final class JSPJavacAntLogger extends AntLogger {
             try {
                 SmapResolver resolver = new SmapResolver(new SmapFileReader(smapFile));
                 String jspName = resolver.getJspFileName(line1, col1);
+//debug ("translate '" + line1 + ":" + col1 + "'");
                 int newRow = resolver.unmangle(line1, col1);
 //debug ("translated to '" + jspName + ":" + newRow + "'");
+                // some mappings may not exist, so try next or previous lines, too
+                if (newRow == -1) {
+                    newRow = resolver.unmangle(line1-1, col1);
+                    jspName = resolver.getJspFileName(line1-1, col1);
+                }
+                if (newRow == -1) {
+                    newRow = resolver.unmangle(line1+1, col1);
+                    jspName = resolver.getJspFileName(line1+1, col1);
+                }
                 try {
-                    return session.createStandardHyperlink(file.toURI().toURL(), message, line1, col1, line2, col2);
+                    WebModule wm = WebModule.getWebModule(FileUtil.toFileObject(file));
+                    FileObject jspFO = wm.getDocumentBase().getFileObject(jspName);
+//debug ("jsp '" + jspFO + "'");
+                    if (jspFO != null) {
+                        return session.createStandardHyperlink(FileUtil.toFile(jspFO).toURI().toURL(), message, newRow, -1, -1, -1);
+                    }
+                    return null;
                 } catch (MalformedURLException e) {
                     assert false : e;
                     return null;
@@ -253,6 +269,7 @@ public final class JSPJavacAntLogger extends AntLogger {
     /** Returns a SMAP file corresponding to the given file, if exists.
      */
     public static File getSMAPFileForFile(File javaFile) {
+        System.err.println("GetSmapeforFile");
         File f = FileUtil.normalizeFile(javaFile);
         File dir = f.getAbsoluteFile().getParentFile();
         String name = f.getName();
