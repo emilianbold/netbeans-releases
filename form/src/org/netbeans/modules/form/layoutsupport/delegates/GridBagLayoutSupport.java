@@ -778,12 +778,6 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                               getBundle().getString("HINT_ipady"), // NOI18N
                               null),
 
-                new Property("insets", // NOI18N
-                             Insets.class,
-                             getBundle().getString("PROP_insets"), // NOI18N
-                             getBundle().getString("HINT_insets"), // NOI18N
-                             null),
-
                 new Property("anchor", // NOI18N
                              Integer.TYPE,
                              getBundle().getString("PROP_anchor"), // NOI18N
@@ -800,6 +794,12 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                              Double.TYPE,
                              getBundle().getString("PROP_weighty"), // NOI18N
                              getBundle().getString("HINT_weighty"), // NOI18N
+                             null),
+
+                new Property("insets", // NOI18N
+                             Insets.class,
+                             getBundle().getString("PROP_insets"), // NOI18N
+                             getBundle().getString("HINT_insets"), // NOI18N
                              null)
             };
 
