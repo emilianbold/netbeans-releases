@@ -122,11 +122,7 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
             super(filter, Children.LEAF);
         }
 
-        /** Finds an icon for this node.
-        * @see java.bean.BeanInfo
-        * @param type constants from <CODE>java.bean.BeanInfo</CODE>
-        * @return icon to use to represent the bean
-        */
+        /*
         public Image getIcon (int type) {
             if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
                     (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
@@ -142,14 +138,10 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
             }
         }
 
-        /** Finds an open icon for this node.
-        *
-        * @param type constants from <CODE>java.bean.BeanInfo</CODE>
-        * @return icon to use to represent the bean when opened
-        */
         public Image getOpenedIcon (int type) {
             return getIcon (type);
         }
+        */
 
         /** Actions.
         * @return array of actions for this node
@@ -174,6 +166,7 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
 
         /** Creates properties for this node */
         public Node.PropertySet[] getPropertySets () {
+            /*
             ResourceBundle bundle = NbBundle.getBundle(ActionsPoolNode.class);
             // default sheet with "properties" property set // NOI18N
             Sheet sheet = Sheet.createDefault();
@@ -184,8 +177,9 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
                     bundle.getString("HINT_ActionItemName")
                 )
             );
-            // PENDING - enable and help properties missing
             return sheet.toArray();
+             */
+            return new Node.PropertySet[] { };
         }
 
     } // end of ActionItemNode
