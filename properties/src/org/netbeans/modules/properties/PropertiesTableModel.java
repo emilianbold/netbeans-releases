@@ -86,7 +86,7 @@ public class PropertiesTableModel extends AbstractTableModel {
             case PropertyBundleEvent.CHANGE_ALL:
                 cancelEditingInTables(getDefaultCancelSelector());
                 // reset all header values as well
-                Object list[] = PropertiesTableModel.this.listenerList.getListenerList();
+                Object[] list = getListenerList();
                 for (int i = 0; i < list.length; i++) {
                     if (list[i] instanceof JTable) {
                         JTable jt = (JTable)list[i];
@@ -202,6 +202,11 @@ public class PropertiesTableModel extends AbstractTableModel {
             return new StringPair(item.getComment(), item.getValue());
     }
 
+    /** Helper method. By-passes strange error of JVM when accessing inherited field in non-static inner class. */
+    private Object[] getListenerList() {
+        return listenerList.getListenerList();
+    }
+    
     /** Returns the name for a column */
     public String getColumnName(final int column) {
         String mark;
