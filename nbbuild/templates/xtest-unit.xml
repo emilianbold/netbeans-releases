@@ -32,18 +32,12 @@ Microsystems, Inc. All Rights Reserved.
         <property name="build.sysclasspath" value="ignore"/>
     </target>
     
-    <target name="pre-init-cp">
-        <!-- Give others chance to setup extra classpath -->
-    </target>
-    
-    <target name="init-cp" depends="pre-init-cp">
+    <target name="init-cp">
         <path id="test.unit.compile.cp">
             <pathelement path="${module.classpath}"/>
             <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${module.jar}"/>
             <pathelement path="${cp.extra}"/>
             <pathelement path="${test.unit.cp.extra}"/>
-            <!-- XXX temporary until XTest is fixed to compile to the right place: -->
-            <pathelement path="${cp.compile.extra}"/>
         </path>
         <path id="test.unit.run.cp">
             <path refid="test.unit.compile.cp"/>
