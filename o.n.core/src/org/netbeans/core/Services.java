@@ -20,6 +20,11 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 
 import org.openide.*;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.InstanceDataObject;
 import org.openide.nodes.*;
 import org.openide.util.enum.*;
 import org.openide.util.Mutex;
@@ -270,19 +275,143 @@ public final class Services extends ServiceType.Registry implements LookupListen
     * @param arr list of ServiceTypes 
     */
     public synchronized void setServiceTypes (java.util.List arr) {
-        // [PENDING] compatible patch will be provided later
-//        lookup = new InstanceLookup();
-//        lookupDefTypes = new InstanceLookup();
-//        if (arr == null) {
-//            Lookup.Result r = getServiceSectionsResult();
-//            registerServiceSections(r.allInstances());
-//        } else {
-//            Iterator it = arr.iterator();
-//            while (it.hasNext()) {
-//                register((ServiceType) it.next(), false);
-//            }
-//        }
-//        proxyLookup.change (new Lookup[] {lookupDefTypes, lookup});
+        if (arr == null) {
+            // previous implementation allowed to pass null as parameter
+            // despite of specification in open api
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
+                System.err.println("WARNING: calling org.openide.ServiceType.Registery.setServiceTypes(null)"); // NOI18N
+                Thread.dumpStack();
+            }
+            return;
+        }
+        
+        HashMap services = new HashMap(20); // <service name, DataObject>
+        searchServices(NbPlaces.findSessionFolder("Services").getPrimaryFile(), services); // NOI18N
+        
+        // storing services
+        HashMap order = new HashMap(10); // <parent folder, <file>>
+        Iterator it = arr.iterator();
+        while (it.hasNext()) {
+            ServiceType st = (ServiceType) it.next();
+            String stName = st.getName();
+            DataObject dobj = (DataObject) services.get(stName);
+            if (dobj != null) {
+                // store existing
+                try {
+                    dobj = InstanceDataObject.create(dobj.getFolder(), dobj.getPrimaryFile().getName(), st, null);
+                } catch (IOException ex) {
+                    TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+                services.remove(stName);
+            } else {
+                dobj = storeNewServiceType(st);
+            }
+            
+            // compute order in folders
+            if (dobj != null) {
+                DataFolder parent = dobj.getFolder();
+                List orderedFiles = (List) order.get(parent);
+                if (orderedFiles == null) {
+                    orderedFiles = new ArrayList(6);
+                    order.put(parent, orderedFiles);
+                }
+                orderedFiles.add(dobj);
+            }
+        }
+        
+        // storing order attribute
+        it = order.keySet().iterator();
+        while (it.hasNext()) {
+            DataObject parent = (DataObject) it.next();
+            List orderedFiles = (List) order.get(parent);
+            if (orderedFiles.size() < 2) continue;
+            
+            Iterator files = orderedFiles.iterator();
+            StringBuffer orderAttr = new StringBuffer(64);
+            while (files.hasNext()) {
+                DataObject file = (DataObject) files.next();
+                orderAttr.append(file.getPrimaryFile().getNameExt()).append('/');
+            }
+            orderAttr.deleteCharAt(orderAttr.length() - 1);
+            try {
+                parent.getPrimaryFile().
+                    setAttribute("OpenIDE-Folder-Order", orderAttr.toString()); // NOI18N
+            } catch (IOException ex) {
+                TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+        
+        // remove remaining services from default FS
+        it = services.values().iterator();
+        while (it.hasNext()) {
+            DataObject dobj = (DataObject) it.next();
+            try {
+                dobj.delete();
+            } catch (IOException ex) {
+                TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+        
+    }
+    
+    private DataObject storeNewServiceType(ServiceType st) {
+        Class stype = st.getClass ();
+        // finds direct subclass of service type
+        while (stype.getSuperclass () != ServiceType.class) {
+            stype = stype.getSuperclass();
+        }
+        
+        try{
+            java.beans.BeanInfo info = org.openide.util.Utilities.getBeanInfo(stype);
+            String folder = org.openide.util.Utilities.getShortClassName(stype);
+
+            DataFolder dfServices = NbPlaces.findSessionFolder("Services"); // NOI18N
+            DataFolder dfTarget = DataFolder.create(dfServices, folder);
+            
+            return InstanceDataObject.create(dfTarget, null, st, null);
+        } catch (Exception ex) {
+            TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+            return null;
+        }
+    }
+    
+    /** search all data objects containing service type instance. */
+    private void searchServices(FileObject folder, Map services) {
+        FileObject[] fobjs = folder.getChildren();
+        ArrayList subfolders = null;
+        for (int i = 0; i < fobjs.length; i++) {
+            if (!fobjs[i].isValid()) continue;
+            if (fobjs[i].isFolder()) {
+                searchServices(fobjs[i], services);
+            } else {
+                try {
+                    DataObject dobj = DataObject.find(fobjs[i]);
+                    InstanceCookie inst = (InstanceCookie) dobj.getCookie(InstanceCookie.class);
+                    if (inst == null) continue;
+                    
+                    if (instanceOf(inst, ServiceType.class)) {
+                        ServiceType ser = (ServiceType) inst.instanceCreate();
+                        services.put(ser.getName(), dobj);
+                    }
+                } catch (org.openide.loaders.DataObjectNotFoundException ex) {
+                } catch (Exception ex) {
+                    TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+            }
+        }
+    }
+    
+    private static boolean instanceOf(InstanceCookie inst, Class clazz) {
+        if (inst instanceof InstanceCookie.Of) {
+            return ((InstanceCookie.Of) inst).instanceOf(clazz);
+        } else {
+            try {
+                return clazz.isAssignableFrom(inst.instanceClass());
+            } catch (Exception ex) {
+                TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+                return false;
+            }
+        }
     }
     
     /** Convert list of ManifestSection.ServiceSections ServiceTypes and register them. */
@@ -546,6 +675,9 @@ public final class Services extends ServiceType.Registry implements LookupListen
 
 /*
 * $Log$
+* Revision 1.55  2001/08/03 01:18:08  jpokorsky
+* #13837 fixed: reimplemented setServiceTypes in accordance with new settings implementation
+*
 * Revision 1.54  2001/08/01 11:41:40  akemr
 * Added // NOI18N
 *
