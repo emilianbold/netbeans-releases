@@ -54,13 +54,13 @@ public class EjbDetailForm extends SectionInnerPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        displayNameLabel.setText("Display Name:");
+        displayNameLabel.setText(org.openide.util.NbBundle.getMessage(EjbDetailForm.class, "LBL_DisplayName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(displayNameLabel, gridBagConstraints);
 
-        descriptionLabel.setText("Description:");
+        descriptionLabel.setText(org.openide.util.NbBundle.getMessage(EjbDetailForm.class, "LBL_Description"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -68,7 +68,7 @@ public class EjbDetailForm extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(descriptionLabel, gridBagConstraints);
 
-        smallIconlabel.setText("Small Icon:");
+        smallIconlabel.setText(org.openide.util.NbBundle.getMessage(EjbDetailForm.class, "LBL_SmallIcon"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -76,7 +76,7 @@ public class EjbDetailForm extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(smallIconlabel, gridBagConstraints);
 
-        largeIconLabel.setText("Large Icon:");
+        largeIconLabel.setText(org.openide.util.NbBundle.getMessage(EjbDetailForm.class, "LBL_LargeIcon"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -84,7 +84,7 @@ public class EjbDetailForm extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(largeIconLabel, gridBagConstraints);
 
-        browseSmallIconButton.setText("Browse ...");
+        browseSmallIconButton.setText(org.openide.util.NbBundle.getMessage(EjbDetailForm.class, "LBL_Browse"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
@@ -92,7 +92,7 @@ public class EjbDetailForm extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(browseSmallIconButton, gridBagConstraints);
 
-        browseLargeIconButton.setText("Browse ...");
+        browseLargeIconButton.setText(org.openide.util.NbBundle.getMessage(EjbDetailForm.class, "LBL_Browse"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;

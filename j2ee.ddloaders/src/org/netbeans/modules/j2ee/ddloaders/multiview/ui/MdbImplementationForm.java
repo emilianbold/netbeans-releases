@@ -54,7 +54,7 @@ public class MdbImplementationForm extends SectionInnerPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(beanClassTextField, gridBagConstraints);
 
-        changeImplClassButton.setText("Change implementation class");
+        changeImplClassButton.setText(org.openide.util.NbBundle.getMessage(MdbImplementationForm.class, "LBL_ChangeImplementationClass"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;

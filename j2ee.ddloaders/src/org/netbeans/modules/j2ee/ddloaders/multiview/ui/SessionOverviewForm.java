@@ -62,7 +62,7 @@ public class SessionOverviewForm extends SectionInnerPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        nameLabel.setText("Name (ejb-name):");
+        nameLabel.setText(org.openide.util.NbBundle.getMessage(SessionOverviewForm.class, "LBL_EjbName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -78,7 +78,7 @@ public class SessionOverviewForm extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(ejbNameTextField, gridBagConstraints);
 
-        sessionTypeLabel.setText("Session Type:");
+        sessionTypeLabel.setText(org.openide.util.NbBundle.getMessage(SessionOverviewForm.class, "LBL_SessionType"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -87,7 +87,7 @@ public class SessionOverviewForm extends SectionInnerPanel {
         add(sessionTypeLabel, gridBagConstraints);
 
         sessionTypeButtonGroup.add(statelessRadioButton);
-        statelessRadioButton.setText("Stateless");
+        statelessRadioButton.setText(org.openide.util.NbBundle.getMessage(SessionOverviewForm.class, "LBL_Stateless"));
         statelessRadioButton.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -97,7 +97,7 @@ public class SessionOverviewForm extends SectionInnerPanel {
         add(statelessRadioButton, gridBagConstraints);
 
         sessionTypeButtonGroup.add(statefulRadioButton);
-        statefulRadioButton.setText("Stateful");
+        statefulRadioButton.setText(org.openide.util.NbBundle.getMessage(SessionOverviewForm.class, "LBL_Stateful"));
         statefulRadioButton.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -107,7 +107,7 @@ public class SessionOverviewForm extends SectionInnerPanel {
         add(statefulRadioButton, gridBagConstraints);
 
         transactionTypeButtonGroup.add(beanRadioButton);
-        beanRadioButton.setText("Bean");
+        beanRadioButton.setText(org.openide.util.NbBundle.getMessage(SessionOverviewForm.class, "LBL_Bean"));
         beanRadioButton.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -117,7 +117,7 @@ public class SessionOverviewForm extends SectionInnerPanel {
         add(beanRadioButton, gridBagConstraints);
 
         transactionTypeButtonGroup.add(containerRadioButton);
-        containerRadioButton.setText("Container");
+        containerRadioButton.setText(org.openide.util.NbBundle.getMessage(SessionOverviewForm.class, "LBL_Container"));
         containerRadioButton.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -126,7 +126,7 @@ public class SessionOverviewForm extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(containerRadioButton, gridBagConstraints);
 
-        transactionTypeLabel.setText("Transaction Type:");
+        transactionTypeLabel.setText(org.openide.util.NbBundle.getMessage(SessionOverviewForm.class, "LBL_Transaction_Type"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;

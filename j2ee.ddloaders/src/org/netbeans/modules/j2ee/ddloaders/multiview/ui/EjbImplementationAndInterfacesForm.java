@@ -13,8 +13,8 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview.ui;
 
-import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 import javax.swing.*;
 
@@ -59,7 +59,7 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText("Bean Class:");
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_BeanClass"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -68,7 +68,7 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
         add(jLabel1, gridBagConstraints);
 
-        jLabel2.setText("Local Interface");
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_LocalInterface"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -77,7 +77,7 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
         add(jLabel2, gridBagConstraints);
 
-        jLabel3.setText("Component:");
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_Component"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -86,7 +86,7 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
         add(jLabel3, gridBagConstraints);
 
-        jLabel4.setText("Home:");
+        jLabel4.setText(org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_Home"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -95,7 +95,7 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
         add(jLabel4, gridBagConstraints);
 
-        jLabel5.setText("Remote Interface");
+        jLabel5.setText(org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_RemoteInterface"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -104,7 +104,7 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
         add(jLabel5, gridBagConstraints);
 
-        jLabel6.setText("Component:");
+        jLabel6.setText(org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_Component"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -113,7 +113,7 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
         add(jLabel6, gridBagConstraints);
 
-        jLabel7.setText("Home:");
+        jLabel7.setText(org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_Home"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -183,7 +183,7 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         add(remoteHomeTextField, gridBagConstraints);
 
-        changeClassesButton.setText("Change Classes");
+        changeClassesButton.setText(org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_ChangeClasses"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;

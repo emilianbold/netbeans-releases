@@ -57,7 +57,7 @@ public class EntityOverviewForm extends SectionInnerPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText("Name (ejb-name):");
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(EntityOverviewForm.class, "LBL_EjbName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -65,7 +65,7 @@ public class EntityOverviewForm extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 6);
         add(jLabel1, gridBagConstraints);
 
-        jLabel2.setText("Persistence type");
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(EntityOverviewForm.class, "LBL_PersistenceType"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -73,7 +73,7 @@ public class EntityOverviewForm extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 6);
         add(jLabel2, gridBagConstraints);
 
-        jLabel3.setText("Abstract schema name:");
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(EntityOverviewForm.class, "LBL_AbstractSchemaName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -81,7 +81,7 @@ public class EntityOverviewForm extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 6);
         add(jLabel3, gridBagConstraints);
 
-        primaryKeyFieldLabel.setText("Primary key field:");
+        primaryKeyFieldLabel.setText(org.openide.util.NbBundle.getMessage(EntityOverviewForm.class, "LBL_PrimaryKeyField"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;

@@ -14,6 +14,7 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview.ui;
 
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.ddloaders.multiview.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
@@ -28,6 +29,8 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -85,7 +88,7 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12)));
-        jLabel1.setText(NbBundle.getMessage(BrowseFolders.class, "LBL_Folders"));
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "LBL_Folders"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -115,12 +118,22 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
 
     public static FileObject showDialog(SourceGroup[] folders, FileObjectFilter filter) {
 
-        BrowseFolders bf = new BrowseFolders(folders, filter);
+        final BrowseFolders bf = new BrowseFolders(folders, filter);
 
-        JButton options[] = new JButton[]{
+        final JButton options[] = new JButton[]{
             new JButton(NbBundle.getMessage(BrowseFolders.class, "LBL_SelectFile")),
             new JButton(NbBundle.getMessage(BrowseFolders.class, "LBL_Cancel")),
         };
+
+        options[0].setEnabled(false);
+
+        JTree tree = Utils.findTreeComponent(bf);
+        tree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
+            public void valueChanged(TreeSelectionEvent e) {
+                FileObject fileObject = bf.getSelectedFileObject();
+                options[0].setEnabled(fileObject!= null && !fileObject.isFolder());
+            }
+        });
 
         OptionsListener optionsListener = new OptionsListener(bf);
 
@@ -146,8 +159,17 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
         return optionsListener.getResult();
 
     }
-    
-    
+
+
+    private FileObject getSelectedFileObject() {
+        Node selection[] = getExplorerManager().getSelectedNodes();
+        if (selection != null && selection.length > 0) {
+            DataObject dobj = (DataObject) selection[0].getLookup().lookup(DataObject.class);
+            return dobj.getPrimaryFile();
+        }
+        return null;
+    }
+
     // Innerclasses ------------------------------------------------------------
     
     /**
@@ -282,13 +304,7 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
             String command = e.getActionCommand();
 
             if (COMMAND_SELECT.equals(command)) {
-                Node selection[] = browsePanel.getExplorerManager().getSelectedNodes();
-
-                if (selection != null && selection.length > 0) {
-                    DataObject dobj = (DataObject) selection[0].getLookup().lookup(DataObject.class);
-                    result = dobj.getPrimaryFile();
-                }
-
+                this.result = browsePanel.getSelectedFileObject();
             }
         }
 
