@@ -356,6 +356,8 @@
 <mapID target="debug.overview" url="debug/debug.html" />
 <mapID target="debug.workspace" url="debug/environment/workspace.html" />
 <mapID target="debug.toolbar" url="debug/environment/toolbar.html" />
+<mapID target="debug.menu" url="debug/environment/debug_menu.html" />
+<mapID target="debug.window.all" url="debug/environment/debug_window.html" />
 <mapID target="debug.window.sessions" url="debug/environment/sessions_view.html" />
 <mapID target="debug.window.breakpoints" url="debug/environment/breakpoints_view.html" />
 <mapID target="debug.window.threads" url="debug/environment/threads_view.html" />
@@ -370,14 +372,12 @@
 <mapID target="debug.window.brkpt_thread" url="debug/environment/brkpt_thread.html" />
 <mapID target="debug.window.brkpt_variable" url="debug/environment/brkpt_variable.html" />
 <mapID target="debug.source.editor" url="debug/environment/debug_sourceeditor.html" />
-<mapID target="debug.members" url="debug/environment/debug_members.html" />
 <mapID target="debug.options" url="debug/environment/options.html" />
 <mapID target="debug.java.options" url="debug/environment/java_options.html" />
 
 <mapID target="debug.sessions.jump" url="debug/sessions/sessions.html" />
 <mapID target="debug.running.debugger" url="debug/sessions/start_first.html" />
 <mapID target="debug.attach" url="debug/sessions/attach.html" />
-<mapID target="debug.sessions.start" url="debug/sessions/start_additional.html" />
 <mapID target="debug.sessions.finishsession" url="debug/sessions/finishsession.html" />
 <mapID target="debug.sessions.64bit" url="debug/sessions/64bit_jvm_debug.html" />
 

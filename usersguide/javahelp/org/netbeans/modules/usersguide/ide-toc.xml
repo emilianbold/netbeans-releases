@@ -206,37 +206,53 @@
 </tocitem>
         
 
-<tocitem text="Debugging Java Programs" target="debug.overview">
+<tocitem text="Debugging" target="debug.overview">
   <tocitem text="The Debug Environment" target="debug.workspace">
     <tocitem text="Debug Toolbar" target="debug.toolbar"></tocitem>
-    <tocitem text="Sessions View" target="debug.window.sessions"></tocitem>
-    <tocitem text="Breakpoints View" target="debug.window.breakpoints"></tocitem>
-    <tocitem text="Threads View" target="debug.window.threads"></tocitem>
-    <tocitem text="Call Stack View" target="debug.window.callstack"></tocitem>
-    <tocitem text="Watches View" target="debug.window.watches"></tocitem>
-    <tocitem text="Variables View" target="debug.window.variables"></tocitem>
-    <tocitem text="Classes View" target="debug.window.classes"></tocitem>
-    <tocitem text="Member Grouping and Sorting" target="debug.members"></tocitem>
-    <tocitem text="Debugger Interactions With the Source Editor" target="debug.source.editor"></tocitem>
+    <tocitem text="Debug Menu" target="debug.menu"></tocitem>
+    <tocitem text="Debugger Window" target="debug.window.all">
+      <tocitem text="Sessions View" target="debug.window.sessions"></tocitem>
+      <tocitem text="Threads View" target="debug.window.threads"></tocitem>
+      <tocitem text="Call Stack View" target="debug.window.callstack"></tocitem>
+      <tocitem text="Variables View" target="debug.window.variables"></tocitem>
+      <tocitem text="Watches View" target="debug.window.watches"></tocitem>
+      <tocitem text="Classes View" target="debug.window.classes"></tocitem>
+      <tocitem text="Breakpoints View" target="debug.window.breakpoints"></tocitem>
+    </tocitem>
   </tocitem>
-  <tocitem text="Starting a Debugging Session" target="debug.sessions.jump">
-    <tocitem text="Starting the First Debugging Session" target="debug.running.debugger" />
-    <tocitem text="Attaching the Debugger to a Running Process" target="debug.attach" />
-    <tocitem text="Starting an Additional Debugging Session" target="debug.sessions.start" />
-    <tocitem text="Debugging a Program on a 64-Bit Java Virtual Machine" target="debug.sessions.64bit" />
-    <tocitem text="Finishing a Debugging Session" target="debug.sessions.finishsession" />
+  <tocitem text="Running a Program in the Debugger" target="debug.sessions.jump">
+    <tocitem text="Starting a Debugging Session" target="debug.running.debugger" />
+    <tocitem text="Attaching to a Running Java VM" target="debug.attach" />
+    <tocitem text="Debugging on a 64-Bit Java VM" target="debug.sessions.64bit" />
       </tocitem>
+  
+
+  <tocitem text="Controlling Program Execution" target="debug.running.jump">
+     <tocitem text="Stepping Through Your Program" target="debug.step" />
+     <tocitem text="Running to the Cursor Location" target="debug.running.cursor" />
+     <tocitem text="Pausing a Program" target="debug.running.pause" />
+     <tocitem text="Continuing a Program" target="debug.running.resume" />
+  </tocitem>
+
+  <tocitem text="Debugging in the Source Editor" target="debug.source.editor"></tocitem>
+
+  <tocitem text="Fixing Your Program" target="debug.fix"></tocitem>
+
+  <tocitem text="Finishing a Session" target="debug.sessions.finishsession" />
 
   <tocitem text="Setting Breakpoints" target="debug.breakpoint">
-     <tocitem text="Setting a Breakpoint on a Line" target="debug.breakpoint.line" />
-     <tocitem text="Setting a Breakpoint on a Method Name" target="debug.breakpoint.method" />
-     <tocitem text="Setting a Breakpoint on an Exception" target="debug.breakpoint.exception" />
-     <tocitem text="Setting a Breakpoint on a Class" target="debug.breakpoint.class" />
-     <tocitem text="Setting a Breakpoint on a Thread" target="debug.breakpoint.thread" />
-     <tocitem text="Setting a Breakpoint on a Variable" target="debug.breakpoint.variable" />
+     <tocitem text="Breaking on a Line" target="debug.breakpoint.line" />
+     <tocitem text="Breaking on a Method Name" target="debug.breakpoint.method" />
+     <tocitem text="Breaking on an Exception" target="debug.breakpoint.exception" />
+     <tocitem text="Breaking on a Class" target="debug.breakpoint.class" />
+     <tocitem text="Breaking on a Thread" target="debug.breakpoint.thread" />
+     <tocitem text="Breaking on a Variable" target="debug.breakpoint.variable" />
      <tocitem text="Conditional Breakpoints" target="debug.breakpoint.condition" />
-     <tocitem text="Viewing the Source for a Line Breakpoint" target="debug.breakpoint.source" />                       
-     <tocitem text="Modifying Breakpoint Properties" target="debug.breakpoint.properties" > 
+     <tocitem text="Enabling and Disabling a Breakpoint" target="debug.breakpoint.enable" />
+     <tocitem text="Viewing the Source for a Line Breakpoint" target="debug.breakpoint.source" />
+     <tocitem text="Grouping Breakpoints" target="debug.breakpoint.group" />    
+     <tocitem text="Deleting a Breakpoint" target="debug.breakpoint.remove" />
+     <tocitem text="Breakpoint Properties" target="debug.breakpoint.properties" > 
         <tocitem text="Line Breakpoint Properties" target="debug.window.brkpt_line" />    
         <tocitem text="Method Breakpoint Properties" target="debug.window.brkpt_method" />    
         <tocitem text="Thread Breakpoint Properties" target="debug.window.brkpt_thread" />    
@@ -244,54 +260,50 @@
         <tocitem text="Exception Breakpoint Properties" target="debug.window.brkpt_exception" />    
         <tocitem text="Class Breakpoint Properties" target="debug.window.brkpt_class" />    
      </tocitem>
-     <tocitem text="Organizing Breakpoints Into a Group" target="debug.breakpoint.group" />    
-     <tocitem text="Disabling and Enabling a Breakpoint" target="debug.breakpoint.enable" />
-     <tocitem text="Removing a Breakpoint" target="debug.breakpoint.remove" />
+
   </tocitem>
 
 
-  <tocitem text="Controlling Program Execution" target="debug.running.jump">
-     <tocitem text="Stepping Through Your Program" target="debug.step" />
-     <tocitem text="Running to the Cursor Location" target="debug.running.cursor" />
-     <tocitem text="Pausing a Program" target="debug.running.pause" />
-     <tocitem text="Continuing a Program in the Debugger" target="debug.running.resume" />
-  </tocitem>
-
-  <tocitem text="Fixing Your Program" target="debug.fix"></tocitem>
 
   <tocitem text="Managing Threads" target="debug.threads.jump">
-    <tocitem text="Suspending and Resuming Execution of a Thread" target="debug.threads.suspend" />
-    <tocitem text="Switching Between Threads to Debug" target="debug.threads.change" />
+    <tocitem text="Suspending and Resuming a Thread" target="debug.threads.suspend" />
+    <tocitem text="Making a Thread Current" target="debug.threads.change" />
     <tocitem text="Viewing the Source Code of a Thread" target="debug.threads.source" />
     <tocitem text="Viewing the Variables in a Thread" target="debug.threads.variables" />
     <tocitem text="Viewing the Call Stack for a Thread" target="debug.threads.callstack" />
     <tocitem text="Thread Properties" target="debug.threads.properties" />
   </tocitem>
+
   <tocitem text="Using the Call Stack" target="debug.callstack.jump" >
     <tocitem text="Browsing the Methods on the Call Stack" target="debug.callstack.callingmethod" />
     <tocitem text="Viewing Variables for a Method on the Call Stack" target="debug.callstack.method" />
     <tocitem text="Viewing Source for a Method on the Call Stack" target="debug.callstack.source" />
   </tocitem>
-  <tocitem text="Examining Program Data" target="debug.variables.jump" >
+
+  <tocitem text="Examining Variables" target="debug.variables.jump" >
     <tocitem text="Viewing the Value of a Variable" target="debug.variables.evaluate"/>
     <tocitem text="Modifying the Value of a Variable" target="debug.variables.value"/>
-    <tocitem text="Watching the Value of a Variable or Expression" target="debug.watch" />
+  </tocitem>
+    
+  <tocitem text="Watching Variables and Expressions" target="debug.watch" >
     <tocitem text="Creating a Fixed Watch" target="debug.watch.fix" />
     <tocitem text="Deleting a Watch" target="debug.watch.delete" />
   </tocitem>
+
   <tocitem text="Examining the Classes Loaded by the Program" target="debug.environment.classes" />
 
-  <tocitem text="Setting General Options for the Debug Environment" target="debug.options">
-  <tocitem text="Setting Java Options for the Debug Environment" target="debug.java.options"></tocitem>
-</tocitem>
 
   <tocitem text="Configuring the Debugger" target="debug.debugger.jump">
+    <tocitem text="Setting General Debugging Options" target="debug.options"/>
+    <tocitem text="Setting Options for the Java Debugger" target="debug.java.options"></tocitem>
+    <tocitem text="Debugger Types" target="debug.debugger.jump">
     <tocitem text="Default Debugger" target="debug.debugger.default"/>
     <tocitem text="Applet Debugger" target="debug.debugger.applet"/>
     <tocitem text="JDK 1.1 Debugger" target="debug.debugger.jdk"/>
     <tocitem text="J2EE Server Debugger" target="debug.debugger.j2ee"/>
-    <tocitem text="Enabling Assertion Checking for Debugging" target="debug.debugger.assertion"/>
-    <tocitem text="Setting the Boot Class Path for Debugging" target="debug.debugger.bootclasspath"/>
+    </tocitem>
+    <tocitem text="Enabling Assertion Checking" target="debug.debugger.assertion"/>
+    <tocitem text="Setting the Boot Class Path" target="debug.debugger.bootclasspath"/>
     <tocitem text="Specifying the Default Debugger" target="debug.debugger.project_default"/>
     <tocitem text="Defining a New Debugger Type" target="debug.service.new"/>
     <tocitem text="Setting a Debugger Type in a Template" target="debug.debugger.template" />
