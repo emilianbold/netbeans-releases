@@ -88,6 +88,7 @@ public class ProductInformationPanel extends JPanel {
         ideInstallValueLabel = new javax.swing.JLabel();
         userDirLabel = new javax.swing.JLabel();
         userDirValueLabel = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
         
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
@@ -303,6 +304,15 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints1.weightx = 1.0;
         add(userDirValueLabel, gridBagConstraints1);
         
+        gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 13;
+        gridBagConstraints1.gridwidth = 3;
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints1.weightx = 1.0;
+        gridBagConstraints1.weighty = 1.0;
+        add(jPanel1, gridBagConstraints1);
+        
     }//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -332,6 +342,7 @@ public class ProductInformationPanel extends JPanel {
     private javax.swing.JLabel ideInstallValueLabel;
     private javax.swing.JLabel userDirLabel;
     private javax.swing.JLabel userDirValueLabel;
+    private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 
     private String getBundleString (String key) {
