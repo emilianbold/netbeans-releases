@@ -1350,6 +1350,7 @@
    <mapID target="org.apache.tools.ant.module.run.AntCompilerType" url="ant/ant_script_comp.html" />
    <mapID target="org.apache.tools.ant.module.run.AntExecutor" url="ant/ant_exec.html" />
    <mapID target="org.apache.tools.ant.module.run.IndirectAntCompilerType" url="ant/ind_ant_comp.html" />
+   <mapID target="org.apache.tools.ant.module.loader.AntProjectCookieEditor" url="ant/ind_ant_comp.html" />
 
 
 <!--from j2eeserver module-->
