@@ -23,6 +23,8 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="../core/netbeans/lib/core.jar"/>
             <pathelement location="../core/netbeans/lib/ext/terminalemulator.jar"/>
             <pathelement location="../jemmy/jemmy.jar"/>
+            <pathelement location="../xtest/lib/junit.jar"/>
+            <pathelement location="../xtest/lib/junit-ext.jar"/>
           </classpath>
         </javac>
     </target>
@@ -32,7 +34,21 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="jars" depends="compile" description="Create jars">
-      <jar basedir="src" compress="false" jarfile="jelly-nb.jar">
+        <jar basedir="src" compress="false" jarfile="jelly-nb.jar" >
+          <include name="**/test/oo/**"/>
+	  <!-- These would come from standard-jar-excludes -->
+	  <exclude name="**/*.java"/>
+	  <exclude name="**/*.orig"/>
+	  <exclude name="**/*.rej"/>
+	  <exclude name="**/*.form"/>
+	  <exclude name="**/*.jar.MAKEME"/>
+	  <exclude name="**/filesystem.attributes"/>
+          <exclude name="**/.nbattrs"/>
+          <exclude name="**/.#*"/>
+        </jar>
+        <!-- Create jell2 jar -->
+        <jar basedir="src" compress="false" jarfile="jelly2-nb.jar" >
+          <include name="**/jellytools/**"/>
 	  <!-- These would come from standard-jar-excludes -->
 	  <exclude name="**/*.java"/>
 	  <exclude name="**/*.orig"/>
@@ -50,7 +66,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="zipsrc" description="Create zip containing only sources">
-        <zip zipfile="jelly-nb-src.zip" basedir="src" includes="**/*.java"/>
+        <zip zipfile="jelly-nb-src.zip" basedir="src" includes="**/test/oo/**/*.java"/>
+        <zip zipfile="jelly2-nb-src.zip" basedir="src" includes="**/jellytools/**/*.java"/>
     </target>
   
     <target name="javadoc" description="Javadoc for jellytools">
@@ -67,6 +84,23 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </javadoc>
         <zip zipfile="jelly-nb-javadoc.zip" basedir="." includes="javadoc/**"/>
+        <delete dir="javadoc"/>
+        <mkdir dir="javadoc"/>
+        <!-- Javadoc for jelly2 -->
+        <javadoc destdir="javadoc" packagenames="org.netbeans.jellytools.*" Windowtitle="Jellytools API">
+            <sourcepath>
+                <pathelement location="src"/>
+            </sourcepath>
+            <classpath>
+                <pathelement location="../openide/netbeans/lib/openide.jar"/>
+                <pathelement location="../core/netbeans/lib/core.jar"/>
+                <pathelement location="../core/netbeans/lib/ext/terminalemulator.jar"/>
+                <pathelement location="../jemmy/jemmy.jar"/>
+                <pathelement location="../xtest/lib/junit.jar"/>
+                <pathelement location="../xtest/lib/junit-ext.jar"/>
+            </classpath>
+        </javadoc>
+        <zip zipfile="jelly2-nb-javadoc.zip" basedir="." includes="javadoc/**"/>
     </target>
 
     <target  name="clean" description="Clean all build products">
@@ -75,9 +109,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/*.class"/>
             </fileset>
         </delete>
-        <delete file="jelly-nb.jar"/>
-        <delete file="jelly-nb-src.zip"/>
-        <delete file="jelly-nb-javadoc.zip"/>
+        <delete file="*.jar"/>
+        <delete file="*.zip"/>
         <delete dir="javadoc"/>
     </target>
 
