@@ -30,7 +30,8 @@ workspaceswitcher
   <target name="all" depends="depucelee"/>
 
   <target name="bootstrap-init">
-    <available property="have-binaries-already" file="../core/release/lib/ext/jh.jar"/>
+    <property name="binroot" value=".."/>
+    <available property="have-binaries-already" file="${binroot}/core/release/lib/ext/jh.jar"/>
   </target>
 
   <target name="bootstrap" depends="check-for-binaries"
@@ -39,7 +40,7 @@ workspaceswitcher
     <javac srcdir="antsrc" destdir="antsrc" deprecation="true">
       <classpath>
         <!-- Needed for CheckLinks: -->
-        <pathelement location="../core/release/lib/ext/regexp.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
       </classpath>
     </javac>
     <jar jarfile="nbantext.jar" basedir="antsrc">
@@ -72,7 +73,6 @@ workspaceswitcher
     <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc" classpath="nbantext.jar"/>
     <!-- Overridable. Note: need not necessarily be a number at all): -->
     <property name="buildnumber" value="dev-000"/>
-    <property name="binroot" value=".."/>
     <!-- Best to leave this alone, though, unless you know what you are doing: -->
     <property name="firststart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true"/>
     <!-- But this it is OK to change: -->

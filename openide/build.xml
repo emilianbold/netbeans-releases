@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="preprocess" classname="org.netbeans.nbbuild.Preprocess" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="postprocess" classname="org.netbeans.nbbuild.Postprocess" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks" classpath="../nbbuild/nbantext.jar:../core/release/lib/ext/regexp.jar"/>
+  <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks" classpath="../nbbuild/nbantext.jar:${binroot}/core/release/lib/ext/regexp.jar"/>
 
   <target name="init">
     <available property="jdk13proxies" classname="java.lang.reflect.Proxy"/>
