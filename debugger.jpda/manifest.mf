@@ -9,3 +9,4 @@ Class-Path: ext/jpda.jar
 
 Name: com/netbeans/developer/modules/debugger/jpda/JPDADebuggerType.class
 OpenIDE-Module-Class: Service
+Default: true
