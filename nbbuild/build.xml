@@ -2459,12 +2459,17 @@ Tag:
 
   <target name="build" depends="build-nozip"
           description="Create a complete build including a ZIP distribution (but do not try it).">
-    <!-- zip task not well suited to making final build, as it does not set +x bits -->
-    <!-- so on Unix try to use native ZIP first -->
     <delete file="NetBeans-${buildnum}.zip"/>
-    <!-- see issue #35744 http://www.netbeans.org/issues/show_bug.cgi?id=35744 -->
-    <delete file="NetBeans-${buildnum}.zip"/>
+    <delete file="NetBeans-${buildnum}-build-extra-data.zip"/>
 
+    <property name="nb-extra-files" value="*.built,test/**,extra/**"/>
+<!--
+    <patternset id="nb-extra-files">
+        <exclude name="*.built" />
+        <exclude name="test/**"/>
+        <exclude name="extra/**"/>
+    </patternset>
+-->
     <!-- package the zip file -->
     <zip destfile="NetBeans-${buildnum}.zip" update="true" duplicate="preserve">
       <zipfileset file="${netbeans.dest}/bin/netbeans" filemode="755" prefix="${netbeans.dest}/bin"/>
@@ -2472,12 +2477,21 @@ Tag:
       <zipfileset dir="${netbeans.dest}" filemode="755" prefix="${netbeans.dest}">
         <include name="**/*.sh"/>
       </zipfileset>
-      <zipfileset dir="${netbeans.dest}" prefix="${netbeans.dest}">
-        <exclude name="*.built" />
+      <zipfileset dir="${netbeans.dest}" prefix="${netbeans.dest}" excludes="${nb-extra-files}"/>
+<!--
+        <patternset excludes="${nb-extra-files}"/>
+        <exclude name="*.built"/>
         <exclude name="test/**"/>
         <exclude name="extra/**"/>
       </zipfileset>
+-->
     </zip>
+    
+    <!-- package the zip file with extra files not to be included in regular product package-->
+    <zip destfile="NetBeans-${buildnum}-build-extra-data.zip" update="true" duplicate="preserve">
+        <zipfileset dir="${netbeans.dest}" prefix="${netbeans.dest}" includes="${nb-extra-files}"/>
+    </zip>
+
     <echo>Build created; see NetBeans-${buildnum}.zip (in nbbuild/).
 If you like, you may run the IDE straight from
 the ${netbeans.dest}/bin/ directory.
