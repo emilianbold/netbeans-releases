@@ -370,6 +370,21 @@ public class PackageViewTest extends NbTestCase {
                 }
                 
                 assertEquals( "Wrong nuber of children. Node: " + nodeNames[i] +".", childCount[i], nodes[i].getChildren().getNodes( true ).length );
+                
+                DataObject.Container cont = (DataObject.Container)nodes[i].getCookie (DataObject.Container.class);
+                if (cont != null) {
+                    Node[] arr = nodes[i].getChildren ().getNodes ( true );
+                    DataObject[] child = cont.getChildren ();
+                    for (int k = 0; k < arr.length; k++) {
+                        DataObject myObj = (DataObject)arr[k].getCookie (DataObject.class);
+                        assertNotNull ("Data object should be found for " + arr[k], myObj);
+                        if (child.length <= k) {
+                            fail ("But there is no object for node: " + arr[k]);
+                        } else {
+                            assertEquals ("child objects are the same", child[k], myObj);
+                        }
+                    }
+                }
             }
         }
     }

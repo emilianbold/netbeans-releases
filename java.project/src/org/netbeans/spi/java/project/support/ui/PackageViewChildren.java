@@ -21,6 +21,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.DnDConstants;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;
@@ -395,8 +396,12 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         public PackageNode( FileObject root, DataFolder dataFolder ) {
             super( dataFolder.getNodeDelegate(), 
                    isEmpty( dataFolder ) ? Children.LEAF : dataFolder.createNodeChildren( NO_FOLDERS_FILTER ),
-                   new ProxyLookup(new Lookup[] {dataFolder.getNodeDelegate().getLookup(),
-                                                 Lookups.singleton(new SimpleSearchInfo(dataFolder, false))}));
+                   new ProxyLookup(new Lookup[] {
+                        Lookups.singleton(new NoFoldersContainer (dataFolder)),
+                        dataFolder.getNodeDelegate().getLookup(),
+                        Lookups.singleton(new SimpleSearchInfo(dataFolder, false)),
+                   })
+            );
             this.root = root;
             this.dataFolder = dataFolder;
             this.isDefaultPackage = root.equals( dataFolder.getPrimaryFile() );
@@ -620,8 +625,41 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             }
             return true;
         }
+    }
+    
+    private static final class NoFoldersContainer 
+    implements DataObject.Container, java.beans.PropertyChangeListener {
+        private DataFolder folder;
+        private PropertyChangeSupport prop = new PropertyChangeSupport (this);
         
+        public NoFoldersContainer (DataFolder folder) {
+            this.folder = folder;
+        }
         
+        public DataObject[] getChildren () {
+            DataObject[] arr = folder.getChildren ();
+            ArrayList list = new ArrayList (arr.length);
+            for (int i = 0; i < arr.length; i++) {
+                if (arr[i] instanceof DataFolder) continue;
+                
+                list.add (arr[i]);
+            }
+            return list.size () == arr.length ? arr : (DataObject[])list.toArray (new DataObject[0]);
+        }
+
+        public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+            prop.addPropertyChangeListener (l);
+        }
+
+        public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+            prop.removePropertyChangeListener (l);
+        }
+
+        public void propertyChange(java.beans.PropertyChangeEvent evt) {
+            if (DataObject.Container.PROP_CHILDREN.equals (evt.getPropertyName ())) {
+                prop.firePropertyChange (PROP_CHILDREN, null, null);
+            }
+        }
     }
     
     static final class NoFoldersDataFilter implements ChangeListener, ChangeableDataFilter {
