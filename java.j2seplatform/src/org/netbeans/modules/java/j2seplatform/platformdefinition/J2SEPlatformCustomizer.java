@@ -1,0 +1,405 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.modules.java.j2seplatform.platformdefinition;
+
+
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ListSelectionEvent;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+import org.netbeans.api.java.classpath.ClassPath;
+
+
+
+public class J2SEPlatformCustomizer extends JTabbedPane {
+
+    private static final int CLASSPATH = 0;
+    private static final int SOURCES = 1;
+    private static final int JAVADOC = 2;
+
+    private J2SEPlatformImpl platform;
+
+    public J2SEPlatformCustomizer (J2SEPlatformImpl platform) {
+        this.platform = platform;
+        this.initComponents ();
+    }
+
+
+    private void initComponents () {
+        this.addTab(NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_Classes"), createPathTab(CLASSPATH));
+        this.addTab(NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_Sources"), createPathTab(SOURCES));
+        this.addTab(NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_Javadoc"), createPathTab(JAVADOC));
+    }
+
+
+    private JComponent createPathTab (int type) {
+        return new PathView (this.platform, type);
+    }
+
+
+    private static class PathView extends JPanel {
+
+        private JList resources;
+        private JButton addButton;
+        private JButton removeButton;
+        private JButton moveUpButton;
+        private JButton moveDownButton;
+        private int type;
+
+        public PathView (J2SEPlatformImpl platform, int type) {
+            this.type = type;
+            this.initComponents (platform);
+        }
+
+        private void initComponents (J2SEPlatformImpl platform) {
+            this.setLayout(new GridBagLayout());
+            JLabel label = new JLabel ();
+            String key = null;
+            switch (type) {
+                case CLASSPATH:
+                    key = "TXT_JDKClasspath";       //NOI18N
+                    break;
+                case SOURCES:
+                    key = "TXT_JDKSources";         //NOI18N
+                    break;
+                case JAVADOC:
+                    key = "TXT_JDKJavadoc";         //NOI18N
+                    break;
+                default:
+                    assert false : "Illegal type of panel";     //NOI18N
+            }
+            label.setText (NbBundle.getMessage(J2SEPlatformCustomizer.class,key));
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = GridBagConstraints.RELATIVE;
+            c.gridy = GridBagConstraints.RELATIVE;
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.insets = new Insets (12,12,6,0);
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.weightx = 1.0;
+            ((GridBagLayout)this.getLayout()).setConstraints(label,c);
+            this.add (label);
+            this.resources = new JList(new PathModel(platform,type));
+            this.resources.addListSelectionListener(new ListSelectionListener() {
+                public void valueChanged(ListSelectionEvent e) {
+                    selectionChanged ();
+                }
+            });
+            JScrollPane spane = new JScrollPane (this.resources);
+            c = new GridBagConstraints();
+            c.gridx = GridBagConstraints.RELATIVE;
+            c.gridy = GridBagConstraints.RELATIVE;
+            c.gridwidth = 1;
+            c.gridheight = 4;
+            c.insets = new Insets (6,12,12,6);
+            c.fill = GridBagConstraints.BOTH;
+            c.weightx = 1.0;
+            c.weighty = 1.0;
+            ((GridBagLayout)this.getLayout()).setConstraints(spane,c);
+            this.add (spane);
+            label.setLabelFor (spane);
+            if (type == SOURCES || type == JAVADOC) {
+                this.addButton = new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_Add"));
+                addButton.addActionListener( new ActionListener () {
+                    public void actionPerformed(ActionEvent e) {
+                        addPathElement ();
+                    }
+                });
+                c = new GridBagConstraints();
+                c.gridx = 1;
+                c.gridy = 1;
+                c.gridwidth = GridBagConstraints.REMAINDER;
+                c.fill = GridBagConstraints.HORIZONTAL;
+                c.anchor = GridBagConstraints.NORTHWEST;
+                c.insets = new Insets (6,6,6,12);
+                ((GridBagLayout)this.getLayout()).setConstraints(addButton,c);
+                this.add (addButton);
+                removeButton = new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_Remove"));
+                removeButton.addActionListener( new ActionListener () {
+                    public void actionPerformed(ActionEvent e) {
+                        removePathElement ();
+                    }
+                });
+                removeButton.setEnabled(false);
+                c = new GridBagConstraints();
+                c.gridx = 1;
+                c.gridy = 2;
+                c.gridwidth = GridBagConstraints.REMAINDER;
+                c.fill = GridBagConstraints.HORIZONTAL;
+                c.anchor = GridBagConstraints.NORTHWEST;
+                c.insets = new Insets (6,6,6,12);
+                ((GridBagLayout)this.getLayout()).setConstraints(removeButton,c);
+                this.add (removeButton);
+                moveUpButton = new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_Up"));
+                moveUpButton.addActionListener( new ActionListener () {
+                    public void actionPerformed(ActionEvent e) {
+                        moveUpPathElement ();
+                    }
+                });
+                moveUpButton.setEnabled(false);
+                c = new GridBagConstraints();
+                c.gridx = 1;
+                c.gridy = 3;
+                c.gridwidth = GridBagConstraints.REMAINDER;
+                c.fill = GridBagConstraints.HORIZONTAL;
+                c.anchor = GridBagConstraints.NORTHWEST;
+                c.insets = new Insets (6,6,6,12);
+                ((GridBagLayout)this.getLayout()).setConstraints(moveUpButton,c);
+                this.add (moveUpButton);
+                moveDownButton = new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_Down"));
+                moveDownButton.addActionListener( new ActionListener () {
+                    public void actionPerformed(ActionEvent e) {
+                        moveDownPathElement ();
+                    }
+                });
+                moveDownButton.setEnabled(false);
+                c = new GridBagConstraints();
+                c.gridx = 1;
+                c.gridy = 4;
+                c.gridwidth = GridBagConstraints.REMAINDER;
+                c.fill = GridBagConstraints.HORIZONTAL;
+                c.anchor = GridBagConstraints.NORTHWEST;
+                c.insets = new Insets (6,6,12,12);
+                ((GridBagLayout)this.getLayout()).setConstraints(moveDownButton,c);
+                this.add (moveDownButton);
+            }
+        }
+
+        private void addPathElement () {
+            JFileChooser chooser = new JFileChooser ();
+            chooser.setMultiSelectionEnabled (true);
+            String title = null;
+            String message = null;
+            if (this.type == SOURCES) {
+                title = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenSources");
+                message = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_Sources");
+            }
+            else if (this.type == JAVADOC) {
+                title = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenJavadoc");
+                message = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_Javadoc");
+            }
+            chooser.setDialogTitle(title);
+            chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            chooser.setFileFilter (new SimpleFileFilter(message,new String[] {"ZIP","JAR"}));   //NOI18N
+            if (chooser.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
+                File f = chooser.getSelectedFile();
+
+
+                PathModel model = (PathModel) this.resources.getModel();
+                if (!model.addPath (f)) {
+                    new NotifyDescriptor.Message (NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_CanNotAddResolve"),
+                            NotifyDescriptor.ERROR_MESSAGE);
+                }
+                this.resources.setSelectedIndex (this.resources.getModel().getSize()-1);
+            }
+        }
+
+        private void removePathElement () {
+            int index = this.resources.getSelectedIndex();
+            if (index == -1) {
+                return;
+            }
+            PathModel model = (PathModel) this.resources.getModel();
+            model.removePath (index);
+            if ( index< this.resources.getModel().getSize() - 2) {
+                this.resources.setSelectedIndex (index+1);
+            }
+            else if (index>0) {
+                this.resources.setSelectedIndex (index-1);
+            }
+        }
+
+        private void moveDownPathElement () {
+            int index = this.resources.getSelectedIndex();
+            if (index == -1) {
+                return;
+            }
+            PathModel model = (PathModel) this.resources.getModel();
+            model.moveDownPath (index);
+            this.resources.setSelectedIndex (index+1);
+        }
+
+        private void moveUpPathElement () {
+            int index = this.resources.getSelectedIndex();
+            if (index == -1) {
+                return;
+            }
+            PathModel model = (PathModel) this.resources.getModel();
+            model.moveUpPath (index);
+            this.resources.setSelectedIndex (index+1);
+        }
+
+        private void selectionChanged () {
+            if (this.type == CLASSPATH) {
+                return;
+            }
+            int index = this.resources.getSelectedIndex();
+            this.removeButton.setEnabled (index != -1);
+            this.moveUpButton.setEnabled (index>0);
+            this.moveDownButton.setEnabled(index>-1 && index<this.resources.getModel().getSize()-1);
+        }
+
+    }
+
+
+    private static class PathModel extends AbstractListModel {
+
+        private J2SEPlatformImpl platform;
+        private int type;
+        private java.util.List data;
+
+        public PathModel (J2SEPlatformImpl platform, int type) {
+            this.platform = platform;
+            this.type = type;
+        }
+
+        public int getSize() {
+            return this.getData().size();
+        }
+
+        public Object getElementAt(int index) {
+            java.util.List list = this.getData();
+            FileObject fo = (FileObject)list.get(index);
+            FileObject arch = FileUtil.getArchiveFile(fo);
+            if (arch!=null) {
+                fo = arch;
+            }
+            File f = FileUtil.toFile (fo);
+            if (f !=null) {
+                return f.getAbsolutePath();
+            }
+            else {
+                return null;
+            }
+        }
+
+        private void removePath (int index) {
+            java.util.List data = getData();
+            data.remove(index);
+            updatePlatform ();
+            fireIntervalRemoved(this,index,index);
+        }
+
+        private void moveUpPath (int index) {
+            java.util.List data = getData ();
+            Object p2 = data.get (index);
+            Object p1 = data.set (index-1,p2);
+            data.set (index,p1);
+            updatePlatform ();
+            fireContentsChanged(this,index-1,index);
+        }
+
+        private void moveDownPath (int index) {
+            java.util.List data = getData ();
+            Object p1 = data.get (index);
+            Object p2 = data.set (index+1,p1);
+            data.set (index,p2);
+            updatePlatform();
+            fireContentsChanged(this,index,index+1);
+        }
+
+        private boolean addPath (File f) {
+            java.util.List data = getData();
+            int oldSize = data.size ();
+            FileObject fo = FileUtil.toFileObject (f);
+            if (fo==null) {
+                return false;
+            }
+            if (FileUtil.isArchiveFile(fo)) {
+                fo = FileUtil.getArchiveRoot (fo);
+            }
+            data.add (fo);
+            updatePlatform();
+            fireIntervalAdded(this,oldSize,oldSize);
+            return true;
+        }
+
+        private synchronized java.util.List getData () {
+            if (this.data == null) {
+                switch (this.type) {
+                    case CLASSPATH:
+                        this.data = this.getPathList (this.platform.getBootstrapLibraries());
+                        break;
+                    case SOURCES:
+                        this.data = this.platform.getSourceFolders();
+                        break;
+                    case JAVADOC:
+                        this.data = this.platform.getJavadocFolders();
+                        break;
+                }
+            }
+            return this.data;
+        }
+
+        private java.util.List getPathList (ClassPath cp) {
+            java.util.List result = new ArrayList ();
+            result.addAll(Arrays.asList(cp.getRoots()));
+            return result;
+        }
+
+
+
+        private void updatePlatform () {
+            switch (this.type) {
+                case SOURCES:
+                    this.platform.setSourceFolders(data);
+                    break;
+                case JAVADOC:
+                    this.platform.setJavadocFolders (data);
+                    break;
+                default:
+                    assert false : "Trying to update unknown property";     //NOI18N
+            }
+        }
+    }
+
+
+    private static class SimpleFileFilter extends FileFilter {
+
+        private String description;
+        private Collection extensions;
+
+
+        public SimpleFileFilter (String description, String[] extensions) {
+            this.description = description;
+            this.extensions = Arrays.asList(extensions);
+        }
+
+        public boolean accept(File f) {
+            if (f.isDirectory())
+                return true;
+            String name = f.getName();
+            int index = name.lastIndexOf('.');   //NOI18N
+            if (index <= 0 || index==name.length()-1)
+                return false;
+            String extension = name.substring (index+1).toUpperCase();
+            return this.extensions.contains(extension);
+        }
+
+        public String getDescription() {
+            return this.description;
+        }
+    }
+
+
+}

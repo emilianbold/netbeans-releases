@@ -17,6 +17,7 @@ import java.beans.*;
 import java.io.*;
 import java.lang.ref.*;
 import java.util.*;
+import java.awt.*;
 
 import org.openide.ErrorManager;
 import org.openide.cookies.*;
@@ -167,15 +168,9 @@ implements Environment.Provider, InstanceCookie.Of,
     
     public Object convert(Object obj) {
         if (obj == Node.class) {
-            Object p;
-            
             try {
-                p = instanceCreate();
-                return new BeanNode (p) {
-                    public String getDisplayName () {
-                        return ((JavaPlatform)this.getBean()).getDisplayName();
-                    }
-                };
+                J2SEPlatformImpl p = (J2SEPlatformImpl) instanceCreate();
+                return new J2SEPlatformNode (p,this.holder);
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             } catch (ClassNotFoundException ex) {
