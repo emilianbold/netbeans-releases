@@ -397,7 +397,6 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
             }
             
             Actions.setMenuText(button, text, true);
-            button.setToolTipText(Actions.cutAmpersand(text));
         }
         
     } // End of SimpleNodeButtonBridge nested class.
