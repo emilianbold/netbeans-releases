@@ -521,6 +521,10 @@ public final class LoaderPoolNode extends AbstractNode {
         public boolean canCut () {
             return false;
         }
+
+        public boolean canRename () {
+            return false;
+        }
     } // end of LoaderPoolItemNode
 
     /** Implementation of children for LoaderPool node in explorer.

@@ -15,6 +15,8 @@ package org.netbeans.core;
 
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Transferable;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import org.openide.nodes.*;
@@ -65,6 +67,10 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
         return new NewType[0];
     }
 
+    protected void createPasteTypes (Transferable t, List s) {
+        s.clear ();
+    }
+
     /** Actions.
     * @return array of actions for this node
     */
@@ -82,6 +88,18 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
     /** Creates properties for this node */
     public Node.PropertySet[] getPropertySets () {
         return NO_PROPERTIES;
+    }
+
+    public boolean canDestroy () {
+        return false;
+    }
+
+    public boolean canCut () {
+        return false;
+    }
+
+    public boolean canRename () {
+        return false;
     }
 
     /** Children for the ActionsPoolNode. Creates ActionsPoolNodes or
@@ -164,6 +182,14 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
             return false;
         }
 
+        public boolean canDestroy () {
+            return false;
+        }
+
+        public boolean canCut () {
+            return false;
+        }
+
         /** Creates properties for this node */
         public Node.PropertySet[] getPropertySets () {
             /*
@@ -185,15 +211,3 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
     } // end of ActionItemNode
 
 }
-
-/*
-* Log
-*  5    Gandalf   1.4         1/13/00  Jaroslav Tulach I18N
-*  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  3    Gandalf   1.2         7/8/99   Jesse Glick     Context help.
-*  2    Gandalf   1.1         6/8/99   Ian Formanek    ---- Package Change To 
-*       org.openide ----
-*  1    Gandalf   1.0         6/8/99   Ian Formanek    
-* $
-*/
