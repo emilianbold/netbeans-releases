@@ -85,7 +85,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
                     SectionPanel.this.setActive(true);
                 }
                 JPopupMenu popup = getNode().getContextMenu();
-                popup.show(foldButton, e.getX(), e.getY());
+                popup.show(titleButton, e.getX(), e.getY());
             }
         });
         if(autoExpand) {

@@ -59,7 +59,7 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         titleButton.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
             protected void showPopup(java.awt.event.MouseEvent e) {
                 JPopupMenu popup = getNode().getContextMenu();
-                popup.show(foldButton,e.getX(), e.getY());
+                popup.show(titleButton,e.getX(), e.getY());
             }
         });
         
