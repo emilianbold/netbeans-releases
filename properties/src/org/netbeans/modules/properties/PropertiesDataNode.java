@@ -68,20 +68,7 @@ public class PropertiesDataNode extends DataNode {
      */
     public PropertiesDataNode(DataObject dataObject, Children children) {
         super(dataObject, children);
-        initialize();
-    }
-
-    
-    /** Initializes instance. Sets icon base and default action. */
-    private void initialize () {
         setIconBase("org/netbeans/modules/properties/propertiesObject"); // NOI18N
-        setDefaultAction(SystemAction.get(OpenAction.class));
-    }
-
-    /** Reads object from outppput stream. Used by deserialization. */
-    private void readObject(ObjectInputStream is) throws IOException, ClassNotFoundException {
-        is.defaultReadObject();
-        initialize();
     }
 
     /** Gets new types that can be created in this node.
