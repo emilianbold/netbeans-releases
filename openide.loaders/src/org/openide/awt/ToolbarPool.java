@@ -124,6 +124,19 @@ public final class ToolbarPool extends JComponent implements Accessible {
         }
     }
     
+    public void addNotify() {
+        super.addNotify();
+        getParent().addMouseListener(listener);
+    }
+    
+    public void removeNotify() {
+        try {
+            getParent().removeMouseListener(listener);
+        } finally {
+            super.removeNotify();
+        }
+    }
+    
 
     public Border getBorder() {
         //Issue 36867, hide border if there are no toolbars.  Not the most
