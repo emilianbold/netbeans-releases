@@ -53,7 +53,7 @@ treefs
   <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge"/>
 
   <!-- Override this with the Ant command, e.g. -Dmodules=... -->
-  <property name="modules" value="apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,openidex,projects,properties,text,usersguide,utilities,vcscvs,web"/>
+  <property name="modules" value="apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,openidex,projects,properties,text,usersguide,uti%SystemRoot%\system32\shell32.dll,-152lities,vcscvs,web"/>
 
   <!-- Ditto (note: need not necessarily be a number at all): -->
   <property name="buildnumber" value="123"/>
@@ -228,7 +228,7 @@ treefs
     <exec os="Windows NT" dir="firststart/bin" command="forte4j.exe ${firststart.args}" output="firststart.log" failonerror="yes"/>
     <!-- XXX chmod does not work reliably...investigate -->
     <exec os="Linux" dir="firststart/bin" command="sh ffj.sh ${firststart.args}" output="firststart.log" failonerror="yes"/>
-    <exec os="Solaris" dir="firststart/bin" command="sh ffj.sh ${firststart.args}" output="firststart.log" failonerror="yes"/>
+    <exec os="SunOS" dir="firststart/bin" command="sh ffj.sh ${firststart.args}" output="firststart.log" failonerror="yes"/>
     <!-- XXX ideal would be a timeout after which the process would get SIGQUIT then SIGINT then SIGKILL -->
     <echo message="Successfully started, cleaning up detritus..."/>
     <delete file="firststart/system/forte4j.log"/>
