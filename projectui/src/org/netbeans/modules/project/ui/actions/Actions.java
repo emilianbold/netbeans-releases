@@ -15,13 +15,16 @@ package org.netbeans.modules.project.ui.actions;
 
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.project.uiapi.ActionsFactory;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
 
 /** Factory for all kinds of actions used in projectui and
@@ -74,25 +77,38 @@ public class Actions implements ActionsFactory {
         return NEW_FILE;
     }    
     
-    public Action projectCommandAction(String command, boolean multiselection, String namePattern, Icon icon ) {
-        return new ProjectCommandAction( command, namePattern, icon, null );
+    public Action projectCommandAction(String command, String namePattern, Icon icon ) {
+        return new ProjectAction( command, namePattern, icon, null );
     }
+    
+    public Action projectSensitiveAction( ProjectActionPerformer performer, String namePattern, Icon icon ) {
+        return new ProjectAction( performer, namePattern, icon, null );
+    }
+    
+    public Action mainProjectCommandAction(String command, String name, Icon icon) {
+        return new MainProjectAction( command, name, icon );
+    }
+    
+    public Action mainProjectSensitiveAction(ProjectActionPerformer performer, String name, Icon icon) {
+        return new MainProjectAction( performer, name, icon );
+    }
+
     
     // Project specific actions ------------------------------------------------
     
     public static Action javadocProject() {
-        return new ProjectCommandAction (
+        return new ProjectAction (
             "javadoc", // XXX Define standard
             NbBundle.getMessage(Actions.class, "LBL_JavadocProjectAction_Name" ), // NI18N
-            "org/netbeans/modules/project/ui/resources/javadocProject.gif", //NOI18N
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/javadocProject.gif" ) ), //NOI18N
             null ); 
     }
     
     public static Action testProject() {        
-        return new ProjectCommandAction (
+        return new ProjectAction (
             "test", // XXX Define standard
             NbBundle.getMessage(Actions.class, "LBL_TestProjectAction_Name" ), // NI18N
-            "org/netbeans/modules/project/ui/resources/testProject.gif", //NOI18N
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/testProject.gif" ) ), //NOI18N
             null ); 
     }
     
@@ -134,31 +150,31 @@ public class Actions implements ActionsFactory {
     
     
     public static Action buildMainProject() {
-        return new MainProjectCommandAction (
+        return new MainProjectAction (
             ActionProvider.COMMAND_BUILD, 
             NbBundle.getMessage(Actions.class, "LBL_BuildMainProjectAction_Name" ),
-            "org/netbeans/modules/project/ui/resources/buildProject.gif" ); 
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/buildProject.gif" ) ) ); 
     }
     
     public static Action rebuildMainProject() {
-        return new MainProjectCommandAction(
+        return new MainProjectAction(
             ActionProvider.COMMAND_REBUILD,
             NbBundle.getMessage(Actions.class, "LBL_RebuildMainProjectAction_Name"),  // NI18N 
-            "org/netbeans/modules/project/ui/resources/rebuildProject.gif" ); //NOI18N                
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/rebuildProject.gif" ) ) ); //NOI18N                
     }
         
     public static Action runMainProject() {
-        return new MainProjectCommandAction(
+        return new MainProjectAction(
             "run", // XXX Define standard 
             NbBundle.getMessage(Actions.class, "LBL_RunMainProjectAction_Name"), // NO18N
-            "org/netbeans/modules/project/ui/resources/runProject.gif" ); //NOI18N
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/runProject.gif" ) ) ); //NOI18N
     }
     
     public static Action debugMainProject() {
-        return new MainProjectCommandAction(
+        return new MainProjectAction(
             "debug", // XXX Define standard
             NbBundle.getMessage(Actions.class, "LBL_DebugMainProjectAction_Name" ), // NI18N
-            "org/netbeans/modules/project/ui/resources/debugProject.gif" ) ; //NOI18N
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/debugProject.gif" ) ) ); //NOI18N
     }
         
 
@@ -168,13 +184,13 @@ public class Actions implements ActionsFactory {
     public static Action stopBuilding() {
         return new UnimplementedAction (        
             NbBundle.getMessage(Actions.class, "LBL_StopBuildingAction_Name"), // NI18N
-            "org/netbeans/modules/project/ui/resources/stopBuild.gif" ); // NOI18N
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/stopBuild.gif" ) ) ); // NOI18N
     }
     
     public static Action runSingle() {
         return new UnimplementedAction (        
             NbBundle.getMessage(Actions.class, "LBL_RunSingleAction_Name"), // NI18N
-            "org/netbeans/modules/project/ui/resources/runSingle.gif" ); // NOI18N
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/runSingle.gif" ) ) ); // NOI18N
         
     }
     
@@ -182,8 +198,9 @@ public class Actions implements ActionsFactory {
         
         return new UnimplementedAction (
             NbBundle.getMessage(Actions.class, "LBL_ImportProjectAction_Name"), // NI18N
-            "org/netbeans/modules/project/ui/resources/openProject.gif" ); // NOI18N
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/openProject.gif" ) ) ); // NOI18N
     }
+    
     
     // Private extra actions
     

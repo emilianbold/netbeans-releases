@@ -14,14 +14,19 @@
 package org.netbeans.modules.project.ui.actions;
 
 import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /** Action for invoking project customizer
  */
-public class CustomizeProject extends ProjectSensitiveAction {
+public class CustomizeProject extends ProjectAction {
+    
+    private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/customizeProject.gif" ) ); //NOI18N
     
     private static final String namePattern = NbBundle.getMessage( CustomizeProject.class, "LBL_CustomizeProjectAction_Name" ); // NOI18N
     
@@ -30,8 +35,7 @@ public class CustomizeProject extends ProjectSensitiveAction {
     }
     
     public CustomizeProject( Lookup context ) {
-        super( "org/netbeans/modules/project/ui/resources/customizeProject.gif", //NOI18N
-               context );
+        super( (String)null, namePattern, ICON, context );
         refresh( getLookup() );
     }
             
@@ -51,7 +55,7 @@ public class CustomizeProject extends ProjectSensitiveAction {
         
     }
     
-    protected void actionPerformed( Lookup context ) {
+    public void actionPerformed( Lookup context ) {
     
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );
         

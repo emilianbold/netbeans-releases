@@ -17,6 +17,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.NewFileWizard;
 import org.netbeans.modules.project.ui.OpenProjectList;
@@ -25,21 +27,22 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 
 /** Action for invoking the project sensitive NewFile Wizard
  */
-public class NewFile extends ProjectSensitiveAction implements PropertyChangeListener {
+public class NewFile extends ProjectAction implements PropertyChangeListener {
 
+    private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/newFile.gif" ) ); //NOI18N        
     private static final String name = NbBundle.getMessage(NewFile.class, "LBL_NewFileAction_Name"); // NI18N
     
     public NewFile() {
         this( null );
-        setDisplayName( name );
     }
     
     public NewFile( Lookup context ) {
-        super( "org/netbeans/modules/project/ui/resources/newFile.gif", context ); //NOI18N        
+        super( (String)null, name, ICON, context ); //NOI18N        
         OpenProjectList.getDefault().addPropertyChangeListener( this );
         refresh( getLookup() );
     }

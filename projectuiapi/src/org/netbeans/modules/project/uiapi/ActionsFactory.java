@@ -15,6 +15,7 @@ package org.netbeans.modules.project.uiapi;
 
 import javax.swing.Action;
 import javax.swing.Icon;
+import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 
 /**
  * Factory to be implemented bu the ui implementation
@@ -34,7 +35,15 @@ public interface ActionsFactory {
     
     public Action newFileAction();
             
-    // Actions reaated to project selection
+    // Actions sensitive to project selection
     
-    public Action projectCommandAction( String command, boolean multiselection, String namePattern, Icon icon );
+    public Action projectCommandAction( String command, String namePattern, Icon icon );
+    
+    public Action projectSensitiveAction( ProjectActionPerformer performer, String name, Icon icon );
+    
+    // Actions selection to main project selection
+    
+    public Action mainProjectCommandAction( String command, String name, Icon icon  );
+        
+    public Action mainProjectSensitiveAction( ProjectActionPerformer performer, String name, Icon icon );
 }

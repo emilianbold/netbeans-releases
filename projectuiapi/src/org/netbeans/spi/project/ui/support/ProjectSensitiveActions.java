@@ -16,9 +16,7 @@ package org.netbeans.spi.project.ui.support;
 import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.project.uiapi.ActionsFactory;
-import org.netbeans.modules.project.uiapi.PhysicalViewFactory;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.modules.project.uiapi.Utilities;
 import org.openide.util.Lookup;
 
 /**
@@ -28,33 +26,26 @@ import org.openide.util.Lookup;
 public class ProjectSensitiveActions {
     
     private ProjectSensitiveActions() {}
-    
-    
-    /** Create actions sensitive to set of currently selected projects. When
+        
+    /** Creates action sensitive to set of currently selected projects. When
      * peroformed the action call given command on the ActionProveider of
-     * given project(s)
+     * given project(s). The action will only be enbled when the exactly one 
+     * prpject is selected.
      * @param command The command which should be invoked when the action is
-     *        performed.    
-     * @param multiselection if true the action will be enabled when more than
-     *        one project is selected and the command will be invoked on all 
-     *        selected projects. When false the action will not support multiselection
-     *        of projects.
+     *        performed.
      * @param namePattern Pattern which should be used for determining the Action's 
      *        name. It takes two parameters {0} - number of selected projects
      *        {1} - name of the first project.  
      * @param icon Icon of the action
      */    
-    public static Action projectCommandAction( String command, /* boolean multiselection,*/ String namePattern, Icon icon  ) {
-        return getActionsFactory().projectCommandAction( command, false, namePattern, icon );
+    public static Action projectCommandAction( String command, String namePattern, Icon icon ) {
+        return Utilities.getActionsFactory().projectCommandAction( command, namePattern, icon );
     }
     
-    // Private methods ---------------------------------------------------------
     
-    
-    private static ActionsFactory getActionsFactory() {        
-        return (ActionsFactory)Lookup.getDefault().lookup( ActionsFactory.class );        
+    public static Action projectSensitiveAction( ProjectActionPerformer performer, String namePattern, Icon icon ) {
+        return Utilities.getActionsFactory().projectSensitiveAction( performer, namePattern, icon );
     }
-    
     
     
 }

@@ -27,10 +27,12 @@ abstract class BasicAction extends AbstractAction {
     
     protected BasicAction() {}
     
-    protected BasicAction( String displayName, String iconResource ) {
-        setDisplayName( displayName );
-        if ( iconResource != null ) {
-            setSmallIcon( iconResource );
+    protected BasicAction( String displayName, Icon icon ) {
+        if ( displayName != null ) {
+            setDisplayName( displayName );
+        }
+        if ( icon != null ) {
+            setSmallIcon( icon );
         }
     }
     

@@ -17,6 +17,8 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
@@ -27,14 +29,18 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public class NewProject extends BasicAction {
         
+    private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/newProject.gif" ) ); //NOI18N    
+    private static final String NAME = NbBundle.getMessage( NewProject.class, "LBL_NewProjectAction_Name" ); // NOI18N
+    
+    
     private static TemplateWizard wizard;
 
     public NewProject() {
-        super( NbBundle.getMessage( NewProject.class, "LBL_NewProjectAction_Name" ),  // NOI18N
-               "org/netbeans/modules/project/ui/resources/newProject.gif" );        //NOI18N 
+        super( NAME, ICON );
     }
 
     public void actionPerformed( ActionEvent evt ) {

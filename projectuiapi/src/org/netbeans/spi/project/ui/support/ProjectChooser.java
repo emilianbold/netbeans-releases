@@ -15,6 +15,7 @@ package org.netbeans.spi.project.ui.support;
 
 import javax.swing.JFileChooser;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
+import org.netbeans.modules.project.uiapi.Utilities;
 import org.openide.util.Lookup;
 
 /**
@@ -31,14 +32,7 @@ public class ProjectChooser {
      *         project directories.
      */
     public static JFileChooser projectChooser() {
-        return getProjectChooserFactory().createProjectChooser();
+        return Utilities.getProjectChooserFactory().createProjectChooser();
     }
-    
-    
-    // Private methods ---------------------------------------------------------
-    
-    private static ProjectChooserFactory getProjectChooserFactory() {
-        return (ProjectChooserFactory)Lookup.getDefault().lookup( ProjectChooserFactory.class );
-    }
-    
+        
 }

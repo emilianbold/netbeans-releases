@@ -23,6 +23,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
+import org.netbeans.modules.project.uiapi.Utilities;
 import org.netbeans.spi.project.Sources;
 import org.netbeans.spi.project.SourceGroup;
 import org.netbeans.spi.project.support.SourceContainers;
@@ -33,9 +34,6 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-// XXX might need variant of createSimpleTargetChooser which returns Panel
-// and specifies how it will store the selected name and location
-// XXX impls should be moved to projects/projectui module
 
 /**
  * Default implementations of template UI. 
@@ -46,7 +44,8 @@ import org.openide.util.Lookup;
  */
 public class Templates {
     
-
+    private Templates() {}
+    
     /** Method to communicate current choice of project to a custom WizardIteartor
      * associated with particular template
      */
@@ -119,9 +118,7 @@ public class Templates {
             wizardDescriptor.putProperty( ProjectChooserFactory.WIZARD_KEY_TARGET_NAME, targetName );
         }
     }
-    
-    private Templates() {}
-        
+            
     /**
      * Create a basic target chooser suitable for many kinds of templates.
      * The user is prompted to choose a location for the new file and a (base) name.
@@ -131,13 +128,7 @@ public class Templates {
      * @return a wizard panel(s) prompting the user to choose a name and location
      */
     public static WizardDescriptor.Panel createSimpleTargetChooser( Project project, SourceGroup[] folders ) {        
-        return getProjectChooserFactory().createSimpleTargetChooser( project, folders );
+        return Utilities.getProjectChooserFactory().createSimpleTargetChooser( project, folders );
     }
-    
-    // Private methods ---------------------------------------------------------
-    
-    private static ProjectChooserFactory getProjectChooserFactory() {
-        return (ProjectChooserFactory)Lookup.getDefault().lookup( ProjectChooserFactory.class );
-    }
-    
+        
 }

@@ -24,21 +24,19 @@ import org.openide.util.Utilities;
 
 /** An action sensitive to selected node. Used for 1-off actions
  */
-public class FileCommandAction extends ProjectSensitiveAction {
+public class FileCommandAction extends ProjectAction {
 
     private String command;
-    private String namePattern;
     private Lookup lookup;
-    
-    
+        
     public FileCommandAction( String command, String namePattern, String iconResource, Lookup lookup ) {
         this( command, namePattern, new ImageIcon( Utilities.loadImage( iconResource ) ), lookup );
     }
     
     public FileCommandAction( String command, String namePattern, Icon icon, Lookup lookup ) {
-        super( icon, lookup );
+        super( command, namePattern, icon, lookup );
         this.command = command;
-        this.namePattern = namePattern;
+        assert namePattern != null : "Name patern must not ber null";
         refresh( getLookup()  );        
     }
 
@@ -48,12 +46,12 @@ public class FileCommandAction extends ProjectSensitiveAction {
 
         if ( projects.length != 1 || !ActionsUtil.commandSupported(projects[0], command, context) ) {
             setEnabled( false ); // Zero or more than one projects found or commande not supported
-            setDisplayName( ActionsUtil.formatName( namePattern, 0, "" ) );
+            setDisplayName( ActionsUtil.formatName( getNamePattern(), 0, "" ) );
         }
         else {
             FileObject[] files = ActionsUtil.getFilesFromLookup( context, command, projects[0] );
             setEnabled( true );
-            setDisplayName( ActionsUtil.formatName( namePattern, files.length, files[0].getNameExt() ) );
+            setDisplayName( ActionsUtil.formatName( getNamePattern(), files.length, files[0].getNameExt() ) );
         }
     }
     
@@ -69,7 +67,7 @@ public class FileCommandAction extends ProjectSensitiveAction {
     }
 
     public Action createContextAwareInstance( Lookup actionContext ) {
-        return new FileCommandAction( command, namePattern, (Icon)getValue( SMALL_ICON ), actionContext );
+        return new FileCommandAction( command, getNamePattern(), (Icon)getValue( SMALL_ICON ), actionContext );
     }
    
         

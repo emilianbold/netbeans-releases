@@ -15,6 +15,8 @@ package org.netbeans.modules.project.ui.actions;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.OpenProjectList;
@@ -23,13 +25,16 @@ import org.netbeans.modules.project.ui.ProjectChooserAccessory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public class OpenProject extends BasicAction {
     
+    private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/openProject.gif" ) ); //NOI18N    
+    private static final String NAME = NbBundle.getMessage( OpenProject.class, "LBL_OpenProjectAction_Name" ); // NOI18N
+        
     /** Creates a new instance of BrowserAction */
     public OpenProject() {
-        super( NbBundle.getMessage( OpenProject.class, "LBL_OpenProjectAction_Name" ),  // NOI18N
-               "org/netbeans/modules/project/ui/resources/openProject.gif" );                 // NOI18N 
+        super( NAME, ICON );
     }
 
     public void actionPerformed( ActionEvent evt ) {
