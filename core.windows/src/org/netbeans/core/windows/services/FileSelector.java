@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -94,10 +94,14 @@ final class FileSelector extends CoronaDialog implements PropertyChangeListener 
         super (null);
 
         this.acceptor = acceptor;
+        
+        ResourceBundle bundle = NbBundle.getBundle(FileSelector.class);
 
         ExplorerPanel ep = new ExplorerPanel ();
         getCustomPane ().setLayout (new BorderLayout());
         getCustomPane ().add(ep, BorderLayout.CENTER);
+        ep.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_FileSelectorExplorerPanel"));
+        ep.getAccessibleContext ().setAccessibleName ("ACSN_FileSelectorExplorerPanel");
         manager = ep.getExplorerManager ();
 
 
@@ -133,12 +137,10 @@ final class FileSelector extends CoronaDialog implements PropertyChangeListener 
         );
  */
 
-        ResourceBundle bundle = NbBundle.getBundle(FileSelector.class);
-            
         okButton = new ButtonBarButton(bundle.getString("CTL_FileSelectorOkButton"));
         cancelButton = new ButtonBarButton(bundle.getString("CTL_FileSelectorCancelButton"));
-        okButton.getAccessibleContext().setAccessibleDescription("ACSD_FileSelectorOkButton");
-        cancelButton.getAccessibleContext().setAccessibleDescription("ACSD_FileSelectorCancelButton");
+        okButton.getAccessibleContext().setAccessibleDescription(bundle.getString ("ACSD_FileSelectorOkButton"));
+        cancelButton.getAccessibleContext().setAccessibleDescription(bundle.getString ("ACSD_FileSelectorCancelButton"));
         getButtonBar().setButtons(
             new ButtonBarButton[0],
             new ButtonBarButton[] { okButton, cancelButton }
