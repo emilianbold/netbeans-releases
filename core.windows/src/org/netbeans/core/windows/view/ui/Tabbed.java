@@ -83,12 +83,8 @@ public interface Tabbed {
     
     public Object getConstraintForLocation(Point location, boolean attachingPossible);
     
-    //XXX currently this will test in the coordinate space of the
-    //tab displayer, which is a child of the tabbed container.  For now
-    //this makes no difference, but if we start to support tabs on the
-    //side or something, we should add an argument to pass the component
-    //the coordinate was found on, so I can convert it.  Peter, let me
-    //know if you want to change this. - Tim
+    /** Indicates whether the point is in tab close button.
+     @param p <code>Point</code> in coordinates of this component */
     public boolean isPointInCloseButton (Point p);
 }
 

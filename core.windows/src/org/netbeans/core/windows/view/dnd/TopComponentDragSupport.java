@@ -279,6 +279,12 @@ implements AWTEventListener, DragSourceListener {
             } else {
                 i = tabbed.tabForCoordinate(p.x, p.y);
             }
+            
+            // #38362 Don't start DnD when closing tab.
+            if(tabbed.isPointInCloseButton(p)) {
+                return;
+            }
+            
             if(i >= 0) {
                 tc = tabbed.getTopComponentAt(i);
             }
