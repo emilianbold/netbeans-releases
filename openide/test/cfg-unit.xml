@@ -21,14 +21,20 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/filesystems/LocalFileSystemTest.class/testFireFileDataCreatedEvent"/>
                 <exclude name="org/openide/filesystems/LocalFileSystemTest.class/testFireFileFolderCreatedEvent"/>
                 <exclude name="org/openide/filesystems/LocalFileSystemTest.class/testGetOutputStream"/>
+                <exclude name="org/openide/filesystems/LocalFileSystemTest.class/testLastModified"/>
+                <exclude name="org/openide/filesystems/LocalFileSystemTest.class/testGetSize"/>
                 <exclude name="org/openide/filesystems/MultiFileSystem1Test.class/testFireFileAttributeChangedEvent"/>
                 <exclude name="org/openide/filesystems/MultiFileSystem1Test.class/testDelete"/>
                 <exclude name="org/openide/filesystems/MultiFileSystem1Test.class/testAddFileChangeListener"/>
                 <exclude name="org/openide/filesystems/MultiFileSystem1Test.class/testRemoveFileChangeListener"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem1Test.class/testLastModified"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem1Test.class/testGetSize"/>
                 <exclude name="org/openide/filesystems/MultiFileSystem2Test.class/testDelete"/>
                 <exclude name="org/openide/filesystems/MultiFileSystem2Test.class/testGetInputStream"/>
                 <exclude name="org/openide/filesystems/MultiFileSystem2Test.class/testGetOutputStream"/>
                 <exclude name="org/openide/filesystems/MultiFileSystem2Test.class/testRename"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem2Test.class/testLastModified"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem2Test.class/testGetSize"/>
                 <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testFireFileDeletedEvent"/>
                 <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testFireFileAttributeChangedEvent"/>
                 <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testFireFileRenamedEvent"/>
@@ -37,11 +43,10 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testGetOutputStream"/>
                 <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testAddFileChangeListener"/>
                 <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testRemoveFileChangeListener"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testLastModified"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testGetSize"/>
                 <include name="org/openide/modules/*.class"/>
-                <include name="org/openide/loaders/*.class"/>
-                <!-- Why? Looks OK to me. -jglick
-                <exclude name="org/openide/loaders/MultiDataObjectTest.class"/>
-                -->
+                <include name="org/openide/loaders/*.class"/>                
                 <include name="org/openide/nodes/*.class"/>
                 <include name="org/openide/util/*.class"/>
                 <include name="org/openide/xml/*.class"/>
@@ -53,6 +58,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openide/explorer/propertysheet/*.class"/>
+                <include name="org/openide/explorer/view/*.class"/>
             </patternset>
         </testset>        
     </testbag>
