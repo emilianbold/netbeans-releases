@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -307,7 +307,7 @@ removed !!!!
 
     <!-- if testbag did not finish correctly, notice this state to the current testbag -->
     <target name="testbag-failure" if="testbag.failure">
-        <testbaginfo unexpectedFailure="testbag did not finish correctly, some tests did not have to run" outfile="${xtest.workdir}/xmlresults/testbag.xml"/> 
+        <testbaginfo unexpectedFailure="testbag did not finish correctly, some tests may not have run" outfile="${xtest.workdir}/xmlresults/testbag.xml"/> 
     </target>
     
     <!-- ======================== -->
