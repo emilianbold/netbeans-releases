@@ -88,7 +88,7 @@ public class ProjectTab extends TopComponent
     
     public ProjectTab() {
 
-        // This should not be here byt for some reason it does not work
+        // This should not be here but for some reason it does not work
         // In the module installer
         Hacks.hackFolderActions();
         
