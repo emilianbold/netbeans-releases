@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
    <target name="compile-dependend-modules">
-        <ant dir="../openide" antfile="build.xml" target="jars"/>
+        <ant dir="../openide" antfile="build.xml" target="netbeans"/>
         <ant dir="../openide/loaders" antfile="build.xml" target="jars"/>
         <ant dir="../openide/io" antfile="build.xml" target="jars"/>
         <ant dir="../openide/execution" antfile="build.xml" target="jars"/>
