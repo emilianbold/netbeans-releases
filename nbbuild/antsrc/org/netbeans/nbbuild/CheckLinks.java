@@ -24,6 +24,7 @@ import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.MatchingTask;
 
 import org.apache.regexp.*;
+import org.apache.tools.ant.types.Mapper;
 
 // [PENDING] would be nice to have line numbers reported in output;
 // not clear what the best way to do that is without introducing
@@ -38,6 +39,7 @@ public class CheckLinks extends MatchingTask {
 
     private File basedir;
     private boolean checkexternal = true;
+    private List mappers = new LinkedList(); // List<Mapper>
 
     /** Set whether to check external links (absolute URLs).
      * Local relative links are always checked.
@@ -51,6 +53,15 @@ public class CheckLinks extends MatchingTask {
      */
     public void setBasedir (File basedir) {
         this.basedir = basedir;
+    }
+
+    /**
+     * Add a mapper to translate file names to the "originals".
+     */
+    public Mapper createMapper() {
+        Mapper m = new Mapper(getProject());
+        mappers.add(m);
+        return m;
     }
 
     public void execute () throws BuildException {
@@ -77,7 +88,7 @@ public class CheckLinks extends MatchingTask {
             }
             log ("Scanning " + file, Project.MSG_VERBOSE);
             try {
-                scan(this, file.getAbsolutePath(), fileurl, okurls, badurls, cleanurls, checkexternal, 1);
+                scan(this, file.getAbsolutePath(), fileurl, okurls, badurls, cleanurls, checkexternal, 1, mappers);
             } catch (IOException ioe) {
                 throw new BuildException ("Could not scan " + file, ioe, location);
             }
@@ -98,7 +109,7 @@ public class CheckLinks extends MatchingTask {
     // 0 - just check that it can be opened
     // 1 - check also that any links from it can be opened
     // 2 - recurse
-    public static void scan(Task task, String referrer, URL u, Set okurls, Set badurls, Set cleanurls, boolean checkexternal, int recurse) throws IOException {
+    public static void scan(Task task, String referrer, URL u, Set okurls, Set badurls, Set cleanurls, boolean checkexternal, int recurse, List mappers) throws IOException {
         //task.log("scan: u=" + u + " referrer=" + referrer + " okurls=" + okurls + " badurls=" + badurls + " cleanurls=" + cleanurls + " recurse=" + recurse, Project.MSG_DEBUG);
         if (okurls.contains(u) && recurse == 0) {
             // Yes it is OK.
@@ -113,7 +124,7 @@ public class CheckLinks extends MatchingTask {
         String frag = u.getRef();
         //task.log("scan: base=" + base + " frag=" + frag, Project.MSG_DEBUG);
         if (badurls.contains(u) || badurls.contains(base)) {
-            task.log(referrer + ": broken link (already reported): " + u, Project.MSG_WARN);
+            task.log(normalize(referrer, mappers) + ": broken link (already reported): " + u, Project.MSG_WARN);
             return;
         }
         if (! checkexternal && ! "file".equals(u.getProtocol())) {
@@ -132,7 +143,7 @@ public class CheckLinks extends MatchingTask {
             mimeType = conn.getContentType ();
             rd = conn.getInputStream ();
         } catch (IOException ioe) {
-            task.log(referrer + ": broken link: " + base, Project.MSG_WARN);
+            task.log(normalize(referrer, mappers) + ": broken link: " + base, Project.MSG_WARN);
             badurls.add(base);
             badurls.add(u);
             return;
@@ -185,14 +196,34 @@ public class CheckLinks extends MatchingTask {
             rd.close();
         }
         if (! okurls.contains(u)) {
-            task.log(referrer + ": broken link: " + u, Project.MSG_WARN);
+            task.log(normalize(referrer, mappers) + ": broken link: " + u, Project.MSG_WARN);
         }
         if (others != null) {
             Iterator it = others.iterator();
             while (it.hasNext()) {
                 URL other = (URL)it.next();
-                scan(task, u.getPath(), other, okurls, badurls, cleanurls, checkexternal, recurse == 1 ? 0 : 2);
+                scan(task, u.getPath(), other, okurls, badurls, cleanurls, checkexternal, recurse == 1 ? 0 : 2, mappers);
             }
+        }
+    }
+    
+    private static String normalize(String path, List mappers) throws IOException {
+        try {
+            Iterator it = mappers.iterator();
+            while (it.hasNext()) {
+                Mapper m = (Mapper)it.next();
+                String[] nue = m.getImplementation().mapFileName(path);
+                if (nue != null) {
+                    for (int i = 0; i < nue.length; i++) {
+                        if (new File(nue[i]).isFile()) {
+                            return nue[i];
+                        }
+                    }
+                }
+            }
+            return path;
+        } catch (BuildException e) {
+            throw new IOException(e.toString());
         }
     }
     
