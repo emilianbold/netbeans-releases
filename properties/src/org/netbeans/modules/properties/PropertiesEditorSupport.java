@@ -116,7 +116,6 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     private PropertiesFileEntry serialEntry;
      
     Object readResolve() throws ObjectStreamException {
-System.out.println("read resolve");
       return new PropertiesEditorSupport(serialEntry);
     }
   }
@@ -498,7 +497,6 @@ System.out.println("read resolve");
               throws IOException, ClassNotFoundException {
       super.readExternal(in);
       propSupport = (PropertiesEditorSupport)in.readObject();
-System.out.println("reading propsupport " + propSupport);
       initMe();
     }
 
