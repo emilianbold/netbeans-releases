@@ -134,7 +134,7 @@ public class TransformXMLTask extends Task{
     private static File getXSLFile(String name) throws IOException {
       if (xtestHome == null) {
           debugInfo("getXSLFile(): xtest.home not set !!!!, have to be set to xtest home");
-          new IOException("xtest.home not set !!!!, have to be set to xtest home");          
+          throw new IOException("xtest.home not set !!!!, have to be set to xtest home");          
       }
       File xtestHomeDir = new File(xtestHome);
       File requestedXSL = new File(xtestHomeDir,"lib"+File.separator+"xsl"+File.separator+name);
@@ -414,5 +414,7 @@ public class TransformXMLTask extends Task{
            System.out.println("TransformXMLTask:transformUnitSuites: cannot transform this suite:"+mnInputFile);
        }    
     }
+
+   
 
 }
