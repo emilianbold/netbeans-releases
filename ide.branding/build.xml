@@ -70,12 +70,15 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     </genlist>
   </target>
 
-  <target name="release">
 
-    <!-- Currently nothing. -->
+  <target name="netbeans-extra" depends="release"/>
 
+  <target name="release" depends="init">
+    <copy todir="${netbeans.dest.dir}/${cluster.dir}">
+      <fileset dir="release"/>
+    </copy>
   </target>
-
+  
   <target name="jars" depends="init">
    <!-- <property name="locjar.writeSrcDir" value="true"/> -->
 
