@@ -52,6 +52,7 @@ public class JUnitSettings extends SystemOption {
     public static final String PROP_EXECUTOR_TYPE       = "executor_type";
     public static final String PROP_GENERATE_EXCEPTION_CLASSES = "generate_exceptions";
     public static final String PROP_TEST_RUNNER         = "test_runner";
+    public static final String PROP_PROPERTIES          = "properties";
 
     public static final int EXECUTOR_EXTERNAL           = 0;
     public static final int EXECUTOR_INTERNAL           = 1;
@@ -82,6 +83,7 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_EXECUTOR_TYPE, new Integer(EXECUTOR_EXTERNAL), true);
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, new Boolean(false), true);
         putProperty(PROP_TEST_RUNNER, "org.netbeans.modules.junit.TestRunner", true);
+        putProperty(PROP_PROPERTIES, NbBundle.getMessage(JUnitSettings.class, "PROP_properties_default_value"), true);
     }
 
     public void writeExternal (ObjectOutput out) throws IOException {
@@ -99,6 +101,7 @@ public class JUnitSettings extends SystemOption {
         out.writeObject(getProperty(PROP_EXECUTOR_TYPE));
         out.writeObject(getProperty(PROP_GENERATE_EXCEPTION_CLASSES));
         out.writeObject(getProperty(PROP_TEST_RUNNER));
+        out.writeObject(getProperty(PROP_PROPERTIES));
     }
     
     public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
@@ -116,6 +119,7 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_EXECUTOR_TYPE, in.readObject(), true);
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, in.readObject(), true);
         putProperty(PROP_TEST_RUNNER, in.readObject(), true);
+        putProperty(PROP_PROPERTIES, in.readObject(), true);
     }
 
     public String displayName () {
@@ -241,6 +245,14 @@ public class JUnitSettings extends SystemOption {
 
     public void setTestRunner(String newVal) {
         putProperty(PROP_TEST_RUNNER, newVal, true);
+    }
+
+    public String getProperties() {
+        return (String) getProperty(PROP_PROPERTIES);
+    }
+
+    public void setProperties(String newVal) {
+        putProperty(PROP_PROPERTIES, newVal, true);
     }
 
     public boolean isGlobal() {

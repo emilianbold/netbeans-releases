@@ -107,10 +107,14 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
             propTestRunner.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_test_runner"));
             propTestRunner.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_test_runner"));
             
+            PropertyDescriptor propProperties = new PropertyDescriptor ("Properties", JUnitSettings.class);
+            propProperties.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_properties"));
+            propProperties.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_properties"));
+
             return new PropertyDescriptor[] { propFileSystem, propSuiteTemplate, propClassTemplate,
               propMembersPublic, propMembersProtected, propMembersPackage, propBodyComments, propBodyContent, 
               propJavaDoc, propCfgConfigEnabled, propCfgExecEnabled, propInternalExecutor, 
-              propGenerateExceptionClasses, propTestRunner };
+              propGenerateExceptionClasses, propTestRunner, propProperties };
         }
         catch (IntrospectionException ie) {
             if (Boolean.getBoolean ("netbeans.debug.exceptions"))
