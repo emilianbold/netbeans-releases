@@ -50,6 +50,8 @@ public class Bundle {
     public static ResourceBundle getBundle(String bundle) {
         try {
             return NbBundle.getBundle(bundle);
+        } catch (NullPointerException e) {
+            throw new JemmyException("\"" + bundle + "\" bundle has not been found", e);
         } catch (MissingResourceException e) {
             throw new JemmyException("\"" + bundle + "\" bundle has not been found", e);
         }
