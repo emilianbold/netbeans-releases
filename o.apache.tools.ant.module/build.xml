@@ -214,7 +214,6 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     - docs/javahelp/org/apache/tools/ant/module/docs/HelpSet.hs
     - docs/javahelp/org/apache/tools/ant/module/docs/TOC.toc
     - docs/src/org/apache/tools/ant/module/docs/Bundle.properties
-    - src/org/apache/tools/ant/module/resources/SampleProject.xml_
     - ../usersguide/javahelp/org/netbeans/modules/usersguide/ant/*.html
     - build.xml
     - external/build.xml
