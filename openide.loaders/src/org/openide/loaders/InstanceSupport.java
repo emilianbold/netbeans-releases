@@ -206,9 +206,9 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
             throw ex;
         } catch (Exception e) {
             // turn other throwables into class not found ex.
-            throw new ClassNotFoundException(e.toString(), e);
+            throw new ClassNotFoundException(e.toString() + " from " + instanceName(), e); // NOI18N
         } catch (LinkageError e) {
-            throw new ClassNotFoundException(e.toString(), e);
+            throw new ClassNotFoundException(e.toString() + " from " + instanceName(), e); // NOI18N
         }
     }
 
