@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.diff;
 
+import java.awt.Component;
 import java.lang.reflect.*;
 import java.io.File;
 import java.io.IOException;
@@ -105,18 +106,24 @@ public class DiffAction extends NodeAction {
                 return ;
             }
         }
-        TopComponent tp;
+        Component tp;
         try {
-            tp = dv.showDiff(diffs, fo1.getName(), fo1.getPackageNameExt('/', '.'),
-                             new InputStreamReader(fo1.getInputStream()),
-                             fo2.getName(), fo2.getPackageNameExt('/', '.'),
-                             new InputStreamReader(fo2.getInputStream()), fo1.getMIMEType());
+            tp = dv.createDiff(diffs, fo1.getName(), fo1.getPackageNameExt('/', '.'),
+                               new InputStreamReader(fo1.getInputStream()),
+                               fo2.getName(), fo2.getPackageNameExt('/', '.'),
+                               new InputStreamReader(fo2.getInputStream()), fo1.getMIMEType());
         } catch (IOException ioex) {
             TopManager.getDefault().notifyException(ioex);
             return ;
         }
         System.out.println("tp = "+tp);
-        if (tp != null) tp.open();
+        if (tp != null) {
+            if (tp instanceof TopComponent) {
+                ((TopComponent) tp).open();
+            } else {
+                tp.show();
+            }
+        }
         /*
         RequestProcessor.postRequest(new Runnable() {
             public void run() {

@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.diff.builtin.visualizer;
 
+import java.awt.Component;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -20,7 +21,6 @@ import java.util.List;
 
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
 
 import org.netbeans.api.diff.DiffVisualizer;
 
@@ -68,7 +68,7 @@ public class GraphicalDiffVisualizer extends DiffVisualizer {
      * @return The TopComponent representing the diff visual representation
      *        or null, when the representation is outside the IDE.
      */
-    public TopComponent showDiff(List diffs, FileObject fo1, FileObject fo2) {
+    public Component showDiff(List diffs, FileObject fo1, FileObject fo2) {
         DiffComponent diff;
         try {
             diff = new DiffComponent(diffs, null, fo1.getMIMEType(),
@@ -97,8 +97,8 @@ public class GraphicalDiffVisualizer extends DiffVisualizer {
      * @return The TopComponent representing the diff visual representation
      *        or null, when the representation is outside the IDE.
      */
-    public TopComponent showDiff(List diffs, String name1, String title1, Reader r1,
-                                 String name2, String title2, Reader r2, String MIMEType) {
+    public Component createDiff(List diffs, String name1, String title1, Reader r1,
+                                String name2, String title2, Reader r2, String MIMEType) {
         DiffComponent diff;
         diff = new DiffComponent(diffs, null, MIMEType,
             name1, name2, title1, title2, r1, r2);

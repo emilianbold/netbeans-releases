@@ -13,12 +13,12 @@
 
 package org.netbeans.modules.diff.builtin.visualizer;
 
+import java.awt.Component;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
 
 import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
 
 import org.netbeans.api.diff.DiffVisualizer;
 
@@ -72,9 +72,7 @@ public class TextDiffVisualizer extends DiffVisualizer {
      *        or null, when the representation is outside the IDE.
      * @throws IOException when the reading from input streams fails.
      */
-    public TopComponent showDiff(List diffs, String name1, String title1,
-                                 Reader r1, String name2, String title2,
-                                 Reader r2, String MIMEType) throws IOException {
+    public Component createDiff(List diffs, String name1, String title1, Reader r1, String name2, String title2, Reader r2, String MIMEType) throws IOException {
         return null;
     }
     
