@@ -50,15 +50,19 @@ public class Installer extends ModuleInstall {
         searchInstaller.restored();
 
         // Don't ask.
-        RequestProcessor.postRequest(new Runnable() {
-            public void run() {
-                Settings.getDefault().isRunning();
+        RequestProcessor.postRequest (new Runnable() {
+                public void run () {
+                    Settings.getDefault().isRunning();
                 }
-            }, 60000
-        );
+            }, 60000);
 
         // test netbeans.openfile property
         String fileName = System.getProperty (NETBEANS_OPENFILE);
+
+        org.openide.ErrorManager em = org.openide.TopManager.getDefault().getErrorManager().getInstance ("org.netbeans.modules.openfile"); // NOI18N
+        String msg = "../utilities/Installer.restored: " + NETBEANS_OPENFILE + "='" + fileName + "'"; // NOI18N
+        em.log (msg);
+
         if ( fileName != null ) {
             OpenFile.open (fileName);
         }

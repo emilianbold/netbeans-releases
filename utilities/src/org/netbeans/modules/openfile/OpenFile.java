@@ -55,6 +55,7 @@ import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
 import org.openide.text.NbDocument;
 import org.openide.TopManager;
+import org.openide.ErrorManager;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -78,6 +79,8 @@ public class OpenFile extends Object {
     /** Name of package keyword. */
     private static final String PACKAGE = "package"; // NOI18N
 
+    /** For debug purposes. */
+    private static final ErrorManager em = TopManager.getDefault().getErrorManager().getInstance ("org.netbeans.modules.openfile"); // NOI18N
 
     
     /** Open the file either by calling {@link OpenCookie} ({@link ViewCookie}), or by
@@ -86,7 +89,14 @@ public class OpenFile extends Object {
      * @param fileName file name to open
      */
     public static void open (final String fileName) {
+        em.log ("OpenFile.open: " + fileName);
+
         final File f = new File (fileName);
+
+        em.log ("    file: " + f);
+        em.log ("    file.exists: " + f.exists());
+        em.log ("    file.isFile: " + f.isFile());
+
         if ( f.exists() && f.isFile() ) {
             RequestProcessor.postRequest
                 (new Runnable () {
