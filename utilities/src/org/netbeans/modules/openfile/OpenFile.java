@@ -11,118 +11,408 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.openfile;
 
-import java.beans.*;
-import java.io.*;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.Font;
+import java.beans.PropertyVetoException;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.text.MessageFormat;
-import java.util.*;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.text.MessageFormat;
+import java.util.Enumeration;
+import java.util.StringTokenizer;
+import java.util.Vector;
 import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.text.StyledDocument;
 
-import org.openide.*;
-import org.openide.cookies.*;
-import org.openide.filesystems.*;
+import org.openide.actions.FileSystemAction;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.cookies.ViewCookie;
+import org.openide.DialogDescriptor;
+import org.openide.filesystems.JarFileSystem;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
+import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataLoader;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.NotifyDescriptor;
 import org.openide.text.NbDocument;
+import org.openide.TopManager;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
+
 /** Opens files when requested. Main functionality.
-*
-* @author Jaroslav Tulach, Jesse Glick
-*/
+ *
+ * @author Jaroslav Tulach, Jesse Glick
+ */
 class OpenFile extends Object {
 
     /** Extenstion for .java files. */
     static final String JAVA_EXT = ".JAVA"; // NOI18N
-    
     /** Extension for .txt files. */
     static final String TXT_EXT = ".TXT"; // NOI18N
-    
-    /** Name of package java keyword. */
+    /** Extension for .zip files. */
+    private static final String ZIP_EXT = ".ZIP"; // NOI18N
+    /** Extension for .jar files. */
+    private static final String JAR_EXT = ".JAR"; // NOI18N
+    /** Name of package keyword. */
     private static final String PACKAGE = "package"; // NOI18N
 
     
     /** Open the file either by calling {@link OpenCookie} ({@link ViewCookie}), or by
-    * showing it in the Explorer.
-    * Uses {@link #find} to figure out what the right file object is.
-    * @param f file on local disk
-    * @param wait whether to wait until requested to return a status
-    * @param addr address to send reply to, if waiting
-    * @param port port to send reply to, if waiting
-    * @param line line number to try to open to (starting at zero), or <code>-1</code> to ignore
-    */
-    static void open (File f, final boolean wait, InetAddress addr, int port, int line) {
-        FileObject fo = find (f);
+     * showing it in the Explorer.
+     * Uses {@link #find} to figure out what the right file object is.
+     * @param file file to open
+     * @param wait whether to wait until requested to return a status
+     * @param address address to send reply to, valid only if wait set
+     * @param port port to send reply to, valid only if wait set
+     * @param line line number to try to open to (starting at zero), or <code>-1</code> to ignore
+     */
+    static void open(File file, final boolean wait, InetAddress address, int port, int line) {
+        FileObject fileObject = find(file);
 
-        if(fo == null) 
+        if(fileObject == null) 
             return;
         
         try {
-            DataObject obj = DataObject.find (fo);
-            final EditorCookie edit = line != -1 ? (EditorCookie) obj.getCookie (EditorCookie.class) : null;
-            final OpenCookie open = (OpenCookie) obj.getCookie (OpenCookie.class);
-            final ViewCookie view = (ViewCookie) obj.getCookie (ViewCookie.class);
-            if (open != null || view != null || edit != null) {
-                TopManager.getDefault ().setStatusText (SettingsBeanInfo.getString (wait ? "MSG_openingAndWaiting" : "MSG_opening", f.toString ()));
-                if (edit != null) {
-                    edit.open ();
-                    StyledDocument doc = edit.openDocument ();
-                    JEditorPane[] panes = edit.getOpenedPanes ();
-                    if (panes.length > 0)
+            DataObject dataObject = DataObject.find(fileObject);
+            
+            final EditorCookie editorCookie = line != -1 ? (EditorCookie) dataObject.getCookie (EditorCookie.class) : null;
+            final OpenCookie openCookie = (OpenCookie)dataObject.getCookie (OpenCookie.class);
+            final ViewCookie viewCookie = (ViewCookie)dataObject.getCookie (ViewCookie.class);
+            
+            if (openCookie != null || viewCookie != null || editorCookie != null) {
+                TopManager.getDefault().setStatusText(SettingsBeanInfo.getString(wait ? "MSG_openingAndWaiting" : "MSG_opening", file.toString ()));
+                
+                if(editorCookie != null) {
+                    editorCookie.open ();
+                    StyledDocument doc = editorCookie.openDocument ();
+                    JEditorPane[] panes = editorCookie.getOpenedPanes ();
+                    
+                    if(panes.length > 0)
                         panes[0].setCaretPosition (NbDocument.findLineOffset (doc, line));
                     else
-                        TopManager.getDefault ().setStatusText (SettingsBeanInfo.getString ("MSG_couldNotOpenAt"));
-                } else if (open != null) {
-                    open.open ();
+                        TopManager.getDefault().setStatusText(SettingsBeanInfo.getString("MSG_couldNotOpenAt"));
+                    
+                } else if(openCookie != null) {
+                    openCookie.open();
                 } else {
-                    view.view ();
+                    viewCookie.view();
                 }
-                TopManager.getDefault ().setStatusText (""); // NOI18N
-                if (wait) {
+                
+                TopManager.getDefault().setStatusText(""); // NOI18N
+                
+                if(wait) {
                     // Could look for a SaveCookie just to see, but need not.
-                    Server.waitFor (obj, addr, port);
+                    Server.waitFor(dataObject, address, port);
                 }
             } else {
-                Node n = obj.getNodeDelegate ();
-                if (fo.isRoot ()) {
+                try {
+                    // If it's zip/jar file dont do additional things.
+                    if(fileObject.getFileSystem() instanceof JarFileSystem)
+                        return;
+                } catch(FileStateInvalidException fse) {
+                    if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                        fse.printStackTrace();
+                }
+                
+                Node node = dataObject.getNodeDelegate ();
+                
+                if(fileObject.isRoot()) {
                     // Try to get the node used in the usual Repository, which
                     // has a non-blank display name and is thus nicer.
-                    FileSystem fs = fo.getFileSystem ();
+                    FileSystem fs = fileObject.getFileSystem ();
                     Node reponode = TopManager.getDefault ().getPlaces ().nodes ().repository ();
                     Children repokids = reponode.getChildren ();
-                    Enumeration fsenum = repokids.nodes ();
+                    Enumeration fsenum = repokids.nodes();
+                    
                     while (fsenum.hasMoreElements ()) {
                         Node fsnode = (Node) fsenum.nextElement ();
                         DataFolder df = (DataFolder) fsnode.getCookie (DataFolder.class);
                         if (df != null && df.getPrimaryFile ().getFileSystem ().equals (fs)) {
-                            n = fsnode;
+                            node = fsnode;
                             break;
                         }
                     }
                 }
 
-// PENDING Opening in new explorer window was submitted as bug (#8809).
-// Here would be nice probably this: check for default data object. Convert it to text if
-// text module is available and open it.
-                    TopManager.getDefault ().getNodeOperation ().explore (n);
-                if (wait)
-                    TopManager.getDefault ().notify (new NotifyDescriptor.Message (SettingsBeanInfo.getString ("MSG_cannotOpenWillClose", f)));
+                // PENDING Opening in new explorer window was submitted as bug (#8809).
+                // Here we chcek if the data object is default data one, 
+                // and try to change it to text one. 
+                // 1) We get default data loader,
+                // 2) Compare if oyr data object is of deafult data object type,
+                // 3) Get its default action
+                // 4) If the default action is not FileSystemAction we assume text module
+                // is avilable and the default action is Convert to text.
+                // 5) Perform the action, find changed data object and open it.
+                // TEMP>>
+                Enumeration loaders = TopManager.getDefault().getLoaderPool().allLoaders();
+                DataLoader DDOLoader = null;
+                // get last data loader from enumeration which have to be default data loader
+                for(; loaders.hasMoreElements(); )
+                    DDOLoader = (DataLoader)loaders.nextElement();
+
+                boolean opened = false;
+                
+                if(DDOLoader != null && dataObject.getClass().getName().equals(DDOLoader.getRepresentationClass().getName())) {
+                    // Is default data object.
+                    SystemAction defaultAction = node.getDefaultAction();
+                    
+                    if(defaultAction != null && !(defaultAction instanceof FileSystemAction)) {
+                        // Now we suppose Convert To Text Action is available.
+                        defaultAction.actionPerformed(new ActionEvent(node, 0, null)); 
+
+                        fileObject.refresh();
+                        try {
+                            DataObject newDataObject = DataObject.find(fileObject);
+                            OpenCookie newOpenCookie = (OpenCookie)newDataObject.getCookie(OpenCookie.class);
+
+                            if(newOpenCookie != null) {
+                                newOpenCookie.open();
+                                opened = true;
+                            }
+                        } catch(DataObjectNotFoundException dnfe) {
+                            if(Boolean.getBoolean("netbeans.debug.exceptions")) // TEMP
+                                dnfe.printStackTrace();
+                        }
+                    }
+                }
+
+                if(!opened)
+                    // As last resort, explore the node.
+                    TopManager.getDefault().getNodeOperation().explore(node);
+                
+                if(wait)
+                    TopManager.getDefault().notify(new NotifyDescriptor.Message(SettingsBeanInfo.getString("MSG_cannotOpenWillClose", file)));
             }
-        } catch (IOException ioe) {
+        } catch(IOException ioe) {
             TopManager.getDefault ().notifyException (ioe);
         }
     }
+    
+    /** Handles .zip and .jar files. Finds of the jar file system
+     * is already mounted, if not mounts it.
+     * @return root <code>FileObject</code>of jar file system or null in case of error */ 
+    private static FileObject handleZipJar(File file) {
+        JarFileSystem jarFileSystem = new JarFileSystem ();
+        try {
+            jarFileSystem.setJarFile(file);
+        } catch (IOException ioe) {
+            TopManager.getDefault().notifyException(ioe);
+            
+            return null;
+        } catch(PropertyVetoException pve) {
+            TopManager.getDefault().notifyException(pve);
+            
+            return null;
+        }
+        
+        Repository repository = TopManager.getDefault().getRepository();
+        
+        FileSystem existing = repository.findFileSystem(jarFileSystem.getSystemName());
+        
+        if(existing == null) {
+            if(TopManager.getDefault().notify(new NotifyDescriptor.Confirmation (SettingsBeanInfo.getString ("MSG_mountArchiveConfirm", file),
+                SettingsBeanInfo.getString ("LBL_mountArchiveConfirm"))).equals (NotifyDescriptor.OK_OPTION)) {
+                repository.addFileSystem(jarFileSystem);
+                existing = jarFileSystem;
+            } else {
+                return null;
+            }
+        }
+        
+        // The root folder will be displayed in the Explorer:
+        return existing.getRoot ();
+    }
 
+    /** Finds in local already mounted file systems.
+     * @return <code>FileObject</code> or null if not found or error happened. */
+    private static FileObject findInExistingFileSystems(File file) {
+        String fileName = file.toString();
+        String fileNameUpper = fileName.toUpperCase();
+        
+        Enumeration mountedFileSystems = TopManager.getDefault().getRepository().getFileSystems();
+
+        // Loop thru all mounted filesystems.
+        while(mountedFileSystems.hasMoreElements()) {
+            FileSystem fileSystem = (FileSystem)mountedFileSystems.nextElement ();
+            
+            if(fileSystem instanceof LocalFileSystem) {
+                File root = ((LocalFileSystem)fileSystem).getRootDirectory();
+                String rootName = root.toString ().toUpperCase ();
+                
+                if (fileNameUpper.startsWith(rootName)) {
+                    // the filesystem can contain the file
+                    String resource = fileName.substring (rootName.length ()).replace(File.separatorChar, '/');
+                    if (resource.startsWith ("/")) // NOI18N
+                        resource = resource.substring(1);
+                    else if (resource.length () > 0)
+                        continue;           // e.g. root = /tmp/foo but file = /tmp/foobar
+                    
+                    FileObject fileObject = fileSystem.findResource(resource);
+                    
+                    if(fileObject != null) {
+                        return fileObject;
+                    } else {
+                        // Most likely, file was just created and is not yet in folder cache. Refresh each segment.
+                        FileObject currentPoint = fileSystem.getRoot ();
+                        StringTokenizer resourceTok = new StringTokenizer (resource, "/"); // NOI18N
+                        String currentResource = ""; // NOI18N
+                        
+                        while (resourceTok.hasMoreTokens ()) {
+                            if (currentPoint == null || currentPoint.isData ()) {
+/*                                TopManager.getDefault ().notify (new NotifyDescriptor.Message
+                                    (MessageFormat.format (NbBundle.getBundle (OpenFile.class).getString("MSG_no_file_in_root_nondir_comp"),
+                                    new Object[] { fileName, root })));
+ */ // TEMP silent
+                                return null;
+                            } else {
+                                currentPoint.refresh ();
+                                if (currentResource.length () > 0) currentResource += '/';
+                                currentResource += resourceTok.nextToken ();
+                                currentPoint = fileSystem.findResource (currentResource);
+                            }
+                        }
+                        if (currentPoint != null && currentPoint.isData ()) {
+                            return currentPoint;
+                        } else {
+/*                            TopManager.getDefault ().notify (new NotifyDescriptor.Message
+                                (MessageFormat.format (NbBundle.getBundle (OpenFile.class).getString ("MSG_no_file_in_root"),
+                                new Object[] { fileName, root })));
+ */ // TEMP silent
+                            return null;
+                        }
+                    }
+                } // End of if (fileNameUpper.startsWith (rootName))
+            } // End of if (fs instanceof LocalFileSystem)
+        }
+        
+        return null;
+    }
+
+    /** Find java package in side .java file. 
+     * @return package or null if not found */
+    private static String findJavaPackage(File file) {
+        String pkg = ""; // NOI18N
+        boolean packageKnown = false;
+        
+        // Try to find the package name and then infer a directory to mount.
+        BufferedReader rd = null;
+
+        try {
+            int pckgPos; // found package position
+
+            rd = new BufferedReader(new SourceReader(new FileInputStream(file)));
+
+            // Check for unicode byte watermarks.
+            rd.mark(2);
+            char[] cbuf = new char[2];
+            rd.read(cbuf, 0, 2);
+            
+            if (cbuf[0] == 255 && cbuf[1] == 254) {
+                rd.close();
+                rd = new BufferedReader(new SourceReader(new FileInputStream(file), "Unicode")); // NOI18N
+            } else {
+                rd.reset();
+            }
+
+            while (!packageKnown) {
+                String line = rd.readLine ();
+                if (line == null) {
+                    packageKnown = true; // i.e. valid termination of search, default pkg
+                    //break;
+                    return pkg;
+                }
+
+                t(line); // test the line SourceReader has produced
+
+                pckgPos = line.indexOf(PACKAGE);
+                if (pckgPos == -1) continue;
+
+                StringTokenizer tok = new StringTokenizer (line, " \t;"); // NOI18N
+                boolean gotPackage = false;
+                while (tok.hasMoreTokens ()) {
+                    String theTok = tok.nextToken ();
+                    if (gotPackage) {
+                        // Hopefully the package name, but first a sanity check...
+                        StringTokenizer ptok = new StringTokenizer (theTok, "."); // NOI18N
+                        boolean ok = ptok.hasMoreTokens ();
+                        while (ptok.hasMoreTokens ()) {
+                            String component = ptok.nextToken ();
+                            if (component.length () == 0) {
+                                ok = false;
+                                break;
+                            }
+                            if (! Character.isJavaIdentifierStart (component.charAt (0))) {
+                                ok = false;
+                                break;
+                            }
+                            for (int pos = 1; pos < component.length (); pos++) {
+                                if (! Character.isJavaIdentifierPart (component.charAt (pos))) {
+                                    ok = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (ok) {
+                            pkg = theTok;
+                            packageKnown = true;
+                            //break; // TEMP
+                            return pkg;
+                        } else {
+                            // Keep on looking for valid package statement.
+                            gotPackage = false;
+                            continue;
+                        }
+                    } else if (theTok.equals (PACKAGE)) {
+                        gotPackage = true;
+                    } else if (theTok.equals ("{")) { // NOI18N
+                        // Most likely we can stop if hit opening brace of class def.
+                        // Usually people leave spaces around it.
+                        packageKnown = true; // valid end of search, default pkg
+                        // break; // TEMP
+                        return pkg;
+                    }
+                }
+            }
+        } catch (IOException e1) {
+            TopManager.getDefault ().notifyException (e1);
+        } finally {
+            try {
+                if (rd != null) rd.close ();
+            } catch (IOException e2) {
+                TopManager.getDefault ().notifyException (e2);
+            }
+        }
+        
+        return null;
+    }
+    
     /** Try to find the file object corresponding to a given file on disk.
     * Can produce a folder, mount directories, etc. as needed.
     * @param f the file on local disk
@@ -131,82 +421,18 @@ class OpenFile extends Object {
     private static synchronized FileObject find (File f) {
         String fileName = f.toString ();
         String fileNameUpper = fileName.toUpperCase ();
+        
         // Handle ZIP/JAR files by mounting and displaying.
-        if (fileNameUpper.endsWith (".ZIP") || fileNameUpper.endsWith (".JAR")) { // NOI18N
-            JarFileSystem jfs = new JarFileSystem ();
-            try {
-                jfs.setJarFile (f);
-            } catch (IOException e5) {
-                TopManager.getDefault ().notifyException (e5);
-                return null;
-            } catch (PropertyVetoException e6) {
-                TopManager.getDefault ().notifyException (e6);
-                return null;
-            }
-            Repository repo2 = TopManager.getDefault ().getRepository ();
-            FileSystem exist = repo2.findFileSystem (jfs.getSystemName ());
-            if (exist == null) {
-                if (TopManager.getDefault ().notify (new NotifyDescriptor.Confirmation (SettingsBeanInfo.getString ("MSG_mountArchiveConfirm", f),
-                                                     SettingsBeanInfo.getString ("LBL_mountArchiveConfirm")))
-                        .equals (NotifyDescriptor.OK_OPTION)) {
-                    repo2.addFileSystem (jfs);
-                    exist = jfs;
-                } else {
-                    return null;
-                }
-            }
-            // The root folder will be displayed in the Explorer:
-            return exist.getRoot ();
+        if (fileNameUpper.endsWith(ZIP_EXT) || fileNameUpper.endsWith(JAR_EXT)) {
+            return handleZipJar(f);
         }
+        
         // Next see if it is present in an existing LocalFileSystem.
         // enumeration of file systems
-        Enumeration en = TopManager.getDefault ().getRepository ().getFileSystems ();
-        while (en.hasMoreElements ()) {
-            FileSystem fs = (FileSystem)en.nextElement ();
-            if (fs instanceof LocalFileSystem) {
-                LocalFileSystem lfs = (LocalFileSystem)fs;
-                File root = lfs.getRootDirectory ();
-                String rootName = root.toString ().toUpperCase ();
-                if (fileNameUpper.startsWith (rootName)) {
-                    // the filesystem can contain the file
-                    String resource = fileName.substring (rootName.length ()).replace (File.separatorChar, '/');
-                    if (resource.startsWith ("/")) // NOI18N
-                        resource = resource.substring (1);
-                    else if (resource.length () > 0)
-                        continue;           // e.g. root = /tmp/foo but file = /tmp/foobar
-                    FileObject fo = fs.findResource (resource);
-                    if (fo != null) {
-                        return fo;
-                    } else {
-                        // Most likely, file was just created and is not yet in folder cache. Refresh each segment.
-                        FileObject currentPoint = fs.getRoot ();
-                        StringTokenizer resourceTok = new StringTokenizer (resource, "/"); // NOI18N
-                        String currentResource = ""; // NOI18N
-                        while (resourceTok.hasMoreTokens ()) {
-                            if (currentPoint == null || currentPoint.isData ()) {
-                                TopManager.getDefault ().notify (new NotifyDescriptor.Message
-                                                                 (MessageFormat.format (NbBundle.getBundle (OpenFile.class).getString("MSG_no_file_in_root_nondir_comp"),
-                                                                                        new Object[] { fileName, root })));
-                                return null;
-                            } else {
-                                currentPoint.refresh ();
-                                if (currentResource.length () > 0) currentResource += '/';
-                                currentResource += resourceTok.nextToken ();
-                                currentPoint = fs.findResource (currentResource);
-                            }
-                        }
-                        if (currentPoint != null && currentPoint.isData ()) {
-                            return currentPoint;
-                        } else {
-                            TopManager.getDefault ().notify (new NotifyDescriptor.Message
-                                                             (MessageFormat.format (NbBundle.getBundle (OpenFile.class).getString ("MSG_no_file_in_root"),
-                                                                                    new Object[] { fileName, root })));
-                            return null;
-                        }
-                    }
-                }
-            }
-        }
+        FileObject findFO = findInExistingFileSystems(f);
+        if(findFO != null)
+            return findFO;
+        
         // Not found. For Java files, it is reasonable to mount the package root.
         String pkg = null;
         // packageKnown will only be true if
@@ -214,95 +440,16 @@ class OpenFile extends Object {
         // indicates a real dir
         boolean packageKnown = false;
         if (fileNameUpper.endsWith(JAVA_EXT)) { // NOI18N
-            // Try to find the package name and then infer a directory to mount.
-            BufferedReader rd = null;
-            try {
-                int pckgPos; // found package position
-
-                rd = new BufferedReader(new SourceReader(new FileInputStream(f)));
-
- 		// Check for unicode byte watermarks.
-                rd.mark(2);
-                char[] cbuf = new char[2];
-                rd.read(cbuf, 0, 2);
-                if (cbuf[0] == 255 && cbuf[1] == 254) {
-                    rd.close();
-                    rd = new BufferedReader(new SourceReader(new FileInputStream(f), "Unicode")); // NOI18N
-                }
-                else {
-                    rd.reset();
-                }
-
-                while (!packageKnown) {
-                    String line = rd.readLine ();
-                    if (line == null) {
-                        packageKnown = true; // i.e. valid termination of search, default pkg
-                        break;
-                    }
-
-                    t(line); // test the line SourceReader has produced
-
-                    pckgPos = line.indexOf(PACKAGE);
-                    if (pckgPos == -1) continue;
-
-                    StringTokenizer tok = new StringTokenizer (line, " \t;"); // NOI18N
-                    boolean gotPackage = false;
-                    while (tok.hasMoreTokens ()) {
-                        String theTok = tok.nextToken ();
-                        if (gotPackage) {
-                            // Hopefully the package name, but first a sanity check...
-                            StringTokenizer ptok = new StringTokenizer (theTok, "."); // NOI18N
-                            boolean ok = ptok.hasMoreTokens ();
-                            while (ptok.hasMoreTokens ()) {
-                                String component = ptok.nextToken ();
-                                if (component.length () == 0) {
-                                    ok = false;
-                                    break;
-                                }
-                                if (! Character.isJavaIdentifierStart (component.charAt (0))) {
-                                    ok = false;
-                                    break;
-                                }
-                                for (int pos = 1; pos < component.length (); pos++) {
-                                    if (! Character.isJavaIdentifierPart (component.charAt (pos))) {
-                                        ok = false;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (ok) {
-                                pkg = theTok;
-                                packageKnown = true;
-                                break;
-                            } else {
-                                // Keep on looking for valid package statement.
-                                gotPackage = false;
-                                continue;
-                            }
-                        } else if (theTok.equals (PACKAGE)) {
-                            gotPackage = true;
-                        } else if (theTok.equals ("{")) { // NOI18N
-                            // Most likely we can stop if hit opening brace of class def.
-                            // Usually people leave spaces around it.
-                            packageKnown = true; // valid end of search, default pkg
-                            break;
-                        }
-                    }
-                }
-            } catch (IOException e1) {
-                TopManager.getDefault ().notifyException (e1);
-            } finally {
-                try {
-                    if (rd != null) rd.close ();
-                } catch (IOException e2) {
-                    TopManager.getDefault ().notifyException (e2);
-                }
-            }
+            pkg = findJavaPackage(f);
         }
+        
         // Now try to go through the package name piece by piece and get the right parent directory.
         if (pkg == null) {
             pkg = ""; // assume default package // NOI18N
-        }
+            packageKnown = false;
+        } else
+            packageKnown = true;
+        
         String prefix = pkg.replace ('.', File.separatorChar);
         File dir = f.getParentFile ();
         String pkgtouse = ""; // NOI18N
@@ -331,6 +478,7 @@ class OpenFile extends Object {
                 break;
             }
         }
+        
         // Ask what to mount (if anything). Prompt appropriately with the possible
         // mount points, as well as the recommended one if there is one (i.e. for valid *.java).
         File[] dirToMount = new File[] { null };
@@ -343,30 +491,34 @@ class OpenFile extends Object {
                 pkgLevel++;
             } while (pos != -1);
         }
-        if (! packageKnown) pkgLevel = -1;
         
-        // PENDING This is just partial temp solution. It should be done somehow for all file extensions from
-        // text module file and. Propbably merge of utilities and text modules would solve finally the
-        // problem, (ability to access TXT loader extensions etc.).
-        if(fileNameUpper.endsWith(TXT_EXT)) { // NOI18N
+        if(!packageKnown) 
+            pkgLevel = -1;
+        
+        // PENDING This is just partial temp solution.
+        // All files except java will be mounted directly (like under default package).
+        if(!fileNameUpper.endsWith(JAVA_EXT)) { // NOI18N
             // Text fiel mount to default package without asking.
             dirToMount[0] = f.getParentFile();            
             mountPackage[0] = ""; // NOI18N
         } else
             askForMountPoint (f, pkgLevel, dirToMount, mountPackage);
         
-        if (dirToMount[0] == null) return null;
+        if(dirToMount[0] == null) 
+            return null;
+        
         // Mount it.
         LocalFileSystem fs = new LocalFileSystem ();
         try {
             fs.setRootDirectory (dirToMount[0]);
         } catch (PropertyVetoException e3) {
-            TopManager.getDefault ().notifyException (e3);
+            TopManager.getDefault().notifyException (e3);
             return null;
         } catch (IOException e4) {
-            TopManager.getDefault ().notifyException (e4);
+            TopManager.getDefault().notifyException (e4);
             return null;
         }
+        
         Repository repo = TopManager.getDefault ().getRepository ();
         if (repo.findFileSystem (fs.getSystemName ()) != null) {
             TopManager.getDefault ().notify (new NotifyDescriptor.Message
@@ -375,6 +527,7 @@ class OpenFile extends Object {
             return null;
         }
         repo.addFileSystem (fs);
+        
         return fs.findResource (mountPackage[0].replace ('.', '/') + (mountPackage[0].equals ("") ? "" : "/") + f.getName ()); // NOI18N
     }
 
@@ -423,112 +576,45 @@ class OpenFile extends Object {
             }
         }
 
-        final JPanel panel = new JPanel ();
-        panel.setLayout (new BorderLayout (0, 5));
-        panel.setBorder (new javax.swing.border.EmptyBorder (8, 8, 8, 8));
-
-        JTextArea textArea = new JTextArea ();
-        textArea.setBackground (Color.lightGray);
-        textArea.setFont (new Font ("SansSerif", Font.PLAIN, 11)); // NOI18N
-        textArea.setText (SettingsBeanInfo.getString (pkgLevel == -1 ? "TXT_whereMountNoSuggest" : "TXT_whereMountSuggest", f.getName ()));
-        textArea.setEditable (false);
-        textArea.setLineWrap (true);
-        textArea.setWrapStyleWord (true);
-        panel.add (textArea, BorderLayout.NORTH);
-
-        final JList list = new JList (pkgs);
-        list.setVisibleRowCount (5);
-        list.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
-        if (pkgLevel != -1) list.setSelectedIndex (pkgLevel);
-        list.setCellRenderer (new ListCellRenderer () {
-            private Icon folderIcon = new ImageIcon (OpenFile.class.getResource ("folder.gif")); // NOI18N
-            private Icon rootFolderIcon = new ImageIcon (OpenFile.class.getResource ("rootFolder.gif")); // NOI18N
-            public Component getListCellRendererComponent (JList lst, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                String pkg2 = (String) value;
-                JLabel lab = new JLabel ();
-                if (pkg2.equals ("")) { // NOI18N
-                    lab.setText (SettingsBeanInfo.getString ("LBL_packageWillBeDefault"));
-                    lab.setIcon (rootFolderIcon);
-                } else {
-                    lab.setText (SettingsBeanInfo.getString ("LBL_packageWillBe", pkg2));
-                    lab.setIcon (folderIcon);
-                }
-                if (isSelected) {
-                    lab.setBackground (lst.getSelectionBackground ());
-                    lab.setForeground (lst.getSelectionForeground ());
-                } else {
-                    lab.setBackground (lst.getBackground ());
-                    lab.setForeground (lst.getForeground ());
-                }
-                lab.setEnabled (lst.isEnabled ());
-                lab.setFont (lst.getFont ());
-                lab.setOpaque (true);
-                return lab;
-            }
-        });
-        panel.add (new JScrollPane (list), BorderLayout.CENTER);
-
-        // Name of mount point:
-        final JLabel label = new JLabel ();
-        label.setFont (new Font ("Monospaced", Font.PLAIN, 12)); // NOI18N
-        panel.add (label, BorderLayout.SOUTH);
-        panel.setPreferredSize (new Dimension (450, 300));
-
-        final JButton okButton = new JButton (SettingsBeanInfo.getString ("LBL_okButton"));
-        JButton cancelButton = new JButton (SettingsBeanInfo.getString ("LBL_cancelButton"));
-
-        list.addListSelectionListener (new ListSelectionListener () {
-                                           public void valueChanged (ListSelectionEvent ev) {
-                                               updateLabelEtcFromList (label, list, dirs, okButton);
-                                           }
-                                       });
-        updateLabelEtcFromList (label, list, dirs, okButton);
+        final PackagePanel panel = new PackagePanel(f, pkgLevel, dirs, pkgs);
 
         final Dialog[] dialog = new Dialog[1];
+        
+        final JButton okButton = panel.getOKButton();
+        JButton cancelButton = panel.getCancelButton();
+        final JList list = panel.getList();
+        
         dialog[0] = TopManager.getDefault ().createDialog
-                    (new DialogDescriptor
-                     (panel,                   // object
-                      SettingsBeanInfo.getString ("LBL_wizTitle"), // title
-                      true,                    // modal
-                      new Object[] { okButton, cancelButton }, // options
-                      okButton,                // initial
-                      DialogDescriptor.DEFAULT_ALIGN, // align
-                      new HelpCtx (OpenFile.class.getName () + ".dialog"), // help // NOI18N
-                      new ActionListener () { // listener
-                          public void actionPerformed (ActionEvent evt) {
-                              if (evt.getSource () == okButton) {
-                                  int idx = list.getSelectedIndex ();
-                                  if (idx != -1) {
-                                      dirToMount[0] = (File) dirs.elementAt (idx);
-                                      mountPackage[0] = (String) pkgs.elementAt (idx);
-                                  } else {
-                                      System.err.println ("Should not have accepted OK button");
-                                  }
-                              }
-                              dialog[0].dispose ();
+            (new DialogDescriptor
+             (panel,                   // object
+              SettingsBeanInfo.getString ("LBL_wizTitle"), // title
+              true,                    // modal
+              new Object[] { okButton, cancelButton }, // options
+              okButton,                // initial
+              DialogDescriptor.DEFAULT_ALIGN, // align
+              new HelpCtx (OpenFile.class.getName () + ".dialog"), // help // NOI18N
+              new ActionListener () { // listener
+                  public void actionPerformed (ActionEvent evt) {
+                      if (evt.getSource () == okButton) {
+                          int idx = list.getSelectedIndex ();
+                          if (idx != -1) {
+                              dirToMount[0] = (File) dirs.elementAt (idx);
+                              mountPackage[0] = (String) pkgs.elementAt (idx);
+                          } else {
+                              System.err.println ("Should not have accepted OK button");
                           }
-                      }));
+                      }
+                      dialog[0].dispose ();
+                  }
+              }));
         dialog[0].show ();
 
-    }
-
-    private static void updateLabelEtcFromList (JLabel label, JList list, Vector dirs, JButton okButton) {
-        int idx = list.getSelectedIndex ();
-        if (idx == -1) {
-            label.setText (" "); // NOI18N
-            okButton.setEnabled (false);
-        } else {
-            File dir = (File) dirs.elementAt (idx);
-            label.setText (SettingsBeanInfo.getString ("LBL_dirWillBe", dir.getAbsolutePath ()));
-            okButton.setEnabled (true);
-        }
     }
 
     /** Filtered reader for Java sources - it simply excludes
       * comments and some useless whitespaces from the original stream.
       */
-    public static class SourceReader extends InputStreamReader
-    {
+    public static class SourceReader extends InputStreamReader {
         private int preRead = -1;
         private boolean inString = false;
         private boolean backslashLast = false;
