@@ -125,6 +125,7 @@ public class BrokenReferencesModel extends AbstractListModel {
     }
 
     public OneReference getOneReference(int index) {
+        assert index>=0 && index<references.size();
         return (OneReference)references.get(index);
     }
     

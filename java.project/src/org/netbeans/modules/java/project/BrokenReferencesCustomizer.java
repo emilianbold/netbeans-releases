@@ -142,7 +142,11 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
     }//GEN-LAST:event_errorListValueChanged
 
     private void fixActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fixActionPerformed
-        BrokenReferencesModel.OneReference or = model.getOneReference(errorList.getSelectedIndex());
+        int index = errorList.getSelectedIndex();
+        if (index==-1) {
+            return;
+        }
+        BrokenReferencesModel.OneReference or = model.getOneReference(index);
         if (or.getType() == BrokenReferencesModel.REF_TYPE_LIBRARY ||
             or.getType() == BrokenReferencesModel.REF_TYPE_LIBRARY_CONTENT) {
             LibrariesCustomizer.showCustomizer(null);
