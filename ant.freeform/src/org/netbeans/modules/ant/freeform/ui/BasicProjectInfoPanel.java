@@ -103,7 +103,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
                 if (fo != null && Util.getAntScriptTargetNames(fo) != null) {
                     antScriptValidityChecked = true;
                 } else {
-                    return "The choosen build script is not valid Ant script";
+                    return "The selected file is not a valid Ant script";
                 }
             }
             if (getProjectName().length() == 0) {
