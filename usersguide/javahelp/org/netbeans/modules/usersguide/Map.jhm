@@ -234,6 +234,7 @@
 <mapID target="vcs.overview" url="vcs-nb/vcs_overview.html" />
 <mapID target="vcs.quickref" url="vcs-nb/vcs_quickref.html" />
 <mapID target="vcs.usingvcs" url="vcs-nb/vcs_usingvcs.html" />
+<mapID target="vcs.project-system" url="vcs-nb/vcs_project-system.html" />
 <mapID target="vcs.repositorysetup" url="vcs-nb/vcs_repositorysetup.html" />
 <mapID target="vcs.checkout" url="vcs-nb/vcs_checkout.html" />
 <mapID target="vcs.diff" url="vcs-nb/vcs_diff.html" />
