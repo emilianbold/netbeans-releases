@@ -2038,7 +2038,8 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	Note that the default comparator compares every property value.
      *
      */
-    public boolean equals(Object obj) {
+    
+    public boolean isEqualTo(Object obj) {
 	boolean ret = false;
 	
 	try {
@@ -2068,34 +2069,6 @@ public abstract class BaseBean implements Cloneable, Bean {
 	return ret;
     }
 
-    public int hashCode() {
-        int result = 17;
-        for (Iterator it = beanPropsIterator(); it.hasNext(); ) {
-            BeanProp prop = (BeanProp) it.next();
-            boolean 	isArray = Common.isArray(prop.type);
-            int size;
-            if (isArray) {
-                size = prop.size();
-            } else {
-                size = 1;
-            }
-            for (int propNum = 0; propNum < size; ++propNum) {
-                Object obj = prop.getValue(propNum);
-                result = 37*result + (obj == null ? 0 : obj.hashCode());
-            }
-        }
-        // And attributes
-        if (beanProp() != null) {
-            String[] attributeNames = beanProp().getAttributeNames();
-            for (int attrNum = 0; attrNum < attributeNames.length; ++attrNum) {
-                String attrName = attributeNames[attrNum];
-                String attrValue = getAttributeValue(attrName);
-                result = 37*result + (attrValue == null ? 0 : attrValue.hashCode());
-            }
-        }
-        return result;
-    }
-    
     /**
      *	Get the bean using its unique identifier. This identifier is not
      *	the indexed position of the element in the array but a unique id
