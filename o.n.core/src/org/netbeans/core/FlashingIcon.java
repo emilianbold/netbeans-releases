@@ -21,6 +21,8 @@ import java.awt.event.MouseListener;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JToolTip;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /** 
  * A flashing icon to provide visual feedback for the user when something 
@@ -40,10 +42,11 @@ class FlashingIcon extends JComponent implements MouseListener {
     private Icon icon;
     
     private boolean keepRunning = false;
-    private Timer timer;
     private boolean isIconVisible = false;
     private boolean keepFlashing = true;
     private long startTime = 0;
+    private RequestProcessor rp;
+    private Task timerTask;
     
     /** 
      * Creates a new instance of FlashingIcon 
@@ -58,6 +61,7 @@ class FlashingIcon extends JComponent implements MouseListener {
         setPreferredSize( d );
         
         addMouseListener( this );
+        rp = new RequestProcessor( "Exception Notification Icon" ); //NOI18N
     }
 
     /**
@@ -72,10 +76,10 @@ class FlashingIcon extends JComponent implements MouseListener {
             isIconVisible = !isIconVisible;
             keepRunning = true;
             keepFlashing = true;
-            if( null == timer ) {
-                timer = new Timer();
-                timer.start();
+            if( null == timerTask ) {
+                timerTask = rp.create( new Timer() );
             }
+            timerTask.run();
         }
         repaint();
     }
@@ -88,7 +92,9 @@ class FlashingIcon extends JComponent implements MouseListener {
             keepRunning = false;
             isIconVisible = false;
             keepFlashing = false;
-            timer = null;
+            if( null != timerTask )
+                timerTask.cancel();
+            timerTask = null;
             setToolTipText( null );
         }
         repaint();
@@ -176,28 +182,23 @@ class FlashingIcon extends JComponent implements MouseListener {
         return retValue;
     }
     
-    private class Timer extends Thread {
+    private class Timer implements Runnable {
         public void run() {
-            while( keepRunning ) {
-                synchronized( FlashingIcon.this ) {
-                    long currentTime = System.currentTimeMillis();
-                    if( keepFlashing ) {
-                        if( currentTime - startTime < STOP_FLASHING_DELAY ) {
-                            flashIcon();
-                        } else {
-                            stopFlashing();
-                        }
-                    }
-                    if( currentTime - startTime >= DISAPPER_DELAY_MILLIS ) {
-                        disapper();
-                        timeout();
-                        break;
+            synchronized( FlashingIcon.this ) {
+                long currentTime = System.currentTimeMillis();
+                if( keepFlashing ) {
+                    if( currentTime - startTime < STOP_FLASHING_DELAY ) {
+                        flashIcon();
+                    } else {
+                        stopFlashing();
                     }
                 }
-                try {
-                    sleep( 500 );
-                } catch( InterruptedException iE ) {
-                    //ignore
+                if( currentTime - startTime >= DISAPPER_DELAY_MILLIS ) {
+                    disapper();
+                    timeout();
+                } else {
+                    if( null != timerTask )
+                        timerTask.schedule( 500 );
                 }
             }
         }
