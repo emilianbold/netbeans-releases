@@ -75,33 +75,47 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     }
     
     protected void classLoaded (ReferenceType referenceType) {
-        try {
-            List list = new ArrayList (referenceType.locationsOfLine (
+        Location location = getLocation (
+            referenceType,
+            breakpoint.getStratum (),
+            breakpoint.getSourceName (),
+            breakpoint.getLineNumber ()
+        );
+        if (location == null)
+            location = getLocation (
+                referenceType,
                 breakpoint.getStratum (),
                 breakpoint.getSourceName (),
-                breakpoint.getLineNumber ()
-            ));
+                breakpoint.getLineNumber () + 1
+            );
+        if (location == null)
+            location = getLocation (
+                referenceType,
+                breakpoint.getStratum (),
+                breakpoint.getSourceName (),
+                breakpoint.getLineNumber () - 1
+            );
+        if (location == null)
+            location = getLocation (
+                referenceType,
+                breakpoint.getStratum (),
+                breakpoint.getSourceName (),
+                breakpoint.getLineNumber () + 2
+            );
+        if (location == null)
+            location = getLocation (
+                referenceType,
+                breakpoint.getStratum (),
+                breakpoint.getSourceName (),
+                breakpoint.getLineNumber () - 2
+            );
             
-            // add lines from innerclasses
-            Iterator i = referenceType.nestedTypes ().iterator ();
-            while (i.hasNext ()) {
-                ReferenceType rt = (ReferenceType) i.next ();
-                list.addAll (rt.locationsOfLine (
-                    breakpoint.getStratum (),
-                    breakpoint.getSourceName (),
-                    breakpoint.getLineNumber ()
-                ));
-            }
-            
-            if (list.size () < 1) return; 
-            Location l = (Location) list.get (0);
-            try {
-                BreakpointRequest br = getEventRequestManager ().
-                    createBreakpointRequest (l);
-                addEventRequest (br);
-            } catch (VMDisconnectedException e) {
-            }
-        } catch (AbsentInformationException ex) {
+        if (location == null) return; 
+        try {
+            BreakpointRequest br = getEventRequestManager ().
+                createBreakpointRequest (location);
+            addEventRequest (br);
+        } catch (VMDisconnectedException e) {
         }
     }
 
@@ -114,6 +128,36 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                 null
             );
         return super.exec (event);
+    }
+    
+    private static Location getLocation (
+        ReferenceType referenceType,
+        String stratum,
+        String sourceName,
+        int lineNumber
+    ) {
+        try {
+            List list = new ArrayList (referenceType.locationsOfLine (
+                stratum,
+                sourceName,
+                lineNumber
+            ));
+            if (!list.isEmpty ()) return (Location) list.get (0);
+
+            // add lines from innerclasses
+            Iterator i = referenceType.nestedTypes ().iterator ();
+            while (i.hasNext ()) {
+                ReferenceType rt = (ReferenceType) i.next ();
+                list = rt.locationsOfLine (
+                    stratum,
+                    sourceName,
+                    lineNumber
+                );
+                if (!list.isEmpty ()) return (Location) list.get (0);
+            }
+        } catch (AbsentInformationException ex) {
+        }
+        return null;
     }
 }
 
