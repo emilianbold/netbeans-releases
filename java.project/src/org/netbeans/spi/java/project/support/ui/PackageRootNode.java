@@ -33,13 +33,16 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /** Node displaying a packages in given SourceGroup
  * @author Petr Hrebejk
  */
 final class PackageRootNode extends AbstractNode {
-    
+
+    private static Image PACKAGE_BADGE = Utilities.loadImage( "org/netbeans/spi/java/project/support/ui/packageBadge.gif" ); // NOI18N
+        
     private static Action actions[]; 
 
     private SourceGroup group;
@@ -95,7 +98,7 @@ final class PackageRootNode extends AbstractNode {
     private Node getDataFolderNodeDelegate() {
         return ((DataFolder)getLookup().lookup( DataFolder.class )).getNodeDelegate();
     }
-
+    
     private Image computeIcon( boolean opened, int type ) {
         Image image;
         Icon icon = group.getIcon( opened );
@@ -103,6 +106,7 @@ final class PackageRootNode extends AbstractNode {
         if ( icon == null ) {
             image = opened ? getDataFolderNodeDelegate().getOpenedIcon( type ) : 
                              getDataFolderNodeDelegate().getIcon( type );
+            image = Utilities.mergeImages( image, PACKAGE_BADGE, 7, 7 );
         }
         else {
             if ( icon instanceof ImageIcon ) {
