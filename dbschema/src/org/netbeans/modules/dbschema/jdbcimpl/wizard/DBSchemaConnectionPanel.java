@@ -88,6 +88,8 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
     }
 
     private void setConnectionCombo(Node[] n) {
+        connInfos.clear();
+        conList.clear();
         existingConnComboBox.removeAllItems();
         Node.Cookie cookie;
         ConnectionNodeInfo info;
@@ -105,7 +107,7 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
         else
             existingConnComboBox.insertItemAt(bundle.getString("SelectFromTheList"), 0); //NOI18N
     }
-
+    
     private void initAccessibility() {
         this.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_ConnectionPanelA11yDesc"));  // NOI18N
         descriptionTextArea.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DescriptionA11yName"));  // NOI18N
@@ -113,10 +115,10 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
         existingConnComboBox.getAccessibleContext().setAccessibleName(bundle.getString("ACS_ExistingConnectionA11yName"));  // NOI18N
         existingConnComboBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_ExistingConnectionA11yDesc"));  // NOI18N
     }
-
+    
     private void resize() {
         int width = (new Double(descriptionTextArea.getFontMetrics(descriptionTextArea.getFont()).getStringBounds(bundle.getString("Description"), getGraphics()).getWidth() / 2)).intValue() + 160;
-//        int height = (driverLabel.getFont().getSize() * 16) + 200;
+        //        int height = (driverLabel.getFont().getSize() * 16) + 200;
         int height = 300;
         if (width < 675)
             width = 675;
@@ -126,7 +128,7 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
         setMinimumSize(dim);
         setPreferredSize(dim);
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
