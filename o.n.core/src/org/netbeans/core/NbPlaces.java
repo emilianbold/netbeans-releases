@@ -109,6 +109,14 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     return DataSystem.getDataSystem (f);
   }
 
+  /** Get a root of packages with a given data filter. 
+  * @param f the requested filter
+  * @return the node
+  */ 
+  public Node packages (DataFilter f) {
+    return new PackageNode (repository (), f);
+  }
+
   /** Node with all installed loaders.
   */
   public Node loaderPool () {
@@ -216,6 +224,8 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  18   Gandalf   1.17        5/7/99   Jan Jancura     Places.Nodes.packages () 
+*       method added
 *  17   Gandalf   1.16        3/29/99  Jaroslav Tulach places ().nodes 
 *       ().session ()
 *  16   Gandalf   1.15        3/25/99  Jaroslav Tulach Faster startup.
