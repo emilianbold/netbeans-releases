@@ -1,25 +1,28 @@
 /*
- * ide.css      01/07/2003
+ * rave.css      08/13/2004
  *
- * Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+ * Copyright © 2003 Sun Microsystems, Inc. All rights reserved.
  * Use is subject to license terms.
  *
- * Use only with JH1.1.2 or later release.
- * DO NOT USE WITH JavaHelp 1.1.1.  This CSS triggers a printing 
- * bug with JH 1.1.1 that causes printing of multiple blank pages.  
- *
- * Changes:
- * Jan. 2003
- * Added <h6> tag for the heading of a glossary topic.
+ * Changes from NetBeans ide.css:
+ * Oct. 2003
+ * Got rid of <tr> and <td> definitions.
+ * Changed table definition and added <border> tag
+ * to improve appearance of tables in web browsers.
+ * Added <th> definition to make default text alignment left.
  * 
- * Sept. 2001
- * <p> now has margin-top and margin-bottom = 5, instead of margin-top = 10.
- * <h2>, <h3>, and <h4> now use margin-top = 10 instead of margin-top = 15.
- * Oct. 2001
- * For table, td, and th tags, border-color changed to silver, a light gray color.
- * Margin for <ol> changed to 14 to match <ul> margin.
- * Nov. 2001
- * Added <small> tag for accessibility purposes. 
+ * Added <dl>, <dt>, and <dd> definitions to be used instead
+ * of formatting tables for See Also lists. For example:
+ * <dl>
+ * <dt>See Also</dt>
+ * <dd>First Linked Element of List</dd>
+ * <dd>Second Linked Element of List</dd>
+ * </dl>
+ * 
+ * Added <ul> and <ol> definitions that support blue ball
+ * and blue square graphics for bullets. Definitions
+ * account for sublists and for subslists of sublists.
+ * 
  */
 
 body  {font-size: small;
@@ -31,6 +34,11 @@ body  {font-size: small;
 
 p  {font-size: small;
      margin-top: 5;
+     margin-bottom: 5}
+
+h1 { font-size: large;
+     font-weight: bold;
+     margin-top: 10;
      margin-bottom: 5}
 
 
@@ -58,38 +66,105 @@ h6 { font-size: small;
      margin-top: 0;
      margin-bottom: 10}
 
-ol {margin-top: 5;
-     margin-bottom: 0;
-     margin-left: 14}
-
 li {margin-top: 0;
     margin-bottom: 5}
         
 li p{margin-top: 5;
-        margin-bottom: 0}
+     margin-bottom: 0}
 
-ul {margin-top: 5;
+/* Ordered lists */
+
+ul {list-style-image:url(images/blue-ball-mid.gif);
+    margin-top: 5;
     margin-bottom: 0;
-    margin-left: 14}
+	 margin-left: 16;
+}
+
+ul li ul{list-style-image:url(images/blue-sqr-mid.gif)}
+
+ul ul{list-style-image:url(images/blue-sqr-mid.gif)}
+
+/* Numbered lists embedded in ordered lists */
+
+ul li ol{list-style-image:none;
+         list-style-type: decimal}
+
+ul li ol li ol{list-style-type: lower-alpha}
+
+ul li ol ol{list-style-type: lower-alpha}
+
+ul ol{list-style-image:none;
+      list-style-type: decimal}
+
+ul ol li ol{list-style-type: lower-alpha}
+
+ul ol ol{list-style-type: lower-alpha}
+
+/* Graphics for notes and warnings */
+ul.note {list-style-image:url(images/tip.gif);
+     margin-top: 5;
+     margin-bottom: 0;
+	  margin-left: 16;
+}
+
+ul.warning {list-style-image:url(images/warn.gif);
+     margin-top: 5;
+     margin-bottom: 0;
+	  margin-left: 16;
+}
+
+/* Numbered lists */
+
+ol {list-style-type: decimal;
+     margin-top: 5;
+     margin-bottom: 0;
+	  margin-left: 22;
+}
+
+ol li ol{list-style-type: lower-alpha}
+
+ol ol{list-style-type: lower-alpha}
+
+/* Ordered lists embedded in Numbered lists */
+
+ol li ul {list-style-image:url(images/blue-ball-mid.gif)}
+
+ol li ul li ul {list-style-image:url(images/blue-sqr-mid.gif)}
+
+ol li ul ul {list-style-image:url(images/blue-sqr-mid.gif)}
+
+ol ul {list-style-image:url(images/blue-ball-mid.gif)}
+
+ol ul li ul {list-style-image:url(images/blue-sqr-mid.gif)}
+
+ol ul ul{list-style-image:url(images/blue-sqr-mid.gif)}
+
+dl {margin-left: 0;
+    margin-top: 10;
+    margin-bottom: 5}
+
+dt {font-size: small;
+    font-style: normal;
+    font-weight: bold;
+    margin-top: 0;
+    margin-bottom: 0;
+    text-indent: 0}
+
+dd {font-size: small;
+    font-style: normal;
+    font-weight: normal;
+    margin-top: 2;
+    margin-left: 25}
         
-table {border-style: solid;
-       border-color: silver;
+[border] {border: thin solid;
+       border-color: silver}
+
+table {border: none;
+       border-color: white;
        margin-top: 5;
-       margin-bottom: 5}
+       margin-bottom: 5}	 
 
-td {border-style: solid;
-    border-color: silver;
-    padding-left: 1;
-    padding-right: 1;
-    padding-top: 1;
-    padding-bottom: 1}
-
-th {border-style: solid;
-    border-color: silver;
-    padding-left: 1;
-    padding-right: 1;
-    padding-top: 1;
-    padding-bottom: 1}
+th {text-align: left}
 
 small {font-size: x-small}
 

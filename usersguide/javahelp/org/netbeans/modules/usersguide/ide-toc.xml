@@ -197,7 +197,26 @@
       <tocitem text="Key Bindings Property Editor" target="editing.keybindings"/>
     </tocitem>
   </tocitem>
+<tocitem text="Refactoring Java Source">
+  <tocitem text="About Refactoring Java Source" target="refactor.aboutRefactoring" /> 
+  <tocitem text="Undoing Refactoring Changes" target="refactor.Undo" />   
+  <tocitem text="Finding Usages of Java Objects" > 
+    <!--      About Finding Usages of Java Objects -->
+    <tocitem text="Finding Class Usages in Java Source" target="refactor.findClass" /> 
+    <tocitem text="Finding Method Usages in Java Source" target="refactor.findMethod" /> 
+    <tocitem text="Finding Variable Usages in Java Source" target="refactor.findField"/> 
+  </tocitem>
 
+  <tocitem text="Renaming Java Objects" > 
+    <!--      About Renaming Java Objects -->        
+    <tocitem text="Class Renaming in Java Sources" target="refactor.renameClass" />
+    <tocitem text="Method Renaming in Java Sources" target="refactor.renameMethod" />
+    <tocitem text="Variable Renaming in Java Sources" target="refactor.renameField"/>       
+  </tocitem>
+  
+  <tocitem text="Moving Java Objects" target="refactor.moveClass" />  
+  <tocitem text="Encapsulating Fields" target="refactor.encapsulateField" />   
+  </tocitem>
   <tocitem text="Building Java Applications" >
      <tocitem text="About Building" target="tbd" />
      <tocitem text="Working with Builds" target="comp_process" />

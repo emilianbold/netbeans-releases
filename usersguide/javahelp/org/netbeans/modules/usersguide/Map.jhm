@@ -14,7 +14,8 @@
 <mapID target="ide.welcome" url="workspace/welcome.html" />
 <mapID target="pending" url="pending.html" />
 <mapID target="tbd" url="tbd.html" />
-
+ <mapID target="bullet_test_topic" url="images/bullet_test.html"/>
+  <mapID target="table_test_topic" url="images/table_test.html"/>
 <mapID target="gs.ide" url="getstart/ide.html" />
 <mapID target="gs.tour" url="getstart/idetour.html" />
 <mapID target="gs.key" url="getstart/keyconcepts.html" />
@@ -179,6 +180,7 @@
 <mapID target="editing.configuring" url="editing/configuring/configuring.html" />
 <mapID target="editing.settingkeybdshorts" url="editing/configuring/settingkeybdshorts.html" />
 <mapID target="editing.editor-props" url="editing/configuring/editor-props.html" />
+<mapID target="editing.indentation" url="editing/configuring/indentation.html" />
 <mapID target="editing_error-marks" url="editing/editing_error-marks.html" />
 <mapID target="editing.tasks" url="editing/tasks_viewing.html" />
 <mapID target="editor.hiding" url="editing/editor_hiding.html" />
@@ -192,7 +194,26 @@
 
 <!--CSH<mapID target="editing.colorchooser" url="editing/configuring/colorchooser.html" />-->
 
+<mapID target="refactor.aboutRefactoring" url="refactor/aboutRefactoring.html" />
+<mapID target="refactor.Undo" url="refactor/Undo.html" />
+<mapID target="refactor.findClass" url="refactor/findClass.html" />
+<mapID target="refactor.findMethod" url="refactor/findMethod.html" />
+<mapID target="refactor.findField" url="refactor/findField.html" />
+<mapID target="refactor.renameClass" url="refactor/renameClass.html" />
+<mapID target="refactor.renameMethod" url="refactor/renameMethod.html" />
+<mapID target="refactor.renameField" url="refactor/renameField.html" />
+<mapID target="refactor.moveClass" url="refactor/moveClass.html" />
+<mapID target="refactor.encapsulateField" url="refactor/encapsulateField.html" />
 
+<!--TODO Check these refactoring IDs to make sure  they work-->
+<mapID target="org.netbeans.api.refactoring.ui.ParametersPanelFindClass" url="refactor/findClass.html" />
+<mapID target="org.netbeans.api.refactoring.ui.ParametersPanelFindMethod" url="refactor/findMethod.html" />
+<mapID target="org.netbeans.api.refactoring.ui.ParametersPanelFindField" url="refactor/findField.html" />
+<mapID target="org.netbeans.api.refactoring.ui.ParametersPanelRenameClass" url="refactor/renameClass.html" />
+<mapID target="org.netbeans.api.refactoring.ui.ParametersPanelRenameMethod" url="refactor/renameMethod.html" />
+<mapID target="org.netbeans.api.refactoring.ui.ParametersPanelRenameField" url="refactor/renameField.html" />
+<mapID target="org.netbeans.api.refactoring.ui.ParametersPanelMoveClass" url="refactor/moveClass.html" />
+<mapID target="org.netbeans.api.refactoring.ui.ParametersPanelEncapsulateField" url="refactor/encapsulateField.html" />
 
 <mapID target="xml_nodes"   url="xml/xmlnodes.html" />
 <mapID target="xml_createxml"   url="xml/createxml.html" />
@@ -1238,7 +1259,6 @@
 <mapID target="org.netbeans.modules.xml.core.wizard.DocumentPanel"   url="xml/createxml.html" />
 <mapID target="org.netbeans.modules.xml.core.wizard.DTDPanel"   url="xml/createxml.html" />
 <mapID target="org.netbeans.modules.xml.core.wizard.SchemaPanel"   url="xml/createxml.html" />
-<mapID target="org.netbeans.modules.css.actions.CopyStyleAction$HTML" url="xml/xmlnodes.html" />
 <mapID target="org.netbeans.modules.css.actions.CopyStyleAction$XML" url="xml/xmlnodes.html" />
 <mapID target="org.netbeans.modules.xml.core.actions.CollectDTDAction" url="xml/xmlnodes.html" />
 <mapID target="org.netbeans.modules.xml.core.actions.CollectXMLAction" url="xml/xmlnodes.html" />
