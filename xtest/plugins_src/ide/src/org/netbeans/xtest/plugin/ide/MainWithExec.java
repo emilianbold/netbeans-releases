@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,6 +22,13 @@ import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import java.awt.EventQueue;
+import java.io.IOException;
+import java.util.Iterator;
+import junit.framework.AssertionFailedError;
+import junit.framework.Test;
+import junit.framework.TestListener;
+import junit.framework.TestResult;
+import org.netbeans.xtest.plugin.ide.services.XTestErrorManager;
 import org.openide.util.SharedClassObject;
 import org.openide.util.actions.SystemAction;
 import org.netbeans.xtest.testrunner.JUnitTestRunner;
@@ -183,11 +190,70 @@ public class MainWithExec implements Main.MainWithExecInterface {
     
     public void run(String[] params, long startTime, long testTime) throws Exception {
         try {
-            JUnitTestRunner testRunner = new JUnitTestRunner(null,System.out);
-            testRunner.runTests();
+            if("true".equals(System.getProperty("xtest.ide.error.manager"))) {
+                // install xtest error manager
+                MyJUnitTestRunner testRunner = new MyJUnitTestRunner();
+                testRunner.runTests();
+            } else {
+                JUnitTestRunner testRunner = new JUnitTestRunner(null, System.out);
+                testRunner.runTests();
+            }
         } catch (Throwable t) {
             System.out.println("Error - during test run caught exception: "+t.getMessage());
             t.printStackTrace();
         }
     }
+    
+    /** This class adds XTestResultListener to be able to track exceptions 
+     * caugth by XTestErrorManager.
+     */
+    private class MyJUnitTestRunner extends JUnitTestRunner {
+
+        public MyJUnitTestRunner() throws IOException {
+            super(null, System.out);
+        }
+
+        protected void addTestListeners(TestResult testResult) {
+            // [pzajac] XTestErrorListenr listener must be first
+            testResult.addListener(new XTestResultListener(testResult));
+            super.addTestListeners(testResult);
+        }
+    }
+   
+    /** This TestListener reports error for a exceptions from ErrorManager
+    */
+    private static class XTestResultListener implements TestListener {
+        
+        private  TestResult result;
+        
+        public XTestResultListener(TestResult result) {
+            this.result = result;
+        }
+        
+        /** An error occurred. */
+        public void addError(Test test, Throwable t) {}
+        
+        /** A failure occurred.*/
+        public void addFailure(Test test, AssertionFailedError t){}
+
+        /* A test ended. */
+        public void endTest(Test test) {
+            try {
+                Iterator it = XTestErrorManager.getExceptions().iterator();
+                if (it.hasNext()) {
+                    // exception was thrown => add the first found exception as
+                    // an error (i.e. its stack trace will be printed in results)
+                    result.addError(test, (Throwable)it.next());
+                    XTestErrorManager.clearExceptions();
+                }
+            } catch (Exception e) {
+                // ClassNotFound exception, etc
+                e.printStackTrace();
+            }
+        }
+        
+        /** A test started. */
+        public void startTest(Test test){};
+        
+    } // XTestResultListener
 }

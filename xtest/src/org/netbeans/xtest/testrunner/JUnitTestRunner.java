@@ -1,14 +1,14 @@
 /*
  *
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -52,17 +52,17 @@ public class JUnitTestRunner {
         }
     }
     
-    // test suite method name - taken from junit.runner.BaseTestRunner (should 
+    // test suite method name - taken from junit.runner.BaseTestRunner (should
     // we take it directly from this place ?
     public static final String SUITE_METHODNAME= "suite";
-        
+    
     public static final String TESTRUNNER_PROPERTIES_FILENAME_KEY = "testlist";
-        
+    
     
     // exit states
     public static final int OK = 0;
     public static final int ERROR = -1;
-
+    
     
     // our printwriter to which all messages are printed out
     // currently this is just stdout;
@@ -70,12 +70,12 @@ public class JUnitTestRunner {
     //private PrintStream out = System.out;
     
     // test runner properties - it is better to use
-    // property file than to transfer parameters via command line, 
+    // property file than to transfer parameters via command line,
     // because on some OSes there is a very short command line length
-    private JUnitTestRunnerProperties runnerProperties;    
+    private JUnitTestRunnerProperties runnerProperties;
     
     // result processor used for tracking this testrun
-    // currently set here, but we should allow user to 
+    // currently set here, but we should allow user to
     // set the processor by own selection
     private JUnitTestListener[] resultProcessors;
     
@@ -91,10 +91,10 @@ public class JUnitTestRunner {
     
     
     /** Creates a new instance of JUnitTestRunner */
-    public JUnitTestRunner(JUnitTestRunnerProperties runnerProperties, ClassLoader testLoader, PrintStream out) 
-                throws IllegalArgumentException {
+    public JUnitTestRunner(JUnitTestRunnerProperties runnerProperties, ClassLoader testLoader, PrintStream out)
+    throws IllegalArgumentException {
         
-        //System.out.println("JUnitTestRunner: runnerProperties = "+runnerProperties);        
+        //System.out.println("JUnitTestRunner: runnerProperties = "+runnerProperties);
         this.runnerProperties = runnerProperties;
         this.testLoader = testLoader;
         if (out != null) {
@@ -103,26 +103,24 @@ public class JUnitTestRunner {
             this.out = new PrintWriter(System.out,true);
         }
         // this should be placed elsewhere, just a hack for now
-        checkRunnerPropertiesValidity();        
+        checkRunnerPropertiesValidity();
     }
     
-    protected JUnitTestListener[] getJUnitTestListeners() {
-        JUnitTestListener[] listeners;
-        if ( getResultsDirectory() != null ) {
-            // create the result processors
-            listeners = new JUnitTestListener[] {
-                new ConsoleSummaryReporter(out),
-                new XMLReporter(getResultsDirectory())
-            };
+    /** Adds given listener to the beginning of an array of existing listeners.
+     */
+    protected void addResultProcessor(JUnitTestListener listener) {
+        if(resultProcessors == null) {
+            resultProcessors = new JUnitTestListener[] {listener};
         } else {
-            out.println("! Results Directory is not available - not storing results to xml files");
-            listeners = new JUnitTestListener[] {
-                new ConsoleSummaryReporter(out)
-            };            
-        }        
-        return listeners;
+            JUnitTestListener[] newResultProcessors = new JUnitTestListener[resultProcessors.length+1];
+            // add new listener at the beginning
+            newResultProcessors[0] = listener;
+            for(int i=0;i<resultProcessors.length;i++) {
+                newResultProcessors[i+1] = resultProcessors[i];
+            }
+            resultProcessors = newResultProcessors;
+        }
     }
-    
     
     // runtests - now always run setup/teardown methods (when available)
     public void runTests() {
@@ -131,9 +129,14 @@ public class JUnitTestRunner {
     
     /** run the junit tests */
     protected void runTests(boolean doSetup) {
-
-        // get result processors
-       resultProcessors = getJUnitTestListeners();
+        
+        // add result processors
+        addResultProcessor(new ConsoleSummaryReporter(out));
+        if ( getResultsDirectory() != null ) {
+            addResultProcessor(new XMLReporter(getResultsDirectory()));
+        } else {
+            out.println("! Results Directory is not available - not storing results to xml files");
+        }
         
         TestSuite[] suites = getTestSuites();
         if (suites == null) {
@@ -144,8 +147,8 @@ public class JUnitTestRunner {
         if ((doSetup) & (runnerProperties.getTestbagSetupClassName() != null)) {
             
             try {
-                callMethod(runnerProperties.getTestbagSetupClassName(), 
-                    runnerProperties.getTestbagSetupMethodName());
+                callMethod(runnerProperties.getTestbagSetupClassName(),
+                           runnerProperties.getTestbagSetupMethodName());
             } catch (InvocationTargetException ite) {
                 out.println("Testbag setup method call failed. Reason = "+ite.getMessage());
                 ite.printStackTrace(out);
@@ -156,7 +159,7 @@ public class JUnitTestRunner {
         String testrunType = runnerProperties.getTestRunType();
         /*
         if (testrunType.equals(TESTRUN_TYPE_TESTBAG)) {
-            // possibly fire start testbag 
+            // possibly fire start testbag
             // TBD !!!
         }
          */
@@ -176,14 +179,14 @@ public class JUnitTestRunner {
         }
         /*
         if (testrunType.equals(TESTRUN_TYPE_TESTBAG)) {
-            // possibly fire end testbag 
+            // possibly fire end testbag
             // TBD !!!
         }
          */
         if ((doSetup) & (runnerProperties.getTestbagTeardownClassName() != null)) {
             try {
-                callMethod(runnerProperties.getTestbagTeardownClassName(), 
-                    runnerProperties.getTestbagTeardownMethodName());
+                callMethod(runnerProperties.getTestbagTeardownClassName(),
+                           runnerProperties.getTestbagTeardownMethodName());
             } catch (InvocationTargetException ite) {
                 out.println("Testbag teardown method call failed. Reason = "+ite.getMessage());
                 ite.printStackTrace(out);
@@ -196,9 +199,9 @@ public class JUnitTestRunner {
         String propertiesFilename = System.getProperty(TESTRUNNER_PROPERTIES_FILENAME_KEY);
         if (propertiesFilename == null) {
             throw new IOException("Cannot load testrunner properties file, because system property "
-                            +TESTRUNNER_PROPERTIES_FILENAME_KEY+" is not specified");
+            +TESTRUNNER_PROPERTIES_FILENAME_KEY+" is not specified");
         }
-        return JUnitTestRunnerProperties.load(propertiesFilename);        
+        return JUnitTestRunnerProperties.load(propertiesFilename);
     }
     
     
@@ -209,8 +212,8 @@ public class JUnitTestRunner {
     private void checkRunnerPropertiesValidity() throws IllegalArgumentException  {
         // TDB !!!!
     }
-
-
+    
+    
     // get all test suites to execute (in the case of nbtestsuites, also with filters)
     TestSuite[] getTestSuites() {
         // get all testnames from properties
@@ -230,24 +233,24 @@ public class JUnitTestRunner {
                     ((NbTestSuite)testSuite).setFilter(filter);
                 }
                 // now continue with filter
-                testSuites.add(testSuite);                
+                testSuites.add(testSuite);
             } catch (ClassNotFoundException cnfe) {
                 // Houston we have the problem - test class is not found !!!!
                 out.println("! Cannot find test class "+testName
                 + " ignoring this test");
             } catch (ClassCastException cce) {
-                out.println("Class "+testName+" does not implement a Test interface - cannot run it as a test");            
+                out.println("Class "+testName+" does not implement a Test interface - cannot run it as a test");
             } catch (Throwable t) {
                 // Houston we have the problem - something even weirder happened
                 out.println("! Cannot define test class "+testName
                 + " ignoring this test. Reason = "+t.getMessage()+", Stacktrace:");
                 t.printStackTrace(out);
-            } 
+            }
         }
         // reurn the array
         return (TestSuite[])(testSuites.toArray(new TestSuite[0]));
     }
-
+    
     
     // get testsuite for the supplied classname
     TestSuite getTestSuiteForName(String className) throws ClassNotFoundException {
@@ -261,7 +264,7 @@ public class JUnitTestRunner {
             // test suite() method not found - swallow the exception
             // similarly as JUnit runners do
         }
-        // now try to prepate the TestSuite        
+        // now try to prepate the TestSuite
         if (suiteMethod != null) {
             // call suite method and see what happens
             try {
@@ -272,11 +275,11 @@ public class JUnitTestRunner {
                     if (aTestSuite.getName() == null) {
                         /*
                         String newSuiteName = testClass.getName();
-                        */
+                         */
                         String newSuiteName = className;
                         out.println("Suite name is null, installing "+newSuiteName);
                         aTestSuite.setName(newSuiteName);
-                    }                    
+                    }
                     return aTestSuite;
                 } else {
                     // we need to construct or own suite
@@ -324,15 +327,15 @@ public class JUnitTestRunner {
                 TestSuite aSuite = new TestSuite(testClass);
                 return aSuite;
             } else {
-                // 
-                //  there should be also added possibility to run tests which 
+                //
+                //  there should be also added possibility to run tests which
                 //      implements just Test or NbTest interfaces
                 //      - this needs some more investigation .... !!!!!
                 //
                 
                 // this happend when a class which is not test is used as a test
                 throw new ClassCastException("Specified class: "+testClass+" is not assignable from junit.framework.Test "
-                    + "interface - cannot run such test");
+                                             + "interface - cannot run such test");
             }
         }
     }
@@ -369,14 +372,14 @@ public class JUnitTestRunner {
         }
     }
     
-
+    
     
     private String getClassnameFromFilename(String filename) {
         String shortFilename;
         if (filename.endsWith(".java")) {
             shortFilename = filename.substring(0, filename.length() - 5);
         } else if (filename.endsWith(".class")) {
-            shortFilename = filename.substring(0, filename.length() - 6);              
+            shortFilename = filename.substring(0, filename.length() - 6);
         } else {
             shortFilename = filename;
         }
@@ -413,18 +416,18 @@ public class JUnitTestRunner {
         }
     }
     
-
+    
     
     // get Filter from include and exclude ArrayLists ...
-    private Filter getFilter(Filter.IncludeExclude[] includes, Filter.IncludeExclude[] excludes) {        
+    private Filter getFilter(Filter.IncludeExclude[] includes, Filter.IncludeExclude[] excludes) {
         Filter filter = new Filter();
         boolean includesSet = false;
         if (includes != null) {
             filter.setIncludes(includes);
             includesSet = true;
-        } 
+        }
         if (excludes != null) {
-            filter.setExcludes(excludes);            
+            filter.setExcludes(excludes);
             includesSet = true;
         }
         if (includesSet) {
@@ -459,28 +462,24 @@ public class JUnitTestRunner {
     }
     
     // add test listeners to testrun object
-    private void addTestListeners(TestResult testResult) {
+    protected void addTestListeners(TestResult testResult) {
         if (testResult == null) throw new NullPointerException("testResult cannot be null");
         for (int i=0 ; i < resultProcessors.length; i++) {
             testResult.addListener(resultProcessors[i]);
-        }        
+        }
     }
     
     // fire start test suite to all result processors
     private void fireStartTestSuite(TestSuite testSuite) {
         for (int i=0 ; i < resultProcessors.length; i++) {
             resultProcessors[i].startTestSuite(testSuite);
-        }        
+        }
     }
-
+    
     // fire end test suite to all result processors
     private void fireEndTestSuite(TestSuite testSuite, TestResult suiteResult) {
-         for (int i=0 ; i < resultProcessors.length; i++) {
+        for (int i=0 ; i < resultProcessors.length; i++) {
             resultProcessors[i].endTestSuite(testSuite,suiteResult);
-        }        
+        }
     }
-    
-
-    
-        
 }
