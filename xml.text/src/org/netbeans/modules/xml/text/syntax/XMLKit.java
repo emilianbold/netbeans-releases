@@ -128,6 +128,10 @@ public class XMLKit extends UniKit {
         
         public XMLEditorAction (String id) {
             super(id);
+            String desc = org.openide.util.NbBundle.getMessage(XMLKit.class,id); // NOI18N
+            if (desc != null) {
+                putValue(SHORT_DESCRIPTION, desc);
+            }
         }
         
         /**
