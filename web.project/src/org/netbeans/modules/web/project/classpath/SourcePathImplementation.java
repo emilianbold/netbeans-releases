@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.web.project.classpath;
@@ -44,15 +44,22 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         this.sourceRoots.addPropertyChangeListener (this);
     }
 
-    public synchronized List /*<PathResourceImplementation>*/ getResources() {
-        if (this.resources == null) {
-            List result = new ArrayList ();
-            URL[] roots = this.sourceRoots.getRootURLs();
-            for (int i = 0; i < roots.length; i++) {
-                PathResourceImplementation res = ClassPathSupport.createResource(roots[i]);
-                result.add (res);
+    public List /*<PathResourceImplementation>*/ getResources() {
+        synchronized (this) {
+            if (this.resources != null) {
+                return this.resources;
             }
-            this.resources = Collections.unmodifiableList(result);
+        }        
+        URL[] roots = this.sourceRoots.getRootURLs();                                
+        synchronized (this) {
+            if (this.resources == null) {
+                List result = new ArrayList (roots.length);
+                for (int i = 0; i < roots.length; i++) {
+                    PathResourceImplementation res = ClassPathSupport.createResource(roots[i]);
+                    result.add (res);
+                }
+                this.resources = Collections.unmodifiableList(result);
+            }
         }
         return this.resources;
     }

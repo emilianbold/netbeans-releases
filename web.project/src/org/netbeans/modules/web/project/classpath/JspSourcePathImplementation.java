@@ -50,24 +50,33 @@ final class JspSourcePathImplementation implements ClassPathImplementation, Prop
         this.sourceRoots.addPropertyChangeListener (this);
     }
 
-    public synchronized List /*<PathResourceImplementation>*/ getResources() {
-        if (this.resources == null) {
-            List result = new ArrayList ();
-            if (documentBaseDir != null) {
-                try {
-                    result.add(ClassPathSupport.createResource(documentBaseDir.getURL()));
-                }
-                catch (FileStateInvalidException e){
-                    ErrorManager.getDefault().notify(e);
-                }
+    public List /*<PathResourceImplementation>*/ getResources() {
+        synchronized (this) {
+            if (this.resources != null)
+                return resources;
+        }
+        URL[] roots = this.sourceRoots.getRootURLs();
+        PathResourceImplementation documentBaseDirRes = null;
+        if (documentBaseDir != null) {
+            try {
+                documentBaseDirRes = ClassPathSupport.createResource(documentBaseDir.getURL());
             }
-            URL[] roots = this.sourceRoots.getRootURLs();
-            for (int i = 0; i < roots.length; i++) {
-                PathResourceImplementation res = ClassPathSupport.createResource(roots[i]);
-                result.add (res);
+            catch (FileStateInvalidException e){
+                ErrorManager.getDefault().notify(e);
             }
-            
-            this.resources = Collections.unmodifiableList(result);
+        }
+        synchronized (this) {
+            if (this.resources == null) {
+                List result = new ArrayList ();
+                if (documentBaseDirRes != null) {
+                    result.add(documentBaseDirRes);
+                }
+                for (int i = 0; i < roots.length; i++) {
+                    PathResourceImplementation res = ClassPathSupport.createResource(roots[i]);
+                    result.add (res);
+                }
+                this.resources = Collections.unmodifiableList(result);
+            }
         }
         return this.resources;
     }
