@@ -68,6 +68,7 @@ public class TwoWaySupportTest extends TestCase {
     }
     
     // XXX to test:
+    // - mutation
     // - initiation
     // - asynchronous access
     // - delayed computation

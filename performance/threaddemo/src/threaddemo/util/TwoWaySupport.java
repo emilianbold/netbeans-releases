@@ -476,18 +476,13 @@ public abstract class TwoWaySupport {
             }
             mutating = true;
         }
+        Object result = null;
         try {
             // XXX should also dequeue if necessary to avoid sequence:
             // invalidate -> initiate -> [pause] -> mutate -> [pause] -> invalidate -> [pause] -> derive
             // where the final derivation was not really appropriate (or was it?)
-            Object result = doRecreate(oldValue, derivedDelta);
-            setModel(result);
-            if (fresh) {
-                fireChange(new TwoWayEvent.Recreated(this, oldValue, result, derivedDelta));
-            } else {
-                fireChange(new TwoWayEvent.Clobbered(this, oldValue, result, derivedDelta));
-            }
-            return result;
+            result = doRecreate(oldValue, derivedDelta);
+            assert result != null;
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
@@ -495,8 +490,17 @@ public abstract class TwoWaySupport {
         } finally {
             synchronized (LOCK) {
                 mutating = false;
+                if (result != null) {
+                    setModel(result);
+                }
             }
         }
+        if (fresh) {
+            fireChange(new TwoWayEvent.Recreated(this, oldValue, result, derivedDelta));
+        } else {
+            fireChange(new TwoWayEvent.Clobbered(this, oldValue, result, derivedDelta));
+        }
+        return result;
     }
     
     /**
