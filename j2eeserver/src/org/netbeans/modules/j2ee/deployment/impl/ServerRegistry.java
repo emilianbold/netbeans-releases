@@ -261,7 +261,7 @@ public final class ServerRegistry implements java.io.Serializable {
         
         checkInstanceAlreadyExists(url);
         if (!addInstanceImpl(url, username, password, displayName)) {
-            throw new InstanceCreationException(NbBundle.getMessage(ServerRegistry.class, "MSG_FailedToCreateInstance"));
+            throw new InstanceCreationException(NbBundle.getMessage(ServerRegistry.class, "MSG_FailedToCreateInstance", displayName));
         }
     }    
     
