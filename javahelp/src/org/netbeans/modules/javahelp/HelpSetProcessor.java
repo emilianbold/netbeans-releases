@@ -112,7 +112,7 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
                 Element el = doc.getDocumentElement();
                 if (! el.getNodeName().equals("helpsetref")) throw new IOException(); // NOI18N
                 String url = el.getAttribute("url"); // NOI18N
-                if (url == null || url.equals("")) throw new IOException("no url attr on <helpsetref>!"); // NOI18N
+                if (url == null || url.equals("")) throw new IOException("no url attr on <helpsetref>! doc.class=" + doc.getClass().getName() + " doc.documentElement=" + el); // NOI18N
                 String mergeS = el.getAttribute("merge"); // NOI18N
                 boolean merge = (mergeS == null) || mergeS.equals("") || // NOI18N
                 Boolean.valueOf(mergeS).booleanValue();

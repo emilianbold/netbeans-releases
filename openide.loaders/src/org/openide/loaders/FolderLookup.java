@@ -252,6 +252,10 @@ public class FolderLookup extends FolderInstance {
     private static void exception (Exception e) {
         ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
     }
+    private static void exception(Exception e, FileObject fo) {
+        ErrorManager.getDefault().annotate(e, ErrorManager.UNKNOWN, "Bad file: " + fo, null, null, null); // NOI18N
+        exception(e);
+    }
 
     
     /** <code>ProxyLookup</code> delegate so we can change the lookups on fly. */
@@ -449,11 +453,9 @@ public class FolderLookup extends FolderInstance {
             try {
                 return clazz.isAssignableFrom (ic.instanceClass ());
             } catch (ClassNotFoundException ex) {
-                ErrorManager.getDefault().annotate(ex, ErrorManager.UNKNOWN, "Bad file: " + fo, null, null, null); // NOI18N
-                exception (ex);
+                exception(ex, fo);
             } catch (IOException ex) {
-                ErrorManager.getDefault().annotate(ex, ErrorManager.UNKNOWN, "Bad file: " + fo, null, null, null); // NOI18N
-                exception (ex);
+                exception(ex, fo);
             }
             return false;
         }
@@ -469,9 +471,9 @@ public class FolderLookup extends FolderInstance {
                 ref = new WeakReference (obj);
                 return obj;
             } catch (ClassNotFoundException ex) {
-                exception (ex);
+                exception(ex, fo);
             } catch (IOException ex) {
-                exception (ex);
+                exception(ex, fo);
             }
             return null;
         }

@@ -286,6 +286,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
      * @since 4.3
      */
     public static DataObject findDataObject (Line l) {
+        if (l == null) throw new NullPointerException();
         return (DataObject)l.getLookup ().lookup (DataObject.class);
     }
     
