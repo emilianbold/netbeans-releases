@@ -103,17 +103,7 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
 
     public String getAsText() {
         return null; 
-        // should not return any text, because it's not editable
-        // it should be paintable instead [tpavek]
-/*        if (current == null) {
-            return NO_BORDER;
-        } else if (current instanceof DesignBorder) {
-            BorderInfo info =((DesignBorder)current).getInfo();
-            if (info==null) return null; // NOI18N
-            return info.getDisplayName();
-        } else {
-            return org.openide.util.Utilities.getShortClassName(current.getClass());
-        } */
+        // should not return any text, because border is not editable as a text
     }
 
     public void setAsText(String string) {
@@ -130,9 +120,9 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
         } 
         else if (current instanceof DesignBorder) {
             BorderInfo info =((DesignBorder)current).getInfo();
-            label = info==null ? "null" : info.getDisplayName(); // NOI18N
+            label = info==null ? "null" : "["+info.getDisplayName()+"]"; // NOI18N
         } else {
-            label = org.openide.util.Utilities.getShortClassName(current.getClass());
+            label = "["+org.openide.util.Utilities.getShortClassName(current.getClass())+"]";
         }
 
         Color color = g.getColor();
