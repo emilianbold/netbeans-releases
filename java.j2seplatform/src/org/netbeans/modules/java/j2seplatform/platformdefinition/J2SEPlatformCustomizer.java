@@ -29,8 +29,6 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import org.openide.NotifyDescriptor;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -320,61 +318,78 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             chooser.setFileFilter (new SimpleFileFilter(message,new String[] {"ZIP","JAR"}));   //NOI18N
             if (chooser.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
-                File f = chooser.getSelectedFile();
-
-
+                File[] fs = chooser.getSelectedFiles();
                 PathModel model = (PathModel) this.resources.getModel();
-                if (!model.addPath (f)) {
+                boolean addingFailed = false;
+                int firstIndex = this.resources.getModel().getSize();
+                for (int i = 0; i < fs.length; i++) {
+                    File f = fs[i];
+                    addingFailed|=!model.addPath (f);
+                }
+                if (addingFailed) {
                     new NotifyDescriptor.Message (NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_CanNotAddResolve"),
                             NotifyDescriptor.ERROR_MESSAGE);
                 }
-                this.resources.setSelectedIndex (this.resources.getModel().getSize()-1);
+                int lastIndex = this.resources.getModel().getSize()-1;
+                if (firstIndex<=lastIndex) {
+                    int[] toSelect = new int[lastIndex-firstIndex+1];
+                    for (int i = 0; i < toSelect.length; i++) {
+                        toSelect[i] = firstIndex+i;
+                    }
+                    this.resources.setSelectedIndices(toSelect);
+                }
             }
         }
 
         private void removePathElement () {
-            int index = this.resources.getSelectedIndex();
-            if (index == -1) {
+            int[] indices = this.resources.getSelectedIndices();
+            if (indices.length == 0) {
                 return;
             }
             PathModel model = (PathModel) this.resources.getModel();
-            model.removePath (index);
-            if ( index< this.resources.getModel().getSize() - 2) {
-                this.resources.setSelectedIndex (index+1);
+            model.removePath (indices);
+            if ( indices[indices.length-1]< this.resources.getModel().getSize() - 2) {
+                this.resources.setSelectedIndex (indices[indices.length-1]+1);
             }
-            else if (index>0) {
-                this.resources.setSelectedIndex (index-1);
+            else if (indices[0]>0) {
+                this.resources.setSelectedIndex (indices[0]-1);
             }
         }
 
         private void moveDownPathElement () {
-            int index = this.resources.getSelectedIndex();
-            if (index == -1) {
+            int[] indices = this.resources.getSelectedIndices();
+            if (indices.length == 0) {
                 return;
             }
             PathModel model = (PathModel) this.resources.getModel();
-            model.moveDownPath (index);
-            this.resources.setSelectedIndex (index+1);
+            model.moveDownPath (indices);
+            for (int i=0; i< indices.length; i++) {
+                indices[i] = indices[i] + 1;
+            }
+            this.resources.setSelectedIndices (indices);
         }
 
         private void moveUpPathElement () {
-            int index = this.resources.getSelectedIndex();
-            if (index == -1) {
+            int[] indices = this.resources.getSelectedIndices();
+            if (indices.length == 0) {
                 return;
             }
             PathModel model = (PathModel) this.resources.getModel();
-            model.moveUpPath (index);
-            this.resources.setSelectedIndex (index-1);
+            model.moveUpPath (indices);
+            for (int i=0; i< indices.length; i++) {
+                indices[i] = indices[i] - 1;
+            }
+            this.resources.setSelectedIndices (indices);
         }
 
         private void selectionChanged () {
             if (this.type == CLASSPATH) {
                 return;
             }
-            int index = this.resources.getSelectedIndex();
-            this.removeButton.setEnabled (index != -1);
-            this.moveUpButton.setEnabled (index>0);
-            this.moveDownButton.setEnabled(index>-1 && index<this.resources.getModel().getSize()-1);
+            int indices[] = this.resources.getSelectedIndices();
+            this.removeButton.setEnabled (indices.length > 0);
+            this.moveUpButton.setEnabled (indices.length > 0 && indices[0]>0);
+            this.moveDownButton.setEnabled(indices.length > 0 && indices[indices.length-1]<this.resources.getModel().getSize()-1);
         }
 
     }
@@ -417,29 +432,35 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             }
         }
 
-        private void removePath (int index) {
+        private void removePath (int[] indices) {
             java.util.List data = getData();
-            data.remove(index);
+            for (int i=indices.length-1; i>=0; i--) {
+                data.remove(indices[i]);
+            }
             updatePlatform ();
-            fireIntervalRemoved(this,index,index);
+            fireIntervalRemoved(this,indices[0],indices[indices.length-1]);
         }
 
-        private void moveUpPath (int index) {
+        private void moveUpPath (int[] indices) {
             java.util.List data = getData ();
-            Object p2 = data.get (index);
-            Object p1 = data.set (index-1,p2);
-            data.set (index,p1);
+            for (int i=0; i<indices.length; i++) {
+                Object p2 = data.get (indices[i]);
+                Object p1 = data.set (indices[i]-1,p2);
+                data.set (indices[i],p1);
+            }
             updatePlatform ();
-            fireContentsChanged(this,index-1,index);
+            fireContentsChanged(this,indices[0]-1,indices[indices.length-1]);
         }
 
-        private void moveDownPath (int index) {
+        private void moveDownPath (int[] indices) {
             java.util.List data = getData ();
-            Object p1 = data.get (index);
-            Object p2 = data.set (index+1,p1);
-            data.set (index,p2);
+            for (int i=indices.length-1; i>=0; i--) {
+                Object p1 = data.get (indices[i]);
+                Object p2 = data.set (indices[i]+1,p1);
+                data.set (indices[i],p2);
+            }
             updatePlatform();
-            fireContentsChanged(this,index,index+1);
+            fireContentsChanged(this,indices[0],indices[indices.length-1]+1);
         }
 
         private boolean addPath (File f) {
