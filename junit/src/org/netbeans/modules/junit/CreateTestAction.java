@@ -437,55 +437,57 @@ public class CreateTestAction extends TestAction {
             Iterator scit = srcChildren.iterator();
             while (scit.hasNext()) {
                 Element el = (Element)scit.next();
-                if (el instanceof JavaClass) {
-                    JavaClass theClass = (JavaClass)el;
-                    if (!skipNonTestable
-                            || TestCreator.isClassTestable(theClass)) {
-                        // find the test class, if it exists or create one
-                        // from active template
-                        try {
-                            //PENDING - test class name:
-                            DataObject doTarget = getTestClass(testClassPath,
+                if (!(el instanceof JavaClass)) {
+                    continue;
+                }
+                
+                JavaClass theClass = (JavaClass)el;
+                
+                if (skipNonTestable && !TestCreator.isClassTestable(theClass)) {
+                    if (progress != null) {
+                        // ignoring because untestable
+                        progress.setMessage(
+                                getIgnoringMsg(theClass.getName()), false);
+                        result.addSkipped(theClass);
+                    }
+                    continue;
+                }
+                
+                // find the test class, if it exists or create one
+                // from active template
+                try {
+                    //PENDING - test class name:
+                    DataObject doTarget = getTestClass(
+                            testClassPath,
                             TestUtil.getTestClassFullName(
                                     theClass.getSimpleName(),
                                     packageName(theClass.getName())),
-                                    doTestT);
-                            
-                            // generate the test of current node
-                            Resource tgtRc = JavaModel.getResource(
-                                    doTarget.getPrimaryFile());
-                            JavaClass targetClass = TestUtil
-                                                    .getMainJavaClass(tgtRc);
-                            
-                            if (targetClass != null) {
-                                if (progress != null) {
-                                    progress.setMessage(
-                                        getCreatingMsg(targetClass.getName()),
-                                                       false);
-                                }
-                                
-                                TestCreator.createTestClass(srcRc,
-                                                            theClass,
-                                                            tgtRc,
-                                                            targetClass);
-                                save(doTarget);
-                                result.addCreated(doTarget);
-                                // add the test class to the parent's suite
-                                if (null != parentSuite) {
-                                    parentSuite.add(targetClass.getName());
-                                }
-                            }
-                        } catch (IOException ioe) {
-                            throw new CreationError(ioe);
-                        }
-                    } else {
+                            doTestT);
+
+                    // generate the test of current node
+                    Resource tgtRc = JavaModel.getResource(
+                            doTarget.getPrimaryFile());
+                    JavaClass targetClass = TestUtil.getMainJavaClass(tgtRc);
+
+                    if (targetClass != null) {
                         if (progress != null) {
-                            // ignoring because untestable
                             progress.setMessage(
-                                    getIgnoringMsg(theClass.getName()), false);
-                            result.addSkipped(theClass);
+                                  getCreatingMsg(targetClass.getName()), false);
+                        }
+
+                        TestCreator.createTestClass(srcRc,
+                                                    theClass,
+                                                    tgtRc,
+                                                    targetClass);
+                        save(doTarget);
+                        result.addCreated(doTarget);
+                        // add the test class to the parent's suite
+                        if (null != parentSuite) {
+                            parentSuite.add(targetClass.getName());
                         }
                     }
+                } catch (IOException ioe) {
+                    throw new CreationError(ioe);
                 }
             }
             
