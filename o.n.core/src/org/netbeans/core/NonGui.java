@@ -127,12 +127,22 @@ public class NonGui extends NbTopManager implements Runnable {
             
             if (userDir == null) {
                 userDir = getHomeDir ();
-                System.getProperties ().put ("netbeans.user", homeDir); // NOI18N                                
+                System.setProperty("netbeans.user", homeDir); // NOI18N                                
             }
             
             /** #11735. Relative userDir is converted to absolute*/
             userDir = new File(userDir).getAbsolutePath();
-            System.getProperties ().setProperty("netbeans.user", userDir); // NOI18N
+            // #21085: userDir might contain ../ sequences which should be removed
+            // Note that the meaning of ".." is defined on Windows and Unix but may
+            // be quite different on other OSs, so this is just a heuristic.
+            if (userDir.indexOf("..") != -1) { // NOI18N
+                try {
+                    userDir = new File(userDir).getCanonicalPath();
+                } catch (IOException ioe) {
+                    // No harm done; leave it non-canonicalized.
+                }
+            }
+            System.setProperty("netbeans.user", userDir); // NOI18N
             
             File systemDirFile = new File (userDir, SYSTEM_FOLDER);
             if (!systemDirFile.isDirectory ()) {
