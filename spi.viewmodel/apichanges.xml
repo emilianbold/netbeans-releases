@@ -62,15 +62,13 @@ Microsystems, Inc. All Rights Reserved.
         <summary>TreeModel.getChildrenCount (Object node) method added.</summary>
         <date day="23" month="7" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Incompatile changes (addition).
-            </p>
-        </compatibility>
+        <compatibility addition="yes"/>
         <description>
                 TreeModel uses indexed approach (getChildren (Object node, int from, int to). But 
                 the children count has not been accesible through the API. This was important problem.
         </description>
+        <class package="org.netbeans.spi.viewmodel" name="TreeModel" />
+        <issue number="46368"/>
     </change>
 
 </changes>

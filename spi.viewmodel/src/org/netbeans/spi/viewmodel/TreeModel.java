@@ -76,6 +76,7 @@ public interface TreeModel {
      *          able to resolve children for given node type
      *
      * @return  true if node is leaf
+     * @since 1.1
      */
     public abstract int getChildrenCount (Object node) throws 
     NoInformationException, ComputingException, UnknownTypeException;
