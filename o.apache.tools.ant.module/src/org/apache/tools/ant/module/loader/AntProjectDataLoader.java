@@ -84,22 +84,22 @@ public class AntProjectDataLoader extends UniFileLoader {
     public void readExternal (ObjectInput oi) throws IOException, ClassNotFoundException {
         try {
             super.readExternal (oi);
-            ExtensionList xl = getExtensions();
-            if (xl.isRegistered(".xml")) { // NOI18N
-                AntModule.err.log("#15547: correcting old Ant object type extension list to be MIME format");
-                if (xl.mimeTypes().hasMoreElements()) {
-                    AntModule.err.log("WARNING: old extension list had some MIME types in it, will be kept...");
-                }
-                xl.removeExtension("xml"); // NOI18N
-                if (xl.extensions().hasMoreElements()) {
-                    AntModule.err.log("WARNING: old extension list had non-.xml extensions in it, will not be converted...");
-                    setExtensions(xl = new ExtensionList());
-                }
-                xl.addMimeType(REQUIRED_MIME);
-            }
         } catch (SafeException se) {
-            AntModule.err.annotate (se, ErrorManager.INFORMATIONAL, "Reading AntProjectDataLoader: resetting action list to default", null, null, null); // NOI18N
-            AntModule.err.notify (ErrorManager.INFORMATIONAL, se);
+            AntModule.err.annotate(se, ErrorManager.UNKNOWN, "Reading AntProjectDataLoader: resetting action list to default", null, null, null); // NOI18N
+            AntModule.err.notify(ErrorManager.INFORMATIONAL, se);
+        }
+        ExtensionList xl = getExtensions();
+        if (xl.isRegistered(".xml")) { // NOI18N
+            AntModule.err.log("#15547: correcting old Ant object type extension list to be MIME format");
+            if (xl.mimeTypes().hasMoreElements()) {
+                AntModule.err.log("WARNING: old extension list had some MIME types in it, will be kept...");
+            }
+            xl.removeExtension("xml"); // NOI18N
+            if (xl.extensions().hasMoreElements()) {
+                AntModule.err.log("WARNING: old extension list had non-.xml extensions in it, will not be converted...");
+                setExtensions(xl = new ExtensionList());
+            }
+            xl.addMimeType(REQUIRED_MIME);
         }
     }
   
