@@ -37,9 +37,6 @@ import java.awt.event.KeyEvent;
 */
 public class CustomTableModelEditor extends JPanel implements EnhancedCustomPropertyEditor {
 
-    // the bundle to use
-    static ResourceBundle bundle = NbBundle.getBundle(CustomTableModelEditor.class);
-
     private boolean isCreated = false;
     private boolean isChangingTableModel = false;
 
@@ -85,6 +82,8 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
     static final long serialVersionUID =8002510111948803668L;
 
     public CustomTableModelEditor(TableModelEditor editor) {
+        ResourceBundle bundle = NbBundle.getBundle(CustomTableModelEditor.class);
+
         model = new TableModelEditor.NbTableModel((TableModel)editor.getValue());
 
         setLayout(new BorderLayout(0, 2));
@@ -823,6 +822,10 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
             defaultValuesTable.clearSelection();
             defaultValuesTable.getParent().requestFocus();
         }
+
+        if (defaultValuesTable.getTableHeader().getDraggedColumn() != null)
+            defaultValuesTable.getTableHeader().setDraggedColumn(
+                defaultValuesTable.getColumnModel().getColumn(toIndex));
     }
 
     // helper methods ------------------
