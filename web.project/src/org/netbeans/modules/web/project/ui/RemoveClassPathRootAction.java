@@ -14,13 +14,20 @@
 package org.netbeans.modules.web.project.ui;
 
 
+import java.io.IOException;
+import java.util.HashSet;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.NodeAction;
+import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 
+
 import java.util.Iterator;
+import java.util.Set;
+import org.netbeans.api.project.ProjectManager;
+import org.openide.ErrorManager;
 
 /**
  * Action for removing an ClassPathRoot. The action looks up
@@ -43,18 +50,48 @@ final class RemoveClassPathRootAction extends NodeAction {
         public boolean canRemove ();
 
         /**
-         * Removes the classpath root
+         * <p>Removes the classpath root. The caller has write access to
+         * ProjectManager. The implementation should <strong>not</strong> save the changed project.
+         * Instead, it should return the changed Project. The caller ensures
+         * that all the changed projects are saved.
+         * 
+         * <p>The reason why the implementation shouldn't save the project is that
+         * changed made to the project may cause the build-impl.xml file to be 
+         * recreated upon saving, which is slow. There will be performance issues (see #54160) if
+         * multiple references are removed and the project is saved after 
+         * each removal.
+         *
+         * @return the changed project or null if no project has been changed.
          */
-        public abstract void remove ();
+        public abstract Project remove ();
     }
 
-    protected void performAction(Node[] activatedNodes) {
-        for (int i=0; i<activatedNodes.length; i++) {
-            Removable removable = (Removable) activatedNodes[i].getLookup().lookup(Removable.class);
-            if (removable!=null) {
-                removable.remove();
+    protected void performAction(final Node[] activatedNodes) {
+        final Set changedProjectsSet = new HashSet();
+        
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+                for (int i = 0; i < activatedNodes.length; i++) {
+                    Removable removable = (Removable) activatedNodes[i].getLookup().lookup(Removable.class);
+                    if (removable == null)
+                        continue;
+
+                    Project p = removable.remove();
+                    if (p != null)
+                        changedProjectsSet.add(p);
+                }
+
+                for (Iterator i = changedProjectsSet.iterator(); i.hasNext();) {
+                    Project p = (Project)i.next();
+                    try {
+                        ProjectManager.getDefault().saveProject(p);
+                    }
+                    catch (IOException e) {
+                        ErrorManager.getDefault().notify(e);
+                    }
+                }
             }
-        }
+        });
     }
 
     protected boolean enable(Node[] activatedNodes) {

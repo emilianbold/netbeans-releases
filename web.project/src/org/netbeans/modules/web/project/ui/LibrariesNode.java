@@ -532,15 +532,13 @@ final class LibrariesNode extends AbstractNode {
                 }
         }
 
-        private void addArtifacts (ArtifactItem[] artifacts) {
+        private void addArtifacts (ArtifactItem[] artifactItems) {
             WebProjectClassPathExtender cpExtender = (WebProjectClassPathExtender) project.getLookup().lookup(WebProjectClassPathExtender.class);
             if (cpExtender != null) {
-                for (int i=0; i<artifacts.length;i++) {
-                    try {
-                        cpExtender.addAntArtifact(classPathId, artifacts[i].getArtifact(), artifacts[i].getArtifactURI(), webModuleElementName);
-                    } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
-                    }
+                try {
+                    cpExtender.addAntArtifacts(classPathId, artifactItems, webModuleElementName);
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ioe);
                 }
             }
             else {
@@ -585,12 +583,10 @@ final class LibrariesNode extends AbstractNode {
         private void addLibraries (Library[] libraries) {
             WebProjectClassPathExtender cpExtender = (WebProjectClassPathExtender) project.getLookup().lookup(WebProjectClassPathExtender.class);
             if (cpExtender != null) {
-                for (int i=0; i<libraries.length;i++) {
-                    try {
-                        cpExtender.addLibrary(classPathId, libraries[i], webModuleElementName);
-                    } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
-                    }
+                try {
+                    cpExtender.addLibraries(classPathId, libraries, webModuleElementName);
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ioe);
                 }
             }
             else {
@@ -647,14 +643,16 @@ final class LibrariesNode extends AbstractNode {
         private void addJarFiles (File[] files) {
             WebProjectClassPathExtender cpExtender = (WebProjectClassPathExtender) project.getLookup().lookup(WebProjectClassPathExtender.class);
             if (cpExtender != null) {
-                for (int i=0; i<files.length;i++) {
-                    try {
-                        FileObject fo = FileUtil.toFileObject (files[i]);
-                        assert fo != null : files[i];
-                        cpExtender.addArchiveFile(classPathId, fo, webModuleElementName);
-                    } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
-                    }
+                FileObject[] fileObjects = new FileObject[files.length];
+                for (int i = 0; i < files.length; i++) {
+                    FileObject fo = FileUtil.toFileObject (files[i]);
+                    assert fo != null : files[i];
+                    fileObjects[i] = fo;
+                }
+                try {
+                    cpExtender.addArchiveFiles(classPathId, fileObjects, webModuleElementName);                    
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ioe);
                 }
             }
             else {

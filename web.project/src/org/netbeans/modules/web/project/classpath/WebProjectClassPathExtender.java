@@ -33,11 +33,13 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 
 import org.netbeans.modules.web.project.UpdateHelper;
+import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 
 public class WebProjectClassPathExtender implements ProjectClassPathExtender {
     
     private static final String CP_CLASS_PATH = "javac.classpath"; //NOI18N
+    private static final String DEFAULT_WEB_MODULE_ELEMENT_NAME = ClassPathSupport.TAG_WEB_MODULE_LIBRARIES;
 
     private Project project;
     private UpdateHelper helper;
@@ -60,15 +62,11 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
     }
 
     public boolean addLibrary(final Library library) throws IOException {
-        return addLibrary(CP_CLASS_PATH, library);
+        return addLibraries(CP_CLASS_PATH, new Library[] { library }, DEFAULT_WEB_MODULE_ELEMENT_NAME);
     }
     
-    public boolean addLibrary(final String classPathId, final Library library) throws IOException {
-        return addLibrary(classPathId, library, null);
-    }
-
-    public boolean addLibrary(final String classPathId, final Library library, final String webModuleElementName) throws IOException {
-        assert library != null : "Parameter cannot be null";       //NOI18N
+    public boolean addLibraries(final String classPathId, final Library[] libraries, final String webModuleElementName) throws IOException {
+        assert libraries != null : "Parameter cannot be null";       //NOI18N
         try {
             return ((Boolean)ProjectManager.mutex().writeAccess(
                     new Mutex.ExceptionAction () {
@@ -76,9 +74,15 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty(classPathId);
                             List resources = cs.itemsList( raw, webModuleElementName );
-                            ClassPathSupport.Item item = ClassPathSupport.Item.create( library, null, ClassPathSupport.Item.PATH_IN_WAR_LIB);
-                            if (!resources.contains(item)) {
-                                resources.add (item);
+                            boolean added = false;
+                            for (int i = 0; i < libraries.length; i++) {
+                                ClassPathSupport.Item item = ClassPathSupport.Item.create( libraries[i], null, ClassPathSupport.Item.PATH_IN_WAR_LIB);
+                                if (!resources.contains(item)) {
+                                    resources.add (item);
+                                    added = true;
+                                }
+                            }
+                            if (added) {
                                 String itemRefs[] = cs.encodeToStrings( resources.iterator(), webModuleElementName );
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties                                
                                 props.setProperty(classPathId, itemRefs);
@@ -102,15 +106,11 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
     }
 
     public boolean addArchiveFile(final FileObject archiveFile) throws IOException {
-        return addArchiveFile(CP_CLASS_PATH,archiveFile);
+        return addArchiveFiles(CP_CLASS_PATH, new FileObject[] { archiveFile }, DEFAULT_WEB_MODULE_ELEMENT_NAME);
     }
     
-    public boolean addArchiveFile(final String classPathId, final FileObject archiveFile) throws IOException {
-        return addArchiveFile(classPathId,archiveFile,null);
-    }
-
-    public boolean addArchiveFile(final String classPathId, final FileObject archiveFile, final String webModuleElementName) throws IOException {
-        assert archiveFile != null : "Parameter cannot be null";       //NOI18N
+    public boolean addArchiveFiles(final String classPathId, final FileObject[] archiveFiles, final String webModuleElementName) throws IOException {
+        assert archiveFiles != null : "Parameter cannot be null";       //NOI18N
         try {
             return ((Boolean)ProjectManager.mutex().writeAccess(
                     new Mutex.ExceptionAction () {
@@ -118,14 +118,19 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty(classPathId);                            
                             List resources = cs.itemsList( raw, webModuleElementName );                                                        
-                            File f = FileUtil.toFile (archiveFile);
-                            if (f == null ) {
-                                throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
+                            boolean added = false;
+                            for (int i = 0; i < archiveFiles.length; i++) {
+                                File f = FileUtil.toFile (archiveFiles[i]);
+                                if (f == null ) {
+                                    throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
+                                }
+                                ClassPathSupport.Item item = ClassPathSupport.Item.create( f, null, archiveFiles[i].isFolder() ? ClassPathSupport.Item.PATH_IN_WAR_NONE : ClassPathSupport.Item.PATH_IN_WAR_LIB);
+                                if (!resources.contains(item)) {
+                                    resources.add (item);
+                                    added = true;
+                                }
                             }
-                            ClassPathSupport.Item item = ClassPathSupport.Item.create( f, null, archiveFile.isFolder() ? ClassPathSupport.Item.PATH_IN_WAR_NONE : ClassPathSupport.Item.PATH_IN_WAR_LIB);
-
-                            if (!resources.contains(item)) {
-                                resources.add (item);
+                            if (added) {
                                 String itemRefs[] = cs.encodeToStrings( resources.iterator(), webModuleElementName );
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
                                 props.setProperty(classPathId, itemRefs);
@@ -148,12 +153,14 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
         }
     }
     
+    // TODO: AB: AntArtifactItem should not be in LibrariesChooser
+    
     public boolean addAntArtifact (AntArtifact artifact, URI artifactElement) throws IOException {
-        return addAntArtifact(CP_CLASS_PATH, artifact, artifactElement, ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
+        return addAntArtifacts(CP_CLASS_PATH, new AntArtifactChooser.ArtifactItem[] { new AntArtifactChooser.ArtifactItem(artifact, artifactElement) }, DEFAULT_WEB_MODULE_ELEMENT_NAME);
     }
 
-    public boolean addAntArtifact(final String classPathId, final AntArtifact artifact, final URI artifactElement, final String webModuleElementName) throws IOException {
-        assert artifact != null : "Parameter cannot be null";       //NOI18N
+    public boolean addAntArtifacts(final String classPathId, final AntArtifactChooser.ArtifactItem[] artifactItems, final String webModuleElementName) throws IOException {
+        assert artifactItems != null : "Parameter cannot be null";       //NOI18N
         try {
             return ((Boolean)ProjectManager.mutex().writeAccess(
                     new Mutex.ExceptionAction () {
@@ -161,9 +168,15 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty (classPathId);
                             List resources = cs.itemsList( raw, webModuleElementName );
-                            ClassPathSupport.Item item = ClassPathSupport.Item.create( artifact, artifactElement, null, ClassPathSupport.Item.PATH_IN_WAR_LIB);
-                            if (!resources.contains(item)) {
-                                resources.add (item);
+                            boolean added = false;
+                            for (int i = 0; i < artifactItems.length; i++) {
+                                ClassPathSupport.Item item = ClassPathSupport.Item.create( artifactItems[i].getArtifact(), artifactItems[i].getArtifactURI(), null, ClassPathSupport.Item.PATH_IN_WAR_LIB);
+                                if (!resources.contains(item)) {
+                                    resources.add (item);
+                                    added = true;
+                                }
+                            }
+                            if (added) {
                                 String itemRefs[] = cs.encodeToStrings( resources.iterator(), webModuleElementName );                                
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                                 props.setProperty (classPathId, itemRefs);

@@ -263,39 +263,33 @@ class ActionFilterNode extends FilterNode {
             return props.getProperty (classPathId) != null;
         }
 
-       public void remove() {        
+       public Project remove() {        
            // Different implementation than j2seproject's one, because
            // we need to remove the library entry from project.xml
            
-           final Project project = FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
+           // The caller has write access to ProjectManager
+           // and ensures the project will be saved.           
            
-           ProjectManager.mutex().writeAccess ( new Runnable () {
-               public void run() {
-                    try {
-                        boolean removed = false;
-                        EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        String raw = props.getProperty (classPathId);
-                        List resources = cs.itemsList( raw, webModuleElementName );
-                        for (Iterator i = resources.iterator(); i.hasNext();) {
-                            ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
-                            if (entryId.equals(WebProjectProperties.getAntPropertyName(item.getReference()))) {
-                                i.remove();
-                                removed = true;
-                            }
-                        }
-                        if (removed) {
-                            String[] itemRefs = cs.encodeToStrings(resources.iterator(), webModuleElementName);
-                            props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-                            props.setProperty (classPathId, itemRefs);
-                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                            ProjectManager.getDefault().saveProject(project);
-                        }
-                    }
-                    catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
-                    }
-               }
-           });
+            boolean removed = false;
+            EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            String raw = props.getProperty (classPathId);
+            List resources = cs.itemsList( raw, webModuleElementName );
+            for (Iterator i = resources.iterator(); i.hasNext();) {
+                ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
+                if (entryId.equals(WebProjectProperties.getAntPropertyName(item.getReference()))) {
+                    i.remove();
+                    removed = true;
+                }
+            }
+            if (removed) {
+                String[] itemRefs = cs.encodeToStrings(resources.iterator(), webModuleElementName);
+                props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+                props.setProperty (classPathId, itemRefs);
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+               return FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
+           } else {
+               return null;
+           }
        }
    }
 }
