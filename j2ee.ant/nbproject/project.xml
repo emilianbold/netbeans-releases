@@ -63,7 +63,9 @@ Microsystems, Inc. All Rights Reserved.
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency/>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                    </run-dependency>
                 </dependency>
             </module-dependencies>
             <public-packages/>

@@ -28,13 +28,16 @@ Microsystems, Inc. All Rights Reserved.
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency/>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
+                        <release-version>0</release-version>
                         <!-- XXX declare the impl dep somehow... -->
                     </run-dependency>
                 </dependency>
