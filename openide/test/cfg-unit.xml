@@ -71,6 +71,8 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/filesystems/JarFileSystemTest.class/testForSpaces"/>
                 <!-- Under development: -->
                 <exclude  name="org/openide/filesystems/MultiFileSystemMaskTest.class"/>                                         
+                <!-- #39613, nbfs protocol is internally inconsistent: -->
+                <exclude name="org/openide/filesystems/XMLFileSystemTest.class/testGetURL"/>
                 <include name="org/openide/modules/*.class"/>
                 <include name="org/openide/loaders/*.class"/>                
                 <!-- #28118 in faling testbag yet -->
