@@ -22,6 +22,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 import org.openide.nodes.Node;
+import org.netbeans.modules.xml.multiview.cookies.LinkCookie;
 
 /**
  *
@@ -133,7 +134,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     public boolean isActive() {
         return active;
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -224,7 +225,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     private javax.swing.JButton titleButton;
     // End of variables declaration//GEN-END:variables
     
-    public static class InnerPanel extends javax.swing.JPanel {
+    public static abstract class InnerPanel extends javax.swing.JPanel implements LinkCookie {
         
         public void add (java.awt.Component comp, Object constraints) {
             super.add(comp, constraints);           
@@ -237,7 +238,6 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
                         }
                     }
                 });
-              
             }
         }
     }

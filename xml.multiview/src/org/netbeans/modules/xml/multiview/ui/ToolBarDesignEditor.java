@@ -37,27 +37,56 @@ public class ToolBarDesignEditor extends AbstractDesignEditor implements org.ope
     protected JComponent designPanel;
     protected JPanel actionPanel;
     private ErrorPanel errorPanel;
+
+    /**
+     * Creates a new instance of ToolBarDesignEditor
+     * @param panel The PanelView which will provide the node tree for the structure view
+     *              and the set of panels the nodes map to.
+     */
+    public ToolBarDesignEditor(){
+        super();
+        createDesignPanel();
+        add(java.awt.BorderLayout.CENTER,designPanel);
+        add(java.awt.BorderLayout.SOUTH,createErrorPanel());
+    }
     
     /**
-     * Creates a new instance of ComponentPanel
+     * Creates a new instance of ToolBarDesignEditor
      * @param panel The PanelView which will provide the node tree for the structure view
      *              and the set of panels the nodes map to.
      */
     public ToolBarDesignEditor(PanelView panel){
         super(panel);
-        add(java.awt.BorderLayout.CENTER,createDesignPanel());
-        add(java.awt.BorderLayout.SOUTH,errorPanel = new ErrorPanel());
+        createDesignPanel();
+        designPanel.add(panel,BorderLayout.CENTER);
+        add(java.awt.BorderLayout.CENTER,designPanel);
+        add(java.awt.BorderLayout.SOUTH,createErrorPanel());
+        panel.attachErrorPanel(errorPanel);
+    }
+    
+    public JComponent createDesignPanel(){
+        designPanel = new JPanel(new BorderLayout());
+        actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        designPanel.add(actionPanel, BorderLayout.SOUTH);
+        return designPanel;
     }
     
     public void setContentView(PanelView panel) {
+        //createDesignPanel();
         if (getContentView()!=null) {
             designPanel.remove(getContentView());
-            designPanel.add(panel,BorderLayout.CENTER);
         }
+        designPanel.add(panel,BorderLayout.CENTER);
+        panel.attachErrorPanel(errorPanel);
         super.setContentView(panel);
     }
     
     public ErrorPanel getErrorPanel() {
+        return errorPanel;
+    }
+    
+    private ErrorPanel createErrorPanel() {
+        errorPanel = new ErrorPanel();
         return errorPanel;
     }
     
@@ -73,15 +102,6 @@ public class ToolBarDesignEditor extends AbstractDesignEditor implements org.ope
     }
     public void componentShowing() {
         super.componentShowing();
-    }
-    public JComponent createDesignPanel(){
-        if (designPanel==null){
-            designPanel = new JPanel(new BorderLayout());
-            designPanel.add(getContentView(),BorderLayout.CENTER);
-            actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-            designPanel.add(actionPanel, BorderLayout.SOUTH);
-        }
-        return designPanel;
     }
     
     public JPanel getActionPanel() {
@@ -99,15 +119,7 @@ public class ToolBarDesignEditor extends AbstractDesignEditor implements org.ope
         EditAction edit = (EditAction)SystemAction.get(EditAction.class);
         ((JComponent)edit.getToolbarPresenter()).setBorder(new javax.swing.border.EmptyBorder(0,0,0,0));
         toolbar.add(edit.getToolbarPresenter());
-        /*
-        CopyAction copy = (CopyAction)SystemAction.get(CopyAction.class);
-        ((JComponent)copy.getToolbarPresenter()).setBorder(new javax.swing.border.EmptyBorder(0,0,0,0));
-        toolbar.add(copy.getToolbarPresenter());
-        
-        PasteAction paste = (PasteAction)SystemAction.get(PasteAction.class);
-        ((JComponent)paste.getToolbarPresenter()).setBorder(new javax.swing.border.EmptyBorder(0,0,0,0));
-        toolbar.add(paste.getToolbarPresenter());
-        */
+
         DeleteAction del = (DeleteAction)SystemAction.get(DeleteAction.class);
         ((JComponent)del.getToolbarPresenter()).setBorder(new javax.swing.border.EmptyBorder(0,0,0,0));
         toolbar.add(del.getToolbarPresenter());

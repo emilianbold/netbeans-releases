@@ -146,10 +146,9 @@ public class TreePanelDesignEditor extends AbstractDesignEditor {
     public JComponent createPropertiesComponent(){
         return null;
     }
-    
-    public ErrorPanel getErrorPanel() {
-        return new ErrorPanel();
-    }
 
+    public ErrorPanel getErrorPanel() {
+        return getContentView().getErrorPanel();
+    }
     
 }

@@ -30,13 +30,9 @@ public class SectionView extends PanelView implements SectionFocusCookie {
     private NodeSectionPanel activePanel;
     boolean sectionSelected; 
     
-    /** Creates a new instance of SectionView */
-    public SectionView() {
-        initComponents();
-        map = new java.util.Hashtable();
-    }
-    
     public void initComponents() {
+        super.initComponents();
+        map = new java.util.Hashtable();
         setLayout(new java.awt.BorderLayout());
         scrollPanel = new JPanel();
         scrollPanel.setLayout(new java.awt.GridBagLayout());
@@ -51,8 +47,8 @@ public class SectionView extends PanelView implements SectionFocusCookie {
         panel.open();
         openParents((JPanel)panel);
         panel.scroll(scrollPane);
-        panel.setActive(true);
         setActivePanel(panel);
+        panel.setActive(true);
         return true;
     }
 

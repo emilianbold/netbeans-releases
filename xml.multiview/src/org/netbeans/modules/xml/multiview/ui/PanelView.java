@@ -48,6 +48,7 @@ public abstract class PanelView extends javax.swing.JPanel {
     /** weak variation of the listener for vetoable change on the explorer manager */
     transient VetoableChangeListener wlvc;
     /** ResourceBundle for ejb package. */
+    transient ErrorPanel errorPanel;
     
     public PanelView() {
         initComponents();
@@ -55,6 +56,15 @@ public abstract class PanelView extends javax.swing.JPanel {
     
     public void initComponents () {
     }
+    
+    void attachErrorPanel(ErrorPanel errorPanel) {
+        this.errorPanel=errorPanel;
+    }
+    
+    public ErrorPanel getErrorPanel() {
+        return errorPanel;
+    }
+    
     /**
      * Gets the current root Node.
      * @return the Node.

@@ -45,4 +45,5 @@ public interface NodeSectionPanel {
     /** Scrolls the panel to be visibel in scrollPane.
      */        
     public void scroll(javax.swing.JScrollPane scrollPane);
+
 }
