@@ -84,6 +84,9 @@ implements FileChangeListener, DataObject.Container {
     * the previous task is canceled (if not running) and new is created.
     */
     transient private RequestProcessor.Task refreshTask;
+    /** task that is non-null if a setOrder has been called
+     */
+    transient private volatile RequestProcessor.Task comparatorTask;
 
     /** Primary files in this folder. Maps (FileObject, Reference (DataObject))
     */
@@ -254,28 +257,44 @@ implements FileChangeListener, DataObject.Container {
 
     /** Setter for sort mode.
     */
-    private void changeComparator () {
+    private synchronized void changeComparator () {
         final boolean LOG = err.isLoggable(ErrorManager.INFORMATIONAL);
         if (LOG) err.log ("changeComparator on " + folder);
-        PROCESSOR.post (new Runnable () {
-                            public void run () {
-                                // if has been notified
-                                // change mode and regenerated children
-                                if (primaryFiles != null) {
-                                    // the old children
-                                    if (LOG) err.log ("changeComparator on " + folder + ": get old");
-                                    List v = getObjects (null);
-                                    if (v.size () != 0) {
-                                        // the new children - also are stored to be returned next time from getChildrenList ()
-                                        order = null;
-                                        if (LOG) err.log ("changeComparator: get new");
-                                        List r = getObjects (null);
-                                        if (LOG) err.log ("changeComparator: fire change");
-                                        fireChildrenChange (r, v);
-                                    }
-                                }
+        final RequestProcessor.Task previous = comparatorTask;
+        final RequestProcessor.Task[] COMP = new RequestProcessor.Task[1];
+        synchronized (COMP) {
+            comparatorTask = PROCESSOR.post (new Runnable () {
+                public void run () {
+                    synchronized (COMP) {
+                        if (previous != null) {
+                            previous.waitFinished ();
+                        }
+                        // if has been notified
+                        // change mode and regenerated children
+                        if (primaryFiles != null) {
+                            // the old children
+                            if (LOG) err.log ("changeComparator on " + folder + ": get old");
+                            List v = getObjects (null);
+                            if (v.size () != 0) {
+                                // the new children - also are stored to be returned next time from getChildrenList ()
+                                order = null;
+                                if (LOG) err.log ("changeComparator: get new");
+                                List r = getObjects (null);
+                                if (LOG) err.log ("changeComparator: fire change");
+                                fireChildrenChange (r, v);
                             }
-                        }, 0, Thread.MIN_PRIORITY);
+                        }
+                        synchronized (FolderList.this) {
+                            // clean  the task if is my own not assigned by somebody else
+                            if (comparatorTask == COMP[0]) {
+                                comparatorTask = null;
+                            }
+                        }
+                    }
+                }
+            }, 0, Thread.MIN_PRIORITY);
+            COMP[0] = comparatorTask;
+        }
     }
     
     /* -------------------------------------------------------------------- */
@@ -292,6 +311,12 @@ implements FileChangeListener, DataObject.Container {
             if (refreshTask == null) {
                 refreshTask = PROCESSOR.post (new Runnable () {
                     public void run () {
+                        RequestProcessor.Task t = comparatorTask;
+                        if (t != null) {
+                            // first of all finish setting up comparator
+                            t.waitFinished ();
+                        }
+                        
                         if (LOG) err.log ("-- refresh on " + folder + ": now=" + now);
                         if (primaryFiles != null) {
                             // list of children is created, recreate it for new files
@@ -833,6 +858,9 @@ implements FileChangeListener, DataObject.Container {
             final boolean LOG = err.isLoggable(ErrorManager.INFORMATIONAL);
             if (LOG) err.log ("ListTask.run 1 on " + folder);
             // invokes the refresh task before we do anything else
+            if (comparatorTask != null) {
+                comparatorTask.waitFinished ();
+            }
             if (refreshTask != null) {
                 refreshTask.waitFinished ();
             }
