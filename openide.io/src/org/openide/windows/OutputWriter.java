@@ -45,11 +45,12 @@ public abstract class OutputWriter extends PrintWriter {
     public abstract void println(String s, OutputListener l) throws IOException;
 
     /** Clear the output pane.
+    * Expect this method to be deprecated in a future release and an 
+    * equivalent created in <code>InputOutput</code>.  It is ambiguous what it means
+    * to reset stdout but not stderr, etc.  For the current implementation, reset
+    * should be called on the stdout.
     * 
     * @throws IOException if there is a problem
-    * @deprecated - ambiguous what it means to reset the stderr but not the stdout.
-    *  use org.openide.io.InputOutput.reset() (org.openide.IO.inputOutput, not
-    * org.openide.WINDOWS.InputOutput).
     */
     public abstract void reset() throws IOException;
 }

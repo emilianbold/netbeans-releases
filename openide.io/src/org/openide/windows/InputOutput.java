@@ -35,7 +35,6 @@ import org.openide.util.io.NullInputStream;
  * 
  * @see OutputWriter
  * @author   Ian Formanek, Jaroslav Tulach, Petr Hamernik, Ales Novak, Jan Jancura
- * @deprecated - use the extension interface org.openide.io.InputOutput instead
  */
 public interface InputOutput {
 
@@ -120,11 +119,7 @@ public interface InputOutput {
     /** Set whether the output window should take focus when anything is written to it.
     * <strong>Note that this really means the output window will steal keyboard
     * focus whenever a line of output is written.  This is generally an extremely
-    * bad idea and strongly recommended against by most UI guidelines.</strong>
-    *
-    * @deprecated - there are more polite ways to request user attention than
-    *  stealing keyboard focus - this is almost always wrong from a usability
-    *  perspective
+    * bad idea and strongly recommended against by most UI guidelines.</strong> 
     * @return <code>true</code> to take focus
     */
     public void setFocusTaken(boolean value);
