@@ -14,6 +14,8 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.ObjectCollectedException;
+import com.sun.jdi.VMDisconnectedException;
 
 import javax.swing.Action;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -52,24 +54,29 @@ NodeActionsProvider {
     }
     
     public Object[] getChildren (
-        TreeModel model, 
-        Object o, 
-        int from, 
-        int to
+        TreeModel   model, 
+        Object      o, 
+        int         from, 
+        int         to
     ) throws NoInformationException, ComputingException, UnknownTypeException {
         if (o instanceof JPDAThread) {
-            JPDAThread t = (JPDAThread) o;
-            ObjectVariable contended = t.getContendedMonitor ();
-            ObjectVariable[] owned = t.getOwnedMonitors ();
-            int i = 0;
-            Object[] os = new Object [to - from];
-            if ( (contended != null) &&
-                 (from < 1) && (to > 0)
-            ) os [i++] = new ContendedMonitor (contended);
-            if ( (owned.length > 0) &&
-                 (from < 2) && (to > 1)
-            ) os [i++] = new OwnedMonitors (owned);
-            return os;
+            try {
+                JPDAThread t = (JPDAThread) o;
+                ObjectVariable contended = t.getContendedMonitor ();
+                ObjectVariable[] owned = t.getOwnedMonitors ();
+                int i = 0;
+                Object[] os = new Object [to - from];
+                if ( (contended != null) &&
+                     (from < 1) && (to > 0)
+                ) os [i++] = new ContendedMonitor (contended);
+                if ( (owned.length > 0) &&
+                     (from < 2) && (to > 1)
+                ) os [i++] = new OwnedMonitors (owned);
+                return os;
+            } catch (ObjectCollectedException e) {
+            } catch (VMDisconnectedException e) {
+            }
+            return new Object [0];
         }
         if (o instanceof OwnedMonitors) {
             OwnedMonitors om = (OwnedMonitors) o;
@@ -81,17 +88,22 @@ NodeActionsProvider {
     }
     
     public int getChildrenCount (
-        TreeModel model, 
-        Object o
+        TreeModel   model, 
+        Object      o
     ) throws NoInformationException, ComputingException, UnknownTypeException {
         if (o instanceof JPDAThread) {
-            JPDAThread t = (JPDAThread) o;
-            ObjectVariable contended = t.getContendedMonitor ();
-            ObjectVariable[] owned = t.getOwnedMonitors ();
-            int i = 0;
-            if (contended != null) i++;
-            if (owned.length > 0) i++;
-            return i;
+            try {
+                JPDAThread t = (JPDAThread) o;
+                ObjectVariable contended = t.getContendedMonitor ();
+                ObjectVariable[] owned = t.getOwnedMonitors ();
+                int i = 0;
+                if (contended != null) i++;
+                if (owned.length > 0) i++;
+                return i;
+            } catch (ObjectCollectedException e) {
+            } catch (VMDisconnectedException e) {
+            }
+            return 0;
         }
         if (o instanceof OwnedMonitors) {
             return ((OwnedMonitors) o).variables.length;
@@ -102,9 +114,14 @@ NodeActionsProvider {
     public boolean isLeaf (TreeModel model, Object o) 
     throws UnknownTypeException {
         if (o instanceof JPDAThread) {
-            JPDAThread t = (JPDAThread) o;
-            return t.getContendedMonitor () == null &&
-                   t.getOwnedMonitors ().length == 0;
+            try {
+                JPDAThread t = (JPDAThread) o;
+                return t.getContendedMonitor () == null &&
+                       t.getOwnedMonitors ().length == 0;
+            } catch (ObjectCollectedException e) {
+            } catch (VMDisconnectedException e) {
+            }
+            return true;
         }
         if (o instanceof OwnedMonitors)
             return false;
