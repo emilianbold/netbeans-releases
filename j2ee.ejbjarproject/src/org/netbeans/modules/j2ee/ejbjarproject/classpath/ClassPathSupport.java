@@ -315,9 +315,16 @@ public class ClassPathSupport {
         }
 
         Document doc = data.getOwnerDocument();
-        Iterator cp = classpath.iterator();
-        for (Iterator i = libraries.iterator(); i.hasNext();)
-             data.appendChild(createLibraryElement(doc, (String)i.next(), (Item) cp.next(), includedLibrariesElement));
+        for (Iterator i = libraries.iterator(); i.hasNext();) {
+            String libraryName = (String)i.next();
+            //find a correcponding classpath item for the library
+            for(int idx = 0; idx < classpath.size(); idx++ ) {
+                ClassPathSupport.Item item = (ClassPathSupport.Item)classpath.get(idx);
+                String libraryPropName = "${" + libraryName + "}";
+                if(libraryPropName.equals(item.getReference()))
+                    data.appendChild(createLibraryElement(doc, libraryName, item, includedLibrariesElement));
+            }
+        }
         
         antProjectHelper.putPrimaryConfigurationData( data, true );
     }
