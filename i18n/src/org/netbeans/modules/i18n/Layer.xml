@@ -29,59 +29,18 @@ Microsystems, Inc. All Rights Reserved.
   
     <folder name="Services">
         <!-- I18N Settings -->
-        <file name="org-netbeans-modules-i18n-I18nOptions.settings">
-            <![CDATA[<?xml version="1.0"?>
-                <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                <settings version="1.0">
-                    <module name="org.netbeans.modules.i18n" spec="1.8"/>
-                    <instanceof class="java.lang.Object"/>
-                    <instanceof class="java.io.Serializable"/>
-                    <instanceof class="java.io.Externalizable"/>
-                    <instanceof class="org.openide.util.SharedClassObject"/>
-                    <instanceof class="org.openide.options.SystemOption"/>
-                    <instanceof class="org.netbeans.modules.i18n.I18nOptions"/>
-                    <instance class="org.netbeans.modules.i18n.I18nOptions"/>
-                </settings>
-            ]]>
-        </file>
+        <file name="org-netbeans-modules-i18n-I18nOptions.settings" url="I18nOptions.settings"/>
         
         <!-- Locale External Execution -->
         <folder name="Executor">
-            <file name="org-netbeans-modules-i18n-LocaleExecutor.settings">
-                <![CDATA[<?xml version="1.0"?>
-                    <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                    <settings version="1.0">
-                        <module name="org.netbeans.modules.i18n" spec="1.8"/>
-                        <instanceof class="java.lang.Object"/>
-                        <instanceof class="java.io.Serializable"/>
-                        <instanceof class="org.openide.ServiceType"/>
-                        <instanceof class="org.openide.execution.Executor"/>
-                        <instanceof class="org.openide.execution.ProcessExecutor"/>
-                        <instanceof class="org.netbeans.modules.i18n.LocaleExecutor"/>
-                        <instance class="org.netbeans.modules.i18n.LocaleExecutor"/>
-                    </settings>
-                ]]>
-            </file>
+            <file name="org-netbeans-modules-i18n-LocaleExecutor.settings" url="LocaleExecutor.settings"/>
         </folder>
     </folder>
     
     <folder name="Templates">
         <folder name="Services">
             <folder name="Executor">
-                <file name="org-netbeans-modules-i18n-LocaleExecutor.settings">
-                    <![CDATA[<?xml version="1.0"?>
-                        <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                        <settings version="1.0">
-                            <module name="org.netbeans.modules.i18n" spec="1.8"/>
-                            <instanceof class="java.lang.Object"/>
-                            <instanceof class="java.io.Serializable"/>
-                            <instanceof class="org.openide.ServiceType"/>
-                            <instanceof class="org.openide.execution.Executor"/>
-                            <instanceof class="org.openide.execution.ProcessExecutor"/>
-                            <instanceof class="org.netbeans.modules.i18n.LocaleExecutor"/>
-                            <instance class="org.netbeans.modules.i18n.LocaleExecutor"/>
-                        </settings>
-                    ]]>
+                <file name="org-netbeans-modules-i18n-LocaleExecutor.settings" url="LocaleExecutor.settings">
                     <attr name="template" boolvalue="true"/>
                 </file>
             </folder>
