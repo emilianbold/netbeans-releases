@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -380,8 +381,9 @@ public class EditablePropertiesTest extends NbTestCase {
     // helper methods:
     
     
-    private String filenameOfTestProperties() throws Exception {
-        return EditablePropertiesTest.class.getResource("data/test.properties").getPath();
+    private String filenameOfTestProperties() {
+        // #50987: never use URL.path for this purpose...
+        return new File(URI.create(EditablePropertiesTest.class.getResource("data/test.properties").toExternalForm())).getAbsolutePath();
     }
     
     private EditableProperties loadTestProperties() throws IOException {
