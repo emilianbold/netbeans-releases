@@ -604,18 +604,30 @@ public abstract class FormProperty extends Node.Property {
         return null;
     }
 
+    /** Gets the code to be generated before the property setter code
+     * (on separate line).
+     */
     public String getPreCode() {
         return preCode;
     }
 
+    /** Gets the code to be generated after the property setter code
+     * (on separate line).
+     */
     public String getPostCode() {
         return postCode;
     }
 
+    /** Sets the code to be generated before the property setter code
+     * (on separate line).
+     */
     public void setPreCode(String value) {
         preCode = value;
     }
 
+    /** Sets the code to be generated after the property setter code
+     * (on separate line).
+     */
     public void setPostCode(String value) {
         postCode = value;
     }
