@@ -124,10 +124,10 @@ public class WebProjectProperties {
     private static final String PROJECT = AntProjectHelper.PROJECT_PROPERTIES_PATH;
     private static final String PRIVATE = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
     
-    public static final String TAG_WEB_MODULE_LIBRARIES = "web-module-libraries"; // NOI18N
+    private static final String TAG_WEB_MODULE_LIBRARIES = "web-module-libraries"; // NOI18N
     private static final String TAG_WEB_MODULE__ADDITIONAL_LIBRARIES = "web-module-additional-libraries"; //NOI18N
 
-    public static final PropertyParser STRING_PARSER = new StringParser();
+    static final PropertyParser STRING_PARSER = new StringParser();
     private static final BooleanParser BOOLEAN_PARSER = new BooleanParser();
     private static final InverseBooleanParser INVERSE_BOOLEAN_PARSER = new InverseBooleanParser();
     private static final PropertyParser PATH_PARSER = new PathParser();
@@ -311,7 +311,7 @@ public class WebProjectProperties {
         }
     }
 
-    public void initProperty(final String propertyName, final PropertyInfo propertyInfo) {
+    void initProperty(final String propertyName, final PropertyInfo propertyInfo) {
         properties.put(propertyName, propertyInfo);
     }
 
@@ -341,7 +341,6 @@ public class WebProjectProperties {
                         if (pd.dest == null && newValueEncoded != null) {
                             // Specialy handled properties
                             if (WEB_PROJECT_NAME.equals(pd.name)) {
-                                String newName = newValueEncoded;
                                 assert false : "No support yet for changing name of J2SEProject; cf. J2SEProject.setName";  //NOI18N
                             }
                         }
@@ -586,7 +585,7 @@ public class WebProjectProperties {
         }
     }
     
-  public class PropertyInfo {
+  class PropertyInfo {
         
         private PropertyDescriptor propertyDesciptor;
         private String rawValue;
@@ -637,8 +636,8 @@ public class WebProjectProperties {
         }
     }
     
-    public static class PropertyDescriptor {
-        public interface Saver {
+    static class PropertyDescriptor {
+        interface Saver {
             public void save(PropertyInfo propertyInfo);
         }
 
@@ -648,14 +647,14 @@ public class WebProjectProperties {
         final Saver saver;
 
 
-        public PropertyDescriptor(String name, String dest, PropertyParser parser, Saver saver) {
+        PropertyDescriptor(String name, String dest, PropertyParser parser, Saver saver) {
             this.name = name;
             this.dest = dest;
             this.saver = saver;
             this.parser = parser;
         }
 
-        public PropertyDescriptor( String name, String dest, PropertyParser parser ) {
+        PropertyDescriptor( String name, String dest, PropertyParser parser ) {
             this(name, dest, parser, null);
         }
 
