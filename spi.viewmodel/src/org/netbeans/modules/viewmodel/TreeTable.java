@@ -309,7 +309,8 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
 
     public void expandNode (Object node) {
         Node n = currentTreeModelRoot.findNode (node);
-        treeTable.expandNode (n);
+        if (treeTable != null)
+            treeTable.expandNode (n);
     }
 
     public void collapseNode (Object node) {
