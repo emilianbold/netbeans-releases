@@ -24,7 +24,7 @@ import javax.swing.*;
  * @author Tran Duc Trung
  */
 
-abstract class FakeComponentPeer implements FakePeer
+abstract class FakeComponentPeer implements FakePeer, java.awt.peer.LightweightPeer
 {
     Component _delegate;
     Component _target;
@@ -114,6 +114,16 @@ abstract class FakeComponentPeer implements FakePeer
 
     public void setBounds(int x, int y, int width, int height) {
         _delegate.setBounds(x, y, width, height);
+    }
+
+    // JDK 1.5
+    public void setBounds(int x, int y, int width, int height, int op) {
+        _delegate.setBounds(x, y, width, height);
+    }
+
+    // JDK 1.5
+    public Rectangle getBounds() {
+        return _delegate.getBounds();
     }
 
     public void handleEvent(AWTEvent e) {
@@ -224,22 +234,7 @@ abstract class FakeComponentPeer implements FakePeer
     // JDK 1.4 (VolatileImage not before 1.4)
     public VolatileImage createVolatileImage(int width, int height) {
         GraphicsConfiguration gc = getGraphicsConfiguration();
-        if (gc != null) {
-            try {
-                java.lang.reflect.Method m = GraphicsConfiguration.class.getMethod(
-                    "createCompatibleVolatileImage", // NOI18N
-                    new Class[] { Integer.TYPE, Integer.TYPE });
-                if (m != null) {
-                    return (VolatileImage) m.invoke(
-                             gc,
-                             new Object[] { new Integer(width),
-                                            new Integer(height) });
-                }
-            }
-            catch (Exception ex) {} // ignore
-        }
-        return null;
-//        return gc != null ? gc.createCompatibleVolatileImage(width, height) : null;
+        return gc != null ? gc.createCompatibleVolatileImage(width, height) : null;
     }
 
     public boolean prepareImage(Image img, int w, int h,
@@ -266,7 +261,8 @@ abstract class FakeComponentPeer implements FakePeer
 
     // JDK 1.4 (BufferCapabilities not before 1.4)
     public void createBuffers(int numBuffers, BufferCapabilities caps)
-        throws AWTException {
+        throws AWTException
+    {
     }
 
     // JDK 1.4
@@ -280,6 +276,19 @@ abstract class FakeComponentPeer implements FakePeer
 
     // JDK 1.4
     public void destroyBuffers() {
+    }
+
+    // JDK 1.5
+    public void reparent(java.awt.peer.ContainerPeer newContainer) {
+    }
+
+    // JDK 1.5
+    public boolean isReparentSupported() {
+        return false;
+    }
+
+    // JDK 1.5
+    public void layout() {
     }
 
     // deprecated

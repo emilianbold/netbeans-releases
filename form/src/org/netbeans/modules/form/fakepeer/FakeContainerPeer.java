@@ -53,6 +53,19 @@ abstract class FakeContainerPeer extends FakeComponentPeer implements ContainerP
         return false;
     }
 
+    // JDK 1.5
+    public void cancelPendingPaint(int x, int y, int w, int h) {
+    }
+
+    // JDK 1.5
+    public void restack() {
+    }
+
+    // JDK 1.5
+    public boolean isRestackSupported() {
+        return false;
+    }
+
     // deprecated
     public Insets insets() {
         if (_insets == null)

@@ -98,6 +98,11 @@ class FakeTextComponentPeer extends FakeComponentPeer
         return 0;
     }
 
+    // JDK 1.5
+    public java.awt.im.InputMethodRequests getInputMethodRequests() {
+        return null;
+    }
+
     //
     //
     //
