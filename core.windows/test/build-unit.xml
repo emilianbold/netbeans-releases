@@ -159,6 +159,8 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
                 <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
                 <pathelement location="${openide/io.dir}/${nb.modules.dir}/org-openide-io.jar"/> 
+                <pathelement location="${core.dir}/${nb.lib.dir}/org-netbeans-swing-plaf.jar"/>
+                <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-swing-tabcontrol.jar"/>
 
 	        <pathelement path="${junit.path}"/>
 		<pathelement path="${xerces.path}"/>
@@ -178,6 +180,8 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
                 <pathelement location="${openide/io.dir}/${nb.modules.dir}/org-openide-io.jar"/> 
 		<pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-lib-terminalemulator.jar"/>
+                <pathelement location="${core.dir}/${nb.lib.dir}/org-netbeans-swing-plaf.jar"/>
+                <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-swing-tabcontrol.jar"/>
                 
 	        <pathelement path="${junit.path}"/>
 		<pathelement path="${xerces.path}"/>
@@ -198,6 +202,8 @@ Microsystems, Inc. All Rights Reserved.
 	   <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
            <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+           <pathelement location="${core.dir}/${nb.lib.dir}/org-netbeans-swing-plaf.jar"/>
+           <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-swing-tabcontrol.jar"/>
 
             <!-- XXX -->
            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
@@ -217,6 +223,8 @@ Microsystems, Inc. All Rights Reserved.
 	   <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
            <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+           <pathelement location="${core.dir}/${nb.lib.dir}/org-netbeans-swing-plaf.jar"/>
+           <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-swing-tabcontrol.jar"/>
 
             <!-- XXX -->
            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
@@ -236,6 +244,8 @@ Microsystems, Inc. All Rights Reserved.
 	   <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
            <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+           <pathelement location="${core.dir}/${nb.lib.dir}/org-netbeans-swing-plaf.jar"/>
+           <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-swing-tabcontrol.jar"/>
 
             <!-- XXX -->
            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
@@ -243,6 +253,8 @@ Microsystems, Inc. All Rights Reserved.
            <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
            <pathelement location="${openide/io.dir}/${nb.modules.dir}/org-openide-io.jar"/>
            <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-lib-terminalemulator.jar"/>
+           <pathelement location="${core.dir}/${nb.lib.dir}/org-netbeans-swing-plaf.jar"/>
+           <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-swing-tabcontrol.jar"/>
     	</path>
     </target>
     
