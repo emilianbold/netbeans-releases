@@ -819,11 +819,6 @@ SystemFileSystem
         <file name="explorer.wsmode" url="windowmanager/Editing/explorer.wsmode" />
         <folder name="explorer">
           <attr name="filesystems.wstcref/runtime.wstcref" boolvalue="true" />
-          <attr name="filesystems.wstcref/Javadoc.wstcref" boolvalue="true" />
-          <attr name="Javadoc.wstcref/runtime.wstcref" boolvalue="true" />
-          <attr name="filesystems.wstcref/project.wstcref" boolvalue="true" />
-          <attr name="project.wstcref/Javadoc.wstcref" boolvalue="true" />
-          <attr name="project.wstcref/runtime.wstcref" boolvalue="true" />
           <file name="filesystems.wstcref" url="windowmanager/Editing/explorer/filesystems.wstcref" />
           <attr name="runtime.wstcref/properties.wstcref" boolvalue="true" />
           <file name="runtime.wstcref" url="windowmanager/Editing/explorer/runtime.wstcref" />
