@@ -73,7 +73,8 @@ public class FakePeerSupport
 
         for (int i = 0; i < ncomponents; i++) {
             Component comp = components[i];
-            attachFakePeer(comp);
+            if (!comp.isDisplayable()) // peer not attached yet
+                attachFakePeer(comp);
 
             if (comp instanceof Container)
                 attachFakePeerRecursively((Container) comp);
