@@ -27,6 +27,8 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -87,6 +89,10 @@ public class ImageViewer extends CloneableTopComponent {
     /** Listens for name changes. */
     private PropertyChangeListener nameChangeL;
     
+    /** collection of all buttons in the toolbar */
+    private final Collection/*<JButton>*/ toolbarButtons
+                                          = new ArrayList/*<JButton>*/(11);
+    
     
     /** Default constructor. Must be here, used during de-externalization */
     public ImageViewer () {
@@ -123,11 +129,19 @@ public class ImageViewer extends CloneableTopComponent {
         
         /* try to load the image: */
         String errMsg = loadImage(storedObject);
-        Component view = (storedImage != null) ? createImageView()
-                                               : createMessagePanel(errMsg);
+        
+        /* compose the whole panel: */
+        JToolBar toolbar = createToolBar();
+        Component view;
+        if (storedImage != null) {
+            view = createImageView();
+        } else {
+            view = createMessagePanel(errMsg);
+            setToolbarButtonsEnabled(false);
+        }
         setLayout(new BorderLayout());
         add(view, BorderLayout.CENTER);
-        add(createToolBar(), BorderLayout.NORTH);
+        add(toolbar, BorderLayout.NORTH);
 
         getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACS_ImageViewer"));        
         
@@ -227,6 +241,24 @@ public class ImageViewer extends CloneableTopComponent {
                                                : createMessagePanel(errMsg);
         remove(0);
         add(view, BorderLayout.CENTER, 0);
+        if (wasValid != isValid) {
+            setToolbarButtonsEnabled(isValid);
+        }
+    }
+    
+    /**
+     * Enables or disables all toolbar buttons.
+     *
+     * @param  enabled  <code>true</code> if all buttons should be enabled,
+     *                  <code>false</code> if all buttons should be disabled
+     */
+    private void setToolbarButtonsEnabled(final boolean enabled) {
+        assert toolbarButtons != null;
+        
+        final Iterator/*<JButton>*/ it = toolbarButtons.iterator();
+        while (it.hasNext()) {
+            ((JButton) it.next()).setEnabled(enabled);
+        }
     }
     
     /**
@@ -271,6 +303,7 @@ public class ImageViewer extends CloneableTopComponent {
             outButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACSD_Out_BTN"));
             outButton.setLabel("");
         toolBar.add(outButton);       
+        toolbarButtons.add(outButton);
         toolBar.addSeparator(new Dimension(2,2));
             JButton inButton = new JButton(SystemAction.get(ZoomInAction.class));
             inButton.setToolTipText (NbBundle.getBundle(ImageViewer.class).getString("LBL_ZoomIn"));
@@ -278,26 +311,39 @@ public class ImageViewer extends CloneableTopComponent {
             inButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACSD_In_BTN"));
             inButton.setLabel("");
         toolBar.add(inButton);
+        toolbarButtons.add(inButton);
         toolBar.addSeparator(new Dimension(11,2));
-        toolBar.add(getZoomButton(1,1));
+        
+        JButton button;
+        
+        toolBar.add(button = getZoomButton(1,1));
+        toolbarButtons.add(button);
         toolBar.addSeparator(new Dimension(11,2));
-        toolBar.add(getZoomButton(1,3));
+        toolBar.add(button = getZoomButton(1,3));
+        toolbarButtons.add(button);
         toolBar.addSeparator(new Dimension(2,2));
-        toolBar.add(getZoomButton(1,5));
+        toolBar.add(button = getZoomButton(1,5));
+        toolbarButtons.add(button);
         toolBar.addSeparator(new Dimension(2,2));
-        toolBar.add(getZoomButton(1,7));
+        toolBar.add(button = getZoomButton(1,7));
+        toolbarButtons.add(button);
         toolBar.addSeparator(new Dimension(11,2));
-        toolBar.add(getZoomButton(3,1));
+        toolBar.add(button = getZoomButton(3,1));
+        toolbarButtons.add(button);
         toolBar.addSeparator(new Dimension(2,2));
-        toolBar.add(getZoomButton(5,1));
+        toolBar.add(button = getZoomButton(5,1));
+        toolbarButtons.add(button);
         toolBar.addSeparator(new Dimension(2,2));
-        toolBar.add(getZoomButton(7,1));
+        toolBar.add(button = getZoomButton(7,1));
+        toolbarButtons.add(button);
         toolBar.addSeparator(new Dimension(11,2));
 //        SystemAction sa = SystemAction.get(CustomZoomAction.class);
 //        sa.putValue (Action.SHORT_DESCRIPTION, NbBundle.getBundle(ImageViewer.class).getString("LBL_CustomZoom"));
-        toolBar.add (getZoomButton ());
+        toolBar.add (button = getZoomButton ());
+        toolbarButtons.add(button);
         toolBar.addSeparator(new Dimension(11,2));
-        toolBar.add(getGridButton());
+        toolBar.add(button = getGridButton());
+        toolbarButtons.add(button);
         
         return toolBar;
     }
