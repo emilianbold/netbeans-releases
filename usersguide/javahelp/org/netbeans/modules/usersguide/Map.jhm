@@ -901,7 +901,7 @@
 
 
    <mapID target="org.netbeans.modules.jarpackager.options.JarPackagerOption" url="jarpackager/jarpackager_options.html" />
-   
+   <mapID target="org.netbeans.modules.jarpackager.JarExecutor" url="run/external.html" />
    <mapID target="org.netbeans.modules.vcscore.search.VcsSearchType" url="objects/search/search_status.html" />
    <mapID target="org.netbeans.modules.cvsclient.JavaCvsSettings" url="vcs-nb/cvs-nb/cvs_settings.html" />
    <mapID target="VCS_VariableEditor" url="vcs-nb/vcsgeneric/vcsgeneric_variables.html" />
