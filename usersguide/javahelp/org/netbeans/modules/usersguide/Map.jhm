@@ -691,9 +691,9 @@
 <!--CSH-->
 
 
-<mapID target="setupwizard.idesettings" url="configure/setup.html" />
-<mapID target="setupwizard.moduleselection" url="configure/setup.html" />
-<mapID target="setupwizard.autoupdate" url="configure/setup.html" />
+<mapID target="setupwizard.idesettings" url="configure/setup_1.html" />
+<mapID target="setupwizard.moduleselection" url="configure/setup_2.html" />
+<mapID target="setupwizard.autoupdate" url="configure/setup_3.html" />
 
 <mapID target="org.netbeans.core.windows.MainWindow" url="pending.html" />
 
