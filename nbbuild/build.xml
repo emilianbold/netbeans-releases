@@ -31,7 +31,7 @@ ToDo:
   <property name="build.sysclasspath" value="ignore"/>
 
   <!-- To make people happy who want to do `ant clean all': -->
-  <target name="all" depends="build,sanity-check" description="Build the IDE and run a sanity check."/>
+  <target name="all" depends="build,check-commit-validation" description="Build the IDE and run a sanity check."/>
 
   <target name="check-for-jdk-1.4">
     <available property="have-jdk-1.4" classname="java.lang.CharSequence"/>
@@ -1086,8 +1086,30 @@ the ${netbeans.dest}/bin/ directory.
     <printcvsmodules modules="${fixedmodules},${modules}" targetprefix="all-" />
   </target>
 
-  <!-- backward compatible name, delete after a time -->  
-  <target name="commitValidation" depends="commit-validation" />
+  <target name="conditional-commit-validation" >
+    <condition property="run.validation" >
+        <and>
+          <available file="../ide/test/build.xml" />
+          <available file="../jemmy/build.xml" />
+          <available file="../jellytools/build.xml" />
+          <available file="../xtest/build.xml" />
+        </and>
+    </condition>
+  </target>
+
+  
+  <target name="check-commit-validation" depends="commitValidation,no-commit-validation"  />
+  <target name="commitValidation" depends="conditional-commit-validation" if="run.validation" >
+    <antcall target="commit-validation" />
+  </target>
+  <target name="no-commit-validation" depends="conditional-commit-validation" unless="run.validation" >
+    <echo>
+        You do not seem to have modules to run commit validation test suite. 
+        You shall not commit any changes into CVS repository without running it.
+        More information at http://www.netbeans.org/community/guidelines/commit.html
+    </echo>
+  </target>
+  
   <target name="commit-validation" description="Runs tests to validate IDE before commit.">
     <property name="xtest.home" location="../xtest"/>
     <ant dir="${xtest.home}/instance" target="runtests">
