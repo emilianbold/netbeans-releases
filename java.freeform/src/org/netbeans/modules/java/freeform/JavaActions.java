@@ -231,17 +231,21 @@ final class JavaActions implements ActionProvider {
     }
     
     private void handleDebug() throws IOException, SAXException {
-        if (!alert(NbBundle.getMessage(JavaActions.class, "ACTION_debug"), GENERAL_SCRIPT_PATH)) {
-            return;
-        }
         String[] bindings = findCommandBinding(ActionProvider.COMMAND_RUN);
         Element task = null;
         Element origTarget = null;
         if (bindings != null && bindings.length <= 2) {
             origTarget = findExistingBuildTarget(ActionProvider.COMMAND_RUN);
-            assert origTarget != null;
-            task = targetUsesTaskExactlyOnce(origTarget, "java"); // NOI18N
+            //The origTarget may be null if the user has removed it from build.xml
+            if (origTarget != null) {
+                task = targetUsesTaskExactlyOnce(origTarget, "java"); // NOI18N
+            }
         }
+        
+        if (!alert(NbBundle.getMessage(JavaActions.class, "ACTION_debug"), task != null ? GENERAL_SCRIPT_PATH : FILE_SCRIPT_PATH)) {
+            return;
+        }
+        
         String generatedTargetName = "debug-nb"; // NOI18N
         String generatedScriptPath;
         Document doc;
