@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -160,10 +161,10 @@ class EjbJarActionProvider implements ActionProvider {
         } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             FileObject[] sourceRoots = project.getSourceRoots().getRoots();
             FileObject[] files = findSourcesAndPackages( context, sourceRoots);
-            
+            boolean recursive = (context.lookup(NonRecursiveFolder.class) == null);
             p = new Properties();
             if (files != null) {
-                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots,files[0]))); // NOI18N
+                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots,files[0]), recursive)); // NOI18N
             } else {
             }
         // TEST PART
@@ -303,7 +304,7 @@ class EjbJarActionProvider implements ActionProvider {
     private FileObject getRoot (FileObject[] roots, FileObject file) {
         FileObject srcDir = null;
         for (int i=0; i< roots.length; i++) {
-            if (FileUtil.isParentOf(roots[i],file)) {
+            if (FileUtil.isParentOf(roots[i],file) || roots[i].equals(file)) {
                 srcDir = roots[i];
                 break;
             }
