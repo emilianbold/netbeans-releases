@@ -84,7 +84,14 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
 
-
+    
+    <testbag testattribs="uworking" executor="ide" name="Using different browsers">
+       <testset dir="qa-functional/src">
+            <patternset>
+                 <include name="**/using/Using.class/testEBCLNetscape6InPath"/>
+            </patternset>
+       </testset>
+    </testbag>
 
     <testbag testattribs="jas" executor="ide" name="JSP and Servlet settings tests">
         <testset dir="qa-functional/src">

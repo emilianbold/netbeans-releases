@@ -63,6 +63,9 @@ public class Using extends JellyTestCase {
      **/
     public void testEBCLIeInPath() {
 	String ie = BrowserUtils.getIEInPath();
+	if(ie == null) {
+	    fail("Internet Explorer not found in path");
+	}
 	BrowserUtils.setCLBrowser();
 	BrowserUtils.setCLBrowserCommand(ie);
 	view();
@@ -72,6 +75,9 @@ public class Using extends JellyTestCase {
      **/
     public void testEBCLIeFullPath() {
 	String iefp = BrowserUtils.getIEFullPath();
+	if(iefp == null) {
+	    fail("Internet Explorer not found. See output for details.");
+	}
 	BrowserUtils.setCLBrowser();
 	BrowserUtils.setCLBrowserCommand(iefp);
 	view();
@@ -83,6 +89,9 @@ public class Using extends JellyTestCase {
 
     public void testEBCLNetscapeInPath() {
 	String ns = BrowserUtils.getNetscapeInPath();
+	if(ns == null) {
+	    fail("Netscape not found in path");
+	}
 	BrowserUtils.setCLBrowser();
 	BrowserUtils.setCLBrowserCommand(ns);
 	view();
@@ -94,6 +103,9 @@ public class Using extends JellyTestCase {
 
     public void testEBCLNetscapeFullPath() {
 	String nsfp = BrowserUtils.getNetscapeFullPath();
+	if(nsfp == null) {
+	    fail("Netscape not found. See output for details.");
+	}
 	BrowserUtils.setCLBrowser();
 	BrowserUtils.setCLBrowserCommand(nsfp);
 	view();
@@ -105,9 +117,18 @@ public class Using extends JellyTestCase {
 
     public void testEBCLNetscape6InPath() {
 	String ns = BrowserUtils.getNetscape6InPath();
+	if(ns == null) {
+	    fail("Netscape6 not found in path.");
+	}
 	BrowserUtils.setCLBrowser();
 	BrowserUtils.setCLBrowserCommand(ns);
+	System.out.println("before view");
 	view();
+	System.out.println("after view");
+	if(BrowserUtils.handleErrorInCLBrowser()) {
+	    fail("Problems in starting Netscape6 in path.");
+	}
+	System.out.println("ended test");
     }
 
     /**
@@ -116,6 +137,9 @@ public class Using extends JellyTestCase {
 
     public void testEBCLNetscape6FullPath() {
 	String nsfp = BrowserUtils.getNetscape6FullPath();
+	if(nsfp == null) {
+	    fail("Netscape6 not found. See output for details.");
+	}
 	BrowserUtils.setCLBrowser();
 	BrowserUtils.setCLBrowserCommand(nsfp);
 	view();
@@ -135,6 +159,9 @@ public class Using extends JellyTestCase {
 
     public void testEBUNetscapeInPath() {
 	String ns = BrowserUtils.getNetscapeInPath();
+	if(ns == null) {
+	    fail("Netscape not found.");
+	}
 	BrowserUtils.setExternalUnixBrowser();
 	BrowserUtils.setEBUBrowserCommand(ns);
 	view();
@@ -146,6 +173,9 @@ public class Using extends JellyTestCase {
 
     public void testEBUNetscapeFullPath() {
 	String nsfp = BrowserUtils.getNetscapeFullPath();
+	if(nsfp == null) {
+	    fail("Netscape not found. See output for details.");
+	}
 	BrowserUtils.setExternalUnixBrowser();
 	BrowserUtils.setEBUBrowserCommand(nsfp);
 	view();
@@ -218,7 +248,7 @@ public class Using extends JellyTestCase {
      **/
     public void view() {
 	String menuPath = "View|Web Browser"; //NOI18N
-	new Action(menuPath,null);
+	new Action(menuPath,null).performMenu();
     }
 }
 

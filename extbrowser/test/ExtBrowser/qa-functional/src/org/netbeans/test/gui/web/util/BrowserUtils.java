@@ -25,6 +25,7 @@ import org.netbeans.jellytools.properties.TextFieldProperty;
 import org.netbeans.jellytools.properties.PropertySheetTabOperator;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 
+import org.netbeans.jemmy.operators.JTextComponentOperator;
 
 import java.io.File;
 
@@ -205,5 +206,44 @@ public class BrowserUtils {
 	    return netscapeUx;
 	}
     }
+
+
+
+    /* Errors handling section */
+
+    /**
+       Handle error in CL browser configuration
+    */
+    public static boolean handleErrorInCLBrowser() {
+	String title = Bundle.getString("org.openide.Bundle","NTF_WarningTitle");
+	String text = Bundle.getString("org.netbeans.modules.extbrowser.Bundle","EXC_Invalid_Processor");
+	NbDialogOperator op = null;
+	try {
+	    op = new NbDialogOperator(title);
+	}catch(Exception e) {
+	    System.out.println(title + " dialog not found");
+	    return false;
+	}
+	//	JTextComponentOperator tco = new JTextComponentOperator(op,0);
+	//	System.out.println("#####TEXT:" + tco.getText());
+	op.ok();
+	return true;
+    }
+    /**
+       Handle error in CL browser configuration
+    */
+    public static boolean handleErrorInUnixBrowser() {
+	String title = Bundle.getString("org.openide.Bundle","NTF_WarningTitle");
+	String text = Bundle.getString("org.netbeans.modules.extbrowser.Bundle","MSG_Cant_run_netscape"); //{0} - name of command, for example netscape88
+	try {
+	    NbDialogOperator op = new NbDialogOperator(title);
+	    op.ok();
+	    return true;
+	}catch(Exception e) {
+	    return false;
+	}
+    }
 }
+
+
 
