@@ -125,7 +125,7 @@ public class HTMLFormatter extends ExtFormatter {
                                         }
                                     }
                                     else {
-                                        if (token.getImage().indexOf(tag) > -1){
+                                        if (token.getImage().equals(tag)){
                                             poss++;
                                         }
                                     }
@@ -182,7 +182,7 @@ public class HTMLFormatter extends ExtFormatter {
 				    }
 				}
 				else {
-				    if (token.getImage().indexOf(tag) > -1){				    
+				    if (token.getImage().equals(tag)){
 					poss++;
 				    }
 				}
