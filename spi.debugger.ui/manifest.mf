@@ -1,0 +1,5 @@
+Netbeans-Module: Version 1.00
+Netbeans-Module-Name: Debugger Module
+
+Name: com/netbeans/developer/modules/debugger/DebuggerSettings.class
+Netbeans-Module-Class: Option
