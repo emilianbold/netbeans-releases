@@ -11,12 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * NoJavadocException.java
- *
- * Created on 18. èerven 2001, 15:07
- */
-
 package org.netbeans.modules.javadoc.search;
 
 /**

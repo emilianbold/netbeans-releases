@@ -11,12 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * JavadocSearchEngine.java
- *
- * Created on 18. èerven 2001, 14:50
- */
-
 package org.netbeans.modules.javadoc.search;
 
 /**
