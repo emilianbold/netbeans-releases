@@ -100,10 +100,10 @@ public final class ScheduledRequest implements Runnable {
         if (task != null) {
             // if anything was scheduled cancel it
             task.cancel();
-            task = null;
             counter = 0;
+            releaseResources();
         }
-        if (lock == null) lock = fobj.lock();
+        lock = fobj.lock();
         performRequest();
     }
     
@@ -127,8 +127,11 @@ public final class ScheduledRequest implements Runnable {
         if (isRunning()) {
             t.waitFinished();
         } else {
-            t.cancel();
-            counter = 0;
+            synchronized (this) {
+                t.cancel();
+                counter = 0;
+                releaseResources();
+            }
         }
     }
     
@@ -152,12 +155,18 @@ public final class ScheduledRequest implements Runnable {
         } finally {
             running = false;
             if (task == null || counter == 0) {
-                lock.releaseLock();
-                lock = null;
-                inst = null;
-                task = null;
+                releaseResources();
             }
         }
+    }
+    
+    private void releaseResources() {
+        if (lock != null) {
+            lock.releaseLock();
+            lock = null;
+        }
+        inst = null;
+        task = null;
     }
     
 }
