@@ -64,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="netbeans/modules"/>
 
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="netbeans/modules/xml-api.jar"
+        <locjar jarfile="netbeans/modules/autoload/xml-api.jar"
                 manifest="manifest-subst.mf"
                 compress="false">
             <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
@@ -92,7 +92,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="Info"/>
         <makenbm file="../xml-api-${release}.nbm"
                  topdir="."
-                 module="netbeans/modules/xml-api.jar"
+                 module="netbeans/modules/autoload/xml-api.jar"
                  homepage="http://${homepage.base}/api/"
                  distribution="${dist.base}/xml-api-${release}.nbm">
             <license file="${license.file}"/>
