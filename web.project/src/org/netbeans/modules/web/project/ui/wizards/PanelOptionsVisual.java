@@ -114,6 +114,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         add(j2eeSpecComboBox, gridBagConstraints);
         j2eeSpecComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NPW1_J2EESpecLevel_A11YDesc"));
 
+        j2eeSpecDescLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_Description_LabelMnemonic").charAt(0));
         j2eeSpecDescLabel.setLabelFor(j2eeSpecDescTextPane);
         j2eeSpecDescLabel.setText(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_J2EESpecLevelDesc_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
