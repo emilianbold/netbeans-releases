@@ -36,11 +36,14 @@ import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
-import org.openide.util.Mutex;
+//import org.openide.util.Mutex;
 
 // XXX This entire class is junk. Should have a sensible data model independent of
 // nodes and display it using Children.Keys (or Looks) and everything would be
 // much easier. -jglick
+
+// I totally agree. It was planed to redesign the module and base it on a data model
+// unfortunately this project was cancelled. Radko
 
 public class DatabaseNodeChildren extends Children.Array {
 
@@ -53,14 +56,14 @@ public class DatabaseNodeChildren extends Children.Array {
     private PropertyChangeListener listener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent event) {
             if (event.getPropertyName().equals("finished")) { //NOI18N
-                Mutex.EVENT.writeAccess(new Runnable() {
-                    public void run() {
+//                Mutex.EVENT.writeAccess(new Runnable() {
+//                    public void run() {
                 remove(getNodes()); //remove wait node
                 nodes = getCh(); // change children ...
                 refresh(); // ... and refresh them
                 removeListener();
-                    }
-                });
+//                    }
+//                });
             }
         }
     };
