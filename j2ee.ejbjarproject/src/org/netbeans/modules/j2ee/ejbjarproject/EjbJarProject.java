@@ -132,7 +132,7 @@ final class EjbJarProject implements Project, AntProjectListener {
             "${build.classes.dir}/*.class" // NOI18N
         });
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
-        String webModuleLabel = org.openide.util.NbBundle.getMessage(EjbJarCustomizerProvider.class, "LBL_Node_WebModule"); //NOI18N
+        String webModuleLabel = org.openide.util.NbBundle.getMessage(EjbJarCustomizerProvider.class, "LBL_Node_EJBModule"); //NOI18N
         String srcJavaLabel = org.openide.util.NbBundle.getMessage(EjbJarCustomizerProvider.class, "LBL_Node_Sources"); //NOI18N
         
         sourcesHelper.addPrincipalSourceRoot("${"+EjbJarProjectProperties.SOURCE_ROOT+"}", webModuleLabel, /*XXX*/null, null);
