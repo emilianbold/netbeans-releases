@@ -80,7 +80,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Compilers -->
     <!-- ========= -->
     
-    <target depends="set_classpath" name="default-compiler">
+    <target name="default-compiler" depends="set_classpath">
        <ant antfile="${xtest.module_harness.antfile}" dir="." target="buildtests">
            <!-- This property contains directories to compile.
     	        These directories will be compiled separately. 
@@ -99,17 +99,27 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes tests inside IDE -->
-    <target depends="set_classpath" name="runidetest">
+    <target name="runidetest" depends="set_classpath">
+        <!-- package and install test module -->
+        <jar jarfile="${netbeans.home}/modules/servletmodule.jar" 
+             manifest="${xtest.testtype}/src/META-INF/MANIFEST.MF" 
+             compress="false">
+            <fileset dir="${xtest.testtype}/src">
+                <include name="org/netbeans/modules/servlettest/*.class"/>
+            </fileset>
+        </jar>
         <ant antfile="${xtest.module_harness.antfile}" dir="." target="test">
            <property name="xtest.exectype" value="ide"/>
            <property name="xtest.ide.winsys" value="sdi"/>
-       </ant>
+        </ant>
+        <!-- clean up garbage -->
+        <delete file="${netbeans.home}/modules/servletmodule.jar"/>
     </target>
     
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes standalone tests -->
-    <target depends="set_classpath" name="runcodetest">
+    <target name="runcodetest" depends="set_classpath">
         <ant antfile="${xtest.module_harness.antfile}" dir="." target="test">
            <property name="xtest.exectype" value="code"/>
         </ant>

@@ -7,6 +7,7 @@
  		<testset dir="unit/src">
 			<patternset>
 				<include name="**/*.class"/>
+				<exclude name="**/servlettest/**"/>
 				<exclude name="**/data"/>
  			</patternset>
  		</testset>
@@ -17,16 +18,16 @@
                           then call this one. It is handy when some servers (e.g. rmi registry)
                           have to be started before tests are run and stopped after
                           the run. -->
-	<executor antfile="build-unit.xml" name="code" target="runcodetest"/> 
+	<executor name="code" antfile="build-unit.xml" target="runcodetest"/> 
     
     <!-- ide executor - use this one if you plan to run your tests inside IDE (internally).
                         Similarly as with code executor, you can create your own to 
                         prepare some neccessary stuff before running tests. -->
-	<executor antfile="build-unit.xml" name="ide" target="runidetest"/> 
+	<executor name="ide" antfile="build-unit.xml" target="runidetest"/> 
 
-	<compiler antfile="build-unit.xml" default="true" name="default-compiler" target="default-compiler"/>
+	<compiler name="default-compiler" antfile="build-unit.xml" default="true" target="default-compiler"/>
 
     <!-- standard results processor - currently there is only one results processor in XTest -->    
-	<resultsprocessor antfile="build.xml" default="true" name="default-results-processor" target="test_report"/> 
+	<resultsprocessor name="default-results-processor" antfile="build.xml" default="true" target="test_report"/> 
 
 </mconfig>
