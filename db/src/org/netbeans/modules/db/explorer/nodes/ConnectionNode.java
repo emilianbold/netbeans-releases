@@ -33,7 +33,6 @@ import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.dlg.ConnectDialog;
 
 /**
 * Node representing open or closed connection to database.
