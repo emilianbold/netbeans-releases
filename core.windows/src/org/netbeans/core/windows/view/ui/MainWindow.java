@@ -338,7 +338,6 @@ public final class MainWindow extends JFrame {
             && !Arrays.asList(desktopPanel.getComponents()).contains(desktop)) {
                 desktopPanel.add(desktop, BorderLayout.CENTER);
             }
-            
             return;
         }
 
@@ -351,6 +350,9 @@ public final class MainWindow extends JFrame {
         if(desktop != null) {
             desktopPanel.add(desktop, BorderLayout.CENTER);
         }
+        invalidate();
+        validate();
+        repaint();        
     }
 
     // XXX PENDING used in DnD only.
