@@ -150,38 +150,16 @@ public final class DebuggerEngine extends LookupProvider {
     /** Action constant for Restart Action. */
     public static final Object              ACTION_RESTART = "restart";
     
-    /** Name of property for the session's state. */
-    //public static final String              PROP_STATE = "state"; // NOI18N
-    /** Name of property for the set of watches in the system. */
-//    public static final String              PROP_WATCHES = "watches"; // NOI18N
-    
-    /** Name of property for current thread. */
-//    public static final String              PROP_CURRENT_THREAD = "currentThread";
-    
     
     // variables ...............................................................
     
     private String                  typeID;
-//    private Session                 session;
     private Vector                  listener = new Vector ();
     private HashMap                 listeners = new HashMap ();
-//    private PropertyChangeSupport   pcs;
-    
-//    private Object                  lastAction;
     private HashMap                 actionProviders;
     private MyActionListener        actionListener = new MyActionListener ();
-    
-//    private Vector                  watches;
-//    private ThreadsProducer         threadsProducer;
-//    private AbstractThread          currentThread = null;
     private Lookup                  lookup;
     Lookup                          privateLookup;
-    
-    
-//    {
-//        pcs = new PropertyChangeSupport (this);
-//        watches = new Vector ();
-//    }
 
     DebuggerEngine (
         String typeID, 
@@ -190,7 +168,6 @@ public final class DebuggerEngine extends LookupProvider {
         Lookup sessionLookup
     ) {
         this.typeID = typeID;
-//        session = s;
         privateLookup = (services == null) ? 
             (Lookup) new Lookup.MetaInf (typeID, this) :
             new Lookup.Compound (
@@ -202,19 +179,6 @@ public final class DebuggerEngine extends LookupProvider {
             privateLookup
         );
     }
-    
-    /**
-     * Creates a new instance of DebuggerEngine with given services and id.
-     * ID should be unique representation of the type of this engine, like
-     * "debuggerjpda.netbeans.org".
-     * 
-     * @param id unique identifier of type of this debugger engine
-     * @param services set of services
-     * @return a new instance of DebuggerEngine
-     */
-//    public static DebuggerEngine create (String id, Object[] services) {
-//        return new DebuggerEngine (id, services);
-//    }
     
     /**
      * Returns list of services of given type.
@@ -267,15 +231,6 @@ public final class DebuggerEngine extends LookupProvider {
         return typeID;
     }
     
-//    /**
-//     * Return instance of session this engine has been created for.
-//     *
-//     * @return instance of session this engine has been created for
-//     */
-//    public Session getOriginalSession () {
-//        return session;
-//    }
-    
     
     // support for actions .....................................................
 
@@ -292,7 +247,6 @@ public final class DebuggerEngine extends LookupProvider {
 
     private final boolean doActionIn (Object action) {
         if (actionProviders == null) initActionImpls ();
-//        lastAction = action;
         ArrayList l = (ArrayList) actionProviders.get (action);
         if (l != null) {
             l = (ArrayList) l.clone ();
@@ -325,15 +279,6 @@ public final class DebuggerEngine extends LookupProvider {
     }
     
     /**
-     * Returns action constant of last action called on this DebuggerEngine.
-     * 
-     * @return action constant of last action called on this DebuggerEngine
-     */
-//    public Object getLastAction () {
-//        return lastAction;
-//    }
-    
-    /**
      * Returns true if given action can be performed on this DebuggerEngine.
      * 
      * @param action action constant (default set of constanct are defined
@@ -364,159 +309,6 @@ public final class DebuggerEngine extends LookupProvider {
                 registerActionsProvider (ii.next (), ap);
         }
     }
-
-    
-    // watches .................................................................
-//
-//    /**
-//    * Returns watch for given expression or null.
-//    *
-//    * @return watch for given expression or null
-//    */
-//    public Watch findWatch (String expression) {
-//        Watch[] ws = getWatches ();
-//        int i, k = ws.length;
-//        for (i = 0; i < k; i++)
-//            if (expression.equals (ws [i]))
-//                return ws [i];
-//        return null;
-//    }
-//
-//    /**
-//    * Returns array of all watches.
-//    *
-//    * @return array of all watches.
-//    */
-//    public Watch[] getWatches () {
-//        Watch[] w;
-//        if (watches == null) return new Watch [0]; // PATCH for deser.
-//                                                   // from core/1
-//        synchronized (watches) {
-//            w = new Watch [watches.size ()];
-//            watches.copyInto (w);
-//        }
-//        return w;
-//    }
-//
-//    /**
-//    * Removes all watches.
-//    */
-//    public void removeAllWatches () {
-//        Vector v = (Vector) watches.clone ();
-//        int i, k = v.size ();
-//        for (i = k - 1; i >= 0; i--)
-//            ((Watch) v.elementAt (i)).remove ();
-//    }
-//
-//    /**
-//     * Adds watch.
-//     *
-//     * @param b watch to be added
-//     */
-//    protected void addWatch (Watch w) {
-//        watches.addElement (w);
-//        fireWatchCreated (w);
-//    }
-//
-//    /**
-//    * Removes watch.
-//    *
-//    * @param b watch to be removed
-//    */
-//    public void removeWatch (Watch w) {
-//        watches.removeElement (w);
-//        fireWatchRemoved (w);
-//    }
-    
-    
-    // threads .................................................................
-    
-    /**
-     * Returns root of all threads.
-     *
-     * @return root of all threads
-     */
-//    public ThreadsProducer getThreadsRoot () {
-//        if (threadsProducer == null) {
-//            ThreadsProvider tp = (ThreadsProvider) lookupFirst 
-//                (ThreadsProvider.class);
-//            threadsProducer = tp.getThreadsRoot ();
-//        }
-//        return threadsProducer;
-//    }
-
-    /**
-     * Returns current thread or null.
-     *
-     * @return current thread or null
-     */
-//    public AbstractThread getCurrentThread () {
-//        return currentThread;
-//    }
-
-    /**
-     * Sets current thread. If thread is null, unsets curent thread.
-     * 
-     * @param thread thread to be current
-     */
-//    public void setCurrentThread (AbstractThread thread) {
-//        if (currentThread == thread) return;
-//        Object old = currentThread;
-//        currentThread = thread;
-//        firePropertyChange (PROP_CURRENT_THREAD, old, thread);
-//    }
-    
-    
-    // PCH listener support ....................................................
-
-    /**
-     * Adds property change listener.
-     *
-     * @param l new listener.
-     */
-//    public void addPropertyChangeListener (PropertyChangeListener l) {
-//        pcs.addPropertyChangeListener (l);
-//    }
-
-    /**
-     * Removes property change listener.
-     *
-     * @param l removed listener.
-     */
-//    public void removePropertyChangeListener (PropertyChangeListener l) {
-//        pcs.removePropertyChangeListener (l);
-//    }
-
-    /**
-     * Adds property change listener.
-     *
-     * @param propertyName a name of property to listen on
-     * @param l new listener.
-     */
-//    public void addPropertyChangeListener (
-//        String propertyName, PropertyChangeListener l
-//    ) {
-//        pcs.addPropertyChangeListener (propertyName, l);
-//    }
-
-    /**
-     * Removes property change listener.
-     *
-     * @param propertyName a name of property to listen on
-     * @param l removed listener.
-     */
-//    public void removePropertyChangeListener (
-//        String propertyName, PropertyChangeListener l
-//    ) {
-//        pcs.removePropertyChangeListener (propertyName, l);
-//    }
-    
-    /**
-     * Fires property change.
-     */
-//    private void firePropertyChange (String name, Object o, Object n) {
-//        pcs.firePropertyChange (name, o, n);
-//    }
 
     
     // DebuggerEngineListener support ..........................................
@@ -576,60 +368,6 @@ public final class DebuggerEngine extends LookupProvider {
 
     
     // firing support ..........................................................
-    
-    /**
-     * Notifies registered listeners about a change.
-     * Notifies {@link #listener registered listeners} that a watch
-     * {@link DebuggerListener#watchAdded was added}
-     * and {@link #pcs property change listeners} that its properties
-     * {@link PropertyChangeSupport#firePropertyChange(String, Object, Object)}
-     * were changed.
-     *
-     * @param Watch  a watch that was created
-     */
-//    private void fireWatchCreated (final Watch watch) {
-//        initDebuggerEngineListeners ();
-//        Vector l = (Vector) listener.clone ();
-//        Vector l1 = (Vector) listeners.get (PROP_WATCHES);
-//        if (l1 != null)
-//            l1 = (Vector) l1.clone ();
-//        int i, k = l.size ();
-//        for (i = 0; i < k; i++)
-//            ((DebuggerEngineListener)l.elementAt (i)).watchAdded (this, watch);
-//        if (l1 != null) {
-//            k = l1.size ();
-//            for (i = 0; i < k; i++)
-//                ((DebuggerEngineListener)l1.elementAt (i)).watchAdded (this, watch);
-//        }
-//        pcs.firePropertyChange (PROP_WATCHES, null, null);
-//    }
-
-    /**
-     * Notifies registered listeners about a change.
-     * Notifies {@link #listener registered listeners} that a watch
-     * {@link DebuggerListener#watchRemoved was removed}
-     * and {@link #pcs property change listeners} that its properties
-     * {@link PropertyChangeSupport#firePropertyChange(String, Object, Object)}
-     * were changed.
-     *
-     * @param Watch  a watch that was removed
-     */
-//    private void fireWatchRemoved (final Watch watch) {
-//        initDebuggerEngineListeners ();
-//        Vector l = (Vector) listener.clone ();
-//        Vector l1 = (Vector) listeners.get (PROP_WATCHES);
-//        if (l1 != null)
-//            l1 = (Vector) l1.clone ();
-//        int i, k = l.size ();
-//        for (i = 0; i < k; i++)
-//            ((DebuggerEngineListener)l.elementAt (i)).watchRemoved (this, watch);
-//        if (l1 != null) {
-//            k = l1.size ();
-//            for (i = 0; i < k; i++)
-//                ((DebuggerEngineListener)l1.elementAt (i)).watchRemoved (this, watch);
-//        }
-//        pcs.firePropertyChange (PROP_WATCHES, null, null);
-//    }
 
     /**
      * Notifies registered listeners about a change.
@@ -642,7 +380,6 @@ public final class DebuggerEngine extends LookupProvider {
      * @param breakpoint  a breakpoint that was removed
      */
     private boolean fireActionDone (
-       // final Object oldAction, 
         final Object action, 
         boolean succeed
     ) {
