@@ -347,6 +347,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Applet.java" url="templates/AWTForms/Applet_java">
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/Applet.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/applet.gif"/>
             </file>
             <file name="Applet.form" url="templates/AWTForms/Applet_form">
                 <attr name="template" boolvalue="true" />
@@ -355,6 +356,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Dialog.java" url="templates/AWTForms/Dialog_java">
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/Dialog.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/dialog.gif"/>
             </file>
             <file name="Dialog.form" url="templates/AWTForms/Dialog_form">
                 <attr name="template" boolvalue="true" />
@@ -363,6 +365,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Frame.java" url="templates/AWTForms/Frame_java">
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/Frame.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/frame.gif"/>
             </file>
             <file name="Frame.form" url="templates/AWTForms/Frame_form">
                 <attr name="template" boolvalue="true" />
@@ -371,6 +374,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Panel.java" url="templates/AWTForms/Panel_java">
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/Panel.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/beaninfo/awt/panel.gif"/>
             </file>
             <file name="Panel.form" url="templates/AWTForms/Panel_form">
                 <attr name="template" boolvalue="true" />
@@ -384,6 +388,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="JApplet.java" url="templates/SwingForms/JApplet_java">
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/JApplet.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JAppletColor16.gif"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JAppletColor32.gif"/>
             </file>
             <file name="JApplet.form" url="templates/SwingForms/JApplet_form">
                 <attr name="template" boolvalue="true" />
@@ -392,6 +398,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="JDialog.java" url="templates/SwingForms/JDialog_java">
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/JDialog.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor16.gif"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor32.gif"/>
             </file>
             <file name="JDialog.form" url="templates/SwingForms/JDialog_form">
                 <attr name="template" boolvalue="true" />
@@ -400,6 +408,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="JFrame.java" url="templates/SwingForms/JFrame_java">
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/JFrame.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
             </file>
             <file name="JFrame.form" url="templates/SwingForms/JFrame_form">
                 <attr name="template" boolvalue="true" />
@@ -408,6 +418,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="JInternalFrame.java" url="templates/SwingForms/JInternalFrame_java">
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/JInternalFrame.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JInternalFrameColor16.gif"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JInternalFrameColor32.gif"/>
             </file>
             <file name="JInternalFrame.form" url="templates/SwingForms/JInternalFrame_form">
                 <attr name="template" boolvalue="true" />
@@ -416,6 +428,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="JPanel.java" url="templates/SwingForms/JPanel_java">
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/JPanel.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor16.gif"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor32.gif"/>
             </file>
             <file name="JPanel.form" url="templates/SwingForms/JPanel_form">
                 <attr name="template" boolvalue="true" />
