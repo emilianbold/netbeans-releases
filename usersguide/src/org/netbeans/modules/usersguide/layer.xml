@@ -91,8 +91,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Cf. #19623: -->
     <folder name="TipsOfTheDay">
         <!-- Don't forget to keep ordering constraints intact; and update layer_ja.xml too: -->
-        <file name="get-started.html" url="tips/get-started.html"/>
-        <attr name="get-started.html/update-center.html" boolvalue="true"/>
         <file name="update-center.html" url="tips/update-center.html"/>
         <attr name="update-center.html/add-jar-zip.html" boolvalue="true"/>
         <file name="add-jar-zip.html" url="tips/add-jar-zip.html"/>
@@ -118,9 +116,7 @@ Microsystems, Inc. All Rights Reserved.
         <file name="terminate-process.html" url="tips/terminate-process.html"/>
         <attr name="terminate-process.html/browse-javadoc.html" boolvalue="true"/>
         <file name="browse-javadoc.html" url="tips/browse-javadoc.html"/>
-        <attr name="browse-javadoc.html/mdi.html" boolvalue="true"/>
-        <file name="mdi.html" url="tips/mdi.html"/>
-        <attr name="mdi.html/hide-filesystem.html" boolvalue="true"/>
+        <attr name="browse-javadoc.html/hide-filesystem.html" boolvalue="true"/>
         <file name="hide-filesystem.html" url="tips/hide-filesystem.html"/>
         <attr name="hide-filesystem.html/vcs-groups.html" boolvalue="true"/>
         <file name="vcs-groups.html" url="tips/vcs-groups.html"/>
@@ -144,9 +140,7 @@ Microsystems, Inc. All Rights Reserved.
         <file name="editor-scrolling-shortcuts.html" url="tips/editor-scrolling-shortcuts.html"/>
         <attr name="editor-scrolling-shortcuts.html/tab-switch-shortcuts.html" boolvalue="true"/>
         <file name="tab-switch-shortcuts.html" url="tips/tab-switch-shortcuts.html"/>
-        <attr name="tab-switch-shortcuts.html/dock-view.html" boolvalue="true"/>
-        <file name="dock-view.html" url="tips/dock-view.html"/>
-        <attr name="dock-view.html/sort-properties.html" boolvalue="true"/>
+        <attr name="tab-switch-shortcuts.html/sort-properties.html" boolvalue="true"/>
         <file name="sort-properties.html" url="tips/sort-properties.html"/>
         <attr name="sort-properties.html/copy-paste-methods-fields.html" boolvalue="true"/>
         <file name="copy-paste-methods-fields.html" url="tips/copy-paste-methods-fields.html"/>
@@ -162,9 +156,7 @@ Microsystems, Inc. All Rights Reserved.
         <file name="create-menu-items-from-classes.html" url="tips/create-menu-items-from-classes.html"/>
         <attr name="create-menu-items-from-classes.html/editor-indentation.html" boolvalue="true"/>
         <file name="editor-indentation.html" url="tips/editor-indentation.html"/>
-        <attr name="editor-indentation.html/open-file.html" boolvalue="true"/>
-        <file name="open-file.html" url="tips/open-file.html"/>
-        <attr name="open-file.html/local-vars.html" boolvalue="true"/>
+        <attr name="editor-indentation.html/local-vars.html" boolvalue="true"/>
         <file name="local-vars.html" url="tips/local-vars.html"/>
         <attr name="local-vars.html/explore-from-here.html" boolvalue="true"/>
         <file name="explore-from-here.html" url="tips/explore-from-here.html"/>
