@@ -133,7 +133,7 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
                    SystemAction.get (org.netbeans.core.actions.AddFSAction.class),
                    SystemAction.get (org.netbeans.core.actions.AddJarAction.class),
                    null,
-                   SystemAction.get (org.openide.actions.NewAction.class),
+                   SystemAction.get (org.netbeans.core.actions.MountAction.class),
                    null,
                    SystemAction.get (org.openide.actions.ToolsAction.class),
                    SystemAction.get (org.openide.actions.PropertiesAction.class),
@@ -250,64 +250,3 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
     }
 
 }
-
-/*
- * Log
- *  27   Jaga      1.25.1.0    3/16/00  Jaroslav Tulach IDE is initialized 
- *       immediatelly when somebody calls TopManager.getDefault.
- *  26   Gandalf   1.25        1/13/00  Jaroslav Tulach I18N
- *  25   Gandalf   1.24        12/22/99 Ian Formanek    Fixed order of actions 
- *       in popup menu
- *  24   Gandalf   1.23        11/29/99 Petr Kuzel      Repository node tagged 
- *       by Repository cookie.
- *  23   Gandalf   1.22        11/5/99  Jaroslav Tulach WeakListener has now 
- *       registration methods.
- *  22   Gandalf   1.21        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  21   Gandalf   1.20        9/6/99   Jaroslav Tulach #3576
- *  20   Gandalf   1.19        8/9/99   Ian Formanek    Generated Serial Version
- *       UID
- *  19   Gandalf   1.18        8/3/99   Jaroslav Tulach Serialization of 
- *       NbMainExplorer improved again.
- *  18   Gandalf   1.17        7/8/99   Jesse Glick     Context help.
- *  17   Gandalf   1.16        6/9/99   Ian Formanek    ToolsAction
- *  16   Gandalf   1.15        6/8/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  15   Gandalf   1.14        5/9/99   Ian Formanek    Fixed bug 1655 - 
- *       Renaming of top level nodes is not persistent (removed the possibility 
- *       to rename).
- *  14   Gandalf   1.13        5/4/99   Jaroslav Tulach No new directory & jar 
- *       in Repository node.
- *  13   Gandalf   1.12        4/9/99   Ian Formanek    Removed debug printlns
- *  12   Gandalf   1.11        3/26/99  Jaroslav Tulach 
- *  11   Gandalf   1.10        3/26/99  Ian Formanek    Fixed use of obsoleted 
- *       NbBundle.getBundle (this)
- *  10   Gandalf   1.9         3/22/99  Jaroslav Tulach Added new section.
- *  9    Gandalf   1.8         3/21/99  Jaroslav Tulach Repository displayed ok.
- *  8    Gandalf   1.7         3/19/99  Jaroslav Tulach TopManager.getDefault 
- *       ().getRegistry ()
- *  7    Gandalf   1.6         3/17/99  Ian Formanek    Short Description, 
- *       cleaned up displayName -> Name
- *  6    Gandalf   1.5         2/11/99  Ian Formanek    Renamed FileSystemPool 
- *       -> Repository
- *  5    Gandalf   1.4         1/7/99   Jan Jancura     
- *  4    Gandalf   1.3         1/7/99   Ian Formanek    fixed resource names
- *  3    Gandalf   1.2         1/6/99   Ian Formanek    Reflecting change in 
- *       datasystem package
- *  2    Gandalf   1.1         1/6/99   Ian Formanek    Fixed outerclass 
- *       specifiers uncompilable under JDK 1.2
- *  1    Gandalf   1.0         1/5/99   Ian Formanek    
- * $
- * Beta Change History:
- *  0    Tuborg    0.31        --/--/98 Jaroslav Tulach The DataFolderRoot constructor now takes reference to this
- *  0    Tuborg    0.32        --/--/98 Jaroslav Tulach Serialization
- *  0    Tuborg    0.40        --/--/98 Jaroslav Tulach Nodes
- *  0    Tuborg    0.41        --/--/98 Petr Hamernik   isLeaf added
- *  0    Tuborg    0.43        --/--/98 Jaroslav Tulach changes due to new notification model of fs
- *  0    Tuborg    0.44        --/--/98 Jaroslav Tulach redesign
- *  0    Tuborg    0.45        --/--/98 Jaroslav Tulach now keeps list of all node delegates
- *  0    Tuborg    0.46        --/--/98 Jaroslav Tulach DataFilterCookie
- *  0    Tuborg    0.47        --/--/98 Ales Novak      constructor with parent node added
- *  0    Tuborg    0.48        --/--/98 Jan Formanek    icon modified
- *  0    Tuborg    0.49        --/--/98 Petr Hamernik   add directory action added
- */
