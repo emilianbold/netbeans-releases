@@ -753,7 +753,24 @@ public class DataNode extends AbstractNode {
             this.clone = clone;
         }
 
-        public Node getNode () throws DataObjectNotFoundException {
+        public Node getNode () throws IOException {
+            if (obj == null) {
+                // Serialization problem? Seems to occur frequently with connection support:
+                // java.lang.IllegalArgumentException: Called DataObject.find on null
+                //         at org.openide.loaders.DataObject.find(DataObject.java:435)
+                //         at org.openide.loaders.DataNode$ObjectHandle.getNode(DataNode.java:757)
+                //         at org.netbeans.modules.java.JavaDataObject$PersistentConnectionHandle.getNode(JavaDataObject.java:977)
+                //         at org.openide.loaders.ConnectionSupport$Pair.getNode(ConnectionSupport.java:357)
+                //         at org.openide.loaders.ConnectionSupport.register(ConnectionSupport.java:94)
+                //         at org.netbeans.modules.java.codesync.SourceConnectionSupport.registerDependency(SourceConnectionSupport.java:475)
+                //         at org.netbeans.modules.java.codesync.SourceConnectionSupport.addDependency(SourceConnectionSupport.java:554)
+                //         at org.netbeans.modules.java.codesync.ClassDependencyImpl.supertypesAdded(ClassDependencyImpl.java:241)
+                //         at org.netbeans.modules.java.codesync.ClassDependencyImpl.refreshClass(ClassDependencyImpl.java:121)
+                //         at org.netbeans.modules.java.codesync.SourceConnectionSupport.refreshLinks(SourceConnectionSupport.java:357)
+                //         at org.netbeans.modules.java.codesync.SourceConnectionSupport.access$000(SourceConnectionSupport.java:44)
+                //         at org.netbeans.modules.java.codesync.SourceConnectionSupport$2.run(SourceConnectionSupport.java:223)
+                throw new IOException("File could not be restored"); // NOI18N
+            }
             Node n = DataObject.find (obj).getNodeDelegate ();
             return clone ? n.cloneNode () : n;
         }
