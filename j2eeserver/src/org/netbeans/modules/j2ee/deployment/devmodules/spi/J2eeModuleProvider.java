@@ -20,6 +20,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
+import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
 import org.openide.filesystems.FileObject;
 import org.openide.util.WeakListeners;
 
@@ -82,6 +83,12 @@ public abstract class J2eeModuleProvider {
          * @return true if there is no existing configuration, false if there is exsisting configuration.
          */
         public boolean createInitialConfiguration();
+        /**
+         * Ensure configuration is ready to respond to any editing to the module.
+         * @return true if the configuration is ready, else false.
+         */
+        public boolean ensureConfigurationReady();
+        
         public void setWebContextRoot(String contextRoot);
         public String getWebContextRoot();
         /**
@@ -140,6 +147,15 @@ public abstract class J2eeModuleProvider {
         return getConfigSupportImpl().findConfigurationFO(name);
     }
     
+    /**
+     * Return destination path-to-source file mappings.
+     * Default returns config file mapping with straight mapping from the configuration
+     * directory to distribution directory.
+     */
+    public SourceFileMap getSourceFileMap() {
+        return getConfigSupportImpl().getDefaultConfigFileMap();
+    }
+    
     /** If the module wants to specify a target server instance for deployment 
      * it needs to override this method to return false. 
      */
@@ -169,7 +185,7 @@ public abstract class J2eeModuleProvider {
     public String getDeploymentName() {
         return getConfigSupportImpl().getDeploymentName();
     }
-    
+
     protected final void fireServerChange (String oldServerID, String newServerID) {
         Server oldServer = ServerRegistry.getInstance ().getServer (oldServerID);
 	Server newServer = ServerRegistry.getInstance ().getServer (newServerID);

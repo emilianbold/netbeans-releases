@@ -46,6 +46,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
 
 /**
  * Each J2eeModuleProvider hold a reference to an instance of this config support.
@@ -70,6 +71,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     private String configurationPrimaryFileName = null;
     private Map allRelativePaths = null;
     private ConfigDataObject configDO = null;
+    private boolean preparing = false; //to cut possible circularity of ensureConfigurationReady
     
     /** Creates a new instance of ConfigSupportImpl */
     public ConfigSupportImpl (J2eeModuleProvider provider) {
@@ -139,13 +141,25 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         try {
             FileObject fo = findPrimaryConfigurationFO();
             if (fo == null) {
-                ConfigurationStorage storage = getStorage();
-                return (storage != null);
+                return ensureConfigurationReady();
             }
         } catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         return false;
+    }
+    
+    public boolean ensureConfigurationReady() {
+        if (preparing) { // should be single place to check
+            return true; // optimistic
+        }
+        preparing = true;
+        try {
+            ConfigurationStorage storage = getStorage();
+            return (storage != null);
+        } finally {
+            preparing = false;
+        }
     }
      
     /**
@@ -186,6 +200,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     
     public void resetStorage() {
         try {
+            preparing = false;
             if (configDO == null) {
                 FileObject fo = findPrimaryConfigurationFO();
                 if (fo != null) {
@@ -312,13 +327,14 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         if (getServer() == null) {
             return null;
         }
-        if (configDO != null) {
-            return (ConfigurationStorage) configDO.getCookie(ConfigurationStorage.class);
-        }
-        
         FileLock lock = null;
         OutputStream out = null;
         try {
+            if (configDO != null) {
+                preparing = true;
+                return (ConfigurationStorage) configDO.getCookie(ConfigurationStorage.class);
+            }
+        
             FileObject primary = findPrimaryConfigurationFO();
             if (primary == null) {
                 ServerInstance instance = ServerRegistry.getInstance ().getServerInstance (getProvider ().getServerInstanceID ());
@@ -367,6 +383,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             } catch(IOException ioe) {
                 ErrorManager.getDefault().log(ioe.toString());
             }
+            preparing = false;
         }
         return null;
     }
@@ -500,5 +517,41 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,  ioe);
         }
         return null;
+    }
+    
+    /**
+     * Return straigth file mapping servide for configuration files.
+     * Note: mapping root is folder containing primary configuration file.
+     */
+    public SourceFileMap getDefaultConfigFileMap() {
+        try {
+            FileObject primaryFO = getProvider().getDeploymentConfigurationFile(getPrimaryConfigurationFileName());
+            return new StraightFileMap(primaryFO.getParent());
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+        }
+        return null;
+    }
+
+    /**
+     * Straight file mapping service.
+     * Map a distribution path to a file using distribution path as relative path to a mapping root.
+     */
+    private static final class StraightFileMap extends SourceFileMap {
+        private FileObject root;
+        public StraightFileMap(FileObject root) {
+            this.root = root;
+        }
+        public boolean add(String distributionPath, FileObject sourceFile) {
+            return sourceFile.getPath().startsWith(root.getPath());
+        }
+        public FileObject findSourceFile(String distributionPath) {
+            String path = distributionPath.startsWith("/") ? distributionPath.substring(1) : distributionPath; //NOI18N
+            FileObject fo = root.getFileObject(path);
+            return fo;
+        }
+        public FileObject remove(String distributionPath) {
+            return findSourceFile(distributionPath);
+        }
     }
 }
