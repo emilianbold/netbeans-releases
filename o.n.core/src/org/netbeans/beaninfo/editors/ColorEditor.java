@@ -225,7 +225,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
             throw new IllegalArgumentException(null);
         }
         
-        text.trim();
+        text = text.trim();
         
         if("null".equals(text)) { // NOI18N
             setValue(null);
@@ -255,11 +255,11 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
 
                     if (index1 >= 0 && index2 >= 0) {
                         int red = Integer.parseInt(text.substring(
-                                                        start, index1));
+                                                        start, index1).trim());
                         int green = Integer.parseInt(text.substring(
-                                                          index1 + 1, index2));
+                                                          index1 + 1, index2).trim());
                         int blue = Integer.parseInt(text.substring(
-                                                         index2 + 1, end));
+                                                         index2 + 1, end).trim());
 
                         setValue(new SuperColor(null,
                                                 0,
