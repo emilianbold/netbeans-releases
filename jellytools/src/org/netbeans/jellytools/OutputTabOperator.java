@@ -282,6 +282,10 @@ public class OutputTabOperator extends JComponentOperator {
                     Method getLineEndMethod = clazz.getDeclaredMethod("getLineEnd", new Class[] {int.class});
                     getLineEndMethod.setAccessible(true);
                     Integer lineEnd = (Integer)getLineEndMethod.invoke(document, new Integer[] {new Integer(line)});
+                    if(lineStart.intValue() == lineEnd.intValue()) {
+                        // line is empty
+                        return "";
+                    }
                     Method getTextMethod = clazz.getDeclaredMethod("getText", new Class[] {int.class, int.class});
                     getTextMethod.setAccessible(true);
                     return getTextMethod.invoke(document, new Integer[] {lineStart, new Integer(lineEnd.intValue()-lineStart.intValue()-1)}).toString();
