@@ -28,6 +28,17 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Synch the following property loads with NbModuleProject.makeEvalDefs: -->
         <property file="../nbproject/private/private.properties"/>
         <property file="../nbproject/project.properties"/>
+        <!-- #45947 - properties from project.properties with test-unit-sys-prop
+            prefix are treated as system properties. -->
+        <property name="temp.properties.path" location="${xtest.workdir}/sys/temp.properties"/>
+        <copy file="../nbproject/project.properties" tofile="${temp.properties.path}"/>
+        <replace file="${temp.properties.path}" token="test-unit-sys-prop." value="xtest.userdata|"/>
+        <property file="${temp.properties.path}"/>
+        <!-- Properties with prefix "xtest.userdata|" are written to the
+            ${xtest.workdir}/sys/userdata.properties in module_harness.xml#write-property 
+            target and then loaded as system properties before test execution. -->
+        <delete file="${temp.properties.path}"/>
+        <!-- #45947 end -->
     </target>
     
     <target name="init-parse-project-xml" depends="init-read-property-files" if="do.we.need.to.parse.project.xml.file" >
