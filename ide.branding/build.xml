@@ -88,6 +88,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     <copy todir="${netbeans.dest.dir}/${cluster.dir}" file="release/netbeans.png"/>
     <copy todir="${netbeans.dest.dir}/${cluster.dir}" file="release/netbeans.icns"/>
     <copy todir="${netbeans.dest.dir}/${cluster.dir}" file="release/shortcuts.pdf"/>
+    <copy todir="${netbeans.dest.dir}/${cluster.dir}" file="../launcher/os2/nbos2icons.zip"/>
   </target>
   
   <target name="jars" depends="init">
