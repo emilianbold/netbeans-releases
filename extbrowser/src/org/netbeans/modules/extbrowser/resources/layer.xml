@@ -17,6 +17,12 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Services">
     <folder name="Browsers">
 
+      <file name="OSXBrowser.settings" url="OSXBrowser.xml">
+        <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.OSXBrowser.isHidden"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
+      </file>
+
       <!-- Present on Non-Windows, Non-Unix platforms, like OS_2, Mac OS -->
       <file name="SimpleExtBrowser.settings" url="simpleBrowser.xml">
         <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.SimpleExtBrowser.isHidden"/>
@@ -41,13 +47,13 @@ Microsystems, Inc. All Rights Reserved.
       <file name="NetscapeBrowser.settings" url="NetscapeBrowser.xml">
         <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.NetscapeBrowser.isHidden"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/netscape.png"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
       </file>
 
       <file name="MozillaBrowser.settings" url="MozillaBrowser.xml">
         <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.MozillaBrowser.isHidden"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/mozilla.png"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
       </file>
       
       <!-- Default system browser should be first on Windows -->
@@ -65,6 +71,7 @@ Microsystems, Inc. All Rights Reserved.
       <attr name="MozillaBrowser.settings/NetscapeBrowser.settings" boolvalue="true"/>
 
       <!-- Other browsers order -->
+      <attr name="OSXBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
       <attr name="SimpleExtBrowser.settings/SwingBrowser.ser" boolvalue="true"/>
             
      </folder>
