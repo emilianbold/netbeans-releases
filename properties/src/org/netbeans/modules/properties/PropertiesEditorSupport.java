@@ -69,7 +69,7 @@ import org.openide.util.TaskListener;
  * @see org.openide.text.CloneableEditorSupport
  */
 public class PropertiesEditorSupport extends CloneableEditorSupport 
-implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
+implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serializable {
     
     /** New lines in this file was delimited by '\n'. */
     private static final byte NEW_LINE_N = 0;

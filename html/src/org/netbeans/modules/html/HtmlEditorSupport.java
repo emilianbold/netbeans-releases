@@ -48,7 +48,7 @@ import org.openide.windows.CloneableOpenSupport;
  * @author Radim Kubacki
  * @see org.openide.text.DataEditorSupport
  */
-public final class HtmlEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie, PrintCookie {
+public final class HtmlEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie {
 
     /** SaveCookie for this support instance. The cookie is adding/removing 
      * data object's cookie set depending on if modification flag was set/unset. */

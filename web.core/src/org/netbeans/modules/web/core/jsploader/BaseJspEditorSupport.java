@@ -51,7 +51,7 @@ import org.netbeans.modules.web.core.jsploader.TagLibParseSupport;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.nodes.Node;
 
-public class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, EditorCookie, OpenCookie, LineCookie, CloseCookie, PrintCookie {
+public class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, EditorCookie.Observable, OpenCookie, LineCookie, CloseCookie, PrintCookie {
     
     private static final int AUTO_PARSING_DELAY = 2000;//ms
     

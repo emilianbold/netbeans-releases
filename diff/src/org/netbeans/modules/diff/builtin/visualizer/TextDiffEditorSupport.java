@@ -85,7 +85,7 @@ import org.netbeans.api.diff.Difference;
  *
  * @author Jaroslav Tulach, Martin Entlicher
  */
-public class TextDiffEditorSupport extends CloneableEditorSupport implements EditorCookie, OpenCookie, PrintCookie, CloseCookie {
+public class TextDiffEditorSupport extends CloneableEditorSupport implements EditorCookie.Observable, OpenCookie, PrintCookie, CloseCookie {
 
     /** The difference */
     //private final DiffsListWithOpenSupport diff;

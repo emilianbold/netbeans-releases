@@ -57,7 +57,7 @@ import org.netbeans.modules.java.JavaDataObject;
  * @author Petr Jiricka, Yury Kamen
  */
 public class ServletEditor extends CloneableEditorSupport 
-    implements EditorCookie, CloseCookie, PrintCookie {
+    implements EditorCookie.Observable, CloseCookie, PrintCookie {
 
     /** Gets the lineset. Returns our lineset, which is a hack because the APIs don't handle dataobjects well. */
     public Line.Set getLineSet() {

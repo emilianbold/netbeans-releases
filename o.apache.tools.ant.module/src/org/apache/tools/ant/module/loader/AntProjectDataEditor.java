@@ -31,7 +31,7 @@ import org.openide.text.DataEditorSupport;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.CloneableOpenSupport;
 
-class AntProjectDataEditor extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie, PrintCookie {
+class AntProjectDataEditor extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie {
 
     public AntProjectDataEditor (AntProjectDataObject obj) {
         super (obj, new AntEnv (obj));

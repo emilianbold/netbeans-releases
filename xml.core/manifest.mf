@@ -7,7 +7,7 @@ OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Public-Packages: 
  org.netbeans.modules.xml.api.**,
  org.netbeans.modules.xml.spi.**
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.17
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.40
 OpenIDE-Module-Module-Dependencies: 
  org.netbeans.api.xml/1 > @API_SPEC_VERS_SUBST@,
  org.openide.execution > 1.0,

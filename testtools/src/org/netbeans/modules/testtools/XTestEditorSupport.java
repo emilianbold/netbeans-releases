@@ -35,7 +35,7 @@ import org.openide.windows.CloneableOpenSupport;
 
 /** Editor Support class for XTest Workspace Build Script
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
-public final class XTestEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie, PrintCookie, CloseCookie {
+public final class XTestEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie {
 
     /** SaveCookie for this support instance. The cookie is adding/removing 
      * data object's cookie set depending on if modification flag was set/unset. */

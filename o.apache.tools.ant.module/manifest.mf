@@ -7,7 +7,7 @@ OpenIDE-Module-Public-Packages: org.apache.tools.ant.module.api.*, org.apache.to
 OpenIDE-Module-Install: org/apache/tools/ant/module/AntModule.class
 OpenIDE-Module-Layer: org/apache/tools/ant/module/resources/AntModuleLayer.xml
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.javahelp/1 > 1.0, org.openide.compiler > 1.0, org.openide.execution > 1.0, org.openide.io > 1.0
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.17
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.40
 OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine, org.openide.execution.ExecutionEngine, org.openide.windows.IOProvider
 OpenIDE-Module-Package-Dependencies: [org.apache.tools.ant.Location], [org.apache.xerces.parsers.DOMParser], [org.apache.xml.serialize.EncodingInfo]
 Class-Path: ext/ant-1.5.1.jar ext/ant-optional-1.5.1.jar
