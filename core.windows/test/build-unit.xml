@@ -24,6 +24,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="runidetest">
         <property name="xtest.ide.use.classloader" value="org.netbeans.core.windows"/>
+        <property name="xtest.ide.commandline.suffix" value="-nogui"/>
         <executeTests  pluginName="ide">
             <classpath/>
         </executeTests>

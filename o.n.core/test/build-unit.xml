@@ -57,13 +57,14 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="runplatformtest">
         <executeTests  pluginName="ide">
-            <property name="xtest.ide.commandline.suffix" value="--clusters ${core.dir}" />
+            <property name="xtest.ide.commandline.suffix" value="--clusters ${core.dir} -nogui" />
             <classpath/>
         </executeTests>
     </target>
     
     <target name="runidetest">
         <executeTests  pluginName="ide">
+            <property name="xtest.ide.commandline.suffix" value="-nogui"/>
             <classpath/>
         </executeTests>
     </target>
