@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.favorites;
 
+import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,6 +46,22 @@ final class Favorites extends FilterNode {
     /** Creates new ProjectRootFilterNode. */
     private Favorites(Node node) {
         super(node, new Chldrn (node));
+    }
+    
+    public Image getIcon (int type) {
+        return Utilities.loadImage("org/netbeans/modules/favorites/resources/actionSelect.gif"); // NOI18N
+    }
+    
+    public Image getOpenedIcon (int type) {
+        return Utilities.loadImage("org/netbeans/modules/favorites/resources/actionSelect.gif"); // NOI18N
+    }
+    
+    public boolean canCopy () {
+        return false;
+    }
+    
+    public boolean canCut () {
+        return false;
     }
     
     public static org.openide.loaders.DataFolder getFolder () {
@@ -125,16 +142,11 @@ final class Favorites extends FilterNode {
     public Handle getHandle () {
         return new RootHandle ();
     }
-
+    
     public javax.swing.Action[] getActions(boolean context) {
-
-//        Action[] retValue;
-//        
-//        retValue = super.getActions(context);
-//        return retValue;
         return new Action[] {Actions.add()};
     }
-
+    
     private static class RootHandle implements Node.Handle {
         static final long serialVersionUID = 1907300072945111595L;
 
