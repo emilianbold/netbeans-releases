@@ -223,16 +223,18 @@ public abstract class AbstractPhadhail implements Phadhail {
             // Fire changes in path of children too.
             List recChildren = new ArrayList(100); // List<AbstractPhadhail>
             String prefix = oldFile.getAbsolutePath() + File.separatorChar;
-            Iterator it = instances.values().iterator();
-            while (it.hasNext()) {
-                AbstractPhadhail ph = (AbstractPhadhail)((Reference)it.next()).get();
-                if (ph != null && ph != this && ph.getPath().startsWith(prefix)) {
-                    recChildren.add(ph);
+            synchronized (AbstractPhadhail.class) {
+                Iterator it = instancesForFactory(factory()).values().iterator();
+                while (it.hasNext()) {
+                    AbstractPhadhail ph = (AbstractPhadhail)((Reference)it.next()).get();
+                    if (ph != null && ph != this && ph.getPath().startsWith(prefix)) {
+                        recChildren.add(ph);
+                    }
                 }
             }
             // Do the notification after traversing the instances map, since
             // we cannot mutate the map while an iterator is active.
-            it = recChildren.iterator();
+            Iterator it = recChildren.iterator();
             while (it.hasNext()) {
                 ((AbstractPhadhail)it.next()).parentRenamed(oldFile, newFile);
             }
