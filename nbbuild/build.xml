@@ -3828,7 +3828,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
     
     
-  <target name="check-files-layout" depends="generate-golden-files-init" >
+  <target name="generate-files-layout" depends="generate-golden-files" >
     <property name="generated.files.dir" location="build/generated" />
     <mkdir dir="${generated.files.dir}" />
     
@@ -3856,6 +3856,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </condition>
     
     
+  </target>
+  
+  
+  <target name="check-files-layout" depends="generate-files-layout" >
     <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="diff" failonerror="no" timeout="60000" >
       <arg value="-u" />
       <arg value="${check.files.layout.template}" />
