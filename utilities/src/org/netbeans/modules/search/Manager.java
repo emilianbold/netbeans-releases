@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.search;
 
+import java.lang.ref.Reference;
 import java.lang.reflect.Method;
 import java.util.List;
 import org.openide.ErrorManager;
@@ -62,6 +63,8 @@ final class Manager {
     private SearchTask currentSearchTask;
 
     private SearchTask pendingSearchTask;
+
+    private PrintDetailsTask currentPrintDetailsTask;
     
     private PrintDetailsTask pendingPrintDetailsTask;
 
@@ -75,7 +78,7 @@ final class Manager {
 
     private boolean searchWindowOpen = false;
     
-    private SearchDisplayer searchDisplayer;
+    private Reference outputWriterRef;
     
 
     /**
@@ -129,13 +132,9 @@ final class Manager {
             assert state == NO_TASK;
             pendingTasks |= PRINTING_DETAILS;
             
-            if (searchDisplayer == null) {
-                searchDisplayer = new SearchDisplayer();
-            }
             pendingPrintDetailsTask = new PrintDetailsTask(
                     children.getNodes(),
-                    searchGroup,
-                    searchDisplayer);
+                    searchGroup);
             processNextPendingTask();
         }
     }
@@ -198,6 +197,19 @@ final class Manager {
         }
         callOnWindowFromAWT("showAllDetailsFinished");                  //NOI18N
     }
+
+    /**
+     */
+    private void activateResultWindow() {
+        Method theMethod;
+        try {
+            theMethod = ResultView.class
+                        .getMethod("requestActive", new Class[0]);      //NOI18N
+        } catch (NoSuchMethodException ex) {
+            throw new IllegalArgumentException();
+        }
+        callOnWindowFromAWT(theMethod, null);
+    }
     
     /**
      * Calls a given method on the Search Results window, from the AWT thread.
@@ -205,16 +217,11 @@ final class Manager {
      * @param  methodName  name of the method to be called
      */
     private void callOnWindowFromAWT(final String methodName) {
-        Method theMethod = null;
-        Method[] methods = ResultView.class.getDeclaredMethods();
-        for (int i = 0; i < methods.length; i++) {
-            Method method = methods[i];
-            if (method.getName().equals(methodName)
-                    && method.getParameterTypes().length == 0) {
-                theMethod = method;
-            }
-        }
-        if (theMethod == null) {
+        Method theMethod;
+        try {
+            theMethod = ResultView.class
+                        .getDeclaredMethod(methodName, new Class[0]);
+        } catch (NoSuchMethodException ex) {
             throw new IllegalArgumentException();
         }
         callOnWindowFromAWT(theMethod, null);
@@ -282,7 +289,6 @@ final class Manager {
         synchronized (lock) {
             searchWindowOpen = false;
             
-            searchDisplayer = null;
             callOnWindowFromAWT("setResultModel", null);                //NOI18N
             if (currentSearchTask != null) {
                 currentSearchTask.stop(false);
@@ -334,6 +340,17 @@ final class Manager {
             callOnWindowFromAWT("setResultModel",                       //NOI18N
                               resultModel);
             resultModelToClean = resultModel;
+
+            if (outputWriterRef != null) {
+                SearchDisplayer.clearOldOutput(outputWriterRef);
+                outputWriterRef = null;
+
+                /*
+                 * The following is necessary because clearing the output window
+                 * activates the output window:
+                 */
+                activateResultWindow();
+            }
             
             RequestProcessor.Task task;
             task = RequestProcessor.getDefault().create(pendingSearchTask);
@@ -353,6 +370,11 @@ final class Manager {
      */
     private void startPrintingDetails() {
         synchronized (lock) {
+            if (outputWriterRef != null) {
+                SearchDisplayer.clearOldOutput(outputWriterRef);
+                outputWriterRef = null;
+            }
+
             RequestProcessor.Task task;
             task = RequestProcessor.getDefault()
                    .create(pendingPrintDetailsTask);
@@ -361,6 +383,7 @@ final class Manager {
             
             printDetailsTask = task;
             pendingTasks &= ~PRINTING_DETAILS;
+            currentPrintDetailsTask = pendingPrintDetailsTask;
             pendingPrintDetailsTask = null;
             
             state = PRINTING_DETAILS;
@@ -422,6 +445,9 @@ final class Manager {
             } else if (task == printDetailsTask) {
                 assert state == PRINTING_DETAILS;
                 notifyPrintingDetailsFinished();
+
+                outputWriterRef = currentPrintDetailsTask.getOutputWriterRef();
+                currentPrintDetailsTask = null;
                 printDetailsTask = null;
                 state = NO_TASK;
             } else {

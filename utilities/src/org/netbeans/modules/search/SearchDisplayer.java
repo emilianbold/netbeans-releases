@@ -17,6 +17,8 @@ package org.netbeans.modules.search;
 import java.awt.EventQueue;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import org.openide.ErrorManager;
 
@@ -39,33 +41,40 @@ public final class SearchDisplayer {
 
     /** name of attribute &quot;text to display in the Output Window&quot; */
     public static final String ATTR_OUTPUT_LINE = "output line";        //NOI18N
-    /** output tab */
-    private final InputOutput searchIO;
     /** writer to that tab */
     private OutputWriter ow = null;
     /** */
-    private volatile boolean justPrepared;
+    private Reference owRef = null;
 
     /** Creates new SearchDisplayer */
     SearchDisplayer() {
-        String name = NbBundle.getMessage(ResultView.class,
-                                          "TITLE_SEARCH_RESULTS");      //NOI18N
-        searchIO = IOProvider.getDefault().getIO(name, false);
     }
 
     /**
      */
     void prepareOutput() {
-        if (ow != null) {
-            try {
-                ow.reset();
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+        String tabName = NbBundle.getMessage(ResultView.class,
+                                             "TITLE_SEARCH_RESULTS");   //NOI18N
+        InputOutput searchIO = IOProvider.getDefault().getIO(tabName, false);
+        ow = searchIO.getOut();
+        owRef = new WeakReference(ow);
+        
+        searchIO.select();
+    }
+    
+    /**
+     */
+    static void clearOldOutput(final Reference outputWriterRef) {
+        if (outputWriterRef != null) {
+            OutputWriter oldWriter = (OutputWriter) outputWriterRef.get();
+            if (oldWriter != null) {
+                try {
+                    oldWriter.reset();
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
             }
         }
-        ow = searchIO.getOut();
-        searchIO.select();
-        justPrepared = true;
     }
     
     /**
@@ -89,13 +98,9 @@ public final class SearchDisplayer {
         }
 
         /* Print the output lines: */
-        final boolean requestFocus = justPrepared;
         try {
             EventQueue.invokeAndWait(new Runnable() {
                 public void run() {
-                    if (requestFocus) {
-                        searchIO.setFocusTaken(true);
-                    }
                     try {
                         for (int i = 0; i < outputLines.length; i++) {
                             OutputListener listener = listeners[i];
@@ -109,15 +114,11 @@ public final class SearchDisplayer {
                         ErrorManager.getDefault()
                         .notify(ErrorManager.EXCEPTION, ex);
                     }
-                    if (requestFocus) {
-                        searchIO.setFocusTaken(false);
-                    }
                 }
             });
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }
-        justPrepared = false;
     }
     
     /**
@@ -125,6 +126,13 @@ public final class SearchDisplayer {
     void finishDisplaying() {
         ow.flush();
         ow.close();
+        ow = null;
+    }
+    
+    /**
+     */
+    Reference getOutputWriterRef() {
+        return owRef;
     }
     
 }

@@ -14,6 +14,7 @@
 package org.netbeans.modules.search;
 
 import java.awt.EventQueue;
+import java.lang.ref.Reference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,24 +37,23 @@ public class PrintDetailsTask implements Runnable {
     /** */
     private final SearchGroup searchGroup;
     /** */
-    private final SearchDisplayer displayer;
-    /** */
     private final Node[] buffer = new Node[BUFFER_SIZE];
     /** position of the first free item in the buffer */
     private int bufPos = 0;
+    /** */
+    private SearchDisplayer displayer;
     
     
     /** Creates a new instance of PrintDetailsTask */
     public PrintDetailsTask(final Node[] nodes,
-                            final SearchGroup searchGroup,
-                            final SearchDisplayer displayer) {
+                            final SearchGroup searchGroup) {
         this.nodes = nodes;
         this.searchGroup = searchGroup;
-        this.displayer = displayer;
     }
     
     /** */
     public void run() {
+        displayer = new SearchDisplayer();
         callDisplayerFromAWT("prepareOutput");                    //NOI18N
         
         final SearchType[] searchTypes = searchGroup.getSearchTypes();        
@@ -97,6 +97,12 @@ public class PrintDetailsTask implements Runnable {
             displayer.displayNodes(smallBuffer);
         }
         callDisplayerFromAWT("finishDisplaying");
+    }
+
+    /**
+     */
+    public Reference getOutputWriterRef() {
+        return displayer.getOutputWriterRef();
     }
 
     /**
