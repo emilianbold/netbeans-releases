@@ -396,13 +396,13 @@ final class Services extends ServiceType.Registry {
       Node[] current = getNodes ();
       int[] perm = new int[current.length];
       
-      int max = current.length;
+      int max = newKeys.size();
       
       for (int i = 0; i < current.length; i++) {
         int indx = newKeys.indexOf (current[i]);
         if (indx == -1) {
           // node is not present => add at the end
-          perm[i] = --max;
+          perm[i] = max++;
         } else {
           // node present => do the right position
           perm[i] = indx;
@@ -720,6 +720,8 @@ final class Services extends ServiceType.Registry {
 
 /*
 * Log
+*  17   Gandalf   1.16        1/14/00  Martin Ryzl     bug in setting new 
+*       services fixed
 *  16   Gandalf   1.15        1/13/00  Jaroslav Tulach I18N
 *  15   Gandalf   1.14        12/21/99 Jaroslav Tulach serviceTypes r/w property
 *  14   Gandalf   1.13        12/20/99 Jesse Glick     No more "default 
