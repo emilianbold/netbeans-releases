@@ -498,7 +498,7 @@ public class IDESettings extends SystemOption {
             // now the backward compatibility stuff for Radim
             // 
             
-            FileObject fo = TopManager.getDefault ().getRepository ()
+            FileObject fo = Repository.getDefault ()
                 .getDefaultFileSystem ().findResource ("Services/Browsers");   // NOI18N
             DataFolder folder = DataFolder.findFolder (fo);
             DataObject [] dobjs = folder.getChildren ();

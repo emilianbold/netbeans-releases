@@ -257,7 +257,7 @@ implements RepositoryListener, NewTemplateAction.Cookie {
                         root = DataObject.find(((FileSystem)o).getRoot());
                     }
                     catch (DataObjectNotFoundException e) {
-                        TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, e);
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                         // root will remain null and will be accepted
                         // (as that seems safer than not accepting it)
                     }
