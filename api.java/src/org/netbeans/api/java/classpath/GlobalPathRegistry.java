@@ -26,6 +26,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.openide.filesystems.FileObject;
 
@@ -88,6 +90,15 @@ public final class GlobalPathRegistry {
     private final Map/*<String,List<ClassPath>>*/ paths = new HashMap();
     private final List/*<PathRegistryListener>*/ listeners = new ArrayList();
     private Set/*<FileObject>*/ sourceRoots = null;
+    private Set/*ChangeListener*/ results = new HashSet ();
+    private ChangeListener resultListener = new ChangeListener () {
+        public void stateChanged (ChangeEvent event) {
+            synchronized (GlobalPathRegistry.this) {
+                //Reset cache
+                GlobalPathRegistry.this.resetSourceRootsCache ();
+            }
+        }
+    };
     
     private GlobalPathRegistry() {}
     
@@ -146,7 +157,7 @@ public final class GlobalPathRegistry {
                 evt = new GlobalPathRegistryEvent(this, id, Collections.unmodifiableSet(added));
             }
             // Invalidate cache for getSourceRoots and findResource:
-            sourceRoots = null;
+            resetSourceRootsCache ();
         }
         if (_listeners != null) {
             assert evt != null;
@@ -191,7 +202,7 @@ public final class GlobalPathRegistry {
                 _listeners = (GlobalPathRegistryListener[])listeners.toArray(new GlobalPathRegistryListener[listeners.size()]);
                 evt = new GlobalPathRegistryEvent(this, id, Collections.unmodifiableSet(removed));
             }
-            sourceRoots = null;
+            resetSourceRootsCache ();
         }
         if (_listeners != null) {
             assert evt != null;
@@ -257,7 +268,10 @@ public final class GlobalPathRegistry {
                 Iterator it2 = cp.entries().iterator();
                 while (it2.hasNext()) {
                     ClassPath.Entry entry = (ClassPath.Entry)it2.next();
-                    FileObject[] someRoots = SourceForBinaryQuery.findSourceRoots(entry.getURL()).getRoots();
+                    SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(entry.getURL());
+                    result.addChangeListener(this.resultListener);
+                    this.results.add (result);
+                    FileObject[] someRoots = result.getRoots();
                     sourceRoots.addAll(Arrays.asList(someRoots));
                 }
             }
@@ -284,6 +298,15 @@ public final class GlobalPathRegistry {
             }
         }
         return null;
+    }
+    
+    
+    private synchronized void resetSourceRootsCache () {
+        this.sourceRoots = null;
+        for (Iterator it = this.results.iterator(); it.hasNext();) {
+            SourceForBinaryQuery.Result result = (SourceForBinaryQuery.Result) it.next ();
+            result.removeChangeListener(this.resultListener);
+        }
     }
 
 }
