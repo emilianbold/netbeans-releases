@@ -251,7 +251,8 @@ public final class TabbedSlideAdapter implements Tabbed {
     
     public Object getConstraintForLocation(Point location, boolean attachingPossible) {
         // XXX - TBD
-        return null;
+        int tab = slideBar.nextTabForCoordinate(location.x, location.y);
+        return new Integer(tab);
     }
     
     public Image getDragImage(TopComponent tc) {
@@ -260,16 +261,48 @@ public final class TabbedSlideAdapter implements Tabbed {
     }
     
     public Shape getIndicationForLocation(Point location, TopComponent startingTransfer, Point startingPoint, boolean attachingPossible) {
-        Rectangle rect = slideBar.getBounds();
-        rect.setLocation(0, 0);
         
-        int tab = tabForCoordinate(location);
-        // first process the tabs when mouse is inside the tabs area..
-        // need to process before the side resolution.
-        if (tab != -1) {
-            return getTabBounds(tab);
+//        int tab = tabForCoordinate(location);
+        int nextTab = slideBar.nextTabForCoordinate(location.x, location.y);
+        SlideBarDataModel sbdm = (SlideBarDataModel)dataModel;
+        if (nextTab == 0) {
+            Rectangle rect = getTabBounds(0);
+            if (sbdm.getOrientation() == SlideBarDataModel.SOUTH) {
+                rect.x = 0;
+                rect.width = rect.width / 2;
+            } else {
+                rect.y = 0;
+                rect.height = rect.height / 2;
+            }
+            return rect;
+        } else if (nextTab < getTabCount()) {
+            Rectangle rect1 = getTabBounds(nextTab - 1);
+            Rectangle rect2 = getTabBounds(nextTab);
+            Rectangle result = new Rectangle();
+            if (sbdm.getOrientation() == SlideBarDataModel.SOUTH) {
+                result.y = rect1.y;
+                result.height = rect1.height;
+                result.x = rect1.x + (rect1.width / 2);
+                result.width = rect2.x + (rect2.width / 2) - result.x;
+            } else {
+                result.x = rect1.x;
+                result.width = rect1.width;
+                result.y = rect1.y + (rect1.height / 2);
+                result.height = rect2.y + (rect2.height / 2) - result.y;
+            }
+            return result;
+        } else if (nextTab == getTabCount()) {
+            Rectangle rect = getTabBounds(getTabCount() - 1);
+            if (sbdm.getOrientation() == SlideBarDataModel.SOUTH) {
+                rect.x = rect.x + rect.width;
+            } else {
+                rect.y = rect.y + rect.height;
+            }
+            return rect;
         }
         
+        //shall it ever get here?
+        Rectangle rect = slideBar.getBounds();
         return new Rectangle(0, 0, rect.width, rect.height);
     }
     

@@ -189,6 +189,30 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         return -1;
     }
     
+    int nextTabForCoordinate(int x, int y) {
+        Rectangle curBounds = new Rectangle();
+        int index = 0;
+        Iterator iter = buttons.iterator();
+        while (iter.hasNext()) {
+            Component comp = (Component)iter.next();
+            comp.getBounds(curBounds);
+            if (dataModel.getOrientation() == SlideBarDataModel.SOUTH) {
+                if (curBounds.x  + (curBounds.width/2) < x) {
+                    index = index + 1;
+                    continue;
+                }
+            } else {
+                if (curBounds.y  + (curBounds.height/2) < y) {
+                    index = index + 1;
+                    continue;
+                }
+            }
+            return index;
+        }
+        return index;
+    }
+    
+    
     /** Implementation of ChangeListener, reacts to selection changes
      * and assures that currently selected component is slided in
      */
