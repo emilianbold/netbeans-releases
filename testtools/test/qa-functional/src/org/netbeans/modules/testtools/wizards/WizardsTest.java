@@ -246,6 +246,7 @@ public class WizardsTest extends JellyTestCase {
         EditorOperator editor = new EditorOperator("myTestSuite");
         editor.close(true);
         assertFile(getWorkDir().getParentFile().getAbsolutePath()+"/test/myTestSuite.java", true);
+        assertTrue("golden file missing", new File(getWorkDir().getParentFile().getAbsolutePath()+"/test/data/goldenfiles/myTestSuite/myMethod2.pass").exists());
     }
     
 }

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project basedir="." default="all" name="XTest Test Script">
+
+    <property name="netbeans.home" location=""/>
+    
+    <property name="xtest.module" value=""/>
+    
+    <property name="xtest.home" location=""/>
+
+    <property name="xtest.testtype" value=""/>
+
+    <property name="xtest.attribs" value=""/>
+
+    <target name="echo">
+        <echo message="netbeans.home=${netbeans.home}"/>
+        <echo message="xtest.home=${xtest.home}"/>
+        <echo message="xtest.testtype=${xtest.testtype}"/>
+        <echo message="xtest.attribs=${xtest.attribs}"/>
+        <echo message="jemmy.home=${jemmy.home}"/>
+        <echo message="jelly.home=${jelly.home}"/>
+    </target>
+    
+    <target name="all" depends="echo"/>
+    
+    <target name="buildtests" depends="echo"/>
+    
+    <target name="cleantests" depends="echo"/>
+
+    <target name="runtests" depends="echo"/>
+    
+    <target name="cleanresults" depends="echo"/>
+    
+</project>
