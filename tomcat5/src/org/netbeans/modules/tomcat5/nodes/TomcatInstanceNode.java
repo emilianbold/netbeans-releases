@@ -36,7 +36,8 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.Utilities;
 import org.openide.ErrorManager;
-
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
 
 /**
  *
@@ -65,6 +66,9 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     protected static final String PASSWORD = "password"; //NOI18N
     protected static final String NAME_FOR_SHARED_MEMORY_ACCESS = "name_for_shared_memory_access"; //NOI18N
     private static final String DEFAULT_NAME_FOR_SHARED_MEMORY_ACCESS = "tomcat_shared_memory_id"; //NOI18N        
+    
+    private static final int MIN_PORT_NUMBER = 0;
+    private static final int MAX_PORT_NUMBER = 65535;
     
     private Lookup lkp;
     
@@ -177,7 +181,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
 
     private void setDebugPort (Integer port) {
         TomcatManager m = getTomcatManager();
-        if (m != null){
+        if (m != null && validatePortNumber(port.intValue())){
             m.setDebugPort(port);
         };
     }
@@ -633,14 +637,32 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     
     private boolean setServerPort(Integer port) {
         FileObject fo = getTomcatConf();
-        if (fo==null) return false;
+        if (fo==null || !validatePortNumber(port.intValue())) {
+            return false;
+        }
         return TomcatInstallUtil.setServerPort (port, fo);
     }
         
     private boolean setAdminPort(Integer port) {
         FileObject fo = getTomcatConf();
-        if (fo==null) return false;
+        if (fo==null || !validatePortNumber(port.intValue())) {
+            return false;
+        }
         return TomcatInstallUtil.setAdminPort (port, fo);
+    }
+    
+    private boolean validatePortNumber(int port) {
+        if (port < MIN_PORT_NUMBER || port > MAX_PORT_NUMBER) {
+            String msg = NbBundle.getMessage(TomcatInstanceNode.class,
+                    "MSG_outOfPortRange", new Integer(port), // NOI18N
+                    new Integer(MIN_PORT_NUMBER), new Integer(MAX_PORT_NUMBER));
+            NotifyDescriptor notDesc = new NotifyDescriptor.Message(
+                    msg, NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notify(notDesc);
+            return false;
+        } else {
+            return true;
+        }
     }
     
     private FileObject getTomcatConf() {
