@@ -117,7 +117,7 @@ Microsystems, Inc. All Rights Reserved.
              topdir="."
 	     module="netbeans/modules/lexer.jar"
 	     homepage="http://lexer.${homepage.base}/"
-	     distribution="http://{dist.base}/lexer.nbm">
+	     distribution="http://${dist.base}/lexer.nbm">
       <license file="${license.file}"/>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
