@@ -107,6 +107,9 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
      */
     public java.lang.String getAsText() {
         File retValue = (File)getValue();
+        if (retValue == null) {
+            return ""; // NOI18N
+        }
         try {
             return retValue.getCanonicalPath();
         } catch (IOException x) {
