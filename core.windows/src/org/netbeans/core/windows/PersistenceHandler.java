@@ -382,24 +382,23 @@ final class PersistenceHandler implements PersistenceObserver {
             debugLog("mode name=" + modeCfg.name); // NOI18N
             modeCfg.state = mo.getState();
             debugLog("mode state=" + modeCfg.state); // NOI18N
-            if (modeCfg.state == Constants.MODE_STATE_JOINED) {
-                modeCfg.kind = mo.getKind();
-                debugLog("mode kind=" + modeCfg.kind); // NOI18N
-                modeCfg.constraints = mo.getConstraints();
-                debugLog("mode constraints=" + modeCfg.constraints); // NOI18N
-            } else if (modeCfg.state == Constants.MODE_STATE_SEPARATED) {
-                // PENDING Whether to save relative or absolute bounds.
-                // In case of relative, they would need to be computed.
-                Rectangle relBounds = null;
-                if (relBounds != null) {
-                    modeCfg.relativeBounds = relBounds;
-                } else {
-                    modeCfg.bounds = mo.getBounds();
-                    debugLog("mode bounds=" + modeCfg.bounds); // NOI18N
-                }
-                modeCfg.frameState = mo.getFrameState();
-                debugLog("mode frame state=" + modeCfg.frameState); // NOI18N
+            
+            modeCfg.kind = mo.getKind();
+            debugLog("mode kind=" + modeCfg.kind); // NOI18N
+            modeCfg.constraints = mo.getConstraints();
+            debugLog("mode constraints=" + modeCfg.constraints); // NOI18N
+            // PENDING Whether to save relative or absolute bounds.
+            // In case of relative, they would need to be computed.
+            Rectangle relBounds = null;
+            if (relBounds != null) {
+                modeCfg.relativeBounds = relBounds;
+            } else {
+                modeCfg.bounds = mo.getBounds();
+                debugLog("mode bounds=" + modeCfg.bounds); // NOI18N
             }
+            modeCfg.frameState = mo.getFrameState();
+            debugLog("mode frame state=" + modeCfg.frameState); // NOI18N
+                
             TopComponent tc = mo.getSelectedTopComponent();
             if (tc != null) {
                 if (pm.isTopComponentPersistent(tc)) {
