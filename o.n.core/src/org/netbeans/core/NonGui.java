@@ -280,6 +280,9 @@ public class NonGui extends NbTopManager implements Runnable {
                         country = localeParam.substring(index1+1);
                 }
                 java.util.Locale.setDefault(new java.util.Locale(language, country, variant));
+            } else if (args[i].equalsIgnoreCase ("-branding")) { // NOI18N
+                String branding = args[++i];
+                NbBundle.setBranding (branding);
             }
             else if (args[i].equalsIgnoreCase("-?") || args[i].equalsIgnoreCase("-help")) { // NOI18N
                 showHelp();
