@@ -118,9 +118,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
 
-            <attr name="Separator6.instance/org-netbeans-modules-debugger-jpda-ui-actions-ToggleBreakpointAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-jpda-ui-actions-ToggleBreakpointAction.instance"/>
-            <attr name="org-netbeans-modules-debugger-jpda-ui-actions-ToggleBreakpointAction.instance/org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance" boolvalue="true" />
+            <attr name="Separator6.instance/org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance" />
             <attr name="org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
@@ -171,6 +169,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="DebugFull">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <attr name="org-netbeans-modules-project-ui-DebugMainProject.shadow/org-netbeans-modules-debugger-ui-actions-ConnectAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.instance" />
             <attr name="org-netbeans-modules-debugger-ui-actions-ConnectAction.instance/org-netbeans-modules-debugger-ui-actions-KillAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
