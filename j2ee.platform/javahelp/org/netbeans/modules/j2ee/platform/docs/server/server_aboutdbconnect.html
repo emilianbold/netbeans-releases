@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<html>
+    <head>
+        <title>About Connecting to a Database</title>
+        <link rel=stylesheet href="../../../../usersguide/ide.css" type="text/css">
+    </head>
+
+    <h2>About Connecting to a Database</h2>
+    <p><small><a href="#seealso">See Also</a></small></p>
+    <p>To store, organize, and retrieve data, most applications use relational databases. 
+    J2EE applications access relational databases through the JDBC API.</p>
+
+    <p>When accessing a database, the application calls on the following resources:</p>
+    <ul>
+        
+        <li><b>JDBC resource.</b> A JDBC resource (data source) provides applications with a means of connecting to a database. 
+        Typically, the administrator creates a JDBC resource for each database accessed by the applications 
+        deployed in a domain. (However, more than one JDBC resource can be created for a database.)
+        Each JDBC resource has a unique JNDI name.</li>
+        <li><b>JDBC Connection pool.</b> A JDBC connection pool is a group of reusable connections that the
+        application server maintains for a particular database.  When an application closes a connection, the
+        connection is returned to the pool. Connection pooling reduces the transaction time of connecting to a 
+        database by means of sharing connection objects providing access to a database source, thus avoiding 
+        a new physical connection being created every time a connection is requested.</li>
+    </ul>
+
+    <p>At runtime, this is what happens when an application connects to a database:</p>
+    <ol>
+    <li><b>Lookup JNDI name of JDBC resource.</b> To connect to a database, the application looks up the JNDI name of the JDBC resource (data source) associated with the database. 
+    The JNDI API enables the application to locate the JDBC resource.</li>
+    <li><b>Locate JDBC connection pool.</b> The JDBC resource specifies which connection pool to use.  
+    The pool defines connection attributes such as the database name (URL), user name, and password.</li>
+    <li><b>Retrieve connection from connection pool.</b> The application server retrieves a physical connection from the connection pool that corresponds to the database.
+    Now that the application is connected to the database, the application can read, modify, and add data to the database.
+    Applications access the database by making calls to the JDBC API. The JDBC driver translates the application's JDBC calls into the protocol of the database server.</li>
+    <li><b>Close connection.</b> When it is finished accessing the database, the application closes the connection.
+    The application server returns the connection to the connection pool. Once it is back in the pool, the connection is available for the next application.</li>
+  
+    <ul class="note">  
+        <li><b>JNDI name.</b> Each resource has a unique JNDI name which specifies its name and location.
+        Because all resource JNDI names are in the <tt>java:comp/env</tt> subcontext, 
+        the JNDI name of a JDBC resource is expected in the <tt>java:comp/env/jdbc</tt> subcontext.
+        For example, for a database name MyDatabase, specify <tt>jdbc/MyDatabase</tt>.</li> 
+    </ul>
+    
+    <table>
+        <tr> 
+            <th colspan=2 align=left><a name="seealso">See Also</a></th>
+        </tr>
+        <tr> 
+            <td width="23"></td>
+            <td>
+            <!--<a href="nbdocs:/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a> <br>-->
+            <a href="../resourcewizards/ConnPool_chooseDB.html">Choose Database Connection</a><br>
+            <a href="../resourcewizards/ConnPool_props.html">Add Connection Pool Properties</a><br>
+            <a href="../resourcewizards/ConnPool_poolSettings.html">Add Connection Pool Optional Settings</a><br>
+            <a href="register_resource.html">Registering a Resource with the SJS Application Server</a> <br>
+            <a href="nbdocs:/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a> <br>
+
+        </tr>
+    </table>
+
+    <hr>
+
+    <small><a href="credits.html">Legal Notices</a></small> 
+    <table border="0" cellpadding="20">
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+    </table>
+
+    </body>
+
+</html>

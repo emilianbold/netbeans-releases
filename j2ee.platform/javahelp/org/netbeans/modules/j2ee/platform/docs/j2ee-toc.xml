@@ -22,6 +22,7 @@
 	<tocitem text="Registering a Server" target="server_register" />
 	<tocitem text="Starting and Stopping a Server" target="server_start" />
         <tocitem text="Setting a Context Path" target="server_context" />
+        <tocitem text="About Connecting to a Database" target="server_aboutdbconnect" />
 	<tocitem text="Removing an Application from a Server" target="server_remove" />
     </tocitem>
 
