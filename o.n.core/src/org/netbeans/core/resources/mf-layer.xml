@@ -575,6 +575,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="instanceCreate" methodvalue="org.openide.loaders.XMLDataObject.createEntityCatalog"/>
         </file>
 
+
     </folder>
 
     <!-- Container for help sets. -->
@@ -582,8 +583,46 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="hidden" boolvalue="true" />
     </folder>
 
+    <!-- nodes for default objects in the IDE -->
+
+    <file name="Templates[org-openide-nodes-Node].instance">
+        <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createTemplate" />
+    </file>
+
+    <file name="Startup[org-openide-nodes-Node].instance">
+        <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createStartup" />
+    </file>
+
+    <file name="ObjectTypes[org-openide-nodes-Node].instance">
+        <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createObjectTypes" />
+    </file>
+
+    <file name="Menu[org-openide-nodes-Node].instance">
+        <attr name="instanceCreate" newvalue="org.netbeans.core.MenuFolderNode" />
+    </file>
+
+    <file name="Toolbar[org-openide-nodes-Node].instance">
+        <attr name="instanceCreate" newvalue="org.netbeans.core.ToolbarFolderNode" />
+    </file>
+
+    <file name="Actions[org-openide-nodes-Node].instance">
+        <attr name="instanceCreate" newvalue="org.netbeans.core.ActionsPoolNode" />
+    </file>
+
+    <file name="Modules[org-openide-nodes-Node].instance">
+        <attr name="instanceCreate" newvalue="org.netbeans.core.ModuleNode" />
+    </file>
+
+    <file name="Welcome[org-openide-nodes-Node].instance">
+        <attr name="instanceCreate" newvalue="org.netbeans.core.ui.WelcomeFolderNode" />
+    </file>
+
   </folder>
   
+  <!-- workplace of the IDE -->
+  <folder name="Workplace">
+  </folder>
+
   <!-- tempaltes for services in Lookup, should have the same subdirectory as objects under the -->
   
   <folder name="ServiceTemplates">    

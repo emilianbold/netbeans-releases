@@ -189,7 +189,7 @@ public final class LookupNode extends DataFolder.FolderNode implements NewTempla
                 return new Node[0];
             }
             
-            if (obj instanceof DataFolder) {
+            if (obj instanceof DataFolder && n.equals (obj.getNodeDelegate ())) {
                 return new Node[] { new LookupNode((DataFolder)obj) };
             }
 
