@@ -16,6 +16,8 @@ package org.netbeans.modules.web.project;
 import java.util.Vector;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,6 +67,18 @@ public class Utils {
         return fo;
     }
     
+    /**
+     * Updates property file at given location of ant based project
+     * @param h helper of the project
+     * @param path a relative URI in the project directory
+     * @param ep new or updated properties
+     */
+    public static void updateProperties(AntProjectHelper h, String path, EditableProperties ep) {
+        EditableProperties properties = h.getProperties(path);
+        properties.putAll(ep);
+        h.putProperties(path, properties);
+    }
+
     // COPIED FROM TOMCAT
     /** Returns a slash-delimited resource path for the servlet generated from 
      * JSP, given a resource path of the original JSP. Uses code copied from Tomcat.
