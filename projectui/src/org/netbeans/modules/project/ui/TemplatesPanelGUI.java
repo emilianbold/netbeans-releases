@@ -208,9 +208,9 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.4;
         add(jLabel1, gridBagConstraints);
 
         jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("MNE_Templates").charAt(0));
@@ -219,17 +219,17 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
-        add(jLabel2, gridBagConstraints);       
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.6;
+        add(jLabel2, gridBagConstraints);
 
         categoriesPanel.setBorder(new javax.swing.border.EtchedBorder());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 6, 6);
+        gridBagConstraints.weightx = 0.4;
         gridBagConstraints.weighty = 0.7;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 6);
         add(categoriesPanel, gridBagConstraints);
 
         projectsPanel.setBorder(new javax.swing.border.EtchedBorder());
@@ -238,9 +238,9 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(2, 6, 6, 0);
+        gridBagConstraints.weightx = 0.6;
         gridBagConstraints.weighty = 0.7;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 0);
         add(projectsPanel, gridBagConstraints);
 
         jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("CTL_DescriptionMnemonic").charAt(0));
@@ -249,8 +249,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(jLabel3, gridBagConstraints);
 
         description.setEditable(false);
