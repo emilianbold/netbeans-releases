@@ -18,6 +18,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class PanelConfigureProjectVisual extends JPanel {
@@ -128,4 +129,10 @@ public class PanelConfigureProjectVisual extends JPanel {
     private javax.swing.JPanel optionsContainer;
     // End of variables declaration//GEN-END:variables
 
+    /** Help context where to find more about the paste type action.
+     * @return the help context for this action
+     */
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(PanelConfigureProjectVisual.class);
+    }
 }

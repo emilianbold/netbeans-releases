@@ -25,6 +25,7 @@ import javax.swing.event.ListSelectionListener;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /** Customizer for WAR packaging.
@@ -323,6 +324,13 @@ public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSe
         exclude = exclude.replaceAll(" ", ""); //NOI18N
         exclude = exclude.substring(1, exclude.length() -1);
         webProperties.put(WebProjectProperties.BUILD_CLASSES_EXCLUDES, exclude);
+    }
+
+    /** Help context where to find more about the paste type action.
+     * @return the help context for this action
+     */
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CustomizerWar.class);
     }
 
 }

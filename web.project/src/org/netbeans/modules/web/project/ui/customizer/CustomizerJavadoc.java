@@ -15,6 +15,7 @@ package org.netbeans.modules.web.project.ui.customizer;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.openide.util.HelpCtx;
 
 /** Customizer for general project attributes.
  *
@@ -270,4 +271,11 @@ public class CustomizerJavadoc extends JPanel implements WebCustomizer.Panel {
     private javax.swing.JTextField jTextFieldWinTitle;
     // End of variables declaration//GEN-END:variables
         
+    /** Help context where to find more about the paste type action.
+     * @return the help context for this action
+     */
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CustomizerJavadoc.class);
+    }
+
 }

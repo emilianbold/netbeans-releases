@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class CustomizerCompile extends javax.swing.JPanel implements WebCustomizer.Panel {
@@ -237,5 +238,12 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
     private javax.swing.JScrollPane jScrollClasspath;
     private javax.swing.JTable jTableClasspath;
     // End of variables declaration//GEN-END:variables
+
+    /** Help context where to find more about the paste type action.
+     * @return the help context for this action
+     */
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CustomizerCompile.class);
+    }
 
 }

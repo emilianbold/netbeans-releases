@@ -23,6 +23,7 @@ import javax.swing.text.Document;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.openide.util.HelpCtx;
 
 public class CustomizerRun extends JPanel implements WebCustomizer.Panel, DocumentListener {
     
@@ -264,4 +265,12 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
     private void setContextPath() {
         wm.setContextPath(jTextFieldContextPath.getText().trim());
     }
+    
+    /** Help context where to find more about the paste type action.
+     * @return the help context for this action
+     */
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CustomizerRun.class);
+    }
+
 }

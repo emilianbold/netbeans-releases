@@ -22,6 +22,7 @@ import javax.swing.text.Document;
 import org.openide.filesystems.FileObject;
 
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -342,4 +343,12 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
     
         return false;
     }
+    
+    /** Help context where to find more about the paste type action.
+     * @return the help context for this action
+     */
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ImportLocationVisual.class);
+    }
+
 }
