@@ -62,8 +62,9 @@ public class HTMLOptions extends BaseOptions {
                                                 JAVADOC_BGCOLOR
                                             });
 
-
-    static final long serialVersionUID =3409313048987440397L;
+                                        
+    static final long serialVersionUID = 75289734362748537L;
+   
     public HTMLOptions() {
         super(HTMLKit.class, HTML);
     }
