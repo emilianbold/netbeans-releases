@@ -63,6 +63,28 @@ public class Util {
     public static boolean isSunOS() {
         return System.getProperty("os.name").startsWith("Sun");
     }
+    public static boolean isSolarisSparc () {
+        if (System.getProperty("os.name").startsWith("Sun")) {
+            if (System.getProperty("os.arch").startsWith("sparc")) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+    public static boolean isSolarisX86 () {
+        if (System.getProperty("os.name").startsWith("Sun")) {
+            if (System.getProperty("os.arch").startsWith("x86")) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
     public static boolean isAixOS() {
         return System.getProperty("os.name").startsWith("AIX");
     }
