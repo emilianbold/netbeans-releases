@@ -403,53 +403,20 @@ implements Runnable, ExplorerManager.Provider {
         return false;
     }
 
-    /** Finds a data object in given node.
+    /** Finds a data object among children of given node.
     * @param node the node to search in
     * @param obj the object to look for
     */
     private static Node findDataObject (Node node, DataObject obj) {
         Node[] arr = node.getChildren ().getNodes (true);
         for (int i = 0; i < arr.length; i++) {
-            DataShadow ds = (DataShadow)arr[i].getCookie (DataShadow.class);
-            if (ds != null) {
-                if (obj == ds.getOriginal()) {
-                    return arr[i];
-                } else {
-                    //Try to check canonical paths to handle links correctly
-                    File f1 = FileUtil.toFile(ds.getOriginal().getPrimaryFile());
-                    File f2 = FileUtil.toFile(obj.getPrimaryFile());
-                    if ((f1 != null) && (f2 != null)) {
-                        try {
-                            if (f1.getCanonicalPath().equals(f2.getCanonicalPath())) {
-                                return arr[i];
-                            }
-                        } catch (IOException ex) {
-                            //Nothing to do
-                        }
-                    }
-                }
+            DataShadow ds = (DataShadow) arr[i].getCookie (DataShadow.class);
+            if ((ds != null) && (obj == ds.getOriginal())) {
+                return arr[i];
             } else {
-                if (obj == arr[i].getCookie (DataFolder.class)) {
-                    return arr[i];
-                }
                 DataObject o = (DataObject) arr[i].getCookie (DataObject.class);
-                if (o != null) {
-                    if (obj == o) {
-                        return arr[i];
-                    } else {
-                        //Try to check canonical paths to handle links correctly
-                        File f1 = FileUtil.toFile(o.getPrimaryFile());
-                        File f2 = FileUtil.toFile(obj.getPrimaryFile());
-                        if ((f1 != null) && (f2 != null)) {
-                            try {
-                                if (f1.getCanonicalPath().equals(f2.getCanonicalPath())) {
-                                    return arr[i];
-                                }
-                            } catch (IOException ex) {
-                                //Nothing to do
-                            }
-                        }
-                    }
+                if ((o != null) && (obj == o)) {
+                    return arr[i];
                 }
             }
         }
