@@ -90,6 +90,7 @@ public final class FileChangeSupport {
         
         public Holder(FileChangeSupportListener listener, File path) {
             super(listener, Utilities.activeReferenceQueue());
+            assert path != null;
             this.path = path;
             locateCurrent();
         }
@@ -104,7 +105,9 @@ public final class FileChangeSupport {
                 }
                 currentF = currentF.getParentFile();
                 if (currentF == null) {
-                    throw new AssertionError("No ultimate parent for " + path); // NOI18N
+                    // #47320: can happen on Windows in case the drive does not exist.
+                    // (Inside constructor for Holder.) In that case skip it.
+                    return;
                 }
             }
             assert current != null;
@@ -138,8 +141,8 @@ public final class FileChangeSupport {
                 FileChangeSupportEvent event = new FileChangeSupportEvent(DEFAULT, FileChangeSupportEvent.EVENT_MODIFIED, path);
                 listener.fileModified(event);
             } else {
-                boolean oldWasCorrect = oldCurrentF.equals(path);
-                boolean nueIsCorrect = nueCurrentF.equals(path);
+                boolean oldWasCorrect = path.equals(oldCurrentF);
+                boolean nueIsCorrect = path.equals(nueCurrentF);
                 if (oldWasCorrect && !nueIsCorrect) {
                     FileChangeSupportEvent event = new FileChangeSupportEvent(DEFAULT, FileChangeSupportEvent.EVENT_DELETED, path);
                     listener.fileDeleted(event);
