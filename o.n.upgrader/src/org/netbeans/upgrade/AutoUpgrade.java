@@ -148,7 +148,7 @@ public final class AutoUpgrade {
             }
             org.openide.filesystems.FileSystem mine = Repository.getDefault ().getDefaultFileSystem ();
             
-            FileObject defaultProject = old.findResource ("Projects/Default/"); // NOI18N
+            FileObject defaultProject = old.findResource ("Projects/Default/system"); // NOI18N
             if (defaultProject != null) {
                 // first copy content from default project
                 Copy.copyDeep (defaultProject, mine.getRoot (), includeExclude);
@@ -159,7 +159,10 @@ public final class AutoUpgrade {
                 FileObject[] allProjects = projects.getChildren ();
                 for (int i = 0; i < allProjects.length; i++) {
                     // content from projects is prefered
-                    Copy.copyDeep (allProjects[i], mine.getRoot (), includeExclude);
+                    FileObject otherProject = allProjects[i].getFileObject ("system"); // NOI18N
+                    if (otherProject != null) {
+                        Copy.copyDeep (otherProject, mine.getRoot (), includeExclude);
+                    }
                 }
             }
             
