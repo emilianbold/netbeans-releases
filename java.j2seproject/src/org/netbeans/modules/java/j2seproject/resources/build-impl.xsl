@@ -674,8 +674,8 @@ is divided into following sections:
                             <istrue value="${{javadoc.private}}"/>
                         </condition>
                         <property name="javadoc.private.opt" value=""/>
+                        <!-- For weird space-in-path behaviors on Windows, see #46901 and #50548. -->
                         <condition property="javadoc.classpath.opt" value="${{javac.classpath}}">
-                            <!-- -classpath '' cannot be passed safely on Windows; cf. #46901. -->
                             <not>
                                 <equals arg1="${{javac.classpath}}" arg2=""/>
                             </not>
