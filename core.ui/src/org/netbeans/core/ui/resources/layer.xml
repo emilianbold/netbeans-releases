@@ -485,6 +485,8 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="UI">
     <!-- settings categories UI presentation -->
         <folder name="Services">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/session.gif" />
             <attr name="helpID" stringvalue="org.netbeans.core.ControlPanelNode" />
             
             <folder name="IDEConfiguration"> <!-- PENDING rename to somethink like APP Settings or so -->
@@ -608,6 +610,12 @@ SystemFileSystem
                 </file>
             </folder> <!-- EDITING -->
         </folder> <!-- Services -->
+        
+        <folder name="Runtime">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/environment.gif" />
+        </folder> <!-- Runtime -->
+        
     </folder>  <!-- UI -->
 
     <!-- registers all roots of all filesystems -->

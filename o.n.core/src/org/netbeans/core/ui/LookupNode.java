@@ -248,6 +248,11 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
     public boolean canRename() {
         return false;
     }
+
+    public Node cloneNode () {
+        return new LookupNode((DataFolder)super.getCookie(DataFolder.class));
+    }
+    
     
     /** Misleading name: need not be a leaf at all. */
     private static final class Leaf extends FilterNode {

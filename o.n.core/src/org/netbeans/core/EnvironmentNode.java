@@ -26,6 +26,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import org.netbeans.core.modules.ManifestSection;
+import org.netbeans.core.ui.LookupNode;
+import org.openide.nodes.AbstractNode;
 
 /** This object represents environment settings in the Corona system.
 * This class is final only for performance purposes.
@@ -48,25 +50,19 @@ final class EnvironmentNode extends AbstractNode {
     /** Constructor */
     private EnvironmentNode (String filter, Children children) {
         super (children);
-
         this.filter = filter;
-        
-        String resourceName = "CTL_" + filter + "_name"; // NOI18N
-        String iconBase = EN_ICON_BASE + filter.toLowerCase ();
-        
-        setName(NbBundle.getMessage (EnvironmentNode.class, resourceName));
-        setIconBase(iconBase);
+        decorateNode(filter, this);
     }
     
     
     /** Finds the node for given name.
      */
-    public static EnvironmentNode find (final String name) {
+    public static Node find (final String name) {
         Object retValue = 
             Children.MUTEX.readAccess(new Mutex.Action() {
                 public Object run() {
                     synchronized (lock) {
-                        EnvironmentNode n = (EnvironmentNode)types.get (name);
+                        Node n = (Node)types.get (name);
                         if (n == null) {
                             if (ManifestSection.NodeSection.TYPE_ROOTS.equals(name)) {
                                 n = new EnvironmentNode (name, new NbPlaces.Ch (name));
@@ -77,7 +73,7 @@ final class EnvironmentNode extends AbstractNode {
                                 } else {
                                     folder = NbPlaces.findSessionFolder("UI/Services"); // NOI18N
                                 }
-                                n = new EnvironmentNode (name, folder.createNodeChildren(DataFilter.ALL));
+                                n = new PersistentLookupNode(name, folder);
                             }
                             types.put (name, n);
                         }
@@ -86,11 +82,19 @@ final class EnvironmentNode extends AbstractNode {
                 }
             });
         if (retValue != null) {
-            return (EnvironmentNode)retValue;
+            return (Node)retValue;
         }
         throw new IllegalStateException();
     }
     
+    private static void decorateNode (String name, AbstractNode node) {
+        String resourceName = "CTL_" + name + "_name"; // NOI18N
+        String iconBase = EN_ICON_BASE + name.toLowerCase ();
+        
+        node.setDisplayName(NbBundle.getMessage (EnvironmentNode.class, resourceName));
+        node.setIconBase(iconBase);
+    }
+        
 
     public HelpCtx getHelpCtx () {
         return new HelpCtx (EnvironmentNode.class);
@@ -114,6 +118,22 @@ final class EnvironmentNode extends AbstractNode {
     public Node.Handle getHandle () {
         return new EnvironmentHandle (filter);
     }
+
+    /** Adds serialization support to LookupNode */
+    private static final class PersistentLookupNode extends LookupNode {
+        
+        private String filter;
+        
+        public PersistentLookupNode (String filter, DataFolder folder) {
+            super(folder);
+            this.filter = filter;
+        }
+        
+        public Node.Handle getHandle () {
+            return new EnvironmentHandle (filter);
+        }
+        
+    } // end of PersistentLookupNode
 
     static final class EnvironmentHandle implements Node.Handle {
         static final long serialVersionUID =-850350968366553370L;
