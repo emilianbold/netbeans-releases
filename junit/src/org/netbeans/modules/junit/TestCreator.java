@@ -26,6 +26,8 @@ import org.openide.filesystems.FileObject;
 
 import org.openide.src.*;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.api.mdr.MDRepository;
 
 
 /**
@@ -62,57 +64,72 @@ public class TestCreator extends java.lang.Object {
     }
 
     static public void createTestClass(FileObject sourceCtx, ClassElement classSource, FileObject classCtx, ClassElement classTarget) throws SourceException {
-        SourceElement   srcelSource;
-        SourceElement   srcelTarget;
+        JavaModel.getJavaRepository().beginTrans(true);
+        try {
+            SourceElement   srcelSource;
+            SourceElement   srcelTarget;
         
-        // update the source file of the test class
-        srcelSource = classSource.getSource();
-        srcelTarget = classTarget.getSource();
+            // update the source file of the test class
+            srcelSource = classSource.getSource();
+            srcelTarget = classTarget.getSource();
 
-        srcelTarget.setPackage(srcelSource.getPackage());
+            srcelTarget.setPackage(srcelSource.getPackage());
  
-        // add imports from the source but only those that are not
-        // already present
-        Import [] timports = srcelTarget.getImports();
-        Import [] simports = srcelSource.getImports();
-        HashSet tImpSet = new HashSet(timports.length);
-        for (int i = 0 ; i < timports.length; i++) tImpSet.add(timports[i]);
+            // add imports from the source but only those that are not
+            // already present
+            Import [] timports = srcelTarget.getImports();
+            Import [] simports = srcelSource.getImports();
+            HashSet tImpSet = new HashSet(timports.length);
+            for (int i = 0 ; i < timports.length; i++) tImpSet.add(timports[i]);
 
-        // import for junit.framework.*
-        Import frameworkImp = new Import(Identifier.create(JUNIT_FRAMEWORK_PACKAGE_NAME), Import.PACKAGE);
-        if (!tImpSet.contains(frameworkImp)) srcelTarget.addImport(frameworkImp);
+            // import for junit.framework.*
+            Import frameworkImp = new Import(Identifier.create(JUNIT_FRAMEWORK_PACKAGE_NAME), Import.PACKAGE);
+            if (!tImpSet.contains(frameworkImp)) srcelTarget.addImport(frameworkImp);
 
-        // all other imports if not present, yet
-        for (int j = 0; j < simports.length; j++) {
-          if (!tImpSet.contains(simports[j])) {
-            srcelTarget.addImport(simports[j]);
-          }
-        }
+            // all other imports if not present, yet
+            for (int j = 0; j < simports.length; j++) {
+                if (!tImpSet.contains(simports[j])) {
+                    srcelTarget.addImport(simports[j]);
+                }
+            }
 
 
-        // construct/update test class from the source class
-        fillTestClass(sourceCtx, classSource, classCtx, classTarget);
+            // construct/update test class from the source class
+            fillTestClass(sourceCtx, classSource, classCtx, classTarget);
         
-        // if aplicable, add main method (method checks options itself)
-        addMainMethod(classTarget);
+            // if aplicable, add main method (method checks options itself)
+            addMainMethod(classTarget);
+
+        } finally {
+            JavaModel.getJavaRepository().endTrans();
+        }
     }
     
+
     static public void createTestSuite(LinkedList listMembers, String packageName, ClassElement classTarget) throws SourceException {
-        SourceElement   srcelTarget;
 
-        // update the source file of the suite class
-        srcelTarget = classTarget.getSource();
-        //System.err.println("createTestSuite(): srcelTarget:"+srcelTarget);
-        
-        srcelTarget.setPackage(packageName.length() != 0 ? Identifier.create(packageName) : null);
-        srcelTarget.addImport(new Import(Identifier.create(JUNIT_FRAMEWORK_PACKAGE_NAME), Import.PACKAGE));
+        JavaModel.getJavaRepository().beginTrans(true);
+        try {
+            SourceElement   srcelTarget;
 
-        // construct/update test class from the source class
-        fillSuiteClass(listMembers, packageName, classTarget);
+            // update the source file of the suite class
+            srcelTarget = classTarget.getSource();
+            //System.err.println("createTestSuite(): srcelTarget:"+srcelTarget);
         
-        // if aplicable, add main method (method checks options itself)
-        addMainMethod(classTarget);        
+            srcelTarget.setPackage(packageName.length() != 0 ? Identifier.create(packageName) : null);
+            srcelTarget.addImport(new Import(Identifier.create(JUNIT_FRAMEWORK_PACKAGE_NAME), Import.PACKAGE));
+
+            // construct/update test class from the source class
+            fillSuiteClass(listMembers, packageName, classTarget);
+        
+            // if aplicable, add main method (method checks options itself)
+            addMainMethod(classTarget);        
+
+        } finally {
+            JavaModel.getJavaRepository().endTrans();
+        }
     }
+
     
     static public void initialize() {
         // setup the methods filter
@@ -123,57 +140,64 @@ public class TestCreator extends java.lang.Object {
     }
 
     static public boolean isClassTestable(FileObject ctx, ClassElement ce) {
-// @@        System.out.println("isClassTestable : " + ce.getName().getFullName());
-        
-        ClassElement[]  innerClasses;
 
-        // check whether the ClassElement is class
-        if (null == ce || (!ce.isClass())) {
-            // we will not create tests for it
-            return false;
-        }
+        JavaModel.getJavaRepository().beginTrans(true);
+        try {
+            // @@        System.out.println("isClassTestable : " + ce.getName().getFullName());
         
-        JUnitSettings settings = JUnitSettings.getDefault();
-        
-        //System.err.println("isClassTestable: class name="+ce.getVMName());
-        
-        // check whether class implements test interfaces
-        if (TestUtil.isClassElementImplementingTestInterface(ctx, ce)) {
-            //System.err.println("!!Class implements Test Interface");
-            if ( ! JUnitSettings.GENERATE_TESTS_FROM_TEST_CLASSES) {
-                // we don't want to generate tests from test classes                
+            ClassElement[]  innerClasses;
+
+            // check whether the ClassElement is class
+            if (null == ce || (!ce.isClass())) {
+                // we will not create tests for it
                 return false;
             }
-        }
+        
+            JUnitSettings settings = JUnitSettings.getDefault();
+        
+            //System.err.println("isClassTestable: class name="+ce.getVMName());
+        
+            // check whether class implements test interfaces
+            if (TestUtil.isClassElementImplementingTestInterface(ctx, ce)) {
+                //System.err.println("!!Class implements Test Interface");
+                if ( ! JUnitSettings.GENERATE_TESTS_FROM_TEST_CLASSES) {
+                    // we don't want to generate tests from test classes                
+                    return false;
+                }
+            }
 
-        // this is WILD :-(((( ....
-        int classModifiers = ce.getModifiers();
-        if ( ((0 != (classModifiers & Modifier.PUBLIC)) || 
-                ( settings.isIncludePackagePrivateClasses() && (0 == ( classModifiers & Modifier.PRIVATE )))
-              ) &&
-             (settings.isGenerateExceptionClasses() || ! TestUtil.isClassElementException(ctx, ce)) &&
-             (!ce.isInner() || 0 != (classModifiers & Modifier.STATIC)) &&
-             (0 == (classModifiers & Modifier.ABSTRACT) || settings.isGenerateAbstractImpl()) &&
-              hasTestableMethods(ce)) {
-                    return true;
-        }
-
-        //System.err.println("isClassTestable(): does not seem to be testable");
-        // nothing from the non-static inner class is accessible (and testable),
-        // except there is a class specific way how to get an instance of inner class
-        if (ce.isInner() && 0 == (classModifiers & Modifier.STATIC)) {
-            //System.err.println("isClassTestable(): is inner, but not static");
-            return false;
-        }
-            
-        // check for testable inner classes
-        innerClasses = ce.getClasses();
-        for(int i = 0; i < innerClasses.length; i++) {
-            if (isClassTestable(ctx, innerClasses[i]))
+            // this is WILD :-(((( ....
+            int classModifiers = ce.getModifiers();
+            if ( ((0 != (classModifiers & Modifier.PUBLIC)) || 
+                  ( settings.isIncludePackagePrivateClasses() && (0 == ( classModifiers & Modifier.PRIVATE )))
+                  ) &&
+                 (settings.isGenerateExceptionClasses() || ! TestUtil.isClassElementException(ctx, ce)) &&
+                 (!ce.isInner() || 0 != (classModifiers & Modifier.STATIC)) &&
+                 (0 == (classModifiers & Modifier.ABSTRACT) || settings.isGenerateAbstractImpl()) &&
+                 hasTestableMethods(ce)) {
                 return true;
-        }
+            }
 
-        return false;
+            //System.err.println("isClassTestable(): does not seem to be testable");
+            // nothing from the non-static inner class is accessible (and testable),
+            // except there is a class specific way how to get an instance of inner class
+            if (ce.isInner() && 0 == (classModifiers & Modifier.STATIC)) {
+                //System.err.println("isClassTestable(): is inner, but not static");
+                return false;
+            }
+            
+            // check for testable inner classes
+            innerClasses = ce.getClasses();
+            for(int i = 0; i < innerClasses.length; i++) {
+                if (isClassTestable(ctx, innerClasses[i]))
+                    return true;
+            }
+
+            return false;
+
+        } finally {
+            JavaModel.getJavaRepository().endTrans();
+        }
     }
     
     

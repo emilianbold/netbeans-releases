@@ -305,11 +305,14 @@ public class CreateTestAction extends CookieAction {
 
             }
             
-            if (!results.isAbborted() && ((0 < mySuite.size())&(JUnitSettings.getDefault().isGenerateSuiteClasses()))) {
+            if (
+                !results.isAbborted() && 
+                ((0 < mySuite.size())&(JUnitSettings.getDefault().isGenerateSuiteClasses()))) {
                 createSuiteTest(testClassPath, DataFolder.findFolder(foSource), (String) null, mySuite, doSuiteT, parentSuite, progress);
             }
 
             return results;
+
 
         } else {
             return createSingleTest(testClassPath, foSource, doTestT, doSuiteT, parentSuite, progress, true);
@@ -339,6 +342,7 @@ public class CreateTestAction extends CookieAction {
             if (classSource == null) {
                 continue;
             }
+
             if (!skipNonTestable || TestCreator.isClassTestable(foSource, classSource)) {
                 // find the test class, if it exists or create one from active template
                 DataObject doTarget = getTestClass(testClassPath, TestUtil.getTestClassFullName(classSource), doTestT);
@@ -375,7 +379,6 @@ public class CreateTestAction extends CookieAction {
         }
 
         return result;
-
     }
     
     private static DataObject getTestClass(ClassPath cp, String testClassName, DataObject doTemplate) {

@@ -34,6 +34,10 @@ Microsystems, Inc. All Rights Reserved.
       <pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/>
       <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
       <pathelement location="${ant.dir}/${nb.modules.dir}/org-apache-tools-ant-module.jar"/>
+      <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-modules-javacore.jar"/>
+      <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-jmi-javamodel.jar"/>
+      <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-mdr.jar"/>
+      <pathelement location="${mdr/jmi.dir}/${nb.modules.dir}/ext/jmi.jar"/>
     </path>
   </target>
   
