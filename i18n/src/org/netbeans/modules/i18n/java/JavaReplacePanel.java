@@ -248,7 +248,7 @@ public class JavaReplacePanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(publicRadio, gridBagConstraints);
 
-        staticCheck.setMnemonic('s');
+        staticCheck.setMnemonic('a');
         staticCheck.setSelected(true);
         staticCheck.setText("static");
         staticCheck.setEnabled(false);

@@ -114,7 +114,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="staticCheck">
       <Properties>
-        <Property name="mnemonic" type="int" value="115"/>
+        <Property name="mnemonic" type="int" value="97"/>
         <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" value="static"/>
         <Property name="enabled" type="boolean" value="false"/>
