@@ -23,7 +23,6 @@ import org.openide.*;
 import org.openide.awt.StatusDisplayer;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 import org.openide.util.RequestProcessor;
 
@@ -35,20 +34,48 @@ import org.openide.util.RequestProcessor;
  * browser windows.
  *
  * @author Radim Kubacki
- * @version 1.0
  */
 public class UnixBrowserImpl extends ExtBrowserImpl {
     
-    /** windowID of servicing window (-1 if there is no assocciated window) */
-    private transient int     currWinID = -1;
+    /** Number of probes to get exit status of executed command. 
+     * Status is checked after each second.
+     */
+    private static final int CMD_TIMEOUT = 6;
     
-    /** number of probes to get XWindow identification of used window */
-    int nOfProbes = 3;
-    
-    /** length of delay between each probe to get XWindow identification */
-    int probeDelayLength = 3000;
-    
-    /** reference to a factory to gett settings */
+    /** Creates modified NbProcessDescriptor that can be used to start
+     * browser process when <CODE>-remote openURL()</CODE> options
+     * cannot be used.
+     * @return command or <CODE>null</CODE>
+     * @param p Original command.
+     */
+    private static NbProcessDescriptor createPatchedExecutable (NbProcessDescriptor p) {
+        NbProcessDescriptor newP = null;
+        
+        String [] args = org.openide.util.Utilities.parseParameters(p.getArguments());
+        if (args.length > 1) {
+            StringBuffer newArgs = new StringBuffer ();
+            boolean found = false;
+            for (int i=0; i<args.length-1; i++) {
+                if (newArgs.length() > 0) {
+                    newArgs.append(" ");  // NOI18N
+                }
+                if (args[i].indexOf("-remote") >= 0  // NOI18N
+                &&  args[i+1].indexOf("openURL(") >=0) {  // NOI18N
+                    found = true;
+                    newArgs.append("\"{URL}\"");  // NOI18N
+                }
+                else {
+                    newArgs.append("\""+args[i]+"\"");  // NOI18N
+                }
+            }
+            if (found) {
+                newP = new NbProcessDescriptor (p.getProcessName(), newArgs.toString(), p.getInfo());
+            }
+        }
+        return newP;
+    }
+
+    /** reference to a factory to get settings */
     private ExtWebBrowser extBrowserFactory;
 
     /** Creates new UnixBrowserImpl */
@@ -56,10 +83,11 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
         this (null);
     }
     
-    /** Creates new UnixBrowserImpl */
+    /** Creates new UnixBrowserImpl
+     * @param extBrowserFactory Associated browser factory to get settings from.
+     */
     public UnixBrowserImpl (ExtWebBrowser extBrowserFactory) {
         super ();
-        currWinID = -1;
         this.extBrowserFactory = extBrowserFactory;
     }
     
@@ -134,60 +162,13 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             if (isInternalProtocol (url.getProtocol ())) {
                 url = URLUtil.createExternalURL(url);
             }
-            if (currWinID != -1) {
-                // check if given window still exists
-                if (getXProperty (currWinID, "WM_NAME") == null) { // NOI18N
-                    currWinID = -1;
-                    // PENDING: build list of existing windows to check new winID
-                    
-                }
-            }
             
-            if (currWinID == -1) {
-                // no browser window is assigned
-                
-                // is browser running?
-                cmd = new NbProcessDescriptor ("xwininfo", "-name " + getCommand (false));   // NOI18N
-                p = cmd.exec (); 
-                if (p.waitFor () == 0) {
-                    cmd = extBrowserFactory.getBrowserExecutable (); // NOI18N
-                    sd.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
-                    p = cmd.exec (new UnixWebBrowser.UnixBrowserFormat ("-raise -remote openURL(\""+url.toString ()+"\",new-window)"));   // NOI18N
-                    if (p.waitFor () != 0) {
-                        DialogDisplayer.getDefault ().notify (
-                            new NotifyDescriptor.Message (
-                            NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Cant_run_netscape", new Object [] { cmd.getProcessName () }),
-                            NotifyDescriptor.Message.WARNING_MESSAGE)
-                        );
-                        return;
-                    }
-                }
-                else {
-                    cmd = extBrowserFactory.getBrowserExecutable (); // NOI18N
-                    sd.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
-                    p = cmd.exec (new UnixWebBrowser.UnixBrowserFormat ("\""+url.toString ()+"\""));   // NOI18N
-                }
-                
-                new Thread (new UnixBrowserImpl.WindowFinder (url.toString())).start();
-            }
-            else {
-                // reuse old window
-                
-                cmd = extBrowserFactory.getBrowserExecutable (); // NOI18N
-                    sd.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
-                p = cmd.exec (new UnixWebBrowser.UnixBrowserFormat (
-                    "-id 0x"+Integer.toHexString (currWinID)+" -raise -remote openURL(\""+url.toString ()+"\")")   // NOI18N
-                );
-                if (p.waitFor () != 0) {
-                    DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message (
-                        NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Cant_run_netscape", new Object [] { cmd.getProcessName () }),
-                        NotifyDescriptor.Message.WARNING_MESSAGE)
-                    );
-                    return;
-                }
-                // this is too early to get window title now
-            }
+            cmd = extBrowserFactory.getBrowserExecutable (); // NOI18N
+            sd.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
+            p = cmd.exec (new UnixWebBrowser.UnixBrowserFormat (url.toString ()));
+            
+            RequestProcessor.getDefault ().post (new Status (cmd, p, url), 1000);
+
             URL old = this.url;
             this.url = url;
             pcs.firePropertyChange (PROP_URL, old, url);
@@ -199,11 +180,6 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                 NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Cant_run_netscape", new Object [] { cmd.getProcessName () }),
                 NotifyDescriptor.Message.WARNING_MESSAGE)
             );
-        }
-        catch (InterruptedException ex) {
-            if (ExtWebBrowser.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-                ExtWebBrowser.getEM ().notify (ErrorManager.INFORMATIONAL, ex);
-            }
         }
         catch (NumberFormatException ex) {
             ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
@@ -225,162 +201,118 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
     public void stopLoading() {
     }
     
-    private void setWindowID (int winID) {
-        if (ExtWebBrowser.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-            ExtWebBrowser.getEM ().log (ErrorManager.INFORMATIONAL, "setWindowID to "+Integer.toHexString (winID));   // NOI18Nex);
-        }
-        currWinID = winID;
-    }
-    
-    /** 
-     *  tries to find property for window, property must be of type STRING
-     *
-     *  @param winID    XWindow identifier of window
-     *  @param propName name of property
-     *
-     *  @return property string if found, null if not found
-     */
-    private String getXProperty (int winID, String propName) {
-
-        try {
-            Process p = Runtime.getRuntime ().exec ("xprop -id 0x"+Integer.toHexString (winID)+" "+propName); // NOI18N
-            if (p.waitFor () == 0) {
-                // completed successfully
-                BufferedReader r = new BufferedReader (new InputStreamReader (p.getInputStream ()));
-                String result = r.readLine ();
-                if ((result != null)
-                &&  (result.startsWith (propName+"(STRING)"))) { // NOI18N
-                    int b,e;
-                    b = result.indexOf ('"');
-                    e = result.indexOf ('"', b+1);
-                    if ((b == -1) || (e == -1))
-                        return null;
-
-//System.out.println("getXProperty ("+Integer.toHexString (winID)+", "+propName+") = "+result.substring (b+1, e)); // NOI18N
-                    return result.substring (b+1, e);
-                }
-            }
-            return null;
-        }
-        catch (java.io.IOException ex) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
-        }
-        catch (InterruptedException ex) {
-            if (ExtWebBrowser.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-                ExtWebBrowser.getEM ().notify (ErrorManager.INFORMATIONAL, ex);
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * Looks into factory for executable. If nothing is found then netscape is returned
-     * 
-     * @param wholePath if true then all path is returned, 
-     *                  if false then it is cut to last part and first char is converted
-     *                  to uppercase
-     * @return command to be executed
-     */
-    private String getCommand (boolean wholePath) {
-        String exec = "netscape";  // NOI18N
-        if (extBrowserFactory != null) {
-            NbProcessDescriptor process = extBrowserFactory.getBrowserExecutable ();
-            if (process != null) {
-                exec = process.getProcessName ();
-            }
-        }
-        if (!wholePath) {
-            int idx = exec.lastIndexOf ('/');
-            if ((idx == -1) && Utilities.isWindows ()) {
-                idx = exec.lastIndexOf ('\\');
-            }
-            if ((idx != -1) && (exec.length () > idx))
-                exec = exec.substring (idx+1);
-            
-            if (exec.length () > 0) 
-                exec = Character.toUpperCase (exec.charAt (0))+exec.substring (1);
-        }
-        return exec;
-    }  
-
-
-    /**
-     * This class searches for window that contains rendered content.
-     * When NN4.x is used this window has _MOZILLA_URL xproperty that is equal to URL
-     * In other cases we only try to find it by WM_NAME property
-     */
-    class WindowFinder implements Runnable {
-
-        String url;
+    /** Object that checks execution result
+     * of browser invocation request.
+     * <p>It can made another attempt to start the browser
+     * when error output contains information that communication
+     * through Xremote protocol failed.
+     */        
+    private class Status implements Runnable {
         
-        public WindowFinder(java.lang.String url) {
+        /** Message printed when invocation fails. */
+        private static final String FAILURE_MSG = "No running window found.";   // NOI18N
+        
+        /** Originally executed command. */
+        private NbProcessDescriptor cmd;
+        
+        /** Handle to executed process. */
+        private Process p;
+        
+        /** URL to be displayed. */
+        private URL url;
+        
+        /** Retries counter. */
+        private int retries = CMD_TIMEOUT;
+        
+        /** Creates Status object to check execution result
+         * of browser invocation request.
+         * @param cmd Originally executed command.
+         * @param p Process that is checked.
+         * @param url Displayed URL that can be used when another attempt
+         * to start the browser is made or <CODE>null</CODE>.
+         */        
+        public Status (NbProcessDescriptor cmd, Process p, URL url) {
+            this. cmd = cmd;
+            this.p = p;
             this.url = url;
         }
         
+        /** Checks whether process is correctly executed.
+         * If it returns bad exit code or prints know error message
+         * it is re-executed once again.
+         * If the execution is not finished during timeout message is displayed.
+         */
         public void run () {
+            boolean retried = false;
+            int exitStatus = 1;
+            Reader r = new InputStreamReader (p.getErrorStream ());
             try {
-                for (int i=nOfProbes; i>0; i--) {
-                    // now try to get win ID
-                    setStatusMessage (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_look_for_win"));
-                    Process p = Runtime.getRuntime ().exec (new String [] {
-                        "sh", "-c", "xwininfo -root -tree|grep " + getCommand (false)}); // NOI18N
-                    java.io.InputStream inp = p.getInputStream ();
-                    int errCode = p.waitFor ();
-                    if (errCode == 0) {
-                        String line, s, prop;
-                        int winID;
-                        BufferedReader r = new BufferedReader (new InputStreamReader(inp));
-                        
-                        while ((line = r.readLine ()) != null) {
-                            s = line.substring (line.indexOf ('x')+1);
-                            s = s.substring (0, s.indexOf (' '));
-                            winID = Integer.parseInt (s, 16);
-                            
-                            prop = getXProperty (winID, "_MOZILLA_URL"); // NOI18N
-                            if (prop != null && prop.equals (url)) {
-                                setWindowID (winID);
-                                setTitle (getXProperty(winID, "WM_NAME")); // NOI18N
-                                return;
-                            }
-                            
-                        }
-                    }
-                    Thread.sleep (probeDelayLength);
-                }
-                // fallback - use the first one if you can't find it by URL
-                setStatusMessage (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_look_for_win"));
-                Process p = Runtime.getRuntime ().exec (new String [] {
-                    "sh", "-c", "xwininfo -root -tree|grep " + getCommand (false) }); // NOI18N
-                java.io.InputStream inp = p.getInputStream ();
-                int errCode = p.waitFor ();
-                if (errCode == 0) {
-                    String line, s, prop;
-                    int winID;
-                    BufferedReader r = new BufferedReader (new InputStreamReader(inp));
-
-                    while ((line = r.readLine ()) != null) {
-                        s = line.substring (line.indexOf ('x')+1);
-                        s = s.substring (0, s.indexOf (' '));
-                        winID = Integer.parseInt (s, 16);
-
-                        prop = getXProperty (winID, "WM_NAME"); // NOI18N
-                        if (prop != null) {
-                            setWindowID (winID);
-                            return;
-                        }
-                    }
-                }
-            }
-            catch (java.io.IOException ex) {
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
-            }
-            catch (InterruptedException ex) {
+                exitStatus = p.exitValue();
                 if (ExtWebBrowser.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-                    ExtWebBrowser.getEM ().notify (ErrorManager.INFORMATIONAL, ex);
+                    ExtWebBrowser.getEM ().log (ErrorManager.INFORMATIONAL, "Command executed. exitValue = "+exitStatus); // NOI18N
                 }
             }
-            // maybe not started & initialized yet
+            catch (IllegalThreadStateException ex) {
+                retries--;
+                if (retries > 0) {
+                    RequestProcessor.getDefault().post(this, 1000);
+                    return;
+                }
+                else {
+                    if (ExtWebBrowser.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+                        ExtWebBrowser.getEM ().log (ErrorManager.INFORMATIONAL, "Command not finished yet"); // NOI18N
+                    }
+                }
+            }
+            // hack : Netscape exits with 0 on Linux even if there is no window
+            if (exitStatus == 0 && org.openide.util.Utilities.getOperatingSystem() == org.openide.util.Utilities.OS_LINUX) {
+                final int LEN = 2048;
+                char [] buff = new char [LEN];
+                int l;
+                StringBuffer sb = new StringBuffer ();
+                try {
+                    while ((l = r.read (buff, 0, LEN)) != -1) {
+                        sb.append (buff, 0, l);
+                    }
+                    if (sb.toString ().indexOf (FAILURE_MSG) >= 0) {
+                        if (ExtWebBrowser.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+                            ExtWebBrowser.getEM ().log (ErrorManager.INFORMATIONAL, "Browser output: \""+FAILURE_MSG+"\""); // NOI18N
+                        }
+                        exitStatus = 2;
+                    }
+                }
+                catch (java.io.IOException ioe) {
+                    // suppose it was executed
+                    ExtWebBrowser.getEM ().notify(ErrorManager.WARNING, ioe);
+                }
+            }
+            if (exitStatus == 2) {
+                try {
+                    NbProcessDescriptor startCmd = UnixBrowserImpl.createPatchedExecutable(cmd);
+                    if (startCmd != null) {
+                        retried = true;
+                        StatusDisplayer.getDefault().
+                            setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", startCmd.getProcessName ()));
+                        Process pr = startCmd.exec (new UnixWebBrowser.UnixBrowserFormat (url.toString ()));
+
+                        // do not care about result now
+                        // RequestProcessor.getDefault ().post (new Status (startCmd, pr, null), 1000);
+                    }
+                }
+                catch (java.io.IOException ioe) {
+                    // suppose it was executed
+                    ExtWebBrowser.getEM ().notify(ErrorManager.WARNING, ioe);
+                }
+            }
+            if (exitStatus != 0 && !retried) {
+                DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message (
+                    NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Cant_run_netscape", new Object [] { cmd.getProcessName () }),
+                    NotifyDescriptor.Message.WARNING_MESSAGE)
+                );
+                return;
+            }
+
         }
-        
     }
 }

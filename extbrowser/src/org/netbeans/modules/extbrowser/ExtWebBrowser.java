@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -149,6 +149,18 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable 
             }
             browserExecutable = new NbProcessDescriptor (executable, "");   // NOI18N
             executable = null;
+        }
+        if (browserExecutable != null && browserExecutable.getArguments() != null) {
+            // replace old {params} with {URL}
+            String args = browserExecutable.getArguments();
+            int idx = args.indexOf("{params}"); // NOI18N
+            if (idx >= 0) {
+                browserExecutable = new NbProcessDescriptor (
+                    browserExecutable.getProcessName(),
+                    args.substring(0, idx)+"-remote openURL({URL})"+args.substring(idx+8), // NOI18N
+                    NbBundle.getMessage (ExtWebBrowser.class, "MSG_BrowserExecutorHint")
+                );
+            }
         }
         init ();
     }
