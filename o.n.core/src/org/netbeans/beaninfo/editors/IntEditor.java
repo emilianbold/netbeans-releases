@@ -141,7 +141,7 @@ public class IntEditor extends ExPropertyEditorSupport {
             setValue(new Integer(Integer.parseInt(s)));
         } catch (NumberFormatException nfe) {
             String msg = NbBundle.getMessage(
-            IntEditor.class, "EXC_ILLEGAL_VALUE_TEXT" + s);
+            IntEditor.class, "EXC_ILLEGAL_VALUE_TEXT") + s;
             RuntimeException iae = new IllegalArgumentException(msg); //NOI18N
             ErrorManager.getDefault().annotate(iae, ErrorManager.USER, msg,
             msg, iae, new java.util.Date());
