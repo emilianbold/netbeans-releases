@@ -17,16 +17,21 @@ import java.io.IOException;
 import java.awt.datatransfer.*;
 
 import org.openide.nodes.*;
-//import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.datatransfer.ExTransferable;
+import org.openide.ErrorManager;
+import org.openide.cookies.SourceCookie;
+import org.openide.src.ClassElement;
+import org.openide.loaders.DataObject;
 
 import org.netbeans.modules.form.layoutsupport.*;
+import org.netbeans.modules.form.project.*;
 
 /**
- * Support class for copy/cut/paste operations in form.
+ * Support class for copy/cut/paste operations in form editor.
  *
  * @author Tomas Pavek
  */
@@ -147,7 +152,7 @@ class CopySupport {
                     if (e instanceof IOException)
                         throw (IOException) e;
                     else { // should not happen, ignore
-                        e.printStackTrace();
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                         return ExTransferable.EMPTY;
                     }
                 }
@@ -267,27 +272,30 @@ class CopySupport {
 
     // ------------
 
-    /** Paste type for InstanceCookie.
+    /** Paste type for a class (java node).
      */
-/*    static class InstancePaste extends PasteType
-                               implements Mutex.ExceptionAction
-    {
-        private Transferable transferable;
-        private FormModel targetForm;
-        private RADComponent targetComponent;
+    static class ClassPaste extends PasteType implements Mutex.ExceptionAction {
 
-        public InstancePaste(Transferable t,
-                             FormModel targetForm,
-                             RADComponent targetComponent)
+        private Transferable transferable;
+        private ClassSource classSource;
+        private FormModel targetForm;
+        private RADComponent targetComponent; // may be null if pasting to Other Components
+
+        public ClassPaste(Transferable t,
+                          ClassSource classSource,
+                          FormModel targetForm,
+                          RADComponent targetComponent)
         {
             this.transferable = t;
+            this.classSource = classSource;
             this.targetForm = targetForm;
             this.targetComponent = targetComponent;
         }
 
         public Transferable paste() throws IOException {
-            if (java.awt.EventQueue.isDispatchThread())
+            if (java.awt.EventQueue.isDispatchThread()) {
                 return doPaste();
+            }
             else { // reinvoke synchronously in AWT thread
                 try {
                     return (Transferable) Mutex.EVENT.readAccess(this);
@@ -297,7 +305,7 @@ class CopySupport {
                     if (e instanceof IOException)
                         throw (IOException) e;
                     else { // should not happen, ignore
-                        e.printStackTrace();
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                         return transferable;
                     }
                 }
@@ -309,14 +317,49 @@ class CopySupport {
         }
 
         private Transferable doPaste() throws IOException {
-            InstanceCookie ic =
-                (InstanceCookie) NodeTransfer.cookie(transferable,
-                                                     NodeTransfer.COPY,
-                                                     InstanceCookie.class);
-            if (ic != null)
-                targetForm.getComponentCreator().createComponent(
-                                                    ic, targetComponent, null);
+            targetForm.getComponentCreator().createComponent(
+                                        classSource, targetComponent, null);
             return transferable;
         }
-    } */
+    }
+
+    static String getCopiedBeanClassName(Transferable t) {
+        ClassElement clsElem = (ClassElement)
+            NodeTransfer.cookie(t, NodeTransfer.COPY, ClassElement.class);
+
+        if (clsElem == null) {
+            SourceCookie source = (SourceCookie)
+                NodeTransfer.cookie(t, NodeTransfer.COPY, SourceCookie.class);
+            DataObject dobj = (DataObject)
+                NodeTransfer.cookie(t, NodeTransfer.COPY, DataObject.class);
+            if (source != null && dobj != null) {
+                ClassElement[] classes = source.getSource().getClasses();
+                for (int i=0; i < classes.length; i++) {
+                    if (classes[i].getName().getName().equals(dobj.getName())
+                        && classes[i].isDeclaredAsJavaBean())
+                    {
+                        clsElem = classes[i];
+                        break;
+                    }
+                }
+            }
+        }
+
+        return clsElem != null ? clsElem.getVMName() : null;
+    }
+
+    static ClassSource getCopiedBeanClassSource(Transferable t) {
+        DataObject dobj = (DataObject)
+            NodeTransfer.cookie(t, NodeTransfer.COPY, DataObject.class);
+        FileObject fo = dobj != null ? dobj.getPrimaryFile() : null;
+        if (fo == null)
+            return null;
+
+        String clsName = getCopiedBeanClassName(t);
+        if (clsName == null)
+            return null;
+
+        return ClassPathUtils.getProjectClassSource(fo, clsName);
+    }
+
 }

@@ -45,26 +45,13 @@ public class BorderDesignSupport implements FormDesignValue,
     public BorderDesignSupport(Class borderClass)
         throws Exception
     {
-        this(new CreationFactory.InstanceSource(borderClass));
-    }
-
-    public BorderDesignSupport(CreationFactory.InstanceSource borderSource)
-        throws Exception
-    {
-        Class borderClass = borderSource.getInstanceClass();
-
         creationDesc = CreationFactory.getDescriptor(borderClass);
         if (creationDesc == null) {
             creationDesc = new ConstructorsDescriptor(borderClass);
             CreationFactory.registerDescriptor(creationDesc);
         }
 
-        Border border = (Border) CreationFactory.createInstance(borderSource);
-
-//        if (borderSource.getInstanceCookie() != null)
-//            setBorder(border);
-//        else
-            theBorder = border;
+        theBorder = (Border) CreationFactory.createInstance(borderClass);
     }
 
     public BorderDesignSupport(Border border) {

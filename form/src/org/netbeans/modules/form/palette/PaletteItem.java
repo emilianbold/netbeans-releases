@@ -15,19 +15,11 @@ package org.netbeans.modules.form.palette;
 
 import java.beans.*;
 import java.awt.Image;
-import java.awt.Toolkit;
-import java.net.URL;
-import java.util.*;
-import java.io.File;
 
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
-import org.openide.util.*;
-import org.openide.filesystems.*;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.api.project.libraries.*;
-import org.netbeans.api.project.*;
+
+import org.netbeans.modules.form.project.*;
 
 /**
  * PaletteItem holds important information about one component (item)
@@ -40,15 +32,14 @@ public final class PaletteItem implements Node.Cookie {
 
     private PaletteItemDataObject itemDataObject;
 
-    // raw data (as read from the file - to be resolved lazily)
-    String componentClassName;
-    String[] classpath_raw;
+    // raw data (as read from the item file - to be resolved lazily)
+    ClassSource componentClassSource;
 //    Boolean isContainer_explicit;
     String componentType_explicit;
 
-    // resolved data
+    // resolved data (derived from the raw data)
     private Class componentClass;
-    private Throwable lastError;
+    private Throwable lastError; // error occurred when loading component class
 //    private Boolean componentIsContainer;
     private int componentType = -1;
 
@@ -59,16 +50,24 @@ public final class PaletteItem implements Node.Cookie {
     private static final int MENU = 8; // bit flag
     private static final int TYPE_MASK = 15;
 
-    // classpath source attributes
-    public static final String JAR_SOURCE = "jar"; // NOI18N
-    public static final String LIBRARY_SOURCE = "library"; // NOI18N
-    public static final String PROJECT_SOURCE = "project"; // NOI18N
-
     // -------
 
     PaletteItem(PaletteItemDataObject dobj) {
         itemDataObject = dobj;
     }
+
+    void setComponentClassSource(String className,
+                                 String[] cpTypes,
+                                 String[] cpNames)
+    {
+        componentClassSource = new ClassSource(className, cpTypes, cpNames);
+    }
+
+    void setComponentExplicitType(String type) {
+        componentType_explicit = type;
+    }
+
+    // -------
 
     /** @return a node visually representing this palette item */
     public Node getNode() {
@@ -77,11 +76,15 @@ public final class PaletteItem implements Node.Cookie {
 
     /** @return a String identifying this palette item */
     public String getId() {
-        return componentClassName;
+        return getComponentClassName();
     }
 
     public String getComponentClassName() {
-        return componentClassName;
+        return componentClassSource.getClassName();
+    }
+
+    public ClassSource getComponentClassSource() {
+        return componentClassSource;
     }
 
     /** @return the class of the component represented by this pallete item.
@@ -90,15 +93,6 @@ public final class PaletteItem implements Node.Cookie {
         if (componentClass == null && lastError == null)
             componentClass = loadComponentClass();
         return componentClass;
-    }
-
-    // [should this really be public?? - MetaComponentCreator needs it now]
-    public String[] getClassPathSource() {
-        if (classpath_raw == null)
-            return null;
-        String[] cpSource = new String[classpath_raw.length];
-        System.arraycopy(classpath_raw, 0, cpSource, 0, classpath_raw.length);
-        return cpSource;
     }
 
     /** @return the exception occurred when trying to resolve the component
@@ -187,81 +181,28 @@ public final class PaletteItem implements Node.Cookie {
         componentClass = null;
         lastError = null;
 //        componentIsContainer = null; 
+        componentType = -1;
+
         itemDataObject.displayName = null;
         itemDataObject.tooltip = null;
         itemDataObject.icon16 = null;
         itemDataObject.icon32 = null;
-        componentType = -1;
     }
 
     // -------
 
     private Class loadComponentClass() {
-        d("Loading class: "+componentClassName); // NOI18N
-
-        ClassLoader loader = null;
-
-        if (classpath_raw == null) { // no classpath, use system class loader
-            loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-        }
-        else try { // the class comes from an external JAR, installed library,
-                   // or some project output JAR
-            List urlList = new ArrayList();
-            for (int i=0; i < classpath_raw.length; i+=2) {
-                if (JAR_SOURCE.equals(classpath_raw[i])) {
-                    // full path to the JAR file in the next String
-                    File jarFile = new File(classpath_raw[i+1]);
-                    urlList.add(FileUtil.getArchiveRoot(jarFile.toURI().toURL()));
-                }
-                else if (LIBRARY_SOURCE.equals(classpath_raw[i])) {
-                    // library name in the next String
-                    Library lib = LibraryManager.getDefault().getLibrary(classpath_raw[i+1]);
-                    if (lib != null) {
-                        List content = lib.getContent("classpath"); // NOI18N
-                        for (Iterator it=content.iterator(); it.hasNext(); ) {
-                            URL rootURL = (URL) it.next();
-                            if (FileUtil.isArchiveFile(rootURL))
-                                rootURL = FileUtil.getArchiveRoot(rootURL);
-                            urlList.add(rootURL);
-                        }
-                    }
-                }
-                else if (PROJECT_SOURCE.equals(classpath_raw[i])) {
-                    File outputFile = new File(classpath_raw[i+1]);
-                    URL rootURL = FileUtil.getArchiveRoot(outputFile.toURI().toURL());
-                    if (FileUtil.isArchiveFile(rootURL))
-                        rootURL = FileUtil.getArchiveRoot(rootURL);
-                    urlList.add(rootURL);
-                }
-            }
-
-            if (urlList.size() > 0) {
-                URL[] roots = new URL[urlList.size()];
-                urlList.toArray(roots);
-                loader = ClassPathSupport.createClassPath(roots).getClassLoader(true);
-            }
+        try {
+            return ClassPathUtils.loadClass(getComponentClassSource());
         }
         catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             lastError = ex;
-            return null;
         }
-
-        if (loader != null) {
-            lastError = null;
-            try {
-                return loader.loadClass(componentClassName);
-            }
-            catch (Exception ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                lastError = ex;
-            }
-            catch (LinkageError ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                lastError = ex;
-            }
+        catch (LinkageError ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            lastError = ex;
         }
-
         return null;
     }
 
@@ -327,27 +268,5 @@ public final class PaletteItem implements Node.Cookie {
             componentType = MENU | VISUAL;
         else
             componentType = 0;
-    }
-
-    // -------
-
-    /** For debugging purposes only. */
-    private static final boolean TRACE = false;
-    
-    /** For debugging purposes only. */
-    private static void t(String str) {
-        if (TRACE)
-            if (str != null)
-                System.out.println("PaletteItem: " + str); // NOI18N
-            else
-                System.out.println(""); // NOI18N
-    }
-
-    private static void d(String str) {
-        if (TRACE) {
-            if (str != null)
-                System.out.println("PaletteItem: " + str); // NOI18N
-            Thread.dumpStack();
-        }
     }
 }

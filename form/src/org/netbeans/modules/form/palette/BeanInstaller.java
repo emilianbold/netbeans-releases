@@ -23,10 +23,9 @@ import org.openide.nodes.Node;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.cookies.SourceCookie;
-import org.openide.src.*;
-import org.netbeans.api.project.ant.*;
-import org.netbeans.api.project.*;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.openide.src.ClassElement;
+
+import org.netbeans.modules.form.project.*;
 
 /**
  * This class provides methods for installing new items to Palete.
@@ -95,14 +94,12 @@ public final class BeanInstaller {
                     while (it.hasNext()) {
                         String classname = (String) it.next();
                         FileObject fo = (FileObject) beanMap.get(classname);
-                        String[] classpath = getProjectOutput(fo);
-                        if (classpath != null) {
+                        ClassSource classSource =
+                            ClassPathUtils.getProjectClassSource(fo, classname);
+                        if (classSource != null) {
                             try {
-                                PaletteItemDataObject.createFile(
-                                    categoryFolder,
-                                    classname,
-                                    PaletteItem.PROJECT_SOURCE,
-                                    classpath);
+                                PaletteItemDataObject.createFile(categoryFolder,
+                                                                 classSource);
                                 // TODO check the class if it can be loaded?
                             }
                             catch (java.io.IOException ex) {
@@ -204,13 +201,14 @@ public final class BeanInstaller {
             Repository.getDefault().getDefaultFileSystem().runAtomicAction(
             new FileSystem.AtomicAction () {
                 public void run() {
+                    String[] cpTypes = new String[] { sourceType };
                     for (int i=0; i < beans.length; i++)
                         try {
                             PaletteItemDataObject.createFile(
                                 categoryFolder,
-                                beans[i].classname,
-                                sourceType,
-                                new String[] { beans[i].source} );
+                                new ClassSource(beans[i].classname,
+                                                cpTypes,
+                                                new String[] { beans[i].source} ));
                             // TODO check the class if it can be loaded?
                         }
                         catch (java.io.IOException ex) {
@@ -220,57 +218,6 @@ public final class BeanInstaller {
             });
         }
         catch (java.io.IOException ex) {} // should not happen
-    }
-
-    /** @return paths to project output roots (JARs) that are produced for
-     * given file (which might be a source, or even part of the output)
-     */
-    private static String[] getProjectOutput(FileObject fo) {
-        Project project = FileOwnerQuery.getOwner(fo);
-        if (project == null)
-            return null; // the file is not in any project
-
-        // find the project output (presumably a JAR file) where the given
-        // source file is compiled (packed) to
-        AntArtifact[] artifacts =
-            AntArtifactQuery.findArtifactsByType(project, "jar"); // NOI18N
-        if (artifacts.length == 0)
-            return null;
-
-        for (int i=0; i < artifacts.length; i++) {
-            File outputFile = new File(
-                artifacts[i].getScriptLocation().getParent()
-                + File.separator
-                + artifacts[i].getArtifactLocation().getPath());
-            try {
-                java.net.URL outputURL = outputFile.toURI().toURL();
-                if (FileUtil.isArchiveFile(outputURL))
-                    outputURL = FileUtil.getArchiveRoot(outputURL);
-                FileObject sourceRoots[] =
-                    SourceForBinaryQuery.findSourceRoots(outputURL).getRoots();
-                for (int j=0; j < sourceRoots.length; j++)
-                    if (FileUtil.isParentOf(sourceRoots[j], fo))
-                        return new String[] { outputFile.getAbsolutePath() };
-            }
-            catch (java.net.MalformedURLException ex) {} // should not happen
-        }
-
-        // if no output found for given source file then the file might not be
-        // a source file ... but a binary output file - in this case return
-        // simply all project outputs as there is no good way to recognize
-        // the right one (and j2se project has just one output anyway)
-        if (!fo.getExt().equals("class")) // NOI18N
-            return null;
-
-        String[] outputs = new String[artifacts.length];
-        for (int i=0; i < artifacts.length; i++) {
-            File outputFile = new File(
-                artifacts[i].getScriptLocation().getParent()
-                + File.separator
-                + artifacts[i].getArtifactLocation().getPath());
-            outputs[i] = outputFile.getAbsolutePath();
-        }
-        return outputs;
     }
 
     /** Recursive method scanning folders for classes (class files) that could

@@ -22,6 +22,7 @@ import org.openide.actions.*;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.form.actions.AddAction;
+import org.netbeans.modules.form.project.ClassSource;
 
 /**
  * This class represents the root node of "Other Components".
@@ -90,16 +91,12 @@ class FormOthersNode extends FormNode {
                 s.add(new CopySupport.RADPaste(t, formModel, null));
             }
         }
-        // TODO java or class node might be selected
-/*        else { // if there is not a RADComponent in the clipboard,
-               // try if it is not InstanceCookie
-            InstanceCookie ic =
-                (InstanceCookie) NodeTransfer.cookie(t,
-                                                     NodeTransfer.COPY,
-                                                     InstanceCookie.class);
-            if (ic != null)
-                s.add(new CopySupport.InstancePaste(t, formModel, null));
-        } */
+        else { // java or class node could be copied
+            ClassSource classSource = CopySupport.getCopiedBeanClassSource(t);
+            if (classSource != null) {
+                s.add(new CopySupport.ClassPaste(t, classSource, formModel, null));
+            }
+        }
     }
 
     // -------------

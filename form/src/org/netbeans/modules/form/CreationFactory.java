@@ -19,7 +19,6 @@ import java.lang.reflect.*;
 import javax.swing.*;
 import javax.swing.border.Border;
 import org.openide.util.Mutex;
-//import org.openide.cookies.InstanceCookie;
 
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
@@ -37,53 +36,6 @@ public class CreationFactory {
     private static boolean defaultDescriptorsCreated = false;
 
     private CreationFactory() {}
-
-    // -----------
-    // InstanceSource innerclass
-
-    public static final class InstanceSource {
-        private Class instClass;
-//        private InstanceCookie instCookie;
-
-        public InstanceSource(Class cls) {
-            instClass = cls;
-            exchangeClass();
-        }
-
-/*        public InstanceSource(InstanceCookie ic)
-            throws java.io.IOException, ClassNotFoundException
-        {
-            instClass = ic.instanceClass();
-            exchangeClass();
-
-            if (!(ic instanceof org.openide.loaders.InstanceDataObject))
-                instCookie = ic; // don't treat InstanceDataObject as instances
-        } */
-
-        public Class getInstanceClass() {
-            return instClass;
-        }
-
-//        public InstanceCookie getInstanceCookie() {
-//            return instCookie;
-//        }
-
-        private void exchangeClass() {
-            // hack - use the class loaded by NbClassLoader, avoid using class
-            // loaded by another loader from InstanceSupport
-//            String name = instClass.getName();
-//            if (!name.startsWith("javax.") && !name.startsWith("java.")) { // NOI18N
-//                ClassLoader filesysClassLoader = FormUtils.getClassLoader();
-//                if (!instClass.getClassLoader().getClass().equals(filesysClassLoader.getClass())) {
-//                    try {
-//                        instClass = filesysClassLoader.loadClass(name);
-//                    }
-//                    catch (LinkageError ex) {}
-//                    catch (Exception ex) {}
-//                }
-//            }
-        }
-    }
 
     // -----------
     // registry methods
@@ -124,28 +76,21 @@ public class CreationFactory {
         return instance;
     }
 
-    public static Object createInstance(final InstanceSource source)
+    public static Object createInstance(Class cls)
         throws Exception
     {
         Object instance;
 
-//        if (source.getInstanceCookie() != null)
-//            instance = source.getInstanceCookie().instanceCreate();
-//        else { // create default instance
-            Class theClass = source.getInstanceClass();
-            CreationDescriptor cd =
-                CreationFactory.getDescriptor(theClass);
-            instance = cd != null ?
-                           cd.createDefaultInstance() :
-                           theClass.newInstance();
-//        }
+        CreationDescriptor cd = CreationFactory.getDescriptor(cls);
+        instance = cd != null ? cd.createDefaultInstance() :
+                                cls.newInstance();
 
         initAfterCreation(instance);
         return instance;
     }
 
     public static Object createInstance(Class cls,
-                                        final FormProperty[] props,
+                                        FormProperty[] props,
                                         int style)
         throws Exception
     {
@@ -153,7 +98,7 @@ public class CreationFactory {
         if (cd == null)
             return null;
 
-        final CreationDescriptor.Creator creator = cd.findBestCreator(props, style);
+        CreationDescriptor.Creator creator = cd.findBestCreator(props, style);
         if (creator == null)
             return null;
 

@@ -210,6 +210,7 @@ public final class BorderEditor extends PropertyEditorSupport
     // --------------------------
     // innerclasses
 
+    // PENDING get rid of ExplorerPanel
     final class BorderPanel extends ExplorerPanel
                             implements PropertyChangeListener,
                                        VetoableChangeListener
@@ -265,13 +266,13 @@ public final class BorderEditor extends PropertyEditorSupport
 
                 BorderDesignSupport nodeBDS = null;
                 try {
-                    CreationFactory.InstanceSource instSource =
-                            new CreationFactory.InstanceSource(
-                                    paletteItem.getComponentClass());
-                    nodeBDS = new BorderDesignSupport(instSource);
+                    // PENDING ClassSource should be used (and project classpath
+                    // updated like in MetaComponentCreator.prepareClass)
+                    // [now not needed - until custom borders are supported]
+                    nodeBDS = new BorderDesignSupport(paletteItem.getComponentClass());
                 }
                 catch (Exception ex) {
-                    ex.printStackTrace();
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
                 if (nodeBDS == null)
                     continue;

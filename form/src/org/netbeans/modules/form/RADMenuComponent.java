@@ -13,11 +13,13 @@
 
 package org.netbeans.modules.form;
 
-import org.openide.util.datatransfer.*;
+import org.openide.util.datatransfer.NewType;
 
 import java.awt.*;
 import javax.swing.*;
 import java.util.*;
+
+import org.netbeans.modules.form.project.ClassSource;
 
 /**
  *
@@ -188,7 +190,9 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
          */
         public void create() throws java.io.IOException {
             getFormModel().getComponentCreator()
-                .createComponent(item, RADMenuComponent.this, null);
+                .createComponent(new ClassSource(item.getName(), null, null),
+                                 RADMenuComponent.this,
+                                 null);
         }
     }
 }

@@ -30,10 +30,10 @@ import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.java.classpath.*;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-//import org.netbeans.api.java.platform.JavaPlatform;
 
 import org.netbeans.modules.form.editors2.IconEditor;
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
+import org.netbeans.modules.form.project.ClassPathUtils;
 
 /**
  * A class that contains utility methods for the formeditor.
@@ -1175,41 +1175,7 @@ public class FormUtils
     public static Class loadUserClass(String name, FileObject formFile)
         throws ClassNotFoundException
     {
-        ClassNotFoundException cnfe = null;
-        ClassLoader loader;
-
-        // first try compilation classpath of the project
-        loader = ClassPath.getClassPath(formFile, ClassPath.COMPILE)
-                                .getClassLoader(true);
-        try {
-            return loader.loadClass(name);
-        }
-        catch (ClassNotFoundException ex) {
-            cnfe = ex;
-        }
-        // LinkageError left uncaught
-
-        // try execution classpath - in case the class is within the same project
-        // (first check there is a java source file for the class available)
-        int i = name.indexOf('$');
-        String resourceName = (i > -1 ? name.substring(0, i) : name)
-                               .replace('.', '/') + ".java"; // NOI18N
-        if (ClassPath.getClassPath(formFile, ClassPath.SOURCE)
-                               .findResource(resourceName) != null)
-        {
-            loader = ClassPath.getClassPath(formFile, ClassPath.EXECUTE)
-                                     .getClassLoader(true);
-            try {
-                return loader.loadClass(name);
-            }
-            catch (ClassNotFoundException ex) {
-                // report failure against compilation classpath (just annotate by this one)
-                ErrorManager.getDefault().annotate(cnfe, ex);
-            }
-            // LinkageError left uncaught
-        }
-
-        throw cnfe;
+        return ClassPathUtils.loadClass(name, formFile);
     }
 
 //    public static Class loadUserClass(String name, FormModel form)

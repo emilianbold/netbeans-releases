@@ -27,6 +27,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.ErrorManager;
 
+import org.netbeans.modules.form.project.ClassSource;
+
 /**
  * DataObject for palette item file. It reads the file and creates PaletteItem
  * and node from it.
@@ -53,7 +55,7 @@ class PaletteItemDataObject extends MultiDataObject {
     static final String ATTR_URL = "urlvalue"; // NOI18N
     static final String TAG_ICON32 = "icon32"; // NOI18N
     // component types: "visual", "menu", "layout", "border"
-    // classpath resource types: "jar", "library", "project"
+    // classpath resource types: "jar", "library", "project" (defined in ClassSource)
 
     private static SystemAction[] staticActions;
 
@@ -70,7 +72,7 @@ class PaletteItemDataObject extends MultiDataObject {
     private String icon16URL;
     private String icon32URL;
 
-    // data derived from raw data
+    // resolved data (derived from raw data)
     String displayName;
     String tooltip;
     java.awt.Image icon16;
@@ -92,6 +94,29 @@ class PaletteItemDataObject extends MultiDataObject {
         return paletteItem != null;
     }
 
+    void reloadFile() {
+        if (paletteItem != null) {
+            paletteItem.reset(); // resets resolved data (but not raw data)
+
+            paletteItem.componentClassSource = null;
+//            paletteItem.isContainer_explicit = null;
+            paletteItem.componentType_explicit = null;
+        }
+
+        displayName = null;
+        tooltip = null;
+        icon16 = null;
+        icon32 = null;
+
+        displayName_key = null;
+        tooltip_key = null;
+        bundleName = null;
+        icon16URL = null;
+        icon32URL = null;
+
+        loadFile();
+    }
+
     // ------
 
     public Node createNodeDelegate() {
@@ -111,13 +136,15 @@ class PaletteItemDataObject extends MultiDataObject {
 
     private void loadFile() {
         fileLoaded = true;
-        paletteItem = null;
-        PaletteItem item = new PaletteItem(this);
+        PaletteItem item = paletteItem;
+        if (item == null)
+            item = new PaletteItem(this);
 
         FileObject file = getPrimaryFile();
-        if (file.getSize() == 0L) { // item file without any content
+        if (file.getSize() == 0L) { // item file is empty
             // just derive the component class name from the file name
-            item.componentClassName = file.getName().replace('-', '.');
+            item.setComponentClassSource(file.getName().replace('-', '.'),
+                                         null, null);
             paletteItem = item;
             return;
         }
@@ -137,8 +164,7 @@ class PaletteItemDataObject extends MultiDataObject {
         catch (org.xml.sax.SAXException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-        // TODO report errors or validate using DTD?
-        // TODO handle empty files analogically to .instance files?
+        // TODO report errors, validate using DTD?
 
         // read the DOM tree
         if (mainElement == null)
@@ -152,6 +178,10 @@ class PaletteItemDataObject extends MultiDataObject {
 
         // TODO item ID (for now we take the class name as the ID)
 
+        String componentClassName = null;
+        List cpTypeList = new ArrayList(); // list for classpath type entries
+        List cpNameList = new ArrayList(); // list for classpath root name entries
+
         // root element ok, read the content
         org.w3c.dom.NodeList childNodes = mainElement.getChildNodes();
         for (int i=0, n=childNodes.getLength(); i < n; i++) {
@@ -162,11 +192,11 @@ class PaletteItemDataObject extends MultiDataObject {
             if (TAG_COMPONENT.equals(nodeName)) {
                 node = attr.getNamedItem(ATTR_CLASSNAME);
                 if (node != null) {
-                    item.componentClassName = node.getNodeValue();
+                    componentClassName = node.getNodeValue();
 
                     node = attr.getNamedItem(ATTR_TYPE);
                     if (node != null)
-                        item.componentType_explicit = node.getNodeValue();
+                        item.setComponentExplicitType(node.getNodeValue());
 
 //                    node = attr.getNamedItem(ATTR_IS_CONTAINER);
 //                    if (node != null)
@@ -176,7 +206,6 @@ class PaletteItemDataObject extends MultiDataObject {
             }
 
             else if (TAG_CLASSPATH.equals(nodeName)) {
-                List cpList = new ArrayList();
                 org.w3c.dom.NodeList cpNodes = childNodes.item(i).getChildNodes();
                 for (int j=0, m=cpNodes.getLength(); j < m; j++) {
                     attr = cpNodes.item(j).getAttributes();
@@ -188,15 +217,12 @@ class PaletteItemDataObject extends MultiDataObject {
                             String type = node.getNodeValue();
                             node = attr.getNamedItem(ATTR_NAME);
                             if (node != null) {
-                                cpList.add(type);
-                                cpList.add(node.getNodeValue());
+                                cpTypeList.add(type);
+                                cpNameList.add(node.getNodeValue());
                             }
                         }
                     }
                 }
-                if (cpList.size() > 0)
-                    item.classpath_raw =
-                        (String[]) cpList.toArray(new String[cpList.size()]);
             }
 
             else if (TAG_DESCRIPTION.equals(nodeName)) {
@@ -228,8 +254,21 @@ class PaletteItemDataObject extends MultiDataObject {
             }
         }
 
-        if (item.componentClassName != null || displayName_key != null)
+        if (componentClassName != null || displayName_key != null) {
+            String[] cpTypes;
+            String[] cpNames;
+            if (cpTypeList.size() > 0) {
+                cpTypes = new String[cpTypeList.size()];
+                cpTypeList.toArray(cpTypes);
+                cpNames = new String[cpNameList.size()];
+                cpNameList.toArray(cpNames);
+            }
+            else cpTypes = cpNames = null;
+
+            item.setComponentClassSource(componentClassName, cpTypes, cpNames);
+
             paletteItem = item;
+        }
     }
 
     private void saveFile() {
@@ -242,12 +281,11 @@ class PaletteItemDataObject extends MultiDataObject {
      * @param source classpath source type - "jar", "library", "project"
      * @param classpath names of classpath roots - e.g. JAR file paths
      */
-    static void createFile(FileObject folder,
-                           String classname,
-                           String source,
-                           String[] classpath)
+    static void createFile(FileObject folder, ClassSource classSource)
         throws IOException
     {
+        String classname = classSource.getClassName();
+
         int idx = classname.lastIndexOf('.');
         String fileName = FileUtil.findFreeFileName(
             folder,
@@ -264,11 +302,11 @@ class PaletteItemDataObject extends MultiDataObject {
         buff.append(classname);
         buff.append("\" />\n"); // NOI18N
         buff.append("  <classpath>\n"); // NOI18N
-        for (int i=0; i < classpath.length; i++) {
+        for (int i=0, n=classSource.getCPRootCount(); i < n; i++) {
             buff.append("      <resource type=\""); // NOI18N
-            buff.append(source);
+            buff.append(classSource.getCPRootType(i));
             buff.append("\" name=\""); // NOI18N
-            buff.append(classpath[i]);
+            buff.append(classSource.getCPRootName(i));
             buff.append("\" />\n"); // NOI18N
             buff.append("  </classpath>\n"); // NOI18N
             buff.append("</palette_item>\n"); // NOI18N

@@ -16,21 +16,25 @@ package org.netbeans.modules.form.actions;
 import javax.swing.*;
 
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.*;
-import org.openide.nodes.*;
+import org.openide.util.actions.CallableSystemAction;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeAcceptor;
 
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.palette.PaletteMenuView;
 import org.netbeans.modules.form.*;
 
 /**
+ * Action allowing to choose a component from palette content and add it to
+ * the selected containers in current form. Presented only in contextual menus
+ * within the Form Editor.
+ *
  * @author Tomas Pavek
  */
 
-public class AddAction extends NodeAction {
+public class AddAction extends CallableSystemAction {
 
     private static String name;
-    private static String menuText;
 
     public String getName() {
         if (name == null)
@@ -43,22 +47,18 @@ public class AddAction extends NodeAction {
         return new HelpCtx(AddAction.class);
     }
 
-    protected void performAction(Node[] activatedNodes) {
-    }
-
-    protected boolean enable(Node[] activatedNodes) {
-        for (int i=0; i < activatedNodes.length; i++) {
-            Node node = activatedNodes[i];
-            
+    public boolean isEnabled() {
+        Node[] nodes = getNodes();
+        for (int i=0; i < nodes.length; i++) {
             FormCookie formCookie =
-                (FormCookie) node.getCookie(FormCookie.class);
+                (FormCookie) nodes[i].getCookie(FormCookie.class);
             if (formCookie == null)
                 return false;
 
             RADComponentCookie radCookie =
-                (RADComponentCookie) node.getCookie(RADComponentCookie.class);
+                (RADComponentCookie) nodes[i].getCookie(RADComponentCookie.class);
             if (radCookie != null
-                    && !(radCookie.getRADComponent() instanceof ComponentContainer))
+                  && !(radCookie.getRADComponent() instanceof ComponentContainer))
                 return false;
         }
         return true;
@@ -72,30 +72,28 @@ public class AddAction extends NodeAction {
         JMenuItem menu = new PaletteMenuView(
             new NodeAcceptor() {
                 public boolean acceptNodes(Node[] nodes) {
-                    if (nodes.length == 0)
+                    if (nodes.length != 1)
                         return false;
 
-                    PaletteItem paletteItem = (PaletteItem)
-                                         nodes[0].getCookie(PaletteItem.class);
+                    PaletteItem paletteItem =
+                        (PaletteItem) nodes[0].getCookie(PaletteItem.class);
                     if (paletteItem == null)
                         return false;
 
-                    Node[] activatedNodes = getActivatedNodes();
-                    if (activatedNodes.length == 0)
+                    nodes = getNodes();
+                    if (nodes.length == 0)
                         return false;
 
                     boolean added = false;
 
-                    for (int i=0; i < activatedNodes.length; i++) {
-                        Node node = activatedNodes[i];
-            
-                        FormCookie formCookie = (FormCookie)
-                            node.getCookie(FormCookie.class);
+                    for (int i=0; i < nodes.length; i++) {
+                        FormCookie formCookie =
+                            (FormCookie) nodes[i].getCookie(FormCookie.class);
                         if (formCookie == null)
                             continue;
 
                         RADComponentCookie radCookie = (RADComponentCookie)
-                            node.getCookie(RADComponentCookie.class);
+                            nodes[i].getCookie(RADComponentCookie.class);
                         RADComponent targetComponent;
                         if (radCookie != null) {
                             targetComponent = radCookie.getRADComponent();
@@ -104,11 +102,10 @@ public class AddAction extends NodeAction {
                         }
                         else targetComponent = null;
 
-                        RADComponent newComp =
-                            formCookie.getFormModel().getComponentCreator()
-                                .createComponent(paletteItem, targetComponent, null);
-
-                        if (newComp != null)
+                        if (formCookie.getFormModel().getComponentCreator()
+                              .createComponent(paletteItem.getComponentClassSource(),
+                                               targetComponent,
+                                               null) != null)
                             added = true;
                     }
 
@@ -117,12 +114,25 @@ public class AddAction extends NodeAction {
             }
         );
 
-        if (menuText == null)
-            menuText = org.openide.util.NbBundle.getBundle(AddAction.class)
-                         .getString("ACT_Add"); // NOI18N
-        menu.setText(menuText);
-        menu.setIcon(null);
-
+        menu.setText(getName());
+        menu.setEnabled(isEnabled());
+        HelpCtx.setHelpIDString(menu, AddAction.class.getName());
         return menu;
+    }
+
+    protected boolean asynchronous() {
+        return false;
+    }
+
+    public void performAction() {
+    }
+
+    // -------
+
+    private static Node[] getNodes() {
+        // using NodeAction and global activated nodes is not reliable
+        // (activated nodes are set with a delay after selection in
+        // ComponentInspector)
+        return ComponentInspector.getInstance().getExplorerManager().getSelectedNodes();
     }
 }

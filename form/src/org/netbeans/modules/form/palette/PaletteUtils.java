@@ -22,8 +22,12 @@ import org.openide.loaders.DataFolder;
 import org.openide.filesystems.*;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
-import org.netbeans.api.project.libraries.*;
-import org.netbeans.api.project.*;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.FileOwnerQuery;
+
+import org.netbeans.modules.form.project.ClassSource;
 
 /**
  * Class providing various useful methods for palette classes.
@@ -95,75 +99,46 @@ public final class PaletteUtils {
     }
 
     static String getItemComponentDescription(PaletteItem item) {
-        String[] classpath_raw = item.classpath_raw;
-        if (classpath_raw == null || classpath_raw.length < 2) {
-            String componentClassName = item.getComponentClassName();
-            if (componentClassName != null) {
-                if (componentClassName.startsWith("javax.") // NOI18N
-                        || componentClassName.startsWith("java.")) // NOI18N
+        ClassSource classSource = item.getComponentClassSource();
+
+        if (classSource == null || classSource.getCPRootCount() == 0) {
+            String className = classSource.getClassName();
+            if (className != null) {
+                if (className.startsWith("javax.") // NOI18N
+                        || className.startsWith("java.")) // NOI18N
                     return getBundleString("MSG_StandardJDKComponent"); // NOI18N
-                if (componentClassName.startsWith("org.netbeans."))
+                if (className.startsWith("org.netbeans."))
                     return getBundleString("MSG_NetBeansComponent"); // NOI18N
             }
         }
-        else if (PaletteItem.JAR_SOURCE.equals(classpath_raw[0])) {
-            return MessageFormat.format(
-                getBundleString("FMT_ComponentFromJar"), // NOI18N
-                new Object[] { classpath_raw[1] });
-        }
-        else if (PaletteItem.LIBRARY_SOURCE.equals(classpath_raw[0])) {
-            Library lib = LibraryManager.getDefault().getLibrary(classpath_raw[1]);
-            return MessageFormat.format(
-                getBundleString("FMT_ComponentFromLibrary"), // NOI18N
-                new Object[] { lib.getDisplayName() });
-        }
-        else if (PaletteItem.PROJECT_SOURCE.equals(classpath_raw[0])) {
-            try {
-                Project project = FileOwnerQuery.getOwner(new File(classpath_raw[1]).toURI());
-                return MessageFormat.format(
-                      getBundleString("FMT_ComponentFromProject"), // NOI18N
-                      new Object[] { project.getProjectDirectory().getPath() })
-                    .replace('/', File.separatorChar);
-            }
-            catch (Exception ex) {} // ignore
-        }
-        return getBundleString("MSG_UnspecifiedComponent"); // NOI18N
-    }
+        else {
+            String type = classSource.getCPRootType(0);
+            String name = classSource.getCPRootName(0);
 
-    public static String getItemSourceDescription(PaletteItem item) {
-        String[] classpath_raw = item.classpath_raw;
-        if (classpath_raw == null || classpath_raw.length < 2) {
-            String componentClassName = item.getComponentClassName();
-            if (componentClassName != null) {
-                if (componentClassName.startsWith("javax.") // NOI18N
-                        || componentClassName.startsWith("java.")) // NOI18N
-                    return getBundleString("MSG_StandardJDKSource"); // NOI18N
-                if (componentClassName.startsWith("org.netbeans."))
-                    return getBundleString("MSG_NetBeansSource"); // NOI18N
-            }
-        }
-        else if (PaletteItem.JAR_SOURCE.equals(classpath_raw[0])) {
-            return MessageFormat.format(
-                getBundleString("FMT_JarSource"), // NOI18N
-                new Object[] { classpath_raw[1] });
-        }
-        else if (PaletteItem.LIBRARY_SOURCE.equals(classpath_raw[0])) {
-            Library lib = LibraryManager.getDefault().getLibrary(classpath_raw[1]);
-            return MessageFormat.format(
-                getBundleString("FMT_LibrarySource"), // NOI18N
-                new Object[] { lib.getDisplayName() });
-        }
-        else if (PaletteItem.PROJECT_SOURCE.equals(classpath_raw[0])) {
-            try {
-                Project project = FileOwnerQuery.getOwner(new File(classpath_raw[1]).toURI());
+            if (ClassSource.JAR_SOURCE.equals(type)) {
                 return MessageFormat.format(
-                      getBundleString("FMT_ProjectSource"), // NOI18N
-                      new Object[] { project.getProjectDirectory().getPath() })
-                    .replace('/', File.separatorChar);
+                    getBundleString("FMT_ComponentFromJar"), // NOI18N
+                    new Object[] { name });
             }
-            catch (Exception ex) {} // ignore
+            else if (ClassSource.LIBRARY_SOURCE.equals(type)) {
+                Library lib = LibraryManager.getDefault().getLibrary(name);
+                return MessageFormat.format(
+                    getBundleString("FMT_ComponentFromLibrary"), // NOI18N
+                    new Object[] { lib.getDisplayName() });
+            }
+            else if (ClassSource.PROJECT_SOURCE.equals(type)) {
+                try {
+                    Project project = FileOwnerQuery.getOwner(new File(name).toURI());
+                    return MessageFormat.format(
+                          getBundleString("FMT_ComponentFromProject"), // NOI18N
+                          new Object[] { project.getProjectDirectory().getPath()
+                                          .replace('/', File.separatorChar) });
+                }
+                catch (Exception ex) {} // ignore
+            }
         }
-        return getBundleString("MSG_UnspecifiedSource"); // NOI18N
+
+        return getBundleString("MSG_UnspecifiedComponent"); // NOI18N
     }
 
     public static FileObject getPaletteFolder() {

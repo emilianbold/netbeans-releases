@@ -32,6 +32,7 @@ import org.openide.explorer.propertysheet.editors.NodeCustomizer;
 
 import org.netbeans.modules.form.actions.*;
 import org.netbeans.modules.form.layoutsupport.*;
+import org.netbeans.modules.form.project.ClassSource;
 
 
 public class RADComponentNode extends FormNode
@@ -45,7 +46,6 @@ public class RADComponentNode extends FormNode
             FormUtils.getBundleString("FMT_UnnamedComponentNodeName")); // NOI18N
 
     private RADComponent component;
-    private RADComponentInstance radComponentInstance;
 
 
     public RADComponentNode(RADComponent component) {
@@ -57,7 +57,6 @@ public class RADComponentNode extends FormNode
     public RADComponentNode(Children children, RADComponent component) {
         super(children, component.getFormModel());
         this.component = component;
-        radComponentInstance = new RADComponentInstance(component);
         component.setNodeReference(this);
 //        getCookieSet().add(this);
         if (component instanceof ComponentContainer)
@@ -289,19 +288,6 @@ public class RADComponentNode extends FormNode
         super.destroy();
     }
 
-    /** Get a cookie from the node.
-     * Uses the cookie set as determined by {@link #getCookieSet}.
-     *
-     * @param type the representation class
-     * @return the cookie or <code>null</code>
-     */
-    public Node.Cookie getCookie(Class type) {
-        if (InstanceCookie.class.equals(type))
-            return radComponentInstance;
-
-        return super.getCookie(type);
-    }
-
     /** Test whether there is a customizer for this node. If true,
      * the customizer can be obtained via {@link #getCustomizer}.
      *
@@ -488,31 +474,15 @@ public class RADComponentNode extends FormNode
                                                component));
             }
         }
-        // TODO java or class node might be selected
-/*        else { // if there is not a RADComponent in the clipboard,
-               // try if it is not InstanceCookie
-            InstanceCookie ic = (InstanceCookie)
-                                NodeTransfer.cookie(t,
-                                                    NodeTransfer.COPY,
-                                                    InstanceCookie.class);
-            Class cls = null;
-            try {
-                if (ic != null)
-                    cls = ic.instanceClass();
+        else { // java or class node could be copied
+            ClassSource classSource = CopySupport.getCopiedBeanClassSource(t);
+            if (classSource != null) {
+//                && (MetaComponentCreator.canAddComponent(cls, component)
+//                   || MetaComponentCreator.canApplyComponent(cls, component)))
+                s.add(new CopySupport.ClassPaste(
+                        t, classSource, component.getFormModel(), component));
             }
-            catch (Exception ex) { // notify??
-                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-            }
-
-            if (cls != null
-                && (MetaComponentCreator.canAddComponent(cls, component)
-                    || MetaComponentCreator.canApplyComponent(cls, component)))
-            {
-                s.add(new CopySupport.InstancePaste(t,
-                                                    component.getFormModel(),
-                                                    component));
-            }
-        } */
+        }
     }
 
     // -----------------------------------------------------------------------------
