@@ -261,18 +261,16 @@ public class TopComponentOperator extends JComponentOperator {
         pushMenuOnTab(saveItem);
     }
 
-    /** Finds index-th TopComponent with given name in IDE registry.
-     * It takes into account only showing ones.
+    /** Finds index-th TopComponent with given name in whole IDE.
      * @param name name of TopComponent
      * @param index index of TopComponent
      * @return TopComponent instance or null if noone matching criteria was found
      */
-    protected static JComponent findTopComponent(String name, int index) {
+    public static JComponent findTopComponent(String name, int index) {
         return findTopComponent(null, name,  index, null);
     }
-    
+
     /** Finds index-th TopComponent with given name in IDE registry.
-     * It takes into account only showing ones.
      * @param cont container where to search
      * @param name name of TopComponent
      * @param index index of TopComponent
