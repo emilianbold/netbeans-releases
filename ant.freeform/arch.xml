@@ -156,6 +156,13 @@ Microsystems, Inc. All Rights Reserved.
    </li>
   </ol>
   <p>
+  Examples of implementation can be found in 
+  <a href="http://www.netbeans.org/source/browse/~checkout~/java/freeform/src/org/netbeans/modules/java/freeform/JavaProjectNature.java?content-type=text/plain">java</a>
+  or 
+  <a href="http://www.netbeans.org/source/browse/~checkout~/web/freeform/src/org/netbeans/modules/web/freeform/WebProjectNature.java?content-type=text/plain">web</a>
+  modules.
+  </p>
+  <p>
   Extensions have access to project's metadata and based on that can decide
   whether and how to enhance the freeform project.
   </p>
