@@ -104,8 +104,8 @@ public class PropertiesTableModel extends AbstractTableModel {
             case PropertyBundleEvent.CHANGE_FILE:
                 final int index = obj.getBundleStructure().getEntryIndexByFileName(evt.getEntryName());
                 if (index == -1) {
-                    if (Boolean.getBoolean("netbeans.debug.exceptions"))
-                        (new Exception("Changed file not found")).printStackTrace();
+                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                        (new Exception("Changed file not found")).printStackTrace(); // NOI18N
                     break;
                 }
                 cancelEditingInTables(new CancelSelector() {
@@ -123,8 +123,8 @@ public class PropertiesTableModel extends AbstractTableModel {
                 final int index2 = obj.getBundleStructure().getEntryIndexByFileName(evt.getEntryName());
                 final int keyIndex = obj.getBundleStructure().getKeyIndexByName(evt.getItemName());
                 if (index2 == -1 || keyIndex == -1) {
-                    if (Boolean.getBoolean("netbeans.debug.exceptions"))
-                        (new Exception("Changed file not found")).printStackTrace();
+                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                        (new Exception("Changed file not found")).printStackTrace(); // NOI18N
                     break;
                 }
                 cancelEditingInTables(new CancelSelector() {
@@ -209,25 +209,21 @@ public class PropertiesTableModel extends AbstractTableModel {
     
     /** Returns the name for a column */
     public String getColumnName(final int column) {
-        String mark;
-        if(column == obj.getBundleStructure().getSortIndex()) {
-            if(obj.getBundleStructure().getSortOrder())
-                // ascending
-                mark = " \u25B2 "; // NOI18N
-            else
-                // descending
-                mark = " \u25BC "; // NOI18N
-        } else
-            mark = " "; // NOI18N
+        String leading;
+        if(column == obj.getBundleStructure().getSortIndex())
+            // Place for drawing ascending/descending mark in renderer.
+            leading = "     "; // NOI18N
+        else
+            leading = " "; // NOI18N
         
         switch (column) {
         case 0:
-            return mark+NbBundle.getBundle(PropertiesTableModel.class).getString("LAB_KeyColumnLabel"); // NOI18N
+            return leading+NbBundle.getBundle(PropertiesTableModel.class).getString("LAB_KeyColumnLabel");
         default:
             if (obj.getBundleStructure().getEntryCount() == 1)
-                return mark+NbBundle.getBundle(PropertiesTableModel.class).getString("LBL_ColumnValue"); // NOI18N
+                return leading+NbBundle.getBundle(PropertiesTableModel.class).getString("LBL_ColumnValue");
             else
-                return mark+Util.getPropertiesLabel (obj.getBundleStructure().getNthEntry(column - 1)); // NOI18N
+                return leading+Util.getPropertiesLabel (obj.getBundleStructure().getNthEntry(column - 1));
         }
     }
 
