@@ -21,6 +21,8 @@ import org.openide.loaders.*;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.NbBundle;
 
+import org.openidex.util.Utilities2;
+
 import com.netbeans.developer.modules.loaders.url.*;
 
 /** ModuleInstall class for Utilities module
@@ -63,7 +65,7 @@ public class Installer extends ModuleInstall {
     try {
       org.openide.filesystems.FileUtil.extractJar (
         org.openide.TopManager.getDefault ().getPlaces ().folders().templates ().getPrimaryFile (),
-        getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/developer/modules/loaders/url/templates.jar")
+        getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/developer/modules/loaders/url/templates.jar") /* NO I18N */
       );
     } catch (java.io.IOException e) {
       org.openide.TopManager.getDefault ().notifyException (e);
@@ -74,7 +76,7 @@ public class Installer extends ModuleInstall {
     try {
       org.openide.filesystems.FileUtil.extractJar (
         org.openide.TopManager.getDefault ().getPlaces ().folders().templates ().getPrimaryFile (),
-        getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/enterprise/modules/group/toinstall/templates.jar")
+        getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/enterprise/modules/group/toinstall/templates.jar") /* NO I18N */
       );
     } catch (java.io.IOException e) {
       org.openide.TopManager.getDefault ().notifyException (e);
@@ -85,7 +87,7 @@ public class Installer extends ModuleInstall {
     try {
       org.openide.filesystems.FileUtil.extractJar (
         org.openide.TopManager.getDefault ().getPlaces ().folders().bookmarks ().getPrimaryFile (),
-        getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/developer/modules/loaders/url/bookmarks.jar")
+        getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/developer/modules/loaders/url/bookmarks.jar") /* NO I18N */
       );
     } catch (java.io.IOException e) {
       org.openide.TopManager.getDefault ().notifyException (e);
@@ -95,42 +97,16 @@ public class Installer extends ModuleInstall {
   private void installActions () {
     try {
       // install into actions pool
-      InstanceDataObject.create (
-        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help"), 
-        "BookmarksAction", BookmarksAction.class.getName ()
-      );
+      Utilities2.createAction (BookmarksAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); /* NO I18N */
 
       // install into menu
-      DataFolder helpFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help");
+      Utilities2.createAction (BookmarksAction.class, 
+        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help"), /* NO I18N */
+        "TipOfTheDayAction", false, true, true, false /* NO I18N */
+      );
 
-      if (InstanceDataObject.find (helpFolder, "Bookmarks", BookmarksAction.class.getName ()) != null) {
-        return; // action already exists
-      }
-
-      DataObject[] children = helpFolder.getChildren ();
-      int indexToUse = -1;
-      for (int i = 0; i < children.length; i++) { // first, try to add it before TipsOfTheDay
-        if (children[i].getName ().indexOf ("TipOfTheDay") != -1) {
-          indexToUse = i;
-        }
-      }
-      if (indexToUse == -1) {
-        for (int i = 0; i < children.length; i++) { // second, try to add it before About
-          if (children[i].getName ().indexOf ("About") != -1) {
-            indexToUse = i;
-          }
-        }
-      }
-      if (indexToUse != -1) {
-        DataObject[] newOrder = new DataObject [children.length + 2];
-        System.arraycopy (children, 0, newOrder, 0, indexToUse);
-        newOrder[indexToUse] = InstanceDataObject.create (helpFolder, "Bookmarks", BookmarksAction.class.getName ());
-        newOrder[indexToUse+1] = InstanceDataObject.create (helpFolder, "Separator-URL", "javax.swing.JSeparator");
-        System.arraycopy (children, indexToUse, newOrder, indexToUse + 2, children.length - indexToUse);
-        helpFolder.setOrder (newOrder);
-      }
     } catch (Exception e) {
-      if (System.getProperty ("netbeans.debug.exceptions") != null) {
+      if (System.getProperty ("netbeans.debug.exceptions") != null) { /* NO I18N */
         e.printStackTrace ();
       }
       // ignore failure to install
@@ -139,18 +115,11 @@ public class Installer extends ModuleInstall {
 
   private void uninstallActions () {
     try {
-      // remove from actions pool
-      InstanceDataObject.remove (
-        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help"),
-        "BookmarksAction", BookmarksAction.class.getName ()
-      );
-
-      // remove from menu
-      DataFolder helpFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help");
-      InstanceDataObject.remove (helpFolder, "Bookmarks", BookmarksAction.class.getName ());
-      InstanceDataObject.remove (helpFolder, "Separator-URL", "javax.swing.JSeparator");
+      // remove from actions pool and menu
+      Utilities2.removeAction (BookmarksAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); /* NO I18N */
+      Utilities2.removeAction (BookmarksAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help")); /* NO I18N */
     } catch (Exception e) {
-      if (System.getProperty ("netbeans.debug.exceptions") != null) {
+      if (System.getProperty ("netbeans.debug.exceptions") != null) { /* NO I18N */
         e.printStackTrace ();
       }
       // ignore failure to uninstall
@@ -160,6 +129,8 @@ public class Installer extends ModuleInstall {
 
 /*
  * Log
+ *  3    Gandalf   1.2         1/4/00   Ian Formanek    Uses Utilities2 to 
+ *       create/remove actions
  *  2    Gandalf   1.1         1/4/00   Ian Formanek    Group and URL 
  *       ModuleInstall code added
  *  1    Gandalf   1.0         1/4/00   Ian Formanek    
