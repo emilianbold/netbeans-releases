@@ -175,6 +175,15 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
     </target>
     
+  <target name="javadoc" depends="projectized.javadoc, init-javadoc"/>
+  
+  <target name="init-javadoc">
+      <mkdir dir="javadoc/J2EEDDAPI/arch"/>
+      <copy file="doc/ddapi_architecture.html" todir="javadoc/J2EEDDAPI/arch"/>
+      <copy file="doc/dd_api_schema.jpg" todir="javadoc/J2EEDDAPI/arch"/>
+      <copy file="doc/usage.html" todir="javadoc/J2EEDDAPI/arch"/>
+  </target>
+  
     <target name="clean-javadoc">
       <delete dir="javadoc"/>
     </target>
