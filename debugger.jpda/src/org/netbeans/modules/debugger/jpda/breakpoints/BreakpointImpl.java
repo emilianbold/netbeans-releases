@@ -150,7 +150,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
             return true; // resume
 
         getDebugger ().setStoppedState (thread);
-        return false;
+        return false; 
     }
 
     private boolean evaluateCondition (

@@ -549,15 +549,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
     * Performs stop action.
     */
     public void setStoppedState (ThreadReference thread) {
+        if (getState () == STATE_STOPPED) return; 
+        // this can happen if two breakpoints are reached at one time?!?!?
+        
         //S ystem.err.println("setStoppedState");
         JPDAThread t = getThread (thread);
-
         checkJSR45Languages (t);
         setCurrentThread (t);
-        if (getState () == STATE_STOPPED) {
-            System.err.println("already stopped!!");
-            Thread.dumpStack();
-        }
         setState (STATE_STOPPED);
         //S ystem.err.println("setStoppedState end");
     }
