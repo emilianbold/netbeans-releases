@@ -96,8 +96,8 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
             p.addPoint(x + 2, y + ins.top);
             p.addPoint(x + width - 3, y + ins.top);
             p.addPoint(x + width - 1, y + ins.top + 2);
-            p.addPoint(x + width - 1, y + height - 1);
-            p.addPoint(x, y + height - 1);
+            p.addPoint(x + width - 1, y + height - 2);
+            p.addPoint(x, y + height - 2);
             return p;
         }
 
