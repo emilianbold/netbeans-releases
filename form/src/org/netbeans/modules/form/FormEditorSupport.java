@@ -166,13 +166,14 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   */
   public void saveDocument () throws IOException {
     super.saveDocument ();
-    
-    TuborgPersistenceManager perMan = new TuborgPersistenceManager ();
-    FileObject formFile = formObject.getFormEntry ().getFile ();
-    try {
-      perMan.saveForm (formObject, formManager);
-    } catch (IOException e) {
-      e.printStackTrace ();
+    if (formLoaded) {
+      TuborgPersistenceManager perMan = new TuborgPersistenceManager ();
+      FileObject formFile = formObject.getFormEntry ().getFile ();
+      try {
+        perMan.saveForm (formObject, formManager);
+      } catch (IOException e) {
+        e.printStackTrace ();
+      }
     }
   }
 
@@ -203,6 +204,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  16   Gandalf   1.15        5/17/99  Ian Formanek    Fixed bug 1820 - An 
+ *       exception is thrown when form is created from a template.
  *  15   Gandalf   1.14        5/16/99  Ian Formanek    
  *  14   Gandalf   1.13        5/15/99  Ian Formanek    
  *  13   Gandalf   1.12        5/12/99  Ian Formanek    
