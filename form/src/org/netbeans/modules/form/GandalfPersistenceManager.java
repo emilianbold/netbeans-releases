@@ -487,7 +487,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       StringBuffer buf = new StringBuffer ();
       
       // 1.store XML file header
-      buf.append ("<?xml version=\"1.0\"?>\n");
+      buf.append ("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n");
       buf.append ("\n");
       
       // 2.store Form element
@@ -1048,10 +1048,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
         (value instanceof Float) ||
         (value instanceof Double) ||
         (value instanceof Boolean) ||
-        (value instanceof Character) ||
-        (value instanceof String)) {
+        (value instanceof Character)) {
       return value.toString ();
     } 
+
+    if (value instanceof String) {
+      // [PENDING - encoding newlines and special chars]
+      return (String)str;
+    }
      
     if (value instanceof Class) {
       return ((Class)value).getName ();
@@ -1289,6 +1293,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  32   Gandalf   1.31        9/14/99  Ian Formanek    Fixed bug 3564 - Form 
+ *       editor cannot load forms with non-US characters.
  *  31   Gandalf   1.30        9/12/99  Ian Formanek    FormAwareEditor.setRADComponent
  *        changes
  *  30   Gandalf   1.29        9/7/99   Ian Formanek    Errors notification 
