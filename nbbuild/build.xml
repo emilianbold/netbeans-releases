@@ -3914,4 +3914,17 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <exclude name="netbeans.css"/>
     </checkcontent>
   </target>
+
+  <target name="display-l10n-list-matches" description="Show which files are actually matched by an l10n.list in some module.">
+    <property name="nbroot" location=".."/>
+    <input addproperty="module">Select a top-level module (e.g. "java") to display results for:</input>
+    <property name="listfile" location="${nbroot}/${module}/l10n.list"/>
+    <echo>${listfile}:1: Matches follow... (click on hyperlinks from IDE!)</echo>
+    <apply parallel="false" executable="sh">
+        <arg value="-c"/>
+        <arg value="echo $0:1"/>
+        <fileset dir="${nbroot}" includesfile="${listfile}"/>
+    </apply>
+  </target>
+
 </project>
