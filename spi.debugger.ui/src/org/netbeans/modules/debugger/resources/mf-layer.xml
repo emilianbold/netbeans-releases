@@ -66,11 +66,7 @@
 
             <attr name="org-openide-actions-FinishDebuggerAction.instance/org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction.instance" />
-
-            <attr name="org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction.instance/org-netbeans-modules-debugger-support-actions-ResumeDebuggerAction.instance" boolvalue="true" />
-        
-            <file name="org-netbeans-modules-debugger-support-actions-ResumeDebuggerAction.instance" />
-            <attr name="org-netbeans-modules-debugger-support-actions-ResumeDebuggerAction.instance/org-openide-actions-TraceIntoAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction.instance/org-openide-actions-TraceIntoAction.instance" boolvalue="true" />
 
             <attr name="org-openide-actions-ToggleBreakpointAction.instance/org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" />
