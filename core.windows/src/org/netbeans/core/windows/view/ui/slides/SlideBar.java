@@ -39,6 +39,8 @@ import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.view.ui.Tabbed;
 import org.netbeans.swing.tabcontrol.DefaultTabDataModel;
 import org.netbeans.swing.tabcontrol.LocationInformer;
+import org.netbeans.swing.tabcontrol.SlideBarDataModel;
+import org.netbeans.swing.tabcontrol.SlidingButton;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDataModel;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
@@ -125,7 +127,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         SlideBarDataModel data = (SlideBarDataModel)e.getSource();
         SlidingButton curButton;
         for (int i = first; i <= last; i++) {
-            curButton = new SlidingButton(this, data.getTab(i), data.getOrientation());
+            curButton = new SlidingButton(data.getTab(i), data.getOrientation());
             attachListeners(curButton);
             buttons.add(i, curButton);
             add(curButton, i * 2);
@@ -201,7 +203,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         List dataList = dataModel.getTabs();
         SlidingButton curButton;
         for (Iterator iter = dataList.iterator(); iter.hasNext(); ) {
-            curButton = new SlidingButton(this, (TabData)iter.next(), dataModel.getOrientation());
+            curButton = new SlidingButton((TabData)iter.next(), dataModel.getOrientation());
             attachListeners(curButton);
             buttons.add(curButton);
             add(curButton);

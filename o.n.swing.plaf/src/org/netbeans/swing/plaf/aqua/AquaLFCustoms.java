@@ -49,7 +49,7 @@ public final class AquaLFCustoms extends LFCustoms {
             "ComboBox.font", controlFont,
             "PopupMenuSeparatorUI", "org.netbeans.swing.plaf.aqua.AquaSeparatorUI",
             "SeparatorUI", "org.netbeans.swing.plaf.aqua.AquaSeparatorUI",
-
+             SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.AquaSlidingButtonUI",
 
         }; //NOI18N
         return result;

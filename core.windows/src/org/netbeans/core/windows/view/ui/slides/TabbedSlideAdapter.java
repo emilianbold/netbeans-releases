@@ -34,6 +34,7 @@ import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.core.windows.view.ui.Tabbed;
+import org.netbeans.swing.tabcontrol.SlideBarDataModel;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDataModel;
 import org.openide.windows.TopComponent;

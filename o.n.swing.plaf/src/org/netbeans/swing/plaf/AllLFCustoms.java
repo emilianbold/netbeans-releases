@@ -57,6 +57,8 @@ final class AllLFCustoms extends LFCustoms {
             SLIDING_TAB_BUTTON_UI,
                 "org.netbeans.swing.tabcontrol.plaf.SlidingTabDisplayerButtonUI",
 
+            SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.SlidingButtonUI", //NOI18N
+                
         
             //XXX convert to derived colors
             "tab_unsel_fill", UIUtils.adjustColor (

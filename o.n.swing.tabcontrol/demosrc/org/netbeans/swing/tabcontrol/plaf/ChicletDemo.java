@@ -38,7 +38,12 @@ public class ChicletDemo {
 //            thing.setArcs(20, 20, 20, 20);
             thing.setArcs(0.5f, 0.5f, 0.5f, 0.5f);
             thing.setNotch(true, false);
-            thing.setState(thing.STATE_CLOSING);
+    Color[] rollover = new Color[]{
+        new Color(222, 222, 227), new Color(220, 238, 255), new Color(190, 247, 255),
+        new Color(205, 205, 205)};
+
+//            thing.setState(thing.STATE_ACTIVE | thing.STATE_SELECTED | thing.STATE_);
+        thing.setColors(rollover[0], rollover[1], rollover[2], rollover[3]);
             thing.setAllowVertical(true);
             thing.setBounds(25, 25, getWidth() - 120, getHeight() - 40);
             thing.draw((Graphics2D) g);

@@ -72,7 +72,7 @@ public final class MetalLFCustoms extends LFCustoms {
             //UI Delegates for the tab control
             EDITOR_TAB_DISPLAYER_UI, "org.netbeans.swing.tabcontrol.plaf.MetalEditorTabDisplayerUI",
             VIEW_TAB_DISPLAYER_UI, "org.netbeans.swing.tabcontrol.plaf.MetalViewTabDisplayerUI",
-            SLIDING_BUTTON_UI, "org.netbeans.core.windows.view.ui.slides.MetalSlidingButtonUI",
+            SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.MetalSlidingButtonUI",
 
             EDITOR_TAB_OUTER_BORDER, outerBorder,
             VIEW_TAB_OUTER_BORDER, outerBorder,

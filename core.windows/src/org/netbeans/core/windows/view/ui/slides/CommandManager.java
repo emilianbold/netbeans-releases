@@ -27,6 +27,8 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import org.netbeans.swing.tabcontrol.DefaultTabDataModel;
+import org.netbeans.swing.tabcontrol.SlideBarDataModel;
+import org.netbeans.swing.tabcontrol.SlidingButton;
 import org.netbeans.swing.tabcontrol.TabDataModel;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;

@@ -17,6 +17,7 @@ import java.awt.Component;
 import java.awt.Rectangle;
 import javax.swing.JLayeredPane;
 import org.netbeans.core.windows.Constants;
+import org.netbeans.swing.tabcontrol.SlideBarDataModel;
 
 /*
  * Interface for slide in and slide out operations. Acts as command interface
