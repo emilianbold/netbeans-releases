@@ -63,6 +63,11 @@ public class TopComponentGetLookupTest extends NbTestCase {
         lookup = top.getLookup ();
     }
     
+    protected boolean runInEQ () {
+        return true;
+    }
+    
+    
     
     /** Test to find nodes.
      */
@@ -500,6 +505,51 @@ public class TopComponentGetLookupTest extends NbTestCase {
         assertEquals("But the CloseCookie remains",
             1,
             lookup.lookup(new Lookup.Template(CloseCookie.class)).allInstances().size());
+    }
+
+    public void testAssociateLookupCanBecalledJustOnce () throws Exception {
+        class TC extends TopComponent {
+            public TC () {
+            }
+            
+            public TC (Lookup l) {
+                super (l);
+            }
+            
+            public void asso (Lookup l) {
+                associateLookup (l);
+            }
+        }
+        
+        TC tc = new TC ();
+        assertNotNull ("There is default lookup", tc.getLookup ());
+        try {
+            tc.asso (Lookup.EMPTY);
+            fail ("Should throw an exception");
+        } catch (IllegalStateException ex) {
+            // ok, should be thrown
+        }
+        
+        tc = new TC (Lookup.EMPTY);
+        assertEquals ("Should return the provided lookup", Lookup.EMPTY, tc.getLookup ());
+        
+        try {
+            tc.asso (Lookup.EMPTY);
+            fail ("Should throw an exception - second association not possible");
+        } catch (IllegalStateException ex) {
+            // ok, should be thrown
+        }
+    
+        tc = new TC ();
+        tc.asso (Lookup.EMPTY);
+        assertEquals ("First association was successful", Lookup.EMPTY, tc.getLookup ());
+        
+        try {
+            tc.asso (new TC ().getLookup ());
+            fail ("Should throw an exception - second association not possible");
+        } catch (IllegalStateException ex) {
+            // ok, should be thrown
+        }
     }
     
     /** Listener to count number of changes.
