@@ -14,7 +14,8 @@
 package org.netbeans.modules.xml.multiview.ui;
 
 import javax.swing.JPanel;
-import java.awt.BorderLayout;
+import java.awt.*;
+
 import org.openide.nodes.Node;
 import org.netbeans.modules.xml.multiview.cookies.SectionFocusCookie;
 /**
@@ -264,11 +265,19 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
     }
     
     private Object getLastActive() {
-        return ((ToolBarDesignEditor)getParent().getParent()).getLastActive();
-    }
-    
-    private void setLastActive(Object key) {
-        ((ToolBarDesignEditor)getParent().getParent()).setLastActive(key);
+        ToolBarDesignEditor toolBarDesignEditor = getToolBarDesignEditor();
+        return toolBarDesignEditor == null ? null : toolBarDesignEditor.getLastActive();
     }
 
+    private void setLastActive(Object key) {
+        ToolBarDesignEditor toolBarDesignEditor = getToolBarDesignEditor();
+        if(toolBarDesignEditor != null) {
+            toolBarDesignEditor.setLastActive(key);
+        }
+    }
+
+    private ToolBarDesignEditor getToolBarDesignEditor() {
+        Container parent = getParent();
+        return parent == null ? null : (ToolBarDesignEditor) parent.getParent();
+    }
 }
