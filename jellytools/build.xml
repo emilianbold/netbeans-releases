@@ -29,12 +29,12 @@ Microsystems, Inc. All Rights Reserved.
     <path id="jellytools.classpath">
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
         <pathelement location="../core/netbeans/lib/core.jar"/>
-        <pathelement location="../core/netbeans/lib/ext/terminalemulator.jar"/>
+        <pathelement location="../core/term/netbeans/modules/autoload/terminalemulator.jar"/>
         <pathelement location="../jemmy/jemmy.jar"/>
         <pathelement location="../xtest/lib/junit.jar"/>
         <pathelement location="../xtest/lib/junit-ext.jar"/>
     </path>
-    
+
     <target name="all" depends="jars,zipsrc,javadoc,javadocWithJemmy" description="Create jars, source zip and javadoc zip">
     </target>
 
