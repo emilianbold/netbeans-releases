@@ -54,8 +54,8 @@ public class GraphManager extends Object {
     //	The key is the input stream. This is how we can get the
     //	factory/writer when we are asked to build a Dom graph.
     //
-    static Map	factoryMap = Collections.synchronizedMap(new HashMap());
-    static Map	writerMap = Collections.synchronizedMap(new HashMap());
+    static Map	factoryMap = Collections.synchronizedMap(new HashMap(2));
+    static Map	writerMap = Collections.synchronizedMap(new HashMap(2));
     
 
     public GraphManager(BaseBean root) {
