@@ -79,7 +79,7 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
                             ClassPathSupport.Item item = ClassPathSupport.Item.create( library, null, ClassPathSupport.Item.PATH_IN_WAR_LIB);
                             if (!resources.contains(item)) {
                                 resources.add (item);
-                                String itemRefs[] = cs.encodeToStrings( resources.iterator(), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES );
+                                String itemRefs[] = cs.encodeToStrings( resources.iterator(), webModuleElementName );
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties                                
                                 props.setProperty(classPathId, itemRefs);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
@@ -126,7 +126,7 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
 
                             if (!resources.contains(item)) {
                                 resources.add (item);
-                                String itemRefs[] = cs.encodeToStrings( resources.iterator(), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
+                                String itemRefs[] = cs.encodeToStrings( resources.iterator(), webModuleElementName );
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
                                 props.setProperty(classPathId, itemRefs);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
@@ -164,7 +164,7 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
                             ClassPathSupport.Item item = ClassPathSupport.Item.create( artifact, artifactElement, null, ClassPathSupport.Item.PATH_IN_WAR_LIB);
                             if (!resources.contains(item)) {
                                 resources.add (item);
-                                String itemRefs[] = cs.encodeToStrings( resources.iterator(), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES );                                
+                                String itemRefs[] = cs.encodeToStrings( resources.iterator(), webModuleElementName );                                
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                                 props.setProperty (classPathId, itemRefs);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
