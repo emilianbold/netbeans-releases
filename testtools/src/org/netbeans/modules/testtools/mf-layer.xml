@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+    <folder name="Mount">
+        <folder name="Javadoc">
+            <file name="org-netbeans-modules-testtools-jemmy-javadoc.xml">
+                <!-- attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/testtools/someIcon.gif"/ -->
+	      <![CDATA[
+		<!DOCTYPE Javadoc PUBLIC "-//NetBeans IDE//DTD JavadocLibrary//EN" "http://www.netbeans.org/dtds/JavadocLibrary-1_0.dtd">
+		<Javadoc>
+		    <Archive name="docs/jemmy-API.zip"/>
+		</Javadoc>
+	      ]]>
+            </file>
+            <file name="org-netbeans-modules-testtools-jelly-javadoc.xml">
+	      <![CDATA[
+		<!DOCTYPE Javadoc PUBLIC "-//NetBeans IDE//DTD JavadocLibrary//EN" "http://www.netbeans.org/dtds/JavadocLibrary-1_0.dtd">
+		<Javadoc>
+		    <Archive name="docs/jelly-API.zip"/>
+		</Javadoc>
+	      ]]>
+            </file>
+            <file name="org-netbeans-modules-testtools-nb-junit-javadoc.xml">
+	      <![CDATA[
+		<!DOCTYPE Javadoc PUBLIC "-//NetBeans IDE//DTD JavadocLibrary//EN" "http://www.netbeans.org/dtds/JavadocLibrary-1_0.dtd">
+		<Javadoc>
+		    <Archive name="docs/nbjunit-api.zip"/>
+		</Javadoc>
+	      ]]>
+            </file>
+        </folder>
+        <folder name="java">
+           <file name="org-netbeans-modules-testtools-jemmy-library.xml">
+	      <![CDATA[
+	          <!DOCTYPE Library PUBLIC "-//NetBeans IDE//DTD JavaLibrary//EN" "http://www.netbeans.org/dtds/JavaLibrary-1_0.dtd">
+	          <Library>
+	              <Archive name="lib/ext/jemmy.jar"/>
+	          </Library>
+	      ]]>
+           </file>
+           <file name="org-netbeans-modules-testtools-jelly-library.xml">
+	      <![CDATA[
+	          <!DOCTYPE Library PUBLIC "-//NetBeans IDE//DTD JavaLibrary//EN" "http://www.netbeans.org/dtds/JavaLibrary-1_0.dtd">
+	          <Library>
+	              <Archive name="lib/ext/jelly-nb.jar"/>
+	          </Library>
+	      ]]>
+           </file>
+           <file name="org-netbeans-modules-testtools-junit-library.xml">
+	      <![CDATA[
+	          <!DOCTYPE Library PUBLIC "-//NetBeans IDE//DTD JavaLibrary//EN" "http://www.netbeans.org/dtds/JavaLibrary-1_0.dtd">
+	          <Library>
+	              <Archive name="lib/ext/junit.jar"/>
+	          </Library>
+	      ]]>
+           </file>
+           <file name="org-netbeans-modules-testtools-junit-ext-library.xml">
+	      <![CDATA[
+	          <!DOCTYPE Library PUBLIC "-//NetBeans IDE//DTD JavaLibrary//EN" "http://www.netbeans.org/dtds/JavaLibrary-1_0.dtd">
+	          <Library>
+	              <Archive name="lib/ext/junit-ext.jar"/>
+	          </Library>
+	      ]]>
+           </file>
+      </folder>
+    </folder>
+
+</filesystem>
