@@ -33,9 +33,10 @@ public final class TestInstalledFileLocator extends InstalledFileLocator {
     }
 
     public File locate(String relativePath, String codeNameBase, boolean localized) {
+        // Simulate effect of having an Ant-task-providing module in user dir:
         if (relativePath.equals("ant")) {
-            return antHome;
-        } else if (relativePath.startsWith("ant/")) {
+            return new File("/my/user/dir/ant");
+        } else if (relativePath.equals("ant/nblib/bridge.jar") || relativePath.equals("ant/lib/ant.jar")) {
             File f = new File(antHome, relativePath.substring(4).replace('/', File.separatorChar));
             if (f.exists()) {
                 return f;

@@ -290,8 +290,9 @@ final class ProjectProperties {
                 m.putAll(p);
             }
             m.put("basedir", FileUtil.toFile(helper.getProjectDirectory()).getAbsolutePath()); // NOI18N
-            File antHome = InstalledFileLocator.getDefault().locate("ant", "org.apache.tools.ant.module", false); // NOI18N
-            if (antHome != null) {
+            File antJar = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", "org.apache.tools.ant.module", false); // NOI18N
+            if (antJar != null) {
+                File antHome = antJar.getParentFile().getParentFile();
                 m.put("ant.home", antHome.getAbsolutePath()); // NOI18N
             }
             stockPropertyPreprovider = PropertyUtils.fixedPropertyProvider(m);
