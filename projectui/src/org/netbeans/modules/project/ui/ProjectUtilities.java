@@ -149,12 +149,13 @@ public class ProjectUtilities {
     
     /** Checks if the given file name can be created in the target folder.
      *
-     * @param folder target folder
+     * @param targetFolder target folder (e.g. source group)
+     * @param folderName name of the folder relative to target folder
      * @param newObjectName name of created file
      * @param extension extension of created file
      * @return localized error message or null if all right
      */    
-    final public static String canUseFileName (FileObject folder, String newObjectName, String extension) {
+    final public static String canUseFileName (FileObject targetFolder, String folderName, String newObjectName, String extension) {
         if (extension != null && extension.length () > 0) {
             StringBuffer sb = new StringBuffer ();
             sb.append (newObjectName);
@@ -162,22 +163,26 @@ public class ProjectUtilities {
             sb.append (extension);
             newObjectName = sb.toString ();
         }
+        
+        String relFileName = folderName + "/" + newObjectName; // NOI18N
+
         // test whether the selected folder on selected filesystem already exists
-        if (folder == null) {
+        if (targetFolder == null) {
             return NbBundle.getMessage (ProjectUtilities.class, "MSG_fs_or_folder_does_not_exist"); // NOI18N
         }
         
         // target filesystem should be writable
-        if (!folder.canWrite ()) {
+        if (!targetFolder.canWrite ()) {
             return NbBundle.getMessage (ProjectUtilities.class, "MSG_fs_is_readonly"); // NOI18N
         }
         
-        if (folder.getFileObject (newObjectName) != null) {
+        if (targetFolder.getFileObject (relFileName) != null) {
             return NbBundle.getMessage (ProjectUtilities.class, "MSG_file_already_exist", newObjectName); // NOI18N
         }
         
-        if (Utilities.isWindows ()) {
-            if (checkCaseInsensitiveName (folder, newObjectName)) {
+        FileObject existingFolder = folderName == null ? targetFolder : targetFolder.getFileObject( folderName );
+        if (Utilities.isWindows () &&  existingFolder != null ) {
+            if (checkCaseInsensitiveName (existingFolder, newObjectName)) {
                 return NbBundle.getMessage (ProjectUtilities.class, "MSG_file_already_exist", newObjectName); // NOI18N
             }
         }
