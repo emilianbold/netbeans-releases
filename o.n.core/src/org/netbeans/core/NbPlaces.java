@@ -92,25 +92,44 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
   /** Default folder for templates.
   */
   public DataFolder templates () {
-    throw new NotImplementedException ();
+    return findSessionFolder ("Templates");
   }
 
   /** Default folder for toolbars.
   */
   public DataFolder toolbars () {
+    return findSessionFolder ("Toolbars");
+  }
+
+  /** Default folder for menus.
+  */
+  public DataFolder menus () {
+    return findSessionFolder ("Menus");
+  }
+    
+  /**
+   * Returns a DataFolder subfolder of the session folder.  In the DataFolder
+   * folders go first (sorted by name) followed by the rest of objects sorted
+   * by name.
+   */
+  private DataFolder findSessionFolder (String name) {
     DataFolder df = null;
     try {
-      FileObject fo = FileSystemPool.getDefault().findResource("Toolbars");
+      FileObject fo = FileSystemPool.getDefault().findResource(name);
       df = DataFolder.findFolder(fo);
+      df.setSortMode(DataFolder.SortMode.FOLDER_NAMES);
     } catch (Exception ex) {
       ex.printStackTrace();
     }
     return df;
   }
+
 }
 
 /*
 * Log
+*  5    Gandalf   1.4         1/25/99  David Peroutka  support for menus and 
+*       toolbars
 *  4    Gandalf   1.3         1/20/99  Jaroslav Tulach 
 *  3    Gandalf   1.2         1/20/99  David Peroutka  
 *  2    Gandalf   1.1         1/6/99   Jan Jancura     
