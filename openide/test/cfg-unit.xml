@@ -93,6 +93,7 @@ Microsystems, Inc. All Rights Reserved.
 		<!-- the ListViews excluded because of issue #29423 -->
                 <exclude name="org/openide/explorer/view/ListViewTest.class"/>
                 <include name="org/openide/util/UtilProgressCursorTest.class"/>
+                <include name="org/openide/explorer/view/TTVTest.class"/>               
             </patternset>
         </testset>        
     </testbag>
