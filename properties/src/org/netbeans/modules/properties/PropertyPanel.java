@@ -15,8 +15,10 @@
 package org.netbeans.modules.properties;
 
 
+import java.awt.event.KeyEvent;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -52,6 +54,11 @@ public class PropertyPanel extends JPanel {
         keyText.setText(UtilConvert.unicodesToChars(element.getKey()));
         valueText.setText(UtilConvert.unicodesToChars(element.getValue()));
         commentText.setText(UtilConvert.unicodesToChars(element.getComment()));
+
+        // Unregister Enter on text fields so default button could work.
+        keyText.getKeymap().removeKeyStrokeBinding(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+        valueText.getKeymap().removeKeyStrokeBinding(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+        commentText.getKeymap().removeKeyStrokeBinding(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
         
         HelpCtx.setHelpIDString(this, Util.HELP_ID_ADDING);
     }
