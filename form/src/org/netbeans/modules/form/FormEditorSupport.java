@@ -83,9 +83,20 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     // ----------
     // opening & saving (interface methods)
 
+    /**
+     * works around a Jikes bug which results int bad bytecode if you calls
+     * OuterClass.super.open() from inside an inner class.  Instead of
+     * super.open() jikes generates bytecode for open() => infinite recursion
+     */
+    private void superOpen() {
+        super.open();
+    }
+
+    
     /** OpenCookie implementation - opens the form (loads it first if needed).
      * @see OpenCookie#open
      */
+
     public void open() {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -97,7 +108,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
 
                 if (loadForm())
                     openGUI();
-                FormEditorSupport.super.open();
+                FormEditorSupport.this.superOpen();
 
                 // clear status text
                 TopManager.getDefault().setStatusText(""); // NOI18N
@@ -327,7 +338,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                 if (loaded) {
                     if (openGui)
                         openGUI();
-                    FormEditorSupport.super.open();
+                    FormEditorSupport.this.superOpen();
                 }
             }
         });
