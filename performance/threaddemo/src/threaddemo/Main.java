@@ -13,10 +13,12 @@
 
 package threaddemo;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.*;
 import java.io.File;
 import javax.swing.*;
+import threaddemo.apps.index.IndexApp;
 import threaddemo.model.*;
 import threaddemo.views.PhadhailViews;
 
@@ -24,9 +26,6 @@ import threaddemo.views.PhadhailViews;
 
 /**
  * Demonstrate various models and views for big data sets.
- * Classpath: openide.jar:naming.jar:looks.jar:Spin.jar
- * naming.jar is from core/naming; looks.jar from openidex/looks in branch looks_jul_2002_private_b;
- * Spin.jar is from spin.sf.net version 1.1.
  * @author Jesse Glick
  */
 public final class Main extends JFrame {
@@ -51,7 +50,7 @@ public final class Main extends JFrame {
     private final JRadioButton synchButton, lockedButton, eventHybridLockedButton, spunButton, swungButton, nodeButton, lookNodeButton, lookButton, rawButton;
     
     private Main(File root) {
-        super("Thread Demo");
+        super("Thread Demo [" + root.getAbsolutePath() + "]");
         this.root = root;
         getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
         JPanel modelPanel = new JPanel();
@@ -87,17 +86,17 @@ public final class Main extends JFrame {
         viewPanel.add(lookNodeButton);
         viewPanel.add(lookButton);
         getContentPane().add(viewPanel);
-        JButton b = new JButton("Show");
-        b.addActionListener(new ActionListener() {
+        JButton showB = new JButton("Show");
+        showB.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
                 showView();
             }
         });
         JPanel bPanel = new JPanel();
-        bPanel.add(b);
+        bPanel.add(showB);
         getContentPane().add(bPanel);
         getContentPane().add(new Monitor());
-        getRootPane().setDefaultButton(b);
+        getRootPane().setDefaultButton(showB);
     }
     
     private void showView() {
@@ -151,6 +150,15 @@ public final class Main extends JFrame {
         l.nameChanged(null);
         model.addPhadhailListener(l);
         frame.getContentPane().add(view);
+        JButton indexB = new JButton("View Index");
+        indexB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ev) {
+                viewIndex(model);
+            }
+        });
+        JPanel bPanel = new JPanel();
+        bPanel.add(indexB);
+        frame.getContentPane().add(bPanel, BorderLayout.SOUTH);
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent ev) {
                 model.removePhadhailListener(l);
@@ -164,6 +172,10 @@ public final class Main extends JFrame {
         frame.setSize(500, 500);
         frame.setLocation(mainFrame.getX() + mainFrame.getWidth(), 0);
         frame.show();
+    }
+    
+    private void viewIndex(Phadhail model) {
+        new IndexApp(model).setVisible(true);
     }
     
 }
