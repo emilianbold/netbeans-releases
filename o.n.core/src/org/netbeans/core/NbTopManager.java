@@ -770,6 +770,7 @@ public abstract class NbTopManager /*extends TopManager*/ {
                        // #14722: pay attention also to META-INF/services/class.Name resources:
                        createMetaInfServicesLookup(),
                        Lookups.singleton(classLoader),
+                       Lookup.EMPTY, // will be moduleLookup
                    });
         }
                 
@@ -814,6 +815,16 @@ public abstract class NbTopManager /*extends TopManager*/ {
             l.setLookups(newDelegates);
         }
 
+        /** Called when Lookup<ModuleInfo> is ready from the ModuleManager.
+         * @see #28465
+         */
+        public static final void moduleLookupReady(Lookup moduleLookup) {
+            Lkp l = (Lkp)Lookup.getDefault();
+            Lookup[] newDelegates = (Lookup[])l.getLookups().clone();
+            newDelegates[2] = moduleLookup;
+            l.setLookups(newDelegates);
+        }
+
         /** When all module classes are accessible thru systemClassLoader, this
          * method is called to initialize the FolderLookup.
          */
@@ -847,10 +858,10 @@ public abstract class NbTopManager /*extends TopManager*/ {
             Lookup[] arr = new Lookup[] {
                 getLookups()[0], // metaInfServicesLookup
                 getLookups()[1], // ClassLoader lookup
+                getLookups()[2], // ModuleInfo lookup
                 // XXX figure out how to put this ahead of MetaInfServicesLookup (for NonGuiMain):
                 NbTopManager.get ().getInstanceLookup (),
                 nue,
-                NbTopManager.get().getModuleSystem().getManager().getModuleLookup()
             };
             StartLog.logProgress ("prepared other Lookups"); // NOI18N
 
