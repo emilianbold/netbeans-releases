@@ -50,6 +50,7 @@ public class PaletteItem implements java.io.Serializable {
 
     /** The JavaBean Class represented by this PaletteItem */
     private Class beanClass;
+    private boolean beanClassFailed;
 
     private Node itemNode;
     private InstanceCookie instanceCookie;
@@ -68,13 +69,13 @@ public class PaletteItem implements java.io.Serializable {
             (InstanceDataObject)itemNode.getCookie(InstanceDataObject.class);
         if (ic != null) {
             instanceDO = (InstanceDataObject)ic;
-            beanClass = instanceDO.instanceClass();
+//            beanClass = instanceDO.instanceClass();
         }
         else {
             ic = (InstanceCookie)itemNode.getCookie(InstanceCookie.class);
             if (ic == null)
                 throw new InstantiationException();
-            beanClass = ic.instanceClass();
+//            beanClass = ic.instanceClass();
         }
         instanceCookie = ic;
     }
@@ -153,9 +154,11 @@ public class PaletteItem implements java.io.Serializable {
 
     public Object createInstance() throws InstantiationException,
                                           IllegalAccessException {
-        if (beanClass == null) return null;
-
         try {
+            getBeanClass();
+            if (beanClass == null)
+                return null;
+
             if (instanceDO != null || instanceCookie == null) {
                 CreationDescriptor cd
                     = CreationFactory.getDescriptor(beanClass);
@@ -184,6 +187,7 @@ public class PaletteItem implements java.io.Serializable {
     throws InstantiationException, IllegalAccessException {
 
         LayoutSupport layoutSupport = null;
+        getBeanClass();
 
         if (LayoutManager.class.isAssignableFrom(beanClass)) {
             // LayoutManager -> find LayoutSupport for it
@@ -206,7 +210,7 @@ public class PaletteItem implements java.io.Serializable {
     }
 
     public Class getItemClass() {
-        return beanClass;
+        return getBeanClass();
     }
 
     public InstanceCookie getInstanceCookie() {
@@ -215,19 +219,20 @@ public class PaletteItem implements java.io.Serializable {
 
     public java.beans.BeanInfo getBeanInfo() {
         try {
-            return java.beans.Introspector.getBeanInfo(beanClass);
+            return java.beans.Introspector.getBeanInfo(getBeanClass());
         } catch (java.beans.IntrospectionException e) {
             return null;
         }
     }
 
     public boolean isBorder() {
+        getBeanClass();
         return BorderInfo.class.isAssignableFrom(beanClass)
                || Border.class.isAssignableFrom(beanClass);
     }
 
     public boolean isVisual() {
-        return Component.class.isAssignableFrom(beanClass);
+        return Component.class.isAssignableFrom(getBeanClass());
     }
 
 //    public boolean isDesignLayout() {
@@ -235,6 +240,7 @@ public class PaletteItem implements java.io.Serializable {
 //    }
 
     public boolean isLayout() {
+        getBeanClass();
         return LayoutSupport.class.isAssignableFrom(beanClass)
                || LayoutManager.class.isAssignableFrom(beanClass)
                || DesignLayout.class.isAssignableFrom(beanClass);
@@ -258,19 +264,36 @@ public class PaletteItem implements java.io.Serializable {
     } */
 
     public boolean isMenu() {
+        getBeanClass();
         return MenuBar.class.isAssignableFrom(beanClass) ||
             PopupMenu.class.isAssignableFrom(beanClass) ||
             JMenuBar.class.isAssignableFrom(beanClass) ||
             JPopupMenu.class.isAssignableFrom(beanClass);
     }
 
+    private Class getBeanClass() {
+        if (beanClass == null && !beanClassFailed) {
+            try {
+                beanClass = instanceCookie.instanceClass();
+            }
+            catch (Exception ex) {
+                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                    ex.printStackTrace();
+                beanClassFailed = true;
+            }
+        }
+        return beanClass;
+    }
+
     // ------------------------------------
 
     public boolean equals(Object obj) {
-        if (!(obj instanceof PaletteItem)) return false;
+        if (!(obj instanceof PaletteItem))
+            return false;
 
         PaletteItem item = (PaletteItem)obj;
-        if (beanClass != item.beanClass) return false;
+        if (getBeanClass() != item.getBeanClass())
+            return false;
 
         if (instanceDO != null && item.instanceDO != null)
             return true;
