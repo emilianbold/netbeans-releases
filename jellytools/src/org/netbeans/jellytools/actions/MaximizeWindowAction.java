@@ -18,7 +18,6 @@ import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.Action.Shortcut;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.openide.windows.TopComponent;
@@ -44,7 +43,7 @@ public class MaximizeWindowAction extends Action {
     private static final String popupPath = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
                                                                     "CTL_MaximizeWindowAction");
     
-    private static final Shortcut maximizeShortcut = new Shortcut(KeyEvent.VK_BACK_QUOTE, KeyEvent.CTRL_MASK);
+    private static final Action.Shortcut maximizeShortcut = new Shortcut(KeyEvent.VK_BACK_QUOTE, KeyEvent.CTRL_MASK);
 
 
     /** Creates new instance of MaximizeWindowAction. */
