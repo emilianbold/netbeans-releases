@@ -14,8 +14,18 @@
 package com.netbeans.enterprise.modules.db.explorer.infos;
 
 import java.util.*;
+
+import org.openide.*;
+import org.openide.filesystems.*;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.InstanceDataObject;
+import org.openide.modules.*;
+import org.openide.nodes.*;
+import org.openide.options.SystemOption;
+import org.openide.TopManager;
+
 import com.netbeans.ddl.*;
-import org.openide.nodes.Node;
 import com.netbeans.enterprise.modules.db.DatabaseException;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseNodeChildren;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
@@ -41,7 +51,19 @@ implements ConnectionOwnerOperations
 					children.add(ninfo);
 				}
 			}
+
+			TopManager tm = TopManager.getDefault();
+			FileSystem rfs = tm.getRepository().getDefaultFileSystem();
+			FileObject rootFolder = rfs.getRoot();
+			FileObject databaseFileObject = rootFolder.getFileObject("Database");
+			if (databaseFileObject != null) {
+				FileObject adaptorsFolder = databaseFileObject.getFileObject("Adaptors");
+				DataObject dbdo = DataFolder.findFolder(adaptorsFolder);
+				if (dbdo != null) children.add(dbdo.getNodeDelegate());
+			}
+			
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new DatabaseException(e.getMessage());	
 		}
 	}
