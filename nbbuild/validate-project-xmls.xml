@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project basedir="." default="validate" name="nbbuild/validate-project-xmls">
+    <target name="init">
+        <property name="nbroot" location=".."/>
+        <ant dir="${nbroot}/ant/project/eg" antfile="create-sample.xml" target="validate-compile"/>
+    </target>
+    <target name="find-xmls" depends="init">
+        <pathconvert property="xmls" pathsep=",">
+            <path>
+                <fileset dir="${nbroot}">
+                    <include name="**/nbproject/project.xml"/>
+                    <include name="**/nbproject/private/private.xml"/>
+                </fileset>
+            </path>
+        </pathconvert>
+    </target>
+    <target name="find-schemas" depends="init">
+        <pathconvert property="schemas" pathsep=",">
+            <path>
+                <fileset dir="${nbroot}">
+                    <include name="ant/project/src/**/*.xsd"/>
+                    <include name="ant/freeform/src/**/*.xsd"/>
+                    <include name="apisupport/project/src/**/*.xsd"/>
+                    <include name="java/j2seproject/src/**/*.xsd"/>
+                    <include name="web/project/src/**/*.xsd"/>
+                </fileset>
+            </path>
+        </pathconvert>
+    </target>
+    <target name="validate" depends="init,find-xmls,find-schemas" description="Ensure that all project.xml files are valid acc. to schema.">
+        <java classname="ValidateAllBySchema" failonerror="true" fork="true">
+            <classpath>
+                <pathelement location="${nbroot}/ant/project/eg"/>
+                <fileset dir="${nbroot}/libs/external">
+                    <include name="xerces*.jar"/>
+                    <include name="xml-commons-dom-ranges*.jar"/>
+                </fileset>
+            </classpath>
+            <arg value="${xmls}"/>
+            <arg value="${schemas}"/>
+        </java>
+    </target>
+</project>
