@@ -62,10 +62,10 @@ import org.openide.WizardDescriptor;
  * @author  Peter Zavadsky
  * @see Panel
  */
-public class ResourceWizardPanel extends JPanel {
+final class ResourceWizardPanel extends JPanel {
 
     /** Local copy of i18n wizard data. */
-    private final Map sourceMap = I18nUtil.createWizardSettings();
+    private final Map sourceMap = Util.createWizardSettings();
 
     /** Table model for resourcesTable. */
     private final AbstractTableModel tableModel = new ResourceTableModel();

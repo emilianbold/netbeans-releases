@@ -65,7 +65,7 @@ import org.openide.WizardDescriptor;
  * @author  Peter Zavadsky
  * @see Panel
  */
-public class TestStringWizardPanel extends JPanel {
+final class TestStringWizardPanel extends JPanel {
     
     /** Column index of check box column. */
     private static final int COLUMN_INDEX_CHECK = 0;
@@ -77,7 +77,7 @@ public class TestStringWizardPanel extends JPanel {
     private static final int COLUMN_INDEX_VALUE = 3;
 
     /** Local copy of i18n wizard data. */
-    private final Map sourceMap = I18nUtil.createWizardSettings();
+    private final Map sourceMap = Util.createWizardSettings();
 
     /** Table model for <code>stringTable</code>. */
     private final AbstractTableModel tableModel = new TestStringTableModel();

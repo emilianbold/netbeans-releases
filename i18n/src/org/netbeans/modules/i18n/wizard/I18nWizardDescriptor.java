@@ -14,7 +14,6 @@
 
 package org.netbeans.modules.i18n.wizard;
 
-
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
@@ -43,7 +42,7 @@ import org.openide.WizardDescriptor;
  * @author  Peter Zavadsky
  * @see org.openide.WizardDescriptor
  */
-public class I18nWizardDescriptor extends WizardDescriptor {
+final class I18nWizardDescriptor extends WizardDescriptor {
 
     /** Preferred size for panels in i18n wizard. */
     public static final Dimension PREFERRED_DIMENSION = new Dimension(500, 300);
@@ -284,12 +283,12 @@ public class I18nWizardDescriptor extends WizardDescriptor {
     
     
     /**
-     * Kind of abstract "adapter" implementing <code>WizardDescriptor.Panel interface</code>.
-     * Used by i18n wizard.
+     * Kind of abstract "adapter" implementing <code>WizardDescriptor.Panel</code>
+     * interface. Used by i18n wizard.
      *
      * @see org.openide.WizardDescriptor.Panel
      */
-    public static abstract class Panel extends Object implements WizardDescriptor.Panel {
+    public static abstract class Panel implements WizardDescriptor.Panel {
 
         /** Reference to panel. */
         private Component component;
@@ -300,11 +299,9 @@ public class I18nWizardDescriptor extends WizardDescriptor {
 
         /** Gets component to display. Implements <code>WizardDescriptor.Panel</code> interface method. 
          * @return this instance */
-        public final Component getComponent() {
+        public synchronized final Component getComponent() {
             if(component == null) {
-                synchronized(this) {
-                    component = createComponent();
-                }
+                component = createComponent();
             }
 
             return component;

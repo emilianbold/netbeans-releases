@@ -25,7 +25,7 @@ import javax.swing.JPanel;
  *
  * @author  Peter Zavadsky
  */
-public class ProgressWizardPanel extends JPanel {
+final class ProgressWizardPanel extends JPanel {
 
     /** Creates new form ProgressPanel */
     public ProgressWizardPanel(boolean withSubProgress) {

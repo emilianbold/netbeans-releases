@@ -14,7 +14,6 @@
 
 package org.netbeans.modules.i18n.wizard;
 
-
 import java.awt.Dialog;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
@@ -29,11 +28,11 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
 
-
 /**
  * Action which runs i18n test wizard.
  *
  * @author  Peter Zavadsky
+ * @author  Petr Kuzel
  */
 public class I18nTestWizardAction extends NodeAction {
 
@@ -41,16 +40,22 @@ public class I18nTestWizardAction extends NodeAction {
     static final long serialVersionUID = -3265587506739081248L;
 
     /** Weak reference to dialog. */
-    private WeakReference dialogWRef = new WeakReference(null);
+    private static WeakReference dialogWRef = new WeakReference(null);
     
     
-    /** Implements superclass abstract method. 
-     * @return <code>true</code> */
+    /** 
+     * We create non-modal but not rentrant dialog. Wait until
+     * previous one is closed.
+     */
     protected boolean enable(Node[] activatedNodes) {
-        return true;
+        Dialog previous = (Dialog) dialogWRef.get();
+        if (previous == null) return true;
+        return previous.isVisible() == false;
     }
     
-    /** Actually performs action. Implements superclass abstract method. */
+    /** 
+     * Popup non modal wizard.
+     */
     protected void performAction(Node[] activatedNodes) {
         Dialog dialog = (Dialog)dialogWRef.get();
         
@@ -61,16 +66,14 @@ public class I18nTestWizardAction extends NodeAction {
         
         WizardDescriptor wizardDescriptor = I18nWizardDescriptor.createI18nWizardDescriptor(
             getWizardIterator(),
-            I18nUtil.createWizardSettings(activatedNodes)
+            Util.createWizardSettings(activatedNodes)
         );
 
         initWizard(wizardDescriptor);
         
         dialog = TopManager.getDefault().createDialog(wizardDescriptor);
-        
-        dialog.show();
-        
         dialogWRef = new WeakReference(dialog);
+        dialog.show();
     }
 
     /** Gets wizard iterator thru panels used in wizard invoked by this action, 
@@ -89,32 +92,32 @@ public class I18nTestWizardAction extends NodeAction {
     /** Initializes wizard descriptor. */
     private void initWizard(WizardDescriptor wizardDesc) {
         // Init properties.
-        wizardDesc.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
-        wizardDesc.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
-        wizardDesc.putProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
+        wizardDesc.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);    // NOI18N
+        wizardDesc.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE);   // NOI18N
+        wizardDesc.putProperty("WizardPanel_contentNumbered", Boolean.TRUE);    // NOI18N
 
         ArrayList contents = new ArrayList(3);
-        contents.add(NbBundle.getBundle(I18nTestWizardAction.class).getString("TXT_SelectTestSources"));
-        contents.add(NbBundle.getBundle(I18nTestWizardAction.class).getString("TXT_SelectTestResources"));
-        contents.add(NbBundle.getBundle(I18nTestWizardAction.class).getString("TXT_FoundMissingResources"));
+        contents.add(Util.getString("TXT_SelectTestSources"));
+        contents.add(Util.getString("TXT_SelectTestResources"));
+        contents.add(Util.getString("TXT_FoundMissingResources"));
         
         wizardDesc.putProperty("WizardPanel_contentData", (String[])contents.toArray(new String[contents.size()])); // NOI18N
         
-        wizardDesc.setTitle(NbBundle.getBundle(I18nTestWizardAction.class).getString("LBL_TestWizardTitle"));
-        wizardDesc.setTitleFormat(new MessageFormat("{0} ({1})")); // NOI18N
+        wizardDesc.setTitle(Util.getString("LBL_TestWizardTitle"));
+        wizardDesc.setTitleFormat(new MessageFormat("{0} ({1})"));              // NOI18N
 
         wizardDesc.setModal(false);
     }
     
     /** Gets localized name of action. Overrides superclass method. */
     public String getName() {
-        return NbBundle.getBundle(I18nTestWizardAction.class).getString("LBL_TestWizardActionName");
+        return Util.getString("LBL_TestWizardActionName");
     }
 
     /** Gets the action's icon location.
      * @return the action's icon location */
     protected String iconResource () {
-        return "org/netbeans/modules/i18n/i18nAction.gif"; // NOI18N
+        return "org/netbeans/modules/i18n/i18nAction.gif";                      // NOI18N
     }
     
     /** Gets the action's help context. Implemenst superclass abstract method. */

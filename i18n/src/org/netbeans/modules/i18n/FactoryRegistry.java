@@ -16,10 +16,15 @@ package org.netbeans.modules.i18n;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 
 /**
@@ -32,17 +37,25 @@ import org.openide.util.Lookup;
  * @see org.netbeans.modules.i18n.form.FormI18nSupport.Factory
  * @see org.netbeans.modules.i18n.jsp.JspI18nSupport.Factory
  */
-public abstract class FactoryRegistry extends Object {
+public final class FactoryRegistry extends Object {
 
+    private FactoryRegistry() {};
     
     /** All i18n supports kept as <code>Lookup.Result</code>. */
     private static Lookup.Result result;
-    
+    private static final Set cache = Collections.synchronizedSet(new HashSet(5));    
+    private static final Set ncache = Collections.synchronizedSet(new HashSet(50));    
     
     /** Gets lookup result holding script type instances. */
     private static Lookup.Result getSupports() {
         if(result == null) {
             result = Lookup.getDefault().lookup(new Lookup.Template(I18nSupport.Factory.class));
+            result.addLookupListener(new LookupListener() {
+                public void resultChanged(LookupEvent e) {
+                    cache.clear();
+                    ncache.clear();
+                }
+            });
         }
         
         return result;
@@ -51,6 +64,7 @@ public abstract class FactoryRegistry extends Object {
     /** Gets <code>I18nSupportFactory</code> for specified data object class.
      * @return factory for specified data object class or <code>null</code> */
     public static I18nSupport.Factory getFactory(Class dataObjectClass) {
+        
         List candidates = new ArrayList(3);
         
         for(Iterator it = getSupports().allInstances().iterator(); it.hasNext(); ) {
@@ -91,8 +105,15 @@ public abstract class FactoryRegistry extends Object {
         }
     }
 
-    /** Indicates if there is a factory for that data object class. */
+    /** 
+     * Indicates if there is a factory for that data object class. 
+     * It queried very often from interactive mode.
+     */
     public static boolean hasFactory(Class dataObjectClass) {
+        
+        if (cache.contains(dataObjectClass)) return true;
+        if (ncache.contains(dataObjectClass)) return false;
+        
         for(Iterator it = getSupports().allInstances().iterator(); it.hasNext(); ) {
             I18nSupport.Factory factory = (I18nSupport.Factory)it.next();
 
@@ -101,11 +122,13 @@ public abstract class FactoryRegistry extends Object {
             Class clazz = factory.getDataObjectClass();
             
             if(clazz != null && clazz.isAssignableFrom(dataObjectClass)) {
+                cache.add(dataObjectClass);
                 return true;
             }
         }
-        
+
+        ncache.add(dataObjectClass);
         return false;
     }
-    
+        
 }

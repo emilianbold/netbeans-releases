@@ -25,17 +25,18 @@ import org.openide.loaders.DataObject;
 
 
 /**
- * Object representing source dependent i18n data passed to i18n wizard descriptor and its 
- * panels via readSettings and storeSettings methods. It's the "value part" of <code>Map</code>
+ * Object representing source dependent i18n data passed to i18n wizard 
+ * descriptor and its panels via readSettings and storeSettings methods.
+ * It's the "value part" of <code>Map</code> (keyed by DataObject)
  * passed as settings for wizard descriptor and to individual panels.
  *
  * @author  Peter Zavadsky
- * @see I18nWizardAction
+ * @see ResourceWizardPanel where lifecycle begins.
  * @see org.openide.WizardDescriptor
  * @see org.openide.WizardDescriptor.Panel#readSettings
  * @see org.openide.WizardDecritptor.Panel#storeSettings
  */
-public class SourceData extends Object {
+final class SourceData {
 
     /** Resource where to put i18n string */
     private DataObject resource;

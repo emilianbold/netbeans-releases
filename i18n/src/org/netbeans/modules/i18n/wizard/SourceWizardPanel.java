@@ -51,10 +51,10 @@ import org.openide.WizardDescriptor;
  * @author  Peter Zavadsky
  * @see Panel
  */
-public class SourceWizardPanel extends JPanel {
+final class SourceWizardPanel extends JPanel {
 
     /** Sources selected by user. */
-    private final Map sourceMap = I18nUtil.createWizardSettings();
+    private final Map sourceMap = Util.createWizardSettings();
     
     /** This component panel wizard descriptor.
      * @see org.openide.WizardDescriptor.Panel 
@@ -74,8 +74,6 @@ public class SourceWizardPanel extends JPanel {
         
         initComponents();        
 
-        postInitComponents();
-        
         initAccessibility ();
         
         setPreferredSize(I18nWizardDescriptor.PREFERRED_DIMENSION);
@@ -83,6 +81,12 @@ public class SourceWizardPanel extends JPanel {
         initList();
         
         putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0)); // NOI18N
+        
+        if (testRole) {
+            setName(Util.getString("TXT_SelecTestSources"));
+        } else {
+            setName(Util.getString("TXT_SelectSources"));                
+        }        
     }
     
 
@@ -101,12 +105,6 @@ public class SourceWizardPanel extends JPanel {
         descPanel.fireStateChanged();
     }
 
-    /** Does additional init work. Sets mnemonics. */
-    private void postInitComponents() {
-        addButton.setMnemonic(NbBundle.getBundle(getClass()).getString("CTL_AddSource_Mnem").charAt(0));
-        removeButton.setMnemonic(NbBundle.getBundle(getClass()).getString("CTL_RemoveSource_Mnem").charAt(0));
-    }
-
     /**
      * Panel description depend of its container test or i18n role
      */
@@ -118,21 +116,31 @@ public class SourceWizardPanel extends JPanel {
         }        
     }
     
-    /** Init list componnet. */
+    /** 
+     * List content drives remove button enableness.
+     */
     private void initList() {
-        sourcesList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent evt) {
-                removeButton.setEnabled(!sourcesList.isSelectionEmpty());
+        sourcesList.getSelectionModel().addListSelectionListener(
+            new ListSelectionListener() {
+                public void valueChanged(ListSelectionEvent evt) {
+                    removeButton.setEnabled(!sourcesList.isSelectionEmpty());
+                }
             }
-        });
+        );
         
         removeButton.setEnabled(!sourcesList.isSelectionEmpty());
     }
     
     private void initAccessibility() {        
-        addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SourceWizardPanel.class).getString("ACS_CTL_AddSource"));
-        removeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SourceWizardPanel.class).getString("ACS_CTL_RemoveSource"));
-        sourcesList.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SourceWizardPanel.class).getString("ACS_sourcesList"));
+        getAccessibleContext().setAccessibleDescription(getPanelDescription());
+        
+        addButton.setToolTipText(Util.getString("CTL_AddSource_desc"));
+        addButton.setMnemonic(Util.getChar("CTL_AddSource_Mnem"));
+        
+        removeButton.setToolTipText(Util.getString("CTL_RemoveSource_desc"));
+        removeButton.setMnemonic(Util.getChar("CTL_RemoveSource_Mnem"));
+        
+        sourcesList.getAccessibleContext().setAccessibleDescription(Util.getString("ACS_sourcesList"));
     }
     
     /** This method is called from within the constructor to
@@ -232,8 +240,8 @@ public class SourceWizardPanel extends JPanel {
         // Selects source data objects which could be i18n-ized.
         try {
             Node[] selectedNodes= TopManager.getDefault().getNodeOperation().select(
-                NbBundle.getBundle(SourceWizardPanel.class).getString("LBL_SelectSources"),
-                NbBundle.getBundle(SourceWizardPanel.class).getString("LBL_Filesystems"),
+                Util.getString("LBL_SelectSources"),
+                Util.getString("LBL_Filesystems"),
                 repositoryNode,
                 new NodeAcceptor() {
                     public boolean acceptNodes(Node[] nodes) {
@@ -257,22 +265,22 @@ public class SourceWizardPanel extends JPanel {
                         }
                         
                         return false;
-                    }
-                    
+                    }                    
                 }
             );
             
             for(int i=0; i<selectedNodes.length; i++) {
                 DataObject dataObject = (DataObject)selectedNodes[i].getCookie(DataObject.class);
 
-                if(dataObject instanceof DataFolder) {
+                if (dataObject instanceof DataFolder) {
+                    // recursively add folder content
                     Iterator it = I18nUtil.getAcceptedDataObjects((DataFolder)dataObject).iterator();
-                    while(it.hasNext()) {
-                        I18nUtil.addSource(sourceMap, (DataObject)it.next());
+                    while (it.hasNext()) {
+                        Util.addSource(sourceMap, (DataObject)it.next());
                     }
-                    
-                } else
-                    I18nUtil.addSource(sourceMap, (DataObject)selectedNodes[i].getCookie(DataObject.class));
+                } else {
+                    Util.addSource(sourceMap, dataObject);
+                }
             }
             
             sourcesList.setListData(sourceMap.keySet().toArray());
@@ -344,14 +352,7 @@ public class SourceWizardPanel extends JPanel {
          * @return this instance */
         protected Component createComponent() {                                    
             Component component = new SourceWizardPanel(this, testWizard);            
-            if(testWizard)
-                component.setName(NbBundle.getBundle(SourceWizardPanel.class).getString("TXT_SelecTestSources"));
-            else
-                component.setName(NbBundle.getBundle(SourceWizardPanel.class).getString("TXT_SelectSources"));                
             
-            // Accessibility            
-            component.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SourceWizardPanel.class).getString("ACS_SourceWizardPanel"));            
-            //--
             return component;
         }
 

@@ -49,10 +49,10 @@ import org.openide.WizardDescriptor;
  * @author  Peter Zavadsky
  * @see Panel
  */
-public class AdditionalWizardPanel extends JPanel {
+final class AdditionalWizardPanel extends JPanel {
 
     /** Local copy of i18n wizard data. */
-    private final Map sourceMap = I18nUtil.createWizardSettings();
+    private final Map sourceMap = Util.createWizardSettings();
     
     /** Sources on which additional modifications coudl happen in this panel. */
     private final Set viewedSources = new HashSet(0);
