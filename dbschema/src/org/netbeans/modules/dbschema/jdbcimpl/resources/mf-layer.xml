@@ -54,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Services">
         <folder name="JavaHelp"> 
-            <!-- Merge after Core IDE Help: -->
+        	<!-- Merge after Core IDE Help: -->
             <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-dbschema-helpset.xml" boolvalue="true"/> 
             <!-- Merge after DBExplorer Help: -->
             <attr name="org-netbeans-modules-db-helpset.xml/org-netbeans-modules-dbschema-helpset.xml" boolvalue="true"/> 
@@ -63,7 +63,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-dbschema-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/> 
         </folder>
     </folder>
-
+	<!--
     <folder name="Actions">
         <folder name="Help">
             <file name="org-netbeans-modules-dbschema-mainpage.xml" url="org-netbeans-modules-dbschema-mainpage.xml">
@@ -71,6 +71,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/dbschema/resources/helpset.gif"/>
             </file>
         </folder>
-    </folder>
+    </folder> -->
 
 </filesystem>

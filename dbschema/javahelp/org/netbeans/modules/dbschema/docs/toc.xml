@@ -18,9 +18,10 @@ Microsystems, Inc. All Rights Reserved.
          "http://java.sun.com/products/javahelp/toc_1_0.dtd">
 <toc version="1.0">
 
-<tocitem text="Database Schema" target="dbschema">
-<tocitem text="Obtaining a Database Schema" target="dbschema"/>
-
-
+<tocitem text="Servers and Databases">
+	<tocitem text="Working With Databases">
+		<tocitem text="Obtaining a Database Schema" target="dbschema"/>
+	</tocitem>
 </tocitem>
+
 </toc>
