@@ -14,7 +14,6 @@
 package org.netbeans.modules.web.project.ui.wizards;
 
 public class WizardProperties {
-
     public static final String PROJECT_DIR = "projdir"; //NOI18N
     public static final String DISPLAY_NAME = "displayName"; //NOI18N
     public static final String CODE_NAME = "codename"; //NOI18N
@@ -23,4 +22,8 @@ public class WizardProperties {
     public static final String SET_AS_MAIN = "setAsMain"; //NOI18N
     public static final String J2EE_LEVEL = "j2eeLevel"; //NOI18N
     public static final String CONTEXT_PATH = "contextPath"; //NOI18N
+    
+    public static final String DOC_BASE = "docBase"; //NOI18N
+    public static final String JAVA_ROOT = "javaRoot"; //NOI18N
+    public static final String LIB_FOLDER = "libFolder"; //NOI18N
 }

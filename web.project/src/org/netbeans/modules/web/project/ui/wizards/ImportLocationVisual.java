@@ -19,6 +19,7 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
+import org.openide.filesystems.FileObject;
 
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -32,6 +33,8 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
     private ImportWebProjectWizardIterator.ThePanel panel;
     private Document moduleDocument;
     private Document locationDocument;
+    private Document nameDocument;
+    private boolean contextModified = false;
     
     /** Creates new form TestPanel */
     public ImportLocationVisual (ImportWebProjectWizardIterator.ThePanel panel) {
@@ -45,7 +48,8 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         projectNameTextField.getDocument ().addDocumentListener (this);
         moduleDocument = moduleLocationTextField.getDocument ();
         moduleDocument.addDocumentListener (this);
-        jTextFieldContextPath.getDocument().addDocumentListener(this);
+        nameDocument = projectNameTextField.getDocument();
+        nameDocument.addDocumentListener(this);
     }
     
     /** This method is called from within the constructor to
@@ -77,7 +81,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jLabelSrcLocationDesc, gridBagConstraints);
 
         jLabelSrcLocation.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -87,7 +91,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jLabelSrcLocation, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -117,7 +121,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 11, 0);
         add(jLabelPrjLocationDesc, gridBagConstraints);
 
         jLabelPrjName.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -127,8 +131,8 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         add(jLabelPrjName, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -145,7 +149,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jLabelPrjLocation, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -174,8 +178,8 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         add(createdFolderLabel, gridBagConstraints);
 
         createdFolderTextField.setEditable(false);
@@ -195,25 +199,35 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         add(jLabelContextPath, gridBagConstraints);
+
+        jTextFieldContextPath.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jTextFieldContextPathKeyReleased(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 11);
         add(jTextFieldContextPath, gridBagConstraints);
 
     }//GEN-END:initComponents
 
+    private void jTextFieldContextPathKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextFieldContextPathKeyReleased
+        contextModified = true;
+    }//GEN-LAST:event_jTextFieldContextPathKeyReleased
+
     private void jButtonPrjLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPrjLocationActionPerformed
         JFileChooser chooser = createChooser();    
-        if (chooser.APPROVE_OPTION == chooser.showDialog(this, NbBundle.getMessage(PanelConfigureProjectVisual.class, "LBL_NWP1_SelectProjectLocation"))) { //NOI18N
+        if (chooser.APPROVE_OPTION == chooser.showDialog(this, NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_SelectProjectLocation"))) { //NOI18N
             File projectDir = chooser.getSelectedFile();
             projectLocationTextField.setText( projectDir.getAbsolutePath());
         }            
@@ -221,7 +235,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
 
     private void jButtonSrcLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSrcLocationActionPerformed
         JFileChooser chooser = createChooser();    
-        if (JFileChooser.APPROVE_OPTION == chooser.showDialog(this, "Web Module Root")) { //NOI18N
+        if (JFileChooser.APPROVE_OPTION == chooser.showDialog(this, NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_SelectWebModuleRootLocation"))) { //NOI18N
             File projectDir = chooser.getSelectedFile();
             moduleLocationTextField.setText( projectDir.getAbsolutePath());
         }            
@@ -269,18 +283,23 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
     /** Handles changes in the project name and project directory
      */
     private void updateTexts(DocumentEvent e) {
-        if (e.getDocument () == moduleDocument) {
+        if (e.getDocument() == moduleDocument) {
             String moduleFolder = moduleLocationTextField.getText().trim();
-            if (panel.isSuitableProjectRoot (FileUtil.toFileObject (new File (moduleFolder)))) {
+            FileObject fo = FileUtil.toFileObject(new File(moduleFolder));
+            if (fo != null && panel.isSuitableProjectRoot(fo)) {
                 projectLocationTextField.setText (moduleFolder);
                 createdFolderTextField.setText (moduleFolder);
             }
-        } else if (e.getDocument ()  == locationDocument || !projectLocationTextField.getText ().equals (moduleLocationTextField.getText ())) {
+        } else if (e.getDocument() == locationDocument || !projectLocationTextField.getText ().equals (moduleLocationTextField.getText ())) {
             StringBuffer folder = new StringBuffer(projectLocationTextField.getText().trim());
             if (!folder.toString ().endsWith(File.separator))
                 folder.append(File.separatorChar);
             folder.append(projectNameTextField.getText().trim());
             createdFolderTextField.setText (folder.toString());
+        }
+
+        if (e.getDocument() == nameDocument && !contextModified) {
+            jTextFieldContextPath.setText("/" + projectNameTextField.getText());
         }
 
         panel.fireChangeEvent ();

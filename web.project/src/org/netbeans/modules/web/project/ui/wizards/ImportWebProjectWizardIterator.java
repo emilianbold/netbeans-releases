@@ -60,13 +60,15 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new ImportWebProjectWizardIterator.ThePanel ()
+            new ImportWebProjectWizardIterator.ThePanel(),
+            new ImportWebProjectWizardIterator.SecondPanel()
         };
     }
     
     private String[] createSteps() {
         return new String[] {
-            NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_Configure_Project") //NOI18N
+            NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_IW_Step1"), //NOI18N
+            NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_IW_Step2") //NOI18N
         };
     }
     
@@ -77,13 +79,36 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         String codename = (String) wiz.getProperty(WizardProperties.CODE_NAME);
         String displayName = (String) wiz.getProperty(WizardProperties.DISPLAY_NAME);
         String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
+        String docBaseName = (String) wiz.getProperty(WizardProperties.DOC_BASE);
+        String javaRootName = (String) wiz.getProperty(WizardProperties.JAVA_ROOT);
+        String libName = (String) wiz.getProperty(WizardProperties.LIB_FOLDER);
         
         FileObject wmFO = FileUtil.toFileObject (dirSrcF);
         assert wmFO != null : "No such dir on disk: " + dirSrcF;
         assert wmFO.isFolder() : "Not really a dir: " + dirSrcF;
-        FileObject javaRoot = guessJavaRoot (wmFO);
-        FileObject docBase = guessDocBase (wmFO);
-        FileObject libFolder = guessLibrariesFolder (wmFO);
+        
+        FileObject javaRoot;
+        FileObject docBase;
+        FileObject libFolder;
+        if (docBaseName == null || docBaseName.equals("")) //NOI18N
+            docBase = guessDocBase(wmFO);
+        else {
+            File f = new File(docBaseName);
+            docBase = FileUtil.toFileObject(f);
+        }
+        if (javaRootName == null || javaRootName.equals("")) //NOI18N
+            javaRoot = guessJavaRoot(wmFO);
+        else {
+            File f = new File(javaRootName);
+            javaRoot = FileUtil.toFileObject(f);
+        }
+        if (libName == null || libName.equals("")) //NOI18N
+            libFolder = guessLibrariesFolder(wmFO);
+        else {
+            File f = new File(libName);
+            libFolder = FileUtil.toFileObject(f);
+        }       
+        
         String buildfile = GeneratedFilesHelper.BUILD_XML_PATH;
         if (new File (dirF, GeneratedFilesHelper.BUILD_XML_PATH).exists ()) {
             buildfile = "nbbuild.xml";
@@ -289,8 +314,14 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         }
         
         public boolean isValid () {
-            File f = new File (panel.moduleLocationTextField.getText ());
-            return f.isDirectory () && isWebModule (FileUtil.toFileObject (f));
+            File f = new File(panel.moduleLocationTextField.getText());
+            File prjFolder = new File(panel.projectLocationTextField.getText());
+            String prjName = panel.projectNameTextField.getText().trim();
+            
+            return f.isDirectory()
+                && prjFolder.isDirectory()
+                && isWebModule(FileUtil.toFileObject(f))
+                && (prjName != null && !prjName.equals("")); //NOI18N
         }
         
         private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
@@ -329,6 +360,10 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             d.putProperty(WizardProperties.DISPLAY_NAME, name);
             d.putProperty(WizardProperties.CODE_NAME, name.replace(' ', '-')); //NOI18N
             d.putProperty(WizardProperties.CONTEXT_PATH, contextPath);
+            
+            File f = new File(panel.moduleLocationTextField.getText().trim());
+            FileObject fo = FileUtil.toFileObject(f);
+            presetSecondPanel(fo);
         }
         
         private boolean isWebModule (FileObject dir) {
@@ -343,5 +378,113 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
                 && (srcRoot == null || FileUtil.isParentOf (dir, srcRoot));
         }
     
+        private void presetSecondPanel(FileObject fo) {
+            FileObject guessFO;
+            String webPages = ""; //NOI18N
+            String javaSources = ""; //NOI18N
+            String libraries = ""; //NOI18N
+            
+            guessFO = guessDocBase(fo);
+            if (guessFO != null)
+                webPages = guessFO.getPath();
+            guessFO = guessJavaRoot(fo);
+            if (guessFO != null)
+                javaSources = guessFO.getPath();
+            guessFO = guessLibrariesFolder(fo);
+            if (guessFO != null)
+                libraries = guessFO.getPath();
+            
+            ((ImportWebLocationsVisual) panels[1].getComponent()).initValues(webPages, javaSources, libraries);
+        }
+    }
+    
+    public final class SecondPanel implements WizardDescriptor.FinishPanel {
+        private ImportWebLocationsVisual panel;
+        
+        private SecondPanel () {
+        }
+        
+        public java.awt.Component getComponent () {
+            if (panel == null)
+                panel = new ImportWebLocationsVisual(this);
+            
+            return panel;
+        }
+        
+        public org.openide.util.HelpCtx getHelp () {
+            return null;
+        }
+        
+        public boolean isValid () {
+            boolean res1 = true;
+            boolean res2 = true;
+            boolean res3 = true;
+            
+            if (!panel.jTextFieldWebPages.getText().trim().equals(""))
+                res1 = relativePath(panel.jTextFieldWebPages.getText().trim());
+            if (!panel.jTextFieldJavaSources.getText().trim().equals(""))
+                res2 = relativePath(panel.jTextFieldJavaSources.getText().trim());
+            if (!panel.jTextFieldLibraries.getText().trim().equals(""))
+                res3 = relativePath(panel.jTextFieldLibraries.getText().trim());
+                
+            return res1 && res2 && res3;
+        }
+        
+        private boolean relativePath(String path) {
+            String moduleRoot = ((ImportLocationVisual) panels[0].getComponent()).moduleLocationTextField.getText().trim();
+            File fp = new File(moduleRoot);
+            FileObject parent = FileUtil.toFileObject(fp);
+
+            File fch = new File(path);
+            FileObject child;
+            try {
+                child = FileUtil.toFileObject(fch);
+            } catch (Exception exc) {
+                return false;
+            }
+            if (child == null)
+                return false;
+            
+            if (child.equals(parent))
+                return true;
+            if (!FileUtil.isParentOf(parent, child))
+                return false;
+            return true;
+        }
+        
+        private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+        public final void addChangeListener(ChangeListener l) {
+            synchronized (listeners) {
+                listeners.add(l);
+            }
+        }
+        
+        public final void removeChangeListener(ChangeListener l) {
+            synchronized (listeners) {
+                listeners.remove(l);
+            }
+        }
+        
+        protected final void fireChangeEvent() {
+            Iterator it;
+            synchronized (listeners) {
+                it = new HashSet(listeners).iterator();
+            }
+            ChangeEvent ev = new ChangeEvent(this);
+            while (it.hasNext()) {
+                ((ChangeListener)it.next()).stateChanged(ev);
+            }
+        }
+        
+        public void readSettings (Object settings) {
+        }
+        
+        public void storeSettings (Object settings) {
+            WizardDescriptor d = (WizardDescriptor) settings;
+            
+            d.putProperty(WizardProperties.DOC_BASE, panel.jTextFieldWebPages.getText().trim());
+            d.putProperty(WizardProperties.JAVA_ROOT, panel.jTextFieldJavaSources.getText().trim());
+            d.putProperty(WizardProperties.LIB_FOLDER, panel.jTextFieldLibraries.getText().trim());
+        }
     }
 }
