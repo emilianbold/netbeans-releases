@@ -224,9 +224,9 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
         DataObject  data;
         Node parent;
         
-        Leaf (Node node, Node parent) {
+        Leaf (Node node, DataObject data, Node parent) {
             super(node);
-            data = (DataObject)node.getCookie(DataObject.class);
+            this.data = data;
             this.parent = parent;
         }
         
@@ -308,7 +308,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
                         obj = orig;
                     }
                 }
-                node = new Leaf(node, parent);
+                node = new Leaf(node, obj, parent);
             }
             
             node = parent.createChild (node);
