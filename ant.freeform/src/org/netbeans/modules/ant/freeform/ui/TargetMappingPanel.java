@@ -15,6 +15,7 @@ package org.netbeans.modules.ant.freeform.ui;
 
 import java.awt.Cursor;
 import java.awt.Frame;
+import java.awt.Toolkit;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
@@ -29,14 +30,14 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.WindowConstants;
 import javax.swing.table.AbstractTableModel;
+import org.netbeans.api.javahelp.Help;
 import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.modules.ant.freeform.Util;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.ErrorManager;
-import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 /**
  * @author  David Konecny
@@ -622,11 +623,11 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
     }//GEN-END:initComponents
 
     private void linkMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linkMouseReleased
-        try {
-            // XXX: define some real URL here!!
-            HtmlBrowser.URLDisplayer.getDefault().showURL(new java.net.URL("http://www.netbeans.org"));
-        } catch (java.net.MalformedURLException exc) {
-            ErrorManager.getDefault().notify(exc);
+        Help help = (Help)Lookup.getDefault().lookup(Help.class);
+        if (help != null) {
+            help.showHelp(new HelpCtx("org.netbeans.modules.ant.freeform.ui.TargetMappingPanel#debug")); // NOI18N
+        } else {
+            Toolkit.getDefaultToolkit().beep();
         }
     }//GEN-LAST:event_linkMouseReleased
 
