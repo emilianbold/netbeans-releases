@@ -651,12 +651,14 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                                                    Container containerDelegate,
                                                    Component component,
                                                    int index,
-                                                   Insets sizeChanges)
+                                                   Insets sizeChanges,
+                                                   Point posInCont)
     {
         return layoutDelegate.getResizedConstraints(container,
                                                     containerDelegate,
                                                     component, index,
-                                                    sizeChanges);
+                                                    sizeChanges,
+                                                    posInCont);
     }
 
     // arranging support

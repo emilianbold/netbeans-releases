@@ -258,7 +258,7 @@ class HandleLayer extends JPanel
             e.consume();
         }
         else if (keyCode == KeyEvent.VK_ESCAPE) {
-            if (cancelDragging())
+            if (endDragging(null))
                 e.consume();
         }
         else if (keyCode == KeyEvent.VK_F10) {
@@ -643,10 +643,8 @@ class HandleLayer extends JPanel
                                         comps, hotspot, resizeType);
     }
 
-    private boolean cancelDragging() {
-        if (componentDragger != null || selectionDragger != null
-            || designerResizer != null)
-        {
+    private boolean endDragging(Point commitPosition) {
+        if (anyDragger()) {
             if (resizeType != 0) {
                 resizeType = 0;
                 Cursor cursor = getCursor();
@@ -657,19 +655,35 @@ class HandleLayer extends JPanel
             }
 
             if (designerResizer != null) {
+                if (commitPosition != null)
+                    designerResizer.drop(commitPosition);
+                else {
+                    Dimension prevSize = formDesigner.getStoredDesignerSize();
+                    if (!formDesigner.getComponentLayer().getDesignerSize()
+                            .equals(prevSize))
+                    {   // restore the previous designer size
+                        formDesigner.getComponentLayer()
+                                      .updateDesignerSize(prevSize);
+                    }
+                }
                 designerResizer = null;
-                Dimension prevSize = formDesigner.getStoredDesignerSize();
-                if (!formDesigner.getComponentLayer().getDesignerSize()
-                        .equals(prevSize)) // restore the previous designer size
-                    formDesigner.getComponentLayer().updateDesignerSize(prevSize);
             }
-            else {
+
+            if (componentDragger != null) {
+                if (commitPosition != null)
+                    componentDragger.dropComponents(commitPosition);
                 componentDragger = null;
+                repaint();
+            }
+
+            if (selectionDragger != null) {
+                if (commitPosition != null)
+                    selectionDragger.drop(commitPosition);
                 selectionDragger = null;
                 repaint();
             }
 
-            draggingCanceled = true;
+            draggingCanceled = commitPosition == null;
             return true;
         }
 
@@ -1024,22 +1038,10 @@ class HandleLayer extends JPanel
 
             if (MouseUtils.isLeftMouseButton(e)) {
                 CPManager palette = CPManager.getDefault();
-                if (palette.getMode() == PaletteAction.MODE_SELECTION) {
-                    if (designerResizer != null) {
-                        designerResizer.drop(e.getPoint());
-                        designerResizer = null;
-                    }
-                    else if (componentDragger != null) {
-                        componentDragger.dropComponents(e.getPoint());
-                        componentDragger = null;
-                        repaint();
-                    }
-                    else if (selectionDragger != null) {
-                        selectionDragger.drop(e.getPoint());
-                        selectionDragger = null;
-                        repaint();
-                    }
-                    else if (draggingCanceled) {
+                if (palette.getMode() == PaletteAction.MODE_SELECTION
+                    && !endDragging(e.getPoint()))
+                {
+                    if (draggingCanceled) {
                         draggingCanceled = false;
                     }
                     else if (prevLeftMousePoint != null
@@ -1100,7 +1102,7 @@ class HandleLayer extends JPanel
                         }
                     }
                 }
-                else cancelDragging();
+                else endDragging(null);
 
                 e.consume();
             }
@@ -1120,13 +1122,11 @@ class HandleLayer extends JPanel
                         // or mouse dragged)
                         if (designerResizer == null && !modifier
                             && (resizeType & DESIGNER_RESIZING) != 0)
-                        {   // can start resizing of the designer
+                        {   // we can start resizing of the designer
                             if (e.getClickCount() == 2)
                                 setUserDesignerSize();
-                            else { // start designer resizing
+                            else // start designer resizing
                                 designerResizer = new DesignerResizer();
-                                draggingCanceled = false;
-                            }
                         }
                         else if (!mouseOnVisual(lastLeftMousePoint)) {
                             if (resizeType == 0) // designerResizeType

@@ -431,14 +431,16 @@ public interface LayoutSupportDelegate {
      * @param component real component being resized
      * @param index position of the component in its container
      * @param sizeChanges Insets object with size differences
+     * @param posInCont position of mouse in the container delegate
      * @return component layout constraints for resized component; null if
-     *         resizing is not supported opossible or not implemented
+     *         resizing is not possible or not implemented
      */
     LayoutConstraints getResizedConstraints(Container container,
                                             Container containerDelegate,
                                             Component component,
                                             int index,
-                                            Insets sizeChanges);
+                                            Insets sizeChanges,
+                                            Point posInCont);
 
     /** Cloning method - creates a copy of the layout delegate.
      * @param targetContext LayoutSupportContext for the new layout delegate

@@ -479,7 +479,7 @@ class ComponentDragger
                         constr = layoutSupport.getResizedConstraints(
                                      targetContainer, targetContainerDel,
                                      comp, metacomp.getComponentIndex(),
-                                     sizeChanges);
+                                     sizeChanges, posInCont);
                     }
                 }
 
