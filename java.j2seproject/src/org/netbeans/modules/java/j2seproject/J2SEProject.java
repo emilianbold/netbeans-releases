@@ -110,7 +110,8 @@ public final class J2SEProject implements Project, AntProjectListener {
     
     private PropertyEvaluator createEvaluator() {
         // XXX might need to use a custom evaluator to handle active platform substitutions... TBD
-        return helper.getStandardPropertyEvaluator(); //It is save not to use the UpdateHelper for PropertyEvaluator, UH.getProperties() delegates to APH
+        // It is currently safe to not use the UpdateHelper for PropertyEvaluator; UH.getProperties() delegates to APH
+        return helper.getStandardPropertyEvaluator();
     }
     
     PropertyEvaluator evaluator() {
