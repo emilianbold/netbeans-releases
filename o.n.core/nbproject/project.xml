@@ -44,7 +44,6 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- autoupdate, apisupport/ant, apisupport/lite -->
                 <package>org.netbeans.core.modules</package>
             </public-packages>
-            <unit-tests/>
         </data>
     </configuration>
 </project>

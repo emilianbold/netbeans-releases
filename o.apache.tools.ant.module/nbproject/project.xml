@@ -83,7 +83,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.apache.tools.ant.module.spi</package>
             </public-packages>
             <javadoc/>
-            <unit-tests/>
         </data>
     </configuration>
 </project>

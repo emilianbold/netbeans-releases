@@ -17,8 +17,10 @@ Microsystems, Inc. All Rights Reserved.
 
     <dirname property="nb_all" file="${ant.file.xtest}/../.."/>
 
-    <!-- Points to directory with IDE to test-->
+    <!-- Points to parent of directory with IDE to test: -->
     <property name="netbeans.dest.dir" location="${nb_all}/nbbuild"/>
+    <!-- Points to IDE dir within that dir: -->
+    <property name="cluster.dir" value="netbeans"/>
     
     <!-- Home of XTest -->
     <property name="xtest.home" location="${nb_all}/xtest"/>

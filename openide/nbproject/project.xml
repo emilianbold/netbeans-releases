@@ -42,7 +42,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.openide.xml</package>
             </public-packages>
             <javadoc/>
-            <unit-tests/>
         </data>
     </configuration>
 </project>

@@ -47,7 +47,6 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <public-packages/>
-            <unit-tests/>
         </data>
     </configuration>
 </project>

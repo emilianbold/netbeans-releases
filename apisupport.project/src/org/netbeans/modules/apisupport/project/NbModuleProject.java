@@ -69,6 +69,7 @@ final class NbModuleProject implements Project {
     
     NbModuleProject(AntProjectHelper helper) {
         this.helper = helper;
+        Util.err.log("Loading project for " + getName() + " in " + getProjectDirectory());
         File nbroot = helper.resolveFile(getNbrootRel());
         moduleList = ModuleList.getModuleList(nbroot);
         genFilesHelper = new GeneratedFilesHelper(helper);
@@ -78,10 +79,10 @@ final class NbModuleProject implements Project {
                 // Can't currently include the ${props} directly in the string,
                 // since APH does not yet grok optional properties.
                 evaluate("src.dir") + "/*.java", // NOI18N
-                evaluate("test.src.dir") + "/*.java", // NOI18N
+                evaluate("test.unit.src.dir") + "/*.java", // NOI18N
             }, new String[] {
                 evaluate("build.classes.dir") + "/*.class", // NOI18N
-                evaluate("build.test.classes.dir") + "/*.class", // NOI18N
+                evaluate("build.test.unit.classes.dir") + "/*.class", // NOI18N
             });
         } else {
             fileBuilt = new GlobFileBuiltQuery(helper, new String[] {
@@ -277,10 +278,8 @@ final class NbModuleProject implements Project {
         defaults.put("manifest.mf", "manifest.mf"); // NOI18N
         defaults.put("src.dir", "src"); // NOI18N
         defaults.put("build.classes.dir", "build/classes"); // NOI18N
-        if (supportsUnitTests()) {
-            defaults.put("test.src.dir", "test/unit/src"); // NOI18N
-            defaults.put("build.test.classes.dir", "build/test/classes"); // NOI18N
-        }
+        defaults.put("test.unit.src.dir", "test/unit/src"); // NOI18N
+        defaults.put("build.test.unit.classes.dir", "build/test/unit/classes"); // NOI18N
         // skip a bunch of properties irrelevant here - NBM stuff, etc.
         evalDefs = Arrays.asList(new Map/*<String,String>*/[] {
             stock,
@@ -297,18 +296,17 @@ final class NbModuleProject implements Project {
     }
     
     FileObject getTestSourceDirectory() {
-        if (!supportsUnitTests()) {
-            return null;
-        }
-        String testSrcDir = evaluate("test.src.dir"); // NOI18N
+        String testSrcDir = evaluate("test.unit.src.dir"); // NOI18N
         return helper.resolveFileObject(testSrcDir);
     }
     
+    FileObject getFunctionalTestSourceDirectory() {
+        // Hardcode location for now. XXX could make it based on some properties.
+        return helper.resolveFileObject("test/qa-functional/src"); // NOI18N
+    }
+    
     File getTestClassesDirectory() {
-        if (!supportsUnitTests()) {
-            return null;
-        }
-        String testClassesDir = evaluate("build.test.classes.dir"); // NOI18N
+        String testClassesDir = evaluate("build.test.unit.classes.dir"); // NOI18N
         return helper.resolveFile(testClassesDir);
     }
     
@@ -367,7 +365,7 @@ final class NbModuleProject implements Project {
     }
     
     boolean supportsUnitTests() {
-        return supportsFeature("unit-tests"); // NOI18N
+        return getTestSourceDirectory() != null;
     }
     
     private boolean supportsFeature(String name) {

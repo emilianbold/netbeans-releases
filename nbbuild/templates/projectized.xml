@@ -62,25 +62,25 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="test-preinit" depends="init"/>
     <target name="test-init" depends="init,test-preinit">
-        <property name="test.src.dir" location="test/unit/src"/>
-        <property name="build.test.classes.dir" location="build/test/classes"/>
-        <property name="build.test.results.dir" location="build/test/results"/>
-        <path id="test.cp">
+        <property name="test.unit.src.dir" location="test/unit/src"/>
+        <property name="build.test.unit.classes.dir" location="build/test/unit/classes"/>
+        <property name="build.test.unit.results.dir" location="build/test/unit/results"/>
+        <path id="test.unit.cp">
             <path refid="cp"/>
             <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${module.jar}"/>
             <!-- XXX check if these files exist, and if not, run xtest/build.xml -->
             <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
             <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
-            <pathelement path="${test.cp.extra}"/>
+            <pathelement path="${test.unit.cp.extra}"/>
         </path>
-        <path id="test.run.cp">
-            <path refid="test.cp"/>
-            <pathelement location="${build.test.classes.dir}"/>
-            <pathelement path="${test.run.cp.extra}"/>
+        <path id="test.unit.run.cp">
+            <path refid="test.unit.cp"/>
+            <pathelement location="${build.test.unit.classes.dir}"/>
+            <pathelement path="${test.unit.run.cp.extra}"/>
         </path>
-        <propertyset id="test.properties">
-            <propertyref prefix="junit-sys-prop."/>
-            <mapper type="glob" from="junit-sys-prop.*" to="*"/>
+        <propertyset id="test.unit.properties">
+            <propertyref prefix="test-unit-sys-prop."/>
+            <mapper type="glob" from="test-unit-sys-prop.*" to="*"/>
         </propertyset>
     </target>
 
@@ -216,14 +216,14 @@ Microsystems, Inc. All Rights Reserved.
     </target>
         
     <target name="test-build" depends="init,test-init,jar">
-        <mkdir dir="${build.test.classes.dir}"/>
-        <javac srcdir="${test.src.dir}" destdir="${build.test.classes.dir}"
+        <mkdir dir="${build.test.unit.classes.dir}"/>
+        <javac srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}"
                debug="true" deprecation="${build.compiler.deprecation}"
                source="1.4" includeantruntime="false">
-            <classpath refid="test.cp"/>
+            <classpath refid="test.unit.cp"/>
         </javac>
-        <copy todir="${build.test.classes.dir}">
-            <fileset dir="${test.src.dir}">
+        <copy todir="${build.test.unit.classes.dir}">
+            <fileset dir="${test.unit.src.dir}">
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
@@ -231,27 +231,27 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="compile-test-single" depends="init,test-init,jar">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
-        <mkdir dir="${build.test.classes.dir}"/>
+        <mkdir dir="${build.test.unit.classes.dir}"/>
         <!-- XXX consider forcing deprecation=true -->
         <!-- XXX consider deleting the .class file first to force a rebuild -->
-        <javac srcdir="${test.src.dir}" destdir="${build.test.classes.dir}"
+        <javac srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}"
                debug="true" deprecation="${build.compiler.deprecation}"
                source="1.4" includeantruntime="false" includes="${javac.includes}">
-            <classpath refid="test.cp"/>
+            <classpath refid="test.unit.cp"/>
         </javac>
     </target>
 
     <target name="test" depends="init,test-init,test-build">
-        <mkdir dir="${build.test.results.dir}"/>
+        <mkdir dir="${build.test.unit.results.dir}"/>
         <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
-            <batchtest todir="${build.test.results.dir}">
-                <fileset dir="${test.src.dir}">
+            <batchtest todir="${build.test.unit.results.dir}">
+                <fileset dir="${test.unit.src.dir}">
                     <!-- XXX could include only out-of-date tests... -->
                     <include name="**/*Test.java"/>
                 </fileset>
             </batchtest>
-            <classpath refid="test.run.cp"/>
-            <syspropertyset refid="test.properties"/>
+            <classpath refid="test.unit.run.cp"/>
+            <syspropertyset refid="test.unit.properties"/>
             <formatter type="brief" usefile="false"/>
         </junit>
         <fail if="tests.failed">Some tests failed; see details above.</fail>
@@ -259,13 +259,13 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="test-single" depends="init,test-init,test-build">
         <fail unless="test.includes">Must set test.includes</fail>
-        <mkdir dir="${build.test.results.dir}"/>
+        <mkdir dir="${build.test.unit.results.dir}"/>
         <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
-            <batchtest todir="${build.test.results.dir}">
-                <fileset dir="${test.src.dir}" includes="${test.includes}"/>
+            <batchtest todir="${build.test.unit.results.dir}">
+                <fileset dir="${test.unit.src.dir}" includes="${test.includes}"/>
             </batchtest>
-            <classpath refid="test.run.cp"/>
-            <syspropertyset refid="test.properties"/>
+            <classpath refid="test.unit.run.cp"/>
+            <syspropertyset refid="test.unit.properties"/>
             <formatter type="brief" usefile="false"/>
         </junit>
         <fail if="tests.failed">Some tests failed; see details above.</fail>
@@ -278,8 +278,8 @@ Microsystems, Inc. All Rights Reserved.
             <jvmarg value="-Xnoagent"/>
             <jvmarg value="-Djava.compiler=none"/>
             <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
-            <classpath refid="test.run.cp"/>
-            <syspropertyset refid="test.properties"/>
+            <classpath refid="test.unit.run.cp"/>
+            <syspropertyset refid="test.unit.properties"/>
             <arg line="${test.class}"/>
         </java>
     </target>
@@ -289,7 +289,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="debug-test-single-nb" depends="init,test-init,test-build" if="netbeans.home">
         <fail unless="test.class">Must set test.class</fail>
         <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${test.class}">
-            <classpath refid="test.run.cp"/>
+            <classpath refid="test.unit.run.cp"/>
         </nbjpdastart>
         <antcall target="do-debug-test-single"/>
     </target>

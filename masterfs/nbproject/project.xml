@@ -39,7 +39,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.spi.masterfs</package>
             </public-packages>
             <javadoc/>
-           <unit-tests/>
         </data>
     </configuration>
 </project>
