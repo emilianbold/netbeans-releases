@@ -229,47 +229,24 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
-    public Value evaluateIn (
-        String expression
-    ) throws InvalidExpressionException {
+    public Value evaluateIn(String expression) throws InvalidExpressionException {
         Expression expr = null;
         try {
             expr = Expression.parse(expression, Expression.LANGUAGE_JAVA_1_5);
-            return evaluateIn (expr, getEvaluationThread ());
+            return evaluateIn(expr);
         } catch (ParseException e) {
-            throw new InvalidExpressionException(e.getMessage());
+            InvalidExpressionException iee = new InvalidExpressionException(e.getMessage());
+            iee.initCause(e);
+            throw iee;
         }
     }
 
-/*
-    public Value evaluateIn (
-        String expression
-    ) throws InvalidExpressionException {
-        return evaluateIn (expression, getEvaluationThread ());
-    }
-
-    public Value evaluateIn (
-        String expression,
-        ThreadReference thread
-    ) throws InvalidExpressionException {
-        if (thread == null)
-            throw new InvalidExpressionException ("No current context");
-        return Evaluator.evaluate (
-            expression,
-            virtualMachine,
-            thread,
-            0,
-            new ArrayList ()
-        );
-    }
-*/
-
     public Value evaluateIn (Expression expression) throws InvalidExpressionException {
-        return evaluateIn(expression, getEvaluationThread ());
+        return evaluateIn(expression, ((CallStackFrameImpl)currentCallStackFrame).getStackFrame());
     }
 
-    public Value evaluateIn (Expression expression, ThreadReference thread) throws InvalidExpressionException {
-        if (thread == null)
+    public Value evaluateIn (Expression expression, StackFrame frame) throws InvalidExpressionException {
+        if (frame == null)
             throw new InvalidExpressionException ("No current context");
 
         // TODO: get imports from the source file
@@ -278,14 +255,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
         try {
             org.netbeans.modules.debugger.jpda.expr.Evaluator evaluator = expression.evaluator(
-                    new EvaluationContext(((CallStackFrameImpl)currentCallStackFrame).getStackFrame(), imports, staticImports));
+                    new EvaluationContext(frame, imports, staticImports));
             return evaluator.evaluate();
-        } catch (IncompatibleThreadStateException e) {
-            throw new InvalidExpressionException ("No current context");
-        } catch (EvaluationException e) {
-            throw new InvalidExpressionException(e.getMessage());
         } catch (Throwable e) {
-            throw new InvalidExpressionException(e.getMessage());
+            InvalidExpressionException iee = new InvalidExpressionException(e.getMessage());
+            iee.initCause(e);
+            throw iee;
         }
     }
 
