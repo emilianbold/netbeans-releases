@@ -1,0 +1,12 @@
+OpenIDE-Module: org.netbeans.modules.diff/1
+OpenIDE-Module-Name: Diff
+OpenIDE-Module-Display-Category: Tools
+OpenIDE-Module-Short-Description: Provides the diff action to view file differences.
+OpenIDE-Module-Long-Description: The Diff module provides an action, that is enabled when two files are selected in the IDE. It is based on an external diff utility, that is executed to obtain the differences, which are then shown to the user graphically.
+OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-Layer: org/netbeans/modules/diff/mf-layer.xml
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.vcscore/1
+
+Name: org/netbeans/modules/diff/DiffAction.class
+OpenIDE-Module-Class: Action
