@@ -177,8 +177,11 @@ final class Services extends ServiceType.Registry implements Comparator {
             InstantiationException mainExc = null;
 
             // construct new service types from the registered sections
+            ArrayList temp = new ArrayList (sections);
+            Collections.sort (temp, this);
+
             arr = new LinkedList ();
-            Iterator it = sections.iterator ();
+            Iterator it = temp.iterator ();
             while (it.hasNext ()) {
                 ManifestSection.ServiceSection ss = (ManifestSection.ServiceSection)it.next ();
                 try {
@@ -197,8 +200,6 @@ final class Services extends ServiceType.Registry implements Comparator {
                 );
             }
             
-            // sort the array
-            java.util.Collections.sort (arr, this);
         }
         
         current.clear ();
@@ -438,6 +439,9 @@ final class Services extends ServiceType.Registry implements Comparator {
 
 /*
 * $Log$
+* Revision 1.32  2000/06/21 16:05:26  jtulach
+* NullPointer fixed.
+*
 * Revision 1.31  2000/06/21 14:23:32  jtulach
 * Default services should be at the begining, when clear services are
 * installed (setServiceType (null)
