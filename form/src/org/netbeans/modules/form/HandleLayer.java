@@ -385,7 +385,10 @@ class HandleLayer extends JPanel
         for (int i=0; i < deepestComponents.length; i++) {
             comp = deepestComponents[i];
             Point p = comp.getLocation();
-            if (comp.contains(deepestPosition.x - p.x, deepestPosition.y - p.y)) {
+            if (comp.isVisible()
+                && comp.contains(deepestPosition.x - p.x,
+                                 deepestPosition.y - p.y))
+            {
                 if (componentsAtPoint[0] == null)
                     componentsAtPoint[0] = comp;
                 else {
