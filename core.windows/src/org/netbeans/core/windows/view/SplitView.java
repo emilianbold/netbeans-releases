@@ -85,48 +85,37 @@ public class SplitView extends ViewElement {
     public void setFirst(ViewElement first) {
         // No validation here, the component could differ, currently EditorView.
         this.first = first;
-
-        if(splitPane != null) {
-            // Component is in use, adjust it if necessary.
-            Component comp = first.getComponent();
-            Container parent = comp.getParent();
-            if(parent == splitPane) {
-                return;
-            }
-            if(parent != null) {
-                parent.remove(comp);
-            }
-
-            int location = splitPane.getDividerLocation(); // keep split position
-            splitPane.setLeftComponent(comp);
-            splitPane.setDividerLocation(location);
-        }
     }
     
     public void setSecond(ViewElement second) {
         // No validation here, the component could differ, currently EditorView.
         this.second = second;
-
-        if(splitPane != null) {
-            // Component is in use, adjust it if necessary.
-            Component comp = second.getComponent();
-            Container parent = comp.getParent();
-            if(parent == getSplitPane()) {
-                return;
-            }
-            if(parent != null) {
-                parent.remove(comp);
-            }
-
-            int location = getSplitPane().getDividerLocation(); // keep split position
-            splitPane.setRightComponent(comp);
-            splitPane.setDividerLocation(location);
-        }
     }
 
     
     public Component getComponent() {
+        assureComponentInSplit(first.getComponent(), true);
+        assureComponentInSplit(second.getComponent(), false);
         return getSplitPane();
+    }
+
+    private void assureComponentInSplit(Component comp, boolean left){
+        // Component is in use, adjust it if necessary.
+        Container parent = comp.getParent();
+        if(parent == getSplitPane()) {
+            return;
+        }
+        if(parent != null) {
+            parent.remove(comp);
+        }
+        
+        int location = getSplitPane().getDividerLocation(); // keep split position
+        if(left) {
+            splitPane.setLeftComponent(comp);
+        } else {
+            splitPane.setRightComponent(comp);
+        }
+        splitPane.setDividerLocation(location);
     }
     
     private JSplitPane getSplitPane() {
