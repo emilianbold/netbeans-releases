@@ -19,6 +19,7 @@ import java.awt.event.ItemEvent;
 import java.beans.*;
 import java.text.MessageFormat;
 import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.IOException;
 
 import javax.swing.*;
@@ -233,20 +234,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     int splitType = split.getSplitType ();
     boolean swapped = split.getPanesSwapped();
     if (sheetVisible) { // showing property sheet pane
-      if (sheetPanel == null) {
-        PropertySheetView propertySheet = new PropertySheetView ();
-        sheetPanel = new ExplorerPanel ();
-        sheetPanel.add (propertySheet, BorderLayout.CENTER);
-        sheetManager = sheetPanel.getExplorerManager ();
-        sheetManager.setRootContext (currentManager.getRootContext ());
-        sheetManager.setExploredContext (currentManager.getExploredContext ());
-        try {
-          sheetManager.setSelectedNodes (currentManager.getSelectedNodes ());
-        } catch (PropertyVetoException e) {
-          throw new InternalError ("Property Sheet must not not veto selection");
-        }
-      }
-
+      getSheetPanel();  
       int splitPos;
       if (splitType == SplittedPanel.HORIZONTAL) {
         splitPos = swapped ? sheetWidth : size.width;
@@ -336,15 +324,63 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     actions.detach ();
   }
 
+  /** Serialize this top component.
+  * @param in the stream to serialize to
+  */
+  public void writeExternal (ObjectOutput out)
+              throws IOException {
+    super.writeExternal(out);
+    out.writeObject(new Boolean(sheetVisible));
+    out.writeObject(new Boolean(split.getPanesSwapped()));
+    out.writeObject(new Integer(split.getSplitType()));
+    out.writeObject(new Integer(split.getSplitPosition()));
+  }
+  
+  
   /** Deserialize this top component, sets as default.
   * @param in the stream to deserialize from
   */
   public void readExternal (ObjectInput in)
               throws IOException, ClassNotFoundException {
     super.readExternal(in);
+    sheetVisible = ((Boolean)in.readObject()).booleanValue();
+    boolean swapped = ((Boolean)in.readObject()).booleanValue();
+    split.setSplitType(((Integer)in.readObject()).intValue());
+    split.setSplitPosition(((Integer)in.readObject()).intValue());
+    if (sheetVisible) {
+      if (swapped) {
+        split.setKeepFirstSame(true);
+        split.add(getSheetPanel(), SplittedPanel.ADD_LEFT);
+      } else {
+        split.setKeepSecondSame(true);
+        split.add(getSheetPanel(), SplittedPanel.ADD_RIGHT);
+      }
+    }
+    // toggle button (do without listening)
+    sheetSwitcher.removeItemListener (this);
+    sheetSwitcher.setSelected(sheetVisible); 
+    sheetSwitcher.addItemListener (this);
     explorer = this;
   }
-  
+
+  /** Safe getter for sheet panel */
+  private ExplorerPanel getSheetPanel () {
+    if (sheetPanel == null) {
+      PropertySheetView propertySheet = new PropertySheetView ();
+      sheetPanel = new ExplorerPanel ();
+      sheetPanel.add (propertySheet, BorderLayout.CENTER);
+      sheetManager = sheetPanel.getExplorerManager ();
+      sheetManager.setRootContext (currentManager.getRootContext ());
+      sheetManager.setExploredContext (currentManager.getExploredContext ());
+      try {
+        sheetManager.setSelectedNodes (currentManager.getSelectedNodes ());
+      } catch (PropertyVetoException e) {
+        throw new InternalError ("Property Sheet must not not veto selection");
+      }
+    }
+    return sheetPanel;
+  }
+    
 
 // -----------------------------------------------------------------------------
 // Static methods
@@ -365,6 +401,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  10   Gandalf   1.9         5/14/99  David Simonek   serialization of 
+*       switchable sheet state
 *  9    Gandalf   1.8         5/11/99  David Simonek   changes to made window 
 *       system correctly serializable
 *  8    Gandalf   1.7         3/25/99  David Simonek   another small changes in 
