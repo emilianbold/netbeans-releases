@@ -12,36 +12,84 @@
 <body>
 <h2>Runtime Window</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The Runtime window displays runtime information on:</p>
-<ul>
-  <li>Active processes</li>
-  <li>History of VCS commands called in the current IDE session</li>
-  <li>The IDE's embedded HTTP server</li>
-  <li>External services connected to the IDE</li>
-  <li>Registered database drivers</li>
-  <li>XML entity catalogs </li>
-</ul> 
+<p>The Runtime window is the main entry point to your runtime resources. It shows 
+a logical view of important runtime resources such as your servers, databases, and
+ registered web services. 
+  You can open the Runtime window by choosing Window <img src="../images/arrow.gif" width="5" height="11" alt="and choosing">&nbsp;Runtime 
+  (Ctrl-5).
 
-<p>The Processes node lists all processes currently being executed within 
+<h3>Runtime Icons</h3>
+<p>The following table lists the runtime icons as they appear in the Runtime 
+window, their descriptions, and the purpose of the resource to which they apply. 
+<table border="1" cellpadding="5" cellspacing="0">
+  <tr align="left"> 
+    <th scope="col"><b>Icon</b></th>
+    <th scope="col"><b>Description</b></th>
+  </tr>
+  <tr> 
+    <td><img src="../images/runtime-window-servers.png" width="16" height="16"></td>
+    <td><b>Servers</b>
+	    <br>Lists all servers currently registered with the IDE. Only
+	    the bundled Tomcat Web Server is registered by default. If your version
+	    of the IDE is bundled with the Sun Java System Application Server, this
+	    server is registered by default as well.</td>
+  </tr>
+  <tr> 
+    <td><img src="../images/runtime-window-processes.png" width="16" height="16"></td>
+    <td><b>Processes</b>
+	    <br>Lists all processes currently being executed within 
   the IDE. You can terminate a running application by right-clicking its node 
   and choosing Terminate Process. This information also appears in the 
 Execution view, which you can open by choosing 
-Window <img src="../images/arrow.gif" alt="and choosing">&nbsp;Execution.</p>
-<p>You can choose commands to start or stop the IDE's internal HTTP server by 
-  right-clicking the HTTP Server node.
+Window <img src="../images/arrow.gif" alt="and choosing">&nbsp;Execution.</td>
+  </tr>
+  <tr> 
+    <td><img src="../images/runtime-window-databases.png" width="16" height="16"></td>
+    <td><b>Databases</b>
+	    <br>Lists all registered database drivers.</td>
+  </tr>
+  <tr> 
+    <td><img src="../images/runtime-window-httpserver.png" width="20" height="16"></td>
+    <td><b>HTTP Server</b>
+	    <br>Choose commands to start or stop the IDE's internal HTTP server by 
+  right-clicking the HTTP Server node.</td>
+  </tr>
+  <tr> 
+    <td><img src="../images/runtime-window-vcscommands.png" width="16" height="16"></td>
+    <td><b>VCS Commands</b>
+	    <br>Lists a history of VCS commands called in the current IDE session.</td>
+  </tr>
+  <tr> 
+    <td><img src="../images/runtime-window-webservices.png" width="16" height="16"></td>
+    <td><b>Web Services</b>
+	    <br>Lists all registered web services. A web service that is registered
+	    can be <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/expose/test_ws.html">tested</a> from the IDE. 
+	    Before you can register a web service, you must 
+	    <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/expose/expose_ws.html">publish</a> it.</td>
+  </tr>
+  <tr> 
+    <td><img src="../images/runtime-window-xmlentitycatalogs.png" width="16" height="16"></td>
+    <td><b>XML Entity Catalogs</b>
+	    <br>Lists all your currently mounted <a href="../xml/catalog/xmlcatalog_about.html">XML Catalogs</a>.</td>
+  </tr>
+</table>
 <p>Other nodes may appear, depending on the modules that are installed in the
 IDE. You can select a node and click F1 to view any help topic that might exist
 for that node.</p> 
 
+<h3>Contextual Menu</h3>
+<p>Each node in the Runtime window has a contextual menu of commands that you 
+  can run on that node. You open a node's contextual menu by right-clicking the 
+  node.</p>
 <table>
-<tr>
-<th colspan=2 align=left><a name="seealso">See Also</a></th>
-</tr>
-<tr>
-<td width="23"></td>
-    <td>
-      <!--TODO - link these to the help pages that documents them -->
-    </td>
+  <tr> 
+    <th colspan=2 align=left><a name="seealso">See also</a></th>
+  </tr>
+  <tr> 
+    <td width="23"></td>
+    <td>      <a href="../project/csh/proj_project_window.html">Projects window</a><br>
+	    <a href="../project/csh/proj_files_window.html">Files Window</a><br>
+	    <a href="../project/csh/proj_fav_window.html">Favorites Window</a><br></td>
   </tr>
 </table>
 <hr>
