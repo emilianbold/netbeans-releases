@@ -24,13 +24,10 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
         <!-- XXX -->
         <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-        
-	<pathelement path="${junit.path}"/> <!-- XXX ??? -->
-        <pathelement path="${xerces.path}"/> <!-- XXX ??? -->
     </path>
     <path id="codetest.classpath">
 	<pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-        <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
+        <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
         <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
         <!-- XXX -->
         <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
