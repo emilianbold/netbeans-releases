@@ -65,7 +65,7 @@ public abstract class GrammarQueryManager {
     
     /**
      * Factory method providing a root grammar for given document.
-     * @param ctx The same context that was passed to {@link #enable}.
+     * @param ctx The same context that was passed to {@link #enabled}.
      * @return GrammarQuery being able to work in the context
      *         or <code>null</null> if {@link #enabled} returns
      *         for the same context false.

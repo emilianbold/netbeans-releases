@@ -20,9 +20,9 @@ more methods than defined by DOM IDLs.
 
 Default <code>GrammarQuery</code> registration mechanism uses
 Lookup. Modules providing an implementation can register
-{@link GrammarQueryProvider} at default filesystem. Such
+{@link org.netbeans.modules.xml.api.model.GrammarQueryManager} at default filesystem. Such
 registration can be than located by clients using
-{@link GrammarQueryProvider#getDefault} which returns
+{@link org.netbeans.modules.xml.api.model.GrammarQueryManager#getDefault} which returns
 an implementation proxing to registered ones.
 
 <hr>
@@ -68,7 +68,7 @@ a default implementation for:
 
 <dl>
 <dt>well formed document <dd>document history based completion (at least pairing tags)
-<dt>DTD grammar based completion <dd>content is forced by a DTd grammar
+<dt>DTD grammar based completion <dd>content is forced by a DTD grammar
 <dt>Schema grammar based completion <dd>must be namespace aware
 </dl>
 

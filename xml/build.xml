@@ -18,7 +18,6 @@ Microsystems, Inc. All Rights Reserved.
     <property name="binroot" location="${nbroot}/../nbextra"/>
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
-    <taskdef name="genjavadoc" classname="org.netbeans.nbbuild.GenerateJavadoc" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="validatexml" classname="org.netbeans.nbbuild.XMLValidate" classpath="${nbext_root}/nbantext.jar;${binroot}/xml/catalog/release/modules/ext/resolver-1_1_nb.jar"/>
     <taskdef  name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext_root}/nbantext.jar"/>
     <property name="submodules" value="api, tax, core, catalog, tools, text-edit, tree-edit, css, xsl"/>
@@ -75,12 +74,6 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="javadoc">
-        <delete dir="javadoc"/>
-        <mkdir dir="javadoc"/>
-        <genjavadoc destdir="javadoc" modules="openide,openidex,editor,xml/api,xml/catalog,xml/core,xml/css,xml/tax,xml/tax/lib,xml/text-edit,xml/tools,xml/tree-edit">
-            <topdir path="${nbroot}"/>
-        </genjavadoc>
-
         <for-each locations="${submodules}"/>
     </target>
 

@@ -4,7 +4,7 @@ OpenIDE-Module-Install: org/netbeans/modules/xml/text/TextEditModuleInstall.clas
 OpenIDE-Module-Layer: org/netbeans/modules/xml/text/resources/mf-layer.xml
 OpenIDE-Module-Specification-Version: @TEXT_SPEC_VERS_SUBST@
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Public-Packages: org.netbeans.modules.xml.text.completion.**
+OpenIDE-Module-Public-Packages: -
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.19
 OpenIDE-Module-Module-Dependencies: 
  org.netbeans.api.xml/1 > @API_SPEC_VERS_SUBST@,

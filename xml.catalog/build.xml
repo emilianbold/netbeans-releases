@@ -32,7 +32,6 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext_root}/nbantext.jar"/>
-    <taskdef name="genjavadoc" classname="org.netbeans.nbbuild.GenerateJavadoc" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext_root}/nbantext.jar"/>
 
     <property name="build.compiler.debug" value="on"/>
@@ -143,9 +142,45 @@ Microsystems, Inc. All Rights Reserved.
     <target name="javadoc">
         <delete dir="javadoc"/>
         <mkdir dir="javadoc"/>
-        <genjavadoc destdir="javadoc" modules="openide,xml/catalog">
-            <topdir path="${nbroot}"/>
-        </genjavadoc>
+
+        <!-- external JavaDocs -->
+        <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4/docs/api"/>
+        <property name="sax-docs-location" value="http://www.saxproject.org/apidoc"/>
+        <property name="openide-docs-location" value="http://www.netbeans.org/download/dev/javadoc/OpenAPIs"/>
+        <property name="xml-api-docs-location" value="${api_root}/javadoc/XML-APIs"/>
+
+        <javadoc destdir="javadoc"
+                 packagenames="org.netbeans.modules.xml.catalog.spi.*"
+                 doctitle="NetBeans XML Catalog APIs"
+                 windowtitle="NetBeans XML Catalog APIs"
+        >
+            <sourcepath>
+                <pathelement location="src"/>
+            </sourcepath>        
+            <classpath>        
+                <fileset dir="${nbroot}/openide/netbeans/lib">
+                    <include name="openide*.jar"/>
+                </fileset>
+                <pathelement location="${xml-apis}"/> <!-- JAXP and SAX dependency -->
+            </classpath>
+            
+            <link href="${jdk-docs-location}"
+                  offline="true"
+                  packagelistLoc="${api_root}/doc/external/jdk"
+            />
+            <link href="${sax-docs-location}"
+                  offline="true"
+                  packagelistLoc="${api_root}/doc/external/sax"
+            />
+            <link href="${openide-docs-location}"
+                  offline="true"
+                  packagelistLoc="${api_root}/doc/external/openide"
+            />            
+            <link href="${xml-api-docs-location}"
+                  offline="true"
+                  packagelistLoc="${api_root}/javadoc/XML-APIs/package-list"
+            />            
+        </javadoc>                
     </target>
 
 

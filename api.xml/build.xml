@@ -135,7 +135,6 @@ Microsystems, Inc. All Rights Reserved.
         <property name="sax-docs-location" value="http://www.saxproject.org/apidoc"/>
         <property name="openide-docs-location" value="http://www.netbeans.org/download/apis"/>
         
-        
         <javadoc destdir="XML-APIs"
                  packagenames="org.netbeans.api.xml.*,org.netbeans.spi.xml.*"
                  doctitle="NetBeans XML Tools APIs"

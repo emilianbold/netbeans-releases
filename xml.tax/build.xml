@@ -31,7 +31,6 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext_root}/nbantext.jar"/>
-    <taskdef name="genjavadoc" classname="org.netbeans.nbbuild.GenerateJavadoc" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext_root}/nbantext.jar"/>
 
     <property name="build.compiler.debug" value="on"/>
@@ -148,11 +147,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="all" depends="clean,nbm"/>
 
     <target name="javadoc">
-        <delete dir="javadoc"/>
-        <mkdir dir="javadoc"/>
-        <genjavadoc destdir="javadoc" modules="openide,xml/tax,xml/tax/lib">
-            <topdir path="${nbroot}"/>
-        </genjavadoc>
+        <for-each locations="lib"/>
     </target>
 
 
