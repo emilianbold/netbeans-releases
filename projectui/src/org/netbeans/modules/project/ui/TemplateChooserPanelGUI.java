@@ -355,9 +355,10 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             if (key instanceof DataObject) {
                 DataObject dobj = (DataObject)key;
                 if (isTemplate(dobj) && OpenProjectList.isRecommended (getProject (), dobj.getPrimaryFile ())) {
-                    return new Node[] {
-                        new FilterNode (dobj.getNodeDelegate(),Children.LEAF)
-                    };
+                    if (dobj instanceof DataShadow) {
+                        dobj = ((DataShadow)dobj).getOriginal ();
+                    }
+                    return new Node[] { new FilterNode (dobj.getNodeDelegate(), Children.LEAF) };
                 }
             }
             return new Node[0];
@@ -436,8 +437,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
         
     }
-
-
+    
     private static boolean isTemplate (DataObject dobj) {
         if (dobj.isTemplate())
             return true;
