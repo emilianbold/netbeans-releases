@@ -18,11 +18,15 @@ import java.util.*;
 import java.io.*;
 
 import javax.swing.text.*;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.DocumentEvent;
 
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
 
 import org.netbeans.modules.xml.text.syntax.dom.*;
+import org.openide.ErrorManager;
+import org.openide.util.WeakListeners;
 
 /**
  * Creates higher level syntax elements (DOM nodes) above token chain.
@@ -41,9 +45,20 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
     private String publicId = null;  // cached refernce to DTD
     private volatile boolean requestedAutoCompletion = false;
 
+    /** Holds last character user have typed. */
+    private char lastInsertedChar = 'X';  // NOI18N
+
+    private final DocumentMonitor documentMonitor;
+
     /** Creates new XMLSyntaxSupport */
     public XMLSyntaxSupport(BaseDocument doc) {
         super(doc);
+
+        // listener has same lifetime as this class
+        documentMonitor = new DocumentMonitor();
+        DocumentListener l = WeakListeners.document(documentMonitor, doc);
+        doc.addDocumentListener(l);
+
     }
 
     /**
@@ -553,7 +568,9 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                             String txtBeforeSpace = doc.getText(dotPos-2, 2);
                             if( txtBeforeSpace.equals("</") )  // NOI18N
                                 retVal = COMPLETION_POPUP;
-                        } catch (BadLocationException e) {}
+                        } catch (BadLocationException e) {
+                            ErrorManager.getDefault().notify(e);
+                        }
                     }
                     break;
                     
@@ -591,6 +608,32 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
     static int getTokenEnd( TokenItem item ) {
         return item.getOffset() + item.getImage().length();
     }
-    
+
+    /** Returns last inserted character. It's most likely one recently typed by user. */
+    public final char lastTypedChar() {
+        return lastInsertedChar;
+    }
+
+    /** Keep track of last typed character */
+    private class DocumentMonitor implements DocumentListener {
+
+        public void changedUpdate(DocumentEvent e) {
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            int start = e.getOffset();
+            int len = e.getLength();
+            try {
+                String s = e.getDocument().getText(start + len - 1, 1);
+                lastInsertedChar = s.charAt(0);
+            } catch (BadLocationException e1) {
+                ErrorManager err = ErrorManager.getDefault();
+                err.notify(e1);
+            }
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+        }
+    }
 }
 

@@ -14,6 +14,10 @@
 package org.netbeans.modules.xml.text.completion;
 
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.DocumentEvent;
+
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
 import org.netbeans.modules.xml.api.model.HintContext;
@@ -22,6 +26,8 @@ import org.netbeans.modules.xml.text.syntax.dom.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.openide.util.WeakListeners;
+import org.openide.ErrorManager;
 
 /**
  * Helper class used in XMLCompletionQuery and other classes that use grammar
@@ -78,7 +84,7 @@ public class SyntaxQueryHelper {
 
         // determine last typed text, prefix text
 
-       if ( boundary == false ) {
+        if ( boundary == false ) {
 
             preText = token.getImage().substring( 0, tunedOffset - token.getOffset() );
             if ("".equals(preText)) throw new IllegalStateException("Cannot get token prefix at " + tunedOffset);
@@ -86,19 +92,21 @@ public class SyntaxQueryHelper {
             // manipulate tunedOffset to delete rest of an old name
             // for cases where it iseasy to locate original name end
 
-            switch (id) {
+            if (sup.lastTypedChar() != '<' && sup.lastTypedChar() != '&') {
+                switch (id) {
 
-                case XMLDefaultTokenContext.TAG_ID:
-                case XMLDefaultTokenContext.CHARACTER_ID:
-                case XMLDefaultTokenContext.ARGUMENT_ID:
+                    case XMLDefaultTokenContext.TAG_ID:
+                    case XMLDefaultTokenContext.CHARACTER_ID:
+                    case XMLDefaultTokenContext.ARGUMENT_ID:
 
-                    int i = token.getImage().length();
-                    int tail = i - (tunedOffset - itemOffset);
-                    tunedOffset += tail;
-                    eraseRight = tail;
-                    break;
+                        int i = token.getImage().length();
+                        int tail = i - (tunedOffset - itemOffset);
+                        tunedOffset += tail;
+                        eraseRight = tail;
+                        break;
+                }
             }
-        } else {
+         } else {
            switch (id) {
                 case XMLDefaultTokenContext.TEXT_ID:
                 case XMLDefaultTokenContext.TAG_ID:
@@ -108,7 +116,7 @@ public class SyntaxQueryHelper {
                     preText = token.getImage();
                     break;                        
             }
-        }
+         }
 
         // adjust how much do you want to erase from the preText
 
@@ -383,5 +391,6 @@ public class SyntaxQueryHelper {
     public boolean isBoundary() {
         return boundary;
     }
-        
+
+
 }
