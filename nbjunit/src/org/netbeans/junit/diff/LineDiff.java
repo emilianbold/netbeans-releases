@@ -34,15 +34,21 @@ import java.util.Collections;
  */
 public class LineDiff implements Diff {
     
-    private boolean ignoreCase;
+    boolean ignoreCase;
+    boolean ignoreEmptyLines;
     
     /** Creates a new instance of LineDiff */
-    public LineDiff(boolean ignoreCase) {
-        this.ignoreCase = ignoreCase;
+    public LineDiff() {
+        this(false, false);
     }
     
-    public LineDiff() {
-        this(false);
+    public LineDiff(boolean ignoreCase) {
+        this(ignoreCase, false);
+    }
+    
+    public LineDiff(boolean ignoreCase, boolean ignoreEmptyLines) {
+        this.ignoreCase = ignoreCase;
+        this.ignoreEmptyLines = ignoreEmptyLines;
     }
     
     public boolean getIgnoreCase() {
@@ -96,6 +102,9 @@ public class LineDiff implements Diff {
         //read lines
         ArrayList tmp=new ArrayList();
         while ((passLine = second.readLine()) != null) {
+            if (ignoreEmptyLines && passLine.trim().length() == 0) {
+                continue;
+            }
             tmp.add(passLine);
         }
         passLines=(String[])(tmp.toArray(new String[tmp.size()]));
@@ -103,6 +112,9 @@ public class LineDiff implements Diff {
         second.close();
         //first matching
         while ((testLine = first.readLine()) != null) {
+            if (ignoreEmptyLines && testLine.trim().length() == 0) {
+                continue;
+            }
             if (match) {
                 if (lastPassIndex < passLines.length) {
                     match=compareLines(passLines[lastPassIndex++],testLine);
