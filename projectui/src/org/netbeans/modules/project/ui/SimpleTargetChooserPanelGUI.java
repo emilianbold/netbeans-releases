@@ -361,13 +361,13 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     }
     
     private String getRelativeNativeName( FileObject root, FileObject folder ) {
+        if (root == null) {
+            throw new NullPointerException("null root passed to getRelativeNativeName"); // NOI18N
+        }
         
         String path;
         
-        if ( root == null && folder != null ) {
-            path = folder.getPath();
-        }
-        else if ( folder == null ) {
+        if (folder == null) {
             path = ""; // NOI18N
         }
         else {
