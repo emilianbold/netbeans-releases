@@ -46,6 +46,8 @@ import org.openide.nodes.NodeListener;
 public final class PropertiesDataObject extends MultiDataObject {
   /** generated Serialized Version UID */
   static final long serialVersionUID = 4795737295255253334L;
+  
+  public static final String MIME_PROPERTIES = "text/x-properties";
 
   /** Structural view of the dataobject */
   protected transient BundleStructure bundleStructure;
@@ -236,6 +238,8 @@ public final class PropertiesDataObject extends MultiDataObject {
 
 /*
  * <<Log>>
+ *  20   Gandalf   1.19        9/13/99  Petr Jiricka    MIME type changed to a 
+ *       constant
  *  19   Gandalf   1.18        9/10/99  Petr Jiricka    Comparator change
  *  18   Gandalf   1.17        8/18/99  Petr Jiricka    Some fix
  *  17   Gandalf   1.16        8/17/99  Petr Jiricka    Changed node 
