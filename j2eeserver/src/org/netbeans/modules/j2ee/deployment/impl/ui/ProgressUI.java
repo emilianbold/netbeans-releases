@@ -74,6 +74,22 @@ public class ProgressUI extends JPanel {
 	this (modal);
     }
 
+    /* 
+     * Returns parent window of this component. It can be JFrame or Dialog
+     * depending on modal state defined in constructor.
+     * @return parent window of this UI
+     */
+    public Window getWindow() {
+        if (frame != null) {
+            return frame;
+        }
+        if (dialog != null) {
+            return dialog;
+        }
+        return null;
+    }
+    
+
     public void addNotify () {
 	super.addNotify ();
 	if (changeFontSize) {

@@ -14,8 +14,6 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
-import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.shared.*;
 import javax.enterprise.deploy.spi.status.*;
@@ -24,15 +22,14 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressUI;
 import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressMonitor;
 import org.openide.filesystems.*;
-import org.openide.cookies.InstanceCookie;
 import java.util.*;
-import java.io.*;
 import org.openide.nodes.Node;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import javax.management.j2ee.Management;
+import org.netbeans.modules.j2ee.deployment.impl.ui.ServerStatusBar;
 import org.openide.util.RequestProcessor;
 //import org.netbeans.modules.j2ee.deployment.impl.ui.actions.ShowEventWindowsAction;
 
@@ -55,6 +52,7 @@ public class ServerInstance implements Node.Cookie {
     private ServerTarget coTarget = null;
     private boolean commandSucceed = false;
     private InstancePropertiesImpl instanceProperties;
+    private ServerStatusBar serverStatusBar = null;
     
     // PENDING how to manage connected/disconnected servers with the same manager?
     // maybe concept of 'default unconnected instance' is broken?
@@ -810,4 +808,13 @@ public class ServerInstance implements Node.Cookie {
     private synchronized void setCommandSucceeded(boolean val) {
         commandSucceed = val;
     }
+    
+    public void setServerStatusBar(ServerStatusBar serverStatusBar) {
+        this.serverStatusBar = serverStatusBar;
+    }
+    
+    public ServerStatusBar getServerStatusBar() {
+        return serverStatusBar;
+    }
+    
 }
