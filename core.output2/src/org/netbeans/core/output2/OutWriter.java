@@ -458,7 +458,9 @@ class OutWriter extends OutputWriter implements Runnable {
             closesRequired = 0;
             markDirty();
             fire();
-            owner.setStreamClosed(true);
+            if (owner != null) {
+                owner.setStreamClosed(true);
+            }
         } catch (IOException ioe) {
             handleException (ioe);
         }
