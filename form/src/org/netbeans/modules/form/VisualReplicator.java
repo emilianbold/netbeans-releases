@@ -209,12 +209,16 @@ public class VisualReplicator {
         if (metacont == null)
             return;
 
-        Object contClone = metacont instanceof RADComponent ?
-                           getClonedComponent((RADComponent)metacont) : null;
-        Container cont = contClone instanceof Container ?
-                         (Container)contClone : null;
-        if (cont != null)
-            cont = ((RADVisualContainer)metacont).getContainerDelegate(cont);
+        Container container = null;
+        if (metacont instanceof RADComponent) {
+            Object contClone = getClonedComponent((RADComponent)metacont);
+            if (contClone instanceof Container)
+                if (metacont instanceof RADVisualContainer)
+                    container = ((RADVisualContainer)metacont)
+                                .getContainerDelegate((Container)contClone);
+                else
+                    container = (Container)contClone;
+        }
 
         RADComponent[] subComps = metacont.getSubBeans();
         for (int i=0; i < subComps.length; i++) {
@@ -222,8 +226,9 @@ public class VisualReplicator {
             if (compClone == null)
                 addComponent(subComps[i]);
             else if (compClone instanceof Component
-                     && ((Component)compClone).getParent() != cont)
-                return; // the clone is placed elsewhere
+                     && ((Component)compClone).getParent() != container)
+                return; // the clone is placed in another container in
+                        // replicator, there's going to be another update
         }
     }
 
