@@ -128,6 +128,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Runtime">
             <file name="org-netbeans-core-execution-ProcessNode.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.core.execution.ProcessNode"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.core.execution.ProcessNode.getExecutionNode"/>
             </file>
         </folder>
         <!-- settings categories UI presentation -->
