@@ -19,10 +19,12 @@ import java.util.Enumeration;
 import java.util.StringTokenizer;
 import javax.servlet.*;
 import javax.servlet.http.*;
-import org.netbeans.modules.web.monitor.server.Constants;
 
-import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+
+import org.netbeans.modules.web.monitor.server.Constants;
 
 /*
  * Put a transaction
@@ -56,27 +58,41 @@ public class PutTransaction extends HttpServlet {
 	// string for this. Don't do that. 
 
 	String id = req.getQueryString(); 
+	if(id == null || id.length() == 0) { 
+	    if(debug) log("Bad request, exiting..."); //NOI18N
+	    return; 
+	}
+
+	id = id.substring(0, id.indexOf(Constants.Punctuation.itemSep));
+
+	if(debug) log(" Trying to add the transaction"); //NOI18N
 	FileObject fo = null;
-	FileLock lock = null;
-	PrintWriter fout = null, out = null;
-	InputStreamReader isr = null;
 	 
 	try {
-	    if(debug) log(" Trying to add the transaction"); //NOI18N
-
-	    // PENDING: the id is parsed in TransactionNode. Should
-	    // *not* do that twice - may be it should be parsed here. 
-	    String name = 
-		id.substring(0, id.indexOf(Constants.Punctuation.itemSep));
-		
 	    if(debug) log(" Before creating the file"); //NOI18N
-	    fo = currDir.createData(name, "xml"); //NOI18N
+	    fo = currDir.createData(id, "xml"); //NOI18N
 	    if(debug) log(" After creating the file"); //NOI18N
+	}
+	catch(IOException ioex) { 
+	    if(debug) log(" Could not create the file, exiting..."); 
+	    return;
+	} 
+	FileLock lock = null;
+	try { 
 	    lock = fo.lock();
 	    if(debug) log(" Got the lock"); //NOI18N
-	    fout = new PrintWriter(fo.getOutputStream(lock));
-	    if(debug) log(" Got the lock, reading buffer"); //NOI18N
+	} 
+	catch(FileAlreadyLockedException falex) { 
+	    if(debug) log(" Couldn't get a file lock, exiting..."); //NOI18N
+	    return; 
+	} 
 
+	PrintWriter fout = null, out = null;
+	InputStreamReader isr = null;
+	boolean success = false;
+	try { 
+
+	    fout = new PrintWriter(fo.getOutputStream(lock));
 	    isr = new InputStreamReader(req.getInputStream());
 
 	    char[] charBuf = new char[4096];
@@ -84,32 +100,29 @@ public class PutTransaction extends HttpServlet {
 	     
 	    while((numChars = isr.read(charBuf, 0, 4096)) != -1) {
 		fout.write(charBuf, 0, numChars);
-		//if(debug) log(new String(charBuf));
 	    }
-
+	    success = true;
  	    if(debug) log("...success"); //NOI18N
-
-	    res.setContentType("text/plain");  //NOI18N
-	    out = res.getWriter();
-	    out.println(Constants.Comm.ACK); 
 	}
-	
-	catch(Exception ex) {
-	    if(debug) log("Couldn't add the transaction");  //NOI18N
-	    if(debug) 
-		log("MonitorAction.getController(): " +  //NOI18N
-		    MonitorAction.getController());
-	    if (debug) log(ex); 
+	catch(IOException ioex) {
+	    if (debug) { 
+		log("Failed to read/write the record:"); 
+		log(ioex);
+	    }
 	}
 	finally {
-	    
-	    try {
-		lock.releaseLock();
-		if(debug) log(" Released the lock"); //NOI18N
-	    }
-	    catch(Exception ex1) { }
+	    lock.releaseLock(); 
 
-	    try { out.close(); }
+	    try { 
+		res.setContentType("text/plain");  //NOI18N	    
+		out = res.getWriter();
+		out.println(Constants.Comm.ACK); 
+	    }
+	    catch(Exception ex) {
+		// It doesn't actually matter if this goes wrong
+	    } 
+
+	    try {out.close(); }
 	    catch(Exception ex2) { }
 
 	    try { isr.close();}
@@ -118,7 +131,7 @@ public class PutTransaction extends HttpServlet {
 	    try { fout.close(); }
 	    catch(Exception ex4) { }
 	}
-	MonitorAction.getController().addTransaction(id); 
+	if(success) MonitorAction.getController().addTransaction(id); 
     }
 
     // PENDING - deal better with this

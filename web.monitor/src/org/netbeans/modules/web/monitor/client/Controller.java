@@ -158,10 +158,12 @@ public class Controller  {
     /**
      * Adds a transaction to the list of current transactions.
      */
-    void addTransaction(String str) {
+    void addTransaction(String id) {
+	if(debug) log("Creating node for " + id);
 	TransactionNode[] nodes = new TransactionNode[1];
-	nodes[0] = createTransactionNode(str);
-	currTrans.add(nodes);
+	MonitorData md = retrieveMonitorData(id, currDirStr); 
+	nodes[0] = createTransactionNode(md, true);
+    	currTrans.add(nodes);
     }
 
     /**
@@ -899,17 +901,6 @@ public class Controller  {
 	savedTrans.add(tns);
     }
 	    
-    private TransactionNode createTransactionNode(String str) {
-
-	if(debug) log("createTransactionNode(String)"); //NOI18N 
-	String id = str.substring(0, str.indexOf("|")); //NOI18N
-	if(debug) log ("id is " + id); //NOI18N 
-	// Retrieve the monitordata 
-	MonitorData md = retrieveMonitorData(id, currDirStr); 
-	return createTransactionNode(md, true);
-    }
-    
-
     private TransactionNode createTransactionNode(MonitorData md, boolean current) {
 
 	if(debug) log("createTransactionNode(MonitorData)"); //NOI18N 
