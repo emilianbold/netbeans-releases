@@ -126,6 +126,12 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     return findSessionFolder ("Bookmarks");
   }
 
+  /** Default folder for projects.
+  */
+  public DataFolder projects () {
+    return findSessionFolder ("Projects");
+  }
+
   /** Startup folder.
   */
   public DataFolder startup () {
@@ -158,6 +164,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  13   Gandalf   1.12        3/11/99  Ian Formanek    
 *  12   Gandalf   1.11        3/11/99  Ian Formanek    Bookmarks & Startup added
 *       to Session Settings
 *  11   Gandalf   1.10        2/26/99  David Simonek   
