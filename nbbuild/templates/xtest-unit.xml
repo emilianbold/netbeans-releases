@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="xtest-unit" basedir="." default="all">
+
+    <dirname property="nb_all" file="${ant.file.xtest-unit}/../.."/>
+    
+    <target name="init">
+        <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <!-- Synch the following property loads with NbModuleProject.makeEvalDefs: -->
+        <property file="../nbproject/private/private.properties"/>
+        <property file="../nbproject/project.properties"/>
+        <parseprojectxml project=".." modulesxml="${nb_all}/nbbuild/templates/modules.xml" publicpackagesproperty="public.packages" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" codenamebasedashesproperty="code.name.base.dashes" autoload="${is.autoload}" eager="${is.eager}" modulejardirproperty="module.jar.dir" moduleclasspathproperty="module.classpath"/>
+        
+        <property name="build.compiler.debug" value="true"/>
+        <property name="build.compiler.source" value="1.4"/>
+        <property name="build.compiler.deprecation" value="true"/>
+        <property name="build.sysclasspath" value="ignore"/>
+        <property name="build.classes.dir" location="../build/classes"/>
+    </target>
+    
+    <target name="pre-init-cp">
+        <!-- Give others chance to setup extra classpath -->
+    </target>
+    
+    <target name="init-cp" depends="pre-init-cp">
+        <path id="test.compile.cp">
+            <pathelement path="${build.classes.dir}"/>
+            <pathelement path="${module.classpath}"/>
+            <pathelement path="${cp.extra}"/>
+            <pathelement path="${test.cp.extra}"/>
+            <pathelement path="${cp.compile.extra}"/>
+        </path>
+        <path id="test.run.cp">
+            <path refid="test.compile.cp"/>
+            <pathelement path="${test.run.cp.extra}"/>
+        </path>
+    </target>
+    
+    <!-- ========= -->
+    <!-- Compilers -->
+    <!-- ========= -->
+    
+    <target name="default-compiler" depends="init,init-cp">
+        <buildTests srcdir="unit/src" compileexcludes="**/data/**">
+            <classpath refid="test.compile.cp"/>
+        </buildTests>
+    </target>
+    
+    <!-- ========= -->
+    <!-- Executors -->
+    <!-- ========= -->
+    
+    <target name="run-unit-test" depends="init,init-cp">
+        <executeTests pluginname="jvm">
+            <classpath refid="test.run.cp"/>
+        </executeTests>
+    </target>
+        
+</project>

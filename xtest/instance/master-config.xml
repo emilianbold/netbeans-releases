@@ -23,6 +23,13 @@ Microsystems, Inc. All Rights Reserved.
       <module name="java" testtypes="unit" attributes="stable"/>
       <module name="openide" testtypes="unit" attributes="stable"/>
       <module name="openide/compat" testtypes="unit" attributes="stable"/>
+      <module name="projects/projectapi" testtypes="unit" attributes="stable"/>
+      <module name="projects/queries" testtypes="unit" attributes="stable"/>
+      <module name="ant/project" testtypes="unit" attributes="stable"/>
+<!--      <module name="ant/grammar" testtypes="unit" attributes="commit"/> -->
+      <module name="java/api" testtypes="unit" attributes="stable"/>
+      <module name="java/j2seplatform" testtypes="unit" attributes="stable"/>
+      <module name="java/j2seproject" testtypes="unit" attributes="stable"/>
       <!--
       <module name="openidex" testtypes="unit" attributes="stable"/>
       -->
@@ -33,6 +40,13 @@ Microsystems, Inc. All Rights Reserved.
       <module name="java" testtypes="unit" attributes="stable"/>
       <module name="openide" testtypes="unit" attributes="stable"/>
       <module name="openide/compat" testtypes="unit" attributes="stable"/>
+      <module name="projects/projectapi" testtypes="unit" attributes="stable"/>
+      <module name="projects/queries" testtypes="unit" attributes="stable"/>
+      <module name="ant/project" testtypes="unit" attributes="stable"/>
+<!--      <module name="ant/grammar" testtypes="unit" attributes="commit"/> -->
+      <module name="java/api" testtypes="unit" attributes="stable"/>
+      <module name="java/j2seplatform" testtypes="unit" attributes="stable"/>
+      <module name="java/j2seproject" testtypes="unit" attributes="stable"/>
       <module name="html" testtypes="unit" attributes="stable"/>
       <!--
       <module name="openidex" testtypes="unit" attributes="stable"/>
@@ -269,7 +283,14 @@ Microsystems, Inc. All Rights Reserved.
       <module name="core" testtypes="unit" attributes="commit"/>
       <module name="core/windows" testtypes="unit" attributes="commit" />
       <module name="openide" testtypes="unit" attributes="commit"/>
-      <module name="ide" testtypes="qa-functional" attributes="commit"/>
+      <module name="projects/projectapi" testtypes="unit" attributes="commit"/>
+      <module name="projects/queries" testtypes="unit" attributes="commit"/>
+      <module name="ant/project" testtypes="unit" attributes="commit"/>
+<!--      <module name="ant/grammar" testtypes="unit" attributes="commit"/> -->
+      <module name="java/api" testtypes="unit" attributes="commit"/>
+      <module name="java/j2seplatform" testtypes="unit" attributes="commit"/>
+      <module name="java/j2seproject" testtypes="unit" attributes="commit"/>
+<!--      <module name="ide" testtypes="qa-functional" attributes="commit"/> -->
   </config>
 
 </testconfig>
