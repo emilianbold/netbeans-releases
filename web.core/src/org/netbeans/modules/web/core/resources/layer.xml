@@ -130,9 +130,6 @@ Microsystems, Inc. All Rights Reserved.
       <file name="Convert to Java....instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.jsploader.ConvertToJavaAction"/>
       </file>
-      <file name="Convert to J2EE 1_3 Spec.instance">
-        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.dd.ConvertTo13SpecAction"/>
-      </file>
     </folder>
   </folder>
 
