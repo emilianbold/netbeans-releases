@@ -214,6 +214,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 // End of form synthetic properties
 
   protected Node.Property[] createSyntheticProperties () {
+    if (!getFormManager ().getFormEditorSupport ().supportsAdvancedFeatures ()) {
+      return new Node.Property[0];
+    }
 
     Node.Property policyProperty = new PropertySupport.ReadWrite (PROP_FORM_SIZE_POLICY, Integer.TYPE, "form size policy", "form size policy") {
       public Object getValue () throws
@@ -427,6 +430,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
 /*
  * Log
+ *  9    Gandalf   1.8         7/11/99  Ian Formanek    Some synthetic 
+ *       properties are available only if supportsAdvancedFeatures of current 
+ *       persistence manager returns true
  *  8    Gandalf   1.7         7/9/99   Ian Formanek    Fixed setting "No Menu"
  *  7    Gandalf   1.6         7/9/99   Ian Formanek    menu editor improvements
  *  6    Gandalf   1.5         7/5/99   Ian Formanek    menu bar property, 
