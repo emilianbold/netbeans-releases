@@ -217,9 +217,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     
     /** Notify about the editor closing.
      */
-    protected void notifyClose() {
-        ;
-    }
+    protected void notifyClose() {}
     
     /** Notify that parsing task has been finished; some dependent data may now
      * be refreshed from up-to-date parsing info */
