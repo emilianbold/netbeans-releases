@@ -24,7 +24,6 @@ import java.io.*;
 import org.netbeans.xtest.pe.xmlbeans.*;
 import java.util.*;
 import org.w3c.dom.*;
-import org.netbeans.junit.Manager;
 
 // move ant task - i'm lazy to write my own :-)))
 import org.apache.tools.ant.taskdefs.Move;
