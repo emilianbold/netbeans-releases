@@ -116,13 +116,12 @@ public class ImageViewer extends CloneableTopComponent {
         panel = new JPanel() {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                
                 g.drawImage(
                     storedImage.getImage(),
                     0,
                     0,
-                    (int)(storedImage.getIconWidth() * getScale()),
-                    (int)(storedImage.getIconHeight() * getScale()),
+                    (int)(getScale () * storedImage.getIconWidth ()),
+                    (int)(getScale () * storedImage.getIconHeight ()),
                     0,
                     0,
                     storedImage.getIconWidth(),
@@ -131,8 +130,8 @@ public class ImageViewer extends CloneableTopComponent {
                 );
                 
                 if(showGrid) {
-                    int x = (int)(storedImage.getIconWidth() * getScale());
-                    int y = (int)(storedImage.getIconHeight() * getScale());
+                    int x = (int)(getScale () * storedImage.getIconWidth ());
+                    int y = (int)(getScale () * storedImage.getIconHeight ());
                     
                     double gridDistance = getScale();
                     
@@ -335,8 +334,8 @@ public class ImageViewer extends CloneableTopComponent {
     /** Resizes panel. */
     private void resizePanel() {
         panel.setPreferredSize(new Dimension(
-            (int)(storedImage.getIconWidth() * getScale()),
-            (int)(storedImage.getIconWidth() * getScale()))
+            (int)(getScale () * storedImage.getIconWidth ()),
+            (int)(getScale () * storedImage.getIconHeight()))
         );
         panel.revalidate();
     }
@@ -345,11 +344,9 @@ public class ImageViewer extends CloneableTopComponent {
      *  size(1x1) zooming will be not performed.
      */
     private boolean isNewSizeOK() {
-        if ((storedImage.getIconWidth() * getScale()) > 1
-        && (storedImage.getIconWidth() * getScale()) > 1) {
-            return true;
-        }
-        
+        if (((getScale () * storedImage.getIconWidth ()) > 1) &&
+            ((getScale () * storedImage.getIconWidth ()) > 1)
+        ) return true;
         return false;
     }
     
@@ -360,8 +357,7 @@ public class ImageViewer extends CloneableTopComponent {
     public void customZoom(int fx, int fy) {
         double oldScale = scale;
         
-        scale = (double)fx/fy;
-        
+        scale = (double)fx/(double)fy;
         if(!isNewSizeOK()) {
             scale = oldScale;
             
@@ -373,10 +369,7 @@ public class ImageViewer extends CloneableTopComponent {
     }
     
     /** Return zooming factor.*/
-    private double getScale() {
-        if(scale > 1.0D)
-            scale = Math.floor(scale);
-        
+    private double getScale () {
         return scale;
     }
     
@@ -387,13 +380,13 @@ public class ImageViewer extends CloneableTopComponent {
     
     /** Change proportion "in"*/
     private void scaleIn() {
-        double oldComputedScale = getScale();
+        double oldComputedScale = getScale ();
         
         scale = changeFactor * scale;
         
         double newComputedScale = getScale();
         
-        if(newComputedScale == oldComputedScale)
+        if (newComputedScale == oldComputedScale)
             // Has to increase.
             scale = newComputedScale + 1.0D;
     }
