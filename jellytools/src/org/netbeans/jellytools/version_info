@@ -1,6 +1,6 @@
 Main-Class: org.netbeans.jellytools.JellyVersion
 Jellytools-MajorVersion: 2.0
-Jellytools-MinorVersion: 42
+Jellytools-MinorVersion: 43
 Jellytools-IDEVersion: NB dev
 Jellytools-Build: @BUILD_NUMBER_SUBST@
 Jemmy-MajorVersion: 2.1
