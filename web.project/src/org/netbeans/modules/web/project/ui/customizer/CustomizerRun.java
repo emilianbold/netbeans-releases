@@ -36,9 +36,12 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
     String[] serverNames;
     String[] serverURLs;
     boolean initialized = false;
-    
+
+    private WebProjectProperties webProperties;
+
     /** Creates new form CustomizerCompile */
     public CustomizerRun(WebProjectProperties webProperties, ProjectWebModule wm) {
+        this.webProperties = webProperties;
         initComponents();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ACS_CustomizeRun_A11YDesc")); //NOI18N
 
@@ -47,6 +50,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
     }
     
     public void initValues() {
+        initialized = false;
         Deployment deployment = Deployment.getDefault ();
         serverInstanceIDs = deployment.getServerInstanceIDs ();
         serverNames = new String[serverInstanceIDs.length];
@@ -62,8 +66,27 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         vps.register(jTextFieldFullURL, WebProjectProperties.LAUNCH_URL_FULL);
         vps.register(jComboBoxServer, serverNames, serverInstanceIDs, WebProjectProperties.J2EE_SERVER_INSTANCE);
 
-        jTextFieldContextPath.setText(wm.getContextPath());
-        
+        WebProjectProperties.PropertyDescriptor.Saver contextPathSaver = new WebProjectProperties.PropertyDescriptor.Saver() {
+            public void save(WebProjectProperties.PropertyInfo propertyInfo) {
+                final String serverInstId = (String) webProperties.get(WebProjectProperties.J2EE_SERVER_INSTANCE);
+                final String path = (String) propertyInfo.getValue();
+                final String oldValue = (String) propertyInfo.getOldValue();
+                if(!oldValue.equals(path)) {
+                    wm.setContextPath(serverInstId, path);
+                }
+            }
+        };
+        if (webProperties.get(WebProjectProperties.CONTEXT_PATH) == null) {
+            WebProjectProperties.PropertyDescriptor propertyDescriptor = new WebProjectProperties.PropertyDescriptor(
+                    WebProjectProperties.CONTEXT_PATH, null, WebProjectProperties.STRING_PARSER, contextPathSaver);
+            final String contextPath = wm.getContextPath();
+            WebProjectProperties.PropertyInfo propertyInfo =
+                    webProperties.new PropertyInfo(propertyDescriptor, contextPath, contextPath);
+            webProperties.initProperty(WebProjectProperties.CONTEXT_PATH, propertyInfo);
+        }
+
+        vps.register(jTextFieldContextPath, WebProjectProperties.CONTEXT_PATH);
+
         jTextFieldRelativeURL.setEditable(jCheckBoxDisplayBrowser.isSelected());
         doc = jTextFieldContextPath.getDocument();
         doc.addDocumentListener(this);
@@ -240,27 +263,18 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
     private javax.swing.JTextField jTextFieldFullURL;
     private javax.swing.JTextField jTextFieldRelativeURL;
     // End of variables declaration//GEN-END:variables
-    
+
     // Implementation of DocumentListener --------------------------------------
     public void changedUpdate(DocumentEvent e) {
-        if (e.getDocument() == doc)
-            setContextPath();
-        
         setFullURL();
     }
-    
-    public void insertUpdate(DocumentEvent e) {
-        if (e.getDocument() == doc)
-            setContextPath();
-        
-        setFullURL();
-    }
-    
-    public void removeUpdate(DocumentEvent e) {
-        if (e.getDocument() == doc)
-            setContextPath();
 
-        setFullURL();
+    public void insertUpdate(DocumentEvent e) {
+        changedUpdate(e);
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        changedUpdate(e);
     }
     // End if implementation of DocumentListener -------------------------------
 
@@ -277,15 +291,10 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         jTextFieldFullURL.setText(fullURL.toString());
     }
     
-    private void setContextPath() {
-        wm.setContextPath(serverInstanceIDs [jComboBoxServer.getSelectedIndex ()], jTextFieldContextPath.getText().trim());
-    }
-    
     /** Help context where to find more about the paste type action.
      * @return the help context for this action
      */
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerRun.class);
     }
-
 }
