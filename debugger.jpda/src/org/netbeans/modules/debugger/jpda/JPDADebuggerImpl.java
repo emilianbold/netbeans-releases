@@ -32,6 +32,8 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.LookupProvider;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.AbstractDICookie;
+import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -346,16 +348,17 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     public void finish () {
         synchronized (LOCK) {
+            AbstractDICookie di = (AbstractDICookie) lookupProvider.lookupFirst 
+                (AbstractDICookie.class);
             if (getState () == STATE_DISCONNECTED) return;
             startingThread.interrupt ();
             startingThread = null;
             try {
                 if (virtualMachine != null) {
-                    Process process = virtualMachine.process ();
-                    if (process != null)
-                        virtualMachine.exit (0);
-                    else
+                    if (di instanceof AttachingDICookie)
                         virtualMachine.dispose ();
+                    else
+                        virtualMachine.exit (0);
                 }
             } catch (VMDisconnectedException e) {
             }
