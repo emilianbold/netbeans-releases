@@ -963,6 +963,8 @@ public class MetaComponentCreator {
                 catch (ClassNotFoundException ex) {
                     error = ex;
                 }
+            } else {
+                return FormUtils.loadSystemClass(classSource.getClassName());
             }
         }
         catch (Exception ex) {
