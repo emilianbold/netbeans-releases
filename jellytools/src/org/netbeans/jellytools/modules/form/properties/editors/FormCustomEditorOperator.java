@@ -20,6 +20,7 @@ package org.netbeans.jellytools.modules.form.properties.editors;
  */
 
 import javax.swing.JDialog;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.*;
 
@@ -60,7 +61,9 @@ public class FormCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btAdvanced() {
         if (_btAdvanced==null) {
-            _btAdvanced = new JButtonOperator( this, "Advanced...", 0 );
+            _btAdvanced = new JButtonOperator(this, Bundle.getString(
+                                             "org.netbeans.modules.form.Bundle", 
+                                             "CTL_Advanced"));
         }
         return _btAdvanced;
     }
@@ -71,7 +74,9 @@ public class FormCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btDefault() {
         if (_btDefault==null) {
-            _btDefault = new JButtonOperator( this, "Default", 0 );
+            _btDefault = new JButtonOperator(this, Bundle.getString(
+                                    "org.openide.explorer.propertysheet.Bundle",
+                                    "CTL_Default"));
         }
         return _btDefault;
     }
@@ -81,7 +86,7 @@ public class FormCustomEditorOperator extends NbDialogOperator {
      * @return JComboBoxOperator */
     public JComboBoxOperator cboMode() {
         if (_cboMode==null) {
-            _cboMode = new JComboBoxOperator( this, 0 );
+            _cboMode = new JComboBoxOperator(this);
         }
         return _cboMode;
     }
