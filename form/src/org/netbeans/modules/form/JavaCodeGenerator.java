@@ -30,10 +30,10 @@ import org.netbeans.modules.form.codestructure.*;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.beans.*;
 import java.io.*;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.*;
 
 /**
@@ -54,6 +54,7 @@ class JavaCodeGenerator extends CodeGenerator {
     static final String PROP_CREATE_CODE_CUSTOM = "creationCodeCustom"; // NOI18N
     static final String PROP_INIT_CODE_PRE = "initCodePre"; // NOI18N
     static final String PROP_INIT_CODE_POST = "initCodePost"; // NOI18N
+    static final String PROP_GENERATE_MNEMONICS = "generateMnemonicsCode"; // Mnemonics support NOI18N
 
     static final String AUX_VARIABLE_MODIFIER =
         "JavaCodeGenerator_VariableModifier"; // NOI18N
@@ -346,6 +347,43 @@ class JavaCodeGenerator extends CodeGenerator {
                     return JavaCodeGenerator.this.canGenerate;
                 }
             });
+
+            // Mnemonics support - start -
+            if (javax.swing.JLabel.class.isAssignableFrom(component.getBeanClass())
+                    || javax.swing.AbstractButton.class.isAssignableFrom(component.getBeanClass()))
+                propList.add(new PropertySupport.ReadWrite(
+                    PROP_GENERATE_MNEMONICS, 
+                    Boolean.TYPE,
+                    bundle.getString("PROP_GENERATE_MNEMONICS"), // NOI18N
+                    bundle.getString("HINT_GENERATE_MNEMONICS2")) // NOI18N
+                {
+                    public void setValue(Object value) {
+                        Object oldValue = getValue();
+                        component.setAuxValue(PROP_GENERATE_MNEMONICS, value);
+                        formModel.fireSyntheticPropertyChanged(
+                            component, PROP_GENERATE_MNEMONICS, oldValue, value);
+                        component.getNodeReference().firePropertyChangeHelper(
+                            PROP_GENERATE_MNEMONICS, null, null); // NOI18N
+                    }
+
+                    public Object getValue() {
+                        return isUsingMnemonics(component) ?
+                               Boolean.TRUE : Boolean.FALSE;
+                    }
+
+                    public boolean canWrite() {
+                        return JavaCodeGenerator.this.canGenerate;
+                    }
+
+                    public boolean supportsDefaultValue() {
+                        return true;
+                    }
+
+                    public void restoreDefaultValue() {
+                        setValue(null);
+                    }
+                });
+            // Mnemonics support - end -
 
             propList.add(new PropertySupport.ReadWrite(
                 PROP_CODE_GENERATION,
@@ -1269,6 +1307,20 @@ class JavaCodeGenerator extends CodeGenerator {
                 if (!javaStr.endsWith("\n")) // NOI18N
                     initCodeWriter.write("\n"); // NOI18N
             }
+            // Mnemonics support - start -
+            else if ("text".equals(prop.getName()) // NOI18N
+                     && canUseMnemonics(comp) && isUsingMnemonics(comp))
+            {
+                javaStr = prop.getJavaInitializationString();
+                if ((javaStr = prop.getJavaInitializationString()) != null) {
+                    initCodeWriter.write("org.openide.awt.Mnemonics.setLocalizedText("); // NOI18N
+                    initCodeWriter.write(comp.getName());
+                    initCodeWriter.write(", "); // NOI18N
+                    initCodeWriter.write(javaStr);
+                    initCodeWriter.write(");\n"); // NOI18N
+                }
+            }
+            // Mnemonics support - end -
             else if ((javaStr = prop.getPartialSetterCode()) != null) {
                 // if the setter throws checked exceptions,
                 // we must generate try/catch block around it.
@@ -1510,6 +1562,25 @@ class JavaCodeGenerator extends CodeGenerator {
         });
         return variables.iterator();
     }
+
+    // Mnemonics support - start -
+    static boolean canUseMnemonics(RADComponent comp) {
+        return javax.swing.JLabel.class.isAssignableFrom(comp.getBeanClass())
+               || javax.swing.AbstractButton.class.isAssignableFrom(comp.getBeanClass());
+    }
+
+    static boolean isUsingMnemonics(RADComponent comp) {
+        Object mnem = comp.getAuxValue(PROP_GENERATE_MNEMONICS);
+        if (mnem != null)
+            return Boolean.TRUE.equals(mnem);
+
+        RADComponent topComp = comp.getFormModel().getTopRADComponent();
+        if (topComp == null)
+            return false;
+
+        return Boolean.TRUE.equals(topComp.getAuxValue(PROP_GENERATE_MNEMONICS));
+    }
+    // Mnemonics support - end -
 
     private String getComponentParameterString(RADComponent component,
                                                boolean inMainClass)
@@ -2389,7 +2460,7 @@ class JavaCodeGenerator extends CodeGenerator {
                         regenerateInitComponents();
                         regenerateEventHandlers();
                         codeUpToDate = true;
-                        FormModel.t("code regenerated");
+                        FormModel.t("code regenerated"); // NOI18N
                     }
                     return;
                 }
@@ -2428,6 +2499,36 @@ class JavaCodeGenerator extends CodeGenerator {
                     toBeSaved = true;
                 else if (ev.getChangeType() == FormModelEvent.FORM_TO_BE_CLOSED)
                     toBeClosed = true;
+                // Mnemonics support - start -
+                else if (ev.getChangeType() == FormModelEvent.COMPONENT_PROPERTY_CHANGED
+                         && "text".equals(ev.getPropertyName())) // NOI18N
+                 {  // "text" property changed
+                    RADComponent comp = ev.getComponent();
+                    RADComponent topComp = formModel.getTopRADComponent();
+                    if (comp != null
+                        && comp.getAuxValue(PROP_GENERATE_MNEMONICS) == null
+                        && (topComp == null || topComp.getAuxValue(PROP_GENERATE_MNEMONICS) == null)
+                        && (javax.swing.JLabel.class.isAssignableFrom(comp.getBeanClass())
+                            || javax.swing.AbstractButton.class.isAssignableFrom(comp.getBeanClass())))
+                    {   // it is JLabel or AbstractButton
+                        if (formSettings.getGenerateMnemonicsCode())
+                            // set component's Mnemonics property according global option
+                            comp.setAuxValue(PROP_GENERATE_MNEMONICS, Boolean.TRUE);
+                        else if (formSettings.getShowMnemonicsDialog()) {
+                            // check if the value contains & (ampersand) to inform
+                            // the user about the Mnemonics code generation feature
+                            try {
+                                String str = (String)
+                                    ev.getComponentProperty().getRealValue();
+                                if (org.openide.awt.Mnemonics.findMnemonicAmpersand(str) > -1
+                                        && showMnemonicsDialog())
+                                    comp.setAuxValue(PROP_GENERATE_MNEMONICS, Boolean.TRUE);
+                            }
+                            catch (Exception ex) {} // ignore
+                        }
+                    }
+                 }
+                 // Mnemonics support - end -
             }
 
             if (modifying)
@@ -2503,6 +2604,101 @@ class JavaCodeGenerator extends CodeGenerator {
             }
         }
     }
+
+    // Mnemonics support - start -
+    private static MnemonicsInfoDialog mnemonicsInfoDialog;
+
+    private boolean showMnemonicsDialog() {
+        if (mnemonicsInfoDialog == null)
+            mnemonicsInfoDialog = new MnemonicsInfoDialog();
+        mnemonicsInfoDialog.show();
+        if (mnemonicsInfoDialog.mnemonicsEnabled())
+            formSettings.setGenerateMnemonicsCode(true);
+        if (mnemonicsInfoDialog.showingDisabled())
+            formSettings.setShowMnemonicsDialog(false);
+        return mnemonicsInfoDialog.mnemonicsEnabled();
+    }
+
+    private static class MnemonicsInfoDialog implements ActionListener {
+        private NotifyDescriptor notifyDescriptor;
+        private boolean generateMnemonics;
+        private boolean dontShowAgain;
+
+        MnemonicsInfoDialog() {
+            java.awt.GridBagConstraints gridBagConstraints;
+
+            javax.swing.JTextArea jTextArea1 = new javax.swing.JTextArea();
+            javax.swing.JCheckBox jCheckBox1 = new javax.swing.JCheckBox();
+            javax.swing.JCheckBox jCheckBox2 = new javax.swing.JCheckBox();
+            javax.swing.JPanel panel = new javax.swing.JPanel();
+
+            panel.setLayout(new java.awt.GridBagLayout());
+
+            jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background")); // NOI18N
+            jTextArea1.setColumns(30);
+            jTextArea1.setRows(8);
+            jTextArea1.setLineWrap(true);
+            jTextArea1.setWrapStyleWord(true);
+            jTextArea1.setEditable(false);
+            jTextArea1.setText(FormUtils.getBundleString("MSG_MNEMONICS_INFO")); // NOI18N
+            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+            gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+            gridBagConstraints.weightx = 1.0;
+            gridBagConstraints.weighty = 1.0;
+            panel.add(jTextArea1, gridBagConstraints);
+
+            jCheckBox1.setText(FormUtils.getBundleString("CTL_GENERATE_MNEMONICS")); // NOI18N
+            jCheckBox1.setSelected(false);
+            jCheckBox1.setActionCommand("generateMnemonics"); // NOI18N
+            jCheckBox1.addActionListener(this);
+            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 1;
+            gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+            gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+            panel.add(jCheckBox1, gridBagConstraints);
+
+            jCheckBox2.setText(FormUtils.getBundleString("CTL_DONT_ADVERTISE_MNEMONICS")); // NOI18N
+            jCheckBox2.setSelected(false);
+            jCheckBox2.setActionCommand("dontShowAgain"); // NOI18N
+            jCheckBox2.addActionListener(this);
+            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 2;
+            gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+            panel.add(jCheckBox2, gridBagConstraints);
+
+            notifyDescriptor = new NotifyDescriptor(
+                panel,
+                FormUtils.getBundleString("CTL_MNEMNICS_INFO_TITLE"), // NOI18N
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.INFORMATION_MESSAGE,
+                new Object[] { NotifyDescriptor.OK_OPTION },
+                NotifyDescriptor.OK_OPTION);
+        }
+
+        void show() {
+            DialogDisplayer.getDefault().notify(notifyDescriptor);
+        }
+
+        boolean mnemonicsEnabled() {
+            return generateMnemonics;
+        }
+
+        boolean showingDisabled() {
+            return dontShowAgain;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            javax.swing.AbstractButton source = (javax.swing.AbstractButton) e.getSource();
+            if (source.getActionCommand().equals("generateMnemonics")) // NOI18N
+                generateMnemonics = source.isSelected();
+            else if (source.getActionCommand().equals("dontShowAgain")) // NOI18N
+                dontShowAgain = source.isSelected();
+        }
+    }
+    // Mnemonics support - end -
 
     // }}}
 

@@ -3194,6 +3194,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
             if (!prop.canWrite())
                 continue; // don't save read-only properties
 
+            if (Boolean.TRUE.equals(prop.getValue("defaultValue"))) // NOI18N
+                continue; // don't save default values
+
             Object value = null;
             try {
                 value = prop.getValue();

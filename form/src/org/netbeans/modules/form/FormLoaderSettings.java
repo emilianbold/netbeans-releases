@@ -66,6 +66,11 @@ public class FormLoaderSettings extends SystemOption {
     /** Property name of the variablesLocal property */
     public static final String PROP_VARIABLES_LOCAL = "variablesLocal"; // NOI18N
 
+    /** Property name of the generateMnemonicsCode property */
+    public static final String PROP_GENERATE_MNEMONICS = "generateMnemonicsCode"; // NOI18N
+    /** Property name of the showMnemonicsDialog property */
+    public static final String PROP_SHOW_MNEMONICS_DIALOG = "showMnemonicsDialog"; // NOI18N
+
     /** Property name of the displayWritableOnly property */
     public static final String PROP_DISPLAY_WRITABLE_ONLY = "displayWritableOnly"; // NOI18N
 
@@ -126,6 +131,13 @@ public class FormLoaderSettings extends SystemOption {
     /** The local variable generation state for components in Form Editor. */
     private static boolean variablesLocal = false;
 
+    /** If true, special code using org.openide.awt.Mnemonics is generated for
+     * buttons and labels. */
+    private static boolean generateMnemonicsCode = false;
+    /** Indicates whether to display automatically hint dialog advertising the
+     * Mnemonics generation feature. */
+    private static boolean showMnemonicsDialog = true;
+    
     /** If true, only editable properties are displayed in the ComponentInspector */
     private static boolean displayWritableOnly = true;
 
@@ -388,6 +400,34 @@ public class FormLoaderSettings extends SystemOption {
         firePropertyChange(PROP_VARIABLES_MODIFIER,
                            new Integer(oldValue),
                            new Integer(variablesModifier));
+    }
+
+    /** Getter for the generateMnemonicsCode option */
+    public boolean getGenerateMnemonicsCode() {
+        return generateMnemonicsCode;
+    }
+
+    /** Setter for the generateMnemonicsCode option */
+    public void setGenerateMnemonicsCode(boolean value) {
+        Boolean oldValue = generateMnemonicsCode ? Boolean.TRUE : Boolean.FALSE;
+        generateMnemonicsCode = value;
+        firePropertyChange(PROP_GENERATE_MNEMONICS,
+                           oldValue, 
+                           value ? Boolean.TRUE : Boolean.FALSE);
+    }
+
+    /** Getter for the showMnemonicsDialog option */
+    public boolean getShowMnemonicsDialog() {
+        return showMnemonicsDialog;
+    }
+
+    /** Setter for the showMnemonicsDialog option */
+    public void setShowMnemonicsDialog(boolean value) {
+        Boolean oldValue = showMnemonicsDialog ? Boolean.TRUE : Boolean.FALSE;
+        showMnemonicsDialog = value;
+        firePropertyChange(PROP_SHOW_MNEMONICS_DIALOG,
+                           oldValue, 
+                           value ? Boolean.TRUE : Boolean.FALSE);
     }
 
     /** Getter for the displayWritableOnly option */

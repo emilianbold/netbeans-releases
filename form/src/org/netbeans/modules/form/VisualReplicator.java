@@ -386,6 +386,26 @@ public class VisualReplicator {
               || "debugGraphicsOptions".equals(property.getName()))) // NOI18N
             return;
 
+        // Mnemonics support - start -
+        if ("text".equals(property.getName()) // NOI18N
+            && (targetComp instanceof AbstractButton
+                || targetComp instanceof JLabel)
+            && JavaCodeGenerator.isUsingMnemonics(property.getRADComponent()))
+        {
+            try {
+                String str = (String) property.getRealValue();
+                if (targetComp instanceof JLabel)
+                    org.openide.awt.Mnemonics.setLocalizedText(
+                                                (JLabel)targetComp, str);
+                else
+                    org.openide.awt.Mnemonics.setLocalizedText(
+                                                (AbstractButton)targetComp, str);
+                return;
+            }
+            catch (Exception ex) {} // ignore and continue
+        }
+        // Mnemonics support - end -
+
         java.lang.reflect.Method writeMethod =
             property.getPropertyDescriptor().getWriteMethod();
         if (writeMethod == null)
@@ -559,6 +579,26 @@ public class VisualReplicator {
                     ((JInternalFrame)clone).getGlassPane().setVisible(false);
             }
         }
+
+        // Mnemonics support - start -
+        if ((clone instanceof AbstractButton || clone instanceof JLabel)
+            && JavaCodeGenerator.isUsingMnemonics(metacomp))
+        {
+            FormProperty prop = metacomp.getBeanProperty("text"); // NOI18N
+            if (prop != null && prop.isChanged()) {
+                try {
+                    String str = (String) prop.getRealValue();
+                    if (clone instanceof JLabel)
+                        org.openide.awt.Mnemonics.setLocalizedText(
+                                                    (JLabel)clone, str);
+                    else
+                        org.openide.awt.Mnemonics.setLocalizedText(
+                                                    (AbstractButton)clone, str);
+                }
+                catch (Exception ex) {} // ignore
+            }
+        }
+        // Mnemonics support - end -
 
         return clone;
     }
