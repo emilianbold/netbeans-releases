@@ -120,6 +120,8 @@ public class J2SEProjectGenerator {
         ep.setComment("dist.dir", new String[] {"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
         ep.setProperty("dist.jar", "${dist.dir}/" + PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
         ep.setProperty("javac.classpath", new String[0]); // NOI18N
+        ep.setProperty("build.sysclasspath", "ignore"); // NOI18N
+        ep.setComment("build.sysclasspath", new String[] {"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_build.sysclasspath")}, false); // NOI18N
         ep.setProperty("run.classpath", new String[] { // NOI18N
             "${javac.classpath}:", // NOI18N
             "${build.classes.dir}", // NOI18N

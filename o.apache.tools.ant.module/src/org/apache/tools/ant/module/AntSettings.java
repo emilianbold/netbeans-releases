@@ -58,7 +58,6 @@ public class AntSettings extends SystemOption implements ChangeListener {
         Properties p = new Properties ();
         // Enable hyperlinking for Jikes:
         p.setProperty ("build.compiler.emacs", "true"); // NOI18N
-        p.setProperty ("build.sysclasspath", "ignore"); // #9527 NOI18N
         setProperties (p);
         setSaveAll (true);
         setCustomDefs (new IntrospectedInfo ());
