@@ -111,15 +111,19 @@ public final class TransformableSupport implements TransformableCookie {
             
             if ( exc instanceof TransformerException ) {
                 transExcept = (TransformerException)exc;                
-                detail = new DefaultXMLProcessorDetail (transExcept);
-                
+                if ( notifier != null ) {
+                    detail = new DefaultXMLProcessorDetail (transExcept);
+                }
             } else if ( exc instanceof SAXParseException ) {
                 transExcept = new TransformerException (exc);
-                detail = new DefaultXMLProcessorDetail ((SAXParseException)exc);
-                
+                if ( notifier != null ) {
+                    detail = new DefaultXMLProcessorDetail ((SAXParseException)exc);
+                }
             } else {
                 transExcept = new TransformerException (exc);
-                detail = new DefaultXMLProcessorDetail (transExcept);
+                if ( notifier != null ) {
+                    detail = new DefaultXMLProcessorDetail (transExcept);
+                }
             }
 
             if ( notifier != null ) {            
@@ -132,7 +136,7 @@ public final class TransformableSupport implements TransformableCookie {
             }
             
             throw transExcept;
-        }                
+        } // catch (Exception exc)
     }
 
 
