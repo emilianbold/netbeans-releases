@@ -15,6 +15,8 @@ package org.netbeans.modules.debugger.jpda;
 
 import com.sun.jdi.*;
 import com.sun.jdi.Method;
+import com.sun.jdi.request.EventRequest;
+import com.sun.jdi.request.EventRequestManager;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -376,11 +378,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
         );
     }
 
-    public Value evaluateIn(String expression) throws InvalidExpressionException {
+    /**
+     * Used by AbstractVariable.
+     */
+    public Value evaluateIn (String expression) throws InvalidExpressionException {
         Expression expr = null;
         try {
-            expr = Expression.parse(expression, Expression.LANGUAGE_JAVA_1_5);
-            return evaluateIn(expr);
+            expr = Expression.parse (expression, Expression.LANGUAGE_JAVA_1_5);
+            return evaluateIn (expr);
         } catch (ParseException e) {
             InvalidExpressionException iee = new InvalidExpressionException(e.getMessage());
             iee.initCause(e);
@@ -388,20 +393,24 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
+    /**
+     * Used by WatchesModel & BreakpointImpl.
+     */
     public Value evaluateIn (Expression expression) 
     throws InvalidExpressionException {
         if (getCurrentCallStackFrame () == null) {
             throw new InvalidExpressionException("No current context (stack frame)");
         }
-        synchronized (LOCK) {
-            return evaluateIn (
-                expression, 
-                ((CallStackFrameImpl) getCurrentCallStackFrame ()).
-                    getStackFrame ()
-            );
-        }
+        return evaluateIn (
+            expression, 
+            ((CallStackFrameImpl) getCurrentCallStackFrame ()).
+                getStackFrame ()
+        );
     }
 
+    /**
+     * Used by BreakpointImpl.
+     */
     public Value evaluateIn (Expression expression, StackFrame frame) throws InvalidExpressionException {
         if (frame == null)
             throw new InvalidExpressionException ("No current context");
@@ -415,7 +424,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
             org.netbeans.modules.debugger.jpda.expr.Evaluator evaluator = expression.evaluator(
                     new EvaluationContext(frame, imports, staticImports));
             synchronized (LOCK) {
-                return evaluator.evaluate();
+                List l = disableAllBreakpoints ();
+                Value v = evaluator.evaluate ();
+                enableAllBreakpoints (l);
+                return v;
             }
         } catch (Throwable e) {
             InvalidExpressionException iee = new InvalidExpressionException(e.getMessage());
@@ -424,7 +436,41 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
-    public String getGenericSignature(TypeComponent component) {
+    /**
+     * Used by AbstractVariable.
+     */
+    public Value invokeMethod (
+        ObjectReference reference,
+        Method method,
+        Value[] arguments
+    ) throws InvalidExpressionException {
+        if (currentThread == null)
+            throw new InvalidExpressionException ("No current context");
+        try {
+            synchronized (LOCK) {
+                List l = disableAllBreakpoints ();
+                Value v = org.netbeans.modules.debugger.jpda.expr.Evaluator.invokeVirtual (
+                    reference,
+                    method,
+                    getEvaluationThread (),
+                    Arrays.asList (arguments)
+                );
+                enableAllBreakpoints (l);
+                return v;
+            }
+        } catch (org.netbeans.modules.debugger.jpda.expr.Evaluator.TimeoutException e) {
+            throw new InvalidExpressionException(e.getMessage());
+        } catch (InvocationTargetException e) {
+            throw new InvalidExpressionException(e.getMessage());
+        }
+    }
+
+    private static final java.util.regex.Pattern jvmVersionPattern =
+            java.util.regex.Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(_\\d+)?(-\\w+)?");
+    private static java.lang.reflect.Method  tcGenericSignatureMethod;
+    private static java.lang.reflect.Method  lvGenericSignatureMethod;
+
+    public static String getGenericSignature(TypeComponent component) {
         if (tcGenericSignatureMethod == null) return null;
         try {
             return (String) tcGenericSignatureMethod.invoke(component, new Object[0]);
@@ -437,7 +483,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
-    public String getGenericSignature(LocalVariable component) {
+    public static String getGenericSignature(LocalVariable component) {
         if (lvGenericSignatureMethod == null) return null;
         try {
             return (String) lvGenericSignatureMethod.invoke(component, new Object[0]);
@@ -462,11 +508,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
         this.startingThread = startingThread;
         setState (STATE_STARTING);
     }
-
-    private static final java.util.regex.Pattern jvmVersionPattern =
-            java.util.regex.Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(_\\d+)?(-\\w+)?");
-    private java.lang.reflect.Method  tcGenericSignatureMethod;
-    private java.lang.reflect.Method  lvGenericSignatureMethod;
 
     public void setRunning (VirtualMachine vm, Operator o) {
         this.virtualMachine = vm;
@@ -521,6 +562,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
         //S ystem.err.println("setStoppedState end");
     }
 
+    /**
+     * Used by KillActionProvider.
+     */
     public void finish () {
         synchronized (LOCK) {
             AbstractDICookie di = (AbstractDICookie) lookupProvider.lookupFirst 
@@ -552,6 +596,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     /**
      * Suspends the target virtual machine (if any).
+     * Used by PauseActionProvider.
      *
      * @see  com.sun.jdi.ThreadReference#suspend
      */
@@ -569,6 +614,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
+    /**
+     * Used by ContinueActionProvider & StepActionProvider.
+     */
     public void resume () {
         synchronized (LOCK) {
             //S ystem.err.println("resume");
@@ -580,29 +628,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 virtualMachine.resume ();
             setState (STATE_RUNNING);
             //S ystem.err.println("resume end");
-        }
-    }
-
-    public Value invokeMethod (
-        ObjectReference reference,
-        Method method,
-        Value[] arguments
-    ) throws InvalidExpressionException {
-        if (currentThread == null)
-            throw new InvalidExpressionException ("No current context");
-        try {
-            synchronized (LOCK) {
-                return org.netbeans.modules.debugger.jpda.expr.Evaluator.invokeVirtual (
-                    reference,
-                    method,
-                    getEvaluationThread (),
-                    Arrays.asList (arguments)
-                );
-            }
-        } catch (org.netbeans.modules.debugger.jpda.expr.Evaluator.TimeoutException e) {
-            throw new InvalidExpressionException(e.getMessage());
-        } catch (InvocationTargetException e) {
-            throw new InvalidExpressionException(e.getMessage());
         }
     }
 
@@ -680,6 +705,35 @@ public class JPDADebuggerImpl extends JPDADebugger {
         } catch (NoInformationException e) {
             setCurrentCallStackFrame (null);
         }
+    }
+    
+    private List disableAllBreakpoints () {
+        List l = new ArrayList ();
+        EventRequestManager erm = getVirtualMachine ().eventRequestManager ();
+        l.addAll (erm.accessWatchpointRequests ());
+        l.addAll (erm.breakpointRequests ());
+        l.addAll (erm.classPrepareRequests ());
+        l.addAll (erm.classUnloadRequests ());
+        l.addAll (erm.exceptionRequests ());
+        l.addAll (erm.methodEntryRequests ());
+        l.addAll (erm.methodExitRequests ());
+        l.addAll (erm.modificationWatchpointRequests ());
+        l.addAll (erm.stepRequests ());
+        l.addAll (erm.threadDeathRequests ());
+        l.addAll (erm.threadStartRequests ());
+        int i = l.size () - 1;
+        for (; i >= 0; i--)
+            if (!((EventRequest) l.get (i)).isEnabled ())
+                l.remove (i);
+            else
+                ((EventRequest) l.get (i)).disable ();
+        return l;
+    }
+    
+    private void enableAllBreakpoints (List l) {
+        int i, k = l.size ();
+        for (i = 0; i < k; i++)
+            ((EventRequest) l.get (i)).enable ();
     }
 
     private void checkJSR45Languages (JPDAThread t) {
