@@ -34,7 +34,7 @@ public final class ServerRegistry implements java.io.Serializable {
     public static final String PASSWORD_ATTR = InstanceProperties.PASSWORD_ATTR;
     public static final String FILE_DEFAULT_INSTANCE = "DefaultInstance.settings"; //NOI18N
     public static final String J2EE_DEFAULT_SERVER = "j2ee.defaultServer"; //NOI18N
-    public static final String TARGETNAME_ATTR = "targetNaem"; //NOI18N
+    public static final String TARGETNAME_ATTR = "targetName"; //NOI18N
     public static final String SERVER_NAME = "serverName"; //NOI18N
     private static ServerRegistry instance = null;
     public synchronized static ServerRegistry getInstance() {

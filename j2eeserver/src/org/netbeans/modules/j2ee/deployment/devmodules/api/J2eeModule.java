@@ -98,9 +98,23 @@ public interface J2eeModule {
      * @return a live bean representing the final DD
      */
     public BaseBean getDeploymentDescriptor(String location);
-    
+
     public interface RootedEntry {
         FileObject getFileObject ();
         String getRelativePath ();
+    }
+    
+    /** Add module change listener.
+     * @param listener on version change
+     */
+    public void addVersionListener(VersionListener ml);
+    
+    /** Remove module version change listener.
+     * @param listener on version change
+     */
+    public void removeVersionListener(VersionListener ml);
+    
+    public interface VersionListener {
+        void versionChanged(String oldVersion, String newVersion);
     }
 }

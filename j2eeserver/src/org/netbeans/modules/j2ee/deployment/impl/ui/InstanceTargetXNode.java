@@ -87,7 +87,10 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
             super.addNotify();
             if (isFurtherExpandable()) {
                 if (original == Node.EMPTY) {
-                    Node newOriginal = ((InstanceTargetXNode) getNode()).getDelegateTargetNode();
+                    InstanceTargetXNode parent = (InstanceTargetXNode) getNode();
+                    Node newOriginal = null;
+                    if (parent != null)
+                        newOriginal = parent.getDelegateTargetNode();
                     if (newOriginal != null && newOriginal != Node.EMPTY)
                         this.changeOriginal(newOriginal);
                     else {
