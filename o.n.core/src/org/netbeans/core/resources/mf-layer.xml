@@ -496,13 +496,45 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
   </folder>
 
+  <!-- register services with Lookup -->
+  
   <folder name="Services">
+
+    <!--<folder name="XML"> uncomment as Lookup will do deep lookups -->
+
+        <!-- Register some entity catalog entries used in OpenIDE (it will be instantiated as EntityCatalogImpl.Entry)-->
+        <file name="org-netbeans-core-xml-EntityCatalogImpl-catalog.xml" >
+            <![CDATA[
+            <!DOCTYPE catalog PUBLIC "-//NetBeans//Entity Mapping Registration 1.0//EN" "http://www.netbeans.org/dtd/EntityCatalog.dtd">
+            <catalog>
+                <!-- public ID defined by XMLDataObject -->
+                <public publicId="-//NetBeans IDE//DTD xmlinfo//EN" uri="nbresboot:/org/openide/resources/xmlinfo.dtd"/>
+
+                <!-- For back compatability purposes. -->
+                <public publicId="-//Forte for Java//DTD xmlinfo//EN" uri="nbresboot:/org/openide/resources/xmlinfo.dtd"/>
+
+                <public publicId="-//NetBeans//Entity Mapping Registration 1.0//EN" uri="nbresboot:/org/openide/xml/EntityCatalog.dtd" />
+
+                <!-- Toolbars stuff -->
+                <public publicId="-//Forte for Java//DTD toolbar//EN" uri="nbresboot:/org/netbeans/core/windows/toolbars/toolbar.dtd" />
+                <public publicId="-//NetBeans IDE//DTD toolbar//EN" uri="nbresboot:/org/netbeans/core/windows/toolbars/toolbar.dtd" />
+
+            </catalog>    
+            ]]>
+        </file>    
+
+        <!-- EntityCatalog implementation -->
+        <file name="org-netbeans-core-xml-EntityCatalogImpl.instance" />
+
+    <!--</folder>-->
+
     <folder name="Hidden">
       <attr name="hidden" boolvalue="true" />
     </folder>
-  </folder>   
 
-  <folder name="ServiceTemplates">    
-  </folder>   
-  
+    <folder name="ServiceTemplates">    
+    </folder>
+
+  </folder>
+
 </filesystem>

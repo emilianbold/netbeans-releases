@@ -16,6 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
   <property name="binroot" value=".."/>
+  <property name="xmlparser" value="xerces.jar"/>
 
   <target name="compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
@@ -27,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
 	<pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
 	<pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
 	<pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
-	<pathelement location="${binroot}/core/release/lib/ext/parser.jar"/>
+	<pathelement location="${binroot}/core/release/lib/ext/${xmlparser}"/>
 	<pathelement location="${binroot}/core/release/lib/ext/jh.jar"/>
       </classpath>
     </javac>
@@ -42,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
 	<pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
 	<pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
 	<pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
-	<pathelement location="${binroot}/core/release/lib/ext/parser.jar"/>
+	<pathelement location="${binroot}/core/release/lib/ext/${xmlparser}"/>
 	<pathelement location="${binroot}/core/release/lib/ext/jh.jar"/>
       </classpath>
     </javac>
