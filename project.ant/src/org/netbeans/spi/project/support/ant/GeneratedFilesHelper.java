@@ -307,8 +307,9 @@ public final class GeneratedFilesHelper {
      * Load data from a stream into a buffer.
      */
     private static byte[] load(InputStream is) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buf = new byte[4096];
+        int size = Math.max(1024, is.available()); // #46235
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(size);
+        byte[] buf = new byte[size];
         int read;
         while ((read = is.read(buf)) != -1) {
             baos.write(buf, 0, read);
