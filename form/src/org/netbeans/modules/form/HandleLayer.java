@@ -312,6 +312,8 @@ class HandleLayer extends JPanel
             return;
 
         RADComponent metacomp = getMetaComponentAt(e.getPoint(), COMP_SELECTED);
+        if (metacomp == null)
+            return;
 
         if (e.isAltDown()) {
             if (metacomp instanceof RADVisualComponent) {
@@ -811,7 +813,8 @@ class HandleLayer extends JPanel
                         if (designerResizeType == 0) {
                             selectOtherComponentsNode();
                         }
-                    } else if (resizeType == 0) {
+                    }
+                    else if (resizeType == 0) {
                         if (e.getClickCount() == 2)
                             processDoubleClick(e);
                         else {
@@ -821,11 +824,13 @@ class HandleLayer extends JPanel
                         }
                     }
                     
-                    if (fdResizer == null && 
-                        lastLeftMousePoint != null && 
-                        validDesignerResizing(designerResizeType)) {
-                            fdResizer = new FormDesigner.Resizer(formDesigner, designerResizeType);
-                            fdResizer.showCurrentSizeInStatus();
+                    if (fdResizer == null
+                        && lastLeftMousePoint != null
+                        && validDesignerResizing(designerResizeType))
+                    {
+                        fdResizer = new FormDesigner.Resizer(formDesigner,
+                                                             designerResizeType);
+                        fdResizer.showCurrentSizeInStatus();
                     }
                 }
                 else if (!viewOnly) {
