@@ -89,10 +89,9 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         }
     }
 
-    private void openInnerPanel() {
+    protected void openInnerPanel() {
         closeInnerPanel(); // close previous inner panel if exists
-        innerPanel = sectionView.getInnerPanelFactory().createInnerPanel(key);
-
+        innerPanel = createInnerpanel();
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -111,6 +110,10 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         });
         innerPanel.addFocusListener(sectionFocusListener);
         add(innerPanel, gridBagConstraints);
+    }
+
+    protected SectionInnerPanel createInnerpanel() {
+        return sectionView.getInnerPanelFactory().createInnerPanel(key);
     }
 
     private void closeInnerPanel() {
@@ -329,7 +332,23 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     public HeaderButton[] getHeaderButtons(){
         return headerButtons;
     }
-    
+
+    public JPanel getFiller() {
+        return filler;
+    }
+
+    public JToggleButton getFoldButton() {
+        return foldButton;
+    }
+
+    public JSeparator getSeparator() {
+        return jSeparator1;
+    }
+
+    public JButton getTitleButton() {
+        return titleButton;
+    }
+
     public static class HeaderButton extends javax.swing.JButton {
         private SectionPanel panel;
         public HeaderButton(SectionPanel panel, Action action) {
