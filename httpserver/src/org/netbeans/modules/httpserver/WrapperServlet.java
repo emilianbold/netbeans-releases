@@ -21,6 +21,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.*;
 
 import org.openide.util.NbBundle;
+import org.openide.util.SharedClassObject;
+
 /**
  *
  * @author Radim Kubacki
@@ -44,8 +46,8 @@ public class WrapperServlet extends NbBaseServlet {
         if (url == null)
             return null;
         
-        if ("http".equals (url.getProtocol ())
-        ||  "ftp".equals (url.getProtocol ()))
+        if ("http".equals (url.getProtocol ())   // NOI18N
+        ||  "ftp".equals (url.getProtocol ()))   // NOI18N
             return url;
         
         try {
@@ -59,10 +61,12 @@ public class WrapperServlet extends NbBaseServlet {
                 path = java.net.URLEncoder.encode (orig.substring (0, slash))+orig.substring (slash);
             else
                 path = orig;
-            URL newURL = new URL ("http", 
+
+            HttpServerSettings settings = (HttpServerSettings)SharedClassObject.findObject(HttpServerSettings.class, true);
+            URL newURL = new URL ("http",   // NOI18N
                                   InetAddress.getLocalHost ().getHostName (), 
-                                  HttpServerSettings.OPTIONS.getPort (),
-                                  HttpServerSettings.OPTIONS.getWrapperBaseURL () + path);
+                                  settings.getPort (),
+                                  settings.getWrapperBaseURL () + path);
             return newURL;
         }
         catch (Exception ex) {
