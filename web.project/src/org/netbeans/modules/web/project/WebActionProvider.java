@@ -46,22 +46,29 @@ import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 import javax.enterprise.deploy.spi.Target;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.web.dd.DDProvider;
-import org.netbeans.api.web.dd.Servlet;
-import org.netbeans.api.web.dd.WebApp;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.web.api.webmodule.URLCookie;
 import org.netbeans.modules.web.project.ui.NoSelectedServerWarning;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.netbeans.modules.web.project.ui.ServletUriPanel;
+import org.netbeans.modules.web.project.ui.SetExecutionUriAction;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.*;
 import org.netbeans.api.project.ProjectInformation;
+
 import org.netbeans.api.web.dd.DDProvider;
 import org.netbeans.api.web.dd.WebApp;
 import org.netbeans.api.web.dd.Servlet;
 import org.netbeans.api.web.dd.ServletMapping;
 import org.netbeans.api.java.classpath.ClassPath;
+
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+
+
 
 /** Action provider of the Web project. This is the place where to do
  * strange things to Web actions. E.g. compile-single.
@@ -178,11 +185,32 @@ class WebActionProvider implements ActionProvider {
                     }
                 } else {
                     FileObject[] javaFiles = findJavaSources(context);
-                    String[] urlPatterns = getServletMappings(context,javaFiles[0]);
-                    if (urlPatterns!=null && urlPatterns.length>0) {
-                        p.setProperty("client.urlPart", urlPatterns[0]); //NOI18N
+                    FileObject servlet = javaFiles[0];
+                    String executionUri = (String)servlet.getAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI);
+                    if (executionUri!=null) {
+                        p.setProperty("client.urlPart", executionUri); //NOI18N
                     } else {
-                        return;
+                        WebModule webModule = WebModule.getWebModule(servlet);
+                        String[] urlPatterns = SetExecutionUriAction.getServletMappings(webModule,servlet);
+                        if (urlPatterns!=null && urlPatterns.length>0) {
+                            ServletUriPanel uriPanel = new ServletUriPanel(urlPatterns,null,true);
+                            DialogDescriptor desc = new DialogDescriptor(uriPanel,
+                                NbBundle.getMessage (SetExecutionUriAction.class, "TTL_setServletExecutionUri"));
+                            Object res = DialogDisplayer.getDefault().notify(desc);
+                            if (res.equals(NotifyDescriptor.YES_OPTION)) {
+                                p.setProperty("client.urlPart", uriPanel.getServletUri()); //NOI18N
+                                try {
+                                    servlet.setAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI,uriPanel.getServletUri());
+                                } catch (IOException ex){}
+                            } else return;
+                        } else {
+                            String mes = java.text.MessageFormat.format (
+                                    NbBundle.getMessage (SetExecutionUriAction.class, "TXT_missingServletMappings"),
+                                    new Object [] {servlet.getName()});
+                            NotifyDescriptor desc = new NotifyDescriptor.Message(mes,NotifyDescriptor.Message.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notify(desc);
+                            return;
+                        }
                     }
                 }
 
@@ -278,11 +306,15 @@ class WebActionProvider implements ActionProvider {
             return findJavaSources( context ) != null || findJsps (context) != null;
         }
         if ( command.equals( COMMAND_RUN_SINGLE ) ) {
+            // test for jsps
             FileObject jsps [] = findJsps (context);
             if (jsps != null && jsps.length >0) return true;
+            // test for servlets
             FileObject[] javaFiles = findJavaSources(context);
             if (javaFiles!=null && javaFiles.length > 0) {
-                if (isDDServlet(context, javaFiles[0]))
+                if (javaFiles[0].getAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI)!=null)
+                    return true;
+                else if (isDDServlet(context, javaFiles[0]))
                     return true;
                 else return false;
             } else return false;
@@ -399,34 +431,5 @@ class WebActionProvider implements ActionProvider {
             if (servlet!=null) return true;
             else return false;
         } catch (IOException ex) {return false;}  
-    }
-    
-    private String[] getServletMappings(Lookup context, FileObject javaClass) {
-        FileObject webDir = project.getWebModule ().getDocumentBase ();
-        if (webDir==null) return null;
-        FileObject fo = webDir.getFileObject("WEB-INF/web.xml"); //NOI18N
-        if (fo==null) return null;
-        ClassPath classPath = ClassPath.getClassPath(project.getSourceDirectory (),ClassPath.SOURCE);
-        String className = classPath.getResourceName(javaClass,'.',false);
-        try {
-            WebApp webApp = DDProvider.getDefault().getDDRoot(fo);
-            Servlet[] servlets = webApp.getServlet();
-            java.util.List mappingList = new java.util.ArrayList();
-            for (int i=0;i<servlets.length;i++) {
-                if (servlets[i].getServletClass().equals(className)) {
-                    String servletName=servlets[i].getServletName();
-                    ServletMapping[] maps  = webApp.getServletMapping();
-                    for (int j=0;j<maps.length;j++) {
-                        if (maps[j].getServletName().equals(servletName)) {
-                            mappingList.add(maps[j].getUrlPattern());
-                        }
-                    }
-                }
-            }
-            String[] mappings = new String[mappingList.size()];
-            mappingList.toArray(mappings);
-            return mappings;
-        } catch (IOException ex) {return null;}  
-    }
-        
+    }   
 }
