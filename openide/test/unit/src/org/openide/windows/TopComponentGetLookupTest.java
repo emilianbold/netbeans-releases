@@ -116,6 +116,24 @@ public class TopComponentGetLookupTest extends NbTestCase {
         doTestNodesWithChangesInLookup(FeatureDescriptor.class);
     }
     
+    public void testFilterNodeProblems () {
+        class CookieN extends AbstractNode implements Node.Cookie {
+            public CookieN () {
+                super (Children.LEAF);
+                getCookieSet ().add (this);
+            }
+            
+        }
+        
+        CookieN n = new CookieN ();
+        FilterNode fn = new FilterNode (n);
+        top.setActivatedNodes (new Node[] { fn });
+        assertTrue ("CookieN is in FilterNode lookup", n == fn.getLookup ().lookup (CookieN.class));
+        assertTrue ("CookieN is in TopComponent", n == lookup.lookup (CookieN.class));
+        assertEquals ("Just one node", 1, lookup.lookup (new Lookup.Template (Node.class)).allItems ().size ());
+        assertTrue ("Plain cookie found", n == lookup.lookup (Node.Cookie.class));
+    }
+    
     
     /** Tests changes in cookies.
      */
