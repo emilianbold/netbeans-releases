@@ -12,14 +12,6 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!--
-    Document   : api-questions-to-html.xsl
-    Created on : November 4, 2002, 4:51 PM
-    Author     : jarda
-    Description:
-        Purpose of transformation follows.
--->
-
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html"/>
     
@@ -29,6 +21,7 @@ Microsystems, Inc. All Rights Reserved.
     <xsl:param name="arch.stylesheet"/>
     <xsl:param name="arch.overviewlink"/>
     <xsl:param name="arch.footer"/>
+    <xsl:param name="arch.answers.date"/>
 
     <xsl:template match="/">
         <html>
@@ -46,23 +39,21 @@ Microsystems, Inc. All Rights Reserved.
             
                 <h1>NetBeans Architecture Answers for <xsl:value-of select="api-answers/@module" /><xsl:text> module</xsl:text></h1>
                 
-                <xsl:variable name="qver" select="substring-before(substring-after(api-answers/api-questions/@version,'Revision: '),' $')" />
-                <xsl:variable name="aver" select="substring-before(substring-after(api-answers/@version,'Revision:'),' $')" />
+                <xsl:variable name="qver" select="api-answers/api-questions/@version"/>
                 <xsl:variable name="afor" select="api-answers/@question-version" />
                 
                 <ul>
                 <li><b>Author:</b><xsl:text> </xsl:text><xsl:value-of select="api-answers/@author" /></li>
-                <li><b>Version of answers:</b><xsl:text> </xsl:text><xsl:value-of select="$aver" /></li>
-                <li><b>Answers for questions:</b><xsl:text> </xsl:text><xsl:value-of select="$afor" /></li>
-                <li><b>Version of questions:</b><xsl:text> </xsl:text><xsl:value-of select="$qver" /></li>
+                <li><b>Answers as of:</b><xsl:text> </xsl:text><xsl:value-of select="$arch.answers.date"/></li>
+                <li><b>Answers for questions version:</b><xsl:text> </xsl:text><xsl:value-of select="$afor" /></li>
+                <li><b>Latest available version of questions:</b><xsl:text> </xsl:text><xsl:value-of select="$qver" /></li>
                 </ul>
                 
                 <xsl:if test="not($qver=$afor)">
-                    <b> WARNING: Version of questions is different than 
-                        those that these answers are written for! 
-                        Is: "<xsl:value-of select="$qver"/>" and should 
-                        be "<xsl:value-of select="$afor" />".
-                    </b>
+                    <strong>
+                        WARNING: answering questions version <xsl:value-of select="$afor"/>
+                        rather than the current <xsl:value-of select="$qver"/>.
+                    </strong>
                 </xsl:if>
             
                 <xsl:apply-templates />    

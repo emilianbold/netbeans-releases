@@ -14,6 +14,7 @@ package org.netbeans.nbbuild;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
+import java.text.DateFormat;
 import java.util.*;
 
 import org.apache.tools.ant.BuildException;
@@ -138,7 +139,7 @@ public class Arch extends Task implements ErrorHandler {
             log ("Input file " + questionsFile + " does not exists. Generating it filled with skeleton answers.");
             try {
                 TreeSet s = new TreeSet (questions.keySet ());
-                generateTemplateFile (removeRevisionTags (questionsVersion), s);
+                generateTemplateFile(questionsVersion, s);
             } catch (IOException ex) {
                 throw new BuildException (ex);
             }
@@ -165,7 +166,7 @@ public class Arch extends Task implements ErrorHandler {
                 throw new BuildException ("Element api-answers does not have attribute question-version");
             }
             
-            if (!removeRevisionTags (answersVersion).equals (removeRevisionTags (questionsVersion))) {
+            if (!answersVersion.equals(questionsVersion)) {
                 String msg = questionsFile.getAbsolutePath() + ": answers were created for questions version \"" + answersVersion + "\" but current version of questions is \"" + questionsVersion + "\"";
                 if ("true".equals (this.getProject().getProperty("arch.warn"))) {
                     log (msg, Project.MSG_WARN);
@@ -230,6 +231,7 @@ public class Arch extends Task implements ErrorHandler {
             if (footer != null) {
                 t.setParameter("arch.footer", footer);
             }
+            t.setParameter("arch.answers.date", DateFormat.getDateInstance().format(new Date(questionsFile.lastModified())));
             
             String archTarget = output.toString();
             int slash = archTarget.lastIndexOf('/');
@@ -308,8 +310,7 @@ public class Arch extends Task implements ErrorHandler {
             if (x.exists ()) {
                 return result.toString();
             }
-            result.append ("..");
-            result.append (File.separatorChar);
+            result.append("../"); // URI, so pathsep is /
             f = f.getParentFile();
         }
         return "${nbroot}/";
@@ -326,7 +327,6 @@ public class Arch extends Task implements ErrorHandler {
         w.write ("]>\n");
         w.write ("\n");
         w.write ("<api-answers\n");
-        w.write ("  version=\"$Revision$\" date=\"$date$\"\n");
         w.write ("  question-version=\""); w.write (versionOfQuestions); w.write ("\"\n");
         w.write ("  module=\"name of your module\"\n");
         w.write ("  author=\"yourname@netbeans.org\"\n");
@@ -340,17 +340,6 @@ public class Arch extends Task implements ErrorHandler {
         w.close ();
     }
 
-    private static String removeRevisionTags (String s) {
-        if (s.startsWith ("$Revision: ")) {
-            s = s.substring ("$Revision: ".length());
-        }
-        if (s.endsWith (" $")) {
-            s = s.substring (0, s.length() - 2);
-        }
-        return s;
-    }
-    
-    
     private static HashMap readElements (Document q, String name) {
         HashMap map = new HashMap ();
        

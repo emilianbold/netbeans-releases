@@ -4,8 +4,6 @@
 ]>
 
 <api-answers
-  version=""
-  date="17.2.2003"
   question-version="1.8"
   module="HTTP Monitor"
   author="avklopplemon@netbeans.org"

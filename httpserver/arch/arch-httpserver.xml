@@ -16,7 +16,6 @@ Microsystems, Inc. All Rights Reserved.
 ]>
 
 <api-answers
-  version="$Revision$" date="$date$"
   question-version="1.7"
   module="Httpserver"
   author="rkubacki@netbeans.org"

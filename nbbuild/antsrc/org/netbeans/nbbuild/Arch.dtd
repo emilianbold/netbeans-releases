@@ -32,8 +32,6 @@ Document element.
 -->
 <!ELEMENT api-answers (api-questions, answer*) >
 <!ATTLIST api-answers
-          version CDATA #REQUIRED
-          date CDATA #REQUIRED
           question-version CDATA #REQUIRED
           module CDATA #REQUIRED
           author CDATA #REQUIRED
@@ -63,7 +61,6 @@ HTML contents of the document, with substitutions.
 <!ELEMENT api-questions ( category )* >
 <!ATTLIST api-questions
           version CDATA #REQUIRED
-          date CDATA #IMPLIED
 >
 
 <!ELEMENT category ( question )* >
