@@ -39,14 +39,16 @@ import org.netbeans.api.diff.Difference;
  */
 public class CmdlineDiffProvider extends DiffProvider implements java.io.Serializable {
 
-    private static final String REVISION_STR = "retrieving revision".intern();
+    //private static final String REVISION_STR = "retrieving revision";
     private static final String DIFF_REGEXP = "(^[0-9]+(,[0-9]+|)[d][0-9]+$)|"+
                                               "(^[0-9]+(,[0-9]+|)[c][0-9]+(,[0-9]+|)$)|"+
-                                              "(^[0-9]+[a][0-9]+(,[0-9]+|)$)".intern();
+                                              "(^[0-9]+[a][0-9]+(,[0-9]+|)$)";
     private static final int BUFF_LENGTH = 1024;
 
-    private transient RE pattern;
     private String diffCmd;
+    private transient RE pattern;
+    private transient StringBuffer firstText;
+    private transient StringBuffer secondText;
     
     static final long serialVersionUID =4101521743158176210L;
     /** Creates new CmdlineDiffProvider
@@ -58,6 +60,8 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
         try {
             pattern = new RE(DIFF_REGEXP);
         } catch (RESyntaxException resex) {}
+        firstText = new StringBuffer();
+        secondText = new StringBuffer();
     }
     
     public static CmdlineDiffProvider createDefault() {
@@ -163,6 +167,8 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
                 throw (IOException) TopManager.getDefault().getErrorManager().annotate(
                     new IOException(), resex.getLocalizedMessage());
             }
+            firstText = new StringBuffer();
+            secondText = new StringBuffer();
         }
         String cmd = java.text.MessageFormat.format(diffCmd,
             new Object[] { f1.getAbsolutePath(), f2.getAbsolutePath() });
@@ -176,7 +182,8 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
             while ((length = stdout.read(buffer)) > 0) {
                 for (int i = 0; i < length; i++) {
                     if (buffer[i] == '\n') {
-                        stdoutNextLine(outBuffer.toString(), differences);
+                        //stdoutNextLine(outBuffer.toString(), differences);
+                        outputLine(outBuffer.toString(), differences);
                         outBuffer.delete(0, outBuffer.length());
                     } else {
                         if (buffer[i] != 13) {
@@ -185,14 +192,16 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
                     }
                 }
             }
-            if (outBuffer.length() > 0) stdoutNextLine(outBuffer.toString(), differences);
+            if (outBuffer.length() > 0) outputLine(outBuffer.toString(), differences);
+            setTextOnLastDifference(differences);
             return differences;
         } catch (IOException ioex) {
             throw (IOException) TopManager.getDefault().getErrorManager().annotate(ioex,
                     NbBundle.getMessage(CmdlineDiffProvider.class, "runtimeError", cmd));
         }
     }
-    
+
+    /*
     private static String[] matchToStringArray(RE pattern, String line) {
         ArrayList v = new ArrayList(5);
         if (!pattern.match(line)) {
@@ -215,12 +224,28 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
         String[] sa = matchToStringArray(pattern, line);
         if (sa != null && sa.length > 0) outputData(sa, differences);
     }
+     */
+    
+    private void setTextOnLastDifference(List differences) {
+        if (differences.size() > 0) {
+            String t1 = firstText.toString();
+            if (t1.length() == 0) t1 = null;
+            String t2 = secondText.toString();
+            if (t2.length() == 0) t2 = null;
+            Difference d = (Difference) differences.remove(differences.size() - 1);
+            differences.add(new Difference(d.getType(), d.getFirstStart(), d.getFirstEnd(),
+            d.getSecondStart(), d.getSecondEnd(), t1, t2));
+            firstText.delete(0, firstText.length());
+            secondText.delete(0, secondText.length());
+        }
+    }
     
     /**
      * This method is called, with elements of the output data.
      * @param elements the elements of output data.
      */
-    private void outputData(String[] elements, List differences) {
+    //private void outputData(String[] elements, List differences) {
+    private void outputLine(String elements, List differences) {
         //diffBuffer.append(elements[0]+"\n"); // NOI18N
         //D.deb("diff match: "+elements[0]); // NOI18N
         //System.out.println("diff outputData: "+elements[0]); // NOI18N
@@ -228,22 +253,33 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
         int index = 0, commaIndex = 0;
         int n1 = 0, n2 = 0, n3 = 0, n4 = 0;
         String nStr;
-        if ((index = elements[0].indexOf('a')) >= 0) {
+        if (pattern.match(elements)) {
+            setTextOnLastDifference(differences);
+        } else {
+            if (elements.startsWith("< ")) {
+                firstText.append(elements.substring(2) + "\n");
+            }
+            if (elements.startsWith("> ")) {
+                secondText.append(elements.substring(2) + "\n");
+            }
+            return ;
+        }
+        if ((index = elements.indexOf('a')) >= 0) {
             //DiffAction action = new DiffAction();
             try {
-                n1 = Integer.parseInt(elements[0].substring(0, index));
+                n1 = Integer.parseInt(elements.substring(0, index));
                 index++;
-                commaIndex = elements[0].indexOf(',', index);
+                commaIndex = elements.indexOf(',', index);
                 if (commaIndex < 0) {
-                    nStr = elements[0].substring(index, elements[0].length());
-                    if (checkEmpty(nStr, elements[0])) return;
+                    nStr = elements.substring(index, elements.length());
+                    if (checkEmpty(nStr, elements)) return;
                     n3 = Integer.parseInt(nStr);
                     n4 = n3;
                 } else {
-                    nStr = elements[0].substring(index, commaIndex);
-                    if (checkEmpty(nStr, elements[0])) return;
+                    nStr = elements.substring(index, commaIndex);
+                    if (checkEmpty(nStr, elements)) return;
                     n3 = Integer.parseInt(nStr);
-                    nStr = elements[0].substring(commaIndex+1, elements[0].length());
+                    nStr = elements.substring(commaIndex+1, elements.length());
                     if (nStr == null || nStr.length() == 0) n4 = n3;
                     else n4 = Integer.parseInt(nStr);
                 }
@@ -260,23 +296,23 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
             //action.setAddAction(n1, n3, n4);
             //diffActions.add(action);
             differences.add(new Difference(Difference.ADD, n1, 0, n3, n4));
-        } else if ((index = elements[0].indexOf('d')) >= 0) {
+        } else if ((index = elements.indexOf('d')) >= 0) {
             //DiffAction action = new DiffAction();
-            commaIndex = elements[0].lastIndexOf(',', index);
+            commaIndex = elements.lastIndexOf(',', index);
             try {
                 if (commaIndex < 0) {
-                    n1 = Integer.parseInt(elements[0].substring(0, index));
+                    n1 = Integer.parseInt(elements.substring(0, index));
                     n2 = n1;
                 } else {
-                    nStr = elements[0].substring(0, commaIndex);
-                    if (checkEmpty(nStr, elements[0])) return;
+                    nStr = elements.substring(0, commaIndex);
+                    if (checkEmpty(nStr, elements)) return;
                     n1 = Integer.parseInt(nStr);
-                    nStr = elements[0].substring(commaIndex+1, index);
-                    if (checkEmpty(nStr, elements[0])) return;
+                    nStr = elements.substring(commaIndex+1, index);
+                    if (checkEmpty(nStr, elements)) return;
                     n2 = Integer.parseInt(nStr);
                 }
-                nStr = elements[0].substring(index+1, elements[0].length());
-                if (checkEmpty(nStr, elements[0])) return;
+                nStr = elements.substring(index+1, elements.length());
+                if (checkEmpty(nStr, elements)) return;
                 n3 = Integer.parseInt(nStr);
             } catch (NumberFormatException e) {
                 /*
@@ -291,33 +327,33 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
             //action.setDeleteAction(n1, n2, n3);
             //diffActions.add(action);
             differences.add(new Difference(Difference.DELETE, n1, n2, n3, 0));
-        } else if ((index = elements[0].indexOf('c')) >= 0) {
+        } else if ((index = elements.indexOf('c')) >= 0) {
             //DiffAction action = new DiffAction();
-            commaIndex = elements[0].lastIndexOf(',', index);
+            commaIndex = elements.lastIndexOf(',', index);
             try {
                 if (commaIndex < 0) {
-                    n1 = Integer.parseInt(elements[0].substring(0, index));
+                    n1 = Integer.parseInt(elements.substring(0, index));
                     n2 = n1;
                 } else {
-                    nStr = elements[0].substring(0, commaIndex);
-                    if (checkEmpty(nStr, elements[0])) return;
+                    nStr = elements.substring(0, commaIndex);
+                    if (checkEmpty(nStr, elements)) return;
                     n1 = Integer.parseInt(nStr);
-                    nStr = elements[0].substring(commaIndex+1, index);
-                    if (checkEmpty(nStr, elements[0])) return;
+                    nStr = elements.substring(commaIndex+1, index);
+                    if (checkEmpty(nStr, elements)) return;
                     n2 = Integer.parseInt(nStr);
                 }
                 index++;
-                commaIndex = elements[0].indexOf(',', index);
+                commaIndex = elements.indexOf(',', index);
                 if (commaIndex < 0) {
-                    nStr = elements[0].substring(index, elements[0].length());
-                    if (checkEmpty(nStr, elements[0])) return;
+                    nStr = elements.substring(index, elements.length());
+                    if (checkEmpty(nStr, elements)) return;
                     n3 = Integer.parseInt(nStr);
                     n4 = n3;
                 } else {
-                    nStr = elements[0].substring(index, commaIndex);
-                    if (checkEmpty(nStr, elements[0])) return;
+                    nStr = elements.substring(index, commaIndex);
+                    if (checkEmpty(nStr, elements)) return;
                     n3 = Integer.parseInt(nStr);
-                    nStr = elements[0].substring(commaIndex+1, elements[0].length());
+                    nStr = elements.substring(commaIndex+1, elements.length());
                     if (nStr == null || nStr.length() == 0) n4 = n3;
                     else n4 = Integer.parseInt(nStr);
                 }
@@ -334,10 +370,6 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
             //action.setChangeAction(n1, n2, n3, n4);
             //diffActions.add(action);
             differences.add(new Difference(Difference.CHANGE, n1, n2, n3, n4));
-        } else if (elements[0].indexOf(REVISION_STR) == 0) {
-            String rev = elements[0].substring(REVISION_STR.length()).trim();
-            //if (diffOutRev1 == null) diffOutRev1 = rev;
-            //else diffOutRev2 = rev;
         }
     }
     
