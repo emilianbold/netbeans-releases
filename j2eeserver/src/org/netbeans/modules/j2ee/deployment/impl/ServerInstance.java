@@ -100,15 +100,19 @@ public class ServerInstance implements Node.Cookie {
         return manager;
     }
     
-    public void refresh() {
-        if (manager != null) {
-            manager.release();
-            manager = null;
+    public void refresh(boolean running) {
+        if (running) {
+            initCoTarget();
+        } else {        
+            if (manager != null) {
+                manager.release();
+                manager = null;
+            }
+            management = null;
+            targets = null;
+            coTarget = null;
         }
-        management = null;
-        targets = null;
-        initCoTarget();
-        fireInstanceRefreshed();
+        fireInstanceRefreshed(running);
     }
     
     public void remove() {
@@ -199,16 +203,20 @@ public class ServerInstance implements Node.Cookie {
             return isRunning;
         StartServer ss = getStartServer();
         try {
-            isRunning = ss != null && ss.isRunning();
+            boolean state = (ss != null && ss.isRunning());
+            if (isRunning != state) {
+                isRunning = state;
+                refresh(state);
+            }
         } catch (Exception e) {
-            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, e.getMessage());
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             isRunning = false;
         }
         lastCheck = System.currentTimeMillis();
         return isRunning;
     }
     
-    static final long PING_WAIT_MILLIS = 100;
+    /*static final long PING_WAIT_MILLIS = 100;
     private final Object state = new Object();
     public Boolean checkRunning() {
         Runnable r = new Runnable() {
@@ -238,7 +246,7 @@ public class ServerInstance implements Node.Cookie {
         synchronized(state) {
             state.notify();
         }
-    }
+    }*/
     
     public boolean isDebuggable() {
         StartServer ss = getStartServer();
@@ -441,7 +449,7 @@ public class ServerInstance implements Node.Cookie {
                 return false;
             }
             managerStartedByIde = true;
-            refresh();
+            refresh(true);
             return true;
             
         } finally {
@@ -474,7 +482,7 @@ public class ServerInstance implements Node.Cookie {
         } else {
             showStatusText(NbBundle.getMessage(ServerInstance.class, "MSG_StartedServer", url));
             managerStartedByIde = true;
-            refresh();
+            refresh(true);
         }
     }
     
@@ -529,6 +537,7 @@ public class ServerInstance implements Node.Cookie {
             ErrorManager.getDefault().log(ErrorManager.EXCEPTION, msg);
             showStatusText(msg);
             managerStartedByIde = false;
+            refresh(false);
             return true;
             
         } finally {
@@ -631,7 +640,7 @@ public class ServerInstance implements Node.Cookie {
     }
     
     public static interface RefreshListener {
-        public void handleRefresh() ;
+        public void handleRefresh(boolean running) ;
     }
     
     Vector rListeners = new Vector();
@@ -641,10 +650,10 @@ public class ServerInstance implements Node.Cookie {
     public void removeRefreshListener(RefreshListener rl) {
         rListeners.remove(rl);
     }
-    private void fireInstanceRefreshed() {
+    private void fireInstanceRefreshed(boolean running) {
         for (Iterator i=rListeners.iterator(); i.hasNext();) {
             RefreshListener rl = (RefreshListener) i.next();
-            rl.handleRefresh();
+            rl.handleRefresh(running);
         }
     }
     private void showStatusText(String msg) {
@@ -698,5 +707,20 @@ public class ServerInstance implements Node.Cookie {
         return null;
     }
     
-    
+    /*static public interface ServerStatusListener {
+        public void serverStatusChanged(boolean isRunning);
+    }
+    Vector statusListeners = new Vector();
+    private void fireServerStatusChanged(boolean isRunning) {
+        for (Iterator i=statusListeners.iterator(); i.hasNext();) {
+            ServerStatusListener l = (ServerStatusListener) i.next();
+            l.serverStatusChanged(isRunning);
+        }
+    }
+    public void addStatusListener(ServerStatusListener l) {
+        statusListeners.add(l);
+    }
+    public void removeStatusListener(ServerStatusListener l) {
+        statusListeners.remove(l);
+    }*/
 }

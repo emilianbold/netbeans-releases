@@ -39,15 +39,15 @@ public class FilterXNode extends FilterNode {
     private boolean extendsActions = true;
 
     public FilterXNode(Node original, Node xnode, boolean extendsActions) {
-        this(original, xnode, extendsActions, true);
-    }
-    
-    public FilterXNode(Node original, Node xnode, boolean extendsActions, boolean extendsChildren) {
         super(original);
         this.xnode = xnode;
-        if (extendsChildren) {
-            setChildren(new XChildren(xnode));
-        }
+        disableDelegation(DELEGATE_GET_ACTIONS);
+        this.extendsActions = extendsActions;
+    }
+    
+    public FilterXNode(Node original, Node xnode, boolean extendsActions, Children xchildren) {
+        super(original, xchildren);
+        this.xnode = xnode;
         disableDelegation(DELEGATE_GET_ACTIONS);
         this.extendsActions = extendsActions;
     }

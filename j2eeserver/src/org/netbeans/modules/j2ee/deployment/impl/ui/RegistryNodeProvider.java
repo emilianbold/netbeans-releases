@@ -43,18 +43,24 @@ public class RegistryNodeProvider {
         if (factory != null) {
             Node original = factory.getFactoryNode(createLookup(server));
             if (original != null) {
-                return new FilterXNode(original, xnode, true);
+                return new FilterXNode(original, xnode, true, new FilterXNode.XChildren(xnode));
             }
         }
         return xnode;
     }
     
     public Node createInstanceNode(ServerInstance instance) {
+        return createInstanceNode(instance, false);
+    }
+    private Node createInstanceNode(ServerInstance instance, boolean removeRefreshListener) {
         InstanceNode xnode = new InstanceNode(instance);
+        if (removeRefreshListener)
+            instance.removeRefreshListener(xnode);
+        
         if (factory != null) {
             Node original = factory.getManagerNode(createLookup(instance));
             if (original != null) {
-                return new FilterXNode(original, xnode, true);
+                return new FilterXNode(original, xnode, true, new FilterXNode.XChildren(xnode));
             }
         }
         return xnode;
@@ -65,14 +71,14 @@ public class RegistryNodeProvider {
             Node original = factory.getTargetNode(createLookup(target));
             if (original != null) {
                 TargetBaseNode xnode = new TargetBaseNode(org.openide.nodes.Children.LEAF, target);
-                return new FilterXNode(original, xnode, true, false);
+                return new FilterXNode(original, xnode, true);
             }
         }
         return new TargetNode(target);
     }
     
     public Node createInstanceTargetNode(ServerInstance instance) {
-        Node original = createInstanceNode(instance);
+        Node original = createInstanceNode(instance, true);
         return new InstanceTargetXNode(original, instance);
     }
     

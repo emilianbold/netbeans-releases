@@ -106,11 +106,15 @@ public class InstanceNode extends AbstractNode implements ServerInstance.Refresh
     
     class Refresher implements RefreshAction.RefreshCookie {
         public void refresh() {
-            instance.refresh();
+            instance.refresh(false);
+            instance.isRunning();
         }
     }
 
-    public void handleRefresh() {
+    public void handleRefresh(boolean running) {
+        if (! running) {
+            setChildren(new InstanceChildren(instance));
+        }
         InstanceChildren ch = (InstanceChildren) getChildren();
         ch.updateKeys();
     }    

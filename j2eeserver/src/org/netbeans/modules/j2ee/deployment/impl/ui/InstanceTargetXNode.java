@@ -45,9 +45,8 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
     }
     
     public InstanceTargetXNode(Node instanceNode, Node xnode, ServerInstance instance) {
-        super(instanceNode, xnode, true, true);
+        super(instanceNode, xnode, true, new InstanceTargetChildren(xnode, instance));
         this.instance = instance;
-        this.setChildren(new InstanceTargetChildren(xnode, instance));
     }
     
     private ServerTarget getServerTarget() {
@@ -68,7 +67,9 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
             xnode = tn;
         return xnode;
     }
-    
+    private void resetDelegateTargetNode() {
+        xnode = null;
+    }
     public static class InstanceTargetChildren extends Children {
         ServerInstance instance;
         ServerTarget target;
@@ -118,7 +119,13 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
         return c;
     }
     
-    public void handleRefresh() {
+    public void handleRefresh(boolean running) {
+        if (! running) {
+            instanceTarget = null;
+            resetDelegateTargetNode();
+            setChildren(new InstanceTargetChildren(Node.EMPTY, instance));
+        }
+        
         ((InstanceTargetChildren)getChildren()).updateKeys();
     }
 }
