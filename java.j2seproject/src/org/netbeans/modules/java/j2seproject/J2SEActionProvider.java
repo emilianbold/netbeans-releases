@@ -170,7 +170,7 @@ class J2SEActionProvider implements ActionProvider {
             }
             p.setProperty("fix.includes", path); // NOI18N
         }
-        else if (command.equals (COMMAND_RUN) || command.equals(COMMAND_DEBUG)) {
+        else if (command.equals (COMMAND_RUN) || command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
             EditableProperties ep = antProjectHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
             // check project's main class
