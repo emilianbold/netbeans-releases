@@ -17,6 +17,8 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -31,21 +33,36 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.junit.GuiUtils;
 import org.netbeans.modules.junit.SizeRestrictedPanel;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeAcceptor;
+import org.openide.nodes.NodeOperation;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.UserCancelException;
 
 /**
  *
  * @author  Marian Petras
  */
 public class SimpleTestStepLocation implements WizardDescriptor.Panel {
+    
+    private static final String PACKAGES_NODE_ICON_BASE
+     = "org/netbeans/modules/java/j2seproject/ui/resources/packageRoot";//NOI18N
     
     private Component visualComp;
     private List changeListeners;
@@ -108,6 +125,12 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         tfTestClass.setFocusable(false);
         tfProjectName.setFocusable(false);
         tfCreatedFile.setFocusable(false);
+        
+        btnBrowse.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    selectClass();
+                }
+        });
         
         JCheckBox[] chkBoxes;
         
@@ -249,6 +272,60 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         optionsBox.setAlignmentX(0.0f);
 
         return result;
+    }
+    
+    /**
+     * Displays a class chooser dialog and lets the user to select a class.
+     * If the user confirms they choice, full name of the selected class
+     * is put into the <em>Class To Test</em> text field.
+     */
+    private void selectClass() {
+        try {
+            AbstractNode node = new AbstractNode(
+                    PackageView.createPackageView(Utils.getSrcRoot(project)));
+            node.setIconBase(PACKAGES_NODE_ICON_BASE);
+            Node rootNode = new FilterNode(
+                                    node,
+                                    new LogicalViewRootChildren(node));
+            rootNode.setName("Logical View Root");                      //NOI18N
+            rootNode.setDisplayName(
+                    NbBundle.getMessage(SimpleTestStepLocation.class,
+                                        "LBL_SourcePackages"));         //NOI18N
+            
+            NodeAcceptor acceptor = new NodeAcceptor() {
+                public boolean acceptNodes(Node[] nodes) {
+                    Node.Cookie cookie;
+                    return nodes.length == 1
+                           && (cookie = nodes[0].getCookie(DataObject.class))
+                              != null
+                           && ((DataObject) cookie).getPrimaryFile().isFolder()
+                              == false;
+                }
+            };
+            
+            Node selectedNode = NodeOperation.getDefault().select(
+                    NbBundle.getMessage(SimpleTestStepLocation.class,
+                                        "LBL_WinTitle_SelectClass"),    //NOI18N
+                    NbBundle.getMessage(SimpleTestStepLocation.class,
+                                        "LBL_SelectClassToTest"),       //NOI18N
+                    rootNode,
+                    acceptor)[0];
+            
+            /* promote the selection to the text field: */
+            tfClassToTest.setText(getClassName(selectedNode));
+        } catch (UserCancelException ex) {
+            // if the user cancels the choice, do nothing
+        }
+    }
+    
+    private String getClassName(Node node) {
+        FileObject selectedFile
+                = ((DataObject) node.getCookie(DataObject.class))
+                  .getPrimaryFile();
+        
+        //PENDING: is it ensured that the classpath is non-null?
+        return ClassPath.getClassPath(selectedFile, ClassPath.SOURCE)
+               .getResourceName(selectedFile, '.', false);
     }
     
     public Component getComponent() {

@@ -14,11 +14,16 @@
 package org.netbeans.modules.junit.wizards;
 
 import java.io.IOException;
+import java.net.URL;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -52,6 +57,35 @@ public class Utils {
             folder = FileUtil.createFolder(root, relativePathName);
         }
         return folder;
+    }
+    
+    static FileObject getSrcRoot(Project project) {
+        Sources sources = ProjectUtils.getSources(project);
+        
+        //PENDING:
+        // - what about other types of projects?
+        SourceGroup[] sourceGroups = sources.getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        
+        //PENDING:
+        // - what if the array is empty?
+        // - is it OK to return the first element if there are more?
+        return sourceGroups[0].getRootFolder();
+    }
+    
+    static FileObject getTestsRoot(Project project) {
+        
+        //PENDING:
+        // - getSrcRoot() returns at most one source root
+        //    - what if there are more source roots?
+        //    - what if there is no source root?
+        FileObject srcRoot = getSrcRoot(project);
+        URL testRootURL = UnitTestForSourceQuery.findUnitTest(srcRoot);
+        
+        //PENDING:
+        // - what if the URL is null?
+        // - what if the returned FileObject is null?
+        return URLMapper.findFileObject(testRootURL);
     }
     
 }
