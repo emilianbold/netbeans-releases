@@ -17,6 +17,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.CmpRelationshipsForm;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -376,7 +377,11 @@ class CmpRelationshipsDialogHelper {
         if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
 //            listener.validate();
             if (helper == null) {
-                helper = new RelationshipHelper(ejbJar.getSingleRelationships());
+                Relationships relationships = ejbJar.getSingleRelationships();
+                if (relationships == null) {
+                    relationships = ejbJar.newRelationships();
+                }
+                helper = new RelationshipHelper(relationships);
             }
             processResult(helper);
             return true;
