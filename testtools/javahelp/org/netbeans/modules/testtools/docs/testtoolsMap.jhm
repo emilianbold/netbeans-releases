@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+*     Copyright 2002 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+
+<!DOCTYPE map  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN" "http://java.sun.com/products/javahelp/map_1_0.dtd">
+<map version="1.0">
+   <mapID target="testtools_intro" url="testtools_intro.html" />
+   <mapID target="testtools_generator" url="testtools_generator.html" />
+   <mapID target="testtools_services" url="testtools_services.html" />	
+   <mapID target="testtools_wizards" url="testtools_wizards.html" />	
+
+   <mapID target="org.netbeans.modules.testtools.XTestCompilerType" url="testtools_services.html" />
+   <mapID target="org.netbeans.modules.testtools.XTestDataObject" url="testtools_services.html" />
+   <mapID target="org.netbeans.modules.testtools.XTestDataObject$XTestNode" url="testtools_services.html" />
+   <mapID target="org.netbeans.modules.testtools.XTestExecutor" url="testtools_services.html" />
+   <mapID target="org.netbeans.modules.testtools.XTestDataLoader$CleanResultsAction" url="testtools_services.html" />
+
+   <mapID target="org.netbeans.modules.testtools.wizards.TestTypeTemplatePanel" url="testtools_wizards.html#TypeTemp" />
+   <mapID target="org.netbeans.modules.testtools.wizards.TestWorkspaceSettingsPanel" url="testtools_wizards.html#SpaceSet" />
+   <mapID target="org.netbeans.modules.testtools.wizards.TestCasesPanel" url="testtools_wizards.html#Cases" />
+   <mapID target="org.netbeans.modules.testtools.wizards.TestTypeAdvancedSettingsPanel" url="testtools_wizards.html#TypeAdvSet" />
+   <mapID target="org.netbeans.modules.testtools.wizards.TestBagSettingsPanel" url="testtools_wizards.html#BagSet" />
+   <mapID target="org.netbeans.modules.testtools.wizards.TestSuiteTargetPanel" url="testtools_wizards.html#SuiteTarg" />
+   <mapID target="org.netbeans.modules.testtools.wizards.TestTypeSettingsPanel" url="testtools_wizards.html#TypeSet" />
+
+   <mapID target="org.netbeans.modules.testtools.generator.NodeEditorPanel" url="testtools_generator.html" />
+   <mapID target="org.netbeans.modules.testtools.generator.NodeGeneratorPanel" url="testtools_generator.html" />
+
+   <mapID target="org.netbeans.modules.testtools.generator.JellyComponentGeneratorProvider" url="testtools_intro.html" />
+
+</map>

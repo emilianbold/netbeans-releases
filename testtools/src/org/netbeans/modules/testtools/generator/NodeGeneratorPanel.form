@@ -104,7 +104,7 @@
       </Events>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="1" gridY="6" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="17" insetsLeft="12" insetsBottom="12" insetsRight="0" anchor="15" weightX="1.0" weightY="1.0"/>
+          <GridBagConstraints gridX="0" gridY="6" gridWidth="0" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="17" insetsLeft="12" insetsBottom="12" insetsRight="0" anchor="15" weightX="1.0" weightY="1.0"/>
         </Constraint>
       </Constraints>
     </Component>
@@ -130,28 +130,7 @@
       </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="1" gridY="6" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="17" insetsLeft="12" insetsBottom="12" insetsRight="0" anchor="15" weightX="1.0" weightY="1.0"/>
-        </Constraint>
-      </Constraints>
-    </Component>
-    <Component class="javax.swing.JButton" name="closeButton">
-      <Properties>
-        <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="NbBundle.getMessage(NodeGeneratorPanel.class, &quot;MNM_Close&quot;).charAt(0) " type="code"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/testtools/generator/Bundle.properties" key="CTL_Close" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/testtools/generator/Bundle.properties" key="TTT_Close" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="closeButtonActionPerformed"/>
-      </Events>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="2" gridY="6" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="17" insetsLeft="5" insetsBottom="12" insetsRight="12" anchor="15" weightX="1.0" weightY="1.0"/>
+          <GridBagConstraints gridX="0" gridY="6" gridWidth="0" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="17" insetsLeft="12" insetsBottom="12" insetsRight="0" anchor="15" weightX="1.0" weightY="1.0"/>
         </Constraint>
       </Constraints>
     </Component>

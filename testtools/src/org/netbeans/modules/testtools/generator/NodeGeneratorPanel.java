@@ -13,10 +13,13 @@
 
 package org.netbeans.modules.testtools.generator;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.StringTokenizer;
 import org.openide.DialogDescriptor;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /*
@@ -30,7 +33,7 @@ import org.openide.util.NbBundle;
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  * @version 0.2
  */
-public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans.PropertyChangeListener, java.beans.VetoableChangeListener, org.openide.loaders.DataFilter {
+public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans.PropertyChangeListener, java.beans.VetoableChangeListener, org.openide.loaders.DataFilter, ActionListener {
 
     /** root node */
     private Node rootNode;
@@ -46,10 +49,10 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
     public static void showDialog(Node[] nodes){
         if (dialog==null) {
             panel = new NodeGeneratorPanel(nodes);
-            dialog = org.openide.DialogDisplayer.getDefault().createDialog(new DialogDescriptor(panel, NbBundle.getMessage(NodeGeneratorPanel.class, "GeneratorTitle"), false, new Object[0], null, org.openide.DialogDescriptor.BOTTOM_ALIGN, null, null));  // NOI18N
+            dialog = org.openide.DialogDisplayer.getDefault().createDialog(new DialogDescriptor(panel, NbBundle.getMessage(NodeGeneratorPanel.class, "GeneratorTitle"), false, new Object[]{DialogDescriptor.CLOSED_OPTION}, null, DialogDescriptor.BOTTOM_ALIGN, new HelpCtx(NodeGeneratorPanel.class), panel));  // NOI18N
             dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                 public void windowClosing(java.awt.event.WindowEvent evt) {
-                    panel.closeButtonActionPerformed(null);
+                    panel.actionPerformed(null);
                 }
             });
         }
@@ -106,7 +109,6 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
         stopButton = new javax.swing.JButton();
         startButton = new javax.swing.JButton();
         stopButton.setVisible(false);
-        closeButton = new javax.swing.JButton();
         nodeField = new javax.swing.JTextField();
         actionField = new javax.swing.JTextField();
         nodeLabel = new javax.swing.JLabel();
@@ -173,13 +175,13 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(17, 12, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(17, 12, 12, 0);
         add(stopButton, gridBagConstraints);
 
         startButton.setMnemonic(NbBundle.getMessage(NodeGeneratorPanel.class, "MNM_Start").charAt(0) );
@@ -193,33 +195,14 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(17, 12, 12, 0);
-        add(startButton, gridBagConstraints);
-
-        closeButton.setMnemonic(NbBundle.getMessage(NodeGeneratorPanel.class, "MNM_Close").charAt(0) );
-        closeButton.setText(NbBundle.getMessage(NodeGeneratorPanel.class, "CTL_Close"));
-        closeButton.setToolTipText(NbBundle.getMessage(NodeGeneratorPanel.class, "TTT_Close"));
-        closeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                closeButtonActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(17, 5, 12, 12);
-        add(closeButton, gridBagConstraints);
+        add(startButton, gridBagConstraints);
 
         nodeField.setToolTipText(NbBundle.getMessage(NodeGeneratorPanel.class, "TTT_Package"));
         nodeField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -303,12 +286,6 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
     private void nodeFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_nodeFieldFocusGained
         nodeField.selectAll();
     }//GEN-LAST:event_nodeFieldFocusGained
-
-    private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
-        stopButtonActionPerformed(evt);
-        dialog.dispose();
-        dialog=null;
-    }//GEN-LAST:event_closeButtonActionPerformed
 
     private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
         if (thread!=null) {
@@ -429,7 +406,6 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
     private org.openide.explorer.ExplorerPanel packagesPanel;
     private javax.swing.JButton stopButton;
     private javax.swing.JLabel nodeLabel;
-    private javax.swing.JButton closeButton;
     // End of variables declaration//GEN-END:variables
 
     /** creates Component Generator dialog for debugging purposes
@@ -438,5 +414,13 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
     public static void main(String args[]) {
         showDialog(null);
     }
+    
+    /** Invoked when an action occurs.
+     *
+     */
+    public void actionPerformed(ActionEvent evt) {
+        stopButtonActionPerformed(evt);
+        dialog.dispose();
+        dialog=null;    }
     
 }

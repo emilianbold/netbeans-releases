@@ -43,6 +43,7 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreeNode;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /** class with panel used for edit found components before generation
@@ -241,6 +242,7 @@ public class NodeEditorPanel extends javax.swing.JPanel implements ChangeListene
      * @return boolean false when operation canceled */    
     public static boolean showDialog(NodeGenerator gen) {
         DialogDescriptor desc = new DialogDescriptor(new NodeEditorPanel(gen), NbBundle.getMessage(NodeEditorPanel.class, "EditorTitle"), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);  // NOI18N
+        desc.setHelpCtx(new HelpCtx(NodeEditorPanel.class));
         org.openide.DialogDisplayer.getDefault().createDialog(desc).show();
         return desc.getValue()==DialogDescriptor.OK_OPTION;
     }

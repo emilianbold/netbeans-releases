@@ -263,8 +263,8 @@ public class TestCasesPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 11, 11);
         add(down, gridBagConstraints);
 
-        testCases.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseList", new Object[] {}));
         testCases.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        testCases.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseList", new Object[] {}));
         scroll.setViewportView(testCases);
         testCases.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "LBL_TestCaseList", new Object[] {}));
 
