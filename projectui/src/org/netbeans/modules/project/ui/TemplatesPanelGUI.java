@@ -31,6 +31,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.text.ChangedCharSetException;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
@@ -513,6 +514,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             getAccessibleContext ().setAccessibleName ("OUTER LIST");
             getAccessibleContext ().setAccessibleDescription ("DESC OUTER LIST");
             setDefaultProcessor( this );
+            ToolTipManager.sharedInstance ().unregisterComponent (list);
         }
         
         public void actionPerformed( ActionEvent e ) {
