@@ -514,17 +514,17 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         return null;
     }
     
-    public void setCMPMappingInfo(OriginalCMPMapping[] mappings) {
+    public void setCMPMappingInfo(final OriginalCMPMapping[] mappings) {
         ConfigurationStorage cs = getStorage();
         if (cs == null)
             return;
         DeploymentConfiguration config = cs.getDeploymentConfiguration();
-        ConfigurationSupport serverConfig = this.getServer().geConfigurationSupport();
+        ConfigurationSupport serverConfig = getServer().geConfigurationSupport();
         serverConfig.setMappingInfo(config, mappings);
         saveConfiguration();
     }
     
-    public void ensureResourceDefinedForEjb(String ejbname, String ejbtype) {
+    public void ensureResourceDefinedForEjb(final String ejbname, final String ejbtype) {
         ConfigurationStorage cs = getStorage();
         if (cs == null)
             return;
@@ -553,24 +553,15 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             return;
         }
         DeploymentConfiguration config = cs.getDeploymentConfiguration();
-        ConfigurationSupport serverConfig = this.getServer().geConfigurationSupport();
+        ConfigurationSupport serverConfig = getServer().geConfigurationSupport();
         serverConfig.ensureResourceDefined(config, ejb, provider.getEnterpriseResourceDirectory());
         saveConfiguration();
     }
     
     public void saveConfiguration() {
         ConfigurationStorage cs = getStorage();
-        if (cs == null || configDO == null) {
-            return;
-        }
-        
-        SaveCookie s = (SaveCookie) configDO.getCookie(SaveCookie.class);
-        try {
-            if (s != null) {
-                s.save();
-            }
-        } catch(IOException ioe) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(ioe.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
+        if (cs != null) {
+            cs.autoSave();
         }
     }
 }
