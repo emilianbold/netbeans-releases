@@ -314,7 +314,11 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
             } else if (SlideBar.COMMAND_SLIDE_IN.equals(cmd)) {
                 modeView.getController().userTriggeredSlideIn(modeView, sbe.getSlideOperation());
             } else if (SlideBar.COMMAND_SLIDE_OUT.equals(cmd)) {
-                modeView.getController().userTriggeredSlideOut(modeView, sbe.getSlideOperation());
+                // when the call comes from the change of tehmodel rather than user clicking,
+                // ignore activation requests.
+                // #48539
+                SlideOperation op = new ProxySlideOperation(sbe.getSlideOperation(), ignoreChange);
+                modeView.getController().userTriggeredSlideOut(modeView, op);
             } else if (SlideBar.COMMAND_DISABLE_AUTO_HIDE.equals(cmd)) {
                 TopComponent tc = (TopComponent) tabbed.getTopComponentAt(sbe.getTabIndex());
                 modeView.getController().userDisabledAutoHide(modeView, tc);
@@ -461,6 +465,64 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
         }
         
     } // end of ActivationManager
+    
+    /**
+     * proxy slide operation that disables activation reqeuest when throws eoperation comes from the model, not really user action.
+     */
+    private static class ProxySlideOperation implements SlideOperation {
+        
+        private SlideOperation original;
+        private boolean disable;
+        
+        public ProxySlideOperation(SlideOperation orig, boolean disableActivation) {
+            original = orig;
+            disable = disableActivation;
+        }
+        
+        public Component getComponent() {
+            return original.getComponent();
+        }
+
+        public Rectangle getFinishBounds() {
+            return original.getFinishBounds();
+        }
+
+        public String getSide() {
+            return original.getSide();
+        }
+
+        public Rectangle getStartBounds() {
+            return original.getStartBounds();
+        }
+
+        public int getType() {
+            return original.getType();
+        }
+
+        public void prepareEffect() {
+            original.prepareEffect();
+        }
+
+        public boolean requestsActivation() {
+            if (disable) {
+                return false;
+            }
+            return original.requestsActivation();
+        }
+
+        public void run(JLayeredPane pane, Integer layer) {
+            original.run(pane, layer);
+        }
+
+        public void setFinishBounds(Rectangle bounds) {
+            original.setFinishBounds(bounds);
+        }
+
+        public void setStartBounds(Rectangle bounds) {
+            original.setStartBounds(bounds);
+        }
+        
+    }
 
 }
 
