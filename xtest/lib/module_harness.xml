@@ -502,6 +502,9 @@ Microsystems, Inc. All Rights Reserved.
         <!-- copy output dir -->
         <available file="${xtest.workdir}/sys/ide/output" type="dir" property="xtest.ide.output.exists"/>
         <antcall target="copy-output"/>
+        <!-- copy ide screenshot image -->
+        <available file="${xtest.workdir}/sys/ide/system/screenshot.png" type="file" property="xtest.ide.screenshot.exists"/>
+        <antcall target="copy-ide-screenshot"/>
         <!-- copy ide.zip -->
         <condition property="xtest.userdir.move">
            <equals arg1="${xtest.archive.ide.userdir}" arg2="true"/>
@@ -519,6 +522,11 @@ Microsystems, Inc. All Rights Reserved.
            <fileset dir="${xtest.workdir}/sys/ide/output"/>
         </copy>
     </target>
+    
+    <target name="copy-ide-screenshot" if="xtest.ide.screenshot.exists">
+        <copy file="${xtest.workdir}/sys/ide/system/screenshot.png" todir="${xtest.current.results}/sys/ide"/>           
+    </target>
+    
     
     <!-- ======== -->
     <!-- Building -->
