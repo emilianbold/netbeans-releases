@@ -48,8 +48,8 @@
 //      java.sql.Types.VARBINARY = VARBINARY;
       java.sql.Types.VARCHAR = VARCHAR;
     };
-    SizelessTypes = (BIT,DATE,"DOUBLE PRECISION",FLOAT,INT,REAL,SMALLINT,TIME,TIMESTAMP);
-    DecimalTypes = (DECIMAL,NUMERIC);
+    SizelessTypes = (BIT,DATE,"DOUBLE PRECISION",INT,REAL,SMALLINT,TIME,TIMESTAMP);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
     CharacterTypes = (CHAR,VARCHAR);
 //    ProcedureArgumentMap = {
 //      IN = IN;
@@ -244,7 +244,7 @@
       DELETE = DELETE;
     };
     SizelessTypes = (BIGINT,BINARY,BIT,IMAGE,DATE,INT,"LONG VARCHAR","LONG BINARY",REAL,SMALLINT,TIME,TIMESTAMP,TINYINT,VARBINARY);
-    DecimalTypes = (DECIMAL,FLOAT);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
     CharacterTypes = (CHAR,VARCHAR);
 
 //
@@ -398,7 +398,7 @@
       DELETE = DELETE;
     };
     SizelessTypes = (BIGINT,BINARY,BIT,IMAGE,DATE,INT,"LONG VARCHAR","LONG BINARY",REAL,SMALLINT,TIME,TIMESTAMP,TINYINT,VARBINARY);
-    DecimalTypes = (DECIMAL,FLOAT);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
     CharacterTypes = (CHAR,VARCHAR);
 
 //
@@ -582,8 +582,8 @@
       UPDATE = UPDATE;
       DELETE = DELETE;
     };
-    SizelessTypes = (BIGINT,BLOB,DATE,FLOAT,INT,INTEGER,REAL,SMALLINT);
-    DecimalTypes = (DECIMAL,NUMERIC);
+    SizelessTypes = (BIGINT,BLOB,DATE,INT,INTEGER,REAL,SMALLINT);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
     CharacterTypes = (CHAR,VARCHAR2);
 
 //
@@ -783,7 +783,7 @@
 //      DELETE = DELETE;
 //    };
     SizelessTypes = (BOOLEAN,DATE,INT,"LONG VARCHAR","LONG VARBINARY",LONGINT,SMALLINT,TIME,TIMESTAMP,TINYINT);
-    DecimalTypes = (DECIMAL,FLOAT);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
     CharacterTypes = (CHAR,VARCHAR);
     
   };
@@ -951,8 +951,8 @@
       java.sql.Types.TIMESTAMP = "TIME STAMP";
       java.sql.Types.VARBINARY = VARBINARY;
     };
-    SizelessTypes = ("BIG INTEGER",BINARY,BOOLEAN,DATE,DOUBLE,FLOAT,INTEGER,TIME,"TIME STAMP",VARBINARY);
-    DecimalTypes = (DECIMAL,NUMERIC);
+    SizelessTypes = ("BIG INTEGER",BINARY,BOOLEAN,DATE,DOUBLE,INTEGER,TIME,"TIME STAMP",VARBINARY);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
     CharacterTypes = (CHAR);
     
   };
@@ -983,8 +983,8 @@
       java.sql.Types.TIMESTAMP = TIMESTAMP;
       java.sql.Types.VARCHAR = VARCHAR;
     };
-    SizelessTypes = (BOOLEAN,BLOB,CLOB,DATE,"DOUBLE PRECISION",FLOAT,INTEGER,REAL,SMALLINT,TIME,TIMESTAMP);
-    DecimalTypes = (DECIMAL,NUMERIC);
+    SizelessTypes = (BOOLEAN,BLOB,CLOB,DATE,"DOUBLE PRECISION",INTEGER,REAL,SMALLINT,TIME,TIMESTAMP);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
     CharacterTypes = (CHAR,VARCHAR);
     
   };
@@ -1011,8 +1011,8 @@
       java.sql.Types.SMALLINT = SMALLINT;
       java.sql.Types.VARCHAR = VARCHAR;
     };
-    SizelessTypes = (BLOB,CLOB,DATE,"DOUBLE PRECISION",FLOAT,INT,REAL,SMALLINT);
-    DecimalTypes = (DECIMAL,NUMERIC);
+    SizelessTypes = (BLOB,CLOB,DATE,"DOUBLE PRECISION",INT,REAL,SMALLINT);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
     CharacterTypes = (CHAR,VARCHAR);    
   };
   
@@ -1038,8 +1038,8 @@
       java.sql.Types.SMALLINT = SMALLINT;
       java.sql.Types.VARCHAR = VARCHAR;
     };
-    SizelessTypes = (BLOB,CLOB,DATE,"DOUBLE PRECISION",FLOAT,INT,REAL,SMALLINT);
-    DecimalTypes = (DECIMAL,NUMERIC);
+    SizelessTypes = (BLOB,CLOB,DATE,"DOUBLE PRECISION",INT,REAL,SMALLINT);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
     CharacterTypes = (CHAR,VARCHAR);    
   };
   
@@ -1067,8 +1067,8 @@
       java.sql.Types.VARBINARY = VARBINARY;
       java.sql.Types.VARCHAR = VARCHAR;
     };
-    SizelessTypes = (BINARY,IMAGE,DATE,DOUBLE,FLOAT,INT,LONGVARBINARY,SMALLINT,TINYINT,VARBINARY);
-    DecimalTypes = (DECIMAL,NUMERIC);
+    SizelessTypes = (BINARY,IMAGE,DATE,DOUBLE,INT,LONGVARBINARY,SMALLINT,TINYINT,VARBINARY);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
     CharacterTypes = (CHAR,VARCHAR);
 
 //////////////////////
@@ -1111,8 +1111,8 @@
       java.sql.Types.SMALLINT = SMALLINT;
       java.sql.Types.VARCHAR = VARCHAR;
     };
-    SizelessTypes = (BLOB,DATE,"DOUBLE PRECISION",FLOAT,INTEGER,SMALLINT);
-    DecimalTypes = (DECIMAL,NUMERIC);
+    SizelessTypes = (BLOB,DATE,"DOUBLE PRECISION",INTEGER,SMALLINT);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
     CharacterTypes = (CHAR,VARCHAR);
     
 //////////////////////
@@ -1160,8 +1160,8 @@
       java.sql.Types.TINYINT = TINYINT;
       java.sql.Types.VARCHAR = VARCHAR;
     };
-    SizelessTypes = (BIGINT,BLOB,TEXT,DATE,"DOUBLE PRECISION",FLOAT,INT,REAL,SMALLINT,TIME,TIMESTAMP,TINYINT);
-    DecimalTypes = (DECIMAL,NUMERIC);
+    SizelessTypes = (BIGINT,BLOB,DATE,"DOUBLE PRECISION",FLOAT,INT,REAL,SMALLINT,TIME,TIMESTAMP,TINYINT);
+//    DecimalTypes = (DECIMAL,NUMERIC);
     CharacterTypes = (CHAR,VARCHAR);
     
   };
@@ -1200,8 +1200,8 @@
       UPDATE = UPDATE;
       DELETE = DELETE;
     };
-    SizelessTypes = (BIGINT,BLOB,DATE,FLOAT,INT,INTEGER,REAL,SMALLINT);
-    DecimalTypes = (DECIMAL,NUMERIC);
+    SizelessTypes = (BIGINT,BLOB,DATE,INT,INTEGER,REAL,SMALLINT);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
     CharacterTypes = (CHAR,VARCHAR2);
 
 //
@@ -1394,8 +1394,8 @@
       UPDATE = UPDATE;
       DELETE = DELETE;
     };
-    SizelessTypes = (BIGINT,BLOB,DATE,FLOAT,INT,INTEGER,REAL,SMALLINT);
-    DecimalTypes = (DECIMAL,NUMERIC);
+    SizelessTypes = (BIGINT,BLOB,DATE,INT,INTEGER,REAL,SMALLINT);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
     CharacterTypes = (CHAR,VARCHAR2);
 
 //
@@ -1625,7 +1625,7 @@
 
 //  ********************************************************************************
 //
-//  SYBASE SQL SERVER (JDBC type 4)
+//  SYBASE SQL SERVER 11 (JDBC type 4)
 //
 //  ********************************************************************************/
 
@@ -1634,26 +1634,19 @@
     DatabaseProductVersion = 11.5.1;
     TriggerEventListDelimiter = ", ";
     TypeMap = {
-      java.sql.Types.BIGINT = BIGINT;
-      java.sql.Types.BINARY = BINARY;
       java.sql.Types.BIT = BIT;
       java.sql.Types.BLOB = IMAGE;  //JDBC 2.0 A type representing an SQL Binary Large Object
       java.sql.Types.CHAR = CHAR;
       java.sql.Types.CLOB = TEXT;  //JDBC 2.0 A type representing an SQL Character Large Object
-      java.sql.Types.DATE = DATE;
+      java.sql.Types.DATE = DATETIME;
       java.sql.Types.DECIMAL = DECIMAL;
-      java.sql.Types.DOUBLE = DOUBLE;
+      java.sql.Types.DOUBLE = "DOUBLE PRECISION";
       java.sql.Types.FLOAT = FLOAT;
       java.sql.Types.INTEGER = INT;
-      java.sql.Types.LONGVARBINARY = "LONG BINARY";
-      java.sql.Types.LONGVARCHAR = "LONG VARCHAR";
       java.sql.Types.NUMERIC = NUMERIC;
       java.sql.Types.REAL = REAL;
       java.sql.Types.SMALLINT = SMALLINT;
-      java.sql.Types.TIME = TIME;
-      java.sql.Types.TIMESTAMP = TIMESTAMP;
       java.sql.Types.TINYINT = TINYINT;
-      java.sql.Types.VARBINARY = VARBINARY;
       java.sql.Types.VARCHAR = VARCHAR;
     };
     ProcedureArgumentMap = {
@@ -1666,8 +1659,8 @@
       UPDATE = UPDATE;
       DELETE = DELETE;
     };
-    SizelessTypes = (BIGINT,BINARY,BIT,IMAGE,DATE,INT,"LONG VARCHAR","LONG BINARY",REAL,SMALLINT,TIME,TIMESTAMP,TINYINT,VARBINARY);
-    DecimalTypes = (DECIMAL,FLOAT);
+    SizelessTypes = (BIT,IMAGE,TEXT,DATETIME,"DOUBLE PRECISION",INT,REAL,SMALLINT,TINYINT);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
     CharacterTypes = (CHAR,VARCHAR);
 
 //
