@@ -78,7 +78,7 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
         FileObject metaInf = getFileObject(EjbJarProjectProperties.META_INF);
         if (metaInf == null) {
             String path = helper.resolvePath(helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.META_INF));
-            showErrorMessage(NbBundle.getMessage(EjbJarProject.class,"MSG_MetaInf_Corrupted", project.getName(), path));
+            showErrorMessage(NbBundle.getMessage(EjbJarProject.class,"MSG_MetaInfCorrupted", project.getName(), path));
             return null;
         }
         return metaInf;
