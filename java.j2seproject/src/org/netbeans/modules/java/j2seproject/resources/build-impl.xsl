@@ -39,6 +39,7 @@ is divided into following sections:
   - junit compilation
   - junit execution
   - junit debugging
+  - applet
   - cleanup
 
 ]]></xsl:comment>
