@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,8 +25,6 @@ import org.openide.awt.*;
 
 import org.mozilla.util.*;
 import org.mozilla.webclient.*;
-
-import org.netbeans.modules.httpserver.WrapperServlet;
 
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -240,7 +238,7 @@ class WebclientBrowserImpl extends HtmlBrowser.Impl {
     public void setURL (URL url) {
         if (SwingUtilities.isEventDispatchThread ()) {
             final URL newUrl = url;
-            RequestProcessor.postRequest (
+            RequestProcessor.getDefault(). post (
                 new Runnable () {
                     public void run () {
                         WebclientBrowserImpl.this.setURL (newUrl);
@@ -294,7 +292,7 @@ class WebclientBrowserImpl extends HtmlBrowser.Impl {
 
     void setStatusMessage (String msg) {
         // XXX might be better to use own status bar
-        TopManager.getDefault().setStatusText(msg);
+        StatusDisplayer.getDefault ().setStatusText (msg);
         String old = statusMessage;
         statusMessage = msg;
         pcs.firePropertyChange (PROP_STATUS_MESSAGE, old, statusMessage);
