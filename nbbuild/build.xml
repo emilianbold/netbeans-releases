@@ -208,6 +208,7 @@ treefs
 
   <!-- XXX zip task not well suited to making final build, as it does not set +x bits -->
   <!-- should also create empty lib/patches/ dir (but again zip task will ignore it) -->
+  <!-- or just make lib/patches/.exists which is otherwise harmless -->
 
   <target name="virgin" depends="build-messaging">
     <!-- Automatically include openide and core, these are mandatory -->
@@ -218,6 +219,7 @@ treefs
 
   <target name="firststart" depends="build-messaging">
     <nbmerge dest="firststart" topdir=".." modules="openide,core,${modules}" targetprefix="all-"/>
+    <!-- XXX chmod does not work reliably...investigate -->
     <chmod file="firststart/bin/ffj.sh" perm="ugo+x"/>
     <chmod file="firststart/bin/ffj_multiuser.sh" perm="ugo+x"/>
     <echo message="Starting the IDE..."/>
@@ -225,20 +227,17 @@ treefs
     <echo message="to make the first user start faster and better.)"/>
     <!-- XXX should perhaps preset JAVA_PATH to ${java.home} or something? -->
     <!-- XXX check these OS names...still need Windows 95/98, and does this work for 2000? -->
-    <exec os="Windows NT" dir="firststart/bin" command="forte4j.exe ${firststart.args}" output="firststart.log" failonerror="yes"/>
-    <!-- XXX chmod does not work reliably...investigate -->
-    <exec os="Linux" dir="firststart/bin" command="sh ffj.sh ${firststart.args}" output="firststart.log" failonerror="yes"/>
-    <exec os="SunOS" dir="firststart/bin" command="sh ffj.sh ${firststart.args}" output="firststart.log" failonerror="yes"/>
+    <!-- XXX better would be to scan first start log for stacktraces and just show those; -->
+    <!-- possibly after filtering for duplicates or something like this. -->
+    <exec os="Windows NT" dir="firststart/bin" command="forte4j.exe ${firststart.args}" failonerror="yes"/>
+    <exec os="Linux" dir="firststart/bin" command="sh ffj.sh ${firststart.args}" failonerror="yes"/>
+    <exec os="SunOS" dir="firststart/bin" command="sh ffj.sh ${firststart.args}" failonerror="yes"/>
     <!-- XXX ideal would be a timeout after which the process would get SIGQUIT then SIGINT then SIGKILL -->
     <echo message="Successfully started, cleaning up detritus..."/>
     <delete file="firststart/system/forte4j.log"/>
     <delete file="firststart/system/project.basic"/>
     <delete file="firststart/system/project.last"/>
     <delete file="firststart/beans/libs.properties"/>
-    <!-- XXX would be nice to dump firststart.log to stdout at this point -->
-    <!-- Even better would be to scan it for stacktraces and just show those; -->
-    <!-- possibly after filtering for duplicates or something like this. -->
-    <echo message="Check firststart.log in nbbuild/ to see if everything went OK."/>
   </target>
 
   <target name="depucelee" depends="firststart">
@@ -251,7 +250,6 @@ treefs
   <target name="localclean">
     <deltree dir="virgin"/>
     <deltree dir="firststart"/>
-    <delete file="firststart.log"/>
     <echo message="Manually delete unwanted builds as needed."/>
   </target>
 
