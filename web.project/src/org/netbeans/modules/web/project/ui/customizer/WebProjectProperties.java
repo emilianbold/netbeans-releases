@@ -767,6 +767,9 @@ public class WebProjectProperties {
     }
     
     public static final void getFilesForItem (ClassPathSupport.Item item, List/*File*/ files, List/*File*/ dirs) {
+        if (item.isBroken()) {
+            return ;
+        }
         if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
             List/*<URL>*/ roots = item.getLibrary().getContent("classpath");  //NOI18N
             for (Iterator it = roots.iterator(); it.hasNext();) {
@@ -799,13 +802,11 @@ public class WebProjectProperties {
             String artifactFolder = item.getArtifact().getScriptLocation().getParent();
             URI roots[] = item.getArtifact().getArtifactLocations();
             for (int i = 0; i < roots.length; i++) {
-                File root = new File (artifactFolder + File.separator + roots [i]);
-                if (root != null) {
-                    if (root.isFile()) {
-                        files.add(root); 
-                    } else {
-                        dirs.add(root);
-                    }
+                String root = artifactFolder + File.separator + roots [i];
+                if (root.endsWith(File.separator)) {
+                    dirs.add(new File (root));
+                } else {
+                    files.add(new File (root));
                 }
             }
         }

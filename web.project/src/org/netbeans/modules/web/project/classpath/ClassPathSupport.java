@@ -185,6 +185,7 @@ public class ClassPathSupport {
                         File file = item.getFile();
                         // pass null as expected artifact type to always get file reference
                         reference = referenceHelper.createForeignFileReference(file, null);
+                        item.setReference(reference);
                     }
                     break;
                 case Item.TYPE_LIBRARY:
@@ -198,6 +199,7 @@ public class ClassPathSupport {
                             break;
                         }
                         reference = getLibraryReference( item );
+                        item.setReference(reference);
                     }
                     break;    
                 case Item.TYPE_ARTIFACT:
@@ -211,6 +213,7 @@ public class ClassPathSupport {
                             break;
                         }
                         reference = referenceHelper.addReference( item.getArtifact(), item.getArtifactURI());
+                        item.setReference(reference);
                     }
                     break;
                 case Item.TYPE_CLASSPATH:
@@ -418,10 +421,17 @@ public class ClassPathSupport {
         private Item( int type, Object object, String raw, String eval, String property, String pathInWar) {
             this.type = type;
             this.object = object;
-            this.raw = raw;
-            this.eval = eval;
-            this.property = property;
-            this.pathInWar = pathInWar;
+            if (object == null || type == TYPE_CLASSPATH || object == BROKEN ||
+                    (type == TYPE_JAR && object instanceof File) ||
+                    (type == TYPE_ARTIFACT && (object instanceof AntArtifact)) ||
+                    (type == TYPE_LIBRARY && (object instanceof Library))) {
+                this.raw = raw;
+                this.eval = eval;
+                this.property = property;
+                this.pathInWar = pathInWar;
+            } else {
+                throw new IllegalArgumentException ("invalid classpath item, type=" + type + " object type:" + object.getClass().getName());
+            }
         }
         
         private Item( int type, Object object, String raw, String eval, URI artifactURI, String property, String pathInWar) {
@@ -502,6 +512,9 @@ public class ClassPathSupport {
             if ( getType() != TYPE_LIBRARY ) {
                 throw new IllegalArgumentException( "Item is not of required type - LIBRARY" ); // NOI18N
             }
+            if (isBroken()) {
+                return null;
+            }
             return (Library)object;
         }
         
@@ -509,12 +522,18 @@ public class ClassPathSupport {
             if ( getType() != TYPE_JAR ) {
                 throw new IllegalArgumentException( "Item is not of required type - JAR" ); // NOI18N
             }
+            if (isBroken()) {
+                return null;
+            }
             return (File)object;
         }
         
         public AntArtifact getArtifact() {
             if ( getType() != TYPE_ARTIFACT ) {
                 throw new IllegalArgumentException( "Item is not of required type - ARTIFACT" ); // NOI18N
+            }
+            if (isBroken()) {
+                return null;
             }
             return (AntArtifact)object;
         }
@@ -536,6 +555,10 @@ public class ClassPathSupport {
 
         public String getReference() {
             return property;
+        }
+        
+        public void setReference(String property) {
+            this.property = property;
         }
         
         public boolean isBroken() {

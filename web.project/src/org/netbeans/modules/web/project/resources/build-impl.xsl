@@ -147,6 +147,11 @@ is divided into following sections:
                         <istrue value="${{no.dependencies}}"/>
                     </and>
                 </condition>
+                <condition property="no.dist.ear.dir">
+                    <not>
+                        <isset property="dist.ear.dir"/>
+                    </not>
+                </condition>
                 <property name="build.web.excludes" value="${{build.classes.excludes}}"/>
                 <condition property="do.compile.jsps">
                     <istrue value="${{compile.jsps}}"/>
@@ -1419,9 +1424,11 @@ to simulate
             <xsl:choose>
                 <xsl:when test="$ear">
                     <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
+                    <xsl:attribute name="unless">no.deps</xsl:attribute>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:attribute name="unless">dist.ear.dir</xsl:attribute>
+                    <xsl:attribute name="if">no.dist.ear.dir</xsl:attribute>
+                    <xsl:attribute name="unless">no.deps</xsl:attribute>
                 </xsl:otherwise>
             </xsl:choose>
             
