@@ -41,6 +41,8 @@ public class RADComponent {
   private HashMap auxValues;
   private HashMap propertyValues;
 
+  private FormManager formManager;
+
 // -----------------------------------------------------------------------------
 // Constructors
 
@@ -52,6 +54,14 @@ public class RADComponent {
 // -----------------------------------------------------------------------------
 // Public interface
 
+  public void setFormManager (FormManager formManager) {
+    this.formManager = formManager;
+  }
+
+  public FormManager getFormManager () {
+    return formManager;
+  }
+  
   public void setComponent (Class beanClass) {
     this.beanClass = beanClass;
     beanInstance = BeanSupport.createBeanInstance (beanClass);
@@ -78,10 +88,16 @@ public class RADComponent {
       if (beanExpertProperties.length != 0) {
         // No expert properties
         beanPropertySets = new Node.PropertySet [] {
+          new Node.PropertySet ("synthetic", "Synthetic", "Synthetic Properties") {
+            public Node.Property[] getProperties () {
+              
+              return getSyntheticProperties ();
+            }
+          },
           new Node.PropertySet ("properties", "Properties", "Properties") {
             public Node.Property[] getProperties () {
               
-              return beanProperties;
+              return getComponentProperties ();
             }
           },
 /*          new Node.PropertySet ("events", "Events", "Events") {
@@ -92,14 +108,20 @@ public class RADComponent {
         };
       } else {
         beanPropertySets = new Node.PropertySet [] {
+          new Node.PropertySet ("synthetic", "Synthetic", "Synthetic Properties") {
+            public Node.Property[] getProperties () {
+              
+              return getSyntheticProperties ();
+            }
+          },
           new Node.PropertySet ("properties", "Properties", "Properties") {
             public Node.Property[] getProperties () {
-              return beanProperties;
+              return getComponentProperties ();
             }
           },
           new Node.PropertySet ("expert", "Expert", "Expert Properties") {
             public Node.Property[] getProperties () {
-              return beanExpertProperties;
+              return getComponentExpertProperties ();
             }
           },
 /*          new Node.PropertySet ("events", "Events", "Events") {
@@ -120,12 +142,15 @@ public class RADComponent {
   public Object getAuxiliaryValue (String key) {
     return auxValues.get (key);
   }
+  
+// -----------------------------------------------------------------------------
+// Parent-child
 
 // -----------------------------------------------------------------------------
 // Protected interface
 
-  protected Node.Property[] getSynthesizedProperties () {
-    return new Node.Property[0];
+  protected Node.Property[] getSyntheticProperties () {
+    return getFormManager ().getCodeGenerator ().getSyntheticProperties (this);
   }
 
   protected Node.Property[] getComponentProperties () {
@@ -144,6 +169,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  3    Gandalf   1.2         4/29/99  Ian Formanek    
  *  2    Gandalf   1.1         4/29/99  Ian Formanek    
  *  1    Gandalf   1.0         4/26/99  Ian Formanek    
  * $

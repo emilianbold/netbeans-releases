@@ -33,7 +33,7 @@ public class RADComponentNode extends AbstractNode {
     super ((component instanceof ComponentContainer) ? new RADChildren ((ComponentContainer)component) : Children.LEAF);
     this.component = component;
     String className = component.getComponentClass ().getName ();
-    setDisplayName (nameFormat.format (new Object[] {component.getName (), className, className.substring (className.lastIndexOf (".") + 1) } ));
+    setName (nameFormat.format (new Object[] {component.getName (), className, className.substring (className.lastIndexOf (".") + 1) } ));
   }
 
   public Image getIcon (int iconType) {
@@ -53,6 +53,7 @@ public class RADComponentNode extends AbstractNode {
 
 /*
  * Log
+ *  2    Gandalf   1.1         4/29/99  Ian Formanek    
  *  1    Gandalf   1.0         4/29/99  Ian Formanek    
  * $
  */

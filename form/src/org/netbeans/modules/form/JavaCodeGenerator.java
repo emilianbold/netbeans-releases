@@ -52,11 +52,13 @@ public class JavaCodeGenerator extends CodeGenerator {
             throw new IllegalArgumentException ();
           }
 
+          component.setName ((String)value);
           component.setAuxiliaryValue (AUX_VARIABLE_NAME,  value);
         }
 
         public Object getValue () {
-          return component.getAuxiliaryValue (AUX_VARIABLE_NAME);
+          return component.getName ();
+          //return component.getAuxiliaryValue (AUX_VARIABLE_NAME);
         }
       },
     };
@@ -138,6 +140,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  2    Gandalf   1.1         4/29/99  Ian Formanek    
  *  1    Gandalf   1.0         4/26/99  Ian Formanek    
  * $
  */

@@ -45,6 +45,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   private FormTopComponent formTopComponent;
   
   private RADComponentNode formRootNode;
+
+  private FormManager formManager;
   
   /** lock for opening form */
   private static final Object OPEN_FORM_LOCK = new Object ();
@@ -93,7 +95,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   FormTopComponent getFormTopComponent () {
     if (!formLoaded) return null;
     if (formTopComponent == null) {
-      formTopComponent = new FormTopComponent (new FormManager ());
+      formTopComponent = new FormTopComponent (formManager);
     }
     return formTopComponent;
   }
@@ -154,8 +156,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       // create new objects from Backward compatibility classes
       RADForm radForm = null;
       if (deserializedForm instanceof DesignForm) {
-        radForm = new RADForm (new JFrameFormInfo ());
-        RADComponent[] subComps = createHierarchy ((((DesignForm)deserializedForm).getFormManager ().getRootNode ()));
+        formManager = new FormManager (formObject);
+        radForm = new RADForm (new JFrameFormInfo (), formManager);
+        RADComponent[] subComps = createHierarchy ((((DesignForm)deserializedForm).getFormManager ().getRootNode ()), formManager);
         radForm.getTopLevelComponent ().initSubComponents (subComps);
       }
 
@@ -198,19 +201,20 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     return true;
   }
 
-  private RADComponent[] createHierarchy (RADContainerNode node) {
+  private static RADComponent[] createHierarchy (RADContainerNode node, FormManager formManager) {
     RADNode nodes[] = node.getSubNodes ();
     RADComponent[] comps = new RADComponent [nodes.length];
     for (int i = 0; i < nodes.length; i++) {
       if (nodes[i] instanceof RADContainerNode) {
         comps[i] = new RADVisualContainer ();
-        RADComponent[] subs = createHierarchy ((RADContainerNode)nodes[i]);
+        RADComponent[] subs = createHierarchy ((RADContainerNode)nodes[i], formManager);
         ((ComponentContainer)comps[i]).initSubComponents (subs);
       } else if (nodes[i] instanceof RADVisualNode) {
         comps[i] = new RADVisualComponent ();
       } else {
         comps[i] = new RADComponent ();
       }
+      comps[i].setFormManager (formManager);
       comps[i].setComponent (nodes[i].getBeanClass ());
       comps[i].setName (nodes[i].getName ());
     }
@@ -249,6 +253,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  8    Gandalf   1.7         4/29/99  Ian Formanek    
  *  7    Gandalf   1.6         4/29/99  Ian Formanek    
  *  6    Gandalf   1.5         4/12/99  Ian Formanek    Improved form loading 
  *       debug messages
