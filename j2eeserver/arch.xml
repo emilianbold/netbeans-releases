@@ -54,7 +54,10 @@ J2EE Server Module provides support for development of J2EE modules and framewor
     
 <api type="export" group="layer" name="PluginRegistration" category="friend" url="org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/plugin-layer-file.html">
     XML layer contract for registration of server plugins and instances that implement 
-    optional capabilities of server plugins.
+    optional capabilities of server plugins.  Plugins with
+    server-specific deployment decriptor files should declare the full
+    list in XML layer as specified in the document
+    plugin-layer-file.html from the above link. 
 </api>
 
 <p>
