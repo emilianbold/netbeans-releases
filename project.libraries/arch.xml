@@ -595,8 +595,7 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="format-types">
-  <!-- XXX link to public location when available: #43596 -->
-  <api group="dtd" name="Library-Declaration-DTD" type="export" category="devel" url="http://www.netbeans.org/source/browse/projects/libraries/src/org/netbeans/modules/project/libraries/resources/library-declaration-1_0.dtd">
+  <api group="dtd" name="Library-Declaration-DTD" type="export" category="devel" url="http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
    <p>
     An XML DTD is used to define the library definition format.
   </p>

@@ -56,8 +56,7 @@ Microsystems, Inc. All Rights Reserved.
   </p>
   <ol>
    <li>
-    <!-- XXX change links when these are properly published: #43596 -->
-    <api group="dtd" name="freeform-project-java.xsd" type="export" category="official" url="http://www.netbeans.org/source/browse/~checkout~/java/freeform/src/org/netbeans/modules/java/freeform/resources/freeform-project-java.xsd">
+    <api group="dtd" name="freeform-project-java.xsd" type="export" category="official" url="http://www.netbeans.org/ns/freeform-project-java/1.xsd">
      <p>
       XML schema for the Java-specific section. Users are allowed
       to modify this section by hand and can refer to this schema for available

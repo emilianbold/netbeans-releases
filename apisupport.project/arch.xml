@@ -45,8 +45,7 @@ Microsystems, Inc. All Rights Reserved.
   </p>
   <ul>
    <li>
-    <!-- #43596: link to official location -->
-    <api group="dtd" name="project.xml" type="export" category="devel" url="http://www.netbeans.org/source/browse/~checkout~/apisupport/project/src/org/netbeans/modules/apisupport/project/resources/nb-module-project.xsd">
+    <api group="dtd" name="project.xml" type="export" category="devel" url="http://www.netbeans.org/ns/nb-module-project/1.xsd">
      <p>
       Syntax for NBM <code>project.xml</code> files.
      </p>

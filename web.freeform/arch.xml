@@ -49,8 +49,7 @@ Microsystems, Inc. All Rights Reserved.
   </p>
   <ol>
    <li>
-    <!-- XXX change links when these are properly published: #43596 -->
-    <api group="dtd" name="freeform-project-web.xsd" type="export" category="official" url="http://www.netbeans.org/source/browse/~checkout~/web/freeform/src/org/netbeans/modules/web/freeform/resources/freeform-project-web.xsd">
+    <api group="dtd" name="freeform-project-web.xsd" type="export" category="official" url="http://www.netbeans.org/ns/freeform-project-web/1.xsd">
      <p>
       XML schema for the Web-specific section. Users are allowed
       to modify this section by hand and can refer to this schema for available

@@ -46,8 +46,7 @@ Microsystems, Inc. All Rights Reserved.
   </p>
   <ul>
    <li>
-    <!-- XXX link to public location later: #43596 -->
-    <api group="dtd" name="platformdefinition.dtd" type="export" category="devel" url="http://www.netbeans.org/source/browse/~checkout~/java/j2seplatform/src/org/netbeans/modules/java/j2seplatform/platformdefinition/platformdefinition.dtd">
+    <api group="dtd" name="platformdefinition.dtd" type="export" category="devel" url="http://www.netbeans.org/dtds/java-platformdefinition-1_0.dtd">
      <p>
       Definition of XML format for J2SE platform type (i.e. a JDK).
      </p>

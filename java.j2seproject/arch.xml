@@ -15,6 +15,8 @@ Microsystems, Inc. All Rights Reserved.
   <!ENTITY api-questions SYSTEM "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
 ]>
 
+<!-- XXX update for 4.1 format changes -->
+
 <api-answers
   question-version="1.24"
   module="java/j2seproject"
@@ -47,8 +49,7 @@ Microsystems, Inc. All Rights Reserved.
   </p>
   <ol>
    <li>
-    <!-- XXX use official URL when available: #43596 -->
-    <api group="dtd" name="j2se-project.xsd" type="export" category="devel" url="http://www.netbeans.org/source/browse/~checkout~/java/j2seproject/src/org/netbeans/modules/java/j2seproject/resources/j2se-project.xsd">
+    <api group="dtd" name="j2se-project.xsd" type="export" category="devel" url="http://www.netbeans.org/ns/j2se-project/1.xsd">
      <p>
       Definition of j2seproject-specific portions of <code>project.xml</code>.
      </p>
