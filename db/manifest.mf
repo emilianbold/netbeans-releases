@@ -1,5 +1,5 @@
 OpenIDE-Module: com.netbeans.enterprise.modules.db/1
-OpenIDE-Module-Name: Database explorer
+OpenIDE-Module-Name: Database Explorer
 OpenIDE-Module-Install: com/netbeans/enterprise/modules/db/DatabaseModule.class
 OpenIDE-Module-Specification-Version: 0.9.5
 OpenIDE-Module-Implementation-Version: 0.9.5
