@@ -62,7 +62,7 @@ workspaceswitcher
       <config name="stable" modules="ant,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,scripting,text,usersguide,utilities,vcscore,vcscvs,web"/>
       <config name="stable-with-apisupport" modules="ant,apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,scripting,text,usersguide,utilities,vcscore,vcscvs,web"/>
       <config name="ide-hacker" modules="ant,apisupport,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,scripting,serialversion,sysprops,text,utilities,vcscore,vcscvs"/>
-      <config name="bloated" modules="ant,apisupport,applet,autoupdate,beans,clazz,cpplite,crosscompile,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,javaembeddedserver,makefile,multicompile,objectbrowser,projects,properties,remotefs,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,web"/>
+      <config name="bloated" modules="ant,apisupport,applet,autoupdate,beans,clazz,cpplite,crosscompile,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,javaembeddedserver,logger,makefile,multicompile,objectbrowser,projects,properties,remotefs,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,web"/>
       <config name="sandwich" modules="apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,objectbrowser,projects,properties,text,utilities,vcscore,vcscvs,web"/>
       <!-- You are on your own for getting the binaries for some of these: -->
       <config name="bloated-plus-extrabins" modules="ant,apisupport,applet,autoupdate,beans,clazz,cpplite,crosscompile,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,javaembeddedserver,jini,makefile,multicompile,objectbrowser,projects,properties,remotefs,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,web"/>
@@ -182,6 +182,10 @@ workspaceswitcher
   <target name="all-jini" depends="all-openide,all-httpserver">
     <echo message="Building module jini..."/>
     <ant dir="../jini" target="netbeans"/>
+  </target>
+  <target name="all-logger" depends="all-openide,all-core">
+    <echo message="Building module logger..."/>
+    <ant dir="../logger" target="netbeans"/>
   </target>
   <target name="all-makefile" depends="all-openide">
     <echo message="Building module makefile..."/>
