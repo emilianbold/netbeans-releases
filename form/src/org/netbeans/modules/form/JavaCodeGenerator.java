@@ -497,7 +497,7 @@ public class JavaCodeGenerator extends CodeGenerator {
   }
   
   private void addInitCode (RADComponent comp, Writer initCodeWriter, AWTIndentStringWriter initCodeBuffer, int level) throws IOException {
-    //System.out.println("Adding init code for: "+comp.getName ());
+    //System.out.println("Adding init code for: "+comp.getName ()+ " level:"+level);
     /* all components are created before init code in addCreateCode ()
     if (!(comp instanceof FormContainer)) {
       generateComponentCreate (comp, initCodeWriter);
@@ -524,6 +524,7 @@ public class JavaCodeGenerator extends CodeGenerator {
           } // [PENDING - adding to non-visual containers]
 
         } else {
+          initCodeWriter.flush ();
           initCodeBuffer.setIndentLevel (level + 1, oneIndent);
           initCodeWriter.write ("\n");
           addInitCode (children[i], initCodeWriter, initCodeBuffer, level + 1);
@@ -540,6 +541,7 @@ public class JavaCodeGenerator extends CodeGenerator {
             generateMenuAddCode (children[i], (RADMenuComponent)comp, initCodeWriter);
           } // [PENDING - adding to non-visual containers]
 
+          initCodeWriter.flush ();
           initCodeBuffer.setIndentLevel (level, oneIndent);
         }
       }
@@ -1339,7 +1341,9 @@ public class JavaCodeGenerator extends CodeGenerator {
     * Write a string.
     */
     public void write(String str) {
-      if (currentIndent != null) str = Utilities.replaceString (str, "\n", "\n"+currentIndent);
+      if (currentIndent != null) {
+        str = Utilities.replaceString (str, "\n", "\n"+currentIndent);
+      }
       super.write (str);
     }
     
@@ -1421,6 +1425,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  58   Gandalf   1.57        11/24/99 Pavel Buzek     2882 (AWT hierarchy) 
+ *       fixed
  *  57   Gandalf   1.56        11/15/99 Pavel Buzek     editors for code support
  *       mime type text/x-java
  *  56   Gandalf   1.55        11/1/99  Pavel Buzek     enable to enter a custom
