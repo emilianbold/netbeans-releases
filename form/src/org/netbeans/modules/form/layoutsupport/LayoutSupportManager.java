@@ -193,6 +193,11 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         }
     }
 
+    public boolean isUnknownLayout() {
+        return layoutDelegate == null
+               || layoutDelegate instanceof UnknownLayoutSupport;
+    }
+
     // copy layout delegate from another container
     public void copyLayoutDelegateFrom(
                     LayoutSupportManager sourceLayoutSupport)

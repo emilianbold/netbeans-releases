@@ -2437,7 +2437,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             addElementClose(buf, XML_SUB_COMPONENTS);
         }
 
-        if (visualContainer != null && convIndex < 0)
+        if (visualContainer != null && convIndex == LAYOUT_FROM_CODE)
             saveLayoutCode(visualContainer.getLayoutSupport(), buf, indent);
     }
 
@@ -2445,10 +2445,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
                            StringBuffer buf, String indent)
     {
         LayoutSupportManager layoutSupport = container.getLayoutSupport();
-        Class layoutClass = layoutSupport.getLayoutDelegate().getSupportedClass();
+        if (layoutSupport.isUnknownLayout())
+            return LAYOUT_UNKNOWN;
 
         int convIndex = -1; // index in conversion table
 
+        Class layoutClass = layoutSupport.getLayoutDelegate().getSupportedClass();
         if (layoutClass == null)
             convIndex = LAYOUT_NULL;
         else {
@@ -2460,7 +2462,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 }
 
             if (convIndex < 0) // not a standard layout
-                return convIndex;
+                return LAYOUT_FROM_CODE;
         }
 
         StringBuffer buf2 = new StringBuffer();
