@@ -546,10 +546,11 @@
 </tocitem>
 
 <tocitem text="IDE Configuration">
+    <tocitem text="About Configuring the IDE" target="configure.about" />    
+    <tocitem text="Working with IDE Configurations" target="configure.overview" />    
+    <tocitem text="Configuration Tasks: Quick Reference" target="configure.quickref" />          
+
     <tocitem text="Configuring IDE-wide Settings" >
-      <tocitem text="About Configuring the IDE" target="configure.about" />    
-      <tocitem text="Working with IDE Configurations" target="configure.overview" />    
-      <tocitem text="Configuration Tasks: Quick Reference" target="configure.quickref" />          
       <tocitem text="Using the Options Window" target="configure.options" />
       <tocitem text="IDE Startup Parameters" target="configure.startup-switches" />      
       <!--<tocitem text="Configuring System Settings" target="configure.system.settings" />
