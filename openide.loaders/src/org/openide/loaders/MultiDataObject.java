@@ -114,10 +114,8 @@ public class MultiDataObject extends DataObject {
     * @return set of FileObjects
     */
     public Set files () {
-        synchronized ( synchObjectSecondary() ) {
-            removeAllInvalid ();
-            return new FilesSet(getPrimaryFile(), getSecondary());
-        }
+        // move lazy initialization to FilesSet
+        return new FilesSet (this);
     }
 
     /* Getter for delete action.
@@ -152,7 +150,7 @@ public class MultiDataObject extends DataObject {
     /** Lazy getter for secondary property
      * @return secondary object
      */
-    private HashMap getSecondary() {
+    /* package-private */ HashMap getSecondary() {
         synchronized (secondaryCreationLock) {
             if (secondary == null) {
                 secondary = new HashMap (11);
@@ -353,7 +351,7 @@ public class MultiDataObject extends DataObject {
     /** Removes all FileObjects that are not isValid from the
      * set of objects.
      */
-    private void removeAllInvalid () {
+    /* package-private */ void removeAllInvalid () {
         Iterator it = checkSecondary ().entrySet ().iterator ();
         while (it.hasNext ()) {
             Map.Entry e = (Map.Entry)it.next ();

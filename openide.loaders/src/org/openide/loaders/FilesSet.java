@@ -29,6 +29,13 @@ import org.openide.filesystems.FileObject;
  * @author  Petr Hamernik
  */
 final class FilesSet implements Set {
+
+    /** MDO which created this set */
+    private MultiDataObject mymdo;
+    
+    /** A flag */
+    private boolean lazyWorkDone;
+
     /** Primary file. It is returned first. */
     private Object primaryFile;
     
@@ -47,14 +54,33 @@ final class FilesSet implements Set {
      * @param secondary the map of secondary file objects. It is used 
      *     for initialization <code>delegate</code> variable when necessary.
      */
-    public FilesSet(Object primaryFile, HashMap secondary) {
-        this.primaryFile = primaryFile;
-        this.secondary = secondary;
+    public FilesSet(MultiDataObject mdo) {
+        
+        this.mymdo = mdo;
+        this.lazyWorkDone = false;
+        this.primaryFile = null;
+        this.secondary = null;
     }
 
+    /** Does the work which was originaly done in MDO.files() method. */
+    private void doLazyWork() {
+        synchronized (this) {
+            if (!lazyWorkDone) {
+                lazyWorkDone = true;
+
+                synchronized ( mymdo.synchObjectSecondary() ) {
+                    mymdo.removeAllInvalid ();
+                    primaryFile = mymdo.getPrimaryFile();
+                    secondary = mymdo.getSecondary();
+                }
+            }
+        }
+    }
+    
     /** Perform lazy initialization of delegate TreeSet.
      */
     private Set getDelegate() {
+        doLazyWork();
         // This synchronized block was moved from MultiDataObject.files() method,
         // because of lazy initialization of delegate TreeSet.
         // Hopefully won't cause threading problems.
@@ -93,12 +119,14 @@ final class FilesSet implements Set {
     }
     
     public boolean isEmpty() {
+        doLazyWork();
         synchronized (secondary) {
             return (delegate == null) ? false : delegate.isEmpty();
         }
     }
     
     public java.util.Iterator iterator() {
+        doLazyWork();
         synchronized (secondary) {
             return (delegate == null) ? new FilesIterator() : delegate.iterator();
         }
@@ -117,6 +145,7 @@ final class FilesSet implements Set {
     }
     
     public int size() {
+        doLazyWork();
         synchronized (secondary) {
             return (delegate == null) ? (secondary.size() + 1) : delegate.size();
         }
