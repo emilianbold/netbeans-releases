@@ -643,6 +643,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-register">
   <p>
+   <!-- XXX define using <api> -->
    Query multiplexers.
   </p>
  </answer>

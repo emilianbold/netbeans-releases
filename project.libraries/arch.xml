@@ -620,6 +620,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-lookup">
  <p>
+   <!-- XXX use <api group="lookup"> tag -->
    Yes. It looks for instances of
    <code>org.netbeans.spi.project.libraries.LibraryProvider</code> in the default
    lookup. This interface represents a read-only storage of libraries. There can

@@ -924,6 +924,7 @@ Microsystems, Inc. All Rights Reserved.
     <code>Templates/Projects/</code>.
    </p>
   </api>
+  <!-- XXX link to Javadoc or something with definitions -->
   <api group="layer" name="Templates" type="export" category="devel">
    <p>
     File templates can be registered with various attributes, some specific to
