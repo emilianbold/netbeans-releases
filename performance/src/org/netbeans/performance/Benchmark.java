@@ -16,13 +16,15 @@ import java.lang.reflect.Method;
 
 import junit.framework.Test;
 import junit.framework.TestResult;
+import junit.framework.Assert;
+import junit.framework.AssertionFailedError;
 
 /**
  *
- * @author  pn97942
- * @version 
+ * @author  Petr Nejedly
+ * @version 0.9
  */
-public class Benchmark implements Test {
+public class Benchmark extends Assert implements Test {
     
     private String name;
     private static final Object[] emptyObjectArray = new Object[0];
@@ -30,26 +32,50 @@ public class Benchmark implements Test {
     private boolean realRun = false;
     
     private int iterations;
-    private Object parameter = new Object(); // PENDING
+    private Object argument;
     
+    private Object[] arguments;
+    
+    /** Creates new Benchmark without arguments for given test method
+     * @param name the name fo the testing method
+     */    
     public Benchmark( String name ) {
+        this( name, new Object[] { new Object() {
+            public String toString() {
+                return "";
+            }
+        }} );
+    }
+
+    /** Creates new Benchmark for given test method with given set of arguments
+     * @param name the name fo the testing method
+     * @param args the array of objects describing arguments to testing method
+     */    
+    public Benchmark( String name, Object[] args ) {
         this.name = name;
+        arguments = args; // should we clone it?
     }
     
     // things to override by the implementation of a particular Benchmark
-    
+
     /** This method is called before the actual test method to allow
      * the benchmark to prepare accordingly to informations available
-     * through getIterationCount, getParameter and getName. 
+     * through {@link #getIterationCount}, {@link #getArgument} and {@link #getName}.
+     * This method can use assertions to signal failure of the test.
+     * @throws Exception This method can throw any exception which is treated as a error in the testing code
+     * or testing enviroment.
      */
-    protected void setUp() {
+    protected void setUp() throws Exception {
     }
 
     /** This method is called after every finished test method.
      * It is intended to be used to free all the resources allocated
-     * during <CODE>setUp</CODE> or the test itself.
+     * during {@link #setUp} or the test itself.
+     * This method can use assertions to signal failure of the test.
+     * @throws Exception This method can throw any exception which is treated as a error in the testing code
+     * or testing enviroment.
      */
-    protected void tearDown() {
+    protected void tearDown() throws Exception {
     }
     
     /** This method can be overriden by a benchmark that can be resource
@@ -57,8 +83,8 @@ public class Benchmark implements Test {
      * of iterations.
      * @return the maximal iteration count the benchmark is able to handle
      *  without loss of precision due swapping, gc()ing and so on.
-     * Its return value can depend on values returned by <CODE>getName</CODE>
-     * and <CODE>getParameter</CODE>.
+     * Its return value can depend on values returned by {@link #getName}
+     * and {@link #getParameter}.
      */
     protected int getMaxIterationCount() {
         return 50000;
@@ -68,8 +94,7 @@ public class Benchmark implements Test {
 
     /** How many iterations to perform.
      * @return the iteration count the benchmark should perform or
-     * the <CODE>setUp()</CODE> should prepare the benchmark for.
-     * Benchmark writers could use this information during
+     * the {@link #setUp} should prepare the benchmark for.
      */
     protected final int getIterationCount() {
         return iterations;
@@ -78,19 +103,35 @@ public class Benchmark implements Test {
     /** Which test is to be performed.
      * @return the name of the test method that will be performed.
      * Benchmark writers could use this information during the
-     * <CODE>setUp</CODE> to prepare different conditions for different tests.
+     * {@link #setUp} to prepare different conditions for different tests.
      */
     protected final String getName() {
         return name;
     }
     
-    protected final Object getParameter() {
-        return parameter;
+    /** For which argument the test runs
+     * @return the object describing the argument.
+     * It will be one of the objects specified in {@link #Benchmark(String,Object[])}
+     * constructor or {@link #setArgumentArray(Object[])}
+     * It will be <CODE>null</CODE> for tests that didn't specify any argument.
+     */    
+    protected final Object getArgument() {
+        return argument;
+    }
+    
+    /** Sets the set of arguments for this test.
+     * @param args the array of objects describing arguments to testing method
+     */
+    protected final void setArgumentArray( Object[] args ) {
+        arguments = args; //do clone ??
     }
     
     
     // the rest is implemetation
-    
+    /** How many tests should this Test perform
+     * @return the number of tests this Test should perform during
+     * {@link #run} method
+     */
     public int countTestCases() {
         return 1;
     }
@@ -98,7 +139,29 @@ public class Benchmark implements Test {
     public final void run( TestResult result ) {
         try {
             Method testMethod = getClass().getMethod( name, emptyClassArray );
-        
+            for( int a=0; a<arguments.length; a++ ) {
+                
+                result.startTest( this );
+                
+                try {
+                    doOneArgument( testMethod, arguments[a] );
+                } catch( AssertionFailedError err ) {
+                    result.addFailure( this, err );
+                } catch( ThreadDeath td ) {
+                    throw td;                  // need to propagate this
+                } catch( Throwable t ) {
+                    result.addError( this, t );
+                }
+                
+                result.endTest( this );
+            }
+        } catch ( Exception e ) {
+            e.printStackTrace();
+        }
+    }
+    
+    private void doOneArgument( Method testMethod, Object argument ) throws Exception {
+            setArgument( argument );
             // class loading and so on...
             realRun = false;
             doOneMeasurement( testMethod, 1 );
@@ -144,18 +207,13 @@ public class Benchmark implements Test {
             float avgTime  = ((float)sum) / 1000 / iters / 3;
             
             // PENDING - add real reporting stuff here
-            System.out.println( name + ": iter=" + iters + 
+            String argString = argument.toString();
+            if( argString.length() > 0 ) argString = "@" + argString;
+            System.out.println( name + argString +
+                ": iter=" + iters + 
                 ", min=" + 1000000f*realMin + 
                 ", avg=" + 1000000f*avgTime +
                 ", max=" + 1000000f*realMax );
-        
-        } catch ( Exception e ) {
-            e.printStackTrace();
-        }
-    }
-
-    private void setIterationCount( int count ) {
-        iterations = count; 
     }
     
     private long doOneMeasurement( Method testMethod, int iterations ) throws Exception {
@@ -169,6 +227,14 @@ public class Benchmark implements Test {
 
         tearDown();
         return time;
+    }
+
+    private void setIterationCount( int count ) {
+        iterations = count; 
+    }
+
+    private void setArgument( Object arg ) {
+        argument = arg;
     }
     
     private void cooling() {
