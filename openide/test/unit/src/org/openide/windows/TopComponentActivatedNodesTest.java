@@ -1,0 +1,257 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.openide.windows;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.util.Collection;
+import java.util.Iterator;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import junit.textui.TestRunner;
+
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerPanel;
+import org.openide.explorer.view.BeanTreeView;
+import org.openide.explorer.view.TreeView;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+
+
+
+
+/** Check the synchronization TC.getActivatedNodes and ExplorerManager.getSelectedNodes.
+ *  Test should assure the fix of issue 31244.
+ *
+ * @author Jiri Rechtacek
+ */
+public class TopComponentActivatedNodesTest extends NbTestCase {
+    /** top component we work on */
+    private TopComponent top;
+    
+    public TopComponentActivatedNodesTest(java.lang.String testName) {
+        super(testName);
+    }
+    
+    public static void main(java.lang.String[] args) {
+        TestRunner.run(suite());
+    }
+    
+    public static Test suite() {
+        TestSuite suite = new NbTestSuite(TopComponentActivatedNodesTest.class);
+        
+        return suite;
+    }
+    
+    private ExplorerPanel p;
+    private ExplorerManager em;
+    private Node[] nodes;
+    private PropertyChangeListener listenerEM, listenerTC;
+    
+    protected void setUp () {        
+        p = new ExplorerPanel ();
+        em = p.getExplorerManager ();
+        
+        TreeView tv = new BeanTreeView ();
+        p.add (tv);
+        Children ch = new Children.Array ();
+        nodes = new Node[10];
+        for (int i = 0; i < 10; i++) {
+            nodes[i] = new AbstractNode (Children.LEAF);
+            nodes[i].setName ("Node" + i);
+        }
+        ch.add (nodes);
+        Node root = new AbstractNode (ch);
+        em.setRootContext (root);
+        
+        // check synchronixzation before
+        assertArrays ("INIT: getSelectedNodes equals getActivatedNodes.",
+            em.getSelectedNodes (), p.getActivatedNodes ());
+    }
+    
+    private void initListeners () {
+        listenerTC = new PropertyChangeListener () {
+            public void propertyChange (PropertyChangeEvent ev) {
+                System.out.println("TC: PROP_ACTIVATED_NODES change!");
+//                try {
+//                    Thread.sleep (1000);
+//                } catch (Exception e) {
+//                }
+                assertArrays ("FIRED TC CHANGE: getSelectedNodes equals PROP_ACTIVATED_NODES",
+                    em.getSelectedNodes (), p.getActivatedNodes ());
+            }
+        };
+        
+        p.addPropertyChangeListener (TopComponent.Registry.PROP_ACTIVATED_NODES, listenerTC);
+        
+        listenerEM = new PropertyChangeListener () {
+            public void propertyChange (PropertyChangeEvent ev) {
+                if (ExplorerManager.PROP_SELECTED_NODES.equals (ev.getPropertyName ())) {
+                    System.out.println("EM: PROP_SELECTED_NODES change!");
+                    assertArrays ("FIRED EM CHANGE: PROP_SELECTED_NODES equals getActivatedNodes",
+                        ((Object[])ev.getNewValue ()), p.getActivatedNodes ());
+                }
+            }
+        };
+        
+        em.addPropertyChangeListener (listenerEM);
+        
+    }
+    
+    private void removeListeners () {
+        em.removePropertyChangeListener (listenerEM);
+        p.removePropertyChangeListener (TopComponent.Registry.PROP_ACTIVATED_NODES, listenerTC);
+    }
+    
+    public void testOnceChange () {
+        initListeners ();
+        
+        // select a node
+        try {
+            em.setSelectedNodes (new Node[] { nodes[3], nodes[5] });
+
+            Node[] activatedNodes = p.getActivatedNodes ();
+
+            // check synchronixzation after
+            assertArrays ("ONCE CHANGE: getSelectedNodes equals getActivatedNodes.",
+                em.getSelectedNodes (), p.getActivatedNodes ());
+
+            // lookup
+            Lookup.Result result = p.getLookup ().lookup (new Lookup.Template (Node.class));
+            Collection col = result.allInstances ();
+            Iterator it = col.iterator ();
+            Node[] lookupNodes = new Node[col.size ()];
+            int i = 0;
+            while (it.hasNext ()) {
+                lookupNodes[i] = (Node)it.next ();
+                i++;
+            }
+
+            // check nodes in lookup with acivated nodes
+            assertArrays ("LOOKUP AFTER INTENSIVE CHANGES: nodes in lookup == activated nodes",
+                lookupNodes, activatedNodes);
+            
+        } catch (PropertyVetoException pve) {
+            fail ("Caught PropertyVetoException. msg:" + pve.getMessage ());
+        } finally {
+            removeListeners ();
+        }
+    }
+    
+    public void testIntensiveChange () {
+        initListeners ();
+        
+        // select a node
+        try {
+            for (int i = 3; i < 8; i++)
+            em.setSelectedNodes (new Node[] { nodes[i] });
+            
+            Node[] activatedNodes = p.getActivatedNodes ();
+
+            // check synchronixzation after
+            assertArrays ("INTENSIVE CHANGES: getSelectedNodes equals getActivatedNodes.",
+                em.getSelectedNodes (), activatedNodes);
+
+            // lookup
+            Lookup.Result result = p.getLookup ().lookup (new Lookup.Template (Node.class));
+            Collection col = result.allInstances ();
+            Iterator it = col.iterator ();
+            Node[] lookupNodes = new Node[col.size ()];
+            int i = 0;
+            while (it.hasNext ()) {
+                lookupNodes[i] = (Node)it.next ();
+                i++;
+            }
+
+            // check nodes in lookup with acivated nodes
+            assertArrays ("LOOKUP AFTER INTENSIVE CHANGES: nodes in lookup == activated nodes",
+                lookupNodes, em.getSelectedNodes ());
+            
+        } catch (PropertyVetoException pve) {
+            fail ("Caught PropertyVetoException. msg:" + pve.getMessage ());
+        } finally {
+            removeListeners ();
+        }
+    }
+    
+    public void testIntensiveChangeWithLookup () {
+        initListeners ();
+        // select a node
+        try {
+            for (int i = 3; i < 8; i++)
+            em.setSelectedNodes (new Node[] { nodes[i] });
+        } catch (PropertyVetoException pve) {
+            fail ("Caught PropertyVetoException. msg:" + pve.getMessage ());
+        }
+        
+        // get nodes from lookup
+        Lookup.Result result = p.getLookup ().lookup (new Lookup.Template (Node.class));
+        Collection col = result.allInstances ();
+        Iterator it = col.iterator ();
+        Node[] lookupNodes = new Node[col.size ()];
+        int i = 0;
+        while (it.hasNext ()) {
+            lookupNodes[i] = (Node)it.next ();
+            i++;
+        }
+
+        // check nodes in lookup with acivated nodes
+        assertArrays ("LOOKUP AFTER INTENSIVE CHANGES: nodes in lookup == activated nodes",
+            lookupNodes, p.getActivatedNodes ());
+        
+        // check nodes in lookup with selected nodes
+        assertArrays ("LOOKUP AFTER INTENSIVE CHANGES: nodes in lookup == activated nodes",
+            lookupNodes, em.getSelectedNodes ());
+    }
+    
+    private void assertArrays (String msg, Object[] arr1, Object[] arr2) {
+        // DEBUG MSG log content of arrays
+//        System.out.println("do ["+msg+"]: ");
+//        if (arr1 != null) for (int i = 0; i < arr1.length; i++) System.out.println("Arr1: " + i + ". " + arr1[i]);
+//        if (arr2 != null) for (int i = 0; i < arr2.length; i++) System.out.println("Arr2: " + i + ". " + arr2[i]);
+//        System.out.println("done!");
+        // END OF DEBUG MSG
+        if (arr1 == null && arr2 == null) return ;
+        if (arr1 == null) {
+            if (arr2.length == 0) {
+                return ;
+            } else {
+                fail (msg + " BUT: Array1 was null Array2 was not null");
+            }
+        }
+        if (arr2 == null) {
+            if (arr1.length == 0) {
+                return ;
+            } else {
+                fail (msg + " BUT: Array2 was null Array1 was not null");
+            }
+        }
+        if (arr1.length != arr2.length) fail (msg + "Arrays have a diferent size.");
+        //Arrays.sort (arr1);
+        //Arrays.sort (arr2);
+        for (int i = 0; i < arr1.length; i++) {
+            if (! arr1[i].equals (arr2[i]) ) {
+                fail (msg + " BUT: excepted: " + arr1[i] + ", was: " + arr2[i]);
+            }
+        }
+    }
+    
+}
