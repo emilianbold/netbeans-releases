@@ -16,10 +16,14 @@ package org.netbeans.modules.i18n;
 
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.ref.WeakReference;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
+import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Caret;
 import javax.swing.text.StyledDocument;
 
@@ -31,74 +35,69 @@ import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
-import org.openide.windows.Workspace;
 
 
 /**
- * Interantionalization manager.
+ * Internationalization manager.
  *
  * @author   Peter Zavadsky
  */
 public class I18nManager {
     
-    /** Name of property in document holding I18nFinder reference. */
-    public static final String I18N_SUPPORT_PROP = "org.netbeans.modules.i18n.support"; // NOI18N
+    /** Singleton instance of I18nManager. */
+    private static I18nManager manager;
+
+    /** Support for this internatioanlize session. */
+    private I18nJavaSupport support;
+
+    /** Weak reference to i18n panel. */
+    private WeakReference i18nPanelWRef;
     
-    /** Common name for I18N mode. */
-    public static final String I18N_MODE = "internationalization"; // NOI18N
+    /** Weak reference to top component in which internationalizing will be provided. */
+    private WeakReference topComponentWRef;
     
-    /** Holds the only instance of I18nSupport. */
-    private static I18nManager instance;
-    
-    /** Reference to top component providing internationalize dialog. */
-    private TopComponent topComponent;
-    
-    /** Reference to <code>i18nPanel</code>, part of internationalize dialog. */
-    private I18nPanel i18nPanel;
-    
-    /** Holds document object. */
-    private StyledDocument document;
-    
-    /** Caret in opened document. */
-    private Caret caret;
-    
-    /** Holds <code>DataObject</code> which document is internationalized. 
-     * @see org.openide.loaders.DataObject */
-    private DataObject targetDataObject;
+    /** Weak reference to caret in editor pane. */
+    private WeakReference caretWRef;
     
     
-    /** Constructor. Don't call this. Use getI18nSupport method instead. */
-    private I18nManager(StyledDocument document, DataObject targetDataObject) {
-        initialize(document, targetDataObject);
+    /** Private constructor. To ge instance use <code>getI18nMananger</code> method instead. */
+    private I18nManager() {
     }
 
     
-    /** Initializes the <code>document</code> and <code>targetDataObject</code> variables. */
-    private void initialize(StyledDocument document, DataObject targetDataObject) {
-        if(this.document == null || !this.document.equals(document) )
-            this.document = document;
-        if(this.targetDataObject == null || !this.targetDataObject.equals(targetDataObject) )
-            this.targetDataObject = targetDataObject;
-    }
-    
-    /** Gets the only insance of I18nSupport. */
-    public static I18nManager getI18nManager(StyledDocument document, DataObject targetDataObject) {
-        if(instance == null)
-            instance = new I18nManager(document, targetDataObject);
-        else {
-            instance.initialize(document, targetDataObject);
+    /** Gets the only instance of I18nSupport. */
+    public static I18nManager getDefault() {
+        if(manager == null) {
+            synchronized(I18nManager.class) {
+                if(manager == null)
+                    manager = new I18nManager();
+            }
         }
             
-        return instance;
+        return manager;
+    }
+    
+    /** Get i18n support. */
+    private void initSupport(StyledDocument document, DataObject targetDataObject) {
+        if(isFormDataObject(targetDataObject))
+            support = new I18nFormSupport(document, (FormDataObject)targetDataObject);
+        else
+            support = new I18nJavaSupport(document, targetDataObject);
     }
     
     /** The 'heart' method called by <code>I18nAction</code>. */
-    public void internationalize() {
-        // Always close dialog from previous search if necessary.
+    public void internationalize(StyledDocument document, DataObject targetDataObject) {
+        // If there is insert i18n action working on the same document -> cancel it.
+        ((InsertI18nStringAction)SystemAction.get(InsertI18nStringAction.class)).cancel();
+        
+        // If there is i18n action working -> cancel it.
         closeDialog();
+
+        // Initilialize support.
+        initSupport(document, targetDataObject);
        
         // initialize the component
         EditorCookie ec = (EditorCookie)targetDataObject.getCookie(EditorCookie.class);
@@ -108,39 +107,45 @@ public class I18nManager {
         JEditorPane[] panes = ec.getOpenedPanes();
         if(panes == null) {
             NotifyDescriptor.Message message = new NotifyDescriptor.Message(NbBundle.getBundle(I18nModule.class).
-            getString("MSG_CouldNotOpen"), NotifyDescriptor.ERROR_MESSAGE);
+                getString("MSG_CouldNotOpen"), NotifyDescriptor.ERROR_MESSAGE);
             TopManager.getDefault().notify(message);
             return;
         }
+
+        // Gets the top component and keep weak reference to it.
+        topComponentWRef = new WeakReference((TopComponent)SwingUtilities.getAncestorOfClass(TopComponent.class, panes[0]));
         
-        caret = panes[0].getCaret();
+        // Add i18n panel to top component.
+        addI18nPanel();
         
-        // Initializes finder.
-        getI18nSupport().initialize();
+        // Keep only weak ref to caret, the strong one maintains editor pane itself.
+        caretWRef = new WeakReference(panes[0].getCaret());
+        
+        // Initializes support.
+        support.initialize();
         
         // do the search
-        if(find()) {
-            createDialog();
+        if(find())
             fillDialogValues();
-            showDialog();
-        } else {
+        else {
             NotifyDescriptor.Message message = new NotifyDescriptor.Message(NbBundle.getBundle(I18nModule.class).
-            getString("MSG_NoInternationalizableString"), NotifyDescriptor.INFORMATION_MESSAGE); // to info message
+                getString("MSG_NoInternationalizableString"), NotifyDescriptor.INFORMATION_MESSAGE); // to info message
             TopManager.getDefault().notify(message);
         }
     }
 
     /** Finds hard coded string. */
     private boolean find() {
-        I18nJavaSupport support = getI18nSupport();
-
         // Actual find on finder.
         boolean found = support.findNext();
 
         if(found) {
             // Highlight found hard coded string.
-            caret.setDot(support.getHardStringStartOffset());
-            caret.moveDot(support.getHardStringEndOffset());
+            Object referent = caretWRef.get();
+            if(referent != null) {
+                ((Caret)referent).setDot(support.getHardStringStartOffset());
+                ((Caret)referent).moveDot(support.getHardStringEndOffset());
+            }
 
             return true;
         } 
@@ -149,28 +154,30 @@ public class I18nManager {
         return false;
     }
 
-    /** Get i18n support. */
-    private I18nJavaSupport getI18nSupport() {
-        I18nJavaSupport i18nJavaSupport;
-        i18nJavaSupport = (I18nJavaSupport)document.getProperty(I18N_SUPPORT_PROP);
+    /** Fills values presented in internationalize dialog. */
+    private void fillDialogValues() {
+        // It has to work this way, at this time the strong reference in top component have to exist.
+        I18nPanel i18nPanel = (I18nPanel)i18nPanelWRef.get();
         
-        if(i18nJavaSupport == null) {
-            if(isFormDataObject(targetDataObject))
-                i18nJavaSupport = new I18nFormSupport(document, (FormDataObject)targetDataObject);
-            else
-                // At the moment we suppose, targetDataObject is of JavaDataObject type.
-                i18nJavaSupport = new I18nJavaSupport(document, targetDataObject);
-            document.putProperty(I18N_SUPPORT_PROP, i18nJavaSupport);
-        }
+        ResourceBundleString oldRbString = i18nPanel.getResourceBundlePanel().getResourceBundleString();
+        ResourceBundleString newRbString = support.getDefaultBundleString(oldRbString);
         
-        return i18nJavaSupport;
+        // Check in case new value is added and not initialized.
+        if(newRbString.getResourceBundle() == null)
+            newRbString.setResourceBundle(PropertiesModule.getLastBundleUsed());
+       
+        i18nPanel.setResourceBundleString(newRbString);
+        i18nPanel.setI18nInfo(support.getInfo());
+        
+        showDialog();
     }
     
-    /* Replace button handler. */
-    private void doReplace() {
+    /** Replaces current found hard coded string and continue the search for next one. */
+    private void replace() {
         ResourceBundleString rbString = null;
         try {
-            rbString = i18nPanel.getResourceBundlePanel().getResourceBundleString();
+            // To call weak without check have to be save here cause stronmg reference in top component have to exist.
+            rbString = ((I18nPanel)i18nPanelWRef.get()).getResourceBundlePanel().getResourceBundleString();
         } catch (IllegalStateException e) {
             NotifyDescriptor.Message nd = new NotifyDescriptor.Message(NbBundle.getBundle(I18nModule.class).
             getString("EXC_BadKey"), NotifyDescriptor.ERROR_MESSAGE);
@@ -181,128 +188,133 @@ public class I18nManager {
         // Try to add key to bundle.
         I18nUtil.addKeyToBundle(rbString);
 
-        // Hack for creating field.
-        I18nUtil.createField(rbString, targetDataObject);
-        
         // Replace hardcoded string.
-        getI18nSupport().replace(rbString);
-        
-        if(find()) {
-            createDialog();
-            fillDialogValues();
-            showDialog();
-        } else
-            doCancel();
+        support.replace(rbString);
+
+        skip();
     }
     
-    /* Replace All button handler. At the time does nothing. */
-    private void doReplaceAll() {
+    /** At the time not implemented. */
+    private void replaceAll() {
         // PENDING
     }
     
-    /* Skip button handler. */
-    private void doSkip() {
-        if(find()) {
-            createDialog();
+    /** Skips foudn hard coded string and conitnue to search for next one. */
+    private void skip() {
+        if(find())
             fillDialogValues();
-            showDialog();
-        } else
-            doCancel();
+        else
+            cancel();
     }
     
-    /* Cancel button handler. */
-    private void doCancel() {
-        // no memory leaks
-        document = null;
-        targetDataObject = null;
-        caret = null;
+    /** Cancels current internationalizing session and re-layout top component to original layout. */
+    public void cancel() {
+        // No memory leaks.
+        support = null;
+        
         closeDialog();
     }
     
-    /** Finds from the <code>lastPos</code> (or the current position if position == -1).
-     * @return true if a hardcoded string was found
-     * @see #lastPos
-     */
     /** Creates dialog. In our case it is a top component. */
-    private void createDialog() {
-        if(topComponent == null) {
-            
-            // prepare panel which will reside inside top component
-            i18nPanel = new I18nPanel();
-            
-            final JButton[] buttons = i18nPanel.getButtons();
-            
-            for (int i = 0; i < buttons.length; i++) {
-                buttons[i].addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
-                        if (evt.getSource() == buttons[0])
-                            doReplace();
-                        if (evt.getSource() == buttons[1])
-                            doReplaceAll();
-                        if (evt.getSource() == buttons[2])
-                            doSkip();
-                        if (evt.getSource() == buttons[3])
-                            doCancel();
-                    }
-                });
-            }
-            
-            // actually create the dialog as top component
-            topComponent = new TopComponent();
-            topComponent.setCloseOperation(TopComponent.CLOSE_EACH);
-            topComponent.setLayout(new BorderLayout());
-            topComponent.add(i18nPanel, BorderLayout.CENTER);
-            topComponent.setName(targetDataObject.getName());
-            
-            // dock into I18N mode if possible
-            Workspace[] currentWs = TopManager.getDefault().getWindowManager().getWorkspaces();
-            for (int i = currentWs.length; --i >= 0; ) {
-                Mode i18nMode = currentWs[i].findMode(I18N_MODE);
-                if (i18nMode == null) {
-                    i18nMode = currentWs[i].createMode(
-                        I18N_MODE,
-                        NbBundle.getBundle(I18nModule.class).getString("CTL_I18nDialogTitle"),
-                        I18nManager.class.getResource("/org/netbeans/modules/i18n/i18nAction.gif") // NOI18N
-                    );
+    private void addI18nPanel() {
+        // Create i18n panel.
+        I18nPanel i18nPanel = new I18nPanel();
+        
+        final JButton[] buttons = i18nPanel.getButtons();
+
+        for(int i = 0; i < buttons.length; i++) {
+            buttons[i].addActionListener(
+            new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
+                    if (evt.getSource() == buttons[0]) // Replace button.
+                        replace();
+                    if (evt.getSource() == buttons[1]) // Replace All button.
+                        replaceAll();
+                    if (evt.getSource() == buttons[2]) // Skip button.
+                        skip();
+                    if (evt.getSource() == buttons[3]) // Cancel button.
+                        cancel();
                 }
-                i18nMode.dockInto(topComponent);
+            });
+        }
+
+        // Get top component from weak reference.
+        Object referent = topComponentWRef.get();
+
+        if(referent == null) {
+            // Shouldn't happen.
+            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                throw new InternalError("I18n: Manager. Top componnet has been lost from weak reference."); // NOI18N
+        }
+ 
+        TopComponent topComponent = (TopComponent)referent;
+        
+        // Change layout the way split pane is first component i18n panel at the left and original component at the right side.
+        Component component = topComponent.getComponent(0);
+
+        // Keep weak reference to i18n panel only.
+        i18nPanelWRef = new WeakReference(i18nPanel);
+        
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, i18nPanel, component);
+        splitPane.setOneTouchExpandable(true);
+        
+        // Remove original component.
+        topComponent.remove(component);
+        
+        // Add our split pane.
+        topComponent.add(splitPane, BorderLayout.CENTER);
+
+        topComponent.revalidate();
+    }
+    
+    /** Shows dialog. In our case opens top component if it is necessary and
+     * sets caret visible in editor part. */
+    private void showDialog() {
+        // Open top component if it is not already.
+        Object topCompReferent = topComponentWRef.get();
+        if(topCompReferent != null) {
+            if(!((TopComponent)topCompReferent).isOpened()) {
+                ((TopComponent)topCompReferent).open();
+                ((TopComponent)topCompReferent).requestFocus();
             }
         }
-        
-        // Hook for setting target data object for resource bundle panel.
-        i18nPanel.getResourceBundlePanel().setTargetDataObject(targetDataObject);
+
+        // Set caret visible.
+        Object caretReferent = caretWRef.get();
+        if(caretReferent != null) {
+            if(!((Caret)caretReferent).isVisible())
+                ((Caret)caretReferent).setVisible(true);
+        }
     }
     
-    /** Shows dialog. In our case it is a top component. */
-    private void showDialog() {
-        topComponent.open();
-        topComponent.requestFocus();
-    }
-    
-    /** Closes dialog. In our case it is a top component. */
+    /** Closes dialog. In our case removes <code>I18nPanel</code> from top component
+     * and 'reconstruct it' to it's original layout. */
     private void closeDialog() {
-        if(topComponent != null) {
-            topComponent.close();
-            
-            topComponent = null;
-            i18nPanel = null;
+        // At start check if there is open from previous internationalize action.
+        if(topComponentWRef == null)
+            return;
+        
+        Object referent = topComponentWRef.get();
+
+        if(referent != null) {
+            TopComponent topComponent = (TopComponent)referent;
+        
+            if(topComponent != null && topComponent.getComponentCount() == 1 && topComponent.getComponent(0) instanceof JSplitPane) {
+
+                JSplitPane splitPane = (JSplitPane)topComponent.getComponent(0);
+
+                // Remove our split pane.
+                topComponent.remove(splitPane);
+
+                // Add original component.
+                topComponent.add(splitPane.getRightComponent(), BorderLayout.CENTER);
+
+                topComponent.revalidate();
+                topComponent.repaint();
+            }
         }
     }
 
-    /** Fills values presented in internationalize dialog. */
-    private void fillDialogValues() {
-        ResourceBundleString oldRbString = i18nPanel.getResourceBundlePanel().getResourceBundleString();
-        ResourceBundleString newRbString = getI18nSupport().getDefaultBundleString(oldRbString);
-        
-        // Check in case new value is added and not initialized.
-        if(newRbString.getResourceBundle() == null)
-            newRbString.setResourceBundle(PropertiesModule.getLastBundleUsed());
-       
-        i18nPanel.setResourceBundleString(newRbString);
-        i18nPanel.setI18nInfo(getI18nSupport().getInfo());
-    }
-    
     /** Utility method. 
      * @param dataObject checked <code>DataObject</code>
      * @return true if form module is available and <code>dataObject</code> is instnce of <code>FormDataObject</code> */
@@ -322,8 +334,9 @@ public class I18nManager {
         return false;
     }
 
+    
     /** Interface providing information about i18n parameters
-     * used in I18nPanel.
+     * used in <code>I18nPanel</code>.
      */
     public interface I18nInfo {
         /** Getter for property hardString.

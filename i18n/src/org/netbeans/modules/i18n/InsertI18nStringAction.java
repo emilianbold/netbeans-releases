@@ -16,20 +16,20 @@ package org.netbeans.modules.i18n;
 
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 
-import org.netbeans.modules.properties.PropertiesModule;
-
-import org.openide.DialogDescriptor;
 import org.openide.cookies.SourceCookie;
 import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
@@ -38,9 +38,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
-import org.openide.windows.Workspace;
 
 
 /**
@@ -50,29 +48,39 @@ import org.openide.windows.Workspace;
 */
 public class InsertI18nStringAction extends CookieAction {
 
-    /** Soft reference to <code>InsertI18nComponent</code> instance. */
-    private SoftReference topComponentSoftRef;
+    /** Weak reference to top component to which the i18n string will be added. */
+    private WeakReference topComponentWRef;
     
     /** Generated serial version UID. */
     static final long serialVersionUID =-7002111874047983222L;
+
     
-    /** Actually performs InsertI18nStringAction
-    * @param activatedNodes Currently activated nodes.
-    */
+    /** 
+     * Actually performs InsertI18nStringAction
+     * @param activatedNodes Currently activated nodes.
+     */
     public void performAction (final Node[] activatedNodes) {
         final SourceCookie.Editor sec = (SourceCookie.Editor)(activatedNodes[0]).getCookie(SourceCookie.Editor.class);
         if(sec == null)
             return;
         
-        sec.open(); 
+        sec.open();
 
         // Set data object.
         DataObject dataObject = (DataObject)sec.getSource().getCookie(DataObject.class);
         if(dataObject == null)
             return; 
 
+        JEditorPane[] panes = sec.getOpenedPanes();
+        
+        if(panes == null || panes.length == 0)
+            return;
+        
         // Set position. 
-        int position = sec.getOpenedPanes()[0].getCaret().getDot();
+        int position = panes[0].getCaret().getDot();
+
+        // Init top component.
+        topComponentWRef = new WeakReference(SwingUtilities.getAncestorOfClass(TopComponent.class, panes[0]));
         
         // Set document.
         StyledDocument document = sec.getDocument();
@@ -80,39 +88,157 @@ public class InsertI18nStringAction extends CookieAction {
             // Shouldn't happen.
             if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                 TopManager.getDefault().notifyException(new InternalError("I18N: InsertI18nAction: Document not initialized.")); // NOI18N
-            dataObject = null;            
+            dataObject = null;
             return;
         }
+        
+        // If there is a i18n action in run on the same editor, cancel it.
+        I18nManager.getDefault().cancel();
 
-        InsertI18nComponent insertComponent = getTopComponent();
-        insertComponent.initialize(dataObject, document, position);
+        JPanel panel = createPanel(dataObject, document, position);
 
-        insertComponent.open();
-        insertComponent.requestFocus();
+        addPanel(panel);
+
+        // Ensure caret is visible.
+        panes[0].getCaret().setVisible(true);;
     }
 
-    /** Gets <code>TopComponent</code>. */
-    private InsertI18nComponent getTopComponent() {
-        Object topComponent = null;
+    /** Create panel used for specifying i18n string. */
+    private JPanel createPanel(final DataObject dataObject, final StyledDocument document, final int position) {
+        final ResourceBundlePanel rbPanel = new ResourceBundlePanel();
         
-        if(topComponentSoftRef != null)
-            topComponent = topComponentSoftRef.get();
+        rbPanel.setResourceBundleString(new ResourceBundleString());
         
-        if(topComponent == null) {
-            synchronized(this) {
-                if(topComponent == null) {
-                    topComponent = new InsertI18nComponent();
-                    topComponentSoftRef = new SoftReference(topComponent);
+        JButton OKButton = new JButton(NbBundle.getBundle(I18nModule.class).getString("CTL_OKButton"));
+        JButton cancelButton = new JButton(NbBundle.getBundle(I18nModule.class).getString("CTL_CancelButton"));
+
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+
+        // OK button.
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = GridBagConstraints.EAST;
+        gridBagConstraints.fill = GridBagConstraints.NONE;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 0);
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.0;        
+        buttonPanel.add(OKButton, gridBagConstraints); 
+
+        // Cancel button.
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);        
+        gridBagConstraints.weightx = 0.0;
+        buttonPanel.add(cancelButton, gridBagConstraints);
+
+        // Panel.
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = GridBagConstraints.NONE;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 11, 11);
+        gridBagConstraints.weightx = 0.0;
+        gridBagConstraints.weighty = 0.0;
+        rbPanel.add(buttonPanel, gridBagConstraints);
+
+        // Set listeners for buttons.
+        OKButton.addActionListener(
+            new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
+                    // OK button.
+                    try {
+                        ResourceBundleString newRbString = rbPanel.getResourceBundleString();
+
+                        // Try to add key to bundle.
+                        I18nUtil.addKeyToBundle(newRbString);
+
+                        // Create field in necessary.
+                        I18nUtil.createField(newRbString, dataObject);
+                        // Replace string.
+                        document.insertString(position, I18nUtil.getReplaceJavaCode(newRbString, dataObject), null);
+
+                        cancel();
+                    } catch (IllegalStateException e) {
+                        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                            NbBundle.getBundle(I18nModule.class).getString("EXC_BadKey"),
+                            NotifyDescriptor.ERROR_MESSAGE);
+                        TopManager.getDefault().notify(msg);
+                    } catch (BadLocationException e) {
+                        TopManager.getDefault().notify(
+                            new NotifyDescriptor.Message(
+                                NbBundle.getBundle(I18nModule.class).getString("MSG_CantInsertInGuarded"),
+                                NotifyDescriptor.INFORMATION_MESSAGE
+                            )
+                        );
+                    }
                 }
             }
-        }
+        );
+
+        cancelButton.addActionListener(
+            new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
+                    cancel();
+                }
+            }
+        );
+
+        return rbPanel;
+    }
+    
+    /** Adds panel to top component in split pane. */
+    private void addPanel(JPanel panel) {
+        Object referent = topComponentWRef.get();
         
-        return (InsertI18nComponent)topComponent;
+        if(referent == null)
+            return;
+        
+        TopComponent topComponent = (TopComponent)referent;
+        
+        // Change layout the way split pane is first component i18n panel at the left and original component at the right side.
+        Component component = topComponent.getComponent(0);
+        
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panel, component);
+        splitPane.setOneTouchExpandable(true);
+        
+        // Remove original component.
+        topComponent.remove(component);
+        
+        // Add our split pane.
+        topComponent.add(splitPane, BorderLayout.CENTER);
+
+        topComponent.revalidate();
+    }
+    
+    /** Cancels the current insert i18n string action. */
+    public void cancel() {
+        if(topComponentWRef == null)
+            return;
+        
+        Object referent = topComponentWRef.get();
+        
+        if(referent == null)
+            return;
+        
+        TopComponent topComponent = (TopComponent)referent;
+        
+        if(topComponent != null && topComponent.getComponentCount() == 1 && topComponent.getComponent(0) instanceof JSplitPane) {
+
+            JSplitPane splitPane = (JSplitPane)topComponent.getComponent(0);
+
+            // Remove our split pane.
+            topComponent.remove(splitPane);
+
+            // Add original component.
+            topComponent.add(splitPane.getRightComponent(), BorderLayout.CENTER);
+
+            topComponent.revalidate();
+            topComponent.repaint();
+        }
     }
     
     /** Overrides superclass method.
-    * @return true if action will be present 
-    */
+     * @return true if action will be present 
+     */
     protected boolean enable(Node[] activatedNodes) {
         if (!super.enable(activatedNodes))
             return false;
@@ -139,15 +265,15 @@ public class InsertI18nStringAction extends CookieAction {
     }
 
     /**
-    * @return MODE_EXACTLY_ONE.
-    */
+     * @return MODE_EXACTLY_ONE.
+     */
     protected int mode () {
         return MODE_EXACTLY_ONE;
     }
 
     /**
-    * @return ThreadCookie
-    */
+     * @return cookies needed to enable this action on appropriate node.
+     */
     protected Class[] cookieClasses () {
         return new Class [] {
             SourceCookie.Editor.class
@@ -155,163 +281,23 @@ public class InsertI18nStringAction extends CookieAction {
     }
 
     /** 
-    * @return the action's icon 
-    */
+     * @return the action's icon
+     */
     public String getName() {
         return org.openide.util.NbBundle.getBundle(I18nModule.class).getString("CTL_InsertI18nString");
     }
 
     /** 
-    * @return the action's help context 
-    */
+     * @return the action's help context 
+     */
     public HelpCtx getHelpCtx() {
         return new HelpCtx (InsertI18nStringAction.class);
     }
 
-    /** The action's icon location.
-    * @return the action's icon location
-    */
+    /** Action's icon location.
+     * @return the action's icon location
+     */
     protected String iconResource () {
         return "/org/netbeans/modules/i18n/insertI18nStringAction.gif"; // NOI18N
     }
-    
-    /** Class which represents <code>TopConrnt</code> for <code>InsertI18nStringAction</code> action. */
-    private class InsertI18nComponent extends TopComponent {
-
-        /** DataObject in which document will be i18n string insterted. */
-        private DataObject dataObject;
-        /** Document where the string will be inserted. */
-        private StyledDocument document;
-        /** Position at which the string will be inserted. */
-        private int position;
-        /** Refernce to <code>ResourcebundlePanel</code>. */
-        private ResourceBundlePanel rbPanel;
-        
-        /** Constructor. */
-        public InsertI18nComponent() {
-            initComponents();
-            dockIntoI18nMode();
-        }
-        
-        /** intis components. */
-        private void initComponents() {
-            rbPanel = new ResourceBundlePanel();
-            JButton OKButton = new JButton(NbBundle.getBundle(I18nModule.class).getString("CTL_OKButton"));
-            JButton cancelButton = new JButton(NbBundle.getBundle(I18nModule.class).getString("CTL_CancelButton"));
-            
-            // Actually create the dialog as top component.
-            TopComponent topComponent = new TopComponent();
-
-            topComponent.setCloseOperation(TopComponent.CLOSE_EACH);
-            topComponent.setLayout(new BorderLayout());
-            topComponent.add(rbPanel, BorderLayout.CENTER);
-
-            JPanel buttonPanel = new JPanel(new GridBagLayout());
-
-            // OK button.
-            GridBagConstraints gridBagConstraints = new GridBagConstraints();
-            gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 0;
-            gridBagConstraints.anchor = GridBagConstraints.EAST;
-            gridBagConstraints.fill = GridBagConstraints.NONE;
-            gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 0);
-            gridBagConstraints.weightx = 1.0;
-            gridBagConstraints.weighty = 0.0;        
-            buttonPanel.add(OKButton, gridBagConstraints); 
-
-            // Cancel button.
-            gridBagConstraints.gridx = 1;
-            gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);        
-            gridBagConstraints.weightx = 0.0;
-            buttonPanel.add(cancelButton, gridBagConstraints);
-
-            // Panel.
-            gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 3;
-            gridBagConstraints.fill = GridBagConstraints.NONE;
-            gridBagConstraints.insets = new java.awt.Insets(5, 12, 11, 11);
-            gridBagConstraints.weightx = 0.0;
-            gridBagConstraints.weighty = 0.0;
-            rbPanel.add(buttonPanel, gridBagConstraints);
-            
-            // Set listeners for buttons.
-            OKButton.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
-                        // OK button.
-                        try {
-                            ResourceBundleString newRbString = rbPanel.getResourceBundleString();
-
-                            // Try to add key to bundle.
-                            I18nUtil.addKeyToBundle(newRbString);
-                            
-                            // Create field in necessary.
-                            I18nUtil.createField(newRbString, dataObject);
-                            // Replace string.
-                            document.insertString(position, I18nUtil.getReplaceJavaCode(newRbString, dataObject), null);
-                            
-                            InsertI18nComponent.this.close();
-                        } catch (IllegalStateException e) {
-                            NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                                NbBundle.getBundle(I18nModule.class).getString("EXC_BadKey"),
-                                NotifyDescriptor.ERROR_MESSAGE);
-                            TopManager.getDefault().notify(msg);
-                        } catch (BadLocationException e) {
-                            TopManager.getDefault().notify(
-                                new NotifyDescriptor.Message(
-                                    NbBundle.getBundle(I18nModule.class).getString("MSG_CantInsertInGuarded"),
-                                    NotifyDescriptor.INFORMATION_MESSAGE
-                                )
-                            );
-                        }
-                    }
-                }
-            );
-
-            cancelButton.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
-                        InsertI18nComponent.this.close();
-                    }
-                }
-            );
-
-            setLayout(new BorderLayout());
-            add(rbPanel, BorderLayout.CENTER);
-        }
-        
-        /** Docks this <code>TopComponent into i18n mode. 
-         * @see I18nSupport#I18N_Mode */
-        private void dockIntoI18nMode() {
-            // Dock into I18N mode.
-            Workspace[] currentWs = TopManager.getDefault().getWindowManager().getWorkspaces();
-            for(int i = currentWs.length; --i >= 0; ) {
-                Mode i18nMode = currentWs[i].findMode(I18nManager.I18N_MODE);
-                if(i18nMode == null) {
-                    i18nMode = currentWs[i].createMode(
-                        I18nManager.I18N_MODE,
-                        NbBundle.getBundle(I18nModule.class).getString("CTL_I18nDialogTitle"),
-                        InsertI18nStringAction.class.getResource("/org/netbeans/modules/i18n/I18nAction.gif") // NOI18N
-                    );
-                }
-                i18nMode.dockInto(this);
-            }
-        }
-        
-        /** Initializes(resets) the top component.  */
-        private void initialize(DataObject dataObject, StyledDocument document, int position) {
-            this.dataObject = dataObject;
-            this.document = document;
-            this.position = position;
-            
-            setName(dataObject.getName());
-            
-            rbPanel.setTargetDataObject(dataObject);
-            
-            ResourceBundleString rbString = new ResourceBundleString();
-            rbString.setResourceBundle(PropertiesModule.getLastBundleUsed());
-            rbPanel.setResourceBundleString(rbString);
-        }
-  
-    } // End of inner class InsertI18nTopComponent.
 }
