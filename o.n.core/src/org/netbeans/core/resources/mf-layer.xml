@@ -528,7 +528,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- folder for HTML browsers and very simple browser -->
     <folder name="Browsers">
-      <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/core/resources/webbrowsercateg.gif" />
+      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/webbrowsercateg.gif" />
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
       <file name="SwingBrowser.ser" url="SwingBrowser.ser">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.Bundle"/>
