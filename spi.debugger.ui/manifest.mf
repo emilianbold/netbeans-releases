@@ -6,6 +6,6 @@ OpenIDE-Module-Layer: org/netbeans/modules/debugger/resources/mf-layer.xml
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.17
 OpenIDE-Module-Module-Dependencies: org.openide.src > 1.0, org.openide.compiler > 1.0, org.openide.execution > 1.0, org.openide.io > 1.0, org.openide.debugger > 1.0
 OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine, org.openide.execution.ExecutionEngine, org.openide.windows.IOProvider
-OpenIDE-Module-Specification-Version: 2.9
+OpenIDE-Module-Specification-Version: 2.10
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 
