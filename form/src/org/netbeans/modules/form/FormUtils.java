@@ -159,7 +159,12 @@ public class FormUtils
         { javax.swing.JDialog.class, CLASS_EXACTLY,
                 "layout", PROP_HIDDEN },
         { javax.swing.JMenuBar.class, CLASS_EXACTLY,
-                "helpMenu", PROP_HIDDEN }
+                "helpMenu", PROP_HIDDEN },
+        { java.applet.Applet.class, CLASS_AND_SUBCLASSES,
+                "appletContext", PROP_HIDDEN,
+                "codeBase", PROP_HIDDEN,
+                "documentBase", PROP_HIDDEN,
+                "locale", PROP_HIDDEN }
     };
 
     /** The properties whose changes are ignored in JComponent subclasses */
