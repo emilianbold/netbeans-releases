@@ -1323,9 +1323,12 @@ the ${netbeans.dest}/bin/ directory.
     
     <resolve name="zipcluster.file" property="${one.cluster.name}.pkg.filename"/>
     <zip destfile="${netbeans.build.dir}/${clusters.prefix}-${zipcluster.file}-${buildnum}.zip" update="true" duplicate="preserve">
-      <fileset dir="${netbeans.dest.dir}">
+      <zipfileset dir="${netbeans.dest.dir}" filemode="755">
+        <include name="${one.cluster.dir}/${nb.bin.dir}/nbexec"/>
+      </zipfileset>
+      <zipfileset dir="${netbeans.dest.dir}">
         <patternset refID="${one.cluster.name}.files"/>
-      </fileset>
+      </zipfileset>
     </zip>
   </target>
   
