@@ -373,6 +373,23 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
         initData.noDescMsg = NbBundle.getBundle(TemplateWizard1.class).
                             getString("MSG_NoDescription");
         initData.noDescBorder = new EtchedBorder();
+
+        // override the Swing default CSS to make the HTMLEditorKit use the
+        // same font as the rest of the UI
+        
+        Component comp = initData.browser.getBrowserComponent();
+        if (! (comp instanceof javax.swing.JEditorPane))
+            return;
+
+        javax.swing.text.EditorKit kit = ((javax.swing.JEditorPane) comp).getEditorKitForContentType("text/html"); // NOI18N
+        if (! (kit instanceof javax.swing.text.html.HTMLEditorKit))
+            return;
+        
+        javax.swing.text.html.HTMLEditorKit htmlkit = (javax.swing.text.html.HTMLEditorKit) kit;
+        javax.swing.text.html.StyleSheet css = htmlkit.getStyleSheet();
+        java.awt.Font f = new javax.swing.JTextArea().getFont();
+        css.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
+                    .append("pt; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
     }
 
     /** Fills description area using constructed data. Executed in event dispatch thread.
