@@ -56,10 +56,10 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <mkdir dir="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
     <unzip src="ant-docs.zip" dest="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
     <jhindexer basedir="javahelp/org/apache/tools/ant/module/docs"
-               db="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch"
+               db="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch2"
                jhall="${binroot}/nbbuild/lib/jhall.jar">
       <include name="**/*.html"/>
-      <exclude name="JavaHelpSearch/"/>
+      <exclude name="JavaHelpSearch2/"/>
       <exclude name="config-dep.html"/>
       <exclude name="config-prop.html"/>
       <exclude name="config-targ.html"/>
@@ -106,7 +106,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <delete file="ant.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>
-    <delete dir="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch"/>
+    <delete dir="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch2"/>
     <delete file="javahelp/org/apache/tools/ant/module/docs/LICENSE"/>
     <delete dir="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
   </target>
