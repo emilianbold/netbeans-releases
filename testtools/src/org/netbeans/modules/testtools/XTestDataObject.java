@@ -19,12 +19,14 @@ package org.netbeans.modules.testtools;
  * Created on May 2, 2002, 4:07 PM
  */
 
+import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import org.openide.TopManager;
 import org.openide.ServiceType;
 import org.openide.util.HelpCtx;
+import org.openide.util.Utilities;
 import org.openide.nodes.Node;
 import org.openide.nodes.CookieSet;
 import org.openide.execution.Executor;
@@ -206,6 +208,29 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
                 else
                     super.setIconBase("org/netbeans/modules/testtools/XTestIcon");
             }
+
+        public Image getIcon(int type) {
+            AntProjectCookie.ParseStatus cookie = (AntProjectCookie.ParseStatus)getDataObject().getCookie(AntProjectCookie.ParseStatus.class);
+            if (cookie.getFile() == null && cookie.getFileObject() == null) {
+                // Script has been invalidated perhaps? Don't continue, we would
+                // just get an NPE from the getParseException.
+                return Utilities.loadImage("org/netbeans/modules/testtools/XTestIconError.gif"); // NOI18N
+            }
+            if (!cookie.isParsed()) {
+                // Assume for now it is not erroneous.
+                return Utilities.loadImage("org/netbeans/modules/testtools/XTestIcon.gif"); // NOI18N
+            }
+            Throwable exc = cookie.getParseException();
+            if (exc != null) {
+                return Utilities.loadImage("org/netbeans/modules/testtools/XTestIconError.gif"); // NOI18N
+            } else {
+                return Utilities.loadImage("org/netbeans/modules/testtools/XTestIcon.gif"); // NOI18N
+            }
+        }
+
+        public Image getOpenedIcon(int type) {
+            return getIcon(type);
+        }
             
             /** returns Help Context
              * @return HelpCtx */    

@@ -85,18 +85,20 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
 
         setLayout(new java.awt.GridBagLayout());
 
+        testCaseTypes.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseTemplate", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 10.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         add(testCaseTypes, gridBagConstraints);
 
         caseName.setText("testMyTestCase");
+        caseName.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseName", new Object[] {}));
         caseName.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 caseNameActionPerformed(evt);
@@ -114,14 +116,15 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 10.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(caseName, gridBagConstraints);
 
         add.setMnemonic('a');
         add.setText("Add");
+        add.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseAdd", new Object[] {}));
         add.setMinimumSize(new java.awt.Dimension(80, 27));
         add.setPreferredSize(new java.awt.Dimension(80, 27));
         add.setEnabled(false);
@@ -135,14 +138,15 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.weighty = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         add(add, gridBagConstraints);
 
         remove.setMnemonic('r');
         remove.setText("Remove");
+        remove.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseRemove", new Object[] {}));
         remove.setMinimumSize(new java.awt.Dimension(80, 27));
         remove.setPreferredSize(new java.awt.Dimension(80, 27));
         remove.setEnabled(false);
@@ -156,14 +160,15 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.weighty = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         add(remove, gridBagConstraints);
 
         up.setMnemonic('u');
         up.setText("Up");
+        up.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseUp", new Object[] {}));
         up.setMinimumSize(new java.awt.Dimension(80, 27));
         up.setPreferredSize(new java.awt.Dimension(80, 27));
         up.setEnabled(false);
@@ -177,14 +182,15 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(17, 11, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.weighty = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(17, 11, 0, 11);
         add(up, gridBagConstraints);
 
         down.setMnemonic('d');
         down.setText("Down");
+        down.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseDown", new Object[] {}));
         down.setMinimumSize(new java.awt.Dimension(80, 27));
         down.setPreferredSize(new java.awt.Dimension(80, 27));
         down.setEnabled(false);
@@ -199,14 +205,16 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(11, 11, 11, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.weighty = 100.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 11, 11);
         add(down, gridBagConstraints);
 
+        testCases.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseList", new Object[] {}));
         testCases.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         scroll.setViewportView(testCases);
+        testCases.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "LBL_TestCaseList", new Object[] {}));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -214,33 +222,35 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 11, 0);
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 100.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 11, 0);
         add(scroll, gridBagConstraints);
 
         nameLabel.setDisplayedMnemonic('n');
         nameLabel.setLabelFor(caseName);
         nameLabel.setText("Test Case Name:");
+        nameLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseName", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(nameLabel, gridBagConstraints);
 
         templateLabel.setDisplayedMnemonic('t');
         templateLabel.setLabelFor(testCaseTypes);
         templateLabel.setText("Template:");
+        templateLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseTemplate", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         add(templateLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -248,17 +258,17 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(17, 12, 0, 11);
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(17, 12, 0, 11);
         add(separator, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(17, 0, 0, 0);
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(17, 0, 0, 0);
         add(separator2, gridBagConstraints);
 
     }//GEN-END:initComponents

@@ -51,7 +51,24 @@ Microsystems, Inc. All Rights Reserved.
     </javac>
   </target>
 
-  <target name="jars" depends="compile">
+
+ <target name="prepare-lib" depends="prepare-docs">
+    <ant dir="../xtest/" target="makedist"/>
+    <mkdir dir="netbeans/xtest-distribution"/>
+    <unzip src="../xtest/xtest-distribution.zip" dest="netbeans/xtest-distribution" />
+
+    <ant dir="../jellytools/"/>
+    <mkdir dir="netbeans/modules/ext"/>
+    <copy file="../jellytools/jelly2-nb.jar" tofile="netbeans/modules/ext/jelly2-nb.jar" filtering="off"/>
+ </target>
+
+  <target name="prepare-docs">
+    <mkdir dir="netbeans/docs"/>
+    <ant dir="../jellytools/" target="javadoc"/>
+    <copy file="../jellytools/jelly2-nb-javadoc.zip" tofile="netbeans/docs/jelly2-nb-javadoc.zip" filtering="off"/>
+  </target>
+
+  <target name="jars" depends="compile,prepare-lib">
     <tstamp>
         <format property="buildnumber" pattern="yyyyMMddhhmm"/>
     </tstamp>
@@ -69,30 +86,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- genlist targetname="nbm" outputfiledir="../nbbuild/netbeans"/ -->
   </target>
 
- <target name="prepare-lib" depends="prepare-docs">
-    <ant dir="../xtest/" target="makedist"/>
-    <mkdir dir="netbeans/xtest-distribution"/>
-    <unzip src="../xtest/xtest-distribution.zip" dest="netbeans/xtest-distribution" />
-
-    <ant dir="../jellytools/"/>
-    <mkdir dir="netbeans/lib/ext"/>
-    <copy file="../jellytools/jelly2-nb.jar" tofile="netbeans/lib/ext/jelly2-nb.jar" filtering="off"/>
- </target>
-
-  <target name="prepare-docs">
-      <ant dir="../jemmy/" target="api"/>
-      <mkdir dir="netbeans/docs"/>
-      <zip zipfile="netbeans/docs/jemmy-javadoc.zip"
-             basedir="../jemmy/www/javadoc"
-             compress="true">
-      </zip>
-
-    <ant dir="../jellytools/" target="javadoc"/>
-    <copy file="../jellytools/jelly2-nb-javadoc.zip" tofile="netbeans/docs/jelly2-nb-javadoc.zip" filtering="off"/>
-  </target>
-
-
-  <target name="nbm" depends="netbeans,prepare-lib">
+  <target name="nbm" depends="netbeans">
     <makenbm file="testtools.nbm"
              topdir="."
              module="netbeans/modules/testtools.jar"
@@ -122,7 +116,6 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="." includes="*.nbm"/>
     </delete>
     <delete dir="netbeans/docs"/>
-    <delete dir="netbeans/lib"/>
     <delete dir="netbeans/modules"/>
     <delete dir="netbeans/xtest-distribution"/>
     <delete dir="Info"/>
@@ -135,16 +128,6 @@ Microsystems, Inc. All Rights Reserved.
     <ant dir="../jemmysupport/" target="nbm"/>
     <copy file="../jemmysupport/jemmysupport.nbm" tofile="jemmysupport.nbm" filtering="off"/>
 
-<!--
-    <mkdir dir="netbeans/lib/ext"/>
-    <copy file="${binroot}/jemmy/jemmy.jar" tofile="netbeans/lib/ext/jemmy.jar" filtering="off"/>
-    <ant dir="../jemmy/"/>
-    <locjar jarfile="netbeans/lib/ext/jemmy.jar"
-         basedir="${jemmydir}/classes"
-	 excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"
-	 compress="false">
-    </locjar>
--->
   </target>
 
     <!-- Create zip archive from all nbm files. -->
