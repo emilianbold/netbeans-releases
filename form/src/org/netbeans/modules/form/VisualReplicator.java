@@ -521,7 +521,7 @@ public class VisualReplicator {
 
                 // turn off double buffering for JComponent in fake peer container
                 if (clone instanceof JComponent && hasAwtParent(metacomp))
-                    ((JComponent)clone).setDoubleBuffered(false);
+                    setDoubleBufferedRecursively((JComponent)clone, false);
             }
 
             if ((restrictions & DISABLE_FOCUSING) != 0
@@ -701,6 +701,16 @@ public class VisualReplicator {
             parent = parent.getParentComponent();
         }
         return false;
+    }
+
+    private static void setDoubleBufferedRecursively(JComponent component,
+                                                     boolean value)
+    {
+        component.setDoubleBuffered(value);
+        Component[] subcomps = component.getComponents();
+        for (int i=0; i < subcomps.length; i++)
+            if (subcomps[i] instanceof JComponent)
+                setDoubleBufferedRecursively((JComponent)subcomps[i], value);
     }
 
     // -------
