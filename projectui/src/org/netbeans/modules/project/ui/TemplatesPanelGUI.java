@@ -176,7 +176,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         this.jLabel1.setText (this.firer.getCategoriesName());
         this.jLabel1.setDisplayedMnemonic(this.firer.getCategoriesMnemonic());
         this.jLabel2.setText (this.firer.getTemplatesName());
-        this.jLabel2.setDisplayedMnemonic (this.firer.getCategoriesMnemonic());                                                
+        this.jLabel2.setDisplayedMnemonic (this.firer.getTemplatesMnemonic());                                                
         this.categoriesPanel.addPropertyChangeListener(this);                        
         this.projectsPanel.addPropertyChangeListener(this);
         this.description.setEditorKit(new HTMLEditorKit());
