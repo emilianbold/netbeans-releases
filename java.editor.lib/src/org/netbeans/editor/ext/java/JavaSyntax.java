@@ -61,6 +61,9 @@ public class JavaSyntax extends Syntax {
 
     private boolean isJava15 = true;
 
+    //when set to true, the parser divides java block comment by lines (a performance fix of #55628 for JSPs)
+    private boolean useInJsp = false; 
+    
     public JavaSyntax() {
         tokenContextPath = JavaTokenContext.contextPath;
     }
@@ -74,6 +77,11 @@ public class JavaSyntax extends Syntax {
                 // leave the default
             }
         }
+    }
+     
+    public JavaSyntax(String sourceLevel, boolean useInJsp) {
+        this(sourceLevel);
+        this.useInJsp = useInJsp;
     }
 
     protected TokenID parseToken() {
@@ -214,6 +222,14 @@ public class JavaSyntax extends Syntax {
                 case '*':
                     state = ISA_STAR_I_BLOCK_COMMENT;
                     break;
+                //create a block comment token for each line of the comment - a performance fix for #55628
+                case '\n':
+                    if(useInJsp) {
+                        //leave the some state - we are still in the block comment,
+                        //we just need to create a token for each line.
+                        offset++;
+                        return JavaTokenContext.BLOCK_COMMENT;
+                    }
                 }
                 break;
 

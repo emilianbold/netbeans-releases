@@ -30,6 +30,7 @@ import org.netbeans.editor.ext.Completion;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.html.HTMLTokenContext;
+import org.netbeans.editor.ext.java.JavaSyntax;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -176,8 +177,11 @@ public class JSPKit extends NbEditorKit {
     
     public static Syntax getSyntaxForLanguage(Document doc, String language) {
         EditorKit kit = JEditorPane.createEditorKitForContentType(language);
-        if (kit instanceof BaseKit) {
-            return ((BaseKit)kit).createSyntax(doc);
+        if (kit instanceof JavaKit) {
+            JavaKit jkit = (JavaKit)kit;
+            String sourceLevel = jkit.getSourceLevel((BaseDocument)doc);
+            //create a special javasyntax patched for use in JSPs (fix of #55628)
+            return new JavaSyntax(sourceLevel, true); 
         } else {
             return new HTMLSyntax();
         }
