@@ -541,6 +541,19 @@ public class EditorModule extends ModuleInstall {
         }
         
         public void fileSystemRemoved(RepositoryEvent ev){
+            if (Boolean.getBoolean("netbeans.full.hack") == true){ //NOI18N
+                return;
+            }
+
+            org.openide.windows.WindowManager wm=TopManager.getDefault().getWindowManager();
+            if(wm == null) return;
+            java.awt.Frame frm = wm.getMainWindow();
+            if(frm!=null && frm.isVisible()){
+                if (ev.getFileSystem() != null){
+                    JCStorage storage = JCStorage.getStorage();
+                    storage.removeParsedFS(ev.getFileSystem());
+                }
+            }
         }
         
         public void fileSystemPoolReordered(RepositoryReorderedEvent ev){
