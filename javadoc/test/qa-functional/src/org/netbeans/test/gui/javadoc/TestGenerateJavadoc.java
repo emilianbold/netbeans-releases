@@ -14,14 +14,18 @@ import junit.framework.TestSuite;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.RepositoryTabOperator;
 
 import org.netbeans.jellytools.actions.Action;
 
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.properties.ComboBoxProperty;
+import org.netbeans.jellytools.properties.PropertySheetTabOperator;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 import org.netbeans.junit.NbTestSuite;
 
@@ -30,7 +34,7 @@ import org.netbeans.junit.NbTestSuite;
  * @author mk97936
  * @version 1.0
  */
-public class TestGenerateJavadoc extends JellyTestCase {
+public class TestGenerateJavadoc extends JavadocTestCase {
     
     public static final String sep = File.separator;
     
@@ -58,19 +62,16 @@ public class TestGenerateJavadoc extends JellyTestCase {
     protected void tearDown() {
     }
     
+    // -------------------------------------------------------------------------
+    
     public void testGenerate() {
-        
-        String toolsPopupMenuItem = Bundle.getStringTrimmed("org.openide.actions.Bundle", "CTL_Tools");
-        String toolsMainMenuItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Tools");
-        String generateMenuItem = Bundle.getStringTrimmed("org.netbeans.modules.javadoc.Bundle", "CTL_ActionGenerate");
-        String questionWinTitle = Bundle.getStringTrimmed("org.openide.Bundle", "NTF_QuestionTitle");
         
         String userHome = System.getProperty("netbeans.user"); // NOI18N
         RepositoryTabOperator repoTabOper = RepositoryTabOperator.invoke();
         Node topNode = new Node(repoTabOper.getRootNode(), 0);
         
-        String sampledirPath = topNode.getPath() + sep + "org" + sep + "netbeans" + sep + "test" + sep + 
-                               "gui" + sep + "javadoc" + sep + "data" + sep + "sampledir";
+        String sampledirPath = topNode.getPath() + sep + "org" + sep + "netbeans" + sep + "test" + sep + // NOI18N
+                               "gui" + sep + "javadoc" + sep + "data" + sep + "sampledir"; // NOI18N
         
         repoTabOper.mountLocalDirectoryAPI(sampledirPath); // NOI18N
         
@@ -84,11 +85,12 @@ public class TestGenerateJavadoc extends JellyTestCase {
         Node memoryViewNode = new Node(new Node(repoTabOper.getRootNode(), sampledirPath), 
                                        "examples|advanced|MemoryView"); // NOI18N
         generateJDoc.perform(memoryViewNode);
-
-        NbDialogOperator nbDialogOper_1 = new NbDialogOperator(questionWinTitle);
-        nbDialogOper_1.no();
         
-        verifyCommonJdocFiles(userHome);
+        // question about showing javadoc in browser
+        NbDialogOperator questionDialogOper = new NbDialogOperator(questionWinTitle);
+        questionDialogOper.no();
+        
+        verifyCommonJdocFiles(userHome, "javadoc");
         assertTrue("MemoryView doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
                    "advanced" + sep + "MemoryView.html").exists()); // NOI18N
         new EventTool().waitNoEvent(1000);
@@ -97,10 +99,11 @@ public class TestGenerateJavadoc extends JellyTestCase {
         Node colorPickerNode = new Node(new Node(repoTabOper.getRootNode(), sampledirPath), "examples|colorpicker"); // NOI18N        
         generateJDoc.perform(colorPickerNode);
         
-        NbDialogOperator nbDialogOper_2 = new NbDialogOperator(questionWinTitle);
-        nbDialogOper_2.no();
+        // question about showing javadoc in browser
+        NbDialogOperator questionDialogOper_2 = new NbDialogOperator(questionWinTitle);
+        questionDialogOper_2.no();
         
-        verifyCommonJdocFiles(userHome);
+        verifyCommonJdocFiles(userHome, "javadoc");
         assertTrue("ColorPicker doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
                    "colorpicker" + sep + "ColorPicker.html").exists()); // NOI18N
         new EventTool().waitNoEvent(1000);
@@ -109,10 +112,11 @@ public class TestGenerateJavadoc extends JellyTestCase {
         Node examplesNode = new Node(new Node(repoTabOper.getRootNode(), sampledirPath), "examples"); // NOI18N        
         generateJDoc.perform(examplesNode);
         
-        NbDialogOperator nbDialogOper_3 = new NbDialogOperator(questionWinTitle);
-        nbDialogOper_3.no();
+        // question about showing javadoc in browser
+        NbDialogOperator questionDialogOper_3 = new NbDialogOperator(questionWinTitle);
+        questionDialogOper_3.no();
         
-        verifyCommonJdocFiles(userHome);
+        verifyCommonJdocFiles(userHome, "javadoc");
         assertTrue("ClockFrame doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
                    "clock" + sep + "ClockFrame.html").exists()); // NOI18N
         assertTrue("ImageFrame doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
@@ -133,16 +137,66 @@ public class TestGenerateJavadoc extends JellyTestCase {
         
     }
     
-    private void verifyCommonJdocFiles(String base) {
-        assertTrue("index.html doesn't exist!", new File(base + sep + "javadoc" + sep + "index.html").exists()); // NOI18N
-        assertTrue("index-all.html doesn't exist!", new File(base + sep + "javadoc" + sep + "index-all.html").exists()); // NOI18N
-        assertTrue("allclasses-frame.html doesn't exist!", new File(base + sep + "javadoc" + sep + "allclasses-frame.html").exists()); // NOI18N
-        assertTrue("allclasses-noframe.html doesn't exist!", new File(base + sep + "javadoc" + sep + "allclasses-noframe.html").exists()); // NOI18N
-        assertTrue("packages.html doesn't exist!", new File(base + sep + "javadoc" + sep + "packages.html").exists()); // NOI18N
-        assertTrue("stylesheet.css doesn't exist!", new File(base + sep + "javadoc" + sep + "stylesheet.css").exists()); // NOI18N
-        assertTrue("package-list doesn't exist!", new File(base + sep + "javadoc" + sep + "package-list").exists()); // NOI18N
-        assertTrue("help-doc.html doesn't exist!", new File(base + sep + "javadoc" + sep + "help-doc.html").exists()); // NOI18N
-        assertTrue("overview-tree.html doesn't exist!", new File(base + sep + "javadoc" + sep + "overview-tree.html").exists()); // NOI18N
+    private void verifyCommonJdocFiles(String base, String folder) {
+        assertTrue("index.html doesn't exist!", new File(base + sep + folder + sep + "index.html").exists()); // NOI18N
+        assertTrue("index-all.html doesn't exist!", new File(base + sep + folder + sep + "index-all.html").exists()); // NOI18N
+        assertTrue("allclasses-frame.html doesn't exist!", new File(base + sep + folder + sep + "allclasses-frame.html").exists()); // NOI18N
+        assertTrue("allclasses-noframe.html doesn't exist!", new File(base + sep + folder + sep + "allclasses-noframe.html").exists()); // NOI18N
+        assertTrue("packages.html doesn't exist!", new File(base + sep + folder + sep + "packages.html").exists()); // NOI18N
+        assertTrue("stylesheet.css doesn't exist!", new File(base + sep + folder + sep + "stylesheet.css").exists()); // NOI18N
+        assertTrue("package-list doesn't exist!", new File(base + sep + folder + sep + "package-list").exists()); // NOI18N
+        assertTrue("help-doc.html doesn't exist!", new File(base + sep + folder + sep + "help-doc.html").exists()); // NOI18N
+        assertTrue("overview-tree.html doesn't exist!", new File(base + sep + folder + sep + "overview-tree.html").exists()); // NOI18N
+    }
+    
+    private void verifyCommonJdocFilesInFolder(String fodler) {
+        
+    }
+    
+    public void testGenerateToFolder() {
+        
+        String userHome = System.getProperty("netbeans.user"); // NOI18N
+        RepositoryTabOperator repoTabOper = RepositoryTabOperator.invoke();
+        Node topNode = new Node(repoTabOper.getRootNode(), 0);
+        
+        String sampledirPath = topNode.getPath() + sep + "org" + sep + "netbeans" + sep + "test" + sep + // NOI18N
+                               "gui" + sep + "javadoc" + sep + "data" + sep + "sampledir"; // NOI18N
+        
+        repoTabOper.mountLocalDirectoryAPI(sampledirPath); // NOI18N
+        Action generateJDoc = new Action(toolsMainMenuItem + "|" + generateMenuItem, // NOI18N
+                                         toolsPopupMenuItem + "|" + generateMenuItem); // NOI18N
+        
+        // set property "Ask for Destination Directory" to true
+        OptionsOperator optionsOper = OptionsOperator.invoke();
+        optionsOper.selectOption("Code Documentation|Documentation");
+        PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(optionsOper);
+        ComboBoxProperty askForDestProp = new ComboBoxProperty(propertiesTab, "Ask for Destination Directory");
+        askForDestProp.setValue("True");
+        optionsOper.close();
+        // -----
+        
+        Node imageviewerNode = new Node(new Node(repoTabOper.getRootNode(), sampledirPath), "examples|imageviewer"); // NOI18N        
+        generateJDoc.perform(imageviewerNode);
+        
+        NbDialogOperator dialogOper = new NbDialogOperator("Javadoc Destination Directory");
+        JTextFieldOperator textOper = new JTextFieldOperator(dialogOper);
+        textOper.clearText();
+        textOper.typeText(userHome + sep + "javadoc_1");
+        dialogOper.ok();
+        
+        // question about creating non existing folder
+        NbDialogOperator questionDialogOper = new NbDialogOperator(questionWinTitle);
+        questionDialogOper.ok();
+        
+        // question about showing javadoc in browser
+        NbDialogOperator questionDialogOper_2 = new NbDialogOperator(questionWinTitle);
+        questionDialogOper_2.no();
+        
+        verifyCommonJdocFiles(userHome, "javadoc_1");
+        assertTrue("ImageViewer doesn't exist!", new File(userHome + sep + "javadoc_1" + sep + "examples" + sep + // NOI18N
+                   "imageviewer" + sep + "ImageViewer.html").exists()); // NOI18N
+        new EventTool().waitNoEvent(1000);
+        
     }
     
     /** Use for internal test execution inside IDE
@@ -151,4 +205,10 @@ public class TestGenerateJavadoc extends JellyTestCase {
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(suite());
     }
+    
+    private static final String toolsPopupMenuItem = Bundle.getStringTrimmed("org.openide.actions.Bundle", "CTL_Tools");
+    private static final String toolsMainMenuItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Tools");
+    private static final String generateMenuItem = Bundle.getStringTrimmed("org.netbeans.modules.javadoc.Bundle", "CTL_ActionGenerate");
+    private static final String questionWinTitle = Bundle.getStringTrimmed("org.openide.Bundle", "NTF_QuestionTitle");
+    
 }
