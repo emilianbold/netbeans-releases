@@ -15,6 +15,7 @@ package org.netbeans.modules.httpserver;
 
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import javax.servlet.ServletException;
@@ -57,6 +58,7 @@ public class WrapperServlet extends NbBaseServlet {
         
         try {
             URL newURL;
+            String anchor = url.getRef();
             
             if (NbfsURLConnection.PROTOCOL.equals (url.getProtocol ())) {
                 FileObject fo = NbfsURLConnection.decodeURL (url);
@@ -70,12 +72,25 @@ public class WrapperServlet extends NbBaseServlet {
                     if (fsurl != null && "jar".equals (fsurl.getProtocol ()))   // NOI18N
                         fsurl = null;
 
-                    if (fsurl != null)
-                        return fsurl;
+                    if (fsurl != null) {
+                        if (anchor != null) {
+                            try {
+                                fsurl = new URL (fsurl, "#"+anchor);    // NOI18N
+                            }
+                            catch (MalformedURLException ex) {
+                                // should not happen, but never mind - use normal wrapping
+                            }
+                        }
+                        else {
+                            return fsurl;
+                        }
+                    }
                 }
             }
 
             String orig = url.toString ();
+            int ind = orig.indexOf('#');
+            orig = ind < 0 ? orig: orig.substring(0, ind);
             int slash = orig.indexOf ('/');
             if (slash >= 0 && orig.charAt (slash+1) == '/') {
                 slash = orig.indexOf (slash+2);
@@ -85,6 +100,9 @@ public class WrapperServlet extends NbBaseServlet {
                 path = java.net.URLEncoder.encode (orig.substring (0, slash))+orig.substring (slash);
             else
                 path = orig;
+            
+            if (ind >=0) 
+                path = path + "#" + anchor; // NOI18N
 
             HttpServerSettings settings = (HttpServerSettings)SharedClassObject.findObject(HttpServerSettings.class, true);
             settings.setRunning (true);
