@@ -96,7 +96,7 @@ public class UpdateHelper {
                     }
                     else if (canUpdate()) {
                         try {
-                            saveUpdate ();
+                            saveUpdate (props);
                             helper.putProperties(path,props);
                         } catch (IOException ioe) {
                             ErrorManager.getDefault().notify (ioe);
@@ -143,7 +143,7 @@ public class UpdateHelper {
                     helper.putPrimaryConfigurationData(element, shared);
                 } else if (canUpdate()) {
                     try {
-                        saveUpdate ();
+                        saveUpdate (null);
                         helper.putPrimaryConfigurationData(element, shared);
                     } catch (IOException ioe) {
                         ErrorManager.getDefault().notify(ioe);
@@ -168,7 +168,7 @@ public class UpdateHelper {
      */
     public void requestSave () throws IOException{
         if (!isCurrent() && canUpdate()) {
-            saveUpdate ();
+            saveUpdate (null);
         }
     }
 
@@ -206,9 +206,17 @@ public class UpdateHelper {
         }
     }
 
-    private void saveUpdate () throws IOException {
+    private void saveUpdate (EditableProperties props) throws IOException {
         this.helper.putPrimaryConfigurationData(getUpdatedSharedConfigurationData(),true);
         this.cfg.removeConfigurationFragment("data","http://www.netbeans.org/ns/web-project/1",true); //NOI18N
+
+        //add properties needed by 4.1 project
+        if(props != null) {
+            props.put("test.src.dir", "");
+            props.put("build.test.classes.dir", "");
+            props.put("build.test.results.dir", "");
+        }
+        
         ProjectManager.getDefault().saveProject (this.project);
         synchronized(this) {
             this.isCurrent = Boolean.TRUE;
