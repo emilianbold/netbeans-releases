@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,10 +19,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.jar.JarFile;
 import javax.swing.DefaultComboBoxModel;
 
@@ -31,6 +29,7 @@ import javax.swing.JFileChooser;
 import javax.swing.ListSelectionModel;
 
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 import org.netbeans.modules.db.util.DriverListUtil;
@@ -45,6 +44,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
     /** Creates new form AddDriverDialog1 */
     public AddDriverDialog() {
         initComponents();
+        findProgressBar.setBorderPainted(false);
         initAccessibility();
         dlm = (DefaultListModel) drvList.getModel();
         drvs = new LinkedList();
@@ -61,6 +61,8 @@ public class AddDriverDialog extends javax.swing.JPanel {
         browseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BUNDLE).getString("ACS_AddDriverAddButtonA11yDesc")); //NOI18N
         findButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BUNDLE).getString("ACS_AddDriverRemoveButtonA11yDesc")); //NOI18N
         removeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BUNDLE).getString("ACS_AddDriverFindButtonA11yDesc")); //NOI18N
+        findProgressBar.getAccessibleContext().setAccessibleName(NbBundle.getBundle(BUNDLE).getString("ACS_AddDriverProgressBarA11yName")); //NOI18N
+        findProgressBar.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BUNDLE).getString("ACS_AddDriverProgressBarA11yDesc")); //NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -81,6 +83,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
         findButton = new javax.swing.JButton();
         nameLabel = new javax.swing.JLabel();
         nameTextField = new javax.swing.JTextField();
+        findProgressBar = new javax.swing.JProgressBar();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -91,8 +94,8 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(drvListLabel, gridBagConstraints);
 
         drvList.setModel(new DefaultListModel());
@@ -103,8 +106,8 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
         add(drvListScrollPane, gridBagConstraints);
 
         browseButton.setMnemonic(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverAdd_Mnemonic").charAt(0));
@@ -119,8 +122,8 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 11);
         add(browseButton, gridBagConstraints);
 
         removeButton.setMnemonic(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverRemove_Mnemonic").charAt(0));
@@ -135,8 +138,8 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 11);
         add(removeButton, gridBagConstraints);
 
         drvClassLabel.setDisplayedMnemonic(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverClass_Mnemonic").charAt(0));
@@ -185,25 +188,38 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 11, 12);
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 12);
         add(nameLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(11, 0, 11, 12);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
         add(nameTextField, gridBagConstraints);
+
+        findProgressBar.setToolTipText(NbBundle.getBundle(BUNDLE).getString("ACS_AddDriverProgressBarA11yDesc"));
+        findProgressBar.setString("");
+        findProgressBar.setStringPainted(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 12, 11);
+        add(findProgressBar, gridBagConstraints);
 
     }//GEN-END:initComponents
 
     private void drvClassComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_drvClassComboBoxActionPerformed
-//        if (nameTextField.getText() == null || nameTextField.getText().equals(""))
-            nameTextField.setText(DriverListUtil.findFreeName(DriverListUtil.getName((String) drvClassComboBox.getSelectedItem())));
+        nameTextField.setText(DriverListUtil.findFreeName(DriverListUtil.getName((String) drvClassComboBox.getSelectedItem())));
     }//GEN-LAST:event_drvClassComboBoxActionPerformed
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
+        hideProgress();
+        
         ListSelectionModel lsm = drvList.getSelectionModel();
         int count = dlm.getSize();
         int i = 0;
@@ -220,54 +236,59 @@ public class AddDriverDialog extends javax.swing.JPanel {
             }
             i++;
         } while (count != i);
+        
+        findDriverClass();
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void findButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findButtonActionPerformed
-        JarFile jf;
-        Enumeration e;
-        String className;
-        Class c;
-        Class[] cls;
-        URLClassLoader loader = new URLClassLoader((URL[]) drvs.toArray(new URL[drvs.size()]));
-        
-        for (int i = 0; i < drvs.size(); i++) {
-            try {
-                jf = new JarFile(new File(((URL) drvs.get(i)).getFile()));
-                e = jf.entries();
-                while (e.hasMoreElements()) {
-                    className = e.nextElement().toString();
-                    if (className.endsWith(".class")) {
-                        className = className.replace('/', '.');
-                        className = className.substring(0, className.length() - 6);
-                        try {
-                            c = Class.forName(className, true, loader);
-                            cls = c.getInterfaces();
-                            for (int j = 0; j < cls.length; j++)
-                                if (cls[j].equals(java.sql.Driver.class))
-                                    addDriverClass(className);
-                        } catch (ClassNotFoundException exc) {
-                            //PENDING
-                        } catch (ExceptionInInitializerError exc) {
-                            //PENDING
-                        } catch (NoClassDefFoundError exc) {
-                            //PENDING
-                        } catch (UnsatisfiedLinkError err) {
-                            //PENDING
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                startProgress();
+                
+                JarFile jf;
+                Enumeration e;
+                String className;
+                Class c;
+                Class[] cls;
+                URLClassLoader loader = new URLClassLoader((URL[]) drvs.toArray(new URL[drvs.size()]));
+                
+                for (int i = 0; i < drvs.size(); i++) {
+                    try {
+                        jf = new JarFile(new File(((URL) drvs.get(i)).getFile()));
+                        e = jf.entries();
+                        while (e.hasMoreElements()) {
+                            className = e.nextElement().toString();
+                            if (className.endsWith(".class")) {
+                                className = className.replace('/', '.');
+                                className = className.substring(0, className.length() - 6);
+                                try {
+                                    c = Class.forName(className, true, loader);
+                                    cls = c.getInterfaces();
+                                    for (int j = 0; j < cls.length; j++)
+                                        if (cls[j].equals(java.sql.Driver.class))
+                                            addDriverClass(className);
+                                } catch (Exception exc) {
+                                    //PENDING
+                                } catch (Error err) {
+                                    //PENDING
+                                }
+                            }
                         }
+                        jf.close();
+                    } catch (IOException exc) {
+                        //PENDING
                     }
                 }
-                jf.close();
-            } catch (IOException exc) {
-                //PENDING
+                stopProgress();
             }
-        }
-
+        }, 0);
     }//GEN-LAST:event_findButtonActionPerformed
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+        hideProgress();
+        
         JFileChooser fc = new JFileChooser();
-//        fc.setDialogTitle(bundle.getString("RecreateTableFileOpenDialogTitle")); //NOI18N
-        fc.setDialogTitle("Select Driver"); //NOI18N
+        fc.setDialogTitle(NbBundle.getBundle(BUNDLE).getString("AddDriver_Chooser_Title")); //NOI18N
         fc.setMultiSelectionEnabled(true);
         fc.setAcceptAllFileFilterUsed(false);
         
@@ -278,12 +299,11 @@ public class AddDriverDialog extends javax.swing.JPanel {
             }
             
             public String getDescription() {
-                return "Archive Files (*.jar, *.zip)";
-//                return bundle.getString("Archive Files"); //NOI18N
+                return NbBundle.getBundle(BUNDLE).getString("AddDriver_Chooser_Filter"); //NOI18N
             }
         });
         
-        if (fc.showDialog(WindowManager.getDefault().getMainWindow(), "Add") == JFileChooser.APPROVE_OPTION) { //NOI18N
+        if (fc.showDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getBundle(BUNDLE).getString("AddDriver_Chooser_ApproveOption")) == JFileChooser.APPROVE_OPTION) { //NOI18N
             File[] files = fc.getSelectedFiles();            
             for (int i = 0; i < files.length; i++)
                 if (files[i] != null && files[i].isFile()) {
@@ -293,8 +313,9 @@ public class AddDriverDialog extends javax.swing.JPanel {
                     } catch (MalformedURLException exc) {
                         //PENDING
                     }
-                    findDriverClass(files[i]);
                 }
+            
+            findDriverClass();
         }
     }//GEN-LAST:event_browseButtonActionPerformed
     
@@ -307,6 +328,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
     private javax.swing.JLabel drvListLabel;
     private javax.swing.JScrollPane drvListScrollPane;
     private javax.swing.JButton findButton;
+    private javax.swing.JProgressBar findProgressBar;
     private javax.swing.JLabel nameLabel;
     private javax.swing.JTextField nameTextField;
     private javax.swing.JButton removeButton;
@@ -324,22 +346,21 @@ public class AddDriverDialog extends javax.swing.JPanel {
         return (String) drvClassComboBox.getSelectedItem();
     }
     
-    private void findDriverClass(File drvFile) {
+    private void findDriverClass() {
         JarFile jf;
-        String drv;
-
-        try {
-            jf = new JarFile(drvFile);
-            Set drvs = DriverListUtil.getDrivers();
-            Iterator it = drvs.iterator();
-            while (it.hasNext()) {
-                drv = (String) it.next();
-                if (jf.getEntry(drv.replace('.', '/') + ".class") != null) //NOI18N
-                    addDriverClass(drv);
-            }        
-            jf.close();
-        } catch (IOException exc) {
-            //PENDING
+        String[] drivers = (String[]) DriverListUtil.getDrivers().toArray(new String[DriverListUtil.getDrivers().size()]);
+        
+        drvClassComboBox.removeAllItems();
+        for (int i = 0; i < drvs.size(); i++) {
+            try {
+                jf = new JarFile(new File(((URL) drvs.get(i)).getFile()));
+                for (int j = 0; j < drivers.length; j++)
+                    if (jf.getEntry(drivers[j].replace('.', '/') + ".class") != null) //NOI18N
+                        addDriverClass(drivers[j]);
+                jf.close();
+            } catch (IOException exc) {
+                //PENDING
+            }
         }
     }
     
@@ -348,4 +369,22 @@ public class AddDriverDialog extends javax.swing.JPanel {
             drvClassComboBox.addItem(drv);
     }
     
+    private void startProgress() {
+        findProgressBar.setBorderPainted(true);
+        findProgressBar.setIndeterminate(true);
+        findProgressBar.setString(NbBundle.getBundle(BUNDLE).getString("AddDriverProgressStart")); //NOI18N
+    }
+
+    private void stopProgress() {
+        findProgressBar.setValue(findProgressBar.getMaximum());
+        findProgressBar.setString(NbBundle.getBundle(BUNDLE).getString("AddDriverProgressStop")); //NOI18N
+        findProgressBar.setIndeterminate(false);
+    }
+
+    private void hideProgress() {
+        findProgressBar.setBorderPainted(false);
+        findProgressBar.setIndeterminate(false);
+        findProgressBar.setString(""); //NOI18N
+        findProgressBar.setValue(findProgressBar.getMinimum());
+    }
 }
