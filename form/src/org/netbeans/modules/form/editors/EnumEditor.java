@@ -160,6 +160,7 @@ public class EnumEditor extends PropertyEditorSupport
         "JTextField.", // NOI18N
         "JViewport.", // NOI18N
         "JFrame.", // NOI18N        
-        "JList." // NOI18N
+        "JList.", // NOI18N
+        "JFormattedTextField." // NOI18N
     };
 }
