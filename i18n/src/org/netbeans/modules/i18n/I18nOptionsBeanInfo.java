@@ -21,8 +21,11 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.SimpleBeanInfo;
 import java.beans.PropertyDescriptor;
+import java.util.ResourceBundle;
 
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+
 
 /**
  * Bean info for <code>I18nOptions</code> class.
@@ -51,13 +54,23 @@ public class I18nOptionsBeanInfo extends SimpleBeanInfo {
             // Set last resource property as hidden.
             lastResPD.setHidden(true);
             
+            ResourceBundle bundle = NbBundle.getBundle(I18nOptionsBeanInfo.class);
+            
             // Set display names.
-            advWizardPD.setDisplayName(I18nUtil.getBundle().getString("TXT_AdvancedWizard"));
-            initCodePD.setDisplayName(I18nUtil.getBundle().getString("TXT_InitCodeFormat"));
-            replaceCodePD.setDisplayName(I18nUtil.getBundle().getString("TXT_ReplaceCodeFormat"));
-            regExpPD.setDisplayName(I18nUtil.getBundle().getString("TXT_RegularExpression"));
-            replaceValuePD.setDisplayName(I18nUtil.getBundle().getString("TXT_ReplaceResourceValue"));
-            i18nRegExpPD.setDisplayName(I18nUtil.getBundle().getString("TXT_I18nRegularExpression"));
+            advWizardPD.setDisplayName(bundle.getString("TXT_AdvancedWizard"));
+            initCodePD.setDisplayName(bundle.getString("TXT_InitCodeFormat"));
+            replaceCodePD.setDisplayName(bundle.getString("TXT_ReplaceCodeFormat"));
+            regExpPD.setDisplayName(bundle.getString("TXT_RegularExpression"));
+            replaceValuePD.setDisplayName(bundle.getString("TXT_ReplaceResourceValue"));
+            i18nRegExpPD.setDisplayName(bundle.getString("TXT_I18nRegularExpression"));
+
+            // Set short descriptions.
+            advWizardPD.setShortDescription(bundle.getString("TXT_AdvancedWizardDesc"));
+            initCodePD.setShortDescription(bundle.getString("TXT_InitCodeFormatDesc"));
+            replaceCodePD.setShortDescription(bundle.getString("TXT_ReplaceCodeFormatDesc"));
+            regExpPD.setShortDescription(bundle.getString("TXT_RegularExpressionDesc"));
+            replaceValuePD.setShortDescription(bundle.getString("TXT_ReplaceResourceValueDesc"));
+            i18nRegExpPD.setShortDescription(bundle.getString("TXT_I18nRegularExpressionDesc"));
             
             // Set property editors.
             initCodePD.setPropertyEditorClass(HelpStringCustomEditor.InitCodeEditor.class);
