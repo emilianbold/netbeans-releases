@@ -300,13 +300,71 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * @return the new mode */
     public Mode createMode(String name, String displayName, URL icon) {
         if(getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
-            return createMode(name, Constants.MODE_KIND_EDITOR, false, null);
+            return new WrapMode (createMode(name, Constants.MODE_KIND_EDITOR, false, null));
         } else {
             // #36945 In 'separate' ui mode create new mode.
             return createMode(name, Constants.MODE_KIND_VIEW, false,
                 new SplitConstraint[] { new SplitConstraint(Constants.HORIZONTAL, 1, 0.2)});
         }
     }
+    private static class WrapMode implements Mode {
+        private Mode wrap;
+        
+        public WrapMode (Mode wrap) {
+            this.wrap = wrap;
+        }
+        
+        public void addPropertyChangeListener (PropertyChangeListener list) {
+            wrap.addPropertyChangeListener (list);
+        }
+        
+        public boolean canDock (TopComponent tc) {
+            return wrap.canDock (tc);
+        }
+        
+        public boolean dockInto (TopComponent c) {
+            if (c.getClientProperty (Constants.TOPCOMPONENT_ALLOW_DOCK_ANYWHERE) == null) {
+                c.putClientProperty (Constants.TOPCOMPONENT_ALLOW_DOCK_ANYWHERE, Boolean.TRUE);
+            }
+            return wrap.dockInto (c);
+        }
+        
+        public Rectangle getBounds () {
+            return wrap.getBounds ();
+        }
+        
+        public String getDisplayName () {
+            return wrap.getDisplayName ();
+        }
+        
+        public Image getIcon () {
+            return wrap.getIcon ();
+        }
+        
+        public String getName () {
+            return wrap.getName ();
+        }
+        
+        public TopComponent getSelectedTopComponent () {
+            return wrap.getSelectedTopComponent ();
+        }
+        
+        public TopComponent[] getTopComponents () {
+            return wrap.getTopComponents ();
+        }
+        
+        public Workspace getWorkspace () {
+            return wrap.getWorkspace ();
+        }
+        
+        public void removePropertyChangeListener (PropertyChangeListener list) {
+            wrap.removePropertyChangeListener (list);
+        }
+        
+        public void setBounds (Rectangle s) {
+            wrap.setBounds (s);
+        }
+    } // end of WrapMode
 
     /** Finds mode by specified name.
      * Implements <code>Workspace</code> interface method.
@@ -787,6 +845,9 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
         if(mode == null) {
             mode = getDefaultEditorMode();
+            if (tc.getClientProperty (Constants.TOPCOMPONENT_ALLOW_DOCK_ANYWHERE) == null) {
+                tc.putClientProperty (Constants.TOPCOMPONENT_ALLOW_DOCK_ANYWHERE, Boolean.TRUE);
+            }
         }
 
         // XXX PENDING If necessary, unmaximize the state.
