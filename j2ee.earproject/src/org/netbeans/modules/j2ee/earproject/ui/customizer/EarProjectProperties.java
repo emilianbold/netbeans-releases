@@ -1439,4 +1439,28 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
             configurationXmlChanged(null);
         
     }
+    
+    String[] getWebUris() {
+        Application app = null;
+        try {
+            app = DDProvider.getDefault ().getDDRoot (earProject.getAppModule().getDeploymentDescriptor ());
+            //kids.add(new Node[] { new LogicalViewNode(app) });
+        }
+        catch (java.io.IOException ioe) {
+            org.openide.ErrorManager.getDefault ().log (ioe.getLocalizedMessage ());
+        }
+        Module mods[] = app.getModule();
+        int len = 0;
+        if (null != mods)
+            len = mods.length;
+        ArrayList retList = new ArrayList();
+        for (int i = 0; i < len; i++) {
+            Web w = mods[i].getWeb();
+            if (null != w) {
+                retList.add(w.getWebUri());
+            }
+        }
+        return (String[]) retList.toArray(new String[retList.size()]);
+        
+    }
 }

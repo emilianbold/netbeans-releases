@@ -94,7 +94,8 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
 //            webProperties.initProperty(WebProjectProperties.CLIENT_MODULE_URI, propertyInfo);
         }
 //
-        vps.register(jTextFieldContextPath, EarProjectProperties.CLIENT_MODULE_URI);
+        vps.register(clientModuleUriCombo, webProperties.getWebUris(),
+            EarProjectProperties.CLIENT_MODULE_URI);
 
         jTextFieldRelativeURL.setEditable(jCheckBoxDisplayBrowser.isSelected());
         initialized = true;
@@ -109,7 +110,6 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
         java.awt.GridBagConstraints gridBagConstraints;
 
         jLabelContextPath = new javax.swing.JLabel();
-        jTextFieldContextPath = new javax.swing.JTextField();
         jLabelServer = new javax.swing.JLabel();
         jComboBoxServer = new javax.swing.JComboBox();
         jCheckBoxDisplayBrowser = new javax.swing.JCheckBox();
@@ -123,12 +123,13 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
         jButtonAddLib = new javax.swing.JButton();
         jButtonAddProject = new javax.swing.JButton();
         jButtonRemove = new javax.swing.JButton();
+        clientModuleUriCombo = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EtchedBorder());
-        jLabelContextPath.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/earproject/ui/customizer/Bundle").getString("LBL_CustomizeRun_ContextPath_LabelMnemonic").charAt(0));
-        jLabelContextPath.setLabelFor(jTextFieldContextPath);
+        jLabelContextPath.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/earproject/ui/customizer/Bundle").getString("LBL_CustomizeRun_ClientModuleURI_LabelMnemonic").charAt(0));
+        jLabelContextPath.setLabelFor(clientModuleUriCombo);
         jLabelContextPath.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_ClientModuleURI_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -137,17 +138,6 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 0);
         add(jLabelContextPath, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 11, 11, 11);
-        add(jTextFieldContextPath, gridBagConstraints);
-        jTextFieldContextPath.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/earproject/ui/customizer/Bundle").getString("ACS_CustomizeRun_ContextPath_A11YDesc"));
 
         jLabelServer.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/earproject/ui/customizer/Bundle").getString("LBL_CustomizeRun_Server_LabelMnemonic").charAt(0));
         jLabelServer.setLabelFor(jComboBoxServer);
@@ -293,15 +283,20 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jButtonRemove, gridBagConstraints);
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(8, 12, 11, 11);
+        add(clientModuleUriCombo, gridBagConstraints);
+
     }//GEN-END:initComponents
 
     private void jComboBoxServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxServerActionPerformed
         if (jComboBoxServer.getSelectedIndex() == -1 || !initialized)
             return;
         String newCtxPath = null ; // wm.getContextPath(serverInstanceIDs [jComboBoxServer.getSelectedIndex ()]);
-        if (newCtxPath != null) {
-            jTextFieldContextPath.setText(newCtxPath);
-        }
     }//GEN-LAST:event_jComboBoxServerActionPerformed
 
     private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxDisplayBrowserActionPerformed
@@ -313,6 +308,7 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
     }//GEN-LAST:event_jCheckBoxDisplayBrowserActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox clientModuleUriCombo;
     private javax.swing.JButton jButtonAddJar;
     private javax.swing.JButton jButtonAddLib;
     private javax.swing.JButton jButtonAddProject;
@@ -326,7 +322,6 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
     private javax.swing.JLabel jLabelServer;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTableAddContent;
-    private javax.swing.JTextField jTextFieldContextPath;
     private javax.swing.JTextField jTextFieldRelativeURL;
     // End of variables declaration//GEN-END:variables
 

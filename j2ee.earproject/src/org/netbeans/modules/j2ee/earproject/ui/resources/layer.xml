@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="J2EE">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/ear.html"/>
-                <attr name="emptyEar.xml/completeEar.xml/importBlueprintEar.xml" boolvalue="true"/>
+                <attr name="emptyEar.xml/importBlueprintEar.xml" boolvalue="true"/>
 
                 <file name="emptyEar.xml">
                     <attr name="template" boolvalue="true"/>
@@ -31,13 +31,6 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/emptyProject.html"/>
-                </file>
-                <file name="completeEar.xml">
-                    <attr name="template" boolvalue="true"/>
-                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.CompleteEarProjectWizardIterator"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif"/>
-                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/completeProject.html"/>
                 </file>
                 <file name="importBlueprintEar.xml">
                    <attr name="template" boolvalue="true"/>

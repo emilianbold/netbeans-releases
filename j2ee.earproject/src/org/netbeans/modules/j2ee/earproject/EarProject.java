@@ -90,6 +90,7 @@ import org.w3c.dom.Text;
 import org.netbeans.modules.j2ee.common.ui.IconBaseProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.dd.api.application.*;
 
 /**
  * Represents an Enterprise Application project.
@@ -190,6 +191,12 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
 //            new SourceLevelQueryImpl(helper, evaluator()),
 //            fileBuilt,
             new RecommendedTemplatesImpl(),
+            helper.createSharabilityQuery(evaluator(),
+                    new String[] {"${"+EarProjectProperties.SOURCE_ROOT+"}"},
+                    new String[] {
+                    "${"+EarProjectProperties.BUILD_DIR+"}",
+                    "${"+EarProjectProperties.DIST_DIR+"}"}
+                ),
             this,
 //            sourcesHelper.createSources()
         });

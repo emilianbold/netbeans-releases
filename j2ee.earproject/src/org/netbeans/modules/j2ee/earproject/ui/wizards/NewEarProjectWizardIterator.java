@@ -33,6 +33,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
+import org.netbeans.modules.j2ee.earproject.EarProject;
 //import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -41,6 +42,17 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.j2ee.common.ui.wizards.WizardProperties;
 import org.openide.util.HelpCtx;
+import org.netbeans.modules.j2ee.dd.api.application.Application;
+import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
+
+import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
+import org.netbeans.modules.j2ee.earproject.EarProject;
+import org.netbeans.modules.j2ee.earproject.EarProjectType;
+import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectGenerator;
+import org.netbeans.modules.web.project.WebProjectGenerator;
+import org.openide.ErrorManager;
 
 /**
  * Wizard to create a new Web project.
@@ -70,31 +82,71 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
     }
     
     public Set instantiate() throws IOException {
-        Set resultSet = new HashSet();
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         String name = (String) wiz.getProperty(WizardProperties.NAME);
         String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
-        
-        AntProjectHelper h = EarProjectGenerator.createProject(dirF, name, j2eeLevel, serverInstanceID, contextPath);
-        try {
-            FileObject webRoot = h.getProjectDirectory().getFileObject("web");//NOI18N
-            FileObject indexJSPFo = getIndexJSPFO(webRoot, "index"); //NOI18N
-            assert indexJSPFo != null : "webRoot: " + webRoot + ", defaultJSP: index";//NOI18N
-            // Returning FileObject of main class, will be called its preferred action
-            resultSet.add (indexJSPFo);
-        } catch (Exception x) {
-            //PENDING
+        Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
+        Boolean createWAR = (Boolean) wiz.getProperty(WizardProperties.CREATE_WAR);
+        String warName = null;
+        if (createWAR.booleanValue()) {
+            warName = (String) wiz.getProperty(WizardProperties.WAR_NAME);
+        }
+        Boolean createJAR = (Boolean) wiz.getProperty(WizardProperties.CREATE_JAR);
+        String jarName = null;
+        if (createJAR.booleanValue()) {
+            jarName = (String) wiz.getProperty(WizardProperties.JAR_NAME);
         }
         
+        return testableInstantiate(dirF,name,j2eeLevel, serverInstanceID, contextPath, warName,jarName);
+    }
+    
+    Set testableInstantiate(File dirF, String name, String j2eeLevel, 
+            String serverInstanceID, String contextPath, String warName, String jarName) throws IOException {        
+        Set resultSet = new HashSet();
+        AntProjectHelper h = EarProjectGenerator.createProject(dirF, name, j2eeLevel, serverInstanceID, contextPath);
         FileObject dir = FileUtil.toFileObject(FileUtil.normalizeFile(dirF));
         Project p = ProjectManager.getDefault().findProject(dir);
-        
-        Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
-        //FoldersListSettings.getDefault().setNewProjectCount(index.intValue());
-        
+        EarProject earProject = (EarProject) p.getLookup().lookup(EarProject.class);
+        if (null != earProject) {
+            Application app = null;
+            try {
+                app = DDProvider.getDefault().getDDRoot(earProject.getAppModule().getDeploymentDescriptor());
+                app.setDisplayName(name);
+                //kids.add(new Node[] { new LogicalViewNode(app) });
+                app.write(earProject.getAppModule().getDeploymentDescriptor ());
+            }
+            catch (java.io.IOException ioe) {
+                org.openide.ErrorManager.getDefault().log(ioe.getLocalizedMessage());
+            }
+        }
         resultSet.add(dir);
+            AuxiliaryConfiguration aux = h.createAuxiliaryConfiguration();
+            ReferenceHelper refHelper = new ReferenceHelper(h, aux, h.getStandardPropertyEvaluator ());
+            EarProjectProperties epp = new EarProjectProperties((EarProject) p, h, refHelper, new EarProjectType());
+        if (null != warName) {
+            File webAppDir = new File(dirF, warName);
+            h = WebProjectGenerator.createProject(FileUtil.normalizeFile(webAppDir),
+                warName,
+                serverInstanceID,
+                WebProjectGenerator.SRC_STRUCT_BLUEPRINTS,
+                j2eeLevel, "/"+warName); //NOI18N
+            FileObject dir2 = FileUtil.toFileObject(FileUtil.normalizeFile(webAppDir));
+            p = ProjectManager.getDefault().findProject(dir2);
+            epp.addJ2eeSubprojects(new Project[] { p });
+             //ProjectManager.getDefault().
+            resultSet.add(dir2);
+        }
+        if (null != jarName) {
+            File ejbJarDir = new File(dirF,jarName);
+            h = EjbJarProjectGenerator.createProject(FileUtil.normalizeFile(ejbJarDir),jarName,
+                j2eeLevel, serverInstanceID);
+            FileObject dir2 = FileUtil.toFileObject(FileUtil.normalizeFile(ejbJarDir));
+            resultSet.add(dir2);
+            p = ProjectManager.getDefault().findProject(dir2);
+            epp.addJ2eeSubprojects(new Project[] { p });
+        }
         
         // Returning set of FileObject of project diretory. 
         // Project will be open and set as main
