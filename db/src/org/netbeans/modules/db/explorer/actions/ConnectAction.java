@@ -69,8 +69,7 @@ public class ConnectAction extends DatabaseAction {
         Boolean rpwd = (Boolean)nfo.get(DatabaseNodeInfo.REMEMBER_PWD);
 
         boolean remember = ((rpwd != null) ? rpwd.booleanValue() : false);
-        if (user == null || pwd == null || !remember) {
-
+        if (user == null || pwd == null || !remember)
             try {
                 // add connection (if needed) and make the connection to SAMPLE database connected
                 PointbasePlus.addOrConnectAccordingToOption();
@@ -78,6 +77,10 @@ public class ConnectAction extends DatabaseAction {
                 if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
                     ex.printStackTrace();
             }
+            
+        if (user == null || pwd == null || !remember) {
+
+
 
             final ConnectPanel basePanel = new ConnectPanel(user);
             final SchemaPanel schemaPanel = new SchemaPanel(new Vector(), user);
