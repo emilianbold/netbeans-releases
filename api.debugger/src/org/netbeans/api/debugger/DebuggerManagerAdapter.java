@@ -50,8 +50,6 @@ public class DebuggerManagerAdapter implements LazyDebuggerManagerListener {
 
     /**
      * Called when set of watches is initialized.
-     *
-     * @return initial set of watches
      */
     public void initWatches () {
     }
