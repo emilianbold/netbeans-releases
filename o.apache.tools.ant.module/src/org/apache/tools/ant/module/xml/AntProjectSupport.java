@@ -7,7 +7,7 @@
  *
  * The Original Code is the Ant module
  * The Initial Developer of the Original Code is Jayme C. Edwards.
- * Portions created by Jayme C. Edwards are Copyright (c) 2000.
+ * Portions created by Jayme C. Edwards are Copyright (c) 2002.
  * All Rights Reserved.
  *
  * Contributor(s): Jesse Glick.
@@ -191,6 +191,7 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
             parser.setFeature ("http://apache.org/xml/features/dom/defer-node-expansion", false); // NOI18N
             Reader rd;
             EditorCookie editor = getEditor ();
+            File file = getFile(); // #19705
             if (editor != null) {
                 StyledDocument doc = editor.openDocument ();
                 rd = new DocumentReader (doc, fo);
@@ -273,7 +274,7 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
     }
     
     public int hashCode () {
-        return 27825 ^ (fo == null ? file.hashCode () : fo.hashCode ());
+        return 27825 ^ (fo == null ? (file == null ? 0 : file.hashCode()) : fo.hashCode());
     }
     
     public String toString () {
@@ -284,8 +285,10 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
             } catch (DataObjectNotFoundException donfe) {
                 return fo.toString ();
             }
-        } else {
+        } else if (file != null) {
             return file.getAbsolutePath ();
+        } else {
+            return "<missing Ant script>"; // NOI18N
         }
     }
     
