@@ -105,6 +105,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="lib/xerces.jar"/>
     <delete file="lib/xalan.jar"/>
     <delete file="lib/xtest-ext.jar"/>
+    <delete file="xtest-distribution.zip"/>
   </target>
 
 </project>
