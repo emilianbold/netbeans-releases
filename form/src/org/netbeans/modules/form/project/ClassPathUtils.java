@@ -50,8 +50,13 @@ public class ClassPathUtils {
         ClassLoader loader;
 
         // first try compilation classpath of the project
-        loader = ClassPath.getClassPath(fileInProject, ClassPath.COMPILE)
-                                .getClassLoader(true);
+        ClassPath classPath = ClassPath.getClassPath(fileInProject, ClassPath.COMPILE);
+        
+        if (classPath == null) {
+            throw new ClassNotFoundException(getBundleString("MSG_NullClassPath"));
+        } else {
+            loader = classPath.getClassLoader(true);
+        }
         try {
             return loader.loadClass(name);
         }
