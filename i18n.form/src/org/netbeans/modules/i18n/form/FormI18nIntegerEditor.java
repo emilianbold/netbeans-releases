@@ -28,6 +28,7 @@ import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormAwareEditor;
 import org.netbeans.modules.form.FormDataObject;
 import org.netbeans.modules.form.NamedPropertyEditor;
+import org.netbeans.modules.form.FormEditorSupport;
 import org.netbeans.modules.i18n.I18nPanel;
 import org.netbeans.modules.i18n.I18nString;
 import org.netbeans.modules.i18n.I18nUtil;
@@ -209,7 +210,7 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
      * instance is created or the custom editor is obtained from getCustomEditor().
      * @param model the <code>FormModel</code> representing meta-data of current form */
     public void setFormModel(FormModel model) {
-        sourceDataObject = model.getFormDataObject();
+        sourceDataObject = FormEditorSupport.getFormDataObject(model);
     }
 
     /**
