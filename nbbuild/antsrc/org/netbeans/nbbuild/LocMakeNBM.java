@@ -179,12 +179,12 @@ public class LocMakeNBM extends Task {
     makenbm.setIsStandardInclude( false) ;
     String distbase = getProject().getProperty("dist.base");
     if (distbase != null) {
-        try {
+//        try {
             int idx = fname.lastIndexOf('/');
             makenbm.setDistribution(distbase + "/" + fname.substring(idx + 1));
-        } catch (MalformedURLException e) {
-            throw new BuildException(e, getLocation());
-        }
+//        } catch (MalformedURLException e) {
+//            throw new BuildException(e, getLocation());
+//        }
     }
     licenseFile = getLicenseFile( locale) ;
     if( licenseFile != null) {
