@@ -27,7 +27,10 @@ import java.util.regex.Pattern;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -80,6 +83,13 @@ public final class JavaAntLogger extends AntLogger {
     private static final Pattern CLASSPATH_ARGS = Pattern.compile("\r?\n'-classpath'\r?\n'(.*)'\r?\n"); // NOI18N
     
     /**
+     * Regexp matching part of a Java task's invocation debug message
+     * that specificies java executable.
+     * Hack to find JDK used for execution.
+     */
+    private static final Pattern JAVA_EXECUTABLE = Pattern.compile("^Executing '(.*)' with arguments:$"); // NOI18N
+    
+    /**
      * Ant task names we will pay attention to.
      */
     private static final String[] TASKS_OF_INTEREST = {
@@ -102,6 +112,7 @@ public final class JavaAntLogger extends AntLogger {
      * Data stored in the session.
      */
     private static final class SessionData {
+        public ClassPath platformSources = null;
         public String classpath = null;
         public Collection/*<FileObject>*/ classpathSourceRoots = null;
         public String possibleExceptionText = null;
@@ -109,6 +120,10 @@ public final class JavaAntLogger extends AntLogger {
         public SessionData() {}
         public void setClasspath(String cp) {
             classpath = cp;
+            classpathSourceRoots = null;
+        }
+        public void setPlatformSources(ClassPath platformSources) {
+            this.platformSources = platformSources;
             classpathSourceRoots = null;
         }
     }
@@ -195,7 +210,29 @@ public final class JavaAntLogger extends AntLogger {
                 data.setClasspath(cp);
             }
             // XXX should also probably clear classpath when taskFinished called
+            m2 = JAVA_EXECUTABLE.matcher(line);
+            if (m2.find()) {
+                String executable = m2.group(1);
+                ClassPath platformSources = findPlatformSources(executable);
+                if (platformSources != null) {
+                    data.setPlatformSources(platformSources);
+                }
+            }
         }
+    }
+    
+    private ClassPath findPlatformSources(String javaExecutable) {
+        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        for (int i=0; i<platforms.length; i++) {
+            FileObject fo = platforms[i].findTool("java"); // NOI18N
+            if (fo != null) {
+                File f = FileUtil.toFile(fo);
+                if (f.getAbsolutePath().startsWith(javaExecutable)) {
+                    return platforms[i].getSourceFolders();
+                }
+            }
+        }
+        return null;
     }
     
     private static void hyperlink(String line, AntSession session, AntEvent event, FileObject source, int messageLevel, int sessionLevel, SessionData data, int lineNumber) {
@@ -237,6 +274,16 @@ public final class JavaAntLogger extends AntLogger {
                 }
                 FileObject[] someRoots = SourceForBinaryQuery.findSourceRoots(binroot).getRoots();
                 data.classpathSourceRoots.addAll(Arrays.asList((Object[]) someRoots));
+            }
+            if (data.platformSources != null) {
+                data.classpathSourceRoots.addAll(Arrays.asList(data.platformSources.getRoots()));
+            } else {
+                // no platform found. use default one:
+                JavaPlatform plat = JavaPlatform.getDefault();
+                // in unit tests the default platform may be null:
+                if (plat != null) {
+                    data.classpathSourceRoots.addAll(Arrays.asList(plat.getSourceFolders().getRoots()));
+                }
             }
         }
         return data.classpathSourceRoots;
