@@ -9,7 +9,9 @@ package Templates.JSP_Servlet;
 /** 
  *
  * @author  __USER__
- * @version 
+ * @version
+ * 
+ * Web application lifecycle listener.
  */
 
 public class ServletListener {
