@@ -373,13 +373,14 @@ public class MetaComponentCreator {
             return null;
 
         // get container on which the layout will be set
-        RADVisualContainer metacont =
-            targetComp instanceof RADVisualContainer ?
-                (RADVisualContainer) targetComp :
-                (RADVisualContainer) targetComp.getParentComponent();
-
-        if (metacont == null)
-            return null;
+        RADVisualContainer metacont;
+        if (targetComp instanceof RADVisualContainer)
+            metacont = (RADVisualContainer) targetComp;
+        else {
+            metacont = (RADVisualContainer) targetComp.getParentComponent();
+            if (metacont == null)
+                return null;
+        }
 
         LayoutSupportDelegate layoutDelegate =
                               metacont.getLayoutSupport().getLayoutDelegate();

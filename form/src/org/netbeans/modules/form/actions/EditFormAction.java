@@ -39,7 +39,7 @@ public class EditFormAction extends NodeAction {
                                             .getCookie(RADComponentCookie.class);
             RADComponent metacomp = radCookie == null ? null :
                                       radCookie.getRADComponent();
-            if (metacomp instanceof RADVisualContainer) {
+            if (metacomp != null) { //instanceof RADVisualContainer
                 FormDesigner designer = metacomp.getFormModel().getFormDesigner();
                 designer.resetTopDesignComponent(true);
                 designer.open();

@@ -72,8 +72,11 @@ public class FormModel
             throw new IllegalStateException("Form type already initialized."); // NOI18N
 
         RADComponent topComp;
-        if (java.awt.Component.class.isAssignableFrom(formClass))
-            topComp = new RADVisualFormContainer();
+        if (java.awt.Component.class.isAssignableFrom(formClass)) {
+            topComp = FormUtils.isContainer(formClass) ?
+                          new RADVisualFormContainer() :
+                          new RADVisualComponent();
+        }
         else if (java.lang.Object.class != formClass)
             topComp = new RADFormContainer();
         else topComp = null;

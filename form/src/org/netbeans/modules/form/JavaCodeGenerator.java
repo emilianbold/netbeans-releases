@@ -623,7 +623,7 @@ class JavaCodeGenerator extends CodeGenerator {
         if (comp == null)
             return;
 
-        if (!(comp instanceof FormContainer)) {
+        if (comp != formModel.getTopRADComponent()) {
             generateComponentCreate(comp, initCodeWriter);
         }
         if (comp instanceof ComponentContainer) {
@@ -1178,8 +1178,8 @@ class JavaCodeGenerator extends CodeGenerator {
         return anyVariable;
     }
 
-    private static String getVariableGenString(RADComponent comp) {
-        if (comp instanceof FormContainer) {
+    private String getVariableGenString(RADComponent comp) {
+        if (comp == formModel.getTopRADComponent()) {
                 return ""; // NOI18N
         } else {
             return comp.getName() + "."; // NOI18N

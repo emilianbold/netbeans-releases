@@ -71,7 +71,9 @@ public class RADVisualComponent extends RADComponent {
 
     /** @return The index of this component within visual components of its parent */
     public final int getComponentIndex() {
-        return ((ComponentContainer)getParentComponent()).getIndexOf(this);
+        RADVisualContainer parent = (RADVisualContainer) getParentComponent();
+        return parent != null ? parent.getIndexOf(this) : -1;
+//        return ((ComponentContainer)getParentComponent()).getIndexOf(this);
     }
 
     final LayoutSupportManager getParentLayoutSupport() {

@@ -334,9 +334,14 @@ class HandleLayer extends JPanel
         if (!(metacomp instanceof RADVisualComponent))
             return;
 
-        RADVisualContainer metacont = metacomp instanceof RADVisualContainer ?
-                (RADVisualContainer) metacomp :
-                (RADVisualContainer) metacomp.getParentComponent();
+        RADVisualContainer metacont;
+        if (metacomp instanceof RADVisualContainer)
+            metacont = (RADVisualContainer) metacomp;
+        else {
+            metacont = (RADVisualContainer) metacomp.getParentComponent();
+            if (metacont == null)
+                return;
+        }
 
         LayoutSupportManager laysup = metacont.getLayoutSupport();
         if (laysup.supportsArranging()) {
@@ -461,8 +466,11 @@ class HandleLayer extends JPanel
         while (selected.hasNext()) {
             RADComponent comp = (RADComponent) selected.next();
             if (comp instanceof RADVisualComponent) {
-                if (parent == null)
+                if (parent == null) {
                     parent = comp.getParentComponent();
+                    if (parent == null)
+                        return; // component without a parent cannot be resized
+                }
                 else if (comp.getParentComponent() != parent)
                     return; // selected components are not in the same container
             }
@@ -476,15 +484,18 @@ class HandleLayer extends JPanel
         int resizing = 0;
 
         if (!formDesigner.isComponentSelected(metacomp)) {
-            RADVisualContainer metacont;
+            RADVisualComponent[] otherComps;
             if (metacomp instanceof RADVisualContainer)
-                metacont = (RADVisualContainer) metacomp;
-            else
-                metacont = (RADVisualContainer) metacomp.getParentComponent();
+                otherComps = ((RADVisualContainer)metacomp).getSubComponents();
+            else {
+                RADVisualContainer metacont = metacomp.getParentContainer();
+                if (metacont != null)
+                    otherComps = metacont.getSubComponents();
+                else return; // component without a parent
+            }
 
-            RADVisualComponent[] metacomps = metacont.getSubComponents();
-            for (int i=0; i < metacomps.length; i++) {
-                metacomp = metacomps[i];
+            for (int i=0; i < otherComps.length; i++) {
+                metacomp = otherComps[i];
                 resizing = getComponentResizable(p, metacomp);
                 if (resizing != 0)
                     break;
@@ -622,8 +633,11 @@ class HandleLayer extends JPanel
 
         if (metacomp instanceof RADVisualContainer)
             metacont = (RADVisualContainer) metacomp;
-        else
+        else {
             metacont = (RADVisualContainer) metacomp.getParentComponent();
+            if (metacont == null)
+                return;
+        }
 
         if (item.isLayout()) {
 /*            LayoutSupport layoutSupp = metacont.getLayoutSupport();

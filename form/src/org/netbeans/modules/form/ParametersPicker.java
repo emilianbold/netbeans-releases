@@ -76,7 +76,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
             RADComponent radComp =(RADComponent)it.next();
             if (requiredType.isAssignableFrom(radComp.getBeanClass())) {
                 beansList.add(radComp);
-                if (radComp instanceof RADFormContainer) {
+                if (radComp == formModel.getTopRADComponent()) {
                     beanComboModel.addElement(FormEditor.getFormBundle().getString("CTL_FormTopContainerName"));
                 } else {
                     beanComboModel.addElement(radComp.getName());
@@ -131,7 +131,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
                 propertyButton.setSelected(true);
                 selectedComponent = value.getRADComponent();
                 selectedProperty = value.getProperty();
-                if (selectedComponent instanceof FormContainer) {
+                if (selectedComponent == formModel.getTopRADComponent()) {
                     propertyLabel.setText(selectedProperty.getName());
                 } else {
                     propertyLabel.setText(selectedComponent.getName() + "." + selectedProperty.getName()); // NOI18N
@@ -141,7 +141,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
                 methodButton.setSelected(true);
                 selectedComponent = value.getRADComponent();
                 selectedMethod = value.getMethod();
-                if (selectedComponent instanceof FormContainer) {
+                if (selectedComponent == formModel.getTopRADComponent()) {
                     methodLabel.setText(selectedMethod.getName());
                 } else {
                     methodLabel.setText(selectedComponent.getName() + "." + selectedMethod.getName()); // NOI18N
@@ -216,14 +216,14 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         } else if (codeButton.isSelected()) {
             return codeArea.getText();
         } else if (beanButton.isSelected()) {
-            if (selectedComponent instanceof FormContainer) {
+            if (selectedComponent == formModel.getTopRADComponent()) {
                 return "this"; // NOI18N
             } else {
                 return(selectedComponent.getName());
             }
         } else if (propertyButton.isSelected()) {
             StringBuffer sb = new StringBuffer();
-            if (!(selectedComponent instanceof FormContainer)) {
+            if (selectedComponent != formModel.getTopRADComponent()) {
                 sb.append(selectedComponent.getName());
                 sb.append("."); // NOI18N
             }
@@ -236,7 +236,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
             return  sb.toString();
         } else if (methodButton.isSelected()) {
             StringBuffer sb = new StringBuffer();
-            if (!(selectedComponent instanceof FormContainer)) {
+            if (selectedComponent != formModel.getTopRADComponent()) {
                 sb.append(selectedComponent.getName());
                 sb.append("."); // NOI18N
             }
@@ -473,7 +473,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
             selectedComponent = picker.getSelectedComponent();
             selectedMethod = picker.getSelectedMethod();
             methodLabel.setEnabled(true);
-            if (selectedComponent instanceof FormContainer) {
+            if (selectedComponent == formModel.getTopRADComponent()) {
                 methodLabel.setText(selectedMethod.getName());
             } else {
                 methodLabel.setText(selectedComponent.getName() + "." + selectedMethod.getName()); // NOI18N
@@ -499,7 +499,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
             selectedComponent = propertyPicker.getSelectedComponent();
             selectedProperty = propertyPicker.getSelectedProperty();
             propertyLabel.setEnabled(true);
-            if (selectedComponent instanceof FormContainer) {
+            if (selectedComponent == formModel.getTopRADComponent()) {
                 propertyLabel.setText(selectedProperty.getName());
             } else {
                 propertyLabel.setText(selectedComponent.getName() + "." + selectedProperty.getName()); // NOI18N

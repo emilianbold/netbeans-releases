@@ -64,14 +64,14 @@ public class RADComponentNode extends FormNode
     }
 
     void updateName() {
-        Class compClass = component.getBeanClass();
-        if (component instanceof FormContainer)
+        String compClassName = Utilities.getShortClassName(
+                                             component.getBeanClass());
+        if (component == component.getFormModel().getTopRADComponent())
             setDisplayName(nodeNoNameFormat.format(
-                new Object[] { Utilities.getShortClassName(compClass) }));
+                new Object[] { compClassName }));
         else
             setDisplayName(nodeNameFormat.format(
-                new Object[] { getName(),
-                               Utilities.getShortClassName(compClass) }));
+                new Object[] { getName(), compClassName }));
     }
 
     public void fireComponentPropertiesChange() {
@@ -189,12 +189,12 @@ public class RADComponentNode extends FormNode
             actions.add(null);
 
             if (component instanceof ComponentContainer) {
-                if (!(component instanceof FormContainer))
+                if (component != component.getFormModel().getTopRADComponent())
                     actions.add(SystemAction.get(CutAction.class));
                 actions.add(SystemAction.get(CopyAction.class));
                 actions.add(SystemAction.get(PasteAction.class));
                 actions.add(null);
-                if (!(component instanceof FormContainer)) {
+                if (component != component.getFormModel().getTopRADComponent()) {
                     actions.add(SystemAction.get(RenameAction.class));
                     actions.add(SystemAction.get(DeleteAction.class));
                     actions.add(null);
@@ -211,7 +211,7 @@ public class RADComponentNode extends FormNode
                 actions.add(null);
             }
 
-            if (!(component instanceof FormContainer)) {
+            if (component != component.getFormModel().getTopRADComponent()) {
                 actions.add(SystemAction.get(MoveUpAction.class));
                 actions.add(SystemAction.get(MoveDownAction.class));
             }
@@ -254,14 +254,16 @@ public class RADComponentNode extends FormNode
      * @return <code>false</code>
      */
     public boolean canRename() {
-        return !component.isReadOnly() && !(component instanceof FormContainer);
+        return !component.isReadOnly()
+               && component != component.getFormModel().getTopRADComponent();
     }
 
     /** Can this node be destroyed?
      * @return <CODE>false</CODE>
      */
     public boolean canDestroy() {
-        return !component.isReadOnly() && !(component instanceof FormContainer);
+        return !component.isReadOnly()
+               && component != component.getFormModel().getTopRADComponent();
     }
 
     /** Remove the node from its parent and deletes it.
@@ -389,7 +391,7 @@ public class RADComponentNode extends FormNode
      * @return <code>true</code> if it can
      */
     public boolean canCopy() {
-        return true; //!(component instanceof FormContainer);
+        return true;
     }
 
     /** Test whether this node can be cut.
@@ -397,7 +399,8 @@ public class RADComponentNode extends FormNode
      * @return <code>true</code> if it can
      */
     public boolean canCut() {
-        return !component.isReadOnly() && !(component instanceof FormContainer);
+        return !component.isReadOnly()
+               && component != component.getFormModel().getTopRADComponent();
     }
 
     /** Copy this node to the clipboard.

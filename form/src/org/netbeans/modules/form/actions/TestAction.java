@@ -68,12 +68,17 @@ public class TestAction extends CallableSystemAction {
     }
 
     private void testForm() {
-        RADComponent topComp = formModel.getTopRADComponent();
-        if (!(topComp instanceof RADVisualFormContainer)) return;
-        RADVisualFormContainer formContainer = (RADVisualFormContainer) topComp;
+        if (!(formModel.getTopRADComponent() instanceof RADVisualComponent))
+            return;
+
+        RADVisualComponent topComp = (RADVisualComponent)
+                                     formModel.getTopRADComponent();
+        RADVisualFormContainer formContainer =
+            topComp instanceof RADVisualFormContainer ?
+                (RADVisualFormContainer) topComp : null;
 
         // a JFrame or Frame will be used (depending on form is Swing or AWT)
-        Object formInstance = formContainer.getBeanInstance();
+        Object formInstance = topComp.getBeanInstance();
         Class frameClass = formInstance instanceof JComponent
                            || formInstance instanceof JFrame
                            || formInstance instanceof JDialog
@@ -86,7 +91,7 @@ public class TestAction extends CallableSystemAction {
         try {
             // create a copy of form
             Frame frame = (Frame)
-                FormDesigner.createContainerView(formContainer, frameClass);
+                FormDesigner.createFormView(topComp, frameClass);
 
             // set title
             String title = frame.getTitle();
@@ -112,11 +117,14 @@ public class TestAction extends CallableSystemAction {
             }
  
             // set size
-            if (formContainer.getFormSizePolicy() == RADVisualFormContainer.GEN_BOUNDS
-                    && formContainer.getGenerateSize())
+            if (formContainer != null
+                && formContainer.getFormSizePolicy()
+                                     == RADVisualFormContainer.GEN_BOUNDS
+                && formContainer.getGenerateSize())
+            {
                 frame.setSize(formContainer.getFormSize());
-            else
-                frame.pack();
+            }
+            else frame.pack();
 
             // set location
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -138,7 +146,8 @@ public class TestAction extends CallableSystemAction {
 
     public void setFormModel(FormModel model) {
         formModel = model;
-        setEnabled(formModel != null); // [also test the top metacomponent]
+        setEnabled(formModel != null
+                   && formModel.getTopRADComponent() instanceof RADVisualComponent);
     }
 
     private FormModel formModel;

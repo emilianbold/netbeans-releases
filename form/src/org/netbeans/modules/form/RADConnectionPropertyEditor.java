@@ -128,20 +128,20 @@ public class RADConnectionPropertyEditor
                     PropertyDescriptor pd = designValue.getProperty();
                     if (pd == null) return null; // failed to initialize => do not generate code
                     else {
-                        if (designValue.radComponent instanceof FormContainer) {
+                        if (designValue.radComponent == formModel.getTopRADComponent()) {
                             return pd.getReadMethod().getName() + "()"; // [FUTURE: Handle indexed properties] // NOI18N
                         } else {
                             return designValue.radComponent.getName() + "." + pd.getReadMethod().getName() + "()"; // [FUTURE: Handle indexed properties] // NOI18N
                         }
                     }
                 case RADConnectionDesignValue.TYPE_METHOD:
-                    if (designValue.radComponent instanceof FormContainer) {
+                    if (designValue.radComponent == formModel.getTopRADComponent()) {
                         return designValue.methodName + "()"; // NOI18N
                     } else {
                         return designValue.radComponent.getName() + "." + designValue.methodName + "()"; // NOI18N
                     }
                 case RADConnectionDesignValue.TYPE_BEAN:
-                    if (designValue.radComponent instanceof FormContainer) {
+                    if (designValue.radComponent == formModel.getTopRADComponent()) {
                         return "this"; // NOI18N
                     } else {
                         return designValue.radComponent.getName();

@@ -158,7 +158,10 @@ public class FormDesigner extends TopComponent
         }
 
         FormEditor.actions.attach(ci.getExplorerManager());
-        handleLayer.requestFocus();
+        if (textEditLayer == null || !textEditLayer.isVisible())
+            handleLayer.requestFocus();
+        else
+            textEditLayer.requestFocus();
     }
 
     protected void componentDeactivated() {
@@ -526,8 +529,10 @@ public class FormDesigner extends TopComponent
     public void setTopDesignComponent(RADVisualComponent component,
                                       boolean update) {
         topDesignComponent = component;
-        if (update)
+        if (update) {
+            setSelectedComponent(topDesignComponent);
             updateWholeDesigner();
+        }
     }
 
     public RADVisualComponent getTopDesignComponent() {
@@ -540,8 +545,10 @@ public class FormDesigner extends TopComponent
                                  formModel.getTopRADComponent();
         else topDesignComponent = null;
 
-        if (update)
+        if (update) {
+            setSelectedComponent(topDesignComponent);
             updateWholeDesigner();
+        }
     }
 
     /** Tests whether top designed container is some parent of given component
@@ -569,8 +576,8 @@ public class FormDesigner extends TopComponent
         }
     }
 
-    public static Container createContainerView(final RADVisualContainer metacont,
-                                                final Class contClass)
+    public static Container createFormView(final RADVisualComponent metacomp,
+                                           final Class contClass)
         throws Exception
     {
         return (Container) FormLAF.executeWithLookAndFeel(
@@ -579,7 +586,7 @@ public class FormDesigner extends TopComponent
                 public Object run() throws Exception {
                     VisualReplicator r =
                         new VisualReplicator(contClass, null, 0);
-                    r.setTopMetaComponent(metacont);
+                    r.setTopMetaComponent(metacomp);
                     return r.createClone();
                 }
             }
@@ -706,7 +713,9 @@ public class FormDesigner extends TopComponent
         textEditLayer.setVisible(true);
         layeredPane.revalidate();
         layeredPane.repaint();
-        textEditLayer.requestFocus();
+
+        requestFocus();
+        componentActivated();
     }
 
     private void finishInPlaceEditing(boolean applyChanges) {
@@ -1118,7 +1127,9 @@ public class FormDesigner extends TopComponent
             if (h < minSize) h = minSize;
             
             fdPanel.updatePanel(new Dimension(w, h));
-            if (resizingFinished) ((RADVisualFormContainer)formDesigner.getModel().getTopRADComponent()).setFormSize(new Dimension(w, h));
+            if (resizingFinished)
+                ((RADVisualFormContainer)formDesigner.getModel().getTopRADComponent())
+                    .setFormSize(new Dimension(w, h));
             setStatusText("FMT_MSG_RESIZING_FORMDESIGENR", // NOI18N
                             new Object[] { new Integer(w).toString(), new Integer(h).toString() } );
         }
