@@ -6,6 +6,9 @@
 
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import javax.swing.JPanel;
 import org.netbeans.api.debugger.DebuggerManager;
 
@@ -24,7 +27,23 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller {
     private ActionsPanel                actionsPanel; 
     private ExceptionBreakpoint         breakpoint;
     private boolean                     createBreakpoint = false;
+    private static Map                  exceptions = new HashMap ();
     
+    static {
+        exceptions.put ("ArrayIndexOutOfBoundsException", "java.lang");
+        exceptions.put ("ClassCastException", "java.lang");
+        exceptions.put ("ClassNotFoundException", "java.lang");
+        exceptions.put ("IllegalAccessException", "java.lang");
+        exceptions.put ("IllegalArgumentException", "java.lang");
+        exceptions.put ("IndexOutOfBoundsException", "java.lang");
+        exceptions.put ("NullPointerException", "java.lang");
+        exceptions.put ("RuntimeException", "java.lang");
+        exceptions.put ("SecurityException", "java.lang");
+        exceptions.put ("StringIndexOutOfBoundsException", "java.lang");
+        exceptions.put ("UnsupportedOperationException", "java.lang");
+        exceptions.put ("IOException", "java.io");
+        exceptions.put ("UnsupportedOperationException", "java.util");
+    }
     
     private static ExceptionBreakpoint creteBreakpoint () {
         ExceptionBreakpoint mb = ExceptionBreakpoint.create (
@@ -49,14 +68,17 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller {
     public ExceptionBreakpointPanel (ExceptionBreakpoint b) {
         breakpoint = b;
         initComponents ();
+        Iterator it = exceptions.keySet ().iterator ();
+        while (it.hasNext ())
+            cbExceptionClassName.addItem (it.next ());
         
         String className = b.getExceptionClassName ();
         int i = className.lastIndexOf ('.');
         if (i < 0) {
-            cbPackageName.setSelectedItem ("");
+            tfPackageName.setText ("");
             cbExceptionClassName.setSelectedItem (className);
         } else {
-            cbPackageName.setSelectedItem (className.substring (0, i));
+            tfPackageName.setText (className.substring (0, i));
             cbExceptionClassName.setSelectedItem (className.substring (i + 1, className.length ()));
         }
         cbBreakpointType.addItem (java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("LBL_Exception_Breakpoint_Type_Catched"));
@@ -95,8 +117,8 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller {
         cbBreakpointType = new javax.swing.JComboBox();
         jLabel5 = new javax.swing.JLabel();
         tfCondition = new javax.swing.JTextField();
-        cbPackageName = new javax.swing.JComboBox();
         cbExceptionClassName = new javax.swing.JComboBox();
+        tfPackageName = new javax.swing.JTextField();
         pActions = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
 
@@ -115,7 +137,6 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller {
         jLabel1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("ACSD_L_Exception_Breakpoint_filter_hint"));
 
         jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("MN_L_Exception_Breakpoint_Package_Name").charAt(0));
-        jLabel2.setLabelFor(cbPackageName);
         jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("L_Exception_Breakpoint_Package_Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -180,17 +201,14 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller {
         pSettings.add(tfCondition, gridBagConstraints);
         tfCondition.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("ACSD_TF_Exception_Breakpoint_Condition"));
 
-        cbPackageName.setEditable(true);
-        cbPackageName.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("TTT_CB_Exception_Breakpoint_Package_Name"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(cbPackageName, gridBagConstraints);
-        cbPackageName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("ACSD_CB_Exception_Breakpoint_Package_Name"));
-
         cbExceptionClassName.setEditable(true);
         cbExceptionClassName.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("TTT_CB_Exception_Breakpoint_Class_Name"));
+        cbExceptionClassName.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbExceptionClassNameActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -199,6 +217,14 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(cbExceptionClassName, gridBagConstraints);
         cbExceptionClassName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("ACSD_CB_Exception_Breakpoint_Class_Name"));
+
+        tfPackageName.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("TTT_CB_Exception_Breakpoint_Package_Name"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        pSettings.add(tfPackageName, gridBagConstraints);
+        tfPackageName.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("ACSD_CB_Exception_Breakpoint_Package_Name"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -223,6 +249,13 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller {
 
     }//GEN-END:initComponents
 
+    private void cbExceptionClassNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbExceptionClassNameActionPerformed
+        // TODO add your handling code here:
+        String pkg = (String) exceptions.get (cbExceptionClassName.getSelectedItem ());
+        if (pkg != null)
+            tfPackageName.setText (pkg);
+    }//GEN-LAST:event_cbExceptionClassNameActionPerformed
+
     
     // Controller implementation ...............................................
     
@@ -233,7 +266,7 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller {
      */
     public boolean ok () {
         actionsPanel.ok ();
-        String className = ((String) cbPackageName.getSelectedItem ()).trim ();
+        String className = ((String) tfPackageName.getText ()).trim ();
         if (className.length () > 0)
             className += '.';
         className += ((String) cbExceptionClassName.getSelectedItem ()).trim ();
@@ -281,7 +314,6 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbBreakpointType;
     private javax.swing.JComboBox cbExceptionClassName;
-    private javax.swing.JComboBox cbPackageName;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -291,6 +323,7 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller {
     private javax.swing.JPanel pActions;
     private javax.swing.JPanel pSettings;
     private javax.swing.JTextField tfCondition;
+    private javax.swing.JTextField tfPackageName;
     // End of variables declaration//GEN-END:variables
     
 }

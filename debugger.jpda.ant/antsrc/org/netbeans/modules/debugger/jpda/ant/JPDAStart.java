@@ -330,7 +330,7 @@ public class JPDAStart extends Task implements Runnable {
      *
      */
     static ClassPath convertToSourcePath (Project project, Path path) {
-        String[] paths = path.list ();
+        String[] paths = path == null ? new String [0] : path.list ();
         List l = new ArrayList ();
         List exist = new ArrayList ();
         for (int i = 0; i < paths.length; i++) {

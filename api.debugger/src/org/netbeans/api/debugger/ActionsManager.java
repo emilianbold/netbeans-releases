@@ -347,10 +347,9 @@ public final class ActionsManager {
                 continue;
             }
             int j, jj = props.length;
-            for (j = 0; j < jj; j++) {
+            for (j = 0; j < jj; j++)
                 removeActionsManagerListener (props [j], l);
-                l.destroy ();
-            }
+            l.destroy ();
         }
         lazyListeners = new ArrayList ();
     }
