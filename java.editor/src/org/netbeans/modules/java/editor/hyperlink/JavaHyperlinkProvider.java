@@ -61,20 +61,24 @@ public final class JavaHyperlinkProvider implements HyperlinkProvider {
         String name = "";
         SyntaxSupport sup = doc.getSyntaxSupport();
         NbJavaJMISyntaxSupport nbJavaSup = (NbJavaJMISyntaxSupport)sup.get(NbJavaJMISyntaxSupport.class);
+        boolean wasIdentifier = false;
         
         try {
             while (true) {
                 TokenID token = nbJavaSup.getTokenID(offset);
                 
-                if (token == JavaTokenContext.IDENTIFIER) {
+                if (token == JavaTokenContext.IDENTIFIER && !wasIdentifier) {
                     int[] span = org.netbeans.editor.Utilities.getIdentifierBlock(doc, offset);
                     
                     name = doc.getText(span) + name;
                     offset = span[0] - 1;
+                    
+                    wasIdentifier = true;
                 } else {
                     if (token == JavaTokenContext.DOT) {
                         offset--;
                         name = "." + name; // NOI18N
+                        wasIdentifier = false;
                     } else {
                         if (    token == JavaTokenContext.WHITESPACE 
                              || token == JavaTokenContext.BLOCK_COMMENT
