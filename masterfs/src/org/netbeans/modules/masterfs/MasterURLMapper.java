@@ -15,7 +15,6 @@ package org.netbeans.modules.masterfs;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
 import java.io.File;
@@ -33,7 +32,7 @@ public final class MasterURLMapper extends URLMapper {
 
     public FileObject[] getFileObjects(final URL url) {
         final FileSystem hfs = MasterFileSystem.getDefault();
-        if (!url.getProtocol().equals("file")) return null;
+        if (!url.getProtocol().equals("file")) return null;  //NOI18N
         FileObject retVal = hfs.findResource(url.getFile());
         if (!(retVal instanceof MasterFileObject)) return null;
 
@@ -43,12 +42,10 @@ public final class MasterURLMapper extends URLMapper {
     public URL getURL(final FileObject fo, final int type) {
         if (!(fo instanceof MasterFileObject)) return null;
         MasterFileObject hfo = (MasterFileObject) fo;
-        //if (hfo.isRoot()) return null;
-        File f = FileUtil.toFile(hfo);
-        if (f == null) return null;
+        File f = (hfo != null) ? hfo.getResource().getFile() : null;
 
         try {
-            return f.toURI().toURL();
+            return (f != null) ? f.toURI().toURL() : null;
         } catch (MalformedURLException mfx) {
             return null;
         }

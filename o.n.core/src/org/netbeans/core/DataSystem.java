@@ -16,6 +16,9 @@ package org.netbeans.core;
 import java.awt.Component;
 import java.beans.*;
 import java.util.*;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import javax.swing.Action;
 
 import org.openide.actions.NewTemplateAction;
@@ -158,9 +161,33 @@ implements RepositoryListener, NewTemplateAction.Cookie {
     * @param fs file system to remove
     */
     void refresh (FileSystem fs) {
-        ((DSMap)getChildren ()).refresh (fileSystemPool, fs);
+        // XXX hack to show only masterfs and no other filesystems
+        // should later be solved better
+        // XXX should check if fs.root.url.protocol is not 'file' or 'jar', and if so, show it also
+        // (to display network mounts)        
+        URLMapper mapper = getMasterFsURLMapper();
+        if (mapper == null) {
+            //original solution based on Repository
+            ((DSMap)getChildren ()).refresh (fileSystemPool, fs);
+        } else {
+            ((DSMap)getChildren ()).refreshListRoots(mapper);
+        }
     }
 
+    private static URLMapper getMasterFsURLMapper() {
+        URLMapper retVal = null;
+        Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template (URLMapper.class));
+        Collection c = result.allInstances();
+        for (Iterator iterator = c.iterator(); iterator.hasNext();) {
+            URLMapper mapper = (URLMapper) iterator.next();
+            if (mapper != null && mapper.getClass().getName().equals("org.netbeans.modules.masterfs.MasterURLMapper")) {//NOI18N
+                retVal = mapper;
+                break;
+            }
+        }
+        return retVal;
+    }
+    
     /** We have customizer */
     public boolean hasCustomizer() {
         return true;
@@ -225,28 +252,73 @@ implements RepositoryListener, NewTemplateAction.Cookie {
             ArrayList list = new ArrayList();
             while (en.hasMoreElements()) {
                 Object o = en.nextElement();
-                // XXX hack to show only masterfs and no other filesystems
-                // should later be solved better
-                // XXX should check if fs.root.url.protocol is not 'file' or 'jar', and if so, show it also
-                // (to display network mounts)
-                if (fs != o && o.getClass().getName().equals("org.netbeans.modules.masterfs.MasterFileSystem")) { // NOI18N
+                DataObject root = null;
+                try {
+                    root = DataObject.find(((FileSystem)o).getRoot());
+                }
+                catch (DataObjectNotFoundException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    // root will remain null and will be accepted
+                    // (as that seems safer than not accepting it)
+                }
+                if ((root instanceof DataFolder) && getDS().filter.acceptDataObject(root))  {
+                    list.add(root);
+                }                
+            }
+            setKeys(list);
+        }
+        
+        private void refreshListRoots(URLMapper mapper) {
+            File[] files = File.listRoots();
+            Set rootSet = new HashSet();
+
+            for (int i = 0; i < files.length; i++) {
+                File file = files[i];
+                FileObject fo = fetchFileObject(file, mapper);
+                if (fo != null) {
+                    try {
+                        fo = fo.getFileSystem().getRoot();
+                    } catch (FileStateInvalidException e) {
+                        continue;
+                    }
+
                     DataObject root = null;
                     try {
-                        root = DataObject.find(((FileSystem)o).getRoot());
-                    }
-                    catch (DataObjectNotFoundException e) {
+                        root = DataObject.find(fo);
+                    } catch (DataObjectNotFoundException e) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                         // root will remain null and will be accepted
                         // (as that seems safer than not accepting it)
                     }
-                    if ((root instanceof DataFolder) && getDS().filter.acceptDataObject(root))  {
-                        list.add(root);
+                    if ((root instanceof DataFolder) && getDS().filter.acceptDataObject(root)) {
+                        rootSet.add(root);
                     }
                 }
             }
-            setKeys(list);
-        }            
+            setKeys(rootSet);
+        }
+
+
+        private FileObject fetchFileObject(File file, URLMapper mapper) {
+            /*intentiionally isn't used FileUtil.toFileObject because here can't be 
+            called method normalizeFile which causes problems with removeable drives 
+            on Windows*/             
+            FileObject retVal = null;
+            try {
+                
+                FileObject[] all  = mapper.getFileObjects(new URL ("file:/"+file.getAbsolutePath ().replace('\\', File.separatorChar)));//NOI18N
+                if (all != null && all.length > 0) {
+                    retVal = all [0];
+                }
+            } catch (MalformedURLException e) {
+                retVal = null;
+            }
+            return retVal;
+        }
+
     }
+    
+    
 
     /** Serialization. */
     private static class DSHandle implements Handle {
