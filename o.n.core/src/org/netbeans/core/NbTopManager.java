@@ -680,7 +680,7 @@ public abstract class NbTopManager extends TopManager {
         }
         // save all open files
         try {
-            if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog(null, true) ) {
+            if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog(null, false) ) {
                 if (getModuleSystem().shutDown()) {
                     try {
                         // save project
