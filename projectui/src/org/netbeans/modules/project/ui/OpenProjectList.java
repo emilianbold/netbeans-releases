@@ -373,8 +373,17 @@ public final class OpenProjectList {
         }
         
         
-        public List getProjects() {
-            return new ArrayList( recentProjects );
+        public List getProjects() {         
+            // Copy the list
+            ArrayList result = new ArrayList( recentProjects  );
+            for ( Iterator it = result.iterator(); it.hasNext(); ) {
+                Project p = (Project)it.next();
+                if ( !p.getProjectDirectory().isValid() ) {
+                    remove( p );        // Folder does not exist any more => remove from
+                    result.remove( p ); // both the list and the result
+                }
+            }
+            return result;
         }
         
         public void load() {
