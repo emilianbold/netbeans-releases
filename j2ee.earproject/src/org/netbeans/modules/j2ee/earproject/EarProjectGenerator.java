@@ -213,9 +213,8 @@ public class EarProjectGenerator {
                         if (null != m && m.length > 0) {
                             // notify the user here....
                             DialogDisplayer.getDefault().notify(
-                                    new NotifyDescriptor(NbBundle.getMessage(EarProjectGenerator.class, "MESSAGE_CheckContextRoots"),
-                                        NbBundle.getMessage(EarProjectGenerator.class, "TITLE_CheckContextRoots"),NotifyDescriptor.OK_CANCEL_OPTION,
-                                        NotifyDescriptor.WARNING_MESSAGE, (Object[]) null, (Object) null));
+                                    new NotifyDescriptor.Message(NbBundle.getMessage(EarProjectGenerator.class, "MESSAGE_CheckContextRoots"),
+                                        NotifyDescriptor.WARNING_MESSAGE)); 
                             // delete the modules
                             for (int k = 0; k < m.length; k++) {
                                 app.removeModule(m[k]);
@@ -256,10 +255,19 @@ public class EarProjectGenerator {
                 File subProjDir = new File(pDir,subprojectRoot.getName());
                 subProjDir = FileUtil.normalizeFile(subProjDir);
                 File srcFolders[] = null;
-                if (null != javaRoot) {
-                    srcFolders = new File[] { FileUtil.toFile(javaRoot)};
-                } else {
+                // XXX this is a hack. Remove once 56487 is resolved
+                if (null == javaRoot) {
+                    FileObject srcDir = subprojectRoot.getFileObject("src");
+                    if (null == srcDir) {
+                        srcDir = subprojectRoot.createFolder("src");
+                    }
+                    javaRoot = srcDir.createFolder("java");
+                }
+                // end hack for 56487
+                if (null == javaRoot) {
                     srcFolders = new File[0];
+                } else {
+                    srcFolders = new File[] { FileUtil.toFile(javaRoot)};
                 }
                 if (null != webDotXml) {
                     subProjHelper = WebProjectGenerator.importProject(subProjDir,
