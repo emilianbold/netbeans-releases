@@ -80,6 +80,11 @@ SystemFileSystem
 SystemFileSystem
 ]]>
             </file>
+            <file name="MergeVisualizers.shadow">
+<![CDATA[Services/MergeVisualizers
+SystemFileSystem
+]]>
+            </file>
           </folder>
           <attr name="org-netbeans-modules-diff-DiffSettings.shadow/DiffTypes" boolvalue="true"/>
 
