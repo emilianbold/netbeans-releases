@@ -313,6 +313,16 @@ Microsystems, Inc. All Rights Reserved.
       <module name="xml/tree-edit"	testtypes="qa-functional"  attributes="validation"/>
   </config>
   
+  <!-- validation suite for all XML modules -->
+  <config name="all-xml">
+      <module name="xml"	testtypes="qa-functional"  attributes="validation"/>
+      <module name="xml/catalog"	testtypes="qa-functional"  attributes="validation"/>
+      <module name="xml/core"		testtypes="qa-functional"  attributes="validation"/>
+      <module name="xml/text-edit"	testtypes="qa-functional"  attributes="validation"/>
+      <module name="xml/tools"		testtypes="qa-functional"  attributes="validation"/>
+      <module name="xml/tax/lib"	testtypes="qa-functional"  attributes="validation"/>
+      <module name="xml/tree-edit"	testtypes="qa-functional"  attributes="validation"/>
+  </config>  
 
 </testconfig>
 
