@@ -63,6 +63,8 @@ treefs (complete yet?)
 
   <!-- Best to leave this alone, though, unless you know what you are doing: -->
   <property name="firststart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true"/>
+  <!-- But this it is OK to change: -->
+  <property name="tryme.args" value=" -J-Dnetbeans.debug.exceptions=true"/>
 
   <target name="look-for-binaries">
     <available property="have-binaries-already" file="../core/release/lib/ext/jh.jar"/>
@@ -252,9 +254,11 @@ treefs (complete yet?)
 
   <target name="firststart" depends="init,build-messaging">
     <nbmerge dest="firststart" topdir=".." modules="openide,core,${modules}" targetprefix="all-"/>
-    <!-- XXX chmod does not work reliably...investigate -->
     <chmod file="firststart/bin/runide.sh" perm="ugo+x"/>
     <chmod file="firststart/bin/runide_multiuser.sh" perm="ugo+x"/>
+    <chmod file="firststart/bin/fastjavac/fastjavac.linux" perm="ugo+x"/>
+    <chmod file="firststart/bin/fastjavac/fastjavac.sun" perm="ugo+x"/>
+    <chmod file="firststart/bin/fastjavac/fastjavac.sun.intel" perm="ugo+x"/>
     <echo message="Starting the IDE..."/>
     <echo message="(This both acts as a test, and primes some files"/>
     <echo message="to make the first user start faster and better.)"/>
@@ -281,6 +285,20 @@ treefs (complete yet?)
     <echo message="Build created; see NetBeans-${buildnumber}.zip (in nbbuild/)."/>
     <echo message="If you like, you may run the IDE straight from"/>
     <echo message="the nbbuild/firststart/bin/ directory."/>
+    <echo message="(For example, type: ant tryme)"/>
+  </target>
+
+  <target name="check-for-firststart">
+    <available property="have-firststart" file="firststart/lib/openide.jar"/>
+  </target>
+  <target name="maybe-firststart" depends="check-for-firststart" unless="have-firststart">
+    <ant dir="." target="firststart"/>
+  </target>
+  <target name="tryme" depends="maybe-firststart">
+    <exec os="indows" dir="firststart/bin" command="runide.exe ${tryme.args}" failonerror="yes"/>
+    <exec os="Linux" dir="firststart/bin" command="./runide.sh ${tryme.args}" failonerror="yes"/>
+    <exec os="SunOS" dir="firststart/bin" command="./runide.sh ${tryme.args}" failonerror="yes"/>
+    <exec os="Solaris" dir="firststart/bin" command="./runide.sh ${tryme.args}" failonerror="yes"/>
   </target>
 
   <target name="update-info" depends="all-openide,all-core">
