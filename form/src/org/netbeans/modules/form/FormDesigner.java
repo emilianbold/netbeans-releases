@@ -362,6 +362,28 @@ public class FormDesigner extends TopComponent
         updateActivatedNodes();
     }
 
+    void setSelectedNode(FormNode node) {
+        if (node instanceof RADComponentNode)
+            setSelectedComponent(((RADComponentNode)node).getRADComponent());
+        else {
+            clearSelectionImpl();
+
+            ComponentInspector ci = ComponentInspector.getInstance();
+            if (ci.getFocusedForm() != formEditorSupport)
+                return;
+
+            Node[] selectedNodes = new Node[] { node };
+            try {
+                ci.setSelectedNodes(selectedNodes, formEditorSupport);
+            }
+            catch (PropertyVetoException ex) {
+                ex.printStackTrace();
+            }
+
+            setActivatedNodes(selectedNodes);
+        }
+    }
+
     void addComponentToSelectionImpl(RADComponent metacomp) {
         if (metacomp == null)
             return;
