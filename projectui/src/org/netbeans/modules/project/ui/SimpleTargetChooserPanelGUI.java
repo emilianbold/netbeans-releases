@@ -47,6 +47,9 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     /** prefered dimmension of the panels */
     private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (500, 340);
     
+    private static final String NEW_FILE_PREFIX = 
+        NbBundle.getMessage( SimpleTargetChooserPanelGUI.class, "LBL_SimpleTargetChooserPanelGUI_NewFilePrefix" ); // NOI18N
+    
     private final ListCellRenderer CELL_RENDERER = new GroupCellRenderer();
         
     private Project project;
@@ -118,6 +121,11 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             displayName = template.getName ();
         }
         putClientProperty ("NewFileWizard_Title", displayName);// NOI18N        
+        
+        if (template != null) {
+            documentNameTextField.setText (NEW_FILE_PREFIX + template.getName ());
+            documentNameTextField.selectAll ();
+        }
         
         if (isFolder) {
             jLabel3.setText (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_FolderName_Label")); // NOI18N

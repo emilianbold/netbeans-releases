@@ -45,6 +45,8 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
   
     private static final String DEFAULT_NEW_PACKAGE_NAME = 
         NbBundle.getMessage( JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_DefaultNewPackageName" ); // NOI18N
+    private static final String NEW_CLASS_PREFIX = 
+        NbBundle.getMessage( JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_NewJavaClassPrefix" ); // NOI18N
     
     /** prefered dimmension of the panel */
     private static final Dimension PREF_DIM = new Dimension(500, 340);
@@ -135,6 +137,10 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             }
             else {
                 packageComboBox.setSelectedItem( preselectedPackage );
+                if (template != null) {
+                    documentNameTextField.setText (NEW_CLASS_PREFIX + template.getName ());
+                    documentNameTextField.selectAll ();
+                }
             }
         }
         updateText();
