@@ -67,13 +67,13 @@ Microsystems, Inc. All Rights Reserved.
     
 
     <!-- Executor for Measure Complex Startup Time - prepare -->
-    <target name="runcodetest_measure_complex_startup_prepare">
+    <target name="runcodetest_measure_complex_startup_prepare" depends="copy_unzip_jedit_project">
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="ide">
             <classpath refid="jemmy.and.jelly.path"/>
             
             <!-- Opens project at specified location -->
-            <property name="xtest.ide.open.project" location="${xtest.data}/PerformanceTestData"/>
+            <property name="xtest.ide.open.project" location="${xtest.sketchpad}/jEdit41"/>
             
             <property name="xtest.timeout" value="3600000" />
         </executeTests>
@@ -118,6 +118,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     
+    <!-- Copy and unzip project JEdit from close source path, will be used for Performance tests -->
+    <target name="copy_unzip_jedit_project">
+        <unzip src="${nbextra.dir}/qa/projectized/jEdit41.zip" dest="${xtest.sketchpad}/"/>
+    </target>
         
     <!-- ========= -->
     <!-- JDKs     -->
