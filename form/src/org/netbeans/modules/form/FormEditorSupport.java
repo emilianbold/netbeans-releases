@@ -1288,6 +1288,7 @@ public class FormEditorSupport extends JavaEditor
 
         if (designerSelected && !Boolean.TRUE.equals(groupVisible)) {
             group.open();
+            ComponentInspector.getInstance().requestActive();
         }
         else if (!designerSelected && !Boolean.FALSE.equals(groupVisible)) {
             group.close();
