@@ -86,7 +86,7 @@ import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
  * 
  * @author Petr Hrebejk
  */
-public class EarProjectProperties extends ArchiveProjectProperties implements AntProjectListener, Node.Cookie {
+public class EarProjectProperties extends ArchiveProjectProperties {
     
     private EarProject earProject;
 
@@ -1322,23 +1322,6 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
 //            return trimmed;
 //    }
     
-    public     void configurationXmlChanged(AntProjectEvent ev) {
-        // XXX - remove this if block after completing 54179
-        if (projectClosed()) {
-            removeFromHelper();
-            return;
-        }
-            if (notUpdating) {
-                 Object pre = get(JAR_CONTENT_ADDITIONAL);
-                //if (null != ev)
-                    read();
-                Object o = get(JAR_CONTENT_ADDITIONAL);
-                if (null != o) {            
-                    propertyChangeSupport.firePropertyChange("bogus", null, o);
-                }
-            }
-    }
-    
     /**
      * Called when a change was made to a properties file that might be shared with Ant.
      * <p class="nonnormative">
@@ -1447,8 +1430,6 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
                 catch ( java.io.IOException ex ) {
                     org.openide.ErrorManager.getDefault().notify( ex );
                 }
-            configurationXmlChanged(null);
-        
     }
     
     String[] getWebUris() {
@@ -1485,8 +1466,4 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
         return true;
     }
     
-    // XXX - remove this method after completing 54179
-    private void removeFromHelper() {
-        antProjectHelper.removeAntProjectListener(this);
-    }
 }

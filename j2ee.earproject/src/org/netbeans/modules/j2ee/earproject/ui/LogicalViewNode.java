@@ -22,6 +22,7 @@ import org.openide.actions.*;
 import org.openide.nodes.*;
 import org.openide.loaders.DataFolder;
 import org.openide.util.HelpCtx;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.Utilities;
@@ -29,6 +30,8 @@ import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.earproject.ui.actions.AddModuleAction;
 
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
+
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 /**
  * A node with some children.
@@ -41,20 +44,17 @@ public class LogicalViewNode extends AbstractNode {
 
 	private static Image J2EE_MODULES_BADGE = Utilities.loadImage( "org/netbeans/modules/j2ee/earproject/ui/resources/application_16.gif", true ); // NOI18N
     
-    private final Application model;
-    private final EarProjectProperties epp;
+    private final AntProjectHelper model;
     private final DataFolder aFolder;
 	
-    public LogicalViewNode(Application model, EarProjectProperties epp, DataFolder folder) {
-        super(new LogicalViewChildren(model, epp));
+    public LogicalViewNode(AntProjectHelper model, DataFolder folder) {
+        super(new LogicalViewChildren(model), Lookups.fixed( new Object[] { model }));
         this.model = model;
-        this.epp = epp;
-		this.aFolder = folder;
+        this.aFolder = folder;
         // Set FeatureDescriptor stuff:
         setName("preferablyUniqueNameForThisNodeAmongSiblings"); // or, super.setName if needed
         setDisplayName(NbBundle.getMessage(LogicalViewNode.class, "LBL_LogicalViewNode"));
         setShortDescription(NbBundle.getMessage(LogicalViewNode.class, "HINT_LogicalViewNode"));
-        getCookieSet().add(epp);
         // Add cookies, e.g.:
         /*
         getCookieSet().add(new OpenCookie() {

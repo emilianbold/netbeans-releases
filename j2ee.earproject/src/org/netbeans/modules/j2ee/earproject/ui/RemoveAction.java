@@ -59,7 +59,7 @@ public class RemoveAction extends NodeAction {
             //n.removeFromEar();     
         //}
         //if (null != n)
-            n.forceSave();
+            n.removeFromJarContent();
         }
     }
     

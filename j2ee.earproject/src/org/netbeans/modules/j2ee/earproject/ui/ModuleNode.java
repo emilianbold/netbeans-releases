@@ -32,6 +32,11 @@ import org.netbeans.modules.j2ee.common.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.ui.actions.OpenModuleProjectAction;
 
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.modules.j2ee.earproject.ProjectPropertyProvider;
+import org.netbeans.modules.j2ee.common.ui.customizer.ArchiveProjectProperties;
+import org.netbeans.api.project.FileOwnerQuery;
+
 /**
  * A simple node with no children.
  * Often used in conjunction with some kind of underlying data model, where
@@ -42,20 +47,22 @@ import org.netbeans.modules.j2ee.earproject.ui.actions.OpenModuleProjectAction;
  * @author Ludovic Champenois
  */
 public class ModuleNode extends AbstractNode implements Node.Cookie {
-    private VisualClassPathItem model;
-    private EarProjectProperties epp;
+    private VisualClassPathItem key;
+    private AntProjectHelper helper;
     
     // will frequently accept an element from some data model in the constructor:
-    public ModuleNode(VisualClassPathItem key, EarProjectProperties epp) {
+    public ModuleNode(VisualClassPathItem key, AntProjectHelper helper) {
         super(Children.LEAF);
-        model = key;
-        this.epp = epp;
+        this.key = key;
+        this.helper = helper;
+//        this.epp = epp;
         // Whatever is most relevant to a user:
         //setDefaultAction(SystemAction.get(PropertiesAction.class));
         // Set FeatureDescriptor stuff:
         setName("preferablyUniqueNameForThisNodeAmongSiblings"); // or, super.setName if needed
         setDisplayName(key.getCompletePathInArchive()); // toString());
         setShortDescription(NbBundle.getMessage(ModuleNode.class, "HINT_ModuleNode"));
+//        getCookieSet().add(key);
         // Add cookies, e.g.:
         /*
         getCookieSet().add(new OpenCookie() {
@@ -98,7 +105,7 @@ public class ModuleNode extends AbstractNode implements Node.Cookie {
         return actions;
     }
     public Image getIcon(int type){
-        if (model.toString().endsWith("war")) //FIXME
+        if (key.toString().endsWith("war")) //FIXME
             return Utilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/WebModuleNode.gif");
         else
             return Utilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/EjbModuleNodeIcon.gif");
@@ -115,22 +122,20 @@ public class ModuleNode extends AbstractNode implements Node.Cookie {
         // return new HelpCtx(ModuleNode.class);
     }
     
-    //List goners = new java.util.ArrayList();
-    
-    void removeFromEar() {
-        //goners.add(model);
-    }
-    
-    void forceSave() {
+    void removeFromJarContent() {
         List newList = new java.util.ArrayList();
-        Object t = epp.get(EarProjectProperties.JAR_CONTENT_ADDITIONAL);
+        Project p = FileOwnerQuery.getOwner(helper.getProjectDirectory());
+        ProjectPropertyProvider ppp =
+                (ProjectPropertyProvider) p.getLookup().lookup(ProjectPropertyProvider.class);
+        ArchiveProjectProperties epp = ppp.getProjectProperties();
+       Object t = epp.get(EarProjectProperties.JAR_CONTENT_ADDITIONAL);
         if (!(t instanceof List)) {
             assert false : "jar content isn't a List???";
             return;
         }
         List vcpis = (List) t;
         newList.addAll(vcpis);
-        newList.remove(model);
+        newList.remove(key);
         epp.put(EarProjectProperties.JAR_CONTENT_ADDITIONAL, newList);
         //goners.clear();
         epp.store();
@@ -140,15 +145,10 @@ public class ModuleNode extends AbstractNode implements Node.Cookie {
                 catch ( java.io.IOException ex ) {
                     org.openide.ErrorManager.getDefault().notify( ex );
                 }
-        epp.configurationXmlChanged(null);
-    }
-    
-   Project project() {
-        return epp.getProject();
     }
     
     public VisualClassPathItem getVCPI() {
-        return model;
+        return key;
     }
     // RECOMMENDED - handle cloning specially (so as not to invoke the overhead of FilterNode):
     /*

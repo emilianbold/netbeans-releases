@@ -30,6 +30,15 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.Project;
 import org.openide.util.RequestProcessor;
+
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
+import org.netbeans.spi.project.support.ant.AntProjectEvent;
+
+
+import org.netbeans.modules.j2ee.earproject.EarProject;
+import org.netbeans.modules.j2ee.common.ui.customizer.ArchiveProjectProperties;
+import org.netbeans.api.project.FileOwnerQuery;
 /**
  * List of children of a containing node.
  * Each child node is represented by one key from some data model.
@@ -37,18 +46,14 @@ import org.openide.util.RequestProcessor;
  * Edit this template to work with the classes and logic of your data model.
  * @author vkraemer
  */
-public class LogicalViewChildren extends Children.Keys  implements PropertyChangeListener {
+public class LogicalViewChildren extends Children.Keys  implements AntProjectListener {
     
-    private final Application model;
-    private final EarProjectProperties epp;
+    private final AntProjectHelper model;
     
-    public LogicalViewChildren(Application model, EarProjectProperties epp) {
+    public LogicalViewChildren(AntProjectHelper model) {
         if (null == model)
             throw new IllegalArgumentException("model");
         this.model = model;
-        this.epp = epp;
-        //model.addPropertyChangeListener(this);
-        epp.addPropertyChangeListener(this);
     }
     
     protected void addNotify() {
@@ -56,7 +61,7 @@ public class LogicalViewChildren extends Children.Keys  implements PropertyChang
         // set the children to use:
         updateKeys();
         // and listen to changes in the model too:
-        model.addPropertyChangeListener(this);
+        model.addAntProjectListener(this);
     }
     
     private void updateKeys() {
@@ -88,7 +93,10 @@ public class LogicalViewChildren extends Children.Keys  implements PropertyChang
 //                }
 //            }
 //        }
-        Object t = epp.get(EarProjectProperties.JAR_CONTENT_ADDITIONAL);
+        Project p = FileOwnerQuery.getOwner(model.getProjectDirectory());
+        EarProject ep = (EarProject) p.getLookup().lookup(EarProject.class);
+        ArchiveProjectProperties epp = ep.getProjectProperties();
+        Object t = epp.get(ArchiveProjectProperties.JAR_CONTENT_ADDITIONAL);
         if (!(t instanceof List)) {
             assert false : "jar content isn't a List???";
             return;
@@ -105,7 +113,6 @@ public class LogicalViewChildren extends Children.Keys  implements PropertyChang
             VisualClassPathItem vcpi = (VisualClassPathItem) t;
             Object obj = vcpi.getObject();
             AntArtifact aa;
-            Project p;
             if (obj instanceof AntArtifact) {
                 aa = (AntArtifact) obj;
                 p = aa.getProject();            
@@ -132,7 +139,7 @@ public class LogicalViewChildren extends Children.Keys  implements PropertyChang
     }
     
     protected void removeNotify() {
-        epp.removePropertyChangeListener(this);
+        model.removeAntProjectListener(this);
         setKeys(Collections.EMPTY_SET);
         super.removeNotify();
     }
@@ -140,7 +147,7 @@ public class LogicalViewChildren extends Children.Keys  implements PropertyChang
     protected Node[] createNodes(Object key) {
         // interpret your key here...usually one node generated, but could be zero or more
         VisualClassPathItem vcpi = (VisualClassPathItem) key;
-        return new Node[] {new ModuleNode(vcpi,epp) };
+        return new Node[] { new ModuleNode(vcpi, model) };
     }
     
     public void modelChanged(Object ev) {
@@ -148,7 +155,7 @@ public class LogicalViewChildren extends Children.Keys  implements PropertyChang
         updateKeys();
     }
     
-    public void propertyChange(PropertyChangeEvent pce) {
+    public void configurationXmlChanged(AntProjectEvent ape) {
         // unsafe to call Children.setKeys() while holding a mutext
         // here the caller holds ProjectManager.mutex() read access
         RequestProcessor.getDefault().post(new Runnable() {
@@ -158,6 +165,8 @@ public class LogicalViewChildren extends Children.Keys  implements PropertyChang
         });
     }
  
+    public void propertiesChanged(AntProjectEvent ape) {
+    }
 /*    private void addKeyValues(List keyContainer, List beans) {
         Iterator it = beans.iterator();
         while (it.hasNext()) {

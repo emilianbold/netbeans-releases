@@ -44,6 +44,10 @@ import org.netbeans.api.project.ant.AntArtifactQuery;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.modules.j2ee.earproject.EarProject;
+import org.netbeans.api.project.FileOwnerQuery;
+
 /**
  * Action that allows selection and assembly of J2EE module projects.
  * @author Chris Webster
@@ -52,7 +56,7 @@ import java.util.Iterator;
 public class AddModuleAction extends CookieAction {
     
     private static final Class[] COOKIE_ARRAY =
-        new Class[] { EarProjectProperties.class };
+        new Class[] { AntProjectHelper.class };
     
     public Class[] cookieClasses() {
         return COOKIE_ARRAY;
@@ -64,11 +68,14 @@ public class AddModuleAction extends CookieAction {
     
     public void performAction(Node[] activeNodes) {
         try {
-            EarProjectProperties epp = 
-                (EarProjectProperties) activeNodes[0].getCookie(EarProjectProperties.class);
-            Project[] moduleProjects = getSelectedProjects(epp);
+            AntProjectHelper aph = 
+                (AntProjectHelper) activeNodes[0].getLookup().lookup(AntProjectHelper.class);
+            Project[] moduleProjects = getSelectedProjects(aph);
             // XXX Vince add code here to add to application.xml and
             // build script
+            Project p = FileOwnerQuery.getOwner(aph.getProjectDirectory());
+            EarProject ep = (EarProject) p.getLookup().lookup(EarProject.class);
+            EarProjectProperties epp = (EarProjectProperties) ep.getProjectProperties();
             epp.addJ2eeSubprojects(moduleProjects);
 //            List artifactList = new ArrayList();
 //            for (int i = 0; i < moduleProjects.length; i++) {
@@ -124,7 +131,7 @@ public class AddModuleAction extends CookieAction {
         return false;
     }
     
-    private Project[] getSelectedProjects(EarProjectProperties epp) throws UserCancelException {
+    private Project[] getSelectedProjects(AntProjectHelper epp) throws UserCancelException {
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
         List moduleProjectNodes = new LinkedList();
         for (int i = 0; i < allProjects.length; i++) {
@@ -142,7 +149,7 @@ public class AddModuleAction extends CookieAction {
         final Node root = new AbstractNode(children);
         String moduleSelector = NbBundle.getMessage(AddModuleAction.class, "LBL_ModuleSelectorTitle");
         
-        Project parent = epp.getProject();
+        Project parent = FileOwnerQuery.getOwner(epp.getProjectDirectory());
         SubprojectProvider spp = (SubprojectProvider) parent.getLookup().lookup(SubprojectProvider.class);
         if (null != spp) {
             final Set s = spp.getSubprojects();
