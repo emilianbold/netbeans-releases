@@ -123,9 +123,17 @@
     <mapID target="ent_app_build" url="enterprise/general/ent_app_build.html" />
     <mapID target="ent_app_server" url="enterprise/general/ent_app_server.html" />
     
+
+    !-- New Project Wizard csh -->
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIterator" url="enterprise/csh/NewEarProjectWizardIterator.html" />
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.CompleteEarProjectWizardIterator" url="enterprise/csh/CompleteEarProjectWizardIterator.html" />
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.ImportBlueprintEarWizardIterator" url="enterprise/csh/ImportBlueprintEarWizardIterator.html" />
+
+    !-- Project Properties dialog box csh -->
+
+    <mapID target="org.netbeans.modules.j2ee.common.ui.customizer.CustomizerGeneral" url="enterprise/csh/CustomizerGeneral.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.ui.customizer.CustomizerJarContent" url="enterprise/csh/CustomizerJarContent.html" />
+    <mapID target="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerRun" url="enterprise/csh/CustomizerRun.html" />
 
 <!-- End of Enterprise Application help -->
 
