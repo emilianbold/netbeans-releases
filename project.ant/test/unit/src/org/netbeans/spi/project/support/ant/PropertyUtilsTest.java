@@ -208,6 +208,22 @@ public class PropertyUtilsTest extends NbTestCase {
         assertEquals("two definitions now from disk", 2, p2.size());
         assertEquals("key1 correct from disk", "val1", p2.getProperty("key1"));
         assertEquals("key2 correct from disk", "val2", p2.getProperty("key2"));
+        // Test the property provider too.
+        PropertyProvider gpp = PropertyUtils.globalPropertyProvider();
+        TestCL l = new TestCL();
+        gpp.addChangeListener(l);
+        p = PropertyUtils.getGlobalProperties();
+        assertEquals("correct initial definitions", p, gpp.getProperties());
+        p.setProperty("key3", "val3");
+        assertEquals("still have 2 defs", 2, gpp.getProperties().size());
+        assertFalse("no changes yet", l.changed);
+        PropertyUtils.putGlobalProperties(p);
+        assertTrue("got a change", l.changed);
+        l.changed = false;
+        assertEquals("now have 3 defs", 3, gpp.getProperties().size());
+        assertEquals("right val", "val3", gpp.getProperties().get("key3"));
+        assertFalse("no spurious changes", l.changed);
+        // XXX try modifying build.properties using Filesystems API
     }
     
     public void testEvaluateString() throws Exception {
@@ -418,6 +434,18 @@ public class PropertyUtilsTest extends NbTestCase {
                 assertNull("null prop name -> null new value", nue);
                 assertNull("null prop name -> null old value", old);
             }
+        }
+        
+    }
+    
+    private static final class TestCL implements ChangeListener {
+        
+        public boolean changed = false;
+        
+        public TestCL() {}
+        
+        public void stateChanged(ChangeEvent e) {
+            changed = true;
         }
         
     }

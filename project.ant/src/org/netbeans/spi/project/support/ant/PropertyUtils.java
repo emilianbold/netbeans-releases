@@ -21,6 +21,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,8 +53,6 @@ import org.openide.util.WeakListeners;
  */
 public class PropertyUtils {
     
-    // XXX fire changes from putGlobalProperties?
-    
     private PropertyUtils() {}
     
     /**
@@ -69,15 +69,20 @@ public class PropertyUtils {
         }
     }
     
+    private static Reference/*<GlobalPropertyProvider>*/ globalPropertyProvider = null;
+    
     /**
      * Load global properties defined by the IDE in the user directory.
      * Currently loads ${netbeans.user}/build.properties if it exists.
      * <p>
      * Acquires read access.
+     * <p>
+     * To listen to changes use {@link #globalPropertyProvider}.
      * @return user properties (empty if missing or malformed)
      */
     public static EditableProperties getGlobalProperties() {
         // XXX cache between calls
+        // XXX make more flexible - some way to define other properties files too
         return (EditableProperties)ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
                 if (USER_BUILD_PROPERTIES != null && USER_BUILD_PROPERTIES.isFile() &&
@@ -120,6 +125,14 @@ public class PropertyUtils {
                         } finally {
                             os.close();
                         }
+                        synchronized (PropertyUtils.class) {
+                            if (globalPropertyProvider != null) {
+                                GlobalPropertyProvider gpp = (GlobalPropertyProvider)globalPropertyProvider.get();
+                                if (gpp != null) {
+                                    gpp.fireChange();
+                                }
+                            }
+                        }
                     } else {
                         throw new IOException("Do not know where to store build.properties; must set netbeans.user!"); // NOI18N
                     }
@@ -129,6 +142,61 @@ public class PropertyUtils {
         } catch (MutexException e) {
             throw (IOException)e.getException();
         }
+    }
+    
+    /**
+     * Create a property evaluator based on {@link #getGlobalProperties}
+     * and {@link #putGlobalProperties}.
+     * It will supply global properties and fire changes when this file
+     * is changed.
+     * @return a property producer
+     */
+    /*XXX public*/ static synchronized PropertyProvider globalPropertyProvider() {
+        if (globalPropertyProvider != null) {
+            PropertyProvider pp = (PropertyProvider)globalPropertyProvider.get();
+            if (pp != null) {
+                return pp;
+            }
+        }
+        GlobalPropertyProvider gpp = new GlobalPropertyProvider();
+        globalPropertyProvider = new SoftReference(gpp);
+        return gpp;
+    }
+    
+    private static final class GlobalPropertyProvider implements PropertyProvider {
+        
+        // XXX listen to changes in the file too
+        
+        private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        
+        public GlobalPropertyProvider() {}
+        
+        public Map getProperties() {
+            return getGlobalProperties();
+        }
+        
+        void fireChange() {
+            ChangeListener[] ls;
+            synchronized (this) {
+                if (listeners.isEmpty()) {
+                    return;
+                }
+                ls = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
+            }
+            ChangeEvent ev = new ChangeEvent(this);
+            for (int i = 0; i < ls.length; i++) {
+                ls[i].stateChanged(ev);
+            }
+        }
+        
+        public synchronized void addChangeListener(ChangeListener l) {
+            listeners.add(l);
+        }
+        
+        public synchronized void removeChangeListener(ChangeListener l) {
+            listeners.remove(l);
+        }
+        
     }
     
     /**
@@ -467,7 +535,7 @@ public class PropertyUtils {
     }
     
     /**
-     * Produce a trivial property producer using only a fixed list of property definitions.
+     * Create a trivial property producer using only a fixed list of property definitions.
      * Its values are constant, and it never fires changes.
      * @param defs a map from property names to values (it is illegal to modify this map
      *             after passing it to this method)
@@ -496,7 +564,7 @@ public class PropertyUtils {
     }
     
     /**
-     * Produce a property evaluator based on a series of definitions.
+     * Create a property evaluator based on a series of definitions.
      * Each batch of definitions can refer to properties within itself
      * (so long as there is no cycle) or any previous batch.
      * However the special first provider cannot refer to properties within itself.
