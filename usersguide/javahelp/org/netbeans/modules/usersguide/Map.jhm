@@ -23,6 +23,7 @@
 <mapID target="proj_main" url="project/proj_main.html" />
 <mapID target="proj_process" url="project/proj_process.html" />
 <mapID target="proj_quickref" url="project/proj_quickref.html" />
+<mapID target="proj_sources_multi" url="project/proj_sources_multi.html" />
 <mapID target="proj_templates" url="project/proj_templates.html" />
 <mapID target="proj_stand_about" url="project/proj_stand_about.html" />
 <mapID target="proj_jdk" url="project/proj_jdk.html" />
@@ -360,6 +361,9 @@ the Options window:-->
 <!-- Files window :-->
 <mapID target="ProjectTab_Files" url="project/csh/proj_files_window.html" />
 
+<!-- Navigator window :-->
+<mapID target="org.netbeans.modules.navigator.Navigator.java" url="editing/csh/nav_window.html" />
+
 <!-- New Wizard templates page :-->
 <mapID target="org.netbeans.modules.project.ui.TemplatesPanel" url="project/csh/proj_wiz.html" />
 
@@ -380,7 +384,7 @@ the Options window:-->
 <mapID target="org.netbeans.modules.ant.freeform.ui.ClasspathWizardPanel" url="project/csh/proj_j2sefree_wiz4.html" />
 <mapID target="org.netbeans.modules.ant.freeform.ui.WebLocationsWizardPanel" url="project/csh/proj_j2sefree_wiz5.html" />
 
-<!-- NEW Standard J2SE Project Properties dialog:-->
+<!-- Standard J2SE Project Properties dialog:-->
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerSources" url="project/csh/proj_j2sestand_props_sources.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerLibraries" url="project/csh/proj_j2sestand_props_libraries.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerCompile" url="project/csh/proj_j2sestand_props_compiling.html" />
@@ -388,7 +392,7 @@ the Options window:-->
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJavadoc" url="project/csh/proj_j2sestand_props_documenting.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerRun" url="project/csh/proj_j2sestand_props_run.html" />
 
-<!-- NEW Freeform J2SE and Web Project Properties dialog:-->
+<!-- Freeform J2SE and Web Project Properties dialog:-->
 <mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersPanel" url="project/csh/proj_j2sefree_props_sources.html" />
 <mapID target="org.netbeans.modules.java.freeform.ui.ClasspathPanel" url="project/csh/proj_j2sefree_props_classpath.html" />
 <mapID target="org.netbeans.modules.java.freeform.ui.OutputPanel" url="project/csh/proj_j2sefree_props_output.html" />
