@@ -53,9 +53,13 @@ public class JUnitSettings extends SystemOption {
     public static final String PROP_GENERATE_EXCEPTION_CLASSES = "generate_exceptions";
     public static final String PROP_GENERATE_ABSTRACT_IMPL = "gemerate_abstract_impl";
     public static final String PROP_TEST_RUNNER         = "test_runner";
-    public static final String PROP_PROPERTIES          = "properties";
-    public static final String PROP_GENERATE_NBJUNIT    = "generate_nbjunit";
+    public static final String PROP_PROPERTIES          = "properties";    
     public static final String PROP_REGENERATE_SUITE_METHOD = "regenerate_suite_method";
+    
+    // !-- GENERATE NbJUnit no longer supported
+    // public static final String PROP_GENERATE_NBJUNIT    = "generate_nbjunit";
+    //  GENERATE NbJUnit no longer supported --!
+    
 
     public static final int EXECUTOR_EXTERNAL           = 0;
     public static final int EXECUTOR_INTERNAL           = 1;
@@ -87,10 +91,12 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_GENERATE_ABSTRACT_IMPL, Boolean.TRUE, true);
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, Boolean.FALSE, true);
         putProperty(PROP_TEST_RUNNER, "org.netbeans.modules.junit.JUnitTestRunner", true);
-        putProperty(PROP_PROPERTIES, NbBundle.getMessage(JUnitSettings.class, "PROP_properties_default_value"), true);
-        putProperty(PROP_GENERATE_NBJUNIT, Boolean.FALSE, true);
+        putProperty(PROP_PROPERTIES, NbBundle.getMessage(JUnitSettings.class, "PROP_properties_default_value"), true);        
         putProperty(PROP_REGENERATE_SUITE_METHOD, Boolean.TRUE, true);
         
+        // !-- GENERATE NbJUnit no longer supported
+        //putProperty(PROP_GENERATE_NBJUNIT, Boolean.FALSE, true);
+        //  GENERATE NbJUnit no longer supported --!
     }
 
     public void writeExternal (ObjectOutput out) throws IOException {
@@ -110,8 +116,11 @@ public class JUnitSettings extends SystemOption {
         out.writeObject(getProperty(PROP_GENERATE_EXCEPTION_CLASSES));
         out.writeObject(getProperty(PROP_TEST_RUNNER));
         out.writeObject(getProperty(PROP_PROPERTIES));
-        out.writeObject(getProperty(PROP_GENERATE_NBJUNIT));
         out.writeObject(getProperty(PROP_REGENERATE_SUITE_METHOD));
+        
+        // !-- GENERATE NbJUnit no longer supported
+        //out.writeObject(getProperty(PROP_GENERATE_NBJUNIT));
+        //  GENERATE NbJUnit no longer supported --!
         
     }
     
@@ -132,8 +141,11 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, in.readObject(), true);
         putProperty(PROP_TEST_RUNNER, in.readObject(), true);
         putProperty(PROP_PROPERTIES, in.readObject(), true);
-        putProperty(PROP_GENERATE_NBJUNIT,in.readObject(), true);
-        putProperty(PROP_REGENERATE_SUITE_METHOD,in.readObject(), true);        
+        putProperty(PROP_REGENERATE_SUITE_METHOD,in.readObject(), true);
+
+        // !-- GENERATE NbJUnit no longer supported
+        //putProperty(PROP_GENERATE_NBJUNIT,in.readObject(), true);
+        //  GENERATE NbJUnit no longer supported --!        
         
     }
 
@@ -283,16 +295,18 @@ public class JUnitSettings extends SystemOption {
         return false;
     }
 
+    // !-- GENERATE NbJUnit no longer supported
+    /*
     public boolean isGenerateNbJUnit() {
-        // this is no longer supported - always return false
-        //return ((Boolean) getProperty(PROP_GENERATE_NBJUNIT)).booleanValue();
-        return false;
+        return ((Boolean) getProperty(PROP_GENERATE_NBJUNIT)).booleanValue();
     }
 
+     
     public void setGenerateNbJUnit(boolean newVal) {
-        // this is no longer supported - do nothing
-        //putProperty(PROP_GENERATE_NBJUNIT, newVal ? Boolean.TRUE : Boolean.FALSE, true);
+        putProperty(PROP_GENERATE_NBJUNIT, newVal ? Boolean.TRUE : Boolean.FALSE, true);
     }
+     */
+    // GENERATE NbJUnit no longer supported --!
     
     public boolean isRegenerateSuiteMethod() {
         return ((Boolean) getProperty(PROP_REGENERATE_SUITE_METHOD)).booleanValue();

@@ -116,11 +116,15 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
             propProperties.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_properties"));
             propProperties.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_properties"));
             
+            // !-- GENERATE NbJUnit no longer supported
+            /*
             PropertyDescriptor propGenerateNbJUnit = new PropertyDescriptor ("GenerateNbJUnit", JUnitSettings.class);
             propGenerateNbJUnit.setPropertyEditorClass(BoolPropEd.class);
             propGenerateNbJUnit.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_generate_nbjunit"));
             propGenerateNbJUnit.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_generate_nbjunit"));
-
+             */
+            // GENERATE NbJUnit no longer supported --!
+            
             PropertyDescriptor propRegenerateSuiteMethod = new PropertyDescriptor ("RegenerateSuiteMethod", JUnitSettings.class);
             propRegenerateSuiteMethod.setPropertyEditorClass(BoolPropEd.class);
             propRegenerateSuiteMethod.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_regenerate_suite_method"));
@@ -130,7 +134,7 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
             return new PropertyDescriptor[] { propFileSystem, propSuiteTemplate, propClassTemplate,
               propMembersPublic, propMembersProtected, propMembersPackage, propBodyComments, propBodyContent, 
               propJavaDoc, propCfgConfigEnabled, propCfgExecEnabled, propInternalExecutor, 
-              propGenerateExceptionClasses, propGenerateAbstractImpl,  propGenerateNbJUnit, 
+              propGenerateExceptionClasses, propGenerateAbstractImpl,  
               propRegenerateSuiteMethod, propTestRunner, propProperties };
         }
         catch (IntrospectionException ie) {
