@@ -48,7 +48,7 @@ import com.netbeans.developer.modules.loaders.form.palette.*;
 *
 * @author Petr Hamernik
 */
-public final class BorderEditor extends PropertyEditorSupport { // implements org.openide.explorer.propertysheet.editors.XMLPropertyEditor { // [PENDING - not for now]
+public final class BorderEditor extends PropertyEditorSupport implements org.openide.explorer.propertysheet.editors.XMLPropertyEditor { // [PENDING - not for now]
 
   /** Icon bases for unknown border node. */
   private static final String UNKNOWN_BORDER_BASE = "com/netbeans/developer/explorer/propertysheet/editors/unknownBorder";
@@ -185,7 +185,7 @@ public final class BorderEditor extends PropertyEditorSupport { // implements or
 
     }
 
-    public HelpCtx getHelpCtx () {
+    public org.openide.util.HelpCtx getHelpCtx () {
       return new HelpCtx (BorderPanel.class);
     }
     
@@ -430,6 +430,8 @@ public final class BorderEditor extends PropertyEditorSupport { // implements or
 
 /*
  * Log
+ *  12   Gandalf   1.11        11/24/99 Pavel Buzek     added support for saving
+ *       in XML format
  *  11   Gandalf   1.10        11/5/99  Jesse Glick     Context help jumbo 
  *       patch.
  *  10   Gandalf   1.9         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
