@@ -459,7 +459,11 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     private static Image loadImage(String path) {
         try {
             URL url = AbstractViewTabDisplayerUI.class.getResource("/"+path);
-            return ImageIO.read(url);
+            //Apple Bug ID# 3737894 - some transparent gifs incorrectly loaded 
+            //with ImageIO
+
+            //return ImageIO.read(url);
+            return Toolkit.getDefaultToolkit().createImage(url);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
