@@ -568,6 +568,13 @@ Microsystems, Inc. All Rights Reserved.
     <file name="SourceOptions.settings" url="SourceOptions.settings"/>
     <file name="PrintSettings.settings" url="PrintSettings.settings"/>
 
+
+    <!-- Add pretty name and icon -->
+    <folder name="MIMEResolver">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/mime.gif" />        
+    </folder>
+
   </folder>
   
   <!-- workplace of the IDE -->
@@ -657,35 +664,12 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="global-layer" boolvalue="false" />
       </file>
     </folder>
+
   </folder>
 
   <!-- For debugging only, comment out if desired: -->
   <file name="debug-sfs-structure[org-netbeans-core-projects-SystemFileSystem$StructureNode].instance"/>
 
   &dtds;
-
-  <folder name="xml">
-  
-    <folder name="entities">
-        <folder name="NetBeans">
-            <file name="DTD_MIME_Resolver_1_0" url="nbresboot:/org/netbeans/core/filesystems/resolver.dtd"/>
-            <file name="DTD_MIME_Resolver_XML_Rules_1_0" url="nbresboot:/org/netbeans/core/filesystems/xml-rules.dtd"/>
-        </folder>
-    </folder>
-    
-    <folder name="lookups">
-        <folder name="NetBeans">
-        
-            <!-- Environment.Provider for declarative MIME resolver XML documents. -->
-            
-            <file name="DTD_MIME_Resolver_1_0.instance">
-                <attr name="instanceClass" stringvalue="org.openide.loaders.Environment$Provider"/>
-                <attr name="instanceCreate" newvalue="org.netbeans.core.filesystems.MIMEResolverImpl"/>
-            </file>            
-            
-        </folder>
-    </folder>
-    
-  </folder> <!-- name="xml" -->
   
 </filesystem>
