@@ -59,11 +59,11 @@ public class Operator {
               }
               Executor exec = null;
               if (e.request () == null) {
-                //S ystem.out.println ("EVENT: " + e + " REQUEST: null");          
+                System.out.println ("EVENT: " + e + " REQUEST: null");          
               } else 
                 exec = (Executor) e.request ().getProperty ("executor");
               
-              //printEvent (e, exec);
+              printEvent (e, exec);
 
               // safe invocation of user action
               if (exec != null) 
@@ -73,7 +73,7 @@ public class Operator {
                   ex.printStackTrace ();
                 }
             }
-            //S ystem.out.println ("END (" + set.suspendPolicy () + ") ===========================================================================");
+//            System.out.println ("END (" + set.suspendPolicy () + ") ===========================================================================");
             if (resume) {
               resume = false;
               virtualMachine.resume ();
@@ -119,10 +119,17 @@ public class Operator {
           System.out.println ("EVENT: ThreadDeathEvent " + ((ThreadDeathEvent) e).thread ());
         } catch (Exception ex) {
           System.out.println ("EVENT: ThreadDeathEvent1 " + e);
-        }
+        } 
+      } else
+      if (e instanceof MethodEntryEvent) {
+/*        try {
+          System.out.println ("EVENT: MethodEntryEvent " + e);
+        } catch (Exception ex) {
+          System.out.println ("EVENT: MethodEntryEvent " + e);
+        }*/
       } else
       if (e instanceof BreakpointEvent) {
-        System.out.println ("EVENT: BreakpointEvent " + ((BreakpointEvent) e).thread () + " : " + ((BreakpointEvent) e).location ());
+//        System.out.println ("EVENT: BreakpointEvent " + ((BreakpointEvent) e).thread () + " : " + ((BreakpointEvent) e).location ());
       } else
       if (e instanceof StepEvent) {
         System.out.println ("EVENT: BreakpointEvent " + ((StepEvent) e).thread () + " : " + ((StepEvent) e).location ());
@@ -135,6 +142,8 @@ public class Operator {
 
 /*
  * Log
+ *  8    Gandalf   1.7         1/4/00   Jan Jancura     Use trim () on user 
+ *       input.
  *  7    Gandalf   1.6         11/9/99  Jan Jancura     sout commented out.
  *  6    Gandalf   1.5         11/8/99  Jan Jancura     Somma classes renamed
  *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
