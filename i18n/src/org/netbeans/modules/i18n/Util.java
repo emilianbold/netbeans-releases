@@ -82,9 +82,9 @@ public class Util {
   }
 
     /**
-     * Gets classpath that contains the given resource bundel. 
+     * Gets classpath that contains the given resource bundle. 
      * In addition to the bundle file, a source must be given that
-     * will access the resource in the run-time.
+     * will access the resource at run-time.
      */
     public static ClassPath getExecClassPath(FileObject srcFile, FileObject resFile) {
         // try EXECUTE class-path first
