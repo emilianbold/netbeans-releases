@@ -351,11 +351,6 @@ is divided into following sections:
                 <xsl:attribute name="depends">compile</xsl:attribute>
                 <xsl:attribute name="if">do.compile.jsps</xsl:attribute>
                 <xsl:attribute name="description">Test compile JSP pages to expose compilation errors.</xsl:attribute>
-                <!--
-                <taskdef classname="org.apache.jasper.JspC" name="jasper2" > 
-                    <classpath path="${{jspc.classpath}}"/> 
-                </taskdef> 
-                -->
 
                 <mkdir dir="${{build.generated.dir}}/src"/>
                 <java classname="org.apache.jasper.JspC"
@@ -369,12 +364,6 @@ is divided into following sections:
                     <arg value="-die1"/>
                     <classpath path="${{jspc.classpath}}"/> 
                 </java>
-                <!--
-                <jasper2
-                    validateXml="false" 
-                    uriroot="${{basedir}}/${{build.web.dir}}" 
-                    outputDir="${{basedir}}/${{build.generated.dir}}/src" /> 
-                -->
                 <mkdir dir="${{build.generated.dir}}/classes"/>
                 <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1"
                     srcdir="${{build.generated.dir}}/src"
@@ -386,12 +375,6 @@ is divided into following sections:
             <target name="compile-single-jsp">
                 <xsl:attribute name="depends">compile</xsl:attribute> 
                 <fail unless="jsp.includes">Must select a file in the IDE or set jsp.includes</fail>
-
-                <!--
-                <taskdef classname="org.netbeans.modules.web.project.ant.JspCSingle" name="single-jspc" > 
-                    <classpath path="${{libs.copyfiles.classpath}}:${{jspc.classpath}}"/>
-                </taskdef> 
-                -->
 
                 <mkdir dir="${{build.generated.dir}}/src"/>
                 <java classname="org.netbeans.modules.web.project.ant.JspCSingle"
@@ -407,13 +390,6 @@ is divided into following sections:
                     <arg path="${{jsp.includes}}"/>
                     <classpath path="${{libs.copyfiles.classpath}}:${{jspc.classpath}}"/> 
                 </java>
-                <!--
-                <single-jspc
-                     validateXml="false" 
-                     uriroot="${{basedir}}/${{build.web.dir}}" 
-                     outputDir="${{basedir}}/${{build.generated.dir}}/src"
-                     jspincludes="${{jsp.includes}}" /> 
-                -->
                 <mkdir dir="${{build.generated.dir}}/classes"/>
                 <!--
                 <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1">
