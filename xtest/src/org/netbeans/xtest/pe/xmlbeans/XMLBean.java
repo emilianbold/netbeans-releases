@@ -254,7 +254,7 @@ public abstract class XMLBean {
         }
         
         if (fieldTypeName.equals("boolean")) {
-            field.setBoolean(obj,Boolean.getBoolean(value));
+            field.setBoolean(obj,Boolean.valueOf(value).booleanValue());
             return;
         }   
         
