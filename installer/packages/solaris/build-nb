@@ -206,7 +206,7 @@ build_package () {
   echo "i depend" >> prototype
   echo "!default 0644 root other" >> prototype
   echo "d none netbeans 0755" >> prototype
-  sed "s/ 0644 ${USER} ${GROUP}$//" proto | sed "s/ ${USER} ${GROUP}$//" | fgrep -vf "$FILTER" >> prototype
+  sed "s/ 06[04][04] ${USER} ${GROUP}$//" proto | sed "s/ 0711 ${USER} ${GROUP}$/ 0755/" | sed "s/ ${USER} ${GROUP}$//" | fgrep -vf "$FILTER" >> prototype
 
   pkgmk -o -d ./ ${1}
 
