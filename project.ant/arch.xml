@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
   <!ENTITY api-questions SYSTEM "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
 ]>
@@ -28,7 +40,7 @@
         </question>
 -->
  <answer id="arch-overall">
-  <api group="java" name="AntProjectAPI" type="export" category="devel">
+  <api group="java" name="AntProjectAPI" type="export" category="official">
    <p>
    Mostly an SPI for creating project types centered around the Ant build tool.
    Permits Ant-based project types to be registered and supplies various support

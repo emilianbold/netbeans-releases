@@ -8,14 +8,12 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
   <!ENTITY api-questions SYSTEM "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
 ]>
-
-<!-- XXX update for 4.1 format changes -->
 
 <api-answers
   question-version="1.24"
@@ -49,9 +47,16 @@ Microsystems, Inc. All Rights Reserved.
   </p>
   <ol>
    <li>
-    <api group="dtd" name="j2se-project.xsd" type="export" category="devel" url="http://www.netbeans.org/ns/j2se-project/1.xsd">
+    <api group="dtd" name="j2se-project.xsd" type="export" category="official" url="http://www.netbeans.org/ns/j2se-project/1.xsd">
      <p>
-      Definition of j2seproject-specific portions of <code>project.xml</code>.
+      Definition of j2seproject-specific portions of <code>project.xml</code> (1st revision).
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="dtd" name="j2se-project-2.xsd" type="export" category="official" url="http://www.netbeans.org/ns/j2se-project/2.xsd">
+     <p>
+      Definition of j2seproject-specific portions of <code>project.xml</code> (2nd revision).
      </p>
     </api>
    </li>
@@ -110,7 +115,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-time">
   <p>
-   Mostly done. Tracked under issue #41537.
+   Done.
   </p>
  </answer>
 
@@ -152,7 +157,7 @@ Microsystems, Inc. All Rights Reserved.
    completion and other services for editing Java sources. Classpaths can include
    other projects, raw JARs, or configured libraries. Specific J2SE platforms may
    be configured. <a
-   href="http://projects.netbeans.org/buildsys/j2se-project-ui-spec.html">Full UI
+   href="http://projects.netbeans.org/buildsys/j2se-project-ui-spec-promoe.html">Full UI
    specification</a>
   </p>
  </answer>
@@ -656,9 +661,9 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="exec-property">
   <p>
    <api type="export" group="property" name="j2seproject.transparentUpdate" category="private">
-   If the property is set to true the j2seproject updates metadata of project.xml from 
-   "http://www.netbeans.org/ns/j2se-project/1" to "http://www.netbeans.org/ns/j2se-project/2"
-   without any explicit user feedback.
+    If the property is set to <code>true</code> the project updates metadata of <code>project.xml</code> from
+    the namespace <code>http://www.netbeans.org/ns/j2se-project/1</code> to
+    <code>http://www.netbeans.org/ns/j2se-project/2</code> without explicit user confirmation.
    </api>
   </p>
  </answer>
@@ -760,9 +765,9 @@ Microsystems, Inc. All Rights Reserved.
    The usual Ant-based project metadata files and build scripts.
   </p>
   <p>
-   Depends on the Javadoc structure. It tries to find the <code>overview-summary.html</code> in
-   the api folder, and the <code>package-summary.html</code> and javadoc pages for classes in the
-   package structure under the api folder.
+   Depends on the structure of built Javadoc. It tries to find the <code>overview-summary.html</code> in the
+   <code>api</code> folder, and the <code>package-summary.html</code> and Javadoc pages for classes in the
+   package structure under the <code>api</code> folder.
   </p>
  </answer>
 

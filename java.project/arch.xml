@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="arch-overall">
   <ul>
    <li>
-  <api group="java" name="JavaProjectAPI" type="export" category="devel">
+  <api group="java" name="JavaProjectAPI" type="export" category="official">
    <p>
    The Java Project API is actually entirely SPI and supplies useful
    implementations of Java-related functionality specific to the project system.
@@ -59,8 +59,8 @@ Microsystems, Inc. All Rights Reserved.
   </api>
   <api group="java" name="ProjectClassPathSupport" type="export" category="devel">
    <p>
-    Support class containg helper method for creating ClassPathImplementation based
-    on the Ant properies.
+      Support class containg helper method for creating <code>ClassPathImplementation</code> based on Ant
+      properties.
    </p>
   </api>
    </li>
@@ -103,7 +103,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-time">
   <p>
-   Essentially complete.
+   Complete.
   </p>
  </answer>
 

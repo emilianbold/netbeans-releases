@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
@@ -40,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-overall">
-  <api group="java" name="JavaPlatformAPI" type="export" category="devel">
+  <api group="java" name="JavaPlatformAPI" type="export" category="official">
    The Java Platform API permits access to installed Java platforms (for example,
    the J2SE JDK, or various mobile-device emulators for J2ME). Particular platform
    types are registered by modules and can store customized information about the

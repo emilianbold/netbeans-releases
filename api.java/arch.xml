@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
@@ -40,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-overall">
-  <api group="java" name="JavaSupportAPIs" type="export" category="devel">
+  <api group="java" name="JavaSupportAPIs" type="export" category="official">
    The Java Support APIs provides basic facilities for getting or supplying
    information about Java-language source files. It is based on the query pattern
    so implementations can be supplied from other modules or projects.

@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
@@ -40,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-overall">
-  <api group="org.apache.tools.ant.Task" name="nbbrowse" type="export" category="devel">
+  <api group="org.apache.tools.ant.Task" name="nbbrowse" type="export" category="official">
    <p>
     Provides the <code>&lt;nbbrowse&gt;</code> Ant task.
    </p>

@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
@@ -40,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-overall">
-  <api group="java" name="ProjectLibrariesAPI" type="export" category="devel">
+  <api group="java" name="ProjectLibrariesAPI" type="export" category="official">
    The Project Libraries API permits definitions of <q>libraries</q> to be
    registered and persisted. Library type providers may be registered and can
    construct memory objects corresponding to persistent library definitions.
@@ -595,7 +595,7 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="format-types">
-  <api group="dtd" name="Library-Declaration-DTD" type="export" category="devel" url="http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
+  <api group="dtd" name="Library-Declaration-DTD" type="export" category="official" url="http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
    <p>
     An XML DTD is used to define the library definition format.
   </p>
