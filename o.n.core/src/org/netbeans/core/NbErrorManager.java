@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -485,6 +485,30 @@ final class NbErrorManager extends ErrorManager {
         * there is no annotation trace then of the exception
         */
         public void printStackTrace (PrintWriter pw) {
+            // #19487: don't go into an endless loop here
+            printStackTrace(pw, new HashSet(10));
+        }
+        private void printStackTrace(PrintWriter pw, Set/*<Throwable>*/ nestingCheck) {
+            if (t != null && !nestingCheck.add(t)) {
+                // Unlocalized log message - this is for developers of NB, not users
+                log(ErrorManager.WARNING, "WARNING - ErrorManager detected cyclic exception nesting:"); // NOI18N
+                Iterator it = nestingCheck.iterator();
+                while (it.hasNext()) {
+                    Throwable t = (Throwable)it.next();
+                    log(ErrorManager.WARNING, "\t" + t); // NOI18N
+                    Annotation[] anns = findAnnotations(t);
+                    if (anns != null) {
+                        for (int i = 0; i < anns.length; i++) {
+                            Throwable t2 = anns[i].getStackTrace();
+                            if (t2 != null) {
+                                log(ErrorManager.WARNING, "\t=> " + t2); // NOI18N
+                            }
+                        }
+                    }
+                }
+                log(ErrorManager.WARNING, "Be sure not to annotate an exception with itself, directly or indirectly."); // NOI18N
+                return;
+            }
             /*Heaeder */
             pw.print (getDate ());
             pw.print (": "); // NOI18N
@@ -549,7 +573,7 @@ final class NbErrorManager extends ErrorManager {
                     Annotation[] ans = findAnnotations (thr);
                     Exc ex = new Exc (thr, 0, ans);
                     pw.println();
-                    ex.printStackTrace (pw);    
+                    ex.printStackTrace(pw, nestingCheck);
                 }
             }
         }
