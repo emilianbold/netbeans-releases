@@ -70,6 +70,7 @@ Microsystems, Inc. All Rights Reserved.
       <exclude name="credits.html"/>
       <exclude name="ant/credits.html"/>
       <exclude name="pending.html"/>
+      <exclude name="ja/"/>
     </jhindexer>
     <mkdir dir="netbeans/modules/docs"/>
     <locjar jarfile="netbeans/modules/docs/usersguide.jar"
