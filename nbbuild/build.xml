@@ -827,20 +827,46 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="nbm"/><!-- dummy target -->
 
   <!-- build javadoc for selected modules -->
-  <target name="build-javadoc" depends="init">
+  <target name="build-javadoc" depends="init" description="Builds javadoc documentation for modules" >
       <ant dir="." target="merge">
           <property name="modules" value="${modules}"/>
           <property name="fixedmodules" value="${fixedmodules}"/>
           <property name="merge.dependent.modules" value="true"/>
           <property name="stop.when.broken.module" value="false"/>
       </ant>
+      
+      <mkdir dir="modules_exported_interfaces" />
+      <property name="export.interfaces" location="modules_exported_interfaces" />
+      
       <!-- build javadoc for supported APIs -->
       <for-each startdir=".." target="javadoc" locations="${fixedmodules}"/>
       <!-- build javadoc for unsupported APIs -->
       <for-each startdir=".." target="javadoc" locations="${modules}"/>
       <taskdef name="simplemerge" classname="org.netbeans.nbbuild.SimpleMerge" classpath="nbantext.jar"/>
       <simplemerge topdir=".." subdir="javadoc" dest="modules_javadoc" modules="${fixedmodules}"/>
-      <simplemerge topdir=".." subdir="javadoc" dest="modules_javadoc/UnsupportedAPIs" modules="${modules}"/>
+      <simplemerge topdir=".." subdir="javadoc" dest="modules_javadoc" modules="${modules}"/>
+      
+      <echo file="modules_exported_interfaces/header.gen" >&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;apis&gt;
+</echo>
+      
+      <echo file="modules_exported_interfaces/footer.gen" >
+        &lt;/apis&gt;
+      </echo>
+      
+      <concat destfile="modules_exported_interfaces/doc.gen" >
+          <fileset dir="modules_exported_interfaces" includes="header.gen" />
+          <fileset dir="modules_exported_interfaces" includes="*" excludes="*.gen" />
+          <fileset dir="modules_exported_interfaces" includes="footer.gen" />
+      </concat>
+      
+      <style 
+        in="modules_exported_interfaces/doc.gen" 
+        out="modules_javadoc/index.html" 
+        style="javadoctools/export2html.xsl"
+      />
+      
+      <delete dir="modules_exported_interfaces" />
   </target>
 
   <target name="build-messaging" depends="init">
