@@ -17,6 +17,7 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -95,8 +96,15 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
             }
         }
         
-        setErrorMessage( null );
-        return true;
+        // check if the file name can be created
+        FileObject template = Templates.getTemplate( wizard );
+
+        String errorMessage = canUseFileName (getTargetFolderFromGUI (), gui.getTargetName(), template.getExt ());
+        if (gui.isShowing ()) {
+            setLocalizedErrorMessage (errorMessage);
+        }
+
+        return errorMessage == null;
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -145,25 +153,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
             if ( bottomPanel != null ) {
                 bottomPanel.storeSettings( settings );
             }
-            FileObject rootFolder = gui.getRootFolder();
-            FileObject folder = null;
-            if ( !isPackage ) {
-                String packageFileName = gui.getPackageFileName();
-                folder = rootFolder.getFileObject( packageFileName );            
-                if ( folder == null ) {
-                    try {
-                        folder = FileUtil.createFolder( rootFolder, packageFileName );
-                    }
-                    catch( IOException e ) {
-                        ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
-                        return;
-                    }
-                }
-            }
-            else {
-                folder = rootFolder;
-            }
-            Templates.setTargetFolder( (WizardDescriptor)settings, folder );
+            Templates.setTargetFolder( (WizardDescriptor)settings, getTargetFolderFromGUI () );
             Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
         }
         ((WizardDescriptor)settings).putProperty ("NewFileWizard_Title", null); // NOI18N
@@ -177,11 +167,37 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
     
     private void setErrorMessage( String key ) {
         if ( key == null ) {
-            wizard.putProperty( "WizardPanel_errorMessage", "" ); // NOI18N
+            setLocalizedErrorMessage ( "" ); // NOI18N
         }
         else {
-            wizard.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage( JavaTargetChooserPanelGUI.class, key) ); // NOI18N
+            setLocalizedErrorMessage ( NbBundle.getMessage( JavaTargetChooserPanelGUI.class, key) ); // NOI18N
         }
+    }
+    
+    private void setLocalizedErrorMessage (String message) {
+        wizard.putProperty ("WizardPanel_errorMessage", message); // NOI18N
+    }
+    
+    private FileObject getTargetFolderFromGUI () {
+        assert gui != null;
+        FileObject rootFolder = gui.getRootFolder();
+        FileObject folder = null;
+        if ( !isPackage ) {
+            String packageFileName = gui.getPackageFileName();
+            folder = rootFolder.getFileObject( packageFileName );            
+            if ( folder == null ) {
+                try {
+                    folder = FileUtil.createFolder( rootFolder, packageFileName );
+                }
+                catch( IOException e ) {
+                    ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
+                }
+            }
+        }
+        else {
+            folder = rootFolder;
+        }
+        return folder;
     }
     
     // Nice copy of useful methods (Taken from JavaModule)
@@ -208,6 +224,67 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
         else {
             return true;
         }
+    }
+    
+    // helper methods copied from project/ui/ProjectUtilities
+    /** Checks if the given file name can be created in the target folder.
+     *
+     * @param folder target folder
+     * @param newObjectName name of created file
+     * @param extension extension of created file
+     * @return localized error message or null if all right
+     */    
+    final public static String canUseFileName (FileObject folder, String newObjectName, String extension) {
+        if (extension != null && extension.length () > 0) {
+            StringBuffer sb = new StringBuffer ();
+            sb.append (newObjectName);
+            sb.append ('.'); // NOI18N
+            sb.append (extension);
+            newObjectName = sb.toString ();
+        }
+        // test whether the selected folder on selected filesystem already exists
+        if (folder == null) {
+            return NbBundle.getMessage (JavaTargetChooserPanel.class, "MSG_fs_or_folder_does_not_exist"); // NOI18N
+        }
+        
+        // target filesystem should be writable
+        if (!folder.canWrite ()) {
+            return NbBundle.getMessage (JavaTargetChooserPanel.class, "MSG_fs_is_readonly"); // NOI18N
+        }
+        
+        if (folder.getFileObject (newObjectName) != null) {
+            return NbBundle.getMessage (JavaTargetChooserPanel.class, "MSG_file_already_exist", newObjectName); // NOI18N
+        }
+        
+        if (Utilities.isWindows ()) {
+            if (checkCaseInsensitiveName (folder, newObjectName)) {
+                return NbBundle.getMessage (JavaTargetChooserPanel.class, "MSG_file_already_exist", newObjectName); // NOI18N
+            }
+        }
+
+        // all ok
+        return null;
+    }
+    
+    // helper check for windows, its filesystem is case insensitive (workaround the bug #33612)
+    /** Check existence of file on case insensitive filesystem.
+     * Returns true if folder contains file with given name and extension.
+     * @param folder folder for search
+     * @param name name of file
+     * @param extension extension of file
+     * @return true if file with name and extension exists, false otherwise.
+     */    
+    private static boolean checkCaseInsensitiveName (FileObject folder, String name) {
+        // bugfix #41277, check only direct children
+        Enumeration children = folder.getChildren (false);
+        FileObject fo;
+        while (children.hasMoreElements ()) {
+            fo = (FileObject) children.nextElement ();
+            if (name.equalsIgnoreCase (fo.getName ())) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
