@@ -32,19 +32,6 @@ public class SimpleTestCaseWizard extends TemplateWizard {
      * initializes the settings for the settings panel
      */
     protected void initialize() {
-        //PENDING:
-        /*
-        JUnitSettings settings = JUnitSettings.getDefault();
-        
-        putProperty(GuiUtils.CHK_SETUP,
-                    Boolean.valueOf(settings.isGenerateSetUp()));
-        putProperty(GuiUtils.CHK_TEARDOWN,
-                    Boolean.valueOf(settings.isGenerateTearDown()));
-        putProperty(GuiUtils.CHK_HINTS,
-                    Boolean.valueOf(settings.isBodyComments()));
-        putProperty(PROP_TEMPLATE,
-                    settings.getClassTemplate());
-         */
     }
     
 }

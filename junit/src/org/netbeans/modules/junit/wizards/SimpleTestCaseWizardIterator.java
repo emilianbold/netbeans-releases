@@ -28,6 +28,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.junit.CreateTestAction;
+import org.netbeans.modules.junit.GuiUtils;
 import org.netbeans.modules.junit.JUnitSettings;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -171,6 +172,48 @@ public class SimpleTestCaseWizardIterator
                 throw new AssertionError(current);
         }
     }
+    
+    private void loadSettings(TemplateWizard wizard) {
+        JUnitSettings settings = JUnitSettings.getDefault();
+        
+        wizard.putProperty(GuiUtils.CHK_PUBLIC,
+                           Boolean.valueOf(settings.isMembersPublic()));
+        wizard.putProperty(GuiUtils.CHK_PROTECTED,
+                           Boolean.valueOf(settings.isMembersProtected()));
+        wizard.putProperty(GuiUtils.CHK_PACKAGE,
+                           Boolean.valueOf(settings.isMembersPackage()));
+        wizard.putProperty(GuiUtils.CHK_SETUP,
+                           Boolean.valueOf(settings.isGenerateSetUp()));
+        wizard.putProperty(GuiUtils.CHK_TEARDOWN,
+                           Boolean.valueOf(settings.isGenerateTearDown()));
+        wizard.putProperty(GuiUtils.CHK_METHOD_BODIES,
+                           Boolean.valueOf(settings.isBodyContent()));
+        wizard.putProperty(GuiUtils.CHK_JAVADOC,
+                           Boolean.valueOf(settings.isJavaDoc()));
+        wizard.putProperty(GuiUtils.CHK_HINTS,
+                           Boolean.valueOf(settings.isBodyComments()));
+    }
+
+    private void saveSettings(TemplateWizard wizard) {
+        JUnitSettings settings = JUnitSettings.getDefault();
+        
+        settings.setMembersPublic(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_PUBLIC)));
+        settings.setMembersProtected(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_PROTECTED)));
+        settings.setMembersPackage(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_PACKAGE)));
+        settings.setGenerateSetUp(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_SETUP)));
+        settings.setGenerateTearDown(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_TEARDOWN)));
+        settings.setBodyContent(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_METHOD_BODIES)));
+        settings.setJavaDoc(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_JAVADOC)));
+        settings.setBodyComments(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_HINTS)));
+    }
 
     /**
      * <!-- PENDING -->
@@ -178,6 +221,7 @@ public class SimpleTestCaseWizardIterator
     public void initialize(TemplateWizard wiz) {
         this.wizard = wiz;
         current = INDEX_CHOOSE_CLASS;
+        loadSettings(wiz);
     }
 
     /**
@@ -185,13 +229,13 @@ public class SimpleTestCaseWizardIterator
      */
     public void uninitialize(TemplateWizard wiz) {
         this.wizard = null;
-        
         classChooserPanel = null;
-        
         changeListeners = null;
     }
 
     public Set instantiate(TemplateWizard wiz) throws IOException {
+        saveSettings(wiz);
+        
         /* get the template DataObject... */
         String templatePath = NbBundle.getMessage(
                                       CreateTestAction.class,

@@ -26,6 +26,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.junit.CreateTestAction;
+import org.netbeans.modules.junit.GuiUtils;
 import org.netbeans.modules.junit.JUnitSettings;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -188,12 +189,35 @@ public class TestSuiteWizardIterator
         }
     }
 
+    private void loadSettings(TemplateWizard wizard) {
+        JUnitSettings settings = JUnitSettings.getDefault();
+        
+        wizard.putProperty(GuiUtils.CHK_SETUP,
+                           Boolean.valueOf(settings.isGenerateSetUp()));
+        wizard.putProperty(GuiUtils.CHK_TEARDOWN,
+                           Boolean.valueOf(settings.isGenerateTearDown()));
+        wizard.putProperty(GuiUtils.CHK_HINTS,
+                           Boolean.valueOf(settings.isBodyComments()));
+    }
+
+    private void saveSettings(TemplateWizard wizard) {
+        JUnitSettings settings = JUnitSettings.getDefault();
+        
+        settings.setGenerateSetUp(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_SETUP)));
+        settings.setGenerateTearDown(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_TEARDOWN)));
+        settings.setBodyComments(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_HINTS)));
+    }
+
     /**
      * <!-- PENDING -->
      */
     public void initialize(TemplateWizard wiz) {
         this.wizard = wiz;
         current = INDEX_TARGET;
+        loadSettings(wiz);
     }
 
     /**
@@ -210,6 +234,7 @@ public class TestSuiteWizardIterator
     }
 
     public Set instantiate(TemplateWizard wiz) throws IOException {
+        saveSettings(wiz);
         
         /* get the template DataObject... */
         String templatePath = NbBundle.getMessage(

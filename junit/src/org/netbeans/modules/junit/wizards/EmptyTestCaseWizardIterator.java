@@ -28,6 +28,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.junit.CreateTestAction;
+import org.netbeans.modules.junit.GuiUtils;
 import org.netbeans.modules.junit.JUnitSettings;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -184,12 +185,35 @@ public class EmptyTestCaseWizardIterator
         }
     }
 
+    private void loadSettings(TemplateWizard wizard) {
+        JUnitSettings settings = JUnitSettings.getDefault();
+        
+        wizard.putProperty(GuiUtils.CHK_SETUP,
+                           Boolean.valueOf(settings.isGenerateSetUp()));
+        wizard.putProperty(GuiUtils.CHK_TEARDOWN,
+                           Boolean.valueOf(settings.isGenerateTearDown()));
+        wizard.putProperty(GuiUtils.CHK_HINTS,
+                           Boolean.valueOf(settings.isBodyComments()));
+    }
+
+    private void saveSettings(TemplateWizard wizard) {
+        JUnitSettings settings = JUnitSettings.getDefault();
+        
+        settings.setGenerateSetUp(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_SETUP)));
+        settings.setGenerateTearDown(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_TEARDOWN)));
+        settings.setBodyComments(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_HINTS)));
+    }
+
     /**
      * <!-- PENDING -->
      */
     public void initialize(TemplateWizard wiz) {
         this.wizard = wiz;
         current = INDEX_TARGET;
+        loadSettings(wiz);
     }
 
     /**
@@ -206,6 +230,7 @@ public class EmptyTestCaseWizardIterator
     }
 
     public Set instantiate(TemplateWizard wizard) throws IOException {
+        saveSettings(wizard);
         
         /* get the template DataObject... */
         String templatePath = NbBundle.getMessage(
