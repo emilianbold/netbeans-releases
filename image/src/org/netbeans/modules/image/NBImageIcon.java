@@ -70,4 +70,3 @@ class NBImageIcon extends ImageIcon implements Serializable {
         }
     } // End of nested class ResolvableHelper.
 }
-
