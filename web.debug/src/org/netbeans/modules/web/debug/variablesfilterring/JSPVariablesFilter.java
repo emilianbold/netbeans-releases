@@ -65,9 +65,9 @@ public class JSPVariablesFilter implements TreeModelFilter {
             List visibleChildrenList = new ArrayList();
             ImplicitLocals implicitLocals = null;
             Object refThis = null;
-            AttributeMap requestAttributes = null;
-            AttributeMap sessionAttributes = null;
-            AttributeMap applicationAttributes = null;
+            AttributeMap requestAttributes = new AttributeMap("request");
+            AttributeMap sessionAttributes = new AttributeMap("session");
+            AttributeMap applicationAttributes = new AttributeMap("application");
             for (int i = 0; i < parentChildrenCount; i++) {
                 
                 Object var = children[i];
@@ -345,10 +345,20 @@ public class JSPVariablesFilter implements TreeModelFilter {
         private ArrayList attributes = new ArrayList();
         private ObjectVariable owner = null;
         private String ownerName = null;
+
+        public class UnknownOwnerNameException extends RuntimeException {
+            public UnknownOwnerNameException(String name) {
+                super("Unknown owner name: " + name);
+            }
+        };
+        
+        public AttributeMap(String aOwnerName) {
+            setOwnerName(aOwnerName);
+        }
         
         public AttributeMap(ObjectVariable aVar) {
             owner = aVar;
-            ownerName = ((LocalVariable)owner).getName();
+            setOwnerName(((LocalVariable)owner).getName());
             Iterator it = new AttributeIterator();
             while (it.hasNext()) {
                 Attribute attribute = (Attribute)it.next();
@@ -356,6 +366,13 @@ public class JSPVariablesFilter implements TreeModelFilter {
             }
         }
 
+        private void setOwnerName(String aOwnerName) {
+            if (aOwnerName.equals("request") || aOwnerName.equals("session") || aOwnerName.equals("application"))
+                ownerName = aOwnerName;
+            else
+                throw new UnknownOwnerNameException(aOwnerName);
+        }
+        
         public ArrayList getAttributes() { return attributes; }
         public String getOwnerName() { return ownerName; }
         
