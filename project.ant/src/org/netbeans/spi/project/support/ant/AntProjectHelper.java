@@ -21,6 +21,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -117,17 +120,21 @@ public final class AntProjectHelper {
     
     /**
      * Cached project.xml parse (null if not loaded).
+     * Access within {@link #modifiedMetadataPaths} monitor.
      */
     private Document projectXml;
     
     /**
      * Cached private.xml parse (null if not loaded).
+     * Access within {@link #modifiedMetadataPaths} monitor.
      */
     private Document privateXml;
     
     /**
      * Set of relative paths to metadata files which have been modified
      * and which need to be saved.
+     * Also server as a monitor for {@link #projectXml} and {@link #privateXml} accesses;
+     * Xerces' DOM is not thread-safe <em>even for reading<em> (#50198).
      */
     private final Set/*<String>*/ modifiedMetadataPaths = new HashSet();
     
@@ -179,33 +186,32 @@ public final class AntProjectHelper {
      */
     private Document getConfigurationXml(boolean shared) {
         assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-        synchronized (modifiedMetadataPaths) { // can be in read lock only; modifiedMetadataPaths is a convenient lock
-            Document xml = shared ? projectXml : privateXml;
+        assert Thread.holdsLock(modifiedMetadataPaths);
+        Document xml = shared ? projectXml : privateXml;
+        if (xml == null) {
+            String path = shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH;
+            xml = loadXml(path);
             if (xml == null) {
-                String path = shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH;
-                xml = loadXml(path);
-                if (xml == null) {
-                    // Missing or broken; create a skeleton.
-                    String element = shared ? "project" : "project-private"; // NOI18N
-                    String ns = shared ? PROJECT_NS : PRIVATE_NS;
-                    xml = XMLUtil.createDocument(element, ns, null, null);
-                    if (shared) {
-                        // #46048: need to generate minimal compliant XML skeleton.
-                        Element typeEl = xml.createElementNS(PROJECT_NS, "type"); // NOI18N
-                        typeEl.appendChild(xml.createTextNode(getType().getType()));
-                        xml.getDocumentElement().appendChild(typeEl);
-                        xml.getDocumentElement().appendChild(xml.createElementNS(PROJECT_NS, "configuration")); // NOI18N
-                    }
-                }
+                // Missing or broken; create a skeleton.
+                String element = shared ? "project" : "project-private"; // NOI18N
+                String ns = shared ? PROJECT_NS : PRIVATE_NS;
+                xml = XMLUtil.createDocument(element, ns, null, null);
                 if (shared) {
-                    projectXml = xml;
-                } else {
-                    privateXml = xml;
+                    // #46048: need to generate minimal compliant XML skeleton.
+                    Element typeEl = xml.createElementNS(PROJECT_NS, "type"); // NOI18N
+                    typeEl.appendChild(xml.createTextNode(getType().getType()));
+                    xml.getDocumentElement().appendChild(typeEl);
+                    xml.getDocumentElement().appendChild(xml.createElementNS(PROJECT_NS, "configuration")); // NOI18N
                 }
             }
-            assert xml != null;
-            return xml;
+            if (shared) {
+                projectXml = xml;
+            } else {
+                privateXml = xml;
+            }
         }
+        assert xml != null;
+        return xml;
     }
     
     /**
@@ -220,6 +226,7 @@ public final class AntProjectHelper {
      */
     private Document loadXml(String path) {
         assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
+        assert Thread.holdsLock(modifiedMetadataPaths);
         FileObject xml = dir.getFileObject(path);
         if (xml == null || !xml.isData()) {
             return null;
@@ -247,6 +254,7 @@ public final class AntProjectHelper {
     private void saveXml(final Document doc, final String path) throws IOException {
         assert ProjectManager.mutex().isWriteAccess();
         assert !writingXML;
+        assert Thread.holdsLock(modifiedMetadataPaths);
         writingXML = true;
         try {
             dir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
@@ -274,7 +282,9 @@ public final class AntProjectHelper {
                             public void accepted() {
                                 // Try again.
                                 try {
-                                    body.run();
+                                    synchronized (modifiedMetadataPaths) {
+                                        body.run();
+                                    }
                                 } catch (IOException e) {
                                     // Oh well.
                                     ErrorManager.getDefault().notify(e);
@@ -291,10 +301,14 @@ public final class AntProjectHelper {
                             private void reload() {
                                 // Revert the save.
                                 if (path.equals(PROJECT_XML_PATH)) {
-                                    projectXml = null;
+                                    synchronized (modifiedMetadataPaths) {
+                                        projectXml = null;
+                                    }
                                 } else {
                                     assert path.equals(PRIVATE_XML_PATH) : path;
-                                    privateXml = null;
+                                    synchronized (modifiedMetadataPaths) {
+                                        privateXml = null;
+                                    }
                                 }
                                 fireExternalChange(path);
                             }
@@ -316,6 +330,7 @@ public final class AntProjectHelper {
      */
     private Element getConfigurationDataRoot(boolean shared) {
         assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
+        assert Thread.holdsLock(modifiedMetadataPaths);
         Document doc = getConfigurationXml(shared);
         if (shared) {
             Element project = doc.getDocumentElement();
@@ -460,37 +475,39 @@ public final class AntProjectHelper {
      */
     private void save() throws IOException {
         assert ProjectManager.mutex().isWriteAccess();
-        assert !modifiedMetadataPaths.isEmpty();
-        ProjectXmlSavedHook hook = null;
-        if (modifiedMetadataPaths.contains(PROJECT_XML_PATH)) {
-            // Saving project.xml so look for that hook.
-            Project p = AntBasedProjectFactorySingleton.getProjectFor(this);
-            hook = (ProjectXmlSavedHook)p.getLookup().lookup(ProjectXmlSavedHook.class);
-            // might still be null
-        }
-        Iterator it = modifiedMetadataPaths.iterator();
-        while (it.hasNext()) {
-            String path = (String)it.next();
-            if (path.equals(PROJECT_XML_PATH)) {
-                assert projectXml != null;
-                saveXml(projectXml, path);
-            } else if (path.equals(PRIVATE_XML_PATH)) {
-                assert privateXml != null;
-                saveXml(privateXml, path);
-            } else {
-                // All else is assumed to be a properties file.
-                properties.write(path);
+        synchronized (modifiedMetadataPaths) {
+            assert !modifiedMetadataPaths.isEmpty();
+            ProjectXmlSavedHook hook = null;
+            if (modifiedMetadataPaths.contains(PROJECT_XML_PATH)) {
+                // Saving project.xml so look for that hook.
+                Project p = AntBasedProjectFactorySingleton.getProjectFor(this);
+                hook = (ProjectXmlSavedHook)p.getLookup().lookup(ProjectXmlSavedHook.class);
+                // might still be null
             }
-            // As metadata files are saved, take them off the modified list.
-            it.remove();
-        }
-        if (hook != null) {
-            try {
-                hook.projectXmlSaved();
-            } catch (IOException e) {
-                // Treat it as still modified.
-                modifiedMetadataPaths.add(PROJECT_XML_PATH);
-                throw e;
+            Iterator it = modifiedMetadataPaths.iterator();
+            while (it.hasNext()) {
+                String path = (String)it.next();
+                if (path.equals(PROJECT_XML_PATH)) {
+                    assert projectXml != null;
+                    saveXml(projectXml, path);
+                } else if (path.equals(PRIVATE_XML_PATH)) {
+                    assert privateXml != null;
+                    saveXml(privateXml, path);
+                } else {
+                    // All else is assumed to be a properties file.
+                    properties.write(path);
+                }
+                // As metadata files are saved, take them off the modified list.
+                it.remove();
+            }
+            if (hook != null) {
+                try {
+                    hook.projectXmlSaved();
+                } catch (IOException e) {
+                    // Treat it as still modified.
+                    modifiedMetadataPaths.add(PROJECT_XML_PATH);
+                    throw e;
+                }
             }
         }
     }
@@ -582,12 +599,14 @@ public final class AntProjectHelper {
         assert namespace != null && namespace.length() > 0;
         return (Element) ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
-                Element el = getConfigurationFragment(name, namespace, shared);
-                if (el != null) {
-                    return el;
-                } else {
-                    // No such data, corrupt file.
-                    return getConfigurationXml(shared).createElementNS(namespace, name);
+                synchronized (modifiedMetadataPaths) {
+                    Element el = getConfigurationFragment(name, namespace, shared);
+                    if (el != null) {
+                        return el;
+                    } else {
+                        // No such data, corrupt file.
+                        return cloneSafely(getConfigurationXml(shared).createElementNS(namespace, name));
+                    }
                 }
             }
         });
@@ -664,17 +683,34 @@ public final class AntProjectHelper {
     Element getConfigurationFragment(final String elementName, final String namespace, final boolean shared) {
         return (Element) ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
-                Element root = getConfigurationDataRoot(shared);
-                Element data = Util.findElement(root, elementName, namespace);
-                if (data != null) {
-                    // XXX should also perhaps set ownerDocument to a dummy empty document?
-                    // or create a new document with this as a root?
-                    return (Element) data.cloneNode(true);
-                } else {
-                    return null;
+                synchronized (modifiedMetadataPaths) {
+                    Element root = getConfigurationDataRoot(shared);
+                    Element data = Util.findElement(root, elementName, namespace);
+                    if (data != null) {
+                        return cloneSafely(data);
+                    } else {
+                        return null;
+                    }
                 }
             }
         });
+    }
+    
+    private static final DocumentBuilder db;
+    static {
+        try {
+            db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            throw new AssertionError(e);
+        }
+    }
+    private static Element cloneSafely(Element el) {
+        // #50198: for thread safety, use a separate document.
+        // Using XMLUtil.createDocument is much too slow.
+        synchronized (db) {
+            Document dummy = db.newDocument();
+            return (Element) dummy.importNode(el, true);
+        }
     }
     
     /**
@@ -685,31 +721,33 @@ public final class AntProjectHelper {
     void putConfigurationFragment(final Element fragment, final boolean shared) {
         ProjectManager.mutex().writeAccess(new Mutex.Action() {
             public Object run() {
-                Element root = getConfigurationDataRoot(shared);
-                Element existing = Util.findElement(root, fragment.getLocalName(), fragment.getNamespaceURI());
-                // XXX first compare to existing and return if the same
-                if (existing != null) {
-                    root.removeChild(existing);
+                synchronized (modifiedMetadataPaths) {
+                    Element root = getConfigurationDataRoot(shared);
+                    Element existing = Util.findElement(root, fragment.getLocalName(), fragment.getNamespaceURI());
+                    // XXX first compare to existing and return if the same
+                    if (existing != null) {
+                        root.removeChild(existing);
+                    }
+                    // the children are alphabetize: find correct place to insert new node
+                    Node ref = null;
+                    NodeList list = root.getChildNodes();
+                    for (int i=0; i<list.getLength(); i++) {
+                        Node node  = list.item(i);
+                        if (node.getNodeType() != Node.ELEMENT_NODE) {
+                            continue;
+                        }
+                        int comparison = node.getNodeName().compareTo(fragment.getNodeName());
+                        if (comparison == 0) {
+                            comparison = node.getNamespaceURI().compareTo(fragment.getNamespaceURI());
+                        }
+                        if (comparison > 0) {
+                            ref = node;
+                            break;
+                        }
+                    }
+                    root.insertBefore(root.getOwnerDocument().importNode(fragment, true), ref);
+                    modifying(shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH);
                 }
-                // the children are alphabetize: find correct place to insert new node
-                Node ref = null;
-                NodeList list = root.getChildNodes();
-                for (int i=0; i<list.getLength(); i++) {
-                    Node node  = list.item(i);
-                    if (node.getNodeType() != Node.ELEMENT_NODE) {
-                        continue;
-                    }
-                    int comparison = node.getNodeName().compareTo(fragment.getNodeName());
-                    if (comparison == 0) {
-                        comparison = node.getNamespaceURI().compareTo(fragment.getNamespaceURI());
-                    }
-                    if (comparison > 0) {
-                        ref = node;
-                        break;
-                    }
-                }
-                root.insertBefore(root.getOwnerDocument().importNode(fragment, true), ref);
-                modifying(shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH);
                 return null;
             }
         });
@@ -725,14 +763,16 @@ public final class AntProjectHelper {
     boolean removeConfigurationFragment(final String elementName, final String namespace, final boolean shared) {
         return ((Boolean) ProjectManager.mutex().writeAccess(new Mutex.Action() {
             public Object run() {
-                Element root = getConfigurationDataRoot(shared);
-                Element data = Util.findElement(root, elementName, namespace);
-                if (data != null) {
-                    root.removeChild(data);
-                    modifying(shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH);
-                    return Boolean.TRUE;
-                } else {
-                    return Boolean.FALSE;
+                synchronized (modifiedMetadataPaths) {
+                    Element root = getConfigurationDataRoot(shared);
+                    Element data = Util.findElement(root, elementName, namespace);
+                    if (data != null) {
+                        root.removeChild(data);
+                        modifying(shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH);
+                        return Boolean.TRUE;
+                    } else {
+                        return Boolean.FALSE;
+                    }
                 }
             }
         })).booleanValue();
