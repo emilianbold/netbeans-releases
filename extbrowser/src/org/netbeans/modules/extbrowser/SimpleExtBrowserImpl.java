@@ -42,9 +42,7 @@ public class SimpleExtBrowserImpl extends ExtBrowserImpl {
         }
         
         try {
-            if (isInternalProtocol(url.getProtocol())) {
-                url = URLUtil.createExternalURL(url, true);
-            }
+            url = URLUtil.createExternalURL(url, false);
             NbProcessDescriptor np = extBrowserFactory.getBrowserExecutable();
             if (np != null) {
                 np.exec(new SimpleExtBrowser.BrowserFormat((url == null)? "": url.toString())); // NOI18N

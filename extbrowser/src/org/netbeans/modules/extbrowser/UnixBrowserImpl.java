@@ -118,9 +118,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
         StatusDisplayer sd = StatusDisplayer.getDefault ();
         try {
             // internal protocols cannot be displayed in external viewer
-            if (isInternalProtocol(url.getProtocol())) {
-                url = URLUtil.createExternalURL(url, true);
-            }
+            url = URLUtil.createExternalURL(url, false);
             
             cmd = extBrowserFactory.getBrowserExecutable (); // NOI18N
             sd.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
