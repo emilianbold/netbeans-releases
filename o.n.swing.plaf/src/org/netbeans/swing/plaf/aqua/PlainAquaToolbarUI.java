@@ -257,13 +257,8 @@ public class PlainAquaToolbarUI extends BasicToolBarUI implements ContainerListe
         //do nothing
     }
 
-    private static Boolean fl = null;
-    private static boolean isFinderLook (Component c) {
-       if (fl == null) {
-           fl = "true".equals(System.getProperty("apple.awt.brushMetalLook")) ?
-               Boolean.TRUE : Boolean.FALSE;
-        }
-        return fl.booleanValue();
+    private static final boolean isFinderLook (Component c) {
+        return Boolean.getBoolean ("apple.awt.brushMetalLook");
     }
     
     static int arcsize = 13;
