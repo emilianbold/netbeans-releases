@@ -34,12 +34,14 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ArrayList;
+import java.util.ResourceBundle;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.border.CompoundBorder;
 
+import org.openide.awt.Actions;
 import org.openide.cookies.SaveCookie;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
@@ -79,9 +81,7 @@ import org.netbeans.core.execution.ExecutionListener;
 public class ExitDialog extends JPanel implements java.awt.event.ActionListener {
 
 
-    private static JButton[] exitOptions;
-
-    private static Object[] secondaryExitOptions;
+    private static Object[] exitOptions;
 
     /** The dialog */
     private static java.awt.Dialog exitDialog;
@@ -144,7 +144,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
     }
     
     private void updateSaveButton () {
-        exitOptions [0].setEnabled (list.getSelectedIndex () != -1);
+        ((JButton)exitOptions [0]).setEnabled (list.getSelectedIndex () != -1);
     }
 
     /** @return preffered size */
@@ -162,7 +162,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
             save(true);
         } else if (exitOptions[2].equals (evt.getSource ())) {
             theEnd();
-        } else if (secondaryExitOptions[0].equals (evt.getSource ())) {
+        } else if (NotifyDescriptor.CANCEL_OPTION.equals (evt.getSource ())) {
             exitDialog.setVisible (false);
         }
     }
@@ -316,21 +316,18 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
             exitDialog = null;
             
             if (exitDialog == null) {
-                JButton buttonSave;
-                JButton buttonSaveAll;
-                JButton buttonDiscardAll;
-                exitOptions = new JButton[] {
-                                  buttonSave = new JButton (NbBundle.getBundle(ExitDialog.class).getString("CTL_Save")),
-                                  buttonSaveAll = new JButton (NbBundle.getBundle(ExitDialog.class).getString("CTL_SaveAll")),
-                                  buttonDiscardAll = new JButton (NbBundle.getBundle(ExitDialog.class).getString("CTL_DiscardAll")),
+                ResourceBundle bundle = NbBundle.getBundle(ExitDialog.class);
+                JButton buttonSave = new JButton();
+
+                // special handling to handle a button title with mnemonic 
+                // and to allow enable/disable control of the option
+                Actions.setMenuText(buttonSave, bundle.getString("CTL_Save"), true);
+
+                exitOptions = new Object[] {
+                                  buttonSave,
+                                  bundle.getString("CTL_SaveAll"),
+                                  bundle.getString("CTL_DiscardAll"),
                               };
-                buttonSave.setMnemonic(NbBundle.getBundle(ExitDialog.class).getString("CTL_Save_Mnemonic").charAt(0));
-                buttonSaveAll.setMnemonic(NbBundle.getBundle(ExitDialog.class).getString("CTL_SaveAll_Mnemonic").charAt(0));
-                buttonDiscardAll.setMnemonic(NbBundle.getBundle(ExitDialog.class).getString("CTL_DiscardAll_Mnemonic").charAt(0));
-                secondaryExitOptions = new Object[] {
-                                           new JButton (NbBundle.getBundle(ExitDialog.class).getString("CTL_Cancel")),
-                                       };
-                ((JButton)secondaryExitOptions[0]).getAccessibleContext().setAccessibleDescription((NbBundle.getBundle(ExitDialog.class)).getString("ACSD_CancelButton"));
                 ExitDialog exitComponent = null;
                 if (activatedNodes != null)
                     exitComponent = new ExitDialog (activatedNodes);
@@ -338,20 +335,16 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
                     exitComponent = new ExitDialog ();
                 DialogDescriptor exitDlgDescriptor = new DialogDescriptor (
                                                          exitComponent,                                                   // inside component
-                                                         NbBundle.getBundle(ExitDialog.class).getString("CTL_ExitTitle"), // title
+                                                         bundle.getString("CTL_ExitTitle"), // title
                                                          true,                                                            // modal
                                                          exitOptions,                                                     // options
-                                                         secondaryExitOptions [0],                                        // initial value
+                                                         NotifyDescriptor.CANCEL_OPTION,                                        // initial value
                                                          DialogDescriptor.RIGHT_ALIGN,                                    // option align
                                                          new org.openide.util.HelpCtx (ExitDialog.class.getName () + ".dialog"), // HelpCtx // NOI18N
                                                          exitComponent                                                    // Action Listener
                                                      );
-                exitDlgDescriptor.setAdditionalOptions (secondaryExitOptions);
+                exitDlgDescriptor.setAdditionalOptions (new Object[] {NotifyDescriptor.CANCEL_OPTION});
                 exitDialog = TopManager.getDefault ().createDialog (exitDlgDescriptor);
-                
-                buttonSave.getAccessibleContext().setAccessibleDescription((NbBundle.getBundle(ExitDialog.class)).getString("ACSD_SaveButton"));
-                buttonSaveAll.getAccessibleContext().setAccessibleDescription((NbBundle.getBundle(ExitDialog.class)).getString("ACSD_SaveAllButton"));
-                buttonDiscardAll.getAccessibleContext().setAccessibleDescription((NbBundle.getBundle(ExitDialog.class)).getString("ACSD_DiscardAllButton"));
             }
 
             result = false;
