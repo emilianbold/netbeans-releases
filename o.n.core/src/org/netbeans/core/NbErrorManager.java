@@ -192,6 +192,7 @@ final class NbErrorManager extends ErrorManager {
                 }
             }
             log.println(s);
+            log.flush();
         }
     }
     
@@ -347,6 +348,10 @@ final class NbErrorManager extends ErrorManager {
         }
 
         return arr;
+    }
+    
+    public String toString() {
+        return super.toString() + "<" + prefix + "," + minLogSeverity + ">"; // NOI18N
     }
 
     /** Implementation of annotation interface.
