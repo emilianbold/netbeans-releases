@@ -194,7 +194,11 @@ public final class FoldHierarchyTransactionImpl {
                 FoldStateChange change = stateChanges[i];
                 Fold fold = change.getFold();
                 updateAffectedOffsets(fold);
-                int origOffset = change.getOriginalEndOffset();
+                int origOffset = change.getOriginalStartOffset();
+                if (origOffset != -1) {
+                    updateAffectedStartOffset(origOffset);
+                }
+                origOffset = change.getOriginalEndOffset();
                 if (origOffset != -1) {
                     updateAffectedEndOffset(origOffset);
                 }

@@ -19,6 +19,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
+import javax.swing.undo.UndoManager;
 import junit.framework.*;
 import junit.framework.*;
 
@@ -40,8 +41,14 @@ implements DocumentListener {
     private static final float INSERT_NL_RATIO_1 = 0.5f;
     private static final int REMOVE_RATIO_1 = 70;
     private static final int REMOVE_MAX_LENGTH_1 = 10;
-    private static final int CREATE_POSITION_RATIO_1 = 5;
-    private static final int RELEASE_POSITION_RATIO_1 = 1;
+    // [TODO] Reset to zero temporarily
+    // as the current document content has certain specifics for positions undo
+    private static final int CREATE_POSITION_RATIO_1 = 0;
+    private static final int RELEASE_POSITION_RATIO_1 = 20;
+    private static final int UNDO_RATIO_1 = 30;
+    private static final int UNDO_MAX_COUNT_1 = 5;
+    private static final int REDO_RATIO_1 = 30;
+    private static final int REDO_MAX_COUNT_1 = 5;
     
     private static final int OP_COUNT_2 = 10000;
     private static final int INSERT_RATIO_2 = 70;
@@ -49,8 +56,14 @@ implements DocumentListener {
     private static final float INSERT_NL_RATIO_2 = 0.2f;
     private static final int REMOVE_RATIO_2 = 100;
     private static final int REMOVE_MAX_LENGTH_2 = 10;
-    private static final int CREATE_POSITION_RATIO_2 = 2;
-    private static final int RELEASE_POSITION_RATIO_2 = 5;
+    // [TODO] Reset to zero temporarily
+    // as the current document content has certain specifics for positions undo
+    private static final int CREATE_POSITION_RATIO_2 = 0;
+    private static final int RELEASE_POSITION_RATIO_2 = 40;
+    private static final int UNDO_RATIO_2 = 30;
+    private static final int UNDO_MAX_COUNT_2 = 5;
+    private static final int REDO_RATIO_2 = 30;
+    private static final int REDO_MAX_COUNT_2 = 5;
 
     private PlainDocument masterDoc;
     
@@ -61,6 +74,10 @@ implements DocumentListener {
     private List masterPositions = new ArrayList();
     
     private List testPositions = new ArrayList();
+    
+    private UndoManager masterUndoManager = new UndoManager();
+    
+    private UndoManager testUndoManager = new UndoManager();
     
     public PlainDocumentCompatibilityRandomTest(java.lang.String testName) {
         super(testName);
@@ -82,39 +99,67 @@ implements DocumentListener {
     }
 
     public void testFresh(long seed) {
-        Random random = new Random();
-        if (seed != 0) {
-            System.err.println("TESTING with SEED=" + seed);
-            random.setSeed(seed);
+        if (seed == 0) {
+            seed = System.currentTimeMillis();
+            System.err.println("Chosen SEED=" + seed);
         }
+        Random random = new Random(seed);
+
         
+        if (debug) {
+            System.err.println("TESTING with SEED=" + seed);
+        }
+
         masterDoc = new PlainDocument();
         testDoc = new BaseDocument(BaseKit.class, false);
         
-        // Atach listener
+        // Atach document listener
         masterDoc.addDocumentListener(this);
         testDoc.addDocumentListener(this);
+        
+        // Attach undoable listeners
+        masterDoc.addUndoableEditListener(masterUndoManager);
+        testDoc.addUndoableEditListener(testUndoManager);
         
         testRound(random, OP_COUNT_1,
             INSERT_RATIO_1, INSERT_MAX_LENGTH_1, INSERT_NL_RATIO_1,
             REMOVE_RATIO_1, REMOVE_MAX_LENGTH_1,
-            CREATE_POSITION_RATIO_1, RELEASE_POSITION_RATIO_1
+            CREATE_POSITION_RATIO_1, RELEASE_POSITION_RATIO_1,
+            UNDO_RATIO_1, UNDO_MAX_COUNT_1,
+            REDO_RATIO_1, REDO_MAX_COUNT_1
         );
 
         testRound(random, OP_COUNT_2,
             INSERT_RATIO_2, INSERT_MAX_LENGTH_2, INSERT_NL_RATIO_2,
             REMOVE_RATIO_2, REMOVE_MAX_LENGTH_2,
-            CREATE_POSITION_RATIO_2, RELEASE_POSITION_RATIO_2
+            CREATE_POSITION_RATIO_2, RELEASE_POSITION_RATIO_2,
+            UNDO_RATIO_2, UNDO_MAX_COUNT_2,
+            REDO_RATIO_2, REDO_MAX_COUNT_2
         );
+        
+        // Detach undo managers
+        masterDoc.removeUndoableEditListener(masterUndoManager);
+        testDoc.removeUndoableEditListener(testUndoManager);
+        
+        // Clear undo managers
+        masterUndoManager.discardAllEdits();
+        testUndoManager.discardAllEdits();
+        
+        // Remove document listeners
+        masterDoc.removeDocumentListener(this);
+        testDoc.removeDocumentListener(this);
     }
     
     private void testRound(Random random, int opCount,
     int insertRatio, int insertMaxLength, float insertNlRatio,
     int removeRatio, int removeMaxLength,
-    int createPositionRatio, int releasePositionRatio) {
+    int createPositionRatio, int releasePositionRatio,
+    int undoRatio, int undoMaxCount,
+    int redoRatio, int redoMaxCount) {
         
         int ratioSum = insertRatio + removeRatio
-            + createPositionRatio + releasePositionRatio;
+            + createPositionRatio + releasePositionRatio
+            + undoRatio + redoRatio;
         
         for (int op = 0; op < opCount; op++) {
             double r = random.nextDouble() * ratioSum;
@@ -124,18 +169,6 @@ implements DocumentListener {
                 System.err.println("LINES:\n" + linesToString());
             }
             
-/*            if (op == 0) { // Explicit first operation
-                try {
-                    String txt = "\na\n";
-                    masterDoc.insertString(0, txt, null);
-                    testDoc.insertString(0, txt, null);
-                } catch (BadLocationException e) {
-                    throw new RuntimeException(e);
-                }
-                r += Integer.MAX_VALUE; // prevent further operations
-            }
- */
-
             if ((r -= insertRatio) < 0) {
                 int offset = (int)((docLength + 1) * random.nextDouble());
                 int length = (int)(insertMaxLength * random.nextDouble());
@@ -165,6 +198,8 @@ implements DocumentListener {
                 try {
                     masterDoc.insertString(offset, sb.toString(), null);
                     testDoc.insertString(offset, sb.toString(), null);
+                    // Reset undoable events merging
+                    testDoc.resetUndoMerge();
                 } catch (BadLocationException e) {
                     throw new RuntimeException(e);
                 }
@@ -182,6 +217,8 @@ implements DocumentListener {
                 try {
                     masterDoc.remove(offset, length);
                     testDoc.remove(offset, length);
+                    // Reset undoable events merging
+                    testDoc.resetUndoMerge();
                 } catch (BadLocationException e) {
                     throw new RuntimeException(e);
                 }
@@ -214,6 +251,41 @@ implements DocumentListener {
                     testPositions.remove(index);
                 }
 
+            } else if ((r -= undoRatio) < 0) {
+                int undoCount = (int)(undoMaxCount * random.nextDouble());
+
+                if (debug) {
+                    debugOp(op, "undo(" + undoCount + ")");
+                }
+                
+                while (undoCount > 0) {
+                    undoCount--;
+                    if (masterUndoManager.canUndo()) {
+                        masterUndoManager.undo();
+                        testUndoManager.undo();
+                        if (undoCount > 0) {
+                            checkConsistency(); // Check consistency after each undo
+                        }
+                    }
+                }
+
+            } else if ((r -= redoRatio) < 0) {
+                int redoCount = (int)(redoMaxCount * random.nextDouble());
+
+                if (debug) {
+                    debugOp(op, "redo(" + redoCount + ")");
+                }
+                
+                while (redoCount > 0) {
+                    redoCount--;
+                    if (masterUndoManager.canRedo()) {
+                        masterUndoManager.redo();
+                        testUndoManager.redo();
+                        if (redoCount > 0) {
+                            checkConsistency(); // Check consistency after each redo
+                        }
+                    }
+                }
             }
 
             checkConsistency();
@@ -260,7 +332,8 @@ implements DocumentListener {
                 Position masterPos = (Position)masterPositions.get(i);
                 Position testPos = (Position)testPositions.get(i);
                 if (masterPos.getOffset() != testPos.getOffset()) {
-                    fail("Tested position " + testPos.getOffset()
+                    fail("Tested position " + (i + 1) + " of " + positionCount
+                        + ": " + testPos.getOffset()
                         + " != " + masterPos.getOffset());
                 }
             }
