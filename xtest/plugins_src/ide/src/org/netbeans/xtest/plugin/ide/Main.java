@@ -504,7 +504,11 @@ public class Main extends Object {
                 //now 2 sec continuously should be silence
                 while (System.currentTimeMillis() - lastEventTime < eventDelayTime) {
                     //sleep for the rest of eventDelay time
-                    t.sleep(eventDelayTime + lastEventTime - System.currentTimeMillis());
+                    long sleepTime = eventDelayTime + lastEventTime - System.currentTimeMillis();
+                    // it may happen that sleepTime < 0 (TODO investigate why)
+                    if(sleepTime > 0) {
+                        t.sleep(sleepTime);
+                    }
                 }
 
                 //if (queue.peekEvent()==null) System.out.println("The AWT event queue seems to be empty.");
