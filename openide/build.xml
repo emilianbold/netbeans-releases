@@ -30,9 +30,6 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="init">
     <available property="jdk13proxies" classname="java.lang.reflect.Proxy"/>
-    <available property="javasound" classname="javax.sound.sampled.AudioSystem"/>
-    <available property="jmf" classname="javax.media.ControllerAdapter"/>
-    <available property="mediaplayer" classname="javax.media.bean.playerbean.MediaPlayer"/>
   </target>
 
   <target name="warn-re-jdk13proxies" depends="init" unless="jdk13proxies">
@@ -155,7 +152,23 @@ Microsystems, Inc. All Rights Reserved.
     </jar>
   </target>
 
-  <target name="vers-prep">
+  <!-- See #11746. -->
+  <target name="vers-prep-1">
+    <uptodate targetfile="manifest-subst.mf" property="spec-vers-up-to-date">
+      <srcfiles dir=".">
+        <include name="openide-spec-vers.properties"/>
+      </srcfiles>
+    </uptodate>
+  </target>
+  <target name="vers-prep-2" depends="vers-prep-1" unless="spec-vers-up-to-date">
+    <!-- Either manifest-subst.mf is missing or openide-spec-vers.properties is newer. -->
+    <delete>
+      <fileset dir=".">
+        <include name="*-subst.mf"/>
+      </fileset>
+    </delete>
+  </target>
+  <target name="vers-prep" depends="vers-prep-2">
     <property file="openide-spec-vers.properties"/>
     <filter token="SPEC_VERS_SUBST" value="${org.openide.specification.version}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
@@ -332,7 +345,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     <echo message="Build Open API documentation..."/>
     <mkdir dir="OpenAPIs"/>
     <javadoc destdir="OpenAPIs"
-             packagenames="org.openide,org.openide.actions,org.openide.awt,org.openide.compiler,org.openide.cookies,org.openide.debugger,org.openide.execution,org.openide.explorer,org.openide.explorer.propertysheet,org.openide.explorer.view,org.openide.filesystems,org.openide.loaders,org.openide.modules,org.openide.nodes,org.openide.options,org.openide.src,org.openide.src.nodes,org.openide.text,org.openide.util,org.openide.util.actions,org.openide.util.datatransfer,org.openide.util.enum,org.openide.util.io,org.openide.windows,org.openide.xml"
+             packagenames="org.openide,org.openide.actions,org.openide.awt,org.openide.compiler,org.openide.cookies,org.openide.debugger,org.openide.execution,org.openide.explorer,org.openide.explorer.propertysheet,org.openide.explorer.view,org.openide.filesystems,org.openide.loaders,org.openide.modules,org.openide.nodes,org.openide.options,org.openide.src,org.openide.src.nodes,org.openide.text,org.openide.util,org.openide.util.actions,org.openide.util.datatransfer,org.openide.util.enum,org.openide.util.io,org.openide.util.lookup,org.openide.windows,org.openide.xml"
              doctitle="NetBeans Open APIs"
              windowtitle="NetBeans APIs"
              overview="api/doc/overview.html"
@@ -361,8 +374,10 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
       />
       <group title="&lt;a href=&quot;@TOP@org/openide/modules/doc-files/api.html&quot;&gt;Modules API&lt;/a&gt;"
              packages="org.openide.modules"/>
-      <group title="&lt;a href=&quot;@TOP@org/openide/TopManager.html&quot;&gt;TopManager&lt;/a&gt; and &lt;a href=&quot;@TOP@org/openide/Places.html&quot;&gt;Places&lt;/a&gt; APIs; &lt;a href=&quot;@TOP@org/openide/doc-files/services-api.html&quot;&gt;Services API&lt;/a&gt;"
+      <group title="TopManager, ServiceType, WizardDescriptor, ..."
              packages="org.openide"/>
+      <group title="&lt;a href=&quot;@TOP@org/openide/doc-files/services-api.html&quot;&gt;Services API&lt;/a&gt;"
+             packages="org.openide.util.lookup"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/filesystems/doc-files/api.html&quot;&gt;FileSystems API&lt;/a&gt;"
              packages="org.openide.filesystems"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/loaders/doc-files/api.html&quot;&gt;DataSystems API&lt;/a&gt;"
@@ -434,6 +449,24 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
 
   <target name="examplemodules" depends="example-scripts,example-minicomposer-nodice,example-minicomposer,example-globalactions,example-audioloader-nodice,example-audioloader"/>
 
+  <target name="example-init" depends="init">
+    <available property="javasound" classname="javax.sound.sampled.AudioSystem"/>
+    <property name="jmf.home" location="/space/JMF2.1"/>
+<!-- Unused:
+    <available property="jmf" classname="javax.media.ControllerAdapter">
+      <classpath>
+        <pathelement location="${jmf.home}/lib/jmf.jar"/>
+      </classpath>
+    </available>
+-->
+    <available property="mediaplayer" classname="javax.media.bean.playerbean.MediaPlayer">
+      <classpath>
+        <pathelement location="${jmf.home}/lib/jmf.jar"/>
+        <pathelement location="${jmf.home}/lib/mediaplayer.jar"/>
+      </classpath>
+    </available>
+  </target>
+
   <target name="example-scripts" depends="jars">
     <javac srcdir="api/examples" destdir="api/examples">
       <include name="**/org/netbeans/examples/scripts/"/>
@@ -445,11 +478,11 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     </javac>
   </target>
 
-  <target name="example-minicomposer-nodice" depends="init" unless="javasound">
-    <echo message="Sorry, minicomposer example requires JavaSound to be built."/>
-    <echo message="Included in JDK 1.3, else you may need to download it separately."/>
+  <target name="example-minicomposer-nodice" depends="example-init" unless="javasound">
+    <fail message="Sorry, minicomposer example requires JavaSound to be built.
+Included in JDK 1.3, else you may need to download it separately."/>
   </target>
-  <target name="example-minicomposer" depends="init,jars" if="javasound">
+  <target name="example-minicomposer" depends="example-init,jars" if="javasound">
     <javac srcdir="api/examples" destdir="api/examples">
       <include name="**/org/netbeans/examples/modules/minicomposer/"/>
       <classpath>
@@ -494,19 +527,21 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
   </target>
 
   <!-- [PENDING] ideally would test all of javasound, jmf, mediaplayer properties -->
-  <target name="example-audioloader-nodice" depends="init" unless="mediaplayer">
-    <echo>Sorry, audioloader example requires to be built: JavaSound; JMF 2.0 or greater; JMF's mediaplayer.
+  <target name="example-audioloader-nodice" depends="example-init" unless="mediaplayer">
+    <fail message="Sorry, audioloader example requires to be built: JavaSound; JMF 2.0 or greater; JMF's mediaplayer.
 JavaSound is included in JDK 1.3, else you may need to download it separately.
 The Java Media Framework is separately downloadable.
-</echo>
+Set jmf.home to the location of your JMF installation to continue."/>
   </target>
-  <target name="example-audioloader" depends="init,jars" if="mediaplayer">
+  <target name="example-audioloader" depends="example-init,jars" if="mediaplayer">
     <javac srcdir="api/examples" destdir="api/examples">
       <include name="**/org/netbeans/examples/modules/audioloader/"/>
       <classpath>
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
+        <pathelement location="${jmf.home}/lib/jmf.jar"/>
+        <pathelement location="${jmf.home}/lib/mediaplayer.jar"/>
       </classpath>
     </javac>
     <mkdir dir="examplemodules"/>
