@@ -165,16 +165,9 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         if ( JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals( e.getPropertyName() ) ) {             
             // We have to update the Accessory
             JFileChooser chooser = (JFileChooser)e.getSource();
+            File rawdir = chooser.getSelectedFile();
+            File dir = rawdir != null ? FileUtil.normalizeFile(rawdir) : null;
             DefaultListModel spListModel = (DefaultListModel)jListSubprojects.getModel();
-
-            if (chooser.getSelectedFile() == null) {
-                setAccessoryEnablement(false);
-                jCheckBoxSubprojects.setEnabled(false);
-                jTextFieldProjectName.setText("");
-                spListModel.clear();
-                return;
-            }
-            File dir = FileUtil.normalizeFile(chooser.getSelectedFile());
             
             Project project = null;            
             if ( isProjectDir( dir ) ) {
