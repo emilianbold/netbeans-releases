@@ -23,8 +23,9 @@
 		class = com.netbeans.enterprise.modules.db.explorer.nodes.RootNode;
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.RootNodeInfo;
 		children_ordering = {
-			com.netbeans.enterprise.modules.db.explorer.nodes.DriverListNode = 0;
-			com.netbeans.enterprise.modules.db.explorer.nodes.ConnectionNode = 1;
+			org.openide.loaders.DataFolder$FolderNode = 0;
+			com.netbeans.enterprise.modules.db.explorer.nodes.DriverListNode = 1;
+			com.netbeans.enterprise.modules.db.explorer.nodes.ConnectionNode = 2;
 		};
 		iconbase = "/com/netbeans/enterprise/modules/db/resources/database";
 		children = (driverlist);
