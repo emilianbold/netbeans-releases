@@ -1,12 +1,12 @@
 Manifest-Version: 1.0
-OpenIDE-Module-Specification-Version: 1.0
 Created-By: Jayme C. Edwards
-OpenIDE-Module-Install: org/apache/tools/ant/module/AntModuleInstall
- .class
-OpenIDE-Module-Description: org.apache.tools.ant.module.docs.HelpSet
 OpenIDE-Module: org.apache.tools.ant.module
-OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Name: Ant
+OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-Layer: org/apache/tools/ant/module/AntModuleLayer.xml
+OpenIDE-Module-Description: org.apache.tools.ant.module.docs.HelpSet
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.1.1
 Class-Path: ext/xalan.jar ext/xerces.jar
 
 Name: org/apache/tools/ant/module/AntProjectDataLoader.class
