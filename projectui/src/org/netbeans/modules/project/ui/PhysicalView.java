@@ -176,7 +176,7 @@ public class PhysicalView {
             this.pi = ProjectUtils.getInformation( project );
             this.group = group;
             this.isProjectDir = isProjectDir;
-            pi.addPropertyChangeListener(this);
+            pi.addPropertyChangeListener(WeakListeners.propertyChange(this, pi));
             group.addPropertyChangeListener( WeakListeners.propertyChange( this, group ) );
         }
 
