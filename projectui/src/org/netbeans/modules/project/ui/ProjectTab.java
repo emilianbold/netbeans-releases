@@ -110,7 +110,10 @@ public class ProjectTab extends TopComponent
     }
     
     private void initValues( String tcID ) {
-        setName(NbBundle.getMessage(ProjectTab.class, "LBL_" + tcID ));  //NOI18N
+        
+        String name = NbBundle.getMessage(ProjectTab.class, "LBL_" + tcID ); // NOI18N
+        setName( name );
+        setToolTipText( name );
         
         if ( tcID.equals( ID_LOGICAL ) ) {
             setIcon( ICON_LOGICAL ); 
