@@ -108,6 +108,10 @@ public class QueueTool implements Outputable, Timeoutable {
      */
     public static void processEvent(AWTEvent event) {
         if((JemmyProperties.getCurrentDispatchingModel() & 
+            JemmyProperties.SHORTCUT_MODEL_MASK) != 0) {
+            installQueue();
+        }    
+        if((JemmyProperties.getCurrentDispatchingModel() & 
             JemmyProperties.SHORTCUT_MODEL_MASK) != 0 &&
            isDispatchThread()) {
             shortcutEvent(event);

@@ -377,12 +377,16 @@ public class JTreeOperator extends JComponentOperator
      * @throws TimeoutExpiredException
      */
     public void doExpandPath(TreePath path) {
-	output.printLine("Expanding \"" + path.getPathComponent(path.getPathCount() - 1).toString() +
-			 "\" node");
-	output.printGolden("Expanding \"" + path.getPathComponent(path.getPathCount() - 1).toString() +
-			 "\" node");
-	driver.expandItem(this, getRowForPath(path));
-	waitExpanded(path);
+        if(path != null) {
+            output.printLine("Expanding \"" + path.getPathComponent(path.getPathCount() - 1).toString() +
+                             "\" node");
+            output.printGolden("Expanding \"" + path.getPathComponent(path.getPathCount() - 1).toString() +
+                               "\" node");
+            driver.expandItem(this, getRowForPath(path));
+            waitExpanded(path);
+        } else {
+            throw(new NoSuchPathException());
+        }
     }
 
     /**
@@ -405,10 +409,14 @@ public class JTreeOperator extends JComponentOperator
      * @throws TimeoutExpiredException
      */
     public void doMakeVisible(TreePath path)  {
-	output.printLine("Making \"" + path.toString() + "\" path visible");
-	output.printGolden("Making path visible");
-	makeVisible(path);
-	waitVisible(path);
+        if(path != null) {
+            output.printLine("Making \"" + path.toString() + "\" path visible");
+            output.printGolden("Making path visible");
+            makeVisible(path);
+            waitVisible(path);
+        } else {
+            throw(new NoSuchPathException());
+        }
     }
 
     /**
@@ -473,8 +481,12 @@ public class JTreeOperator extends JComponentOperator
      * @return a number of children.
      */
     public int getChildCount(TreePath path) {
-	return(getChildCount(path.
-			     getLastPathComponent()));
+        if(path != null) {
+            return(getChildCount(path.
+                                 getLastPathComponent()));
+        } else {
+            throw(new NoSuchPathException());
+        }
     }
 
     /**
@@ -484,9 +496,13 @@ public class JTreeOperator extends JComponentOperator
      * @return a number of children.
      */
     public TreePath getChildPath(TreePath path, int index) {
-	return(path.
-	       pathByAddingChild(getChild(path.
-					  getLastPathComponent(), index)));
+        if(path != null) {
+            return(path.
+                   pathByAddingChild(getChild(path.
+                                              getLastPathComponent(), index)));
+        } else {
+            throw(new NoSuchPathException());
+        }
     }
 
     /**
@@ -495,14 +511,18 @@ public class JTreeOperator extends JComponentOperator
      * @return a number of children.
      */
     public TreePath[] getChildPaths(TreePath path) {
-	Object[] children = getChildren(path.
-					getLastPathComponent());
-	TreePath[] result = new TreePath[children.length];
-	for(int i = 0; i < children.length; i++) {
-	    result[i] = path.
-		pathByAddingChild(children[i]);
-	}
-	return(result);
+        if(path != null) {
+            Object[] children = getChildren(path.
+                                            getLastPathComponent());
+            TreePath[] result = new TreePath[children.length];
+            for(int i = 0; i < children.length; i++) {
+                result[i] = path.
+                    pathByAddingChild(children[i]);
+            }
+            return(result);
+        } else {
+            throw(new NoSuchPathException());
+        }
     }
 
     /**
@@ -964,12 +984,16 @@ public class JTreeOperator extends JComponentOperator
      * @throws TimeoutExpiredException
      */
     public void doCollapsePath(TreePath path) {
-	output.printLine("Collapsing \"" + path.toString() + "\" path");
-	output.printGolden("Collapsing path");
-	driver.collapseItem(this, getRowForPath(path));
- 	if(getVerification()) {
-	    waitCollapsed(path);
-	}
+        if(path != null) {
+            output.printLine("Collapsing \"" + path.toString() + "\" path");
+            output.printGolden("Collapsing path");
+            driver.collapseItem(this, getRowForPath(path));
+            if(getVerification()) {
+                waitCollapsed(path);
+            }
+        } else {
+            throw(new NoSuchPathException());
+        }
     }
 
     /**
@@ -991,18 +1015,22 @@ public class JTreeOperator extends JComponentOperator
      * @param path a path to select.
      */
     public void selectPath(final TreePath path) {
-	output.printLine("Selecting \"" + path.toString() + "\" path");
-	output.printGolden("Selecting path");
-        scrollToPath(path);
-        getQueueTool().invokeSmoothly(new QueueTool.QueueAction("Path selecting") {
-                public Object launch() {
-                    driver.selectItem(JTreeOperator.this, getRowForPath(path));
-                    return(null);
-                }
-            });
- 	if(getVerification()) {
-	    waitSelected(path);
-	}
+        if(path != null) {
+            output.printLine("Selecting \"" + path.toString() + "\" path");
+            output.printGolden("Selecting path");
+            scrollToPath(path);
+            getQueueTool().invokeSmoothly(new QueueTool.QueueAction("Path selecting") {
+                    public Object launch() {
+                        driver.selectItem(JTreeOperator.this, getRowForPath(path));
+                        return(null);
+                    }
+                });
+            if(getVerification()) {
+                waitSelected(path);
+            }
+        } else {
+            throw(new NoSuchPathException());
+        }
     }
 
     /**
@@ -1043,12 +1071,16 @@ public class JTreeOperator extends JComponentOperator
      * @return a Point in component's coordinate system.
      */
     public Point getPointToClick(TreePath path) {
-	Rectangle rect = getPathBounds(path);
-        if(rect != null) {
-            return(new Point((int)(rect.getX() + rect.getWidth() / 2),
-                             (int)(rect.getY() + rect.getHeight() / 2)));
+        if(path != null) {
+            Rectangle rect = getPathBounds(path);
+            if(rect != null) {
+                return(new Point((int)(rect.getX() + rect.getWidth() / 2),
+                                 (int)(rect.getY() + rect.getHeight() / 2)));
+            } else {
+                throw(new NoSuchPathException(path));
+            }
         } else {
-            throw(new NoSuchPathException(path));
+            throw(new NoSuchPathException());
         }
     }
 
@@ -1070,17 +1102,21 @@ public class JTreeOperator extends JComponentOperator
      * @throws TimeoutExpiredException
      */
     public void clickOnPath(TreePath path, int clickCount) {
-	output.printLine("Click on \"" + path.toString() + 
-			 "\" path");
-	output.printGolden("Click on path");
-	makeComponentVisible();
-	if(path.getParentPath() != null) {
-	    expandPath(path.getParentPath());
-	}
-	makeVisible(path);
-        scrollToPath(path);
-	Point point = getPointToClick(path);
-	clickMouse((int)point.getX(), (int)point.getY(), clickCount);
+        if(path != null) {
+            output.printLine("Click on \"" + path.toString() + 
+                             "\" path");
+            output.printGolden("Click on path");
+            makeComponentVisible();
+            if(path.getParentPath() != null) {
+                expandPath(path.getParentPath());
+            }
+            makeVisible(path);
+            scrollToPath(path);
+            Point point = getPointToClick(path);
+            clickMouse((int)point.getX(), (int)point.getY(), clickCount);
+        } else {
+            throw(new NoSuchPathException());
+        }
     }
 
     /** 
@@ -1133,7 +1169,7 @@ public class JTreeOperator extends JComponentOperator
      * @throws TimeoutExpiredException
      */
     public JPopupMenu callPopupOnPaths(TreePath[] paths) {
-	return(callPopupOnPaths(paths, getPopupMouseButton()));
+        return(callPopupOnPaths(paths, getPopupMouseButton()));
     }
 
     /** 
@@ -1144,8 +1180,12 @@ public class JTreeOperator extends JComponentOperator
      * @throws TimeoutExpiredException
      */
     public JPopupMenu callPopupOnPath(TreePath path, int mouseButton) {
-	TreePath[] paths = {path};
-	return(callPopupOnPaths(paths, mouseButton));
+        if(path != null) {
+            TreePath[] paths = {path};
+            return(callPopupOnPaths(paths, mouseButton));
+        } else {
+            throw(new NoSuchPathException());
+        }
     }
 
     /** 
@@ -1163,29 +1203,33 @@ public class JTreeOperator extends JComponentOperator
      * @param path a tree path to scroll to.
      */
     public void scrollToPath(TreePath path) {
-	output.printTrace("Scroll JTree to path \"" + path.toString() + "\"\n    : " +
-			  getSource().toString());
-	output.printGolden("Scroll JTree to path \"" + path.toString() + "\"");
-	makeComponentVisible();
-	//try to find JScrollPane under.
-	JScrollPane scroll = (JScrollPane)getContainer(new JScrollPaneOperator.
-						       JScrollPaneFinder(ComponentSearcher.
-									 getTrueChooser("JScrollPane")));
-	if(scroll == null) {
-	    return;
-	}
-	JScrollPaneOperator scroller = new JScrollPaneOperator(scroll);
-	scroller.copyEnvironment(this);
-	scroller.setVisualizer(new EmptyVisualizer());
-	Rectangle rect = getPathBounds(path);
-        if(rect != null) {
-            scroller.scrollToComponentRectangle(getSource(), 
-                                                (int)rect.getX(),
-                                                (int)rect.getY(),
-                                                (int)rect.getWidth(),
-                                                (int)rect.getHeight());
+        if(path != null) {
+            output.printTrace("Scroll JTree to path \"" + path.toString() + "\"\n    : " +
+                              getSource().toString());
+            output.printGolden("Scroll JTree to path \"" + path.toString() + "\"");
+            makeComponentVisible();
+            //try to find JScrollPane under.
+            JScrollPane scroll = (JScrollPane)getContainer(new JScrollPaneOperator.
+                                                           JScrollPaneFinder(ComponentSearcher.
+                                                                             getTrueChooser("JScrollPane")));
+            if(scroll == null) {
+                return;
+            }
+            JScrollPaneOperator scroller = new JScrollPaneOperator(scroll);
+            scroller.copyEnvironment(this);
+            scroller.setVisualizer(new EmptyVisualizer());
+            Rectangle rect = getPathBounds(path);
+            if(rect != null) {
+                scroller.scrollToComponentRectangle(getSource(), 
+                                                    (int)rect.getX(),
+                                                    (int)rect.getY(),
+                                                    (int)rect.getWidth(),
+                                                    (int)rect.getHeight());
+            } else {
+                throw(new NoSuchPathException(path));
+            }
         } else {
-            throw(new NoSuchPathException(path));
+            throw(new NoSuchPathException());
         }
     }
 
@@ -1216,14 +1260,18 @@ public class JTreeOperator extends JComponentOperator
      * @return Component to be displayed.
      */
     public Component getRenderedComponent(TreePath path, boolean isSelected, boolean isExpanded, boolean cellHasFocus) {
-	return(getCellRenderer().
-	       getTreeCellRendererComponent((JTree)getSource(),
-					    path.getLastPathComponent(),
-					    isSelected,
-					    isExpanded,
-					    getModel().isLeaf(path.getLastPathComponent()),
-					    getRowForPath(path),
-					    cellHasFocus));
+        if(path != null) {
+            return(getCellRenderer().
+                   getTreeCellRendererComponent((JTree)getSource(),
+                                                path.getLastPathComponent(),
+                                                isSelected,
+                                                isExpanded,
+                                                getModel().isLeaf(path.getLastPathComponent()),
+                                                getRowForPath(path),
+                                                cellHasFocus));
+        } else {
+            throw(new NoSuchPathException());
+        }
     }
 
     /**
@@ -1269,17 +1317,21 @@ public class JTreeOperator extends JComponentOperator
      * @param path a path to wait expanded.
      */
     public void waitExpanded(final TreePath path) {
-	getOutput().printLine("Wait \"" + path.toString() + "\" path to be expanded in component \n    : "+
-			      getSource().toString());
-	getOutput().printGolden("Wait \"" + path.toString() + "\" path to be expanded");
-	waitState(new ComponentChooser() {
-		public boolean checkComponent(Component comp) {
-		    return(isExpanded(path));
-		}
-		public String getDescription() {
-		    return("Has \"" + path.toString() + "\" path expanded");
-		}
-	    });
+        if(path != null) {
+            getOutput().printLine("Wait \"" + path.toString() + "\" path to be expanded in component \n    : "+
+                                  getSource().toString());
+            getOutput().printGolden("Wait \"" + path.toString() + "\" path to be expanded");
+            waitState(new ComponentChooser() {
+                    public boolean checkComponent(Component comp) {
+                        return(isExpanded(path));
+                    }
+                    public String getDescription() {
+                        return("Has \"" + path.toString() + "\" path expanded");
+                    }
+                });
+        } else {
+            throw(new NoSuchPathException());
+        }
     }
 
     /**
@@ -1305,17 +1357,21 @@ public class JTreeOperator extends JComponentOperator
      * @param path a path to wait collapsed.
      */
     public void waitCollapsed(final TreePath path) {
-	getOutput().printLine("Wait \"" + path.toString() + "\" path to be collapsed in component \n    : "+
-			      getSource().toString());
-	getOutput().printGolden("Wait \"" + path.toString() + "\" path to be collapsed");
-	waitState(new ComponentChooser() {
-		public boolean checkComponent(Component comp) {
-		    return(isCollapsed(path));
+        if(path != null) {
+            getOutput().printLine("Wait \"" + path.toString() + "\" path to be collapsed in component \n    : "+
+                                  getSource().toString());
+            getOutput().printGolden("Wait \"" + path.toString() + "\" path to be collapsed");
+            waitState(new ComponentChooser() {
+                    public boolean checkComponent(Component comp) {
+                        return(isCollapsed(path));
+                    }
+                    public String getDescription() {
+                        return("Has \"" + path.toString() + "\" path collapsed");
 		}
-		public String getDescription() {
-		    return("Has \"" + path.toString() + "\" path collapsed");
-		}
-	    });
+                });
+        } else {
+            throw(new NoSuchPathException());
+        }
     }
 
     /**
@@ -1341,17 +1397,21 @@ public class JTreeOperator extends JComponentOperator
      * @param path a path to wait visible.
      */
     public void waitVisible(final TreePath path) {
-	getOutput().printLine("Wait \"" + path.toString() + "\" path to be visible in component \n    : "+
-			      getSource().toString());
-	getOutput().printGolden("Wait \"" + path.toString() + "\" path to be visible");
-	waitState(new ComponentChooser() {
-		public boolean checkComponent(Component comp) {
-		    return(isVisible(path));
-		}
-		public String getDescription() {
-		    return("Has \"" + path.toString() + "\" path visible");
-		}
-	    });
+        if(path != null) {
+            getOutput().printLine("Wait \"" + path.toString() + "\" path to be visible in component \n    : "+
+                                  getSource().toString());
+            getOutput().printGolden("Wait \"" + path.toString() + "\" path to be visible");
+            waitState(new ComponentChooser() {
+                    public boolean checkComponent(Component comp) {
+                        return(isVisible(path));
+                    }
+                    public String getDescription() {
+                        return("Has \"" + path.toString() + "\" path visible");
+                    }
+                });
+        } else {
+            throw(new NoSuchPathException());
+        }
     }
 
     /**
@@ -2236,6 +2296,12 @@ public class JTreeOperator extends JComponentOperator
      * item requested.
      */
     public class NoSuchPathException extends JemmyInputException {
+	/**
+	 * Constructor.
+	 */
+	public NoSuchPathException() {
+	    super("Unknown/null/invalid tree path.", null);
+	}
 	/**
 	 * Constructor.
          * @param path a nonexistent path.
