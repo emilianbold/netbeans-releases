@@ -299,7 +299,7 @@
 
 <!--begin GUI Form Editor section-->
   <tocitem text="Designing Java GUIs">
-    <tocitem text="About Java GUIs" target="gui.about"/>
+    <tocitem text="About Designing Java GUIs" target="gui.about"/>
     <tocitem text="Working with the Form Editor" target="gui.overview"/>
     <tocitem text="Form Editor Tasks: Quick Reference" target="gui.quickref"/>
     
