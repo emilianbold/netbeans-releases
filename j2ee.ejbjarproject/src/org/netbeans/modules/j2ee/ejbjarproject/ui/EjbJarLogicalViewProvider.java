@@ -219,9 +219,6 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             actions.add(null);
             actions.add(SystemAction.get( org.openide.actions.FindAction.class ));
             actions.add(null);
-            actions.add(SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class));
-            actions.add(SystemAction.get( org.openide.actions.ToolsAction.class ));
-            actions.add(null);
             if (brokenLinksAction != null) {
                 actions.add(brokenLinksAction);
             }
