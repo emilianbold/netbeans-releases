@@ -16,11 +16,12 @@ package org.netbeans.modules.form;
 import java.beans.*;
 import java.io.IOException;
 import java.util.*;
-import javax.swing.RepaintManager;
+import java.awt.Cursor;
+import javax.swing.*;
 
 import org.openide.*;
 import org.openide.nodes.*;
-import org.openide.awt.UndoRedo;
+import org.openide.awt.*;
 import org.openide.cookies.*;
 import org.openide.loaders.*;
 import org.openide.util.*;
@@ -100,6 +101,12 @@ public class FormEditorSupport extends JavaEditor
      * @see OpenCookie#open
      */
     public void openForm() {
+        // set status text "Opening Form: ..."
+        StatusDisplayer.getDefault().setStatusText(
+            FormUtils.getFormattedBundleString(
+                "FMT_OpeningForm", // NOI18N
+                new Object[] { formDataObject.getPrimaryFile().getNameExt() }));
+
         // switch to GUI workspace
         final boolean openGui = activateWorkspace();
 
@@ -108,13 +115,18 @@ public class FormEditorSupport extends JavaEditor
 
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                // set status text "Loading form..."
-                TopManager.getDefault().setStatusText(
+                JFrame mainWin = (JFrame) WindowManager.getDefault().getMainWindow();
+
+                // set status text "Opening Form: ..."
+                StatusDisplayer.getDefault().setStatusText(
                     FormUtils.getFormattedBundleString(
                         "FMT_OpeningForm", // NOI18N
-                        new Object[] { formDataObject.getName() }));
-                RepaintManager.currentManager(WindowManager.getDefault().getMainWindow())
-                    .paintDirtyRegions();
+                        new Object[] { formDataObject.getFormFile().getNameExt() }));
+                RepaintManager.currentManager(mainWin).paintDirtyRegions();
+
+                // set wait cursor [is not very reliable, but...]
+                mainWin.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                mainWin.getGlassPane().setVisible(true);
 
                 // load form data and report errors
                 try {
@@ -132,7 +144,11 @@ public class FormEditorSupport extends JavaEditor
                         ComponentInspector.getInstance().focusForm(FormEditorSupport.this);
 
                 // clear status text
-                TopManager.getDefault().setStatusText(""); // NOI18N
+                StatusDisplayer.getDefault().setStatusText(""); // NOI18N
+
+                // clear wait cursor
+                mainWin.getGlassPane().setVisible(false);
+                mainWin.getGlassPane().setCursor(null);
 
                 // report errors during loading
                 reportErrors(LOADING);
