@@ -103,7 +103,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../httpserver/external" target="unscramble"/>
     <ant dir="../java/external" target="unscramble"/>
     <ant dir="../libs/external" target="unscramble"/>
-    <ant dir="../scripting/external" target="unscramble"/>
     <ant dir="../tomcatint/external" target="unscramble"/>
     <ant dir="../web/external" target="unscramble"/>
     <ant dir="../xml/external" target="unscramble"/>
