@@ -6,33 +6,32 @@
 
 package org.netbeans.test.gui.javadoc;
 
-import java.io.PrintStream;
 import java.io.File;
 
+import junit.framework.Test;
 import junit.framework.TestSuite;
 
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OptionsOperator;
-import org.netbeans.jellytools.RepositoryTabOperator;
-import org.netbeans.jellytools.TreeTableOperator;
-import org.netbeans.jellytools.WizardOperator;
+import junit.textui.TestRunner;
+
+import org.netbeans.jellytools.*;
 
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 
 import org.netbeans.jellytools.nodes.Node;
+
 import org.netbeans.jellytools.properties.ComboBoxProperty;
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jellytools.properties.PropertySheetTabOperator;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
+
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
 import org.netbeans.junit.NbTestSuite;
+
 
 /** JUnit test suite with Jemmy support
  *
@@ -52,7 +51,7 @@ public class TestGenerateJavadoc extends JavadocTestCase {
     
     /** method used for explicit testsuite definition
      */
-    public static junit.framework.Test suite() {
+    public static Test suite() {
         TestSuite suite = new NbTestSuite(TestGenerateJavadoc.class);
         return suite;
     }
@@ -122,6 +121,12 @@ public class TestGenerateJavadoc extends JavadocTestCase {
         questionDialogOper_3.no();
         
         verifyCommonJdocFiles(userHome, "javadoc");
+        verifyCommonJdocFilesInFolder(userHome, "javadoc" + sep + "examples" + sep + "clock");
+        verifyCommonJdocFilesInFolder(userHome, "javadoc" + sep + "examples" + sep + "imageviewer");
+        verifyCommonJdocFilesInFolder(userHome, "javadoc" + sep + "examples" + sep + "advanced");
+        verifyCommonJdocFilesInFolder(userHome, "javadoc" + sep + "examples" + sep + "texteditor");
+        verifyCommonJdocFilesInFolder(userHome, "javadoc" + sep + "examples" + sep + "colorpicker");
+        
         assertTrue("ClockFrame doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
                    "clock" + sep + "ClockFrame.html").exists()); // NOI18N
         assertTrue("ImageFrame doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
@@ -154,8 +159,10 @@ public class TestGenerateJavadoc extends JavadocTestCase {
         assertTrue("overview-tree.html doesn't exist!", new File(base + sep + folder + sep + "overview-tree.html").exists()); // NOI18N
     }
     
-    private void verifyCommonJdocFilesInFolder(String fodler) {
-        
+    private void verifyCommonJdocFilesInFolder(String base, String folder) {
+        assertTrue("package-frame.html doesn't exist!", new File(base + sep + folder + sep + "package-frame.html").exists()); // NOI18N
+        assertTrue("package-summary.html doesn't exist!", new File(base + sep + folder + sep + "package-summary.html").exists()); // NOI18N
+        assertTrue("package-tree.html doesn't exist!", new File(base + sep + folder + sep + "package-tree.html").exists()); // NOI18N
     }
     
     public void testGenerateToFolder() {
@@ -270,7 +277,7 @@ public class TestGenerateJavadoc extends JavadocTestCase {
      * @param args command line arguments
      */
     public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
+        TestRunner.run(suite());
     }
     
     private static final String toolsPopupMenuItem = Bundle.getStringTrimmed("org.openide.actions.Bundle", "CTL_Tools");
