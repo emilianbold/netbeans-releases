@@ -173,9 +173,6 @@ public class Main extends java.lang.Object {
         }
         htmlAutoPopup = hopts.getCompletionAutoPopup();
         hopts.setCompletionAutoPopup(false);
-        
-        registerActions();
-        mainThread=Thread.currentThread();
     }
     
     /** Start Editor Test Application. It must be started by Internal Execurion in IDE.
@@ -199,6 +196,7 @@ public class Main extends java.lang.Object {
             finish();
             return;
         }
+        registerActions();
         test = new Test("Default");
         test.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(final java.beans.PropertyChangeEvent p1) {
@@ -236,6 +234,7 @@ public class Main extends java.lang.Object {
         log("New test created");
         return true;
     }
+    
     public static Test loadTest(URL testFile) {
         setFileName(null);
         log("Test "+fileName+" opened.");
@@ -291,6 +290,7 @@ public class Main extends java.lang.Object {
         }
         return test;
     }
+    
     private static PropertyChangeListener listener = null;
     
     public static boolean openTest(String aFileName) {
