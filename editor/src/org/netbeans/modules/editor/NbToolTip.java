@@ -278,13 +278,17 @@ public class NbToolTip extends FileChangeAdapter {
         }
         
         public void run() {
-            if (tts.getStatus() == ToolTipSupport.STATUS_HIDDEN) {
+            if (tts == null) return;
+            
+            if (tts == null || tts.getStatus() == ToolTipSupport.STATUS_HIDDEN) {
                 return; // do nothing
             }
             if (!isRequestValid()) {
                 return;
             }
 
+            if (tts!=null) tts.addPropertyChangeListener(this);
+            
             kit.toolTipAnnotationsLock(doc);
             try {
                 doc.readLock();
@@ -299,13 +303,13 @@ public class NbToolTip extends FileChangeAdapter {
                         annos[i].attach(linePart);
                     }
 
-                    if (annoDesc != null) {
+                    if (annoDesc != null && tts != null) {
                         tts.setToolTipText(annoDesc.getShortDescription());
                         annoDesc.addPropertyChangeListener(this);
                     } else {
                         for (int i = 0; i < annos.length; i++) {
                             String desc = annos[i].getShortDescription();
-                            if (desc != null) {
+                            if (desc != null && tts != null) {
                                 tts.setToolTipText(desc);
                             }
                             annos[i].addPropertyChangeListener(this);
@@ -344,7 +348,7 @@ public class NbToolTip extends FileChangeAdapter {
         }
 
         private void dismiss() {
-            tts.removePropertyChangeListener(this);
+            if (tts !=null) tts.removePropertyChangeListener(this);
             tts = null; // signal that support no longer valid
 
             if (annoDesc != null) {
