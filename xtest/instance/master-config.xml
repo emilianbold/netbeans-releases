@@ -38,6 +38,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="corba"   	testtypes="qa-functional"  attributes="validation"/>  
       <module name="core"   	testtypes="qa-functional"  attributes="validation"/>  
       <module name="editor" 	testtypes="qa-functional"  attributes="validation"/>
+      <module name="form" 	testtypes="qa-functional"  attributes="validation"/>
       <module name="i18n"   	testtypes="qa-functional"  attributes="validation"/>
       <module name="jarpackager"  	testtypes="qa-functional"  attributes="validation"/>
       <module name="java"   	testtypes="qa-functional"  attributes="validation"/>
@@ -68,6 +69,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="corba"   	testtypes="qa-functional"  attributes="validation"/>  
       <module name="core"   	testtypes="qa-functional"  attributes="validation"/>  
       <module name="editor" 	testtypes="qa-functional"  attributes="validation"/>
+      <module name="form" 	testtypes="qa-functional"  attributes="validation"/>
       <module name="i18n"   	testtypes="qa-functional"  attributes="validation"/>
       <module name="jarpackager"  	testtypes="qa-functional"  attributes="validation"/>
       <module name="java"   	testtypes="qa-functional"  attributes="validation"/>
@@ -103,6 +105,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="corba"   	testtypes="qa-functional"  attributes="validation,full"/>  
       <module name="core"   	testtypes="qa-functional"  attributes="validation,full"/>  
       <module name="editor" 	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="form" 	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="i18n"   	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="jarpackager"  	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="java"   	testtypes="qa-functional"  attributes="validation,full"/>
@@ -133,6 +136,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="corba"   	testtypes="qa-functional"  attributes="validation,full"/>  
       <module name="core"   	testtypes="qa-functional"  attributes="validation,full"/>  
       <module name="editor" 	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="form" 	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="i18n"   	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="jarpackager"  	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="java"   	testtypes="qa-functional"  attributes="validation,full"/>
