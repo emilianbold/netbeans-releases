@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,19 +31,27 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.Action;
-
-import org.openide.*;
+import org.openide.ErrorManager;
 import org.openide.actions.ToolsAction;
 import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.util.*;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.InstanceDataObject;
+import org.openide.nodes.BeanChildren;
+import org.openide.nodes.BeanNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.Sheet;
+import org.openide.util.NbBundle;
+import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
-import org.openide.util.actions.*;
-import org.openide.nodes.*;
+import org.openide.util.WeakListeners;
+import org.openide.util.actions.SystemAction;
 
 /** Node to represent a .settings file.
  * @author Jan Pokorsky
@@ -178,7 +186,7 @@ public final class SerialDataNode extends DataNode {
         if (notifyResolvePropertyChange && propertyChangeListener != null ) {
             notifyResolvePropertyChange = false;
             ErrorManager.getDefault().log(ErrorManager.WARNING,
-                "None PropertyChangeEvent fired from setting stored in " +// NOI18N
+                "Warning: no PropertyChangeEvent fired from settings stored in " +// NOI18N
                 getDataObject());
         }
         SerialDataConvertor c = getConvertor();
