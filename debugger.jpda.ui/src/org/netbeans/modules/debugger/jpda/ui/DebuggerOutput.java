@@ -260,7 +260,7 @@ PropertyChangeListener {
             } catch (NoInformationException ex) {
                 if (lineNumber > 0)
                     print (
-                        "CTL_Thread_stopped_no_source",
+                        "CTL_Thread_stopped_no_info",
                      //   IOManager.DEBUGGER_OUT + IOManager.STATUS_OUT,
                         new String[] {
                             threadName,
@@ -272,7 +272,7 @@ PropertyChangeListener {
                     );
                 else
                     print (
-                        "CTL_Thread_stopped_no_source_no_line",
+                        "CTL_Thread_stopped_no_info_no_line",
                         //IOManager.DEBUGGER_OUT + IOManager.STATUS_OUT,
                         new String[] {
                             threadName,
