@@ -108,6 +108,7 @@
 -->
  <answer id="arch-what">
   <p>
+   Provides a generic infrastructure for modelling projects.
    Documentation available in the Javadoc. The build system design overview
    describes the basic purpose of modelling projects.
   </p>

@@ -113,11 +113,13 @@
 -->
  <answer id="arch-what">
   <p>
-   Details are covered in the Javadoc. Queries are one way of solving the
+   General kinds of queries between modules.
+   Queries are one way of solving the
    intermodule communication problem when it is necessary for some modules to
    obtain basic information about the system (e.g. whether a particular file is
    intended for version control) without needing direct dependencies on the
    module providing the answer (e.g. the project type which controls the file).
+   Details are covered in the Javadoc.
   </p>
  </answer>
 
