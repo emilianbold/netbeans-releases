@@ -3,7 +3,8 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/diff/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.2
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/diff/mf-layer.xml
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.vcscore/1
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.editor/1 > 1.7
+OpenIDE-Module-Package-Dependencies: org.apache.regexp[RE]
 
 Name: org/netbeans/modules/diff/DiffAction.class
 OpenIDE-Module-Class: Action

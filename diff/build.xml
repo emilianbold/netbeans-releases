@@ -34,12 +34,13 @@ Microsystems, Inc. All Rights Reserved.
         deprecation="${build.compiler.deprecation}" 
         debug="${build.compiler.debug}"
         destdir="src">
-      <classpath>        
+      <classpath>
+        <pathelement location="../editor/netbeans/modules/ext/nb-editor.jar"/>
 	<pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
         <fileset dir="${nbroot}/openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-	<pathelement location="${nbroot}/vcscore/netbeans/modules/autoload/vcscore.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
       </classpath>
     </javac>
   </target>
