@@ -271,14 +271,14 @@ final class BeanPatternGenerator extends Object {
         
         for (Iterator it = fields.iterator(); it.hasNext();) {
             Field field = (Field) it.next();
-            if (pcsType.equals(field.getType())) {
+            if (JMIUtils.equalTypes(pcsType, field.getType())) {
                 supportName = field.getName();
                 break;
             }
         }
 
         if ( supportName == null ) { // Field not found we create new
-            supportName = "propertyChangeSupport"; // NOI18N
+            supportName = findFreeFieldName(ce, "propertyChangeSupport"); // NOI18N
             Field supportField = jmodel.getField().createField();
             supportField.setName(supportName);
             supportField.setType(pcsType);
@@ -307,14 +307,14 @@ final class BeanPatternGenerator extends Object {
         
         for (Iterator it = fields.iterator(); it.hasNext();) {      // Try to find suitable field
             Field field = (Field) it.next();
-            if (vcsType.equals(field.getType())) {
+            if (JMIUtils.equalTypes(vcsType, field.getType())) {
                 vetoSupportName = field.getName();
                 break;
             }
         }
 
         if ( vetoSupportName == null ) { // Field not found we create new
-            vetoSupportName = "vetoableChangeSupport"; // NOI18N
+            vetoSupportName = findFreeFieldName(ce, "vetoableChangeSupport"); // NOI18N
             Field supportField = jmodel.getField().createField();
             supportField.setName( vetoSupportName );
             supportField.setType( vcsType );
@@ -325,6 +325,15 @@ final class BeanPatternGenerator extends Object {
         }
 
         return vetoSupportName;
+    }
+    
+    private static String findFreeFieldName(JavaClass ce, String defName) throws JmiException {
+        assert JMIUtils.isInsideTrans();
+        String name = defName;
+        for (int i = 1; ce.getField(name, true) != null; i++) {
+            name = defName + '_' + i;
+        }
+        return name;
     }
 
     /** If in the class don't exists methods for adding/removing PropertyChangeListeners
@@ -465,7 +474,7 @@ final class BeanPatternGenerator extends Object {
         List/*<Field>*/ fields = JMIUtils.getFields(ce);
         for (Iterator it = fields.iterator(); it.hasNext();) {      // Try to find suitable field
             Field field = (Field) it.next();
-            if (fieldType.equals(field.getType()) && fieldNameToFind.equals(field.getName())) {
+            if (JMIUtils.equalTypes(fieldType, field.getType()) && fieldNameToFind.equals(field.getName())) {
                 fieldName = fieldNameToFind;
                 break;
             }
@@ -507,7 +516,7 @@ final class BeanPatternGenerator extends Object {
         
         for (Iterator it = fields.iterator(); it.hasNext();) {      // Try to find suitable field
             Field field = (Field) it.next();
-            if (fieldType.equals(field.getType())) {
+            if (JMIUtils.equalTypes(fieldType, field.getType())) {
                 fieldName = field.getName();
                 break;
             }
@@ -551,7 +560,7 @@ final class BeanPatternGenerator extends Object {
         
         for (Iterator it = fields.iterator(); it.hasNext();) {      // Try to find suitable field
             Field field = (Field) it.next();
-            if (type.equals(field.getType()) && fieldNameToFind.equals(field.getName())) {
+            if (JMIUtils.equalTypes(type, field.getType()) && fieldNameToFind.equals(field.getName())) {
                 fieldName = fieldNameToFind;
                 break;
             }
