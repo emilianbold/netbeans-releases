@@ -15,11 +15,7 @@ package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
@@ -110,12 +106,20 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                         FileObject sourceRoot = null;
                         if (ref == null || (sourceRoot = (FileObject)ref.get()) == null ) {
                             sourceRoot = getRootForFile (file, TYPE_JAVA);
+                            if (sourceRoot == null) {
+                                return null;
+                            }
                             this.sourceRootsCache.put (file, new WeakReference(sourceRoot));
                         }
-                        ref = (Reference) this.sourceClasPathsCache.get(sourceRoot);
-                        if (ref == null || (cp = (ClassPath)ref.get()) == null ) {
-                            cp = ClassPathSupport.createClassPath(new FileObject[] {sourceRoot});
-                            this.sourceClasPathsCache.put (sourceRoot, new WeakReference(cp));
+                        if (!sourceRoot.isValid()) {
+                            this.sourceClasPathsCache.remove(sourceRoot);
+                        }
+                        else {
+                            ref = (Reference) this.sourceClasPathsCache.get(sourceRoot);
+                            if (ref == null || (cp = (ClassPath)ref.get()) == null ) {
+                                cp = ClassPathSupport.createClassPath(new FileObject[] {sourceRoot});
+                                this.sourceClasPathsCache.put (sourceRoot, new WeakReference(cp));
+                            }
                         }
                     }
                     return cp;                                        
@@ -135,14 +139,22 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                 FileObject execRoot = null;
                 if (ref == null || (execRoot = (FileObject)ref.get()) == null ) {
                     execRoot = getRootForFile (file, TYPE_CLASS);
+                    if (execRoot == null) {
+                        return null;
+                    }
                     this.sourceRootsCache.put (file, new WeakReference(execRoot));
                 }
-                ref = (Reference) this.sourceClasPathsCache.get(execRoot);
-                if (ref == null || (cp = (ClassPath)ref.get()) == null ) {
-                    cp = ClassPathSupport.createClassPath(new FileObject[] {execRoot});
-                    this.sourceClasPathsCache.put (execRoot, new WeakReference(cp));
+                if (!execRoot.isValid()) {
+                    this.sourceClasPathsCache.remove (execRoot);
                 }
-                return cp;
+                else {
+                    ref = (Reference) this.sourceClasPathsCache.get(execRoot);
+                    if (ref == null || (cp = (ClassPath)ref.get()) == null ) {
+                        cp = ClassPathSupport.createClassPath(new FileObject[] {execRoot});
+                        this.sourceClasPathsCache.put (execRoot, new WeakReference(cp));
+                    }
+                    return cp;
+                }
             }
         }
         return null;
@@ -195,6 +207,9 @@ public class DefaultClassPathProvider implements ClassPathProvider {
             } finally {
                 in.close ();
             }
+        } catch (FileNotFoundException fnf) {
+            //Ignore it
+            // The file was removed after checking it for isValid
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
@@ -288,7 +303,11 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                     }
                 }
             }
-        } catch (IOException e1) {
+        } catch (FileNotFoundException fnf) {
+            //Ignore it
+            //The file was probably removed after it was checked for isValid
+        }
+        catch (IOException e1) {
             ErrorManager.getDefault().notify(e1);
         } finally {
             try {
