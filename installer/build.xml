@@ -25,9 +25,9 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
 		<target name="init-modules">
-			<style destdir="." in="D:/builds/NETBEANS/unpacked/netbeans/update_tracking.xml" out="modulesDef.properties" style="modulesDef.xsl"/>
+	<!--		<style destdir="." in="D:/builds/NETBEANS/unpacked/netbeans/update_tracking.xml" out="modulesDef.properties" style="modulesDef.xsl"/>
 			<filter filtersfile="modulesDef.properties" />
-			<copy file="src/org/netbeans/installer/actions/DetectAction.yava" toFile="src/org/netbeans/installer/actions/DetectAction.java" filtering="true" />
+			<copy file="src/org/netbeans/installer/actions/DetectAction.yava" toFile="src/org/netbeans/installer/actions/DetectAction.java" filtering="true" /> -->
 		</target>
 																																		
 		<target name="init" depends="check-buildnumber,check-nb-id,init-modules" >        
