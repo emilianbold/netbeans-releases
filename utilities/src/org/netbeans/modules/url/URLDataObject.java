@@ -13,15 +13,13 @@
 
 package com.netbeans.developer.modules.loaders.url;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 
 import com.netbeans.ide.*;
-import com.netbeans.ide.cookies.OpenCookie;
 import com.netbeans.ide.filesystems.*;
 import com.netbeans.ide.loaders.*;
 import com.netbeans.ide.windows.*;
-import com.netbeans.ide.actions.OpenAction;
 import com.netbeans.ide.util.*;
 import com.netbeans.ide.util.actions.*;
 import com.netbeans.ide.nodes.*;
@@ -38,27 +36,133 @@ public class URLDataObject extends MultiDataObject {
   private static final String URL_ICON_BASE =
     "com/netbeans/developer/modules/resources/urlObject";
 
+  /* The FileObject containing the URL String */
+  private FileObject urlFile;
+
   /** New instance.
   * @param pf primary file object for this data object
   */
-  public URLDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
+  public URLDataObject(final FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
     super(pf, loader);
-    getCookieSet ().add (new OpenCookie () {
+    urlFile = pf;
+    getCookieSet ().add (new com.netbeans.ide.cookies.OpenCookie () {
         /** Invokes the open action */
         public void open () {
-          String urlString = "http://www.netbeans.com/";
+          String urlString = getURLString ();
+          if (urlString == null) return;
+          
           java.net.URL url = null;
           try {
             url = new java.net.URL (urlString);
             TopManager.getDefault ().showUrl (url);
           } catch (java.net.MalformedURLException e) {
-            // TopManager.notify (...)  // [PENDING - display message box with error]
+            try {
+              url = new java.net.URL ("http://"+urlString); // try to prepend http protocol
+              TopManager.getDefault ().showUrl (url);
+            } catch (java.net.MalformedURLException e2) {
+              if (urlString.length () > 50) { // too long URL
+                TopManager.getDefault ().notify (
+                    new NotifyDescriptor.Message (
+                        NbBundle.getBundle(this).getString("MSG_MalformedURLError"),
+                        NotifyDescriptor.ERROR_MESSAGE
+                    )
+                );
+              } else {            
+                TopManager.getDefault ().notify (
+                    new NotifyDescriptor.Message (
+                        java.text.MessageFormat.format (
+                            NbBundle.getBundle(this).getString("MSG_FMT_MalformedURLError"),
+                            new Object[] { urlString }
+                        ),
+                        NotifyDescriptor.ERROR_MESSAGE
+                    )
+                );
+              }
+            }
           }
+        }
+      }
+    );
+    getCookieSet ().add (new URLNodeCookie () {
+        public void openInNewWindow () {
+          System.out.println("Open In New Window");
+        }
+
+        public void editURL () {
+          String urlString = getURLString ();
+          if (urlString == null) return;
+          NotifyDescriptor.InputLine urlLine = new NotifyDescriptor.InputLine ("URL:", "Edit URL");
+          urlLine.setInputText (urlString);
+          TopManager.getDefault ().notify (urlLine);
+          if (urlLine.getValue () == NotifyDescriptor.OK_OPTION) 
+            setURLString (urlLine.getInputText ());
         }
       }
     );
   }
 
+  /** @return the URL String stored in the file. If there are multiple lines of text in the 
+  *           file, only the first line is returned
+  */
+  private String getURLString () {
+    String urlString = "";
+    InputStream is = null;
+    try {
+      urlString = new BufferedReader (new InputStreamReader (is = urlFile.getInputStream ())).readLine ();
+    } catch (FileNotFoundException e) {
+      TopManager.getDefault ().notify (
+          new NotifyDescriptor.Message (
+              java.text.MessageFormat.format (
+                  NbBundle.getBundle(this).getString("MSG_FMT_FileNotFoundError"),
+                  new Object[] { urlFile.getPackageNameExt (File.separatorChar, '.') }
+              ),
+              NotifyDescriptor.ERROR_MESSAGE
+          )
+      );
+      return null;
+    } catch (IOException e) {
+      TopManager.getDefault ().notify (
+          new NotifyDescriptor.Message (
+              java.text.MessageFormat.format (
+                  NbBundle.getBundle(this).getString("MSG_FMT_IOError"),
+                  new Object[] { urlFile.getPackageNameExt (File.separatorChar, '.'), e.getMessage () }
+              ),
+              NotifyDescriptor.ERROR_MESSAGE
+          )
+      );
+      e.printStackTrace ();
+      return null;
+    } finally {
+      if (is != null)
+        try {
+          is.close ();
+        } catch (IOException e) {
+        }
+    }
+    if (urlString == null)
+      urlString = ""; // if the file is empty, return empty string, as null is reserved for notifying failure
+    
+    return urlString;
+  }
+
+  /** Stores specified String into the URL file.
+  * @param newUrlString the URL String to be stored in the file.
+  */
+  private void setURLString (String newUrlString) {
+    FileLock lock = null;
+    try {
+      lock = urlFile.lock ();
+      OutputStream os = urlFile.getOutputStream (lock);
+      os.write (newUrlString.getBytes ());
+      os.close ();
+    } catch (IOException e) {
+      e.printStackTrace ();
+    } finally {
+      if (lock != null)
+        lock.releaseLock ();
+    }
+  }
+  
   /** Help context for this object.
   * @return help context
   */
@@ -80,7 +184,7 @@ public class URLDataObject extends MultiDataObject {
   protected Node createNodeDelegate () {
     DataNode node = new DataNode (this, Children.LEAF);
     node.setIconBase(URL_ICON_BASE);
-    node.setDefaultAction (SystemAction.get (OpenAction.class));
+    node.setDefaultAction (SystemAction.get (com.netbeans.ide.actions.OpenAction.class));
     return node;
   }
 
@@ -89,6 +193,7 @@ public class URLDataObject extends MultiDataObject {
 
 /*
  * Log
+ *  2    Gandalf   1.1         2/25/99  Ian Formanek    
  *  1    Gandalf   1.0         1/22/99  Ian Formanek    
  * $
  */

@@ -35,6 +35,9 @@ public class URLDataLoader extends UniFileLoader {
 
     setActions(new SystemAction[] {
       SystemAction.get(OpenAction.class),
+      SystemAction.get(OpenInNewWindowAction.class),
+      null,
+      SystemAction.get(EditURLAction.class),
       null,
       SystemAction.get(CutAction.class),
       SystemAction.get(CopyAction.class),
@@ -67,6 +70,7 @@ public class URLDataLoader extends UniFileLoader {
 
 /*
  * Log
+ *  2    Gandalf   1.1         2/25/99  Ian Formanek    
  *  1    Gandalf   1.0         1/22/99  Ian Formanek    
  * $
  */
