@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="precompile">
-    <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="on">
+    <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
@@ -40,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="compile" depends="precompile">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="on">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement path="libsrc"/>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
