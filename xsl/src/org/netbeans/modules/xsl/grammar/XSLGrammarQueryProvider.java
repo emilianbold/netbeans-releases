@@ -96,7 +96,7 @@ public class XSLGrammarQueryProvider extends GrammarQueryManager {
     }
     
     public GrammarQuery getGrammar(GrammarEnvironment input) {
-        return new XSLGrammarQuery(prefix == null ? "xsl" : prefix);
+        return new XSLGrammarQuery();
     }
     
 }

@@ -13,81 +13,115 @@
 
 package org.netbeans.modules.xsl.grammar;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.Icon;
 
+import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.xml.api.model.*;
 import org.openide.util.enum.*;
+import org.netbeans.modules.xml.dtd.grammar.*;
+import org.netbeans.modules.xml.spi.dom.*;
 
 import org.w3c.dom.*;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
+ * This class implements code completion for XSL transformation files.
+ * XSL elements in the completion are hardcoded from the XSLT spec, but the
+ * result elements are gathered from the "doctype-public" and "doctype-system"
+ * attributes of the xsl:output element.
  *
  * @author  asgeir@dimonsoftware.com
  */
 public class XSLGrammarQuery implements GrammarQuery{
 
+    /** Contains a mapping from XSL namespace element names to set of names of 
+     * allowed XSL children. Neither the element name keys nor the names in the
+     * value set should contain the namespace prefix.
+     */
     private final static Map elementDecls = new HashMap();
     
+    /** Contains a mapping from XSL namespace element names to set of names of
+     * allowed XSL attributes for that element.  The element name keys should 
+     * not contain the namespace prefix.
+     */
     private final static Map attrDecls = new HashMap();
     
+    /** A Set of XSL attributes which should be allowd for result elements*/
     private final static Set resultElementAttr;
     
+    /** An object which indicates that result element should be allowed in a element Set */
     private final static Object resultElements = new Object();
-    
-    private final static Set emptySet = new HashSet();
-    
+        
+    /** A Set of elements which should be allowed at template level in XSL stylesheet */ 
     private static Set template;
+           
+    /** A list of prefixes using the "http://www.w3.org/1999/XSL/Transform" namespace
+     * defined in the context XSL document.  The first prefix in the list is the actual XSL
+     * transformation prefix, which is normally defined on the xsl:stylesheet element.
+     */
+    private List prefixList = new LinkedList();
     
-    private final static String spaceAtt = "xml:space";
-
-
-    private static final String[] aCharInstructions = {"apply-templates", // NOI18N
-        "call-template","apply-imports","for-each","value-of", // NOI18N
-        "copy-of","number","choose","if","text","copy", // NOI18N
-        "variable","message","fallback"}; // NOI18N
-        
-    private static final String[] aInstructionsExtra = {"processing-instruction", // NOI18N
-        "comment","element","attribute"}; // NOI18N
-        
-    private static final String[] aTopLevel = {"import","include","strip-space", // NOI18N
-        "preserve-space","output","key","decimal-format","attribute-set", // NOI18N
-        "variable","param","template","namespace-alias"}; // NOI18N
+    /** A GrammarQuery for the result elements created for the doctype-public" and 
+     * "doctype-system" attributes of the xsl:output element.*/
+    private GrammarQuery resultGrammarQuery;
     
-    private static final String[] aTopLevelAttr = {"extension-element-prefixes",
-        "exclude-result-prefixes","id","version",spaceAtt};
-        
-    // Those attributes are in the xsl namespace
-    private static final String[] aResultElementsAttr = {"extension-element-prefixes",
-        "exclude-result-prefixes","use-attribute-sets","version"};
-
-    // !!! this static block is too eager, this initalization
-    // should be defered by using static methods like
-    // getTemplate(), getIntructions(), etc.
+    /** The value of the system identifier of the DTD which was used when
+     * resultGrammarQuery was previously created */
+    private String lastDoctypeSystem;
+    
+    /** The value of the public identifier of the DTD which was used when
+     * resultGrammarQuery was previously created */
+    private String lastDoctypePublic;
+    
+    // Initialization of the static members above
     static {
+        // Commonly used variables
+        Set emptySet = new HashSet();
+        String spaceAtt = "xml:space";
         Set tmpSet;
         
-        Set charInstructions = new HashSet(Arrays.asList(aCharInstructions));
+        ////////////////////////////////////////////////
+        // Initialize common sets
+        
+        Set charInstructions = new HashSet(Arrays.asList(new String[]{"apply-templates", // NOI18N
+            "call-template","apply-imports","for-each","value-of", // NOI18N
+            "copy-of","number","choose","if","text","copy", // NOI18N
+            "variable","message","fallback"}));
       
         Set instructions = new HashSet(charInstructions);
-        instructions.addAll(Arrays.asList(aInstructionsExtra));
+        instructions.addAll(Arrays.asList(new String[]{"processing-instruction", // NOI18N
+            "comment","element","attribute"}));
         
         Set charTemplate = charInstructions; // We don't care about PCDATA
         
         template = new HashSet(instructions);
         template.add(resultElements);
         
-        Set topLevel = new HashSet(Arrays.asList(aTopLevel));
+        Set topLevel = new HashSet(Arrays.asList(new String[]{"import","include","strip-space", // NOI18N
+            "preserve-space","output","key","decimal-format","attribute-set", // NOI18N
+            "variable","param","template","namespace-alias"}));
         
-        Set topLevelAttr = new HashSet(Arrays.asList(aTopLevelAttr));
-        resultElementAttr = new HashSet(Arrays.asList(aResultElementsAttr));
-                
+        Set topLevelAttr = new HashSet(Arrays.asList(new String[]{"extension-element-prefixes",
+            "exclude-result-prefixes","id","version",spaceAtt}));
+            
+        resultElementAttr = new HashSet(Arrays.asList(new String[]{"extension-element-prefixes",
+            "exclude-result-prefixes","use-attribute-sets","version"}));
+         
+        ////////////////////////////////////////////////
+        // Add items to elementDecls and attrDecls maps
+            
         // xsl:stylesheet
         elementDecls.put("stylesheet", topLevel);
         attrDecls.put("stylesheet", topLevelAttr);
@@ -260,101 +294,104 @@ public class XSLGrammarQuery implements GrammarQuery{
         attrDecls.put("fallback", new HashSet(Arrays.asList(new String[]{spaceAtt})));
                         
     }
-    
-    private String xslNamespacePrefix;
-       
+           
     /** Creates a new instance of XSLGrammarQuery */
-    public XSLGrammarQuery(String xslNamespacePrefix) {
-        this.xslNamespacePrefix = xslNamespacePrefix;
+    public XSLGrammarQuery()     {
     }
+
+////////////////////////////////////////////////////////////////////////////////
+// GrammarQuery interface fulfillment
     
-    /**
-     * @semantics Navigates through read-only Node tree to determine context and provide right results.
-     * @postconditions Let ctx unchanged
-     * @time Performs fast up to 300 ms.
-     * @stereotype query
-     * @param ctx represents virtual element Node that has to be replaced, its own attributes does not name sense, it can be used just as the navigation start point.
-     * @return enumeration of <code>GrammarResult</code>s (ELEMENT_NODEs) that can be queried on name, and attributes
-     *         Every list member represents one possibility.  
-     */
     public Enumeration queryElements(HintContext ctx) {        
         Node node = ((Node)ctx).getParentNode();        
-        Set elements;
         
-        String xslNamespaceWithColon = xslNamespacePrefix + ":";
+        String prefix = ctx.getCurrentPrefix();
+        QueueEnumeration list = new QueueEnumeration();
+                
         if (node instanceof Element) {
             Element el = (Element) node;
-            if (el.getTagName().startsWith(xslNamespaceWithColon)) {
-                String parentName = el.getTagName().substring(xslNamespaceWithColon.length());
+            updateProperies(el);
+            if (prefixList.size() == 0) return EmptyEnumeration.EMPTY;
+            
+            String firstXslPrefixWithColon = prefixList.get(0) + ":";
+            Set elements;
+            if (el.getTagName().startsWith(firstXslPrefixWithColon)) {
+                String parentName = el.getTagName().substring(firstXslPrefixWithColon.length());
                 elements = (Set) elementDecls.get(parentName);
             } else {
                 // Children of result elements should always be the template set
                 elements = template;
             }
-         } else if (node instanceof Document) {
-            elements = elementDecls.keySet();
-        } else {
-            return EmptyEnumeration.EMPTY;
-        }
-                        
-        if (elements == null) return EmptyEnumeration.EMPTY;
-        String prefix = ctx.getCurrentPrefix();
-        QueueEnumeration list = new QueueEnumeration();
-                
-        if (prefix.startsWith(xslNamespaceWithColon) || xslNamespaceWithColon.startsWith(prefix)) {
-            // Add XSL elements
-//            boolean namespaceOrLessEntered = prefix.length() <= xslNamespaceWithColon.length();
-            Iterator it = elements.iterator();
-            while ( it.hasNext()) {
-                Object next = it.next();
-                if (next instanceof String) {
-                    String nextText = xslNamespaceWithColon + (String)next;
-                    if (nextText.startsWith(prefix)) {
-                        list.put(new MyElement(nextText));
-                    }
+            
+            // First we add the Result elements
+            if (elements.contains(resultElements) && resultGrammarQuery != null) {
+                ResultHintContext resultHintContext = new ResultHintContext(ctx, firstXslPrefixWithColon, null);
+                Enumeration resultEnum = resultGrammarQuery.queryElements(resultHintContext);
+                while (resultEnum.hasMoreElements()) {
+                    list.put(resultEnum.nextElement());
                 }
             }
-        }
-        
-        if (elements.contains(resultElements)) {
-            Set dummyResultSet = new HashSet(Arrays.asList(new String[]{
-                        "html","body","head","p","table","tr","td","br"}));        
-            Iterator it = dummyResultSet.iterator();
-            while ( it.hasNext()) {
-                Object next = it.next();
-                if (((String)next).startsWith(prefix)) {
-                    list.put(new MyElement((String)next));
+
+            // Then we add the XSLT elements of the first prefix (normally of the stylesheet node).
+            addXslElementsToEnum(list, elements, prefixList.get(0) + ":", prefix);
+            
+            // Finally we add xsl namespace elements with other prefixes than the first one
+            for (int prefixInd = 1; prefixInd < prefixList.size(); prefixInd++) {
+                String curPrefix = (String)prefixList.get(prefixInd) + ":";
+                Node curNode = el;
+                String curName = null;
+                while(curNode != null && null != (curName = curNode.getNodeName()) && !curName.startsWith(curPrefix)) {
+                    curNode = curNode.getParentNode();
                 }
-             }
-        }
-        
+                
+                if (curName == null) {
+                    // This must be the document node
+                    addXslElementsToEnum(list, elementDecls.keySet(), curPrefix, prefix);
+                } else {
+                    String parentName = curName.substring(curPrefix.length());
+                    elements = (Set) elementDecls.get(parentName);
+                    addXslElementsToEnum(list, elements, curPrefix, prefix);
+                }
+            }
+            
+         } else if (node instanceof Document) {
+            addXslElementsToEnum(list, elementDecls.keySet(), prefixList.get(0) + ":", prefix);
+        } else {
+            return EmptyEnumeration.EMPTY;
+        }        
+              
         return list;                        
     }
-
-    /**
-     * @stereotype query
-     * @output list of results that can be queried on name, and attributes
-     * @time Performs fast up to 300 ms. 
-     * @param ctx represents virtual attribute <code>Node</code> to be replaced. Its parent is a element node.
-     * @return enumeration of <code>GrammarResult</code>s (ATTRIBUTE_NODEs) that can be queried on name, and attributes.
-     *         Every list member represents one possibility.  
-     */
+    
     public Enumeration queryAttributes(HintContext ctx) {
         Element el = ((Attr)ctx).getOwnerElement();
         if (el == null) return EmptyEnumeration.EMPTY;
+        String elTagName = el.getTagName();
         NamedNodeMap existingAttributes = el.getAttributes();
-        String xslNamespaceWithColon = xslNamespacePrefix + ":";
+         
+        updateProperies(el);
         
+       
+        String curXslPrefix = null;
+        for (int ind = 0; ind < prefixList.size(); ind++) {
+            if (elTagName.startsWith((String)prefixList.get(ind))){
+                curXslPrefix = (String)prefixList.get(ind) + ":";
+                break;
+            }
+        }
+                
         Set possibleAttributes;
-        if (el.getTagName().startsWith(xslNamespaceWithColon)) {
+        if (curXslPrefix != null) {
             // Attributes of XSL element
-            possibleAttributes = (Set) attrDecls.get(el.getTagName().substring(xslNamespaceWithColon.length()));
+            possibleAttributes = (Set) attrDecls.get(el.getTagName().substring(curXslPrefix.length()));
         } else {
-            // Attributes of Result element
+            // XSL Attributes of Result element
             possibleAttributes = new HashSet(resultElementAttr.size());
-            Iterator it = resultElementAttr.iterator();
-            while ( it.hasNext()) {
-                possibleAttributes.add(xslNamespaceWithColon + (String) it.next());
+            if (prefixList.size() > 0) {
+                Iterator it = resultElementAttr.iterator();
+                while ( it.hasNext()) {
+                    possibleAttributes.add((String)prefixList.get(0) + ":" + (String) it.next());
+                }
             }
         }
         if (possibleAttributes == null) return EmptyEnumeration.EMPTY;
@@ -362,6 +399,17 @@ public class XSLGrammarQuery implements GrammarQuery{
         String prefix = ctx.getCurrentPrefix();
         
         QueueEnumeration list = new QueueEnumeration();
+        
+        if (resultGrammarQuery != null) {
+            Enumeration enum = resultGrammarQuery.queryAttributes(ctx);
+            while(enum.hasMoreElements()) {
+                GrammarResult resNode = (GrammarResult)enum.nextElement();
+                if (!possibleAttributes.contains(resNode.getNodeName())) {
+                    list.put(resNode);
+                }
+            }
+        }
+        
         Iterator it = possibleAttributes.iterator();
         while ( it.hasNext()) {
             String next = (String) it.next();
@@ -371,260 +419,174 @@ public class XSLGrammarQuery implements GrammarQuery{
                 }
             }
         }
-        
+                
         return list;
     }
 
-    /**
-     * Return options for value at given context.
-     * It could be also used for completing of value parts such as Ant or XSLT property names (how to trigger it?).
-     * @semantics Navigates through read-only Node tree to determine context and provide right results.
-     * @postconditions Let ctx unchanged
-     * @time Performs fast up to 300 ms.
-     * @stereotype query
-     * @input ctx represents virtual Node that has to be replaced (parent can be either Attr or Element), its own attributes does not name sense, it can be used just as the navigation start point.
-     * @return enumeration of <code>GrammarResult</code>s (TEXT_NODEs) that can be queried on name, and attributes.
-     *         Every list member represents one possibility.  
-     */
     public Enumeration queryValues(HintContext ctx) {
        return EmptyEnumeration.EMPTY;
     }
 
-    /**
-     * Allow to get names of <b>parsed general entities</b>.
-     * @return enumeration of <code>GrammarResult</code>s (ENTITY_REFERENCE_NODEs)
-     */
     public Enumeration queryEntities(String prefix) {
        return EmptyEnumeration.EMPTY;
     }
 
-    /**
-     * Allow to get names of <b>declared notations</b>.
-     * @return enumeration of <code>GrammarResult</code>s (NOTATION_NODEs)
-     */    
     public Enumeration queryNotations(String prefix) {
         return EmptyEnumeration.EMPTY;
     }
     
-    public String toString() {
-        return "XSLT grammar";
+////////////////////////////////////////////////////////////////////////////////
+// Private helper methods    
+    
+    /**
+     * @param enum the Enumeration which the element should be added to
+     * @param set a set containing strings which should be added (with prefix) to the enum
+     * @param namespacePrefix a prefix at the form "xsl:" which should be added in front 
+     *          of the names in the set.
+     * @param startWith Elements should only be added to enum if they start with this string
+     */
+    private void addXslElementsToEnum(QueueEnumeration enum, Set set, String namespacePrefix, String startWith) {
+        if (startWith.startsWith(namespacePrefix) || namespacePrefix.startsWith(startWith)) {
+            Iterator it = set.iterator();
+            while ( it.hasNext()) {
+                Object next = it.next();
+                if (next instanceof String) {
+                    String nextText = namespacePrefix + (String)next;
+                    if (nextText.startsWith(startWith)) {
+                        enum.put(new MyElement(nextText));
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * This method traverses up the document tree, investigates it and updates 
+     * prefixList, resultGrammarQuery, lastDoctypeSystem or lastDoctypePublic
+     * members if necessery.
+     * @param curNode the node which from wich the traversing should start.
+     */
+    private void updateProperies(Node curNode) {
+        prefixList.clear();
+        
+        // Traverse up the documents tree
+        Node rootNode = curNode;
+        while (curNode != null && !(curNode instanceof Document)) {
+            
+            // Update the xsl namespace prefix list
+            NamedNodeMap attributes = curNode.getAttributes();
+            for (int ind = 0; ind < attributes.getLength(); ind++) {
+                Attr attr = (Attr)attributes.item(ind);
+                String attrName = attr.getName();
+                if (attrName != null && attrName.startsWith("xmlns:")) {
+                    if (attr.getValue().equals("http://www.w3.org/1999/XSL/Transform")) {
+                        prefixList.add(0, attrName.substring(6));
+                    }
+                }
+            }
+            
+            
+            rootNode = curNode;
+            curNode = rootNode.getParentNode();
+        }
+        
+        boolean outputFound = false;
+        if (prefixList.size() > 0) {
+            String outputElName = (String)prefixList.get(0) + ":output";
+            Node childOfRoot = rootNode.getFirstChild();
+            while (childOfRoot != null) {
+                String childNodeName = childOfRoot.getNodeName();
+                if (childNodeName != null && childNodeName.equals(outputElName)) {
+                    Element outputEl = (Element)childOfRoot;
+                    String curDoctypePublic = outputEl.getAttribute("doctype-public");
+                    String curDoctypeSystem = outputEl.getAttribute("doctype-system");
+                    
+                    if (curDoctypePublic != null && !curDoctypePublic.equals(lastDoctypePublic) || 
+                      curDoctypePublic == null && lastDoctypePublic != null ||
+                      curDoctypeSystem != null && !curDoctypeSystem.equals(lastDoctypeSystem) || 
+                      curDoctypeSystem == null && lastDoctypeSystem != null) {
+                        setOutputDoctype(curDoctypePublic, curDoctypeSystem);
+                    }
+                    
+                    outputFound = true;
+                    break;
+                }
+                childOfRoot = childOfRoot.getNextSibling();
+            }
+        }
+        
+        if (!outputFound) {
+            setOutputDoctype(null, null);
+        }
+    }
+
+    /**
+     * Updates resultGrammarQuery by parsing the DTD specified by publicId and 
+     * systemId. lastDoctypeSystem and lastDoctypePublic are assigned to the new values.
+     * @param publicId the public identifier of the DTD
+     * @param publicId the system identifier of the DTD
+     */
+    private void setOutputDoctype(String publicId, String systemId) {
+        lastDoctypePublic = publicId;
+        lastDoctypeSystem = systemId;
+        
+        if (publicId == null && systemId == null) {
+            resultGrammarQuery = null;
+            return;
+        }
+        
+        UserCatalog catalog = UserCatalog.getDefault();
+        EntityResolver resolver = catalog.getEntityResolver();
+        InputSource inputSource = null;
+//        System.out.println("setOutputDoctype.resolver: " + resolver);
+        if (resolver != null) {
+            try {
+                inputSource = resolver.resolveEntity(publicId, systemId);
+            } catch(SAXException e) {
+//                System.out.println("setOutputDoctype.SAXException: " + e.getMessage());
+            } catch(IOException e) {
+//                System.out.println("setOutputDoctype.IOException: " + e.getMessage());
+            } // Will be handled below
+        }
+        
+        if (inputSource == null) {
+            try {
+                java.net.URL url = new java.net.URL(systemId);
+                inputSource = new InputSource(url.openStream());
+                inputSource.setPublicId(publicId);
+                inputSource.setSystemId(systemId);
+            } catch(IOException e) {
+//                System.out.println("setOutputDoctype.IOException: " + e.getMessage());
+                resultGrammarQuery = null;
+                return;
+            }
+        }
+
+        DTDParser dtdParser = new DTDParser(true);
+        resultGrammarQuery = dtdParser.parse(inputSource);
+        
+    }
+    
+////////////////////////////////////////////////////////////////////////////////
+// Private helper classes    
+    
+    private class ResultHintContext extends ResultNode implements HintContext {
+        private String currentPrefix;
+        
+        public ResultHintContext(HintContext peer, String ignorePrefix, String onlyUsePrefix) {
+            super(peer, ignorePrefix, onlyUsePrefix);
+            currentPrefix = peer.getCurrentPrefix();
+        }
+        
+        public String getCurrentPrefix() {
+            return currentPrefix;
+        }
     }
     
     // Result classes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        
-    private static abstract class AbstractResultNode implements Node, GrammarResult {
-        
-        private static final String domExText = "This read-only implementation supports DOM level 1 Core and XML module.";  //NOI18N;
-        
-        public String getNodeName() {
-            return null;
-        }
-
-        /**
-         * @return false
-         */
-        public boolean isSupported(String feature, String version) {
-            return "1.0".equals(version);
-        }
-
-        public void setPrefix(String str) throws org.w3c.dom.DOMException {
-            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public String getPrefix() {
-            return null;    // some client determines DOM1 by NoSuchMethodError
-        }
-
-        public org.w3c.dom.Node getPreviousSibling() {
-            return null;
-        }
-
-        //!!! rather abstract to force all to reimplement
-        public abstract short getNodeType();
-
-        public org.w3c.dom.Document getOwnerDocument() {
-            // let it be the first item
-            return null;
-        }
-
-        public org.w3c.dom.Node replaceChild(org.w3c.dom.Node node, org.w3c.dom.Node node1) throws org.w3c.dom.DOMException {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public org.w3c.dom.Node cloneNode(boolean param) {
-            return (Node) this;  //we are immutable, only problem with references may appear
-        }
-
-        public org.w3c.dom.Node getNextSibling() {
-            return null;
-        }
-
-        public org.w3c.dom.Node insertBefore(org.w3c.dom.Node node, org.w3c.dom.Node node1) throws org.w3c.dom.DOMException {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public String getNamespaceURI() {
-            return null;    // some client determines DOM1 by NoSuchMethodError
-        }
-
-        public org.w3c.dom.NamedNodeMap getAttributes() {
-            return null;
-        }
-
-        public org.w3c.dom.NodeList getChildNodes() {       
-            return null;
-        }
-
-        public String getNodeValue() throws org.w3c.dom.DOMException {
-            // attribute, text, pi data
-            return null;
-        }
-
-        public org.w3c.dom.Node appendChild(org.w3c.dom.Node node) throws org.w3c.dom.DOMException {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public String getLocalName() {
-            return null;    // some client determines DOM1 by NoSuchMethodError
-        }
-
-        public org.w3c.dom.Node getParentNode() {
-            return null;
-        }
-
-        public void setNodeValue(String str) throws org.w3c.dom.DOMException {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public org.w3c.dom.Node getLastChild() {
-            return null;
-        }
-
-        public boolean hasAttributes() {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public void normalize() {
-            // ignore
-        }
-
-        public org.w3c.dom.Node removeChild(org.w3c.dom.Node node) throws org.w3c.dom.DOMException {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        /**
-         * @return false
-         */
-        public boolean hasChildNodes() {
-            return false;
-        }
-
-        /**
-         * @return null
-         */
-        public org.w3c.dom.Node getFirstChild() {
-            return null;
-        }
-
-
-        // A bonus Element interface ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
-
-        public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public String getAttributeNS(String namespaceURI, String localName) {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public String getAttribute(String name) {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public Attr removeAttributeNode(Attr oldAttr) throws DOMException {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public Attr getAttributeNode(String name) {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public boolean hasAttribute(String name) {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public String getTagName() {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-       }
-
-        public Attr getAttributeNodeNS(String namespaceURI, String localName) {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public void removeAttribute(String name) throws DOMException {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public Attr setAttributeNodeNS(Attr newAttr) throws DOMException {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public void setAttribute(String name, String value) throws DOMException {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public NodeList getElementsByTagName(String name) {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public boolean hasAttributeNS(String namespaceURI, String localName) {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public Attr setAttributeNode(Attr newAttr) throws DOMException {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public void removeAttributeNS(String namespaceURI, String localName) throws DOMException {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public void setAttributeNS(String namespaceURI, String qualifiedName, String value) throws DOMException {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-
-        // A bonus Attr implementation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-        public boolean getSpecified() {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public String getName() {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public Element getOwnerElement() {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public void setValue(String value) throws DOMException {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        public String getValue() {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
-
-        // Notation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-        public String getPublicId() {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }        
-
-        public String getSystemId() {
-           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
-        }
+    
+    
+    private static abstract class AbstractResultNode extends AbstractNode implements GrammarResult {
         
         public Icon getIcon(int kind) {
             return null;
@@ -653,7 +615,25 @@ public class XSLGrammarQuery implements GrammarQuery{
         }
         
     }
+    
+    private static class MyEntityReference extends AbstractResultNode implements EntityReference {
         
+        private String name;
+        
+        MyEntityReference(String name) {
+            this.name = name;
+        }
+        
+        public short getNodeType() {
+            return Node.ENTITY_REFERENCE_NODE;
+        }
+        
+        public String getNodeName() {
+            return name;
+        }
+                
+    }
+    
     private static class MyElement extends AbstractResultNode implements Element {
         
         private String name;
@@ -700,5 +680,25 @@ public class XSLGrammarQuery implements GrammarQuery{
             return null;  //??? what spec says
         }
         
+        
     }
+
+    private static class MyNotation extends AbstractResultNode implements Notation {
+        
+        private String name;
+        
+        MyNotation(String name) {
+            this.name = name;
+        }
+        
+        public short getNodeType() {
+            return Node.NOTATION_NODE;
+        }
+        
+        public String getNodeName() {
+            return name;
+        }
+                        
+    }
+
 }
