@@ -138,7 +138,7 @@ public final class Util extends Object {
             int end = part.indexOf(PRB_SEPARATOR_CHAR, 1);
             String result;
             result = (end == -1) ? part.substring(1) : part.substring(1, end);
-            return (result.length() == 0) ? null : result;
+            return (result.length() == 0) ? "" : result;
         }
         catch (ArrayIndexOutOfBoundsException ex) {
             return null;
