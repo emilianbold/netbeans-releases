@@ -8,4 +8,4 @@ OpenIDE-Module-Description: com.netbeans.developer.modules.debugger.jpda.docs.He
 Class-Path: ext/jpda.jar
 
 Name: com/netbeans/developer/modules/debugger/jpda/JPDADebuggerType.class
-OpenIDE-Module-Class: Executor
+OpenIDE-Module-Class: Service
