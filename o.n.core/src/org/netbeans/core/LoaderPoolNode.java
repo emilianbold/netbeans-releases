@@ -647,7 +647,7 @@ public final class LoaderPoolNode extends AbstractNode {
         */
         public void propertyChange (PropertyChangeEvent ev) {
             String prop = ev.getPropertyName ();
-            if (DataLoader.PROP_ACTIONS.equals (ev) || DataLoader.PROP_DISPLAY_NAME.equals (ev))
+            if (DataLoader.PROP_ACTIONS.equals (prop) || DataLoader.PROP_DISPLAY_NAME.equals (prop))
                 return; // these are not important to the pool, i.e. to file recognition
             if (installationFinished) {
                 superFireChangeEvent ();
