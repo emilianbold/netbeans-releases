@@ -726,7 +726,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
       </fileset>
     </delete>
     <delete dir="javadoc"/>
-    <ant dir="api/examples" target="clean"/>
+    <!-- ant dir="api/examples" target="clean"/ -->
   </target>
 
     <target  name="standalone-fs" depends="standalone-fs-prepare" description="Creates ZIP file suitable for download. ZIP file contains all JARs necessary for using standalone filesystems (excluding a JAXP implementation).">
