@@ -36,10 +36,10 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules"/>
+    <mkdir dir="netbeans/modules/autoload"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/openidex.jar"
+    <locjar jarfile="netbeans/modules/autoload/openidex.jar"
             manifest="manifest-subst.mf"
             basedir="src"
 	    excludesfile="../nbbuild/standard-jar-excludes.txt"

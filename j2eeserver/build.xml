@@ -88,7 +88,7 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="${nbroot}/openide/netbeans/lib">
                 <include name="openide*.jar"/>
         </fileset>
-        <pathelement location="${nbroot}/openidex/netbeans/modules/openidex.jar"/>
+        <pathelement location="${nbroot}/openidex/netbeans/modules/autoload/openidex.jar"/>
         <pathelement location="${nbroot}/logger/netbeans/lib/ext/logger.jar"/>
         <pathelement location="${nbroot}/jarpackager/netbeans/modules/jarpackager.jar"/>
         <pathelement location="${nbroot}/debuggerjpda/netbeans/modules/jpdaDebugger.jar"/>
@@ -140,11 +140,11 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="${nbroot}/openide/netbeans/lib">
                 <include name="openide*.jar"/>
         </fileset>
-        <pathelement location="${nbroot}/openidex/netbeans/modules/openidex.jar"/>
+        <pathelement location="${nbroot}/openidex/netbeans/modules/autoload/openidex.jar"/>
         <pathelement location="${nbroot}/logger/netbeans/lib/ext/logger.jar"/>
         <pathelement location="${nbroot}/jarpackager/netbeans/modules/jarpackager.jar"/>
         <pathelement location="${nbroot}/debuggerjpda/netbeans/modules/jpdaDebugger.jar"/>
-        <pathelement location="${nbroot}/debuggercore/netbeans/modules/debuggerCore.jar"/>
+        <pathelement location="${nbroot}/debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>
         <pathelement location="${nbroot}/core/netbeans/lib/core.jar"/>
       </classpath>
     </javac>

@@ -45,7 +45,7 @@ ToDo:
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-	<pathelement location="../debuggercore/netbeans/modules/debuggerCore.jar"/>
+	<pathelement location="../debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>
       </classpath>
     </javac>
   </target>

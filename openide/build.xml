@@ -515,7 +515,7 @@ Included in JDK 1.3, else you may need to download it separately."/>
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-        <pathelement location="../openidex/netbeans/modules/openidex.jar"/>
+        <pathelement location="../openidex/netbeans/modules/autoload/openidex.jar"/>
       </classpath>
     </javac>
     <mkdir dir="examplemodules"/>
