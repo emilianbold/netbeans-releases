@@ -694,7 +694,7 @@ Tag:
     <!-- zip task not well suited to making final build, as it does not set +x bits -->
     <!-- so on Unix try to use native ZIP first -->
     <delete file="NetBeans-${buildnum}.zip"/>
-    <exec executable="zip" dir="." os="Linux SunOS Solaris" failonerror="false">
+    <exec executable="zip" dir="." os="Linux SunOS Solaris Mac OS X" failonerror="false">
       <arg value="-r"/>
       <arg value="NetBeans-${buildnum}.zip"/>
       <arg value="${netbeans.dest}"/>
@@ -777,7 +777,7 @@ the ${netbeans.dest}/bin/ directory.
       <arg file="${test.user.dir}"/>
       <arg line="${sanitystart.args}"/>
     </exec>
-    <exec os="Linux SunOS Solaris" dir="." executable="sh" failonerror="yes" timeout="600000">
+    <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh" failonerror="yes" timeout="600000">
       <arg value="${netbeans.dest}/bin/runide.sh"/>
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
@@ -808,7 +808,7 @@ the ${netbeans.dest}/bin/ directory.
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
     </exec>
-    <exec os="Linux SunOS Solaris" dir="." executable="sh" failonerror="yes">
+    <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh" failonerror="yes">
       <arg value="${netbeans.dest}/bin/runide.sh"/>
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
