@@ -38,8 +38,8 @@ public class SwingBrowserBeanInfo extends SimpleBeanInfo {
      */
     public BeanDescriptor getBeanDescriptor() {
         BeanDescriptor beanDescriptor = new BeanDescriptor  (SwingBrowser.class);
-        beanDescriptor.setDisplayName (NbBundle.getMessage (SwingBrowser.class, "CTL_SwingBrowser"));
-        beanDescriptor.setShortDescription (NbBundle.getMessage (SwingBrowser.class, "HINT_SwingBrowser"));
+        beanDescriptor.setDisplayName (NbBundle.getMessage (SwingBrowserBeanInfo.class, "CTL_SwingBrowser"));
+        beanDescriptor.setShortDescription (NbBundle.getMessage (SwingBrowserBeanInfo.class, "HINT_SwingBrowser"));
         return beanDescriptor;
     }
 
@@ -57,9 +57,12 @@ public class SwingBrowserBeanInfo extends SimpleBeanInfo {
      */
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
-            return new PropertyDescriptor[] {
-                new PropertyDescriptor ("name", SwingBrowser.class, "getName", null) // NOI18N
+            PropertyDescriptor [] props = new PropertyDescriptor [] {
+                new PropertyDescriptor (SwingBrowser.PROP_DESCRIPTION, SwingBrowser.class, "getDescritpion", null) // NOI18N
             };
+            props[0].setDisplayName (NbBundle.getMessage (SwingBrowserBeanInfo.class, "PROP_SwingBrowserDescription"));
+            props[0].setShortDescription (NbBundle.getMessage (SwingBrowserBeanInfo.class, "HINT_SwingBrowserDescription"));
+            return props;
         } catch( IntrospectionException e) {
             return null;
         }

@@ -26,6 +26,9 @@ import org.openide.util.NbBundle;
 
 public class SwingBrowser implements HtmlBrowser.Factory, java.io.Serializable {
 
+    /** Property name */
+    public static final String PROP_DESCRIPTION = "description"; // NOI18N
+
     protected transient PropertyChangeSupport pcs;
     
     private static final long serialVersionUID = -3735603646171376891L;
@@ -43,8 +46,8 @@ public class SwingBrowser implements HtmlBrowser.Factory, java.io.Serializable {
     /** Getter for browser name
      *  @return browserName name of browser
      */
-    public String getName () {
-        return NbBundle.getMessage (SwingBrowser.class, "CTL_SwingBrowser");
+    public String getDescritpion () {
+        return NbBundle.getMessage (SwingBrowser.class, "LBL_SwingBrowserDescription");
     }
     
     /**
