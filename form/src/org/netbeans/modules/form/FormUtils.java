@@ -31,6 +31,7 @@ import org.netbeans.api.java.classpath.*;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 //import org.netbeans.api.java.platform.JavaPlatform;
 
+import org.netbeans.modules.form.editors2.IconEditor;
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
 
 /**
@@ -658,6 +659,8 @@ public class FormUtils
             catch (Exception ex) {
                 org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
+        } else if (value instanceof IconEditor.NbImageIcon) {
+            return new IconEditor.NbImageIcon((IconEditor.NbImageIcon)value);
         }
 
         return null;
@@ -1180,7 +1183,7 @@ public class FormUtils
 
         public OIS(InputStream is, ClassLoader loader) throws IOException {
             super(is);
-            classLoader = loader;
+            classLoader = (loader == null) ? ClassLoader.getSystemClassLoader() : loader;
         }
 
         protected Class resolveClass(ObjectStreamClass streamCls)
