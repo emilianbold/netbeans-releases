@@ -118,23 +118,23 @@ public class MnemonicEditor extends PropertyEditorSupport implements EnhancedPro
     }
     
     /**
-     * Accepts Character and String values. If the argument is
+     * Accepts Integer, Character and String values. If the argument is
      * a String the first character is taken as the new value.
-     * @param v new value
+     * @param newValue new value
      */
     public void setValue(Object newValue) throws IllegalArgumentException {
         if  (newValue instanceof Integer) {
             super.setValue(newValue);
             return;
-        }        
+        }
         if  (newValue instanceof Character) {
-            super.setValue(newValue);
+            super.setValue(new Integer((int)(((Character)newValue).charValue())));
             return;
         }
         if (newValue instanceof String) {
             String text = (String ) newValue;
             if (text.length() >= 1) {
-                super.setValue(new Character(text.charAt(0)));
+                super.setValue(new Integer((int)text.charAt(0)));
                 return;
             }
         }
