@@ -155,23 +155,7 @@ class EjbJarActionProvider implements ActionProvider {
                     return;
                 }
             }
-            J2eeModuleProvider jmp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-            ServerDebugInfo sdi = jmp.getServerDebugInfo ();
-            String h = sdi.getHost();
-            String transport = sdi.getTransport();
-            String address = "";                                                //NOI18N
-            
-            if (transport.equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
-                address = sdi.getShmemName();
-            } else {
-                address = Integer.toString(sdi.getPort());
-            }
-            
             p = new Properties();
-            p.setProperty("jpda.transport", transport);
-            p.setProperty("jpda.host", h);
-            p.setProperty("jpda.address", address);
-            p.setProperty("client.urlPart", project.getEjbModule().getUrl());
         //COMPILATION PART
         } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             FileObject[] sourceRoots = project.getSourceRoots().getRoots();
