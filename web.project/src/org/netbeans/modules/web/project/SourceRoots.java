@@ -226,6 +226,11 @@ public final class SourceRoots {
                     public Object run() {
                         String[] originalProps = getRootProperties();
                         URL[] originalRoots = getRootURLs();
+                        
+                        //roots and properties don't match -> return
+                        if (originalProps.length != originalRoots.length)
+                            return null;
+                        
                         Map oldRoots2props = new HashMap ();
                         for (int i=0; i<originalProps.length;i++) {
                             oldRoots2props.put (originalRoots[i],originalProps[i]);
