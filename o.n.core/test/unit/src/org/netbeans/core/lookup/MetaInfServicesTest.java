@@ -131,7 +131,7 @@ public class MetaInfServicesTest extends NbTestCase {
         LookupL l = new LookupL();
         r.addLookupListener(l);
         twiddle(m2, TWIDDLE_ENABLE);
-        assertTrue(l.gotSomething());
+        assertTrue("Turning on a second module with a manifest service fires a lookup change", l.gotSomething());
         instances = new ArrayList(r.allInstances());
         assertEquals(2, instances.size());
         assertEquals(instance1, instances.get(0));

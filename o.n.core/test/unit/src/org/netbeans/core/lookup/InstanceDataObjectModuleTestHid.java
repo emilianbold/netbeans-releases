@@ -49,8 +49,16 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
     
     private ModuleManager mgr;
     protected Module m1, m2;
+
+    private static Throwable first = null;
     
     protected void setUp() throws Exception {
+        if (first == null) {
+            first = new Throwable("First called here:");
+        } else {
+            first.printStackTrace();
+            new Throwable("I have been called twice!").printStackTrace();
+        }
         mgr = NbTopManager.get().getModuleSystem().getManager();
         final File jar1 = new File(InstanceDataObjectModuleTestHid.class.getResource("data/test1.jar").getPath());
         final File jar2 = new File(InstanceDataObjectModuleTestHid.class.getResource("data/test2.jar").getPath());
