@@ -611,6 +611,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (ed instanceof XMLPropertyEditor) {
           ed.setValue (value);
           valueNode = ((XMLPropertyEditor)ed).storeToXML (topDocument);
+          if (valueNode == null) continue; // editor refused to save the value
         } else {
           encodedValue = encodePrimitiveValue (value);
           if (encodedValue == null) encodedSerializeValue = encodeValue (value);
@@ -740,6 +741,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       if (prop.getCurrentEditor () instanceof XMLPropertyEditor) {
         prop.getCurrentEditor ().setValue (value);
         valueNode = ((XMLPropertyEditor)prop.getCurrentEditor ()).storeToXML (topDocument);
+        if (valueNode == null) continue; // property editor refused to save the value
       } else {
         encodedValue = encodePrimitiveValue (value);
         if (encodedValue == null) encodedSerializeValue = encodeValue (value);
@@ -1272,6 +1274,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  26   Gandalf   1.25        8/6/99   Ian Formanek    Survives when storeToXML
+ *       returns null
  *  25   Gandalf   1.24        8/6/99   Ian Formanek    displaying error log
  *  24   Gandalf   1.23        8/2/99   Ian Formanek    NonVisuals element is 
  *       not saved if empty
