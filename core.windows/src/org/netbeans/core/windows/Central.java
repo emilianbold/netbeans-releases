@@ -140,15 +140,12 @@ final class Central implements ControllerHandler {
             // and user clicks in the currently active mode, not allow to exit in such case and fire changes to
             // force the slided-out window to disappear.
             ModeImpl impl = model.getSlidingMode(Constants.BOTTOM);
-            if (impl == null || impl.getSelectedTopComponent() == null) {
-                return;
-            }
+            boolean bottom = (impl == null || impl.getSelectedTopComponent() == null);
             impl = model.getSlidingMode(Constants.LEFT);
-            if (impl == null || impl.getSelectedTopComponent() == null) {
-                return;
-            }
+            boolean left = (impl == null || impl.getSelectedTopComponent() == null);
             impl = model.getSlidingMode(Constants.RIGHT);
-            if (impl == null || impl.getSelectedTopComponent() == null) {
+            boolean right = (impl == null || impl.getSelectedTopComponent() == null);
+            if (bottom && left && right) {
                 return;
             }
         }
