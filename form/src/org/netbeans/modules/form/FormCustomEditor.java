@@ -48,7 +48,7 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
 
     allEditors = FormPropertyEditorManager.getAllEditors (editor.getPropertyType (), false);
     allCustomEditors = new Component[allEditors.length];
-    PropertyEditor currentlyUsedEditor = editor.getCurrentEditor ();
+    PropertyEditor currentlyUsedEditor = editor.getModifiedEditor ();
     if (currentlyUsedEditor == null) {
       currentlyUsedEditor = allEditors[0];
       editor.setModifiedEditor (currentlyUsedEditor);
@@ -154,6 +154,7 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
 
 /*
  * Log
+ *  10   Gandalf   1.9         8/1/99   Ian Formanek    
  *  9    Gandalf   1.8         7/23/99  Ian Formanek    Fixes problem with 
  *       properties, where the RADConnectionPropertryEditor is the only one 
  *       available
