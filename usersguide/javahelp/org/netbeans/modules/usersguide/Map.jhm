@@ -535,7 +535,9 @@ the Options window:-->
    <mapID target="org.netbeans.core.ui.ModuleNode" url="configure/modules/modulenodes.html" />
    <mapID target="org.netbeans.core.ui.ModuleNode$Item" url="configure/modules/modulenodes.html" />   
    <mapID target="org.netbeans.core.ui.ModuleNode$CategoryNode" url="configure/modules/modulenodes.html" />   
-      
+
+<!--generic node; for example, used for Runtime | VCS Commands node; remove after 4.1-->         
+   <mapID target="org.netbeans.core.ui.LookupNode" url="pending.html" />   
    
 <!--OptionsAction is Options window:--> 
    <mapID target="org.netbeans.core.actions.OptionsAction" url="configure/configure_options.html" /> 
