@@ -200,6 +200,18 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
          supp.removePropertyChangeListener(l);
      }
     
+    public String getAsText() {
+        Object value = getValue();
+        if (value instanceof DataObject) {
+            return ((DataObject)value).getName();
+        }
+        return "";
+    }
+
+    public void setAsText(String text) throws java.lang.IllegalArgumentException {
+        if ((text==null)||(text.equals(""))) setValue(null);
+    }
+
     /** CookieFilter allows you to filter DataObjects
      * based on presence of specified cookies.
      */
