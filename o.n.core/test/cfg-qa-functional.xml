@@ -50,7 +50,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="full ide or ws" executor="ide" name="Project switching" resultsprocessor="unit">
+    <testbag testattribs="full or ide or ws" executor="ide" name="Project switching" resultsprocessor="unit">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/windowsystem/validation/Validation_ProjectSwitching.class"/>		
@@ -253,6 +253,19 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
 <!-- END Property Editors testbag -->
+
+
+<!-- START javahelp testbag -->
+
+    <testbag testattribs="full or validation or javahelp" executor="ide" name="Javahelp tests" resultsprocessor="unit">
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/javahelp/JavaHelpDialogTest.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
+<!-- END javahelp testbag -->
     
     <executor name="code" antfile="build-qa-functional.xml" target="runcodetest"/>
     
