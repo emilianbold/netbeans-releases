@@ -114,19 +114,29 @@ public class SourceFoldersWizardPanel implements WizardDescriptor.Panel, ChangeL
         }
         List l = (List)wizardDescriptor.getProperty(NewJavaFreeformProjectSupport.PROP_EXTRA_JAVA_SOURCE_FOLDERS);
         if (l != null) {
-            // TODO: should not remove all source folders here
-            pm.clearSourceFolders();
             Iterator it = l.iterator();
             while (it.hasNext()) {
                 String path = (String)it.next();
                 assert it.hasNext();
                 String label = (String)it.next();
-                JavaProjectGenerator.SourceFolder sf = new JavaProjectGenerator.SourceFolder();
-                sf.location = path;
-                sf.label = label;
-                sf.type = JavaProjectConstants.SOURCES_TYPE_JAVA;
-                sf.style = JavaProjectNature.STYLE_PACKAGES;
-                pm.addSourceFolder(sf, false);
+                // try to find if the model already contains this source folder
+                boolean found = false;
+                for (int i = 0; i < pm.getSourceFoldersCount(); i++) {
+                    JavaProjectGenerator.SourceFolder existingSf = pm.getSourceFolder(i);
+                    if (existingSf.location.equals(path)) {
+                        found = true;
+                        break;
+                    }
+                }
+                // don't add the folder if it is already in the model
+                if (!found) {
+                    JavaProjectGenerator.SourceFolder sf = new JavaProjectGenerator.SourceFolder();
+                    sf.location = path;
+                    sf.label = label;
+                    sf.type = JavaProjectConstants.SOURCES_TYPE_JAVA;
+                    sf.style = JavaProjectNature.STYLE_PACKAGES;
+                    pm.addSourceFolder(sf, false);
+                }
             }
         }
         
