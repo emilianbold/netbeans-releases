@@ -76,8 +76,6 @@ public class AntTargetNode extends ElementNode {
     protected void initDisplay () {
         String targetName = el.getAttribute ("name"); // NOI18N
         setNameSuper (targetName);
-        //setDisplayName(targetName);
-        //setShortDescription(targetName + Resources.ANTTARGET_DESCRIPTION);
         String desc = el.getAttribute ("description"); // NOI18N
         if (desc.length () > 0) {
             setShortDescription (desc);
@@ -117,10 +115,12 @@ public class AntTargetNode extends ElementNode {
     }
 
     protected void addProperties (Sheet.Set props) {
-        // [PENDING] I18N for these properties:
-        String[] attrs = new String[] { "name", "description", "if", "unless", "id" }; // NOI18N
+        String[] attrs = new String[] { "name", "description", "if", "unless", /*"id"*/ }; // NOI18N
         for (int i = 0; i < attrs.length; i++) {
-            props.put (new AntProperty (el, attrs[i]));
+            org.openide.nodes.Node.Property prop = new AntProperty (el, attrs[i]);
+            prop.setDisplayName (NbBundle.getMessage (AntTargetNode.class, "PROP_target_" + attrs[i]));
+            prop.setShortDescription (NbBundle.getMessage (AntTargetNode.class, "HINT_target_" + attrs[i]));
+            props.put (prop);
         }
         props.put (new DependsProperty ());
     }
@@ -128,6 +128,8 @@ public class AntTargetNode extends ElementNode {
     private class DependsProperty extends AntProperty {
         public DependsProperty () {
             super (el, "depends"); // NOI18N
+            this.setDisplayName (NbBundle.getMessage (AntTargetNode.class, "PROP_target_depends"));
+            this.setShortDescription (NbBundle.getMessage (AntTargetNode.class, "HINT_target_depends"));
         }
         private Set/*<String>*/ getAvailable () {
             Element proj = (Element) el.getParentNode ();

@@ -50,9 +50,9 @@ public class TargetExecutor implements Runnable {
     public TargetExecutor (AntTargetCookie cookie) throws IOException {
         this.cookie = cookie;
         Element el = cookie.getTargetElement ();
-        if (el == null) throw new IOException ("No <target> found");
+        if (el == null) throw new IOException ("No <target> found"); // NOI18N
         String targetName = el.getAttribute ("name"); // NOI18N
-        if (targetName.length () == 0) throw new IOException ("<target> had no name");
+        if (targetName.length () == 0) throw new IOException ("<target> had no name"); // NOI18N
         targetNames = Collections.singletonList (targetName);
     }
     
