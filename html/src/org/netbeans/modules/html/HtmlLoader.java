@@ -15,9 +15,11 @@ package com.netbeans.developer.modules.loaders.html;
 
 import java.util.*;
 import java.io.IOException;
+import java.net.URL;
 import java.awt.BorderLayout;
 
 import com.netbeans.ide.actions.*;
+import com.netbeans.ide.awt.HtmlBrowser;
 import com.netbeans.ide.cookies.ViewCookie;
 import com.netbeans.ide.loaders.UniFileLoader;
 import com.netbeans.ide.loaders.MultiDataObject;
@@ -82,8 +84,7 @@ public class HtmlLoader extends UniFileLoader {
     });
     obj.getCookieSet ().add (es);
     obj.getCookieSet ().add (
-//      new View (obj.getPrimaryEntry ())
-      new ICEView (obj)
+      new BrowserView (obj)
     );
     return obj;
   }
@@ -91,10 +92,10 @@ public class HtmlLoader extends UniFileLoader {
 
   // innerclasses ......................................................................
 
-  public static class ICEView extends OpenSupport implements ViewCookie {
+  public static class BrowserView extends OpenSupport implements ViewCookie {
     DataObject obj;
 
-    ICEView (DataObject obj) {
+    BrowserView (DataObject obj) {
       super (obj.getPrimaryFile ());
       this.obj = obj;
     }
@@ -103,30 +104,30 @@ public class HtmlLoader extends UniFileLoader {
     * @return the cloneable top component for this support
     */
     protected CloneableTopComponent createCloneableTopComponent () {
-      return new ICEViewComponent (obj);
+      return new BrowserCloneableTopComponent (obj);
     }
   }
 
-  public static class ICEViewComponent extends CloneableTopComponent {
-    private Browser browser;
+  public static class BrowserCloneableTopComponent extends CloneableTopComponent {
+    private HtmlBrowser browser;
     DataObject obj;
 
     /** Constructor
     * @param obj data object we belong to
     */
-    public ICEViewComponent (DataObject obj) {
+    public BrowserCloneableTopComponent (DataObject obj) {
       super (obj);
       this.obj = obj;
 
       setLayout (new BorderLayout ());
-      setMode (Mode.EDITOR);
 //      if (actions != null)
-//        add (SystemAction.getToolbarPresenter (actions), BorderLayout.NORTH);
+//        add (SystemAction.createToolbarPresenter (actions), BorderLayout.NORTH);
 
-      browser = new Browser ();
+      browser = new HtmlBrowser ();
       try {
-        browser.setCurrentLocation ("" + obj.getPrimaryFile ().getURL ());
+        browser.setURL (obj.getPrimaryFile ().getURL ());
       } catch (com.netbeans.ide.filesystems.FileStateInvalidException e) {
+        e.printStackTrace ();
       }
       add (browser, BorderLayout.CENTER);
     }
@@ -136,7 +137,7 @@ public class HtmlLoader extends UniFileLoader {
     * @return the copy of this object
     */
     protected CloneableTopComponent createClonedObject () {
-      return new ICEViewComponent (obj);
+      return new BrowserCloneableTopComponent (obj);
     }
 
     /** This method is called when parent window of this component has focus,
@@ -157,33 +158,11 @@ public class HtmlLoader extends UniFileLoader {
     protected void componentDeactivated () {
     }
   }
-     /*
-  public static class View implements OpenCookie {
-    EditorSupport es;
-
-    /**
-    * Creates cookie for the file specified.
-    * @param fo file object of a class or ser file
-    *
-    public View (MultiDataObject.Entry entry) {
-      es = new EditorSupport (entry);
-      es.setEditable (false);
-    }
-
-    /** Instructs an viewer to be opened. The operation can
-    * immediatelly return and the viewer be openned later.
-    * There can be more viewers opened, so one of them is
-    * randomly choosen and opened.
-    *
-    public void view () {
-      es.open ();
-    }
-    }
-    */
 }
 
 /*
 * Log
+*  6    Gandalf   1.5         2/16/99  Jan Jancura     
 *  5    Gandalf   1.4         2/11/99  Jan Jancura     
 *  4    Gandalf   1.3         2/3/99   Jaroslav Tulach 
 *  3    Gandalf   1.2         1/11/99  Jan Jancura     
