@@ -13,13 +13,19 @@
 
 package org.netbeans.core.windows.view.ui.slides;
 
+import com.sun.rsasign.b;
 import java.awt.Component;
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +34,7 @@ import javax.swing.Action;
 import javax.swing.DefaultSingleSelectionModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.SingleSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -295,6 +302,8 @@ public final class TabbedSlideAdapter implements Tabbed {
                 }
                 return rect;
             }
+        } else {
+            // make the slidebar bigger?? how..
         }
         //shall it ever get here?
         Rectangle rect = slideBar.getBounds();
@@ -304,8 +313,29 @@ public final class TabbedSlideAdapter implements Tabbed {
     public Image createImageOfTab(int tabIndex) {
         TabData dt = slideBar.getModel().getTab(tabIndex);
         if (dt.getComponent() instanceof TopComponent) {
-            return ((TopComponent)dt.getComponent()).getIcon();
+            
+            JLabel lbl = new JLabel(dt.getText());
+            int width = lbl.getFontMetrics(lbl.getFont()).stringWidth(dt.getText());
+            int height = lbl.getFontMetrics(lbl.getFont()).getHeight();
+            Image img = ((TopComponent)dt.getComponent()).getIcon();
+            lbl.setIcon(new ImageIcon(img));
+            width = width + (img.getWidth(null) == -1 ? 16 : img.getWidth(null)) + 6;
+            height = Math.max(height + 5, img.getHeight(null) == -1 ? 21 : 5 + img.getHeight(null));
+            
+            GraphicsConfiguration config = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                        .getDefaultScreenDevice().getDefaultConfiguration();
+            
+            
+            BufferedImage image = config.createCompatibleImage(width, height);
+            Graphics2D g = image.createGraphics();
+            g.setColor(lbl.getForeground());
+            g.setFont(lbl.getFont());
+            g.drawImage(img, 0, 0, null);
+            g.drawString(dt.getText(), 18, height / 2);
+            
+            return image;
         }
+        
         return null;
     }
     
