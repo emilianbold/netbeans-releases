@@ -59,7 +59,7 @@ public class JavadocModule extends ModuleInstall {
         try {
             Utilities2.createAction (SearchDocAction.class,
                                      DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help"), // NOI18N
-                                     "Tutorial", true, false, false, false); // NOI18N
+                                     "Documentation", true, true, false, false); // NOI18N
 
             // Create Action in action pool
             Utilities2.createAction (SearchDocAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); // NOI18N
