@@ -31,7 +31,7 @@ import org.apache.jasper.compiler.JspReader;
 import org.apache.jasper.compiler.Parser;
 import org.apache.jasper.runtime.JspLoader;*/
 
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileStateInvalidException;
@@ -101,7 +101,7 @@ public class JspCompileUtil {
     	    }
     	}
     	catch (DataObjectNotFoundException e) {
-    	    TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, e);
+    	    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
     	}
     	return result;
     }
@@ -114,7 +114,7 @@ public class JspCompileUtil {
     
     /** Finds a fileobject for an absolute file name or null if not found */
     public static FileObject findFileObjectForFile(String fileName) {
-        Repository rep = TopManager.getDefault().getRepository();
+        Repository rep = Repository.getDefault();
         for (Enumeration en = rep.getFileSystems(); en.hasMoreElements(); ) {
             FileSystem fs = (FileSystem)en.nextElement();
             FileObject fo = findFileObjectForFile(fs, fileName);
@@ -129,7 +129,7 @@ public class JspCompileUtil {
      * @return null if such a FileObject was not found
      */
     public static FileObject findFileObjectForFile(String fileName, String resourceName) {
-        Repository rep = TopManager.getDefault().getRepository();
+        Repository rep = Repository.getDefault();
         for (Enumeration en = rep.getFileSystems(); en.hasMoreElements(); ) {
             FileSystem fs = (FileSystem)en.nextElement();
             FileObject fo = findFileObjectForFile(fs, fileName);
@@ -240,7 +240,7 @@ public class JspCompileUtil {
     * </ul> */
     static FileObject getAsRootOfFileSystem(File intendedRoot) {
         // try to find it among current filesystems
-        for (Enumeration en = TopManager.getDefault().getRepository().getFileSystems(); en.hasMoreElements(); ) {
+        for (Enumeration en = Repository.getDefault().getFileSystems(); en.hasMoreElements(); ) {
             FileSystem fs = (FileSystem)en.nextElement();
             File root = NbClassPath.toFile(fs.getRoot());
             if (root != null) {
@@ -268,11 +268,11 @@ public class JspCompileUtil {
                                                    MessageFormat.format(NbBundle.getBundle(JspCompileUtil.class).
                                                                         getString("EXC_JspFSNotCreated"),
                                                                         new Object[] {intendedRoot.getAbsolutePath()}), NotifyDescriptor.ERROR_MESSAGE);
-            TopManager.getDefault().notify(message);
+            DialogDisplayer.getDefault().notify(message);
             return null;
         }
         newFs.setHidden(true);
-        TopManager.getDefault().getRepository().addFileSystem(newFs);
+        Repository.getDefault().addFileSystem(newFs);
         return newFs.getRoot();
     }
 
@@ -338,17 +338,17 @@ public class JspCompileUtil {
      */
     public static synchronized JspParserAPI getJspParser() {
         if (parserFactory == null) {
-            FileObject f = TopManager.getDefault().getRepository().findResource("/J2EE/JSPParser"); // NOI18N
+            FileObject f = Repository.getDefault().findResource("/J2EE/JSPParser"); // NOI18N
             if (f != null) {
                 try {
                     DataFolder folder = (DataFolder)DataObject.find(f).getCookie(DataFolder.class);
                     parserFactory = new JspParserFactory(folder);
                 } 
                 catch (DataObjectNotFoundException ex) {
-                    TopManager.getDefault().getErrorManager().notify(ErrorManager.EXCEPTION, ex);
+                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
                 }
             } else {
-                TopManager.getDefault().getErrorManager().notify(ErrorManager.EXCEPTION, 
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, 
                     new Exception(NbBundle.getBundle(JspCompileUtil.class).getString("EXC_JspParserNotInstalled")));
             }
         }
@@ -406,7 +406,7 @@ public class JspCompileUtil {
 
     private static FileSystem mountFS(FileSystem fs) throws IOException {
         // compare with the other filesystems
-        Enumeration en = TopManager.getDefault().getRepository().getFileSystems();
+        Enumeration en = Repository.getDefault().getFileSystems();
         for (;en.hasMoreElements(); ) {
             FileSystem f = (FileSystem)en.nextElement();
             if (f.getSystemName().equals(fs.getSystemName()))
@@ -415,7 +415,7 @@ public class JspCompileUtil {
         
         // add to the repository
         fs.setHidden(true);
-        TopManager.getDefault().getRepository().addFileSystem(fs);
+        Repository.getDefault().addFileSystem(fs);
         return fs;
     }
 

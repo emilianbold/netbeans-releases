@@ -18,7 +18,6 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 import java.io.IOException;
 
-import org.openide.TopManager;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.filesystems.FileSystem;
@@ -114,7 +113,7 @@ public class TagLibParseSupport implements Node.Cookie {
                 try {
                     JspParserAPI parser = JspCompileUtil.getJspParser();
                     if (parser == null) {
-                        TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, 
+                        ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, 
                         new NullPointerException());
                     }
                     else {
@@ -131,7 +130,7 @@ public class TagLibParseSupport implements Node.Cookie {
                     }
                 }
                 catch (IOException e) { 
-                    TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
+                    ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
                 }
             }
             finally {
@@ -224,7 +223,7 @@ public class TagLibParseSupport implements Node.Cookie {
     static TagLibData createTagLibData(JspInfo.TagLibraryData info, FileSystem fs) {
         JspParserAPI parser = JspCompileUtil.getJspParser();
         if (parser == null) {
-            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, 
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, 
             new NullPointerException());
             return null;
         }

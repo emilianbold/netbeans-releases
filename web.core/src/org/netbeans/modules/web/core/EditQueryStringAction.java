@@ -26,9 +26,10 @@ import org.openide.loaders.ExecSupport;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
 
 import org.netbeans.modules.j2ee.impl.ServerExecSupport;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 
 /**
 * EditQueryStringAction.
@@ -52,13 +53,13 @@ public class EditQueryStringAction extends CookieAction {
 
         dlg.setInputText(WebExecSupport.getQueryString(dObj.getPrimaryFile()));
 
-        if (NotifyDescriptor.OK_OPTION.equals(TopManager.getDefault().notify(dlg))) {
+        if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dlg))) {
             try {
                 // WebExecSupport.setQueryString(dObj.getPrimaryFile(), dlg.getInputText());
                 qsc.setQueryString (dlg.getInputText());
             }
             catch (IOException e) {
-                TopManager.getDefault().notifyException(e);
+                ErrorManager.getDefault().notify(e);
             }
         }
     }

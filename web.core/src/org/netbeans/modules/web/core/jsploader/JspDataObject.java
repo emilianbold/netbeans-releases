@@ -787,10 +787,10 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             }
         } 
         catch (DataObjectNotFoundException e) {
-            TopManager.getDefault().getErrorManager().notify(ErrorManager.WARNING, e);
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
         }
         catch (FileStateInvalidException e) {
-            TopManager.getDefault().getErrorManager().notify(ErrorManager.WARNING, e);
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
         }
     }
     
@@ -839,8 +839,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                                 java.text.MessageFormat.format(NbBundle.getBundle(JspNode.class).getString("FMT_UnsupportedEncoding"), // NOI18N
                                 new Object[] { encoding } )
                             );
-                            TopManager.getDefault().getErrorManager().annotate(t, ex);
-                            TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, t);
+                            ErrorManager.getDefault().annotate(t, ex);
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
                         }
                     } else
                         encoding = null;
@@ -849,7 +849,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                     // actually set the encoding
                     Util.setFileEncoding(servletFileObject, encoding);
                 } catch (IOException ex) {
-                    TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
             else
@@ -887,10 +887,10 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             return DataObject.find(prim);
         }
         catch (java.beans.PropertyVetoException e) {
-            TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, e);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         catch (DataObjectNotFoundException e) {
-            TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, e);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         return dObj;
     }

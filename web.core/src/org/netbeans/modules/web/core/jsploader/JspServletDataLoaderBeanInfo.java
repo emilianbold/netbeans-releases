@@ -17,7 +17,7 @@ import java.beans.*;
 import java.awt.Image;
 
 import org.netbeans.modules.java.JavaDataLoader;
-import org.openide.TopManager;
+import org.openide.ErrorManager;
 
 /** JSP/Servlet loader bean info.
 *
@@ -29,7 +29,7 @@ public class JspServletDataLoaderBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (JavaDataLoader.class) };
         } catch (IntrospectionException ie) {
-            TopManager.getDefault ().notifyException (ie);
+            ErrorManager.getDefault ().notify (ie);
             return null;
         }
     }
