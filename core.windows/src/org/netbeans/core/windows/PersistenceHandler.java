@@ -165,6 +165,15 @@ final class PersistenceHandler implements PersistenceObserver {
             createTopComponentGroupFromConfig(groupCfg);
         }
 
+        // XXX #37188 Hot fix for the problem with initing active
+        // component (even it is not on screen yet).
+        if(activeMode != null) {
+            TopComponent active = activeMode.getSelectedTopComponent();
+            if(active != null) {
+                WindowManagerImpl.getInstance().componentShowing(active);
+            }
+        }
+        
         wm.setActiveMode(activeMode);
         wm.setMaximizedMode(maximizedMode);
 
