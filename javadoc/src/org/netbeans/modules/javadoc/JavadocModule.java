@@ -99,9 +99,10 @@ public class JavadocModule extends ModuleInstall {
   * on DataFolder and JavaDataObject.
   */
   public void restored() {
+   
     
     numberOfStarts ++;
-        
+   
     if ( numberOfStarts < 3 ) {
       /* 
        * This works only on the first start when called from
@@ -197,7 +198,8 @@ public class JavadocModule extends ModuleInstall {
     mount( jdkDocsDir, true );
     
     // Try to find NetBeans open-api documentation
-        
+    // This is now done by Apisupport module
+    /*    
     File apiDocsDir = null;
     
     apiDocsDir = new File ( System.getProperty ("netbeans.user")  + java.io.File.separator + "docs" // NOI18N
@@ -206,9 +208,54 @@ public class JavadocModule extends ModuleInstall {
       apiDocsDir = new File ( System.getProperty ("netbeans.home")  + java.io.File.separator + "docs" // NOI18N
                                  + java.io.File.separator + "openide-api" ); // NOI18N
     mount( apiDocsDir, true );
+    */
     
     // Create default directory for JavaDoc
     StdDocletSettings sdsTemp = new StdDocletSettings();
+    
+        // Reseting javadoc output directory is necessary for 
+        // multiuser installation
+    String fileSep = System.getProperty ("file.separator");
+
+    File directory = null;
+
+    try {
+      directory = new File (System.getProperty ("netbeans.user") + fileSep + "javadoc").getCanonicalFile();
+    }
+    catch ( java.io.IOException e ) {
+      directory = new File (System.getProperty ("netbeans.user") + fileSep + "javadoc").getAbsoluteFile();
+    }
+
+    //if ( sdsTemp.getDirectory() != null && !sdsTemp.getDirectory().equals( directory ) ) {
+    if ( System.getProperty ("netbeans.user") != null && 
+         !System.getProperty ("netbeans.user").equals(System.getProperty ("netbeans.home") ) ) {
+      
+      // Multiuser we need to unmount the old file system
+
+      LocalFileSystem localFS = new LocalFileSystem();
+      try {
+        File oldDirectory = null;
+        try {
+          oldDirectory = new File (System.getProperty ("netbeans.home") + fileSep + "javadoc").getCanonicalFile();
+        }
+        catch ( java.io.IOException e ) {
+          oldDirectory = new File (System.getProperty ("netbeans.home") + fileSep + "javadoc").getAbsoluteFile();
+        }
+
+        localFS.setRootDirectory ( oldDirectory );
+        Repository r = TopManager.getDefault ().getRepository ();
+        
+        FileSystem fs = r.findFileSystem( localFS.getSystemName() );
+
+        if (fs != null) {
+          r.removeFileSystem (fs);
+        }  
+      }
+      catch (java.io.IOException ex) {} 
+      catch (java.beans.PropertyVetoException ex) {}
+    }
+
+    sdsTemp.setDirectory( directory );
     File jdOutputDir = sdsTemp.getDirectory();
     
     if ( !jdOutputDir.isDirectory() ) 
@@ -217,14 +264,12 @@ public class JavadocModule extends ModuleInstall {
     
   }
   
-  
   /** Method finds out wether directory exists and whether it is
    *  a searchable javadoc directory if so mounts the directory
    *  into Javadoc repository
    */
   static void mount( File root, boolean testSearchability ) {
-
-    
+  
     if ((root != null) && (root.isDirectory())) {
       String dirName = root.getAbsolutePath();
 
@@ -241,8 +286,9 @@ public class JavadocModule extends ModuleInstall {
         localFS.setRootDirectory (new File (dirName));
         Repository r = TopManager.getDefault ().getRepository ();
 
-        if (r.findFileSystem(localFS.getSystemName()) == null) {
-
+        FileSystem fs = r.findFileSystem(localFS.getSystemName());
+      
+        if (fs == null) {
           if( !testSearchability ||
               DocFileSystem.getDocFileObject( localFS ) != null ) {  
             r.addFileSystem (localFS);
@@ -275,6 +321,8 @@ public class JavadocModule extends ModuleInstall {
 
 /* 
  * Log
+ *  26   Gandalf   1.25        2/8/00   Petr Hrebejk    Problem with mounting 
+ *       Javadoc output directory in multiuser installation fix
  *  25   Gandalf   1.24        1/19/00  Petr Hrebejk    Hack for project module 
  *       added
  *  24   Gandalf   1.23        1/16/00  Jesse Glick     Actions pool.
