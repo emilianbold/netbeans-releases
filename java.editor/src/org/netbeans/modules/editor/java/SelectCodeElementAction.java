@@ -26,9 +26,10 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.jmi.javamodel.Element;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.loaders.DataObject;
+import org.openide.text.PositionBounds;
 
 /**
 * Java editor kit with appropriate document
@@ -97,7 +98,7 @@ class SelectCodeElementAction extends BaseAction {
                 } else { // select next element
                     DataObject dob = NbEditorUtilities.getDataObject(target.getDocument());
                     if (dob != null) {
-                        JavaMetamodel manager = JavaMetamodel.getManager();
+                        JMManager manager = (JMManager)JMManager.getManager();
                         MDRepository repository = JavaModel.getJavaRepository();
                         repository.beginTrans(true); // write access to enforce reparsing if necessary
                         try {
@@ -118,8 +119,9 @@ class SelectCodeElementAction extends BaseAction {
                                 }
 
                                 if (elem != null) {
-                                    selectionStartOffset = elem.getStartOffset();
-                                    selectionEndOffset = elem.getEndOffset();
+                                    PositionBounds bounds=manager.getElementPosition(elem);
+                                    selectionStartOffset = bounds.getBegin().getOffset();
+                                    selectionEndOffset = bounds.getEnd().getOffset();
                                     
                                     // Additional patching of selection bounds
                                     if (elem instanceof Resource) {
