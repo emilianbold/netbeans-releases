@@ -69,11 +69,6 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="clean">
-    <delete>
-      <fileset dir="src">
-        <include name="**/*.class"/>
-      </fileset>
-    </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="usersguide.nbm"/>
     <delete dir="netbeans"/>
