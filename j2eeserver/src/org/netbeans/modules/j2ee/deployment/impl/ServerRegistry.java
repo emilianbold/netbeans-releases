@@ -216,7 +216,8 @@ public final class ServerRegistry implements java.io.Serializable {
             fireInstanceListeners(ss, false);
             removeInstanceFromFile(instance.getUrl());
         }
-        getDefaultInstance(false);
+        ServerString newinst = getDefaultInstance(false);
+        fireDefaultInstance(def, newinst);
     }
     
     public ServerInstance[] getServerInstances() {
@@ -364,6 +365,9 @@ public final class ServerRegistry implements java.io.Serializable {
         
         if (instance == null) {
             removeDefaultInstanceFile();
+            ServerString oldValue = defaultInstance;
+            defaultInstance = null;
+            fireDefaultInstance(oldValue, null);
         } else {
             if (ServerStringConverter.writeServerInstance(instance, DIR_INSTALLED_SERVERS, FILE_DEFAULT_INSTANCE)) {
                 ServerString oldValue = defaultInstance;

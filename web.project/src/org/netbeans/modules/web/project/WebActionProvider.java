@@ -481,6 +481,9 @@ class WebActionProvider implements ActionProvider {
         
         J2eeModuleProvider jmp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
         ServerDebugInfo sdi = jmp.getServerDebugInfo ();
+        if (sdi == null) {
+            return false;
+        }
 //        server.getServerInstance().getStartServer().getDebugInfo(null);
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
         
@@ -511,34 +514,42 @@ class WebActionProvider implements ActionProvider {
         String instance = antProjectHelper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_INSTANCE);
         boolean selected;
         if (instance != null) {
-            selected = true;
-        } else {
-            // no selected server => warning
-            String server = antProjectHelper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_TYPE);
-            NoSelectedServerWarning panel = new NoSelectedServerWarning (server);
-
-            Object[] options = new Object[] {
-                DialogDescriptor.OK_OPTION,
-                DialogDescriptor.CANCEL_OPTION
-            };
-            DialogDescriptor desc = new DialogDescriptor (panel,
-                    NbBundle.getMessage (NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title"), // NOI18N
-                true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
-            Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
-            dlg.setVisible (true);
-            if (desc.getValue() != options[0]) {
-                selected = false;
-            } else {
-                instance = panel.getSelectedInstance ();
-                selected = instance != null;
-                if (selected) {
-                    WebProjectProperties wpp = new WebProjectProperties (project, antProjectHelper, refHelper);
-                    wpp.put (WebProjectProperties.J2EE_SERVER_INSTANCE, instance);
-                    wpp.store ();
+            J2eeModuleProvider jmp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+            String sdi = jmp.getServerInstanceID();
+            if (sdi != null) {
+                String id = Deployment.getDefault().getServerID(sdi);
+                if (id != null) {
+                    return true;
                 }
             }
-            dlg.dispose();            
         }
+            
+        // no selected server => warning
+        String server = antProjectHelper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_TYPE);
+        NoSelectedServerWarning panel = new NoSelectedServerWarning (server);
+
+        Object[] options = new Object[] {
+            DialogDescriptor.OK_OPTION,
+            DialogDescriptor.CANCEL_OPTION
+        };
+        DialogDescriptor desc = new DialogDescriptor (panel,
+                NbBundle.getMessage (NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title"), // NOI18N
+            true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
+        Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
+        dlg.setVisible (true);
+        if (desc.getValue() != options[0]) {
+            selected = false;
+        } else {
+            instance = panel.getSelectedInstance ();
+            selected = instance != null;
+            if (selected) {
+                WebProjectProperties wpp = new WebProjectProperties (project, antProjectHelper, refHelper);
+                wpp.put (WebProjectProperties.J2EE_SERVER_INSTANCE, instance);
+                wpp.store ();
+            }
+        }
+        dlg.dispose();            
+
         return selected;
     }
     

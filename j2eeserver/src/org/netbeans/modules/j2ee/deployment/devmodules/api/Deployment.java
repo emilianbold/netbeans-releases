@@ -132,11 +132,22 @@ public final class Deployment {
     }
     
     public String getServerID (String instanceId) {
-        return ServerRegistry.getInstance ().getServerInstance (instanceId).getServer ().getShortName ();
+        ServerInstance si = ServerRegistry.getInstance().getServerInstance(instanceId);
+        if (si != null) {
+            return si.getServer().getShortName();
+        }
+        return null;
     }
     
     public String getDefaultServerInstanceID () {
-        return ServerRegistry.getInstance ().getDefaultInstance ().getServerInstance ().getUrl ();
+        ServerString defInst = ServerRegistry.getInstance ().getDefaultInstance ();
+        if (defInst != null) {
+            ServerInstance si = defInst.getServerInstance();
+            if (si != null) {
+                return si.getUrl ();
+            }
+        }
+        return null;
     }
     
     public String [] getInstancesOfServer (String id) {

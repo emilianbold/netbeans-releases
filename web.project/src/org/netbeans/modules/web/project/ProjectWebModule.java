@@ -156,10 +156,12 @@ public final class ProjectWebModule extends J2eeModuleProvider
     public String getServerID () {
         String inst = getServerInstanceID ();
         if (inst != null) {
-            return Deployment.getDefault ().getServerID (inst);
-        } else {
-            return helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_TYPE);
+            String id = Deployment.getDefault().getServerID(inst);
+            if (id != null) {
+                return id;
+            }
         }
+        return helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_TYPE);
     }
 
     public String getServerInstanceID () {

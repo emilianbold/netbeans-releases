@@ -53,7 +53,11 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     }
 
     private void refresh () {
-        WebContextRoot webContextRoot = getServer ().getWebContextRoot();
+        Server s = getServer();
+        if (s == null) {
+            return;
+        }
+        WebContextRoot webContextRoot = s.getWebContextRoot();
         if (webContextRoot != null) {
             webContextRootXpath = webContextRoot.getXpath();
             webContextRootPropName = webContextRoot.getPropName();

@@ -57,7 +57,10 @@ public abstract class J2eeModuleProvider {
     
     public final ServerDebugInfo getServerDebugInfo () {
         ServerInstance si = ServerRegistry.getInstance ().getServerInstance (getServerInstanceID ());
-        return si.getStartServer().getDebugInfo(null);
+        if (si != null) {
+            return si.getStartServer().getDebugInfo(null);
+        }
+        return null;
     }
     
     /**
@@ -115,7 +118,7 @@ public abstract class J2eeModuleProvider {
     private final class IL implements ServerRegistry.InstanceListener {
         
         public void changeDefaultInstance (org.netbeans.modules.j2ee.deployment.impl.ServerString oldInstance, org.netbeans.modules.j2ee.deployment.impl.ServerString newInstance) {
-            if (useDefaultServer () && oldInstance == null || oldInstance.getPlugin() != newInstance.getPlugin()) {
+            if (useDefaultServer () && oldInstance == null || ((newInstance != null) && (oldInstance.getPlugin() != newInstance.getPlugin()))) {
                 ConfigSupportImpl cs = (ConfigSupportImpl) getConfigSupport ();
                 String oldCtxPath = cs.getWebContextRoot(oldInstance.getServer ());
                 cs.resetStorage ();
