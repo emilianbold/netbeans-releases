@@ -121,12 +121,18 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         
         if (isFolder) {
             jLabel3.setText (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_FolderName_Label")); // NOI18N
+            jLabel3.setDisplayedMnemonic (NbBundle.getMessage (SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_FolderName_Label").charAt (0)); // NOI18N
             jLabel2.setText (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_ParentFolder_Label")); // NOI18N
+            jLabel2.setDisplayedMnemonic (NbBundle.getMessage (SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_ParentFolder_Label").charAt (0)); // NOI18N
             jLabel4.setText (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_CreatedFolder_Label")); // NOI18N
+            jLabel4.setDisplayedMnemonic (NbBundle.getMessage (SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_CreatedFolder_Label").charAt (0)); // NOI18N
         } else {
             jLabel3.setText (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_FileName_Label")); // NOI18N
             jLabel2.setText (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_Folder_Label")); // NOI18N
             jLabel4.setText (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_CreatedFile_Label")); // NOI18N
+            jLabel3.setDisplayedMnemonic (NbBundle.getMessage (SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_FileName_Label").charAt (0)); // NOI18N
+            jLabel2.setDisplayedMnemonic (NbBundle.getMessage (SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_Folder_Label").charAt (0)); // NOI18N
+            jLabel4.setDisplayedMnemonic (NbBundle.getMessage (SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_CreatedFile_Label").charAt (0)); // NOI18N
         }
     }
     
@@ -210,6 +216,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
+        jLabel3.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_FileName_Label").charAt(0));
         jLabel3.setText(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_FileName_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -228,6 +235,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 0);
         add(jPanel1, gridBagConstraints);
 
+        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_Project_Label").charAt(0));
         jLabel1.setText(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_Project_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -241,6 +249,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(projectTextField, gridBagConstraints);
 
+        locationLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_Location_Label").charAt(0));
         locationLabel.setText(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_Location_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
@@ -255,6 +264,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
         add(locationComboBox, gridBagConstraints);
 
+        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_ParentFolder_Label").charAt(0));
         jLabel2.setText(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_Folder_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -270,6 +280,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(folderTextField, gridBagConstraints);
 
+        browseButton.setMnemonic(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_Browse_Button").charAt(0));
         browseButton.setText(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_Browse_Button"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
@@ -277,6 +288,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(browseButton, gridBagConstraints);
 
+        jLabel4.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_CreatedFile_Label").charAt(0));
         jLabel4.setText(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_CreatedFile_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;

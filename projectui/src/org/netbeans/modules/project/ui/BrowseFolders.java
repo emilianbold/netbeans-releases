@@ -45,8 +45,6 @@ import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.NbBundle;
 
-// XXX I18N
-
 /**
  *
  * @author  phrebejk
@@ -102,7 +100,8 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12)));
-        jLabel1.setText("Folders:");
+        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "MNE_BrowseFolders_jLabel1").charAt(0));
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "LBL_BrowseFolders_jLabel1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -132,16 +131,15 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         BrowseFolders bf = new BrowseFolders( folders, project, preselectedFileName );
         
         JButton options[] = new JButton[] { 
-            //new JButton( NbBundle.getMessage( BrowseFolders.class, "LBL_BrowseFolders_Select_Option") ), // NOI18N
-            //new JButton( NbBundle.getMessage( BrowseFolders.class, "LBL_BrowseFolders_Cancel_Option") ), // NOI18N
-            new JButton( "Select Folder" ), 
-            new JButton( "Cancel" ), 
+            new JButton( NbBundle.getMessage( BrowseFolders.class, "BTN_BrowseFolders_Select_Option") ), // NOI18N
+            new JButton( NbBundle.getMessage( BrowseFolders.class, "BTN_BrowseFolders_Cancel_Option") ), // NOI18N
         };
                 
         OptionsListener optionsListener = new OptionsListener( bf );
         
         options[ 0 ].setActionCommand( OptionsListener.COMMAND_SELECT );
         options[ 0 ].addActionListener( optionsListener );
+        options[ 0 ].setMnemonic (NbBundle.getMessage( BrowseFolders.class, "MNE_BrowseFolders_Select_Option").charAt (0) );
         options[ 1 ].setActionCommand( OptionsListener.COMMAND_CANCEL );
         options[ 1 ].addActionListener( optionsListener );    
         
