@@ -76,6 +76,8 @@ public class BreakpointOutput extends LazyActionsManagerListener
 
     public void breakpointReached (JPDABreakpointEvent event) {
         if (event.getDebugger () != debugger) return;
+        if (event.getConditionResult () == event.CONDITION_FAILED) return;
+        if (event.getConditionResult () == event.CONDITION_FALSE) return;
         if (ioManager == null) {
             lookupIOManager ();
             if (ioManager == null) return;
