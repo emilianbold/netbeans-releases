@@ -23,7 +23,10 @@ Microsystems, Inc. All Rights Reserved.
     -->
     <folder name="Windows2">
         <attr name="SystemFileSystem.layer" stringvalue="project"/>
-        <file name="WindowManager.wswmgr" url="windowmanager/windowmanager.wswmgr"/>        
+        <file name="WindowManager.wswmgr" url="windowmanager/windowmanager.wswmgr">
+        <!-- is on session layer because of the bug #39713. Don't change main window constraints when changing projects. -->
+            <attr name="SystemFileSystem.layer" stringvalue="session"/>
+        </file>        
     </folder>
 
     <folder name="Windows2Local">

@@ -782,6 +782,13 @@ public class WindowManagerParser {
             wmConfigFO = rootFolder.getFileObject
             (WindowManagerParser.this.getName(), PersistenceManager.WINDOWMANAGER_EXT);
             if (wmConfigFO != null) {
+                Object attr = wmConfigFO.getAttribute("SystemFileSystem.layer"); // NOI18N
+                if ((attr instanceof String) && !"session".equals(attr)) { // NOI18N
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                        "The WindowManager configuration ought to be stored on session layer, to prevent misbehaviour on swtiching project. See #39713 for details."); //NOI18N
+                    // setting the session layer works only for new files :(
+                    //WindowManagerParser.this.setInSessionLayer(true);
+                }
                 //log("-- WMParser.getConfigFOInput" + " wmConfigFO LOCAL:" + wmConfigFO);
                 return wmConfigFO;
             } else {
