@@ -173,7 +173,7 @@ public class SAXEntityParser implements XMLReader {
      */
     protected boolean propagateException(SAXParseException ex) {
         if (ex == null) return false;
-        return FAKE_SYSTEM_ID != ex.getSystemId();
+        return (FAKE_SYSTEM_ID.equals(ex.getSystemId()) == false);
     }
     
     public org.xml.sax.ContentHandler getContentHandler() {
