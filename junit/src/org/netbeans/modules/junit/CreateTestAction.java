@@ -25,12 +25,18 @@ import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.Action;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.cookies.SaveCookie;
+import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -38,6 +44,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.jmi.javamodel.*;
@@ -95,7 +102,91 @@ public class CreateTestAction extends TestAction {
             DialogDisplayer.getDefault().notify(descr);
         }
         
+
+        /**
+         * Checks that the selection of nodes the dialog is invoked on is valid. 
+         * @return String message describing the problem found or null, if the
+         *         selection is ok
+         */
+         private static String checkNodesValidity(Node[] nodes) {
+             String problem = null;
+             
+             FileObject [] files = getFiles(nodes);
+             
+             Project project = getProject(files);
+             if (project == null) return NbBundle.getMessage(CreateTestAction.class, "MSG_multiproject_selection");
+             
+             if (!checkPackages(files)) return NbBundle.getMessage(CreateTestAction.class, "MSG_invalid_packages");
+             
+             return null;
+         }
+         
+         
+         /**
+          * Check that all the files (folders or java files) have correct java
+          * package names.
+          * @return true if all are fine
+          */
+         private static boolean checkPackages(FileObject [] files) {
+             if (files.length == 0) return true;
+             else {
+                 Project project = FileOwnerQuery.getOwner(files[0]);
+                 for (int i = 0 ; i < files.length; i++) {
+                     String packageName = getPackage(project, files[i]);
+                     if (packageName == null || !TestUtil.isValidPackageName(packageName))
+                         return false;
+                 }
+                 return true;
+             }
+         }
+
+         /**
+          * Get the package name of <code>file</code>.
+          *
+          * @param project owner of the file (for performance reasons)
+          * @param file the FileObject whose packagename to get
+          * @return package name of the file or null if it cannot be retrieved
+          */
+         private static String getPackage(Project project, FileObject file) {
+             SourceGroup srcGrp = TestUtil.findSourceGroupOwner(project, file);
+             if (srcGrp!= null) {
+                 ClassPath cp = ClassPathSupport.createClassPath(new FileObject [] {srcGrp.getRootFolder()});
+                 return cp.getResourceName(file, '.', false);
+             } else return null;
+         }
+             
+         
+         private static FileObject [] getFiles(Node [] nodes) {
+             FileObject [] ret = new FileObject[nodes.length];
+             for (int i = 0 ; i < nodes.length ; i++) {
+                 ret[i]  = TestUtil.getFileObjectFromNode(nodes[i]);
+             }
+             return ret;
+         }
+         
+         /**
+          * Get the single project for <code>nodes</code> if there is such.
+          * If the nodes belong to different projects or some of the nodes doesn't
+          * have a project, return null.
+          */
+         private static Project getProject(FileObject [] files) {
+             Project project = null;
+             for (int i = 0 ; i < files.length; i++) {
+                 Project nodeProject = FileOwnerQuery.getOwner(files[i]);
+                 if (project == null) project = nodeProject;
+                 else if (project != nodeProject) return null;
+             }
+             return project;
+         }
+         
         protected void performAction(Node[] nodes) {
+            String problem;
+            if ((problem = checkNodesValidity(nodes))!=null) {
+                // TODO report problem
+                NotifyDescriptor msg = new NotifyDescriptor.Message(problem, NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(msg);
+                return;
+            } 
             
             // show configuration dialog
             // when dialog is canceled, escape the action
@@ -106,17 +197,17 @@ public class CreateTestAction extends TestAction {
             final boolean singleClass = (nodes.length == 1)
                                         && cfg.isSingleClass();
             String testClassName = singleClass ? cfg.getTestClassName() : null;
-            
+
             final FileObject targetFolder = cfg.getTargetFolder();
             final ClassPath testClassPath = ClassPathSupport.createClassPath(
                                                new FileObject[] {targetFolder});
-            
+
             DataObject doTestTempl;
             if ((doTestTempl = loadTestTemplate("PROP_testClassTemplate"))
                     == null) {
                 return;
             }
-            
+
             DataObject doSuiteTempl = null;
             if (!singleClass) {
                 if ((doSuiteTempl = loadTestTemplate("PROP_testSuiteTemplate"))
@@ -124,22 +215,22 @@ public class CreateTestAction extends TestAction {
                     return;
                 }
             }
-            
+
             ProgressIndicator progress = new ProgressIndicator();
             progress.show();
-            
+
             String msg = NbBundle.getMessage(
                     CreateTestAction.class,
                     "MSG_StatusBar_CreateTest_Begin");                  //NOI18N
             progress.displayStatusText(msg);
-            
+
             // results will be accumulated here
             CreationResults results;
             final TestCreator testCreator = new TestCreator(true);
             try {
                 if (singleClass) {
                     assert testClassName != null;
-                    
+
                     FileObject fo = getTestFileObject(nodes[0]);
                     if (fo != null) {
                         try {
@@ -161,7 +252,7 @@ public class CreateTestAction extends TestAction {
                     }
                 } else {
                     results = new CreationResults();
-                    
+
                     // go through all nodes
                     for(int nodeIdx = 0; nodeIdx < nodes.length; nodeIdx++) {
                         if (hasParentAmongNodes(nodes, nodeIdx)) {
@@ -187,8 +278,8 @@ public class CreateTestAction extends TestAction {
             } finally {
                 progress.hide();
             }
-            
-            
+
+
             if (!results.getSkipped().isEmpty()) {
                 // something was skipped
                 String message;
@@ -196,8 +287,8 @@ public class CreateTestAction extends TestAction {
                     // one class? report it
                     CreationResults.SkippedClass skippedClass = 
                             (CreationResults.SkippedClass)results.getSkipped().iterator().next();
-                            
-                    
+
+
                     message = NbBundle.getMessage(CreateTestAction.class,
                                                   "MSG_skipped_class",  //NOI18N
                                                   skippedClass.cls.getName(),
@@ -211,14 +302,14 @@ public class CreateTestAction extends TestAction {
                         CreationResults.SkippedClass sc = (CreationResults.SkippedClass)it.next();
                         reason = TestCreator.TesteableResult.combine(reason, sc.reason);
                     }
-                    
+
                     message = NbBundle.getMessage(CreateTestAction.class,
                                                   "MSG_skipped_classes", // NOI18N
                                                   strReason(reason, "COMMA", "OR"));// NOI18N
                 }
                 TestUtil.notifyUser(message,
                                     NotifyDescriptor.INFORMATION_MESSAGE);
-                
+
             } else if (results.getCreated().size() == 1) {
                 // created exactly one class, highlight it in the explorer
                 // and open it in the editor
@@ -231,13 +322,17 @@ public class CreateTestAction extends TestAction {
                 }
             }
         }
+        
+
+            
+        
 
         /**
          * A helper method to create the reason string from a result
          * and two message bundle keys that indicate the separators to be used instead
          * of "," and " and " in a connected reason like: 
          * "abstract, package-private and without testeable methods".
-         *<p>
+         * <p>
          * The values of the keys are expected to be framed by two extra characters
          * (e.g. as in " and "), which are stripped off. These characters serve to 
          * preserve the spaces in the properties file.
@@ -246,8 +341,8 @@ public class CreateTestAction extends TestAction {
          * @param commaKey bundle key for the connective to be used instead of ", "
          * @param andKey   bundle key for the connective to be used instead of "and"
          * @return String composed of the reasons contained in
-         *         <code>reason</code> separated by $commaKey and
-         *         $andKey
+         *         <code>reason</code> separated by the values of commaKey and
+         *         andKey.
          */
         private static String strReason(TestCreator.TesteableResult reason, String commaKey, String andKey) {
 	    String strComma = NbBundle.getMessage(CreateTestAction.class,commaKey);

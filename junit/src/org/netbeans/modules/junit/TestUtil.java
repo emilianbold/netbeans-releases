@@ -40,6 +40,7 @@ import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.jmi.javamodel.*;
 import org.openide.src.ClassElement;
 import java.lang.reflect.Modifier;
+import org.openide.util.Utilities;
 
 
 /**
@@ -563,8 +564,24 @@ public class TestUtil {
      *          <code>SourceGroup</code> was found
      * @author  Marian Petras
      */
-    private static SourceGroup findSourceGroupOwner(FileObject file) {
+    public static SourceGroup findSourceGroupOwner(FileObject file) {
         final Project project = FileOwnerQuery.getOwner(file);
+        return findSourceGroupOwner(project, file);
+    }
+    
+    /**
+     * Finds a <code>SourceGroup</code> the given file belongs to.
+     * Only Java <code>SourceGroup</code>s are taken into account. 
+     *
+     * @param project the <code>Project</code> the file belongs to
+     * @param  file  <code>FileObject</code> whose owning
+     *               <code>SourceGroup</code> to be found
+     * @return  Java <code>SourceGroup</code> containing the given
+     *          file; or <code>null</code> if no such
+     *          <code>SourceGroup</code> was found
+     */
+
+    public static SourceGroup findSourceGroupOwner(Project project, FileObject file) {        
         final SourceGroup[] sourceGroups
                 = new Utils(project).getJavaSourceGroups();
         for (int i = 0; i < sourceGroups.length; i++) {
@@ -676,5 +693,22 @@ public class TestUtil {
             return map;
         }
     }
+
+    // Nice copy of useful methods (Taken from JavaModule)
+    public static boolean isValidPackageName(String str) {
+        if (str.length() > 0 && str.charAt(0) == '.') {
+            return false;
+        }
+        StringTokenizer tukac = new StringTokenizer(str, ".");
+        while (tukac.hasMoreTokens()) {
+            String token = tukac.nextToken();
+            if ("".equals(token))
+                return false;
+            if (!Utilities.isJavaIdentifier(token))
+                return false;
+        }
+        return true;
+    }
+
     
 }
