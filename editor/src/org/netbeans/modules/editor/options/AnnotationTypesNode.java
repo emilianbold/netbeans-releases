@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.editor.options;
 
+import java.awt.Image;
+import java.awt.Toolkit;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 import org.openide.actions.PropertiesAction;
@@ -31,10 +33,12 @@ import org.netbeans.editor.AnnotationTypes;
 import java.lang.Boolean;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import org.openide.ErrorManager;
 import org.openide.actions.CustomizeBeanAction;
+import org.openide.util.Utilities;
 
 /** Node representing the Annotation Types in Options window.
  *
@@ -181,13 +185,24 @@ public class AnnotationTypesNode extends AbstractNode {
         
         // Cf. #7925, though not quite the same.
         private static final class AnnotationTypesSubnode extends BeanNode {
+            private final URL iconURL;
+
             public AnnotationTypesSubnode(AnnotationType type) throws IntrospectionException {
                 super(new AnnotationTypeOptions(type));
                 setName(type.getDescription());
-                String icon = type.getGlyph().getFile();
-                icon = icon.substring(0, icon.lastIndexOf('.'));
-                setIconBase(icon);
+                iconURL = type.getGlyph();
             }
+            
+            public Image getIcon(int type) {
+                // Utilities.loadImage does not handle URLs.
+                // Toolkit.getImage would work, but U.lI does nicer caching.
+                if (iconURL.getProtocol().equals("nbresloc")) { // NOI18N
+                    return Utilities.loadImage(iconURL.getPath().substring(1));
+                } else {
+                    return Toolkit.getDefaultToolkit().getImage(iconURL);
+                }
+            }
+            
             public boolean canDestroy() {
                 return false;
             }
