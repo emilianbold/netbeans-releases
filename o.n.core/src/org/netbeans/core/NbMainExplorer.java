@@ -130,6 +130,9 @@ implements ItemListener, Runnable {
     setLayout(new BorderLayout ());
     add(split, BorderLayout.CENTER);
     add(toolbar = createToolbar(), BorderLayout.NORTH);
+    
+    // initialize managing of cut/copy/paste/delete actions
+    actions = new ExplorerActions();
   }
 
   /** Clones the explorer 
@@ -177,7 +180,7 @@ implements ItemListener, Runnable {
     
     if (actions != null) {
       actions.detach ();
-      actions = null;
+      //actions = null;
     }
     tabs.removeChangeListener (managersListener);
   }
@@ -189,14 +192,6 @@ implements ItemListener, Runnable {
     
     ExplorerManager currentManager = 
       getRootPanel (currentRoot).getExplorerManager ();
-    // attach actions if we are activated
-    if (this.equals(TopComponent.getRegistry().getActivated())) {
-      if (actions == null) {
-        actions = new ExplorerActions();
-      }
-      actions.attach(currentManager);
-    }
-    
     propertySheet.setNodes (currentManager.getSelectedNodes ());
     setActivatedNodes (currentManager.getSelectedNodes ());
     updateTitle ();
@@ -619,7 +614,8 @@ implements ItemListener, Runnable {
       }
       currentRoot = (Node)roots.get (index);
 
-      ExplorerManager currentManager = getRootPanel (currentRoot).getExplorerManager ();
+      ExplorerManager currentManager = 
+        getRootPanel (currentRoot).getExplorerManager ();
       if (actions != null)
         actions.attach(currentManager);
       propertySheet.setNodes (currentManager.getSelectedNodes ());
@@ -681,6 +677,8 @@ implements ItemListener, Runnable {
 
 /*
 * Log
+*  32   Gandalf   1.31        8/19/99  David Simonek   cut/copy/paste/delete 
+*       actions enabling hopefully fixed
 *  31   Gandalf   1.30        8/18/99  David Simonek   bugfix #3463, #3461  
 *  30   Gandalf   1.29        8/17/99  David Simonek   commentaries removed
 *  29   Gandalf   1.28        8/13/99  Jaroslav Tulach New Main Explorer
