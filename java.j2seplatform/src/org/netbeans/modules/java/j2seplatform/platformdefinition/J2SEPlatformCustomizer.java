@@ -83,20 +83,25 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             this.setLayout(new GridBagLayout());
             JLabel label = new JLabel ();
             String key = null;
+            String mneKey = null;
             switch (type) {
                 case CLASSPATH:
                     key = "TXT_JDKClasspath";       //NOI18N
+                    mneKey = "MNE_JDKClasspath";    //NOI18N
                     break;
                 case SOURCES:
                     key = "TXT_JDKSources";         //NOI18N
+                    mneKey = "MNE_JDKSources";      //NOI18N
                     break;
                 case JAVADOC:
                     key = "TXT_JDKJavadoc";         //NOI18N
+                    mneKey = "MNE_JDKJavadoc";      //NOI8N
                     break;
                 default:
                     assert false : "Illegal type of panel";     //NOI18N
             }
             label.setText (NbBundle.getMessage(J2SEPlatformCustomizer.class,key));
+            label.setDisplayedMnemonic(NbBundle.getMessage(J2SEPlatformCustomizer.class,mneKey).charAt(0));
             GridBagConstraints c = new GridBagConstraints();
             c.gridx = GridBagConstraints.RELATIVE;
             c.gridy = GridBagConstraints.RELATIVE;
