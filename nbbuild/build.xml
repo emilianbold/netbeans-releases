@@ -16,6 +16,9 @@ Microsystems, Inc. All Rights Reserved.
 ToDo:
 - build validator DTD for this build system
 - sanity check that module list actually satisfies module dependencies
+    this sanity check can be actually done by target 'print-cvs-modules',
+    hich prints also suspected compile-time dependency (what is going to be
+    built, but not merged into product)
 -->
 
 <project name="nbbuild" default="all" basedir=".">
