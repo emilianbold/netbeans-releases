@@ -58,18 +58,55 @@ public class TopComponentGetLookupTest extends NbTestCase {
         lookup = top.getLookup ();
     }
 
+    
+    
     /** Test to find nodes.
      */
-    public void testNodes () {
-        top.setActivatedNodes(new org.openide.nodes.Node[] {
-            new N ("1"), new N ("2")
-        });
+    private void doTestNodes (org.openide.nodes.Node[] arr, Class c, int cnt) {
+        if (arr != null) {
+            top.setActivatedNodes(arr);
+        }
         
-        assertNotNull ("At least one node is registered", lookup.lookup (N.class));
-        Lookup.Result res = lookup.lookup (new Lookup.Template (N.class));
-        java.util.Collection c = res.allItems ();
-        assertEquals ("Two registered", c.size (), 2);
+        assertNotNull ("At least one node is registered", lookup.lookup (c));
+        Lookup.Result res = lookup.lookup (new Lookup.Template (c));
+        java.util.Collection coll = res.allItems ();
+        assertEquals ("Two registered", cnt, coll.size ());
     }
+    
+    public void testNodes () {
+        doTestNodes (new org.openide.nodes.Node[] {
+            new N ("1"), new N ("2")
+        }, N.class, 2);
+        doTestNodes (new org.openide.nodes.Node[] {
+            new N ("1"), new N ("2")
+        }, java.beans.FeatureDescriptor.class, 2);
+    }
+    
+    private void doTestNodesWithChangesInLookup (Class c) {
+        InstanceContent ic = new InstanceContent();
+        
+        org.openide.nodes.Node[] arr = new org.openide.nodes.Node[] {
+            new org.openide.nodes.AbstractNode (org.openide.nodes.Children.LEAF, new AbstractLookup (ic)), 
+            new org.openide.nodes.AbstractNode (org.openide.nodes.Children.LEAF, Lookup.EMPTY) 
+        };
+        //doTestNodes (arr, org.openide.nodes.AbstractNode.class);
+        doTestNodes (arr, c, 2);
+        
+        ic.add (arr[1]);
+        
+        assertEquals ("Now the [1] is in lookup of [0]", arr[1], lookup.lookup (c));
+
+        doTestNodes (null, c, 2);
+    }
+    
+    public void testNodesWhenTheyAreNotInTheirLookup () {
+        doTestNodesWithChangesInLookup (org.openide.nodes.AbstractNode.class);
+    }
+    
+    public void testNodesSuperclassesWhenTheyAreNotInTheirLookup () {
+        doTestNodesWithChangesInLookup (java.beans.FeatureDescriptor.class);
+    }
+    
     
     /** Tests changes in cookies.
      */
