@@ -370,8 +370,10 @@ public final class ToolbarPool extends JComponent implements Accessible {
      * @return the names of toolbar configurations contained in this pool
      */
     public final synchronized String[] getConfigurations () {
-        String[] arr = new String[toolbarConfigs.size ()];
-        return (String[])toolbarConfigs.keySet ().toArray (arr);
+        ArrayList list = new ArrayList( toolbarConfigs.keySet() );
+        Collections.sort( list );
+        String[] arr = new String[ list.size() ];
+        return (String[]) list.toArray( arr );
     }
 
         /** Read accessible context
