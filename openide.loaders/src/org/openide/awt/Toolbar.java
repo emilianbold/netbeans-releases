@@ -203,10 +203,11 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             minheight = 29;
         } else if ("Metal".equals(lf)) {
             minheight = 36;
+        } else if ("Windows".equals(lf)) {
+            minheight = isXPTheme() ? 23 : 27;
         } else {
             minheight = 28;
         }
-        
         Dimension result = super.getPreferredSize();
         result.height = Math.max (result.height, minheight);
         return result;
@@ -570,10 +571,14 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     /** Recognizes if XP theme is set.
      * @return true if XP theme is set, false otherwise
      */
+    private static Boolean isXP = null;
     private static boolean isXPTheme () {
-        Boolean isXP = (Boolean)Toolkit.getDefaultToolkit().
-        getDesktopProperty("win.xpstyle.themeActive");
-        return isXP == null ? false : isXP.booleanValue();
+        if (isXP == null) {
+            Boolean xp = (Boolean)Toolkit.getDefaultToolkit().
+            getDesktopProperty("win.xpstyle.themeActive"); //NOI18N
+            isXP = Boolean.TRUE.equals(xp)? Boolean.TRUE : Boolean.FALSE;
+        }
+        return isXP.booleanValue();
     }    
     
     private final class ToolbarAqua extends JPanel {
