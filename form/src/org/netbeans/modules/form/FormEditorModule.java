@@ -174,7 +174,7 @@ public class FormEditorModule implements ModuleInstall {
     } catch (java.io.IOException e) {
     }
 
-    if ((categoryErrors.size () != 0) || (componentErrors.size () != 0) || true) {
+    if ((categoryErrors.size () != 0) || (componentErrors.size () != 0)) {
       TopManager.getDefault ().notify (new NotifyDescriptor.Message (NbBundle.getBundle (FormEditorModule.class).getString ("ERR_ProblemsCreatingPalette"), NotifyDescriptor.WARNING_MESSAGE));
     }
   }
@@ -290,6 +290,8 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  9    Gandalf   1.8         4/5/99   Ian Formanek    
+ *  8    Gandalf   1.7         3/31/99  Ian Formanek    
  *  7    Gandalf   1.6         3/31/99  Ian Formanek    Fixed bug 1410 - Many 
  *       exceptions (see attachment) are thrown only during first startup after 
  *       installing.
