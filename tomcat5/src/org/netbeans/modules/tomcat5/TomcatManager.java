@@ -294,7 +294,7 @@ public class TomcatManager implements DeploymentManager {
                 catalinaFS.setHidden(true);
                 Repository.getDefault().addFileSystem(catalinaFS);
             } catch (Exception ex) {
-                catalinaFS = null;
+                org.openide.ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, ex);
             }
         }
         return catalinaFS;
@@ -670,7 +670,6 @@ public class TomcatManager implements DeploymentManager {
     }    
     
     public Integer getServerPort() {
-        System.err.println("getserverport");
         
         boolean upToDate = true;
         InstanceProperties ip = getInstanceProperties();
@@ -681,7 +680,6 @@ public class TomcatManager implements DeploymentManager {
         String time;
         try {
             time = ip.getProperty(TIMESTAMP);
-            System.err.println("time: " + time);
         } catch (IllegalStateException ise) {
             // TODO - Workaround - should be fixed on j2eeserver side
             return null;
@@ -691,7 +689,6 @@ public class TomcatManager implements DeploymentManager {
             upToDate = isPortUpToDate(t);
         }
         if (upToDate) {
-            System.err.println("was uptodate");
             String o;
             try {
                 o = ip.getProperty(SERVER_PORT);
@@ -700,7 +697,6 @@ public class TomcatManager implements DeploymentManager {
                 return null;
             }
             if (o != null) {
-                System.err.println("os is not null");
                 return Integer.valueOf(o);
             } 
         } else {
@@ -714,23 +710,19 @@ public class TomcatManager implements DeploymentManager {
     }
     
     public Integer getAdminPort() {
-        System.err.println("getadminport");
         boolean upToDate = true;
         InstanceProperties ip = getInstanceProperties();
         if (ip == null) {
             return null;
         }
         String time = ip.getProperty(TIMESTAMP);
-        System.err.println("time: " + time);
         if (time != null) {
             Long t = Long.valueOf(time);
             upToDate = isPortUpToDate(t);
         }
         if (upToDate) {
-            System.err.println("is uptodate");
             String o = ip.getProperty(ADMIN_PORT);
             if (o != null) {
-                System.err.println("o is not null");
                 return Integer.valueOf(o);
             }
         } else {
