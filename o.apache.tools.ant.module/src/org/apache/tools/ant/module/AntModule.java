@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * Contributor(s): Jesse Glick.
@@ -23,6 +23,7 @@ import org.openide.TopManager;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.modules.ModuleInstall;
 
+import org.apache.tools.ant.module.run.OutputWriterOutputStream;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
 
 public class AntModule extends ModuleInstall {
@@ -39,6 +40,8 @@ public class AntModule extends ModuleInstall {
 
     public void uninstalled () {
         AntProjectSupport.stopFiringProcessor ();
+        // #14804:
+        OutputWriterOutputStream.detachAllAnnotations();
     }
     
     /*
