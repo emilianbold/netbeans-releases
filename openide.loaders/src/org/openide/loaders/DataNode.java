@@ -132,7 +132,7 @@ public class DataNode extends AbstractNode {
             }
 
             super.setName (name);
-            if (rename) updateDisplayName ();
+            updateDisplayName ();
         } catch (IOException ex) {
             String msg = null;
             if ((ex.getLocalizedMessage() == null) || 
