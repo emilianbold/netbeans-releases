@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -119,13 +119,8 @@ abstract class DefaultParser  extends DefaultHandler {
         } catch (SAXException sex) {
             if (!isStopException(sex)) {
                 ErrorManager emgr = ErrorManager.getDefault();
-                emgr.log("While parsing: " + fo.toString());
-                //System.out.println("While parsing: " + fo.toString());
-                Exception e = sex.getException();
-                if (e != null) emgr.notify(emgr.WARNING, e);
-                emgr.notify(emgr.INFORMATIONAL, sex);
-                System.out.println("sex exception: " + sex.getException());
-                //sex.printStackTrace();
+                emgr.annotate(sex, ErrorManager.UNKNOWN, "While parsing: " + fo, null, null, null); // NOI18N
+                emgr.notify(ErrorManager.INFORMATIONAL, sex);
                 state = ERROR;
             }
         } finally {

@@ -128,7 +128,7 @@ class ModuleChangeHandler implements FileChangeListener {
         if (accepted && fo.isFolder()) {
             FileObject [] files = fo.getChildren();
             for (int i = 0; i < files.length; i++) {
-                System.out.println("fo[" + i + "]: " + files[i]);
+                System.err.println("fo[" + i + "]: " + files[i]);
             }
         }
         processDataOrFolderCreated(fo);

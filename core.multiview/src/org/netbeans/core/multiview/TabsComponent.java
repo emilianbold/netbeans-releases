@@ -178,7 +178,7 @@ class TabsComponent extends JPanel {
             if (toolbarPanel != null) {
                 bar.remove(toolbarPanel);
             } else {
-                System.out.println("something wrong.. model was not set..");
+                System.err.println("something wrong.. model was not set..");
             }
             if (innerbar == null) {
                 innerbar = getEmptyInnerToolBar();

@@ -126,8 +126,11 @@ public final class Startup {
           }
           try {
               uiClass = Class.forName(uiClassName);
+          } catch (ClassNotFoundException e) {
+              System.err.println("Custom UI class " + uiClassName + " not on classpath."); // NOI18N
           } catch (Exception e) {
-              System.out.println("Custom ui class " + uiClassName + " not on classpath."); //NOI18N
+              System.err.println("While loading: " + uiClassName); // NOI18N
+              e.printStackTrace();
           }
       }
       LookAndFeel result = null;
@@ -142,7 +145,8 @@ public final class Startup {
                   result = UIManager.getLookAndFeel();
               }
           } catch (Exception e) {
-              System.out.println("Cannot load custom ui " + " " + uiClass); //NOI18N
+              System.err.println("Cannot load custom UI class " + uiClass); //NOI18N
+              e.printStackTrace();
               result = UIManager.getLookAndFeel();
           }
       }

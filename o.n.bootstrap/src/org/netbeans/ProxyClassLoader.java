@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -419,8 +419,8 @@ public class ProxyClassLoader extends ClassLoader {
      */
     private static void printDefaultPackageWarning(String name) {
         if (! DO_NOT_WARN_DEFAULT_PACKAGE) {
-            System.out.println("You are trying to access file: " + name + " from the default package."); // NOI18N
-            System.out.println("Please see http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/classpath.html#default_package"); // NOI18N
+            System.err.println("You are trying to access file: " + name + " from the default package."); // NOI18N
+            System.err.println("Please see http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/classpath.html#default_package"); // NOI18N
         }
     }
     
