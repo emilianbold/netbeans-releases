@@ -208,6 +208,9 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 if (cmd.toUpperCase ().indexOf (WinWebBrowser.IEXPLORE) >= 0)
                     return WinWebBrowser.IEXPLORE;
 
+                if (cmd.toUpperCase ().indexOf ("NETSCP6") >= 0)    // NOI18N
+                    return WinWebBrowser.NETSCAPE6;
+                
                 if (cmd.toUpperCase ().indexOf (WinWebBrowser.NETSCAPE) >= 0)
                     return WinWebBrowser.NETSCAPE;
                 
@@ -354,11 +357,12 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 if (task.browser.realDDEServer().equals(WinWebBrowser.IEXPLORE)) {
                     winID = (hasNoWindow && !win9xHack(task))? "0": "-1";   // NOI18N
                 }
-                else
+                else {
                     winID = "0x00000000"+Integer.toHexString(hasNoWindow? 0: task.browser.currWinID).toUpperCase(); // NOI18N
-                if (winID.length() > 10) winID = "0x"+winID.substring(winID.length()-8); // NOI18N
-
-                // nbfs can be displayed internally and in ext. viewer too
+                    if (winID.length() > 10) 
+                        winID = "0x"+winID.substring(winID.length()-8); // NOI18N
+                }
+                    
                 String args1;
                 args1="\""+url.toString()+"\",,"+winID+",0x1,,,"+(task.browser.ddeProgressSrvName==null?"":task.browser.ddeProgressSrvName);  // NOI18N
                 if (!win9xHack (task) && !mozillaHack (task)) {
@@ -416,7 +420,8 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
         }
 
         private boolean mozillaHack (DisplayTask task) {
-            return task.browser.realDDEServer().equals(WinWebBrowser.MOZILLA);
+            return task.browser.realDDEServer().equals(WinWebBrowser.MOZILLA)
+                || task.browser.realDDEServer().equals(WinWebBrowser.NETSCAPE6);
         }
         
         /** 

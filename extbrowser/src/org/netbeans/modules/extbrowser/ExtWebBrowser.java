@@ -83,7 +83,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable 
      * @return Value of property startIfNotRunning.
      */
     public boolean isStartWhenNotRunning () {
-        return startIfNotRunning;
+        return true;
     }
 
     /** Setter for property startIfNotRunning.
