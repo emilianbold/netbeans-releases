@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init" depends="default.init">
       <patternset id="jellytools.files">
         <!-- All files created for NBM -->
-        <include name="${nb.modules.dir}/jellytools.jar"/>
+        <include name="${nb.modules.dir}/org-netbeans-modules-jellytools.jar"/>
         <include name="${nb.system.dir}/ParserDB/Jelly*"/>
         <include name="${nb.docs.dir}/jelly2-nb-javadoc.zip"/>
         <include name="${nb.modules.dir}/ext/jelly2-nb.jar"/>
@@ -146,11 +146,16 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
   <target name="netbeans" depends="release">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/jellytools.jar">
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/org-netbeans-modules-jellytools.jar">
       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
         <patternset refID="jellytools.files"/>
       </fileset>
     </genlist>
+    <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules">
+      <enabled dir="${netbeans.dest.dir}/${cluster.dir}">
+        <include name="${nb.modules.dir}/org-netbeans-modules-jellytools.jar"/>
+      </enabled>
+    </createmodulexml>
   </target>
 
   <target name="parser-db">
@@ -164,13 +169,13 @@ Microsystems, Inc. All Rights Reserved.
     <filter token="MODULE_VERSION_SUBST" value="${Jellytools-MajorVersion}.${Jellytools-MinorVersion}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="module-manifest.mf" tofile="module-manifest-subst.mf" filtering="on"/>
-    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar"/>
-    <locjar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/jellytools.jar"
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-modules-jellytools.jar"
          manifest="module-manifest-subst.mf"
          basedir="modulesrc"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false">
-    </locjar>
+    </jar>
     <copy file="jelly2-nb.jar" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/jelly2-nb.jar" filtering="off"/>
     <copy file="javadoc/jelly2-nb-javadoc.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/jelly2-nb-javadoc.zip" filtering="off"/>
   </target>
@@ -178,7 +183,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="netbeans">
     <makenbm file="jellytools.nbm"
              productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${nb.modules.dir}/jellytools.jar"
+             module="${nb.modules.dir}/org-netbeans-modules-jellytools.jar"
              homepage="http://jellytools.${homepage.base}"
              distribution="http://${dist.base}/jellytools.nbm">
       <license file="${license.file}"/>
