@@ -179,6 +179,9 @@ public class BrokenReferencesModel extends AbstractListModel {
         Set set = new LinkedHashSet();
         for (int i=0; i<platformsProps.length; i++) {
             String prop = evaluator.getProperty(platformsProps[i]);
+            if (prop == null) {
+                continue;
+            }
             if (!existPlatform(prop)) {
                 
                 // XXX: the J2ME stores in project.properties also platform 
