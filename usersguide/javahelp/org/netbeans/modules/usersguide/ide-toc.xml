@@ -331,22 +331,23 @@
   </tocitem>
 </tocitem>
 
-<tocitem text="Web Module Basics" target="intro">
+<tocitem text="Web Module Basics">
 
-<tocitem text="About Web Modules" target="intro" >
+<tocitem text="About Web Modules">
    <tocitem text="About Web Modules" target="intro" />
    <tocitem text="Working with Web Modules" target="mod_process" />
+   <tocitem text="Project Tasks: Quick Reference" target="proj_quickref"/>
    <tocitem text="How the IDE Supports Web Module Development" target="webmod_idesupport" />
    <tocitem text="Which Technology Versions Are Supported" target="webmod_techsupport" />
    <tocitem text="How to Structure Web Modules" target="webmod_struct" />
    <tocitem text="Where to Put Web Module Files" target="webmod_placefiles" />
 </tocitem> <!-- About Web Modules -->
 
-<tocitem text="Creating Web Projects" target="tbd">
-    <tocitem text="Project Tasks: Quick Reference" target="proj_quickref"/>
+<tocitem text="Creating Web Projects">
+    <tocitem text="Creating a Web Project" target="tbd"/>
     <tocitem text="Java Project Templates" target="proj_templates" />
     <tocitem text="Setting the Main Project" target="proj_main" />
-    <tocitem text="Standard Projects" target="proj_stand_about">
+    <tocitem text="Standard Projects">
       <tocitem text="About Standard Projects" target="proj_stand_about" />
       <tocitem text="Creating a Standard Web Application Project" target="proj_creating" />
       <tocitem text="Creating Dependencies Between Projects" target="comp_dependencies" />
@@ -355,7 +356,7 @@
       <tocitem text="Setting the Target JDK" target="proj_jdk" />
       <tocitem text="Customizing the IDE-Generated Ant Script" target="tbd" />
     </tocitem>
-    <tocitem text="Freeform Projects" target="proj_free_about">
+    <tocitem text="Freeform Projects">
       <tocitem text="About Freeform Projects" target="proj_free_about" />
       <tocitem text="Creating a Web Application with Existing Ant Script" target="proj_creating" />
       <tocitem text="Adding a Source Directory to a Freeform Project" target="proj_free_add" />
@@ -366,15 +367,14 @@
     </tocitem>
 </tocitem>
 
-<tocitem text="Developing Web Modules" target="tbd" > 
-  <tocitem text="About Developing Web Modules" target="tbd" />	
+<tocitem text="Developing Web Modules"> 	
   <tocitem text="Applets" >
           <tocitem text="Adding an Existing Applet" target="webmod_addcompapplet"/>
 	  <tocitem text="Creating an Applet" target="webmod_addapplet"/>
 	  <tocitem text="Running an Applet" target="webmod_runapplet"/>
   </tocitem> <!-- Working With Applets -->
 
-  <tocitem text="Filters" target="concepts_filter" > 
+  <tocitem text="Filters"> 
      <tocitem text="About Filters" target="concepts_filter"  />
      <tocitem text="Creating a Filter" target="filter_create"/>
      <tocitem text="Registering a Filter" target="filter_addtodd"/>
@@ -390,19 +390,19 @@
 	    <tocitem text="Adding JAR Files to a Web Module" target="webmod_addjar" /> 
     </tocitem>--> <!-- Working With JAR Files --> 
   
-  <tocitem text="JSP" target="concepts_jsp" > 
+  <tocitem text="JSP"> 
       <tocitem text="About JavaServer Pages Technology" target="concepts_jsp" />
       <tocitem text="About JSP Syntax" target="concepts_jspsyn" />
       <tocitem text="Creating a JSP File" target="jsp_create" />
       <tocitem text="Editing a JSP File" target="jsp_edit" />
       <tocitem text="Encoding a JSP File" target="jsp_encode" />
-      <tocitem text="Using Tag Libraries in JSP Files" target="webmod_usetags"/>
+      <tocitem text="Using a Tag Library in a JSP File" target="webmod_usetags"/>
       <tocitem text="Upgrading a Specification" target="spec_version" />
       <tocitem text="Compiling a JSP File" target="jsp_validate" />
       <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
   </tocitem> <!-- Working With JSP Pages -->
 
-  <tocitem text="Servlets" target="concepts_servlet">
+  <tocitem text="Servlets">
      <tocitem text="About Servlets" target="concepts_servlet" />
      <tocitem text="Adding an Existing Servlet" target="webmod_addservlet" />
      <tocitem text="Creating a Servlet" target="servlet_create" />
@@ -411,7 +411,7 @@
      <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
   </tocitem> <!-- Working With Servlets -->
 
-  <tocitem text="Tags" target="webmod_addtglb">
+  <tocitem text="Tags">
 	  
       <tocitem text="About Tag Libraries" target="webmod_addtglb"/>
       <tocitem text="About the JSTL" target="webmod_jstl" />
@@ -440,7 +440,7 @@
       </tocitem>
   </tocitem> <!-- Developing Tag Libraries and Tag Files -->
 
-  <tocitem text="Web Module Listeners" target="concepts_listener">
+  <tocitem text="Web Module Listeners">
      <tocitem text="About Web Module Listeners" target="concepts_listener"  />       					
      <tocitem text="Creating a Web Module Listener" target="listen_create"/>
      <tocitem text="Registering a Web Module Listener" target="listen_addtodd"/>
@@ -451,20 +451,20 @@
     <tocitem text="Compiling Web Modules" > 
     </tocitem>  Compiling Web Modules -->
 
-    <tocitem text="Running and Testing Web Modules" target="webmod_servconfig" > 
+    <tocitem text="Running and Testing Web Modules"> 
         <tocitem text="About Running Web Modules" target="webmod_servconfig" />
         <tocitem text="Changing Web Browsers for Running Web Modules" target="webmod_browser" />
         <tocitem text="Changing Web Servers" target="webmod_server_set" />
         <tocitem text="Passing Parameters to a JSP Page" target="jsp_queryparams"/>									
     </tocitem> <!-- Running and Testing Web Modules -->
 
-    <tocitem text="Debugging Web Modules" target="jsp_debug"> 
+    <tocitem text="Debugging Web Modules"> 
         <tocitem text="About Debugging Web Modules" target="jsp_debug"/>
 <!--    <tocitem text="Validating JSP Syntax" target="jsp_validate" />  -->
         <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />		
     </tocitem> <!-- Debugging Web Modules-->
     
-    <tocitem text="Packaging Web Modules" target="concepts_war" > 
+    <tocitem text="Packaging Web Modules"> 
         <tocitem text="About Packaging Web Modules" target="concepts_war"  />
 <!--    <tocitem text="Unpacking and Mounting WAR Files" target="war_unpack" /> -->	
         <tocitem text="Packaging Web Modules" target="webmod_packagewar" />
@@ -473,10 +473,10 @@
         <tocitem text="Removing Packaged Web Modules" target="war_delete"/>        
     </tocitem> <!-- Packaging Web Modules -->
     
-    <tocitem text="Deploying Web Modules" target="webmod_deploy"> 
+    <tocitem text="Deploying Web Modules"> 
         <tocitem text="About Deploying Web Modules" target="webmod_deploy"/>
 	<tocitem text="Deploying a Tag Library"  target="taglib_packlib"/>
-	<tocitem text="Deployment Descriptors" target="webmod_editdd"> 
+	<tocitem text="Deployment Descriptors"> 
 	   <tocitem text="About Deployment Descriptors" target="webmod_editdd" />  
 	   <tocitem text="Editing Deployment Descriptors" target="concepts_deploydes" />  
 	   <tocitem text="Registering a Filter" target="filter_addtodd"/>
