@@ -414,17 +414,30 @@ public final class BeanInstaller
 
     private static class CategorySelector extends JPanel {
         private JList list;
-        private Node[] catNodes;
+        private String[] catNames;
 
         static final long serialVersionUID =936459317386043582L;
 
         public CategorySelector() {
-            catNodes = PaletteNode.getPaletteNode().getCategoriesNodes();
-            String[] categories = new String[catNodes.length];
-            for (int i=0; i < catNodes.length; i++)
-                categories[i] = catNodes[i].getDisplayName();
+            DataObject[] catFolders = PaletteNode.getPaletteFolder().getChildren();
 
-            list = new JList(categories);
+            ArrayList dispList = new ArrayList(catFolders.length);
+            ArrayList nameList = new ArrayList(catFolders.length);
+            for (int i=0; i < catFolders.length; i++)
+                if (catFolders[i] instanceof DataFolder) {
+                    Node node = catFolders[i].getNodeDelegate();
+                    if (node != null) {
+                        dispList.add(node.getDisplayName());
+                        nameList.add(node.getName());
+                    }
+                }
+
+            String[] catDisplayNames = new String[dispList.size()];
+            dispList.toArray(catDisplayNames);
+            catNames = new String[nameList.size()];
+            nameList.toArray(catNames);
+
+            list = new JList(catDisplayNames);
             list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
             setLayout(new BorderLayout(0, 5));
@@ -441,7 +454,7 @@ public final class BeanInstaller
 
         public String getSelectedCategory() {
             int i = list.getSelectedIndex();
-            return i >= 0 ? catNodes[i].getName() : null;
+            return i >= 0 ? catNames[i] : null;
         }
 
         public Dimension getPreferredSize() {
