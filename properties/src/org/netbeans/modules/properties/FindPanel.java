@@ -14,7 +14,7 @@
 
 package org.netbeans.modules.properties;
 
-
+import java.awt.ContainerOrderFocusTraversalPolicy;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -101,25 +101,27 @@ public class FindPanel extends javax.swing.JPanel {
 
         findLabel = new javax.swing.JLabel();
         findCombo = new javax.swing.JComboBox();
-        findButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
+        highlightCheck = new javax.swing.JCheckBox();
         matchCaseCheck = new javax.swing.JCheckBox();
         backwardCheck = new javax.swing.JCheckBox();
         wrapCheck = new javax.swing.JCheckBox();
         rowCheck = new javax.swing.JCheckBox();
-        highlightCheck = new javax.swing.JCheckBox();
+        findButton = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
+        setFocusCycleRoot(true);
+        setFocusTraversalPolicy(new ContainerOrderFocusTraversalPolicy());
         findLabel.setLabelFor(findCombo);
         findLabel.setText(getBundleString("LBL_Find"));
+        findLabel.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(findLabel, gridBagConstraints);
 
         findCombo.setEditable(true);
-        findCombo.setNextFocusableComponent(highlightCheck);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -130,29 +132,18 @@ public class FindPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 11, 0, 0);
         add(findCombo, gridBagConstraints);
 
-        findButton.setText(getBundleString("CTL_Find"));
-        findButton.setNextFocusableComponent(cancelButton);
+        highlightCheck.setMnemonic((getBundleString("CTL_HighlightCheck_Mnem")).charAt(0));
+        highlightCheck.setText(getBundleString("CTL_HighlightCheck"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 11, 0, 11);
-        add(findButton, gridBagConstraints);
-
-        cancelButton.setText(getBundleString("CTL_Cancel"));
-        cancelButton.setNextFocusableComponent(findCombo);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 11);
-        add(cancelButton, gridBagConstraints);
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
+        add(highlightCheck, gridBagConstraints);
 
         matchCaseCheck.setMnemonic((getBundleString("CTL_MatchCaseCheck_Mnem")).charAt(0));
         matchCaseCheck.setText(getBundleString("CTL_MatchCaseCheck"));
-        matchCaseCheck.setNextFocusableComponent(backwardCheck);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -163,7 +154,6 @@ public class FindPanel extends javax.swing.JPanel {
 
         backwardCheck.setMnemonic((getBundleString("CTL_BackwardCheck_Mnem")).charAt(0));
         backwardCheck.setText(getBundleString("CTL_BackwardCheck"));
-        backwardCheck.setNextFocusableComponent(wrapCheck);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -174,7 +164,6 @@ public class FindPanel extends javax.swing.JPanel {
 
         wrapCheck.setMnemonic((getBundleString("CTL_WrapSearch_Mnem")).charAt(0));
         wrapCheck.setText(getBundleString("CTL_WrapSearch"));
-        wrapCheck.setNextFocusableComponent(rowCheck);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -184,7 +173,6 @@ public class FindPanel extends javax.swing.JPanel {
 
         rowCheck.setMnemonic((getBundleString("CTL_SearchByRows_Mnem")).charAt(0));
         rowCheck.setText(getBundleString("CTL_SearchByRows"));
-        rowCheck.setNextFocusableComponent(findButton);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
@@ -192,30 +180,37 @@ public class FindPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
         add(rowCheck, gridBagConstraints);
 
-        highlightCheck.setMnemonic((getBundleString("CTL_HighlightCheck_Mnem")).charAt(0));
-        highlightCheck.setText(getBundleString("CTL_HighlightCheck"));
-        highlightCheck.setNextFocusableComponent(matchCaseCheck);
+        findButton.setText(getBundleString("CTL_Find"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 11, 0, 11);
+        add(findButton, gridBagConstraints);
+
+        cancelButton.setText(getBundleString("CTL_Cancel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
-        add(highlightCheck, gridBagConstraints);
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 11);
+        add(cancelButton, gridBagConstraints);
 
     }//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox backwardCheck;
+    private javax.swing.JButton cancelButton;
     private javax.swing.JButton findButton;
+    private javax.swing.JComboBox findCombo;
     private javax.swing.JLabel findLabel;
+    private javax.swing.JCheckBox highlightCheck;
+    private javax.swing.JCheckBox matchCaseCheck;
     private javax.swing.JCheckBox rowCheck;
     private javax.swing.JCheckBox wrapCheck;
-    private javax.swing.JCheckBox matchCaseCheck;
-    private javax.swing.JButton cancelButton;
-    private javax.swing.JCheckBox backwardCheck;
-    private javax.swing.JComboBox findCombo;
-    private javax.swing.JCheckBox highlightCheck;
     // End of variables declaration//GEN-END:variables
 
 }
