@@ -302,7 +302,7 @@ After that you should be done!
         <zip zipfile="AntAPIs.zip" basedir="AntAPIs"/>
     </target>
 
-    <target name="javadoc" depends="release-helper">
+    <target name="javadoc" depends="release-helper,ant-module-javadoc">
       <copy todir="javadoc">
         <fileset dir=".">
           <include name="AntAPIs"/>
