@@ -10,7 +10,9 @@ http://www.sun.com/
 The Original Code is NetBeans. The Initial Developer of the Original
 Code is Nokia. Portions Copyright 2003 Nokia.
 All Rights Reserved.
---><project basedir="." default="netbeans" name="jnlpinstaller">
+-->
+
+<project basedir="." default="netbeans" name="jnlpinstaller">
 
     <property name="nb_all" value="../.."/>
 
@@ -22,10 +24,15 @@ All Rights Reserved.
 
     <target depends="compile, delete-release" name="jars">
         <mkdir dir="release"/>
-        <jar basedir="src" compress="false" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt" jarfile="release/nbjnlpinstaller.jar"/>
+        <jar compress="false" 
+             jarfile="release/nbjnlpinstaller.jar">
+             <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt">
+                <exclude name="**/IndexServlet*"/>
+             </fileset>
+        </jar>
     </target>
 
-    <target depends="create-config" name="netbeans">
+    <target depends="jnlp-expand1, create-war" name="netbeans">
     </target>
 
     <target depends="copy-to-release, create-jnlp-jars" name="create-config">
@@ -93,12 +100,40 @@ All Rights Reserved.
             <fileset dir="">
                 <include name="*.jnlp"/>
             </fileset>
-            <filterset>
-                <filter token="CODEBASE" value="${jnlp.codebase}"/>
-            </filterset>
         </copy>
     </target>
     
+    <target name="jnlp-expand1" depends="create-config" if="jnlp.static">
+        <replace file="release/nb-launch.jnlp" token="@CODEBASE@" value="${jnlp.codebase}"/>
+        <replace file="release/nb-launch.jnlp" token="@NAME@" value="nb-launch.jnlp"/>
+        <replace file="release/nb-install.jnlp" token="@CODEBASE@" value="${jnlp.codebase}"/>
+        <replace file="release/nb-install.jnlp" token="@NAME@" value="nb-intstall.jnlp"/>
+    </target>
+    
+    <target name="jnlp-expand2" depends="create-config" unless="jnlp.static">
+        <replace file="release/nb-launch.jnlp" token="@CODEBASE@" value="$$$$codebase"/>
+        <replace file="release/nb-launch.jnlp" token="@NAME@" value="$$$$name"/>
+        <replace file="release/nb-install.jnlp" token="@CODEBASE@" value="$$$$codebase"/>
+        <replace file="release/nb-install.jnlp" token="@NAME@" value="$$$$name"/>
+<!--        <replace file="release/config.txt" token="${jnlp.codebase}/" value=" $$$$codebase/"/> -->
+        <delete file="release/config.txt" />
+    </target>
+
+    <target name="create-war" depends="jnlp-expand2" unless="jnlp.static">
+        <mkdir dir="release/WEB-INF/lib"/>
+        <copy file="${jnlp-servlet.file.location}" todir="release/WEB-INF/lib"/>
+        <mkdir dir="release/WEB-INF/classes"/>
+        <copy todir="release/WEB-INF/classes" flatten="false">
+            <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt">
+                <include name="**/IndexServlet*"/>
+            </fileset>
+        </copy>
+        <war basedir="release" 
+            compress="false"
+            webxml="web.xml"
+            warfile="netbeans.war"/>
+    </target>
+        
     <target depends="jars" name="create-jnlp-jars">
         <mkdir dir="release"/>
         <copy flatten="true" todir="release">
@@ -155,6 +190,7 @@ All Rights Reserved.
         <delete file="manifest-subst.mf"/>
         <delete dir="javadoc"/>
         <delete dir="release"/>
+        <delete file="netbeans.war"/>
     </target>
 
     <target depends="clean" name="real-clean">
@@ -165,6 +201,7 @@ All Rights Reserved.
         <pathelement location="${nb_all}/core/netbeans/lib/ext/boot.jar"/>
         <pathelement location="${nb_all}/autoupdate/netbeans/lib/updater.jar"/>
         <pathelement location="${jnlp-api.file.location}"/>
+        <pathelement location="${nb_all}/web/external/servlet-2.3.jar"/>
     </path>
     
 </project>

@@ -13,7 +13,7 @@ All Rights Reserved.
 -->
 <!DOCTYPE jnlp PUBLIC "-//Sun Microsystems, Inc//DTD JNLP Descriptor 1.0//EN" "jnlp_1_0.dtd">
 
-<jnlp codebase="@CODEBASE@">
+<jnlp codebase="@CODEBASE@" href="@NAME@">
     <information>
         <title> NetBeans Start </title>
         <vendor> NetBeans </vendor>
@@ -22,6 +22,6 @@ All Rights Reserved.
         <all-permissions/>
     </security>
     <resources>
-        <j2se version="1.3+"></j2se>
+        <j2se version="1.4+"></j2se>
         <jar main="true" href="nbjnlpinstaller.jar"/>
         <!-- The rest of this file is appended by the build.xml script -->
