@@ -679,17 +679,18 @@ if( localeKitFiles.contains( file)) {
 
   protected void writeSrcDir() {
     String name ;
-    int idx ;
+    int idx, fromIdx ;
     OutputStreamWriter osw ;
     FileOutputStream fos ;
     File file ;
 
     if( shouldWriteSrcDir() && jarFile != null && baseDir != null) {
       name = jarFile.getPath() ;
-      idx = name.indexOf( File.separator+"netbeans"+File.separator) ;
+      fromIdx = getNetbeansStartIdx() ;
+      idx = name.indexOf( File.separator+"netbeans"+File.separator, fromIdx) ;
       if( idx != -1) {
 	try {
-	  file = new File( name.substring( 0, idx) + "/srcdir.properties") ;
+	  file = new File( name.substring( 0, idx) + File.separator + "srcdir.properties") ;
 	  fos = new FileOutputStream( file) ;
 	  osw = new OutputStreamWriter( fos) ;
 	  osw.write( "srcdir=" + baseDir + "\n") ;
@@ -702,6 +703,24 @@ if( localeKitFiles.contains( file)) {
 	  throw new BuildException() ;
 	}
       }
+      else {
+	throw new BuildException( "ERROR: Couldn't find netbeans dir to write srcdir.properties to.") ;
+      }
     }
+  }
+
+  // Return the index to start searching from to find the "netbeans"
+  // directory into which the "srcdir.properties" file will be
+  // written.
+  protected int getNetbeansStartIdx() {
+    int startIdx = 0 ;
+    int idx ;
+
+    idx = baseDir.getPath().lastIndexOf( File.separator+
+					 "netbeans"+File.separator) ;
+    if( idx != -1) {
+      startIdx = idx + 1 ;
+    }
+    return( startIdx) ;
   }
 }

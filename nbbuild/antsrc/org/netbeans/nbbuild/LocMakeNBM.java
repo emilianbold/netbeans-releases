@@ -154,9 +154,9 @@ public class LocMakeNBM extends Task {
     if( deleteInfo) {
       del = (Delete) project.createTask( "delete") ;
       del.init() ;
-      del.setDir( new File( topDir + "/Info")) ;
+      del.setDir( new File( topDir + File.separator + "Info")) ;
       del.execute() ;
-      del.setDir( new File( topDir + "/Info_" + locale)) ;
+      del.setDir( new File( topDir + File.separator + "Info_" + locale)) ;
       del.execute() ;
     }
     else {
@@ -244,12 +244,12 @@ public class LocMakeNBM extends Task {
     File dir ;
 
     if( to_info) {
-      dir = new File( topDir + "/Info_" + locale) ;
-      dir.renameTo( new File( topDir + "/Info")) ;
+      dir = new File( topDir + File.separator + "Info_" + locale) ;
+      dir.renameTo( new File( topDir + File.separator + "Info")) ;
     }
     else {
-      dir = new File( topDir + "/Info") ;
-      dir.renameTo( new File( topDir + "/Info_" + locale)) ;
+      dir = new File( topDir + File.separator + "Info") ;
+      dir.renameTo( new File( topDir + File.separator + "Info_" + locale)) ;
     }
   }
 
@@ -448,12 +448,12 @@ public class LocMakeNBM extends Task {
     String s, srcdir = null ;
 
     // See if the file containing the srcdir is there. //
-    srcdirfile = new File( topDir + "/srcdir.properties") ;
+    srcdirfile = new File( topDir + File.separator + "srcdir.properties") ;
     if( srcdirfile.exists()) {
       srcdir = getSrcDir( srcdirfile) ;
     }
     if( srcdir == null) {
-      throw new BuildException( "ERROR: Could not get source dir for: " + fileName) ;
+      throw new BuildException( "ERROR: Could not get source dir from: " + srcdirfile.getPath()) ;
     }
 
     // Get the codename of this module. //
@@ -467,13 +467,14 @@ public class LocMakeNBM extends Task {
 
     // Convert to pathname and set the loc bundle. //
     s = s.replace( '.', '/') ;
-    locdir = new File( getRelPath( srcdir + "/" + s, findLocBundle)) ;
+    locdir = new File( getRelPath( srcdir + "/" + s, findLocBundle).
+		       replace( '/', File.separatorChar)) ;
     return( getDefaultLocBundleFile( locdir, locale)) ;
   }
 
   protected File getDefaultLocBundleFile( File dir,
 					  String locale) {
-    return( new File( dir.getPath() + "/Bundle_" + locale + ".properties")) ;
+    return( new File( dir.getPath() + File.separator + "Bundle_" + locale + ".properties")) ;
   }
 
   protected File getSpecificLocBundleFile( File enBundle,
