@@ -13,6 +13,7 @@
 
 package com.netbeans.examples.modules.openfile;
 
+import java.io.File;
 import java.io.IOException;
 import javax.swing.JFileChooser;
 
@@ -22,26 +23,37 @@ import org.openide.util.actions.CallableSystemAction;
 
 /** Opens a file by file chooser. */
 public class OpenFileAction extends CallableSystemAction {
+  
   public String getName () {
     return SettingsBeanInfo.getString ("LBL_openFile");
   }
+  
   public HelpCtx getHelpCtx () {
-    return HelpCtx.DEFAULT_HELP;
+    return new HelpCtx (OpenFileAction.class); // [PENDING] add to map when moved
   }
+  
+  protected String iconResource () {
+    return "/com/netbeans/examples/modules/openfile/openFile.gif";
+  }
+  
+  /** Last-used directory. */
+  private static File currDir = null;
   public void performAction () {
     JFileChooser chooser = new JFileChooser ();
     chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
-    if (chooser.showOpenDialog (null) == JFileChooser.APPROVE_OPTION)
+    if (currDir != null) chooser.setCurrentDirectory (currDir);
+    if (chooser.showOpenDialog (null) == JFileChooser.APPROVE_OPTION) {
       try {
         OpenFile.open (chooser.getSelectedFile (), false, null, 0);
       } catch (IOException e) {
         TopManager.getDefault ().notifyException (e);
       }
+    }
+    currDir = chooser.getCurrentDirectory ();
   }
-  protected String iconResource () {
-    return "/com/netbeans/examples/modules/openfile/openFile.gif";
-  }
+  
   public static void main (String[] ignore) {
     new OpenFileAction ().performAction ();
   }
+  
 }

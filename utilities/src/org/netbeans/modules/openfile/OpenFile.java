@@ -15,7 +15,7 @@ package com.netbeans.examples.modules.openfile;
 
 import java.beans.*;
 import java.io.*;
-import java.net.*;
+import java.net.InetAddress;
 import java.util.*;
 
 import org.openide.*;
@@ -25,126 +25,68 @@ import org.openide.filesystems.FileSystem;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 
-/** Acts as a server to open files when requested.
+/** Opens files when requested. Main functionality.
 *
 * @author Jaroslav Tulach, Jesse Glick
 */
-class OpenFile extends Object implements Runnable {
-  /** max length of transferred data */
-  private static final int LENGTH = 512;
-  /** how long to wait between requests */
-  private static final int TIMEOUT = 10000;
-  /** true if we should stop due to uninstallation */
-  static boolean stop;
+class OpenFile extends Object {
   
-  /** Run the server.
-  * If the server is stopped from the Control Panel, waits until it is
-  * started again (if it is started again).
-  * When enabled, calls {@link #server}.
+  /** Open the file either by calling {@link OpenCookie} ({@link ViewCookie}), or by
+  * showing it in the Explorer.
+  * Uses {@link #find} to figure out what the right file object is.
+  * @param f file on local disk
+  * @param wait whether to wait until requested to return a status
+  * @param addr address to send reply to, if waiting
+  * @param port port to send reply to, if waiting
+  * @return whether to reply immediately even if should be waiting
+  * @exception IOException if the file cannot be found
   */
-  public void run () {
-    final Object wait = new Object ();
-    PropertyChangeListener pcl = new PropertyChangeListener () {
-      public void propertyChange (PropertyChangeEvent ev) {
-        if (Settings.PROP_RUNNING.equals (ev.getPropertyName ())) {
-          synchronized (wait) {
-            wait.notifyAll ();
-          }
-        }
-      }
-    };
-    while (true) {
-      if (Settings.DEFAULT.isRunning ()) {
-        try {
-          server ();
-        } catch (IOException ex) {
-          TopManager.getDefault ().notifyException (ex);
-        }
-      }
-      try {
-        Settings.DEFAULT.addPropertyChangeListener (pcl);
-        synchronized (wait) {
-          wait.wait ();
-        }
-      } catch (InterruptedException interr) {
-      }
-      Settings.DEFAULT.removePropertyChangeListener (pcl);
-      // now continue again
-    }
-  }
-  
-  /** the socket to use */
-  private static DatagramSocket s;
-  /** set up the socket */
-  private static void initSocket () throws IOException {
-    s = new DatagramSocket (Settings.DEFAULT.getPort ());
-    s.setSoTimeout (TIMEOUT);
-  }
-  /** Waits on the connection.
-  */
-  private static void server () throws IOException {
-    initSocket ();
-    // Make sure the socket is changed if the user changes the port number.
-    PropertyChangeListener pcl = new PropertyChangeListener () {
-      public void propertyChange (PropertyChangeEvent ev) {
-        if (Settings.PROP_PORT.equals (ev.getPropertyName ())) {
-          try {
-            initSocket ();
-          } catch (IOException e) {
-            TopManager.getDefault ().notifyException (e);
-          }
-        }
-      }
-    };
-    Settings.DEFAULT.addPropertyChangeListener (pcl);
+  static boolean open (File f, boolean wait, InetAddress addr, int port) throws IOException {
+    FileObject fo = find (f);
     
-    DatagramPacket p = new DatagramPacket (new byte[LENGTH], LENGTH);
-    try {
-      while (!stop && Settings.DEFAULT.isRunning ()) {
-        p.setLength (LENGTH);
-        try {
-          s.receive (p);
-        } catch (java.io.InterruptedIOException ex) {
-          // go on
-          continue;
+    if (fo != null) {
+      DataObject obj = DataObject.find (fo);
+      OpenCookie open = (OpenCookie) obj.getCookie (OpenCookie.class);
+      ViewCookie view = (ViewCookie) obj.getCookie (ViewCookie.class);
+      if (open != null || view != null) {
+        if (open != null)
+          open.open ();
+        else
+          view.view ();
+        if (wait) {
+          // Could look for a SaveCookie just to see, but need not.
+          Server.waitFor (obj, addr, port);
         }
-        // Check access:
-        if (Settings.DEFAULT.getAccess () == Settings.ACCESS_LOCAL) {
-          if (! p.getAddress ().equals (InetAddress.getLocalHost ())) {
-            TopManager.getDefault ().notify (new NotifyDescriptor.Message (SettingsBeanInfo.getString ("MSG_rejectHost", p.getAddress ())));
-            continue;
+      } else {
+        Node n = obj.getNodeDelegate ();
+        if (fo.isRoot ()) {
+          // Try to get the node used in the usual Repository, which
+          // has a non-blank display name and is thus nicer.
+          FileSystem fs = fo.getFileSystem ();
+          Node reponode = TopManager.getDefault ().getPlaces ().nodes ().repository ();
+          Children repokids = reponode.getChildren ();
+          Enumeration fsenum = repokids.nodes ();
+          while (fsenum.hasMoreElements ()) {
+            Node fsnode = (Node) fsenum.nextElement ();
+            DataFolder df = (DataFolder) fsnode.getCookie (DataFolder.class);
+            if (df != null && df.getPrimaryFile ().getFileSystem ().equals (fs)) {
+              n = fsnode;
+              break;
+            }
           }
         }
-        // Try to open the requested file:
-        String fileName = new String (p.getData (), p.getOffset () + 1, p.getLength () - 1);
-        boolean wait = (p.getData ()[p.getOffset ()] == (byte) 'Y');
-        TopManager.getDefault ().setStatusText (SettingsBeanInfo.getString (wait ? "MSG_openingAndWaiting" : "MSG_opening", fileName));
-        
-        byte res;
-        boolean replyAnyway = true;
-        try {
-          replyAnyway = open (new File (fileName), wait, p.getAddress (), p.getPort ());
-          res = (byte) (replyAnyway ? 1 : 0);
-        } catch (IOException ex) {
-          TopManager.getDefault ().notifyException (ex);
-          res = 1;
-        }
-        
-        // send reply (unless we are waiting for file to be saved)
-        if (!wait || replyAnyway || res != 0) {
-          p.getData ()[0] = res;
-          p.setLength (1);
-          s.send (p);
+        TopManager.getDefault ().getNodeOperation ().explore (n);
+        if (wait) {
+            TopManager.getDefault ().notify (new NotifyDescriptor.Message (SettingsBeanInfo.getString ("MSG_cannotOpenWillClose", f)));
+            return true;
         }
       }
-    } finally {
-      if (pcl != null) Settings.DEFAULT.removePropertyChangeListener (pcl);
-      if (s != null) s.close ();
-      s = null;
+      return false;
+    } else {
+      throw new FileNotFoundException (f.toString ());
     }
   }
-  
-  
+
   /** Try to find the file object corresponding to a given file on disk.
   * Can produce a folder, mount directories, etc. as needed.
   * @param f the file on local disk
@@ -270,7 +212,7 @@ class OpenFile extends Object implements Runnable {
       File dir = f.getParentFile ();
       if (dir != null) {
         String pkgtouse = "";
-        while (! pkg.equals ("")) {
+        while (! pkg.equals ("")) { // [PENDING] check for dir == null
           int lastdot = pkg.lastIndexOf ('.');
           String trypkg;
           String trypart;
@@ -312,118 +254,11 @@ class OpenFile extends Object implements Runnable {
         }
         repo.addFileSystem (fs);
         String basename = f.getName ();
-        // XXX handle .JAVA here too
+        // [PENDING] handle .JAVA here too
         return fs.find (pkgtouse, basename.substring (0, basename.lastIndexOf (".java")), "java");
       }
     }
     return null;
   }
   
-  /** Open the file either by calling {@link OpenCookie} ({@link ViewCookie}), or by
-  * showing it in the Explorer.
-  * Uses {@link #find} to figure out what the right file object is.
-  * @param f file on local disk
-  * @param wait whether to wait until requested to return a status
-  * @param addr address to send reply to, if waiting
-  * @param port port to send reply to, if waiting
-  * @return whether to reply immediately even if should be waiting
-  * @exception IOException if the file cannot be found
-  */
-  public static boolean open (File f, boolean wait, InetAddress addr, int port) throws IOException {
-    FileObject fo = find (f);
-    
-    if (fo != null) {
-      DataObject obj = DataObject.find (fo);      
-      OpenCookie open = (OpenCookie) obj.getCookie (OpenCookie.class);
-      ViewCookie view = (ViewCookie) obj.getCookie (ViewCookie.class);
-      if (open != null || view != null) {
-        if (open != null)
-          open.open ();
-        else
-          view.view ();
-        if (wait) {
-          // Could look for a SaveCookie just to see, but need not.
-          waitFor (obj, addr, port);
-        }
-      } else {
-        Node n = obj.getNodeDelegate ();
-        if (fo.isRoot ()) {
-          // Try to get the node used in the usual Repository, which
-          // has a non-blank display name and is thus nicer.
-          FileSystem fs = fo.getFileSystem ();
-          Node reponode = TopManager.getDefault ().getPlaces ().nodes ().repository ();
-          Children repokids = reponode.getChildren ();
-          Enumeration fsenum = repokids.nodes ();
-          while (fsenum.hasMoreElements ()) {
-            Node fsnode = (Node) fsenum.nextElement ();
-            DataFolder df = (DataFolder) fsnode.getCookie (DataFolder.class);
-            if (df != null && df.getPrimaryFile ().getFileSystem ().equals (fs)) {
-              n = fsnode;
-              break;
-            }
-          }
-        }
-        TopManager.getDefault ().getNodeOperation ().explore (n);
-        if (wait) {
-            TopManager.getDefault ().notify (new NotifyDescriptor.Message (SettingsBeanInfo.getString ("MSG_cannotOpenWillClose", f)));
-            return true;
-        }
-      }
-      return false;
-    } else {
-      throw new FileNotFoundException (f.toString ());
-    }
-  }
-
-  // Addresses and ports of waiting launchers, based on the DO they wait on.  
-  private static final Map addresses = new HashMap (); // Map<DataObject, InetAddress>
-  private static final Map ports = new HashMap (); // Map<DataObject, Integer>
-  // Listener on all waiting DOs that notices when they are saved (or deleted).
-  private static final PropertyChangeListener waitingListener = new PropertyChangeListener () {
-    public void propertyChange (PropertyChangeEvent ev) {
-      DataObject obj = (DataObject) ev.getSource ();
-      if (DataObject.PROP_VALID.equals (ev.getPropertyName ())) {
-        // If destroyed, report an error.
-        if (! obj.isValid ()) {
-          unWait (obj, (byte) 1);
-        }
-      } else if (DataObject.PROP_MODIFIED.equals (ev.getPropertyName ())) {
-        // Don't do anything when it *becomes* modified, only when unmodified.
-        if (! obj.isModified ()) {
-          unWait (obj, (byte) 0);
-        }
-      }
-    }
-    // Notify the launcher that it is done waiting on a DO.
-    private void unWait (DataObject obj, byte status) {
-      obj.removePropertyChangeListener (waitingListener);
-      if (s != null) {
-        InetAddress addr = (InetAddress) addresses.remove (obj);
-        Integer port = (Integer) ports.remove (obj);
-        DatagramPacket p = new DatagramPacket (new byte[] { status }, 1, addr, port.intValue ());
-        try {
-          s.send (p);
-        } catch (IOException e) {
-          TopManager.getDefault ().notifyException (e);
-        }
-      } else {
-        TopManager.getDefault ().notify (new NotifyDescriptor.Message (SettingsBeanInfo.getString ("MSG_serverNotRunningWhenSaved", obj.getName ())));
-      }
-    }
-  };
-  /** Register a callback so that the launcher will be notified when the file is modified & saved.
-  * @param obj the object to wait for
-  * @param addr the address to send a message back to
-  * @param port the port to send a message back to
-  */
-  public static void waitFor (DataObject obj, InetAddress addr, int port) {
-    addresses.put (obj, addr);
-    ports.put (obj, new Integer (port));
-    obj.addPropertyChangeListener (waitingListener);
-  }
-
-  /** Test run. */
-  public static void main (String[] args) throws Exception {
-    server ();
-  }
 }
