@@ -23,14 +23,8 @@ Microsystems, Inc. All Rights Reserved.
     	<echo message="${product-key}"/>
         <fail message="You have to specify -Dproduct-key on commandline "/>
     </target>
-
-		<target name="init-modules">
-			<style destdir="." in="D:/builds/NETBEANS/unpacked/netbeans/update_tracking.xml" out="modulesDef.properties" style="modulesDef.xsl"/>
-			<filter filtersfile="modulesDef.properties" />
-			<copy file="src/org/netbeans/installer/actions/DetectAction.yava" toFile="DetectAction.java" filtering="true" />
-		</target>
-																																		
-		<target name="init" depends="check-buildnumber,check-nb-id,init-modules" >        
+    
+    <target name="init" depends="check-buildnumber,check-nb-id" >        
         <property name="is-install-dir" location="C:/Program Files/InstallShield/MP45"/>          
         <property name="isje" value="com.installshield.isje.ISJE" />
         <!-- property name="buildfile" location="C:/NBNew/NB.xml" / -->
