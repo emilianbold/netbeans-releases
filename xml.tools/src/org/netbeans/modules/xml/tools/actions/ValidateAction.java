@@ -73,7 +73,7 @@ public class ValidateAction extends CookieAction implements CollectXMLAction.XML
     }
 
     protected String iconResource () {
-        return "org/netbeans/modules/xml/tools/resources/validateAction.gif";   // NOI18N
+        return "org/netbeans/modules/xml/tools/resources/validate_xml.png";   // NOI18N
     }
 
     /** Provide accurate help. */

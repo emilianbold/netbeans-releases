@@ -74,7 +74,7 @@ public class CheckAction extends CookieAction implements CollectXMLAction.XMLAct
 
     /** Do not slow by any icon. */
     protected String iconResource () {
-        return "org/netbeans/modules/xml/tools/resources/checkAction.gif";      // NOI18N
+        return "org/netbeans/modules/xml/tools/resources/check_xml.png";      // NOI18N
     }
 
     /** Provide accurate help. */

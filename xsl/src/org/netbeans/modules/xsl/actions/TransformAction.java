@@ -74,7 +74,7 @@ public class TransformAction extends CookieAction implements CollectXMLAction.XM
 
     /** Do not slow by any icon. */
     protected String iconResource () {
-        return "org/netbeans/modules/xsl/resources/transformAction.gif"; // NOI18N
+        return "org/netbeans/modules/xsl/resources/xsl_transformation.png"; // NOI18N
     }
 
     /** Provide accurate help. */
