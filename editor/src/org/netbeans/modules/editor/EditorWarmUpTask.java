@@ -128,7 +128,7 @@ public class EditorWarmUpTask implements Runnable{
         }
 
         // Work with artificial frame that will host an editor pane
-        JEditorPane pane = new JEditorPane();
+        final JEditorPane pane = new JEditorPane();
         pane.setEditorKit(javaKit);
 
         // Obtain extended component (with editor's toolbar and scrollpane)
@@ -162,6 +162,12 @@ public class EditorWarmUpTask implements Runnable{
                 pane.setDocument(longDoc);
             }
 
+            // Create buffered image for painting simulation
+            BufferedImage bImage = new BufferedImage(
+                IMAGE_WIDTH, IMAGE_HEIGHT, BufferedImage.TYPE_INT_RGB);
+            final Graphics bGraphics = bImage.getGraphics();
+            bGraphics.setClip(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+                    
             // Do view-related operations
             AbstractDocument doc = (AbstractDocument)pane.getDocument();
             doc.readLock();
@@ -212,12 +218,6 @@ public class EditorWarmUpTask implements Runnable{
                         int pos = pane.viewToModel(point);
                     }
 
-                    // Create buffered image for painting simulation
-                    BufferedImage bImage = new BufferedImage(
-                        IMAGE_WIDTH, IMAGE_HEIGHT, BufferedImage.TYPE_INT_RGB);
-                    Graphics bGraphics = bImage.getGraphics();
-                    bGraphics.setClip(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
-                    
                     int rootViewWidth = (int)rootView.getPreferredSpan(View.X_AXIS);
                     int rootViewHeight = (int)rootView.getPreferredSpan(View.Y_AXIS);
                     Rectangle alloc = new Rectangle(0, 0, rootViewWidth, rootViewHeight);
@@ -233,6 +233,23 @@ public class EditorWarmUpTask implements Runnable{
             } finally {
                 doc.readUnlock();
             }
+            
+            final javax.swing.JFrame frame = new javax.swing.JFrame();
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    EditorUI ui = Utilities.getEditorUI(pane);
+                    JComponent mainComp = null;
+                    if (ui != null) {
+                        mainComp = ui.getExtComponent();
+                    }
+                    if (mainComp == null) {
+                        mainComp = new javax.swing.JScrollPane(pane);
+                    }
+                    frame.getContentPane().add(mainComp);
+                    frame.pack();
+                    frame.paint(bGraphics);
+                }
+            });
 
         } catch (BadLocationException e) {
         }
