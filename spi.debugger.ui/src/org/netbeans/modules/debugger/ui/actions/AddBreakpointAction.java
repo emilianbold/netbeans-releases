@@ -53,12 +53,6 @@ public class AddBreakpointAction extends AbstractAction {
                 "CTL_AddBreakpoint"
             )
         );
-        putValue (
-            Action.SMALL_ICON, 
-            Utils.getIcon (
-                "org/netbeans/modules/debugger/resources/actions/NewBreakpoint" // NOI18N
-            )
-        );
     }
 
     public void actionPerformed (ActionEvent e) {
