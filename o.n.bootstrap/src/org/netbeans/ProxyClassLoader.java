@@ -123,7 +123,7 @@ public class ProxyClassLoader extends ClassLoader {
      * <li> Checks the caches whether another class from the same package
      *      was already loaded and uses the same classloader
      * <li> Tries to find the class using parent loaders in their order.
-     * <li> Calls the {@link #simpleFindClass(String,String)} method to find
+     * <li> Calls the {@link #simpleFindClass} method to find
      *      the class using this class loader.
      * </ol>
      *
@@ -155,9 +155,10 @@ public class ProxyClassLoader extends ClassLoader {
      *      <CODE>java/lang/Object.class</CODE> for <CODE>java.lang.Object</CODE>
      *      The ClassLoader implementation may or may not use it, depending
      *      whether it is usefull to it.
+     * @param pkg the package name, in the format org/netbeans/modules/foo/
      * @return the resulting <code>Class</code> object or <code>null</code>
      */
-    protected Class simpleFindClass(String name, String fileName) {
+    protected Class simpleFindClass(String name, String fileName, String pkg) {
         return null;
     }
     
@@ -307,40 +308,60 @@ public class ProxyClassLoader extends ClassLoader {
      */
     protected Package getPackage(String name) {
         zombieCheck(name);
-        
-        String spkg = name.replace('.', '/') + '/';
-        
-	synchronized (packages) {
-	    Package pkg = (Package)packages.get(name);
-            if (pkg != null) return pkg;
-            
+        return getPackageFast(name, name.replace('.', '/') + '/', true);
+    }
+    
+    /**
+     * Faster way to find a package.
+     * @param name package name in org.netbeans.modules.foo format
+     * @param sname package name in org/netbeans/modules/foo/ format
+     * @param recurse whether to also ask parents
+     */
+    protected Package getPackageFast(String name, String sname, boolean recurse) {
+        synchronized (packages) {
+            Package pkg = (Package)packages.get(name);
+            if (pkg != null) {
+                return pkg;
+            }
+            if (!recurse) {
+                return null;
+            }
             for (int i = 0; i < parents.length; i++) {
                 ClassLoader par = parents[i];
-                if (par instanceof ProxyClassLoader && shouldDelegateResource(spkg, par)) {
-                    // XXX could delegate to some special method that does not check parents too
-                    pkg = ((ProxyClassLoader)par).getPackage(name);
-                    if(pkg != null) break;
+                if (par instanceof ProxyClassLoader && shouldDelegateResource(sname, par)) {
+                    pkg = ((ProxyClassLoader)par).getPackageFast(name, sname, false);
+                    if (pkg != null) {
+                        break;
+                    }
                 }
             }
-            // do our own lookup
-            if (pkg == null) pkg = super.getPackage(name);
-            // cache results
-            if (pkg != null) packages.put(name, pkg);
-
+            if (pkg == null) {
+                // Cannot access either Package.getSystemPackage nor ClassLoader.getPackage
+                // from here, so do the best we can though it will cause unnecessary
+                // duplication of the package cache (PCL.packages vs. CL.packages):
+                pkg = super.getPackage(name);
+            }
+            if (pkg != null) {
+                packages.put(name, pkg);
+            }
             return pkg;
-	}
+        }
     }
 
     /** This is here just for locking serialization purposes.
      * Delegates to super.definePackage with proper locking.
+     * Also tracks the package in our private cache, since
+     * getPackageFast(...,...,false) will not call super.getPackage.
      */
     protected Package definePackage(String name, String specTitle,
                 String specVersion, String specVendor, String implTitle,
 		String implVersion, String implVendor, URL sealBase )
 		throws IllegalArgumentException {
 	synchronized (packages) {
-	    return super.definePackage (name, specTitle, specVersion, specVendor, implTitle,
+            Package pkg = super.definePackage (name, specTitle, specVersion, specVendor, implTitle,
 			implVersion, implVendor, sealBase);
+            packages.put(name, pkg);
+            return pkg;
 	}
     }
 
@@ -453,12 +474,12 @@ public class ProxyClassLoader extends ClassLoader {
         
         final ClassLoader owner = isSpecialResource(pkg) ? null : (ClassLoader)domainsByPackage.get(pkg);
         if (owner == this) {
-            return simpleFindClass(name,fileName);
+            return simpleFindClass(name, fileName, pkg);
         }
         if (owner != null) {
             // Note that shouldDelegateResource should already be true as we hit this pkg before.
             if (owner instanceof ProxyClassLoader) {
-                return ((ProxyClassLoader)owner).fullFindClass(name,fileName);
+                return ((ProxyClassLoader)owner).fullFindClass(name, fileName, pkg);
             } else {
                 return owner.loadClass(name); // May throw CNFE, will be propagated
             }
@@ -482,7 +503,7 @@ public class ProxyClassLoader extends ClassLoader {
             if (!shouldDelegateResource(pkg, par)) continue;
 	    if (par instanceof ProxyClassLoader) {
                 ProxyClassLoader pcl = (ProxyClassLoader)par;
-		Class c = pcl.fullFindClass(name,fileName);
+		Class c = pcl.fullFindClass(name, fileName, pkg);
                 // pcl might have have c in its already-loaded classes even though
                 // it was not the defining class loader. In that case, if pcl was
                 // not transitive (should not expose its own parents), reject this.
@@ -512,15 +533,15 @@ public class ProxyClassLoader extends ClassLoader {
 	    }
 	}
 
-        Class c = simpleFindClass(name,fileName); // Try it ourselves
+        Class c = simpleFindClass(name, fileName, pkg); // Try it ourselves
         if (c != null) return c;
         if (cached != null) throw cached;
 	return null;
     }
 
-    private synchronized Class fullFindClass(String name, String fileName) {
+    private synchronized Class fullFindClass(String name, String fileName, String pkg) {
 	Class c = findLoadedClass(name);
-	return (c == null) ? simpleFindClass(name, fileName) : c;
+	return (c == null) ? simpleFindClass(name, fileName, pkg) : c;
     }    
 
     private void addPackages(Map all, Package[] pkgs) {

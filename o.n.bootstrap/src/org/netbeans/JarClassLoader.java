@@ -109,7 +109,7 @@ public class JarClassLoader extends ProxyClassLoader {
         return val;
     }
 
-    protected Class simpleFindClass(String name, String path) {
+    protected Class simpleFindClass(String name, String path, String pkgnameSlashes) {
         // look up the Sources and return a class based on their content
         for( int i=0; i<sources.length; i++ ) {
             Source src = sources[i];
@@ -122,9 +122,13 @@ public class JarClassLoader extends ProxyClassLoader {
             
             int j = name.lastIndexOf('.');
             String pkgName = name.substring(0, j);
-            // XXX could pass path substring up to last slash to PCL.getPackage
-            Package pkg = getPackage(pkgName);
-            
+            // Note that we assume that if we are defining a class in this package,
+            // we should also define the package! Thus recurse==false.
+            // However special packages might be defined in a parent and then we want
+            // to have the same Package object, proper sealing check, etc.; so be safe,
+            // overhead is probably small (check in parents, nope, check super which
+            // delegates to system loaders).
+            Package pkg = getPackageFast(pkgName, pkgnameSlashes, isSpecialResource(pkgnameSlashes));
             if (pkg != null) {
                 // XXX full sealing check, URLClassLoader does something more
                 if (pkg.isSealed() && !pkg.isSealed(src.getURL())) throw new SecurityException("sealing violation"); // NOI18N
