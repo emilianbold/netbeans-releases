@@ -140,6 +140,8 @@ public class AddIndexDialog {
             JScrollPane spane = new JScrollPane(subpane);
             layout.setConstraints(spane, con);
             pane.add(spane);
+            pane.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddIndexDialogA11yName"));  // NOI18N
+            pane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddIndexDialogA11yDesc"));  // NOI18N
             
             final String tablename = (String)info.get(DatabaseNode.TABLE);
 
