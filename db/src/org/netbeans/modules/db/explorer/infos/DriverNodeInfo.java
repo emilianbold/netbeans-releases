@@ -14,21 +14,15 @@
 package org.netbeans.modules.db.explorer.infos;
 
 import java.io.IOException;
-import java.util.Vector;
-import java.text.MessageFormat;
 
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
-import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.driver.JDBCDriver;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
-import org.netbeans.modules.db.explorer.nodes.RootNode;
+import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
 
 public class DriverNodeInfo extends DatabaseNodeInfo {
         
@@ -77,13 +71,23 @@ public class DriverNodeInfo extends DatabaseNodeInfo {
     }
     
     public String getIconBase() {
-        return (String) get("iconbaseprefered"); //NOI18N
-//        return (String) get("iconbasepreferednotinstalled"); //NOI18N
+        return (String) ((checkDriverFiles()) ? get("iconbaseprefered") : get("iconbasepreferednotinstalled")); //NOI18N
     }
 
     public void setIconBase(String base) {
-        put("iconbaseprefered", base); //NOI18N
-//        put("iconbasepreferednotinstalled", base); //NOI18N
+        if (checkDriverFiles())
+            put("iconbaseprefered", base); //NOI18N
+        else
+            put("iconbasepreferednotinstalled", base); //NOI18N
     }
 
+    private boolean checkDriverFiles() {
+        JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDriver(getURL());
+        for (int i = 0; i < drvs.length; i++)
+            if (drvs[i].getName().equals(getName()))
+                return drvs[i].isAvailable();
+        
+        return false;
+    }
+    
 }

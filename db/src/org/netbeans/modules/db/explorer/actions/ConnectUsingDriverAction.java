@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -70,7 +70,8 @@ public class ConnectUsingDriverAction extends DatabaseAction {
         Vector drvs = new Vector();
         JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers();
         for (int i = 0; i < drivers.length; i++)
-            drvs.add(drivers[i]);
+            if (drivers[i].isAvailable())
+                drvs.add(drivers[i]);
         
         final DatabaseConnection cinfo = new DatabaseConnection();
         cinfo.setDriverName(info.getName());
