@@ -600,7 +600,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             }
             //check the config context path
             String ctxRoot = webModule.getContextPath ();
-            if (ctxRoot == null || ctxRoot.equals ("")) {
+            if (ctxRoot == null) {
                 String sysName = "/" + getProjectDirectory ().getName (); //NOI18N
                 sysName = sysName.replace (' ', '_'); //NOI18N
                 webModule.setContextPath (sysName);

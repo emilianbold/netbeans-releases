@@ -269,8 +269,8 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
     
     private boolean isCorrectCP(String contextPath) {
         boolean correct=true;
-        if (!contextPath.startsWith("/")) correct=false; //NOI18N
-        else if (contextPath.length()>1 && contextPath.endsWith("/")) correct=false; //NOI18N
+        if (!contextPath.equals("") && !contextPath.startsWith("/")) correct=false; //NOI18N
+        else if (contextPath.endsWith("/")) correct=false; //NOI18N
         else if (contextPath.indexOf("//")>=0) correct=false; //NOI18N
         return correct;
     }
@@ -287,7 +287,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
                     while (tok.hasMoreTokens()) {
                         buf.append("/"+tok.nextToken()); //NOI18N
                     }
-                    String updatedPath = (buf.length()==0?"/":buf.toString());
+                    String updatedPath = buf.toString();
                     jTextFieldContextPath.setText(updatedPath);
                     String mes = java.text.MessageFormat.format (
                             NbBundle.getMessage (CustomizerRun.class, "MSG_invalidCP"),
