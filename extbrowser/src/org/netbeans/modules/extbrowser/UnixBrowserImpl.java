@@ -40,7 +40,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
     /** Number of probes to get exit status of executed command. 
      * Status is checked after each second.
      */
-    private static final int CMD_TIMEOUT = 6;
+    protected static final int CMD_TIMEOUT = 6;
     
     /** Creates modified NbProcessDescriptor that can be used to start
      * browser process when <CODE>-remote openURL()</CODE> options
@@ -48,7 +48,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
      * @return command or <CODE>null</CODE>
      * @param p Original command.
      */
-    private static NbProcessDescriptor createPatchedExecutable (NbProcessDescriptor p) {
+    protected static NbProcessDescriptor createPatchedExecutable (NbProcessDescriptor p) {
         NbProcessDescriptor newP = null;
         
         String [] args = org.openide.util.Utilities.parseParameters(p.getArguments());
@@ -75,9 +75,6 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
         return newP;
     }
 
-    /** reference to a factory to get settings */
-    private ExtWebBrowser extBrowserFactory;
-
     /** Creates new UnixBrowserImpl */
     public UnixBrowserImpl () {
         this (null);
@@ -87,51 +84,13 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
      * @param extBrowserFactory Associated browser factory to get settings from.
      */
     public UnixBrowserImpl (ExtWebBrowser extBrowserFactory) {
-        super ();
+        super();
         this.extBrowserFactory = extBrowserFactory;
+        if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {        
+            ExtWebBrowser.getEM().log("UnixBrowserImpl created from factory: " + extBrowserFactory);    // NOI18N
+        }
     }
-    
-    /** This should navigate browser back. Actually does nothing.
-     */
-    public void backward() {
-        return;
-    }
-    
-    /** This should navigate browser forward. Actually does nothing.
-     */
-    public void forward() {
-        return;
-    }
-    
-    /** Is backward button enabled?
-     * @return always false
-     */
-    public boolean isBackward() {
-        return false;
-    }
-    
-    /** Is forward button enabled?
-     * @return always false
-     */
-    public boolean isForward() {
-        return false;
-    }
-    
-    /** history is disabled?
-     * @return always false
-     */
-    public boolean isHistory() {
-        return false;
-    }
-    
-    /** Call setURL again to force reloading.
-     * Browser must be set to reload document and do not cache them.
-     */
-    public void reloadDocument() {
-        if (url != null)
-            setURL (url);
-    }
-    
+       
     /** 
      *  Sets current URL.</P>
      *
@@ -159,13 +118,13 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
         StatusDisplayer sd = StatusDisplayer.getDefault ();
         try {
             // internal protocols cannot be displayed in external viewer
-            if (isInternalProtocol (url.getProtocol ())) {
+            if (isInternalProtocol(url.getProtocol())) {
                 url = URLUtil.createExternalURL(url, true);
             }
             
             cmd = extBrowserFactory.getBrowserExecutable (); // NOI18N
             sd.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
-            p = cmd.exec (new UnixWebBrowser.UnixBrowserFormat (url.toString ()));
+            p = cmd.exec (new ExtWebBrowser.UnixBrowserFormat (url.toString ()));
             
             RequestProcessor.getDefault ().post (new Status (cmd, p, url), 1000);
 
@@ -188,19 +147,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             ErrorManager.getDefault ().notify (ex);
         }
     }
-    
-    /** Invoked when the history button is pressed.
-     *  disabled
-     */
-    public void showHistory() {
-        return; 
-    }
-    
-    /** Stops loading of current html page.
-     */
-    public void stopLoading() {
-    }
-    
+   
     /** Object that checks execution result
      * of browser invocation request.
      * <p>It can made another attempt to start the browser
@@ -254,7 +201,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             try {
                 exitStatus = p.exitValue();
                 if (ExtWebBrowser.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-                    ExtWebBrowser.getEM ().log (ErrorManager.INFORMATIONAL, "Command executed. exitValue = "+exitStatus); // NOI18N
+                    ExtWebBrowser.getEM ().log (ErrorManager.INFORMATIONAL, "Command executed. exitValue = " + exitStatus); // NOI18N
                 }
             }
             catch (IllegalThreadStateException ex) {
@@ -322,7 +269,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                         retried = true;
                         StatusDisplayer.getDefault().
                             setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", startCmd.getProcessName ()));
-                        Process pr = startCmd.exec (new UnixWebBrowser.UnixBrowserFormat (url.toString ()));
+                        Process pr = startCmd.exec (new ExtWebBrowser.UnixBrowserFormat (url.toString ()));
 
                         // do not care about result now
                         // RequestProcessor.getDefault ().post (new Status (startCmd, pr, null), 1000);

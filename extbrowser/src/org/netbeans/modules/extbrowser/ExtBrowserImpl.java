@@ -28,19 +28,19 @@ import org.openide.awt.HtmlBrowser;
  * @author Radim Kubacki
  */
 public abstract class ExtBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
-    
-    // private static ResourceBundle bundle = NbBundle.getBundle(ExtBrowserImpl.class);
-    
+        
     /** standart helper variable */
     protected PropertyChangeSupport pcs;
     
     /** requested URL */
     protected URL url;
-    protected String statusMsg = "";  // NOI18N
     protected String title = "";      // NOI18N
     
+    /** What's this?? */ // TODO
     protected HtmlBrowser.BrowserComponent delegatingBrowser = null;
     
+    /** reference to a factory to get settings */
+    protected ExtWebBrowser extBrowserFactory;
 
     /** Default constructor. 
       * <p>Builds PropertyChangeSupport. 
@@ -49,42 +49,41 @@ public abstract class ExtBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
         pcs = new PropertyChangeSupport (this);
     }
     
-    /** Sets new status message for the displayed page.
-     * @param msg new message
-     */
-    protected void setStatusMessage (String msg) {
-        String old = this.statusMsg;
-        this.statusMsg = msg;
-        pcs.firePropertyChange (PROP_STATUS_MESSAGE, old, msg);
-        
+    /** Dummy implementations */
+    public boolean isBackward() { return false; }
+    public boolean isForward() { return false; }
+    public void backward() { }
+    public void forward() { }
+    public boolean isHistory() { return false; }
+    public void showHistory() {}
+    public void stopLoading() { }
+    
+    protected void setTitle (String title) {
         return;
     }
+    
+    public String getTitle() {
+        return "";
+    }
+
     
     /** Returns status message representing status of html browser.
      *
      * @return status message.
      */
     public String getStatusMessage() {
-        return statusMsg;
+        return "";
     }
-    
-    /** Sets new title of the displayed page.
-     * @param title new title
-     */
-    protected void setTitle (String title) {
-        String old = this.title;
-        this.title = title;
-        pcs.firePropertyChange (PROP_TITLE, old, title);
         
-        return;
-    }
-    
-    /** Returns title of the displayed page.
-     * @return title
+    /** Call setURL again to force reloading.
+     * Browser must be set to reload document and do not cache them.
      */
-    public String getTitle() {
-        return title;
+    public void reloadDocument() {
+        if (url != null) {
+            setURL(url);
+        }
     }
+        
     
     /** Returns current URL.
      *
@@ -163,4 +162,5 @@ public abstract class ExtBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
         
         return false;
     }
+    
 }

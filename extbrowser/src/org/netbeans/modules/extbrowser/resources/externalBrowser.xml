@@ -18,6 +18,5 @@ Microsystems, Inc. All Rights Reserved.
     <instanceof class="java.lang.Object"/>
     <instanceof class="org.openide.awt.HtmlBrowser$Factory"/>
     <instanceof class="java.io.Serializable"/>
-    <instanceof class="org.netbeans.modules.extbrowser.ExtWebBrowser"/>
-    <instance class="org.netbeans.modules.extbrowser.SimpleExtBrowser"/>
+    <instance class="org.netbeans.modules.extbrowser.ExtWebBrowser"/>
 </settings>
