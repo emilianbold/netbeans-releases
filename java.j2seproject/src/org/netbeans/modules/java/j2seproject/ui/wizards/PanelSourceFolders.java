@@ -7,30 +7,29 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.java.j2seproject.ui.wizards;
 
-import java.util.HashSet;
-import java.util.Set;
-import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
+import java.io.File;
+import java.io.IOException;
+import java.text.MessageFormat;
+import javax.swing.JFileChooser;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import javax.swing.JFileChooser;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.DocumentEvent;
-import java.io.File;
-import java.text.MessageFormat;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-
+import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author  tom
+ * Sets up source and test folders for new Java project from existing sources.
+ * @author Tomas Zezula et al.
  */
 public class PanelSourceFolders extends SettingsPanel {
 
@@ -225,6 +224,23 @@ public class PanelSourceFolders extends SettingsPanel {
             }
         }
         
+        // #47611: if there is a live project still residing here, forbid project creation.
+        if (destFolder.isDirectory()) {
+            FileObject destFO = FileUtil.toFileObject(FileUtil.normalizeFile(destFolder));
+            assert destFO != null : "No FileObject for " + destFolder;
+            boolean clear = false;
+            try {
+                clear = ProjectManager.getDefault().findProject(destFO) == null;
+            } catch (IOException e) {
+                // need not report here; clear remains false -> error
+            }
+            if (!clear) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+                    NbBundle.getMessage(PanelSourceFolders.class, "MSG_ProjectFolderHasDeletedProject"));
+                return false;
+            }
+        }
+
         String fileName = sources.getText();
         if (fileName.length()==0) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", "");  //NOI18N
