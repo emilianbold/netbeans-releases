@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0"?>
 <!--
                 Sun Public License Notice
 
@@ -19,6 +19,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
     <taskdef name="genjavadoc" classname="org.netbeans.nbbuild.GenerateJavadoc" classpath="${nbext_root}/nbantext.jar"/>
+    <taskdef name="validatexml" classname="org.netbeans.nbbuild.XMLValidate" classpath="${nbext_root}/nbantext.jar;${binroot}/xml/catalog/release/modules/ext/resolver-1_1_nb.jar"/>
     <taskdef  name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext_root}/nbantext.jar"/>
     <property name="submodules" value="tax, core, catalog, tools, text-edit, tree-edit, css"/>
 
@@ -103,6 +104,17 @@ Microsystems, Inc. All Rights Reserved.
              includes="*-${release}.nbm"
              excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"
              compress="true"/>
+    </target>
+
+    <!-- Check all XML files in all sub-modules. -->
+    <target name="check">
+        <validatexml basedir="." catalog="${nbroot}/www/www/dtds/catalog" warnings="true">
+<!--            <include name="**/src/**/*.xml"/>-->
+            <include name="**/src/**/mf-layer.xml"/>
+            <include name="**/build.xml"/>
+<!--            <include name="**/TODO.xml"/>-->
+<!--            <include name="www/**/*.xml"/>-->
+        </validatexml>
     </target>
 
 </project>
