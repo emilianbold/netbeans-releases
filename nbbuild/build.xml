@@ -265,22 +265,27 @@ workspaceswitcher
   <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
   <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
 
-  <!-- XXX zip task not well suited to making final build, as it does not set +x bits -->
 
-  <target name="virgin" depends="init,build-messaging"
+  <target name="virgin" depends="firststart-merge"
           description="Create a virgin build that has never been started.">
-    <!-- Automatically include openide and core and openidex, these are mandatory -->
-    <mkdir dir="virgin"/>
-    <nbmerge dest="virgin" topdir=".." modules="openide,openidex,core,${modules}" targetprefix="all-"/>
-    <zip zipfile="NetBeans-${buildnumber}-virgin.zip" basedir="virgin"/>
+    <!-- zip task not well suited to making final build, as it does not set +x bits -->
+    <!-- so on Unix try to use native ZIP first -->
+    <exec executable="zip" dir="." os="Linux SunOS Solaris" failonerror="false">
+      <arg value="-r"/>
+      <arg value="NetBeans-${buildnumber}-virgin.zip"/>
+      <arg value="netbeans"/>
+    </exec>
+    <zip zipfile="NetBeans-${buildnumber}-virgin.zip" basedir=".">
+      <include name="netbeans/"/>
+    </zip>
     <echo message="Virgin build created; see NetBeans-${buildnumber}-virgin.zip (in nbbuild/)."/>
   </target>
 
   <target name="firststart-merge" depends="init,build-messaging">
-    <mkdir dir="firststart"/>
-    <nbmerge dest="firststart" topdir=".." modules="openide,openidex,core,${modules}" targetprefix="all-"/>
+    <mkdir dir="netbeans"/>
+    <nbmerge dest="netbeans" topdir=".." modules="openide,openidex,core,${modules}" targetprefix="all-"/>
     <chmod perm="ugo+x">
-      <fileset dir="firststart/bin">
+      <fileset dir="netbeans/bin">
         <include name="*.sh"/>
         <include name="fastjavac/fastjavac.linux"/>
         <include name="fastjavac/fastjavac.sun"/>
@@ -299,46 +304,53 @@ to make the first user start faster and better.)
     <!-- possibly after filtering for duplicates or something like this. -->
     <!-- Timeout is ten minutes; should be enough for valid first start, while preventing -->
     <!-- a deadlock from hanging an automated build: -->
-    <exec os="Windows NT Windows 95 Windows 98 Windows 2000" dir="firststart/bin" executable="runide.exe" failonerror="yes" timeout="600000">
+    <exec os="Windows NT Windows 95 Windows 98 Windows 2000" dir="netbeans/bin" executable="runide.exe" failonerror="yes" timeout="600000">
       <arg line="${firststart.args}"/>
     </exec>
-    <exec os="Linux SunOS Solaris" dir="firststart/bin" executable="sh" failonerror="yes" timeout="600000">
+    <exec os="Linux SunOS Solaris" dir="netbeans/bin" executable="sh" failonerror="yes" timeout="600000">
       <arg line="runide.sh ${firststart.args}"/>
     </exec>
     <echo message="Successfully started, cleaning up detritus..."/>
     <!-- XXX W2k users have reported problems with the following line. -->
     <!-- Would it be better to do a copy and then a delete? -->
-    <move file="firststart/system/ide.log" tofile="NetBeans-${buildnumber}.log"/>
-    <delete file="firststart/system/project.basic"/>
-    <delete file="firststart/system/project.last"/>
-    <delete file="firststart/beans/libs.properties"/>
-    <echo file="firststart/build_info">NetBeans dev build
+    <move file="netbeans/system/ide.log" tofile="NetBeans-${buildnumber}.log"/>
+    <delete file="netbeans/system/project.basic"/>
+    <delete file="netbeans/system/project.last"/>
+    <delete file="netbeans/beans/libs.properties"/>
+    <echo file="netbeans/build_info">NetBeans dev build
 Number: ${buildnumber}
 </echo>
   </target>
 
   <target name="depucelee" depends="firststart"
           description="Create a complete build, including first start and final ZIP file.">
-    <zip zipfile="NetBeans-${buildnumber}.zip" basedir="firststart"/>
+    <exec executable="zip" dir="." os="Linux SunOS Solaris" failonerror="false">
+      <arg value="-r"/>
+      <arg value="NetBeans-${buildnumber}.zip"/>
+      <arg value="netbeans"/>
+    </exec>
+    <zip zipfile="NetBeans-${buildnumber}.zip" basedir=".">
+      <include name="netbeans/"/>
+    </zip>
     <echo>Build created; see NetBeans-${buildnumber}.zip (in nbbuild/).
 If you like, you may run the IDE straight from
-the nbbuild/firststart/bin/ directory.
+the nbbuild/netbeans/bin/ directory.
 (For example, type: ant tryme)
 </echo>
   </target>
 
   <target name="check-for-firststart">
-    <available property="have-firststart" file="firststart/lib/openide.jar"/>
+    <available property="have-firststart" file="netbeans/lib/openide.jar"/>
   </target>
   <target name="maybe-firststart" depends="check-for-firststart" unless="have-firststart">
     <ant dir="." target="firststart"/>
   </target>
   <target name="tryme" depends="init,maybe-firststart"
           description="Try running the IDE interactively (build it first if needed).">
-    <exec os="Windows NT Windows 95 Windows 98 Windows 2000" dir="firststart/bin" executable="runide.exe" failonerror="yes">
+    <exec os="Windows NT Windows 95 Windows 98 Windows 2000" dir="netbeans/bin" executable="runide.exe" failonerror="yes">
       <arg line="${tryme.args}"/>
     </exec>
-    <exec os="Linux SunOS Solaris" dir="firststart/bin" executable="sh" failonerror="yes">
+    <exec os="Linux SunOS Solaris" dir="netbeans/bin" executable="sh" failonerror="yes">
       <arg line="runide.sh ${tryme.args}"/>
     </exec>
   </target>
@@ -524,8 +536,7 @@ the nbbuild/firststart/bin/ directory.
   </target>
 
   <target name="localclean">
-    <delete dir="virgin"/>
-    <delete dir="firststart"/>
+    <delete dir="netbeans"/>
   </target>
 
   <target name="clean" depends="init,localclean"
