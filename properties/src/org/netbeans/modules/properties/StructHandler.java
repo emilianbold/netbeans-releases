@@ -328,6 +328,7 @@ public class StructHandler extends Element /*implements TaskListener*/ {
       if (pfe != null) {
         pfe.getHandler().dataRefReleased(this);
       }
+      super.finalize();
     }
   }
 
