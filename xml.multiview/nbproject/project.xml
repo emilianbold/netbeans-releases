@@ -15,7 +15,7 @@ Microsystems, Inc. All Rights Reserved.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
-            <code-name-base>org.netbeans.modules.multiview.editor</code-name-base>
+            <code-name-base>org.netbeans.modules.xml.multiview</code-name-base>
             <path>xml/multiview</path>
             <module-dependencies>
                 <dependency>
@@ -34,20 +34,11 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.core.multiview</code-name-base>
+                    <code-name-base>org.netbeans.modules.java</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <!--
-                <dependency>
-                    <code-name-base>org.openide.src</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -59,20 +50,15 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.libs.xerces</code-name-base>
+                    <code-name-base>org.netbeans.core.multiview</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
-                -->
             </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.multiview.editor</package>
-                <package>org.netbeans.modules.multiview.editor.xml</package>
-                <package>org.netbeans.modules.multiview.editor.ui</package>
-            </public-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>

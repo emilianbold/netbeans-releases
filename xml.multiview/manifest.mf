@@ -1,4 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.multiview.editor/1
+OpenIDE-Module: org.netbeans.modules.xml.multiview/1
 OpenIDE-Module-Specification-Version: 1.0
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/multiview/editor/Bundle.properties
+OpenIDE-Module-Implementation-Version: 1.0-release41
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/multiview/Bundle.properties
