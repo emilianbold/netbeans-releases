@@ -45,6 +45,8 @@ import java.beans.PropertyChangeEvent;
 
 public class NbToolTip extends FileChangeAdapter {
     
+    private static final boolean debug = Boolean.getBoolean("netbeans.debug.editor.tooltip");
+    
     private static final HashMap mime2tip = new HashMap();
     
     private String mimeType;
@@ -78,20 +80,52 @@ public class NbToolTip extends FileChangeAdapter {
         }
         
         if (annos == null) {
+
+            if (debug) {
+                System.err.println("Searching for tooltip annotations for mimeType=" + mimeType);
+            }
+
             FileObject annoFolder = TopManager.getDefault().getRepository().getDefaultFileSystem().
             findResource("Editors/" + mimeType + "/ToolTips"); //NOI18N
         
+            if (debug) {
+                System.err.println("tooltip annotation folder=" + annoFolder);
+            }
+
             if (annoFolder != null) {
                 ArrayList al = new ArrayList();
                 Enumeration en = annoFolder.getChildren(false);
                 while (en.hasMoreElements()) {
                     FileObject fo = (FileObject)en.nextElement();
+                    
+                    if (debug) {
+                        System.err.println("tooltip annotation fileobject=" + fo);
+                    }
+
                     try {
                         DataObject dob = DataObject.find(fo);
                         InstanceCookie ic = (InstanceCookie)dob.getCookie(InstanceCookie.class);
+
+                        if (debug) {
+                            System.err.println("tooltip annotation instanceCookie=" + ic);
+                        }
+
                         if (ic != null) {
                             Object a = ic.instanceCreate();
+
+                            if (debug) {
+                                System.err.println("tooltip annotation instance=" + a);
+                            }
+
                             if (a instanceof Annotation) {
+
+                                if (debug) {
+                                    System.err.println("Found tooltip annotation=" + a
+                                        + ", class " + a.getClass()
+                                        + " for mimeType=" + mimeType
+                                    );
+                                }
+                                
                                 al.add(a);
                             }
                         }
