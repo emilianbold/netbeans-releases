@@ -54,7 +54,6 @@
       threadSafe          : true
       isErrorPage         : false
       errorPage           : null
-      maxTagNesting       : 0
       scriptless          : true
       scriptingInvalid    : false
       elIgnored           : false
@@ -86,66 +85,87 @@
   jsp:id="2"
 >
 <![CDATA[
+<!--
+  Copyright 2004 The Apache Software Foundation
 
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
 
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
 ]]>
 </jsp:text>
 <jsp:text
   jsp:id="3"
 >
 <![CDATA[
+
+
+]]>
+</jsp:text>
+<jsp:text
+  jsp:id="4"
+>
+<![CDATA[
 <html>
   ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="4"
+  jsp:id="5"
 >
 <![CDATA[
 <head>
     ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="5"
+  jsp:id="6"
 >
 <![CDATA[
 <title>JSP 2.0 Expression Language - Functions]]>
 </jsp:text>
 <jsp:text
-  jsp:id="6"
+  jsp:id="7"
 >
 <![CDATA[
 </title>
   ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="7"
+  jsp:id="8"
 >
 <![CDATA[
 </head>
   ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="8"
+  jsp:id="9"
 >
 <![CDATA[
 <body>
     ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="9"
+  jsp:id="10"
 >
 <![CDATA[
 <h1>JSP 2.0 Expression Language - Functions]]>
 </jsp:text>
 <jsp:text
-  jsp:id="10"
+  jsp:id="11"
 >
 <![CDATA[
 </h1>
     ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="11"
+  jsp:id="12"
 >
 <![CDATA[
 <hr>
@@ -157,375 +177,375 @@
     ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="12"
+  jsp:id="13"
 >
 <![CDATA[
 <blockquote>
       ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="13"
+  jsp:id="14"
 >
 <![CDATA[
 <u>]]>
 </jsp:text>
 <jsp:text
-  jsp:id="14"
+  jsp:id="15"
 >
 <![CDATA[
 <b>Change Parameter]]>
 </jsp:text>
 <jsp:text
-  jsp:id="15"
+  jsp:id="16"
 >
 <![CDATA[
 </b>]]>
 </jsp:text>
 <jsp:text
-  jsp:id="16"
+  jsp:id="17"
 >
 <![CDATA[
 </u>
       ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="17"
+  jsp:id="18"
 >
 <![CDATA[
 <form action="functions.jsp" method="GET">
 	  foo = ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="18"
+  jsp:id="19"
 >
 <![CDATA[
 <input type="text" name="foo" value="]]>
 </jsp:text>
-<jsp:text jsp:id="19">${param[&apos;foo&apos;]}</jsp:text>
+<jsp:text jsp:id="20">${param[&apos;foo&apos;]}</jsp:text>
 <jsp:text
-  jsp:id="20"
+  jsp:id="21"
 >
 <![CDATA[
 ">
           ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="21"
+  jsp:id="22"
 >
 <![CDATA[
 <input type="submit">
       ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="22"
+  jsp:id="23"
 >
 <![CDATA[
 </form>
       ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="23"
+  jsp:id="24"
 >
 <![CDATA[
 <br>
       ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="24"
+  jsp:id="25"
 >
 <![CDATA[
 <code>
         ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="25"
+  jsp:id="26"
 >
 <![CDATA[
 <table border="1">
           ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="26"
+  jsp:id="27"
 >
 <![CDATA[
 <thead>
 	    ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="27"
+  jsp:id="28"
 >
 <![CDATA[
 <td>]]>
 </jsp:text>
 <jsp:text
-  jsp:id="28"
+  jsp:id="29"
 >
 <![CDATA[
 <b>EL Expression]]>
 </jsp:text>
 <jsp:text
-  jsp:id="29"
+  jsp:id="30"
 >
 <![CDATA[
 </b>]]>
 </jsp:text>
 <jsp:text
-  jsp:id="30"
+  jsp:id="31"
 >
 <![CDATA[
 </td>
 	    ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="31"
+  jsp:id="32"
 >
 <![CDATA[
 <td>]]>
 </jsp:text>
 <jsp:text
-  jsp:id="32"
+  jsp:id="33"
 >
 <![CDATA[
 <b>Result]]>
 </jsp:text>
 <jsp:text
-  jsp:id="33"
+  jsp:id="34"
 >
 <![CDATA[
 </b>]]>
 </jsp:text>
 <jsp:text
-  jsp:id="34"
->
-<![CDATA[
-</td>
-	  ]]>
-</jsp:text>
-<jsp:text
   jsp:id="35"
 >
 <![CDATA[
-</thead>
+</td>
 	  ]]>
 </jsp:text>
 <jsp:text
   jsp:id="36"
 >
 <![CDATA[
-<tr>
-	    ]]>
+</thead>
+	  ]]>
 </jsp:text>
 <jsp:text
   jsp:id="37"
 >
 <![CDATA[
-<td>${param["foo"]}]]>
+<tr>
+	    ]]>
 </jsp:text>
 <jsp:text
   jsp:id="38"
+>
+<![CDATA[
+<td>${param["foo"]}]]>
+</jsp:text>
+<jsp:text
+  jsp:id="39"
 >
 <![CDATA[
 </td>
 	    ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="39"
+  jsp:id="40"
 >
 <![CDATA[
 <td>]]>
 </jsp:text>
-<jsp:text jsp:id="40">${param[&quot;foo&quot;]}</jsp:text>
+<jsp:text jsp:id="41">${param[&quot;foo&quot;]}</jsp:text>
 <jsp:text
-  jsp:id="41"
+  jsp:id="42"
 >
 <![CDATA[
 &nbsp;]]>
 </jsp:text>
 <jsp:text
-  jsp:id="42"
->
-<![CDATA[
-</td>
-	  ]]>
-</jsp:text>
-<jsp:text
   jsp:id="43"
 >
 <![CDATA[
-</tr>
+</td>
 	  ]]>
 </jsp:text>
 <jsp:text
   jsp:id="44"
 >
 <![CDATA[
-<tr>
-	    ]]>
+</tr>
+	  ]]>
 </jsp:text>
 <jsp:text
   jsp:id="45"
 >
 <![CDATA[
-<td>${my:reverse(param["foo"])}]]>
+<tr>
+	    ]]>
 </jsp:text>
 <jsp:text
   jsp:id="46"
+>
+<![CDATA[
+<td>${my:reverse(param["foo"])}]]>
+</jsp:text>
+<jsp:text
+  jsp:id="47"
 >
 <![CDATA[
 </td>
 	    ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="47"
+  jsp:id="48"
 >
 <![CDATA[
 <td>]]>
 </jsp:text>
-<jsp:text jsp:id="48">${my:reverse(param[&quot;foo&quot;])}</jsp:text>
+<jsp:text jsp:id="49">${my:reverse(param[&quot;foo&quot;])}</jsp:text>
 <jsp:text
-  jsp:id="49"
+  jsp:id="50"
 >
 <![CDATA[
 &nbsp;]]>
 </jsp:text>
 <jsp:text
-  jsp:id="50"
->
-<![CDATA[
-</td>
-	  ]]>
-</jsp:text>
-<jsp:text
   jsp:id="51"
 >
 <![CDATA[
-</tr>
+</td>
 	  ]]>
 </jsp:text>
 <jsp:text
   jsp:id="52"
 >
 <![CDATA[
-<tr>
-	    ]]>
+</tr>
+	  ]]>
 </jsp:text>
 <jsp:text
   jsp:id="53"
 >
 <![CDATA[
-<td>${my:reverse(my:reverse(param["foo"]))}]]>
+<tr>
+	    ]]>
 </jsp:text>
 <jsp:text
   jsp:id="54"
+>
+<![CDATA[
+<td>${my:reverse(my:reverse(param["foo"]))}]]>
+</jsp:text>
+<jsp:text
+  jsp:id="55"
 >
 <![CDATA[
 </td>
 	    ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="55"
+  jsp:id="56"
 >
 <![CDATA[
 <td>]]>
 </jsp:text>
-<jsp:text jsp:id="56">${my:reverse(my:reverse(param[&quot;foo&quot;]))}</jsp:text>
+<jsp:text jsp:id="57">${my:reverse(my:reverse(param[&quot;foo&quot;]))}</jsp:text>
 <jsp:text
-  jsp:id="57"
+  jsp:id="58"
 >
 <![CDATA[
 &nbsp;]]>
 </jsp:text>
 <jsp:text
-  jsp:id="58"
->
-<![CDATA[
-</td>
-	  ]]>
-</jsp:text>
-<jsp:text
   jsp:id="59"
 >
 <![CDATA[
-</tr>
+</td>
 	  ]]>
 </jsp:text>
 <jsp:text
   jsp:id="60"
 >
 <![CDATA[
-<tr>
-	    ]]>
+</tr>
+	  ]]>
 </jsp:text>
 <jsp:text
   jsp:id="61"
 >
 <![CDATA[
-<td>${my:countVowels(param["foo"])}]]>
+<tr>
+	    ]]>
 </jsp:text>
 <jsp:text
   jsp:id="62"
+>
+<![CDATA[
+<td>${my:countVowels(param["foo"])}]]>
+</jsp:text>
+<jsp:text
+  jsp:id="63"
 >
 <![CDATA[
 </td>
 	    ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="63"
+  jsp:id="64"
 >
 <![CDATA[
 <td>]]>
 </jsp:text>
-<jsp:text jsp:id="64">${my:countVowels(param[&quot;foo&quot;])}</jsp:text>
+<jsp:text jsp:id="65">${my:countVowels(param[&quot;foo&quot;])}</jsp:text>
 <jsp:text
-  jsp:id="65"
+  jsp:id="66"
 >
 <![CDATA[
 &nbsp;]]>
 </jsp:text>
 <jsp:text
-  jsp:id="66"
+  jsp:id="67"
 >
 <![CDATA[
 </td>
 	  ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="67"
+  jsp:id="68"
 >
 <![CDATA[
 </tr>
 	]]>
 </jsp:text>
 <jsp:text
-  jsp:id="68"
+  jsp:id="69"
 >
 <![CDATA[
 </table>
       ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="69"
+  jsp:id="70"
 >
 <![CDATA[
 </code>
     ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="70"
+  jsp:id="71"
 >
 <![CDATA[
 </blockquote>
   ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="71"
+  jsp:id="72"
 >
 <![CDATA[
 </body>
 ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="72"
+  jsp:id="73"
 >
 <![CDATA[
 </html>
@@ -536,125 +556,141 @@
 
  ---- NODES
 
-Node [/jsp2/el/functions.jsp(1,1), TaglibDirective] <%@ taglib prefix="my" uri="http://jakarta.apache.org/tomcat/jsp2-example-taglib"%>
-Node [/jsp2/el/functions.jsp(1,84), TemplateText] 
+Node [/jsp2/el/functions.jsp(1,1), TemplateText] <!--
+  Copyright 2004 The Apache Software Foundation
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+Node [/jsp2/el/functions.jsp(16,0), TaglibDirective] <%@ taglib prefix="my" uri="http://jakarta.apache.org/tomcat/jsp2-example-taglib"%>
+Node [/jsp2/el/functions.jsp(16,83), TemplateText] 
 
 
-Node [/jsp2/el/functions.jsp(3,0), TemplateText] <html>
+Node [/jsp2/el/functions.jsp(18,0), TemplateText] <html>
   
-Node [/jsp2/el/functions.jsp(4,2), TemplateText] <head>
+Node [/jsp2/el/functions.jsp(19,2), TemplateText] <head>
     
-Node [/jsp2/el/functions.jsp(5,4), TemplateText] <title>JSP 2.0 Expression Language - Functions
-Node [/jsp2/el/functions.jsp(5,50), TemplateText] </title>
+Node [/jsp2/el/functions.jsp(20,4), TemplateText] <title>JSP 2.0 Expression Language - Functions
+Node [/jsp2/el/functions.jsp(20,50), TemplateText] </title>
   
-Node [/jsp2/el/functions.jsp(6,2), TemplateText] </head>
+Node [/jsp2/el/functions.jsp(21,2), TemplateText] </head>
   
-Node [/jsp2/el/functions.jsp(7,2), TemplateText] <body>
+Node [/jsp2/el/functions.jsp(22,2), TemplateText] <body>
     
-Node [/jsp2/el/functions.jsp(8,4), TemplateText] <h1>JSP 2.0 Expression Language - Functions
-Node [/jsp2/el/functions.jsp(8,47), TemplateText] </h1>
+Node [/jsp2/el/functions.jsp(23,4), TemplateText] <h1>JSP 2.0 Expression Language - Functions
+Node [/jsp2/el/functions.jsp(23,47), TemplateText] </h1>
     
-Node [/jsp2/el/functions.jsp(9,4), TemplateText] <hr>
+Node [/jsp2/el/functions.jsp(24,4), TemplateText] <hr>
     An upgrade from the JSTL expression language, the JSP 2.0 EL also
     allows for simple function invocation.  Functions are defined
     by tag libraries and are implemented by a Java programmer as 
     static methods.
 
     
-Node [/jsp2/el/functions.jsp(15,4), TemplateText] <blockquote>
+Node [/jsp2/el/functions.jsp(30,4), TemplateText] <blockquote>
       
-Node [/jsp2/el/functions.jsp(16,6), TemplateText] <u>
-Node [/jsp2/el/functions.jsp(16,9), TemplateText] <b>Change Parameter
-Node [/jsp2/el/functions.jsp(16,28), TemplateText] </b>
-Node [/jsp2/el/functions.jsp(16,32), TemplateText] </u>
+Node [/jsp2/el/functions.jsp(31,6), TemplateText] <u>
+Node [/jsp2/el/functions.jsp(31,9), TemplateText] <b>Change Parameter
+Node [/jsp2/el/functions.jsp(31,28), TemplateText] </b>
+Node [/jsp2/el/functions.jsp(31,32), TemplateText] </u>
       
-Node [/jsp2/el/functions.jsp(17,6), TemplateText] <form action="functions.jsp" method="GET">
+Node [/jsp2/el/functions.jsp(32,6), TemplateText] <form action="functions.jsp" method="GET">
 	  foo = 
-Node [/jsp2/el/functions.jsp(18,9), TemplateText] <input type="text" name="foo" value="
-Node [/jsp2/el/functions.jsp(18,48), ELExpression] ${param['foo']}
-Node [/jsp2/el/functions.jsp(18,61), TemplateText] ">
+Node [/jsp2/el/functions.jsp(33,9), TemplateText] <input type="text" name="foo" value="
+Node [/jsp2/el/functions.jsp(33,48), ELExpression] ${param['foo']}
+Node [/jsp2/el/functions.jsp(33,61), TemplateText] ">
           
-Node [/jsp2/el/functions.jsp(19,10), TemplateText] <input type="submit">
+Node [/jsp2/el/functions.jsp(34,10), TemplateText] <input type="submit">
       
-Node [/jsp2/el/functions.jsp(20,6), TemplateText] </form>
+Node [/jsp2/el/functions.jsp(35,6), TemplateText] </form>
       
-Node [/jsp2/el/functions.jsp(21,6), TemplateText] <br>
+Node [/jsp2/el/functions.jsp(36,6), TemplateText] <br>
       
-Node [/jsp2/el/functions.jsp(22,6), TemplateText] <code>
+Node [/jsp2/el/functions.jsp(37,6), TemplateText] <code>
         
-Node [/jsp2/el/functions.jsp(23,8), TemplateText] <table border="1">
+Node [/jsp2/el/functions.jsp(38,8), TemplateText] <table border="1">
           
-Node [/jsp2/el/functions.jsp(24,10), TemplateText] <thead>
+Node [/jsp2/el/functions.jsp(39,10), TemplateText] <thead>
 	    
-Node [/jsp2/el/functions.jsp(25,5), TemplateText] <td>
-Node [/jsp2/el/functions.jsp(25,9), TemplateText] <b>EL Expression
-Node [/jsp2/el/functions.jsp(25,25), TemplateText] </b>
-Node [/jsp2/el/functions.jsp(25,29), TemplateText] </td>
+Node [/jsp2/el/functions.jsp(40,5), TemplateText] <td>
+Node [/jsp2/el/functions.jsp(40,9), TemplateText] <b>EL Expression
+Node [/jsp2/el/functions.jsp(40,25), TemplateText] </b>
+Node [/jsp2/el/functions.jsp(40,29), TemplateText] </td>
 	    
-Node [/jsp2/el/functions.jsp(26,5), TemplateText] <td>
-Node [/jsp2/el/functions.jsp(26,9), TemplateText] <b>Result
-Node [/jsp2/el/functions.jsp(26,18), TemplateText] </b>
-Node [/jsp2/el/functions.jsp(26,22), TemplateText] </td>
+Node [/jsp2/el/functions.jsp(41,5), TemplateText] <td>
+Node [/jsp2/el/functions.jsp(41,9), TemplateText] <b>Result
+Node [/jsp2/el/functions.jsp(41,18), TemplateText] </b>
+Node [/jsp2/el/functions.jsp(41,22), TemplateText] </td>
 	  
-Node [/jsp2/el/functions.jsp(27,3), TemplateText] </thead>
+Node [/jsp2/el/functions.jsp(42,3), TemplateText] </thead>
 	  
-Node [/jsp2/el/functions.jsp(28,3), TemplateText] <tr>
+Node [/jsp2/el/functions.jsp(43,3), TemplateText] <tr>
 	    
-Node [/jsp2/el/functions.jsp(29,5), TemplateText] <td>${param["foo"]}
-Node [/jsp2/el/functions.jsp(29,25), TemplateText] </td>
+Node [/jsp2/el/functions.jsp(44,5), TemplateText] <td>${param["foo"]}
+Node [/jsp2/el/functions.jsp(44,25), TemplateText] </td>
 	    
-Node [/jsp2/el/functions.jsp(30,5), TemplateText] <td>
-Node [/jsp2/el/functions.jsp(30,11), ELExpression] ${param["foo"]}
-Node [/jsp2/el/functions.jsp(30,24), TemplateText] &nbsp;
-Node [/jsp2/el/functions.jsp(30,30), TemplateText] </td>
+Node [/jsp2/el/functions.jsp(45,5), TemplateText] <td>
+Node [/jsp2/el/functions.jsp(45,11), ELExpression] ${param["foo"]}
+Node [/jsp2/el/functions.jsp(45,24), TemplateText] &nbsp;
+Node [/jsp2/el/functions.jsp(45,30), TemplateText] </td>
 	  
-Node [/jsp2/el/functions.jsp(31,3), TemplateText] </tr>
+Node [/jsp2/el/functions.jsp(46,3), TemplateText] </tr>
 	  
-Node [/jsp2/el/functions.jsp(32,3), TemplateText] <tr>
+Node [/jsp2/el/functions.jsp(47,3), TemplateText] <tr>
 	    
-Node [/jsp2/el/functions.jsp(33,5), TemplateText] <td>${my:reverse(param["foo"])}
-Node [/jsp2/el/functions.jsp(33,37), TemplateText] </td>
+Node [/jsp2/el/functions.jsp(48,5), TemplateText] <td>${my:reverse(param["foo"])}
+Node [/jsp2/el/functions.jsp(48,37), TemplateText] </td>
 	    
-Node [/jsp2/el/functions.jsp(34,5), TemplateText] <td>
-Node [/jsp2/el/functions.jsp(34,11), ELExpression] ${my:reverse(param["foo"])}
-Node [/jsp2/el/functions.jsp(34,36), TemplateText] &nbsp;
-Node [/jsp2/el/functions.jsp(34,42), TemplateText] </td>
+Node [/jsp2/el/functions.jsp(49,5), TemplateText] <td>
+Node [/jsp2/el/functions.jsp(49,11), ELExpression] ${my:reverse(param["foo"])}
+Node [/jsp2/el/functions.jsp(49,36), TemplateText] &nbsp;
+Node [/jsp2/el/functions.jsp(49,42), TemplateText] </td>
 	  
-Node [/jsp2/el/functions.jsp(35,3), TemplateText] </tr>
+Node [/jsp2/el/functions.jsp(50,3), TemplateText] </tr>
 	  
-Node [/jsp2/el/functions.jsp(36,3), TemplateText] <tr>
+Node [/jsp2/el/functions.jsp(51,3), TemplateText] <tr>
 	    
-Node [/jsp2/el/functions.jsp(37,5), TemplateText] <td>${my:reverse(my:reverse(param["foo"]))}
-Node [/jsp2/el/functions.jsp(37,49), TemplateText] </td>
+Node [/jsp2/el/functions.jsp(52,5), TemplateText] <td>${my:reverse(my:reverse(param["foo"]))}
+Node [/jsp2/el/functions.jsp(52,49), TemplateText] </td>
 	    
-Node [/jsp2/el/functions.jsp(38,5), TemplateText] <td>
-Node [/jsp2/el/functions.jsp(38,11), ELExpression] ${my:reverse(my:reverse(param["foo"]))}
-Node [/jsp2/el/functions.jsp(38,48), TemplateText] &nbsp;
-Node [/jsp2/el/functions.jsp(38,54), TemplateText] </td>
+Node [/jsp2/el/functions.jsp(53,5), TemplateText] <td>
+Node [/jsp2/el/functions.jsp(53,11), ELExpression] ${my:reverse(my:reverse(param["foo"]))}
+Node [/jsp2/el/functions.jsp(53,48), TemplateText] &nbsp;
+Node [/jsp2/el/functions.jsp(53,54), TemplateText] </td>
 	  
-Node [/jsp2/el/functions.jsp(39,3), TemplateText] </tr>
+Node [/jsp2/el/functions.jsp(54,3), TemplateText] </tr>
 	  
-Node [/jsp2/el/functions.jsp(40,3), TemplateText] <tr>
+Node [/jsp2/el/functions.jsp(55,3), TemplateText] <tr>
 	    
-Node [/jsp2/el/functions.jsp(41,5), TemplateText] <td>${my:countVowels(param["foo"])}
-Node [/jsp2/el/functions.jsp(41,41), TemplateText] </td>
+Node [/jsp2/el/functions.jsp(56,5), TemplateText] <td>${my:countVowels(param["foo"])}
+Node [/jsp2/el/functions.jsp(56,41), TemplateText] </td>
 	    
-Node [/jsp2/el/functions.jsp(42,5), TemplateText] <td>
-Node [/jsp2/el/functions.jsp(42,11), ELExpression] ${my:countVowels(param["foo"])}
-Node [/jsp2/el/functions.jsp(42,40), TemplateText] &nbsp;
-Node [/jsp2/el/functions.jsp(42,46), TemplateText] </td>
+Node [/jsp2/el/functions.jsp(57,5), TemplateText] <td>
+Node [/jsp2/el/functions.jsp(57,11), ELExpression] ${my:countVowels(param["foo"])}
+Node [/jsp2/el/functions.jsp(57,40), TemplateText] &nbsp;
+Node [/jsp2/el/functions.jsp(57,46), TemplateText] </td>
 	  
-Node [/jsp2/el/functions.jsp(43,3), TemplateText] </tr>
+Node [/jsp2/el/functions.jsp(58,3), TemplateText] </tr>
 	
-Node [/jsp2/el/functions.jsp(44,1), TemplateText] </table>
+Node [/jsp2/el/functions.jsp(59,1), TemplateText] </table>
       
-Node [/jsp2/el/functions.jsp(45,6), TemplateText] </code>
+Node [/jsp2/el/functions.jsp(60,6), TemplateText] </code>
     
-Node [/jsp2/el/functions.jsp(46,4), TemplateText] </blockquote>
+Node [/jsp2/el/functions.jsp(61,4), TemplateText] </blockquote>
   
-Node [/jsp2/el/functions.jsp(47,2), TemplateText] </body>
+Node [/jsp2/el/functions.jsp(62,2), TemplateText] </body>
 
-Node [/jsp2/el/functions.jsp(48,0), TemplateText] </html>
+Node [/jsp2/el/functions.jsp(63,0), TemplateText] </html>
 
 
 Node [null, Declaration] <%!static private org.apache.jasper.runtime.ProtectedFunctionMapper _jspx_fnmap_0;

@@ -18,7 +18,6 @@
       threadSafe          : true
       isErrorPage         : false
       errorPage           : null
-      maxTagNesting       : 0
       scriptless          : true
       scriptingInvalid    : false
       elIgnored           : true
