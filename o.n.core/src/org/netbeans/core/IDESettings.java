@@ -110,12 +110,6 @@ public class IDESettings extends SystemOption {
 
     private static int uiMode = UIModeManager.SDI_MODE;
     private TabbedContainerUIManager tabbedContainerUIManager = null;
-    
-    protected void initialize() {
-        super.initialize ();
-        
-        putProperty(PROP_WWWBROWSER, "", false);
-    }
 
     // ------------------------------------------
     // property access methods
@@ -348,20 +342,7 @@ public class IDESettings extends SystemOption {
      */
     public HtmlBrowser.Factory getWWWBrowser() {
         try {
-            Object obj = getProperty (PROP_WWWBROWSER);
-            
-            if (obj instanceof String) {
-                // use new style
-                Lookup.Item item = Lookup.getDefault ().lookupItem (new Lookup.Template (HtmlBrowser.Factory.class, (String)obj, null));
-                return item == null ? null : (HtmlBrowser.Factory)item.getInstance ();
-            }
-
-            //
-            // Old legacy style
-            //
-                
-                
-            Node.Handle hdl = (Node.Handle) obj;
+            Node.Handle hdl = (Node.Handle) getProperty(PROP_WWWBROWSER);
             if (hdl == null) {
                 Lookup.Result res = Lookup.getDefault ().lookup (new Lookup.Template (HtmlBrowser.Factory.class));
                 java.util.Iterator it = res.allInstances ().iterator ();
@@ -424,25 +405,11 @@ public class IDESettings extends SystemOption {
         // Node.Handle is stored to refer to registered browser
         try {
             if (brow == null) {
-                putProperty(PROP_WWWBROWSER, null, true);    
+                putProperty(PROP_WWWBROWSER, brow, true);    
                 return;
             }
-            
-            Lookup.Item item = Lookup.getDefault().lookupItem(new Lookup.Template (null, null, brow));
-            if (item != null) {
-                putProperty (PROP_WWWBROWSER, item.getId (), true);
-            } else {
-                // strange
-                ErrorManager.getDefault().log ("IDESettings: Cannot find browser in lookup");// NOI18N
-                putProperty (PROP_WWWBROWSER, null, true);
-            }
-            
 
-            //
-            // now the backward compatibility stuff for Radim
-            // 
-            
-            FileObject fo = Repository.getDefault ()
+            FileObject fo = TopManager.getDefault ().getRepository ()
                 .getDefaultFileSystem ().findResource ("Services/Browsers");   // NOI18N
             DataFolder folder = DataFolder.findFolder (fo);
             DataObject [] dobjs = folder.getChildren ();
@@ -457,6 +424,7 @@ public class IDESettings extends SystemOption {
                 catch (ClassNotFoundException ex) {}
                 
                 if (o != null && o.equals (brow)) {
+                    putProperty(PROP_WWWBROWSER, dobjs[i].getNodeDelegate ().getHandle (), true); 
                     // mark this object so it can be found by modules (utilities, open URL in new window)
                     dobjs[i].getPrimaryFile ().setAttribute ("DEFAULT_BROWSER", Boolean.TRUE); // NOI18N
                 }
