@@ -16,21 +16,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <import file="../../nbbuild/templates/projectized.xml"/>
     
-    <target name="jar-with-module-deps" if="module.dependencies">
-        <property file="spec-vers.properties"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
-            <manifest>
-                <attribute name="OpenIDE-Module-Specification-Version" value="${multiview.spec.version}"/>
-                <attribute name="OpenIDE-Module-Implementation-Version" value="${multiview.impl.version}"/>
-                <attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
-                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
-                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
-                <attribute name="OpenIDE-Module-Module-Dependencies" value="${module.dependencies}"/>
-            </manifest>
-            <fileset dir="${build.classes.dir}"/>
-        </jar>
-    </target>
-    
     <!-- MVInnerComponentGetLookupTest extends org.openide.windows.TopComponentGetLookupTest; -->
     <!-- needs to compile openide tests first -->
     <target name="build-openide">
