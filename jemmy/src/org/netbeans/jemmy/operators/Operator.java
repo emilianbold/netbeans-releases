@@ -33,6 +33,9 @@ import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 
+import org.netbeans.jemmy.util.DefaultVisualizer;
+import org.netbeans.jemmy.util.MouseVisualizer;
+
 import java.awt.Component;
 
 import java.awt.event.InputEvent;
@@ -64,6 +67,7 @@ public abstract class Operator extends Object
     private StringComparator comparator;
     private QueueTool queueTool;
     private boolean verification = false;
+    private JemmyProperties properties;
 
     /**
      * Inits environment.
@@ -224,20 +228,10 @@ public abstract class Operator extends Object
     }
 
     static {
-	try {
-	    setDefaultComponentVisualizer((ComponentVisualizer)
-					  new ClassReference("org.netbeans.jemmy.util.DefaultVisualizer").
-					  newInstance(null, null));
-	} catch(ClassNotFoundException e) {
-	    JemmyProperties.getCurrentOutput().printStackTrace(e);
-	} catch(NoSuchMethodException e) {
-	    JemmyProperties.getCurrentOutput().printStackTrace(e);
-	} catch(InvocationTargetException e) {
-	    JemmyProperties.getCurrentOutput().printStackTrace(e);
-	} catch(IllegalAccessException e) {
-	    JemmyProperties.getCurrentOutput().printStackTrace(e);
-	} catch(InstantiationException e) {
-	    JemmyProperties.getCurrentOutput().printStackTrace(e);
+	if((JemmyProperties.getCurrentDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) > 0) {
+	    setDefaultComponentVisualizer(new DefaultVisualizer());
+	} else {
+	    setDefaultComponentVisualizer(new MouseVisualizer());
 	}
 	operatorPkgs = new Vector ();
 	setDefaultStringComparator(new DefaultStringComparator(false, false));
@@ -262,16 +256,16 @@ public abstract class Operator extends Object
     }
 
     /**
-     * Copies all environment (output, timeouts, dispatching model,
+     * Copies all environment (output, timeouts,
      * visualizer) from another operator.
      */
     public void copyEnvironment(Operator anotherOperator) {
 	setTimeouts(anotherOperator.getTimeouts());
 	setOutput(anotherOperator.getOutput());
 	setVisualizer(anotherOperator.getVisualizer());
-	setDispatchingModel(anotherOperator.getDispatchingModel());
 	setComparator(anotherOperator.getComparator());
 	setVerification(anotherOperator.getVerification());
+	setProperties(anotherOperator.getProperties());
     }
 
     /**
@@ -315,21 +309,14 @@ public abstract class Operator extends Object
  	visualizer = vo;
     }
 
-    /**
-     * Force operator to use dispatching model.
-     * @param m New model value.
-     * @see org.netbeans.jemmy.JemmyProperties#setCurrentDispatchingModel(int)
-     */
-    public void setDispatchingModel(int m) {
-	model = m;
+    public JemmyProperties getProperties() {
+	return(properties);
     }
 
-    /**
-     * @return Current dispatching model.
-     * @see #setDispatchingModel(int)
-     */
-    public int getDispatchingModel() {
-	return(model);
+    public JemmyProperties setProperties(JemmyProperties properties) {
+	JemmyProperties oldProperties = getProperties();
+	this.properties = properties;
+	return(oldProperties);
     }
 
     /**
@@ -339,6 +326,10 @@ public abstract class Operator extends Object
      */
     public void setCharBindingMap(CharBindingMap map) {
 	this.map = map;
+    }
+
+    public CharBindingMap getCharBindingMap() {
+	return(map);
     }
 
     /**
@@ -552,6 +543,23 @@ public abstract class Operator extends Object
     //Mapping                                             //
     ////////////////////////////////////////////////////////
 
+    protected Object produceTimeRestricted(Action action, final Object param, 
+					   long wholeTime) {
+	ActionProducer producer = new ActionProducer(action);
+	producer.setOutput(getOutput().createErrorOutput());
+	producer.setTimeouts(getTimeouts().cloneThis());
+	producer.getTimeouts().setTimeout("ActionProducer.MaxActionTime", wholeTime);
+	try {
+	    return(producer.produceAction(param));
+	} catch(InterruptedException e) {
+	    throw(new JemmyException("Interrupted!", e));
+	}
+    }
+
+    protected Object produceTimeRestricted(Action action, long wholeTime) {
+	return(produceTimeRestricted(action, null, wholeTime));
+    }
+
     /**
      * Makes easier noblocking operations.
      */
@@ -585,9 +593,7 @@ public abstract class Operator extends Object
      * Equivalent to getQueue().lock();
      */
     protected void lockQueue() {
-	if((getDispatchingModel() & JemmyProperties.QUEUE_MODEL_MASK) != 0) {
-	    queueTool.lock();
-	}
+	queueTool.lock();
     }
 
     /**
@@ -763,11 +769,11 @@ public abstract class Operator extends Object
 	queueTool = new QueueTool();
 	setTimeouts(JemmyProperties.getProperties().getTimeouts());
 	setOutput(JemmyProperties.getProperties().getOutput());
-	setDispatchingModel(JemmyProperties.getProperties().getDispatchingModel());
 	setCharBindingMap(JemmyProperties.getProperties().getCharBindingMap());
 	setVisualizer(getDefaultComponentVisualizer());
 	setComparator(getDefaultStringComparator());
 	setVerification(getDefaultVerification());
+	setProperties(JemmyProperties.getProperties());
     }
 
     private int nextDelimIndex(String path, String delim) {

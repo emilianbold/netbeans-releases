@@ -17,6 +17,7 @@
 
 package org.netbeans.jemmy.operators;
 
+import org.netbeans.jemmy.Action;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyProperties;
@@ -27,6 +28,13 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
+
+import org.netbeans.jemmy.util.EmptyVisualizer;
+
+import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.ScrollDriver;
+
+import org.netbeans.jemmy.drivers.scrolling.ScrollAdjuster;
 
 import org.netbeans.jemmy.util.EmptyVisualizer;
 
@@ -49,31 +57,6 @@ import javax.swing.plaf.ScrollBarUI;
  * Operator is supposed to be used to operate with an instance of
  * javax.swing.JScrollBar class. <BR><BR>
  *
- * Operator can use some or one of next scroll modes:<BR>
- * CLICK_SCROLL_MODEL - Click by increase/decrease button to reach the point.<BR>
- * PUSH_AND_WAIT_SCROLL_MODEL - Push one of the buttons and wait for the point reached. <BR>
- * Since point can be missed during this type scrolling, CLICK_SCROLL_MODEL scrolling can be invoked
- * after if necessary.<BR>
- * DRAG_AND_DROP_SCROLL_MODEL - Two different types of scrolling are really under this type<BR>
- * 1. If stop criteria was set by integer value.<BR>
- *  Dragger is taken and dropped once. 
- * Drop point is calculated pretty aproximately, so second type of drag and drop is executed after.
- * JScrollBarOperator.BeforeDropTimeout timeout is used to sleep before drop. <BR>
- * 2. If stop criteria was set by either ScrollChecker or Waitable implementation
- *  Dragger is tanen, then mouse is moved step by step for number of pixels
- * defined by setDragAndDropStepLength(int) method. Scrolling is stopped if either 
- * ScrollChecker.getScrollDirection returned DO_NOT_TOUCH_SCROLL_DIRECTION or 
- * Waitable.actionProduced returned not null. JScrollBarOperator.DragAndDropScrollingDelta timeout
- * is used to sleep between steps. JScrollBarOperator.BeforeDropTimeout is stell used.
- * Since this scrolling type can be inaccurate too, CLICK SCROLL MODEL scrolling can be invoked
- * if necessary.<BR><BR>
- *
- * If no scroll model was defined by setScrollModel method, defines scroll model dynamically by next algorithm: <BR>
- * If getUnitIncrement(-1) > 1 or getUnitIncrement( 1) > 1 <BR>
- *     use CLICK_SCROLL_MODEL<BR>
- * else <BR>
- *     Scroll model to be used is DRAG_AND_DROP_MODEL.<BR>
- *
  *
  * <BR><BR>Timeouts used: <BR>
  * JScrollBarOperator.OneScrollClickTimeout - time for one scroll click <BR>
@@ -83,12 +66,7 @@ import javax.swing.plaf.ScrollBarUI;
  * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
  *
  * @see org.netbeans.jemmy.Timeouts
- * @see #setScrollModel(int)
  * @see #getUnitIncrement(int)
- * @see #setDragAndDropStepLength(int)
- * @see #CLICK_SCROLL_MODEL
- * @see #PUSH_AND_WAIT_SCROLL_MODEL
- * @see #DRAG_AND_DROP_SCROLL_MODEL
  *
  * @author Alexandre Iline (alexandre.iline@sun.com)
  */
@@ -96,53 +74,12 @@ import javax.swing.plaf.ScrollBarUI;
 public class JScrollBarOperator extends JComponentOperator
     implements Timeoutable, Outputable{
 
-    /**
-     * Click scroll model. Respective button is pushed till necessary position reached.
-     * @see #setScrollModel(int)
-     */
-    public static final int CLICK_SCROLL_MODEL = 1;
-
-    /**
-     * Push and wait scroll model. Respective button is pressed, and released after necessary position reached. Default model.
-     * @see #setScrollModel(int)
-     */
-    public static final int PUSH_AND_WAIT_SCROLL_MODEL = 2;
-
-    /**
-     * Drag'n'drop scroll model. If drag'n'drop is not available (i.e., for example scroll pad is not visible) default model is used.
-     * @see #setScrollModel(int)
-     */
-    public static final int DRAG_AND_DROP_SCROLL_MODEL = 3;
-
-    /**
-     * Possible value of the ScrollChecker.getScrollDirection(JScrollBarOperator) method.
-     * Scroll down (right) value
-     */
-    public static final int INCREASE_SCROLL_DIRECTION = 1;
-
-    /**
-     * Possible value of the ScrollChecker.getScrollDirection(JScrollBarOperator) method.
-     * Scroll up (left) value
-     */
-    public static final int DECREASE_SCROLL_DIRECTION = -1;
-
-    /**
-     * Possible value of the ScrollChecker.getScrollDirection(JScrollBarOperator) method.
-     * This value means scrolling has been finished.
-     */
-    public static final int DO_NOT_TOUCH_SCROLL_DIRECTION = 0;
-
     private final static long ONE_SCROLL_CLICK_TIMEOUT = 0;
     private final static long WHOLE_SCROLL_TIMEOUT = 60000;
     private final static long BEFORE_DROP_TIMEOUT = 0;
     private final static long DRAG_AND_DROP_SCROLLING_DELTA = 0;
 
-    private static final int UNDEFINED_SCROLL_MODEL = 0;
     private static final int MINIMAL_PAD_SIZE = 10;
-
-    private static final int IS_NOT_BEING_SCROLLED = 0;
-    private static final int HAS_BEEN_SCROLLED_SUCCESFULLY = 1;
-    private static final int SCROLLING_HAS_BEEN_TIMEOUTED = -1;
 
     private static final int MINIMAL_DRAGGER_SIZE = 5;
 
@@ -150,8 +87,8 @@ public class JScrollBarOperator extends JComponentOperator
     private TestOut output;
     private JButtonOperator minButtOperator;
     private JButtonOperator maxButtOperator;
-    private int scrollModel = UNDEFINED_SCROLL_MODEL;
-    private int dragAndDropStepLength = 100;
+
+    private ScrollDriver driver;
 
     /**
      * Constructor.
@@ -159,8 +96,7 @@ public class JScrollBarOperator extends JComponentOperator
      */
     public JScrollBarOperator(JScrollBar b) {
 	super(b);
-	setDragAndDropStepLength(JemmyProperties.getProperties().getCurrentDragAndDropStepLength());
-	initOperators();
+	driver = DriverManager.getScrollDriver(getClass());
     }
 
     /**
@@ -281,45 +217,6 @@ public class JScrollBarOperator extends JComponentOperator
     }
 
     /**
-     * Step length value defines pixel count which mouse is moved for (during one scroll step).
-     * Default step length - 1. It can be increased to make operator faster.
-     * At the same time point can be missed easily if step length has been increased.
-     * @see #getDragAndDropStepLength()
-     */
-    public void setDragAndDropStepLength(int dragAndDropStepLength) {
-	this.dragAndDropStepLength = dragAndDropStepLength;
-    }
-
-    /**
-     * @see #setDragAndDropStepLength(int)
-     */
-    public int getDragAndDropStepLength() {
-	return(dragAndDropStepLength);
-    }
-
-    /**
-     * Defines scroll model.
-     * @param model New scroll model value.
-     * @see #CLICK_SCROLL_MODEL
-     * @see #PUSH_AND_WAIT_SCROLL_MODEL
-     * @see #DRAG_AND_DROP_SCROLL_MODEL
-     * @see #getScrollModel()
-     * @see #scrollTo(Waitable, Object, boolean)
-     */
-    public void setScrollModel(int model) {
-	scrollModel = model;
-    }
-
-    /**
-     * @param model New scroll model value.
-     * @return Current scroll model value.
-     * @see #setScrollModel(int)
-     */
-    public int getScrollModel() {
-	return(scrollModel);
-    }
-
-    /**
      * Sets operator's output.
      * @param out org.netbeans.jemmy.TestOut instance.
      */
@@ -345,6 +242,7 @@ public class JScrollBarOperator extends JComponentOperator
      */
     public void setTimeouts(Timeouts timeouts) {
 	this.timeouts = timeouts;
+	super.setTimeouts(timeouts);
     }
 
     /**
@@ -357,25 +255,23 @@ public class JScrollBarOperator extends JComponentOperator
 	return(timeouts);
     }
 
+    public void copyEnvironment(Operator anotherOperator) {
+	super.copyEnvironment(anotherOperator);
+	driver = 
+	    (ScrollDriver)DriverManager.
+	    getDriver(DriverManager.SCROLL_DRIVER_ID,
+		      getClass(), 
+		      anotherOperator.getProperties());
+    }
+
     /**
      * Does simple scroll click.
      * @param increase 
      * @throws TimeoutExpiredException
+     * deprecated
      */
     public void scroll(boolean increase) {
-	makeComponentVisible();
-	initOperators();
-	if(increase) {
-	    output.printTrace("Increase JScrollBar value\n" +
-			      getSource().toString());
-	    output.printGolden("Increase JScrollBar value");
-	    maxButtOperator.push();
-	} else {
-	    output.printTrace("Decrease JScrollBar value\n" +
-			      getSource().toString());
-	    output.printGolden("Decrease JScrollBar value");
-	    minButtOperator.push();
-	}
+	scrollToValue(getValue() + (increase ? 1 : -1));
     }
 
     /**
@@ -387,37 +283,33 @@ public class JScrollBarOperator extends JComponentOperator
      * @param waiterParam
      * @param increase
      * @see #scrollTo(JScrollBarOperator.ScrollChecker)
-     * @see #setScrollModel(int)
      * @throws TimeoutExpiredException
      */
     public void scrollTo(Waitable w, Object waiterParam, boolean increase) {
-	scrollTo(new WaitableChecker(w, waiterParam, increase));
+	scrollTo(new WaitableChecker(w, waiterParam, increase, this));
     }
 
     /**
      * Scroll scrollbar to the position defined by w ScrollChecker implementation.
      * @param checker ScrollChecker implementation defining scrolling direction, and so on.
      * @see ScrollChecker
-     * @see #setScrollModel(int)
      * @throws TimeoutExpiredException
      */
     public void scrollTo(ScrollChecker checker) {
-	makeComponentVisible();
+	scrollTo(new CheckerAdjustable(checker, this));
+    }
+
+    public void scrollTo(final ScrollAdjuster adj) {
 	initOperators();
-	int scrModel = getActualScrollModel();
-	try {
-	    if(scrModel == CLICK_SCROLL_MODEL) {
-		clickScroll(checker);
-	    } else if(scrModel == DRAG_AND_DROP_SCROLL_MODEL) {
-		dragAndDrop(checker);
-	    } else {
-		pushAndWait(checker);
-	    }
-	} catch(NullPointerException e) {
-	    if(getSource().isVisible()) {
-		throw(e);
-	    }
-	}
+	produceTimeRestricted(new Action() {
+		public Object launch(Object obj) {
+		    driver.scroll(JScrollBarOperator.this, adj);
+		    return(null);
+		}
+		public String getDescription() {
+		    return("Scrolling");
+		}
+	    }, getTimeouts().getTimeout("JScrollBarOperator.WholeScrollTimeout"));
     }
 
     /**
@@ -429,7 +321,7 @@ public class JScrollBarOperator extends JComponentOperator
 	output.printTrace("Scroll JScrollBar to " + Integer.toString(value) +
 			  " value\n" + getSource().toString());
 	output.printGolden("Scroll JScrollBar to " + Integer.toString(value) + " value");
-	scrollTo(value);
+	scrollTo(new ValueScrollAdjuster(value));
     }
 
     /**
@@ -441,9 +333,10 @@ public class JScrollBarOperator extends JComponentOperator
 	output.printTrace("Scroll JScrollBar to " + Double.toString(proportionalValue) +
 			  " proportional value\n" + getSource().toString());
 	output.printGolden("Scroll JScrollBar to " + Double.toString(proportionalValue) + " proportional value");
-	scrollTo(getMinimum() + 
-		 (int)(proportionalValue * 
-		       (getMaximum() - getVisibleAmount() - getMinimum())));
+	scrollTo(new ValueScrollAdjuster((int)(getMinimum() + 
+					       (getMaximum() - 
+						getVisibleAmount() - 
+						getMinimum()) * proportionalValue)));
     }
 
     /**
@@ -454,7 +347,16 @@ public class JScrollBarOperator extends JComponentOperator
 	output.printTrace("Scroll JScrollBar to minimum value\n" +
 			  getSource().toString());
 	output.printGolden("Scroll JScrollBar to minimum value");
-	scrollTo(getMinimum() - MINIMAL_DRAGGER_SIZE);
+	initOperators();
+	produceTimeRestricted(new Action() {
+		public Object launch(Object obj) {
+		    driver.scrollToMinimum(JScrollBarOperator.this, getOrientation());
+		    return(null);
+		}
+		public String getDescription() {
+		    return("Scrolling");
+		}
+	    }, getTimeouts().getTimeout("JScrollBarOperator.WholeScrollTimeout"));
     }
 
     /**
@@ -465,7 +367,26 @@ public class JScrollBarOperator extends JComponentOperator
 	output.printTrace("Scroll JScrollBar to maximum value\n" +
 			  getSource().toString());
 	output.printGolden("Scroll JScrollBar to maximum value");
-	scrollTo(getMaximum() - getVisibleAmount() + MINIMAL_DRAGGER_SIZE);
+	initOperators();
+	produceTimeRestricted(new Action() {
+		public Object launch(Object obj) {
+		    driver.scrollToMaximum(JScrollBarOperator.this, getOrientation());
+		    return(null);
+		}
+		public String getDescription() {
+		    return("Scrolling");
+		}
+	    }, getTimeouts().getTimeout("JScrollBarOperator.WholeScrollTimeout"));
+    }
+
+    public JButtonOperator getDecreaseButton() {
+	initOperators();
+	return(minButtOperator);
+    }
+
+    public JButtonOperator getIncreaseButton() {
+	initOperators();
+	return(maxButtOperator);
     }
 
     /**
@@ -656,166 +577,11 @@ public class JScrollBarOperator extends JComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    /**
-     * Silente method scrolls to the value. (Does not provide any output)
-     */
-    protected void scrollTo(int value) {
-	int scrModel = getActualScrollModel();
-	makeComponentVisible();
-	initOperators();
-	ScrollChecker w = new ValueScrollChecker(value);
-	boolean increase = value > getValue();
-	if(scrModel == CLICK_SCROLL_MODEL) {
-	    clickScroll(w);
-	} else if(scrModel == DRAG_AND_DROP_SCROLL_MODEL) {
-	    dragAndDrop(value);
-	} else {
-	    pushAndWait(w);
-	}
-    }
-
-    /**
-     * Drag scrollbar to the necessary value.
-     */
-    protected void dragAndDrop(int value) {
-	long startTime = System.currentTimeMillis();
-	if(value >= getMaximum() - getVisibleAmount()||
-	   value <= getMinimum()) {
-	    try {
-		dragToValue(value);
-	    } catch(NullPointerException e) {
-		if(getSource().isVisible()) {
-		    throw(e);
-		}
-	    }
-	} else {
-	    dragAndDrop(new ValueScrollChecker(value));
-	}
-    }
-
-    /**
-     * Scroll by clicking on buttons.
-     */
-    protected void clickScroll(ScrollChecker checker)  {
-	long startTime = System.currentTimeMillis();
-	int direction = checker.getScrollDirection(this);
-	if(direction == DO_NOT_TOUCH_SCROLL_DIRECTION) {
-	    return;
-	}
-	while(checker.getScrollDirection(this) == direction) {
-	    if(System.currentTimeMillis() - startTime > 
-	       timeouts.getTimeout("JScrollBarOperator.WholeScrollTimeout")) {
-		throw(new TimeoutExpiredException(checker.getDescription()));
-	    }
-	    if(direction == INCREASE_SCROLL_DIRECTION) {
-		maxButtOperator.push();
-		if(getValue() == getMaximum() - getVisibleAmount()) {
-		    break;
-		}
-	    } else {
-		minButtOperator.push();
-		if(getValue() == getMinimum()) {
-		    break;
-		}
-	    }
-	}
-    }
-
-    /**
-     * Scroll by pushing on button and wait good position.
-     */
-    protected void pushAndWait(ScrollChecker checker) {
-	int direction = checker.getScrollDirection(this);
-	if(direction == DO_NOT_TOUCH_SCROLL_DIRECTION) {
-	    return;
-	}
-	Waiter valueWaiter = new Waiter(new WaitingNotifier(this, checker));
-	valueWaiter.setTimeouts(timeouts.cloneThis());
-	valueWaiter.getTimeouts().setTimeout("Waiter.TimeDelta", 1);
-	valueWaiter.getTimeouts().setTimeout("Waiter.WaitingTime",
-					     timeouts.
-					     getTimeout("JScrollBarOperator.WholeScrollTimeout"));
-	valueWaiter.getTimeouts().setTimeout("Waiter.AfterWaitingTime", 0);
-	valueWaiter.setOutput(output.createErrorOutput());
-	try {
-	    if(checker.getScrollDirection(this) == INCREASE_SCROLL_DIRECTION) {
-		maxButtOperator.press();
-		valueWaiter.waitAction(null);
-		maxButtOperator.release();
-	    } else {
-		minButtOperator.press();
-		valueWaiter.waitAction(null);
-		minButtOperator.release();
-	    }
-	} catch(InterruptedException e) {
-	    output.printStackTrace(e);
-	}
-	//tiny
-	clickScroll(checker);
-    }
-
-    /**
-     * Scroll by drag'n'drop action.
-     */
-    protected void dragAndDrop(ScrollChecker checker) {
-	int direction = checker.getScrollDirection(this);
-	if(direction == DO_NOT_TOUCH_SCROLL_DIRECTION) {
-	    return;
-	}
-	long startTime = System.currentTimeMillis();
-	Point pnt = getClickPoint(getValue());
-	moveMouse(pnt.x, pnt.y);
-	pressMouse(pnt.x, pnt.y);
-	while(checker.getScrollDirection(this) == direction) {
-	    if(System.currentTimeMillis() - startTime > 
-	       timeouts.getTimeout("JScrollBarOperator.WholeScrollTimeout")) {
-		throw(new TimeoutExpiredException(checker.getDescription()));
-	    }
-	    pnt = increasePoint(pnt, (direction == INCREASE_SCROLL_DIRECTION));
-	    dragMouse(pnt.x, pnt.y, getDefaultMouseButton(), 0);
-	    if(getValue() == getMinimum() &&
-	       direction == DECREASE_SCROLL_DIRECTION ||
-	       getValue() == getMaximum() - getVisibleAmount() &&
-	       direction == INCREASE_SCROLL_DIRECTION) {
-		break;
-	    }
-	    timeouts.sleep("JScrollBarOperator.DragAndDropScrollingDelta");
-	}	    
-	timeouts.sleep("JScrollBarOperator.BeforeDropTimeout");
-	releaseMouse(pnt.x, pnt.y);
-	//tiny
-	clickScroll(checker);
-    }
-
-    private int getActualScrollModel() {
-	int scrModel = getScrollModel();
-	if(scrModel == UNDEFINED_SCROLL_MODEL) {
-	    if(getUnitIncrement(-1) > 1 ||
-	       getUnitIncrement( 1) > 1) {
-		scrModel = CLICK_SCROLL_MODEL;
-	    } else {
-		scrModel = DRAG_AND_DROP_SCROLL_MODEL;
-	    }
-	}
-	if(scrModel == DRAG_AND_DROP_SCROLL_MODEL) {
-	    if(!isPadVisible()) {
-		scrModel = PUSH_AND_WAIT_SCROLL_MODEL;
-	    }
-	}
-	return(scrModel);
-    }
-
-    private void dragToValue(int value) {
-	Point pnt = getClickPoint(getValue());
-	moveMouse(pnt.x, pnt.y);
-	pressMouse(pnt.x, pnt.y);
-	pnt = getClickPoint(value);
-	dragMouse(pnt.x, pnt.y, getDefaultMouseButton(), 0);
-	timeouts.sleep("JScrollBarOperator.BeforeDropTimeout");
-	releaseMouse(pnt.x, pnt.y);
-    }
-
     private void initOperators() {
+	if(minButtOperator != null && 
+	   maxButtOperator != null) {
+	    return;
+	}
 	ComponentChooser chooser = new ComponentChooser() {
 	    public boolean checkComponent(Component comp) {
 		return(comp instanceof JButton);
@@ -874,39 +640,6 @@ public class JScrollBarOperator extends JComponentOperator
 	maxButtOperator.setVisualizer(new EmptyVisualizer());
     }
 
-    private boolean isPadVisible() {
-	boolean result = false;
-	Point pnt = getClickPoint(getValue());
-	moveMouse(pnt.x, pnt.y);
-	pressMouse(pnt.x, pnt.y);
-	result = getValueIsAdjusting();
-	releaseMouse(pnt.x, pnt.y);
-	return(result);
-    }
-
-    private Point getClickPoint(int value) {
-	initOperators();
-	int lenght = (getOrientation() == JScrollBar.HORIZONTAL) ?
-	    getWidth()  - minButtOperator.getWidth()  - maxButtOperator.getWidth() :
-	    getHeight() - minButtOperator.getHeight() - maxButtOperator.getHeight();
-	int subpos = (int)(((float)lenght / (getMaximum() - getMinimum())) * value);
-	if(((JScrollBar)getSource()).getOrientation() == JScrollBar.HORIZONTAL) {
-	    subpos = subpos + minButtOperator.getWidth();
-	} else {
-	    subpos = subpos + minButtOperator.getHeight();
-	}
-	subpos = subpos + MINIMAL_DRAGGER_SIZE / 2 + 1;
-	return((getOrientation() == JScrollBar.HORIZONTAL) ?
-	       new Point(subpos, getHeight() / 2) :
-	       new Point(getWidth() / 2, subpos));
-    }
-
-    private Point increasePoint(Point pnt, boolean increase) {
-	return((getOrientation() == JScrollBar.HORIZONTAL) ?
-	       new Point(pnt.x + (increase ? 1 : -1) * getDragAndDropStepLength(), pnt.y) :
-	       new Point(pnt.x, pnt.y + (increase ? 1 : -1) * getDragAndDropStepLength()));
-    }
-
     /**
      * Interface can be used to define some kind of complicated
      * scrolling rules.
@@ -914,12 +647,12 @@ public class JScrollBarOperator extends JComponentOperator
     public interface ScrollChecker {
 	/**
 	 * Should return one of the following values:<BR>
-	 * INCREASE_SCROLL_DIRECTION<BR>
-	 * DECREASE_SCROLL_DIRECTION<BR>
-	 * DO_NOT_TOUCH_SCROLL_DIRECTION<BR>
-	 * @see #INCREASE_SCROLL_DIRECTION
-	 * @see #DECREASE_SCROLL_DIRECTION
-	 * @see #DO_NOT_TOUCH_SCROLL_DIRECTION
+	 * ScrollAdjuster.INCREASE_SCROLL_DIRECTION<BR>
+	 * ScrollAdjuster.DECREASE_SCROLL_DIRECTION<BR>
+	 * ScrollAdjuster.DO_NOT_TOUCH_SCROLL_DIRECTION<BR>
+	 * @see org.netbeans.jemmy.drivers.scrolling.ScrollAdjuster#INCREASE_SCROLL_DIRECTION
+	 * @see org.netbeans.jemmy.drivers.scrolling.ScrollAdjuster#DECREASE_SCROLL_DIRECTION
+	 * @see org.netbeans.jemmy.drivers.scrolling.ScrollAdjuster#DO_NOT_TOUCH_SCROLL_DIRECTION
 	 */
 	public int getScrollDirection(JScrollBarOperator oper);
 
@@ -929,30 +662,74 @@ public class JScrollBarOperator extends JComponentOperator
 	public String getDescription();
     }
 
-    private class WaitableChecker implements ScrollChecker {
+    private class ValueScrollAdjuster implements ScrollAdjuster {
+	int value;
+	public ValueScrollAdjuster(int value) {
+	    this.value = value;
+	}
+	public int getScrollDirection() {
+	    if(getValue() == value) {
+		return(ScrollAdjuster.DO_NOT_TOUCH_SCROLL_DIRECTION);
+	    } else {
+		return((getValue() < value) ?
+		       ScrollAdjuster.INCREASE_SCROLL_DIRECTION :
+		       ScrollAdjuster.DECREASE_SCROLL_DIRECTION);
+	    }
+	}
+	public int getScrollOrientation() {
+	    return(getOrientation());
+	}
+	public String getDescription() {
+	    return("Scroll to " + Integer.toString(value) + " value");
+	}
+    }
+    private class WaitableChecker implements ScrollAdjuster {
 	Waitable w;
 	Object waitParam;
 	boolean increase;
 	boolean reached = false;
-	public WaitableChecker(Waitable w, Object waitParam, boolean increase) {
+	JScrollBarOperator oper;
+	public WaitableChecker(Waitable w, Object waitParam, boolean increase, JScrollBarOperator oper) {
 	    this.w = w;
 	    this.waitParam = waitParam;
 	    this.increase = increase;
+	    this.oper = oper;
 	}
-	public int getScrollDirection(JScrollBarOperator oper) {
+	public int getScrollDirection() {
 	    if(!reached && w.actionProduced(waitParam) != null) {
 		reached = true;
 	    }
 	    if(reached) {
-		return(DO_NOT_TOUCH_SCROLL_DIRECTION);
+		return(this.DO_NOT_TOUCH_SCROLL_DIRECTION);
 	    } else {
 		return(increase ? 
-		       INCREASE_SCROLL_DIRECTION :
-		       DECREASE_SCROLL_DIRECTION);
+		       this.INCREASE_SCROLL_DIRECTION :
+		       this.DECREASE_SCROLL_DIRECTION);
 	    }
+	}
+	public int getScrollOrientation() {
+	    return(getOrientation());
 	}
 	public String getDescription() {
 	    return(w.getDescription());
+	}
+    }
+
+    private class CheckerAdjustable implements ScrollAdjuster {
+	ScrollChecker checker;
+	JScrollBarOperator oper;
+	public CheckerAdjustable(ScrollChecker checker, JScrollBarOperator oper) {
+	    this.checker = checker;
+	    this.oper = oper;
+	}
+	public int getScrollDirection() {
+	    return(checker.getScrollDirection(oper));
+	}
+	public int getScrollOrientation() {
+	    return(getOrientation());
+	}
+	public String getDescription() {
+	    return(checker.getDescription());
 	}
     }
 
@@ -969,46 +746,6 @@ public class JScrollBarOperator extends JComponentOperator
 	}
 	public String getDescription() {
 	    return(subFinder.getDescription());
-	}
-    }
-
-    private class WaitingNotifier implements Waitable {
-	JScrollBarOperator oper;
-	ScrollChecker checker;
-	int startValue;
-	public WaitingNotifier(JScrollBarOperator oper, ScrollChecker checker) {
-	    this.oper = oper;
-	    this.checker = checker;
-	    startValue = checker.getScrollDirection(oper);
-	}
-	public Object actionProduced(Object obj) {
-	    if(checker.getScrollDirection(oper) != startValue) {
-		return(new Integer(checker.getScrollDirection(oper)));
-	    } else {
-		return(null);
-	    }
-	}
-	public String getDescription() {
-	    return(checker.getDescription());
-	}
-    }
-
-    private class ValueScrollChecker implements ScrollChecker {
-	private int value;
-	public ValueScrollChecker(int value) {
-	    this.value = value;
-	}
-	public int getScrollDirection(JScrollBarOperator oper) {
-	    if(oper.getValue() == value) {
-		return(DO_NOT_TOUCH_SCROLL_DIRECTION);
-	    } else {
-		return((oper.getValue() < value) ?
-		       INCREASE_SCROLL_DIRECTION :
-		       DECREASE_SCROLL_DIRECTION);
-	    }
-	}
-	public String getDescription() {
-	    return("Scroll to " + Integer.toString(value) + " value");
 	}
     }
 }

@@ -59,6 +59,8 @@ public class jemmy_019 extends JemmyTest {
 	    Demonstrator.nextStep("Restore divider position.");
 
 	    split.expandRight();
+	    split.moveToMinimum();
+	    split.moveToMaximum();
 
 	    Demonstrator.showFinalComment("Test passed");
 	    

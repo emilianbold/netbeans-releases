@@ -16,6 +16,9 @@ import javax.swing.JButton;
 import java.lang.reflect.InvocationTargetException;
 
 public class jemmy_016 extends JemmyTest {
+
+    JTabbedPaneOperator tpo;
+
     public int runIt(Object obj) {
 
 	try {
@@ -31,7 +34,7 @@ public class jemmy_016 extends JemmyTest {
 
 	    JFrame win =JFrameOperator.waitJFrame("APPLICATION", false, false);
 
-	    JTabbedPaneOperator tpo = new JTabbedPaneOperator(new JFrameOperator(win), "Page1");
+	    tpo = new JTabbedPaneOperator(new JFrameOperator(win), "Page1");
 
 	    Demonstrator.setTitle("jemmy_016 test");
 	    Demonstrator.nextStep("Check that button on the \"Page1\" page can be found and\n" +
@@ -66,19 +69,24 @@ public class jemmy_016 extends JemmyTest {
 
 	    Demonstrator.nextStep("Check that unexisting page \"Page3\" cannot be selected");
 
-	    if(tpo.selectPage("Page3", true, true) != null) {
-		output.printErrLine("Page3 was selected");
+	    try {
+		tpo.selectPage("Page3", true, true);
+		getOutput().printErrLine("No exception has been thrown");
 		finalize();
 		return(1);
+	    } catch(Exception e) {
 	    }
 
 	    Demonstrator.nextStep("Select existing page \"Page2\"");
 
-	    if(tpo.selectPage("Page2", true, true) == null) {
-		output.printErrLine("Page2 was not selected");
-		finalize();
-		return(1);
-	    }
+	    new Thread(new Runnable() {
+		    public void run() {
+			if(tpo.selectPage("Page2", true, true) == null) {
+			    output.printErrLine("Page2 was not selected");
+			}
+		    }
+		}).start();
+	    tpo.waitSelected("Page2");
 
 	    if(!btt1o.isVisible()) {
 		output.printErrLine("isVisible did not return positive value");

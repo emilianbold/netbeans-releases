@@ -61,7 +61,6 @@ public class jemmy_020 extends JemmyTest {
 
 	    Demonstrator.nextStep("Clear text by select clearing mode");
 
-	    to.setClearingMode(to.SELECT_AND_DELETE_CLEARING_MODE);
 	    to.clearText();
 
 	    Demonstrator.showFinalComment("Test passed");

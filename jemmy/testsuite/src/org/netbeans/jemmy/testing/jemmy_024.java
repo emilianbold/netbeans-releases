@@ -307,8 +307,6 @@ public class jemmy_024 extends JemmyTest {
 
 	    Demonstrator.nextStep("Clear text by \"select and delete\" clearing mode");
 
-	    textOper.setClearingMode(textOper.SELECT_AND_DELETE_CLEARING_MODE);
-
 	    textOper.getTimeouts().setTimeout("JTextComponentOperator.ChangeCaretPositionTimeout",
 					      300000);
 

@@ -19,6 +19,7 @@ package org.netbeans.jemmy.operators;
 
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Outputable;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.Timeoutable;
@@ -27,6 +28,9 @@ import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waiter;
 
 import org.netbeans.jemmy.util.EmptyVisualizer;
+
+import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.TableDriver;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -82,14 +86,15 @@ implements Outputable, Timeoutable {
 
     private TestOut output;
     private Timeouts timeouts;
-    private CellEditor editor;
+
+    TableDriver driver;
 
     /**
      * Constructor.
      */
     public JTableOperator(JTable b) {
 	super(b);
-	setTableCellEditor(new DefaultCellEditor());
+	driver = DriverManager.getTableDriver(getClass());
     }
 
     /**
@@ -331,18 +336,13 @@ implements Outputable, Timeoutable {
 	return(output);
     }
 
-    /**
-     * @see JTableOperator.CellEditor
-     */
-    public void setTableCellEditor(CellEditor editor) {
-	this.editor = editor;
-    }
-
-    /**
-     * @see JTableOperator.CellEditor
-     */
-    public CellEditor getTableCellEditor() {
-	return(editor);
+    public void copyEnvironment(Operator anotherOperator) {
+	super.copyEnvironment(anotherOperator);
+	driver = 
+	    (TableDriver)DriverManager.
+	    getDriver(DriverManager.TABLE_DRIVER_ID,
+		      getClass(), 
+		      anotherOperator.getProperties());
     }
 
     /**
@@ -582,17 +582,10 @@ implements Outputable, Timeoutable {
      * @param row
      * @param column
      * @param newText
-     * @see #setTableCellEditor(JTableOperator.CellEditor)
      * @throws TimeoutExpiredException
      */
     public void changeCellObject(int row, int column, Object newValue)  {
-	scrollToCell(row, column);
-	if(!isEditing() ||
-	   getEditingRow() != row ||
-	   getEditingColumn() != column) {
-	    getTableCellEditor().makeBeingEdited(this, row, column);
-	}
-	getTableCellEditor().enterNewValue(this, waitEditor(row, column), row, column, newValue);
+	driver.editCell(this, row, column, newValue);
     }
 
     /**
@@ -624,6 +617,26 @@ implements Outputable, Timeoutable {
 					    (int)rect.getY(),
 					    (int)rect.getWidth(),
 					    (int)rect.getHeight());
+    }
+
+    public void selectCell(int row, int cell) {
+	driver.selectCell(this, row, cell);
+    }
+
+    /**
+     * Waits for an editor.
+     */
+    public Component waitCellComponent(ComponentChooser chooser, int row, int column) {
+	CellComponentWaiter waiter = new CellComponentWaiter(chooser, row, column);
+	waiter.setOutput(getOutput());
+	waiter.setTimeouts(getTimeouts().cloneThis());
+	waiter.getTimeouts().setTimeout("Waiter.WaitingTime",
+					getTimeouts().getTimeout("JTableOperator.WaitEditingTimeout"));
+	try {
+	    return((Component)waiter.waitAction(null));
+	} catch(InterruptedException e) {
+	    throw(new JemmyException("Waiting has been interrupted", e));
+	}
     }
 
     /**
@@ -1434,55 +1447,6 @@ implements Outputable, Timeoutable {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    /**
-     * Searches JTextComponent instance inside JTable.
-     */
-    protected JTextComponent findEditor() {
-	return((JTextComponent)findEditor(new ComponentChooser() {
-		public boolean checkComponent(Component comp) {
-		    return(comp instanceof JTextComponent);
-		}
-		public String getDescription() {
-		    return("Tree text editor");
-		}
-	    }));
-    }
-
-    /**
-     * Searches for a component inside table.
-     */
-    protected Component findEditor(ComponentChooser chooser) {
-	ComponentSearcher searcher = new ComponentSearcher((Container)getSource());
-	searcher.setOutput(output.createErrorOutput());
-	return(searcher.findComponent(chooser));
-    }
-
-    /**
-     * Waits for an editor defined by setCellEditor method.
-     * @see #setTableCellEditor(JTableOperator.CellEditor)
-     */
-    protected Component waitEditor(int row, int column)  {
-	return(waitEditor(getTableCellEditor(), row, column));
-    }
-
-    /**
-     * Waits for an editor.
-     */
-    protected Component waitEditor(CellEditor editor, int row, int column) {
-	EditorWaiter waiter = new EditorWaiter(this, editor, row, column);
-	waiter.setOutput(getOutput());
-	waiter.setTimeouts(getTimeouts().cloneThis());
-	waiter.getTimeouts().setTimeout("Waiter.WaitingTime",
-					getTimeouts().getTimeout("JTableOperator.WaitEditingTimeout"));
-	try {
-	    return((Component)waiter.waitAction(null));
-	} catch(InterruptedException e) {
-	    output.printStackTrace(e);
-	    return(null);
-	}
-    }
-
-    //
     private Point findCellPoint(String text, boolean ce, boolean ccs, int index) {
 	return(findCellPoint(new BySubStringTableCellChooser(text, 
 							     new DefaultStringComparator(ce, ccs)), 
@@ -1513,66 +1477,6 @@ implements Outputable, Timeoutable {
 	}
 	return(new Point(-1, -1));
     }
-
-    /**
-     * Interface can be used to define a way to edit cells inside JTable.
-     */
-    public static interface CellEditor {
-	/**
-	 * Turns cell into editing mode.
-	 * @param oper Operator used.
-	 * @param row Cell row
-	 * @param column Cell column
-	 */
-	public void makeBeingEdited(JTableOperator oper, int row, int column);
-	/**
-	 * Check if component is an editor.
-	 * @param oper Operator used.
-	 * @param comp Checked component.
-	 * @param row Cell row
-	 * @param column Cell column
-	 */
-	public boolean checkCellEditor(JTableOperator oper, Component comp, int row, int column);
-	/**
-	 * Changes cell value.
-	 * @param oper Operator used.
-	 * @param editor Editor component.
-	 * @param row Cell row.
-	 * @param column Cell column.
-	 * @param value Cell value to enter.
-	 */
-	public void enterNewValue(JTableOperator oper, Component editor, int row, int column, Object value);
-	/**
-	 * Editor description.
-	 */
-	public String getDescription();
-    }
-
-    /**
-     * Default editor. Supposes that double click converts cell to an editing mode
-     * and a JTextComponent inheritor is displayed to edit cell.
-     */
-    protected static class DefaultCellEditor implements CellEditor {
-	public void makeBeingEdited(JTableOperator oper, int row, int column) {
-	    oper.clickOnCell(row, column, 2);
-	}
-	public boolean checkCellEditor(JTableOperator oper, Component comp, int row, int column) {
-	    return(comp instanceof JTextComponent);
-	}
-	public void enterNewValue(JTableOperator oper, Component editor, int row, int column, Object value) {
-	    JTextComponentOperator textOper =  
-		new JTextComponentOperator((JTextComponent)editor);
-	    textOper.copyEnvironment(oper);
-	    textOper.setVisualizer(new EmptyVisualizer());
-	    textOper.clearText();
-	    textOper.typeText(value.toString());
-	    textOper.pushKey(KeyEvent.VK_ENTER);
-	}
-	public String getDescription() {
-	    return("JTextComponent cell editor");
-	}
-    }
-
 
     /**
      * Iterface to choose table cell.
@@ -1695,31 +1599,27 @@ implements Outputable, Timeoutable {
 	}
     }
 
-    private class EditorWaiter extends Waiter {
-	private Point pnt;
-	private CellEditor editor;
+    private class CellComponentWaiter extends Waiter {
+	private ComponentChooser chooser;
 	private int row, column;
-	private JTableOperator oper;
-	public EditorWaiter(JTableOperator oper, CellEditor editor, int row, int column) {
-	    this.editor = editor;
+	public CellComponentWaiter(ComponentChooser chooser, int row, int column) {
+	    this.chooser = chooser;
 	    this.row = row;
 	    this.column = column;
-	    this.oper = oper;
-	    pnt = getPointToClick(row, column);
 	}
 
 	public Object actionProduced(Object obj) {
+	    Point pnt = getPointToClick(row, column);
 	    Component comp = getComponentAt(pnt.x, pnt.y);
 	    if(comp != null &&
-	       editor.checkCellEditor(oper, comp, row, column)) {
+	       chooser.checkComponent(comp)) {
 		return(comp);
 	    } else {
 		return(null);
 	    }
 	}
-
 	public String getDescription() {
-	    return(editor.getDescription());
+	    return(chooser.getDescription());
 	}
     }
 }

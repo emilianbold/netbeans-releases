@@ -301,69 +301,8 @@ public class JTextAreaOperator extends JTextComponentOperator
      * @throws TimeoutExpiredException
      */
     public void changeCaretRow(int row) {
-	if(!hasFocus()) {
-	    makeComponentVisible();
-	    clickMouse(1);
-	}
-	ActionProducer producer = new ActionProducer(new Action() {
-	    public Object launch(Object obj) {
-		int r = ((Integer)obj).intValue();
-		while(getLineOfOffset(getCaretPosition()) != r) {
-		    int keyCode = (getLineOfOffset(getCaretPosition()) > r) ? 
-			KeyEvent.VK_UP : 
-			KeyEvent.VK_DOWN;
-		    if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) != 0) {
-			pushKey(keyCode, 0);
-		    } else {
-			pushKey(keyCode, modifiersPressed);
-		    }
-		}
-		return(null);
-	    }
-	    public String getDescription() {
-		return("Move caret");
-	    }
-	});
-	producer.setOutput(output.createErrorOutput());
-	Timeouts times = timeouts.cloneThis();
-	times.setTimeout("ActionProducer.MaxActionTime",
-			 times.getTimeout("JTextComponentOperator.ChangeCaretPositionTimeout"));
-	producer.setTimeouts(times);
-	try {
-	    producer.produceAction(new Integer(row));
-	} catch(InterruptedException e) {
-	    output.printStackTrace(e);
-	}
-    }
-
-    /**
-     * Overrides superclass's method to use all navigation keys.
-     * @param position Position to move caret to.
-     * @see JTextComponentOperator#changeCaretPosition(int)
-     * @see #changeCaretRow(int)
-     * @see #changeCaretPosition(int, int)
-     * @throws TimeoutExpiredException
-     */
-    public void changeCaretPosition(int position) {
-	if(!hasFocus()) {
-	    makeComponentVisible();
-	    clickMouse(1);
-	}
-	moveOnce(position, KeyEvent.VK_HOME, InputEvent.CTRL_MASK, 0);
-	moveOnce(position, KeyEvent.VK_END, InputEvent.CTRL_MASK, getText().length());
-	if(pageNavigation) {
-	    changeCaretPosition(position, KeyEvent.VK_PAGE_UP, KeyEvent.VK_PAGE_DOWN);
-	}
-	changeCaretRow(getLineOfOffset(position));
-	try {
-	    moveOnce(position, KeyEvent.VK_HOME, getLineStartOffset(getLineOfOffset(getCaretPosition())));
-	    moveOnce(position, KeyEvent.VK_END, getLineEndOffset(getLineOfOffset(getCaretPosition())));
-	} catch(JemmyException e) {
-	    if(!(e.getInnerException() instanceof BadLocationException)) {
-		throw(e);
-	    }
-	}
-	super.changeCaretPosition(position);
+	changeCaretPosition(row, getCaretPosition() - 
+			    getLineStartOffset(getLineOfOffset(getCaretPosition())));
     }
 
     /**
@@ -376,18 +315,12 @@ public class JTextAreaOperator extends JTextComponentOperator
      * @throws TimeoutExpiredException
      */
     public void changeCaretPosition(int row, int column) {
-	if(!hasFocus()) {
-	    makeComponentVisible();
-	    clickMouse(1);
-	}
-	changeCaretRow(row);
-	try {
-	    super.changeCaretPosition(getLineStartOffset(row) + column);
-	} catch(JemmyException e) {
-	    if(!(e.getInnerException() instanceof BadLocationException)) {
-		throw(e);
-	    }
-	}
+	int startOffset = getLineStartOffset(row);
+	int endOffset = getLineEndOffset(row);
+	super.changeCaretPosition(getLineStartOffset(row) + 
+				  ((column <= (endOffset - startOffset)) ?
+				   column :
+				   (endOffset - startOffset)));
     }
 
     /**

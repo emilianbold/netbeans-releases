@@ -518,3 +518,5 @@ Text component clearing now works through ActionProducer.
 
 
 21846, 21769, 21771 and 21872 fixes
+
+#VERSION 2.0.beta

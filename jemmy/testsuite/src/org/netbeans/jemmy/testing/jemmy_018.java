@@ -4,7 +4,8 @@ import org.netbeans.jemmy.*;
 
 import org.netbeans.jemmy.demo.Demonstrator;
 
-import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.drivers.*;
+import org.netbeans.jemmy.drivers.scrolling.*;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.util.*;
 
@@ -228,37 +229,39 @@ public class jemmy_018 extends JemmyTest {
 
 	    Demonstrator.nextStep("Scroll to horizontal center");
 
-	    scroller.getHScrollBarOperator().setDragAndDropStepLength(1);
-	    scroller.getHScrollBarOperator().scrollTo(new Waitable() {
-		    public Object actionProduced(Object obj) {
-			JScrollBarOperator barOper = (JScrollBarOperator)obj;
-			if(barOper.getValue() < 
-			   ((barOper.getMaximum() - 
-			     barOper.getVisibleAmount()) / 2)) {
-			    return("");
+	    scroller.getHScrollBarOperator().scrollTo(new JScrollBarOperator.ScrollChecker() {
+		    public int getScrollDirection(JScrollBarOperator oper) {
+			if       (oper.getValue() <
+				  ((oper.getMaximum() - 
+				   oper.getVisibleAmount()) / 2)) {
+			    return(ScrollAdjuster.INCREASE_SCROLL_DIRECTION);
+			} else if(oper.getValue() > 
+				  ((oper.getMaximum() - 
+				    oper.getVisibleAmount()) / 2)) {
+			    return(ScrollAdjuster.DECREASE_SCROLL_DIRECTION);
 			} else {
-			    return(null);
+			    return(ScrollAdjuster.DO_NOT_TOUCH_SCROLL_DIRECTION);
 			}
 		    }
 		    public String getDescription() {
 			return("");
 		    }
-		}, scroller.getHScrollBarOperator(), false);
+		});
 
 	    Demonstrator.nextStep("Scroll to vertical center");
 
 	    scroller.getVScrollBarOperator().scrollTo(new JScrollBarOperator.ScrollChecker() {
 		    public int getScrollDirection(JScrollBarOperator oper) {
-			if       (oper.getValue() < 
+			if       (oper.getValue() <
 				  ((oper.getMaximum() - 
 				   oper.getVisibleAmount()) / 2)) {
-			    return(JScrollBarOperator.INCREASE_SCROLL_DIRECTION);
+			    return(ScrollAdjuster.INCREASE_SCROLL_DIRECTION);
 			} else if(oper.getValue() > 
 				  ((oper.getMaximum() - 
 				    oper.getVisibleAmount()) / 2)) {
-			    return(JScrollBarOperator.DECREASE_SCROLL_DIRECTION);
+			    return(ScrollAdjuster.DECREASE_SCROLL_DIRECTION);
 			} else {
-			    return(JScrollBarOperator.DO_NOT_TOUCH_SCROLL_DIRECTION);
+			    return(ScrollAdjuster.DO_NOT_TOUCH_SCROLL_DIRECTION);
 			}
 		    }
 		    public String getDescription() {

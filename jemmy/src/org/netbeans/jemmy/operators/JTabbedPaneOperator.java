@@ -19,9 +19,13 @@ package org.netbeans.jemmy.operators;
 
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
+import org.netbeans.jemmy.JemmyInputException;
 import org.netbeans.jemmy.Outputable;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.TimeoutExpiredException;
+
+import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.ListDriver;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -52,12 +56,14 @@ public class JTabbedPaneOperator extends JComponentOperator
     implements Outputable {
 
     private TestOut output;
+    private ListDriver driver;
 
     /**
      * Constructor.
      */
     public JTabbedPaneOperator(JTabbedPane b) {
 	super(b);
+	driver = DriverManager.getListDriver(getClass());
     }
 
     /**
@@ -275,6 +281,15 @@ public class JTabbedPaneOperator extends JComponentOperator
 	return(output);
     }
 
+    public void copyEnvironment(Operator anotherOperator) {
+	super.copyEnvironment(anotherOperator);
+	driver = 
+	    (ListDriver)DriverManager.
+	    getDriver(DriverManager.LIST_DRIVER_ID,
+		      getClass(), 
+		      anotherOperator.getProperties());
+    }
+
     /**
      * Searches tab index by tab title.
      * isCaptionEqual method is used to compare page title with
@@ -299,16 +314,8 @@ public class JTabbedPaneOperator extends JComponentOperator
      * Selects tab.
      */
     public Component selectPage(int index) {
-	if(index == -1) {
-	    return(null);
-	} else {
-	    Rectangle rect = getUI().getTabBounds((JTabbedPane)getSource(),
-						  index);
-	    clickMouse((int)(rect.getX() + rect.getWidth() / 2),
-		       (int)(rect.getY() + rect.getHeight() / 2),
-		       1); 
-	    return(getComponentAt(index));
-	}
+	driver.selectItem(this, index);
+	return(getComponentAt(index));
     }
 
     /**
@@ -316,7 +323,12 @@ public class JTabbedPaneOperator extends JComponentOperator
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      */
     public Component selectPage(String label, boolean ce, boolean ccs) {
-	return(selectPage(findPage(label, ce, ccs)));
+	int index = findPage(label, ce, ccs);
+	if(index != -1) {
+	    return(selectPage(index));
+	} else {
+	    throw(new NoSuchPageException(label));
+	}
     }
 
     /**
@@ -324,7 +336,12 @@ public class JTabbedPaneOperator extends JComponentOperator
      * Uses StringComparator assigned to this object.
      */
     public Component selectPage(String label) {
-	return(selectPage(findPage(label)));
+	int index = findPage(label);
+	if(index != -1) {
+	    return(selectPage(index));
+	} else {
+	    throw(new NoSuchPageException(label));
+	}
     }
 
     /**
@@ -636,6 +653,15 @@ public class JTabbedPaneOperator extends JComponentOperator
 
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
+
+    public class NoSuchPageException extends JemmyInputException {
+	/**
+	 * Constructor.
+	 */
+	public NoSuchPageException(String item) {
+	    super("No such page as \"" + item + "\"", getSource());
+	}
+    }
 
     private int findPage(String label, StringComparator comparator) {
 	for(int i = 0; i < getTabCount(); i++) {

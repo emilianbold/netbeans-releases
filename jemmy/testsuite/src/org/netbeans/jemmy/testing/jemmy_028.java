@@ -23,8 +23,11 @@ public class jemmy_028 extends JemmyTest {
 
 	try {
 
-	    ComponentOperator.
-		setDefaultComponentVisualizer(new DefaultVisualizer());
+	    if((JemmyProperties.getCurrentDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) > 0) {
+		Operator.setDefaultComponentVisualizer(new MouseVisualizer());
+	    } else {
+		Operator.setDefaultComponentVisualizer(new DefaultVisualizer());
+	    }
 	    ((DefaultVisualizer)ComponentOperator.
 	     getDefaultComponentVisualizer()).switchTab(true);
 	    ((DefaultVisualizer)ComponentOperator.

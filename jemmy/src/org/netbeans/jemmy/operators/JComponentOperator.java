@@ -315,9 +315,6 @@ public class JComponentOperator extends ContainerOperator
 	try {
 	    JToolTip tt = (JToolTip)tipWaiter.waitAction(null);
 	    timeouts.sleep("JComponentOperator.ShowToolTipTimeout");
-	    if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) == 0) {
-		exitMouse();
-	    }
 	    return(tt);
 	} catch(InterruptedException e) {
 	    output.printStackTrace(e);

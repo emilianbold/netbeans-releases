@@ -30,6 +30,9 @@ import org.netbeans.jemmy.WindowWaiter;
 
 import org.netbeans.jemmy.util.EmptyVisualizer;
 
+import org.netbeans.jemmy.drivers.ListDriver;
+import org.netbeans.jemmy.drivers.DriverManager;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Window;
@@ -86,13 +89,17 @@ implements Timeoutable, Outputable {
     private Timeouts timeouts;
     private ComponentSearcher searcher;
 
+    private JButtonOperator button;
+    private JTextFieldOperator text;
+
+    ListDriver driver;
+
     /**
      * Constructor
      */
     public JComboBoxOperator(JComboBox b) {
 	super(b);
-	searcher = new ComponentSearcher((Container)getSource());
-	searcher.setOutput(output);
+	driver = DriverManager.getListDriver(getClass());
     }
 
     /**
@@ -297,9 +304,6 @@ implements Timeoutable, Outputable {
     public void setOutput(TestOut output) {
 	super.setOutput(output);
 	this.output = output;
-	if(searcher != null) {
-	    searcher.setOutput(output);
-	}
     }
 
     /**
@@ -313,11 +317,20 @@ implements Timeoutable, Outputable {
 	return(output);
     }
 
+    public void copyEnvironment(Operator anotherOperator) {
+	super.copyEnvironment(anotherOperator);
+	driver = 
+	    (ListDriver)DriverManager.
+	    getDriver(DriverManager.LIST_DRIVER_ID,
+		      getClass(), 
+		      anotherOperator.getProperties());
+    }
+
     /**
      * @return JButton which is used to expand this JComboBox.
      */
     public JButton findJButton() {
-	return((JButton)searcher.findComponent(new ComponentChooser() {
+	return((JButton)waitSubComponent(new ComponentChooser() {
 		public boolean checkComponent(Component comp) {
 		    return(comp instanceof JButton);
 		}
@@ -331,7 +344,7 @@ implements Timeoutable, Outputable {
      * @return JTextField if JComboBox is editable, null otherwise.
      */
     public JTextField findJTextField() {
-	return((JTextField)searcher.findComponent(new ComponentChooser() {
+	return((JTextField)waitSubComponent(new ComponentChooser() {
 		public boolean checkComponent(Component comp) {
 		    return(comp instanceof JTextField);
 		}
@@ -339,6 +352,16 @@ implements Timeoutable, Outputable {
 		    return("ComboBox's text field");
 		}
 	    }));
+    }
+
+    public JButtonOperator getButton() {
+	init();
+	return(button);
+    }
+
+    public JTextFieldOperator getTextField() {
+	init();
+	return(text);
     }
 
     /**
@@ -368,40 +391,24 @@ implements Timeoutable, Outputable {
      */
     public void pushComboButton() {
 	makeComponentVisible();
-	ComponentSearcher bs = new ComponentSearcher((Container)getSource());
-	bs.setOutput(output.createErrorOutput());
-	JButtonOperator bo = new JButtonOperator((JButton)bs.findComponent(new ComponentChooser() {
-		public boolean checkComponent(Component comp) {
-		    return(comp instanceof JButton);
-		}
-		public String getDescription() {
-		    return("JButton");
-		}
-	    }));
-	bo.copyEnvironment(this);
-	bo.setVisualizer(new EmptyVisualizer());
-	bo.push();
+	getButton().push();
+    }
+
+    public int findItemIndex(String item, StringComparator comparator) {
+	ComboBoxModel model = getModel();
+	for(int i = 0; i < model.getSize(); i++) {
+	    if(comparator.equals(model.getElementAt(i).toString(), item)) {
+		return(i);
+	    }
+	}
+	return(-1);
     }
     
     private void selectItem(String item, StringComparator comparator) {
 	output.printLine("Select \"" + item + "\" item in combobox\n    : " +
 			 getSource().toString());
 	output.printGolden("Select \"" + item + "\" item in combobox");
-	
-	makeComponentVisible();
-
-	if(!isPopupVisible()) {
-	    pushComboButton();
-	}
-
-	JListOperator lo = new JListOperator(waitList());
-	lo.copyEnvironment(this);
-	lo.setVerification(false);
-	lo.setVisualizer(new EmptyVisualizer());
-
-	timeouts.sleep("JComboBoxOperator.BeforeSelectingTimeout");
-
-	lo.clickOnItem(item, comparator, 1);
+	selectItem(findItemIndex(item, comparator));
     }
 
     /**
@@ -437,17 +444,7 @@ implements Timeoutable, Outputable {
 			 getSource().toString());
 	output.printGolden("Select " + Integer.toString(index) + "\'th item in combobox");
 
-	if(!isPopupVisible()) {
-	    pushComboButton();
-	}
-
-	JListOperator lo = new JListOperator(waitList());
-	lo.copyEnvironment(this);
-	lo.setVisualizer(new EmptyVisualizer());
-
-	timeouts.sleep("JComboBoxOperator.BeforeSelectingTimeout");
-
-	lo.clickOnItem(index, 1);
+	driver.selectItem(this, index);
 
 	if(getVerification()) {
 	    waitItemSelected(index);
@@ -461,7 +458,7 @@ implements Timeoutable, Outputable {
      */
     public void typeText(String text) {
 	makeComponentVisible();
-	JTextFieldOperator tfo = new JTextFieldOperator(findJTextField());
+	JTextFieldOperator tfo = getTextField();
 	tfo.copyEnvironment(this);
 	tfo.setVisualizer(new EmptyVisualizer());
 	tfo.typeText(text);
@@ -474,7 +471,7 @@ implements Timeoutable, Outputable {
      */
     public void clearText() {
 	makeComponentVisible();
-	JTextFieldOperator tfo = new JTextFieldOperator(findJTextField());
+	JTextFieldOperator tfo = getTextField();
 	tfo.copyEnvironment(this);
 	tfo.setVisualizer(new EmptyVisualizer());
 	tfo.clearText();
@@ -487,10 +484,7 @@ implements Timeoutable, Outputable {
      */
     public void enterText(String text) {
 	makeComponentVisible();
-	if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) == 0) {
-	    requestFocus();
-	}
-	JTextFieldOperator tfo = new JTextFieldOperator(findJTextField());
+	JTextFieldOperator tfo = getTextField();
 	tfo.copyEnvironment(this);
 	tfo.setVisualizer(new EmptyVisualizer());
 	tfo.enterText(text);
@@ -870,6 +864,19 @@ implements Timeoutable, Outputable {
 
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
+
+    private void init() {
+	if(button == null) {
+	    button = new JButtonOperator(findJButton());
+	    button.copyEnvironment(this);
+	    button.setOutput(getOutput().createErrorOutput());
+	    if(((JComboBox)getSource()).isEditable()) {
+		text = new JTextFieldOperator(findJTextField());
+		text.copyEnvironment(this);
+		text.setOutput(getOutput().createErrorOutput());
+	    }
+	}
+    }
 
     private static class JComboBoxByItemFinder implements ComponentChooser {
 	String label;

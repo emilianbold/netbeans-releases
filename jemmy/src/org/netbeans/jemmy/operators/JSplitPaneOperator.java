@@ -17,6 +17,7 @@
 
 package org.netbeans.jemmy.operators;
 
+import org.netbeans.jemmy.Action;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.Outputable;
@@ -26,6 +27,11 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Timeouts;
 
 import org.netbeans.jemmy.util.EmptyVisualizer;
+
+import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.ScrollDriver;
+
+import org.netbeans.jemmy.drivers.scrolling.ScrollAdjuster;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -43,6 +49,7 @@ import javax.swing.plaf.basic.BasicSplitPaneDivider;
  * <BR><BR>Timeouts used: <BR>
  * JSplitPaneOperator.ScrollClickTimeout - time for simple scroll click <BR>
  * JSplitPaneOperator.BetweenClickTimeout - time to sleep between scroll clicks <BR>
+ * JSplitPaneOperator.WholeScrollTimeout - time for the whole scrolling <BR>
  * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
  *
  * @see org.netbeans.jemmy.Timeouts
@@ -58,16 +65,20 @@ public class JSplitPaneOperator extends JComponentOperator
 
     private final static long SCROLL_CLICK_TIMEOUT = 0;
     private final static long BETWEEN_CLICK_TIMEOUT = 0;
+    private final static long WHOLE_SCROLL_TIMEOUT = 60000;
 
     private Timeouts timeouts;
     private TestOut output;
-    
+    private ContainerOperator divider;
+    private ScrollDriver driver;
+
     /**
      * Constructor.
      * @param b JSplitPane component.
      */
     public JSplitPaneOperator(JSplitPane b) {
 	super(b);
+	driver = DriverManager.getScrollDriver(getClass());
     }
     
     /**
@@ -203,6 +214,7 @@ public class JSplitPaneOperator extends JComponentOperator
     static {
 	Timeouts.initDefault("JSplitPaneOperator.ScrollClickTimeout", SCROLL_CLICK_TIMEOUT);
 	Timeouts.initDefault("JSplitPaneOperator.BetweenClickTimeout", BETWEEN_CLICK_TIMEOUT);
+	Timeouts.initDefault("JSplitPaneOperator.WholeScrollTimeout", WHOLE_SCROLL_TIMEOUT);
     }
 
     /**
@@ -249,13 +261,20 @@ public class JSplitPaneOperator extends JComponentOperator
 	return(output);
     }
 
+    public void copyEnvironment(Operator anotherOperator) {
+	super.copyEnvironment(anotherOperator);
+	driver = 
+	    (ScrollDriver)DriverManager.
+	    getDriver(DriverManager.SCROLL_DRIVER_ID,
+		      getClass(), 
+		      anotherOperator.getProperties());
+    }
+
     /**
      * Searches divider inside split pane.
      */
     public BasicSplitPaneDivider findDivider() {
-	ComponentSearcher cs = new ComponentSearcher((Container)getSource());
-	cs.setOutput(output.createErrorOutput());
-	return((BasicSplitPaneDivider)cs.findComponent(new ComponentChooser() {
+	return((BasicSplitPaneDivider)waitSubComponent(new ComponentChooser() {
 		public boolean checkComponent(Component comp) {
 		    return(comp instanceof BasicSplitPaneDivider);
 		}
@@ -263,6 +282,30 @@ public class JSplitPaneOperator extends JComponentOperator
 		    return("");
 		}
 	    }));
+    }
+
+    /**
+     * Searches divider inside split pane.
+     */
+    public ContainerOperator getDivider() {
+	if(divider == null) {
+	    divider = new ContainerOperator(findDivider());
+	    divider.copyEnvironment(this);
+	    divider.setOutput(getOutput().createErrorOutput());
+	}
+	return(divider);
+    }
+
+    public void scrollTo(final ScrollAdjuster adj) {
+	produceTimeRestricted(new Action() {
+		public Object launch(Object obj) {
+		    driver.scroll(JSplitPaneOperator.this, adj);
+		    return(null);
+		}
+		public String getDescription() {
+		    return("Moving a divider");
+		}
+	    }, getTimeouts().getTimeout("JSplitPaneOperator.WholeScrollTimeout"));
     }
 
     /**
@@ -276,7 +319,7 @@ public class JSplitPaneOperator extends JComponentOperator
 			  " location. JSplitPane :    \n" + getSource().toString());
 	output.printGolden("Move JSplitPane divider to " + Integer.toString(dividerLocation) +
 			  " location");
-	moveDividerTo(dividerLocation);
+	scrollTo(new ValueScrollAdjuster(dividerLocation));
     }
 
     /**
@@ -289,10 +332,39 @@ public class JSplitPaneOperator extends JComponentOperator
 			  " proportional location. JSplitPane :    \n" + getSource().toString());
 	output.printGolden("Move JSplitPane divider to " + Double.toString(proportionalLocation) +
 			  " proportional location");
-	moveDividerTo(getMinimumDividerLocation() + 
-		      (int)(proportionalLocation * 
-			    (getMaximumDividerLocation() - getMinimumDividerLocation())));
+	scrollTo(new ValueScrollAdjuster(getMinimumDividerLocation() + 
+					 (int)(proportionalLocation * 
+					       (getMaximumDividerLocation() - getMinimumDividerLocation()))));
     }
+
+    public void moveToMinimum() {
+	output.printTrace("Scroll JSplitPane to minimum. JSplitPane :    \n" + getSource().toString());
+	output.printGolden("Scroll JSplitPane to minimum.");
+	produceTimeRestricted(new Action() {
+		public Object launch(Object obj) {
+		    driver.scrollToMinimum(JSplitPaneOperator.this, getOrientation());
+		    return(null);
+		}
+		public String getDescription() {
+		    return("Scrolling");
+		}
+	    }, getTimeouts().getTimeout("JSplitPaneOperator.WholeScrollTimeout"));
+    }
+
+    public void moveToMaximum() {
+	output.printTrace("Scroll JSplitPane to maximum. JSplitPane :    \n" + getSource().toString());
+	output.printGolden("Scroll JSplitPane to maximum.");
+	produceTimeRestricted(new Action() {
+		public Object launch(Object obj) {
+		    driver.scrollToMaximum(JSplitPaneOperator.this, getOrientation());
+		    return(null);
+		}
+		public String getDescription() {
+		    return("Scrolling");
+		}
+	    }, getTimeouts().getTimeout("JSplitPaneOperator.WholeScrollTimeout"));
+    }
+
 
     /**
      * Pushes one time right(bottom) expand button.
@@ -529,96 +601,20 @@ public class JSplitPaneOperator extends JComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    private void moveTo(ComponentOperator divOper, int x, int y) {
-	divOper.dragNDrop(divOper.getCenterX(), divOper.getCenterY(), x, y);
-    }
-
-    private void moveToPosition(ComponentOperator divOper, int nextPosition) {
-	if(getOrientation() == JSplitPane.HORIZONTAL_SPLIT) {
-	    moveTo(divOper, divOper.getCenterX() + nextPosition, divOper.getCenterY());
-	} else {
-	    moveTo(divOper, divOper.getCenterX(), divOper.getCenterY() + nextPosition);
-	}
-    }
-
-    private void moveOnce(ComponentOperator divOper, 
-			  int dividerLocation, 
-			  int leftPosition, 
-			  int rightPosition) {
-	int currentLocation = getDividerLocation();
-	int currentPosition = 0;
-	if(getOrientation() == JSplitPane.HORIZONTAL_SPLIT) {
-	    currentPosition = (int)(divOper.getSource().getLocationOnScreen().getX() -
-				    getSource().getLocationOnScreen().getX());
-	} else {
-	    currentPosition = (int)(divOper.getSource().getLocationOnScreen().getY() -
-				    getSource().getLocationOnScreen().getY());
-	}
-	int nextPosition = 0;
-	if       (currentLocation > dividerLocation) {
-	    nextPosition = (int)((currentPosition + leftPosition) / 2);
-	    moveToPosition(divOper, nextPosition - currentPosition);
-	    if(currentPosition == (int)(divOper.getSource().getLocationOnScreen().getY() -
-					getSource().getLocationOnScreen().getY())) {
-		return;
-	    }
-	    moveOnce(divOper, dividerLocation, leftPosition, currentPosition);
-	} else if(currentLocation < dividerLocation) {
-	    nextPosition = (int)((currentPosition + rightPosition) / 2);
-	    moveToPosition(divOper, nextPosition - currentPosition);
-	    if(currentPosition == (int)(divOper.getSource().getLocationOnScreen().getY() -
-					getSource().getLocationOnScreen().getY())) {
-		return;
-	    }
-	    moveOnce(divOper, dividerLocation, currentPosition, rightPosition);
-	} else { // (currentLocation == dividerLocation) - stop point
-	    return;
-	}
-    }
-
-    private void moveDividerTo(int dividerLocation) {
-	makeComponentVisible();
-	if(System.getProperty("java.version").startsWith("1.2")) {
-	    setDividerLocation(dividerLocation);
-	} else {
-	    ComponentOperator divOper = new ComponentOperator(findDivider());
-	    divOper.copyEnvironment(this);
-	    divOper.setVisualizer(new EmptyVisualizer());
-	    /* workaround */
-	    if(getDividerLocation() == -1) {
-		moveTo(divOper, divOper.getCenterX() - 1, divOper.getCenterY() - 1);
-		if(getDividerLocation() == -1) {
-		    moveTo(divOper, divOper.getCenterX() + 1, divOper.getCenterY() + 1);
-		}
-	    }
-	    
-	    if(getOrientation() == JSplitPane.HORIZONTAL_SPLIT) {
-		moveOnce(divOper, dividerLocation, 0, getSource().getWidth());
-	    } else {
-		moveOnce(divOper, dividerLocation, 0, getSource().getHeight());
-	    }
-	}
-    }
-
     private void expandTo(int index) {
 	makeComponentVisible();
-	ComponentSearcher cs = new ComponentSearcher(findDivider());
-	cs.setOutput(output.createErrorOutput());
 	JButtonOperator bo = 
-	    new JButtonOperator((JButton)cs.findComponent(new ComponentChooser() {
-		public boolean checkComponent(Component comp) {
-		    return(comp instanceof JButton);
-		}
-		public String getDescription() {
-		    return("");
-		}
-	    }, index));
-	bo.copyEnvironment(this);
+	    new JButtonOperator((JButton)getDivider().
+				waitSubComponent(new JButtonOperator.
+						 JButtonFinder(ComponentSearcher.
+							       getTrueChooser("JButton")),
+						 index));
+	bo.copyEnvironment(getDivider());
 	bo.setVisualizer(new EmptyVisualizer());
 	bo.push();
     }
 
-    private static class JSplitPaneFinder implements ComponentChooser {
+    public static class JSplitPaneFinder implements ComponentChooser {
 	ComponentChooser subFinder;
 	public JSplitPaneFinder(ComponentChooser sf) {
 	    subFinder = sf;
@@ -631,6 +627,27 @@ public class JSplitPaneOperator extends JComponentOperator
 	}
 	public String getDescription() {
 	    return(subFinder.getDescription());
+	}
+    }
+    private class ValueScrollAdjuster implements ScrollAdjuster {
+	int value;
+	public ValueScrollAdjuster(int value) {
+	    this.value = value;
+	}
+	public int getScrollDirection() {
+	    if(getDividerLocation() == value) {
+		return(ScrollAdjuster.DO_NOT_TOUCH_SCROLL_DIRECTION);
+	    } else {
+		return((getDividerLocation() < value) ?
+		       ScrollAdjuster.INCREASE_SCROLL_DIRECTION :
+		       ScrollAdjuster.DECREASE_SCROLL_DIRECTION);
+	    }
+	}
+	public int getScrollOrientation() {
+	    return(getOrientation());
+	}
+	public String getDescription() {
+	    return("Scroll to " + Integer.toString(value) + " value");
 	}
     }
 }

@@ -221,22 +221,6 @@ public class JTextFieldOperator extends JTextComponentOperator{
 	return(waitJTextField(cont, text, ce, ccs, 0));
     }
 
-    /**
-     * Overrides superclass's method to use "Home" and "End" keys.
-     * @param position Position to move caret to.
-     * @see JTextComponentOperator#changeCaretPosition(int)
-     * @throws TimeoutExpiredException
-     */
-    public void changeCaretPosition(int position) {
-	if(!hasFocus()) {
-	    makeComponentVisible();
-	    clickMouse(1);
-	}
-	moveOnce(position, KeyEvent.VK_HOME, 0);
-	moveOnce(position, KeyEvent.VK_END, getText().length());
-	super.changeCaretPosition(position);
-    }
-
     public void waitText(String text, int position) {
 	super.waitText(removeNewLines(text), position);
     }

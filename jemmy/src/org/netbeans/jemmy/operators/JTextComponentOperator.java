@@ -32,6 +32,9 @@ import org.netbeans.jemmy.Timeouts;
 
 import org.netbeans.jemmy.util.EmptyVisualizer;
 
+import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.TextDriver;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Color;
@@ -86,58 +89,6 @@ import javax.swing.text.Keymap;
 public class JTextComponentOperator extends JComponentOperator
     implements Timeoutable, Outputable{
 
-    /**
-     * If this mode is used to clear text, operator pushes the back space button
-     * to receive zero caret position, and pushes delete button to clear text.
-     * @see #setClearingMode(int)
-     * @see #getClearingMode()
-     * @see #clearText()
-     * @see #BACK_SPACE_AND_DELETE_CLEARING_MODE
-     * @see #BACK_SPACE_CLEARING_MODE
-     * @see #DELETE_CLEARING_MODE
-     * @see #SELECT_AND_DELETE_CLEARING_MODE
-     */
-    public static final int BACK_SPACE_AND_DELETE_CLEARING_MODE = 0;
-
-    /**
-     * If this mode is used to clear text, operator pushes navigation buttons
-     * to receive zero caret position, and pushes delete button to clear text.
-     * @see #setClearingMode(int)
-     * @see #getClearingMode()
-     * @see #clearText()
-     * @see #BACK_SPACE_AND_DELETE_CLEARING_MODE
-     * @see #BACK_SPACE_CLEARING_MODE
-     * @see #DELETE_CLEARING_MODE
-     * @see #SELECT_AND_DELETE_CLEARING_MODE
-     */
-    public static final int DELETE_CLEARING_MODE = 1;
-
-    /**
-     * If this mode is used to clear text, operator pushes navigation buttons
-     * to receive maximal caret position, and pushes back space button to clear text.
-     * @see #setClearingMode(int)
-     * @see #getClearingMode()
-     * @see #clearText()
-     * @see #BACK_SPACE_AND_DELETE_CLEARING_MODE
-     * @see #BACK_SPACE_CLEARING_MODE
-     * @see #DELETE_CLEARING_MODE
-     * @see #SELECT_AND_DELETE_CLEARING_MODE
-     */
-    public static final int BACK_SPACE_CLEARING_MODE = 2;
-
-    /**
-     * If this mode is used to clear text, operator selects the whole text,
-     * and pushed delete button.
-     * @see #setClearingMode(int)
-     * @see #getClearingMode()
-     * @see #clearText()
-     * @see #BACK_SPACE_AND_DELETE_CLEARING_MODE
-     * @see #BACK_SPACE_CLEARING_MODE
-     * @see #DELETE_CLEARING_MODE
-     * @see #SELECT_AND_DELETE_CLEARING_MODE
-     */
-    public static final int SELECT_AND_DELETE_CLEARING_MODE = 3;
-
     private final static long PUSH_KEY_TIMEOUT = 0;
     private final static long BETWEEN_KEYS_TIMEOUT = 0;
     private final static long CHANGE_CARET_POSITION_TIMEOUT = 10000;
@@ -146,7 +97,8 @@ public class JTextComponentOperator extends JComponentOperator
     private Timeouts timeouts;
     private TestOut output;
     protected int modifiersPressed = 0;
-    private int clearingMode = BACK_SPACE_AND_DELETE_CLEARING_MODE;
+
+    private TextDriver driver;
 
     /**
      * Constructor.
@@ -154,6 +106,7 @@ public class JTextComponentOperator extends JComponentOperator
      */
     public JTextComponentOperator(JTextComponent b) {
 	super(b);
+	driver = DriverManager.getTextDriver(getClass());
     }
 
     /**
@@ -326,6 +279,8 @@ public class JTextComponentOperator extends JComponentOperator
      */
     public void setTimeouts(Timeouts times) {
 	timeouts = times;
+	timeouts.setTimeout("ComponentOperator.PushKeyTimeout", 
+			    timeouts.getTimeout("JTextComponentOperator.PushKeyTimeout"));
 	super.setTimeouts(timeouts);
     }
 
@@ -361,30 +316,13 @@ public class JTextComponentOperator extends JComponentOperator
 	return(output);
     }
 
-    /**
-     * Changes clearing mode. Default value BACK_SPACE_AND_DELETE_CLEARING_MODE
-     * @see #getClearingMode()
-     * @see #clearText()
-     * @see #BACK_SPACE_AND_DELETE_CLEARING_MODE
-     * @see #BACK_SPACE_CLEARING_MODE
-     * @see #DELETE_CLEARING_MODE
-     * @see #SELECT_AND_DELETE_CLEARING_MODE
-     */
-    public void setClearingMode(int clearingMode) {
-	this.clearingMode = clearingMode;
-    }
-
-    /**
-     * Returns clearing mode. Default value BACK_SPACE_AND_DELETE_CLEARING_MODE
-     * @see #setClearingMode(int)
-     * @see #clearText()
-     * @see #BACK_SPACE_AND_DELETE_CLEARING_MODE
-     * @see #BACK_SPACE_CLEARING_MODE
-     * @see #DELETE_CLEARING_MODE
-     * @see #SELECT_AND_DELETE_CLEARING_MODE
-     */
-    public int getClearingMode() {
-	return(clearingMode);
+    public void copyEnvironment(Operator anotherOperator) {
+	super.copyEnvironment(anotherOperator);
+	driver = 
+	    (TextDriver)DriverManager.
+	    getDriver(DriverManager.TEXT_DRIVER_ID,
+		      getClass(), 
+		      anotherOperator.getProperties());
     }
 
     /**
@@ -455,68 +393,24 @@ public class JTextComponentOperator extends JComponentOperator
     }
 
     /**
-     * Types text. 
-     * If component has not focus, does
-     * mouse click on component center before.
-     * If verification mode is on, checks that right text has been typed.
-     * @param text Text to be typed.
-     * @see #typeText(String, int)
-     * @throws TimeoutExpiredException
-     */
-    public void typeText(String text) {
-	timeouts.setTimeout("ComponentOperator.PushKeyTimeout", 
-			    timeouts.getTimeout("JTextComponentOperator.PushKeyTimeout"));
-	output.printLine("Typing text \"" + text + "\" in text component\n    : " +
-			 getSource().toString());
-	output.printGolden("Typing text \"" + text + "\" in text component");
-	if(!hasFocus()) {
-	    makeComponentVisible();
-	    clickMouse(1);
-	    changeCaretPosition(0);
-	    if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) == 0) {
-		requestFocus();
-	    }
-	}
-	ActionProducer producer = new ActionProducer(new Action() {
-	    public Object launch(Object obj) {
-		char[] crs = ((String)obj).toCharArray();
-		for(int i = 0; i < crs.length; i++) {
-		    typeKey(crs[i], 0);
-		    timeouts.sleep("JTextComponentOperator.BetweenKeysTimeout");
-		}
-		return(null);
-	    }
-	    public String getDescription() {
-		return("Type text");
-	    }
-	});
-	producer.setOutput(output.createErrorOutput());
-	Timeouts times = timeouts.cloneThis();
-	times.setTimeout("ActionProducer.MaxActionTime",
-			 times.getTimeout("JTextComponentOperator.TypeTextTimeout"));
-	producer.setTimeouts(times);
-	int position = getCaretPosition();
-	try {
-	    producer.produceAction(text);
-	} catch(InterruptedException e) {
-	    output.printStackTrace(e);
-	}
-	if(getVerification()) {
-	    waitText(text, -1);
-	}
-    }
-
-    /**
      * Requests a focus, clears text, types new one and pushes Enter.
      * @param text New text value. Shouln't include final '\n'.
      * @throws TimeoutExpiredException
      */
-    public void enterText(String text) {
-	clearText();
-	if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) == 0) {
-	    requestFocus();
+    public void enterText(final String text) {
+	if(!hasFocus()) {
+	    makeComponentVisible();
+	    clickMouse(1);
 	}
-	typeText(text + "\n");
+	produceTimeRestricted(new Action() {
+		public Object launch(Object obj) {
+		    driver.enterText(JTextComponentOperator.this, text);
+		    return(null);
+		}
+		public String getDescription() {
+		    return("Text entering");
+		}
+	    }, getTimeouts().getTimeout("JTextComponentOperator.TypeTextTimeout"));
     }
 
     /**
@@ -528,42 +422,21 @@ public class JTextComponentOperator extends JComponentOperator
      * @see #changeCaretPosition(String, int, boolean)
      * @throws TimeoutExpiredException
      */
-    public void changeCaretPosition(int position) {
+    public void changeCaretPosition(final int position) {
 	output.printLine("Change caret position to " + Integer.toString(position));
 	if(!hasFocus()) {
 	    makeComponentVisible();
 	    clickMouse(1);
 	}
-	ActionProducer producer = new ActionProducer(new Action() {
-	    public Object launch(Object obj) {
-		int pos = ((Integer)obj).intValue();
-		while(getCaretPosition() != pos) {
-		    int keyCode = (getCaretPosition() > pos) ? 
-			KeyEvent.VK_LEFT : 
-			KeyEvent.VK_RIGHT;
-		    if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) != 0) {
-			pushKey(keyCode, 0);
-		    } else {
-			pushKey(keyCode, modifiersPressed);
-		    }
+	produceTimeRestricted(new Action() {
+		public Object launch(Object obj) {
+		    driver.changeCaretPosition(JTextComponentOperator.this, position);
+		    return(null);
 		}
-		return(null);
-	    }
-	    public String getDescription() {
-		return("Move caret");
-	    }
-	});
-	producer.setOutput(output.createErrorOutput());
-	Timeouts times = timeouts.cloneThis();
-	times.setTimeout("ActionProducer.MaxActionTime",
-			 times.getTimeout("JTextComponentOperator.ChangeCaretPositionTimeout"));
-	producer.setTimeouts(times);
-	try {
-	    producer.produceAction(new Integer(position));
-	} catch(InterruptedException e) {
-	    output.printStackTrace(e);
-	}
-
+		public String getDescription() {
+		    return("Caret moving");
+		}
+	    }, getTimeouts().getTimeout("JTextComponentOperator.ChangeCaretPositionTimeout"));
 	if(getVerification()) {
 	    waitCaretPosition(position);
 	}
@@ -617,13 +490,15 @@ public class JTextComponentOperator extends JComponentOperator
      * Types text starting from known position.
      * If verification mode is on, checks that right text has been typed
      * and caret has been moved to right position.
+     * If component has not focus, does
+     * mouse click on component center before.
      * @param text Text to be typed.
      * @param caretPosition Position to start type text
      * @see #typeText(String)
      * @throws TimeoutExpiredException
      * @throws NoSuchTextException
      */
-    public void typeText(String text, int caretPosition) {
+    public void typeText(final String text, final int caretPosition) {
 	output.printLine("Typing text \"" + text + "\" from " +
 			 Integer.toString(caretPosition) + " position " +
 			 "in text component\n    : " +
@@ -633,12 +508,28 @@ public class JTextComponentOperator extends JComponentOperator
 	    makeComponentVisible();
 	    clickMouse(1);
 	}
-	changeCaretPosition(caretPosition);
-	typeText(text);
+	produceTimeRestricted(new Action() {
+		public Object launch(Object obj) {
+		    driver.typeText(JTextComponentOperator.this, text, caretPosition);
+		    return(null);
+		}
+		public String getDescription() {
+		    return("Text typing");
+		}
+	    }, getTimeouts().getTimeout("JTextComponentOperator.TypeTextTimeout"));
 	if(getVerification()) {
-	    waitText(text, caretPosition);
-	    waitCaretPosition(caretPosition + text.length());
+	    waitText(text, -1);
 	}
+    }
+
+    /**
+     * Types text starting from the current position.
+     * @param text Text to be typed.
+     * @see #typeText(String, int)
+     * @throws TimeoutExpiredException
+     */
+    public void typeText(String text) {
+	typeText(text, getCaretPosition());
     }
 
     /**
@@ -649,7 +540,7 @@ public class JTextComponentOperator extends JComponentOperator
      * @see #selectText(String)
      * @throws TimeoutExpiredException
      */
-    public void selectText(int startPosition, int finalPosition) {
+    public void selectText(final int startPosition, final int finalPosition) {
 	output.printLine("Select text from " +
 			 Integer.toString(startPosition) + " to " +
 			 Integer.toString(finalPosition) + 
@@ -659,13 +550,15 @@ public class JTextComponentOperator extends JComponentOperator
 	    makeComponentVisible();
 	    clickMouse(1);
 	}
-	int curPosition = getCaretPosition();
-	changeCaretPosition(startPosition);
-	pressKey(KeyEvent.VK_SHIFT);
-	modifiersPressed = InputEvent.SHIFT_MASK;
-	changeCaretPosition(finalPosition);
-	modifiersPressed = 0;
-	releaseKey(KeyEvent.VK_SHIFT);
+	produceTimeRestricted(new Action() {
+		public Object launch(Object obj) {
+		    driver.selectText(JTextComponentOperator.this, startPosition, finalPosition);
+		    return(null);
+		}
+		public String getDescription() {
+		    return("Text selecting");
+		}
+	    }, getTimeouts().getTimeout("JTextComponentOperator.TypeTextTimeout"));
     }
 
     /**
@@ -708,112 +601,25 @@ public class JTextComponentOperator extends JComponentOperator
 
     /**
      * Clears text using clearing mode.
-     * @see #setClearingMode(int)
-     * @see #getClearingMode()
-     * @see #BACK_SPACE_AND_DELETE_CLEARING_MODE
-     * @see #BACK_SPACE_CLEARING_MODE
-     * @see #DELETE_CLEARING_MODE
-     * @see #SELECT_AND_DELETE_CLEARING_MODE
      * @throws TimeoutExpiredException
      */
     public void clearText() {
 	output.printLine("Clearing text in text component\n    : " +
 			 getSource().toString());
 	output.printGolden("Clearing text in text component");
-	timeouts.setTimeout("ComponentOperator.PushKeyTimeout", 
-			    timeouts.getTimeout("JTextComponentOperator.PushKeyTimeout"));
-	super.setTimeouts(timeouts);
-	//	System.out.println("clearText: hasFocus = " + hasFocus());
 	if(!hasFocus()) {
 	    makeComponentVisible();
 	    clickMouse(1);
 	}
-	Action deleteAction;
-	if(getClearingMode() == BACK_SPACE_CLEARING_MODE) {
-	    deleteAction = new Action() {
-		    public Object launch(Object param) {
-			changeCaretPosition(getDocument().getLength());
-			while(getCaretPosition() > 0) {
-			    if(!hasFocus()) {
-				getOutput().printError("Component does not have focus anymore\n    : " +
-						       getSource().toString());
-				return(null);
-			    }
-			    typeKey(KeyEvent.VK_BACK_SPACE, (char)KeyEvent.VK_BACK_SPACE, 0);
-			}
-			return(null);
-		    }
-		    public String getDescription() {
-			return("Text clearing");
-		    }
-		};
-	} else if(getClearingMode() == DELETE_CLEARING_MODE) {
-	    deleteAction = new Action() {
-		    public Object launch(Object param) {
-			changeCaretPosition(0);
-			while(getDocument().getLength() > 0) {
-			    if(!hasFocus()) {
-				getOutput().printError("Component does not have focus anymore\n    : " +
-						       getSource().toString());
-				return(null);
-			    }
-			    pushKey(KeyEvent.VK_DELETE, 0);
-			}
-			return(null);
-		    }
-		    public String getDescription() {
-			return("Text clearing");
-		    }
-		};
-	} else if(getClearingMode() == SELECT_AND_DELETE_CLEARING_MODE) {
-	    deleteAction = new Action() {
-		    public Object launch(Object param) {
-			selectText(0, getDocument().getLength());
-			pushKey(KeyEvent.VK_DELETE, 0);
-			return(null);
-		    }
-		    public String getDescription() {
-			return("Text clearing");
-		    }
-		};
-	} else {
-	    deleteAction = new Action() {
-		    public Object launch(Object param) {
-			while(getCaretPosition() > 0) {
-			    if(!hasFocus()) {
-				getOutput().printError("Component does not have focus anymore\n    : " +
-						       getSource().toString());
-				return(null);
-			    }
-			    typeKey(KeyEvent.VK_BACK_SPACE, (char)KeyEvent.VK_BACK_SPACE, 0);
-			}
-			while(getDocument().getLength() > 0) {
-			    if(!hasFocus()) {
-				getOutput().printError("Component does not have focus anymore\n    : " +
-						       getSource().toString());
-				return(null);
-			    }
-			    pushKey(KeyEvent.VK_DELETE, 0);
-			}
-			return(null);
-		    }
-		    public String getDescription() {
-			return("Text clearing");
-		    }
-		};
-	}
-	ActionProducer clearer = new ActionProducer(deleteAction);
-	clearer.setOutput(getOutput().createErrorOutput());
-	clearer.setTimeouts(getTimeouts());
-	clearer.getTimeouts().
-	    setTimeout("ActionProducer.MaxActionTime",
-		       getTimeouts().
-		       getTimeout("JTextComponentOperator.TypeTextTimeout"));
-	try {
-	    clearer.produceAction(null);
-	} catch(InterruptedException e) {
-	    throw(new JemmyException("Text clearing has been interrupted", e));
-	}
+	produceTimeRestricted(new Action() {
+		public Object launch(Object obj) {
+		    driver.clearText(JTextComponentOperator.this);
+		    return(null);
+		}
+		public String getDescription() {
+		    return("Text clearing");
+		}
+	    }, getTimeouts().getTimeout("JTextComponentOperator.TypeTextTimeout"));
     }
 
     /**
@@ -874,8 +680,12 @@ public class JTextComponentOperator extends JComponentOperator
 		public boolean checkComponent(Component comp) {
 		    String alltext = getDisplayedText();
 		    if(position >= 0) {
-			return(alltext.substring(position, position + text.length()).
-			       equals(text));
+			if(position + text.length() <= alltext.length()) {
+			    return(alltext.substring(position, position + text.length()).
+				   equals(text));
+			} else {
+			    return(false);
+			}
 		    } else {
 			return(alltext.indexOf(text) >= 0);
 		    }
@@ -1310,93 +1120,6 @@ public class JTextComponentOperator extends JComponentOperator
     ////////////////////////////////////////////////////////
 
     /**
-     * Move caret by "key" pushing if "expectedPosition" is closer to "position"
-     * than current position. Useful for moving caret by buttons like "Home", "End" 
-     * @param position Destination position.
-     * @param key Navigation key.
-     * @param modifiers Navigation key modifiers.
-     * @param expectedPosition Position where caret will be after key pushing.
-     */
-    protected void moveOnce(int position, int key, int modifiers, int expectedPosition) {
-	int curPosition = getCaretPosition();
-	if(getNearest(position, curPosition, expectedPosition) == expectedPosition) {
-	    if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) != 0) {
-		pushKey(key, modifiers);
-	    } else {
-		pushKey(key, modifiersPressed | modifiers);
-	    }
-	    try {
-		getEventDispatcher().waitQueueEmpty(TestOut.getNullOutput(),
-						    timeouts);
-	    } catch(TimeoutExpiredException e) {
-	    }
-	}
-    }
-
-    /**
-     * Move caret by "key" pushing if "expectedPosition" is closer to "position"
-     * than current position. Useful for moving caret by buttons like "Home", "End" 
-     * @param position Destination position.
-     * @param key Navigation key.
-     * @param expectedPosition Position where caret will be after key pushing.
-     */
-    protected void moveOnce(int position, int key, int expectedPosition) {
-	moveOnce(position, key, 0, expectedPosition);
-    }
-
-    /**
-     * Moves caret by "leftKey" and "rightKey" keys pushing.
-     * @param position Destination position.
-     * @param leftKey Navigation key to decrease caret position.
-     * @param rightKey Navigation key to increase caret position.
-     * @throws TimeoutExpiredException
-     */
-    protected void changeCaretPosition(int position, int leftKey, int rightKey) {
-	int oldPosition = getCaretPosition();
-	int prevPosition = oldPosition;
-	boolean toLeft = (oldPosition > position);
-	int keyCode = toLeft ? leftKey : rightKey;
-	while(getCaretPosition() > position && toLeft ||
-	      getCaretPosition() < position && !toLeft) {
-	    prevPosition = oldPosition;
-	    if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) != 0) {
-		pushKey(keyCode, 0);
-	    } else {
-		pushKey(keyCode, modifiersPressed);
-	    }
-	    getEventDispatcher().waitQueueEmpty(TestOut.getNullOutput(),
-						timeouts);
-	    if(getCaretPosition() == oldPosition) {
-		break;
-	    }
-	    oldPosition = getCaretPosition();
-	}
-	if(getNearest(position, oldPosition, prevPosition) == prevPosition) {
-	    keyCode = toLeft ? rightKey : leftKey;
-	    if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) != 0) {
-		pushKey(keyCode, 0);
-	    } else {
-		pushKey(keyCode, modifiersPressed);
-	    }
-	    getEventDispatcher().waitQueueEmpty(output.createErrorOutput(),
-						timeouts);
-	}
-    }
-
-    private int getNearest(int point, int one, int two) {
-	if(((point - one > 0) ?
-	    (point - one) :
-	    (one - point)) >
-	   ((point - two > 0) ?
-	    (point - two) :
-	    (two - point))) {
-	    return(two);
-	} else {
-	    return(one);
-	}
-    }
-
-    /**
      * Can be throught during a text operation 
      * if text has not been found in the component.
      */
@@ -1418,7 +1141,7 @@ public class JTextComponentOperator extends JComponentOperator
 	public String getDescription();
     }
 
-    protected static class JTextComponentByTextFinder implements ComponentChooser {
+    public static class JTextComponentByTextFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
 	public JTextComponentByTextFinder(String lb, StringComparator comparator) {
@@ -1439,10 +1162,13 @@ public class JTextComponentOperator extends JComponentOperator
 	}
     }
 
-    private static class JTextComponentFinder implements ComponentChooser {
+    public static class JTextComponentFinder implements ComponentChooser {
 	ComponentChooser subFinder;
 	public JTextComponentFinder(ComponentChooser sf) {
 	    subFinder = sf;
+	}
+	public JTextComponentFinder() {
+	    this(ComponentSearcher.getTrueChooser("Any JTextComponent"));
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof JTextComponent) {

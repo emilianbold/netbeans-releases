@@ -30,6 +30,9 @@ import org.netbeans.jemmy.Waiter;
 
 import org.netbeans.jemmy.util.EmptyVisualizer;
 
+import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.TreeDriver;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -95,14 +98,14 @@ public class JTreeOperator extends JComponentOperator
 
     private TestOut output;
     private Timeouts timeouts;
-    private CellEditor editor;
+    private TreeDriver driver;
 
     /**
      * Constructor.
      */
     public JTreeOperator(JTree b) {
 	super(b);
-	setTreeCellEditor(new DefaultCellEditor());
+	driver = DriverManager.getTreeDriver(getClass());
     }
 
     /**
@@ -330,18 +333,13 @@ public class JTreeOperator extends JComponentOperator
 	return(output);
     }
 
-    /**
-     * @see JTreeOperator.CellEditor
-     */
-    public void setTreeCellEditor(CellEditor editor) {
-	this.editor = editor;
-    }
-
-    /**
-     * @see JTreeOperator.CellEditor
-     */
-    public CellEditor getTreeCellEditor() {
-	return(editor);
+    public void copyEnvironment(Operator anotherOperator) {
+	super.copyEnvironment(anotherOperator);
+	driver = 
+	    (TreeDriver)DriverManager.
+	    getDriver(DriverManager.TREE_DRIVER_ID,
+		      getClass(), 
+		      anotherOperator.getProperties());
     }
 
     /**
@@ -349,23 +347,11 @@ public class JTreeOperator extends JComponentOperator
      * @throws TimeoutExpiredException
      */
     public void doExpandPath(TreePath path) {
-	Object[] params = {path};
-	Class[] paramClasses = {path.getClass()};
 	output.printLine("Expanding \"" + path.getPathComponent(path.getPathCount() - 1).toString() +
 			 "\" node");
 	output.printGolden("Expanding \"" + path.getPathComponent(path.getPathCount() - 1).toString() +
 			 "\" node");
-	getEventDispatcher().setOutput(output.createErrorOutput());
-	if(!isExpanded(path)) {
-	    if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) == 0) {
-		getEventDispatcher().invokeExistingMethod("fireTreeWillExpand", params, paramClasses, output);
-		getEventDispatcher().invokeExistingMethod("expandPath", params, paramClasses, output);
-		getEventDispatcher().invokeExistingMethod("fireTreeExpanded", params, paramClasses, output);
-	    } else {
-		Point point = getPointToClick(path);
-		clickMouse((int)point.getX(), (int)point.getY(), 2);
-	    }
-	}
+	driver.expandItem(this, getRowForPath(path));
 	waitExpanded(path);
     }
 
@@ -374,7 +360,12 @@ public class JTreeOperator extends JComponentOperator
      * @throws TimeoutExpiredException
      */
     public void doExpandRow(int row) {
-	expandPath(getPathForRow(row));
+	output.printLine("Expanding " + Integer.toString(row) +
+			 " row");
+	output.printGolden("Expanding " + Integer.toString(row) +
+			   " row");
+	driver.expandItem(this, row);
+	waitExpanded(row);
     }
 
     /**
@@ -384,10 +375,7 @@ public class JTreeOperator extends JComponentOperator
     public void doMakeVisible(TreePath path)  {
 	output.printLine("Making \"" + path.toString() + "\" path visible");
 	output.printGolden("Making path visible");
-	getEventDispatcher().setOutput(output.createErrorOutput());
-	Object[] params = {path};
-	Class[] paramClasses = {path.getClass()};
-	getEventDispatcher().invokeExistingMethod("makeVisible", params, paramClasses, output);
+	makeVisible(path);
 	waitVisible(path);
     }
 
@@ -819,20 +807,10 @@ public class JTreeOperator extends JComponentOperator
     public void doCollapsePath(TreePath path) {
 	output.printLine("Collapsing \"" + path.toString() + "\" path");
 	output.printGolden("Collapsing path");
-	getEventDispatcher().setOutput(output.createErrorOutput());
-	Object[] params = {path};
-	Class[] paramClasses = {path.getClass()};
-	if(isExpanded(path)) {
-	    if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) == 0) {
-		getEventDispatcher().invokeExistingMethod("fireTreeWillCollapse", params, paramClasses, output);
-		getEventDispatcher().invokeExistingMethod("collapsePath", params, paramClasses, output);
-		getEventDispatcher().invokeExistingMethod("fireTreeCollapsed", params, paramClasses, output);
-	    } else {
-		Point point = getPointToClick(path);
-		clickMouse((int)point.getX(), (int)point.getY(), 2);
-	    }
+	driver.collapseItem(this, getRowForPath(path));
+ 	if(getVerification()) {
+	    waitCollapsed(path);
 	}
-	waitCollapsed(path);
     }
 
     /**
@@ -840,7 +818,12 @@ public class JTreeOperator extends JComponentOperator
      * @throws TimeoutExpiredException
      */
     public void doCollapseRow(int row) {
-	collapsePath(getPathForRow(row));
+	output.printLine("Collapsing \"" + Integer.toString(row) + "\" row");
+	output.printGolden("Collapsing path");
+	driver.collapseItem(this, row);
+ 	if(getVerification()) {
+	    waitCollapsed(row);
+	}
     }
 
     /**
@@ -849,15 +832,16 @@ public class JTreeOperator extends JComponentOperator
     public void selectPath(TreePath path) {
 	output.printLine("Selecting \"" + path.toString() + "\" path");
 	output.printGolden("Selecting path");
-	TreePath[] paths = {path};
-	selectPaths(paths);
+	driver.selectItem(this, getRowForPath(path));
     }
 
     /**
      * Selects the node in the specified row.
      */
     public void selectRow(int row) {
-	selectPath(getPathForRow(row));
+	output.printLine("Collapsing \"" + Integer.toString(row) + "\" row");
+	output.printGolden("Collapsing path");
+	driver.selectItem(this, row);
     }
 
     /**
@@ -866,12 +850,13 @@ public class JTreeOperator extends JComponentOperator
      */
     public void selectPaths(TreePath[] paths) {
 	output.printLine("Selecting paths:");
+	int[] rows = new int[paths.length];
 	for(int i = 0; i < paths.length; i++) {
 	    output.printLine("    " + paths[i].toString());
+	    rows[i] = getRowForPath(paths[i]);
 	}
 	output.printGolden("Selecting paths");
-	clearSelection();
-	addSelectionPaths(paths);
+	driver.selectItems(this, rows);
  	if(getVerification()) {
 	    waitSelected(paths);
 	}
@@ -881,9 +866,13 @@ public class JTreeOperator extends JComponentOperator
      * Retuns points which can be used to click on path.
      */
     public Point getPointToClick(TreePath path) {
-	Object[] params = {path};
-	Class[] paramClasses = {path.getClass()};
 	Rectangle rect = getPathBounds(path);
+	return(new Point((int)(rect.getX() + rect.getWidth() / 2),
+			 (int)(rect.getY() + rect.getHeight() / 2)));
+    }
+
+    public Point getPointToClick(int row) {
+	Rectangle rect = getRowBounds(row);
 	return(new Point((int)(rect.getX() + rect.getWidth() / 2),
 			 (int)(rect.getY() + rect.getHeight() / 2)));
     }
@@ -995,6 +984,10 @@ public class JTreeOperator extends JComponentOperator
 					    (int)rect.getHeight());
     }
 
+    public void scrollToRow(int row) {
+	scrollToPath(getPathForRow(row));
+    }
+
     /**
      * Turns path to the editing mode.
      * @param path
@@ -1084,11 +1077,8 @@ public class JTreeOperator extends JComponentOperator
      */
     public void changePathObject(TreePath path, Object newValue){
 	scrollToPath(path);
-	if(!isEditing() ||
-	   !getEditingPath().equals(path)) {
-	    getTreeCellEditor().makeBeingEdited(this, path);
-	}
-	getTreeCellEditor().enterNewValue(this, waitEditor(path), path, newValue);
+	driver.editItem(this, getRowForPath(path), newValue, 
+			timeouts.create("JTreeOperator.WaitEditingTimeout"));
     }
 
     /**
@@ -1110,6 +1100,24 @@ public class JTreeOperator extends JComponentOperator
     }
 
     /**
+     * Waits row to be expanded.
+     * @param row
+     */
+    public void waitExpanded(final int row) {
+	getOutput().printLine("Wait " + Integer.toString(row) + "'th row to be expanded in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait " + Integer.toString(row) + "'th row to be expanded");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+		    return(isExpanded(row));
+		}
+		public String getDescription() {
+		    return("Has " + Integer.toString(row) + "'th row expanded");
+		}
+	    });
+    }
+
+    /**
      * Waits path to be collapsed.
      * @param path
      */
@@ -1123,6 +1131,24 @@ public class JTreeOperator extends JComponentOperator
 		}
 		public String getDescription() {
 		    return("Has \"" + path.toString() + "\" path collapsed");
+		}
+	    });
+    }
+
+    /**
+     * Waits row to be collapsed.
+     * @param row
+     */
+    public void waitCollapsed(final int row) {
+	getOutput().printLine("Wait " + Integer.toString(row) + "'th row to be collapsed in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait " + Integer.toString(row) + "'th row to be collapsed");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+		    return(isCollapsed(row));
+		}
+		public String getDescription() {
+		    return("Has " + Integer.toString(row) + "'th row collapsed");
 		}
 	    });
     }
@@ -1933,31 +1959,6 @@ public class JTreeOperator extends JComponentOperator
     ////////////////////////////////////////////////////////
 
     /**
-     * Default editor. Supposes that double click converts tree to an editing mode
-     * and a JTextComponent inheritor is displayed to edit.
-     */
-    protected static class DefaultCellEditor implements CellEditor {
-	public void makeBeingEdited(JTreeOperator oper, TreePath path) {
-	    oper.clickForEdit(path);
-	}
-	public boolean checkCellEditor(JTreeOperator oper, Component comp, TreePath path) {
-	    return(comp instanceof JTextComponent);
-	}
-	public void enterNewValue(JTreeOperator oper, Component editor, TreePath path, Object value) {
-	    JTextComponentOperator textOper =  
-		new JTextComponentOperator((JTextComponent)editor);
-	    textOper.copyEnvironment(oper);
-	    textOper.setVisualizer(new EmptyVisualizer());
-	    textOper.clearText();
-	    textOper.typeText(value.toString());
-	    textOper.pushKey(KeyEvent.VK_ENTER);
-	}
-	public String getDescription() {
-	    return("JTextComponent cell editor");
-	}
-    }
-
-    /**
      * Iterface to choose tree row.
      */
     public interface TreeRowChooser {
@@ -1971,55 +1972,6 @@ public class JTreeOperator extends JComponentOperator
 	 * Row description.
 	 */
 	public String getDescription();
-    }
-
-    /**
-     * Waits for an editor defined by setCellEditor method.
-     * @see #setTreeCellEditor(JTreeOperator.CellEditor)
-     */
-    protected Component waitEditor(TreePath path) {
-	return(waitEditor(getTreeCellEditor(), path));
-    }
-
-    /**
-     * Waits for an editor.
-     */
-    protected Component waitEditor(CellEditor editor, TreePath path) {
-	Waiter waiter = new Waiter(new EditorWaiter(this, editor, path));
-	waiter.setOutput(getOutput());
-	waiter.setTimeouts(getTimeouts().cloneThis());
-	waiter.getTimeouts().setTimeout("Waiter.WaitingTime",
-					getTimeouts().getTimeout("JTreeOperator.WaitEditingTimeout"));
-	try {
-	    return((Component)waiter.waitAction(null));
-	} catch(InterruptedException e) {
-	    output.printStackTrace(e);
-	    return(null);
-	}
-    }
-
-    /**
-     * Searches for JTextComponent inside JTree.
-     * This component should be displayed if tree is in being edited.
-     */
-    protected JTextComponent findEditor() {
-	return((JTextComponent)findEditor(new ComponentChooser() {
-		public boolean checkComponent(Component comp) {
-		    return(comp instanceof JTextComponent);
-		}
-		public String getDescription() {
-		    return("Tree text editor");
-		}
-	    }));
-    }
-
-    /**
-     * Searches for component inside JTree.
-     */
-    protected Component findEditor(ComponentChooser chooser) {
-	ComponentSearcher searcher = new ComponentSearcher((Container)getSource());
-	searcher.setOutput(output.createErrorOutput());
-	return(searcher.findComponent(chooser));
     }
 
     private TreePath findPathPrimitive(TreePath path, TreePathChooser chooser, Waiter loadedWaiter) {
@@ -2061,37 +2013,6 @@ public class JTreeOperator extends JComponentOperator
 
     private TreePath findPath(String[] names, int[] indexes, StringComparator comparator) {
 	return(findPath(new StringArrayPathChooser(names, indexes, comparator)));
-    }
-
-    /**
-     * Interface can be used to define a way to edit cells inside JTree.
-     */
-    public static interface CellEditor {
-	/**
-	 * Turns cell into editing mode.
-	 * @param oper Operator used.
-	 * @param path
-	 */
-	public void makeBeingEdited(JTreeOperator oper, TreePath path) ;
-	/**
-	 * Check if component is an editor.
-	 * @param oper Operator used.
-	 * @param comp Checked component.
-	 * @param path
-	 */
-	public boolean checkCellEditor(JTreeOperator oper, Component comp, TreePath path);
-	/**
-	 * Changes cell value.
-	 * @param oper Operator used.
-	 * @param editor Editor component.
-	 * @param path
-	 * @param value Cell value to enter.
-	 */
-	public void enterNewValue(JTreeOperator oper, Component editor, TreePath path, Object value);
-	/**
-	 * Editor description.
-	 */
-	public String getDescription();
     }
 
     /**
@@ -2234,38 +2155,6 @@ public class JTreeOperator extends JComponentOperator
 	public String getDescription() {
 	    return("JTree with text \"" + label + "\" in " + 
 		   (new Integer(rowIndex)).toString() + "'th row");
-	}
-    }
-
-    private class EditorWaiter implements Waitable {
-	private Point pnt;
-	private CellEditor editor;
-	private TreePath path;
-	private JTreeOperator oper;
-	ComponentSearcher searcher;
-	public EditorWaiter(JTreeOperator oper, CellEditor editor, TreePath path) {
-	    this.editor = editor;
-	    this.path = path;
-	    this.oper = oper;
-	    pnt = getPointToClick(path);
-	    searcher = 
-		new ComponentSearcher((Container)getSource());
-	    searcher.setOutput(getOutput().createErrorOutput());
-	}
-
-	public Object actionProduced(Object obj) {
-	    return(searcher.findComponent(new ComponentChooser() {
-		    public boolean checkComponent(Component comp) {
-			return(editor.checkCellEditor(oper, comp, path));
-		    }
-		    public String getDescription() {
-			return(editor.getDescription());
-		    }
-		}));
-	}
-
-	public String getDescription() {
-	    return(editor.getDescription());
 	}
     }
 }

@@ -21,10 +21,14 @@ import java.awt.event.ContainerListener;
 
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Outputable;
+import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.Timeoutable;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Timeouts;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -47,6 +51,7 @@ public class ContainerOperator extends ComponentOperator
     implements Timeoutable, Outputable {
 
     private static int POINT_RECT_SIZE = 10;
+    private final static long WAIT_SUBCOMPONENT_TIMEOUT = 10000;
     
     /**
      * Constructor.
@@ -184,6 +189,45 @@ public class ContainerOperator extends ComponentOperator
      */
     public static Container waitContainer(Container cont) {
 	return(waitContainer(cont, 0));
+    }
+
+    static {
+	Timeouts.initDefault("ComponentOperator.WaitComponentTimeout", WAIT_SUBCOMPONENT_TIMEOUT);
+    }
+
+    public Component waitSubComponent(final ComponentChooser chooser, final int index) {
+	final ComponentSearcher searcher = new ComponentSearcher((Container)getSource());
+	searcher.setOutput(TestOut.getNullOutput());
+	Waiter waiter = new Waiter(new Waitable() {
+		public Object actionProduced(Object obj) {
+		    return(searcher.findComponent(chooser, index));
+		}
+		public String getDescription() {
+		    return("Wait for \"" + chooser.getDescription() +
+			   "\" component to be displayed");
+		}
+	    });
+	waiter.getTimeouts().setTimeout("Waiter.WaitingTime",
+					getTimeouts().
+					getTimeout("ComponentOperator.WaitComponentTimeout"));
+	try {
+	    return((Component)waiter.waitAction(null));
+	} catch (InterruptedException e) {
+	    throw(new JemmyException("Waiting for \"" + chooser.getDescription() +
+				     "\" component has been interrupted", e));
+	}
+    }
+
+    public Component waitSubComponent(ComponentChooser chooser) {
+	return(waitSubComponent(chooser, 0));
+    }
+
+    public ComponentOperator createSubOperator(ComponentChooser chooser, int index) {
+	return(createOperator(waitSubComponent(chooser, index)));
+    }
+
+    public ComponentOperator createSubOperator(ComponentChooser chooser) {
+	return(createSubOperator(chooser, 0));
     }
 
     ////////////////////////////////////////////////////////

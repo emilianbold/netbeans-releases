@@ -117,71 +117,6 @@ public class jemmy_027 extends JemmyTest {
 		return(1);
 	    }
 
-	    tabOper.setTableCellEditor(new JTableOperator.CellEditor() {
-		    public void makeBeingEdited(JTableOperator oper, int row, int column)
-			throws TimeoutExpiredException {
-			oper.clickOnCell(row, column, 2);
-		    }
-		    public boolean checkCellEditor(JTableOperator oper, Component comp, int row, int column) {
-			if(comp instanceof JPanel) {
-			    ComponentSearcher cs = new ComponentSearcher((Container)comp);
-			    cs.setOutput(TestOut.getNullOutput());
-			    return(cs.findComponent(new org.netbeans.jemmy.ComponentChooser() {
-				    public boolean checkComponent(Component comp) {
-					return(comp instanceof JComboBox);
-				    }
-				    public String getDescription() {
-					return("Second combobox");
-				    }
-				}, 1) != null);
-			} else {
-			    return(false);
-			}
-		    }
-		    public void enterNewValue(JTableOperator oper, Component editor, int row, int column, Object value)
-			throws TimeoutExpiredException {
-			org.netbeans.jemmy.ComponentChooser chooser = new org.netbeans.jemmy.ComponentChooser() {
-				public boolean checkComponent(Component comp) {
-				    return(comp instanceof JComboBox);
-				}
-				public String getDescription() {
-				    return("Second combobox");
-				}
-			    };
-			ComponentSearcher cs = new ComponentSearcher((Container)editor);
-			cs.setOutput(TestOut.getNullOutput());
-			JComboBoxOperator fComboOper = new JComboBoxOperator((JComboBox)cs.findComponent(chooser, 0));
-			fComboOper.setOutput(oper.getOutput());
-			fComboOper.selectItem(((String)value).substring(0, 1), true, true);
-			JComboBoxOperator sComboOper = new JComboBoxOperator((JComboBox)cs.findComponent(chooser, 1));
-			sComboOper.setOutput(oper.getOutput());
-			sComboOper.selectItem(((String)value).substring(1, 2), true, true);
-		    }
-		    public String getDescription() {
-			return("Two combo value editor");
-		    }
-		});
-
-	    for(int i = 0; i < 5; i++) {
-		tabOper.changeCellText(i, i, "00");
-		if(!((String)tabOper.getValueAt(i, i)).equals("00")) {
-		    getOutput().printError("Wrong (" + i + "," + i +
-					   ") cell value :\"" +
-					   (String)tabOper.getValueAt(i, i) +
-					   "\" should be \"00\"");
-		}
-	    }
-
-	    for(int i = 0; i < 5; i++) {
-		tabOper.changeCellText(i, 5 - i - 1, "44");
-		if(!((String)tabOper.getValueAt(i, 5 - i - 1)).equals("44")) {
-		    getOutput().printError("Wrong (" + i + "," + (5 - i - 1) +
-					   ") cell value :\"" +
-					   (String)tabOper.getValueAt(i, 5 - i - 1) +
-					   "\" should be \"44\"");
-		}
-	    }
-
 	    tabOper.clickOnCell(2, 2, 1);
 
 	    tpo.selectPage("Tree Page", true, true);
@@ -222,62 +157,6 @@ public class jemmy_027 extends JemmyTest {
 		return(1);
 	    }
    
-	    treeOper.setTreeCellEditor(new JTreeOperator.CellEditor() {
-		    public void makeBeingEdited(JTreeOperator oper, TreePath path)
-			throws TimeoutExpiredException {
-			oper.clickOnPath(path, 2);
-		    }
-		    public boolean checkCellEditor(JTreeOperator oper, Component comp, TreePath path) {
-			if(comp instanceof JPanel) {
-			    ComponentSearcher cs = new ComponentSearcher((Container)comp);
-			    cs.setOutput(TestOut.getNullOutput());
-			    return(cs.findComponent(new org.netbeans.jemmy.ComponentChooser() {
-				    public boolean checkComponent(Component comp) {
-					return(comp instanceof JComboBox);
-				    }
-				    public String getDescription() {
-					return("Second combobox");
-				    }
-				}, 1) != null);
-			} else {
-			    return(false);
-			}
-		    }
-		    public void enterNewValue(JTreeOperator oper, Component editor, TreePath path, Object value)
-			throws TimeoutExpiredException {
-			org.netbeans.jemmy.ComponentChooser chooser = new org.netbeans.jemmy.ComponentChooser() {
-				public boolean checkComponent(Component comp) {
-				    return(comp instanceof JComboBox);
-				}
-				public String getDescription() {
-				    return("Second combobox");
-				}
-			    };
-			ComponentSearcher cs = new ComponentSearcher((Container)editor);
-			cs.setOutput(TestOut.getNullOutput());
-			JComboBoxOperator fComboOper = new JComboBoxOperator((JComboBox)cs.findComponent(chooser, 0));
-			fComboOper.setOutput(oper.getOutput());
-			fComboOper.selectItem(((String)value).substring(0, 1), true, true);
-			JComboBoxOperator sComboOper = new JComboBoxOperator((JComboBox)cs.findComponent(chooser, 1));
-			sComboOper.setOutput(oper.getOutput());
-			sComboOper.selectItem(((String)value).substring(1, 2), true, true);
-		    }
-		    public String getDescription() {
-			return("Two combo value editor");
-		    }
-		});
-	    
-	    treeOper.changePathText(rootPath, "44");
-	    treeOper.changePathText(lastPath, "00");
-	    treeOper.selectPath(midPath);
-	    
-	    if(!treeOper.findPath("", "/", false, true).
-	       getLastPathComponent().toString().equals("44")) {
-		getOutput().printError("Root should have \"44\" text");
-		return(1);
-	    }
-
-	    lastPath = treeOper.findPath("40/00", "/", false, true);
 
 	} catch(Exception e) {
 	    finalize();
@@ -285,7 +164,6 @@ public class jemmy_027 extends JemmyTest {
 	}
 
 	finalize();
-
 	return(0);
     }
 

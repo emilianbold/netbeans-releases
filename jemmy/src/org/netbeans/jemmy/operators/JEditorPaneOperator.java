@@ -50,7 +50,7 @@ import javax.swing.text.EditorKit;
  * <BR><BR>Timeouts used: <BR>
  * JTextComponentOperator.PushKeyTimeout - time between key pressing and releasing during text typing <BR>
  * JTextComponentOperator.BetweenKeysTimeout - time to sleep between two chars typing <BR>
- * JTextComponentOperator.ChangeCaretPositionTimeout - maximum time to chenge caret position <BR>
+ * JTextComponentOperator.ChangeCaretPositionTimeout - maximum time to change caret position <BR>
  * JTextComponentOperator.TypeTextTimeout - maximum time to type text <BR>
  * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
  * ComponentOperator.WaitFocusTimeout - time to wait component focus <BR>
@@ -245,28 +245,6 @@ public class JEditorPaneOperator extends JTextComponentOperator {
      */
     public void usePageNavigationKeys(boolean yesOrNo) {
 	pageNavigation = yesOrNo;
-    }
-
-    /**
-     * Overrides superclass's method to use all navigation keys.
-     * @param position Position to move caret to.
-     * @see JTextComponentOperator#changeCaretPosition(int)
-     * @throws TimeoutExpiredException
-     */
-    public void changeCaretPosition(int position) {
-	if(!hasFocus()) {
-	    makeComponentVisible();
-	    clickMouse(1);
-	}
-	moveOnce(position, KeyEvent.VK_HOME, InputEvent.CTRL_MASK, 0);
-	moveOnce(position, KeyEvent.VK_END, InputEvent.CTRL_MASK, getText().length());
-	if(pageNavigation) {
-	    changeCaretPosition(position, KeyEvent.VK_PAGE_UP, KeyEvent.VK_PAGE_DOWN);
-	}
-	changeCaretPosition(position, KeyEvent.VK_UP, KeyEvent.VK_DOWN);
-	moveOnce(position, KeyEvent.VK_HOME, 0);
-	moveOnce(position, KeyEvent.VK_END, getText().length());
-	super.changeCaretPosition(position);
     }
 
     /**

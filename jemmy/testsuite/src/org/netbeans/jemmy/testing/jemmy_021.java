@@ -46,7 +46,7 @@ public class jemmy_021 extends JemmyTest {
 
 	    Demonstrator.nextStep("Play with JEditorPane");
 
-	    tp.selectPage("JSplitPane", false, true);
+	    tp.selectPage("JEditorPane", false, true);
 	    
 	    JEditorPaneOperator to = 
 		new JEditorPaneOperator(JEditorPaneOperator.
@@ -136,8 +136,6 @@ public class jemmy_021 extends JemmyTest {
 
 	    Demonstrator.nextStep("Clear text");
 
-	    to.setClearingMode(to.DELETE_CLEARING_MODE);
-	    
 	    to.clearText();
 
 	    if(JEditorPaneOperator.waitJEditorPane(frm, "", true, true) == null) {
@@ -207,8 +205,6 @@ public class jemmy_021 extends JemmyTest {
 
 	    Demonstrator.nextStep("Clear text");
 
-	    tao.setClearingMode(tao.BACK_SPACE_CLEARING_MODE);
-	    
 	    tao.clearText();
 
 	    if(JTextAreaOperator.waitJTextArea(frm, "", true, true) == null) {

@@ -30,6 +30,10 @@ import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 
+import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.KeyDriver;
+import org.netbeans.jemmy.drivers.MouseDriver;
+
 import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Component;
@@ -80,8 +84,6 @@ import java.util.Locale;
  *
  * Provides basic methods to operate with mouse and keyboard.<BR>
  * <BR>
- * All user input methods (pushKey, moveMouse, ...) use dispatching model defined by
- * setDispatchingModel(int) model method.
  * Almost all input methods can throw JemmyInputException or its subclass.<BR>
  *
  * ComponentOperator and its subclasses has a lot of methods which name and parameters just like
@@ -98,7 +100,6 @@ import java.util.Locale;
  * ComponentOperator.WaitFocusTimeout - time to wait component focus <BR>
  *
  * @see org.netbeans.jemmy.Timeouts
- * @see #setDispatchingModel(int)
  *
  * @author Alexandre Iline (alexandre.iline@sun.com)
  */
@@ -119,6 +120,8 @@ public class ComponentOperator extends Operator
     private Timeouts timeouts;
     private TestOut output;
     private EventDispatcher dispatcher;
+    private KeyDriver kDriver;
+    private MouseDriver mDriver;
 
     /**
      * Constructor.
@@ -126,6 +129,8 @@ public class ComponentOperator extends Operator
     public ComponentOperator(Component comp) {
 	super();
 	source = comp;
+	kDriver = DriverManager.getKeyDriver(getClass());
+	mDriver = DriverManager.getMouseDriver(getClass());
 	setEventDispatcher(new EventDispatcher(comp));
     }
 
@@ -305,17 +310,6 @@ public class ComponentOperator extends Operator
     }
 
     /**
-     * Force operator to use dispatching model.
-     * @param m New model value.
-     * @see org.netbeans.jemmy.JemmyProperties#setCurrentDispatchingModel(int)
-     */
-    public void setDispatchingModel(int m) {
-	super.setDispatchingModel(m);
-	if(dispatcher != null) {
-	    dispatcher.setDispatchingModel(m);
-	}
-    }
-    /**
      * Defines current timeouts.
      * @param t A collection of timeout assignments.
      * @see org.netbeans.jemmy.Timeoutable
@@ -339,6 +333,20 @@ public class ComponentOperator extends Operator
 	return(timeouts);
     }
 
+    public void copyEnvironment(Operator anotherOperator) {
+	super.copyEnvironment(anotherOperator);
+	kDriver = 
+	    (KeyDriver)DriverManager.
+	    getDriver(DriverManager.KEY_DRIVER_ID,
+		      getClass(), 
+		      anotherOperator.getProperties());
+	mDriver = 
+	    (MouseDriver)DriverManager.
+	    getDriver(DriverManager.MOUSE_DRIVER_ID,
+		      getClass(), 
+		      anotherOperator.getProperties());
+    }
+
     ////////////////////////////////////////////////////////
     //Mouse operations
     ////////////////////////////////////////////////////////
@@ -353,31 +361,8 @@ public class ComponentOperator extends Operator
      * @param forPopup
      */
     public void clickMouse(int x, int y, int clickCount, int mouseButton, int modifiers, boolean forPopup) {
-	moveMouse(x, y);
-	if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) != 0) {
-	    getEventDispatcher().robotPressMouse(mouseButton, modifiers);
-	} else {
-	    getEventDispatcher().dispatchMouseEvent(MouseEvent.MOUSE_ENTERED ,               modifiers,          0, x, y, false);
-	    getEventDispatcher().dispatchMouseEvent(MouseEvent.MOUSE_PRESSED , mouseButton | modifiers,          1, x, y, forPopup);
-	}
-	for(int i = 1; i < clickCount; i++) {
-	    if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) != 0) {
-		getEventDispatcher().robotReleaseMouse(mouseButton, modifiers);
-		getEventDispatcher().robotPressMouse(mouseButton, modifiers);
-	    } else {
-		getEventDispatcher().dispatchMouseEvent(MouseEvent.MOUSE_RELEASED, mouseButton | modifiers, i    , x, y, forPopup);
-		getEventDispatcher().dispatchMouseEvent(MouseEvent.MOUSE_CLICKED , mouseButton | modifiers, i    , x, y, forPopup);
-		getEventDispatcher().dispatchMouseEvent(MouseEvent.MOUSE_PRESSED , mouseButton | modifiers, i + 1, x, y, forPopup);
-	    }
-	}
-	timeouts.sleep("ComponentOperator.MouseClickTimeout");
-	if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) != 0) {
-	    getEventDispatcher().robotReleaseMouse(mouseButton, modifiers);
-	} else {
-	    getEventDispatcher().dispatchMouseEvent(MouseEvent.MOUSE_RELEASED, mouseButton | modifiers, clickCount, x, y, forPopup);
-	    getEventDispatcher().dispatchMouseEvent(MouseEvent.MOUSE_CLICKED , mouseButton | modifiers, clickCount, x, y, forPopup);
-	    getEventDispatcher().dispatchMouseEvent(MouseEvent.MOUSE_EXITED  ,               modifiers,          0, x, y, false);
-	}
+	mDriver.clickMouse(this, x, y, clickCount, mouseButton, modifiers,
+			   timeouts.create("ComponentOperator.MouseClickTimeout"));
     }
 
     /**
@@ -421,22 +406,14 @@ public class ComponentOperator extends Operator
      * Press mouse.
      */
     public void pressMouse(int x, int y) {
-	if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) != 0) {
-	    getEventDispatcher().robotPressMouse(getDefaultMouseButton(), 0);
-	} else {
-	    getEventDispatcher().dispatchMouseEvent(MouseEvent.MOUSE_PRESSED, getDefaultMouseButton(), 1, x, y, false);
-	}
+	mDriver.pressMouse(this, x, y, getDefaultMouseButton(), 0);
     }
 
     /**
      * Releases mouse.
      */
     public void releaseMouse(int x, int y) {
-	if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) != 0) {
-	    getEventDispatcher().robotReleaseMouse(getDefaultMouseButton(), 0);
-	} else {
-	    getEventDispatcher().dispatchMouseEvent(MouseEvent.MOUSE_RELEASED, getDefaultMouseButton(), 1, x, y, false);
-	}
+	mDriver.releaseMouse(this, x, y, getDefaultMouseButton(), 0);
     }
 
     /**
@@ -445,11 +422,7 @@ public class ComponentOperator extends Operator
      * @param y Vertical destination coordinate.
      */
     public void moveMouse(int x, int y) {
-	if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) != 0) {
-	    getEventDispatcher().robotMoveMouse(x, y);
-	} else {
-	    getEventDispatcher().dispatchMouseEvent(MouseEvent.MOUSE_MOVED, 0, 0, x, y, false);
-	}
+	mDriver.moveMouse(this, x, y);
     }
 
     /**
@@ -460,11 +433,7 @@ public class ComponentOperator extends Operator
      * @param modifiers Modifiers
      */
     public void dragMouse(int x, int y, int mouseButton, int modifiers) {
-	if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) != 0) {
-	    getEventDispatcher().robotMoveMouse(x, y);
-	} else {
-	    getEventDispatcher().dispatchMouseEvent(MouseEvent.MOUSE_DRAGGED, mouseButton | modifiers, 1, x, y, false);
-	}
+	mDriver.dragMouse(this, x, y, getDefaultMouseButton(), 0);
     }
 
     /**
@@ -499,22 +468,9 @@ public class ComponentOperator extends Operator
      * @param modifiers Modifiers
      */
     public void dragNDrop(int start_x, int start_y, int end_x, int end_y, int mouseButton, int modifiers) {
-	if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) != 0) {
-	    getEventDispatcher().robotMoveMouse(start_x, start_y);
-	    getEventDispatcher().robotPressMouse(mouseButton, modifiers);
-	    timeouts.sleep("ComponentOperator.BeforeDragTimeout");
-	    getEventDispatcher().robotMoveMouse(end_x, end_y);
-	    timeouts.sleep("ComponentOperator.AfterDragTimeout");
-	    getEventDispatcher().robotReleaseMouse(mouseButton, modifiers);
-	} else {
-	    getEventDispatcher().dispatchMouseEvent(MouseEvent.MOUSE_ENTERED,                        0, 0, start_x, start_y, false);
-	    getEventDispatcher().dispatchMouseEvent(MouseEvent.MOUSE_PRESSED,  mouseButton | modifiers, 1, start_x, start_y, false);
-	    timeouts.sleep("ComponentOperator.BeforeDragTimeout");
-	    getEventDispatcher().dispatchMouseEvent(MouseEvent.MOUSE_DRAGGED,  mouseButton | modifiers, 0, end_x,   end_y,   false);
-	    timeouts.sleep("ComponentOperator.AfterDragTimeout");
-	    getEventDispatcher().dispatchMouseEvent(MouseEvent.MOUSE_RELEASED, mouseButton | modifiers, 1, end_x,   end_y,   false);
-	    getEventDispatcher().dispatchMouseEvent(MouseEvent.MOUSE_EXITED,                         0, 0, end_x,   end_y,   false);
-	}
+	mDriver.dragNDrop(this, start_x, start_y, end_x, end_y, mouseButton, modifiers,
+			  timeouts.create("ComponentOperator.BeforeDragTimeout"),
+			  timeouts.create("ComponentOperator.AfterDragTimeout"));
     }
 
     /**
@@ -600,22 +556,14 @@ public class ComponentOperator extends Operator
      * Move mouse inside the component.
      */
     public void enterMouse() {
-	if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) != 0) {
-	    getEventDispatcher().robotMoveMouse(getCenterXForClick(), getCenterYForClick());
-	} else {
-	    getEventDispatcher().dispatchMouseEvent(MouseEvent.MOUSE_ENTERED, 0, 0, getCenterXForClick(), getCenterYForClick(), false);
-	}
+	mDriver.enterMouse(this);
     }
 
     /**
      * Move mouse outside the component.
      */
     public void exitMouse() {
-	if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) != 0) {
-	    getEventDispatcher().robotMoveMouse(-1, -1);
-	} else {
-	    getEventDispatcher().dispatchMouseEvent(MouseEvent.MOUSE_EXITED, 0, 0, getCenterXForClick(), getCenterYForClick(), false);
-	}
+	mDriver.exitMouse(this);
     }
 
     /**
@@ -661,11 +609,7 @@ public class ComponentOperator extends Operator
      * @param modifiers Modifiers (combination of InputEvent.*_MASK fields)
      */
     public void pressKey(int keyCode, int modifiers) {
-	if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) != 0) {
-	    getEventDispatcher().robotPressKey(keyCode, modifiers);
-	} else {
-	    getEventDispatcher().dispatchKeyEvent(KeyEvent.KEY_PRESSED , modifiers, keyCode);
-	}
+	kDriver.pressKey(this, keyCode, modifiers);
     }
 
     /**
@@ -682,11 +626,7 @@ public class ComponentOperator extends Operator
      * @param modifiers Modifiers (combination of InputEvent.*_MASK fields)
      */
     public void releaseKey(int keyCode, int modifiers) {
-	if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) != 0) {
-	    getEventDispatcher().robotReleaseKey(keyCode, modifiers);
-	} else {
-	    getEventDispatcher().dispatchKeyEvent(KeyEvent.KEY_RELEASED, modifiers, keyCode);
-	}
+	kDriver.releaseKey(this, keyCode, modifiers);
     }
 
     /**
@@ -703,9 +643,7 @@ public class ComponentOperator extends Operator
      * @param modifiers Modifiers (combination of InputEvent.*_MASK fields)
      */
     public void pushKey(int keyCode, int modifiers) {
-	pressKey(keyCode, modifiers);
-	timeouts.sleep("ComponentOperator.PushKeyTimeout");
-	releaseKey(keyCode, modifiers);
+	kDriver.pushKey(this, keyCode, modifiers, timeouts.create("ComponentOperator.PushKeyTimeout"));
     }
 
     /**
@@ -723,13 +661,7 @@ public class ComponentOperator extends Operator
      * @param modifiers Modifiers (combination of InputEvent.*_MASK fields)
      */
     public void typeKey(int keyCode, char keyChar, int modifiers) {
-	pressKey(keyCode, modifiers);
-	timeouts.sleep("ComponentOperator.PushKeyTimeout");
-	if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) != 0) {
-	} else {
-	    getEventDispatcher().dispatchKeyEvent(KeyEvent.KEY_TYPED   , modifiers, KeyEvent.VK_UNDEFINED, keyChar);
-	}
-	releaseKey(keyCode, modifiers);
+	kDriver.typeKey(this, keyCode, keyChar, modifiers, timeouts.create("ComponentOperator.PushKeyTimeout"));
     }
 
     /**
@@ -1706,7 +1638,6 @@ public class ComponentOperator extends Operator
     private void setEventDispatcher(EventDispatcher dispatcher) {
 	dispatcher.setOutput(getOutput().createErrorOutput());
 	dispatcher.setTimeouts(getTimeouts());
-	dispatcher.setDispatchingModel(getDispatchingModel());
 	this.dispatcher = dispatcher;
     }
 

@@ -29,6 +29,8 @@ import java.util.Properties;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
+import org.netbeans.jemmy.drivers.InputDriverInstaller;
+
 /**
  * 
  * Keeps default Jemmy properties
@@ -140,6 +142,14 @@ public final class JemmyProperties {
      */
     public static Object setCurrentProperty(String propertyName, Object propertyValue) {
 	return(getProperties().setProperty(propertyName, propertyValue));
+    }
+
+    public static Object removeCurrentProperty(String propertyName) {
+	return(getProperties().removeProperty(propertyName));
+    }
+
+    public String[] getCurrentKeys() {
+	return(getProperties().getKeys());
     }
 
     /**
@@ -543,6 +553,7 @@ public final class JemmyProperties {
      * @see #ROBOT_MODEL_MASK
      */
     public int setDispatchingModel(int model) {
+	new InputDriverInstaller((model & ROBOT_MODEL_MASK) == 0).install();
 	return(((Integer)setProperty("dispatching.model", new Integer(model))).intValue());
     }
 
@@ -608,6 +619,24 @@ public final class JemmyProperties {
 	} else {
 	    return(null);
 	}
+    }
+
+    public Object removeProperty(String name) {
+	if(contains(name)) {
+	    return(properties.remove(name));
+	} else {
+	    return(null);
+	}
+    }
+
+    public String[] getKeys() {
+	Enumeration keys = properties.keys();
+	String[] result = new String[properties.size()];
+	int i = 0;
+	while(keys.hasMoreElements()) {
+	    result[i] = (String)keys.nextElement();
+	}
+	return(result);
     }
 
     private JemmyProperties cloneThis() {

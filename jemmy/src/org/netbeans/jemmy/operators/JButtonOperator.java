@@ -256,7 +256,7 @@ public class JButtonOperator extends AbstractButtonOperator{
 	makeComponentVisible();
     }
 
-    private static class JButtonFinder implements ComponentChooser {
+    public static class JButtonFinder implements ComponentChooser {
 	ComponentChooser subFinder;
 	public JButtonFinder(ComponentChooser sf) {
 	    subFinder = sf;

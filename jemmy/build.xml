@@ -27,7 +27,7 @@
 
   <target name="api" depends="compile">
     <mkdir dir="${javadoc}"/>
-    <javadoc packagenames="${package},${package}.util,${package}.explorer,${package}.operators,${package}.demo" 
+    <javadoc packagenames="${package},${package}.util,${package}.explorer,${package}.operators,${package}.demo,${package}.drivers,${package}.drivers.buttons,${package}.drivers.input,${package}.drivers.lists,${package}.drivers.scrolling,${package}.drivers.tables,${package}.drivers.text,${package}.drivers.trees" 
      sourcepath="${src}" destdir="${javadoc}" Protected="yes" Windowtitle="Jemmy API"/>
   </target>
 

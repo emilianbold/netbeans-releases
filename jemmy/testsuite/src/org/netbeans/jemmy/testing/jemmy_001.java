@@ -241,7 +241,7 @@ public class jemmy_001 extends JemmyTest {
 	    Demonstrator.showFinalComment("Test passed");
 
 	    Dumper.dumpComponent(operator_1.getSource(), getOutput().getOutput());
-
+	    /*
 	    try {
 		if(!System.getProperty("java.version").startsWith("1.2")) {
 		    Object[] params = {operator_1.getSource(),
@@ -264,6 +264,7 @@ public class jemmy_001 extends JemmyTest {
 	    } catch(IllegalAccessException e) {
 		getOutput().printStackTrace(e);
 	    }
+	    */
 	} catch(Exception e) {
 	    finalize();
 	    throw(new TestCompletedException(1, e));

@@ -26,6 +26,9 @@ import org.netbeans.jemmy.Timeoutable;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Timeouts;
 
+import org.netbeans.jemmy.drivers.ButtonDriver;
+import org.netbeans.jemmy.drivers.DriverManager;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Insets;
@@ -68,6 +71,8 @@ public class AbstractButtonOperator extends JComponentOperator
     private Timeouts timeouts;
     private TestOut output;
 
+    ButtonDriver driver;
+
     /**
      * Constructor.
      * @param b The <code>java.awt.AbstractButton</code> managed by
@@ -75,6 +80,7 @@ public class AbstractButtonOperator extends JComponentOperator
      */
     public AbstractButtonOperator(AbstractButton b) {
 	super(b);
+	driver = DriverManager.getButtonDriver(getClass());
     }
 
     /**
@@ -299,24 +305,24 @@ public class AbstractButtonOperator extends JComponentOperator
 	return(output);
     }
 
+    public void copyEnvironment(Operator anotherOperator) {
+	super.copyEnvironment(anotherOperator);
+	driver = 
+	    (ButtonDriver)DriverManager.
+	    getDriver(DriverManager.BUTTON_DRIVER_ID,
+		      getClass(), 
+		      anotherOperator.getProperties());
+    }
+
     /**
      * Puchs the button by mouse click.
      * @throws TimeoutExpiredException
      */
     public void push() {
-	prepareToClick();
-	try {
-	    waitComponentEnabled();
-	} catch(InterruptedException e) {
-	}
 	output.printLine("Push button\n    :" + getSource().toString());
 	output.printGolden("Push button");
-	Timeouts times = timeouts.cloneThis();
-	times.setTimeout("ComponentOperator.MouseClickTimeout", 
-			 timeouts.getTimeout("AbstractButtonOperator.PushButtonTimeout"));
-	super.setTimeouts(times);
-	super.setOutput(output.createErrorOutput());
-	clickMouse(1);
+	makeComponentVisible();
+	driver.push(this);
     }
 
     /**
@@ -358,17 +364,10 @@ public class AbstractButtonOperator extends JComponentOperator
      * @throws TimeoutExpiredException
      */
     public void press() {
-	prepareToClick();
-	try {
-	    waitComponentEnabled();
-	} catch(InterruptedException e) {
-	}
 	output.printLine("Press button\n    :" + getSource().toString());
 	output.printGolden("Press button");
-	super.setOutput(output.createErrorOutput());
-	enterMouse();
-	moveMouse(getCenterX(), getCenterY());
-	pressMouse();
+	makeComponentVisible();
+	driver.press(this);
     }
 
     /**
@@ -376,15 +375,9 @@ public class AbstractButtonOperator extends JComponentOperator
      * @throws TimeoutExpiredException
      */
     public void release() {
-	prepareToClick();
-	try {
-	    waitComponentEnabled();
-	} catch(InterruptedException e) {
-	}
 	output.printLine("Release button\n    :" + getSource().toString());
 	output.printGolden("Release button");
-	super.setOutput(output.createErrorOutput());
-	releaseMouse();
+	driver.release(this);
     }
 
     /**
@@ -791,9 +784,6 @@ public class AbstractButtonOperator extends JComponentOperator
 
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
-
-    protected void prepareToClick() {
-    }
 
     protected static class AbstractButtonByLabelFinder implements ComponentChooser {
 	String label;

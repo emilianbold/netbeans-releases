@@ -22,6 +22,8 @@ import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Timeouts;
 
+import org.netbeans.jemmy.drivers.DriverManager;
+
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JInternalFrameOperator;
 import org.netbeans.jemmy.operators.JScrollPaneOperator;
@@ -85,12 +87,12 @@ public class MouseVisualizer extends DefaultVisualizer {
 	throws TimeoutExpiredException {
 	if(winOper.getFocusOwner() == null) {
 	    super.activate(winOper);
-	    winOper.copyEnvironment(winOper);
-	    winOper.getEventDispatcher().checkComponentUnderMouse(checkMouse);
-	    winOper.setDispatchingModel(winOper.getDispatchingModel() |
-					JemmyProperties.ROBOT_MODEL_MASK);
 	    Point p = getClickPoint(winOper);
-	    winOper.clickMouse((int)p.getX(), (int)p.getY(), 1);
+	    DriverManager.getMouseDriver(WindowOperator.class).
+		clickMouse(winOper, p.x, p.y,
+			   1, winOper.getDefaultMouseButton(),
+			   0, 
+			   winOper.getTimeouts().create("ComponentOperator.MouseClickTimeout"));
 	}
     }
 

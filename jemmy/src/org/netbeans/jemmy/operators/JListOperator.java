@@ -26,6 +26,9 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 
 import org.netbeans.jemmy.util.EmptyVisualizer;
 
+import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.MultiSelListDriver;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -63,12 +66,14 @@ public class JListOperator extends JComponentOperator
     implements Outputable {
 
     private TestOut output;
+    private MultiSelListDriver driver;
 
     /**
      * Constructor.
      */
     public JListOperator(JList b) {
 	super(b);
+	driver = DriverManager.getMultiSelListDriver(getClass());
     }
 
     /**
@@ -263,6 +268,15 @@ public class JListOperator extends JComponentOperator
      */
     public TestOut getOutput() {
 	return(output);
+    }
+
+    public void copyEnvironment(Operator anotherOperator) {
+	super.copyEnvironment(anotherOperator);
+	driver = 
+	    (MultiSelListDriver)DriverManager.
+	    getDriver(DriverManager.MULTISELLIST_DRIVER_ID,
+		      getClass(), 
+		      anotherOperator.getProperties());
     }
 
     /**
@@ -530,6 +544,26 @@ public class JListOperator extends JComponentOperator
      */
     public void scrollToItem(String item, boolean ce, boolean cc) {
 	scrollToItem(findItemIndex(item, ce, cc));
+    }
+
+    public void selectItem(int index) {
+	driver.selectItem(this, index);
+    }
+
+    public void selectItem(String item) {
+	selectItem(findItemIndex(item));
+    }
+
+    public void selectItems(int[] indices) {
+	driver.selectItems(this, indices);
+    }
+
+    public void selectItem(String[] items) {
+	int[] indices = new int[items.length];
+	for(int i = 0; i < items.length; i++) {
+	    indices[i] = findItemIndex(items[i]);
+	}
+	selectItems(indices);
     }
 
     /**
