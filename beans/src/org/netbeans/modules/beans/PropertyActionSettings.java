@@ -16,7 +16,6 @@ package org.netbeans.modules.beans;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Lookup;
 
 /** Options for setting properties of generating property patterns from fields
  *
@@ -82,7 +81,7 @@ public class PropertyActionSettings extends SystemOption {
      * @return itself, only one instance
      */
     public static PropertyActionSettings getDefault() {
-        return (PropertyActionSettings)Lookup.getDefault().lookup(PropertyActionSettings.class);
+        return (PropertyActionSettings)PropertyActionSettings.findObject(PropertyActionSettings.class,true);
     }
 
     /** Return setting for generating GET/SET property
