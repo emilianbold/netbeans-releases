@@ -147,6 +147,9 @@ public class RADComponent {
     return beanInfo;
   }
 
+  public boolean hasHiddenState () {
+    return (getBeanInfo ().getBeanDescriptor ().getValue ("hidden-state") != null);
+  }
   
   /** Getter for the Name property of the component - usually maps to variable declaration for holding the 
   * instance of the component
@@ -937,6 +940,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  26   Gandalf   1.25        6/30/99  Ian Formanek    Added hasHiddenState 
+ *       method
  *  25   Gandalf   1.24        6/30/99  Ian Formanek    AuxiliaryValue -> 
  *       AuxValue
  *  24   Gandalf   1.23        6/30/99  Ian Formanek    reflecting change in 
