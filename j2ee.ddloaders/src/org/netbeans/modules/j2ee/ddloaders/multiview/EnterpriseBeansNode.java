@@ -68,6 +68,10 @@ public class EnterpriseBeansNode extends EjbSectionNode {
                     }
                 }
             }
+
+            public void refreshView() {
+                checkChildren();
+            }
         };
         populateBoxPanel(boxPanel);
         return boxPanel;
@@ -82,10 +86,17 @@ public class EnterpriseBeansNode extends EjbSectionNode {
             nodeMap.put(((SectionNode) node).getKey(), node);
         }
         Ejb[] ejbs = enterpriseBeans.getEjbs();
-        // sort beans according to their display name
+        // Group beans according to their type and sort them according to their display name
         Arrays.sort(ejbs, new Comparator() {
             public int compare(Object o1, Object o2) {
-                return Utils.getEjbDisplayName((Ejb) o1).compareTo(Utils.getEjbDisplayName((Ejb) o2));
+                Ejb ejb1 = (Ejb) o1;
+                Ejb ejb2 = (Ejb) o2;
+                int i = getType(ejb1) - getType(ejb2);
+                return i != 0 ? i : Utils.getEjbDisplayName(ejb1).compareTo(Utils.getEjbDisplayName(ejb2));
+            }
+
+            private int getType(Ejb ejb) {
+                return (ejb instanceof Session) ? 1 : (ejb instanceof Entity) ? 2 : 3;
             }
         });
         boolean dirty = nodes.length != ejbs.length;
@@ -98,6 +109,9 @@ public class EnterpriseBeansNode extends EjbSectionNode {
                 dirty = true;
             }
             newNodes[i] = node;
+            if (!dirty) {
+                dirty = ((SectionNode) nodes[i]).getKey() != node.getKey();
+            }
         }
         if (dirty) {
             children.remove(nodes);
