@@ -12,27 +12,35 @@
  */
 package org.netbeans.modules.xml.catalog;
 
+import org.openide.TopManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.CookieAction;
 
 /** 
  * Action sensitive to the node selection that refreshs children.
  *
  * @author  Petr Kuzel
  */
-final class RefreshAction extends NodeAction {
+final class RefreshAction extends CookieAction {
 
     /** Serial Version UID */
     private static final long serialVersionUID =4798470042774935554L;
     
     protected void performAction (Node[] nodes) {        
-        Refreshable node = (Refreshable) nodes[0];
-        node.refresh();
-    }
-
-    protected boolean enable (Node[] nodes) {
-        return nodes.length == 1 && nodes[0] instanceof Refreshable;
+        if (nodes == null) return;
+        TopManager top = TopManager.getDefault();
+        try {
+            for (int i = 0; i<nodes.length; i++) {
+                String msg = Util.THIS.getString("MSG_refreshing", nodes[i].getDisplayName());
+                top.setStatusText(msg);
+                Refreshable cake = (Refreshable) nodes[i].getCookie(Refreshable.class);
+                cake.refresh();
+            }
+        } finally {
+            String msg = Util.THIS.getString("MSG_refreshed");
+            top.setStatusText(msg);
+        }
     }
 
     public String getName () {
@@ -47,12 +55,13 @@ final class RefreshAction extends NodeAction {
         return new HelpCtx(getClass());
     }
 
-    /** Perform extra initialization of this action's singleton.
-     * PLEASE do not use constructors for this purpose!
-    protected void initialize () {
-	super.initialize ();
-	putProperty ("someProp", value);
+    protected Class[] cookieClasses() {
+        return new Class[] {Refreshable.class};
     }
-    */
+    
+    protected int mode() {
+        return CookieAction.MODE_ALL;
+    }
+    
 
 }

@@ -12,13 +12,15 @@
  */
 package org.netbeans.modules.xml.catalog;
 
+import org.openide.nodes.Node;
+
 /**
  * Interface implemented by refreshable nodes.
  *
  * @author  Petr Kuzel
  * @version 1.0
  */
-public interface Refreshable {
+public interface Refreshable extends Node.Cookie {
 
     /**
      * Refresh node. Typically refresh underlaying catalog and then node children.
