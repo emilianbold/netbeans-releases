@@ -293,7 +293,8 @@ public class EditorView extends ViewElement {
             if(kind == Constants.MODE_KIND_EDITOR) {
                 return true;
             } else {
-                if(getSideForLocation(location) != null) {
+                if(WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_JOINED
+                && getSideForLocation(location) != null) {
                     return true;
                 } else {
                     return false;
