@@ -140,46 +140,49 @@
 
 <!-- End of CSH for Web Applications -->
 
-
-
 <!-- Start of "Developing Web Services" help -->
-	
-	<mapID target="about_web_service" url="web/webservice/about_jwsd.html" />
-	<mapID target="about_wsdl" url="web/webservice/about_wsdl.html" />
-	<mapID target="about_jwsd_architecture" url="web/webservice/about_jwsd_architecture.html" />
-	<mapID target="about_sei" url="web/webservice/about_sei.html" />
-	<mapID target="tweak_wsdl" url="web/webservice/tweak_wsdl.html" />
-	<mapID target="about_wscompile" url="web/webservice/about_wscompile.html" />
-	<mapID target="select_wscompile_ws" url="web/webservice/select_wscompile_ws.html" />
-	<mapID target="compile_doc" url="web/webservice/compile_doc.html" />
-	<mapID target="compile_rpc" url="web/webservice/compile_rpc.html" />
-	<mapID target="compile_wsdl" url="web/webservice/compile_wsdl.html" />
-        <mapID target="select_wscompile_wsc" url="web/webservice/select_wscompile_wsc.html" />
-	<mapID target="ws_process" url="web/webservice/ws_process.html" />
-	<mapID target="create_ws" url="web/webservice/create_ws.html" />
-	<mapID target="create_ws_fromwsdl" url="web/webservice/create_ws_fromwsdl.html" />
-	<mapID target="create_ws_fromcode" url="web/webservice/create_ws_fromcode.html" />
-	<mapID target="add_ws_operation" url="web/webservice/add_ws_operation.html" />
-	<mapID target="webservicesxml" url="web/webservice/webservicesxml.html" />
-	<mapID target="add_enterprise_resource" url="web/webservice/add_enterprise_resource.html" />
-	<mapID target="call_an_ejb" url="web/webservice/call_an_ejb.html" />
-	<mapID target="use_a_database" url="web/webservice/use_a_database.html" />
-	<mapID target="send_JMS_message" url="web/webservice/send_JMS_message.html" />
-	<mapID target="add_soap_message" url="web/webservice/add_soap_message.html" />
-	<mapID target="test_ws" url="web/webservice/test_ws.html" />
-	<mapID target="test_ws_clientside" url="web/webservice/test_ws_clientside.html" />
-	<mapID target="expose_ws" url="web/webservice/expose_ws.html" />
-	<mapID target="register_ws" url="web/webservice/register_ws.html" />
-	<mapID target="create_wsc" url="web/webserviceclient/create_wsc.html" />
-	<mapID target="about_wsc" url="web/webserviceclient/about_wsc.html" />
-	<mapID target="call_ws_operation" url="web/webserviceclient/call_ws_operation.html" />
-	<mapID target="config_ws_about" url="web/webservice/config_ws_about.html" />
-	<mapID target="config_ws_dd" url="web/webservice/config_ws_dd.html" />
 
+        <!-- Start of "About" section -->
+	<mapID target="about_ws" url="webservice/about/about_ws.html" />
+	<mapID target="about_ws_architecture" url="webservice/about/about_ws_architecture.html" />
+	<mapID target="ws_process" url="webservice/about/ws_process.html" />
+	<!-- End of "About" section -->
+	<!-- Start of "Create" section -->
+	<mapID target="create_ws_from_scratch" url="webservice/create/create_ws_from_scratch.html" />
+	<mapID target="create_ws_from_wsdl" url="webservice/create/create_ws_from_wsdl.html" />
+	<mapID target="create_ws_from_code" url="webservice/create/create_ws_from_code.html" />
+	<mapID target="add_ws_operation" url="webservice/create/add_ws_operation.html" />
+	<mapID target="add_ws_soap_message" url="webservice/create/add_ws_soap_message.html" />
+	<!-- End of "Create" section -->
+	<!-- Start of "Configure" section -->
+	<mapID target="config_ws_about" url="webservice/configure/config_ws_about.html" />
+	<mapID target="config_ws_dd" url="webservice/configure/config_ws_dd.html" />
+	<!-- End of "Configure" section -->
+	<!-- Start of "Build" section -->
+	<mapID target="about_build_ws" url="webservice/build/about_build_ws.html" />
+	<mapID target="about_wscompile" url="webservice/build/about_wscompile.html" />
+	<mapID target="about_wsdl" url="webservice/build/about_wsdl.html" />
+	<mapID target="about_sei" url="webservice/build/about_sei.html" />
+	<mapID target="compile_doc" url="webservice/build/compile_doc.html" />
+	<mapID target="compile_rpc" url="webservice/build/compile_rpc.html" />
+	<mapID target="compile_wsdl" url="webservice/build/compile_wsdl.html" />
+	<mapID target="tweak_wsdl" url="webservice/build/tweak_wsdl.html" />
+	<!-- End of "Build" section -->
+	<!-- Start of "Expose" section -->
+	<mapID target="test_ws" url="webservice/expose/test_ws.html" />
+	<mapID target="expose_ws" url="webservice/expose/expose_ws.html" />
+	<mapID target="register_ws" url="webservice/expose/register_ws.html" />
+	<!-- End of "Expose" section -->
+	<!-- Start of "Consume" section -->
+	<mapID target="about_wsc" url="webservice/consume/about_wsc.html" />
+	<mapID target="wsc_build" url="webservice/consume/wsc_build.html" />
+	<mapID target="wsc_test" url="webservice/consume/wsc_test.html" />
+	<mapID target="wsc_create" url="webservice/consume/wsc_create.html" />
+	<mapID target="wsc_call_ws" url="webservice/consume/wsc_call_ws.html" />
+	<!-- End of "Consume" section -->
+	
 <!-- End of "Developing Web Services" help -->
 	
-
-
 <!-- Start of Enterprise Application help -->
 
     <mapID target="about_ent_apps" url="enterprise/general/about_ent_apps.html" />
