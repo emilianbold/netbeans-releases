@@ -42,6 +42,9 @@ public class ClassPathSupport {
      * @return PathResourceImplementation
      */
     public static PathResourceImplementation createResource (URL url) {
+        if (url == null) {
+            throw new NullPointerException("Cannot pass null URL to ClassPathSupport.createResource"); // NOI18N
+        }
         if (FileUtil.isArchiveFile(url)) {
             throw new IllegalArgumentException("File URL pointing to " + // NOI18N
                 "JAR is not valid classpath entry. Use jar: URL. Was: "+url); // NOI18N
@@ -87,9 +90,12 @@ public class ClassPathSupport {
         assert roots != null;
         List l = new ArrayList ();
         for (int i =0; i < roots.length; i++) {
-            if (roots[i] == null)
+            if (roots[i] == null) {
                 continue;
-            l.add (createResource (URLMapper.findURL(roots[i],URLMapper.EXTERNAL)));
+            }
+            URL u = URLMapper.findURL(roots[i], URLMapper.EXTERNAL);
+            assert u != null : "Should have found an EXTERNAL URL matching " + roots[i];
+            l.add(createResource(u));
         }
         return createClassPath (l);
     }
