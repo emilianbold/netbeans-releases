@@ -22,6 +22,7 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
 
+import org.openide.TopManager;
 import org.openide.src.*;
 import org.openide.filesystems.*;
 
@@ -85,6 +86,13 @@ public class TestCreator extends java.lang.Object {
         if (JUnitSettings.getDefault().isMembersProtected()) cfg_MethodsFilter |= Modifier.PROTECTED;
         if (JUnitSettings.getDefault().isMembersPublic()) cfg_MethodsFilter |= Modifier.PUBLIC;
     }
+
+    static public boolean isClassTestable(ClassElement ce) {
+        return (null != ce && 
+                ce.isClass() && 
+                (0 != (ce.getModifiers() & Modifier.PUBLIC)) &&
+                (JUnitSettings.getDefault().isGenerateExceptionClasses() || !isException(ce)));
+    }
     
     /* private methods */
     static private boolean         cfg_MethodsFilterPackage = true;
@@ -118,13 +126,36 @@ public class TestCreator extends java.lang.Object {
         method.setBody("\njunit.textui.TestRunner.run(suite());\n");
         return method;
     }
-    
+
+    /**
+     * Creates function <b>static public Test suite()</b> and fills its body,
+     * appends all test functions in the class and creates sub-suites for
+     * all test inner classes.
+     */
     static private MethodElement createTestClassSuiteMethod(ClassElement classTest) throws SourceException {
+        StringBuffer    body = new StringBuffer(512);
+        ClassElement    innerClasses[];
+        
+        // create header of function
         MethodElement method = new MethodElement();
         method.setName(Identifier.create("suite"));
         method.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
         method.setReturn(Type.createClass(Identifier.create("Test")));
-        method.setBody("\nreturn new TestSuite(" + classTest.getName().getName() + ".class);\n");
+        
+        // prepare the body
+        body.append("\nTestSuite suite = new TestSuite(");
+        body.append(classTest.getName().getName());
+        body.append(".class);\n");
+        
+        innerClasses = classTest.getClasses();
+        for(int i = 0; i < innerClasses.length; i++) {
+            body.append("suite.addTest(");
+            body.append(innerClasses[i].getName().getName());
+            body.append(".suite());\n");
+        }
+        
+        body.append("\nreturn suite;\n");
+        method.setBody(body.toString());
         return method;
     }
 
@@ -175,7 +206,11 @@ public class TestCreator extends java.lang.Object {
                         }
                         if (JUnitSettings.getDefault().isBodyComments()) {
                             // generate comments to bodies
-                            newBody.append("// Add your test code here.\n");
+                            newBody.append("\n// Add your test code below by replacing the default call to fail.\n");
+                        }
+                        if (JUnitSettings.getDefault().isBodyContent()) {
+                            // generate a test failuare by default (in response to request 022).
+                            newBody.append("fail(\"The test case is empty.\");\n");
                         }
                         method.setBody(newBody.toString());
                         method.setReturn(Type.VOID);
@@ -222,9 +257,35 @@ public class TestCreator extends java.lang.Object {
     }
     
     static private void fillTestClass(ClassElement classSource, ClassElement classTest) throws SourceException {
-        LinkedList methods;
+        LinkedList      methods;
+        ClassElement    innerClasses[];
         
         fillGeneral(classTest);
+
+        // create test classes for inner classes
+        innerClasses = classSource.getClasses();
+        for(int i = 0; i < innerClasses.length; i++) {
+            if (isClassTestable(innerClasses[i])) {
+                // create new test class
+                ClassElement    innerTester;
+                Identifier      name = Identifier.create(TestUtil.getTestClassName(innerClasses[i].getName().getName()));
+                boolean         add = false;
+                
+                if (null == (innerTester = classTest.getClass(name))) {
+                    add = true;
+                    innerTester = new ClassElement();
+                    innerTester.setName(name);
+                }
+                
+                // process tested inner class the same way like top-level class
+                fillTestClass(innerClasses[i], innerTester);
+                
+                // do additional things for test class to became inner class usable for testing in JUnit
+                innerTester.setModifiers(innerTester.getModifiers() | Modifier.STATIC);
+                if (add)
+                    classTest.addClass(innerTester);
+            }
+        }
         
         // fill main and suite methods
         methods = new LinkedList();
@@ -320,6 +381,32 @@ public class TestCreator extends java.lang.Object {
             if (forbidenMethods[i].equals(name)) 
               return true;            
         }
+        return false;
+    }
+    
+    static private boolean isException(ClassElement element) {
+        ClassElement newElement = (ClassElement)element.clone();
+        Identifier identifier = null;
+        String superClassName = null;
+        while ((identifier = newElement.getSuperclass()) != null) {
+            superClassName = identifier.getFullName();
+            if (superClassName.equals("java.lang.Throwable")) {
+                return true;
+            } else {
+                    newElement = ClassElement.forName(superClassName);
+                    if (newElement == null) {
+                        return isException(superClassName);
+                    }
+            }
+        }
+        return false;
+    }
+
+    static private boolean isException(String className) {
+        try {
+            Class clazz = TopManager.getDefault().currentClassLoader().loadClass(className);
+            return java.lang.Throwable.class.isAssignableFrom(clazz);
+        } catch (Exception e) {}
         return false;
     }
 }
