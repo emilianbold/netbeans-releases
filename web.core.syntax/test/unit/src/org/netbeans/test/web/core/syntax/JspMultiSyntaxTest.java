@@ -91,6 +91,10 @@ public class JspMultiSyntaxTest extends NbTestCase {
         dumpTokensForContent("</ jsp:element >"); //should be marked as an error
     }
     
+    public void testJspComment() {
+        dumpTokensForContent("<html><%-- text \n new line --%></html>\n");
+    }
+    
     //helper methods -----------
     
     private void dumpTokensForContent(String content) {
