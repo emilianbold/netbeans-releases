@@ -165,7 +165,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
   /** Property editor for variables modifiers.
   */
   final public static class FieldModifierPropertyEditor extends org.openide.explorer.propertysheet.editors.ModifierEditor {
-static final long serialVersionUID =7628317154007139777L;
+    static final long serialVersionUID =7628317154007139777L;
     /** Construct new editor with mask for fields. */
     public FieldModifierPropertyEditor() {
       super(Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE | Modifier.STATIC |
@@ -174,43 +174,6 @@ static final long serialVersionUID =7628317154007139777L;
   }
 
   
-  final public static class ModifierPropertyEditor extends java.beans.PropertyEditorSupport {
-    /** Display Names for alignment. */
-    private static final String[] names = {
-      formBundle.getString ("VALUE_PRIVATE"),
-      formBundle.getString ("VALUE_PACKAGE_PRIVATE"),
-      formBundle.getString ("VALUE_PROTECTED"),
-      formBundle.getString ("VALUE_PUBLIC"),
-    };
-
-    /** @return names of the possible directions */
-    public String[] getTags () {
-      return names;
-    }
-
-    /** @return text for the current value */
-    public String getAsText () {
-      int value = ((Integer)getValue ()).intValue ();
-      
-      if ((value >= 0) && (value < 4)) {
-        return names [value];
-      }
-      else return null;
-    }
-
-    /** Setter.
-    * @param str string equal to one value from directions array
-    */
-    public void setAsText (String str) {
-      for (int i = 0; i < 4; i ++)
-        if (names[i].equals (str)) {
-          setValue (new Integer (i));
-          return;
-        }
-    }
-
-  }
-
   final public static class OutputLevelEditor extends java.beans.PropertyEditorSupport {
     /** Display Names for alignment. */
     private static final String[] names = {
@@ -294,6 +257,7 @@ static final long serialVersionUID =7628317154007139777L;
 
 /*
  * Log
+ *  21   Gandalf   1.20        1/10/00  Ian Formanek    Removed obsoleted code
  *  20   Gandalf   1.19        1/5/00   Ian Formanek    NOI18N
  *  19   Gandalf   1.18        1/1/00   Ian Formanek    Fixed bug w/ resource in
  *       WorkspaceEditor
