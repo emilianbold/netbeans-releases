@@ -334,7 +334,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
 
                 boolean isStatic = false;
 
-                if ( token.equals( STR_STATIC ) ) {
+                if ( token.equalsIgnoreCase( STR_STATIC ) ) {
                     isStatic = true;
                     token = st.nextToken();
                 }
