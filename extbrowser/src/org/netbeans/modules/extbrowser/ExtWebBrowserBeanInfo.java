@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -41,16 +41,16 @@ public class ExtWebBrowserBeanInfo extends SimpleBeanInfo {
 
 //                properties[1].setDisplayName (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "PROP_BROWSER_START_TIMEOUT"));
 //                properties[1].setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_BROWSER_START_TIMEOUT"));
-//                properties[1].setExpert(Boolean.TRUE.booleanValue());
+//                properties[1].setExpert(true);
 
                 properties[1].setDisplayName (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "PROP_DDE_ACTIVATE_TIMEOUT"));
                 properties[1].setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_DDE_ACTIVATE_TIMEOUT"));
-                properties[1].setExpert(Boolean.TRUE.booleanValue());
+                properties[1].setExpert(true);
                 properties[1].setHidden(true);
 
                 properties[2].setDisplayName (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "PROP_DDE_OPENURL_TIMEOUT"));
                 properties[2].setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_DDE_OPENURL_TIMEOUT"));
-                properties[2].setExpert(Boolean.TRUE.booleanValue());
+                properties[2].setExpert(true);
                 properties[2].setHidden(true);
 
             } catch (IntrospectionException ie) {
