@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,20 +15,34 @@ package threaddemo.views;
 
 import java.awt.EventQueue;
 import java.io.IOException;
-import java.lang.ref.*;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.event.*;
-import org.netbeans.spi.looks.*;
-import org.openide.actions.*;
-import org.openide.cookies.*;
-import org.openide.util.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.spi.looks.Look;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.NewAction;
+import org.openide.actions.OpenAction;
+import org.openide.actions.RenameAction;
+import org.openide.actions.SaveAction;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
-import threaddemo.data.*;
+import threaddemo.data.DomProvider;
+import threaddemo.data.PhadhailLookups;
+import threaddemo.data.PhadhailNewType;
 import threaddemo.locking.Locks;
-import threaddemo.model.*;
+import threaddemo.model.Phadhail;
+import threaddemo.model.PhadhailEvent;
+import threaddemo.model.PhadhailListener;
+import threaddemo.model.PhadhailNameEvent;
 
 /**
  * A look which wraps phadhails.
@@ -177,7 +191,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
         Lookup.Result r = (Lookup.Result)phadhails2Results.get(ph);
         if (r == null) {
             Lookup l = PhadhailLookups.getLookup(ph);
-            r = l.lookup(new Lookup.Template());
+            r = l.lookup(new Lookup.Template(Object.class));
             assert r != null : "Null lookup from " + l + " in " + ph;
             phadhails2Results.put(ph, r);
             assert !results2Phadhails.containsKey(r);

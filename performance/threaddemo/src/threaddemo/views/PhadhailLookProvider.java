@@ -7,16 +7,17 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package threaddemo.views;
 
 import java.util.Enumeration;
-import org.netbeans.spi.looks.*;
+import org.netbeans.spi.looks.Look;
+import org.netbeans.spi.looks.LookProvider;
+import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
-import org.openide.util.enum.SingletonEnumeration;
 import org.w3c.dom.Element;
 import org.w3c.dom.events.EventTarget;
 import threaddemo.model.Phadhail;
@@ -35,13 +36,13 @@ final class PhadhailLookProvider implements LookProvider {
     
     public Enumeration getLooksForObject(Object representedObject) {
         if (representedObject instanceof Phadhail) {
-            return new SingletonEnumeration(PHADHAIL_LOOK);
+            return Enumerations.singleton(PHADHAIL_LOOK);
         } else if (representedObject instanceof String) {
-            return new SingletonEnumeration(STRING_LOOK);
+            return Enumerations.singleton(STRING_LOOK);
         } else {
             assert representedObject instanceof Element : representedObject;
             assert representedObject instanceof EventTarget : representedObject;
-            return new SingletonEnumeration(ELEMENT_LOOK);
+            return Enumerations.singleton(ELEMENT_LOOK);
         }
     }
     

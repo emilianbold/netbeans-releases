@@ -7,25 +7,29 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package threaddemo.views.looktree;
 
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.lang.ref.*;
-import java.util.Enumeration;
-import javax.swing.*;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
-import org.netbeans.spi.looks.*;
 import org.netbeans.api.nodes2looks.Nodes;
+import org.netbeans.spi.looks.Look;
 import org.netbeans.spi.looks.Selectors;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
-import org.openide.util.enum.SingletonEnumeration;
 import org.openide.util.lookup.Lookups;
 
 // XXX NodeAction's not necessarily handled well, e.g. Save... doesn't grok selection
