@@ -136,11 +136,15 @@ Microsystems, Inc. All Rights Reserved.
      
      <for list="${xtest.instance.postfixes}" delimiters="," property="xtest.instance.postfix">
        <antcall target="test-one-repository"/>
-     </for>     
+     </for>   
      <antcall target="pack-results"/>     
    </target>
    
    <target name="pack-results" if="ide.home">
+      <antcall target="pack-results2"/>
+   </target>
+   
+   <target name="pack-results2" if="xtest.ship.results.to">
          <buildinfo srcfile="${ide.home}/build_info" buildNumberProperty="ide.build"
                 buildProjectNameProperty="xtest.tested.project" />
          <echo message="Shipping results for build ${ide.build}"/>
@@ -164,8 +168,6 @@ Microsystems, Inc. All Rights Reserved.
    <target name="ship-results" if="xtest.ship.results.to">
         <copy overwrite="yes" file="${archive.file}" todir="${xtest.ship.results.to}"/>
         <chmod perm="ugo+rw" file="${xtest.ship.results.to}/${archive.filename}"/>
-        <copy overwrite="yes" file="${archive.file}" todir="${xtest.ship.results.to}/../backup"/>
-        <chmod perm="ugo+rw" file="${xtest.ship.results.to}/../backup/${archive.filename}"/>
    </target>
 
    <target name="ship-nbresults" if="xtest.ship.nbresults.to">
