@@ -750,6 +750,10 @@ public class TemplateWizard extends WizardDescriptor {
         return 1;
     }
     
+    final TemplateWizardIterImpl getIterImpl () {
+        return iterator;
+    }
+    
     /** Listens on content property changes in delegated iterator. Updates Wizard
      * descriptor properties.
      */
