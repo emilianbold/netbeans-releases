@@ -96,6 +96,7 @@ Show Code Completion [completion-show]: Ctrl+Space Ctrl+\
 Show Completion and JavaDoc Window [jdc-popup-show]: 
 Show Popup Menu [show-popup-menu]: Shift+F10 
 Simulate Escape Key [escape]: Escape 
+Split Line [split-line]: Ctrl+Enter 
 Start Macro Recording [start-macro-recording]: Ctrl+J S 
 Stop Macro Recording [stop-macro-recording]: Ctrl+J E 
 Substitute Code Completion Text [shift-insert-break]: Shift+Enter Shift+Enter 
