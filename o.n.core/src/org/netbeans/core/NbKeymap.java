@@ -34,6 +34,8 @@ final class NbKeymap implements Keymap {
   Action defaultAction;
   /** Listeners set */
   HashSet listeners;
+  /** hash table to map (Action -> KeyStroke[]) */
+  Map actions;
 
   /** Default constructor
   */
@@ -99,12 +101,25 @@ final class NbKeymap implements Keymap {
   }
 
   public KeyStroke[] getKeyStrokesForAction(Action a) {
+    Map actions;
+    if (this.actions == null) {
+      actions = this.actions = new HashMap (bindings.size ());
+    } else {
+      actions = this.actions;
+    }
+
+    
+
+    KeyStroke[] strokes = (KeyStroke[])actions.get (a);
+    if (strokes != null) {
+      return strokes;
+    }
+    
     // searches for all entries which have value a
     // and add them to the resulting array
     Set result = new HashSet(5);
     Map.Entry curEntry = null;
     int count = 0;
-    KeyStroke[] strokes = null;
     synchronized (this) {
       Set entries = bindings.entrySet();
       for (Iterator it = bindings.entrySet().iterator(); it.hasNext(); ) {
@@ -113,9 +128,15 @@ final class NbKeymap implements Keymap {
           result.add(curEntry.getKey());
           count++;
         }
+
+        actions.put (curEntry.getValue (), new KeyStroke[] { (KeyStroke)curEntry.getKey () });
+        
       }
       strokes = (KeyStroke[])result.toArray(new KeyStroke[count]);
     }
+
+    actions.put (a, strokes);
+    
     return strokes;
   }
 
@@ -126,6 +147,7 @@ final class NbKeymap implements Keymap {
   public void addActionForKeyStroke(KeyStroke key, Action a) {
     synchronized (this) {
       bindings.put(key, a);
+      actions = null;
     }
     fireChangeEvent(new ChangeEvent(this));
   }
@@ -133,6 +155,7 @@ final class NbKeymap implements Keymap {
   public void removeKeyStrokeBinding(KeyStroke key) {
     synchronized (this) {
       bindings.remove(key);
+      actions = null;
     }
     fireChangeEvent(new ChangeEvent(this));
   }
@@ -140,6 +163,7 @@ final class NbKeymap implements Keymap {
   public void removeBindings() {
     synchronized (this) {
       bindings.clear();
+      actions = null;
     }
     fireChangeEvent(new ChangeEvent(this));
   }
@@ -167,6 +191,7 @@ final class NbKeymap implements Keymap {
 
 /*
 * Log
+*  5    src-jtulach1.4         5/5/99   Jaroslav Tulach Speeded up a bit.
 *  4    src-jtulach1.3         4/1/99   David Simonek   concurrent writing bug 
 *       fixed (hopefully)
 *  3    src-jtulach1.2         3/4/99   Jaroslav Tulach ChangeListener in 
