@@ -296,7 +296,7 @@ final class NbErrorManager extends ErrorManager {
                 } else {
                     l = new ArrayList(l);
                 }
-                l.add(new Ann(EXCEPTION, null, null, t2, null));
+                l.add(new Ann(UNKNOWN, null, null, t2, null));
             }
         }
         Annotation[] arr;
