@@ -57,10 +57,13 @@ public final class NewProjectWizard extends TemplateWizard {
         JComponent jc = (JComponent)panel.getComponent ();
         jc.setPreferredSize( new java.awt.Dimension (500, 340) );
         jc.setName (NbBundle.getBundle (NewProjectWizard.class).getString ("LBL_NewProjectWizard_Name")); // NOI18N
+        jc.getAccessibleContext ().setAccessibleName (NbBundle.getBundle (NewProjectWizard.class).getString ("ACSN_NewProjectWizard")); // NOI18N
+        jc.getAccessibleContext ().setAccessibleDescription (NbBundle.getBundle (NewProjectWizard.class).getString ("ACSD_NewProjectWizard")); // NOI18N
         jc.putClientProperty ("WizardPanel_contentSelectedIndex", new Integer (0)); // NOI18N
         jc.putClientProperty ("WizardPanel_contentData", new String[] { // NOI18N
                 NbBundle.getBundle (NewProjectWizard.class).getString ("LBL_NewProjectWizard_Name"), // NOI18N
                 NbBundle.getBundle (NewProjectWizard.class).getString ("LBL_NewProjectWizard_Dots")}); // NOI18N
+                
         return panel;
     }          
     

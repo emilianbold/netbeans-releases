@@ -251,8 +251,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         add(jLabel1, gridBagConstraints);
 
         jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("MNE_Templates").charAt(0));
-        jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("CTL_Templates"));
         jLabel2.setLabelFor(projectsPanel);
+        jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("CTL_Templates"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -456,6 +456,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                 this.btv.setRootVisible(false);
                 this.btv.setPopupAllowed(false);
                 this.btv.setDefaultActionAllowed(false);
+                this.btv.getAccessibleContext ().setAccessibleName (NbBundle.getMessage (TemplatesPanelGUI.class, "ACSN_CategoriesPanel")); // NOI18N
+                this.btv.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (TemplatesPanelGUI.class, "ACSD_CategoriesPanel")); // NOI18N
             }
             return this.btv;
         }
@@ -471,6 +473,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             super ();
             // bugfix #44717, Enter key must work regardless if TemplatesPanels is focused
             list.unregisterKeyboardAction (KeyStroke.getKeyStroke (KeyEvent.VK_ENTER, 0, false));
+            getAccessibleContext ().setAccessibleName ("OUTER LIST");
+            getAccessibleContext ().setAccessibleDescription ("DESC OUTER LIST");
         }
     }
     
@@ -483,6 +487,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             if (this.list == null) {
                 this.list = new TemplatesListView ();
                 this.list.setPopupAllowed(false);
+                this.list.getAccessibleContext ().setAccessibleName (NbBundle.getMessage (TemplatesPanelGUI.class, "ACSN_TemplatesPanel")); // NOI18N
+                this.list.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (TemplatesPanelGUI.class, "ACSD_TemplatesPanel")); // NOI18N
             }
             
             return this.list;
