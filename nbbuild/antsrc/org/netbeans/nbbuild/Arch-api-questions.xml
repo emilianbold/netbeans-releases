@@ -275,7 +275,7 @@ openide/www/tutorial/questions.html.
             Please describe the interfaces you are searching for, where 
             are defined, whether you are searching for just one or more of them,
             if the order is important, etc. Also classify the stability of such
-            API contract.
+            API contract. For that use &lt;api group=&amp;lookup&amp; /&gt; tag.
             </hint>
         </question>
         <question id="lookup-register" when="final" >
