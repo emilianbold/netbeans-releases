@@ -166,6 +166,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
 
     public void setTopComponents(TopComponent[] tcs, TopComponent selected) {
         assert selected != null : "Null passed as component to select";
+        int sizeBefore = getModel().size();
         
         TabData[] data = new TabData[tcs.length];
         int toSelect=-1;
@@ -202,6 +203,12 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
             "set a selected component that was not in the array of open " +
             "components.  ToSelect: " + selected + " components: " + 
             Arrays.asList(tcs));
+        }
+        int sizeNow = getModel().size();
+        if (sizeBefore != 0 && sizeNow == 0) {
+            //issue 40076, ensure repaint if the control has been emptied.
+            revalidate();
+            repaint();
         }
     }
     
