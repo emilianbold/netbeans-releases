@@ -429,6 +429,7 @@ public class EventSetPattern extends Pattern {
         removeListenerMethod = y.removeListenerMethod;
         isUnicast = y.isUnicast;
         type = y.type;
+        name = y.name;
 
         /*
         if (!x.inDefaultEventSet || !y.inDefaultEventSet) {
