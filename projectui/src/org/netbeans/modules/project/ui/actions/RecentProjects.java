@@ -19,10 +19,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
+import javax.swing.*;
+
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.OpenProjectList;
@@ -30,6 +28,9 @@ import org.netbeans.api.project.ProjectInformation;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
 
 public class RecentProjects extends AbstractAction implements Presenter.Menu, PropertyChangeListener {
     
@@ -38,6 +39,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     /** Key for remembering project in JMenuItem
      */
     private static final String PROJECT_KEY = "org.netbeans.modules.project.ui.RecentProjectItem"; // NOI18N
+    private final ProjectDirListener prjDirListener = new ProjectDirListener(); 
     
     private JMenu subMenu;
     
@@ -86,6 +88,12 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
         
         for ( Iterator it = projects.iterator(); it.hasNext(); ) {
             Project p = (Project)it.next();
+            FileObject prjDir = p.getProjectDirectory();
+            if (prjDir == null || !prjDir.isValid()) {
+                continue;
+            }
+            prjDir.removeFileChangeListener(prjDirListener);            
+            prjDir.addFileChangeListener(prjDirListener);
             ProjectInformation pi = ProjectUtils.getInformation(p);
             JMenuItem jmi = new JMenuItem(pi.getDisplayName(), pi.getIcon());
             subMenu.add( jmi );
@@ -122,6 +130,12 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
             
         }
         
+    }
+    
+    private class ProjectDirListener extends FileChangeAdapter {
+        public void fileDeleted(FileEvent fe) {
+            createSubMenu();
+        }
     }
     
 }
