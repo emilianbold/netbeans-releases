@@ -37,7 +37,7 @@ public class Installer extends ModuleInstall {
         // will already have been interesting mouse-entered events
         // by the time F1 is first pressed. Otherwise only the second
         // F1 actually gets anything other than the main window help.
-        ignore = HelpAction.class;
+        HelpAction.WindowActivatedDetector.install();
     }
     
     public void uninstalled() {
@@ -46,6 +46,7 @@ public class Installer extends ModuleInstall {
         if (help != null) {
             help.deactivate();
         }
+        HelpAction.WindowActivatedDetector.uninstall();
         // UIManager is too aggressive about caching, and we get CCE's,
         // since JavaHelp's HelpUtilities sets up these defaults, and UIManager
         // caches the actual classes (probably incorrectly). #4675772

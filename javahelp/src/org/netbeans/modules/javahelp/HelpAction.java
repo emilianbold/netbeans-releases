@@ -30,15 +30,7 @@ import org.netbeans.api.javahelp.Help;
 public class HelpAction extends SystemAction
 {
     private static final long serialVersionUID = 4658008202517094416L;
-
-    // XXX(-ttran) we need to register AWTEventListener even before HelpAction
-    // is called for the first time.  Do it in a static block.  Beware that it
-    // wouldn't work if the class is not loaded eargerly
     
-    static {
-        WindowActivatedDetector.install();
-    }
-
     public String getName() {
         return NbBundle.getMessage(HelpAction.class, "LBL_HelpAction");
     }
@@ -60,18 +52,22 @@ public class HelpAction extends SystemAction
         putProperty("OpenIDE-Transmodal-Action", Boolean.TRUE); // NOI18N
     }
 
-    private static class WindowActivatedDetector implements AWTEventListener
-    {
+    static class WindowActivatedDetector implements AWTEventListener {
         private static java.lang.ref.WeakReference currentWindowRef;
-        private static boolean installed;
+        private static WindowActivatedDetector detector = null;
 
         static synchronized void install() {
-            if (installed)
-                return;
-            installed = true;
-            
-            Toolkit.getDefaultToolkit ().addAWTEventListener(
-                new WindowActivatedDetector(), AWTEvent.WINDOW_EVENT_MASK);
+            if (detector == null) {
+                detector = new WindowActivatedDetector();
+                Toolkit.getDefaultToolkit ().addAWTEventListener(detector, AWTEvent.WINDOW_EVENT_MASK);
+            }
+        }
+        
+        static synchronized void uninstall() {
+            if (detector != null) {
+                Toolkit.getDefaultToolkit().removeAWTEventListener(detector);
+                detector = null;
+            }
         }
         
         static synchronized Window getCurrentActivatedWindow() {
