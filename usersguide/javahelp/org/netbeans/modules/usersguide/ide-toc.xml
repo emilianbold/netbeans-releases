@@ -240,8 +240,9 @@
     <tocitem text="Finding Class, Method, and Field Usages" target="refactor.findClass" /> 
     <tocitem text="Renaming a Class or Interface" target="refactor.renameClass" />
     <tocitem text="Renaming a Field or Method" target="refactor.renameField"/>       
-    <tocitem text="Moving Java Objects" target="refactor.moveClass" />  
-    <tocitem text="Encapsulating Fields" target="refactor.encapsulateField" />   
+    <tocitem text="Moving a Java Object to Another Package" target="refactor.moveClass" />  
+    <tocitem text="Encapsulating a Field" target="refactor.encapsulateField" /> 
+    <tocitem text="Changing a Method's Signature" target="refactor.changeParameters"/>
   </tocitem>
   <tocitem text="Building Java Applications" >
      <tocitem text="About Building Java Applications" target="comp_about" />
