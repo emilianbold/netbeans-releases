@@ -320,8 +320,12 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     String ctx = ltok.nextToken ();
                     String s = ltok.nextToken ();
                     String tag = ltok.nextToken ();
+                    String path = null;
                     //take the rest of line as path (it can contain ':')
-                    String path = line.substring (ctx.length () + s.length () + tag.length () + 3);
+                    // #50410 - path information is missing in the Japanese localization of Tomcat Manager
+                    if (ltok.hasMoreTokens()) {
+                        path = line.substring (ctx.length () + s.length () + tag.length () + 3);
+                    }
                     if ("running".equals (s)
                     &&  (state == TomcatManager.ENUM_AVAILABLE || state == TomcatManager.ENUM_RUNNING)) {
                         modules.add (new TomcatModule (t, ctx, path));
