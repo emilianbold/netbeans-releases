@@ -257,11 +257,13 @@ public class PlainAquaToolbarUI extends BasicToolBarUI implements ContainerListe
         //do nothing
     }
 
+    private static Boolean fl = null;
     private static boolean isFinderLook (Component c) {
-        if (c instanceof JComponent) {
-            return Boolean.TRUE.equals (((JComponent) c).getClientProperty("finderLook"));
+       if (fl == null) {
+           fl = "true".equals(System.getProperty("apple.awt.brushMetalLook")) ?
+               Boolean.TRUE : Boolean.FALSE;
         }
-        return false;
+        return fl.booleanValue();
     }
     
     static int arcsize = 13;
@@ -278,8 +280,6 @@ public class PlainAquaToolbarUI extends BasicToolBarUI implements ContainerListe
         
         public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
             UIUtils.configureRenderingHints(g);
-            y+=2; //leave a gap at the top
-            h-=2; //leave a gap at the top
             
             boolean finderLook = isFinderLook (c);
             Color col;
