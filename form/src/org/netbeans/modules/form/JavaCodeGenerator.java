@@ -212,7 +212,7 @@ public class JavaCodeGenerator extends CodeGenerator {
           }
           
         },
-        new PropertySupport.ReadWrite ("creationCodePre", String.class, "Pre Creation Code",  // [PENDING - localize]
+        new CodePropertySupportRW ("creationCodePre", String.class, "Pre Creation Code",  // [PENDING - localize]
                                        "Code before creation of this component") {
           public void setValue (Object value) {
             if (!(value instanceof String)) {
@@ -229,9 +229,9 @@ public class JavaCodeGenerator extends CodeGenerator {
               value = "";
             }
             return value;
-          }          
+          }
         },
-        new PropertySupport.ReadWrite ("creationCodePost", String.class, "Post Creation Code",  // [PENDING - localize]
+        new CodePropertySupportRW ("creationCodePost", String.class, "Post Creation Code",  // [PENDING - localize]
                                        "Code after creation of this component") {
           public void setValue (Object value) {
             if (!(value instanceof String)) {
@@ -250,7 +250,7 @@ public class JavaCodeGenerator extends CodeGenerator {
             return value;
           }
         },
-        new PropertySupport.ReadWrite ("initCodePre", String.class, "Pre Init Code",  // [PENDING - localize]
+        new CodePropertySupportRW ("initCodePre", String.class, "Pre Init Code",  // [PENDING - localize]
                                        "Code before initialization of this component") {
           public void setValue (Object value) {
             if (!(value instanceof String)) {
@@ -269,7 +269,7 @@ public class JavaCodeGenerator extends CodeGenerator {
             return value;
           }          
         },
-        new PropertySupport.ReadWrite ("initCodePost", String.class, "Post Init Code",  // [PENDING - localize]
+        new CodePropertySupportRW ("initCodePost", String.class, "Post Init Code",  // [PENDING - localize]
                                        "Code after initialization of this component") {
           public void setValue (Object value) {
             if (!(value instanceof String)) {
@@ -315,7 +315,7 @@ public class JavaCodeGenerator extends CodeGenerator {
           moreProps [i] = props [i];
         }
         moreProps [moreProps.length -1] = 
-          new PropertySupport.ReadWrite ("creationCodeCustom", String.class, "Custom Creation Code",  // [PENDING - localize]
+          new CodePropertySupportRW ("creationCodeCustom", String.class, "Custom Creation Code",  // [PENDING - localize]
                                          "Custom code for creation of the component") {
             public void setValue (Object value) {
               if (!(value instanceof String)) {
@@ -1368,7 +1368,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     }
 
     /** @return names of the possible directions */
-    public String[] getTags () {
+    public java.lang.String[] getTags () {
       if (component.hasHiddenState ()) {
         return new String[] { serializeName } ;
       } else {
@@ -1398,10 +1398,31 @@ public class JavaCodeGenerator extends CodeGenerator {
       }
     }
   } 
+  
+  
+          
+  abstract class CodePropertySupportRW extends PropertySupport.ReadWrite {
+    CodePropertySupportRW (String name, Class type, String displayName, String shortDescription) {
+      super (name, type, displayName, shortDescription);
+    }
+    public PropertyEditor getPropertyEditor () {
+      return new PropertyEditorSupport () {
+        public java.awt.Component getCustomEditor () {
+          return new com.netbeans.developer.modules.loaders.form.editors.CustomCodeEditor (CodePropertySupportRW.this);
+        }
+        public boolean supportsCustomEditor () {
+          return true;
+        }
+      };
+    }
+  }
+  
 }
 
 /*
  * Log
+ *  57   Gandalf   1.56        11/15/99 Pavel Buzek     editors for code support
+ *       mime type text/x-java
  *  56   Gandalf   1.55        11/1/99  Pavel Buzek     enable to enter a custom
  *       code before/after creation and initialization of component and custom 
  *       code for component creation
