@@ -94,9 +94,6 @@
 <mapID target="beans.adding" url="beans/adding.html" />
 <mapID target="beans.glossary_serialized" url="beans/glossary_serialized.html" />
 
-<!-- REMOVE entry; Issue 54603; action no longer exists <mapID target="beans.csh.serialize" url="pending.html" />-->
-
-
 <mapID target="java.sync.properties" url="java/synchronizing/properties.html" />
 <mapID target="java.sync.new-interface" url="java/synchronizing/new-interface.html" />
 <mapID target="java.sync.template" url="java/synchronizing/template.html" />
@@ -296,8 +293,6 @@
 <mapID target="i18n.pe.testregexp" url="internationalize/i18nkeyformat.html" />
 <mapID target="i18n.pe.i18nregexp" url="internationalize/i18nstringformat.html" />
 
-<!--REMOVE entry Still relevant? <mapID target="internation.runlocale" url="pending.html" />-->
-
 <mapID target="ant_docs" url="ant/ant_docs.html" />
 <mapID target="ant_editing" url="ant/ant_editing.html" />
 <mapID target="ant_intro" url="ant/ant_intro.html" />
@@ -331,8 +326,6 @@
 <mapID target="update.globally" url="configure/modules/updateglobally.html" />
 <mapID target="configure.enable.module" url="configure/modules/enablemodule.html" />
 
-<!--REMOVE entry; no apparent CSH ID<mapID target="configure.module" url="pending.html" />-->
-
 <mapID target="shortcuts.kybd" url="shortcuts/kybdshortcuts.html" />
 <mapID target="shortcuts.menus" url="shortcuts/menucuts.html" />
 <mapID target="shortcuts.menucuts-setting" url="shortcuts/menucuts-setting.html" />
@@ -346,11 +339,6 @@
 <mapID target="accessibility.stylesheet" url="accessibility/stylesheet.html" />
 <mapID target="accessibility.jhshortcuts" url="shortcuts/jhshortcuts.html" />
 <mapID target="accessibility.alternate.browser" url="accessibility/alternate_browser.html" />
-
-
-<!--Open Image dialog available from icon property editors (and other places?)-->
-<!-- REMOVE ID; bug 54598; form\src\org\netbeans\modules\form\editors2\IconEditor.java-->
-<mapID target="csh.openimage" url="pending.html" />
 
 
 
@@ -402,19 +390,6 @@
 <!-- Add Libraries dialog box (from Project Properties -> Compiling Classes-->
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.LibrariesChooser" url="pending.html" />
 
-<!-- Tags wizard -->
-<mapID target="org.netbeans.modules.web.dd.wizards.TagInfoPanel" url="web/taglib/edit_taghandler.html" />
-<mapID target="org.netbeans.modules.web.dd.wizards.TargetChooserPanel_taglibrary" url="web/taglib/createtaglib.html" />
-
-<!-- JSP, HTML and Tag wizard -->
-<mapID target="org.netbeans.modules.web.dd.wizards.TargetChooserPanel_jsptag" url="web/webmod/mod_tagf_add.html" />
-<mapID target="org.netbeans.modules.web.dd.wizards.TargetChooserPanel_html" url="web/concepts/html.html" />
-<mapID target="org.netbeans.modules.html.HtmlLoader.Obj" url="web/concepts/html.html" />
-
-<!-- Servlet and Filter wizards -->
-<mapID target="org.netbeans.modules.web.dd.wizards.DeployDataPanel_filter" url="web/servlet/filter_create.html" />
-<mapID target="org.netbeans.modules.web.dd.wizards.DeployDataExtraPanel" url="web/servlet/filter_create.html" />
-<mapID target="org.netbeans.modules.web.dd.wizards.DeployDataPanel_servlet" url="web/servlet/servlet_create.html" />
 
 
 <!--CSH - Insert Internationalized String dialog-->
@@ -444,30 +419,17 @@
 <!--csh page for projects|settings|Java Sources-->
 <mapID target="org.netbeans.modules.java.settings.JavaSettings" url="java/java_sources.html" />
 
-<!--ID no longer seems relevant; Issue 54603 Removed help for bean node  properties
-<mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="pending.html" />-->
-
-<!-- These customizers seem to be gone
-Following csh page hooked to both method and constructor customizer dialogs 
-<mapID target="java.method.customizer" url="pending.html" />
-Following csh pages should be for class and field customizer dialogs 
-<mapID target="java.class.customizer" url="pending.html" />
-<mapID target="java.field.customizer" url="pending.html" />-->
 
 <!-- Options | Editing | Java Sources | Source Synchronization -->
 <mapID target="org.netbeans.modules.java.settings.JavaSynchronizationSettings" url="java/synchronizing/properties.html" />
 
 <!--CSH for GUI/Form Editor-->
-<!-- This node doesn't seem to exist anymore; csh page for Component Palette node in options window 
-<mapID target="gui.options.component-palette" url="pending.html" />-->
 
 <!-- csh page for event handler dialog box -->
 <mapID target="gui.csh.handlers" url="gui/gui_manageevents.html" />
 <!-- csh page for Form Editor property Variables Modifier (also for the Java module's "Modifiers" property) -->
 <mapID target="org.openide.explorer.propertysheet.editors.ModifierEditor" url="gui/gui_modifiers.html" /> 
 
-<!-- REMOVE ID; bug 54598 form\src\org\netbeans\modules\form\editors2\IconEditor.java-->
-<mapID target="gui.csh.icon" url="pending.html" />
 
 <mapID target="gui.source.modifying.property" url="gui/gui_modifysource.html" />
 
@@ -483,9 +445,6 @@ Following csh pages should be for class and field customizer dialogs
 <!-- add task dialog box; QUESTION - does ant task dialog still exist? -->
 <mapID target="org.apache.tools.ant.module.node-manip" url="pending.html" />
 <mapID target="org.netbeans.beaninfo.editors.PropertiesCustomEditor" url="ant/ant_settings.html" />
-
-<!--REMOVE; superceded by org.netbeans.core.windows.view.ui.MainWindow
-<mapID target="org.netbeans.core.windows.MainWindow" url="pending.html" />-->
 
 <mapID target="org.netbeans.core.services.Browsers" url="webbrowser/options.html" />
 <mapID target="org.netbeans.modules.extbrowser.ExtWebBrowser" url="webbrowser/options.html" />
@@ -509,42 +468,7 @@ Following csh pages should be for class and field customizer dialogs
   <!--the one below should remain mapped to pending -->
   <mapID target="org.openide.util.HelpCtx.DEFAULT_HELP" url="pending.html" />
 
-<!--REMOVE entries; action IDs no longer are accessible by F1
-  <mapID target="org.openide.actions.ExecuteAction" url="pending.html" />
-  <mapID target="org.openide.actions.CompileAction" url="pending.html" />
-  <mapID target="org.openide.actions.CompileAllAction" url="pending.html" />
-  <mapID target="org.openide.actions.AddWatchAction" url="pending.html" />
-  <mapID target="org.openide.actions.BuildAction" url="pending.html" />
-  <mapID target="org.openide.actions.BuildAllAction" url="pending.html" />
-  <mapID target="org.openide.actions.CloneViewAction" url="pending.html" />
-  <mapID target="org.openide.actions.CloseViewAction" url="pending.html" />
-  <mapID target="org.openide.actions.CustomizeAction" url="pending.html" />
-  <mapID target="org.openide.actions.CustomizeBeanAction" url="pending.html" />
-  <mapID target="org.openide.actions.CustomizeBeanAction.dialog" url="pending.html" />
-  <mapID target="org.openide.actions.CopyAction" url="pending.html" />
-  <mapID target="org.openide.actions.CutAction" url="pending.html" />
-  <mapID target="org.openide.actions.DeleteAction" url="pending.html" />
-  <mapID target="org.openide.actions.EditAction" url="pending.html" />
-  <mapID target="org.openide.actions.FinishDebuggerAction" url="pending.html" />
-  <mapID target="org.openide.actions.GoAction" url="pending.html" />
-  <mapID target="org.openide.actions.GotoAction" url="pending.html" />
-  <mapID target="org.openide.actions.GoToCursorAction" url="pending.html" />
-  <mapID target="org.openide.actions.InstantiateAction" url="pending.html" />
-  <mapID target="org.openide.actions.NewTemplateAction" url="pending.html" />
-  <mapID target="org.openide.actions.NewTemplateAction$From" url="pending.html" />
-  <mapID target="org.openide.actions.PasteAction" url="pending.html" />
-  <mapID target="org.openide.actions.PropertiesAction" url="pending.html" />
-  <mapID target="org.openide.actions.SaveAction" url="pending.html" />
-  <mapID target="org.openide.actions.SaveAllAction" url="pending.html" />
-  <mapID target="org.openide.actions.SaveAsTemplateAction" url="pending.html" />
-  <mapID target="org.openide.actions.StepOutAction" url="pending.html" />
-  <mapID target="org.openide.actions.ToggleBreakpointAction" url="pending.html" />
-  <mapID target="org.openide.actions.TraceIntoAction" url="pending.html" />
-  <mapID target="org.openide.actions.TraceOverAction" url="pending.html" />
-  <mapID target="org.openide.actions.ViewAction" url="pending.html" />
-  <mapID target="org.openide.actions.UndockAction" url="pending.html" />
-  <mapID target="org.openide.actions.WorkspaceSwitchAction" url="pending.html" />-->
-  
+ 
   <mapID target="org.openide.awt.HtmlBrowser$BrowserComponent" url="webbrowser/swingbrowser.html" />
   
 <!--ID for Waiting For Tasks to Finish dialog box-->
@@ -558,52 +482,12 @@ Following csh pages should be for class and field customizer dialogs
 <!--ID for Java Elements Options window node-->
     <mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceOptions" url="files/files_elements.html" />
     
-<!--Remove entry; actions no longer applicable to F1  <mapID target="org.openide.explorer.propertysheet.SetDefaultValueAction" url="pending.html" />-->
-
-  <!--Remove entry; actions no longer affected by F1  <mapID target="org.openide.filesystems.RefreshAction" url="pending.html" />-->
 <!--Remove PrintSettings ID-->
   <mapID target="org.openide.text.PrintSettings" url="pending.html" />
-    <!--remove ID - issue 54600 -->
-    <mapID target="org.openide.loaders.GroupShadow" url="pending.html" />
-
-  <!--REMOVE ID - 54600 ; instance objects no longer applicable-->
-  <mapID target="org.openide.loaders.InstanceDataObject" url="pending.html" />
 
     <!--TODO provide reasonable mapping for BeanNode-->  
   <mapID target="org.openide.nodes.BeanNode" url="pending.html" />
 
-<!--remove entries; no longer relevant
-  <mapID target="org.openide.src.nodes.ElementNode" url="pending.html" />
-  <mapID target="org.openide.src.nodes.SourceOptions" url="pending.html" />
-  <mapID target="org.openide.text.EditorSupport$Editor" url="pending.html" />
-  <mapID target="org.openide.loaders.DataFolder$Paste.move" url="pending.html" />
-  <mapID target="org.openide.loaders.DataFolder$Paste.instantiate" url="pending.html" />
-  <mapID target="org.openide.loaders.DataFolder$Paste.copy" url="pending.html" />  
-  <mapID target="org.openide.loaders.DataFolder$Paste.shadow" url="pending.html" />
-  <mapID target="org.openide.loaders.DataFolder$SerializePaste" url="pending.html" /> 
-  <mapID target="org.openide.loaders.DataFolder$InstantiatePaste" url="pending.html" /> 
-  <mapID target="org.openide.options.SystemOption" url="pending.html" />  
-  <mapID target="org.openide.src.nodes.ClassElementNode.MENU_CREATE_BLOCK" url="pending.html" />
-  <mapID target="org.openide.src.nodes.ClassElementNode.MENU_CREATE_CLASS" url="pending.html" />  
-  <mapID target="org.openide.src.nodes.ClassElementNode.MENU_CREATE_CONSTRUCTOR" url="pending.html" />
-  <mapID target="org.openide.src.nodes.SourceEditSupport.newElement0" url="pending.html" /> 
-  <mapID target="org.openide.src.nodes.SourceEditSupport.newElement1" url="pending.html" /> 
-  <mapID target="org.openide.src.nodes.SourceEditSupport.newElement2" url="pending.html" /> 
-  <mapID target="org.openide.src.nodes.SourceEditSupport.newElement3" url="pending.html" />
-  <mapID target="org.openide.src.nodes.SourceEditSupport.newElement4" url="pending.html" /> 
-  <mapID target="org.openide.src.nodes.SourceEditSupport.newElement5" url="pending.html" />
-  <mapID target="org.openide.src.nodes.ClassElementNode.MENU_CREATE_INTERFACE" url="pending.html" /> 
-  <mapID target="org.openide.src.nodes.ClassElementNode.MENU_CREATE_METHOD" url="pending.html" /> 
-  <mapID target="org.openide.src.nodes.ClassElementNode.MENU_CREATE_VARIABLE" url="pending.html" /> 
-  <mapID target="org.openide.actions.CleanAction" url="pending.html" />
-  <mapID target="org.openide.actions.CleanAllAction" url="pending.html" />
-  <mapID target="org.openide.actions.ToolsAction" url="pending.html" />
-  <mapID target="org.openide.src.nodes.DefaultFactory$ElementCategoryNode" url="pending.html" /> 
-
-   <mapID target="org.netbeans.core.actions.SetupWizardAction" url="pending.html" />
-   <mapID target="org.netbeans.core.actions.SettingsAction" url="pending.html" />-->
-
-<!--remove entry; apparently ID is overridden by beans.beaninfo.nodes   <mapID target="org.netbeans.beaninfo.editors.BeanEditor" url="pending.html" />-->
 
 <!--OptionsAction is Options window--> 
    <mapID target="org.netbeans.core.actions.OptionsAction" url="configure/configure_options.html" /> 
@@ -612,8 +496,6 @@ Following csh pages should be for class and field customizer dialogs
    <mapID target="org.netbeans.core.actions.OptionsAction$OptionsPanel$OptionsFilterNode" url="configure/configure_options.html" />
    <mapID target="org.netbeans.core.EnvironmentNode" url="files/files_runtime.html" />
 
-<!--Remove entries; referred to now obsolete filesystems customizer   <mapID target="org.netbeans.core.FSPoolNode" url="pending.html" /> 
-   <mapID target="org.netbeans.core.FSPoolNode$FSNode" url="pending.html" />-->
    <mapID target="org.netbeans.core.LoaderPoolNode" url="files/files_unknown.html" /> 
 <!--nodes in Options | System | Object Types-->
    <mapID target="org.netbeans.core.LoaderPoolNode$LoaderPoolItemNode" url="files/files_unknown.html" /> 
@@ -624,20 +506,6 @@ Following csh pages should be for class and field customizer dialogs
       
    <mapID target="org.netbeans.core.MenuFolderNode" url="configure/workspace/menu_customize.html" /> 
 
-<!--remove entries; actions no longer relevant to F1   <mapID target="org.netbeans.core.actions.DockingAction" url="pending.html" />
-   <mapID target="org.netbeans.core.actions.EditorViewAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.ExecutionViewAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.ExecutionViewAction$ExecutionView" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.ExplorerViewAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.GlobalPropertiesAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.OpenExplorerAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.OutputWindowAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.OpenedWindowsAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.OpenedWindowsAction$WindowAction" url="pending.html" />
-   <mapID target="org.netbeans.core.actions.StopCompileAction" url="pending.html" /> 
-      
-   <mapID target="org.netbeans.core.actions.FocusNextWorkspaceAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.FocusPreviousWorkspaceAction" url="pending.html" />-->
    
    <!--nodes for Diff Settings and Diff and Merge Types-->
    <mapID target="org.netbeans.modules.diff.DiffSettings" url="files/files_diff.html" />
@@ -654,21 +522,8 @@ Following csh pages should be for class and field customizer dialogs
 <!--possibly remap the following target to configure_options.html -->
    <mapID target="org.netbeans.core.IDESettings" url="configure/system_settings.html" /> 
 
-<!--Remove entries; IDs obsolete with new project system   <mapID target="org.netbeans.core.NbMainExplorer" url="pending.html" /> 
-   <mapID target="org.netbeans.core.NbPlaces$SessionNode" url="pending.html" /> -->
-<!--remove entry; action not accessible by F1   <mapID target="org.netbeans.core.ModuleNode$AutoLoadModulesAction" url="pending.html" /> -->
-<!--remove entry; dialog long gone   <mapID target="org.netbeans.core.TemplatesExplorer.dialog" url="pending.html" /> -->
    <mapID target="org.netbeans.core.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
 
-<!--remove entries; actions no longer relevant to F1   <mapID target="org.netbeans.core.actions.HTMLViewAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.NextWorkspaceAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.PreviousWorkspaceAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.AboutAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.UnmountFSAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.SetArgumentsAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.StatusLineAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.SystemExit.dialog" url="pending.html" /> 
-   <mapID target="org.netbeans.core.execution.ExternalExecutionSettings" url="pending.html" /> -->
 
    <mapID target="org.netbeans.core.execution.ProcessNode" url="files/files_runtime.html" /> 
    <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="files/files_runtime.html" /> 
@@ -681,44 +536,10 @@ Following csh pages should be for class and field customizer dialogs
       
 <!--remove ID issue 54601-->
     <mapID target="org.netbeans.core.output.OutputTab" url="pending.html" />
-<!--remove entries - actions no longer relevant to F1   <mapID target="org.netbeans.core.actions.NextOutJumpAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.PreviousOutJumpAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.projects.settings.SettingsAction" url="pending.html" />-->
-   
-<!--remove entry   <mapID target="org.openide.awt.MenuBar$MenuFolder.Project" url="pending.html" /> -->
 
 <!--remove ID bug 54598-->
   <mapID target="org.netbeans.modules.form.editors2.BorderEditor$BorderPanel" url="pending.html" />
    
-<!--remove entry -obsolete   <mapID target="org.netbeans.modules.debugger.core.CoreDebugger.dialog" url="pending.html" />-->
-<!--remove entries - actions obsolete for F1   <mapID target="org.netbeans.modules.debugger.session.actions.StartSessionAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.debugger.support.actions.SuspendDebuggerAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.debugger.support.actions.ResumeDebuggerAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.debugger.support.actions.CreateVariableAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.debugger.support.actions.ConnectAction" url="pending.html" />
-  <mapID target="org.netbeans.modules.debugger.support.actions.ContinueAction" url="pending.html" />
-  <mapID target="org.netbeans.modules.debugger.support.actions.FinishAction" url="pending.html" />
-  <mapID target="org.netbeans.modules.debugger.support.actions.StepIntoAction" url="pending.html" />
-  <mapID target="org.netbeans.modules.debugger.support.actions.RunToCursorAction" url="pending.html" />
-  <mapID target="org.netbeans.modules.debugger.support.actions.StepOverAction" url="pending.html" />
-  <mapID target="org.netbeans.modules.debugger.support.actions.StepOutAction" url="pending.html" />
-  <mapID target="org.netbeans.modules.debugger.support.actions.AddBreakpointAction" url="pending.html" />
-  <mapID target="org.netbeans.modules.debugger.support.actions.PauseAction" url="pending.html" />
-  <mapID target="org.netbeans.modules.debugger.support.actions.StartAction" url="pending.html" />
-
-  <mapID target="org.netbeans.modules.debugger.support.actions.DebuggerWindowAction" url="pending.html" />
-  <mapID target="NetbeansDebuggerFixAction" url="pending.html" />
-  <mapID target="NetbeansDebuggerGoToCalledMethodAction" url="pending.html" />
-  <mapID target="NetbeansDebuggerGoToCallingMethodAction" url="pending.html" />
-  <mapID target="NetbeansDebuggerPopTopmostFrameAction" url="pending.html" />
-  
-   <mapID target="org.netbeans.modules.debugger.support.actions.ConnectAction.dialog" url="pending.html" /> 
-   <mapID target="org.netbeans.modules.debugger.support.actions.AddBreakpointAction.dialog" url="pending.html" />
-   <mapID target="org.netbeans.modules.debugger.support.actions.GoToSourceAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.debugger.support.actions.SuspendAction.dialog" url="pending.html" />
-   <mapID target="org.netbeans.modules.debugger.support.actions.SwitchOnAction.dialog" url="pending.html" />
-   <mapID target="org.netbeans.modules.debugger.support.actions.DebuggerViewAction" url="pending.html" />-->
-
    <mapID target="org.netbeans.modules.httpserver.HttpServerSettings" url="webbrowser/httpserver-options.html" />
 
 <!--remove entries; Issue 54603 either un-F1'd actions or otherwise obsolete   <mapID target="org.netbeans.modules.beans.BiFeatureNode" url="pending.html" />
@@ -749,43 +570,7 @@ Following csh pages should be for class and field customizer dialogs
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.installBean" url="beans/adding.html" />
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.selectPaletteCategory" url="beans/adding.html" />
 
-<!--remove entries; F1 no longer works on them   <mapID target="org.netbeans.modules.form.palette.ComponentPalette" url="pending.html" /> 
-   <mapID target="org.netbeans.modules.form.palette.ComponentPalette.selectionButton" url="pending.html" />
-   <mapID target="org.netbeans.modules.form.palette.ComponentPalette.connectionButton" url="pending.html" /> 
-   <mapID target="org.netbeans.modules.form.palette.ComponentPalette.paletteItem" url="pending.html" /> 
-   <mapID target="org.netbeans.modules.form.palette.PaletteAction" url="pending.html" /> 
-   <mapID target="org.netbeans.modules.form.palette.PaletteCategoryNode" url="pending.html" />
-   <mapID target="org.netbeans.modules.form.palette.PaletteNode" url="pending.html" />
-   <mapID target="org.netbeans.modules.form.ParametersPicker" url="pending.html"/>
-   <mapID target="org.netbeans.modules.java.JavaConnections.dialog" url="pending.html"/>
-   <mapID target="org.netbeans.modules.url.BookmarksNode" url="pending.html" />
-   <mapID target="org.netbeans.modules.image.ImageViewer" url="pending.html" /> 
-   
-   <mapID target="org.netbeans.modules.image.CustomZoomAction" url="pending.html" /> 
-   
-   <mapID target="org.netbeans.modules.url.OpenInNewWindowAction" url="pending.html" /> 
-   <mapID target="org.netbeans.modules.url.BookmarksAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.url.URLDataObject" url="pending.html" /> -->
 
-   <!--remove 2 ID openfile IDs-->
-      <mapID target="org.netbeans.modules.openfile.OpenFile.dialog" url="pending.html" /> 
-  <mapID target="org.netbeans.modules.openfile.OpenFileAction" url="pending.html" /> 
-<!--remove entry; no longer relevant   <mapID target="org.netbeans.modules.openfile.Settings" url="pending.html" /> -->
-
-<!--remove entry; overridden by editing.find   <mapID target="org.netbeans.modules.editor.NbDialogCreator.findDialog" url="pending.html" /> -->
-
-<!--remove entries; various reasons   <mapID target="org.netbeans.modules.editor.NbDialogCreator.gotoDialog" url="pending.html" /> 
-   <mapID target="org.netbeans.modules.form.RADLayoutNode" url="pending.html" /> 
-   <mapID target="org.netbeans.modules.form.RADChildren$NonVisualNode" url="pending.html" />
-   <mapID target="org.netbeans.modules.editor.java.JCUpdateAction" url="pending.html" />
-
-   <mapID target="org.netbeans.modules.javadoc.search.SearchDocAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.debugger.support.nodes.BreakpointsView" url="pending.html" />
-   <mapID target="org.netbeans.modules.debugger.support.nodes.ThreadsView" url="pending.html" />
-   <mapID target="org.netbeans.modules.debugger.support.nodes.WatchesView" url="pending.html" />
-   <mapID target="org.netbeans.modules.form.FormEditor$ComponentInspector" url="pending.html" />
-   <mapID target="org.netbeans.modules.form.FormTopComponent" url="pending.html" />
-   <mapID target="org.netbeans.beaninfo.editors.ServiceTypePanel" url="pending.html" />-->
 
 <!--QUESTION - reclaim these IDs? they are currently overridden by gui.connecting.code-->
    <mapID target="org.netbeans.modules.form.ConnectionWizard1" url="pending.html" />
@@ -796,25 +581,14 @@ Following csh pages should be for class and field customizer dialogs
 
    <mapID target="org.netbeans.modules.editor.options.BaseOptionsBeanInfo$AbbrevMapEditor" url="pending.html" />
 
-   <!--this ID overridden by javadoc.search.window-->
-      <mapID target="org.netbeans.modules.javadoc.search.IndexSearch" url="pending.html" /> 
-      
-    <!--this ID overridden by javadoc.auto.comment  -->   
-   <mapID target="org.netbeans.modules.javadoc.comments.AutoCommentTopComponent" url="pending.html" />
-
-    <!--remove entries
-   <mapID target="org.netbeans.modules.javadoc.comments.AutoCommentAction" url="pending.html" />   
-   <mapID target="org.netbeans.modules.javadoc.comments.CorrectJavaDocAction" url="javadoc/accuracy.html" />-->
+   
+   <mapID target="org.netbeans.modules.javadoc.comments.CorrectJavaDocAction" url="javadoc/accuracy.html" />
 
    <mapID target="javadoc.auto.comment" url="javadoc/auto_comment_window.html" />
 <!--This ID is used for CSH as well for the Javadoc Index Search window-->
       <mapID target="javadoc.search.window" url="javadoc/show_in_editor.html" />
    
-<!--remove entries   <mapID target="org.netbeans.modules.java.support.AutoCommentAction" url="pending.html"  />
-   <mapID target="org.netbeans.modules.java.support.AutoCommentAction.dialog" url="pending.html"  />
-   <mapID target="org.netbeans.modules.java.support.AutoCommentPanel.dialog" url="pending.html"  />
-   <mapID target="org.netbeans.modules.javadoc.GenerateDocAction" url="pending.html" />-->
-   
+  
    <mapID target="org.netbeans.modules.form.FormCustomEditorAdvanced" url="pending.html" />
    <mapID target="org.netbeans.modules.form.FormCustomEditor.tabbedPane" url="pending.html" />
 
@@ -870,19 +644,12 @@ Following csh pages should be for class and field customizer dialogs
    <mapID target="org.netbeans.beaninfo.LoaderActionsPanel" url="pending.html" />
    <!--TODO - help topic for Actions dialog; if topic is written, close 39369 -->
    
-<!--remove entries; customizers are gone   <mapID target="org.openide.src.nodes.MethodCustomizer" url="pending.html" />
-   <mapID target="org.openide.src.nodes.FieldCustomizer" url="pending.html" />
-   <mapID target="org.openide.src.nodes.ClassCustomizer" url="pending.html" />-->
-
    <mapID target="org.netbeans.core.actions.ConfigureShortcutsAction" url="shortcuts/kybdshortcuts.html" />
 
-<!--remove entries; no longer relevant   <mapID target="org.netbeans.core.NbNodeOperation.customize" url="pending.html" />
    <mapID target="org.netbeans.core.windows.nodes.ModeContext" url="configure/workspace/window_managing.html" />
-   <mapID target="org.openide.explorer.propertysheet.PropertySheet$BeanPasteType" url="pending.html" />
 
    <mapID target="org.openide.actions.StartDebuggerAction" url="pending.html" />
    <mapID target="org.openide.explorer.propertysheet.editors.FileEditor" url="pending.html" />
-   <mapID target="org.netbeans.core.NbAuthenticator.getPasswordAuthentication" url="web/webmod/tomcat_edit_tomcatuser.html" />-->
 
    <!--ID used for random windows that F1 is clicked on-->
    <mapID target="org.openide.windows.TopComponent" url="pending.html" /> 
@@ -894,12 +661,6 @@ Following csh pages should be for class and field customizer dialogs
    <mapID target="org.netbeans.core.ui.ModuleNode" url="pending.html" />
    <mapID target="org.netbeans.core.ui.ModuleNode$Item" url="pending.html" />   
    <mapID target="org.netbeans.core.ui.ModuleNode$CategoryNode" url="pending.html" />   
-<!--remove entries; no longer relevant   <mapID target="org.netbeans.core.ui.NewTemplateWizard1" url="pending.html" />
-   <mapID target="org.openide.text.CloneableEditor" url="pending.html" />
-   <mapID target="org.openide.actions.ClassNamePanel" url="pending.html" />-->
-
-   <!--Remove entry; no longer relevant; Property Viewer: Working Directory (File) dialogue; Project | Settings | Filesystems Settings | (mounted CVS client)| Working Directory-->
-      <mapID target="org.netbeans.beaninfo.editors.FileEditor" url="pending.html" />
 
 <!--from j2eeserver module-->
   <mapID target="credits_html" url="credits.html" />
@@ -911,9 +672,6 @@ Following csh pages should be for class and field customizer dialogs
   <mapID target="org.netbeans.modules.j2ee.impl.DeployAction" url="pending.html" />
   
 <!--PENDING - map these IDs if possible-->
-
-<!--remove ID - 54602-->
-  <mapID target="org.netbeans.modules.pdf.PDFSettings" url="pending.html" />
 
 
  <!--Options | Source Creation and Management | Templates-->  
@@ -929,43 +687,6 @@ Following csh pages should be for class and field customizer dialogs
     <!--for Filesystems node in Filesystems folder-->
   <mapID target="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeFilesystems" url="pending.html" />  
 
-  <!--remove entries these 4
-  <mapID target="org.netbeans.core.actions.MemoryMeterAction" url="pending.html" />
-  <mapID target="org.netbeans.core.actions.MountAction" url="pending.html" />
-  <mapID target="org.openide.actions.PageSetupAction" url="pending.html" />
-  <mapID target="org.openide.actions.PopupAction" url="pending.html" />-->
-
-<!--remove entries in this block
-  <mapID target="org.openide.actions.FileSystemAction" url="pending.html" />
-  <mapID target="org.openide.actions.GarbageCollectAction" url="pending.html" />
-  <mapID target="org.openide.explorer.ExplorerPanel" url="pending.html" />
-  <mapID target="org.openide.actions.MoveDownAction" url="pending.html" />
-  <mapID target="org.openide.actions.MoveUpAction" url="pending.html" />
-  <mapID target="org.openide.actions.NextTabAction" url="pending.html" />
-  <mapID target="org.openide.actions.OpenAction" url="pending.html" />
-  <mapID target="org.openide.actions.PreviousTabAction" url="pending.html" />  
-  <mapID target="org.openide.actions.RedoAction" url="pending.html" />
-  <mapID target="org.openide.actions.RenameAction" url="pending.html" />
-  <mapID target="org.openide.actions.ReorderAction" url="pending.html" />
-  <mapID target="org.openide.actions.UndoAction" url="pending.html" />-->
-
-<!--remove IDs for these two - issue 54600 -->
-  <mapID target="org.openide.loaders.DataFolder$NewFolder" url="pending.html" />
-  <mapID target="org.openide.loaders.DefaultDataObject" url="pending.html" />
-
-  <!--Remove IDs below  - issue 54600-->
-  <mapID target="org.openide.explorer.propertysheet.editors.IconEditor$IconPanel" url="pending.html" />
-  <mapID target="org.openide.explorer.propertysheet.editors.StringArrayCustomEditor" url="pending.html" />
-
-  <!--remove entry   <mapID target="org.openide.awt.MenuBar$MenuFolder.File" url="pending.html" /> -->
-
-<!--remove entries   <mapID target="org.openide.awt.MenuBar$MenuFolder.Edit" url="pending.html" />
-   <mapID target="org.openide.awt.MenuBar$MenuFolder.View" url="pending.html" /> 
-   <mapID target="org.openide.awt.MenuBar$MenuFolder.Build" url="pending.html" />
-   <mapID target="org.openide.awt.MenuBar$MenuFolder.Debug" url="pending.html" />
-   <mapID target="org.openide.awt.MenuBar$MenuFolder.Tools" url="pending.html" />
-   <mapID target="org.openide.awt.MenuBar$MenuFolder.Window" url="pending.html" /> 
-   <mapID target="org.openide.awt.MenuBar$MenuFolder.Help" url="pending.html" />-->
 
 <!--remove 6 IDs below-->
   <mapID target="org.netbeans.beaninfo.editors.InsetsCustomEditor" url="pending.html" /> 
@@ -974,26 +695,14 @@ Following csh pages should be for class and field customizer dialogs
    <mapID target="org.netbeans.beaninfo.editors.StringCustomEditor" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.CustomTableModelEditor" url="pending.html" /> 
    <mapID target="org.netbeans.beaninfo.editors.DimensionCustomEditor" url="pending.html" /> 
-<!--REMOVE entry; superceded by org.netbeans.core.windows.view.ui.MainWindow  <mapID target="org.netbeans.core.MainWindow" url="pending.html" />-->
-<!--Write topic to say what you can do with Actions pool?-->
+
+   <!--Write topic to say what you can do with Actions pool?-->
    <mapID target="org.netbeans.core.ActionsPoolNode" url="pending.html" />
    
-<!--remove entries  <mapID target="org.openide.actions.FindAction" url="pending.html" />
-   <mapID target="org.openide.actions.ReplaceAction" url="pending.html" />-->
  
 <!--found as ID for subfolders of Actions in Options; probably used in other  places as well-->
    <mapID target="org.openide.explorer.view.TreeTable" url="pending.html" />
         
-<!--remove these entries
-   <mapID target="org.netbeans.core.Main.showTipsOfTheDay" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.TipOfTheDayAction" url="pending.html" />    
-   <mapID target="org.netbeans.core.actions.SystemExit" url="pending.html" />    
-   <mapID target="org.netbeans.core.actions.ModuleHelpAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.JavaHelp$HelpComponent" url="pending.html" />  
-   <mapID target="org.openide.actions.OpenLocalExplorerAction" url="pending.html" />
-   <mapID target="org.openide.actions.PrintAction" url="pending.html" />
-   <mapID target="org.netbeans.core.actions.EmptyAction" url="pending.html" />
-   <mapID target="org.openide.actions.NewAction" url="pending.html" />   -->
 
 <!--Swing and AWT components - could conceivably eventually be mapped to JDK docs-->      
    <mapID target="java.awt.Button" url="pending.html" />
@@ -1048,53 +757,10 @@ Following csh pages should be for class and field customizer dialogs
 <mapID target="org.netbeans.modules.web.core.syntax.JspIndentEngine" 
   url="editing/configuring/indentation.html" />
 
-<!-- context sensitive help map IDs -->
-
-<mapID target="org.netbeans.modules.web.dd.wizards.ListenerPanel" 
-        url="web/servlet/listen_addtodd.html" />
-
-<mapID target="org.netbeans.modules.web.war.ui.ExtraFilesPropertyEditorSupport" 
-        url="web/warpkg/war_xtrafiles.html" />
 
 
 <!-- reference issue 39843 -->
 
-<mapID target="org.netbeans.modules.web.core.jsploader.ServletDataNode" 
-    url="web/concepts/servlet.html" /> <!-- TEMP -->
-
-<mapID target="org.netbeans.modules.web.core.jsploader.JspNode" 
-	url="web/concepts/jsp.html" />
-
-<mapID target="org.netbeans.modules.web.dd.wizards.new.servlet"
-        url="web/servlet/servlet_create.html" /><!-- TEMP -->
-<mapID target="org.netbeans.modules.web.dd.wizards.dd.servlet"
-        url="web/servlet/servlet_create.html" /><!-- TEMP -->
-
-<mapID target="org.netbeans.modules.web.dd.wizards.new.filter"
-        url="web/servlet/filter_create.html" /><!-- TEMP -->
-<mapID target="org.netbeans.modules.web.dd.wizards.dd.filter"
-        url="web/servlet/filter_addtodd.html" /><!-- TEMP -->
-<mapID target="org.netbeans.modules.web.dd.wizards.dd2.filter"
-        url="web/servlet/filter_addtodd.html" /><!-- TEMP -->
-
-  <!-- when implemented -->
-<mapID target="org.netbeans.modules.web.dd.wizards.new.listener"
-        url="web/servlet/listen_create.html" /><!-- TEMP -->
-<mapID target="org.netbeans.modules.web.dd.wizards.dd.listener"
-        url="web/servlet/listen_addtodd.html" /><!-- TEMP -->
-
-<mapID target="org.netbeans.modules.web.dd.wizards.new.jspdoc"
-        url="web/create_jsp/jsp_create.html" /> <!-- TEMP -->
-
-<mapID target="org.netbeans.modules.web.dd.wizards.new.jspf"
-        url="web/create_jsp/jsp_create.html" /> <!-- TEMP -->
-
-  <!-- when implemented -->
-<mapID target="org.netbeans.modules.web.dd.wizards.new.jsptag"
-        url="web/create_jsp/jsp_create.html" /> <!-- TEMP -->
-
-<mapID target="org.netbeans.modules.web.dd.wizards.new.jsp"
-        url="web/create_jsp/jsp_create.html" /> <!-- TEMP -->
 
 <!-- XML Module CSH -->
 <mapID target="org.netbeans.modules.xml.tools.actions.ValidateAction" url="xml/xml_validate.html" />
