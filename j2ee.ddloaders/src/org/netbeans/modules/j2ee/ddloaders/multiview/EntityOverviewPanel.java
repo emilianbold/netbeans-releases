@@ -76,6 +76,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                 entity.setAbstractSchemaName(value);
             }
         }));
+        abstractSchemaNameTextField.setEditable(false);
 
         if (isCmp) {
             primaryKeyFieldLabel.setVisible(true);
