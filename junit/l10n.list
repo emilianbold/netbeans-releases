@@ -1,10 +1,5 @@
 junit/src/org/netbeans/modules/junit/Bundle.properties
 junit/src/org/netbeans/modules/junit/testrunner/Bundle.properties
 junit/src/org/netbeans/modules/junit/resources/templates/SimpleJUnitTest.java.template
-junit/javahelp/org/netbeans/modules/junit/docs/**/*.hs
-junit/javahelp/org/netbeans/modules/junit/docs/**/*.html
-junit/javahelp/org/netbeans/modules/junit/docs/**/*.jhm
-junit/javahelp/org/netbeans/modules/junit/docs/**/*.xml
-junit/javahelp/org/netbeans/modules/junit/docs/**/*.gif
 junit/src/org/netbeans/modules/junit/resources/templates/JUnitFolder.html
 junit/src/org/netbeans/modules/junit/resources/templates/SimpleJUnitTest.html
