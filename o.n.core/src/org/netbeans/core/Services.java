@@ -51,8 +51,8 @@ public final class Services extends ServiceType.Registry implements LookupListen
     /** serial */
     static final long serialVersionUID =-7558069607307508327L;
     
-    public static final String PROP_KINDS = "kinds";
-    public static final String PROP_SERVICE_TYPES = "serviceTypes";
+    public static final String PROP_KINDS = "kinds"; // NOI18N
+    public static final String PROP_SERVICE_TYPES = "serviceTypes"; // NOI18N
 
     /** instance */
     private static final Services INSTANCE = new Services ();
@@ -546,6 +546,9 @@ public final class Services extends ServiceType.Registry implements LookupListen
 
 /*
 * $Log$
+* Revision 1.54  2001/08/01 11:41:40  akemr
+* Added // NOI18N
+*
 * Revision 1.53  2001/07/26 21:06:41  jpokorsky
 * Workaround ensuring Executor.getDefault won't return null. Class Services should be rewritten to reflect contemporary implementation of settings.
 *

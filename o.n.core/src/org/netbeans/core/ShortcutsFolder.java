@@ -202,7 +202,7 @@ final class ShortcutsFolder extends FolderInstance {
      */
     static String getKeyText (KeyStroke stroke) {
         if (stroke == null) {
-            return "";
+            return ""; // NOI18N
         }
         String modifText = java.awt.event.KeyEvent.getKeyModifiersText(stroke.getModifiers ());
         if ("".equals (modifText)) return java.awt.event.KeyEvent.getKeyText(stroke.getKeyCode ()); // NOI18N

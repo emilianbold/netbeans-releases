@@ -232,9 +232,9 @@ public class IDESettings extends SystemOption {
                 System.setProperty(KEY_NON_PROXY_HOSTS, getDefaultNonProxyHosts());
             } else {
                 // reset properties so that they don't apply
-                System.setProperty(KEY_PROXY_HOST, "");
-                System.setProperty(KEY_PROXY_PORT, "");
-                System.setProperty(KEY_NON_PROXY_HOSTS, "");
+                System.setProperty(KEY_PROXY_HOST, ""); // NOI18N
+                System.setProperty(KEY_PROXY_PORT, ""); // NOI18N
+                System.setProperty(KEY_NON_PROXY_HOSTS, ""); // NOI18N
             }
             // notify listeners
             firePropertyChange(PROP_USE_PROXY, new Boolean(oldValue), new Boolean(value));
@@ -404,13 +404,13 @@ public class IDESettings extends SystemOption {
                 if (o != null && o.equals (brow)) {
                     putProperty(PROP_WWWBROWSER, dobjs[i].getNodeDelegate ().getHandle (), true); 
                     // mark this object so it can be found by modules (utilities, open URL in new window)
-                    dobjs[i].getPrimaryFile ().setAttribute ("DEFAULT_BROWSER", Boolean.TRUE);
+                    dobjs[i].getPrimaryFile ().setAttribute ("DEFAULT_BROWSER", Boolean.TRUE); // NOI18N
                 }
                 else {
                     // unset default browser attribute in other browsers
-                    Object attr = dobjs[i].getPrimaryFile ().getAttribute ("DEFAULT_BROWSER");
+                    Object attr = dobjs[i].getPrimaryFile ().getAttribute ("DEFAULT_BROWSER"); // NOI18N
                     if ((attr != null) && (attr instanceof Boolean))
-                        dobjs[i].getPrimaryFile ().setAttribute ("DEFAULT_BROWSER", Boolean.FALSE);
+                        dobjs[i].getPrimaryFile ().setAttribute ("DEFAULT_BROWSER", Boolean.FALSE); // NOI18N
                 }
             }
         }
@@ -442,9 +442,9 @@ public class IDESettings extends SystemOption {
      * @return sensible default for non-proxy hosts, including 'localhost'
      */
     private String getDefaultNonProxyHosts() {
-        String nonProxy = "localhost";
+        String nonProxy = "localhost"; // NOI18N
         try {
-            nonProxy = nonProxy + "|" + InetAddress.getLocalHost().getHostName();
+            nonProxy = nonProxy + "|" + InetAddress.getLocalHost().getHostName(); // NOI18N
         }
         catch (UnknownHostException e) {
             TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, e);

@@ -56,7 +56,7 @@ public final class LoaderPoolNode extends AbstractNode {
     * This value is returned from the getLoaderPoolNode() static method */
     private static LoaderPoolNode loaderPoolNode;
     private static final ErrorManager err =
-        TopManager.getDefault ().getErrorManager ().getInstance ("org.netbeans.core.LoaderPoolNode");
+        TopManager.getDefault ().getErrorManager ().getInstance ("org.netbeans.core.LoaderPoolNode"); // NOI18N
 
     /** The only instance of the NbLoaderPool class in the system.
     * This value is returned from the getNbLoaderPool() static method */

@@ -131,7 +131,7 @@ public class NonGui extends NbTopManager implements Runnable {
             
             /** #11735. Relative userDir is converted to absolute*/
             userDir = new File(userDir).getAbsolutePath();
-            System.getProperties ().setProperty("netbeans.user", userDir);
+            System.getProperties ().setProperty("netbeans.user", userDir); // NOI18N
             
             File systemDirFile = new File (userDir, SYSTEM_FOLDER);
             if (!systemDirFile.isDirectory ()) {
@@ -363,12 +363,12 @@ public class NonGui extends NbTopManager implements Runnable {
                     try {
                         BufferedReader rd = new BufferedReader (new InputStreamReader (is));
                         String line = rd.readLine ();
-                        if (line == null || line.equals (""))
+                        if (line == null || line.equals ("")) // NOI18N
                             throw new IOException ("empty branding file"); // NOI18N
                         if (rd.readLine () != null)
                             throw new IOException ("branding file more than one line"); // NOI18N
                         line = line.trim ();
-                        if (line.equals ("-")) line = null;
+                        if (line.equals ("-")) line = null; // NOI18N
                         try {
                             NbBundle.setBranding (line);
                         } catch (IllegalArgumentException iae) {
@@ -445,11 +445,11 @@ public class NonGui extends NbTopManager implements Runnable {
         // Upgrade
         try {
             if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
-                System.setProperty("import.canceled", "false");
+                System.setProperty("import.canceled", "false"); // NOI18N
                 SwingUtilities.invokeAndWait(new Runnable() {
                     public void run() {
                         boolean canceled = org.netbeans.core.upgrade.UpgradeWizard.showWizard();
-                        System.setProperty("import.canceled", new Boolean(canceled).toString());
+                        System.setProperty("import.canceled", new Boolean(canceled).toString()); // NOI18N
                     }
                 });
                 

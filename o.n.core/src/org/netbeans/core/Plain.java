@@ -71,15 +71,15 @@ public class Plain extends NbTopManager implements Runnable {
 
   /** */
   public Object notify (org.openide.NotifyDescriptor nd) {
-    new Exception("TopManager.notify()").printStackTrace();
-    System.out.println("MSG = " + nd.getMessage());
+    new Exception("TopManager.notify()").printStackTrace(); // NOI18N
+    System.out.println("MSG = " + nd.getMessage()); // NOI18N
     Object[] options = nd.getOptions();
-    System.out.print("(");
+    System.out.print("("); // NOI18N
     for(int i = 0; i < options.length; i++) {
-      if (i != 0) System.out.print(", ");
+      if (i != 0) System.out.print(", "); // NOI18N
       System.out.print(options[i]);
     }
-    System.out.println(")");
+    System.out.println(")"); // NOI18N
     return new Object();
   }
   

@@ -158,7 +158,7 @@ public abstract class NbTopManager extends TopManager {
         }
         
         // Enforce JDK 1.3+ since we would not work without it.
-        if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.3")) < 0) {
+        if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.3")) < 0) { // NOI18N
             System.err.println("The IDE requires JDK 1.3 or higher to run."); // XXX I18N?
             System.exit(1);
         }
@@ -525,7 +525,7 @@ public abstract class NbTopManager extends TopManager {
     public void setStatusText(String text) {
         if (Utilities.compareObjects(statusText, text)) return;
         if (text == null || text.length () == 0) {
-            text = " ";
+            text = " "; // NOI18N
         }
 
         statusText = text;
@@ -788,7 +788,7 @@ public abstract class NbTopManager extends TopManager {
                     if (line == null)
                         break;
                     
-                    int i = line.indexOf("=");
+                    int i = line.indexOf("="); // NOI18N
                     if (i == -1) {
                         continue;
                     }
@@ -898,7 +898,7 @@ public abstract class NbTopManager extends TopManager {
 
             // replace the lookup by new one
             Lookup lookup = Lookup.getDefault ();
-	    StartLog.logProgress ("Got Lookup");
+	    StartLog.logProgress ("Got Lookup"); // NOI18N
 
             if (lookup instanceof Lkp) {
                 Lkp lkp = (Lkp)lookup;

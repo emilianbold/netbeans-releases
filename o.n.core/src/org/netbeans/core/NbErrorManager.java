@@ -46,7 +46,7 @@ final class NbErrorManager extends ErrorManager {
     private String prefix = null;
     
     static {
-        System.setProperty("sun.awt.exception.handler", "org.netbeans.core.NbErrorManager$AWTHandler");
+        System.setProperty("sun.awt.exception.handler", "org.netbeans.core.NbErrorManager$AWTHandler"); // NOI18N
     }
 
     /** Adds these values. All the
