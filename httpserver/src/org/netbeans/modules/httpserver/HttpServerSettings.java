@@ -63,7 +63,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   private static ResourceBundle bundle = NbBundle.getBundle(HttpServerSettings.class);
 
   /** port */
-  private static int port = 8081; //8080
+  private static int port = 8082; //8080
 
   /** allowed connections hosts - local/any */
   private static String host = LOCALHOST;
@@ -452,6 +452,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  19   Gandalf   1.18        9/13/99  Petr Jiricka    Default port moved to 
+ *       8082
  *  18   Gandalf   1.17        9/8/99   Petr Jiricka    Fixed 
  *       NullPointerException at startup
  *  17   Gandalf   1.16        8/17/99  Petr Jiricka    Fixed startup of the 
