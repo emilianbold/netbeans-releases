@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="core unit test config">
     <!-- Tests which should be run before commit to validate IDE, needs IDE mode for ValidateLayer suites -->
-    <testbag testattribs="commit" executor="ide" name="Before Commit Validation in IDE" resultsprocessor="unit">
+    <testbag testattribs="noncommit" executor="ide" name="Before Commit Validation in IDE" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
                 <!-- this shall be enabled! <exclude name="org/netbeans/core/AutomountSupportTest.class"/> -->
