@@ -43,12 +43,12 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
     
     <target name="unit-compiler">
-        <buildTests srcDir="unit/src" compileexcludes="**/jars/**,**/data/**">
-            <classpath refid="compiletest.classpath"/>
-        </buildTests>
         <ant dir="unit/src/org/netbeans/core/modules"/>
         <ant dir="unit/src/org/netbeans/core/projects"/>
         <ant dir="unit/src/org/netbeans/core/lookup/data"/>
+        <buildTests srcDir="unit/src" compileexcludes="**/jars/**,**/data/**">
+            <classpath refid="compiletest.classpath"/>
+        </buildTests>
     </target>
     
     <!-- ================ -->
