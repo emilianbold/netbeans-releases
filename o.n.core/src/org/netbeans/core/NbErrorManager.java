@@ -46,6 +46,10 @@ final class NbErrorManager extends ErrorManager {
     /** Prefix preprended to customized loggers, if any. */
     private String prefix = null;
     
+    // Make sure two distinct EM impls log differently even with the same name.
+    private int uniquifier = 0; // 0 for root EM (prefix == null), else >= 1
+    private static final Map uniquifiedIds = new HashMap(20); // Map<String,Integer>
+    
     static {
         System.setProperty("sun.awt.exception.handler", "org.netbeans.core.NbErrorManager$AWTHandler"); // NOI18N
     }
@@ -161,8 +165,26 @@ final class NbErrorManager extends ErrorManager {
 
     public void log(int severity, String s) {
         if (isLoggable (severity)) {
-            if (prefix != null)
-                getLogWriter ().print ("[" + prefix + "] "); // NOI18N
+            if (prefix != null) {
+                boolean showUniquifier;
+                // Print a unique EM sequence # if there is more than one
+                // with this name. Shortcut: if the # > 1, clearly there are.
+                if (uniquifier > 1) {
+                    showUniquifier = true;
+                } else if (uniquifier == 1) {
+                    synchronized (uniquifiedIds) {
+                        int count = ((Integer)uniquifiedIds.get(prefix)).intValue();
+                        showUniquifier = count > 1;
+                    }
+                } else {
+                    throw new IllegalStateException("prefix != null yet uniquifier == 0");
+                }
+                if (showUniquifier) {
+                    getLogWriter ().print ("[" + prefix + " #" + uniquifier + "] "); // NOI18N
+                } else {
+                    getLogWriter ().print ("[" + prefix + "] "); // NOI18N
+                }
+            }
             getLogWriter().println(s);
             getLogWriter().flush(); 
         }
@@ -189,10 +211,17 @@ final class NbErrorManager extends ErrorManager {
      * a hierarchy.
      */
     public final ErrorManager getInstance(String name) {
-        // TODO: change this to create a hierarchy
-        // [jglick] is the following enough or is more needed?
         NbErrorManager newEM = new NbErrorManager();
         newEM.prefix = (prefix == null) ? name : prefix + '.' + name;
+        synchronized (uniquifiedIds) {
+            Integer i = (Integer)uniquifiedIds.get(newEM.prefix);
+            if (i == null) {
+                newEM.uniquifier = 1;
+            } else {
+                newEM.uniquifier = i.intValue() + 1;
+            }
+            uniquifiedIds.put(newEM.prefix, new Integer(newEM.uniquifier));
+        }
         newEM.minLogSeverity = minLogSeverity;
         String prop = newEM.prefix;
         while (prop != null) {
