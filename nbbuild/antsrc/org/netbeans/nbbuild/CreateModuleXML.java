@@ -18,6 +18,7 @@ import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.*;
 import java.util.jar.*;
 import java.io.*;
+import java.util.zip.ZipEntry;
 
 /** Create XML files corresponding to the set of known modules
  * without actually running the IDE. Suitable for virgin builds.
@@ -105,6 +106,39 @@ public class CreateModuleXML extends Task {
                     String codename = attr.getValue("OpenIDE-Module");
                     if (codename == null) throw new BuildException("Not a module: " + module);
                     String displayname = attr.getValue("OpenIDE-Module-Name");
+                    if (displayname == null) {
+                        String bundle = attr.getValue("OpenIDE-Module-Localizing-Bundle");
+                        if (bundle != null) {
+                            // Display name actually found in a bundle, not manifest.
+                            ZipEntry entry = jar.getEntry(bundle);
+                            InputStream is;
+                            if (entry != null) {
+                                is = jar.getInputStream(entry);
+                            } else {
+                                File moduleloc = new File(new File(module.getParentFile(), "locale"), module.getName());
+                                if (! moduleloc.isFile()) {
+                                    throw new BuildException("Expecting localizing bundle: " + bundle);
+                                }
+                                JarFile jarloc = new JarFile(moduleloc);
+                                try {
+                                    ZipEntry entry2 = jarloc.getEntry(bundle);
+                                    if (entry2 == null) {
+                                        throw new BuildException("Expecting localizing bundle: " + bundle);
+                                    }
+                                    is = jarloc.getInputStream(entry2);
+                                } finally {
+                                    jarloc.close();
+                                }
+                            }
+                            try {
+                                Properties p = new Properties();
+                                p.load(is);
+                                displayname = p.getProperty("OpenIDE-Module-Name");
+                            } finally {
+                                is.close();
+                            }
+                        }
+                    }
                     if (displayname == null) displayname = codename;
                     names.add(displayname);
                     int idx = codename.lastIndexOf('/');
