@@ -734,9 +734,8 @@ class JavaCodeGenerator extends CodeGenerator {
                 //PENDING  -announce this !!
                 e.printStackTrace();
             }
-            if (exceptions != null && exceptions.length > 0) {
-                initCodeWriter.write("try {\n"); // NOI18N
-            }
+            if (!generateTryCode(exceptions, initCodeWriter))
+                exceptions = null;
 
             if ((customCreateCode != null) &&(!customCreateCode.equals(""))) { // NOI18N
                 initCodeWriter.write(comp.getName() + " = "); // NOI18N
@@ -748,28 +747,8 @@ class JavaCodeGenerator extends CodeGenerator {
             }
             initCodeWriter.write("\n"); // NOI18N
 
-            if (exceptions != null && exceptions.length > 0) {
-                int varCount = 1;
-                // add the catch for all checked exceptions
-                for (int j = 0; j < exceptions.length; j++) {
-                    initCodeWriter.write("} catch ("); // NOI18N
-                    initCodeWriter.write(exceptions[j].getName());
-                    initCodeWriter.write(" "); // NOI18N
-                    String excName = "e"+varCount; // NOI18N
-                    varCount++;
-                    while (formModel.getVariablePool().isReserved(excName)) {
-                        excName = "e"+varCount; // NOI18N
-                        varCount++;
-                    }
-                    initCodeWriter.write(excName);
-                    initCodeWriter.write(") {\n"); // NOI18N
-                    initCodeWriter.write(excName);
-                    initCodeWriter.write(".printStackTrace();\n"); // NOI18N
-                    if (j == exceptions.length - 1) {
-                        initCodeWriter.write("}\n"); // NOI18N
-                    }
-                }
-            }
+            if (exceptions != null)
+                generateCatchCode(exceptions, initCodeWriter);
         }
         if ((postCode != null) &&(!postCode.equals(""))) { // NOI18N
             initCodeWriter.write(postCode);
@@ -896,9 +875,8 @@ class JavaCodeGenerator extends CodeGenerator {
                // if the setter throws checked exceptions,
                // we must generate try/catch block around it.
                 Class[] exceptions = writeMethod.getExceptionTypes();
-                if (exceptions.length > 0) {
-                    initCodeWriter.write("try {\n"); // NOI18N
-                }
+                if (!generateTryCode(exceptions, initCodeWriter))
+                    exceptions = null;
 
                 initCodeWriter.write(getVariableGenString(comp));
                 initCodeWriter.write(writeMethod.getName());
@@ -906,28 +884,9 @@ class JavaCodeGenerator extends CodeGenerator {
                 initCodeWriter.write(javaStr);
                 initCodeWriter.write(");\n"); // NOI18N
 
-                // add the catch for all checked exceptions
-                int varCount = 1;
-                for (int j = 0; j < exceptions.length; j++) {
-                    initCodeWriter.write("} catch ("); // NOI18N
-                    initCodeWriter.write(exceptions[j].getName());
-                    initCodeWriter.write(" "); // NOI18N
-
-                    String excName = "e"+varCount; // NOI18N
-                    varCount++;
-                    while (formModel.getVariablePool().isReserved(excName)) {
-                        excName = "e"+varCount; // NOI18N
-                        varCount++;
-                    }
-
-                    initCodeWriter.write(excName);
-                    initCodeWriter.write(") {\n"); // NOI18N
-                    initCodeWriter.write(excName);
-                    initCodeWriter.write(".printStackTrace();\n"); // NOI18N
-                    if (j == exceptions.length - 1) {
-                        initCodeWriter.write("}\n"); // NOI18N
-                    }
-                }
+                // add the catch code if needed
+                if (exceptions != null)
+                    generateCatchCode(exceptions, initCodeWriter);
             }
         }
 
@@ -980,9 +939,8 @@ class JavaCodeGenerator extends CodeGenerator {
             if (shouldGenerate) {
                 Method eventAddMethod = eventSetDesc.getAddListenerMethod();
                 Class[] exceptions = eventAddMethod.getExceptionTypes();
-                
-                if (exceptions != null && exceptions.length > 0)
-                    initCodeWriter.write("try {\n"); // NOI18N
+                if (!generateTryCode(exceptions, initCodeWriter))
+                    exceptions = null;
 
                 // beginning of the addXXXListener
                 initCodeWriter.write(variablePrefix);
@@ -1033,41 +991,13 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
 
                 // end of the innerclass
-                initCodeWriter.write("});\n\n"); // NOI18N
+                initCodeWriter.write("});\n"); // NOI18N
 
-                // if the add listener method is throwing something,
-                // generate the catch for each exception 
-                if (exceptions != null && exceptions.length > 0) {
-                    initCodeWriter.write("}"); // NOI18N
-                    for (int k = 0; k < exceptions.length; k++) {
-                        boolean addException = true;
-                        if (k > 0) {
-                            for (int m = 0; m < k; m++)
-                                if (exceptions[m].isAssignableFrom(exceptions[k])) {
-                                    // already caught
-                                    addException = false;
-                                    break;
-                                }
-                        }
-                        if (addException) {
-                            initCodeWriter.write(" catch ("); // NOI18N
-                            initCodeWriter.write(exceptions[k].getName());
-                            initCodeWriter.write(" "); // NOI18N
+                // generate the catch code for the addXXXListener method
+                if (exceptions != null)
+                    generateCatchCode(exceptions, initCodeWriter);
 
-                            String varName = "e"; // NOI18N
-                            int varCount = 0;
-                            while (formModel.getVariablePool().isReserved(varName))
-                                varName = "e" + (++varCount); // NOI18N
-
-                            initCodeWriter.write(varName);
-                            initCodeWriter.write(") {\n"); // NOI18N
-                            initCodeWriter.write(varName);
-                            initCodeWriter.write(".printStackTrace();\n"); // NOI18N
-                            initCodeWriter.write("}"); // NOI18N
-                        }
-                    }
-                    initCodeWriter.write("\n\n"); // NOI18N
-                }
+                initCodeWriter.write("\n"); // NOI18N
             }
         }
     }
@@ -1102,6 +1032,56 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
+    private boolean generateTryCode(Class[] exceptions, Writer initCodeWriter)
+    throws IOException {
+        if (exceptions != null)
+            for (int i=0; i < exceptions.length; i++)
+                if (Exception.class.isAssignableFrom(exceptions[i])
+                    && RuntimeException.class.isAssignableFrom(exceptions[i]))
+                {
+                    initCodeWriter.write("try {\n"); // NOI18N
+                    return true;
+                }
+
+        return false;
+    }
+
+    private void generateCatchCode(Class[] exceptions, Writer initCodeWriter)
+    throws IOException {
+        initCodeWriter.write("}"); // NOI18N
+        for (int i=0; i < exceptions.length; i++) {
+            Class exception = exceptions[i];
+            if (!Exception.class.isAssignableFrom(exception)
+                    || RuntimeException.class.isAssignableFrom(exception))
+                continue; // needs not be caught
+
+            if (i > 0) {
+                int j;
+                for (j=0; j < i; j++)
+                    if (exceptions[j].isAssignableFrom(exception))
+                        break;
+                if (j < i)
+                    continue; // a subclass of this exception already caught
+            }
+
+            initCodeWriter.write(" catch ("); // NOI18N
+            initCodeWriter.write(exception.getName());
+            initCodeWriter.write(" "); // NOI18N
+
+            String varName = "e"; // NOI18N
+            int varCount = 0;
+            while (formModel.getVariablePool().isReserved(varName))
+                varName = "e" + (++varCount); // NOI18N
+
+            initCodeWriter.write(varName);
+            initCodeWriter.write(") {\n"); // NOI18N
+            initCodeWriter.write(varName);
+            initCodeWriter.write(".printStackTrace();\n"); // NOI18N
+            initCodeWriter.write("}"); // NOI18N
+                        
+        }
+        initCodeWriter.write("\n"); // NOI18N
+    }
 
     // -----------------------------------------------------------------------------
     // Event handlers
