@@ -116,6 +116,8 @@ public final class ActionsManager {
     private HashMap                 actionProviders;
     private MyActionListener        actionListener = new MyActionListener ();
     private Lookup                  lookup;
+    private boolean                 doiingDo = false;
+    private boolean                 destroy = false;
 
     
     ActionsManager (Lookup lookup) {
@@ -133,8 +135,19 @@ public final class ActionsManager {
      * @return true if action has been performed
      */
     public final void doAction (Object action) {
-        doActionIn (action);
+        doiingDo = true;
+        if (actionProviders == null) initActionImpls ();
+        ArrayList l = (ArrayList) actionProviders.get (action);
+        if (l != null) {
+            l = (ArrayList) l.clone ();
+            int i, k = l.size ();
+            for (i = 0; i < k; i++)
+                if (((ActionsProvider) l.get (i)).isEnabled (action))
+                    ((ActionsProvider) l.get (i)).doAction (action);
+        }
         fireActionDone (action);
+        doiingDo = false;
+        if (destroy) destroyIn ();
     }
     
     /**
@@ -161,7 +174,8 @@ public final class ActionsManager {
      * Stops listening on all actions, stops firing events.
      */
     public void destroy () {
-        destroyDebuggerEngineListeners ();
+        if (!doiingDo) destroyIn ();
+        destroy = true;
     }
 
     
@@ -254,8 +268,6 @@ public final class ActionsManager {
                 ((ActionsManagerListener) l1.elementAt (i)).actionPerformed 
                     (action);
         }
-//        if ((action == DebuggerManager.ACTION_KILL) && succeed)
-//            destroyDebuggerEngineListeners ();
     }
 
     /**
@@ -294,18 +306,6 @@ public final class ActionsManager {
     
     
     // private support .........................................................
-
-    private final void doActionIn (Object action) {
-        if (actionProviders == null) initActionImpls ();
-        ArrayList l = (ArrayList) actionProviders.get (action);
-        if (l != null) {
-            l = (ArrayList) l.clone ();
-            int i, k = l.size ();
-            for (i = 0; i < k; i++)
-                if (((ActionsProvider) l.get (i)).isEnabled (action))
-                    ((ActionsProvider) l.get (i)).doAction (action);
-        }
-    }
     
     private void registerActionsProvider (Object action, ActionsProvider p) {
         ArrayList l = (ArrayList) actionProviders.get (action);
@@ -362,7 +362,7 @@ public final class ActionsManager {
         }
     }
     
-    private synchronized void destroyDebuggerEngineListeners () {
+    private synchronized void destroyIn () {
         int i, k = lazyListeners.size ();
         for (i = 0; i < k; i++) {
             LazyActionsManagerListener l = (LazyActionsManagerListener)
