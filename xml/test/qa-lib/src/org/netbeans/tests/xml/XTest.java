@@ -16,6 +16,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import org.netbeans.jellytools.JellyTestCase;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.loaders.DataObject;
 import org.openide.util.Utilities;
 import org.openide.util.io.NullOutputStream;
 
@@ -47,6 +48,14 @@ public abstract class XTest extends JellyTestCase {
         super(testName);
     }
     
+    
+    protected void deleteData(String path) {
+        try {
+        DataObject dao = TestUtil.THIS.findData(path);
+        if (dao != null) dao.delete();
+        } catch (Exception ex) {}
+    }
+
     /** @depricated use getPackegeName() */
     protected String packageName() {
         return  getPackageName();

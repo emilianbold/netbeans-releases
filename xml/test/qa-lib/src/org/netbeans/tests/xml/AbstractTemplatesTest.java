@@ -12,19 +12,11 @@
  */
 package org.netbeans.tests.xml;
 
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.NewWizardOperator;
 import org.netbeans.modules.css.CSSObject;
-import org.netbeans.test.oo.gui.jelly.Explorer;
-import org.netbeans.test.oo.gui.jelly.Editor;
-import org.openide.filesystems.FileObject;
-import org.netbeans.test.oo.gui.jelly.xml.NewWizardDialog;
-import java.io.File;
-import org.netbeans.modules.xml.core.DTDDataObject;
-import org.netbeans.modules.xml.core.XMLDataObject;
-import org.netbeans.tests.xml.TestUtil;
-import org.netbeans.tests.xml.JXTest;
 import org.openide.loaders.DataObject;
-import junit.textui.TestRunner;
-import org.netbeans.test.oo.gui.jello.JelloBundle;
 import org.openide.util.NbBundle;
 
 /**
@@ -59,9 +51,6 @@ import org.openide.util.NbBundle;
  */
 
 public abstract class AbstractTemplatesTest extends JXTest {
-    private final static String TEMPLATE_FOLDER = NbBundle.getBundle("org.netbeans.api.xml.resources.Bundle").getString("OpenIDE-Module-Display-Category");
-    //private final static String TEMPLATE_FOLDER = JelloBundle.getStringFormat("org.netbeans.api.xml.resources.Bundle", "Templates/XML", null);
-    
     /** Creates new TemplatesTest */
     public AbstractTemplatesTest(String testName) {
         super(testName);
@@ -75,77 +64,45 @@ public abstract class AbstractTemplatesTest extends JXTest {
      */
     protected abstract String[][] getTemplateList();
     
-    /* templates names for futre use */
-    //JelloBundle.getString(THIS_BUNDLE, "Templates/XML/XMLSchema.xml"),
-    //JelloBundle.getString(CORE_BUNDLE, "Templates/XML/XMLCatalog.xml"),
-    //JelloBundle.getString(CSS_BUNDLE,  "Templates/XML/CascadeStyleSheet.css"),
+    /** Should return TestUtil from Test's package */
+    protected abstract AbstractTestUtil testUtil();
     
     // TESTS ///////////////////////////////////////////////////////////////////
     
     public void testNewFromTemplate() throws Exception {
-        String testDirName = "XMLTestDir";
-        String treePath = getWorkDir().getAbsolutePath() + "|" + testDirName;
-        
-        // create or clean test dir and mount it
-        File testDir =  new File(getWorkDir(), testDirName);
-        if (!testDir.exists()) {
-            testDir.mkdir();
-        } else {
-            File fs[] = testDir.listFiles();
-            for (int i=0; i<fs.length; i++) {
-                fs[i].delete();
-            }
-        }
-        TestUtil.mountDirectory(getWorkDir());
-        
         String templates[][] = getTemplateList();
-        Explorer exp = Explorer.find();
-        exp.switchToFilesystemsTab();
-        // weak up lazy menus
-        exp.pushPopupMenuNoBlock("New|" + TEMPLATE_FOLDER, treePath);//!!!
-        try {Thread.sleep(1000);} catch (Exception e) {}; //!!!
-        exp.clickNode(treePath, 1);//!!!
         
-        for (int i=0; i < templates.length; i++) {
+        //FolderNode folder = new FolderNode(findDataNode("templates"), "");
+        String folder = getFilesystemName() + DELIM + getDataPackageName(DELIM) + DELIM + "templates";
+        // remove old files
+        for (int i = 0; i < templates.length; i++) {
             String name = templates[i][0];
-            newFromTemplate(name, treePath, exp);
-            Editor.find(name);
+            String ext = templates[i][1];
+            System.out.println("templates/" + name + "." + ext);
+            DataObject dao = testUtil().findData("templates/" + name + "." + ext);
+            System.out.println(dao);
+            if (dao != null) dao.delete();
+            NewWizardOperator.create("XML" + DELIM + name, folder, name);
+            new EditorOperator(name);
         }
         
         // write the created documents to output
         for (int i = 0; i < templates.length; i++) {
             String name = templates[i][0];
             String ext = templates[i][1];
-            FileObject fo = TestUtil.findFileObject("XMLTestDir/" + name + "." + ext);
-            DataObject dataObject = DataObject.find(fo);
+            DataObject dataObject = testUtil().findData("templates/" + name + "." + ext);
             ref("\n+++ Document: " + dataObject.getName());
             
-            String str = TestUtil.dataObjectToString(dataObject);
+            String str = testUtil().dataObjectToString(dataObject);
             if (dataObject instanceof CSSObject) {
-                str = TestUtil.replaceString(str, "/*", "*/", "/* REMOVED */");
+                str = testUtil().replaceString(str, "/*", "*/", "/* REMOVED */");
             } else {
-                str = TestUtil.replaceString(str, "<!--", "-->", "<!-- REMOVED -->");
+                str = testUtil().replaceString(str, "<!--", "-->", "<!-- REMOVED -->");
             }
             ref(str);
         }
         // close source editor
-        new Editor().close();
+        new EditorWindowOperator().closeDiscard();
         compareReferenceFiles();
-    }
-    
-    // create new document from templates
-    private void newFromTemplate(String templateName, String treePath, Explorer exp) {
-        String menuPath = "New|" + TEMPLATE_FOLDER + "|" + templateName;
-        try {
-            exp.clickNode(treePath, 1);//!!!
-            try {Thread.sleep(500);} catch (Exception e) {}; //!!!
-            exp.pushPopupMenuNoBlock(menuPath, treePath);
-            NewWizardDialog wizard = new NewWizardDialog();
-            wizard.setJTextField(templateName);
-            wizard.finish();
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("Cannot create document from : " + menuPath + "in: " + treePath);
-        }
     }
 }
