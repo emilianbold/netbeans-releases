@@ -7,3 +7,5 @@ OpenIDE-Module-Specification-Version: 1.5
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1
 
+Name: org/netbeans/modules/beans/AddPropertyAction.class
+OpenIDE-Module-Class: Action

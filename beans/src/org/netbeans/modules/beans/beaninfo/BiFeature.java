@@ -199,17 +199,17 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
                 continue;
             }
             if ( statement.indexOf( stDisplayName ) != -1 ) {
-                String[] params = BiAnalyser.getParameters( statement );
+                String param = BiAnalyser.getArgumentParameter( statement );
                 
-                if ( params.length > 0 )
-                    this.setDisplayName( params[0] );
+                if ( param != null )
+                    this.setDisplayName( param );
                 continue;
             }
             if ( statement.indexOf( stShortDescription ) != -1 ) {
-                String[] params = BiAnalyser.getParameters( statement );
+                String param = BiAnalyser.getArgumentParameter( statement );
                 
-                if ( params.length > 0 )
-                    this.setShortDescription( params[0] );
+                if ( param != null )
+                    this.setShortDescription( param );
                 continue;
             }
             analyzeCustomizationString( statement ); // Implemented in descendants

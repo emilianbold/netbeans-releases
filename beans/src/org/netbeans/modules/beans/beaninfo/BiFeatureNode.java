@@ -18,6 +18,7 @@ import java.awt.Toolkit;
 import java.io.IOException;
 import java.beans.BeanInfo;
 import java.beans.PropertyEditor;
+import java.beans.PropertyEditorSupport;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
@@ -52,7 +53,8 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
     public static final String PROP_DISPLAY_NAME = "displayName"; // NOI18N
     /** Property expert constant */
     public static final String PROP_EXPERT = "expert"; // NOI18N
-    /** Property hidden constant */
+    /** Property hidden constant
+ */
     public static final String PROP_HIDDEN = "hidden"; // NOI18N
     /** Property name constant */
     public static final String PROP_NAME = "name"; // NOI18N
@@ -212,18 +214,22 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                        }
                    }
                });
-        ps.put(new PropertySupport.ReadWrite (
-                   PROP_DISPLAY_NAME,
+          ps.put(new CodePropertySupportRW(//PropertySupport.ReadWrite (
+          //ps.put(new PropertySupport.ReadWrite (
+               PROP_DISPLAY_NAME,
                    String.class,
                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_DISPLAY_NAME ),
                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_DISPLAY_NAME )
                ) {
                    public Object getValue () {
-                       return biFeature.getDisplayName ();
+                       String toRet = biFeature.getDisplayName() != null ? biFeature.getDisplayName() : "null";
+                       return toRet;
                    }
                    public void setValue (Object val) throws
                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                        try {
+                           if( "null".equals((String)val) )
+                                val = null;
                            biFeature.setDisplayName ( (String)val );
                        } catch (ClassCastException e) {
                            throw new IllegalArgumentException ();
@@ -231,24 +237,27 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                    }
                });
 
-        ps.put(new PropertySupport.ReadWrite (
+        ps.put(new CodePropertySupportRW (//PropertySupport.ReadWrite (
                    PROP_SHORT_DESCRIPTION,
                    String.class,
                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_SHORT_DESCRIPTION ),
                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_SHORT_DESCRIPTION )
                ) {
                    public Object getValue () {
-                       return biFeature.getShortDescription ();
+                       String toRet = biFeature.getShortDescription () != null ? biFeature.getShortDescription () : "null";
+                       return toRet;
                    }
                    public void setValue (Object val) throws
                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                        try {
+                           if( "null".equals((String)val) )
+                                val = null;
                            biFeature.setShortDescription ( (String)val );
                        } catch (ClassCastException e) {
                            throw new IllegalArgumentException ();
                        }
                    }
-               });
+                });
         ps.put(new PropertySupport.ReadWrite (
                    PROP_INCLUDED,
                    Boolean.TYPE,
@@ -556,6 +565,26 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
     */
     public String getName () {
         return biFeature.getName();
+    }
+
+    abstract class CodePropertySupportRW extends PropertySupport.ReadWrite
+    {
+        CodePropertySupportRW(String name, Class type,
+                              String displayName, String shortDescription) {
+            super(name, type, displayName, shortDescription);
+        }
+
+        public PropertyEditor getPropertyEditor() {
+            return new PropertyEditorSupport() {
+                public java.awt.Component getCustomEditor() {
+                    return new CustomCodeEditor(CodePropertySupportRW.this);
+                }
+
+                public boolean supportsCustomEditor() {
+                    return true;
+                }
+            };            
+        }
     }
 }
 

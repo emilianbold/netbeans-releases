@@ -605,10 +605,15 @@ public class BiAnalyser extends Object implements Node.Cookie {
         final int IN_WHITE = 1;
         int mode = IN_WHITE;
         boolean eo_javaid = false;
-
+        boolean guarded = false;    //guarded beetwen ""
+        boolean escape = false;    //guarded beetwen ""
+        
         for ( int i = 0; i < code.length(); i++ ) {
             char ch = code.charAt( i );
-
+            
+            if( ch != '\"' )
+                escape = false;
+            
             switch ( mode ) {
             case IN_TEXT:
                 if ( !Character.isWhitespace( ch ) ) {
@@ -619,20 +624,43 @@ public class BiAnalyser extends Object implements Node.Cookie {
                         mode = IN_WHITE;
                         eo_javaid = false;
                     }
-                    else
+                    else if ( ch == '\\' ){
+                        escape = true;
+                        sb.append( ch );
+                    }
+                    else if ( ch == '\"' ){
+                        if( !escape )
+                            guarded = !guarded;
+                        escape = false;
+                        sb.append( ch );
+                    }
+                    else    
                         sb.append( ch );
                 }
                 else {
-                    eo_javaid = Character.isJavaIdentifierPart ( code.charAt( i - 1 ) );
-                    mode = IN_WHITE;
+                    if( guarded )
+                        sb.append( ch );
+                    else{
+                        eo_javaid = Character.isJavaIdentifierPart ( code.charAt( i - 1 ) );
+                        mode = IN_WHITE;
+                    }
                 }
                 break;
             case IN_WHITE:
                 if ( !Character.isWhitespace( ch ) ) {
                     if ( eo_javaid && Character.isJavaIdentifierStart ( ch ) )
                         sb.append( ' ' );
+                    else if ( ch == '\\' ){
+                        escape = true;
+                        sb.append( ch );
+                    }
+                    else if ( ch == '\"' ) {
+                        if( !escape )
+                            guarded = !guarded;
+                        escape = false;
+                    }
                     sb.append( ch );
-                    mode = IN_TEXT;
+                    mode = IN_TEXT;                    
                 }
                 break;
             }
@@ -667,6 +695,17 @@ public class BiAnalyser extends Object implements Node.Cookie {
         return resultStrs;
     }
 
+    static String getArgumentParameter( String command ) {
+        String paramString;
+
+        int beg = command.indexOf( '(' );
+        int end = command.lastIndexOf( ')' );
+
+        if ( beg != -1 && end != -1 && ( ++beg < end ) )
+            return command.substring( beg, end );
+        else
+            return null;
+    }
     /** Gets the initializer */
     static String getInitializer( String command ) {
 
