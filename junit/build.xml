@@ -23,7 +23,6 @@ Microsystems, Inc. All Rights Reserved.
       <include name="${nb.modules.dir}/junit.jar"/>
       <include name="${nb.docs.dir}/junit-3.8.1-api.zip"/>
       <include name="${nb.modules.dir}/ext/junit*.jar"/>
-      <include name="${nb.system.dir}/ParserDB/JUnit-*.jc?"/>
     </patternset>
     <path id="cp">
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
@@ -72,13 +71,6 @@ Microsystems, Inc. All Rights Reserved.
 
   </target>
 
-  <target name="parserdb" depends="init">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB"/>
-    <copy toDir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB">
-      <fileset dir="parserdb"/>
-    </copy>
-  </target>
-
   <target name="release" depends="init">
     <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
     <copy file="external/junit-3.8.1-api.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
@@ -90,7 +82,7 @@ Microsystems, Inc. All Rights Reserved.
     </copy>
   </target>
 
-  <target name="netbeans" depends="jars,parserdb,release">
+  <target name="netbeans" depends="jars,release">
     <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/junit.jar">
        <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
          <patternset refID="junit.files"/>
