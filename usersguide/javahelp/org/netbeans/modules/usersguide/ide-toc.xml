@@ -339,8 +339,8 @@
    <tocitem text="Where to Put Web Module Files" target="webmod_placefiles" />
 </tocitem> <!-- About Web Modules -->
 
- <tocitem text="Creating Web Modules" >
-    <tocitem text="About Creating Web Module" target="tbd" />
+<tocitem text="Creating Web Modules" target="tbd">
+	 <tocitem text="About Creating Web Modules" target="tbd" />
     <tocitem text="Working with Projects" target="proj_process"/>
     <tocitem text="Project Tasks: Quick Reference" target="proj_quickref"/>
     <tocitem text="Java Project Templates" target="proj_templates" />
@@ -368,8 +368,9 @@
 <tocitem text="Developing Web Modules" target="tbd" > 
   <tocitem text="About Developing Web Modules" target="tbd" />	
   <tocitem text="Applets" >
-      <tocitem text="Adding Simple Applets" target="webmod_addapplet"/>
-      <tocitem text="Adding Applets With Servlet Dependencies" target="webmod_addcompapplet"/>
+          <tocitem text="Adding an Existing Applet" target="webmod_addcompapplet"/>
+	  <tocitem text="Creating an Applet" target="webmod_addapplet"/>
+	  <tocitem text="Running an Applet" target="webmod_runapplet"/>
   </tocitem> <!-- Working With Applets -->
 
   <tocitem text="Filters" target="concepts_filter" > 
@@ -379,7 +380,7 @@
   </tocitem> <!-- Working With Filters -->
   
   <tocitem text="HTML and XML Files" >      
-      <tocitem text="Adding HTML files to a Web Module" target="concepts_html" />          
+      <tocitem text="Creating an HTML File" target="concepts_html" />          
       <tocitem text="Working With XML Files" target="webmod_xml" />		
   </tocitem> <!-- Introduction to Web Modules-->
   
@@ -474,7 +475,7 @@
     <tocitem text="Deploying Web Modules" target="webmod_deploy"> 
         <tocitem text="About Deploying Web Modules" target="webmod_deploy"/>
 	<tocitem text="Deploying Tag Libraries"  target="taglib_packlib"/>
-	<tocitem text="Working With Deployment Descriptors" > 
+	<tocitem text="Working With Deployment Descriptors" target="concepts_deploydes"> 
 	   <tocitem text="About Deployment Descriptors" target="concepts_deploydes" />  
 	   <tocitem text="Editing Deployment Descriptors" target="webmod_editdd" />  
 	   <tocitem text="Registering a Filter" target="filter_addtodd"/>

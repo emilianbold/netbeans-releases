@@ -422,6 +422,7 @@
 <mapID target="webmod_jstl" url="web/webmod/mod_jstl.html" />
 <mapID target="webmod_addcompapplet" url="web/webmod/mod_addcompapplet.html" />
 <mapID target="webmod_addapplet" url="web/webmod/mod_addapplet.html" />
+<mapID target="webmod_runapplet" url="web/webmod/mod_runapplet.html" />
 <mapID target="webmod_addtagf" url="web/webmod/mod_tagf_add.html" />
 <mapID target="webmod_abouttagf" url="web/webmod/mod_tagf_about.html" />
 <mapID target="war_delete" url="web/warpkg/war_delete.html" />
