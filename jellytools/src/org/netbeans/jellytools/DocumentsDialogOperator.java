@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -195,7 +195,6 @@ public class DocumentsDialogOperator extends NbDialogOperator {
         btCloseDocuments();
         btSaveDocuments();
         btClose();
-        btHelp();
         txtDescription();
         lstDocuments();
     }
