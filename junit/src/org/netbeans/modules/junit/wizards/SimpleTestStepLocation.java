@@ -417,9 +417,7 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
     }
     
     private void updateCreatedFileName() {
-        tfCreatedFile.setText(testRelFileName != ""                     //NOI18N
-                              ? testsRootDirName + '/' + testRelFileName
-                              : "");                                    //NOI18N
+        tfCreatedFile.setText(testsRootDirName + '/' + testRelFileName);
     }
     
     private boolean checkClassNameValidity() {
