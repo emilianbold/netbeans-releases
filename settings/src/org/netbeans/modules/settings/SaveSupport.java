@@ -230,7 +230,10 @@ final class SaveSupport {
             Convertor conv = getConvertor();
             if (conv == null) return ;
             java.io.ByteArrayOutputStream b = new java.io.ByteArrayOutputStream(1024);
-            java.io.Writer w = new java.io.OutputStreamWriter(b, "UTF-8"); // NOI18N
+            java.io.Writer w = ContextProvider.createWriterContextProvider(
+                new java.io.OutputStreamWriter(b, "UTF-8"), // NOI18N
+                SaveSupport.this.file
+            );
             isChanged = false;
             try {
                 conv.write(w, inst);

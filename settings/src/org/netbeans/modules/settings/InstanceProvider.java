@@ -248,7 +248,11 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
             
             try {
                 synchronized (READWRITE_LOCK) {
-                    inst = getConvertor().read(new java.io.InputStreamReader(settingFO.getInputStream()));
+                    java.io.Reader r = ContextProvider.createReaderContextProvider(
+                        new java.io.InputStreamReader(settingFO.getInputStream()),
+                        getFile()
+                    );
+                    inst = getConvertor().read(r);
                 }
             } catch (IOException ex) {
                 throw (IOException) ErrorManager.getDefault().

@@ -13,6 +13,8 @@
 
 package org.netbeans.spi.settings;
 
+import org.openide.util.Lookup;
+
 /** Convertor allows to read/write objects in own format and notify about
  * object changes.
  *
@@ -49,4 +51,33 @@ public abstract class Convertor {
      * @see #registerSaver
      */
     public abstract void unregisterSaver (Object inst, Saver s);
+    
+    /** get a context associated with the reader <code>r</code>. It can contain
+     * various info like a file location of the read object etc.
+     * @param r stream containing stored object
+     * @return a context associated with the reader
+     * @since 1.2
+     */
+    protected static org.openide.util.Lookup findContext(java.io.Reader r) {
+        if (r instanceof Lookup.Provider) {
+            return ((Lookup.Provider) r).getLookup();
+        } else {
+            return Lookup.EMPTY;
+        }
+    }
+    
+    /** get a context associated with the writer <code>w</code>. It can contain
+     * various info like a file location of the written object etc.
+     * @param w stream into which inst is written
+     * @return a context associated with the reader
+     * @since 1.2
+     */
+    protected static org.openide.util.Lookup findContext(java.io.Writer w) {
+        if (w instanceof Lookup.Provider) {
+            return ((Lookup.Provider) w).getLookup();
+        } else {
+            return Lookup.EMPTY;
+        }
+    }
+    
 }

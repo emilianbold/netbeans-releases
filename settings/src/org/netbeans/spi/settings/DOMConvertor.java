@@ -15,6 +15,7 @@ package org.netbeans.spi.settings;
 
 import java.io.IOException;
 import org.openide.ErrorManager;
+import org.openide.util.Lookup;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -49,6 +50,8 @@ public abstract class DOMConvertor extends Convertor {
     private final static String ELM_DELEGATE = "domconvertor"; // NOI18N
     
     private final static java.util.Map refsCache = new java.util.WeakHashMap();
+    /** cache of contexts <Document, Lookup>*/
+    private final static java.util.Map ctxCache = new java.util.WeakHashMap();
     
     private String publicID;
     private String systemID;
@@ -81,6 +84,7 @@ public abstract class DOMConvertor extends Convertor {
             org.xml.sax.XMLReader xr = XMLUtil.createXMLReader(false, false);
             InputSource is = new InputSource(r);
             Document doc = XMLUtil.parse(is, false, false, null, org.openide.xml.EntityCatalog.getDefault());
+            setDocumentContext(doc, findContext(r));
             return readElement(doc.getDocumentElement());
         } catch (SAXException ex) {
             IOException ioe = new IOException(ex.getLocalizedMessage());
@@ -102,6 +106,7 @@ public abstract class DOMConvertor extends Convertor {
     public final void write(java.io.Writer w, Object inst) throws java.io.IOException {
         try {
             Document doc = XMLUtil.createDocument(rootElement, null, publicID, systemID);
+            setDocumentContext(doc, findContext(w));
             writeElement(doc, doc.getDocumentElement(), inst);
             java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream(1024);
             XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
@@ -231,6 +236,29 @@ public abstract class DOMConvertor extends Convertor {
         // bind cached object with original element
         cache.elm = el;
         return el;
+    }
+    
+    /** get a context associated with the document <code>doc</code>. It can
+     * contain various info like a file location of the read document etc.
+     * @param doc a DOM document containing stored object
+     * @return a context associated with the document
+     * @since 1.2
+     */
+    protected static org.openide.util.Lookup findContext(org.w3c.dom.Document doc) {
+        synchronized (ctxCache) {
+            Lookup ctx = (Lookup) ctxCache.get(doc);
+            return ctx == null? Lookup.EMPTY: ctx;
+        }
+    }
+    
+   
+    // private impl //////////////////////////////////////////////////////////////
+    
+    /** remember context for document */
+    private static void setDocumentContext(Document doc, Lookup ctx) {
+        synchronized (ctxCache) {
+            ctxCache.put(doc, ctx);
+        }
     }
     
     /** write an object obj to String using Convertor.write() */

@@ -22,6 +22,8 @@ import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.InstanceDataObject;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.DOMException;
@@ -58,12 +60,15 @@ public class DOMConvertorTest extends NbTestCase {
     }
     
     public void testCreateSetting() throws Exception {
+        try {
         org.openide.filesystems.FileUtil.createFolder(fs.getRoot(), "testCreateSetting");
         DataFolder folder = DataFolder.findFolder(fs.findResource("testCreateSetting"));
         
         ComposedSetting cs = new ComposedSetting();
         cs.b1 = new java.awt.Button();
         cs.b2 = cs.b1;
+        cs.cs = new ComposedSetting();
+        cs.cs.b1 = new java.awt.Button();
         DataObject dobj = InstanceDataObject.create(folder, "testCreateSetting", cs, null);
         
         // test reading
@@ -75,11 +80,16 @@ public class DOMConvertorTest extends NbTestCase {
         
         ComposedSetting cs2 = (ComposedSetting) ic.instanceCreate();
         assertEquals(cs2.b1, cs2.b2);
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            throw ex;
+        }
     }
     
     public static class ComposedSetting {
         java.awt.Button b1;
         java.awt.Button b2;
+        ComposedSetting cs;
     }
     
     public static class ComposedSettingConvertor extends DOMConvertor {
@@ -97,6 +107,12 @@ public class DOMConvertorTest extends NbTestCase {
                     ELM_COMPOSED_SETTING + ", but was: " + element.getTagName());
             }
             
+            // test presence of context
+            Lookup l = findContext(element.getOwnerDocument());
+            if (l == null) throw new NullPointerException("missing context");
+            FileObject fo = (FileObject) l.lookup(FileObject.class);
+            if (fo == null) throw new NullPointerException("missing info about source");
+            
             ComposedSetting cs = new ComposedSetting();
             NodeList nl = element.getChildNodes();
             for (int i = 0, len = nl.getLength(); i < len; i++) {
@@ -109,6 +125,8 @@ public class DOMConvertorTest extends NbTestCase {
                         } else {
                             cs.b2 = (java.awt.Button) obj;
                         }
+                    } else {
+                        cs.cs = (ComposedSetting) obj;
                     }
                 }
             }
@@ -127,10 +145,26 @@ public class DOMConvertorTest extends NbTestCase {
             }
             ComposedSetting cs = (ComposedSetting) inst;
             // test CDATA wrapping
-            Element subel = delegateWrite(doc, cs.b1);
-            el.appendChild(subel);
-            subel = delegateWrite(doc, cs.b2);
-            el.appendChild(subel);
+            Element subel;
+            if (cs.b1 != null) {
+                subel = delegateWrite(doc, cs.b1);
+                el.appendChild(subel);
+            }
+            if (cs.b2 != null) {
+                subel = delegateWrite(doc, cs.b2);
+                el.appendChild(subel);
+            }
+
+            if (cs.cs != null) {
+                subel = delegateWrite(doc, cs.cs);
+                el.appendChild(subel);
+            }
+            
+            // test presence of context
+            Lookup l = findContext(doc);
+            if (l == null) throw new NullPointerException("missing context");
+            FileObject fo = (FileObject) l.lookup(FileObject.class);
+            if (fo == null) throw new NullPointerException("missing info about source");
         }
         
     }
