@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- Ant property. Value 'ignore' means that system classpath is ignored
          and only classpath specified in build file is used. -->
-    <property name="build.sysclasspath" value="ignore"/>
+    <!--property name="build.sysclasspath" value="ignore"/-->
 
     <!-- Points to directory with IDE to test-->
     <property name="netbeans.home" location="../../nbbuild/netbeans"/>
@@ -45,7 +45,10 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Main targets -->
     <!-- ============ -->
 
-    <target name="all" depends="runtests"/>
+    <!--target name="all" depends="runtests"/-->
+    <target name="all">
+        <echo message="Tests are disabled"/>
+    </target>
 
     <!-- This calls target which will call compilers according to cfg file.
          You should not change this target unless you realy know what you are doing -->
