@@ -27,13 +27,17 @@ import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
+import javax.swing.text.StyledDocument;
 
 import org.openide.ErrorManager;
+import org.openide.cookies.EditCookie;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 
 /**
@@ -41,7 +45,8 @@ import org.openide.util.Lookup;
  * get the encoding information.
  * <p>
  * This factory should ideally be replaced by some public APIs. This uses just
- * heuristics to find things out. This is intended to be only a temporary solution.
+ * heuristics combined with a lot of reflection calls to find things out.
+ * This is intended to be only a temporary solution.
  * <p>
  * Use on your own risk.
  *
@@ -81,13 +86,26 @@ public class EncodedReaderFactory {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ueex);
             }
         }
-        Reader r = getReaderFromKit(file, null, mimeType);
-        if (r != null) {
-            return r;
-        } else {
-            // Fallback, use current encoding
-            return new InputStreamReader(new FileInputStream(file));
+        Reader r = null;
+        String name = file.getName();
+        int endingIndex = name.lastIndexOf('.');
+        String ext = (endingIndex >= 0 && endingIndex < (name.length() - 1)) ? name.substring(endingIndex + 1) : "";
+        if (!"java".equalsIgnoreCase(ext)) { // We read the encoding for Java files explicitely
+            try {                            // If it's not defined, read with default encoding from stream (because of guarded blocks)
+                FileObject fo = FileUtil.toFileObject(file);
+                if (fo != null) {
+                    r = getReaderFromEditorSupport(fo);
+                }
+            } catch (IllegalArgumentException iaex) {}
+            if (r == null) {
+                r = getReaderFromKit(file, null, mimeType);
+            }
         }
+        if (r == null) {
+            // Fallback, use current encoding
+            r = new InputStreamReader(new FileInputStream(file));
+        }
+        return r;
     }
     
     public Reader getReader(FileObject fo, String encoding) throws FileNotFoundException {
@@ -98,12 +116,80 @@ public class EncodedReaderFactory {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ueex);
             }
         }
-        Reader r = getReaderFromKit(null, fo, fo.getMIMEType());
-        if (r != null) {
-            return r;
-        } else {
+        Reader r = null;
+        String ext = fo.getExt();
+        if (!"java".equalsIgnoreCase(ext)) {// We read the encoding for Java files explicitely
+                                            // If it's not defined, read with default encoding from stream (because of guarded blocks)
+            r = getReaderFromEditorSupport(fo);
+            if (r == null) {
+                r = getReaderFromKit(null, fo, fo.getMIMEType());
+            }
+        }
+        if (r == null) {
             // Fallback, use current encoding
-            return new InputStreamReader(fo.getInputStream());
+            r = new InputStreamReader(fo.getInputStream());
+        }
+        return r;
+    }
+    
+    /** @return The reader or <code>null</code>. */
+    private Reader getReaderFromEditorSupport(FileObject fo) throws FileNotFoundException {
+        //System.out.println("getReaderFromEditorSupport("+fo+")");
+        DataObject dobj;
+        try {
+            dobj = DataObject.find(fo);
+        } catch (DataObjectNotFoundException donfex) {
+            return null;
+        }
+        if (!fo.equals(dobj.getPrimaryFile())) {
+            return null;
+        }
+        EditCookie edit = (EditCookie) dobj.getCookie(EditCookie.class);
+        CloneableEditorSupport editorSupport = null;
+        if (edit instanceof CloneableEditorSupport) {
+            editorSupport = (CloneableEditorSupport) edit;
+        }
+        //System.out.println("  editorSupport = "+editorSupport);
+        if (editorSupport == null) {
+            return null;
+        }
+        try {
+            Method createKitMethod = getDeclaredMethod(editorSupport.getClass(), "createEditorKit", new Class[] {});
+            createKitMethod.setAccessible(true);
+            EditorKit kit = (EditorKit) createKitMethod.invoke(editorSupport, new Object[] {});
+            //System.out.println("  KIT from cloneable editor support = "+kit);
+            Method createStyledDocumentMethod = getDeclaredMethod(editorSupport.getClass(),
+                    "createStyledDocument", new Class[] { EditorKit.class });
+            createStyledDocumentMethod.setAccessible(true);
+            StyledDocument doc = (StyledDocument) createStyledDocumentMethod.invoke(editorSupport, new Object[] { kit });
+            Method loadFromStreamToKitMethod = getDeclaredMethod(editorSupport.getClass(),
+                    "loadFromStreamToKit", new Class[] { StyledDocument.class, InputStream.class, EditorKit.class });
+            loadFromStreamToKitMethod.setAccessible(true);
+            InputStream in = fo.getInputStream();
+            try {
+                loadFromStreamToKitMethod.invoke(editorSupport, new Object[] { doc, in, kit });
+            } finally {
+                try { in.close(); } catch (IOException ioex) {}
+            }
+            String text = doc.getText(0, doc.getLength());
+            doc = null; // Release it, we have the text
+            return new StringReader(text);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+    
+    private static Method getDeclaredMethod(Class objClass, String name, Class[] args) throws NoSuchMethodException, SecurityException {
+        try {
+            return objClass.getDeclaredMethod(name, args);
+        } catch (NoSuchMethodException nsmex) {
+            Class superClass = objClass.getSuperclass();
+            if (superClass != null) {
+                return getDeclaredMethod(superClass, name, args);
+            } else {
+                throw nsmex;
+            }
         }
     }
     
@@ -151,9 +237,6 @@ public class EncodedReaderFactory {
     
     public String getEncoding(FileObject fo) {
         String ext = fo.getExt();
-        if ("html".equalsIgnoreCase(ext)) {
-            return findHTMLEncoding(fo);
-        }
         if ("properties".equalsIgnoreCase(ext)) {
             return findPropertiesEncoding();
         }
@@ -175,9 +258,6 @@ public class EncodedReaderFactory {
         String name = file.getName();
         int endingIndex = name.lastIndexOf('.');
         String ext = (endingIndex >= 0 && endingIndex < (name.length() - 1)) ? name.substring(endingIndex + 1) : "";
-        if ("html".equalsIgnoreCase(ext)) {
-            return findHTMLEncoding(file);
-        }
         if ("properties".equalsIgnoreCase(ext)) {
             return findPropertiesEncoding();
         }
@@ -222,90 +302,6 @@ public class EncodedReaderFactory {
             }
         }
         return null;
-    }
-    
-    /**
-     * Finds the encoding of an HTML file.
-     * <p>
-     * This method was copied from org.netbeans.modules.html.HtmlEditorSupport.
-     */
-    private static String findHTMLEncoding(File file) {
-        byte[] arr = new byte[4096];
-        String txt;
-        InputStream stream = null;
-        try {
-            stream = new FileInputStream(file);
-            int len = stream.read (arr, 0, arr.length);
-            txt = new String (arr, 0, (len>=0)?len:0).toUpperCase();
-        } catch (IOException ioex) {
-            return null;
-        } finally {
-            if (stream != null) {
-                try { stream.close(); } catch (IOException e) {}
-            }
-        }
-        // encoding
-        return findHTMLEncoding (txt);
-    }
-
-    /**
-     * Finds the encoding of an HTML file.
-     */
-    private static String findHTMLEncoding(FileObject fo) {
-        byte[] arr = new byte[4096];
-        String txt;
-        InputStream stream = null;
-        try {
-            stream = fo.getInputStream();
-            int len = stream.read (arr, 0, arr.length);
-            txt = new String (arr, 0, (len>=0)?len:0).toUpperCase();
-        } catch (IOException ioex) {
-            return null;
-        } finally {
-            if (stream != null) {
-                try { stream.close(); } catch (IOException e) {}
-            }
-        }
-        // encoding
-        return findHTMLEncoding (txt);
-    }
-
-    
-    /** Tries to guess the encoding from given header text. Tries to find
-     *   <em>&lt;meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"&gt;</em>
-     * <p>
-     * This method was copied from org.netbeans.modules.html.HtmlEditorSupport.
-     *
-     * @param txt the string to search in (should be in upper case)
-     * @return the encoding or null if no has been found
-     */
-    private static String findHTMLEncoding (String txt) {
-        int headLen = txt.indexOf ("</HEAD>"); // NOI18N
-        if (headLen == -1) headLen = txt.length ();
-        
-        int content = txt.indexOf ("CONTENT-TYPE"); // NOI18N
-        if (content == -1 || content > headLen) {
-            return null;
-        }
-        
-        int charset = txt.indexOf ("CHARSET=", content); // NOI18N
-        if (charset == -1) {
-            return null;
-        }
-        
-        int charend = txt.indexOf ('"', charset);
-        int charend2 = txt.indexOf ('\'', charset);
-        if (charend == -1 && charend2 == -1) {
-            return null;
-        }
-
-        if (charend2 != -1) {
-            if (charend == -1 || charend > charend2) {
-                charend = charend2;
-            }
-        }
-        
-        return txt.substring (charset + "CHARSET=".length (), charend); // NOI18N
     }
     
     private static String findPropertiesEncoding() {
