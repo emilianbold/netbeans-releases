@@ -13,7 +13,9 @@
 
 package org.netbeans.core.output2;
 
+import java.io.IOException;
 import javax.swing.Action;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -29,19 +31,25 @@ public final class NbIOProvider extends IOProvider {
     private static final String STDOUT = NbBundle.getMessage(NbIOProvider.class,
         "LBL_STDOUT"); //NOI18N
     
-    /** 
-     * Default standard out instance
-     */
-    static NbIO stdOut = null;
-    
-    
     public OutputWriter getStdOut() {
-        if (stdOut != null) {
-            stdOut = new NbIO (STDOUT, null);
+        if (Controller.log) {
+            Controller.log("NbIOProvider.getStdOut");
         }
-        //XXX this will cause clearing stdout on each call.  Good? bad?
-        Controller.ensureViewInDefault (stdOut, true);
-        return stdOut.getOut();
+        InputOutput stdout = getIO (STDOUT, false, null);
+        OutWriter out = ((NbIO)stdout).out();
+        
+        Controller.ensureViewInDefault ((NbIO) stdout, true);
+        //ensure it is not closed
+        if (out != null && out.isClosed()) {
+            try {
+                out.reset();
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(e);
+                stdout = getIO (STDOUT, true, null);
+                out = (OutWriter) stdout.getOut();
+            }
+        }
+        return out;
     }
     
     
