@@ -45,6 +45,11 @@ Microsystems, Inc. All Rights Reserved.
     <copy todir="netbeans" includeEmptyDirs="false">
       <fileset dir="release"/>
     </copy>
+    <!-- [PENDING] may according to wishes give another attribute: eof="add" -->
+    <fixcrlf srcdir="netbeans/bin" cr="add">
+      <include name="**/*.bat"/>
+      <include name="**/*.cmd"/>
+    </fixcrlf>
   </target>
 
   <target name="netbeans" depends="jars,release">
