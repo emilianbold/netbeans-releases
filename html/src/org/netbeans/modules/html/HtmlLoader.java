@@ -24,10 +24,12 @@ import com.netbeans.ide.cookies.ViewCookie;
 import com.netbeans.ide.loaders.UniFileLoader;
 import com.netbeans.ide.loaders.MultiDataObject;
 import com.netbeans.ide.loaders.DataObject;
+import com.netbeans.ide.loaders.DataNode;
 import com.netbeans.ide.loaders.DataObjectExistsException;
 import com.netbeans.ide.text.EditorSupport;
 import com.netbeans.ide.loaders.OpenSupport;
 import com.netbeans.ide.filesystems.FileObject;
+import com.netbeans.ide.nodes.Children;
 import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.util.actions.SystemAction;
 import com.netbeans.ide.windows.CloneableTopComponent;
@@ -72,8 +74,19 @@ public class HtmlLoader extends UniFileLoader {
   protected MultiDataObject createMultiObject (FileObject primaryFile)
   throws DataObjectExistsException, IOException {
 
-    MultiDataObject obj = new MultiDataObject (primaryFile, this);
-    obj.setIconBase ("/com/netbeans/developer/modules/loaders/html/htmlObject");
+    class Obj extends MultiDataObject {
+      public Obj (FileObject pf, UniFileLoader l) throws DataObjectExistsException {
+        super (pf, l);
+      }
+      
+      protected com.netbeans.ide.nodes.Node createNodeDelegate () {
+        DataNode n = new DataNode (MultiDataObject.this, Children.LEAF);
+        n.setIconBase ("/com/netbeans/developer/modules/loaders/html/htmlObject");
+        return n;
+      }
+    };
+
+    MultiDataObject obj = new Obj (primaryFile, this);
     EditorSupport es = new EditorSupport (obj.getPrimaryEntry ());
     es.setActions (new SystemAction [] {
       SystemAction.get (CutAction.class),
@@ -160,6 +173,7 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  9    Gandalf   1.8         3/17/99  Jaroslav Tulach No setIconBase
 *  8    Gandalf   1.7         3/14/99  Jaroslav Tulach Change of 
 *       MultiDataObject.Entry.
 *  7    Gandalf   1.6         3/2/99   Jan Jancura     
