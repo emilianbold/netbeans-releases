@@ -25,6 +25,8 @@ import java.text.MessageFormat;
 */
 public class RADMenuItemComponent extends RADComponent {
 
+  static final Object DUMMY_SEPARATOR_INSTANCE = new Object ();
+  
   /** A JDK 1.1 serial version UID */
 //  static final long serialVersionUID = -6333847833552116543L;
 
@@ -32,49 +34,29 @@ public class RADMenuItemComponent extends RADComponent {
   private int type;
 
   /** Possible constants for type variable */
-  static final int T_MENUBAR             = 0x1110;
-  static final int T_MENUITEM            = 0x0011;
-  static final int T_CHECKBOXMENUITEM    = 0x0012;
-  static final int T_MENU                = 0x0113;
-  static final int T_POPUPMENU           = 0x1114;
+  static final int T_MENUBAR              = 0x01110;
+  static final int T_MENUITEM             = 0x00011;
+  static final int T_CHECKBOXMENUITEM     = 0x00012;
+  static final int T_MENU                 = 0x00113;
+  static final int T_POPUPMENU            = 0x01114;
   
-  static final int T_JPOPUPMENU          = 0x1125;
-  static final int T_JMENUBAR            = 0x1126;
-  static final int T_JMENUITEM           = 0x0027;
-  static final int T_JCHECKBOXMENUITEM   = 0x0028;
-  static final int T_JMENU               = 0x0129;
-  static final int T_JRADIOBUTTONMENUITEM= 0x002A;
+  static final int T_JPOPUPMENU           = 0x01125;
+  static final int T_JMENUBAR             = 0x01126;
+  static final int T_JMENUITEM            = 0x00027;
+  static final int T_JCHECKBOXMENUITEM    = 0x00028;
+  static final int T_JMENU                = 0x00129;
+  static final int T_JRADIOBUTTONMENUITEM = 0x0002A;
+
+  static final int T_SEPARATOR            = 0x1001B;
+  static final int T_JSEPARATOR           = 0x1002C;
 
   /** Masks for the T_XXX constants */
-  static final int MASK_AWT              = 0x0010;
-  static final int MASK_SWING            = 0x0020;
-  static final int MASK_CONTAINER        = 0x0100;
-  static final int MASK_ROOT             = 0x1000;
+  static final int MASK_AWT               = 0x00010;
+  static final int MASK_SWING             = 0x00020;
+  static final int MASK_CONTAINER         = 0x00100;
+  static final int MASK_ROOT              = 0x01000;
+  static final int MASK_SEPARATOR         = 0x10000;
 
-  /** Icons for java data objects. * /
-  static protected Image iconMenuBar;
-  static protected Image iconPopupMenu;
-  static protected Image iconMenu;
-  static protected Image iconMenuItem;
-  static protected Image iconCheckBoxMenuItem;
-  static protected Image iconRadioBoxMenuItem;
-
-  static {
-    Toolkit t = java.awt.Toolkit.getDefaultToolkit();
-    Class cl = Object.class;
-    
-    iconMenuBar = t.getImage(cl.getResource("/com/netbeans/developerx/resources/palette/menubar.gif"));
-    iconPopupMenu = t.getImage(cl.getResource("/com/netbeans/developerx/resources/palette/popupmenu.gif"));
-    iconMenu = t.getImage(cl.getResource("/com/netbeans/developerx/resources/form/menu.gif"));
-    iconMenuItem = t.getImage(cl.getResource("/com/netbeans/developerx/resources/form/menuItem.gif"));
-    iconCheckBoxMenuItem = t.getImage(cl.getResource("/com/netbeans/developerx/resources/form/menuCheckItem.gif"));
-    iconRadioBoxMenuItem = t.getImage(cl.getResource("/com/netbeans/developerx/resources/form/menuRadioItem.gif"));
-  }
-*/
-  /** Names of the properties */
-  private static final String PROP_TEXT = "text";
-  private static final String PROP_LABEL = "label";
-  
   /** The MessageFormat for component names */
   private static MessageFormat menuNameFormat =
     new MessageFormat(FormEditor.getFormBundle().getString("FMT_MenuName"));
@@ -91,12 +73,23 @@ public class RADMenuItemComponent extends RADComponent {
     this.parent = parent;
   }
   
+  /** No synthetic properties for AWT Separator */
+  protected org.openide.nodes.Node.Property[] createSyntheticProperties () {
+    if (type == T_SEPARATOR) return RADComponent.NO_PROPERTIES;
+    else return super.createSyntheticProperties ();
+  }
+  
 // -----------------------------------------------------------------------------
 // Public interface
 
   public void setComponent (Class beanClass) {
-    super.setComponent (beanClass);
     type = recognizeType(beanClass);
+    // to initialize the type before calling super.setComponent is crucial, 
+    // as the type is used in various methods called from the setComponent
+    // (e.g. the createSyntheticProperties () relies on this order to correctly
+    //  provide no properties for AWT menu separators)
+
+    super.setComponent (beanClass);
 
     Object o = getBeanInstance();
     if (o instanceof MenuItem) {
@@ -111,40 +104,12 @@ public class RADMenuItemComponent extends RADComponent {
     return type;
   }
 
-  String getItemLabel () {
-    return "label"; // [PENDING]
-  }
-
-  /** Finds an icon for this component.
-  * @see java.bean.BeanInfo
-  * @param type constants from <CODE>java.bean.BeanInfo</CODE>
-  * @return icon to use to represent the bean
-  * /
-  public java.awt.Image getIcon (int type) {
-    switch (this.type) {
-      case T_MENUBAR: return iconMenuBar;
-      case T_MENUITEM: return iconMenuItem;
-      case T_CHECKBOXMENUITEM: return iconCheckBoxMenuItem;
-      case T_MENU: return iconMenu;
-      case T_POPUPMENU: return iconPopupMenu;
-      case T_JPOPUPMENU: return iconPopupMenu;
-      case T_JMENUBAR: return iconMenuBar;
-      case T_JMENUITEM: return iconMenuItem;
-      case T_JCHECKBOXMENUITEM: return iconCheckBoxMenuItem;
-      case T_JMENU: return iconMenu;
-      case T_JRADIOBUTTONMENUITEM: return iconRadioBoxMenuItem;
-      default: return super.getIcon(type);
-    }
-  }
-
-  public java.awt.Image getOpenedIcon (int type) {
-    return getIcon(type);
-  }
-
   /** Test the given class if is is subclass of one of four basic classes and
   * return adequate T_XXX constant.
   */
   static int recognizeType(Class cl) {
+    if (JSeparator.class.isAssignableFrom(cl)) return T_JSEPARATOR;
+    if (com.netbeans.developer.modules.loaders.form.Separator.class.isAssignableFrom(cl)) return T_SEPARATOR;
     if (PopupMenu.class.isAssignableFrom(cl)) return T_POPUPMENU;
     if (Menu.class.isAssignableFrom(cl)) return  T_MENU;
     if (CheckboxMenuItem.class.isAssignableFrom(cl)) return T_CHECKBOXMENUITEM;
@@ -169,20 +134,13 @@ public class RADMenuItemComponent extends RADComponent {
     };
   }
 
-  protected String formatName() {
-    String beanClassName = getBeanClass().getName();
-    String clName = beanClassName;
-    int index = beanClassName.lastIndexOf(".");
-    if (index != -1)
-      clName = beanClassName.substring(index + 1);
-    return menuNameFormat.format(new Object[] { getName(), clName, getItemLabel() });
-  }
-
-
 }
 
 /*
  * Log
+ *  4    Gandalf   1.3         9/6/99   Ian Formanek    Correctly works with 
+ *       separators - fixes bug 3703 - When a new separator is created usng New 
+ *       > Separator in a menu, an exception is thrown.
  *  3    Gandalf   1.2         8/6/99   Ian Formanek    setComponent is public
  *  2    Gandalf   1.1         7/16/99  Ian Formanek    default action
  *  1    Gandalf   1.0         7/5/99   Ian Formanek    

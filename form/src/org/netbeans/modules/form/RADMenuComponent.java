@@ -37,24 +37,11 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     supportedNewMenu.put(new Integer(T_MENUBAR), new Class[] { Menu.class });
     supportedNewMenu.put(new Integer(T_MENU), new Class[] { MenuItem.class, CheckboxMenuItem.class, Menu.class });
     supportedNewMenu.put(new Integer(T_POPUPMENU), new Class[] { MenuItem.class, CheckboxMenuItem.class, Menu.class });
-
     supportedNewMenu.put(new Integer(T_JMENUBAR), new Class[] { JMenu.class });
     supportedNewMenu.put(new Integer(T_JMENU), new Class[] { JMenuItem.class, JCheckBoxMenuItem.class, JRadioButtonMenuItem.class, JMenu.class });
     supportedNewMenu.put(new Integer(T_JPOPUPMENU), new Class[] { JMenuItem.class, JCheckBoxMenuItem.class, JRadioButtonMenuItem.class, JMenu.class });
   }
 
-  /** Default icons for menu separators. */
-//  static protected Image sepIcon;
-//  static protected Image sepIcon32;
-
-  /** Init icons * /
-  static {
-    sepIcon = Toolkit.getDefaultToolkit ().getImage (
-      Object.class.getResource ("/com/netbeans/developerx/resources/form/menuSeparator.gif"));
-    sepIcon32 = Toolkit.getDefaultToolkit ().getImage (
-      Object.class.getResource ("/com/netbeans/developerx/resources/form/menuSeparator32.gif"));
-  }
-*/
 // -----------------------------------------------------------------------------
 // Private variables
 
@@ -98,7 +85,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     for (int i = 0; i < initComponents.length; i++) {
       subComponents.add (initComponents[i]);
       ((RADMenuItemComponent)initComponents[i]).initParent (this);
-      addVisualMenu (initComponents[i]);
+      addVisualMenu ((RADMenuItemComponent)initComponents[i]);
     }
   }
 
@@ -125,53 +112,47 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
   }
 
   public void remove (RADComponent comp) {
-    if (!(comp instanceof RADMenuItemComponent)) throw new IllegalArgumentException ();
-    // [PENDING]
     ((RADChildren)getNodeReference ().getChildren ()).updateKeys ();
   }
 
   public int getIndexOf (RADComponent comp) {
-    if (!(comp instanceof RADMenuItemComponent)) throw new IllegalArgumentException ();
     return subComponents.indexOf (comp);
   }
 
   /**  Adds the menu represented by the node */
-  private void addVisualMenu (RADComponent comp) {
+  private void addVisualMenu (RADMenuItemComponent comp) {
     Object o = getBeanInstance();
-    if (comp instanceof RADMenuItemComponent) {
-      Object m = ((RADMenuItemComponent) comp).getBeanInstance();
+    Object m = comp.getBeanInstance();
 
-      switch (getMenuItemType ()) {
-        case T_MENUBAR:
-          ((MenuBar)o).add((Menu)m);
-          break;
-        case T_MENU:
-        case T_POPUPMENU:
-          ((Menu)o).add((MenuItem)m);
-          break;
-        case T_JMENUBAR:
-          ((JMenuBar)o).add((JMenu)m);
-          break;
-        case T_JMENU:
-          ((JMenu)o).add((JMenuItem)m);
-          break;
-        case T_JPOPUPMENU:
-          ((JPopupMenu)o).add((JMenuItem)m);
-          break;
-      }
-    } else {
-/*      switch (type) {
-        case T_MENU:
-        case T_POPUPMENU:
+    switch (getMenuItemType ()) {
+      case T_MENUBAR:
+        ((MenuBar)o).add((Menu)m);
+        break;
+      case T_MENU:
+      case T_POPUPMENU:
+        if (comp.getMenuItemType () == T_SEPARATOR) {
           ((Menu)o).addSeparator();
-          break;
-        case T_JMENU:
+        } else {
+          ((Menu)o).add((MenuItem)m);
+        }
+        break;
+      case T_JMENUBAR:
+        ((JMenuBar)o).add((JMenu)m);
+        break;
+      case T_JMENU:
+        if (comp.getMenuItemType () == T_JSEPARATOR) {
           ((JMenu)o).addSeparator();
-          break;
-        case T_JPOPUPMENU:
+        } else {
+          ((JMenu)o).add((JMenuItem)m);
+        }
+        break;
+      case T_JPOPUPMENU:
+        if (comp.getMenuItemType () == T_JSEPARATOR) {
           ((JPopupMenu)o).addSeparator();
-          break;
-      } */
+        } else {
+          ((JPopupMenu)o).add((JMenuItem)m);
+        }
+        break;
     }
   }
   
@@ -212,16 +193,17 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     * @exception IOException if something fails
     */
     public void create () throws IOException {
-      RADComponent newNonVisualComp = new RADComponent ();
-      newNonVisualComp.initialize (getFormManager ());
-      newNonVisualComp.setComponent (JSeparator.class); // [PENDING]
-      getFormManager ().addNonVisualComponent (newNonVisualComp, RADMenuComponent.this);
-      getFormManager ().selectComponent (newNonVisualComp, false);
+      RADMenuItemComponent newSeparatorComp = new RADMenuItemComponent ();
+      newSeparatorComp.initialize (getFormManager ());
+      if ((getMenuItemType () == T_MENU) || (getMenuItemType () == T_POPUPMENU)) {
+        newSeparatorComp.setComponent (com.netbeans.developer.modules.loaders.form.Separator.class);
+      } else {
+        newSeparatorComp.setComponent (JSeparator.class);
+      }
+      getFormManager ().addNonVisualComponent (newSeparatorComp, RADMenuComponent.this);
+      addVisualMenu (newSeparatorComp);
+      getFormManager ().selectComponent (newSeparatorComp, false);
       return;
-      
-/*      MenuSeparatorNode sep = new MenuSeparatorNode(RADMenuNode.this);
-      RADMenuNode.this.add(sep);
-      RADMenuNode.this.getFormManager().regenerateInitializer(); */
     }
   }
 
@@ -283,6 +265,9 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
 
 /*
  * Log
+ *  5    Gandalf   1.4         9/6/99   Ian Formanek    Correctly works with 
+ *       separators - fixes bug 3703 - When a new separator is created usng New 
+ *       > Separator in a menu, an exception is thrown.
  *  4    Gandalf   1.3         7/14/99  Ian Formanek    Fixed problem with 
  *       appearance of loaded menus
  *  3    Gandalf   1.2         7/9/99   Ian Formanek    Menu editor improvements

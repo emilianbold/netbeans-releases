@@ -403,6 +403,11 @@ public class JavaCodeGenerator extends CodeGenerator {
   }
   
   private void generateComponentCreate (RADComponent comp, Writer initCodeWriter) throws IOException {
+    if ((comp instanceof RADMenuItemComponent) && (((RADMenuItemComponent)comp).getMenuItemType () == RADMenuItemComponent.T_SEPARATOR)) {
+      // do noty generate init for AWT separator as it is not a real component
+      return;
+    }
+    
     Integer generationType = (Integer)comp.getAuxValue (AUX_CODE_GENERATION);
     if (comp.hasHiddenState () || ((generationType != null) && (generationType.equals (VALUE_SERIALIZE)))) {
       String serializeTo = (String)comp.getAuxValue (AUX_SERIALIZE_TO);
@@ -462,10 +467,16 @@ public class JavaCodeGenerator extends CodeGenerator {
   }
   
   private void generateMenuAddCode (RADComponent comp, RADMenuComponent container, Writer initCodeWriter) throws IOException {
-    initCodeWriter.write (container.getName ());
-    initCodeWriter.write (".add (");
-    initCodeWriter.write (comp.getName ());
-    initCodeWriter.write (");");
+    if ((comp instanceof RADMenuItemComponent) && (((RADMenuItemComponent)comp).getMenuItemType () == RADMenuItemComponent.T_SEPARATOR)) {
+      // treat AWT Separator specially - it is not a component
+      initCodeWriter.write (container.getName ());
+      initCodeWriter.write (".addSeparator ();");
+    } else {
+      initCodeWriter.write (container.getName ());
+      initCodeWriter.write (".add (");
+      initCodeWriter.write (comp.getName ());
+      initCodeWriter.write (");");
+    }
   }
 
 /*  private void generateIndexedPropertySetter (RADComponent comp, PropertyDescriptor desc, StringBuffer text, String indent) {
@@ -701,6 +712,10 @@ public class JavaCodeGenerator extends CodeGenerator {
     RADComponent[] children = cont.getSubBeans ();
     
     for (int i = 0; i < children.length; i++) {
+      if ((children[i] instanceof RADMenuItemComponent) && (((RADMenuItemComponent)children[i]).getMenuItemType () == RADMenuItemComponent.T_SEPARATOR)) {
+        // treat AWT Separator specially - it is not a component
+        continue;
+      }
       Integer m = (Integer) children[i].getAuxValue (AUX_VARIABLE_MODIFIER);
       int modifiers = (m != null) ? m.intValue() : FormEditor.getFormSettings ().getVariablesModifier ();
       variablesWriter.write (java.lang.reflect.Modifier.toString (modifiers));
@@ -1203,6 +1218,9 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  46   Gandalf   1.45        9/6/99   Ian Formanek    Correctly works with 
+ *       separators - fixes bug 3703 - When a new separator is created usng New 
+ *       > Separator in a menu, an exception is thrown.
  *  45   Gandalf   1.44        9/2/99   Ian Formanek    Fixed bug 3698 - When 
  *       the event handler is added or modified, the focus is not transfered to 
  *       the editor.
