@@ -125,16 +125,17 @@ public abstract class AbstractModeContainer implements ModeContainer {
         // PENDING focus gets main window sometimes, investgate and refine (jdk1.4.1?).
         final TopComponent selectedTopComponent = tabbedHandler.getSelectedTopComponent();
         if(selectedTopComponent != null) {
-            //#44278 - invokeLater seems to help the non-focused node problem while changing modes.
-            //everything is processed correctly.. maybe some kind of swing issue?
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
+            //#44278 - invokeLater seemed to help the non-focused node problem while changing modes.
+            // however introduced #46124 - so rollbacking to the state before..
+            
+//            SwingUtilities.invokeLater(new Runnable() {
+//                public void run() {
             // test for focus owner deleted, didn't work correctly during shorcut maximization
             //#39204: Call requestFocusInWindow to avoid changing active window
                     selectedTopComponent.requestFocusInWindow();
-                }
-            }
-            );
+//                }
+//            }
+//            );
             
         }
     }
