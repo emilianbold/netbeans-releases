@@ -397,9 +397,11 @@ public class RADComponent {
 // Protected interface to working with properties on bean instance
 
   protected Object getPropertyValue (PropertyDescriptor desc) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+//System.out.println ("1: "+desc.getName ());
     if (isChangedValue (desc)) {
       return getChangedValue (desc);
     }
+//System.out.println ("2: "+desc.getName ());
     Method readMethod = desc.getReadMethod ();
     if (readMethod == null) {
       throw new IllegalAccessException ();
@@ -408,12 +410,13 @@ public class RADComponent {
   }
 
   protected void setPropertyValue (PropertyDescriptor desc, Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    cacheValue (desc, value);
+
     // [PENDING - property names to cache]
     if ("enabled".equals (desc.getName ()) || 
         "visible".equals (desc.getName ())) 
     {
       // values of these properties are just cached, not represented during design-time
-      cacheValue (desc, value);
       return;
     } 
     
@@ -423,7 +426,7 @@ public class RADComponent {
     }
     Object valueToSet = value;
     if (value instanceof FormDesignValue) {
-      valueToSet = ((FormDesignValue)value).getDesignValue ();
+      valueToSet = ((FormDesignValue)value).getDesignValue (RADComponent.this);
     }
     writeMethod.invoke (getComponentInstance (), new Object[] { valueToSet });
   }
@@ -913,6 +916,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  22   Gandalf   1.21        6/27/99  Ian Formanek    !!! Caches all changed 
+ *       property values !!!
  *  21   Gandalf   1.20        6/24/99  Ian Formanek    Improved 
  *       FormPropertyEditor towards accepting multiple editors
  *  20   Gandalf   1.19        6/9/99   Ian Formanek    ---- Package Change To 
