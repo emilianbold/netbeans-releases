@@ -201,13 +201,7 @@ public class PhysicalView {
 
         public String getShortDescription() {
             FileObject gdir = group.getRootFolder();
-            File f = FileUtil.toFile(gdir);
-            String dir;
-            if (f != null) {
-                dir = f.getAbsolutePath();
-            } else {
-                dir = gdir.getPath();
-            }
+            String dir = FileUtil.getFileDisplayName(gdir);
             return NbBundle.getMessage(PhysicalView.class, 
                                        isProjectDir ? "HINT_project" : "HINT_group", // NOI18N
                                        dir); 

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -191,6 +191,7 @@ public class PatchAction extends NodeAction {
             else file = findChild(fo, fileDiffs[i].getFileName());//fo.getFileObject(fileDiffs[i].getFileName());
             if (file == null) {
                 String path = null;
+                // XXX should probably be using FileUtil.getFileDisplayName here
                 File ff = FileUtil.toFile(fo);
                 if (ff != null) {
                     path = ff.getAbsolutePath() + File.separator;
@@ -348,7 +349,7 @@ public class PatchAction extends NodeAction {
                 backup.delete();
             }
             catch (IOException ex) {
-                filenames.append(backup.getPath());
+                filenames.append(FileUtil.getFileDisplayName(backup));
                 filenames.append("\n");
                 exceptions.append(ex.getLocalizedMessage());
                 exceptions.append("\n");

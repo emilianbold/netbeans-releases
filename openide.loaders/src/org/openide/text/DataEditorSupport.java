@@ -204,7 +204,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
             
         // set document name property
         doc.putProperty(javax.swing.text.Document.TitleProperty,
-            obj.getPrimaryFile ().getPath()
+            FileUtil.getFileDisplayName(obj.getPrimaryFile())
         );
         // set dataobject to stream desc property
         doc.putProperty(javax.swing.text.Document.StreamDescriptionProperty,

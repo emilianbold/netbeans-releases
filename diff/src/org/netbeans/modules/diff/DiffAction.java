@@ -119,6 +119,7 @@ public class DiffAction extends NodeAction {
         try {
             String path1 = null;
             String path2 = null;
+            // XXX should be using FileUtil.getFileDisplayName here
             File file1 = FileUtil.toFile(fo1);
             if (file1 != null) {
                 path1 = file1.getAbsolutePath();
