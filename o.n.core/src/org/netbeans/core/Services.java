@@ -303,7 +303,7 @@ final class Services extends ServiceType.Registry {
         // if the key is not there yet
         try {
           Node n = (Node)map.get (key (s));
-          if (!newKeys.contains (n)) {
+          if (n != null && !newKeys.contains (n)) {
             newKeys.add (n);
           }
         } catch (InstantiationException e) {
@@ -640,6 +640,8 @@ final class Services extends ServiceType.Registry {
 
 /*
 * Log
+*  8    Gandalf   1.7         10/5/99  Jaroslav Tulach Handles missing sections 
+*       too.
 *  7    Gandalf   1.6         10/5/99  Jaroslav Tulach Small improvement.
 *  6    Gandalf   1.5         10/4/99  Jesse Glick     Make Default action on 
 *       service types.
