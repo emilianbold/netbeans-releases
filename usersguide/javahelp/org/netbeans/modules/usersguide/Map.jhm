@@ -14,8 +14,8 @@
 <mapID target="ide.welcome" url="getstart/welcome.html" />
 <mapID target="pending" url="pending.html" />
 <mapID target="tbd" url="tbd.html" />
- <mapID target="bullet_test_topic" url="images/bullet_test.html"/>
-  <mapID target="table_test_topic" url="images/table_test.html"/>
+<mapID target="bullet_test_topic" url="images/bullet_test.html"/>
+<mapID target="table_test_topic" url="images/table_test.html"/>
 <mapID target="gs.ide" url="getstart/ide.html" />
 <mapID target="gs.tour" url="getstart/idetour.html" />
 <mapID target="gs.key" url="getstart/keyconcepts.html" />
@@ -430,7 +430,10 @@
 <!--CSH-->
 
 <!-- Projects window -->
-<mapID target="ProjectTab_Projects" url="pending.html" />
+<mapID target="ProjectTab_Projects" url="project/csh/proj_project_window.html" />
+
+<!-- Files window -->
+<mapID target="ProjectTab_Files" url="project/csh/proj_files_window.html" />
 
 <!-- Link to debugging freeform page from New Freeform J2SE wizard -->
 <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel#debug" url="project/proj_free_debug.html" />
@@ -899,12 +902,6 @@
    <mapID target="org.netbeans.modules.editor.java.JCExtension" url="pending.html" />
    <mapID target="org.netbeans.modules.editor.java.JCProviderPanel" url="pending.html" />
    <mapID target="org.netbeans.editor.ext.JCView" url="pending.html" />
-<!--
-   <mapID target="org.openide.loaders.TemplateWizard1.Templates" url="objects/objects_new.html" />
-   <mapID target="org.openide.loaders.TemplateWizard2" url="objects/objects_new.html" />
-   <mapID target="org.openide.loaders.NewObjectPanel" url="objects/objects_new.html" />
-   <mapID target="org.openide.loaders.ClassNamePanel" url="objects/objects_new.html" />
--->
 
    <mapID target="org.netbeans.modules.vcscore.settings.GeneralVcsSettingsNode" url="vcs-nb/vcs_globalsettings.html" />
 
