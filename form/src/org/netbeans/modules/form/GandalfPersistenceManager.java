@@ -590,6 +590,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
           }
         }
 
+        if (prop == null)       // unknown property, ignore
+          continue;
+        
         try {
           prop.setValue (propValue);
         } catch (java.lang.reflect.InvocationTargetException e) {
@@ -684,15 +687,28 @@ public class GandalfPersistenceManager extends PersistenceManager {
     FileObject formFile = formObject.getFormEntry ().getFile ();
     FileLock lock = null;
     java.io.OutputStream os = null;
+    String encoding = manager.getEncoding();
+    
+    if (encoding == null) {
+      encoding = "UTF-8";
+    }
+    else {
+      // XXX(-tdt) test if the encoding is supported by the JDK
+      try {
+        String x = new String(new byte[0], 0, 0, encoding);
+      }
+      catch (java.io.UnsupportedEncodingException ex) {
+        encoding = "UTF-8";
+      }
+    }
+
     try {
       lock = formFile.lock ();
       StringBuffer buf = new StringBuffer ();
       
       // 1.store XML file header
       buf.append ("<?xml version=\"1.0\""); // NOI18N
-      if (manager.getEncoding () != null) {
-        buf.append (" encoding=\"" + manager.getEncoding ()+ "\""); // NOI18N
-      }
+      buf.append (" encoding=\"" + encoding + "\""); // NOI18N
       buf.append (" ?>\n"); // NOI18N
       buf.append ("\n"); // NOI18N
       
@@ -741,11 +757,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       addElementClose (buf, XML_FORM);
       
       os = formFile.getOutputStream (lock); // [PENDING - first save to ByteArray for safety]
-      if (manager.getEncoding () != null) {
-        os.write (buf.toString ().getBytes (manager.getEncoding ()));
-      } else {
-        os.write (buf.toString ().getBytes ());
-      }
+      os.write (buf.toString ().getBytes(encoding));
     } finally {
       if (os != null) os.close ();
       if (lock != null) lock.releaseLock ();
@@ -1673,6 +1685,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  49   Gandalf-post-FCS1.47.1.0    3/20/00  Tran Duc Trung  FIX: wrong form 
+ *       character encoding can lead to form data loss
  *  48   Gandalf   1.47        1/13/00  Ian Formanek    NOI18N #2
  *  47   Gandalf   1.46        1/5/00   Ian Formanek    NOI18N
  *  46   Gandalf   1.45        1/2/00   Ian Formanek    Improved serialization 
