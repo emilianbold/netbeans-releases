@@ -14,6 +14,7 @@
 package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.event.Event;
 
 import java.util.Collections;
 
@@ -29,6 +30,7 @@ import org.netbeans.api.debugger.jpda.AbstractDICookie;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.util.Operator;
+import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderListener;
 
@@ -78,8 +80,13 @@ public class StartActionProvider extends ActionsProvider {
                         VirtualMachine virtualMachine = cookie.
                             getVirtualMachine ();
                         
-                        Operator o = createOperator (virtualMachine);
-                        o.start ();
+                        final Object startLock = new Object();
+                        Operator o = createOperator (virtualMachine, startLock);
+                        synchronized(startLock) {
+                            if (startVerbose) System.out.println("\nS StartActionProvider.doAction () - starting operator thread");
+                            o.start ();
+                            startLock.wait();
+                        }
                         debuggerImpl.setRunning (
                             virtualMachine,
                             o
@@ -129,11 +136,19 @@ public class StartActionProvider extends ActionsProvider {
     public void removeActionsProviderListener (ActionsProviderListener l) {}
     
     private Operator createOperator (
-        VirtualMachine virtualMachine
+        VirtualMachine virtualMachine,
+        final Object startLock
     ) {
         return new Operator (
             virtualMachine,
-            null,
+            new Executor () {
+                public boolean exec(Event event) {
+                    synchronized(startLock) {
+                        startLock.notify();
+                    }
+                    return false;
+                }
+            },
             new Runnable () {
                 public void run () {
                     ((Session) lookupProvider.lookupFirst 
