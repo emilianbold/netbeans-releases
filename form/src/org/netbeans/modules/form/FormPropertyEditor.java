@@ -20,7 +20,7 @@ import com.netbeans.ide.nodes.*;
  *
  * @author Ian Formanek
  */
-public class FormPropertyEditor implements PropertyEditor {
+public class FormPropertyEditor implements PropertyEditor, PropertyChangeListener {
   // -----------------------------------------------------------------------------
   // Private Variables
 
@@ -40,6 +40,7 @@ public class FormPropertyEditor implements PropertyEditor {
     this.radComponent = radComponent;
     this.propertyType = propertyType;
     currentEditor = defaultEditor;
+    currentEditor.addPropertyChangeListener (this);
   }
 
   Class getPropertyType () {
@@ -51,9 +52,24 @@ public class FormPropertyEditor implements PropertyEditor {
   }
 
   void setCurrentEditor (PropertyEditor editor) {
+    if (currentEditor != null) {
+      currentEditor.removePropertyChangeListener (this);
+    }
     currentEditor = editor;
     currentEditor.setValue (value);
+    if (currentEditor instanceof FormAwareEditor) {
+      ((FormAwareEditor)currentEditor).setRADComponent (radComponent);
+    }
+    currentEditor.addPropertyChangeListener (this);
     firePropertyChange();
+  }
+  
+  // -----------------------------------------------------------------------------
+  // PropertyChangeListener implementation
+
+  public void propertyChange (PropertyChangeEvent evt) {
+    value = currentEditor.getValue ();
+    firePropertyChange ();
   }
   
   // -----------------------------------------------------------------------------
@@ -69,7 +85,8 @@ public class FormPropertyEditor implements PropertyEditor {
   public void setValue(Object value) {
     this.value = value;
     currentEditor.setValue (value);
-    firePropertyChange();
+    Thread.dumpStack();
+    //firePropertyChange();
   }
   
   /**
@@ -193,10 +210,14 @@ public class FormPropertyEditor implements PropertyEditor {
   /**
   * Determines whether the propertyEditor can provide a custom editor.
   *
+      if (allEditors[i].supportsCustomEditor ())
   * @return  True if the propertyEditor can provide a custom editor.
   */
   public boolean supportsCustomEditor() {
-    return true;
+    PropertyEditor[] allEditors = FormPropertyEditorManager.getAllEditors (propertyType, false);
+    if (allEditors.length > 1) return true; // we must allow to choose the editor even if none of them supports custom editing
+    if (allEditors.length == 1) return allEditors[0].supportsCustomEditor ();
+    return false;
   }
 
   // -----------------------------------------------------------------------------
@@ -255,6 +276,7 @@ public class FormPropertyEditor implements PropertyEditor {
 
 /*
  * Log
+ *  2    Gandalf   1.1         5/30/99  Ian Formanek    
  *  1    Gandalf   1.0         5/24/99  Ian Formanek    
  * $
  */

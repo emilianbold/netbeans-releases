@@ -614,7 +614,7 @@ public class RADComponent {
           } catch (IllegalAccessException iex) {
           }
         } else {
-          defaultEditor = FormPropertyEditorManager.getDefaultEditor (desc.getPropertyType ());
+          defaultEditor = FormPropertyEditorManager.findEditor (desc.getPropertyType ());
         }
         if (defaultEditor != null) {
 /*              if (ed instanceof FormAwareEditor) {
@@ -758,7 +758,7 @@ public class RADComponent {
           } catch (IllegalAccessException iex) {
           }
         } else {
-          defaultEditor = FormPropertyEditorManager.getDefaultEditor (desc.getPropertyType ());
+          defaultEditor = FormPropertyEditorManager.findEditor (desc.getPropertyType ());
         }
         if (defaultEditor != null) {
 /*              if (ed instanceof FormAwareEditor) {
@@ -895,6 +895,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  16   Gandalf   1.15        5/30/99  Ian Formanek    
  *  15   Gandalf   1.14        5/26/99  Ian Formanek    cleaned
  *  14   Gandalf   1.13        5/24/99  Ian Formanek    
  *  13   Gandalf   1.12        5/23/99  Ian Formanek    Support for 

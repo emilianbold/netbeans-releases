@@ -39,7 +39,7 @@ public class FormCustomEditor extends JPanel {
     this.editor = editor;
     setBorder (new EmptyBorder (5, 5, 5, 5));
     setLayout (new BorderLayout ());
-    PropertyEditor[] allEditors = FormPropertyEditorManager.getAllEditors (editor.getPropertyType ());
+    PropertyEditor[] allEditors = FormPropertyEditorManager.getAllEditors (editor.getPropertyType (), false);
     if (allEditors.length == 1) {
       if (editor.getCurrentEditor ().supportsCustomEditor ()) {
         add (editor.getCurrentEditor ().getCustomEditor (), BorderLayout.CENTER);
@@ -66,6 +66,7 @@ public class FormCustomEditor extends JPanel {
 
 /*
  * Log
+ *  2    Gandalf   1.1         5/30/99  Ian Formanek    
  *  1    Gandalf   1.0         5/24/99  Ian Formanek    
  * $
  */
