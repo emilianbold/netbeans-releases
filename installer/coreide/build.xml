@@ -15,6 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <property name="ismp.home" location="/usr/local/ismp5"/>
   <property name="nb.dir" location="build/netbeans"/>
+  <property name="ismp.project" value="coreide.xml"/>
   
   <target name="init" depends="set-buildnumber, set-installer.basename, set-nb.zipfile" unless="inited">
     <property name="inited" value="true" />
@@ -49,11 +50,11 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="xsl-win32" depends="init">
     <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="coreide.xml" />
+      <arg value="${ismp.project}" />
       <arg value="-xsl" />
       <arg value="win32.xsl"/>
       <arg value="-saveas"/>
-      <arg value="build/coreide.xml-win32"/>
+      <arg value="build/${ismp.project}-win32"/>
       <classpath>
         <path refid="ismp.cp"/>
       </classpath>
@@ -62,11 +63,11 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="xsl-unix" depends="init">
     <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="coreide.xml" />
+      <arg value="${ismp.project}" />
       <arg value="-xsl" />
       <arg value="unix.xsl"/>
       <arg value="-saveas"/>
-      <arg value="build/coreide.xml-unix"/>
+      <arg value="build/${ismp.project}-unix"/>
       <classpath>
         <path refid="ismp.cp"/>
       </classpath>
@@ -75,11 +76,11 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="xsl-win32" depends="init">
     <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="coreide.xml" />
+      <arg value="${ismp.project}" />
       <arg value="-xsl" />
       <arg value="unix.xsl"/>
       <arg value="-saveas"/>
-      <arg value="build/coreide.xml-win32"/>
+      <arg value="build/${ismp.project}-win32"/>
       <classpath>
         <path refid="ismp.cp"/>
       </classpath>
@@ -88,7 +89,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="build-win32" depends="init, compile, unzip, xsl-win32">
     <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="build/coreide.xml-win32" />
+      <arg value="build/${ismp.project}-win32" />
       <arg value="-build" />
       <arg value="-alias"/>
       <arg value="basedir=${basedir}"/>
@@ -103,7 +104,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="build-unix" depends="init, compile, unzip, xsl-unix">
     <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="build/coreide.xml-unix" />
+      <arg value="build/${ismp.project}-unix" />
       <arg value="-build" />
       <arg value="-alias"/>
       <arg value="basedir=${basedir}"/>
