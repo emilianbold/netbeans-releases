@@ -18,9 +18,6 @@ import java.beans.PropertyEditorManager;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Hashtable;
-import javax.swing.LookAndFeel;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
@@ -38,8 +35,6 @@ public class IDESettings extends SystemOption {
   /** generated Serialized Version UID */
   static final long serialVersionUID = 801136840705717911L;
 
-  /** Look&feel property name */
-  public static final String PROP_LOOK_AND_FEEL = "lookAndFeel";
   /** showTipsOnStartup property name */
   public static final String PROP_SHOW_TIPS_ON_STARTUP = "showTipsOnStartup";
   /** lastTip property name */
@@ -87,37 +82,6 @@ public class IDESettings extends SystemOption {
     showTips = value;
     // fire the PropertyChange
     firePropertyChange (PROP_SHOW_TIPS_ON_STARTUP, new Boolean (!showTips), new Boolean (showTips));
-  }
-
-  /** Getter for the LookAndFeel option */
-  public LookAndFeel getLookAndFeel () {
-    return UIManager.getLookAndFeel ();
-  }
-
-  /** Setter for the LookAndFeel option */
-  public void setLookAndFeel (LookAndFeel value) {
-    LookAndFeel oldValue = UIManager.getLookAndFeel ();
-    if ((oldValue != null) && (value.getClass ().equals (oldValue.getClass ())))
-      return;
-
-    // we do not try to set the unsupported look & feel
-    if (!value.isSupportedLookAndFeel ())
-      return;
-
-    // update the UI
-    try {
-      UIManager.setLookAndFeel(value);
-    } catch (UnsupportedLookAndFeelException e) {
-      TopManager.getDefault().notify(
-        new NotifyDescriptor.Exception(e,
-          NbBundle.getBundle(IDESettings.class).getString("MSG_UnsupportedLookAndFeel"))
-        );
-      return; // we do not update UI, nor we fire the property change now
-    }
-    org.openide.TopManager.getDefault ().getWindowManager ().updateUI ();
-
-    // fire the PropertyChange
-    firePropertyChange (PROP_LOOK_AND_FEEL, oldValue, value);
   }
 
   /** Getter for LastTip
@@ -242,6 +206,8 @@ public class IDESettings extends SystemOption {
 
 /*
  * Log
+ *  14   Gandalf   1.13        1/10/00  Ian Formanek    Look&Feel property 
+ *       removed
  *  13   Gandalf   1.12        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  12   Gandalf   1.11        9/20/99  Jaroslav Tulach #1603
