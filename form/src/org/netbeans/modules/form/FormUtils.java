@@ -1212,24 +1212,21 @@ public class FormUtils
     public static Class loadClass(String name, FileObject formFile)
         throws ClassNotFoundException
     {
-        // first try the system classloader (for Swing components and IDE stuff
-        // like property editors, form module support classes, etc)
-        try {
-            return loadSystemClass(name);
-        }
-        catch (ClassNotFoundException ex) {
+        // first try the project class loader (for user classes)
+        if (formFile != null) {
+            try {
+                return loadUserClass(name, formFile);
+            }
+            catch (ClassNotFoundException ex) {
             // ignore, likely this is not the right classloader
+            }
+            catch (LinkageError ex) {
+                // some problem during loading [should not be left uncaught here?]
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
         }
-        catch (LinkageError ex) {
-            // some problem during loading [should not be left uncaught here?]
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-
-        // second try the project class loader (the class is not an IDE class)
-        if (formFile != null)
-            return loadUserClass(name, formFile);
-
-        throw new ClassNotFoundException(); // classpath unknown
+        // fall back to system class loader (for IDE classes)
+        return loadSystemClass(name);
     }
 
     public static Class loadClass(String name, FormModel form)

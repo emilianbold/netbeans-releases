@@ -46,38 +46,12 @@ public class ClassPathUtils {
     public static Class loadClass(String name, FileObject fileInProject)
         throws ClassNotFoundException
     {
-        ClassNotFoundException cnfe = null;
-        ClassLoader loader;
-
-        // first try compilation classpath of the project
-        ClassPath classPath = ClassPath.getClassPath(fileInProject, ClassPath.COMPILE);
-        
+        ClassPath classPath = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE);
         if (classPath == null) {
             throw new ClassNotFoundException(getBundleString("MSG_NullClassPath")); // NOI18N
-        } else {
-            loader = classPath.getClassLoader(true);
         }
-        try {
-            return loader.loadClass(name);
-        }
-        catch (ClassNotFoundException ex) {
-            cnfe = ex;
-        }
+        return classPath.getClassLoader(true).loadClass(name);
         // LinkageError left uncaught
-
-        // try execution classpath - in case the class is within the same project
-        loader = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE)
-                    .getClassLoader(true);
-        try {
-            return loader.loadClass(name);
-        }
-        catch (ClassNotFoundException ex) {
-            // report failure against compilation classpath (just annotate by this one)
-            ErrorManager.getDefault().annotate(cnfe, ex);
-        }
-        // LinkageError left uncaught
-
-        throw cnfe;
     }
 
     /** Loads class from classpath described by ClassSource object.
