@@ -45,7 +45,6 @@ public class HttpServerModule implements ModuleInstall {
   * Add applet executor
   */
   public void restored() {            
-    System.out.println("Registering HttpServerModule as server");
     com.netbeans.ide.util.HttpServer.registerServer(HttpServerSettings.OPTIONS);
 //    com.mortbay.Base.Log.instance()._out = new NullWriter();
   }
@@ -116,6 +115,7 @@ public class HttpServerModule implements ModuleInstall {
 
 /*
  * Log
+ *  10   Gandalf   1.9         6/1/99   Petr Jiricka    
  *  9    Gandalf   1.8         6/1/99   Petr Jiricka    
  *  8    Gandalf   1.7         5/31/99  Petr Jiricka    
  *  7    Gandalf   1.6         5/28/99  Petr Jiricka    
