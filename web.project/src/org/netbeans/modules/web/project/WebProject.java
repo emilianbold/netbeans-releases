@@ -281,32 +281,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
-//        FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(helper.getStandardPropertyEvaluator (), new String[] {
-//            "${src.dir}/*.java" // NOI18N
-//        }, new String[] {
-//            "${build.classes.dir}/*.class" // NOI18N
-//        });
-        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
-        String webModuleLabel = org.openide.util.NbBundle.getMessage(WebCustomizerProvider.class, "LBL_Node_WebModule"); //NOI18N
-        String webPagesLabel = org.openide.util.NbBundle.getMessage(WebCustomizerProvider.class, "LBL_Node_DocBase"); //NOI18N
-//        String srcJavaLabel = org.openide.util.NbBundle.getMessage(WebCustomizerProvider.class, "LBL_Node_Sources"); //NOI18N
-//        String testJavaLabel = org.openide.util.NbBundle.getMessage(WebCustomizerProvider.class, "LBL_Node_TestSources"); //NOI18N
-        
-        sourcesHelper.addPrincipalSourceRoot("${"+WebProjectProperties.SOURCE_ROOT+"}", webModuleLabel, /*XXX*/null, null);
-//        sourcesHelper.addPrincipalSourceRoot("${"+WebProjectProperties.SRC_DIR+"}", srcJavaLabel, /*XXX*/null, null);
-        sourcesHelper.addPrincipalSourceRoot("${"+WebProjectProperties.WEB_DOCBASE_DIR+"}", webPagesLabel, /*XXX*/null, null);
-//        sourcesHelper.addPrincipalSourceRoot("${"+WebProjectProperties.TEST_SRC_DIR+"}", testJavaLabel, /*XXX*/null, null);
-        
-//        sourcesHelper.addTypedSourceRoot("${"+WebProjectProperties.SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/null, null);
-        sourcesHelper.addTypedSourceRoot("${"+WebProjectProperties.WEB_DOCBASE_DIR+"}", WebProjectConstants.TYPE_DOC_ROOT, webPagesLabel, /*XXX*/null, null);
-        sourcesHelper.addTypedSourceRoot("${"+WebProjectProperties.WEB_DOCBASE_DIR+"}/WEB-INF", WebProjectConstants.TYPE_WEB_INF, /*XXX I18N*/ "WEB-INF", /*XXX*/null, null);
-//        sourcesHelper.addTypedSourceRoot("${"+WebProjectProperties.TEST_SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, testJavaLabel, /*XXX*/null, null);
-        
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-            public void run() {
-                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-            }
-        });
         return Lookups.fixed(new Object[] {
             new Info(),
             aux,
@@ -327,11 +301,10 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             new ProjectOpenedHookImpl(),
             new UnitTestForSourceQueryImpl(getSourceRoots(),getTestSourceRoots()),
             new SourceLevelQueryImpl(this.helper, evaluator()),
-            new JavaSources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+            new WebSources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new WebSharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new RecommendedTemplatesImpl(this.updateHelper),
             new WebFileBuiltQuery (this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
-            sourcesHelper.createSources(),
             helper.createSharabilityQuery(evaluator(), new String[] {
                 "${src.dir}", // NOI18N
                 "${web.docbase.dir}", // NOI18N
