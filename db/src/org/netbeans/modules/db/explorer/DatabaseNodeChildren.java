@@ -34,15 +34,23 @@ public class DatabaseNodeChildren extends Children.Array
 		java.util.Map nodeord = (java.util.Map)nodeinfo.get(DatabaseNodeInfo.CHILDREN_ORDERING);
 		TreeSet children = new TreeSet(new NodeComparator(nodeord));
 		
-		try {		
+		try {
 			Vector chlist = nodeinfo.getChildren();
 			for (int i=0;i<chlist.size();i++) {
-				
 				Node snode = null;
 				Object sinfo = chlist.elementAt(i);
-				if (sinfo instanceof DatabaseNodeInfo) snode = createNode((DatabaseNodeInfo)sinfo);
-				else if (sinfo instanceof Node) snode = (Node)sinfo;
-				if (snode != null) children.add(snode);
+				
+				if (sinfo instanceof DatabaseNodeInfo) {
+				  DatabaseNodeInfo dni = (DatabaseNodeInfo) sinfo;
+				  if (dni.getName().equals("Connection"))
+            dni.setName(dni.getName() + " " + dni.getDatabase());
+				  snode = createNode(dni);
+				}
+				else
+				  if (sinfo instanceof Node)
+				    snode = (Node)sinfo;
+				if (snode != null)
+				  children.add(snode);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -112,7 +120,7 @@ public class DatabaseNodeChildren extends Children.Array
 			ninfo.getChildren().add(info);
 			if (isInitialized()) add(new Node[] {subnode});
 		}
-		
+
 		return subnode;
 	}
 }
