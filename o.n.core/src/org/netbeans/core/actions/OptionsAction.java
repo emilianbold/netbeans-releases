@@ -74,7 +74,7 @@ import org.openide.windows.TopComponent;
 public class OptionsAction extends CallableSystemAction {
 
     public OptionsAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
+        putValue("noIconInMenu", Boolean.TRUE); //NOI18N
     }
     
     private static final String HELP_ID = "org.netbeans.core.actions.OptionsAction"; // NOI18N 

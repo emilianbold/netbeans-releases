@@ -29,7 +29,7 @@ import org.netbeans.core.IDESettings;
 public class HTMLViewAction extends CallableSystemAction {
     
     public HTMLViewAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
+        putValue("noIconInMenu", Boolean.TRUE); //NOI18N
     }
     
     public static final String MODE_NAME = "webbrowser"; // NOI18N

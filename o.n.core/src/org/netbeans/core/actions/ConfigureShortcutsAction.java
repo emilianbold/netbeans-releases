@@ -26,7 +26,7 @@ import org.netbeans.core.ShortcutsEditor;
 public class ConfigureShortcutsAction extends org.openide.util.actions.CallableSystemAction {
 
     public ConfigureShortcutsAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
+        putValue("noIconInMenu", Boolean.TRUE); //NOI18N
     }
     
     public void performAction () {
