@@ -52,9 +52,9 @@ public class J2SEProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static AntProjectHelper createProject(File dir, String codename, String displayName, String mainClass ) throws IOException {
+    public static AntProjectHelper createProject(File dir, String codename, String displayName, String mainClass, String manifestFile ) throws IOException {
         FileObject dirFO = createProjectDir (dir);
-        AntProjectHelper h = createProject(dirFO, codename, displayName, "src", "test", mainClass); //NOI18N
+        AntProjectHelper h = createProject(dirFO, codename, displayName, "src", "test", mainClass, manifestFile); //NOI18N
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
@@ -69,7 +69,7 @@ public class J2SEProjectGenerator {
                                                   final File sourceFolder, final File testFolder) throws IOException {
         assert sourceFolder != null : "Source folder must be given";   //NOI18N
         final FileObject dirFO = createProjectDir (dir);
-        final AntProjectHelper h = createProject(dirFO, codename, displayName, null, null, null);
+        final AntProjectHelper h = createProject(dirFO, codename, displayName, null, null, null, null);
         final J2SEProject p = (J2SEProject) ProjectManager.getDefault().findProject(dirFO);
         final ReferenceHelper refHelper = p.getReferenceHelper();
         try {
@@ -94,7 +94,7 @@ public class J2SEProjectGenerator {
     }
 
     private static AntProjectHelper createProject(FileObject dirFO, String codename, String displayName,
-                                                  String srcRoot, String testRoot, String mainClass) throws IOException {
+                                                  String srcRoot, String testRoot, String mainClass, String manifestFile) throws IOException {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, J2SEProjectType.TYPE, codename);
         h.setDisplayName( displayName == null ? codename : displayName ); // for now
         Element data = h.getPrimaryConfigurationData(true);
@@ -102,6 +102,10 @@ public class J2SEProjectGenerator {
         Element minant = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "minimum-ant-version"); // NOI18N
         minant.appendChild(doc.createTextNode("1.6")); // NOI18N
         data.appendChild(minant);
+        if (manifestFile != null) {
+            Element manifest = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "use-manifest"); // NOI18N
+            data.appendChild(manifest);
+        }
         h.putPrimaryConfigurationData(data, true);
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         // XXX the following just for testing, TBD:
@@ -146,7 +150,9 @@ public class J2SEProjectGenerator {
         ep.setProperty(J2SEProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
         ep.setProperty(J2SEProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
         ep.setProperty(J2SEProjectProperties.JAVADOC_ENCODING, ""); // NOI18N
-
+        if (manifestFile != null) {
+            ep.setProperty("manifest.file", manifestFile); // NOI18N
+        }
 
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);

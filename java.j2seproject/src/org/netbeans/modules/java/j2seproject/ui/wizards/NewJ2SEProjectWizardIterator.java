@@ -44,6 +44,8 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
     static final int TYPE_LIB = 1;
     static final int TYPE_EXT = 2;
 
+    private static final String MANIFEST_FILE = "manifest.mf";
+
     private static final long serialVersionUID = 1L;
     
     private int type;
@@ -107,7 +109,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
             J2SEProjectGenerator.createProject(dirF, codename, displayName, sourceFolder, testFolder );
         }
         else {
-            AntProjectHelper h = J2SEProjectGenerator.createProject (dirF, codename, displayName, mainClass );
+            AntProjectHelper h = J2SEProjectGenerator.createProject (dirF, codename, displayName, mainClass, MANIFEST_FILE );
             if (mainClass != null && mainClass.length () > 0) {
                 try {
                     //String sourceRoot = "src"; //(String)j2seProperties.get (J2SEProjectProperties.SRC_DIR);
@@ -122,6 +124,9 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
             }
         }
         FileObject dir = FileUtil.toFileObject(dirF);
+        if (type == TYPE_APP) {
+            FileObject manifest = dir.createData(MANIFEST_FILE);
+        }
         Project p = ProjectManager.getDefault().findProject(dir);
         
         // Returning FileObject of project diretory. 
