@@ -152,6 +152,7 @@
         <!-- PROJECT PROPERTIES DIALOG BOX FOR A FREE-FORM WEB APPLICATION: -->
 	<!-- The Web Sources panel in Project Properties for a Free-Form Web Application: -->
 	<mapID target="org.netbeans.modules.web.freeform.ui.WebLocationsPanel" url="web/csh/dbox_projprops_freeform/WebLocationsPanel.html" />
+	<mapID target="org.netbeans.modules.web.freeform.ui.WebClasspathPanel" url="web/csh/dbox_projprops_freeform/WebClasspathPanel.html" />
 
 	<!-- NEW PROJECT WIZARD FOR A STANDARD WEB APPLICATION :-->
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelConfigureProject" url="web/csh/projwiz_standard/PanelConfigureProject.html" />
