@@ -50,6 +50,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
   public static final String XML_EVENT = "EventHandler";
   public static final String XML_PROPERTIES = "Properties";
   public static final String XML_PROPERTY = "Property";
+  public static final String XML_SYNTHETIC_PROPERTY = "SyntheticProperty";
+  public static final String XML_SYNTHETIC_PROPERTIES = "SyntheticProperties";
   public static final String XML_AUX_VALUES = "AuxValues";
   public static final String XML_AUX_VALUE = "AuxValue";
   public static final String XML_SERIALIZED_PROPERTY_VALUE = "SerializedValue";
@@ -354,6 +356,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 comp.setAuxValue (auxName, auxValues.get (auxName));
               }
             }
+          } else if (XML_SYNTHETIC_PROPERTIES.equals (componentNode.getNodeName ())) {
+            loadSyntheticProperties (componentNode, comp);
           }
         }
       }
@@ -540,9 +544,50 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
       }
     }
-
   }
 
+  private void loadSyntheticProperties (org.w3c.dom.Node node, RADComponent comp) {
+    org.w3c.dom.Node[] propNodes = findSubNodes (node, XML_SYNTHETIC_PROPERTY);
+    if (propNodes.length > 0) {
+      for (int i = 0; i < propNodes.length; i++) {
+        String propName = findAttribute (propNodes[i], ATTR_PROPERTY_NAME);
+        String encodedValue = findAttribute (propNodes[i], ATTR_PROPERTY_VALUE);
+        Object propValue=null;
+        //System.out.println("loading name="+propName+", encodedValue="+encodedValue);
+        try {
+          propValue = decodeValue (encodedValue);
+        } catch (IOException e) {
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+          // [PENDING - handle error]
+        }
+        //System.out.println("......encoded to:"+propValue);
+
+        Node.Property [] props = comp.getSyntheticProperties ();
+        Node.Property prop=null;
+        for (int j=0, n=props.length; j<n; j++) {
+          if (props[j].getName ().equals (propName)) {
+            prop = props [j];
+            break;
+          }
+        }
+
+        try {
+          prop.setValue (propValue);
+        } catch (java.lang.reflect.InvocationTargetException e) {
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+          // ignore this property // [PENDING]
+        } catch (IllegalAccessException e) {
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+          // ignore this property // [PENDING]
+        } catch (Exception e) {
+          // unexpected exception - always printed
+          e.printStackTrace ();
+          // ignore this property
+        }
+      }
+    }
+  }
+  
   private Hashtable loadEvents (org.w3c.dom.Node node) {
     Hashtable eventsTable = new Hashtable (20);
 
@@ -857,6 +902,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
       buf.append (indent); addElementClose (buf, XML_PROPERTIES);
     }
 
+    // 1.a synthetic properties - only for RADVisualFormContainer
+    if (component instanceof RADVisualFormContainer) {
+      buf.append (indent); addElementOpen (buf, XML_SYNTHETIC_PROPERTIES);
+      saveSyntheticProperties (component, buf, indent + ONE_INDENT);
+      buf.append (indent); addElementClose (buf, XML_SYNTHETIC_PROPERTIES);
+    }
+    
     // 2. Events
     if (component.getEventsList ().getEventNames ().size () > 0) {
       buf.append ("\n");
@@ -987,7 +1039,43 @@ public class GandalfPersistenceManager extends PersistenceManager {
       }
     }
   }
+  
+  private void saveSyntheticProperties (RADComponent component, StringBuffer buf, String indent) {
+    Node.Property[] props = component.getSyntheticProperties ();
+    for (int i = 0; i < props.length; i++) {
+      Node.Property prop = props[i];
 
+      Object value = null;
+      try {
+        value = prop.getValue ();
+      } catch (Exception e) {
+        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+        // problem getting value => ignore this property
+        continue;
+      }
+      String encodeValue = encodeValue (value);
+      if (encodeValue == null) {
+        // [PENDING - notify problem?]
+        continue;
+      }
+      //System.out.println("saving name="+prop.getName ()+", value="+value);
+      buf.append (indent); 
+
+      addLeafElementOpenAttr (
+        buf, 
+        XML_SYNTHETIC_PROPERTY, 
+        new String[] { 
+          ATTR_PROPERTY_NAME, 
+          ATTR_PROPERTY_VALUE, 
+          },
+        new String[] { 
+          prop.getName (), 
+          encodeValue,
+        }
+      );
+    }
+  }  
+  
   private void saveEvents (Hashtable events, StringBuffer buf, String indent) {
     for (Iterator it = events.keySet ().iterator (); it.hasNext (); ) {
       String eventName = (String)it.next ();
@@ -1528,6 +1616,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  45   Gandalf   1.44        12/14/99 Pavel Buzek     #1991
  *  44   Gandalf   1.43        12/9/99  Pavel Buzek     reading propertied that 
  *       support XML but were serialized in older beta version
  *  43   Gandalf   1.42        11/24/99 Pavel Buzek     decodeValue and 
