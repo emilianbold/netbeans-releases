@@ -109,7 +109,7 @@ public class MetaComponentCreator {
     {
         int targetPlacement = getTargetPlacement(sourceComp.getBeanClass(),
                                                  targetComp,
-                                                 false);
+                                                 false, false);
 
         // if layout or border is to be copied from a meta component, we just
         // apply the cloned instance, but don't copy the meta component
@@ -157,7 +157,8 @@ public class MetaComponentCreator {
     public static boolean canAddComponent(Class beanClass,
                                           RADComponent targetComp)
     {
-        int targetPlacement = getTargetPlacement(beanClass, targetComp, false);
+        int targetPlacement = getTargetPlacement(beanClass, targetComp,
+                                                 false, false);
         return targetPlacement == TARGET_OTHER
                 || targetPlacement == TARGET_MENU
                 || targetPlacement == TARGET_VISUAL;
@@ -166,7 +167,8 @@ public class MetaComponentCreator {
     public static boolean canApplyComponent(Class beanClass,
                                             RADComponent targetComp)
     {
-        int targetPlacement = getTargetPlacement(beanClass, targetComp, false);
+        int targetPlacement = getTargetPlacement(beanClass, targetComp,
+                                                 false, false);
         return targetPlacement == TARGET_BORDER
                 || targetPlacement == TARGET_LAYOUT;
     }
@@ -208,7 +210,7 @@ public class MetaComponentCreator {
 
         RADComponent newComp;
 
-        switch (getTargetPlacement(beanClass, targetComp, true)) {
+        switch (getTargetPlacement(beanClass, targetComp, true, true)) {
             case TARGET_LAYOUT:
                 newComp = setContainerLayout(source, targetComp);
                 break;
@@ -236,9 +238,17 @@ public class MetaComponentCreator {
         return newComp;
     }
 
+    /** This method is responsible for decision whether a bean can be added to
+     * (or applied on) a target component in FormModel. It returns a constant
+     * of corresponding target operation. This method is used in two modes.
+     * It is more strict for copy/cut/paste operations (paramaters canUseParent
+     * and DefaultToOthers are set to false), and less strict for visual
+     * ("click") operations (canUseParent and defaultToOthers set to true).
+     */
     private static int getTargetPlacement(Class beanClass,
                                           RADComponent targetComp,
-                                          boolean canUseParent)
+                                          boolean canUseParent,
+                                          boolean defaultToOthers)
     {
         if (LayoutSupportDelegate.class.isAssignableFrom(beanClass)
               || LayoutManager.class.isAssignableFrom(beanClass))
@@ -302,8 +312,13 @@ public class MetaComponentCreator {
                         return TARGET_MENU;
                 }
                 else return NO_TARGET; // unknown container
+
+                return defaultToOthers ? TARGET_MENU : NO_TARGET;
+                // [Temporary solution - better would be to let the menu be
+                // tried as a visual component (Now, it would not have special
+                // features of menu components like adding submenus, menu items,
+                // etc). This should be fixed. Meanwhile, we return here...]
             }
-            return TARGET_MENU;
         }
 
         else if (JSeparator.class.isAssignableFrom(beanClass)
@@ -343,10 +358,10 @@ public class MetaComponentCreator {
             return TARGET_VISUAL;
         }
 
-        if (targetComp instanceof RADMenuComponent)
-            return NO_TARGET;
-        else
+        if (targetComp == null || defaultToOthers)
             return TARGET_OTHER;
+
+        return NO_TARGET;
     }
 
     // ---------
