@@ -1123,7 +1123,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         }
         
         /** Overriden to explicitely set persistence type of ModuleTab
-         * to PERSISTENCE_ALWAYS */
+         * to selected type */
         public int getPersistenceType() {
             return persistenceType;
         }
