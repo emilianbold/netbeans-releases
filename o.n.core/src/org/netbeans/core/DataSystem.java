@@ -79,7 +79,7 @@ final class DataSystem extends AbstractNode {
   * @param filter the filter to use
   */
   private DataSystem(Children ch, DataFilter filter) {
-    this (ch, Repository.getDefault (), filter);
+    this (ch, NbTopManager.getDefaultRepository (), filter);
   }
 
 
@@ -308,7 +308,7 @@ final class DataSystem extends AbstractNode {
     // must not be called from constructor of DataSystem
     protected java.util.Map initMap() {
       if (ref == null) throw new RuntimeException();
-      Enumeration en = Repository.getDefault().getFileSystems();
+      Enumeration en = NbTopManager.getDefaultRepository ().getFileSystems();
       java.util.Map map = new java.util.HashMap();
       while (en.hasMoreElements ()) {
         // the root that should represent the file system
@@ -411,6 +411,8 @@ final class DataSystem extends AbstractNode {
 
 /*
  * Log
+ *  8    Gandalf   1.7         3/19/99  Jaroslav Tulach TopManager.getDefault 
+ *       ().getRegistry ()
  *  7    Gandalf   1.6         3/17/99  Ian Formanek    Short Description, 
  *       cleaned up displayName -> Name
  *  6    Gandalf   1.5         2/11/99  Ian Formanek    Renamed FileSystemPool 

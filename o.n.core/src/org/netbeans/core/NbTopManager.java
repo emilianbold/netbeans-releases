@@ -70,6 +70,9 @@ public class NbTopManager extends TopManager {
   /** currently used debugger or null if none is in use */
   private static Debugger debugger;
 
+  /** default repository */
+  private static Repository repository;
+
   /** ExecutionMachine */
   private com.netbeans.ide.execution.ExecutionEngine execEngine;
 
@@ -94,12 +97,30 @@ public class NbTopManager extends TopManager {
   /** support for listeners */
   static PropertyChangeSupport change;
 
+  /** repository */
+  static Repository defaultRepository;
+
 
   /** Constructs a new manager.
   */
   NbTopManager() {
     change = new PropertyChangeSupport (this);
   }
+
+  /** Default repository
+  */
+  public Repository getRepository () {
+    return defaultRepository;
+  }
+
+  /** Default repository.
+  */
+  static Repository getDefaultRepository () {
+    return defaultRepository;
+  }
+
+  /** Default repository.
+  *
 
   /** Shows a specified HelpCtx in IDE's help window.
   * @param helpCtx thehelp to be shown

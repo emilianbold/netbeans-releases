@@ -169,11 +169,11 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
    */
   private DataFolder findSessionFolder (String name) {
     try {
-      FileObject fo = Repository.getDefault().findResource(name);
+      FileObject fo = NbTopManager.getDefaultRepository().findResource(name);
 
       if (fo == null) {
         // resource not found, try to create new folder
-        fo = Repository.getDefault ().getDefaultFileSystem ().getRoot ().createFolder (name);
+        fo = NbTopManager.getDefaultRepository ().getDefaultFileSystem ().getRoot ().createFolder (name);
       }
 
       DataFolder df = DataFolder.findFolder(fo);
@@ -188,6 +188,8 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  15   Gandalf   1.14        3/19/99  Jaroslav Tulach TopManager.getDefault 
+*       ().getRegistry ()
 *  14   Gandalf   1.13        3/13/99  Jaroslav Tulach Places.roots ()
 *  13   Gandalf   1.12        3/11/99  Ian Formanek    
 *  12   Gandalf   1.11        3/11/99  Ian Formanek    Bookmarks & Startup added
