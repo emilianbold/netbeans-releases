@@ -49,6 +49,7 @@ import org.netbeans.core.actions.*;
 import org.netbeans.core.modules.InstalledFileLocatorImpl;
 import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.modules.ModuleSystem;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  * Most of the NetBeans startup logic that is not closely tied to the GUI.
@@ -255,23 +256,21 @@ public class NonGui extends NbTopManager implements Runnable {
                         //System.setProperty("import.canceled", canceled ? "true" : "false"); // NOI18N
                         
                         // Let's use reflection
-                        File coreide = new InstalledFileLocatorImpl().locate("modules/org-netbeans-core-ide.jar", null, false); // NOI18N
+                        InstalledFileLocator ifl = new InstalledFileLocatorImpl();
+                        File coreide = ifl.locate("modules/org-netbeans-core-ide.jar", "org.netbeans.core.ide", false); // NOI18N
                         if (coreide != null) {
                             // This module is included in our distro somewhere... may or may not be turned on.
                             // Whatever - try running some classes from it anyway.
                             try {
-                                // #30502: don't forget locale variants!
                                 List urls = new ArrayList();
                                 urls.add(coreide.toURI().toURL());
-                                File localeDir = new File(coreide.getParentFile(), "locale"); // NOI18N
-                                if (localeDir.isDirectory()) {
-                                    Iterator it = NbBundle.getLocalizingSuffixes();
-                                    while (it.hasNext()) {
-                                        String suffix = (String)it.next();
-                                        File v = new File(localeDir, "org-netbeans-core-ide" + suffix + ".jar"); // NOI18N
-                                        if (v.isFile()) {
-                                            urls.add(v.toURI().toURL());
-                                        }
+                                // #30502: don't forget locale variants!
+                                Iterator it = NbBundle.getLocalizingSuffixes();
+                                while (it.hasNext()) {
+                                    String suffix = (String)it.next();
+                                    File var = ifl.locate("modules/locale/org-netbeans-core-ide" + suffix + ".jar", "org.netbeans.core.ide", false); // NOI18N
+                                    if (var != null) {
+                                        urls.add(var.toURI().toURL());
                                     }
                                 }
                                 ClassLoader l = new URLClassLoader((URL[])urls.toArray(new URL[urls.size()]), NonGui.class.getClassLoader());
