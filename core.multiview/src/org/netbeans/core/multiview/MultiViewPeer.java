@@ -491,7 +491,7 @@ public final class MultiViewPeer  {
     
     public Lookup getLookup() {
         if (lookup == null) {
-            lookup = new MultiViewTopComponentLookup(new Object[] {delegatingMap});
+            lookup = new MultiViewTopComponentLookup(delegatingMap);
         }
         return lookup;
     }

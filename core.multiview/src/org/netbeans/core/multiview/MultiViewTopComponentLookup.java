@@ -13,13 +13,14 @@
 
 package org.netbeans.core.multiview;
 
+import javax.swing.Action;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 import java.beans.*;
 import java.util.*;
 import javax.swing.ActionMap;
 
 import org.openide.nodes.*;
-import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.lookup.AbstractLookup;
@@ -31,10 +32,10 @@ class MultiViewTopComponentLookup extends Lookup {
     private MyProxyLookup proxy;
     private InitialProxyLookup initial;
     
-    public MultiViewTopComponentLookup(Object[] initialObjects) {
+    public MultiViewTopComponentLookup(ActionMap initialObject) {
         super();
         // need to delegate in order to get the correct Lookup.Templates that refresh..
-        initial = new InitialProxyLookup(initialObjects);
+        initial = new InitialProxyLookup(initialObject);
         proxy = new MyProxyLookup(initial);
     }
     
@@ -173,16 +174,63 @@ class MultiViewTopComponentLookup extends Lookup {
     }
     
     private static class InitialProxyLookup extends ProxyLookup {
-        private Object[] initObjects;
-        public InitialProxyLookup(Object[] objs) {
-            super(new Lookup[] {Lookups.fixed(objs)});
-            initObjects = objs;
+        private ActionMap initObject;
+        public InitialProxyLookup(ActionMap obj) {
+            super(new Lookup[] {Lookups.fixed(new Object[] {new LookupProxyActionMap(obj)})});
+            initObject = obj;
         }
 
         public void refreshLookup() {
-            setLookups(new Lookup[] {Lookups.fixed(initObjects)});
+            setLookups(new Lookup[] {Lookups.fixed(new Object[] {new LookupProxyActionMap(initObject)})});
         }
         
     }
     
+    /**
+     * non private because of tests..
+     */
+    static class LookupProxyActionMap extends ActionMap  {
+        private ActionMap map;
+        public LookupProxyActionMap(ActionMap original) {
+            map = original;
+        }
+        
+        public void setParent(ActionMap map) {
+            this.map.setParent(map);
+        }
+        
+        
+        public ActionMap getParent() {
+            return map.getParent();
+        }
+        
+        public void put(Object key, Action action) {
+            map.put(key, action);
+        }
+        
+        public Action get(Object key) {
+            return map.get(key);
+        }
+        
+        public void remove(Object key) {
+            map.remove(key);
+        }
+        
+        public void clear() {
+            map.clear();
+        }
+        
+        public Object[] keys() {
+            return map.keys();
+        }
+        
+        public int size() {
+            return map.size();
+        }
+        
+        public Object[] allKeys() {
+            return map.allKeys();
+        }
+        
+    }
 }

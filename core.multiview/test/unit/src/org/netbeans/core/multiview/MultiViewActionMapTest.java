@@ -113,7 +113,7 @@ public class MultiViewActionMapTest extends NbTestCase {
         tc.getActionMap().put("testkey", act);
         ActionMap obj = (ActionMap)tc.getLookup().lookup(ActionMap.class);
         assertNotNull(obj);
-        assertEquals(obj.getClass(), MultiViewActionMap.class);
+        assertEquals(obj.getClass(), MultiViewTopComponentLookup.LookupProxyActionMap.class);
         Action res = (Action)obj.get("testkey");
         assertNotNull(res);
         assertEquals("MultiViewAction", res.getValue(Action.NAME));
@@ -234,6 +234,7 @@ public class MultiViewActionMapTest extends NbTestCase {
         private String key;
         private Action action;
         int count = 0;
+        private ActionMap lastMap;
         
         public void setCorrectValues(String keyValue, Action actionValue) {
             action = actionValue;
@@ -248,6 +249,11 @@ public class MultiViewActionMapTest extends NbTestCase {
             Lookup.Result res = (Lookup.Result)ev.getSource();
             assertEquals(1, res.allInstances().size());
             ActionMap map = (ActionMap)res.allInstances().iterator().next();
+            if (lastMap != null) {
+                // because of CallbackSystemAction.GlobalManager
+                assertNotSame(map, lastMap);
+            }
+            lastMap = map;
             Action act = map.get(key);
             assertEquals(action, act);
             count++;
@@ -352,7 +358,7 @@ public class MultiViewActionMapTest extends NbTestCase {
         
         ActionMap map = (ActionMap)look.lookup(ActionMap.class);
         assertNotNull("is null", map);
-        assertEquals("is wrong class=" + map.getClass(), map.getClass(), MultiViewActionMap.class);
+        assertEquals("is wrong class=" + map.getClass(), map.getClass(), MultiViewTopComponentLookup.LookupProxyActionMap.class);
         Action res = map.get("testkey");
         assertNull(res);
         Action act = new TestAction("MultiViewAction");
