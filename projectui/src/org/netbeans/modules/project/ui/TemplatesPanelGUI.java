@@ -25,7 +25,6 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -176,16 +175,16 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                             try {
                                 this.description.setPage (descURL);                                
                             } catch (IOException e) {
-                                this.description.setText (ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("TXT_NoDescription"));
+                                this.description.setText (NbBundle.getBundle (TemplatesPanelGUI.class).getString ("TXT_NoDescription")); // NOI18N
                             }
                         }
                         else {
-                            this.description.setText (ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("TXT_NoDescription"));
+                            this.description.setText (NbBundle.getBundle (TemplatesPanelGUI.class).getString ("TXT_NoDescription")); // NOI18N
                         }
                     }                    
                 } else {
                     // bugfix #46738, Description in New Project dialog doesn't show description of selected categories
-                    this.description.setText (ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("TXT_NoDescription"));                
+                    this.description.setText (NbBundle.getBundle (TemplatesPanelGUI.class).getString ("TXT_NoDescription")); // NOI18N
                 }
                 this.firer.fireChange ();
             }
@@ -221,9 +220,9 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(500, 230));
-        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("MNE_Categories").charAt(0));
+        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(TemplatesPanelGUI.class).getString("MNE_Categories").charAt(0));
         jLabel1.setLabelFor(categoriesPanel);
-        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("CTL_Categories"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getBundle(TemplatesPanelGUI.class).getString("CTL_Categories"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -233,9 +232,9 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(jLabel1, gridBagConstraints);
 
-        jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("MNE_Templates").charAt(0));
+        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(TemplatesPanelGUI.class).getString("MNE_Templates").charAt(0));
         jLabel2.setLabelFor(projectsPanel);
-        jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("CTL_Templates"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getBundle(TemplatesPanelGUI.class).getString("CTL_Templates"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -263,9 +262,9 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.insets = new java.awt.Insets(2, 6, 6, 0);
         add(projectsPanel, gridBagConstraints);
 
-        jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("CTL_DescriptionMnemonic").charAt(0));
+        jLabel3.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(TemplatesPanelGUI.class).getString("CTL_DescriptionMnemonic").charAt(0));
         jLabel3.setLabelFor(description);
-        jLabel3.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("CTL_Description"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getBundle(TemplatesPanelGUI.class).getString("CTL_Description"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -274,7 +273,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         add(jLabel3, gridBagConstraints);
 
         description.setEditable(false);
-        description.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("TXT_NoDescription"));
+        description.setText(org.openide.util.NbBundle.getBundle(TemplatesPanelGUI.class).getString("TXT_NoDescription"));
         description.setPreferredSize(new java.awt.Dimension(100, 66));
         jScrollPane1.setViewportView(description);
 

@@ -154,10 +154,9 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
 
         setLayout(new java.awt.GridBagLayout());
 
-        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("AD_J2SEVolumeCustomizer"));
-        message.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("MNE_ContentMessage").charAt(0));
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(J2SEVolumeCustomizer.class).getString("AD_J2SEVolumeCustomizer"));
         message.setLabelFor(content);
-        message.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("CTL_ContentMessage"));
+        org.openide.awt.Mnemonics.setLocalizedText(message, org.openide.util.NbBundle.getBundle(J2SEVolumeCustomizer.class).getString("CTL_ContentMessage"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -178,8 +177,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 6, 6);
         add(jScrollPane1, gridBagConstraints);
 
-        addButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("MNE_AddContent").charAt(0));
-        addButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("CTL_AddContent"));
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getBundle(J2SEVolumeCustomizer.class).getString("CTL_AddContent"));
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addResource(evt);
@@ -194,9 +192,9 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 6, 5, 6);
         add(addButton, gridBagConstraints);
+        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(J2SEVolumeCustomizer.class).getString("AD_addButton"));
 
-        removeButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("MNE_RemoveContent").charAt(0));
-        removeButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("CTL_RemoveContent"));
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getBundle(J2SEVolumeCustomizer.class).getString("CTL_RemoveContent"));
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeResource(evt);
@@ -211,10 +209,9 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
         add(removeButton, gridBagConstraints);
-        removeButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("AD_RemoveContent"));
+        removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(J2SEVolumeCustomizer.class).getString("AD_RemoveContent"));
 
-        upButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("MNE_UpContent").charAt(0));
-        upButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("CTL_UpContent"));
+        org.openide.awt.Mnemonics.setLocalizedText(upButton, org.openide.util.NbBundle.getBundle(J2SEVolumeCustomizer.class).getString("CTL_UpContent"));
         upButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 upResource(evt);
@@ -229,10 +226,9 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 6);
         add(upButton, gridBagConstraints);
-        upButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("AD_UpContent"));
+        upButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(J2SEVolumeCustomizer.class).getString("AD_UpContent"));
 
-        downButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("MNE_DownContent").charAt(0));
-        downButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("CTL_DownContent"));
+        org.openide.awt.Mnemonics.setLocalizedText(downButton, org.openide.util.NbBundle.getBundle(J2SEVolumeCustomizer.class).getString("CTL_DownContent"));
         downButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 downResource(evt);
@@ -247,7 +243,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 6, 6);
         add(downButton, gridBagConstraints);
-        downButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("AD_DownContent"));
+        downButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(J2SEVolumeCustomizer.class).getString("AD_DownContent"));
 
     }//GEN-END:initComponents
 

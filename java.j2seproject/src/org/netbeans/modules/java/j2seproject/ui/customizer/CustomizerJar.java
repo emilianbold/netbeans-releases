@@ -91,7 +91,7 @@ public class CustomizerJar extends JPanel implements J2SECustomizer.Panel, HelpC
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 12);
         add(jTextFieldDistDir, gridBagConstraints);
-        jTextFieldDistDir.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_jTextFieldDistDir"));
+        jTextFieldDistDir.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJar.class).getString("AD_jTextFieldDistDir"));
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_Excludes_JTextField"));
         jLabel2.setLabelFor(jTextFieldExcludes);
@@ -110,7 +110,7 @@ public class CustomizerJar extends JPanel implements J2SECustomizer.Panel, HelpC
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(jTextFieldExcludes, gridBagConstraints);
-        jTextFieldExcludes.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_jTextFieldExcludes"));
+        jTextFieldExcludes.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJar.class).getString("AD_jTextFieldExcludes"));
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxCommpress, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_Commpres_JCheckBox"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -122,7 +122,7 @@ public class CustomizerJar extends JPanel implements J2SECustomizer.Panel, HelpC
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         add(jCheckBoxCommpress, gridBagConstraints);
-        jCheckBoxCommpress.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_jCheckBoxCompress"));
+        jCheckBoxCommpress.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJar.class).getString("AD_jCheckBoxCompress"));
 
     }//GEN-END:initComponents
     

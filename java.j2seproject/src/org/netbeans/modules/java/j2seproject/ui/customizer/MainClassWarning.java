@@ -61,11 +61,11 @@ public class MainClassWarning extends JPanel {
 
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jPanel1 = new MainClassChooser (sourcesRoot, java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("CTL_SelectAvaialableMainClasses"));
+        jPanel1 = new MainClassChooser (sourcesRoot, org.openide.util.NbBundle.getBundle(MainClassWarning.class).getString("CTL_SelectAvaialableMainClasses"));
 
         setLayout(new java.awt.GridBagLayout());
 
-        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_MainClassWarning"));
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(MainClassWarning.class).getString("AD_MainClassWarning"));
         jLabel1.setText(org.openide.util.NbBundle.getMessage(MainClassWarning.class, "LBL_MainClassNotFound", new Object[] {projectName}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

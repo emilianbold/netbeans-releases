@@ -405,9 +405,9 @@ public class PanelSourceFolders extends SettingsPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         jPanel2.add(projectName, gridBagConstraints);
 
-        jLabel6.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_CreatedProjectFolder_LablelMnemonic").charAt(0));
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_NWP1_CreatedProjectFolder_Lablel"));
+        jLabel6.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(PanelSourceFolders.class).getString("LBL_NWP1_CreatedProjectFolder_LablelMnemonic").charAt(0));
         jLabel6.setLabelFor(projectLocation);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_NWP1_CreatedProjectFolder_Lablel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);

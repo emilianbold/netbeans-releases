@@ -130,7 +130,7 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel, H
         add(jCheckBoxDebugInfo, gridBagConstraints);
         jCheckBoxDebugInfo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustomizerCompile_jCheckBoxDebugInfo"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeprecation, java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("LBL_CustomizeCompile_Compiler_Deprecation_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeprecation, org.openide.util.NbBundle.getBundle(CustomizerCompile.class).getString("LBL_CustomizeCompile_Compiler_Deprecation_JCheckBox"));
         jCheckBoxDeprecation.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -257,7 +257,7 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel, H
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 13, 0);
         add(jPanel2, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxBuildSubprojects, java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("LBL_CustomizeCompile_Build_Subprojects"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxBuildSubprojects, org.openide.util.NbBundle.getBundle(CustomizerCompile.class).getString("LBL_CustomizeCompile_Build_Subprojects"));
         jCheckBoxBuildSubprojects.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
