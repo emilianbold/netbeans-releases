@@ -80,12 +80,14 @@ public final class NbPlaces extends Object implements Places, Places.Nodes, Plac
         return DataSystem.getDataSystem (f);
     }
 
-    /** Get a root of packages with a given data filter.
-    * @param f the requested filter
-    * @return the node
-    */ 
+    /**
+     * Implements <code>org.openide.Places.Nodes interface method.
+     * <em>Note: This method is no longer supported.</em>
+     * @param f the requested filter
+     * @return empty node */ 
     public Node packages (DataFilter f) {
-        return PackageChildren.createNode (f);
+        //return PackageChildren.createNode (f);
+        return Node.EMPTY;
     }
 
     /** Node with all installed loaders.
