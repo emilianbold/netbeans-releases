@@ -169,7 +169,8 @@ public final class EclipseProject implements Comparable {
         Collection libs = cp.getLibraries(); // internal libraries
         Collection extLibs = cp.getExternalLibraries(); // external libraries
         Collection ulJars = getUserLibrariesJars(); // jars in user libraries
-        File[] files = new File[libs.size() + extLibs.size() + ulJars.size()];
+        Collection variables = cp.getVariables();
+        File[] files = new File[libs.size() + extLibs.size() + ulJars.size() + variables.size()];
         int i = 0;
         for (Iterator it = libs.iterator(); it.hasNext(); ) {
             files[i++] = new File(((ClassPathEntry)it.next()).getAbsolutePath());
@@ -179,6 +180,9 @@ public final class EclipseProject implements Comparable {
         }
         for (Iterator it = ulJars.iterator(); it.hasNext(); ) {
             files[i++] = new File((String) it.next());
+        }
+        for (Iterator it = variables.iterator(); it.hasNext(); ) {
+            files[i++] = new File(((ClassPathEntry)it.next()).getAbsolutePath());
         }
         return files;
     }
