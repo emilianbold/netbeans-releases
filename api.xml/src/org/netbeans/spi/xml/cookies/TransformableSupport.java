@@ -103,14 +103,21 @@ public final class TransformableSupport implements TransformableCookie {
             transformer.transform (xmlSource, outputResult);
             
         } catch (Exception exc) { // TransformerException, ParserConfigurationException, SAXException, FileStateInvalidException
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    EXCEPTION during transformation", exc);
+            if ( Util.THIS.isLoggable() ) /* then */ {
+                Util.THIS.debug ("    EXCEPTION during transformation", exc);
+                Util.THIS.debug ("    exception's message = " + exc.getLocalizedMessage());
+
+                Throwable tempExc = unwrapException (exc);
+                Util.THIS.debug ("    wrapped exception = " + tempExc.getLocalizedMessage());
+            }
 
             TransformerException transExcept = null;
             CookieObserver.Message message = null;
 
             if ( notifier != null ) {
+                Throwable unwrappedExc = unwrapException (exc);
                 message = new CookieObserver.Message
-                    (exc.getLocalizedMessage(), 
+                    (unwrappedExc.getLocalizedMessage(),
                      CookieObserver.Message.FATAL_ERROR_LEVEL);
             }
 
@@ -142,9 +149,27 @@ public final class TransformableSupport implements TransformableCookie {
         }                
     }
 
+
     //
     // utils
     //
+
+    private static Throwable unwrapException (Throwable exc) {
+        Throwable wrapped = null;
+        if (exc instanceof TransformerException) {
+            wrapped = ((TransformerException) exc).getException();
+        } else if (exc instanceof SAXException) {
+            wrapped = ((SAXException) exc).getException();
+        } else {
+            return exc;
+        }
+
+        if ( wrapped == null ) {
+            return exc;
+        }
+
+        return unwrapException (wrapped);
+    }
 
     private static URIResolver getURIResolver () {
         UserCatalog catalog = UserCatalog.getDefault();
@@ -222,31 +247,31 @@ public final class TransformableSupport implements TransformableCookie {
             this.peer = peer;
         }
         
-        public void error (TransformerException tex) throws javax.xml.transform.TransformerException {
-            CookieObserver.Message message = new CookieObserver.Message(
-                tex.getLocalizedMessage(), 
-                CookieObserver.Message.ERROR_LEVEL
-            );            
-            message.addDetail(new DefaultXMLProcessorDetail(tex));
+        public void error (TransformerException tex) throws TransformerException {
+            report (CookieObserver.Message.ERROR_LEVEL, tex);
+        }
+        
+        public void fatalError (TransformerException tex) throws TransformerException {
+            report (CookieObserver.Message.FATAL_ERROR_LEVEL, tex);
+        }
+        
+        public void warning (TransformerException tex) throws TransformerException {
+            report (CookieObserver.Message.WARNING_LEVEL, tex);
+        }
+
+        private void report (int level, TransformerException tex) throws TransformerException {
+            if ( Util.THIS.isLoggable() ) /* then */ {
+                Util.THIS.debug ("[TransformableSupport::Proxy]: report [" + level + "]: ", tex);
+                Util.THIS.debug ("    exception's message = " + tex.getLocalizedMessage());
+
+                Throwable tempExc = unwrapException (tex);
+                Util.THIS.debug ("    wrapped exception = " + tempExc.getLocalizedMessage());
+            }
+
+            Throwable unwrappedExc = unwrapException (tex);
+            CookieObserver.Message message = new CookieObserver.Message (unwrappedExc.getLocalizedMessage(), level);
+            message.addDetail (new DefaultXMLProcessorDetail (tex));
             peer.receive (message);
-        }
-        
-        public void fatalError(TransformerException tex) throws javax.xml.transform.TransformerException {
-            CookieObserver.Message message = new CookieObserver.Message(
-                tex.getLocalizedMessage(), 
-                CookieObserver.Message.FATAL_ERROR_LEVEL
-            );            
-            message.addDetail(new DefaultXMLProcessorDetail(tex));
-            peer.receive (message);            
-        }
-        
-        public void warning(TransformerException tex) throws javax.xml.transform.TransformerException {
-            CookieObserver.Message message = new CookieObserver.Message(
-                tex.getLocalizedMessage(), 
-                CookieObserver.Message.WARNING_LEVEL
-            );            
-            message.addDetail(new DefaultXMLProcessorDetail(tex));
-            peer.receive (message);            
         }
         
     } // class Proxy
