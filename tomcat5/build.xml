@@ -27,6 +27,7 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nb_root}/nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nb_root}/nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nb_root}/nbbuild/nbantext.jar"/>
+  <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nb_root}/nbbuild/nbantext.jar"/>
 
   <path id="cp">
         <pathelement location="${jdkhome}/lib/tools.jar"/>
@@ -106,7 +107,7 @@ Microsystems, Inc. All Rights Reserved.
     -->
   </target>
 
-  <target name="netbeans" depends="jars,release">
+  <target name="netbeans" depends="jars,release,javahelp">
     <genlist targetname="nbm" outputfiledir="netbeans"/>
   </target>
 
@@ -179,7 +180,7 @@ Microsystems, Inc. All Rights Reserved.
       <exclude name="credits.html"/>
     </jhindexer>
     <mkdir dir="netbeans/modules/docs"/>
-    <locjar jarfile="netbeans/modules/docs/tomcat4.jar"
+    <locjar jarfile="netbeans/modules/docs/tomcat5.jar"
             compress="true">
       <fileset dir="javahelp" excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"/>
       <locale name="ja"/>
