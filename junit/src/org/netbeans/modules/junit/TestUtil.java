@@ -17,12 +17,23 @@
  */
 package org.netbeans.modules.junit;
 
+import java.net.URL;
 import java.util.*;
+import java.util.Collections;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -461,4 +472,141 @@ public class TestUtil {
         return pkg.getMultipartId().createMultipartId(name, null, Collections.EMPTY_LIST);
     }
 
+    /**
+     * Finds <code>SourceGroup</code>s where a test for the given class
+     * can be created (so that it can be found by the projects infrastructure
+     * when a test for the class is to be opened or run).
+     *
+     * @param  fileObject  <code>FileObject</code> to find target
+     *                     <code>SourceGroup</code>(s) for
+     * @return  an array of objects - each of them can be either
+     *          a <code>SourceGroup</code> for a possible target folder
+     *          or simply a <code>FileObject</code> representing a possible
+     *          target folder (if <code>SourceGroup</code>) for the folder
+     *          was not found);
+     *          the returned array may be empty but not <code>null</code>
+     * @author  Marian Petras
+     */
+    public static Object[] getTestTargets(FileObject fileObject) {
+        
+        /* .) get project owning the given FileObject: */
+        final Project project = FileOwnerQuery.getOwner(fileObject);
+        if (project == null) {
+            return new Object[0];
+        }
+        
+        SourceGroup sourceGroupOwner = findSourceGroupOwner(fileObject);
+        if (sourceGroupOwner == null) {
+            return new Object[0];
+        }
+        
+        /* .) get URLs of target SourceGroup's roots: */
+        final URL[] rootURLs = UnitTestForSourceQuery.findUnitTests(
+                                       sourceGroupOwner.getRootFolder());
+        if (rootURLs.length == 0) {
+            return new Object[0];
+        }
+        
+        /* .) convert the URLs to FileObjects: */
+        boolean someSkipped = false;
+        FileObject[] sourceRoots = new FileObject[rootURLs.length];
+        for (int i = 0; i < rootURLs.length; i++) {
+            if ((sourceRoots[i] = URLMapper.findFileObject(rootURLs[i]))
+                    == null) {
+                ErrorManager.getDefault().notify(
+                        ErrorManager.INFORMATIONAL,
+                        new IllegalStateException(
+                           "No FileObject found for the following URL: "//NOI18N
+                           + rootURLs[i]));
+                someSkipped = true;
+                continue;
+            }
+            if (FileOwnerQuery.getOwner(sourceRoots[i]) != project) {
+                ErrorManager.getDefault().notify(
+                        ErrorManager.INFORMATIONAL,
+                        new IllegalStateException(
+                    "Source root found by FileOwnerQuery points "       //NOI18N
+                    + "to a different project for the following URL: "  //NOI18N
+                    + rootURLs[i]));
+                someSkipped = true;
+                continue;
+            }
+        }
+        
+        if (someSkipped) {
+            sourceRoots = (FileObject[]) skipNulls(sourceRoots);
+            if (sourceRoots.length == 0) {
+                return new Object[0];
+            }
+        }
+        
+        /* .) find SourceGroups corresponding to the FileObjects: */
+        final Object[] targets = new Object[sourceRoots.length];
+        Map map = getFileObject2SourceGroupMap(project);
+        for (int i = 0; i < sourceRoots.length; i++) {
+            Object srcGroup = map.get(sourceRoots[i]);
+            targets[i] = srcGroup != null ? srcGroup : sourceRoots[i];
+        }
+        return targets;
+    }
+    
+    /**
+     *
+     * @author  Marian Petras
+     */
+    private static SourceGroup findSourceGroupOwner(FileObject file) {
+        final Project project = FileOwnerQuery.getOwner(file);
+        final Sources sources = ProjectUtils.getSources(project);
+        final SourceGroup[] sourceGroups = sources.getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (int i = 0; i < sourceGroups.length; i++) {
+            SourceGroup srcGroup = sourceGroups[i];
+            if (srcGroup.contains(file)) {
+                return srcGroup;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     *
+     * @author  Marian Petras
+     */
+    private static Object[] skipNulls(final Object[] objs) {
+        List resultList = new ArrayList(objs.length);
+        
+        for (int i = 0; i < objs.length; i++) {
+            if (objs[i] != null) {
+                resultList.add(objs[i]);
+            }
+        }
+        
+        return resultList.isEmpty() ? new Object[0] : resultList.toArray();
+    }
+    
+    /**
+     *
+     * @author  Marian Petras
+     */
+    private static Map getFileObject2SourceGroupMap(Project project) {
+        final Sources sources = ProjectUtils.getSources(project);
+        final SourceGroup[] sourceGroups = sources.getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        
+        if (sourceGroups.length == 0) {
+            return Collections.EMPTY_MAP;
+        } else if (sourceGroups.length == 1) {
+            return Collections.singletonMap(sourceGroups[0].getRootFolder(),
+                                            sourceGroups[0]);
+        } else {
+            Map map = new HashMap(Math.round(sourceGroups.length * 1.4f + .5f),
+                                  .75f);
+            for (int i = 0; i < sourceGroups.length; i++) {
+                map.put(sourceGroups[i].getRootFolder(),
+                        sourceGroups[i]);
+            }
+            return map;
+        }
+    }
+    
 }

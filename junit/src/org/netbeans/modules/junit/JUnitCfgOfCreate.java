@@ -13,58 +13,167 @@
 
 package org.netbeans.modules.junit;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Stack;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.SourceGroup;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
 import org.openide.awt.Mnemonics;
+import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 
 /**
  *
  * @author  vstejskal
+ * @author  Marian Petras
  */
-public class JUnitCfgOfCreate extends JPanel {
+public final class JUnitCfgOfCreate extends JPanel
+                                    implements ChangeListener {
+    
+    /** suffix of test classes */
+    private static final String TEST_CLASS_SUFFIX = "Test";             //NOI18N
     
     /**
-     * whether the dialog should support the case that tests for whole folders
-     * are about to be created
+     * nodes selected when the Create Tests action was invoked
      */
-    private final boolean forFolders;
+    private final Node[] nodes;
+    /** whether the tests will be created for multiple classes */
+    private final boolean multipleClasses;
+    /** whether a single package/folder is selected */
+    private boolean singlePackage;
+    /** whether a single class is selected */
+    private boolean singleClass;
+    /** registered change listeners */
+    private List changeListeners;
+    /** is this panel painted? */
+    private boolean painted = false;
+    /** */
+    private String initialMessage;
+    
+    /**
+     * is at least one target folder/source group available?
+     *
+     * @see  #isAcceptable()
+     */
+    private boolean hasTargetFolders = false;
+
+    /**
+     * is combination of checkbox states acceptable?
+     *
+     * @see  #isAcceptable()
+     */
+    private boolean checkBoxesOK = true;
+    // The default value is important - if it were <false> by default,
+    // method checkChkBoxesStates() might not display the error message.
+    
+    /**
+     * is the entered class name non-empty and valid?
+     *
+     * @see  #isAcceptable()
+     */
+    private boolean classNameValid;
+    
+    /**
+     * is the current form contents acceptable?
+     *
+     * @see  #isAcceptable()
+     */
+    private boolean isAcceptable;
+    
+    /** */
+    private static final int MSG_TYPE_TEMPORARY = -1;
+    /** layer index for a message about an empty set of target folders */
+    private static final int MSG_TYPE_NO_TARGET_FOLDERS = 0;
+    /** layer index for a message about invalid configuration of checkboxes */
+    private static final int MSG_TYPE_INVALID_CHKBOXES = 1;
+    /** layer index for a message about invalid class name */
+    private static final int MSG_TYPE_CLASSNAME_INVALID = 2;
+    /**
+     * messages in layers (index <code>0</code> means the topmost layer)
+     */
+    private final String[] messageLayers = new String[3];
+    /**
+     * was the last message temporary?
+     * Temporary messages are displayed no matter what message layers contain.
+     *
+     * @see  #messageLayers
+     */
+    private boolean lastMsgWasTemporary = false;
 
     /**
      * Creates a JUnit configuration panel.
      *
-     * @param  forFolders  whether the options should support the case that
-     *                     tests for whole folders are about to be created
+     * @param  nodes  nodes selected when the Create Tests action was invoked
      */
-    private JUnitCfgOfCreate(final boolean forFolders) {
-        this.forFolders = forFolders;
+    JUnitCfgOfCreate(Node[] nodes) {
+        assert (nodes != null) && (nodes.length != 0);
+        
+        this.nodes = nodes;
+        multipleClasses = checkMultipleClasses();
         
         initBundle();
         try {
             initComponents();
-            addAccessibleDescriptions();
             setBorder(BorderFactory.createEmptyBorder(12, 12, 0, 11));
+            addAccessibleDescriptions();
+            initializeCheckBoxStates();
+            fillFormData();
+            checkAcceptability();
+            setupUserInteraction();
+            
+            /*
+             * checkAcceptability() must not be called
+             *        before initializeCheckBoxStates() and fillFormData()
+             * setupUserInteraction must not be called
+             *        before initializeCheckBoxStates()
+             */
+            
         } finally {
             unlinkBundle();
         }
@@ -94,7 +203,7 @@ public class JUnitCfgOfCreate extends JPanel {
         this.chkJavaDoc.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkJavaDoc.toolTip"));
         this.chkJavaDoc.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkJavaDoc.AD"));
         
-        if (forFolders) {
+        if (multipleClasses) {
             this.chkExceptions.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkExceptions.toolTip"));
             this.chkExceptions.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkExceptions.AD"));
         
@@ -114,75 +223,134 @@ public class JUnitCfgOfCreate extends JPanel {
     }
     
     /**
+     * Checks whether multiple classes may be selected.
+     * It also detects whether exactly one package/folder or exactly one class
+     * is selected and sets values of variables {@link #singlePackage}
+     * and {@link #singleClass} accordingly.
+     *
+     * @return  <code>false</code> if there is exactly one node selected
+     *          and the node represents a single <code>DataObject</code>,
+     *          not a folder or another <code>DataObject</code> container;
+     *          <code>true</code> otherwise
+     */
+    private boolean checkMultipleClasses() {
+        if (nodes.length > 1) {
+            return true;
+        }
+        
+        Lookup nodeLookup = nodes[0].getLookup();
+        if (nodeLookup.lookup(DataObject.Container.class) != null) {
+            singlePackage = nodeLookup.lookup(DataFolder.class)
+                            != null;
+            return true;
+        }
+        singleClass = (nodeLookup.lookup(SourceCookie.class) != null);
+        return !singleClass;
+    }
+    
+    /**
      * Displays a configuration dialog and updates JUnit options according
      * to the user's settings.
      *
-     * @param  forFolders  whether tests for folders are about to be created
+     * @param  nodes  nodes selected when the Create Test action was invoked
      */
-    public static boolean configure(final boolean forFolders) {
-        // check if the dialog can be displayed
-        if (!JUnitSettings.getDefault().isCfgCreateEnabled())
-            return true;
+    boolean configure() {
         
-        // create panel
-        JUnitCfgOfCreate cfg = new JUnitCfgOfCreate(forFolders);
+        // check if the dialog should be displayed:
+        //PENDING:
+        //if (!JUnitSettings.getDefault().isCfgCreateEnabled()) {
+        //    return true;
+        //}
         
-        // setup the panel
-        cfg.chkPublic.setSelected(JUnitSettings.getDefault().isMembersPublic());
-        cfg.chkProtected.setSelected(JUnitSettings.getDefault().isMembersProtected());
-        cfg.chkPackage.setSelected(JUnitSettings.getDefault().isMembersPackage());
-        cfg.chkComments.setSelected(JUnitSettings.getDefault().isBodyComments());
-        cfg.chkContent.setSelected(JUnitSettings.getDefault().isBodyContent());
-        cfg.chkJavaDoc.setSelected(JUnitSettings.getDefault().isJavaDoc());        
-        if (forFolders) {
-            cfg.chkGenerateSuites.setSelected(JUnitSettings.getDefault().isGenerateSuiteClasses());        
-            cfg.chkPackagePrivateClasses.setSelected(JUnitSettings.getDefault().isIncludePackagePrivateClasses());
-            cfg.chkAbstractImpl.setSelected(JUnitSettings.getDefault().isGenerateAbstractImpl());
-            cfg.chkExceptions.setSelected(JUnitSettings.getDefault().isGenerateExceptionClasses());
-        }
-        cfg.chkEnabled.setSelected(JUnitSettings.getDefault().isCfgCreateEnabled());
-        cfg.chkSetUp.setSelected(JUnitSettings.getDefault().isGenerateSetUp());
-        cfg.chkTearDown.setSelected(JUnitSettings.getDefault().isGenerateTearDown());
-        
-        // display dialog
-        DialogDescriptor descriptor = new DialogDescriptor (
-            cfg,
-            NbBundle.getMessage(JUnitCfgOfCreate.class,
-                                "JUnitCfgOfCreate.Title")               //NOI18N
-        );
-        descriptor.setHelpCtx(new HelpCtx(JUnitCfgOfCreate.class));
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.show();
-        dialog.dispose();
-        
-        // save panel settings
-        if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-            
-            // store code generation options
-            JUnitSettings.getDefault().setMembersPublic(cfg.chkPublic.isSelected());
-            JUnitSettings.getDefault().setMembersProtected(cfg.chkProtected.isSelected());
-            JUnitSettings.getDefault().setMembersPackage(cfg.chkPackage.isSelected());
-            JUnitSettings.getDefault().setBodyComments(cfg.chkComments.isSelected());
-            JUnitSettings.getDefault().setBodyContent(cfg.chkContent.isSelected());
-            JUnitSettings.getDefault().setJavaDoc(cfg.chkJavaDoc.isSelected());
-            JUnitSettings.getDefault().setCfgCreateEnabled(cfg.chkEnabled.isSelected());
-            if (forFolders) {
-                JUnitSettings.getDefault().setGenerateSuiteClasses(cfg.chkGenerateSuites.isSelected());
-                JUnitSettings.getDefault().setIncludePackagePrivateClasses(cfg.chkPackagePrivateClasses.isSelected());
-                JUnitSettings.getDefault().setGenerateAbstractImpl(cfg.chkAbstractImpl.isSelected());
-                JUnitSettings.getDefault().setGenerateExceptionClasses(cfg.chkExceptions.isSelected());
+        // create and display the dialog:
+        String title = NbBundle.getMessage(JUnitCfgOfCreate.class,
+                                           "JUnitCfgOfCreate.Title");   //NOI18N
+        ChangeListener changeListener;
+        final JButton btnOK = new JButton(
+                NbBundle.getMessage(JUnitCfgOfCreate.class, "LBL_OK")); //NOI18N
+        btnOK.setEnabled(isAcceptable());
+        addChangeListener(changeListener = new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                btnOK.setEnabled(isAcceptable());
             }
-            JUnitSettings.getDefault().setGenerateSetUp(cfg.chkSetUp.isSelected());
-            JUnitSettings.getDefault().setGenerateTearDown(cfg.chkTearDown.isSelected());
-            
+        });
+        
+        Object returned = DialogDisplayer.getDefault().notify(
+                new DialogDescriptor (
+                        this,
+                        title,
+                        true,                       //modal
+                        new Object[] {btnOK, DialogDescriptor.CANCEL_OPTION},
+                        btnOK,                      //initial value
+                        DialogDescriptor.DEFAULT_ALIGN,
+                        new HelpCtx(JUnitCfgOfCreate.class),
+                        (ActionListener) null
+                ));
+        removeChangeListener(changeListener);
+        
+        if (returned == btnOK) {
+            rememberCheckBoxStates();
             return true;
         }
-        
         return false;
     }
     
     /** resource bundle used during initialization of this panel */
     public ResourceBundle bundle;
+    
+    /**
+     * Reads JUnit settings and initializes checkboxes accordingly.
+     *
+     * @see  #rememberCheckBoxStates
+     */
+    private void initializeCheckBoxStates() {
+        final JUnitSettings settings = JUnitSettings.getDefault();
+        
+        chkPublic.setSelected(settings.isMembersPublic());
+        chkProtected.setSelected(settings.isMembersProtected());
+        chkPackage.setSelected(settings.isMembersPackage());
+        chkComments.setSelected(settings.isBodyComments());
+        chkContent.setSelected(settings.isBodyContent());
+        chkJavaDoc.setSelected(settings.isJavaDoc());        
+        if (multipleClasses) {
+            chkGenerateSuites.setSelected(settings.isGenerateSuiteClasses());        
+            chkPackagePrivateClasses.setSelected(
+                    settings.isIncludePackagePrivateClasses());
+            chkAbstractImpl.setSelected(settings.isGenerateAbstractImpl());
+            chkExceptions.setSelected(settings.isGenerateExceptionClasses());
+        }
+        chkEnabled.setSelected(settings.isCfgCreateEnabled());
+        chkSetUp.setSelected(settings.isGenerateSetUp());
+        chkTearDown.setSelected(settings.isGenerateTearDown());
+        
+        checkChkBoxesStates();
+    }
+    
+    /**
+     * Stores settings given by checkbox states to JUnit settings.
+     *
+     * @see  #initializeCheckBoxStatesf
+     */
+    private void rememberCheckBoxStates() {
+        final JUnitSettings settings = JUnitSettings.getDefault();
+        
+        settings.setMembersPublic(chkPublic.isSelected());
+        settings.setMembersProtected(chkProtected.isSelected());
+        settings.setMembersPackage(chkPackage.isSelected());
+        settings.setBodyComments(chkComments.isSelected());
+        settings.setBodyContent(chkContent.isSelected());
+        settings.setJavaDoc(chkJavaDoc.isSelected());
+        settings.setCfgCreateEnabled(chkEnabled.isSelected());
+        if (multipleClasses) {
+            settings.setGenerateSuiteClasses(chkGenerateSuites.isSelected());
+            settings.setIncludePackagePrivateClasses(
+                    chkPackagePrivateClasses.isSelected());
+            settings.setGenerateAbstractImpl(chkAbstractImpl.isSelected());
+            settings.setGenerateExceptionClasses(chkExceptions.isSelected());
+        }
+        settings.setGenerateSetUp(chkSetUp.isSelected());
+        settings.setGenerateTearDown(chkTearDown.isSelected());
+    }
     
     /**
      * Loads a resource bundle so that it can be used during intialization
@@ -208,20 +376,443 @@ public class JUnitCfgOfCreate extends JPanel {
      * This method is called from within the constructor to initialize the form.
      */
     private void initComponents() {
-        createOptionsPanel();
-        composeWholePanel();
+        JComponent settingsPanel = createSettingsPanel();
+        settingsPanel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 5));
+        
+        /* create the "Show this configuration dialog again" checkbox: */
+        chkEnabled = new JCheckBox();
+        Mnemonics.setLocalizedText(
+                chkEnabled,
+                bundle.getString("JUnitCfgOfCreate.chkEnabled.text"));  //NOI18N
+        
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        add(settingsPanel);
+        add(Box.createVerticalStrut(11));
+        add(chkEnabled);
+        
+        /* tune the layout: */
+        settingsPanel.setAlignmentX(0.0f);
+        //chkEnabled.setAlignmentX(0.0f);   //not necessary - it is the default
+    }
+    
+    /**
+     */
+    private void setupUserInteraction() {
+        final ItemListener listener = new CheckBoxListener();
+
+        chkEnabled.addItemListener(listener);
+        chkPublic.addItemListener(listener);
+        chkProtected.addItemListener(listener);
+        chkPackage.addItemListener(listener);
+    }
+    
+    /**
+     */
+    private void checkChkBoxesStates() {
+        final boolean wereOK = checkBoxesOK;
+        checkBoxesOK = chkPublic.isSelected()
+                       || chkProtected.isSelected()
+                       || chkPackage.isSelected();
+        if (checkBoxesOK != wereOK) {
+            //PENDING - text of the message:
+            setMessage(!checkBoxesOK
+                           ? NbBundle.getMessage(
+                                     getClass(),
+                                     "MSG_AllMethodTypesDisabled")      //NOI18N
+                           : null,
+                       MSG_TYPE_INVALID_CHKBOXES);
+        }
+    }
+    
+    /**
+     * Listener object that listens on state changes of some check-boxes.
+     */
+    private final class CheckBoxListener implements ItemListener {
+        
+        public void itemStateChanged(ItemEvent e) {
+            final Object source = e.getSource();
+            
+            if (source == chkEnabled) {
+                showCfgDialogStateChanged();
+            } else {
+                assert source == chkPublic
+                       || source == chkProtected
+                       || source == chkPackage;
+                checkChkBoxesStates();
+                checkAcceptability();
+            }
+        }
+        
+    }
+    
+    /**
+     * Creates the component to be displayed on the Test Settings tab.
+     */
+    private JComponent createSettingsPanel() {
+        JPanel settingsPanel = new JPanel(new BorderLayout(0, 12));
+        
+        settingsPanel.add(createNameAndLocationPanel(), BorderLayout.NORTH);
+        settingsPanel.add(createMessagePanel(), BorderLayout.CENTER);
+        settingsPanel.add(createCodeGenPanel(), BorderLayout.SOUTH);
+        
+        return settingsPanel;
+    }
+    
+    /**
+     */
+    private Component createNameAndLocationPanel() {
+        JPanel panel = new JPanel();
+        
+        final boolean askForClassName = singleClass;
+        
+        JLabel lblClassToTest = new JLabel();
+        JLabel lblClassName = askForClassName ? new JLabel() : null;
+        JLabel lblLocation = new JLabel();
+        
+        String classToTestKey = singlePackage
+                                ? "LBL_PackageToTest"                   //NOI18N
+                                : singleClass
+                                  ? "LBL_ClassToTest"                   //NOI18N
+                                  : "LBL_MultipleClassesSelected";      //NOI18N
+                                    
+        Mnemonics.setLocalizedText(
+                lblClassToTest,
+                NbBundle.getMessage(getClass(), classToTestKey));
+        if (askForClassName) {
+            Mnemonics.setLocalizedText(
+                    lblClassName,
+                    NbBundle.getMessage(getClass(), "LBL_ClassName"));  //NOI18N
+        }
+        Mnemonics.setLocalizedText(
+                lblLocation,
+                NbBundle.getMessage(getClass(), "LBL_Location"));       //NOI18N
+        
+        if (singlePackage || singleClass) {
+            lblClassToTestValue = new JLabel();
+        }
+        if (askForClassName) {
+            tfClassName = new ClassNameTextField();
+            tfClassName.setChangeListener(this);
+        }
+        cboxLocation = new JComboBox();
+        
+        if (askForClassName) {
+            lblClassName.setLabelFor(tfClassName);
+        }
+        lblLocation.setLabelFor(cboxLocation);
+        
+        if (lblClassToTestValue != null) {
+            Font labelFont = javax.swing.UIManager.getDefaults()
+                             .getFont("TextField.font");                //NOI18N
+            if (labelFont != null) {
+                lblClassToTestValue.setFont(labelFont);
+            }
+        }
+        
+        panel.setLayout(new GridBagLayout());
+        
+        GridBagConstraints gbcLeft = new GridBagConstraints();
+        gbcLeft.anchor = GridBagConstraints.WEST;
+        gbcLeft.insets.bottom = 12;
+        gbcLeft.insets.right = 6;
+        
+        GridBagConstraints gbcRight = new GridBagConstraints();
+        gbcRight.anchor = GridBagConstraints.WEST;
+        gbcRight.insets.bottom = 12;
+        gbcRight.weightx = 1.0f;
+        gbcRight.fill = GridBagConstraints.BOTH;
+        gbcRight.gridwidth = GridBagConstraints.REMAINDER;
+        
+        if (lblClassToTestValue != null) {
+            panel.add(lblClassToTest,      gbcLeft);
+            panel.add(lblClassToTestValue, gbcRight);
+        } else {
+            panel.add(lblClassToTest,   gbcRight);
+        }
+        if (askForClassName) {
+            panel.add(lblClassName,     gbcLeft);
+            panel.add(tfClassName,      gbcRight);
+        }
+        gbcLeft.insets.bottom = 0;
+        gbcRight.insets.bottom = 0;
+        panel.add(lblLocation,      gbcLeft);
+        panel.add(cboxLocation,     gbcRight);
+        
+        return panel;
+    }
+    
+    /**
+     */
+    private void showCfgDialogStateChanged() {
+        if (!chkEnabled.isSelected()) {
+            String settingsCat = NbBundle.getMessage(
+                    getClass(),
+                    "UI/Services/Testing");                             //NOI18N
+            String settingName = NbBundle.getMessage(
+                   getClass(),
+                   "org-netbeans-modules-junit-JUnitSettings.settings");//NOI18N
+            String optionName = removeMnemonicAmpersand(
+                    NbBundle.getMessage(
+                            getClass(),
+                            "JUnitCfgOfCreate.chkEnabled.text").trim());//NOI18N
+            String msg = NbBundle.getMessage(
+                    getClass(),
+                    "MSG_HowToDisplayTheDialogAgain",                   //NOI18N
+                    settingsCat,
+                    settingName,
+                    optionName);
+            setMessage(msg, MSG_TYPE_TEMPORARY);
+        } else {
+            setMessage(null, MSG_TYPE_TEMPORARY);
+        }
+    }
+    
+    /**
+     */
+    private void checkClassNameValidity() {
+        if (tfClassName == null) {
+            classNameValid = true;
+            return;
+        }
+        
+        String key = null;
+        final int state = tfClassName.getStatus();
+        switch (state) {
+            case ClassNameTextField.STATUS_EMPTY:
+                //PENDING - polish the message:
+                key = "MSG_ClassnameMustNotBeEmpty";                    //NOI18N
+                break;
+            case ClassNameTextField.STATUS_INVALID:
+                //PENDING - polish the message:
+                key = "MSG_InvalidClassname";                           //NOI18N
+        }
+        setMessage((key != null)
+                           ? NbBundle.getMessage(getClass(), key)
+                           : null,
+                   MSG_TYPE_CLASSNAME_INVALID);
+        
+        classNameValid = (state == ClassNameTextField.STATUS_VALID);
+    }
+    
+    /**
+     * This method gets called if status of contents of the Class Name
+     * text field changes. See <code>STATUS_xxx</code> constants
+     * in class <code>ClassNameTextField</code>.
+     *
+     * @param  e  event describing the state change event
+     *            (unused in this method)
+     */
+    public void stateChanged(ChangeEvent e) {
+        checkClassNameValidity();
+        checkAcceptability();
+    }
+    
+    /**
+     */
+    private void checkAcceptability() {
+        final boolean wasAcceptable = isAcceptable;
+        isAcceptable = hasTargetFolders && classNameValid && checkBoxesOK;
+        if (isAcceptable != wasAcceptable) {
+            fireStateChange();
+        }
+    }
+    
+    /**
+     * Are the values filled in the form acceptable?
+     *
+     * @see  #addChangeListener
+     */
+    private boolean isAcceptable() {
+        return isAcceptable;
+    }
+    
+    /**
+     * Paints this panel's children and then displays the initial message
+     * (in the message area) if any.
+     * This method is overridden so that this panel receives a notification
+     * immediately after the children components are painted - it is necessary
+     * for computation of space needed by the message area for displaying
+     * the initial message.
+     *
+     * @param  g  the <code>Graphics</code> context in which to paint
+     */
+    protected void paintChildren(java.awt.Graphics g) {
+        
+        /*
+         * This is a hack to make sure that window size adjustment
+         * is not done sooner than the text area is painted.
+         *
+         * The reason is that the window size adjustment routine
+         * needs the text area to compute height necessary for displaying
+         * the given message. But the text area does not return correct
+         * data (Dimension getPreferredSize()) until it is painted.
+         */
+        
+        super.paintChildren(g);
+        if (initialMessage != null) {
+            displayMessage(initialMessage);
+            initialMessage = null;
+        }
+        painted = true;
+    }
+    
+    /**
+     * Displays a given message in the message panel and resizes the dialog
+     * if necessary. If the message cannot be displayed immediately,
+     * because of this panel not displayed (painted) yet, displaying the message
+     * is deferred until this panel is painted.
+     *
+     * @param  message  message to be displayed, or <code>null</code> if
+     *                  the currently displayed message (if any) should be
+     *                  removed
+     */
+    private void setMessage(final String message, final int msgType) {
+        
+        /* determine message to display: */
+        String msgToDisplay = null;
+        if (msgType == MSG_TYPE_TEMPORARY) {
+            if (message != null) {
+                
+                /* ignore all layered message and display the given message: */
+                msgToDisplay = message;
+            } else {
+                
+                /* clear the message unless there is some layered message: */
+                msgToDisplay = "";                                      //NOI18N
+                for (int i = 0; i < messageLayers.length; i++) {
+                    if (messageLayers[i] != null) {
+                        msgToDisplay = messageLayers[i];
+                        break;
+                    }
+                }
+            }
+            lastMsgWasTemporary = true;
+        } else {
+            final boolean compareValues = !lastMsgWasTemporary;
+            lastMsgWasTemporary = false;
+
+            boolean covered = false;
+            boolean lookingDown = false;
+            
+            for (int i = 0; i < messageLayers.length; i++) {
+                final String currMsg = messageLayers[i];
+                if (lookingDown) {
+                    if (messageLayers[i] != null) {
+                        msgToDisplay = currMsg;
+                        break;
+                    }
+                }
+                if (i == msgType) {
+                    if (message == null) {
+                        if (compareValues && (currMsg == null)) {
+                            return;
+                        } else if (!covered) {
+                            messageLayers[i] = message;
+                            lookingDown = true;
+                            continue;
+                        }
+                    } else if (compareValues && message.equals(currMsg)) {
+                        return;
+                    }
+                    messageLayers[i] = message;
+                    if (!covered) {
+                        msgToDisplay = (message != null ? message : "");//NOI18N
+                    }
+                    break;
+                }
+                covered |= (currMsg != null);
+            }
+            if (lookingDown && (msgToDisplay == null)) {
+                msgToDisplay = "";                                      //NOI18N
+            }
+        }
+
+        /* display the message: */
+        if (!painted) {
+            initialMessage = msgToDisplay;
+        } else if (msgToDisplay != null) {
+            displayMessage(msgToDisplay);
+        }
+    }
+    
+    /**
+     * Displays a given message in the message panel and resizes the dialog
+     * if necessary.
+     *
+     * @param  message  message to be displayed, or <code>null</code> if
+     *                  the currently displayed message (if any) should be
+     *                  removed
+     * @see  #adjustWindowSize()
+     */
+    private void displayMessage(String message) {
+        if (message == null) {
+            message = "";                                               //NOI18N
+        }
+        
+        txtAreaMessage.setText(message);
+        adjustWindowSize();
+    }
+    
+    /**
+     */
+    private Component createMessagePanel() {
+        txtAreaMessage = new JTextArea();
+        txtAreaMessage.setEditable(false);
+        txtAreaMessage.setFocusable(false);
+        txtAreaMessage.setLineWrap(true);
+        txtAreaMessage.setWrapStyleWord(true);
+        
+        Color color;
+        color = UIManager.getColor("Label.background");                 //NOI18N
+        if (color == null) {
+            color = UIManager.getColor("Panel.background");             //NOI18N
+        }
+        if (color != null) {
+            txtAreaMessage.setBackground(color);
+        } else {
+            txtAreaMessage.setOpaque(false);
+        }
+        
+        color = UIManager.getColor("nb.errorForeground");               //NOI18N
+        if (color == null) {
+            color = new Color(89, 79, 191);   //RGB suggested by Bruce in #28466
+        }
+        txtAreaMessage.setForeground(color);
+
+        return txtAreaMessage;
+    }
+    
+    /**
+     * Checks whether the dialog is large enough for the message (if any)
+     * to be displayed and adjusts the dialogs size if it is too small.
+     * <p>
+     * Note: Resizing the dialog works only once this panel and its children
+     * are {@linkplain #paintChildren(java.awt.Graphics) painted}.
+     */
+    private void adjustWindowSize() {
+        Dimension currSize = getSize();
+        int currWidth = currSize.width;
+        int currHeight = currSize.height;
+        int prefHeight = getPreferredSize().height;
+        if (currHeight < prefHeight) {
+            int delta = prefHeight - currHeight;
+            java.awt.Window win = SwingUtilities.getWindowAncestor(this);
+            Dimension winSize = win.getSize();
+            win.setSize(winSize.width, winSize.height + delta);
+        }
     }
     
     /**
      * Creates a panel containing controls for settings code generation options.
-     * The created panel is stored in variable {@link #jpCodeGen jpCodeGen}.
+     *
+     * @return   created panel
      */
-    private void createOptionsPanel() {
+    private Component createCodeGenPanel() {
         
         /* create the components: */
         String[] chkBoxIDs;
         JCheckBox[] chkBoxes;
-        if (forFolders) {
+        if (multipleClasses) {
             chkBoxIDs = new String[] {
                 GuiUtils.CHK_PUBLIC,
                 GuiUtils.CHK_PROTECTED,
@@ -273,7 +864,7 @@ public class JUnitCfgOfCreate extends JPanel {
                 new JCheckBox[] {chkPublic, chkProtected, chkPackage});
         JComponent classTypes = null;
         JComponent optionalClasses = null;
-        if (forFolders) {
+        if (multipleClasses) {
             classTypes = GuiUtils.createChkBoxGroup(
                 bundle.getString("JUnitCfgOfCreate.groupClassTypes"),   //NOI18N
                 new JCheckBox[] {chkPackagePrivateClasses,
@@ -292,21 +883,22 @@ public class JUnitCfgOfCreate extends JPanel {
         /* create the left column of options: */
         Box leftColumn = Box.createVerticalBox();
         leftColumn.add(methodAccessLevels);
-        if (forFolders) {
+        if (multipleClasses) {
             leftColumn.add(Box.createVerticalStrut(11));
             leftColumn.add(classTypes);
+        } else {
+            /*
+             * This strut ensures that width of the left column is not limited.
+             * If it was limited, the rigth column would not move when the
+             * dialog is horizontally resized.
+             */
+            leftColumn.add(Box.createVerticalStrut(0));
         }
         leftColumn.add(Box.createVerticalGlue());
         
-        /* set alignments for BoxLayout: */
-        methodAccessLevels.setAlignmentX(0.0f);
-        if (forFolders) {
-            classTypes.setAlignmentX(0.0f);
-        }
-        
         /* create the right column of options: */
         Box rightColumn = Box.createVerticalBox();
-        if (forFolders) {
+        if (multipleClasses) {
             rightColumn.add(optionalClasses);
             rightColumn.add(Box.createVerticalStrut(11));
         }
@@ -315,19 +907,29 @@ public class JUnitCfgOfCreate extends JPanel {
         rightColumn.add(optionalComments);
         rightColumn.add(Box.createVerticalGlue());
         
-        /* set alignments for BoxLayout: */
-        if (forFolders) {
+        /* compose the final panel: */
+        //JPanel jpCodeGen = new SizeRestrictedPanel(false, true);
+        JPanel jpCodeGen = new JPanel();
+        jpCodeGen.setLayout(new BoxLayout(jpCodeGen, BoxLayout.X_AXIS));
+        jpCodeGen.add(leftColumn);
+        jpCodeGen.add(Box.createHorizontalStrut(24));
+        jpCodeGen.add(rightColumn);
+        
+        /* decorate the panel: */
+        addTitledBorder(jpCodeGen,
+                  new Insets(12, 12, 11, 12),
+                  bundle.getString("JUnitCfgOfCreate.jpCodeGen.title"));//NOI18N
+        
+        /* tune the layout: */
+        methodAccessLevels.setAlignmentX(0.0f);
+        if (multipleClasses) {
+            classTypes.setAlignmentX(0.0f);
             optionalClasses.setAlignmentX(0.0f);
         }
         optionalCode.setAlignmentX(0.0f);
         optionalComments.setAlignmentX(0.0f);
         
-        /* compose the final panel: */
-        jpCodeGen = new SizeRestrictedPanel(false, true);
-        jpCodeGen.setLayout(new BoxLayout(jpCodeGen, BoxLayout.X_AXIS));
-        jpCodeGen.add(leftColumn);
-        jpCodeGen.add(Box.createHorizontalStrut(12));
-        jpCodeGen.add(rightColumn);
+        return jpCodeGen;
     }
     
     /**
@@ -349,34 +951,270 @@ public class JUnitCfgOfCreate extends JPanel {
     }
     
     /**
-     * Composes the whole panel from the code generation
-     * options panel and the &quot;Show this configuration dialog&quot;
-     * checkbox.
      */
-    private void composeWholePanel() {
+    FileObject getTargetFolder() {
+        Object selectedLocation = cboxLocation.getSelectedItem();
         
-        /* create the "Show this configuration dialog again" checkbox: */
-        chkEnabled = new JCheckBox();
-        Mnemonics.setLocalizedText(
-                chkEnabled,
-                bundle.getString("JUnitCfgOfCreate.chkEnabled.text"));  //NOI18N
+        if (selectedLocation == null) {
+            return null;
+        }
         
-        /* decorate the option panels: */
-        addTitledBorder(jpCodeGen,
-                  new Insets(12, 12, 11, 12),
-                  bundle.getString("JUnitCfgOfCreate.jpCodeGen.title"));//NOI18N
+        if (selectedLocation instanceof SourceGroup) {
+            return ((SourceGroup) selectedLocation).getRootFolder();
+        }
+        assert selectedLocation instanceof FileObject;      //root folder
+        return (FileObject) selectedLocation;
+    }
+    
+    /**
+     * Initializes form in the Test Settings panel of the dialog.
+     */
+    private void fillFormData() {
+        final DataObject dataObj = (DataObject)
+                                  nodes[0].getLookup().lookup(DataObject.class);
+        final FileObject fileObj = dataObj.getPrimaryFile();
         
-        /* compose the main panel: */
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        add(jpCodeGen);
-        add(Box.createVerticalStrut(11));
-        add(chkEnabled);
+        if (singleClass) {
+            assert nodes.length == 1;
+            
+            ClassPath cp = ClassPath.getClassPath(fileObj, ClassPath.SOURCE);
+            String className = cp.getResourceName(fileObj, '.', false);
+            lblClassToTestValue.setText(className);
+            
+            if (tfClassName != null) {
+                String prefilledName = className + TEST_CLASS_SUFFIX;
+                tfClassName.setText(prefilledName);
+                tfClassName.setCaretPosition(prefilledName.length());
+            }
+        } else if (singlePackage) {
+            assert nodes.length == 1;
+            
+            ClassPath cp = ClassPath.getClassPath(fileObj, ClassPath.SOURCE);
+            String packageName = cp.getResourceName(fileObj, '.', true);
+            if (packageName.length() == 0) {
+                packageName = NbBundle.getMessage(
+                        getClass(),
+                        "DefaultPackageName");                          //NOI18N
+            }
+            lblClassToTestValue.setText(packageName);
+        } else {
+            //PENDING
+        }
         
-        /* tune the layout: */
-        jpCodeGen.setAlignmentX(0.0f);
-        //chkEnabled.setAlignmentX(0.0f);   //not necessary - its the default
+        setupLocationChooser(fileObj);
+        
+        checkClassNameValidity();
+    }
+    
+    /**
+     */
+    private void setupLocationChooser(FileObject refFileObject) {
+        Object[] targetFolders = TestUtil.getTestTargets(refFileObject);
+        if (targetFolders.length != 0) {
+            hasTargetFolders = true;
+            cboxLocation.setModel(new DefaultComboBoxModel(targetFolders));
+            cboxLocation.setRenderer(new LocationChooserRenderer());
+        } else {
+            hasTargetFolders = false;
+            //PENDING - message text:
+            String msgNoTargetsFound = NbBundle.getMessage(
+                                        getClass(),
+                                        "MSG_NoTestTarget",             //NOI18N
+                                        refFileObject.getNameExt());
+            setMessage(msgNoTargetsFound, MSG_TYPE_NO_TARGET_FOLDERS);
+            disableComponents();
+        }
+    }
+    
+    /**
+     * Renderer which specially handles values of type
+     * <code>SourceGroup</code> and <code>FileObject</code>.
+     * It displays display names of these objects, instead of their default
+     * string representation (<code>toString()</code>).
+     *
+     * @see  SourceGroup#getDisplayName()
+     * @see  FileUtil#getFileDisplayName(FileObject)
+     */
+    private final class LocationChooserRenderer
+            extends DefaultListCellRenderer {
+        public Component getListCellRendererComponent(
+                JList list,
+                Object value,
+                int index,
+                boolean isSelected,
+                boolean cellHasFocus) {
+            return super.getListCellRendererComponent(
+                    list,
+                    value instanceof SourceGroup
+                        ? ((SourceGroup) value).getDisplayName()
+                        : value instanceof FileObject
+                              ?  FileUtil.getFileDisplayName((FileObject) value)
+                              : value.toString(),
+                    index,
+                    isSelected,
+                    cellHasFocus);
+        }
     }
 
+    /**
+     * Registers a change listener.
+     * Registered change listeners are notified when acceptability
+     * of values in the form changes.
+     *
+     * @param  l  listener to be registered
+     * @see  #isAcceptable
+     * @see  #removeChangeListener
+     */
+    private void addChangeListener(ChangeListener l) {
+        if (changeListeners == null) {
+            changeListeners = new ArrayList(3);
+        }
+        changeListeners.add(l);
+    }
+    
+    /**
+     * Unregisters the given change listener.
+     * If the given listener has not been registered before, calling this
+     * method does not have any effect.
+     *
+     * @param  l  change listener to be removed
+     * @see  #addChangeListener
+     */
+    private void removeChangeListener(ChangeListener l) {
+        if (changeListeners != null
+                && changeListeners.remove(l)
+                && changeListeners.isEmpty()) {
+            changeListeners = null;
+        }
+    }
+    
+    /**
+     * Notifies all registered change listeners about a change.
+     *
+     * @see  #addChangeListener
+     */
+    private void fireStateChange() {
+        if (changeListeners != null) {
+            ChangeEvent e = new ChangeEvent(this);
+            for (Iterator i = changeListeners.iterator(); i.hasNext(); ) {
+                ((ChangeListener) i.next()).stateChanged(e);
+            }
+        }
+    }
+    
+    /**
+     * Disables all interactive visual components of this dialog
+     * except the OK, Cancel and Help buttons.
+     */
+    private void disableComponents() {
+        final Stack stack = new Stack();
+        stack.push(this);
+        
+        while (!stack.empty()) {
+            Container container = (Container) stack.pop();
+            Component comps[] = container.getComponents();
+            for (int i = 0; i < comps.length; i++) {
+                final java.awt.Component comp = comps[i];
+                
+                if (comp == txtAreaMessage) {
+                    continue;
+                }
+                if (comp instanceof JPanel) {
+                    stack.push(comp);
+
+                    final Border border = ((JPanel) comp).getBorder();
+                    if (border != null) {
+                        disableBorderTitles(border);
+                    }
+                    continue;
+                }
+                comp.setEnabled(false);
+                if (comp instanceof java.awt.Container) {
+                    if (((Container) comp).getComponentCount() != 0) {
+                        stack.push(comp);
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     */
+    private static void disableBorderTitles(Border border) {
+        
+        if (border instanceof TitledBorder) {
+            disableBorderTitle((TitledBorder) border);
+            return;
+        }
+        
+        if (!(border instanceof CompoundBorder)) {
+            return;
+        }
+        
+        Stack stack = new Stack();
+        stack.push(border);
+        while (!stack.empty()) {
+            CompoundBorder cb = (CompoundBorder) stack.pop();
+            
+            Border b;
+            b = cb.getOutsideBorder();
+            if (b instanceof CompoundBorder) {
+                stack.push(b);
+            } else if (b instanceof TitledBorder) {
+                disableBorderTitle((TitledBorder) b);
+            }
+            
+            b = cb.getInsideBorder();
+            if (b instanceof CompoundBorder) {
+                stack.push(b);
+            } else if (b instanceof TitledBorder) {
+                disableBorderTitle((TitledBorder) b);
+            }
+        }
+    }
+    
+    /**
+     */
+    private static void disableBorderTitle(TitledBorder border) {
+        final Color color = UIManager.getColor(
+                "Label.disabledForeground");                        //NOI18N
+        if (color != null) {
+            border.setTitleColor(color);
+        }
+    }
+
+    /**
+     * Removes an ampersand character (<code>'&amp;'</code>)
+     * marking a mnemonic character from a given string.
+     * This method determines position of the marking ampersand using method
+     * <code>Mnemonics.findMnemonicAmpersand(...)</code>.
+     *
+     * @param  strWithAmpersand  string from which the ampersand character
+     *                           should be removed
+     * @return  string with the marking ampersand character removed;
+     *          or the passed string (instance) if no marking ampersand
+     *          was found
+     * @see  org.openide.awt.Mnemonics#findMnemonicAmpersand
+     */
+    private String removeMnemonicAmpersand(String strWithAmpersand) {
+        assert strWithAmpersand != null;
+        
+        int position = Mnemonics.findMnemonicAmpersand(strWithAmpersand);
+        switch (position) {
+            case -1:
+                return strWithAmpersand;
+            case 0:
+                return strWithAmpersand.substring(1);
+            default:
+                return strWithAmpersand.substring(0, position)
+                       + strWithAmpersand.substring(position + 1);
+        }
+    }
+    
+    private JLabel lblClassToTestValue;
+    private ClassNameTextField tfClassName;
+    private JTextArea txtAreaMessage;
+    private JComboBox cboxLocation;
     private JCheckBox chkAbstractImpl;
     private JCheckBox chkComments;
     private JCheckBox chkContent;
@@ -390,6 +1228,5 @@ public class JUnitCfgOfCreate extends JPanel {
     private JCheckBox chkPublic;
     private JCheckBox chkSetUp;
     private JCheckBox chkTearDown;
-    private JComponent jpCodeGen;
 
 }

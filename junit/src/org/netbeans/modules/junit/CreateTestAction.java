@@ -91,15 +91,18 @@ public class CreateTestAction extends TestAction {
         }
         
         protected void performAction(Node[] nodes) {
-            boolean folderSelected = isFolderSelected(nodes);
-            
             DataObject doTestTempl = null;
             DataObject doSuiteTempl = null;
             
             // show configuration dialog
             // when dialog is canceled, escape the action
-            if (!JUnitCfgOfCreate.configure(folderSelected))
+            JUnitCfgOfCreate cfg = new JUnitCfgOfCreate(nodes);
+            if (!cfg.configure()) {
                 return;
+            }
+            final FileObject targetFolder = cfg.getTargetFolder();
+            final ClassPath testClassPath = ClassPathSupport.createClassPath(
+                                               new FileObject[] {targetFolder});
             
             String temp = null;
             try {
@@ -152,33 +155,6 @@ public class CreateTestAction extends TestAction {
                         TestUtil.notifyUser(NbBundle.getMessage(CreateTestAction.class,
                         "MSG_no_project", fo));
                         continue;
-                    }
-                    ClassPath testClassPath = null;
-                    
-                    FileObject packageRoot = cp.findOwnerRoot(fo);
-                    String resource = cp.getResourceName(fo, '/', false);
-                    
-                    URL testRoot = UnitTestForSourceQuery.findUnitTest(packageRoot);
-                    if (testRoot == null) {
-                        testClassPath = cp;
-                        //                     TestUtil.notifyUser(NbBundle.getMessage(CreateTestAction.class,
-                        //                         "MSG_no_tests_in_project", fo));
-                        //                     continue;
-                    } else {
-                        if (testRoot.getProtocol().equals("file") && URLMapper.findFileObject(testRoot) == null) { // NOI18N
-                            if (!reportedMissingURLs.contains(testRoot.toExternalForm())) {
-                                NotifyDescriptor descr = new Message(
-                                NbBundle.getMessage(CreateTestAction.class, "MSG_testdir_not_found", testRoot.toExternalForm()),
-                                NotifyDescriptor.ERROR_MESSAGE);
-                                DialogDisplayer.getDefault().notify(descr);
-                                reportedMissingURLs.add(testRoot.toExternalForm());
-                            }
-                            continue;
-                        }
-                        
-                        ArrayList cpItems = new ArrayList();
-                        cpItems.add(ClassPathSupport.createResource(testRoot));
-                        testClassPath = ClassPathSupport.createClassPath(cpItems);
                     }
                     
                     try {
@@ -236,22 +212,6 @@ public class CreateTestAction extends TestAction {
             FileObject pfo = FileUtil.toFileObject(parent);
             if (pfo == null) pfo = ensureFolder(parent);
             return pfo.createFolder(name);
-        }
-        
-        /**
-         * Detects whether at least one of the given nodes represents
-         * a <code>DataFolder</code>.
-         *
-         * @return  <code>true</code> if at least one of the nodes represents
-         *          a <code>DataFolder</code>; <code>false</code> otherwise
-         */
-        private static boolean isFolderSelected(Node[] nodes) {
-            for (int i = 0; i < nodes.length; i++) {
-                if (nodes[i].getCookie(DataFolder.class) != null) {
-                    return true;
-                }
-            }
-            return false;
         }
         
         public static DataObject createSuiteTest(ClassPath testClassPath,
@@ -373,6 +333,7 @@ public class CreateTestAction extends TestAction {
                         // find the test class, if it exists or create one
                         // from active template
                         try {
+                            //PENDING - test class name:
                             DataObject doTarget = getTestClass(testClassPath,
                             TestUtil.getTestClassFullName(theClass.getSimpleName(),
                             packageName(theClass.getName())),
