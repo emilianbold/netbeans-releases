@@ -27,6 +27,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements EjbJarCusto
         
         vps = new VisualPropertySupport(webProperties);
         vcs = new VisualClasspathSupport(
+            webProperties.getProject(),
             jTableClasspath,
             jButtonAddJar,
             jButtonAddLibrary,

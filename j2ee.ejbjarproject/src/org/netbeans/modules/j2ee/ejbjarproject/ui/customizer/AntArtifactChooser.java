@@ -14,6 +14,7 @@
 package org.netbeans.modules.j2ee.ejbjarproject.ui.customizer;
 
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -24,6 +25,8 @@ import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -172,7 +175,7 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
     /** Shows dialog with the artifact chooser 
      * @return null if canceled selected jars if some jars selected
      */
-    public static AntArtifact[] showDialog( String artifactType ) {
+    public static AntArtifact[] showDialog( String artifactType, Project master) {
         
         JFileChooser chooser = ProjectChooser.projectChooser();
         chooser.setDialogTitle( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_Title" ) ); // NOI18N
@@ -180,12 +183,38 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
         
         AntArtifactChooser accessory = new AntArtifactChooser( artifactType, chooser );
         chooser.setAccessory( accessory );
+        chooser.setPreferredSize( new Dimension( 650, 380 ) );
+        chooser.setCurrentDirectory (FoldersListSettings.getDefault().getLastUsedArtifactFolder());
         
 
         int option = chooser.showOpenDialog( null ); // Show the chooser
               
         if ( option == JFileChooser.APPROVE_OPTION ) {
 
+            File dir = chooser.getSelectedFile();
+            dir = FileUtil.normalizeFile (dir);
+            Project selectedProject = accessory.getProject( dir );
+
+            if ( selectedProject == null ) {
+                return null;
+            }
+            
+            if ( selectedProject.getProjectDirectory().equals( master.getProjectDirectory() ) ) {
+                DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
+                    NbBundle.getMessage( AntArtifactChooser.class, "MSG_AACH_RefToItself" ),
+                    NotifyDescriptor.INFORMATION_MESSAGE ) );
+                return null;
+            }
+            
+            if ( ProjectUtils.hasSubprojectCycles( master, selectedProject ) ) {
+                DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
+                    NbBundle.getMessage( AntArtifactChooser.class, "MSG_AACH_Cycles" ),
+                    NotifyDescriptor.INFORMATION_MESSAGE ) );
+                return null;
+            }
+            
+            FoldersListSettings.getDefault().setLastUsedArtifactFolder (FileUtil.normalizeFile(chooser.getCurrentDirectory()));
+            
             DefaultListModel model = (DefaultListModel)accessory.jListArtifacts.getModel();
             
             AntArtifact artifacts[] = new AntArtifact[ model.size() ];

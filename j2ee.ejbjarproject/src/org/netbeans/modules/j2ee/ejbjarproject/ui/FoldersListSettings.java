@@ -29,6 +29,8 @@ public class FoldersListSettings extends SystemOption {
     
     private static final String SHOW_AGAIN_BROKEN_REF_ALERT = "showAgainBrokenRefAlert"; //NOI18N
 
+    private static final String LAST_USED_ARTIFACT_FOLDER = "lastUsedArtifactFolder"; //NOI18N
+
     private static final String LAST_USED_SOURCE_ROOT_FOLDER = "lastUsedSourceRootFolder";   //NOI18N
 
     public String displayName() {
@@ -79,6 +81,20 @@ public class FoldersListSettings extends SystemOption {
         this.putProperty (LAST_USED_SOURCE_ROOT_FOLDER, path, true);
     }
     
+    public File getLastUsedArtifactFolder () {
+        String folder = (String) this.getProperty (LAST_USED_ARTIFACT_FOLDER);
+        if (folder == null) {
+            folder = System.getProperty("user.home");    //NOI18N
+        }
+        return new File (folder);
+    }
+
+    public void setLastUsedArtifactFolder (File folder) {
+        assert folder != null : "Folder can not be null";
+        String path = folder.getAbsolutePath();
+        this.putProperty (LAST_USED_ARTIFACT_FOLDER, path, true);
+    }
+
     public File getLastUsedClassPathFolder () {
         String lucpr = (String) this.getProperty (LAST_USED_CP_FOLDER);
         if (lucpr == null) {

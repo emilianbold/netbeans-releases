@@ -35,7 +35,7 @@ import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
-public class EjbJarSources implements Sources, PropertyChangeListener  {
+public class EjbJarSources implements Sources, PropertyChangeListener, ChangeListener  {
 
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
@@ -61,6 +61,7 @@ public class EjbJarSources implements Sources, PropertyChangeListener  {
             public Object run() {
                 if (delegate == null) {
                     delegate = initSources();
+                    delegate.addChangeListener(EjbJarSources.this);
                 }
                 return delegate.getSourceGroups(type);
             }
@@ -159,8 +160,13 @@ public class EjbJarSources implements Sources, PropertyChangeListener  {
 
     private void fireChange() {
         ChangeListener[] _listeners;
+        synchronized (this) {
+            if (delegate != null) {
+                delegate.removeChangeListener(this);
+                delegate = null;
+            }
+        }
         synchronized (listeners) {
-            delegate = null;
             if (listeners.isEmpty()) {
                 return;
             }
@@ -171,11 +177,15 @@ public class EjbJarSources implements Sources, PropertyChangeListener  {
             _listeners[i].stateChanged(ev);
         }
     }
-
+    
     public void propertyChange(PropertyChangeEvent evt) {
         if (SourceRoots.PROP_ROOT_PROPERTIES.equals(evt.getPropertyName())) {
             this.fireChange();
         }
+    }
+
+    public void stateChanged (ChangeEvent event) {
+        this.fireChange();
     }
 
 }
