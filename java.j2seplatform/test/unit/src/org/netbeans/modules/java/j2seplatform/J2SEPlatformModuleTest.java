@@ -51,7 +51,7 @@ public class J2SEPlatformModuleTest extends NbTestCase implements Lookup.Provide
     }
     
     public void testRestored() throws Exception {
-        J2SEPlatformModule.doUpdateSourceLevel();
+        J2SEPlatformModule.updateBuildProperties();
         EditableProperties ep = PropertyUtils.getGlobalProperties();
         JavaPlatform platform = JavaPlatformManager.getDefault().getDefaultPlatform();
         String ver = platform.getSpecification().getVersion().toString();

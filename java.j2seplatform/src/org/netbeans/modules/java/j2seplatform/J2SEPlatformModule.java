@@ -32,13 +32,12 @@ public class J2SEPlatformModule extends ModuleInstall {
 
     public void restored() {
         super.restored();
-        // update default javac.source and javac.target in 
-        // userdir/build.properties according to current active platform
-        doUpdateSourceLevel();
+        // update source level and J2SE platforms in build.properties file
+        updateBuildProperties();
     }
 
     // implemented as separate method for simpler unit testing
-    static void doUpdateSourceLevel() {
+    public static void updateBuildProperties() {
         ProjectManager.mutex().postWriteRequest(
             new Runnable () {
                 public void run () {
