@@ -37,7 +37,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-netbeans-core-actions-MountAction.instance"/>
             <file name="org-netbeans-core-actions-ConfigureShortcutsAction.instance"/>
-            <file name="org-openide-actions-CustomizeBeanAction.instance"/>
             <file name="org-openide-actions-EditAction.instance"/>
             <file name="org-netbeans-core-actions-SystemExit.instance"/>
             <file name="org-openide-actions-FileSystemAction.instance"/>
@@ -57,7 +56,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-RenameAction.instance"/>
             <file name="org-openide-actions-ReorderAction.instance"/>
             <file name="org-openide-actions-SaveAllAction.instance"/>
-            <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
             <file name="org-openide-actions-SaveAction.instance"/>
             <file name="org-openide-actions-ToolsAction.instance"/>
             <file name="org-openide-actions-ViewAction.instance"/>
@@ -72,7 +70,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-CloseViewAction.instance"/>
             <file name="org-openide-actions-CustomizeAction.instance"/>
             <file name="org-netbeans-core-actions-EditorViewAction.instance"/>
-            <file name="org-netbeans-core-actions-ExecutionViewAction.instance"/>
             <file name="org-openide-actions-OpenLocalExplorerAction.instance"/>
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
             <file name="org-netbeans-core-actions-FocusPreviousWorkspaceAction.instance"/>            
@@ -177,8 +174,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-actions-EditorViewAction.instance"/>
             <attr name="org-netbeans-core-actions-EditorViewAction.instance/org-netbeans-core-actions-OutputWindowAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-OutputWindowAction.instance"/>
-            <!-- attr name="org-netbeans-core-actions-ExecutionViewAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true" / -->
-            <!-- attr name="org-netbeans-core-actions-ExecutionViewAction.instance/org-netbeans-core-actions-OutputWindowAction.instance" boolvalue="true" / -->
             <attr name="org-netbeans-core-actions-OutputWindowAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
         </folder>
@@ -421,16 +416,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
             </folder>
 
-            <folder name="ScriptType">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/scriptTypes.gif" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-            </folder>
-
-            <folder name="IndentEngine">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-            </folder>
-            
         </folder>    
         
         <!-- folder for all registered filesystem templates -->
@@ -478,19 +463,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="helpID" stringvalue="org.netbeans.core.services.Browsers"/>
         </folder>
 
-        <folder name="ScriptType">
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/scriptTypes.gif" />
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
-            <attr name="helpID" stringvalue="org.netbeans.core.services.ScriptTypes"/>
-        </folder>
-
-        <folder name="IndentEngine">
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif" />
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-            <attr name="helpID" stringvalue="org.netbeans.core.services.IndentEngines"/>
-        </folder>
-        
         <file name="org-netbeans-core-IDESettings.settings" url="IDESettings.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/ideSettings.gif" />
@@ -603,25 +575,10 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="Browsers.shadow">
                         <attr name="originalFile" stringvalue="Services/Browsers"/>
                     </file>
-
-                    <file name="ScriptTypes.shadow">
-                        <attr name="originalFile" stringvalue="Services/ScriptType"/>
-                    </file>
                 </folder> <!-- ServerAndExternalToolSettings -->
             </folder> <!-- IDEConfiguration -->
             
-            <folder name="Editing">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-                <file name="IndentationEngines.shadow">
-                        <attr name="originalFile" stringvalue="Services/IndentEngine"/>
-                </file>
-            </folder> <!-- EDITING -->
         </folder> <!-- Services -->
-        
-        <folder name="Runtime">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/environment.gif" />
-        </folder> <!-- Runtime -->
         
     </folder>  <!-- UI -->
 
@@ -642,12 +599,6 @@ Microsystems, Inc. All Rights Reserved.
         </file>
     </folder>
 	
-    <!-- folder name="Workplace" -->
-         <!-- Workplace of the IDE -->
-    <!-- /folder -->    
-
-
-    
     <folder name="Windows">
         <!--
         <attr name="SystemFileSystem.layer" stringvalue="project"/>
@@ -660,10 +611,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Editing">
                 <file name="explorer.wsmode" url="windowmanager/Editing/explorer.wsmode" />
                 <folder name="explorer">
-                    <!-- attr name="filesystems.wstcref/runtime.wstcref" boolvalue="true" / -->
                     <file name="filesystems.wstcref" url="windowmanager/Editing/explorer/filesystems.wstcref" />
-                    <attr name="runtime.wstcref/properties.wstcref" boolvalue="true" />
-                    <!-- file name="runtime.wstcref" url="windowmanager/Editing/explorer/runtime.wstcref" / -->
                     <file name="properties.wstcref" url="windowmanager/Editing/explorer/properties.wstcref" />
                 </folder>
                 
@@ -681,24 +629,14 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="output.wstcref" url="windowmanager/Editing/output/output.wstcref" />
                 </folder>
                 
-                <!--
-                <file name="execution.wsmode" url="windowmanager/Editing/execution.wsmode" />
-                <folder name="execution">
-                    <file name="execution.wstcref" url="windowmanager/Editing/execution/execution.wstcref" />
-                </folder>
-                -->
             </folder>
         </folder>
 
         <folder name="Components">
             <file name="filesystems.settings" url="components/filesystems.settings" >
             </file>
-            <!--file name="runtime.settings" url="components/runtime.settings" >
-            </file -->
             <file name="output.settings" url="components/output.settings" >
             </file>
-            <!--file name="execution.settings" url="components/execution.settings" >
-            </file-->
             <file name="properties.settings" url="components/properties.settings" >
             </file>
         </folder>

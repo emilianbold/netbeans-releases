@@ -24,6 +24,11 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-ExecuteAction.instance"/>
             <file name="org-netbeans-core-actions-SetArgumentsAction.instance"/>
         </folder>
+        
+        <folder name="View">
+            <file name="org-netbeans-core-actions-ExecutionViewAction.instance"/>
+        </folder>
+        
     </folder>    
     
     <folder name="Menu">

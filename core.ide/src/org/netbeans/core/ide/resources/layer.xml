@@ -16,6 +16,13 @@ Microsystems, Inc. All Rights Reserved.
 <!-- XML Layer for core-ide -->
 
 <filesystem>
+
+    <folder name="Actions">
+        <folder name="System">
+            <file name="org-openide-actions-CustomizeBeanAction.instance"/>
+            <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
+        </folder>
+    </folder>
     
     <folder name="Shortcuts">
         <file name="S-F8.instance"> <!-- PENDING Debugger -->
@@ -35,6 +42,30 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/src/sourceOptions.gif" />
         </file>
+        <folder name="ScriptType">
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/scriptTypes.gif" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.layer" stringvalue="project"/>
+            <attr name="helpID" stringvalue="org.netbeans.core.services.ScriptTypes"/>
+        </folder>
+        <folder name="IndentEngine">
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="helpID" stringvalue="org.netbeans.core.services.IndentEngines"/>
+        </folder>
+    </folder>
+    
+    <folder name="Templates">
+        <folder name="Services">
+            <folder name="ScriptType">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/scriptTypes.gif" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            </folder>
+            <folder name="IndentEngine">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            </folder>
+        </folder>
     </folder>
     
     <folder name="UI">
@@ -53,6 +84,12 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
                 </folder>
                 
+                <folder name="ServerAndExternalToolSettings">
+                    <file name="ScriptTypes.shadow">
+                        <attr name="originalFile" stringvalue="Services/ScriptType"/>
+                    </file>
+                </folder>
+                
             </folder>        
             
             <folder name="SourceCreationAndManagement">
@@ -63,8 +100,21 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
                 </file>
             </folder> <!-- SourceCreationAndManagement -->
+            
+            <folder name="Editing">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+                <file name="IndentationEngines.shadow">
+                        <attr name="originalFile" stringvalue="Services/IndentEngine"/>
+                </file>
+            </folder> <!-- EDITING -->
         
         </folder>
+        
+        <folder name="Runtime">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/environment.gif" />
+        </folder> <!-- Runtime -->
+        
     </folder>
     
     <folder name="Workplace">
