@@ -208,7 +208,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         for (int i=0; i < perm.length; i++) {
             RADVisualComponent comp = (RADVisualComponent) subComponents.get(i);
             components[perm[i]] = comp;
-            constraints[i] = layoutSupport.getStoredConstraints(comp);
+            constraints[perm[i]] = layoutSupport.getStoredConstraints(comp);
         }
 
         subComponents.clear();
