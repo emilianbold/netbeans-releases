@@ -36,7 +36,7 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
 
 import org.netbeans.api.diff.Diff;
-import org.netbeans.api.diff.DiffWrapperPanel;
+//import org.netbeans.api.diff.DiffWrapperPanel;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.spi.diff.*;
 
