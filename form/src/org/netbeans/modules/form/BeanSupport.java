@@ -31,8 +31,9 @@ public class BeanSupport {
 // -----------------------------------------------------------------------------
 // Private variables
 
-  private static HashMap errorEmptyMap = new HashMap (10);
+  private static HashMap errorEmptyMap = new HashMap (3);
   private static HashMap valuesCache = new HashMap (30);
+  private static HashMap instancesCache = new HashMap (30);
 
 // -----------------------------------------------------------------------------
 // Public methods
@@ -65,6 +66,20 @@ public class BeanSupport {
     }
   }
   
+  /** Utility method to obtain an instance of specified beanClass. The instance is reused, and 
+  * thus should only be used to obtain info about settings of default instances of the specified class.
+  * @param beanClass the class to create inctance of
+  * @return instance of specified class or null if an error occured during instantiation
+  */
+  public static Object getDefaultInstance (Class beanClass) {
+    Object defInstance = instancesCache.get (beanClass);
+    if (defInstance == null) {
+      defInstance = createBeanInstance (beanClass);
+      instancesCache.put (beanClass, defInstance);
+    }
+    return defInstance;
+  }
+
   /** Utility method to obtain a default property values of specified JavaBean class.
   * The default values are property values immediately after the instance is created.
   * Because some AWT components initialize their properties only after the peer is
@@ -80,7 +95,7 @@ public class BeanSupport {
   public static Map getDefaultPropertyValues (Class beanClass) {
     Map defValues = (Map) valuesCache.get (beanClass);
     if (defValues == null) {
-      Object beanInstance = createBeanInstance (beanClass);
+      Object beanInstance = getDefaultInstance (beanClass);
       if (beanInstance == null)
         return errorEmptyMap;
       defValues = getPropertyValues (beanInstance);
@@ -235,6 +250,8 @@ public class BeanSupport {
 
 /*
  * Log
+ *  11   Gandalf   1.10        9/24/99  Ian Formanek    getDefaultInstance 
+ *       method added
  *  10   Gandalf   1.9         9/6/99   Ian Formanek    Defaults for Window and 
  *       Dialog fixed, default colors for components are taken from SystemColor 
  *       rather than hardcoded colors (was Color.lightGray and Color.black)
