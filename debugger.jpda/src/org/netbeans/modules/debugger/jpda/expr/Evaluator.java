@@ -1303,7 +1303,8 @@ public class Evaluator implements JavaParserVisitor {
     }
 
     private Value evaluateVariable(Identifier ctx) {
-
+        
+        // local variable
         if (ctx.localContext) {
             try {
                 LocalVariable var = frame.visibleVariableByName(ctx.identifier);
@@ -1311,7 +1312,8 @@ public class Evaluator implements JavaParserVisitor {
             } catch (AbsentInformationException e) {
             }
         }
-
+          
+        // field
         if (ctx.instanceContext != null) {
             Field field = ctx.typeContext.fieldByName(ctx.identifier);
             if (field != null) return ctx.instanceContext.getValue(field);
@@ -1321,14 +1323,34 @@ public class Evaluator implements JavaParserVisitor {
                 }
             }
         }
-
+        
+        // field from static context
         Field field = ctx.typeContext.fieldByName(ctx.identifier);
         try {
             if (field != null) return ctx.typeContext.getValue(field);
         } catch (IllegalArgumentException e) {
             Assert.error(currentNode, "accessInstanceVariableFromStaticContext", ctx);
         }
-
+        
+        // local variable accessed from innerclass
+        if (ctx.instanceContext != null) {
+            field = ctx.typeContext.fieldByName("val$" + ctx.identifier);
+            if (field != null) return ctx.instanceContext.getValue(field);
+        }
+        
+        // outer field accessed from innerclass
+        if (ctx.instanceContext != null) {
+            Field helpField = ctx.typeContext.fieldByName("this$0");
+            if (helpField != null) {
+                ObjectReference or = (ObjectReference)ctx.instanceContext.getValue(helpField);
+                if (or != null) {
+                    field = or.referenceType().fieldByName(ctx.identifier);
+                    if (field != null) return or.getValue(field);
+                }
+            }
+        }
+        
+        // static import
         for (Iterator i = staticImportsIterator(ctx.identifier); i.hasNext(); ) {
             String typeName = (String) i.next();
             try {
