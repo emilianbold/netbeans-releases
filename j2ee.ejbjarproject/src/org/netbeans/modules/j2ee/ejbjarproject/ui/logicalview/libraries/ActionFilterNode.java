@@ -16,6 +16,7 @@ package org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.libraries;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import javax.swing.Action;
@@ -38,9 +39,12 @@ import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.VisualClassPathItem;
 
 
 /**
@@ -71,13 +75,13 @@ class ActionFilterNode extends FilterNode {
      * the node should not have the {@link RemoveClassPathRootAction}
      * @return ActionFilterNode
      */
-    static ActionFilterNode create (Node original, UpdateHelper helper, String classPathId, String entryId) {
+    static ActionFilterNode create (Node original, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId) {
         DataObject dobj = (DataObject) original.getLookup().lookup(DataObject.class);
         assert dobj != null;
         FileObject root =  dobj.getPrimaryFile();
         Lookup lkp = new ProxyLookup (new Lookup[] {original.getLookup(), helper == null ?
             Lookups.singleton (new JavadocProvider(root,root)) :
-            Lookups.fixed (new Object[] {new Removable (helper, classPathId, entryId),
+            Lookups.fixed (new Object[] {new Removable (helper, eval, refHelper, classPathId, entryId),
             new JavadocProvider(root,root)})});
         return new ActionFilterNode (original, helper == null ? MODE_PACKAGE : MODE_ROOT, root, lkp);
     }
@@ -228,11 +232,15 @@ class ActionFilterNode extends FilterNode {
    private static class Removable implements RemoveClassPathRootAction.Removable {
 
        private final UpdateHelper helper;
+       private final PropertyEvaluator eval;
+       private final ReferenceHelper refHelper;
        private final String classPathId;
        private final String entryId;
 
-       Removable (UpdateHelper helper, String classPathId, String entryId) {
+       Removable (UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId) {
            this.helper = helper;
+           this.eval = eval;
+           this.refHelper = refHelper;
            this.classPathId = classPathId;
            this.entryId = entryId;
        }
@@ -245,32 +253,37 @@ class ActionFilterNode extends FilterNode {
         }
 
        public void remove() {
+           // Different implementation than j2seproject's one, because
+           // we need to remove the library entry from project.xml
+           
+           final Project project = FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
+           
            ProjectManager.mutex().writeAccess ( new Runnable () {
                public void run() {
-                   EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                   String cp = props.getProperty (classPathId);
-                   if (cp != null) {
-                       String[] entries = PropertyUtils.tokenizePath(cp);
-                       List/*<String>*/ result = new ArrayList ();                       
-                       for (int i=0; i<entries.length; i++) {
-                           if (!entryId.equals(EjbJarProjectProperties.getAntPropertyName(entries[i]))) {
-                               int size = result.size();
-                               if (size>0) {
-                                   result.set (size-1,(String)result.get(size-1) + ':'); //NOI18N
-                               }
-                               result.add (entries[i]);                                                                                             
-                           }
-                       }
-                       props.setProperty (classPathId, (String[])result.toArray(new String[result.size()]));
-                       helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,props);
-                       Project project = FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
-                       assert project != null;
-                       try {
-                        ProjectManager.getDefault().saveProject(project);
-                       } catch (IOException ioe) {
-                           ErrorManager.getDefault().notify(ioe);
-                       }
-                   }
+                    try {
+                        boolean removed = false;
+                        EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        String raw = props.getProperty (classPathId);
+                        EjbJarProjectProperties.PathParser parser = new EjbJarProjectProperties.PathParser ();
+                        List/*VisualClassPathItem*/ resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
+                        for (Iterator i = resources.iterator(); i.hasNext();) {
+                            VisualClassPathItem item = (VisualClassPathItem)i.next();
+                            if (entryId.equals(EjbJarProjectProperties.getAntPropertyName(item.getRaw()))) {
+                                i.remove();
+                                removed = true;
+                            }
+                        }
+                        if (removed) {
+                            raw = parser.encode (resources, project, helper.getAntProjectHelper(), refHelper);
+                            props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+                            props.put (classPathId, raw);
+                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                            ProjectManager.getDefault().saveProject(project);
+                        }
+                    }
+                    catch (IOException ioe) {
+                        ErrorManager.getDefault().notify(ioe);
+                    }
                }
            });
        }

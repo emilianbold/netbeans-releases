@@ -23,6 +23,7 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -48,9 +49,11 @@ import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
 
 
@@ -69,11 +72,11 @@ class ProjectNode extends AbstractNode {
     private final Project project;
     private Image cachedIcon;
 
-    ProjectNode (Project project, UpdateHelper helper,ReferenceHelper refHelper, String classPathId, String entryId) {
+    ProjectNode (Project project, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId) {
         super (Children.LEAF, Lookups.fixed(new Object[] {
             project,
             new JavadocProvider(project),
-            new Removable(helper,refHelper, classPathId, entryId)}));
+            new Removable(helper, eval, refHelper, classPathId, entryId)}));
         this.project = project;
     }
 
@@ -229,12 +232,14 @@ class ProjectNode extends AbstractNode {
     private static class Removable implements RemoveClassPathRootAction.Removable {
 
         private final UpdateHelper helper;
+        private final PropertyEvaluator eval;
         private final ReferenceHelper refHelper;
         private final String classPathId;
         private final String entryId;
 
-        Removable (UpdateHelper helper, ReferenceHelper refHelper, String classPathId, String entryId) {
+        Removable (UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId) {
             this.helper = helper;
+            this.eval = eval;
             this.refHelper = refHelper;
             this.classPathId = classPathId;
             this.entryId = entryId;
@@ -249,36 +254,47 @@ class ProjectNode extends AbstractNode {
         public void remove() {
             ProjectManager.mutex().writeAccess ( new Runnable () {
                public void run() {
-                   EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                   String cp = props.getProperty (classPathId);
-                   if (cp != null) {
-                       String[] entries = PropertyUtils.tokenizePath(cp);
-                       List/*<String>*/ result = new ArrayList ();
-                       for (int i=0; i<entries.length; i++) {
-                           if (!entryId.equals(EjbJarProjectProperties.getAntPropertyName(entries[i]))) {
-                               int size = result.size();
-                               if (size>0) {
-                                   result.set (size-1,(String)result.get(size-1) + ':'); //NOI18N
-                               }
-                               result.add (entries[i]);                                                              
-                           }
+                   // Different implementation than j2seproject's one, because
+                   // ewe need to remove the project entry from project.xml
+
+                   final Project project = FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
+
+                   ProjectManager.mutex().writeAccess ( new Runnable () {
+                       public void run() {
+                            try {
+                                boolean removed = false;
+                                EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                                String raw = props.getProperty (classPathId);
+                                EjbJarProjectProperties.PathParser parser = new EjbJarProjectProperties.PathParser ();
+                                List/*VisualClassPathItem*/ resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
+                                for (Iterator i = resources.iterator(); i.hasNext();) {
+                                    VisualClassPathItem item = (VisualClassPathItem)i.next();
+                                    if (entryId.equals(EjbJarProjectProperties.getAntPropertyName(item.getRaw()))) {
+                                        i.remove();
+                                        removed = true;
+                                    }
+                                }
+                                if (removed) {
+                                    raw = parser.encode (resources, project, helper.getAntProjectHelper(), refHelper);
+                                    props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+                                    props.put (classPathId, raw);
+                                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                                    
+                                    String ref = "${" + entryId + "}"; //NOI18N
+                                    if (!RemoveClassPathRootAction.isReferenced (new EditableProperties[] {
+                                        props,
+                                        helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH)}, ref)) {
+                                        refHelper.destroyForeignFileReference (ref);
+                                    }
+                                    
+                                    ProjectManager.getDefault().saveProject(project);
+                                }
+                            }
+                            catch (IOException ioe) {
+                                ErrorManager.getDefault().notify(ioe);
+                            }
                        }
-                       props.setProperty (classPathId, (String[])result.toArray(new String[result.size()]));
-                       helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,props);
-                       String ref = "${"+entryId+"}";  //NOI18N
-                       if (!RemoveClassPathRootAction.isReferenced (new EditableProperties[] {
-                           props,
-                           helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH)}, ref)) {
-                           refHelper.destroyForeignFileReference (ref);
-                       }
-                       Project project = FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
-                       assert project != null;
-                       try {
-                        ProjectManager.getDefault().saveProject(project);
-                       } catch (IOException ioe) {
-                           ErrorManager.getDefault().notify(ioe);
-                       }
-                   }
+                   });
                }
            });
         }
