@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form;
 
 import java.util.EventObject;
@@ -40,8 +39,10 @@ public class FormModelEvent extends EventObject
                    RADComponent metacomp,
                    String propName, Object propOldVal, Object propNewVal) {
         this(source);
-        component = metacomp;
-        deriveContainer(metacomp);
+        if (component != null) {
+            component = metacomp;
+            deriveContainer(metacomp);
+        }
         propertyName = propName;
         propertyOldValue = propOldVal;
         propertyNewValue = propNewVal;
