@@ -399,7 +399,7 @@ is divided into following sections:
               <xsl:when test="ejbjarproject2:from-wsdl">
                 <target name="{$wsname}_wscompile" depends="init, wscompile-init">
                   <wscompile import="true" 
-                     config="${{src.dir}}/${{{$wsname}.config.name}}"
+                     config="${{{$wsname}.config.name}}"
                      features="${{wscompile.service.{$wsname}.features}}"
                      mapping="${{meta.inf}}/wsdl/${{{$wsname}.mapping}}"
                      classpath="${{wscompile.classpath}}" 
@@ -425,7 +425,7 @@ is divided into following sections:
                      nonClassDir="${{classes.dir}}/META-INF/wsdl"
                      classpath="${{wscompile.classpath}}:${{classes.dir}}"
                      mapping="${{classes.dir}}/META-INF/wsdl/${{{$wsname}.mapping}}"
-                     config="${{src.dir}}/${{{$wsname}.config.name}}"
+                     config="${{{$wsname}.config.name}}"
                      features="${{wscompile.service.{$wsname}.features}}">
                   </wscompile>
                 </target>
