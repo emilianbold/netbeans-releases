@@ -196,7 +196,7 @@ public class TestGenerateJavadoc extends JavadocTestCase {
         optionsOper.selectOption("Code Documentation|Documentation");
         PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(optionsOper);
         ComboBoxProperty askForDestProp = new ComboBoxProperty(propertiesTab, "Ask for Destination Directory");
-        askForDestProp.setValue("True");
+        askForDestProp.setValue("true");
         optionsOper.close();
         // -----
         
@@ -229,8 +229,8 @@ public class TestGenerateJavadoc extends JavadocTestCase {
         String [] docletSettings = new String [] {"Author", "Bottom", "Charset", "Doc Title", "Footer", "Group",
             "Header", "Help File", "Link", "Linkoffline", "No Deprecated", "No Deprecated List", "No Help", "No Index", 
             "No Navbar", "No Tree", "Split Index", "Style Sheet File", "Use", "Version", "Window Title"};
-        String [] docletValues = new String [] {"False", "", "", "", "", "", "", "", "", "", "False", "False", "False",
-            "False", "False", "False", "False", "", "False", "False", ""};
+        String [] docletValues = new String [] {"false", "", "", "", "", "", "", "", "", "", "false", "false", "false",
+            "false", "false", "false", "false", "", "false", "false", ""};
         
         // create new doclet with name TestDoclet
         OptionsOperator optionsOper = OptionsOperator.invoke();
@@ -261,8 +261,8 @@ public class TestGenerateJavadoc extends JavadocTestCase {
         // Doclets setting excluded
         String [] execSettings = new String [] {"1.1 style", "Enable JDK 1.4 source", "Encoding", 
             "Extdirs", "External Process", "Locale", "Members", "Overview", "Recursive", "Verbose"};
-        String [] execValues = new String [] {"False", "False", "", "", "External Javadoc Executor",
-            "", "protected", "", "True", "False"};
+        String [] execValues = new String [] {"false", "false", "", "", "External Javadoc Executor",
+            "", "protected", "", "true", "false"};
         
         OptionsOperator optionsOper = OptionsOperator.invoke();
         JTreeOperator optionsTreeOper = optionsOper.treeTable().tree();
