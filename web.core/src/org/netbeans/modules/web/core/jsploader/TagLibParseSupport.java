@@ -30,6 +30,7 @@ import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.openide.filesystems.FileUtil;
 
 /** Support for parsing JSP pages and tag files and cooperation between the parser 
  * and the editor.
@@ -84,6 +85,14 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
     /** Gets the tag library data relevant for the editor. */
     public JSPColoringData getJSPColoringData() {
         return getJSPColoringData(true);
+    }
+    
+    private WebModule getWebModule(FileObject fo){
+        FileObject wmRoot = WebModule.getWebModule(fo).getDocumentBase();
+        if (fo == wmRoot || FileUtil.isParentOf(wmRoot, fo)) {
+            return WebModule.getWebModule(fo);
+        }
+        return null;
     }
     
     JSPColoringData getJSPColoringData(boolean prepare) {
@@ -157,7 +166,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
             }
             JspParserAPI.JspOpenInfo info = (JspParserAPI.JspOpenInfo)jspOpenInfoRef.get(timestamp);
             if (info == null) {
-                info = JspParserFactory.getJspParser().getJspOpenInfo(jspFile, JspParserAccess.getJspParserWM (WebModule.getWebModule (jspFile)), useEditor);
+                info = JspParserFactory.getJspParser().getJspOpenInfo(jspFile, JspParserAccess.getJspParserWM (getWebModule (jspFile)), useEditor);
                 jspOpenInfoRef.put(info, timestamp);
             }
             return info;
@@ -224,7 +233,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
             if (parser == null) {
                 throw new InternalError();
             }
-            locResult = parser.analyzePage(jspFile, JspParserAccess.getJspParserWM (WebModule.getWebModule (jspFile)), JspParserAPI.ERROR_IGNORE);
+            locResult = parser.analyzePage(jspFile, JspParserAccess.getJspParserWM (getWebModule (jspFile)), JspParserAPI.ERROR_IGNORE);
             synchronized (TagLibParseSupport.this.parseResultLock) {
                 parseResultRef = new SoftReference(locResult);
                 if (locResult.isParsingSuccess()) {
