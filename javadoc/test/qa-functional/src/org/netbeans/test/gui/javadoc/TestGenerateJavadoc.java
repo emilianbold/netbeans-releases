@@ -69,8 +69,8 @@ public class TestGenerateJavadoc extends JellyTestCase {
         RepositoryTabOperator repoTabOper = RepositoryTabOperator.invoke();
         Node topNode = new Node(repoTabOper.getRootNode(), 0);
         
-        String path = repoTabOper.mountLocalDirectoryAPI(topNode.getPath() + sep + 
-                            "org" + sep + "netbeans" + sep + "test" + sep + "gui" + sep + // NOI18N
+        repoTabOper.mountLocalDirectoryAPI(topNode.getPath() + sep + "org" + sep + // NOI18N
+                            "netbeans" + sep + "test" + sep + "gui" + sep + // NOI18N
                             "javadoc" + sep + "data" + sep + "sampledir"); // NOI18N
         
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 120000); // NOI18N
