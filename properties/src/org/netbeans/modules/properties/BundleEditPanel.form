@@ -31,7 +31,7 @@
               </Properties>
 
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value=""/>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new BundleTable();"/>
               </AuxValues>
             </Component>
           </SubComponents>

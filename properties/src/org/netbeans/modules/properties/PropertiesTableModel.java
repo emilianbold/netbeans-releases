@@ -269,16 +269,13 @@ public class PropertiesTableModel extends AbstractTableModel {
 
     /** Cancels editing in all listening JTables if appropriate. */
     private void cancelEditingInTables(CancelSelector can) {
+        
         Object list[] = listenerList.getListenerList();
-        for (int i = 0; i < list.length; i++) {
-            if (list[i] instanceof JTable) {
-                JTable jt = (JTable)list[i];
-                if (can.doCancelEditing(jt.getEditingRow(), jt.getEditingColumn())) {
-                    TableCellEditor ed = jt.getCellEditor();
-                    if (ed != null) {
-                        ed.cancelCellEditing();
-                        //System.out.println("canceling edit in " + jt);
-                    }
+        for(int i = 0; i < list.length; i++) {
+            if(list[i] instanceof BundleEditPanel.BundleTable) {
+                BundleEditPanel.BundleTable jt = (BundleEditPanel.BundleTable)list[i];
+                if (can.doCancelEditing(jt.getEditingRow(), jt.getEditingColumn())) {                    
+                    jt.removeEditorSilent();
                 }
             }
         }
@@ -325,8 +322,8 @@ public class PropertiesTableModel extends AbstractTableModel {
                 }
             } else if(changeType == PropertyBundleEvent.CHANGE_ALL) {
                 // All items changed (keyset).                
-                
                 cancelEditingInTables(getDefaultCancelSelector());
+                
                 // reset all header values as well
                 Object[] list = PropertiesTableModel.super.listenerList.getListenerList();
                 for (int i = 0; i < list.length; i++) {
@@ -339,10 +336,10 @@ public class PropertiesTableModel extends AbstractTableModel {
                         }
                     }
                 }
+                
                 fireTableDataChanged();
             } else if(changeType == PropertyBundleEvent.CHANGE_FILE) {
                 // File changed.
-                
                 final int index = obj.getBundleStructure().getEntryIndexByFileName(evt.getEntryName());
                 if (index == -1) {
                     if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N

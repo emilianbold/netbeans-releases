@@ -113,6 +113,7 @@ public class BundleEditPanel extends JPanel {
                 removeButton.setEnabled(table.getSelectedRow() >= 0);
             }
         });
+        
     } // End of constructor.
 
     
@@ -171,7 +172,7 @@ public class BundleEditPanel extends JPanel {
     private void initComponents() {//GEN-BEGIN:initComponents
         tablePanel = new javax.swing.JPanel();
         scrollPane = new javax.swing.JScrollPane();
-        table = new javax.swing.JTable();
+        table = new BundleTable();
         valuePanel = new javax.swing.JPanel();
         commentLabel = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -782,5 +783,38 @@ public class BundleEditPanel extends JPanel {
             }
         }
     } // End of inner class TableViewRenderer.
+    
+    
+    
+    /** <code>JTable</code> with one bug fix.
+     * @see #removeEditorSilent */
+    static class BundleTable extends JTable {
+        
+        /**
+         * The same like superclass removeEditor except it doesn't request focus back to table.
+         * We need this kind of behaviour (see bug in IssueaZilla #9237). The table shoudl request focus
+         * after canceling editing when is showing only (submit bug to jdk ?).
+         * @see javax.swing.JTable#removeEditor */
+        public void removeEditorSilent() {
+            TableCellEditor editor = getCellEditor();
+            if(editor != null) {
+                editor.removeCellEditorListener(this);
+
+                // requestFocus();
+                if (editorComp != null) { 
+                    remove(editorComp);
+                }
+
+                Rectangle cellRect = getCellRect(editingRow, editingColumn, false);
+
+                setCellEditor(null);
+                setEditingColumn(-1);
+                setEditingRow(-1);
+                editorComp = null;
+
+                repaint(cellRect);
+            }
+        }
+    } // End of BundleTable class.
     
 }
