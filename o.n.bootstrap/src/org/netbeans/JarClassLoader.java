@@ -117,7 +117,7 @@ public class JarClassLoader extends ProxyClassLoader {
             if (data == null) continue;
             
             // do the enhancing
-            byte[] d = PatchByteCode.patch (data);
+            byte[] d = PatchByteCode.patch (data, name);
             data = d;
             
             int j = name.lastIndexOf('.');

@@ -49,9 +49,9 @@ public class NbEnhanceClass extends Task {
         patchClass = f;
     }
     
-    /** Name of the method to call. Must have byte[] array argument and return the same
+    /** Name of the method to call. Must have signature byte[] x(byte[], Map)
      */
-    private String enhanceMethod = "enhance";
+    private String enhanceMethod = "enhanceClass";
     public void setEnhanceMethod (String f) {
         enhanceMethod = f;
     }
@@ -123,7 +123,7 @@ public class NbEnhanceClass extends Task {
         // Initialize the method
         //
         
-        ClassLoader cl = new AntClassLoader(getProject(), patchPath);
+        ClassLoader cl = new AntClassLoader(getProject(), patchPath, false);
         
         java.lang.reflect.Method m;
         try {
@@ -201,11 +201,13 @@ public class NbEnhanceClass extends Task {
                     args.put ("netbeans.superclass", p.nbSuperClass);
                 }
                 if (members != null) {
-                    args.put ("netbeans.public", members.toArray (new String[0]));
+                    args.put ("netbeans.public", members);
                 }
                 if (rename != null) {
-                    args.put ("netbeans.rename", rename.toArray (new String[0]));
+                    args.put ("netbeans.rename", rename);
                 }
+                
+                log("Patching " + p.clazz + " with arguments " + args, Project.MSG_VERBOSE);
                 
                 out = (byte[])m.invoke (null, new Object[] { arr, args });
                 if (out == null) {

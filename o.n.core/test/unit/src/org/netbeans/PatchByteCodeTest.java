@@ -18,7 +18,7 @@ import junit.textui.TestRunner;
 import org.netbeans.junit.*;
 import java.io.InputStream;
 import java.lang.reflect.*;
-import java.util.HashMap;
+import java.util.*;
 
 /** Test patching of openide.jar byte code for compatibility.
  * @author Jaroslav Tulach
@@ -61,8 +61,8 @@ public class PatchByteCodeTest extends NbTestCase {
         
 
         HashMap args = new HashMap ();
-        args.put ("netbeans.public", new String[] { "addCompilerListener", "removeCompilerListener" } );
-        byte[] res = PatchByteCode.enhance(arr, args);
+        args.put ("netbeans.public", Arrays.asList(new String[] { "addCompilerListener", "removeCompilerListener" }) );
+        byte[] res = PatchByteCode.enhanceClass(arr, args);
         PatchClassLoader loader = new PatchClassLoader ("org.openide.compiler.CompilerGroup", res, ClassLoader.getSystemClassLoader());
         
         Class c = loader.loadClass ("org.openide.compiler.CompilerGroup");
@@ -95,8 +95,8 @@ public class PatchByteCodeTest extends NbTestCase {
         
         
         HashMap args = new HashMap ();
-        args.put ("netbeans.public", new String[] { "member", "field", "method", "staticmethod" } );
-        byte[] res = PatchByteCode.enhance(arr, args);
+        args.put ("netbeans.public", Arrays.asList(new String[] { "member", "field", "method", "staticmethod" }) );
+        byte[] res = PatchByteCode.enhanceClass(arr, args);
         PatchClassLoader loader = new PatchClassLoader (Sample.class.getName (), res, ClassLoader.getSystemClassLoader());
         
         Class c = loader.loadClass (Sample.class.getName ());
@@ -151,8 +151,8 @@ public class PatchByteCodeTest extends NbTestCase {
         
         
         HashMap args = new HashMap ();
-        args.put ("netbeans.rename", new String[] { "staticmethod", "StaticMethod" } );
-        byte[] res = PatchByteCode.enhance(arr, args);
+        args.put ("netbeans.rename", Arrays.asList(new String[] { "staticmethod", "StaticMethod" }) );
+        byte[] res = PatchByteCode.enhanceClass(arr, args);
 
         PatchClassLoader loader = new PatchClassLoader (Sample.class.getName (), res, ClassLoader.getSystemClassLoader());
         
@@ -185,7 +185,7 @@ public class PatchByteCodeTest extends NbTestCase {
         
         HashMap args = new HashMap ();
         args.put ("netbeans.superclass", superclass.replace ('.', '/'));
-        byte[] res = PatchByteCode.enhance(arr, args);
+        byte[] res = PatchByteCode.enhanceClass(arr, args);
         PatchClassLoader loader = new PatchClassLoader (className, res);
 
         Class c = loader.loadClass (className);
@@ -218,7 +218,7 @@ public class PatchByteCodeTest extends NbTestCase {
         protected synchronized Class loadClass(String name, boolean resolve) 
         throws ClassNotFoundException {
             if (res.equals (name)) {
-                byte[] patch = PatchByteCode.patch(arr);
+                byte[] patch = PatchByteCode.patch(arr, name);
                 
                 return defineClass (name, patch, 0, patch.length);
             } else {

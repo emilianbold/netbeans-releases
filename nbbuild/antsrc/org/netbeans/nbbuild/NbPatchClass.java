@@ -93,14 +93,14 @@ public class NbPatchClass extends Task {
         // Initialize the method
         //
         
-        log ("Initilalizing patching " + patchClass + '.' + patchMethod);
+        log ("Initializing patching " + patchClass + '.' + patchMethod);
         
         ClassLoader cl = new AntClassLoader(getProject(), patchPath);
         
         java.lang.reflect.Method m;
         try {
             Class c = cl.loadClass (patchClass);
-            m = c.getMethod(patchMethod, new Class[] { byte[].class });
+            m = c.getMethod(patchMethod, new Class[] { byte[].class, String.class });
             if (m.getReturnType() != byte[].class) {
                 throw new BuildException ("Method does not return byte[]: " + m);
             }
@@ -124,6 +124,12 @@ public class NbPatchClass extends Task {
         java.util.Enumeration it = jar.entries();
         while (it.hasMoreElements()) {
             java.util.jar.JarEntry e = (java.util.jar.JarEntry)it.nextElement ();
+            String entryname = e.getName();
+            if (!entryname.endsWith(".class")) {
+                // resource, skip
+                continue;
+            }
+            String name = entryname.substring(0, entryname.length() - 6).replace('/', '.');
 
             int size = (int)e.getSize();
             if (size <= 4) {
@@ -140,7 +146,7 @@ public class NbPatchClass extends Task {
                 while (indx < arr.length) {
                     int read = is.read (arr, indx, arr.length - indx);
                     if (read == -1) {
-                        throw new BuildException("Entry: " + e.getName () + " size should be: " + size + " but was read just: " + indx);
+                        throw new BuildException("Entry: " + name + " size should be: " + size + " but was read just: " + indx);
                     }
                     indx += read;
                 }
@@ -151,7 +157,7 @@ public class NbPatchClass extends Task {
             byte[] original = (byte[])arr.clone ();
             byte[] out;
             try {
-                out = (byte[])m.invoke (null, new Object[] { arr });
+                out = (byte[])m.invoke (null, new Object[] { arr, name });
             } catch (java.lang.reflect.InvocationTargetException ex) {
                 throw new BuildException (ex.getTargetException());
             } catch (Exception ex) {

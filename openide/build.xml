@@ -896,6 +896,9 @@ Set jmf.home to the location of your JMF installation to continue."/>
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir="compat/src">
+        <include name="**/*.class"/>
+      </fileset>
       <fileset dir="api/examples">
         <include name="**/*.class"/>
       </fileset>

@@ -15,6 +15,8 @@ package org.netbeans;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 /** Class that can enhance bytecode with information about alternative
  * superclass and access modifiers. It can also extract this information 
@@ -145,15 +147,15 @@ public final class PatchByteCode {
      * @return new version of the bytecode if changed, otherwise null to signal that
      * no change has been made
      */
-    public static byte[] enhance (byte[] arr, java.util.Map args) {
+    public static byte[] enhanceClass(byte[] arr, java.util.Map args) {
         if (isPatched (arr)) {
             // already patched
             return null;
         }
         
         String superClass = (String)args.get ("netbeans.superclass");
-        String[] methods = (String[])args.get ("netbeans.public");
-        String[] rename = (String[])args.get ("netbeans.rename");
+        List methods = (List)args.get ("netbeans.public"); // List<String>
+        List rename = (List)args.get ("netbeans.rename"); // List<String>
         
 
         HashMap m;
@@ -161,14 +163,16 @@ public final class PatchByteCode {
             m = new HashMap ();
             
             if (methods != null) {
-                for (int i = 0; i < methods.length; i++) {
-                    m.put (methods[i], new int[1]);
+                Iterator it = methods.iterator();
+                while (it.hasNext()) {
+                    m.put((String)it.next(), new int[1]);
                 }
             } 
             
             if (rename != null) {
-                for (int i = 0; i < rename.length; i++) {
-                    m.put (rename[i], new int[1]);
+                Iterator it = rename.iterator();
+                while (it.hasNext()) {
+                    m.put((String)it.next(), new int[1]);
                 }
             }
         } else {
@@ -196,14 +200,16 @@ public final class PatchByteCode {
         }
         
         if (methods != null) {
-            for (int i = 0; i < methods.length; i++) {
-                patched |= pc.markMemberPublic (methods[i]);
+            Iterator it = methods.iterator();
+            while (it.hasNext()) {
+                patched |= pc.markMemberPublic((String)it.next());
             }
         }
         
         if (rename != null) {
-            for (int i = 0; i < rename.length; i += 2) {
-                patched |= pc.renameMember(rename[i], rename[i + 1]);
+            Iterator it = rename.iterator();
+            while (it.hasNext()) {
+                patched |= pc.renameMember((String)it.next(), (String)it.next());
             }
         }
         
@@ -228,10 +234,18 @@ public final class PatchByteCode {
      * to reflect the change.
      * 
      * @param arr the bytecode
+     * @param name the class name
      * @return the enhanced bytecode
      */
-    public static byte[] patch (byte[] arr) {
+    public static byte[] patch (byte[] arr, String name) {
         if (!isPatched (arr)) return arr;
+        
+        /*
+        if (System.getProperty("test.class") != null) { // NOI18N
+            // Running in XTest (ide-mode executor). Provide a little debug info.
+            System.err.println("Patching: " + name); // NOI18N
+        }
+         */
 
         PatchByteCode pc = new PatchByteCode (arr, null);
         if (pc.superClassNameAttr > 0) {
