@@ -373,7 +373,14 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         
         OpenProjectListSettings opls = OpenProjectListSettings.getInstance();
         JFileChooser chooser = new ProjectFileChooser();
-        chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );        
+        chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
+
+        if ("GTK".equals(javax.swing.UIManager.getLookAndFeel().getID())) { // NOI18N
+            // see BugTraq #5027268
+            chooser.putClientProperty("GTKFileChooser.showDirectoryIcons", Boolean.TRUE); // NOI18N
+            //chooser.putClientProperty("GTKFileChooser.showFileIcons", Boolean.TRUE); // NOI18N
+        }
+        
         chooser.setApproveButtonText( NbBundle.getMessage( ProjectChooserAccessory.class, "BTN_PrjChooser_ApproveButtonText" ) ); // NOI18N
         chooser.setApproveButtonMnemonic( NbBundle.getMessage( ProjectChooserAccessory.class, "MNM_PrjChooser_ApproveButtonText" ).charAt (0) ); // NOI18N
         chooser.setMultiSelectionEnabled( false );        
