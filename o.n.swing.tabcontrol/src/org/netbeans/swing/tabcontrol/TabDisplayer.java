@@ -191,6 +191,8 @@ public final class TabDisplayer extends JComponent implements Accessible {
      * or null if no global location info is needed */
     private LocationInformer locationInformer = null;
 
+    private boolean showClose = !Boolean.getBoolean(
+        "nb.tabs.suppressCloseButton"); //NOI18N
     
     public TabDisplayer () {
         this (new DefaultTabDataModel(), TYPE_VIEW);
@@ -237,6 +239,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
         if (!initialized) {
             return;
         }
+        
         if (type == TYPE_TOOLBAR) {
             setUI (new ToolbarTabDisplayerUI(this));
             return;
@@ -263,6 +266,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
                     WinClassicEditorTabDisplayerUI.createUI(this);
         }
         setUI((TabDisplayerUI) ui);
+        
     }
     
     /**
@@ -486,6 +490,28 @@ public final class TabDisplayer extends JComponent implements Accessible {
             accessibleContext = new AccessibleTabDisplayer();
         }
         return accessibleContext;
+    }
+
+    /**
+     * Set whether or not the close button should be visible.
+     * This can be defaulted by setting the system property
+     * <code>nb.tabs.suppressCloseButton</code>.  The default is
+     * true.
+     */
+    public final void setShowCloseButton (boolean val) {
+        boolean wasShow = isShowCloseButton();
+        if (wasShow != val) {
+            showClose = val;
+            if (isShowing()) {
+                repaint();
+            }
+            firePropertyChange ("showCloseButton", !val, val);
+        }
+    }
+    
+    /** Find out if this displayer is set to show close buttons */
+    public final boolean isShowCloseButton () {
+        return showClose;
     }
     
     

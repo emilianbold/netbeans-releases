@@ -73,12 +73,21 @@ public abstract class AbstractTabCellRenderer extends JLabel
     public AbstractTabCellRenderer (TabPainter painter, Dimension padding) {
         this (painter, painter, painter, padding);
     }
+    
+    private boolean showClose = true;
+    public final void setShowCloseButton (boolean b) {
+        showClose = b;
+    }
+    
+    public final boolean isShowCloseButton() {
+        return showClose;
+    }
 
     private Rectangle scratch = new Rectangle();
     public String getCommandAtPoint(Point p, int tabState, Rectangle bounds) {
         setBounds (bounds);
         setState (tabState);
-        if (supportsCloseButton(getBorder())) {
+        if (supportsCloseButton(getBorder()) && isShowCloseButton()) {
             TabPainter cbp = (TabPainter) getBorder();
             cbp.getCloseButtonRectangle (this, scratch, bounds);
             if (getClass() != AquaEditorTabCellRenderer.class) {
@@ -109,7 +118,7 @@ public abstract class AbstractTabCellRenderer extends JLabel
                      
                      return result;
                  }
-             } else if (TabDisplayer.COMMAND_CLOSE == result && eventType == MouseEvent.MOUSE_RELEASED) {
+             } else if (TabDisplayer.COMMAND_CLOSE == result && eventType == MouseEvent.MOUSE_RELEASED && isShowCloseButton()) {
                  if ((modifiers & MouseEvent.SHIFT_DOWN_MASK) != 0) {
                      return TabDisplayer.COMMAND_CLOSE_ALL;
                  } else if ((modifiers & MouseEvent.ALT_DOWN_MASK) != 0) {

@@ -198,5 +198,9 @@ public abstract class TabbedContainerUI extends ComponentUI {
      *         last tab index) if the tab should be inserted at the end.
      */
     public abstract int dropIndexOfPoint(Point p);
+    
+    public abstract void setShowCloseButton (boolean val);
+    
+    public abstract boolean isShowCloseButton ();
 
 }

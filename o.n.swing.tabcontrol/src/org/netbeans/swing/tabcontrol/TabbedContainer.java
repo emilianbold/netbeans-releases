@@ -644,6 +644,27 @@ public class TabbedContainer extends JComponent {
     public int getTabCount() {
         return getModel().size();
     }
+    
+    /**
+     * Set whether or not close buttons should be shown.
+     * This can be defaulted with the system property
+     * <code>nb.tabs.suppressCloseButton</code>; if the system
+     * property is not set, the default is true.
+     */
+    public final void setShowCloseButton (boolean val) {
+        boolean wasShow = isShowCloseButton();
+        if (val != wasShow) {
+            getUI().setShowCloseButton(val);
+            firePropertyChange ("showCloseButton", wasShow, val);
+        }
+    }
+    
+    /**
+     * Determine whether or not close buttons are being shown. 
+     */
+    public final boolean isShowCloseButton () {
+        return getUI().isShowCloseButton();
+    }
 
     /** Get the index of a component */
     public int indexOf (Component comp) {

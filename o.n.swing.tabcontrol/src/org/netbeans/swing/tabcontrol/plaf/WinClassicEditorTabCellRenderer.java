@@ -20,6 +20,7 @@ package org.netbeans.swing.tabcontrol.plaf;
 
 import javax.swing.*;
 import java.awt.*;
+import org.netbeans.swing.tabcontrol.TabDisplayer;
 
 /**
  * Windows classic implementation of tab renderer
@@ -60,6 +61,13 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
         public void getCloseButtonRectangle(JComponent jc,
                                             final Rectangle rect,
                                             Rectangle bounds) {
+            if (!((AbstractTabCellRenderer) jc).isShowCloseButton()) {
+                rect.x = -100;
+                rect.y = -100;
+                rect.width = 0;
+                rect.height = 0;
+                return;
+            }
             Insets ins = getBorderInsets(jc);
 
             rect.y = bounds.y + ins.top;
@@ -142,6 +150,10 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
             Polygon p = getInteriorPolygon(c);
             g.fillPolygon(p);
 
+            if (!supportsCloseButton((JComponent)c)) {
+                return;
+            }
+            
             Rectangle r = new Rectangle();
             getCloseButtonRectangle(ren, r, new Rectangle(0, 0,
                                                           ren.getWidth(),
@@ -190,7 +202,8 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
         }
 
         public boolean supportsCloseButton(JComponent renderer) {
-            return true;
+            return 
+                ((AbstractTabCellRenderer) renderer).isShowCloseButton();
         }
 
     }

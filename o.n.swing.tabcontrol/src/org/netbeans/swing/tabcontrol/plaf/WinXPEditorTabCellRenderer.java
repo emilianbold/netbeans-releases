@@ -22,6 +22,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Area;
 import java.awt.geom.Point2D;
+import org.netbeans.swing.tabcontrol.TabDisplayer;
 
 /**
  * Windows xp implementation of tab renderer
@@ -322,6 +323,14 @@ final class WinXPEditorTabCellRenderer extends AbstractTabCellRenderer {
         public void getCloseButtonRectangle(JComponent jc,
                                             final Rectangle rect,
                                             Rectangle bounds) {
+                                                
+            if (!((AbstractTabCellRenderer) jc).isShowCloseButton()) {
+                rect.x = -100;
+                rect.y = -100;
+                rect.width = 0;
+                rect.height = 0;
+                return;
+            }
             Insets ins = getBorderInsets(jc);
 
             rect.y = bounds.y + ins.top - 3;
@@ -574,7 +583,8 @@ final class WinXPEditorTabCellRenderer extends AbstractTabCellRenderer {
         }
 
         public boolean supportsCloseButton(JComponent renderer) {
-            return true;
+            return renderer instanceof TabDisplayer ? 
+                ((TabDisplayer) renderer).isShowCloseButton() : true;
         }
 
     }

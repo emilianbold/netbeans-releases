@@ -20,6 +20,7 @@ package org.netbeans.swing.tabcontrol.plaf;
 
 import javax.swing.*;
 import java.awt.*;
+import org.netbeans.swing.tabcontrol.TabDisplayer;
 
 /**
  * A tab cell renderer for OS-X.  Basically does its work by subclassing JButton
@@ -74,7 +75,8 @@ final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
                                             Rectangle bounds) {
             boolean rightClip = ((AquaEditorTabCellRenderer) jc).isClipRight();
             boolean leftClip = ((AquaEditorTabCellRenderer) jc).isClipLeft();
-            if (leftClip || rightClip) {
+            boolean notSupported = !((AbstractTabCellRenderer) jc).isShowCloseButton();
+            if (leftClip || rightClip || notSupported) {
                 rect.x = -100;
                 rect.y = -100;
                 rect.width = 0;
@@ -93,20 +95,22 @@ final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
         }
 
         private void paintCloseButton(Graphics g, JComponent c) {
-            Rectangle r = new Rectangle(0, 0, c.getWidth(), c.getHeight());
-            Rectangle cbRect = new Rectangle();
-            getCloseButtonRectangle((JComponent) c, cbRect, r);
-            //We return larger bounds than we want to paint to compensate
-            //for antialiasing and the fact that lines are inclusive not
-            //exclusive
-            cbRect.width -= 5;
-            cbRect.height -= 5;
+            if (((AbstractTabCellRenderer) c).isShowCloseButton()) {
+                Rectangle r = new Rectangle(0, 0, c.getWidth(), c.getHeight());
+                Rectangle cbRect = new Rectangle();
+                getCloseButtonRectangle((JComponent) c, cbRect, r);
+                //We return larger bounds than we want to paint to compensate
+                //for antialiasing and the fact that lines are inclusive not
+                //exclusive
+                cbRect.width -= 5;
+                cbRect.height -= 5;
 
-            g.setColor(Color.darkGray);
-            g.drawLine(cbRect.x, cbRect.y, cbRect.x + cbRect.width,
-                       cbRect.y + cbRect.height);
-            g.drawLine(cbRect.x, cbRect.y + cbRect.height,
-                       cbRect.x + cbRect.width, cbRect.y);
+                g.setColor(Color.darkGray);
+                g.drawLine(cbRect.x, cbRect.y, cbRect.x + cbRect.width,
+                           cbRect.y + cbRect.height);
+                g.drawLine(cbRect.x, cbRect.y + cbRect.height,
+                           cbRect.x + cbRect.width, cbRect.y);
+            }
         }
 
         public Polygon getInteriorPolygon(Component c) {
@@ -173,8 +177,8 @@ final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
         public boolean supportsCloseButton(JComponent c) {
             boolean leftClip = ((AquaEditorTabCellRenderer) c).isClipLeft();
             boolean rightClip = ((AquaEditorTabCellRenderer) c).isClipRight();
-
-            return !leftClip && !rightClip;
+            boolean supported = ((AquaEditorTabCellRenderer) c).isShowCloseButton();
+            return !leftClip && !rightClip && supported;
         }
 
     }

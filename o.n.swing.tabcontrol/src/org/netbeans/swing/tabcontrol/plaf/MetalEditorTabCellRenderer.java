@@ -20,6 +20,7 @@ package org.netbeans.swing.tabcontrol.plaf;
 
 import javax.swing.*;
 import java.awt.*;
+import org.netbeans.swing.tabcontrol.TabDisplayer;
 
 /**
  * Renderer for editor tabs in metal l&f
@@ -51,7 +52,7 @@ class MetalEditorTabCellRenderer extends AbstractTabCellRenderer {
         }
 
         public boolean supportsCloseButton(JComponent renderer) {
-            return true;
+            return ((AbstractTabCellRenderer) renderer).isShowCloseButton();
         }
 
         public boolean isBorderOpaque() {
@@ -172,6 +173,13 @@ class MetalEditorTabCellRenderer extends AbstractTabCellRenderer {
         public void getCloseButtonRectangle(JComponent jc,
                                             final Rectangle rect,
                                             Rectangle bounds) {
+            if (!((AbstractTabCellRenderer) jc).isShowCloseButton()) {
+                rect.x = -100;
+                rect.y = -100;
+                rect.width = 0;
+                rect.height = 0;
+                return;
+            }
             Insets ins = getBorderInsets(jc);
 
             rect.y = bounds.y + ins.top;
@@ -188,10 +196,6 @@ class MetalEditorTabCellRenderer extends AbstractTabCellRenderer {
             rect.height += 4;
             rect.x -= 2;
             rect.y -= 2;
-        }
-
-        public boolean supportsCloseButton() {
-            return true;  
         }
     }
 

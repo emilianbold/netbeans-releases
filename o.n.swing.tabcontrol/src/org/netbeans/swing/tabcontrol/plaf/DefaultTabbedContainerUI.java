@@ -605,6 +605,14 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
         r.y += p.y;
         return r;
     }
+    
+    public void setShowCloseButton (boolean val) {
+        tabDisplayer.setShowCloseButton(val);
+    }
+    
+    public boolean isShowCloseButton () {
+        return tabDisplayer.isShowCloseButton();
+    }
 
     /**
      * Scroll pane-like border, good general border around windows. Used if no

@@ -123,24 +123,39 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         // setting font already here to compute string width correctly
         g.setFont(getTxtFont());
         if (isSelected(index)) {
-            // selected one is trickier, paint text, bump and close icon
-            // close icon has the biggest space priority, bump the smallest one
-            String iconPath = findIconPath(index);
-            Icon icon = closeIcon.obtainIcon(iconPath);
-            int iconWidth = icon.getIconWidth();
             JButton pinButton = getPinButton(index);
             int space4Pin = pinButton != null ? pinButton.getWidth() + 1 : 0;
-            int space4Icon = iconWidth + ICON_X_LEFT_PAD + ICON_X_RIGHT_PAD + space4Pin;
-            text2Paint = stripTextToFit(text,
-                                        width - 2 * TXT_X_PAD - space4Icon, fm);
-            int txtWidth = BaseTabLayoutModel.textWidth(text2Paint, getTxtFont());
+            int space4Icon = 0;
+            int txtWidth;
+            if (displayer.isShowCloseButton()) {
+                // selected one is trickier, paint text, bump and close icon
+                // close icon has the biggest space priority, bump the smallest one
+                String iconPath = findIconPath(index);
+                Icon icon = closeIcon.obtainIcon(iconPath);
+                int iconWidth = icon.getIconWidth();
+                space4Icon = iconWidth + ICON_X_LEFT_PAD + ICON_X_RIGHT_PAD + space4Pin;
+                text2Paint = stripTextToFit(text,
+                                            width - 2 * TXT_X_PAD - space4Icon, fm);
+                txtWidth = BaseTabLayoutModel.textWidth(text2Paint, getTxtFont());
+                getCloseIconRect(tempRect, index);
+                icon.paintIcon(getDisplayer(), g, tempRect.x, tempRect.y);
+            } else {
+                tempRect.x = x + (width - 2);
+                
+                tempRect.y = pinButton == null ? 0 : ((displayer.getHeight() / 2) -
+                    (pinButton.getPreferredSize().height / 2));
+                int pinWidth = pinButton == null ? 0 : pinButton.getPreferredSize().width;
+                text2Paint = stripTextToFit(text,
+                                            (width - 2 * TXT_X_PAD) - pinWidth, fm);                
+                txtWidth = BaseTabLayoutModel.textWidth(text2Paint, getTxtFont());
+                space4Icon = pinWidth + 5;
+            }
             int bumpWidth = width
                     - (TXT_X_PAD + txtWidth + BUMP_X_PAD + space4Icon);
             if (bumpWidth > 0) {
                 paintBump(index, g, x + TXT_X_PAD + txtWidth + BUMP_X_PAD,
                           y + BUMP_Y_PAD, bumpWidth, height - 2 * BUMP_Y_PAD);
             }
-            getCloseIconRect(tempRect, index);
             if (pinButton != null) {
                 // don't activate and draw pin button if tab is too narrow
                 if (tempRect.x - space4Pin < x + TXT_X_PAD - 1) {
@@ -150,7 +165,6 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                     pinButton.setLocation(tempRect.x - space4Pin, tempRect.y);
                 }
             }
-            icon.paintIcon(getDisplayer(), g, tempRect.x, tempRect.y);
         } else {
             text2Paint = stripTextToFit(text, width - 2 * TXT_X_PAD, fm);
         }
@@ -314,6 +328,9 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         //on the parent class
 
         protected int inCloseIconRect(Point point) {
+            if (!displayer.isShowCloseButton()) {
+                return -1;
+            }
             int index = getLayoutModel().indexOfPoint(point.x, point.y);
             if (index < 0) {
                 return -1;

@@ -325,6 +325,8 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
             ColorUtil.setupAntialiasing(g);
         }
         
+        boolean showClose = displayer.isShowCloseButton();
+        
         paintBackground(g);
         int start = getFirstVisibleTab();
         if (start == -1 || !displayer.isShowing()) {
@@ -363,6 +365,8 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
                         
                         if ((state & TabState.NOT_ONSCREEN) == 0) {
                             TabCellRenderer ren = getTabCellRenderer(i);
+                            ren.setShowCloseButton(showClose);
+                            
                             TabData data = displayer.getModel().getTab(i);
                             
                             
@@ -656,9 +660,14 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
 
         private void performCommand (String command, int idx, MouseEvent evt) {
             if (TabDisplayer.COMMAND_SELECT == command) {
-                selectionModel.setSelectedIndex (idx);
+                if (idx != displayer.getSelectionModel().getSelectedIndex()) {
+                    boolean go = shouldPerformAction (command, idx, evt);
+                    if (go) {
+                        selectionModel.setSelectedIndex (idx);
+                    }
+                }
             } else {
-                boolean should = shouldPerformAction (command, idx, evt);
+                boolean should = shouldPerformAction (command, idx, evt) && displayer.isShowCloseButton();
                 if (should) {
                     if (TabDisplayer.COMMAND_CLOSE == command) {
                         displayer.getModel().removeTab(idx);
@@ -680,16 +689,6 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
                     }
                 }
             }
-            
-            /*else if (TabDisplayer.COMMAND_CLOSE == command) {
-                if (shouldPerformAction(command, idx, evt)) {
-                    displayer.getModel().removeTab(idx);
-                }
-            } else {
-                //Some action we don't know about - post it and see what happens
-                shouldPerformAction (command, idx, evt);
-            }
-             */
         }
 
         public void mouseReleased(MouseEvent e) {

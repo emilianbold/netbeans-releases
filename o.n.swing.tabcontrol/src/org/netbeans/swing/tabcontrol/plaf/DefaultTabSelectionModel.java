@@ -77,6 +77,7 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
 
     public void setSelectedIndex(int index) {
         if (index != sel) {
+            int oldIndex = sel;
             if ((index < -1) || (index >= dataModel.size())) {
                 throw new IllegalArgumentException("Selected index set to "
                    + index

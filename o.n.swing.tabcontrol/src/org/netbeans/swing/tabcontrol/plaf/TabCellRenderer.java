@@ -135,4 +135,7 @@ public interface TabCellRenderer {
 
     public Color getSelectedActivatedBackground(); //XXX delete me
 
+    public boolean isShowCloseButton();
+    
+    public void setShowCloseButton(boolean val);
 }

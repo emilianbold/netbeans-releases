@@ -184,5 +184,4 @@ public abstract class TabDisplayerUI extends ComponentUI {
     public abstract void registerShortcuts (JComponent comp);
         
     public abstract void unregisterShortcuts (JComponent comp);
-
 }

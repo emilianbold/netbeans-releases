@@ -77,13 +77,22 @@ public class WindowsSlidingButtonUI extends SlidingButtonUI {
     public void installDefaults (AbstractButton b) {
         super.installDefaults(b);
 	if(!defaults_initialized) {
-	    dashedRectGapX = ((Integer)UIManager.get("Button.dashedRectGapX")).intValue();
-	    dashedRectGapY = ((Integer)UIManager.get("Button.dashedRectGapY")).intValue();
-	    dashedRectGapWidth = ((Integer)UIManager.get("Button.dashedRectGapWidth")).intValue();
-	    dashedRectGapHeight = ((Integer)UIManager.get("Button.dashedRectGapHeight")).intValue();
-            
-	    focusColor = UIManager.getColor(getPropertyPrefix() + "focus");
-	    defaults_initialized = true;
+            try {
+                dashedRectGapX = ((Integer)UIManager.get("Button.dashedRectGapX")).intValue();
+                dashedRectGapY = ((Integer)UIManager.get("Button.dashedRectGapY")).intValue();
+                dashedRectGapWidth = ((Integer)UIManager.get("Button.dashedRectGapWidth")).intValue();
+                dashedRectGapHeight = ((Integer)UIManager.get("Button.dashedRectGapHeight")).intValue();
+
+                focusColor = UIManager.getColor(getPropertyPrefix() + "focus");
+                defaults_initialized = true;
+            } catch (NullPointerException npe) {
+                //We're testing on a non windows platform, the defaults don't
+                //exist
+                dashedRectGapX = 2;
+                dashedRectGapY = 2;
+                dashedRectGapWidth = 2;
+                dashedRectGapHeight = 2;
+            }
 	}
     }
     

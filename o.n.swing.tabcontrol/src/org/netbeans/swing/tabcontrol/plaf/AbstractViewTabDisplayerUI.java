@@ -600,7 +600,11 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             selectionChanged = i != sel.getSelectedIndex();
             // invoke possible selection change
             if ((i != -1) || !selectionChanged) {
-                getSelectionModel().setSelectedIndex(i);
+                boolean change = shouldPerformAction(TabDisplayer.COMMAND_SELECT,
+                    i, e);
+                if (change) {
+                    getSelectionModel().setSelectedIndex(i);
+                }
             } 
             // update pressed state
             if (shouldReact(e) && !selectionChanged) {
@@ -620,7 +624,11 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                 selectionChanged = i != sel.getSelectedIndex();
                 // invoke possible selection change
                 if ((i != -1) || !selectionChanged) {
-                    getSelectionModel().setSelectedIndex(i);
+                boolean change = shouldPerformAction(TabDisplayer.COMMAND_SELECT,
+                    i, e);
+                    if (change) {
+                        getSelectionModel().setSelectedIndex(i);
+                    }
                 }
                 if (i != -1) {
                     //Post a maximize request

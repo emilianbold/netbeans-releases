@@ -120,29 +120,38 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         if (isSelected(index)) {
             // paint text, dragger and close icon
             // close icon has the biggest space priority, text the smallest one
-            if (closeIcon == null) {
-                closeIcon = new IconLoader();
-            }
-            String iconPath = findIconPath(index);
-            Icon icon = closeIcon.obtainIcon(iconPath);
-            int iconWidth = icon.getIconWidth();
             JButton pinButton = getPinButton(index);
-            int space4Pin = pinButton != null ? pinButton.getWidth() + 1 : 0;
-            int space4Icon = iconWidth + 2 * ICON_X_PAD + space4Pin;
-            text2Paint = stripTextToFit(text,
-                                        width - 2 * TXT_X_PAD - space4Icon, fm);
-            int txtWidth = BaseTabLayoutModel.textWidth(text2Paint, getTxtFont());
-            getCloseIconRect(tempRect, index);
+            int space4pin = pinButton != null ? pinButton.getWidth() + 1 : 0;
+            if (displayer.isShowCloseButton()) {
+                if (closeIcon == null) {
+                    closeIcon = new IconLoader();
+                }
+                String iconPath = findIconPath(index);
+                Icon icon = closeIcon.obtainIcon(iconPath);
+                int iconWidth = icon.getIconWidth();
+                int space4Icon = iconWidth + 2 * ICON_X_PAD + space4pin;
+                text2Paint = stripTextToFit(text,
+                                            width - 2 * TXT_X_PAD - space4Icon, fm);
+                int txtWidth = BaseTabLayoutModel.textWidth(text2Paint, getTxtFont());
+                getCloseIconRect(tempRect, index);
+                icon.paintIcon(getDisplayer(), g, tempRect.x, tempRect.y);
+            } else {
+                text2Paint = stripTextToFit(text,
+                                            width - 2 * TXT_X_PAD - space4pin, fm);
+                tempRect.x = x + (width - 2);
+                tempRect.y = pinButton == null ? 0 : ((displayer.getHeight() / 2) -
+                    (pinButton.getPreferredSize().height / 2));
+                
+            }
             if (pinButton != null) {
                 // don't activate and draw pin button if tab is too narrow
-                if (tempRect.x - space4Pin < x + TXT_X_PAD - 1) {
+                if (tempRect.x - space4pin < x + TXT_X_PAD - 1) {
                     pinButton.setVisible(false);
                 } else {
                     pinButton.setVisible(true);
-                    pinButton.setLocation(tempRect.x - space4Pin, tempRect.y);
+                    pinButton.setLocation(tempRect.x - space4pin, tempRect.y);
                 }
             }
-            icon.paintIcon(getDisplayer(), g, tempRect.x, tempRect.y);
         } else {
             text2Paint = stripTextToFit(text, width - 2 * TXT_X_PAD, fm);
         }
@@ -465,6 +474,10 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         
         
         public Icon getIcon() {
+            if (displayer == null) {
+                //superclass constructor - UI is asking for icon
+                return null;
+            }
             if (displayer.isActive()) {
                 return iconCache.obtainIcon((String)focusedNormal.get(getOrientation()));
             } else {

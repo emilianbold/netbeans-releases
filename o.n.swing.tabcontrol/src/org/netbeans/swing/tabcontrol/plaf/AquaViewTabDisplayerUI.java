@@ -108,36 +108,49 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             int iconHeight = 5;
 
             int iconY;
-            if (iconHeight > height) {
-                //It's too tall, try to center it
-                iconY = -1 * ((iconHeight - height) / 2);
-            } else {
-                iconY = (height / 2) - (iconHeight / 2);
-            }
-
+            int iconX;
+            JButton pinButton = getPinButton(index);
             int gap = 2;
+            
+            if (displayer.isShowCloseButton()) {
+                if (iconHeight > height) {
+                    //It's too tall, try to center it
+                    iconY = -1 * ((iconHeight - height) / 2);
+                } else {
+                    iconY = (height / 2) - (iconHeight / 2);
+                }
 
-            int iconX = x + width - (iconWidth + gap);
+                iconX = x + width - (iconWidth + gap);
 
-            if (index == getDataModel().size() - 1) {
-                iconX -= 3;
-                textW -= 3;
+                if (index == getDataModel().size() - 1) {
+                    iconX -= 3;
+                    textW -= 3;
+                }
+
+                g.setColor(isSelected(index) && isActive() ?
+                           new Color(80, 80, 123) : new Color(110, 120, 120));
+                iconY -= 2; //Only if we're painting, not using a bitmap
+                iconX -= 2; //Only if we're painting, not using a bitmap
+
+                g.drawLine(iconX, iconY, iconX + iconWidth, iconY + iconHeight);
+                g.drawLine(iconX, iconY + iconHeight, iconX + iconWidth, iconY);
+
+                iconY++;
+                g.drawLine(iconX, iconY, iconX + iconWidth, iconY + iconHeight);
+                g.drawLine(iconX, iconY + iconHeight, iconX + iconWidth, iconY);
+            } else {
+                iconWidth = 0;
+                iconX = x + width - gap;
+                if (iconHeight > height) {
+                    //It's too tall, try to center it
+                    iconY = -1 * ((iconHeight - height) / 2);
+                } else {
+                    iconY = ((height / 2) - (iconHeight / 2)) - 1;
+                }
+                tempRect.x = iconX;
             }
-
-            g.setColor(isSelected(index) && isActive() ?
-                       new Color(80, 80, 123) : new Color(110, 120, 120));
-            iconY -= 2; //Only if we're painting, not using a bitmap
-            iconX -= 2; //Only if we're painting, not using a bitmap
-
-            g.drawLine(iconX, iconY, iconX + iconWidth, iconY + iconHeight);
-            g.drawLine(iconX, iconY + iconHeight, iconX + iconWidth, iconY);
-
-            iconY++;
-            g.drawLine(iconX, iconY, iconX + iconWidth, iconY + iconHeight);
-            g.drawLine(iconX, iconY + iconHeight, iconX + iconWidth, iconY);
 
             // pin button
-            JButton pinButton = getPinButton(index);
             int space4Pin = pinButton != null ? pinButton.getWidth() + 1 : 0;
             if (pinButton != null && isSelected(index)) {
 //                pinButton.setLocation(iconX - space4Pin, iconY - 1);
@@ -222,6 +235,13 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
      * rectangle.
      */
     private Rectangle getCloseIconRect(Rectangle rect, int index) {
+        if (!displayer.isShowCloseButton()) {
+            rect.x = -2;
+            rect.y = -2;
+            rect.width = 0;
+            rect.height = 0;
+            return rect;
+        }
         FontMetrics fm = getTxtFontMetrics();
         String text2Paint = null;
         // setting font already here to compute string width correctly
@@ -301,7 +321,9 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             int closeRectIdx = inCloseIconRect(p);
             // invoke possible selection change
             if ((i != -1) && closeRectIdx == -1) {
-                getSelectionModel().setSelectedIndex(i);
+                if (shouldPerformAction (TabDisplayer.COMMAND_SELECT, i, e)) {
+                    getSelectionModel().setSelectedIndex(i);
+                }
             }
             if (shouldReact(e) && closeRectIdx != -1) {
                 setClosePressed(closeRectIdx);
