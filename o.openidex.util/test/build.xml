@@ -12,7 +12,7 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="openide tests" basedir="." default="all">
+<project name="openidex tests" basedir="." default="all">
 
     <property name="build.sysclasspath" value="ignore"/>
 
@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- says how to create classpath for code tests -->
     <!-- can have values src, jar, ide               -->
-    <property name="xtest.code.classpath" value="src"/>
+    <property name="xtest.source.location" value="src"/>
     
     <property name="xtest.home" location="../../xtest"/>
     <property name="xtest.extra.home" location="../../../nbextra/xtest"/>
@@ -46,7 +46,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.includes" value=""/>
     <property name="xtest.excludes" value=""/>   
     
-    <property name="xtest.general.antfile" location="${xtest.home}/general.xml"/>
+    <property name="xtest.general.antfile" location="${xtest.home}/lib/module_harness.xml"/>
     
     <!-- =========== -->
     <!-- Init target -->
@@ -144,13 +144,13 @@ Microsystems, Inc. All Rights Reserved.
     <target name="which-classpath">
         <!-- this "switch" will decide how to create classpath for code tests -->
         <condition property="jarcode.classpath">
-            <equals arg1="${xtest.code.classpath}" arg2="jar"/>
+            <equals arg1="${xtest.source.location}" arg2="jar"/>
         </condition>
         <condition property="srccode.classpath">
-            <equals arg1="${xtest.code.classpath}" arg2="src"/>
+            <equals arg1="${xtest.source.location}" arg2="src"/>
         </condition>
         <condition property="idecode.classpath">
-            <equals arg1="${xtest.code.classpath}" arg2="ide"/>
+            <equals arg1="${xtest.source.location}" arg2="ide"/>
         </condition>
     </target>
 
