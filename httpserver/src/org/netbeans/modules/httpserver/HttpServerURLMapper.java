@@ -50,7 +50,7 @@ public class HttpServerURLMapper extends URLMapper {
         // remove the wrapper servlet URI
         HttpServerSettings settings = (HttpServerSettings)SharedClassObject.findObject(HttpServerSettings.class, true);
         String wrapper = settings.getWrapperBaseURL ();
-        if (!path.startsWith(wrapper))
+        if (path == null || !path.startsWith(wrapper))
             return null;
         path = path.substring(wrapper.length());
         
