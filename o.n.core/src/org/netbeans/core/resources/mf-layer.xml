@@ -183,7 +183,10 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <!-- For debugging only, comment out if desired: -->
-    <file name="debug-sfs-structure[org-netbeans-core-projects-SystemFileSystem$StructureNode].instance"/>
+    <file name="debug-sfs-structure.instance">
+        <attr name="instanceOf" stringvalue="org.openide.nodes.Node"/>
+        <attr name="instanceClass" stringvalue="org.netbeans.core.projects.SystemFileSystem$StructureNode"/>
+    </file>
     
     &dtds;
   
