@@ -42,6 +42,12 @@
 	<mapID target="servlet_edit" url="web/servlet/servlet_edit.html" />	
 	<mapID target="webmod_addservlet" url="web/webmod/mod_addservlet.html" />
 	<mapID target="webmod_usetags" url="web/webmod/mod_usetags.html" />
+	<mapID target="mod_setstruts" url="web/webmod/mod_setstruts.html" />
+	<mapID target="mod_addstruts" url="web/webmod/mod_addstruts.html" />
+	<mapID target="mod_setjsf" url="web/webmod/mod_setjsf.html" />
+	<mapID target="mod_addjsf" url="web/webmod/mod_addjsf.html" />
+	<mapID target="mod_struts" url="web/webmod/mod_struts.html" />
+	<mapID target="mod_jsf" url="web/webmod/mod_jsf.html" />
 	<mapID target="webmod_editdd" url="web/webmod/mod_editdd.html" />
 	<mapID target="webmod_placefiles" url="web/webmod/mod_placefiles.html" />
 	<mapID target="webmod_struct" url="web/concepts/webmod_struct.html" />

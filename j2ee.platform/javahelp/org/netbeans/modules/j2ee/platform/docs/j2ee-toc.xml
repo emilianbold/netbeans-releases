@@ -95,9 +95,11 @@
          <tocitem text="Running a Web Application Listener" target="listener_run"/>
        </tocitem> <!-- Working With Listeners --> 
       <tocitem text="Tags">
-          <tocitem text="About Tag Libraries" target="webmod_addtglb"/>
-          <tocitem text="About the JSTL" target="webmod_jstl" /> 
-          <tocitem text="Tag Libraries" >
+	  <tocitem text="About Tag Libraries" target="webmod_addtglb"/>
+	  <tocitem text="About the JSTL" target="webmod_jstl" />
+	  <tocitem text="About the JSF Framework" target="mod_jsf" /> 
+	  <tocitem text="About the Struts Framework" target="mod_struts" /> 	  	  
+      <tocitem text="Tag Libraries" >
           <tocitem text="Managing Libraries" target="ctx_repaddto"/>
           <tocitem text="Creating a Separate Tag Library"  target="taglib_packlib"/>
           <tocitem text="Adding a Tag Library to a WAR File" target="tagsupport_fromfilesys" />        
@@ -118,6 +120,13 @@
           <tocitem text="Creating a Tag Handler" target="ctx_tagcust" />
           <tocitem text="Defining a Tag Handler's TLD Information" target="edit_taghandler" />
       </tocitem> <!-- Developing Tag Libraries and Tag Files -->
+     <tocitem text="Frameworks" >
+          <tocitem text="About Frameworks" target="tbd"  />        
+	  <tocitem text="Creating a New Application with JSF Support" target="mod_setjsf" />
+          <tocitem text="Creating a New Application with Struts Support" target="mod_setstruts" />
+	  <tocitem text="Adding JSF Support to an Existing Application" target="mod_addjsf" />
+	  <tocitem text="Adding Struts Support to an Existing Application" target="mod_addstruts" />
+      </tocitem>
       </tocitem>
       <tocitem text="HTML and XML Files" >      
           <tocitem text="Creating an HTML File" target="concepts_html" />          
@@ -145,11 +154,8 @@
 	    </tocitem>
 	    <tocitem text="Adding a Web Application Module to a J2EE Application" target="add_web_to_j2ee_app" />
         </tocitem>
-	<tocitem text="Building and Deploying Web Applications"> 
+	<tocitem text="Building Web Applications"> 
 	    <tocitem text="About Building Web Applications" target="concepts_war"  />
-            <tocitem text="About Running Web Applications" target="webmod_servconfig" />
-	    <tocitem text="Running Tasks: Quick Reference" target="deploying_tasks" />
-            <!--    <tocitem text="Unpacking and Mounting WAR Files" target="war_unpack" /> -->	
             <tocitem text="Building a WAR File" target="webmod_packagewar" />
 	    <tocitem text="Adding External Resources to a WAR File">
             <tocitem text="Adding a General External Resource to a WAR File" target="war_xtrafiles" />
@@ -157,7 +163,13 @@
             <tocitem text="Adding a Tag Library to a WAR File" target="tagsupport_fromfilesys" />
 	    <tocitem text="Adding an Applet JAR File to a WAR File" target="webmod_addcompapplet"/>
             </tocitem>
-             <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
+            <tocitem text="Removing a WAR File" target="war_delete"/>        
+    </tocitem> <!-- Building Web Applications -->
+
+   <tocitem text="Deploying Web Applications"> 
+            <tocitem text="About Running Web Applications" target="webmod_servconfig" />
+	    <tocitem text="Running Tasks: Quick Reference" target="deploying_tasks" />
+            <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
             <tocitem text="Setting a Username and Password for the Tomcat Manager" target="password_tomcat_manager" />
             <tocitem text="Running a Web Application" target="run_webapp" />
 	    <tocitem text="Running Web Components">
@@ -169,9 +181,8 @@
             </tocitem>
             <tocitem text="Changing Web Servers" target="webmod_server_set" />
             <tocitem text="Changing Web Browsers" target="webmod_browser" />
-            <!--	<tocitem text="Viewing the Contents of a WAR File" target="war_viewcont" />  -->
-            <tocitem text="Removing a WAR File" target="war_delete"/>        
-    </tocitem> <!-- Packaging Web Applications -->
+            <!--	<tocitem text="Viewing the Contents of a WAR File" target="war_viewcont" />  -->      
+    </tocitem> <!-- Deploying Web Applications -->
        
     <tocitem text="Debugging and Testing Web Applications"> 
             <tocitem text="About Debugging and Testing Web Applications" target="jsp_debug"/>
@@ -227,7 +238,7 @@
 		<tocitem text="Working with Web Services" target="ws_process" />
 		<tocitem text="Web Service Tasks: Quick Reference" target="tbd" />
   	 </tocitem>
-	 <tocitem text="Creating Web Services" >
+	 <tocitem text="Creating and Editing Web Services" >
 		<tocitem text="Implementing an Existing WSDL File" target="create_ws_fromwsdl" />
 		<tocitem text="Exposing Existing Code as a Web Service" target="create_ws_fromcode" />
 		<tocitem text="Creating a Web Service from Scratch" target="create_ws" />
