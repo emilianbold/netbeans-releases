@@ -59,7 +59,7 @@ public class PatternAnalyser extends Object implements Node.Cookie {
 
   public void analyzeAll() {
 
-    System.out.println ( "PATTERN ANALYZING" ); 
+    //System.out.println ( "PATTERN ANALYZING" ); 
 
     int methodCount = classElement.getMethods().length;
     propertyPatterns = new HashMap( methodCount / 2 + PROPERTIES_RESERVE );
@@ -340,11 +340,13 @@ public class PatternAnalyser extends Object implements Node.Cookie {
   void addEventSet( EventSetPattern esp ) {
     String key = esp.getName() + esp.getType();
     EventSetPattern old = (EventSetPattern)eventSetPatterns.get( key );
+   
+    
     if ( old == null ) {
       eventSetPatterns.put( key, esp);
       return;
     }
-
+    
     EventSetPattern composite = new EventSetPattern( old, esp );
     eventSetPatterns.put( key, composite );
   }
@@ -353,6 +355,8 @@ public class PatternAnalyser extends Object implements Node.Cookie {
 
 /* 
  * Log
+ *  4    Gandalf   1.3         7/21/99  Petr Hrebejk    Field and Method 
+ *       listeners moved to PatternChildren
  *  3    Gandalf   1.2         7/20/99  Ian Formanek    compilable version
  *  2    Gandalf   1.1         7/9/99   Petr Hrebejk    Factory chaining fix
  *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
