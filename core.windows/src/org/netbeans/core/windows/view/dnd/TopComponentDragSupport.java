@@ -15,6 +15,8 @@
 package org.netbeans.core.windows.view.dnd;
 
 
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.view.ui.ModeComponent;
@@ -62,7 +64,7 @@ import java.util.Set;
  *
  * @see java awt.dnd.DragSourceListener
  */
-final class TopComponentDragSupport extends KeyAdapter
+final class TopComponentDragSupport 
 implements AWTEventListener, DragSourceListener {
     
     /** Mime type for <code>TopComponent</code> <code>DataFlavor</code>. */
@@ -367,32 +369,26 @@ implements AWTEventListener, DragSourceListener {
         }
     }
 
+    private AWTEventListener keyListener = new AWTEventListener() {
+            public void eventDispatched(AWTEvent event) {
+                KeyEvent keyevent = (KeyEvent)event;
+                
+                if (keyevent.getID() == KeyEvent.KEY_RELEASED && 
+                    keyevent.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    hackESC = true;
+                }                
+            }
+            
+        };
     /** Adds <code>KeyListener</code> to container and its component
      * hierarchy to listen for ESC key. */
     private void addListening(Container con) {
-        con.addKeyListener(this);
-        keyObservers.add(con);
-        
-        Component[] cs = con.getComponents();
-        
-        for(int i = 0; i < cs.length; i++) {
-            cs[i].addKeyListener(this);
-            keyObservers.add(cs[i]);
-            if(cs[i] instanceof Container) {
-                addListening((Container)cs[i]);
-            }
-        }
+        Toolkit.getDefaultToolkit().addAWTEventListener(keyListener, AWTEvent.KEY_EVENT_MASK);
     }
     
     /** Removes ESC listening. Helper method. */
     private void removeListening() {
-        // Remove listening.
-        for(Iterator it = keyObservers.iterator(); it.hasNext(); ) {
-            Component c = (Component)it.next();
-            c.removeKeyListener(this);
-        }
-        
-        keyObservers.clear();
+        Toolkit.getDefaultToolkit().removeAWTEventListener(keyListener);
     }
     
     // >> DragSourceListener implementation >>
@@ -688,16 +684,7 @@ implements AWTEventListener, DragSourceListener {
     void dragFinished() {
         dragContextWRef = new WeakReference(null);
     }
-
-    /** Overrides <code>KeyAdapter</code> method. Listen for ESC key
-     * releasing on source of gesture, thus to identify cancellation
-     * of drop action when simulating drop into "free" desktop area. */
-    public void keyReleased(java.awt.event.KeyEvent evt) {
-        if(evt.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE) {
-            hackESC = true;
-        }
-    }
-    
+   
     private static void debugLog(String message) {
         Debug.log(TopComponentDragSupport.class, message);
     }
@@ -791,6 +778,7 @@ implements AWTEventListener, DragSourceListener {
         
         return buffImage;
     }
+
     // Helpers<<
     
     /** <code>Transferable</code> used for <code>TopComponent</code> instances
