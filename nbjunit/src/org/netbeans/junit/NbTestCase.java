@@ -359,7 +359,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             File.separator + getName();
     }
 
-    /** Returns unique working directory for a test (each test method have uniq1ue dir).
+    /** Returns unique working directory for a test (each test method has a unique dir).
      * If not available, method tries to create it. This method uses getWorkDirPath()
      * method to determine the unique path.
      * @throws IOException if the directory cannot be created
