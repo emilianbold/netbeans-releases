@@ -43,8 +43,10 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.openide.cookies.EditorCookie;
@@ -54,6 +56,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.XMLDataObject;
+import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.io.ReaderInputStream;
@@ -73,8 +76,8 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
             in.read(b);
             in.close();
             return new ImageIcon(b);
-        } catch (Exception e) {
-            System.out.println(path);
+        } catch (IOException ioe) {
+            fail(ioe);
         }
         return null;
     }
@@ -152,9 +155,13 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
         }
     }
     
-    private boolean modified=false;
     DataObject dob;
     Document doc;
+    
+    private static void fail(Throwable t) {
+        if (System.getProperty("netbeans.debug.exceptions") != null) // NOI18N
+            t.printStackTrace();
+    }
     
     /** Creates new form ComponentsEditorPanel
      * @param gen ComponentGenerator instance */
@@ -163,6 +170,7 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
             this.dob=dob;
             StyledDocument stdoc=((EditorCookie)dob.getCookie(EditorCookie.class)).openDocument();
             this.doc=DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new ReaderInputStream(new StringReader(stdoc.getText(0, stdoc.getLength()))));
+            //this.doc=dob.getDocument();
             TreeNode rootNode=createNode(doc.getDocumentElement());
             initComponents();
             MyCellRenderer rend = new MyCellRenderer();
@@ -177,23 +185,15 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
             });
             for (int i=0; i<tree.getRowCount(); i++) tree.expandRow(i);
             tree.setEditable(true);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (IOException ioe) {
+            fail(ioe);
+        } catch (SAXException saxe) {
+            fail(saxe);
+        } catch (ParserConfigurationException pce) {
+            fail(pce);
+        } catch (BadLocationException ble) {
+            fail(ble);
         }
-    }
-    
-    protected void setModified() {
-        if (!modified) {
-            SwingUtilities.getWindowAncestor(this).addWindowListener(new WindowAdapter() {
-                public void windowClosing(java.awt.event.WindowEvent evt)  {
-                    try {
-                        closeDialog();
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
-        } else modified=true;
     }
     
     void nodeChanged(TreePath paths[]) {
@@ -341,6 +341,33 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
         return null;
     }
     
+    protected void setModified() {
+        try {
+            EditorCookie cookie=(EditorCookie)dob.getCookie(EditorCookie.class);
+            final StringWriter sw=new StringWriter();
+            XMLSerializer ser=new XMLSerializer(sw, new OutputFormat("xml","UTF-8",true)); // NOI18N
+            ser.serialize(doc);
+            sw.close();
+            final StyledDocument stdoc=cookie.openDocument();
+            NbDocument.runAtomicAsUser(stdoc, new Runnable() {
+                public void run() {
+                    try {
+                        stdoc.remove(0, stdoc.getLength());
+                        stdoc.insertString(0, sw.toString(), null);
+                    } catch (BadLocationException e) {
+                        if (System.getProperty("netbeans.debug.exceptions") != null) // NOI18N
+                            e.printStackTrace();
+                    }
+                }
+            });
+            dob.setModified(true);
+        } catch (IOException ioe) {
+            fail(ioe);
+        } catch (BadLocationException ble) {
+            fail(ble);
+        }
+    }
+    
     public class Unknown extends DefaultMutableTreeNode implements ActionListener {
         public Unknown(Element e) {
             super(e);
@@ -358,23 +385,23 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
             return ((Element)getUserObject()).getAttribute(name);
         }
         protected void setAttribute(String name, String value) {
-            setModified();
             if (value==null || value.length()<1) {
                 ((Element)getUserObject()).removeAttribute(name);
             } else {
                 ((Element)getUserObject()).setAttribute(name, value);
             }
             ((DefaultTreeModel)tree.getModel()).nodeChanged(this);
+            setModified();
         }
         public String toString() {
             //return className()+" "+getAttribute("name");
             return getAttribute("name");
         }
         public void delete() {
-            setModified();
             Element e=((Element)getUserObject());
             e.getParentNode().removeChild(e);
             ((DefaultTreeModel)tree.getModel()).removeNodeFromParent(this);
+            setModified();
         }
         private JPopupMenu popupMenu;
         public JPopupMenu getPopupMenu() {
@@ -393,10 +420,10 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
         }
         public void actionPerformed(ActionEvent ae) {
             if (ae.getActionCommand().startsWith("Add ")) {
-                setModified();
                 Element el=(Element)getUserObject();
                 Unknown node=createNode((Element)el.appendChild(createElement(el, ae.getActionCommand())));
                 ((DefaultTreeModel)tree.getModel()).insertNodeInto(node, this, getChildCount());
+                setModified();
             } else if (ae.getActionCommand().equals("Delete")) {
                 delete();
             } else if (ae.getActionCommand().equals("Rename")) {
@@ -696,18 +723,6 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
         }
         
     }
-    
-    public void closeDialog() throws Exception {
-        EditorCookie cookie=(EditorCookie)dob.getCookie(EditorCookie.class);
-        StringWriter sw=new StringWriter();
-        XMLSerializer ser=new XMLSerializer(sw, new OutputFormat("xml","UTF-8",true));
-        ser.serialize(doc);
-        sw.close();
-        StyledDocument stdoc=cookie.openDocument();
-        stdoc.remove(0, stdoc.getLength());
-        stdoc.insertString(0, sw.toString(), null);
-    }
-    
     
     /**
      * @param args the command line arguments
