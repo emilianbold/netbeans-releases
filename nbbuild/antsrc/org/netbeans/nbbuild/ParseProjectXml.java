@@ -122,7 +122,7 @@ public final class ParseProjectXml extends Task {
     private void define(String prop, String val) {
         log("Setting " + prop + "=" + val, Project.MSG_VERBOSE);
         String old = getProject().getProperty(prop);
-        if (old != null) {
+        if (old != null && !old.equals(val)) {
             getProject().log("Warning: " + prop + " was already set to " + old, Project.MSG_WARN);
         }
         getProject().setNewProperty(prop, val);
