@@ -62,7 +62,9 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
     </copy>
   </target>
-  <target name="netbeans" depends="jars,release"/>
+  <target name="netbeans" depends="jars,release">
+    <mkdir dir="netbeans/lib/patches"/>
+  </target>
   <target name="clean">
     <delete>
       <fileset dir="src">

@@ -297,11 +297,12 @@ to make the first user start faster and better.)
       <arg line="runide.sh ${firststart.args}"/>
     </exec>
     <echo message="Successfully started, cleaning up detritus..."/>
+    <!-- XXX W2k users have reported problems with the following line. -->
+    <!-- Would it be better to do a copy and then a delete? -->
     <move file="firststart/system/ide.log" tofile="NetBeans-${buildnumber}.log"/>
     <delete file="firststart/system/project.basic"/>
     <delete file="firststart/system/project.last"/>
     <delete file="firststart/beans/libs.properties"/>
-    <mkdir dir="firststart/lib/patches"/>
     <echo file="firststart/build_info">NetBeans dev build
 Number: ${buildnumber}
 </echo>
