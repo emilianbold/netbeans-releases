@@ -19,6 +19,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,6 +47,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
@@ -141,7 +143,18 @@ public class EjbJarClassPathUi {
                         return NbBundle.getMessage( EjbJarClassPathUi.class, "LBL_MISSING_PROJECT", getProjectName( item ) );
                     }
                     else {
-                        return item.getArtifactURI().toString();
+                        Project p = item.getArtifact().getProject();
+                        String projectName;
+                        ProjectInformation pi = (ProjectInformation)p.getLookup().lookup(ProjectInformation.class);
+                        if (pi != null) {
+                            projectName = pi.getDisplayName();
+                        } else {
+                            projectName = "???"; // NOI18N
+                        }
+                        return MessageFormat.format(NbBundle.getMessage(EjbJarClassPathUi.class,"MSG_ProjectArtifactFormat"), new Object[] {
+                            projectName,
+                            item.getArtifactURI().toString()
+                        });
                     }
                 case ClassPathSupport.Item.TYPE_JAR:
                     if ( item.isBroken() ) {
