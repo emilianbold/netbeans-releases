@@ -11,42 +11,43 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.openidex.search;
 
+
+import java.awt.Image;
 import java.beans.*;
 
+
+/** Bean info for <code>SearchType</code> class.
+ *
+ * @author  Petr Kuzel
+ * */
 public class SearchTypeBeanInfo extends SimpleBeanInfo {
 
-    // Property identifiers //GEN-FIRST:Properties
-    private static final int PROPERTY_class = 0;
-    private static final int PROPERTY_name = 1;
-    private static final int PROPERTY_displayName = 2;
-    private static final int PROPERTY_helpCtx = 3;
-    private static final int PROPERTY_scannerClass = 4;
+    // Property identifiers 
+    private static final int PROPERTY_name = 0;
+    private static final int PROPERTY_helpCtx = 1;
 
     // Property array
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[5];
+    private static PropertyDescriptor[] properties = new PropertyDescriptor[2];
 
     static {
         try {
-            properties[PROPERTY_class] = new PropertyDescriptor ( "class", SearchType.class, "getClass", null ); // NOI18N
-            properties[PROPERTY_class].setHidden ( true );
+
             properties[PROPERTY_name] = new PropertyDescriptor ( "name", SearchType.class, "getName", "setName" ); // NOI18N
             properties[PROPERTY_name].setHidden ( true );
-            properties[PROPERTY_displayName] = new PropertyDescriptor ( "displayName", SearchType.class, "getDisplayName", null ); // NOI18N
-            properties[PROPERTY_displayName].setHidden ( true );
             properties[PROPERTY_helpCtx] = new PropertyDescriptor ( "helpCtx", SearchType.class, "getHelpCtx", null ); // NOI18N
             properties[PROPERTY_helpCtx].setHidden ( true );
-            properties[PROPERTY_scannerClass] = new PropertyDescriptor ( "scannerClass", SearchType.class, "getScannerClass", null ); // NOI18N
-            properties[PROPERTY_scannerClass].setHidden ( true );
+        } catch( IntrospectionException e) {
+            e.printStackTrace();
         }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
         // Here you can add code for customizing the properties array.
 
-    }//GEN-LAST:Properties
+    }
 
-    // EventSet identifiers//GEN-FIRST:Events
+    // EventSet identifiers
     private static final int EVENT_propertyChangeListener = 0;
 
     // EventSet array
@@ -54,25 +55,24 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
 
     static {
         try {
-            eventSets[EVENT_propertyChangeListener] = new EventSetDescriptor ( SearchType.class, "propertyChangeListener", java.beans.PropertyChangeListener.class, new String[0], "addPropertyChangeListener", "removePropertyChangeListener" ); // NOI18N
+            eventSets[EVENT_propertyChangeListener] = new EventSetDescriptor ( SearchType.class, "propertyChangeListener", PropertyChangeListener.class, new String[0], "addPropertyChangeListener", "removePropertyChangeListener" ); // NOI18N
         }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Events
+        catch( IntrospectionException e) {
+            e.printStackTrace();
+        }
 
         // Here you can add code for customizing the event sets array.
 
-    }//GEN-LAST:Events
+    }
 
-    private static java.awt.Image iconColor16 = null; //GEN-BEGIN:IconsDef
-    private static java.awt.Image iconColor32 = null;
-    private static java.awt.Image iconMono16 = null;
-    private static java.awt.Image iconMono32 = null; //GEN-END:IconsDef
+    private static Image iconColor16 = null; 
+    private static Image iconColor32 = null;
+    private static Image iconMono16 = null;
+    private static Image iconMono32 = null; 
     private static String iconNameC16 = "/org/openidex/search/res/find.gif";
     private static String iconNameC32 = null;
     private static String iconNameM16 = null;
     private static String iconNameM32 = null;
-
-    private static int defaultPropertyIndex = -1;//GEN-BEGIN:Idx
-    private static int defaultEventIndex = -1;//GEN-END:Idx
 
 
     /**
@@ -102,28 +102,6 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
         return eventSets;
     }
 
-    /**
-     * A bean may have a "default" property that is the property that will
-     * mostly commonly be initially chosen for update by human's who are 
-     * customizing the bean.
-     * @return  Index of default property in the PropertyDescriptor array
-     * 		returned by getPropertyDescriptors.
-     * <P>	Returns -1 if there is no default property.
-     */
-    public int getDefaultPropertyIndex() {
-        return defaultPropertyIndex;
-    }
-
-    /**
-     * A bean may have a "default" event that is the event that will
-     * mostly commonly be used by human's when using the bean. 
-     * @return Index of default event in the EventSetDescriptor array
-     *		returned by getEventSetDescriptors.
-     * <P>	Returns -1 if there is no default event.
-     */
-    public int getDefaultEventIndex() {
-        return defaultPropertyIndex;
-    }
 
     /**
      * This method returns an image object that can be used to
@@ -146,7 +124,7 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
      * @return  An image object representing the requested icon.  May
      *    return null if no suitable icon is available.
      */
-    public java.awt.Image getIcon(int iconKind) {
+    public Image getIcon(int iconKind) {
         switch ( iconKind ) {
         case ICON_COLOR_16x16:
             return loadImage( iconNameC16 );

@@ -11,94 +11,118 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.openidex.search;
+
 
 import java.util.Enumeration;
 
-import javax.swing.*;
+import org.openide.nodes.Node;
+import org.openide.ServiceType;
+import org.openide.TopManager;
 
-import org.openide.*;
-import org.openide.nodes.*;
 
+/**
+ * Search type is sevice which provides serch functionality on set of nodes. 
+ * It has to provide GUI presentation so user can have the possibility to
+ * set/moify criteria.
+ * It performs search according to that.
+ * And additionaly could provide feature of dynamic change of result for cases 
+ * the original nodes were changed the way it affect the result of search.
+ *
+ * @author  Peter Zavadsky
+ */
+public abstract class SearchType extends ServiceType implements Cloneable {
 
-/** A class that represents one search type to the user and
-* has the ability to create object that can search on the basis
-* of this style.
-* <p>
-* Semantic constrain: All properties defining state must be bound.
-* <P>
-* There is a list of all SearchTypes in the system and one can 
-* easily find which is enabled on which nodes.
-*
-* @author  Jaroslav Tulach
-*/
-public abstract class SearchType extends org.openide.ServiceType implements Cloneable {
-
-    public static final long serialVersionUID = 1L; //fixed
-
+    /** Serial version UID. */ // PENDING How to change this silly number?
+    static final long serialVersionUID = 1L;
+    
     /** Name of valid property. */
-    public static final String PROP_VALID = "valid";
+    public static final String PROP_VALID = "org.openidex.search.valid"; // NOI18N
+    
+    /** Name of object changed property. */
+    protected static final String PROP_OBJECT_CHANGED = "org.openidex.search.objectChanged"; // NOI18N
+    
+    /** Property valid. */
     private boolean valid;
 
-    /** Is this object enabled on given set of nodes or not.
-    * @param arr array of nodes to use in this kriterium
-    * @return true if this style of search can be done on given nodes
-    */
-    public abstract boolean enabled (Node[] arr);
+    
+    /** Class types of object on which this search type is able to search. */
+    private Class[] searchTypeClasses;
+    
 
-    /** List of all SearchTypes in the system.
-    * @return enumeration of SearchType instances
-    */
-    public static Enumeration enumerateSearchTypes () {
-        return TopManager.getDefault().getServices().services(SearchType.class);
+    /** Gets class types of objects this search type can search (test) on.
+     * The classes are used for associating search types working on the same
+     * object types to create <code>SearchGroup</code>. 
+     * <em>Note: </em> the order of classes declares also priority. */
+    public synchronized final Class[] getSearchTypeClasses() {
+        if(searchTypeClasses == null)
+            searchTypeClasses = createSearchTypeClasses();
+        
+        return searchTypeClasses;
     }
 
-    /** Gives the Scanner's class that instance can be used for
-    * the search.
-    *
-    * @return the class that must be subclass of Scanner
-    */
-    public abstract Class getScannerClass ();
+    /** Actually creates array of class types of objects this search type can search.
+     * <em>Note: </em> the order of classes declares also priority. */
+    protected abstract Class[] createSearchTypeClasses();
+    
 
-
-    /** Gives short type name.
-    * @return String representing name used as tab label or null
-    */
-    public abstract String getTabText();
-
-    /** If any node match criterion it will be
-      returnded with following detail classes attached.
-      @return array of Classes their instances will have to be 
-        attached to matching node.
-    */
-    public abstract Class[] getDetailClasses();
-
-    //----------- Utility methods -------------------
-
-    /** @return display name obtained from BeanDescriptor or null.
-    */
-    public String getDisplayName() {
-        try {
-            return (new BeanNode(this)).getDisplayName();
-        } catch (java.beans.IntrospectionException ex) {
-            return null;
-        }
+    /** Accepts search root nodes. Subclasses have a chance to exclude some of
+     * the non interesting node systems. E.g. CVS search type can exclude non
+     * CVS node systems. */
+    protected Node[] acceptSearchRootNodes(Node[] roots) {
+        return roots;
     }
 
-    /** SearchType must be cloneable.
-    *
-    * @return a clone
-    */
-    public Object clone() {
-        try {
-            return super.clone();
-        } catch (CloneNotSupportedException ex) {
-            throw new RuntimeException("SearchType must be clonable."); // NOI18N
-        }
+    /** Accepts search object to the search. Subclasses have a chance to excluide
+     * the non interesting objects from the search. E.g. Java search type will
+     * exclude non Java data objects.
+     * <em>Note:</em> the search object instance is of the class type
+     * returned by SearchKey.getSearchObjectType method. So there is no necessity
+     * to do additional check for that search type. 
+     * @return <code>true</code> */
+    protected boolean acceptSearchObject(Object searchObject) {
+        return true;
     }
 
+    /** Prepares search object. Dummy implementation. Gives a chance to subclasses to 
+     * provide changes for dynamic changes on search objects.
+     * Typically it has to add some listener at the object and in the case some change
+     * which could lead to a change of the search result should fire 
+     * PROP_OBJECT_CHANGED property change. */
+    protected void prepareSearchObject(Object searchObject) {}
+    
+    /** Provides actual search processing of one node based on concrete search type
+     * criteria.
+     * @return <code>true</code> if the node satisfies criteria of this search type
+     * or <code>false</code> if doesn't */
+    protected abstract boolean testObject(Object searchObject);
+
+    /** Gets details for object satisfied the search.
+     * Subclasses should override the method to get detail nodes for the
+     * specified result object.
+     *
+     * @param resultObject object which has satisfied this search type
+     * @return <code>null</code> */
+    public Node[] getDetails(Object resultObject) {
+        return null;
+    }
+    
+    /** Gets details for node which represents one result node.
+     * Subclasses should override the method to get detail nodes for the
+     * specified result object.
+     *
+     * @param node which represents object which has satisfied this search type
+     * @return <code>null</code> */
+    public Node[] getDetails(Node node) {
+        return null;
+    }
+    
+    /** Tests whether the search type is enabled on certain nodes. */
+    public abstract boolean enabled(Node[] nodes);
+    
     /** Now the custonized criterion changed validity state. */
-    protected final void setValid(boolean state) {
+    public final void setValid(boolean state) {
         boolean old = valid;
         valid = state;
         firePropertyChange(PROP_VALID, new Boolean(old), new Boolean(state));
@@ -108,24 +132,21 @@ public abstract class SearchType extends org.openide.ServiceType implements Clon
     public final boolean isValid() {
         return valid;
     }
-
-    /** Just be serialization compaticle. */
-    private void readObject(java.io.ObjectInputStream in)
-    throws java.io.IOException, ClassNotFoundException {
-        valid = true; //may mark as valid even invalid
-        in.defaultReadObject();
+    
+    /** Clones seach type. */
+    public Object clone() {
+        try {
+            return super.clone();
+        } catch (CloneNotSupportedException ex) {
+            throw new RuntimeException("SearchType must be cloneable."); // NOI18N
+        }
     }
-}
 
-/*
-* Log
-*  8    Gandalf-post-FCS1.5.1.1     4/11/00  Petr Kuzel      Serialization fix.
-*  7    Gandalf-post-FCS1.5.1.0     4/4/00   Petr Kuzel      unknown state
-*  6    Gandalf   1.5         1/18/00  Jesse Glick     Context help.
-*  5    Gandalf   1.4         1/14/00  Ian Formanek    I18N
-*  4    Gandalf   1.3         1/4/00   Petr Kuzel      Polymorphism
-*  3    Gandalf   1.2         12/15/99 Martin Balin    Fixed package statement
-*  2    Gandalf   1.1         12/14/99 Petr Kuzel      Enforcing Cloneable.
-*  1    Gandalf   1.0         12/14/99 Petr Kuzel      
-* $ 
-*/ 
+
+    /** Enumeration of all SearchTypes in the system.
+     * @return enumeration of SearchType instances */
+    public static Enumeration enumerateSearchTypes () {
+        return TopManager.getDefault().getServices().services(SearchType.class);
+    }
+    
+}
