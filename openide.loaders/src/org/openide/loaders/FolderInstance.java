@@ -230,12 +230,15 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
         Object object = CURRENT.get ();
         
         if (object == null || LAST_CURRENT.get () != this) {
+            err.log ("do into waitFinished"); // NOI18N
             waitFinished ();
 
             object = FolderInstance.this.object;
         }
-        
-//        err.log ("instanceCreate: " + object);
+
+        if (err.isLoggable(err.INFORMATIONAL)) {
+            err.log ("instanceCreate: " + object); // NOI18N
+        }
 
         if (object instanceof java.io.IOException) {
             throw (java.io.IOException)object;
@@ -270,21 +273,35 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
      * internal state correctly.
      */
     public void waitFinished () {
+        boolean isLog = err.isLoggable (err.INFORMATIONAL);
         for (;;) {
+            err.log ("waitProcessingFinished on container"); // NOI18N
             waitProcessingFinished (container);
 
             Task originalRecognizing = checkRecognizingStarted ();
+            if (isLog) {
+                err.log ("checkRecognizingStarted: " + originalRecognizing); // NOI18N
+            }
             originalRecognizing.waitFinished ();
 
             Task t = creationTask;
+            if (isLog) {
+                err.log ("creationTask: " + creationTask); // NOI18N
+            }
             if (t != null) {
                 t.waitFinished ();
             }
 
 
             Task[] toWait = waitFor;
+            if (isLog) {
+                err.log ("toWait: " + toWait); // NOI18N
+            }
             if (toWait != null) {
                 for (int i = 0; i < toWait.length; i++) {
+                    if (isLog) {
+                        err.log ("  wait[" + i + "]: " + toWait[i]); // NOI18N
+                    }
                     toWait[i].waitFinished ();
                 }
             }
@@ -292,6 +309,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
             // loop if there was yet another task started to compute the
             // children list
             if (originalRecognizing == checkRecognizingStarted ()) {
+                err.log ("breaking the wait loop"); // NOI18N
                 break;
             }
             
@@ -994,10 +1012,6 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
             } else {
                 return null;
             }
-        }
-        
-        public String toString () {
-            return super.toString () + " from " + source + " tocookie: " + cookie; // NOI18N
         }
     } // end of HoldInstance
     

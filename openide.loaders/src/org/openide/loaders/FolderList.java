@@ -200,6 +200,9 @@ implements FileChangeListener, DataObject.Container {
      */
     public static void changedDataSystem (FileObject folder) {
         FolderList list = find (folder, false);
+        if (err.isLoggable(err.INFORMATIONAL)) {
+            err.log ("changedDataSystem: " + folder + " on " + Thread.currentThread()); // NOI18N
+        }
         if (list != null) {
             list.refresh ();
         }
