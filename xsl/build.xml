@@ -13,8 +13,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="xml/xsl" default="netbeans" basedir=".">
-    <import file="../../nbbuild/default.xml"/> 
-
+    <import file="../../nbbuild/default.xml"/>
     <property name="xml_root" location=".."/>
     <property name="api_root" location="${xml_root}/api"/>
     <property name="tax_root" location="${xml_root}/tax"/>
@@ -37,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
           <pathelement location="${xml/api.dir}/${nb.modules/autoload.dir}/xml-api.jar"/>
           <pathelement location="${xml/core.dir}/${nb.modules/autoload.dir}/xml-core.jar"/>
           <pathelement location="${httpserver/servletapi.dir}/${nb.modules/autoload.dir}/ext/servlet-2.2.jar"/>
-          <pathelement location="${libs/xalan.dir}/${nb.modules/autoload.dir}/ext/xalan-2.5.2.jar"/>
+          <!--<pathelement location="${libs/xalan.dir}/${nb.modules/autoload.dir}/ext/xalan-2.5.2.jar"/>-->
 
             <!-- Projects dependency -->
             <pathelement location="${projects/projectapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectapi.jar"/>

@@ -16,7 +16,7 @@ package org.netbeans.modules.xsl.grammar;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.Icon;
-import org.apache.xpath.XPathAPI;
+//import org.apache.xpath.XPathAPI;
 
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.xml.api.model.*;
@@ -638,6 +638,7 @@ public final class XSLGrammarQuery implements GrammarQuery{
                 // its grammar.
 
                 Object selScenarioObj = scenarioCookie.getModel().getSelectedItem();
+                /*
                 if (selScenarioObj instanceof XSLScenario) {
                     XSLScenario scenario = (XSLScenario)selScenarioObj;
                     Document doc = null;
@@ -702,7 +703,7 @@ public final class XSLGrammarQuery implements GrammarQuery{
 
                         addItemsToEnum(list, childNodeNames, subRest, preExpression + subPre);
                     }
-                }
+                }*/
 
                 addItemsToEnum(list, getXPathAxes(), subRest, preExpression + subPre);
                 addItemsToEnum(list, getXslFunctions(), subExpression, preExpression);
