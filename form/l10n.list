@@ -21,3 +21,7 @@ form/src/org/netbeans/modules/form/resources/MDIApplication.html
 form/src/org/netbeans/modules/form/resources/OKCancelDialog.html
 form/src/org/netbeans/modules/form/resources/Panel.html
 form/src/org/netbeans/modules/form/resources/Forms.html
+form/src/org/netbeans/modules/form/beaninfo/awt/Bundle.properties
+form/src/org/netbeans/modules/form/beaninfo/swing/Bundle.properties
+form/src/org/netbeans/modules/form/wizard/Bundle.properties
+form/src/org/netbeans/modules/form/resources/Bundle.properties
