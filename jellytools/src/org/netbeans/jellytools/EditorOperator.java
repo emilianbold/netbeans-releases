@@ -146,7 +146,7 @@ public class EditorOperator extends TopComponentOperator {
             public Object launch() {
                 return WindowManagerImpl.getInstance().findMode("editor"); //NOI18N
             }
-        });        
+        });
         Iterator iter = mode.getOpenedTopComponents().iterator();
         while(iter.hasNext()) {
             EditorOperator.close((TopComponent)iter.next(), false);
@@ -170,13 +170,24 @@ public class EditorOperator extends TopComponentOperator {
      * Other top components like VCS outputs are closed directly.
      * It is package private because it is also used by EditorWindowOperator. 
      */
-    static void close(TopComponent tc, boolean save) {
-        TopComponentOperator tco = new TopComponentOperator(tc);
-        if(save) {
-            tco.save();
-            tco.close();
-        } else {
-            tco.closeDiscard();
+    static void close(final TopComponent tc, boolean save) {
+        // firstly test whether it is still opened (run in dispatch thread)
+        Boolean isOpened = (Boolean)new QueueTool().invokeSmoothly(
+                    new QueueTool.QueueAction("isOpened") { // NOI18N
+                        public Object launch() {
+                            return new Boolean(tc.isOpened());
+                        }
+                    }
+        );
+        if(isOpened.booleanValue()) {
+            // it is still opened => try to close (otherwise do nothing)
+            TopComponentOperator tco = new TopComponentOperator(tc);
+            if(save) {
+                tco.save();
+                tco.close();
+            } else {
+                tco.closeDiscard();
+            }
         }
     }
 
