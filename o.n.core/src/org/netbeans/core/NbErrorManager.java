@@ -299,11 +299,8 @@ final class NbErrorManager extends ErrorManager {
                     arr[i].getStackTrace ().printStackTrace(pw);
                 }
             }
-
-            if (cnt == 0) {
-                // ok, no stack printed log the original exception
-                t.printStackTrace(pw);
-            }
+            // ok, print trace of the original exception too
+            t.printStackTrace(pw);
         }
 
         /** Method that iterates over annotations to find out
