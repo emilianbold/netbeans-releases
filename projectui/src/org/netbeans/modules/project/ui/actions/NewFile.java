@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.*;
 import javax.swing.JPopupMenu.Separator;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.NewFileWizard;
 import org.netbeans.modules.project.ui.NoProjectNew;
@@ -45,14 +47,16 @@ import org.openide.util.actions.Presenter.Popup;
 
 /** Action for invoking the project sensitive NewFile Wizard
  */
-public class NewFile extends ProjectAction implements PropertyChangeListener, Popup {
+public class NewFile extends ProjectAction implements PropertyChangeListener, Popup, PopupMenuListener {
 
     private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/newFile.gif" ) ); //NOI18N        
     private static final String NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Name" ); // NI18N
     private static final String POPUP_NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_PopupName" ); // NOI18N
     private static final String FILE_POPUP_NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_File_PopupName" ); // NOI18N
     private static final String TEMPLATE_NAME_FORMAT = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Template_PopupName" ); // NOI18N
-        
+
+    private JMenu subMenu;
+    
     public NewFile() {
         this( null );
     }
@@ -144,13 +148,21 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     // Presenter.Popup implementation ------------------------------------------
     
     public JMenuItem getPopupPresenter() {
+        if (subMenu == null) {
+            subMenu = new JMenu(POPUP_NAME);
+            subMenu.getPopupMenu().addPopupMenuListener(this);
+        }
+        return subMenu;
+    }
+    
+    private void fillSubMenu() {
         Project projects[] = ActionsUtil.getProjectsFromLookup( getLookup(), null );
         if ( projects != null && projects.length > 0 ) {
-            return createSubmenu( projects[0] );
+            fillSubMenu(subMenu, projects[0]);
         }
         else {
             // When no project is seleceted only file and folder can be created
-            return createNonProjectSubmenu();
+            fillNonProjectSubMenu(subMenu);
         }
     }
     
@@ -209,10 +221,10 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     public static String IN_PROJECT_PROPERTY = "org.netbeans.modules.project.ui.actions.NewFile.InProject"; // NOI18N
     
     
-    JMenuItem createSubmenu( Project project ) {
-        JMenu menuItem = new JMenu( POPUP_NAME );
+     private void fillSubMenu(JMenu menuItem, Project project) {
+        menuItem.removeAll();
         
-        ActionListener menuListener = new PopupMenuListener();
+        ActionListener menuListener = new PopupListener();
         
         JMenuItem fileItem = new JMenuItem( FILE_POPUP_NAME, (Icon)getValue( Action.SMALL_ICON ) );
         fileItem.addActionListener( menuListener );
@@ -236,15 +248,13 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
             }
             menuItem.add( item );
         }
-        
-        return menuItem;
     }
     
     
-    JMenuItem createNonProjectSubmenu() {
-        JMenu menuItem = new JMenu( POPUP_NAME );
+    private void fillNonProjectSubMenu(JMenu menuItem) {
+        menuItem.removeAll();
         
-        ActionListener menuListener = new PopupMenuListener();
+        ActionListener menuListener = new PopupListener();
         
         DataFolder preselectedFolder = preselectedFolder( getLookup() );
         
@@ -269,11 +279,9 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
             item.setEnabled( canWrite );
             menuItem.add( item );
         }
-        
-        return menuItem;
     }
     
-    private class PopupMenuListener implements ActionListener {
+    private class PopupListener implements ActionListener {
                 
         public void actionPerformed( ActionEvent e ) {
             JMenuItem source = (JMenuItem)e.getSource();
@@ -290,7 +298,19 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         }
         
     }
-        
+    
+    // Implementation of PopupMenuListener -------------------------------------
+    
+    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+        fillSubMenu();
+    }
+    
+    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+    }
+
+    public void popupMenuCanceled(PopupMenuEvent e) {
+    }
+    
 }
     
     
