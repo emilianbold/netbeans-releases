@@ -81,10 +81,8 @@
 
   <folder name="Shortcuts">
 
-    <file name="CS-PAUSE[org-netbeans-modules-debugger-support-actions-ResumeDebuggerAction].instance" />
     <file name="CS-F8[org-netbeans-modules-debugger-support-actions-AddBreakpointAction].instance" />
     <file name="C-5[org-netbeans-modules-debugger-support-actions-DebuggerViewAction].instance" />
-    <file name="C-PAUSE[org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction].instance" />
 
   </folder>
 
