@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -83,7 +83,9 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_RelationshipName"));
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "AddCmpRelationshipDialog_AD"));
+        jLabel1.setLabelFor(relationshipNameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_RelationshipName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -99,7 +101,10 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         add(relationshipNameTextField, gridBagConstraints);
+        relationshipNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "RelationshipName_AD"));
 
+        jLabel3.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Description_mnemonic").charAt(0));
+        jLabel3.setLabelFor(descriptionTextArea);
         jLabel3.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Description"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -121,8 +126,11 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         add(descriptionTextArea, gridBagConstraints);
+        descriptionTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "Description_AN"));
+        descriptionTextArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "Description_AD"));
 
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_EntityBean"));
+        jLabel4.setLabelFor(ejbComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_EntityBean"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -130,7 +138,8 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 5);
         add(jLabel4, gridBagConstraints);
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_RoleName"));
+        jLabel2.setLabelFor(roleNameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_RoleName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -145,8 +154,11 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(15, 5, 0, 12);
         add(roleNameTextField, gridBagConstraints);
+        roleNameTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "RoleName_AN_1"));
+        roleNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "RoleName_AD_1"));
 
-        jLabel14.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_RoleName"));
+        jLabel14.setLabelFor(roleNameTextField2);
+        jLabel14.setText(Utils.removeMnemonicMarker(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_RoleName")));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
@@ -161,6 +173,8 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(15, 5, 0, 12);
         add(roleNameTextField2, gridBagConstraints);
+        roleNameTextField2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "RoleName_AN_2"));
+        roleNameTextField2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "RoleName_AD_2"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -170,8 +184,11 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         add(ejbComboBox, gridBagConstraints);
+        ejbComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "EntityBean_AN_1"));
+        ejbComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "EntityBean_AD_1"));
 
-        jLabel12.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_EntityBean"));
+        jLabel12.setLabelFor(ejbComboBox2);
+        jLabel12.setText(Utils.removeMnemonicMarker(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_EntityBean")));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 3;
@@ -187,6 +204,8 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         add(ejbComboBox2, gridBagConstraints);
+        ejbComboBox2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "EntityBean_AN_2"));
+        ejbComboBox2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "EntityBean_AD_2"));
 
         jLabel5.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Multiplicity"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -197,6 +216,7 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         add(jLabel5, gridBagConstraints);
 
         multiplicityButtonGroup.add(multiplicityOneRadioButton);
+        multiplicityOneRadioButton.setMnemonic(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_One_mnemonic1").charAt(0));
         multiplicityOneRadioButton.setSelected(true);
         multiplicityOneRadioButton.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_One"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -205,8 +225,11 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
         add(multiplicityOneRadioButton, gridBagConstraints);
+        multiplicityOneRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "One_AN_1"));
+        multiplicityOneRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "One_AD_1"));
 
         multiplicityButtonGroup.add(multiplicityManyRadioButton);
+        multiplicityManyRadioButton.setMnemonic(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Many_mnemonic1").charAt(0));
         multiplicityManyRadioButton.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Many"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -214,6 +237,8 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         add(multiplicityManyRadioButton, gridBagConstraints);
+        multiplicityManyRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "Many_AN_1"));
+        multiplicityManyRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "Many_AD_1"));
 
         jLabel13.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Multiplicity"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -224,6 +249,7 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         add(jLabel13, gridBagConstraints);
 
         multiplicityButtonGroup2.add(multiplicityOneRadioButton2);
+        multiplicityOneRadioButton2.setMnemonic(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_One_mnemonic2").charAt(0));
         multiplicityOneRadioButton2.setSelected(true);
         multiplicityOneRadioButton2.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_One"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -232,8 +258,11 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
         add(multiplicityOneRadioButton2, gridBagConstraints);
+        multiplicityOneRadioButton2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "One_AN_2"));
+        multiplicityOneRadioButton2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "One_AD_2"));
 
         multiplicityButtonGroup2.add(multiplicityManyRadioButton2);
+        multiplicityManyRadioButton2.setMnemonic(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Many_mnemonic2").charAt(0));
         multiplicityManyRadioButton2.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Many"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
@@ -241,8 +270,10 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         add(multiplicityManyRadioButton2, gridBagConstraints);
+        multiplicityManyRadioButton2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "Many_AN_2"));
+        multiplicityManyRadioButton2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "Many_AD_2"));
 
-        cascadeDeleteCheckBox.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_CascadeDelete"));
+        org.openide.awt.Mnemonics.setLocalizedText(cascadeDeleteCheckBox, org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_CascadeDelete"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -250,8 +281,10 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(cascadeDeleteCheckBox, gridBagConstraints);
+        cascadeDeleteCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "CascadeDelete_AN_1"));
+        cascadeDeleteCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "CascadeDelete_AD_1"));
 
-        cascadeDeleteCheckBox2.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_CascadeDelete"));
+        cascadeDeleteCheckBox2.setText(Utils.removeMnemonicMarker(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_CascadeDelete")));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 5;
@@ -259,8 +292,10 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(cascadeDeleteCheckBox2, gridBagConstraints);
+        cascadeDeleteCheckBox2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "CascadeDelete_AN_2"));
+        cascadeDeleteCheckBox2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "CascadeDelete_AD_2"));
 
-        createCmrFieldCheckBox.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_CreateCMRField"));
+        org.openide.awt.Mnemonics.setLocalizedText(createCmrFieldCheckBox, org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_CreateCMRField"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -268,8 +303,10 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(15, 12, 0, 12);
         add(createCmrFieldCheckBox, gridBagConstraints);
+        createCmrFieldCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "CreateCMRField_AN_1"));
+        createCmrFieldCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "CreateCMRField_AD_1"));
 
-        createCmrFieldCheckBox2.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_CreateCMRField"));
+        createCmrFieldCheckBox2.setText(Utils.removeMnemonicMarker(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_CreateCMRField")));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 6;
@@ -277,8 +314,11 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(15, 12, 0, 12);
         add(createCmrFieldCheckBox2, gridBagConstraints);
+        createCmrFieldCheckBox2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "CreateCMRField_AN_2"));
+        createCmrFieldCheckBox2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "CreateCMRField_AD_2"));
 
-        jLabel6.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_FieldName"));
+        jLabel6.setLabelFor(fieldNameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_FieldName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -293,8 +333,11 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         add(fieldNameTextField, gridBagConstraints);
+        fieldNameTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "FieldName_AN_1"));
+        fieldNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "FieldName_AD_1"));
 
-        jLabel9.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_FieldName"));
+        jLabel9.setLabelFor(fieldNameTextField2);
+        jLabel9.setText(Utils.removeMnemonicMarker(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_FieldName")));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 7;
@@ -309,8 +352,11 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         add(fieldNameTextField2, gridBagConstraints);
+        fieldNameTextField2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "FieldName_AN_2"));
+        fieldNameTextField2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "FieldName_AD_2"));
 
-        jLabel7.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_FieldType"));
+        jLabel7.setLabelFor(fieldTypeComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_FieldType"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
@@ -325,8 +371,11 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         add(fieldTypeComboBox, gridBagConstraints);
+        fieldTypeComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "FieldType_AN_1"));
+        fieldTypeComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "FieldType_AD_1"));
 
-        jLabel10.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_FieldType"));
+        jLabel10.setLabelFor(fieldTypeComboBox2);
+        jLabel10.setText(Utils.removeMnemonicMarker(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_FieldType")));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 8;
@@ -341,6 +390,8 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         add(fieldTypeComboBox2, gridBagConstraints);
+        fieldTypeComboBox2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "FieldType_AN_2"));
+        fieldTypeComboBox2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "FieldType_AD_2"));
 
         jLabel8.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_AddToLocalInterfaceColon"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -361,7 +412,7 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         add(jLabel11, gridBagConstraints);
 
         getterCheckBox.setSelected(true);
-        getterCheckBox.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Getter"));
+        org.openide.awt.Mnemonics.setLocalizedText(getterCheckBox, org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Getter"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 10;
@@ -369,9 +420,11 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 5);
         add(getterCheckBox, gridBagConstraints);
+        getterCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "Getter_AN_1"));
+        getterCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "Getter_AD_1"));
 
         getterCheckBox2.setSelected(true);
-        getterCheckBox2.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Getter"));
+        getterCheckBox2.setText(Utils.removeMnemonicMarker(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Getter")));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 10;
@@ -379,9 +432,11 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 5);
         add(getterCheckBox2, gridBagConstraints);
+        getterCheckBox2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "Getter_AN_2"));
+        getterCheckBox2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "Getter_AD_2"));
 
         setterCheckBox.setSelected(true);
-        setterCheckBox.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Setter"));
+        org.openide.awt.Mnemonics.setLocalizedText(setterCheckBox, org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Setter"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 11;
@@ -389,9 +444,11 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 5);
         add(setterCheckBox, gridBagConstraints);
+        setterCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "Setter_AN_1"));
+        setterCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "Setter_AD_1"));
 
         setterCheckBox2.setSelected(true);
-        setterCheckBox2.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Setter"));
+        setterCheckBox2.setText(Utils.removeMnemonicMarker(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Setter")));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 11;
@@ -399,6 +456,8 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 5);
         add(setterCheckBox2, gridBagConstraints);
+        setterCheckBox2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "Setter_AN_2"));
+        setterCheckBox2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "Setter_AD_2"));
 
         errorLabel.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
