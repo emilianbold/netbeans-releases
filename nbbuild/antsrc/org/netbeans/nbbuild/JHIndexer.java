@@ -72,7 +72,7 @@ public class JHIndexer extends MatchingTask {
         scanner.scan ();
         String[] files = scanner.getIncludedFiles ();
         // First, an up-to-date check. ;-)
-        if (basedir.exists ()) {
+        if (basedir.exists () && db.exists ()) {
             long lastModified = Long.MIN_VALUE;
             // First scan output dir for any files.
             FileScanner output = new DirectoryScanner ();
