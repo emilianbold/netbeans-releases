@@ -6,7 +6,7 @@
 -->
 <html>
 <head>
-<TITLE>Managing IDE Windows</TITLE>
+<title>Managing IDE Windows</title>
 <link rel="StyleSheet" href="../../ide.css" type="text/css">
 </head>
 <body>
@@ -22,15 +22,14 @@
      box indicates  where the window will reside once you drop it.</li>
   <li>Drop the window. </li>
 </ol>
-<table>
-  <tr> 
-    <td valign="top"><img src="../../images/tip.gif" alt="Tip"></td>
-    <td valign="top" align="left"> You cannot dock IDE windows within the Source
+
+  <ul class="note"> 
+    <li> You cannot dock IDE windows within the Source
        Editor pane as it can only contain documents
        and not other windows. Also, you cannot move document tabs outside
       of the Source Editor. 
-  </tr>
-</table>
+  </ul>
+
 <h3>Splitting the Source Editor</h3>
 <p> You can split the Source Editor allowing you to  work with multiple files
    or   different areas of the same file simultaneously. The Source
@@ -51,7 +50,7 @@
     where you want the copy to be placed. </li>
 </ol>
 <h3>Automatically Appearing Windows</h3>
-<p>Some windows only appear when you are performing the task to which they are
+<p>Some windows only appear when you are performing a task to which they are
    related. For example, the Debugger windows only appear when you are in a debugging
    session. You can manually open task-related windows so that they are always
    open.</p>
@@ -65,68 +64,107 @@ IDE windowing system.">
     <th align="left" scope="col">Keys</th>
     <th align="left" scope="col">Action</th>
   </tr>
+  <tr>
+    <td colspan="2"><hr>
+	</tr>
   <tr> 
-    <td valign="top">Ctrl-`</td>
-    <td>Toggle open IDE windows</td>
+    <td valign="top">Command-0 </td>
+    <td>Switch to Editor window</td>
   </tr>
   <tr> 
-    <td valign="top">Shit-Escape</td>
-    <td>Maximize window </td>
+    <td valign="top">Command-1</td>
+    <td>Switch to Project window </td>
   </tr>
-    <td valign="top">Ctrl-Shift-2</td>
-    <td>Show file in Files window</td>
+  <tr> 
+    <td valign="top">Command-2 </td>
+    <td>Switch to Files window </td>
   </tr>
-    <td valign="top">Ctrl-F4 </td>
+  <tr> 
+    <td valign="top">Command-3</td>
+    <td>Switch to Favorites window </td>
+  </tr>
+
+  <tr> 
+    <td valign="top">Command-4</td>
+    <td>Switch to Output window </td>
+  </tr>
+  <tr> 
+    <td valign="top">Command-5 </td>
+    <td>Switch to Runtime window </td>
+  </tr>
+<!--  <tr> 
+    <td valign="top">Ctrl-6 </td>
+    <td>Switch to Execution window </td>
+  </tr>-->
+  <tr> 
+    <td valign="top">Command-6</td>
+    <td>Switch to To Do window </td>
+  </tr>
+  <tr> 
+    <td valign="top">Command-7</td>
+    <td>Switch to Navigator window </td>
+  </tr>
+  <tr> 
+    <td valign="top">Command-8</td>
+    <td>Switch to Versioning  window </td>
+  </tr>
+  <tr> 
+    <td valign="top">Command-9</td>
+    <td>Switch to VCS Output window </td>
+  </tr>
+  <tr> 
+    <td valign="top">Command-Shift-5</td>
+    <td>Switch to HTTP Monitor window </td>
+  </tr>
+  <tr> 
+    <td valign="top">Command-Shift-7</td>
+    <td>Switch to Properties window </td>
+  </tr>
+  <tr>
+    <td colspan="2"><hr>
+	</tr>
+  <tr>
+    <td valign="top">Command-Shift-1</td>
+    <td>Select file in Projects window</td>
+  </tr>
+  <tr>
+    <td valign="top">Command-Shift-2</td>
+    <td>Select file in Files window</td>
+  </tr>
+  <tr>
+    <td valign="top">Command-Shift-3</td>
+    <td>Select file in Favorites window</td>
+  </tr>
+  <tr>
+    <td valign="top">Command-Shift-8</td>
+    <td>Select file in Versioning window</td>
+  </tr>
+
+  <tr>
+    <td valign="top">Command-F4 </td>
     <td>Close window</td>
   </tr>
   <tr> 
-    <td valign="top">Ctrl-Shift-F4 </td>
+    <td valign="top">Command-Shift-F4 </td>
     <td>Close all documents</td>
   </tr>
+    <tr>
+    <td colspan="2"><hr>
+	</tr>
+
   <tr> 
     <td valign="top">Shift-F4</td>
     <td>Open Documents dialog box </td>
   </tr>
   <tr> 
-    <td valign="top">Ctrl-0 </td>
-    <td>Switch to Source Editor</td>
+    <td valign="top">Ctrl-Tab</td>
+    <td>Switch to recent window </td>
   </tr>
   <tr> 
-    <td valign="top">Ctrl-1 </td>
-    <td>Switch to Properties window </td>
+    <td valign="top">Shift-Escape</td>
+    <td>Maximize window </td>
   </tr>
-  <tr> 
-    <td valign="top">Ctrl-2 </td>
-    <td>Switch to Files window </td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-3</td>
-    <td>Switch to Project window </td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-4</td>
-    <td>Switch to Output window </td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-5 </td>
-    <td>Switch to Runtime window </td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-6 </td>
-    <td>Switch to Execution window </td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-7</td>
-    <td>Switch to HTTP Monitor window </td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-8 </td>
-    <td>Switch to To Do window </td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-9</td>
-    <td>Switch to VCS Output window </td>
-  </tr>
+
   <tr> 
     <td valign="top">F1 </td>
     <td>Show Help for selected component</td>
