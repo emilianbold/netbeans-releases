@@ -100,6 +100,7 @@ public abstract class AbstractTabDisplayerUI extends TabDisplayerUI {
     public final void installUI(JComponent c) {
         assert c == displayer;
         super.installUI(c); //installs the selection model
+        ToolTipManager.sharedInstance().registerComponent(displayer);
         layoutModel = createLayoutModel();
         mouseListener = createMouseListener();
         componentListener = createComponentListener();

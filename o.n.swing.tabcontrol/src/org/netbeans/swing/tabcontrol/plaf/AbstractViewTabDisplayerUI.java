@@ -78,6 +78,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
 
     public void installUI(JComponent c) {
         super.installUI(c);
+        ToolTipManager.sharedInstance().registerComponent(displayer);
         controller = createController();
         dataModel = displayer.getModel();
         layoutModel = new ViewTabLayoutModel(dataModel, displayer);
@@ -102,6 +103,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
 
     public void uninstallUI(JComponent c) {
         super.uninstallUI(c);
+        ToolTipManager.sharedInstance().unregisterComponent(displayer);
         displayer.removePropertyChangeListener (controller);
         dataModel.removeChangeListener(controller);
         selectionModel.removeChangeListener(controller);
