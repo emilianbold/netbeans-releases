@@ -20,7 +20,7 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerListener;
-import org.netbeans.api.debugger.LazyDebuggerEngineListener;
+import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
@@ -40,7 +40,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
  *
  * @author   Jan Jancura
  */
-public class BreakpointsEngineListener extends LazyDebuggerEngineListener 
+public class BreakpointsEngineListener extends LazyActionsManagerListener 
 implements PropertyChangeListener, DebuggerManagerListener {
     
     private static boolean verbose = 
@@ -52,7 +52,6 @@ implements PropertyChangeListener, DebuggerManagerListener {
     
     
     public BreakpointsEngineListener (DebuggerEngine engine) {
-        super (engine);
         this.debugger = (JPDADebuggerImpl) engine.lookupFirst 
             (JPDADebugger.class);
         this.engine = engine;

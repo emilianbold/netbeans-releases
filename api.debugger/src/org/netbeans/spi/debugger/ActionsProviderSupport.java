@@ -16,7 +16,7 @@ package org.netbeans.spi.debugger;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Vector;
-import org.netbeans.api.debugger.DebuggerEngine;
+
 
 /**
  * Support for {@link ActionsProvider} implementation. You should implement
@@ -36,7 +36,7 @@ public abstract class ActionsProviderSupport extends ActionsProvider {
      *
      * @param action an action which has been called
      */
-    public abstract boolean doAction (DebuggerEngine engine, Object action);
+    public abstract boolean doAction (Object action);
     
     /**
      * Returns a state of given action defined by {@link #setEnabled} 
@@ -44,7 +44,7 @@ public abstract class ActionsProviderSupport extends ActionsProvider {
      *
      * @param action action
      */
-    public final boolean isEnabled (DebuggerEngine engine, Object action) {
+    public final boolean isEnabled (Object action) {
         return this.enabled.contains (action);
     }
     

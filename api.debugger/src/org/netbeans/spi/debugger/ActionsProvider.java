@@ -36,14 +36,14 @@ public abstract class ActionsProvider {
      *
      * @param action an action which has been called
      */
-    public abstract boolean doAction (DebuggerEngine engine, Object action);
+    public abstract boolean doAction (Object action);
     
     /**
      * Should return a state of given action.
      *
      * @param action action
      */
-    public abstract boolean isEnabled (DebuggerEngine engine, Object action);
+    public abstract boolean isEnabled (Object action);
     
     /**
      * Adds property change listener.

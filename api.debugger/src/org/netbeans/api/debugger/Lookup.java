@@ -195,24 +195,16 @@ abstract class Lookup {
 
                 Object o = null;
                 if (context != null) {
-                    Constructor co = null;
-                    Class paramType = context.getClass ();
-                    do {
+                    Constructor[] cs = cls.getConstructors ();
+                    int i, k = cs.length;
+                    for (i = 0; i < k; i++) {
+                        Constructor c = cs [i];
+                        if (c.getParameterTypes ().length != 1) continue;
                         try {
-                            co = cls.getConstructor 
-                                (new Class[] {paramType});
-                            try {
-                                o = co.newInstance (new Object[] {context});
-                            } catch (InvocationTargetException ex) {
-                                ex.getCause ().printStackTrace();
-                            }
-                        } catch (NoSuchMethodException ex) {
-                            paramType = paramType.getSuperclass ();
+                            o = c.newInstance (new Object[] {context});
+                        } catch (IllegalAccessException e) {
                         }
-                    } while ( (co == null) && 
-                              (paramType != null) &&
-                              (!Object.class.equals (co)) );
-                              
+                    }
                 }
                 if (o == null)
                     o = cls.newInstance ();
@@ -232,6 +224,10 @@ abstract class Lookup {
                 System.out.println("\nservice: " + service);
                 System.out.println("context: " + context);
                 e.printStackTrace ();
+            } catch (InvocationTargetException ex) {
+                System.out.println("\nservice: " + service);
+                System.out.println("context: " + context);
+                ex.getCause ().printStackTrace ();
             }
             return null;
         }

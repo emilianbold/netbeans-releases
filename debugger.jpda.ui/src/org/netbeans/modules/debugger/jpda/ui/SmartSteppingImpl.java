@@ -18,6 +18,7 @@ import java.util.HashSet;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.LookupProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.spi.debugger.jpda.SmartSteppingListener;
 
@@ -45,14 +46,14 @@ public class SmartSteppingImpl extends SmartSteppingListener {
      * @return true if execution should be stopped on the current position
      */
     public boolean stopHere (
-        DebuggerEngine engine, 
+        LookupProvider lookupProvider, 
         JPDAThread thread, 
         SmartSteppingFilter f
     ) {
         String className = thread.getClassName ();
         if (className == null) return false;
 
-        EngineContext ectx = (EngineContext) engine.lookupFirst 
+        EngineContext ectx = (EngineContext) lookupProvider.lookupFirst 
             (EngineContext.class);
         boolean b = ectx.sourceAvailable (thread, null);
         if (b) return true;

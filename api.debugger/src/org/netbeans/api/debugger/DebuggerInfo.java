@@ -26,7 +26,7 @@ import java.util.List;
  *
  * @author   Jan Jancura
  */
-public final class DebuggerInfo extends LookupProvider {
+public final class DebuggerInfo implements LookupProvider {
 
     private String typeID;
     private Lookup lookup;
@@ -71,9 +71,9 @@ public final class DebuggerInfo extends LookupProvider {
      *
      * @return type identification of this session
      */
-    public String getTypeID () {
-        return typeID;
-    }
+//    public String getTypeID () {
+//        return typeID;
+//    }
     
     /**
      * Returns list of services of given type.

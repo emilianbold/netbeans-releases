@@ -45,7 +45,11 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                         TopComponentGroup group = WindowManager.getDefault ().
                             findTopComponentGroup ("debugger"); // NOI18N
                         if (group != null) {
+                            try {
                             group.open ();
+                            } catch (Throwable e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 });

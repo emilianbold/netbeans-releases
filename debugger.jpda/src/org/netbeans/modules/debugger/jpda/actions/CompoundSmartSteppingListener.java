@@ -56,7 +56,7 @@ public class CompoundSmartSteppingListener extends SmartSteppingListener {
      * Asks all SmartSteppingListener listeners if executiong should stop on the 
      * current place represented by JPDAThread.
      */
-    public boolean stopHere (DebuggerEngine engine, JPDAThread t, SmartSteppingFilter filter) {
+    public boolean stopHere (LookupProvider lookupProvider, JPDAThread t, SmartSteppingFilter filter) {
         if (ssverbose)
             System.out.println("\nSS  CompoundSmartSteppingListener.stopHere? : " + 
                 t.getClassName () + '.' +
@@ -68,7 +68,7 @@ public class CompoundSmartSteppingListener extends SmartSteppingListener {
         boolean stop = true;
         while (i.hasNext ()) {
             SmartSteppingListener ss = (SmartSteppingListener) i.next ();
-            boolean sh = ss.stopHere (engine, t, filter);
+            boolean sh = ss.stopHere (lookupProvider, t, filter);
             stop = stop && sh;
             if (ssverbose)
                 System.out.println("SS    " + ss.getClass () + 

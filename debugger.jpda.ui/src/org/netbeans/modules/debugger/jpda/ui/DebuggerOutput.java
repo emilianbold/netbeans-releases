@@ -24,11 +24,11 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.Breakpoint;
 
 import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerEngineListener;
+import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
-import org.netbeans.api.debugger.LazyDebuggerEngineListener;
+import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.LookupProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
@@ -46,13 +46,13 @@ import org.openide.util.NbBundle;
 
 /**
  * Listens on
- * {@link org.netbeans.api.debugger.DebuggerEngineListener#PROP_ACTION_PERFORMED} and
+ * {@link org.netbeans.api.debugger.ActionsManagerListener#PROP_ACTION_PERFORMED} and
  * {@link org.netbeans.api.debugger.jpda.JPDADebugger#PROP_STATE}
  * properties and writes some messages to Debugger Console.
  *
  * @author   Jan Jancura
  */
-public class DebuggerOutput extends LazyDebuggerEngineListener implements
+public class DebuggerOutput extends LazyActionsManagerListener implements
 PropertyChangeListener {
 
     private static final int    where = IOManager.STATUS_OUT + IOManager.STD_OUT;
@@ -63,7 +63,6 @@ PropertyChangeListener {
 
 
     public DebuggerOutput (DebuggerEngine engine) {
-        super (engine);
         this.debugger = (JPDADebugger) engine.lookupFirst
             (JPDADebugger.class);
         this.engine = engine;
@@ -88,7 +87,7 @@ PropertyChangeListener {
     }
 
     public String[] getProperties () {
-        return new String[] {DebuggerEngineListener.PROP_ACTION_PERFORMED};
+        return new String[] {ActionsManagerListener.PROP_ACTION_PERFORMED};
     }
 
     public void propertyChange (java.beans.PropertyChangeEvent evt) {
@@ -245,19 +244,19 @@ PropertyChangeListener {
         }
     }
 
-    public void actionPerformed (DebuggerEngine engine, Object action, boolean success) {
+    public void actionPerformed (Object action, boolean success) {
         if (!success) return;
         //print ("CTL_Debugger_running", where, null, null);
-        if (action == DebuggerEngine.ACTION_CONTINUE)
+        if (action == DebuggerManager.ACTION_CONTINUE)
             print ("CTL_Continue", where, null, null);
         else
-        if (action == DebuggerEngine.ACTION_STEP_INTO)
+        if (action == DebuggerManager.ACTION_STEP_INTO)
             print ("CTL_Step_Into", where, null, null);
         else
-        if (action == DebuggerEngine.ACTION_STEP_OUT)
+        if (action == DebuggerManager.ACTION_STEP_OUT)
             print ("CTL_Step_Out", where, null, null);
         else
-        if (action == DebuggerEngine.ACTION_STEP_OVER)
+        if (action == DebuggerManager.ACTION_STEP_OVER)
             print ("CTL_Step_Over", where, null, null);
     }
 

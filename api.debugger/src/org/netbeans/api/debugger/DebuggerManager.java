@@ -107,6 +107,48 @@ import org.netbeans.spi.debugger.SessionProvider;
  * @author Jan Jancura
  */
 public final class DebuggerManager {
+    
+    /** Action constant for breakpoint hit action. */
+    public static final Object              ACTION_BREAKPOINT_HIT = "breakpointHit";
+    
+    /** Action constant for Step Over Action. */
+    public static final Object              ACTION_STEP_OVER = "stepOver";
+    
+    /** Action constant for Step Into Action. */
+    public static final Object              ACTION_STEP_INTO = "stepInto";
+    
+    /** Action constant for Step Out Action. */
+    public static final Object              ACTION_STEP_OUT = "stepOut";
+    
+    /** Action constant for Continue Action. */
+    public static final Object              ACTION_CONTINUE = "continue";
+    
+    /** Action constant for Start Action. */
+    public static final Object              ACTION_START = "start";
+    
+    /** Action constant for Kill Action. */
+    public static final Object              ACTION_KILL= "kill";
+    
+    /** Action constant for Make Caller Current Action. */
+    public static final Object              ACTION_MAKE_CALLER_CURRENT = "makeCallerCurrent";
+    
+    /** Action constant for Make Callee Current Action. */
+    public static final Object              ACTION_MAKE_CALLEE_CURRENT = "makeCalleeCurrent";
+    
+    /** Action constant for Pause Action. */
+    public static final Object              ACTION_PAUSE = "pause";
+    
+    /** Action constant for Run to Cursor Action. */
+    public static final Object              ACTION_RUN_TO_CURSOR = "runToCursor";
+    
+    /** Action constant for Pop Topmost Call Action. */
+    public static final Object              ACTION_POP_TOPMOST_CALL = "popTopmostCall";
+    
+    /** Action constant for Fix Action. */
+    public static final Object              ACTION_FIX = "fix";
+    
+    /** Action constant for Restart Action. */
+    public static final Object              ACTION_RESTART = "restart";
 
     
     /** Name of property for the set of breakpoints in the system. */
@@ -143,6 +185,7 @@ public final class DebuggerManager {
     private SessionListener                   sessionListener = new SessionListener ();
     private Vector                            listener = new Vector ();
     private HashMap                           listeners = new HashMap ();
+    private ActionsManager                    actionsManager = null;
 //    private PropertyChangeSupport pcs = new PropertyChangeSupport (this);
     
     private Lookup                            lookup = new Lookup.MetaInf (null, null);
@@ -165,6 +208,13 @@ public final class DebuggerManager {
     private DebuggerManager () {
     }
 
+
+    public ActionsManager getActionsManager () {
+        if (actionsManager == null)
+            actionsManager = new ActionsManager (lookup);
+        return actionsManager;
+    }
+    
     
     // lookup management .............................................
     
@@ -313,8 +363,8 @@ public final class DebuggerManager {
         
         k = engines.size ();
         for (i = 0; i < k; i++) {
-            ((DebuggerEngine) engines.get (i)).doAction 
-                (DebuggerEngine.ACTION_START);
+            ((DebuggerEngine) engines.get (i)).getActionsManager ().doAction 
+                (ACTION_START);
         }
         
         if (sessionToStart == null) return;
@@ -333,7 +383,8 @@ public final class DebuggerManager {
         // finish all non persistent sessions
         int i, k = ds.length;
         for (i = 0; i < k; i++)
-            ds [i].getCurrentEngine ().doAction (DebuggerEngine.ACTION_KILL);
+            ds [i].getCurrentEngine ().getActionsManager ().
+                doAction (ACTION_KILL);
     }
     
     /**

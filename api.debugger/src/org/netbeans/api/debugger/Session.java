@@ -107,7 +107,7 @@ import java.util.List;
  *
  * @author Jan Jancura
  */
-public final class Session extends LookupProvider {
+public final class Session implements LookupProvider {
     
     /** Name of property for current language. */
     public static final String PROP_CURRENT_LANGUAGE = "currentLanguage";
@@ -179,9 +179,9 @@ public final class Session extends LookupProvider {
      *
      * @return identifier of type of this engine
      */
-    public String getTypeID () {
-        return id;
-    }
+//    public String getTypeID () {
+//        return id;
+//    }
     
     /**
      * Returns name of location this session is running on.
@@ -229,7 +229,8 @@ public final class Session extends LookupProvider {
         HashSet dead = new HashSet (Arrays.asList (engines));
         Iterator i = dead.iterator ();
         while (i.hasNext ())
-            ((DebuggerEngine) i.next ()).doAction (DebuggerEngine.ACTION_KILL);
+            ((DebuggerEngine) i.next ()).getActionsManager ().
+                doAction (DebuggerManager.ACTION_KILL);
     }
 
     /**

@@ -19,21 +19,8 @@ import java.beans.PropertyChangeSupport;
 
 
 /**
- * Abstract definition of watch. Each watch is created for (defined by) 
+ * Abstract definition of watch. Each watch is created for
  * one String which contains the name of variable or some expression.
- * <br><br>
- * <b><u>List of properties:</b></u>
- * <ul>
- *   <li><b>variableName (rw):</b> contains the name of variable or expression
- *      which should be evaluated</li> 
- *   <li><b>asText (rw):</b> returns the current value of variable / 
- *      expression</li> 
- *   <li><b>type (ro):</b> returns the type of current value of variable</li> 
- *   <li><b>errorMessage (ro):</b> returns some description of problems 
- *      if the value can not be evaluated</li> 
- *   <li><b>hidden (rw):</b> returns true if this watch should be visible to 
- *      user</li> 
- * </ul>
  *
  * @author   Jan Jancura
  */

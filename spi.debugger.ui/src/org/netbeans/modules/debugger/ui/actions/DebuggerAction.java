@@ -19,10 +19,10 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.debugger.ActionsManager;
 
 import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerEngineAdapter;
-import org.netbeans.api.debugger.DebuggerEngineListener;
+import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Watch;
@@ -36,16 +36,23 @@ public abstract class DebuggerAction extends AbstractAction {
 
     public DebuggerAction () {
         new Listener (this);
-        setEnabled (false);
+        setEnabled (getCurrentActionsManager ().isEnabled (getAction ()));
     }
     
     public abstract Object getAction ();
     
     public void actionPerformed (ActionEvent evt) {
-        DebuggerManager.getDebuggerManager ().getCurrentSession ().
-            getCurrentEngine ().doAction (
+        getCurrentActionsManager ().doAction (
                 getAction ()
             );
+    }
+        
+    private static ActionsManager getCurrentActionsManager () {
+        return DebuggerManager.getDebuggerManager ().
+            getCurrentEngine () == null ? 
+            DebuggerManager.getDebuggerManager ().getActionsManager () :
+            DebuggerManager.getDebuggerManager ().getCurrentEngine ().
+                getActionsManager ();
     }
 
     
@@ -56,10 +63,10 @@ public abstract class DebuggerAction extends AbstractAction {
      * on PROP_ACTION_STATE and updates state of this action instance.
      */
     static class Listener extends DebuggerManagerAdapter 
-    implements DebuggerEngineListener {
+    implements ActionsManagerListener {
         
-        private DebuggerEngine currentEngine;
-        private WeakReference ref;
+        private ActionsManager  currentActionsManager;
+        private WeakReference   ref;
 
         
         Listener (DebuggerAction da) {
@@ -73,25 +80,13 @@ public abstract class DebuggerAction extends AbstractAction {
         public void propertyChange (PropertyChangeEvent evt) {
             final DebuggerAction da = getDebuggerAction ();
             if (da == null) return;
-            if (currentEngine != null)
-                currentEngine.removeEngineListener 
-                    (DebuggerEngineListener.PROP_ACTION_STATE_CHANGED, this);
-            currentEngine = null;
-            
-            DebuggerEngine ne = DebuggerManager.getDebuggerManager ().
-                getCurrentEngine ();
-            if (ne == null) {
-                SwingUtilities.invokeLater (new Runnable () {
-                    public void run () {
-                        da.setEnabled (false);
-                    }
-                });
-                return;
-            }
-            currentEngine = ne;
-            currentEngine.addEngineListener
-                (DebuggerEngineListener.PROP_ACTION_STATE_CHANGED, this);
-            final boolean en = ne.isEnabled (da.getAction ());
+            if (currentActionsManager != null)
+                currentActionsManager.removeActionsManagerListener
+                    (ActionsManagerListener.PROP_ACTION_STATE_CHANGED, this);
+            currentActionsManager = getCurrentActionsManager ();
+            currentActionsManager.addActionsManagerListener
+                (ActionsManagerListener.PROP_ACTION_STATE_CHANGED, this);
+            final boolean en = currentActionsManager.isEnabled (da.getAction ());
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
                     da.setEnabled (en);
@@ -99,10 +94,9 @@ public abstract class DebuggerAction extends AbstractAction {
             });
         }
         
-        public void actionPerformed (DebuggerEngine engine, Object action, boolean success) {
+        public void actionPerformed (Object action, boolean success) {
         }
         public void actionStateChanged (
-            final DebuggerEngine engine,
             final Object action, 
             final boolean enabled
         ) {
@@ -123,10 +117,10 @@ public abstract class DebuggerAction extends AbstractAction {
                     DebuggerManager.PROP_CURRENT_ENGINE,
                     this
                 );
-                if (currentEngine != null)
-                    currentEngine.removeEngineListener 
-                        (DebuggerEngineListener.PROP_ACTION_STATE_CHANGED, this);
-                currentEngine = null;
+                if (currentActionsManager != null)
+                    currentActionsManager.removeActionsManagerListener 
+                        (ActionsManagerListener.PROP_ACTION_STATE_CHANGED, this);
+                currentActionsManager = null;
                 return null;
             }
             return da;

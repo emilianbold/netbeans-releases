@@ -594,32 +594,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         return javaEngineProvider.getSession ();
                     }
                 },
-                new DebuggerEngineProvider () {
-                    public String[] getLanguages () {
-                        return new String[] {language};
-                    }
-
-                    public String getEngineTypeID () {
-                        return "netbeans-JPDASession/" + language;
-                    }
-
-                    public Object[] getServices () {
-                        return new Object [0];
-                    }
-
-                    public void setDestructor (DebuggerEngine.Destructor desctuctor) {
-                    }
-                }
-//                new DelegatingDebuggerEngineProvider () {
-//                    public DebuggerEngine getEngine () {
-//                        return debuggerEngine;
-//                    }
-//                    public String[] getLanguages () {
-//                        return new String[] {language};
-//                    }
-//                    public void setDestructor (DebuggerEngine.Destructor desctuctor) {
-//                    }
-//                }
+                new JSR45DebuggerEngineProvider (language)
             }
         );
     }

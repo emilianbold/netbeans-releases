@@ -106,69 +106,22 @@ import org.netbeans.spi.debugger.ActionsProviderListener;
  *
  * @author   Jan Jancura
  */
-public final class DebuggerEngine extends LookupProvider {
-    
-    /** Action constant for breakpoint hit action. */
-    public static final Object              ACTION_BREAKPOINT_HIT = "breakpointHit";
-    
-    /** Action constant for Step Over Action. */
-    public static final Object              ACTION_STEP_OVER = "stepOver";
-    
-    /** Action constant for Step Into Action. */
-    public static final Object              ACTION_STEP_INTO = "stepInto";
-    
-    /** Action constant for Step Out Action. */
-    public static final Object              ACTION_STEP_OUT = "stepOut";
-    
-    /** Action constant for Continue Action. */
-    public static final Object              ACTION_CONTINUE = "continue";
-    
-    /** Action constant for Start Action. */
-    public static final Object              ACTION_START = "start";
-    
-    /** Action constant for Kill Action. */
-    public static final Object              ACTION_KILL= "kill";
-    
-    /** Action constant for Make Caller Current Action. */
-    public static final Object              ACTION_MAKE_CALLER_CURRENT = "makeCallerCurrent";
-    
-    /** Action constant for Make Callee Current Action. */
-    public static final Object              ACTION_MAKE_CALLEE_CURRENT = "makeCalleeCurrent";
-    
-    /** Action constant for Pause Action. */
-    public static final Object              ACTION_PAUSE = "pause";
-    
-    /** Action constant for Run to Cursor Action. */
-    public static final Object              ACTION_RUN_TO_CURSOR = "runToCursor";
-    
-    /** Action constant for Pop Topmost Call Action. */
-    public static final Object              ACTION_POP_TOPMOST_CALL = "popTopmostCall";
-    
-    /** Action constant for Fix Action. */
-    public static final Object              ACTION_FIX = "fix";
-    
-    /** Action constant for Restart Action. */
-    public static final Object              ACTION_RESTART = "restart";
+public final class DebuggerEngine implements LookupProvider {
     
     
     // variables ...............................................................
     
-    private String                  typeID;
-    private Vector                  listener = new Vector ();
-    private HashMap                 listeners = new HashMap ();
-    private HashMap                 actionProviders;
-    private MyActionListener        actionListener = new MyActionListener ();
     private Lookup                  lookup;
-    Lookup                          privateLookup;
+    private ActionsManager          actionsManager;
 
+    
     DebuggerEngine (
         String typeID, 
         Session s, 
         Object[] services,
         Lookup sessionLookup
     ) {
-        this.typeID = typeID;
-        privateLookup = (services == null) ? 
+        Lookup privateLookup = (services == null) ? 
             (Lookup) new Lookup.MetaInf (typeID, this) :
             new Lookup.Compound (
                 new Lookup.Instance (services),
@@ -219,272 +172,17 @@ public final class DebuggerEngine extends LookupProvider {
     public Object lookupFirst (String folder, Class service) {
         return lookup.lookupFirst (folder, service);
     }
+    
+    
+    // main public methods .....................................................
 
-    /**
-     * Returns identifier of type of this engine. This id is used for 
-     * identification of engine during registration of services in 
-     * Meta-inf/debugger.
-     *
-     * @return identifier of type of this engine
-     */
-    public String getTypeID () {
-        return typeID;
-    }
-    
-    
-    // support for actions .....................................................
 
-    /**
-     * Performs action on this DebbuggerEngine.
-     *
-     * @param action action constant (default set of constanct are defined
-     *    in this class with ACTION_ prefix)
-     * @return true if action has been performed
-     */
-   public final boolean doAction (Object action) {
-        return fireActionDone (action, doActionIn (action));
-    }
-
-    private final boolean doActionIn (Object action) {
-        if (actionProviders == null) initActionImpls ();
-        ArrayList l = (ArrayList) actionProviders.get (action);
-        if (l != null) {
-            l = (ArrayList) l.clone ();
-            int i, k = l.size ();
-            for (i = 0; i < k; i++)
-                if (((ActionsProvider) l.get (i)).doAction (this, action))
-                    return true;
-        }
-        return false;
+    public ActionsManager getActionsManager () {
+        if (actionsManager == null)
+            actionsManager = new ActionsManager (lookup);
+        return actionsManager;
     }
     
-    private void registerActionsProvider (Object action, ActionsProvider p) {
-        ArrayList l = (ArrayList) actionProviders.get (action);
-        if (l == null) {
-            l = new ArrayList ();
-            actionProviders.put (action, l);
-        }
-        l.add (p);
-        fireActionStateChanged (action, p.isEnabled (this, action));
-        p.addActionsProviderListener (actionListener);
-    }
-    
-    private void unregisterActionsProvider (Object action, ActionsProvider p) {
-        ArrayList l = (ArrayList) actionProviders.get (action);
-        if (l == null) return; 
-        l.remove (p);
-        if (l.size () == 0)
-            actionProviders.remove (action);
-        p.removeActionsProviderListener (actionListener);
-    }
-    
-    /**
-     * Returns true if given action can be performed on this DebuggerEngine.
-     * 
-     * @param action action constant (default set of constanct are defined
-     *    in this class with ACTION_ prefix)
-     * @return true if given action can be performed on this DebuggerEngine
-     */
-    public final boolean isEnabled (final Object action) {
-        if (actionProviders == null) initActionImpls ();
-        ArrayList l = (ArrayList) actionProviders.get (action);
-        if (l != null) {
-            l = (ArrayList) l.clone ();
-            int i, k = l.size ();
-            for (i = 0; i < k; i++)
-                if (((ActionsProvider) l.get (i)).isEnabled (this, action))
-                    return true;
-        }
-        return false;
-    }
-    
-    private void initActionImpls () {
-        actionProviders = new HashMap ();
-        Iterator i = lookup (ActionsProvider.class).iterator ();
-        List l = new ArrayList ();
-        while (i.hasNext ()) {
-            ActionsProvider ap = (ActionsProvider) i.next ();
-            Iterator ii = ap.getActions ().iterator ();
-            while (ii.hasNext ())
-                registerActionsProvider (ii.next (), ap);
-        }
-    }
-
-    
-    // DebuggerEngineListener support ..........................................
-
-    /**
-     * Add DebuggerEngineListener.
-     *
-     * @param l listener instance
-     */
-    public void addEngineListener (DebuggerEngineListener l) {
-        listener.addElement (l);
-    }
-
-    /**
-     * Removes DebuggerEngineListener.
-     *
-     * @param l listener instance
-     */
-    public void removeEngineListener (DebuggerEngineListener l) {
-        listener.removeElement (l);
-    }
-
-    /** 
-     * Add DebuggerEngineListener.
-     *
-     * @param propertyName a name of property to listen on
-     * @param l the DebuggerEngineListener to add
-     */
-    public void addEngineListener (
-        String propertyName, 
-        DebuggerEngineListener l
-    ) {
-        Vector listener = (Vector) listeners.get (propertyName);
-        if (listener == null) {
-            listener = new Vector ();
-            listeners.put (propertyName, listener);
-        }
-        listener.addElement (l);
-    }
-
-    /** 
-     * Remove DebuggerEngineListener.
-     *
-     * @param propertyName a name of property to listen on
-     * @param l the DebuggerEngineListener to remove
-     */
-    public void removeEngineListener (
-        String propertyName, 
-        DebuggerEngineListener l
-    ) {
-        Vector listener = (Vector) listeners.get (propertyName);
-        if (listener == null) return;
-        listener.removeElement (l);
-        if (listener.size () == 0)
-            listeners.remove (propertyName);
-    }
-
-    
-    // firing support ..........................................................
-
-    /**
-     * Notifies registered listeners about a change.
-     * Notifies {@link #listener registered listeners} that a breakpoint
-     * {@link DebuggerManagerListener#breakpointRemoved was removed}
-     * and {@link #pcs property change listeners} that its properties
-     * {@link PropertyChangeSupport#firePropertyChange(String, Object, Object)}
-     * were changed.
-     *
-     * @param breakpoint  a breakpoint that was removed
-     */
-    private boolean fireActionDone (
-        final Object action, 
-        boolean succeed
-    ) {
-        initDebuggerEngineListeners ();
-        Vector l = (Vector) listener.clone ();
-        Vector l1 = (Vector) listeners.get (
-            DebuggerEngineListener.PROP_ACTION_PERFORMED
-        );
-        if (l1 != null)
-            l1 = (Vector) l1.clone ();
-        int i, k = l.size ();
-        for (i = 0; i < k; i++)
-            ((DebuggerEngineListener)l.elementAt (i)).actionPerformed ( 
-                this, action, succeed
-            );
-        if (l1 != null) {
-            k = l1.size ();
-            for (i = 0; i < k; i++)
-                ((DebuggerEngineListener)l1.elementAt (i)).actionPerformed 
-                    (this, action, succeed);
-        }
-        if ((action == ACTION_KILL) && succeed)
-            destroyDebuggerEngineListeners ();
-        return succeed;
-    }
-
-    /**
-     * Notifies registered listeners about a change.
-     * Notifies {@link #listener registered listeners} that a breakpoint
-     * {@link DebuggerManagerListener#breakpointRemoved was removed}
-     * and {@link #pcs property change listeners} that its properties
-     * {@link PropertyChangeSupport#firePropertyChange(String, Object, Object)}
-     * were changed.
-     *
-     * @param breakpoint  a breakpoint that was removed
-     */
-    private void fireActionStateChanged (
-        final Object action, 
-        boolean enabled
-    ) {
-        initDebuggerEngineListeners ();
-        Vector l = (Vector) listener.clone ();
-        Vector l1 = (Vector) listeners.get (
-            DebuggerEngineListener.PROP_ACTION_STATE_CHANGED
-        );
-        if (l1 != null)
-            l1 = (Vector) l1.clone ();
-        int i, k = l.size ();
-        for (i = 0; i < k; i++)
-            ((DebuggerEngineListener)l.elementAt (i)).actionStateChanged ( 
-                this, action, enabled
-            );
-        if (l1 != null) {
-            k = l1.size ();
-            for (i = 0; i < k; i++)
-                ((DebuggerEngineListener)l1.elementAt (i)).actionStateChanged 
-                    (this, action, enabled);
-        }
-    }
-    
-    
-    // private support .........................................................
-    
-    private boolean listerersLoaded = false;
-    private List lazyListeners;
-    
-    private void initDebuggerEngineListeners () {
-        if (listerersLoaded) return;
-        listerersLoaded = true;
-        lazyListeners = lookup (LazyDebuggerEngineListener.class);
-        int i, k = lazyListeners.size ();
-        for (i = 0; i < k; i++) {
-            LazyDebuggerEngineListener l = (LazyDebuggerEngineListener)
-                lazyListeners.get (i);
-            String[] props = l.getProperties ();
-            if (props == null) {
-                addEngineListener (l);
-                continue;
-            }
-            int j, jj = props.length;
-            for (j = 0; j < jj; j++) {
-                addEngineListener (props [j], l);
-            }
-        }
-    }
-    
-    private synchronized void destroyDebuggerEngineListeners () {
-        int i, k = lazyListeners.size ();
-        for (i = 0; i < k; i++) {
-            LazyDebuggerEngineListener l = (LazyDebuggerEngineListener)
-                lazyListeners.get (i);
-            String[] props = l.getProperties ();
-            if (props == null) {
-                removeEngineListener (l);
-                continue;
-            }
-            int j, jj = props.length;
-            for (j = 0; j < jj; j++) {
-                removeEngineListener (props [j], l);
-                l.destroy ();
-            }
-        }
-        lazyListeners = new ArrayList ();
-    }
-
     
     // innerclasses ............................................................
 
@@ -514,12 +212,6 @@ public final class DebuggerEngine extends LookupProvider {
          */
         public void killLanguage (Session s, String language) {
             s.removeLanguage (language, DebuggerEngine.this);
-        }
-    }
-    
-    class MyActionListener implements ActionsProviderListener {
-        public void actionStateChange (Object action, boolean enabled) {
-            fireActionStateChanged (action, enabled);
         }
     }
 }

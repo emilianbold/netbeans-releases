@@ -135,13 +135,13 @@ public class AddWatchAction extends CallableSystemAction {
         }
         
         String s = watch;
-        int i = s.indexOf (',');
+        int i = s.indexOf (';');
         while (i > 0) {
             String ss = s.substring (0, i).trim ();
             if (ss.length () > 0)
                 DebuggerManager.getDebuggerManager ().createWatch (ss);
             s = s.substring (i + 1);
-            i = s.indexOf (',');
+            i = s.indexOf (';');
         }
         s = s.trim ();
         if (s.length () > 0)
