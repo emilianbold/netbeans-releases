@@ -40,18 +40,6 @@
 
 <mapID target="explorer" url="objects/explorer.html" />
 
-<!--<mapID target="filesystems.classpath" url="filesystems/filesystems_classpath.html" />-->
-<!--<mapID target="filesystems.mount" url="filesystems/filesystems_mounting.html" />-->
-<!--<mapID target="filesystems.openfile" url="filesystems/filesystems_openfile.html" />-->
-<!--<mapID target="filesystems.order" url="filesystems/filesystems_order.html" />-->
-<!--<mapID target="filesystems.removing" url="filesystems/filesystems_removing.html" />-->
-<!--<mapID target="filesystems.disable-compile" url="filesystems/filesystems_disable-compile.html" />-->
-<!--<mapID target="filesystems.diff" url="filesystems/filesystems_diff.html" />-->
-<!--<mapID target="filesystems.jdk" url="filesystems/filesystems_jdk.html" />-->
-<!--<mapID target="filesystems.ignore-files" url="filesystems/filesystems_ignore-files.html" />-->
-<!--<mapID target="filesystems.hiding" url="filesystems/filesystems_hiding.html" />-->
-<!--<mapID target="filesystems.backup" url="filesystems/filesystems_backup.html" />-->
-
 <mapID target="objects.file-extensions" url="objects/objects_file-extensions.html" />
 <mapID target="objects.icons" url="objects/objects_icons.html" />
 <mapID target="objects.opening" url="objects/objects_opening.html" />
@@ -267,6 +255,17 @@
 <mapID target="editing.editor.plain" url="editing/configuring/editor-props.html" />
 <mapID target="editing.editor.jsp" url="editing/configuring/editor-props.html" />
 <mapID target="editing.editor.properties" url="editing/configuring/editor-props.html" />
+
+<!-- New debug IDs -->
+
+<mapID target="debug.process" url="debug/debug_process.html" />
+<mapID target="debug.quickref" url="debug/debug_quickref.html" />
+<mapID target="debug.local" url="debug/debug_local.html" />
+<mapID target="debug.finish" url="debug/debug_finish.html" />
+<mapID target="debug.context" url="debug/debug_context.html" />
+
+
+<!-- End new debug IDs -->
 
 <mapID target="debug.toolbar" url="debug/environment/toolbar.html" />
 <mapID target="debug.menu" url="debug/environment/debug_menu.html" />

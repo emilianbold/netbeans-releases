@@ -180,15 +180,17 @@
   </tocitem>
 
   <tocitem text="Debugging Java Applications">
-    <tocitem text="Starting a Debugging Session" target="debug.sessions.jump"/>
+    <tocitem text="About Debugging Java Applications" target="tbd"/>
+    <tocitem text="Working with Debugging" target="debug.process"/>
+    <tocitem text="Debugging Tasks: Quick Reference" target="debug.quickref"/>
+    <tocitem text="Starting a Local Debugging Session" target="debug.local"/>
     <tocitem text="Attaching to a Java VM" target="debug.attach" />
     <tocitem text="Debugging on a 64-Bit Java VM" target="debug.sessions.64bit" />
     <tocitem text="Stepping Through Your Program" target="debug.step" />
     <tocitem text="Fixing and Continuing" target="debug.fix"></tocitem>
-    <tocitem text="Finishing a Session" target="debug.sessions.finishsession" />
-    <tocitem text="Debug Output" target="debug.output.window"></tocitem>
+    <tocitem text="Finishing a Session" target="debug.finish" />
     <tocitem text="Source Editor Debugging Features" target="debug.source.editor"></tocitem>
-    <tocitem text="Current Context in the Debugger" target="debug.current-context"></tocitem>
+    <tocitem text="Current Context in the Debugger" target="debug.context"></tocitem>
     <tocitem text="Setting Breakpoints" />
     <tocitem text="Debugging Threads in the IDE" target="debug.threads.jump"/>
     <tocitem text="Using the Call Stack" />
