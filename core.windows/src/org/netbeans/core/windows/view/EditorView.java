@@ -51,7 +51,7 @@ public class EditorView extends ViewElement {
 
     private ViewElement editorArea;
     
-    private Component component;
+    private EditorAreaComponent editorAreaComponent;
     
     // XXX PENDING
     private final WindowDnDManager windowDnDManager;
@@ -65,14 +65,6 @@ public class EditorView extends ViewElement {
         this.windowDnDManager = windowDnDManager;
     }
     
-    
-    public Component getComponent() {
-        if(component == null) {
-            initComponent();
-        }
-
-        return component;
-    }
     
     // XXX
     Rectangle getPureBounds() {
@@ -88,14 +80,12 @@ public class EditorView extends ViewElement {
         }
     }
     
-    
-    private void initComponent() {
-        JPanel panel = new EditorComponent(this, windowDnDManager);
-        if(editorArea != null) {
-            manageBorder(panel);
-            panel.add(editorArea.getComponent(), BorderLayout.CENTER);
+    private EditorAreaComponent getEditorAreaComponent() {
+        if(editorAreaComponent == null) {
+            editorAreaComponent = new EditorAreaComponent(this, windowDnDManager);
         }
-        component = panel;
+        
+        return editorAreaComponent;
     }
     
     /** Handles special border policy - scroll pane like border only 
@@ -115,36 +105,37 @@ public class EditorView extends ViewElement {
     }
     
     public void setEditorArea(ViewElement editorArea, boolean addingAllowed) {
-        EditorComponent editorComp = (EditorComponent)getComponent();        
-        
-        if(this.editorArea == editorArea) {
-            if(this.editorArea == null
-            || Arrays.asList(editorComp.getComponents()).contains(this.editorArea.getComponent())) {
-                return;
-            }
-        }
-
-        // Remove the old one.
-        if(this.editorArea != null) {
-            editorComp.remove(this.editorArea.getComponent());
-        }
         this.editorArea = editorArea;
-        manageBorder(editorComp);
-        
-        // XXX #36885 When in maximixed and compact mode, we cannot add the components
-        // into the editor area, it would remove it from the screen.
-        if(addingAllowed) {
-            if(this.editorArea != null) {
-                editorComp.add(this.editorArea.getComponent(), BorderLayout.CENTER);
-            }
-
-            editorComp.validate();
-            editorComp.repaint();
-        }
     }
+    
+    public Component getComponent() {
+        assureComponentInEditorArea();
+        return getEditorAreaComponent();
+    }
+    
+    private void assureComponentInEditorArea() {
+        EditorAreaComponent eac = getEditorAreaComponent();
+        if(editorArea == null) {
+            eac.setAreaComponent(null);
+        } else {
+            eac.setAreaComponent(editorArea.getComponent());
+        }
+        manageBorder(eac);
+        
+//        // XXX #36885 When in maximixed and compact mode, we cannot add the components
+//        // into the editor area, it would remove it from the screen.
+//        if(addingAllowed) {
+//            if(this.editorArea != null) {
+//                editorAreaComp.add(this.editorArea.getComponent(), BorderLayout.CENTER);
+//            }
+//
+//            editorAreaComp.validate();
+//            editorAreaComp.repaint();
+//        }
+    } 
 
     
-    private static class EditorComponent extends JPanel
+    private static class EditorAreaComponent extends JPanel
     implements TopComponentDroppable {
         
         private final EditorView editorView;
@@ -152,8 +143,10 @@ public class EditorView extends ViewElement {
         // XXX PENDING
         private final WindowDnDManager windowDnDManager;
         
+        private Component areaComponent;
         
-        public EditorComponent(EditorView editorView, WindowDnDManager windowDnDManager) {
+        
+        public EditorAreaComponent(EditorView editorView, WindowDnDManager windowDnDManager) {
             this.editorView = editorView;
             this.windowDnDManager = windowDnDManager;
             
@@ -168,8 +161,8 @@ public class EditorView extends ViewElement {
             if (lfID.equals("Windows")) {
                 setBackground((Color)UIManager.get("nb_workplace_fill"));
             }
-
-            // PENDING TEMP Adding image into empty area.
+            
+            // PENDING Adding image into empty area.
             String imageSource = Constants.SWITCH_IMAGE_SOURCE; // NOI18N
             if(imageSource != null) {
                 Image image = Utilities.loadImage(imageSource);
@@ -179,8 +172,31 @@ public class EditorView extends ViewElement {
                     add(label, BorderLayout.CENTER);
                 } else {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                        new NullPointerException("Image not found at " + imageSource)); // NOI18N
+                    new NullPointerException("Image not found at " + imageSource)); // NOI18N
                 }
+            }
+        }
+        
+        public void setAreaComponent(Component areaComponent) {
+            if(this.areaComponent == areaComponent) {
+                // XXX PENDING revise how to better manipulate with components
+                // so there don't happen unneeded removals.
+                if(areaComponent != null
+                && !Arrays.asList(getComponents()).contains(areaComponent)) {
+                    add(areaComponent, BorderLayout.CENTER);
+                }
+                
+                return;
+            }
+            
+            if(this.areaComponent != null) {
+                remove(this.areaComponent);
+            }
+            
+            this.areaComponent = areaComponent;
+            
+            if(this.areaComponent != null) {
+                add(this.areaComponent, BorderLayout.CENTER);
             }
         }
         
@@ -289,7 +305,7 @@ public class EditorView extends ViewElement {
             return true;
         }
         
-    } // End of EditorComponent class.
+    } // End of EditorAreaComponent class.
     
     
 }
