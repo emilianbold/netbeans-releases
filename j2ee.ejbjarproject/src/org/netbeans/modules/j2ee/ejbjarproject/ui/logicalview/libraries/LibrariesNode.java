@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,6 +15,7 @@ package org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.libraries;
 
 
 import java.awt.Dialog;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
@@ -41,8 +42,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -74,7 +73,6 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
-import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.EjbJarProjectClassPathExtender;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarClassPathUi;
@@ -91,7 +89,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.LibrariesChooser;
  */
 public final class LibrariesNode extends AbstractNode {
 
-    private static final String ICON = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/libraries";    //NOI18N
+    private static final Image ICON_BADGE = Utilities.loadImage("org/netbeans/modules/j2ee/ejbjarproject/ui/resources/libraries-badge.png");    //NOI18N
     static final RequestProcessor rp = new RequestProcessor ();
     private static Icon folderIconCache;
     private static Icon openedFolderIconCache;
@@ -119,7 +117,6 @@ public final class LibrariesNode extends AbstractNode {
         super (new LibrariesChildren (eval, helper, refHelper, classPathProperty, classPathIgnoreRef, j2eePlatformProperty, platformProperty, includedLibrariesElement));
         this.displayName = displayName;
         this.librariesNodeActions = librariesNodeActions;
-        this.setIconBase(ICON);
     }
 
     public String getDisplayName () {
@@ -129,6 +126,14 @@ public final class LibrariesNode extends AbstractNode {
     public String getName () {
         return this.getDisplayName();
     }    
+
+    public Image getIcon( int type ) {        
+        return computeIcon( false, type );
+    }
+        
+    public Image getOpenedIcon( int type ) {
+        return computeIcon( true, type );
+    }
 
     public Action[] getActions(boolean context) {        
         return this.librariesNodeActions;
@@ -168,6 +173,13 @@ public final class LibrariesNode extends AbstractNode {
         else {
             return folderIconCache;
         }
+    }
+
+    private Image computeIcon( boolean opened, int type ) {        
+        Icon icon = getFolderIcon(opened);
+        Image image = ((ImageIcon)icon).getImage();
+        image = Utilities.mergeImages(image, ICON_BADGE, 7, 7 );
+        return image;        
     }
 
     //Static inner classes

@@ -13,8 +13,8 @@
 
 package org.netbeans.modules.web.project.ui;
 
-
 import java.awt.Dialog;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
@@ -41,8 +41,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser.ArtifactItem;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -81,16 +79,13 @@ import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.web.project.ui.customizer.LibrariesChooser;
 
-
-
-
 /**
  * LibrariesNode displays the content of classpath and optionaly Java platform.
  * @author Tomas Zezula
  */
 final class LibrariesNode extends AbstractNode {
 
-    private static final String ICON = "org/netbeans/modules/web/project/ui/resources/libraries";    //NOI18N
+    private static final Image ICON_BADGE = Utilities.loadImage("org/netbeans/modules/web/project/ui/resources/libraries-badge.png");    //NOI18N
     static final RequestProcessor rp = new RequestProcessor ();
     private static Icon folderIconCache;
     private static Icon openedFolderIconCache;
@@ -119,7 +114,6 @@ final class LibrariesNode extends AbstractNode {
         super (new LibrariesChildren (eval, helper, refHelper, classPathProperty, classPathIgnoreRef, j2eePlatformProperty, platformProperty, webModuleElementName));
         this.displayName = displayName;
         this.librariesNodeActions = librariesNodeActions;
-        this.setIconBase(ICON);
     }
 
     public String getDisplayName () {
@@ -129,6 +123,14 @@ final class LibrariesNode extends AbstractNode {
     public String getName () {
         return this.getDisplayName();
     }    
+
+    public Image getIcon( int type ) {        
+        return computeIcon( false, type );
+    }
+        
+    public Image getOpenedIcon( int type ) {
+        return computeIcon( true, type );
+    }
 
     public Action[] getActions(boolean context) {        
         return this.librariesNodeActions;
@@ -168,6 +170,13 @@ final class LibrariesNode extends AbstractNode {
         else {
             return folderIconCache;
         }
+    }
+
+    private Image computeIcon( boolean opened, int type ) {        
+        Icon icon = getFolderIcon(opened);
+        Image image = ((ImageIcon)icon).getImage();
+        image = Utilities.mergeImages(image, ICON_BADGE, 7, 7 );
+        return image;        
     }
 
     //Static inner classes
