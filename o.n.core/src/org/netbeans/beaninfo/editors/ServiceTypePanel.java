@@ -61,6 +61,9 @@ public class ServiceTypePanel extends ExplorerPanel {
         update ();
 
         initComponents ();
+
+        // #20886 Workaround for jdk JSplitPane bug.
+        handleDividerLocation();
         
         label.setText(name);
         listView1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(ServiceTypePanel.class).getString("ACSD_ServiceTypeList"));
@@ -76,6 +79,18 @@ public class ServiceTypePanel extends ExplorerPanel {
                 });
     }
 
+    private void handleDividerLocation() {
+        // There is a problem with divider of JSplitPane
+        // in some cases -> see bugtraq #4786896.
+        int listWidth = listView1.getPreferredSize().width;
+        int propWidth = propertySheetView1.getPreferredSize().width;
+        int splitWidth = jSplitPane1.getPreferredSize().width;
+        int location = (int)((float)listWidth/(listWidth + propWidth) * splitWidth);
+        if(location > 0) {
+            jSplitPane1.setDividerLocation(location);
+        }
+    }
+    
     public HelpCtx getHelpCtx () {
         return getHelpCtx (getExplorerManager ().getSelectedNodes (),
                            new HelpCtx (ServiceTypePanel.class));
