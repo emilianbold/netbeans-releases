@@ -531,10 +531,11 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Hidden">
       <attr name="hidden" boolvalue="true" />
     </folder>
-
-    <folder name="ServiceTemplates">    
-    </folder>
-
+  </folder>
+  
+  <!-- tempaltes for services in Lookup, should have the same subdirectory as objects under the -->
+  
+  <folder name="ServiceTemplates">    
   </folder>
 
 </filesystem>
