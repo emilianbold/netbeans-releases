@@ -16,11 +16,14 @@ package org.netbeans.core;
 import java.beans.Introspector;
 import java.beans.PropertyEditorManager;
 import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 import java.net.URL;
+import java.net.InetAddress;
 import java.util.Hashtable;
 import javax.swing.SwingUtilities;
 
 import org.openide.NotifyDescriptor;
+import org.openide.ErrorManager;
 import org.openide.TopManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.loaders.DataNode;
@@ -83,9 +86,6 @@ public class IDESettings extends SystemOption {
     private static boolean useProxy = false;
     private static String proxyHost = System.getProperty(KEY_PROXY_HOST, "");
     private static String proxyPort = System.getProperty(KEY_PROXY_PORT, "");
-    // do not use proxy for 'localhost'
-    // [PENDING] should be a user-modifiable property
-    private static String nonProxyHosts = "localhost";  // NOI18N
     
     // ------------------------------------------
     // property access methods
@@ -210,7 +210,7 @@ public class IDESettings extends SystemOption {
                 // apply the current proxyHost:proxyPort settings
                 System.setProperty(KEY_PROXY_HOST, getProxyHost());
                 System.setProperty(KEY_PROXY_PORT, getProxyPort());
-                System.setProperty(KEY_NON_PROXY_HOSTS, nonProxyHosts);
+                System.setProperty(KEY_NON_PROXY_HOSTS, getDefaultNonProxyHosts());
             } else {
                 // reset properties so that they don't apply
                 System.setProperty(KEY_PROXY_HOST, "");
@@ -280,6 +280,23 @@ public class IDESettings extends SystemOption {
              (Main.getString ("MSG_must_restart_IDE_for_show_file_extensions"),
               NotifyDescriptor.WARNING_MESSAGE));
         }
+    }
+    
+    // PRIVATE METHODS
+    
+    /** Returns the default value for the http.nonProxyHosts system property. <br>
+     *  PENDING: should be a user settable property
+     * @return sensible default for non-proxy hosts, including 'localhost'
+     */
+    private String getDefaultNonProxyHosts() {
+        String nonProxy = "localhost";
+        try {
+            nonProxy = nonProxy + "|" + InetAddress.getLocalHost().getHostName();
+        }
+        catch (UnknownHostException e) {
+            TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, e);
+        }
+        return nonProxy;
     }
 
 }
