@@ -15,12 +15,7 @@ package gui.window;
 
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.EditorOperator;
-
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.actions.OpenAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
@@ -33,6 +28,7 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
 public class AutoCommentWindow extends testUtilities.PerformanceTestCase {
     
     private static EditorOperator editor;
+    private String MENU, TITLE;
     
     /** Creates a new instance of AutoCommentWindow */
     public AutoCommentWindow(String testName) {
@@ -47,10 +43,11 @@ public class AutoCommentWindow extends testUtilities.PerformanceTestCase {
     }
     
     protected void initialize() {
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.javadoc.comments.Bundle","CTL_AUTOCOMMENT_MenuItem");
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.javadoc.comments.Bundle","CTL_AUTOCOMMENT_WindowTitle");
+    
         // open a java file in the editor
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),"Source Packages|bsh|Parser.java");
-        new OpenAction().performAPI(openFile);
-        editor = new EditorWindowOperator().getEditor("Parser.java");
+        editor = gui.Utilities.openJavaFile();
     }
     
     public void prepare() {
@@ -59,13 +56,13 @@ public class AutoCommentWindow extends testUtilities.PerformanceTestCase {
     
     public ComponentOperator open() {
         // invoke Tools / Auto Comment from the main menu
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Tools|Auto Comment...","|");
-        return new TopComponentOperator("Auto Comment Tool");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        return new TopComponentOperator(TITLE);
     }
     
     public void close() {
         // close the tab
-        new TopComponentOperator("Auto Comment Tool").close();
+        new TopComponentOperator(TITLE).close();
     }
     
     protected void shutdown(){

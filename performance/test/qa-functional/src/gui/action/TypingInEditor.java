@@ -14,9 +14,6 @@
 package gui.action;
 
 import java.awt.event.KeyEvent;
-import java.awt.Component;
-import java.awt.Point;
-import javax.swing.text.Caret;
 
 import org.netbeans.editor.BaseCaret;
 import org.netbeans.modules.java.settings.JavaSettings;
@@ -24,7 +21,6 @@ import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.options.JavaOptions;
 
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -34,7 +30,6 @@ import org.netbeans.jellytools.actions.Action.Shortcut;
 import org.netbeans.jellytools.actions.OpenAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.ComponentChooser;
 
 /**
  * Test of typing in opened source editor.
@@ -110,7 +105,7 @@ public class TypingInEditor extends testUtilities.PerformanceTestCase {
         setJavaEditorCaretFilteringOn();
 
         // open a java file in the editor
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),"Source Packages|org.netbeans.test.performance|Main.java"));
+        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
         editorOperator = new EditorWindowOperator().getEditor("Main.java");
         
         //wait painting pf folds in the editor

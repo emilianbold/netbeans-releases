@@ -16,9 +16,6 @@ package gui.menu;
 import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 
-import org.netbeans.junit.NbTestSuite;
-
-
 /**
  * Test of popup menu on nodes in Files View.
  * @author  mmirilovic@netbeans.org
@@ -35,14 +32,6 @@ public class FilesViewPopupMenu extends ValidatePopupMenuOnNodes {
     /** Creates a new instance of FilesViewPopupMenu */
     public FilesViewPopupMenu(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new FilesViewPopupMenu("testProjectNodePopupMenuFiles", "Project node popup in Files View"));
-        suite.addTest(new FilesViewPopupMenu("testPackagePopupMenuFiles", "Package node popup in Files View"));
-        suite.addTest(new FilesViewPopupMenu("testbuildXmlFilePopupMenuFiles", "build.xml file node popup in Files View"));
-        return suite;
     }
     
     public void testProjectNodePopupMenuFiles() {

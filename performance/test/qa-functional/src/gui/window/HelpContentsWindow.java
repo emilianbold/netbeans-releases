@@ -25,13 +25,13 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  */
 public class HelpContentsWindow extends testUtilities.PerformanceTestCase {
     
-    /** Creates a new instance of ValidateHelpContentsWindow */
+    /** Creates a new instance of HelpContentsWindow */
     public HelpContentsWindow(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
     
-    /** Creates a new instance of ValidateHelpContentsWindow */
+    /** Creates a new instance of HelpContentsWindow */
     public HelpContentsWindow(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
@@ -39,9 +39,7 @@ public class HelpContentsWindow extends testUtilities.PerformanceTestCase {
     
     public void prepare() {
         // do nothing
-        // work around issue 35962 (Main menu popup accidentally rolled up)
-        //new ActionNoBlock("Help|About", null).perform();
-        //new org.netbeans.jellytools.NbDialogOperator("About").close();
+        gui.Utilities.workarroundMainMenuRolledUp();
     }
     
     public ComponentOperator open() {

@@ -13,20 +13,22 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.DialogOperator;
+
 
 /**
  * Test of Set Default Server Dialog
  *
- * @author  anebuzelsky@netbeans.org
+ * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class SetDefaultServerDialog extends testUtilities.PerformanceTestCase {
+    
+    private String MENU, TITLE;
     
     /** Creates a new instance of SetDefaultServerDialog */
     public SetDefaultServerDialog(String testName) {
@@ -44,11 +46,14 @@ public class SetDefaultServerDialog extends testUtilities.PerformanceTestCase {
     private Node thenode;
     
     protected void initialize() {
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actionsBundle","LBL_SetDefaultServer");
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle","LBL_SetDefaultDlgTitle");
+        
         // show Runtime tab, maximize it and select Server Registry node
         thetab = RuntimeTabOperator.invoke();
         thetab.maximize();
         Operator.StringComparator thecomparator = new Operator.DefaultStringComparator(false, false);
-        thenode = new Node (thetab.tree(), thetab.tree().findPath("Server Registry", thecomparator));
+        thenode = new Node (thetab.tree(), thetab.tree().findPath("Server Registry", thecomparator)); //NOI18N impossible
         thenode.setComparator(thecomparator);
         thenode.select();
     }
@@ -59,8 +64,8 @@ public class SetDefaultServerDialog extends testUtilities.PerformanceTestCase {
     
     public ComponentOperator open() {
         // invoke Add new server instance using URL item from the popup
-        thenode.callPopup().pushMenu("Set Default Server...");
-        return new DialogOperator("Select Default Server Target(s)");
+        thenode.callPopup().pushMenu(MENU);
+        return new NbDialogOperator(TITLE);
     }
     
     protected void shutdown() {

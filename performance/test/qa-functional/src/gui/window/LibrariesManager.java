@@ -14,7 +14,6 @@
 package gui.window;
 
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.NbDialogOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -26,6 +25,8 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  * @author  mmirilovic@netbeans.org
  */
 public class LibrariesManager extends testUtilities.PerformanceTestCase {
+    
+    private String MENU, TITLE;
     
     /** Creates a new instance of LibrariesManager */
     public LibrariesManager(String testName) {
@@ -39,16 +40,19 @@ public class LibrariesManager extends testUtilities.PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void initialize() {
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.project.libraries.ui.Bundle","CTL_LibrariesManager");
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.api.project.libraries.Bundle","TXT_LibrariesManager");
+    }
+    
     public void prepare() {
         // do nothing
-        // work around issue 35962 (Main menu popup accidentally rolled up)
-        new ActionNoBlock("Help|About", null).perform();
-        new NbDialogOperator("About").close();
+        gui.Utilities.workarroundMainMenuRolledUp();
    }
     
     public ComponentOperator open() {
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Tools|Library Manager","|");
-        return new NbDialogOperator("Library Manager");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        return new NbDialogOperator(TITLE);
     }
     
 }

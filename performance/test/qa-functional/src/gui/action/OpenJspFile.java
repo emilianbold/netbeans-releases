@@ -27,6 +27,8 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
  */
 public class OpenJspFile extends OpenFiles {
     
+    private static final String WEB_PAGES = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_Node_DocBase");
+    
     /**
      * Creates a new instance of OpenFiles
      * @param testName the name of the test
@@ -57,10 +59,10 @@ public class OpenJspFile extends OpenFiles {
     }
     
     public void prepare(){
-        this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),"Web Pages" + '|' + fileName);
+        this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),WEB_PAGES + '|' + fileName);
         
         if (this.openNode == null) {
-            fail ("Cannot find node ["+"Web Pages" + '|' + fileName + "] in project [" + fileProject + "]");
+            throw new Error("Cannot find node [" + WEB_PAGES + '|' + fileName + "] in project [" + fileProject + "]");
         }
         log("========== Open file path ="+this.openNode.getPath());
     }
@@ -68,14 +70,14 @@ public class OpenJspFile extends OpenFiles {
     public ComponentOperator open(){
         JPopupMenuOperator popup =  this.openNode.callPopup();
         if (popup == null) {
-            fail ("Cannot get context menu for node ["+"Web Pages" + '|' +  fileName + "] in project [" + fileProject + "]");
+            throw new Error("Cannot get context menu for node [" + WEB_PAGES + '|' +  fileName + "] in project [" + fileProject + "]");
         }
         log("------------------------- after popup invocation ------------");
         try {
             popup.pushMenu(this.menuItem);
         }
         catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
-            fail ("Cannot push menu item "+this.menuItem+" of node ["+"Web Pages" + '|' +  fileName + "] in project [" + fileProject + "]");
+            throw new Error("Cannot push menu item "+this.menuItem+" of node [" + WEB_PAGES + '|' +  fileName + "] in project [" + fileProject + "]");
         }
         log("------------------------- after open ------------");
         return new EditorOperator(this.fileName);

@@ -15,16 +15,18 @@ package gui.window;
 
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.modules.vcscore.VersioningOperator;
-import org.netbeans.jellytools.modules.vcscore.actions.VersioningExplorerAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 
 /**
  * Test opening Versioning Tab.
+ *
  * @author  mmirilovic@netbeans.org
  */
 public class VersioningWindow extends testUtilities.PerformanceTestCase {
+    
+    private String MENU;
     
     /** Creates a new instance of VersioningWindow */
     public VersioningWindow(String testName) {
@@ -38,14 +40,17 @@ public class VersioningWindow extends testUtilities.PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    protected void initialize() {
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Window") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.vcscore.Bundle","Menu/Window/Versioning") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.vcscore.actions.Bundle","LBL_OpenVersioning");
+    }    
+    
     public void prepare() {
         // do nothing
     }
     
     public ComponentOperator open() {
         // invoke Versioning from the main menu
-        // doesn't work now ?   new VersioningExplorerAction().performMenu();
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Window|Versioning|Versioning","|");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
         return new VersioningOperator();
     }
     
@@ -55,3 +60,4 @@ public class VersioningWindow extends testUtilities.PerformanceTestCase {
     }
     
 }
+

@@ -18,26 +18,33 @@ import org.netbeans.jellytools.TopComponentOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.DialogOperator;
+
 
 /**
  * Test of TODO Window
  *
- * @author  anebuzelsky@netbeans.org
+ * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class ToDoWindow extends testUtilities.PerformanceTestCase {
     
-    /** Creates a new instance of ValidateToDoWindow */
+    private String MENU, TITLE;
+    
+    /** Creates a new instance of ToDoWindow */
     public ToDoWindow(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
     
-    /** Creates a new instance of ValidateToDoWindow */
+    /** Creates a new instance of ToDoWindow */
     public ToDoWindow(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
+    
+    protected void initialize() {
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Window") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.tasklist.docscan.Bundle","BK0001");
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.tasklist.docscan.Bundle","win-title");
+    }    
     
     public void prepare() {
         // do nothing
@@ -45,8 +52,8 @@ public class ToDoWindow extends testUtilities.PerformanceTestCase {
     
     public ComponentOperator open() {
         // invoke Window / To Do from the main menu
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Window|To Do","|");
-        return new TopComponentOperator("To Do");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        return new TopComponentOperator(TITLE);
     }
     
     public void close() {

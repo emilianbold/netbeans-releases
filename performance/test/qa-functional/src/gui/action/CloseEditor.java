@@ -83,7 +83,7 @@ public class CloseEditor extends testUtilities.PerformanceTestCase {
     }
     
     public void prepare(){
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),"Source Packages" + '|' +  filePackage + '|' + fileName));
+        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName));
     }
     
     public ComponentOperator open(){

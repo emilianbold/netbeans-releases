@@ -13,14 +13,9 @@
 
 package gui.window;
 
-import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-
-import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
@@ -33,6 +28,7 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
 public class InternationalizeDialog extends testUtilities.PerformanceTestCase {
     
     private static EditorOperator editor;
+    private String BUNDLE, MENU, TITLE;
     
     /** Creates a new instance of InternationalizeDialog */
     public InternationalizeDialog(String testName) {
@@ -47,10 +43,11 @@ public class InternationalizeDialog extends testUtilities.PerformanceTestCase {
     }
     
     protected void initialize() {
+        BUNDLE = "org.netbeans.modules.i18n.Bundle";
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"LBL_I18nGroupActionName") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"CTL_I18nAction");
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"CTL_I18nDialogTitle");
         // open a java file in the editor
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),"Source Packages|bsh|Parser.java");
-        new OpenAction().performAPI(openFile);
-        editor = new EditorWindowOperator().getEditor("Parser.java");
+        editor = gui.Utilities.openJavaFile();
     }
     
     public void prepare() {
@@ -59,8 +56,8 @@ public class InternationalizeDialog extends testUtilities.PerformanceTestCase {
     
     public ComponentOperator open() {
         // invoke Tools / Internationalization / Internationalize from the main menu
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Tools|Internationalization|Internationalize...","|");
-        return new NbDialogOperator("Internationalize");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        return new NbDialogOperator(TITLE);
     }
  
     protected void shutdown(){

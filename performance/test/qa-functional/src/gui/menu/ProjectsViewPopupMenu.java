@@ -15,7 +15,6 @@ package gui.menu;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
 
 import org.netbeans.junit.NbTestSuite;
 
@@ -57,35 +56,35 @@ public class ProjectsViewPopupMenu extends ValidatePopupMenuOnNodes {
     }
     
     public void testSourcePackagesPopupMenuProjects(){
-        testNode(new Node(getProjectNode(), "Source Packages"));
+        testNode(new Node(getProjectNode(), gui.Utilities.SOURCE_PACKAGES));
     }
     
     public void testTestPackagesPopupMenuProjects(){
-        testNode(new Node(getProjectNode(), "Test Packages"));
+        testNode(new Node(getProjectNode(), gui.Utilities.TEST_PACKAGES));
     }
     
     public void testPackagePopupMenuProjects(){
-        testNode(new Node(getProjectNode(), "Source Packages" + '|' + "org.netbeans.test.performance"));
+        testNode(new Node(getProjectNode(), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance"));
     }
     
     public void testJavaFilePopupMenuProjects(){
-        testNode(new Node(getProjectNode(), "Source Packages" + '|' + "org.netbeans.test.performance" + '|' + "Main.java"));
+        testNode(new Node(getProjectNode(), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
     }
     
     public void testTxtFilePopupMenuProjects(){
-        testNode(new Node(getProjectNode(), "Source Packages" + '|' + "org.netbeans.test.performance" + '|' + "textfile.txt"));
+        testNode(new Node(getProjectNode(), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|textfile.txt"));
     }
     
     public void testPropertiesFilePopupMenuProjects(){
-        testNode(new Node(getProjectNode(), "Source Packages" + '|' + "org.netbeans.test.performance" + '|' + "Bundle.properties"));
+        testNode(new Node(getProjectNode(), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Bundle.properties"));
     }
     
     public void testXmlFilePopupMenuProjects(){
-        testNode(new Node(getProjectNode(), "Source Packages" + '|' + "org.netbeans.test.performance" + '|' + "xmlfile.xml"));
+        testNode(new Node(getProjectNode(), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|xmlfile.xml"));
     }
     
     public void testJspFilePopupMenuProjects(){
-        testNode(new Node(getWebProjectNode(), "Web Pages" + '|' + "Test.jsp"));
+        testNode(new Node(getWebProjectNode(), org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_Node_DocBase") + "|Test.jsp"));
     }
     
     public void testNode(Node node){

@@ -42,9 +42,9 @@ public class OpenFiles extends testUtilities.PerformanceTestCase {
     /** Menu item name that opens the editor */
     public static String menuItem;
     
-    protected static String OPEN = "Open"; //NOI18N
+    protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org/openide/actions/Bundle", "Open");
     
-    protected static String EDIT = "Edit"; //NOI18N
+    protected static String EDIT = org.netbeans.jellytools.Bundle.getStringTrimmed("org/openide/actions/Bundle", "Edit");
     
     /**
      * Creates a new instance of OpenFiles
@@ -107,10 +107,10 @@ public class OpenFiles extends testUtilities.PerformanceTestCase {
     }
     
     public void prepare(){
-        this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),"Source Packages" + '|' +  filePackage + '|' + fileName);
+        this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject), gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName);
         
         if (this.openNode == null) {
-            fail ("Cannot find node ["+"Source Packages" + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
+            throw new Error ("Cannot find node [" + gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
         }
         log("========== Open file path ="+this.openNode.getPath());
     }
@@ -118,14 +118,14 @@ public class OpenFiles extends testUtilities.PerformanceTestCase {
     public ComponentOperator open(){
         JPopupMenuOperator popup =  this.openNode.callPopup();
         if (popup == null) {
-            fail ("Cannot get context menu for node ["+"Source Packages" + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
+            throw new Error ("Cannot get context menu for node ["+ gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
         }
         log("------------------------- after popup invocation ------------");
         try {
             popup.pushMenu(this.menuItem);
         }
         catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
-            fail ("Cannot push menu item "+this.menuItem+" of node ["+"Source Packages" + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
+            throw new Error ("Cannot push menu item "+this.menuItem+" of node [" + gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
         }
         log("------------------------- after open ------------");
         return new EditorOperator(this.fileName);
@@ -136,7 +136,7 @@ public class OpenFiles extends testUtilities.PerformanceTestCase {
             ((EditorOperator)testedComponentOperator).closeDiscard();
         }
         else {
-            fail ("no component to close");
+            throw new Error ("no component to close");
         }
     }
     

@@ -28,6 +28,9 @@ public class RuntimeViewPopupMenu extends ValidatePopupMenuOnNodes{
     
     private static RuntimeTabOperator runtimeTab;
     
+    private final String SERVER_REGISTRY = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE");
+    private final String TOMCAT = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.tomcat5.nodes.Bundle", "LBL_TomcatFactoryNode_Name");
+    
     /** Creates a new instance of RuntimeViewPopupMenu */
     public RuntimeViewPopupMenu(String testName) {
         super(testName);
@@ -48,15 +51,15 @@ public class RuntimeViewPopupMenu extends ValidatePopupMenuOnNodes{
     
 
     public void testServerRegistryPopupMenuRuntime(){
-        testMenu("Server Registry");
+        testMenu(SERVER_REGISTRY);
     }
     
     public void testTomcatPopupMenuRuntime(){
-        testMenu("Server Registry|Tomcat 5 Servers");
+        testMenu(SERVER_REGISTRY + "|" + TOMCAT);
     }
     
     public void testHttpTomcatPopupMenuRuntime(){
-        testMenu("Server Registry|Tomcat 5 Servers|http://localhost:8084/");
+        testMenu(SERVER_REGISTRY + "|" + TOMCAT + "|http://localhost:8084/");
     }
     
     private void testMenu(String path){

@@ -25,13 +25,13 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  */
 public class RuntimeWindow extends testUtilities.PerformanceTestCase {
     
-    /** Creates a new instance of ValidateRuntimeWindow */
+    /** Creates a new instance of RuntimeWindow */
     public RuntimeWindow(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
     
-    /** Creates a new instance of ValidateRuntimeWindow */
+    /** Creates a new instance of RuntimeWindow */
     public RuntimeWindow(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;

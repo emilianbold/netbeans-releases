@@ -54,9 +54,9 @@ public class PasteInEditor extends testUtilities.PerformanceTestCase {
         setJavaEditorCaretFilteringOn();
         
         // open two java files in the editor
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),"Source Packages|org.netbeans.test.performance|Main20kB.java"));
+        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main20kB.java"));
         editorOperator1 = new EditorWindowOperator().getEditor("Main20kB.java");
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),"Source Packages|org.netbeans.test.performance|TestClassForCopyPaste.java"));
+        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|TestClassForCopyPaste.java"));
         editorOperator2 = new EditorWindowOperator().getEditor("TestClassForCopyPaste.java");
     }
     

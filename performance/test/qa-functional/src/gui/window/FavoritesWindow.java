@@ -13,11 +13,10 @@
 
 package gui.window;
 
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.FavoritesOperator;
+import org.netbeans.jellytools.actions.FavoritesAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
 
 /**
  * Test opening Favorites Tab.
@@ -43,13 +42,13 @@ public class FavoritesWindow extends testUtilities.PerformanceTestCase {
     
     public ComponentOperator open() {
         // invoke Favorites from the main menu
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Window|Favorites","|");
-        return new TopComponentOperator("Favorites");
+        new FavoritesAction().performMenu();
+        return new FavoritesOperator();
     }
-    
+
     public void close() {
         // close the tab
-        ((TopComponentOperator)testedComponentOperator).close();
+        ((FavoritesOperator)testedComponentOperator).close();
     }
     
 }

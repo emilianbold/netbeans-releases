@@ -14,8 +14,6 @@
 package gui.action;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -106,7 +104,7 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
     
     public ComponentOperator open(){
         new DeleteAction().performPopup(nodeToBeDeleted);
-        new NbDialogOperator("Confirm Object Deletion").yes(); //NOI18N
+        new NbDialogOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.explorer.Bundle","MSG_ConfirmDeleteObjectTitle")).yes();
         return null;
     }
     
@@ -130,17 +128,17 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
             log("========== Original Dir path =" + originalDir.getPath());
             log("========== Copy Delete Dir path =" + copyDeleteDir.getPath());
 
-            copyFile(new File (foldersDir, "Test.java"),new File (copyDeleteDir, "Test.java"));
+            gui.Utilities.copyFile(new File (foldersDir, "Test.java"),new File (copyDeleteDir, "Test.java"));
             waitNoEvent(1000);
             
             ProjectRootNode projectNode = projectTab.getProjectRootNode("PerformanceTestFoldersData");
             
-            foldersNode = new Node(projectNode,"Source Packages|folders");
-// doesn't work in Promo D        new RefreshFolderAction().perform(foldersNode);
-            foldersNode.performPopupAction("Refresh Folder");
+            foldersNode = new Node(projectNode, gui.Utilities.SOURCE_PACKAGES + "|folders");
+            
+            new RefreshFolderAction().perform(foldersNode); // foldersNode.performPopupAction("Refresh Folder");
             waitNoEvent(1000);
 
-            nodeToBeDeleted = new Node(projectNode,"Source Packages|folders." + folderToBeDeleted + "_delete");
+            nodeToBeDeleted = new Node(projectNode, gui.Utilities.SOURCE_PACKAGES + "|folders." + folderToBeDeleted + "_delete");
             
             File[] files = originalDir.listFiles();
             log("=============== There is [" + files.length + "] number of files in directory = "+ originalDir.getPath());
@@ -151,10 +149,10 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
                 copyFile = new File(copyDeleteDir,files[i].getName());
                 log("================== Create file ="+copyFile.getPath());
                 
-                copyFile(files[i], copyFile);
+                gui.Utilities.copyFile(files[i], copyFile);
             }
             
-            nodeToBeDeleted.performPopupAction("Refresh Folder");
+            new RefreshFolderAction().perform(nodeToBeDeleted); // nodeToBeDeleted.performPopupAction("Refresh Folder");
             nodeToBeDeleted.expand();
             
         }catch(Exception exc){
@@ -164,18 +162,6 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
         }
     }
 
-    
-    public void copyFile(File f1, File f2) throws Exception {
-        int data;
-        FileInputStream fis = new FileInputStream(f1);
-        FileOutputStream fos = new FileOutputStream(f2);
-        
-        while((data=fis.read())!=-1){
-            fos.write(data);
-        }
-        
-    }
-    
     protected void shutdown() {
         org.netbeans.junit.ide.ProjectSupport.closeProject("PerformanceTestFoldersData");
         projectTab.restore();
@@ -183,17 +169,19 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
         turnBack();
     }
     
-    
+    /**
+     * turn off prescanning of sources
+     */
     protected void turnOff() {
-        // turn off prescanning of sources
         prescanSources = JavaSettings.getDefault().getPrescanSources();
         JavaSettings.getDefault().setPrescanSources(false);
     }
-    
+
+    /**
+     * turn back on prescanning of sources
+     */
     protected void turnBack() {
-        // turn back on prescanning of sources
         JavaSettings.getDefault().setPrescanSources(prescanSources);
     }
-    
     
 }

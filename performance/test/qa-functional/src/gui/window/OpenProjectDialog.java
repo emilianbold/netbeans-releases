@@ -14,11 +14,11 @@
 package gui.window;
 
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.NbDialogOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.DialogOperator;
+
 
 /**
  * Test of Open Project Dialog
@@ -26,6 +26,8 @@ import org.netbeans.jemmy.operators.DialogOperator;
  * @author  mmirilovic@netbeans.org
  */
 public class OpenProjectDialog extends testUtilities.PerformanceTestCase {
+    
+    private String MENU, TITLE;
     
     /** Creates a new instance of OpenProjectDialog */
     public OpenProjectDialog(String testName) {
@@ -41,15 +43,18 @@ public class OpenProjectDialog extends testUtilities.PerformanceTestCase {
     
     public void prepare() {
         // do nothing
-        // work around issue 35962 (Main menu popup accidentally rolled up)
-        new ActionNoBlock("Help|About", null).perform();
-        new org.netbeans.jellytools.NbDialogOperator("About").close();
+        gui.Utilities.workarroundMainMenuRolledUp();
+    }
+    
+    protected void initialize() {
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/File") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle","LBL_NodeNewProjectAction_Name");
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle","LBL_PrjChooser_Title");
     }
     
     public ComponentOperator open() {
         // invoke File / Open File from the main menu
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("File|Open Project...","|");
-        return new DialogOperator("Open Project");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        return new NbDialogOperator(TITLE);
     }
     
 }

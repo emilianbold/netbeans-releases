@@ -33,6 +33,8 @@ public class FindInSourceEditor extends testUtilities.PerformanceTestCase {
     
     private static EditorOperator editor;
     
+    private final String TITLE =  org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.editor.Bundle", "find");
+    
     /** Creates a new instance of FindInSourceEditor */
     public FindInSourceEditor(String testName) {
         super(testName);
@@ -47,9 +49,7 @@ public class FindInSourceEditor extends testUtilities.PerformanceTestCase {
     
     protected void initialize() {
         // open a java file in the editor
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),"Source Packages|bsh|Parser.java");
-        new OpenAction().performAPI(openFile);
-        editor = new EditorWindowOperator().getEditor("Parser.java");
+        editor = gui.Utilities.openJavaFile();
     }
     
     public void prepare() {
@@ -59,7 +59,7 @@ public class FindInSourceEditor extends testUtilities.PerformanceTestCase {
     public ComponentOperator open(){
         // press CTRL+F
         new FindAction().performShortcut();
-        return new NbDialogOperator("Find"); //NOI18N
+        return new NbDialogOperator(TITLE);
     }
 
     protected void shutdown(){

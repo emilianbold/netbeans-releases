@@ -14,7 +14,6 @@
 package gui.window;
 
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.NbDialogOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -26,6 +25,8 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class AttachDialog extends testUtilities.PerformanceTestCase {
+    
+    private String MENU, TITLE;
     
     /** Creates a new instance of AttachDialog */
     public AttachDialog(String testName) {
@@ -39,17 +40,20 @@ public class AttachDialog extends testUtilities.PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void initialize() {
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle","Menu/RunProject") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle","CTL_Connect");
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle","CTL_Connect_to_running_process");
+    }
+    
     public void prepare() {
         // do nothing
-        // work around issue 35962 (Main menu popup accidentally rolled up)
-        new ActionNoBlock("Help|About", null).perform();
-        new NbDialogOperator("About").close();
+        gui.Utilities.workarroundMainMenuRolledUp();
     }
     
     public ComponentOperator open() {
         // invoke Debug / Start Session / Attach from the main menu
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Run|Attach Debugger ...","|");
-        return new NbDialogOperator("Attach");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        return new NbDialogOperator(TITLE);
     }
     
 }

@@ -64,7 +64,7 @@ public class CloseEditorModified extends testUtilities.PerformanceTestCase {
     
     public void initialize(){
         EditorOperator.closeDiscardAll();
-        new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),"Source Packages|org.netbeans.test.performance|Main.java"));
+        new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
         editorOperator = new EditorOperator("Main.java");
     }
 
@@ -80,7 +80,7 @@ public class CloseEditorModified extends testUtilities.PerformanceTestCase {
         //TODO issue 44593 new CloseViewAction().performPopup(editorOperator); 
         new CloseViewAction().performMenu(editorOperator); 
 
-        dialog = new NbDialogOperator("Question");
+        dialog = new NbDialogOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.text.Bundle", "LBL_SaveFile_Title"));
         return dialog;
     }
     

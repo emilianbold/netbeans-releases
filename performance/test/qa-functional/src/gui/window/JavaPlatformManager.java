@@ -14,7 +14,6 @@
 package gui.window;
 
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.NbDialogOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -26,6 +25,8 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  * @author  mmirilovic@netbeans.org
  */
 public class JavaPlatformManager extends testUtilities.PerformanceTestCase {
+    
+    private String MENU, TITLE;
     
     /** Creates a new instance of JavaPlatformManager */
     public JavaPlatformManager(String testName) {
@@ -40,15 +41,15 @@ public class JavaPlatformManager extends testUtilities.PerformanceTestCase {
     }
     
     public void prepare() {
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.platform.ui.Bundle","CTL_PlatformManager");
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.api.java.platform.Bundle","TXT_PlatformsManager");
         // do nothing
-        // work around issue 35962 (Main menu popup accidentally rolled up)
-        new ActionNoBlock("Help|About", null).perform();
-        new NbDialogOperator("About").close();
+        gui.Utilities.workarroundMainMenuRolledUp();
    }
     
     public ComponentOperator open() {
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Tools|Java Platform Manager","|");
-        return new NbDialogOperator("Java Platform Manager");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        return new NbDialogOperator(TITLE);
     }
     
 }

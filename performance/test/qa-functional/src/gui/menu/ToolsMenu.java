@@ -68,8 +68,8 @@ public class ToolsMenu extends MainMenu {
     }
     
     private void testToolsMenu(String file) {
-        dataObjectNode = new Node(getProjectNode(), "Source Packages" + '|' + "org.netbeans.test.performance" + '|' + file);
-        super.testMenu ("org.netbeans.core.Bundle","Tools");
+        dataObjectNode = new Node(getProjectNode(), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|" + file);
+        super.testMenu("org.netbeans.core.Bundle","Menu/Tools");
     }
 
     private Node getProjectNode() {

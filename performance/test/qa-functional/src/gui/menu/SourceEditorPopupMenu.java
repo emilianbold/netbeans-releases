@@ -95,7 +95,7 @@ public class SourceEditorPopupMenu extends testUtilities.PerformanceTestCase {
     
     
     protected void initialize(){
-        Node fileNode = new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), "Source Packages" + '|' + "org.netbeans.test.performance" + '|' + fileName);
+        Node fileNode = new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|" + fileName);
         
         if (fileName.endsWith("xml")) {
             new EditAction().performAPI(fileNode);

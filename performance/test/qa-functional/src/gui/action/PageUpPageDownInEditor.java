@@ -60,7 +60,7 @@ public class PageUpPageDownInEditor extends testUtilities.PerformanceTestCase {
         setJavaEditorCaretFilteringOn();
         
         // open a java file in the editor
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),"Source Packages|org.netbeans.test.performance|Main20kB.java"));
+        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main20kB.java"));
         editorOperator = new EditorWindowOperator().getEditor("Main20kB.java");
     }
     

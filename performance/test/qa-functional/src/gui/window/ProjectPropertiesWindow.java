@@ -16,6 +16,7 @@ package gui.window;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.actions.PropertiesAction;
 
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -28,6 +29,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 public class ProjectPropertiesWindow extends testUtilities.PerformanceTestCase {
     
     private static Node testNode;
+    private String TITLE;
     
     /** Creates a new instance of ProjectPropertiesWindow */
     public ProjectPropertiesWindow(String testName) {
@@ -42,6 +44,7 @@ public class ProjectPropertiesWindow extends testUtilities.PerformanceTestCase {
     }
     
     protected void initialize() {
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.Bundle","LBL_Customizer_Title", new String[]{"jEdit"});
         testNode = (Node) new ProjectsTabOperator().getProjectRootNode("jEdit");
     }
     
@@ -51,8 +54,8 @@ public class ProjectPropertiesWindow extends testUtilities.PerformanceTestCase {
     
     public ComponentOperator open() {
         // invoke Window / Properties from the main menu
-        testNode.performPopupAction("Properties");
-        return new NbDialogOperator("Project Properties - jEdit");
+        new PropertiesAction().performPopup(testNode);
+        return new NbDialogOperator(TITLE);
     }
     
 }

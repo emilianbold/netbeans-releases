@@ -13,19 +13,21 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.DialogOperator;
 
 /**
  * Test of Add JDBC Driver dialog
  *
- * @author  anebuzelsky@netbeans.org
+ * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class AddJDBCDriverDialog extends testUtilities.PerformanceTestCase {
+    
+    private String BUNDLE, MENU, TITLE;
+    private Node thenode;
     
     /** Creates a new instance of AddJDBCDriverDialog */
     public AddJDBCDriverDialog(String testName) {
@@ -39,11 +41,14 @@ public class AddJDBCDriverDialog extends testUtilities.PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
-    private Node thenode;
-    
     protected void initialize() {
+        BUNDLE = "org.netbeans.modules.db.resources.Bundle";
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE, "AddNewDriver");
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE, "AddDriverDialogTitle");
+        
+        String path = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE, "NDN_Databases") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE, "NDN_Drivers");
         // show Runtime tab and select Databases / Drivers node
-        thenode = new Node (RuntimeTabOperator.invoke().getRootNode(), "Databases|Drivers");
+        thenode = new Node (RuntimeTabOperator.invoke().getRootNode(), path);
         thenode.select();
     }
     
@@ -53,8 +58,8 @@ public class AddJDBCDriverDialog extends testUtilities.PerformanceTestCase {
     
     public ComponentOperator open() {
         // invoke Add Driver item from the popup
-        thenode.callPopup().pushMenu("Add Driver ...");
-        return new DialogOperator("Add JDBC Driver");
+        thenode.callPopup().pushMenu(MENU);
+        return new NbDialogOperator(TITLE);
     }
     
 }

@@ -16,12 +16,7 @@ package gui.window;
 import java.awt.event.KeyEvent;
 
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.Action.Shortcut;
 
@@ -35,6 +30,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 public class GotoLineDialog extends testUtilities.PerformanceTestCase {
     
     private static EditorOperator editor;
+    private String TITLE;
     
     /** Creates a new instance of GotoLineDialog */
     public GotoLineDialog(String testName) {
@@ -49,14 +45,14 @@ public class GotoLineDialog extends testUtilities.PerformanceTestCase {
     }
     
     protected void initialize() {
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.editor.Bundle", "goto-title");
         // open a java file in the editor
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),"Source Packages|bsh|Parser.java");
-        new OpenAction().performAPI(openFile);
-        editor = new EditorWindowOperator().getEditor("Parser.java");
+        editor = gui.Utilities.openJavaFile();
     }
     
     public void prepare() {
         // do nothing
+        gui.Utilities.workarroundMainMenuRolledUp();
    }
     
     public ComponentOperator open(){

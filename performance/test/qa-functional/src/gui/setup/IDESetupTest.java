@@ -13,24 +13,12 @@
 
 package gui.setup;
 
-import java.beans.PropertyVetoException;
-
-import java.io.File;
-import java.io.IOException;
-
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenuItem;
-
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 
-import org.netbeans.jemmy.operators.ContainerOperator;
-import org.netbeans.jemmy.operators.JMenuOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JCheckBoxMenuItemOperator;
-
 import org.netbeans.junit.ide.ProjectSupport;
 
+import org.netbeans.jemmy.operators.JMenuBarOperator;
 
 public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
     
@@ -52,8 +40,7 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
      * Close Welcome. 
      */
     public void testCloseWelcome(){
-        new TopComponentOperator("Welcome").close(); //NOI18N 
-        
+        new TopComponentOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title")).close();
     }
     
     
@@ -65,41 +52,15 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
 //        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu("View|Toolbars");
 //        JCheckBoxMenuItemOperator submenu = new JCheckBoxMenuItemOperator(new ContainerOperator(menu_op.getContainers()[0]), "View|Toolbars|Memory"); //NOI18N 
 //        if(submenu.isSelected())
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu("View|Toolbars|Memory","|"); //NOI18N 
+        
+        String MENU = 
+            org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
+            org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
+            org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Toolbars/Memory");
+        
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(MENU,"|"); //NOI18N 
         
     }
     
     
-/*    private FileSystem installVcs(Repository r, File f) {
-        final CommandLineVcsFileSystem fs = new CommandLineVcsFileSystem ();
-        try {
-            // set config file and turn off refresh
-            String profile = "cvs.xml"; // NOI18N
-            System.out.println("VCS profile = "+profile);
-            if (fs.readConfiguration(profile)) {
-                fs.setConfigFileName(profile);
-            }
-            fs.setAutoRefresh(GeneralVcsSettings.AUTO_REFRESH_NO_REFRESH);
-            fs.disableRefresh();
-
-            fs.setRootDirectory(f);
-            r.addFileSystem(fs);
-// promoD            Task t = new RequestProcessor ().post(new Runnable() {
-//                public void run() {
-//                    JCStorage storage = JCStorage.getStorage();
-//                    storage.parseFSOnBackground (fs);
-//                }
-//            });  
-//            t.waitFinished();
-            // TODO should wait until code completion is created
-        }
-        catch (IOException ioe) {
-            fail ("Filesystem mounting failed - "+ioe.getLocalizedMessage());
-        }
-        catch (PropertyVetoException ioe) {
-            fail ("Filesystem mounting failed - "+ioe.getLocalizedMessage());
-        }
-        return fs;
-    }
- */
 }

@@ -26,6 +26,8 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  */
 public class JavadocIndexSearch extends testUtilities.PerformanceTestCase {
     
+    private String BUNDLE, MENU, TITLE;
+    
     /** Creates a new instance of JavadocIndexSearch */
     public JavadocIndexSearch(String testName) {
         super(testName);
@@ -38,13 +40,19 @@ public class JavadocIndexSearch extends testUtilities.PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void initialize() {
+        BUNDLE = "org.netbeans.modules.javadoc.search.Bundle";
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"CTL_SEARCH_MenuItem");
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"CTL_SEARCH_WindowTitle");
+    }
+    
     public void prepare() {
         // do nothing
     }
     
     public ComponentOperator open() {
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("View|Javadoc Index Search","|");
-        return new TopComponentOperator("Javadoc Index Search");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        return new TopComponentOperator(TITLE);
     }
     
 }

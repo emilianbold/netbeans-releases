@@ -77,7 +77,7 @@ public abstract class ValidatePopupMenuOnNodes extends testUtilities.Performance
             r.mouseRelease(java.awt.event.InputEvent.BUTTON3_MASK);
         }
         catch (Exception ex) {
-            fail(ex);
+            throw new Error(ex);
         }
         
         oper.getTimeouts().sleep("JMenuOperator.WaitBeforePopupTimeout");

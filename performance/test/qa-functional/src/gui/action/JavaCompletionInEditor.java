@@ -7,18 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.action;
 
-import java.awt.event.KeyEvent;
 import java.awt.Component;
-import java.awt.Point;
-import javax.swing.text.Caret;
 
-import org.netbeans.editor.BaseCaret;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.options.JavaOptions;
@@ -29,8 +25,6 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.Action.Shortcut;
 import org.netbeans.jellytools.actions.OpenAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -89,13 +83,15 @@ public class JavaCompletionInEditor extends testUtilities.PerformanceTestCase {
     
     protected void initialize() {
         // open a java file in the editor
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),"Source Packages|org.netbeans.test.performance|Main.java"));
+        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
         editorOperator = new EditorWindowOperator().getEditor("Main.java");
         turnOff();
     }
     
     public void prepare() {
         /*
+        import org.netbeans.editor.BaseCaret;
+        
         javax.swing.text.Caret thecaret = editorOperator.txtEditorPane().getCaret();
         if (thecaret instanceof BaseCaret)
         {

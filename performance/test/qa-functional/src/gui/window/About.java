@@ -26,16 +26,24 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class About extends testUtilities.PerformanceTestCase {
     
-    /** Creates a new instance of ValidateAbout */
+    private String MENU, ABOUT, DETAIL;
+    
+    /** Creates a new instance of About */
     public About(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
     
-    /** Creates a new instance of ValidateAbout */
+    /** Creates a new instance of About */
     public About(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
+    }
+    
+    public void initialize() {
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Help") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.actions.Bundle" , "About");
+        ABOUT = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle_nb", "CTL_About_Title");
+        DETAIL = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle_nb", "CTL_About_Detail");
     }
     
     public void prepare(){
@@ -44,8 +52,8 @@ public class About extends testUtilities.PerformanceTestCase {
     
     public ComponentOperator open(){
         // invoke Help / About from the main menu
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Help|About","|");
-        return new org.netbeans.jellytools.NbDialogOperator("About");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        return new org.netbeans.jellytools.NbDialogOperator(ABOUT);
     }
     
 }

@@ -14,7 +14,6 @@
 package gui.window;
 
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.NbDialogOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -26,6 +25,8 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  * @author  mmirilovic@netbeans.org
  */
 public class GotoClassDialog extends testUtilities.PerformanceTestCase {
+    
+    private String MENU, TITLE;
     
     /** Creates a new instance of GotoClassDialog */
     public GotoClassDialog(String testName) {
@@ -39,16 +40,19 @@ public class GotoClassDialog extends testUtilities.PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void initialize() {
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.editor.java.Bundle","NAME_JavaFastOpenAction");
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.editor.ext.java.Bundle", "JFO_title");
+    }
+    
     public void prepare() {
         // do nothing
-        // work around issue 35962 (Main menu popup accidentally rolled up)
-        new ActionNoBlock("Help|About", null).perform();
-        new NbDialogOperator("About").close();
+        gui.Utilities.workarroundMainMenuRolledUp();
    }
     
     public ComponentOperator open() {
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Tools|Go To Class...","|");
-        return new NbDialogOperator("Go To Class");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        return new NbDialogOperator(TITLE);
     }
     
 }

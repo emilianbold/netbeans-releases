@@ -38,12 +38,12 @@ public class PropertyEditorString extends PropertyEditors {
     private Property property;
     
     public void prepare(){
-        property = findProperty("String", propertiesWindow);
+        property = findProperty("String", propertiesWindow); //NOI18N impossible
     }
     
     public ComponentOperator open(){
         openPropertyEditor();
-        return new StringCustomEditorOperator("String");
+        return new StringCustomEditorOperator("String"); //NOI18N impossible
     }
 
 }

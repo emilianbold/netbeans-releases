@@ -28,6 +28,8 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  */
 public class FindInProjects extends testUtilities.PerformanceTestCase {
     
+    private String MENU, TITLE;
+    
     /** Creates a new instance of FindInProjects */
     public FindInProjects(String testName) {
         super(testName);
@@ -40,15 +42,21 @@ public class FindInProjects extends testUtilities.PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void initialize(){
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Edit") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.search.project.Bundle","LBL_SearchProjects");
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.search.project.Bundle","LBL_Title_SearchProjects");
+    }
+    
     public void prepare(){
-        new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),"Source Packages").select();
+        gui.Utilities.workarroundMainMenuRolledUp();
+        new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),gui.Utilities.SOURCE_PACKAGES).select();
     }
     
     public ComponentOperator open(){
 //TODO doesn't work after refactoring merge        new FindAction().performShortcut();
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Edit|Find in Projects...","|");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
         
-        return new NbDialogOperator("Find in Projects"); //NOI18N
+        return new NbDialogOperator(TITLE);
     }
     
 }

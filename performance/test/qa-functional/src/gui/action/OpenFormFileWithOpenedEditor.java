@@ -48,7 +48,7 @@ public class OpenFormFileWithOpenedEditor extends OpenFormFile {
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "JFrame20kB.java";
-        menuItem = "Open"; //NOI18N
+        menuItem = OPEN;
         doMeasurement();
     }
     
@@ -57,7 +57,7 @@ public class OpenFormFileWithOpenedEditor extends OpenFormFile {
      */
     public void initialize(){
         super.initialize();
-        new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),"Source Packages|org.netbeans.test.performance|Main.java"));
+        new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
     }
     
 }

@@ -13,10 +13,6 @@
 
 package gui.action;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 
@@ -82,7 +78,7 @@ public class ExpandNodesProjectsView extends testUtilities.PerformanceTestCase {
         WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 2000;
         project = "jEdit";
-        pathToFolderNode = "Source Packages";
+        pathToFolderNode = gui.Utilities.SOURCE_PACKAGES;
         doMeasurement();
     }
     
@@ -90,7 +86,7 @@ public class ExpandNodesProjectsView extends testUtilities.PerformanceTestCase {
         WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 2000;
         project = testDataProject;
-        pathToFolderNode = "Source Packages|javaFolder50";
+        pathToFolderNode = gui.Utilities.SOURCE_PACKAGES + "|javaFolder50";
         doMeasurement();
     }
     
@@ -98,7 +94,7 @@ public class ExpandNodesProjectsView extends testUtilities.PerformanceTestCase {
         WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 2000;
         project = testDataProject;
-        pathToFolderNode = "Source Packages|javaFolder100";
+        pathToFolderNode = gui.Utilities.SOURCE_PACKAGES + "|javaFolder100";
         doMeasurement();
     }
     
@@ -106,7 +102,7 @@ public class ExpandNodesProjectsView extends testUtilities.PerformanceTestCase {
         WAIT_AFTER_OPEN = 2000;
         WAIT_AFTER_PREPARE = 500;
         project = testDataProject;
-        pathToFolderNode = "Source Packages|xmlFolder100";
+        pathToFolderNode = gui.Utilities.SOURCE_PACKAGES + "|xmlFolder100";
         doMeasurement();
     }
     
@@ -114,7 +110,7 @@ public class ExpandNodesProjectsView extends testUtilities.PerformanceTestCase {
         WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 500;
         project = testDataProject;
-        pathToFolderNode = "Source Packages|txtFolder100";
+        pathToFolderNode = gui.Utilities.SOURCE_PACKAGES + "|txtFolder100";
         doMeasurement();
     }
     

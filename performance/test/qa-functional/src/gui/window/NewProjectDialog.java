@@ -13,12 +13,10 @@
 
 package gui.window;
 
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jellytools.actions.NewProjectAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.DialogOperator;
 
 /**
  * Test of New Project Dialog
@@ -41,15 +39,13 @@ public class NewProjectDialog extends testUtilities.PerformanceTestCase {
     
     public void prepare() {
         // do nothing
-        // work around issue 35962 (Main menu popup accidentally rolled up)
-        new ActionNoBlock("Help|About", null).perform();
-        new org.netbeans.jellytools.NbDialogOperator("About").close();
+        gui.Utilities.workarroundMainMenuRolledUp();
     }
     
     public ComponentOperator open() {
         // invoke File / Open File from the main menu
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("File|New Project...","|");
-        return new DialogOperator("New Project");
+        new NewProjectAction().performMenu();
+        return new NewProjectWizardOperator();
     }
     
 }

@@ -15,12 +15,7 @@ package gui.window;
 
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.actions.OpenAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
@@ -33,6 +28,7 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
 public class OverrideMethods extends testUtilities.PerformanceTestCase {
     
     private static EditorOperator editor;
+    private String MENU, TITLE;
     
     /** Creates a new instance of OverrideMethods */
     public OverrideMethods(String testName) {
@@ -47,10 +43,11 @@ public class OverrideMethods extends testUtilities.PerformanceTestCase {
     }
     
     protected void initialize() {
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.tools.Bundle","LAB_OverrideTool");
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.tools.Bundle","LBL_OverridePanel2_Title");
+        
         // open a java file in the editor
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),"Source Packages|bsh|Parser.java");
-        new OpenAction().performAPI(openFile);
-        editor = new EditorWindowOperator().getEditor("Parser.java");
+        editor = gui.Utilities.openJavaFile();
     }
     
     public void prepare() {
@@ -58,8 +55,8 @@ public class OverrideMethods extends testUtilities.PerformanceTestCase {
    }
     
     public ComponentOperator open() {
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Tools|Override Methods...","|");
-        return new NbDialogOperator("Override and Implement Methods");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        return new NbDialogOperator(TITLE);
     }
     
     protected void shutdown(){

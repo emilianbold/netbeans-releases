@@ -61,7 +61,7 @@ public class CloseEditorTab extends testUtilities.PerformanceTestCase {
     
     public void initialize(){
         EditorOperator.closeDiscardAll();
-        openFiles();
+        prepareFiles();
     }
 
     public void shutdown(){
@@ -69,7 +69,9 @@ public class CloseEditorTab extends testUtilities.PerformanceTestCase {
     }
     
     public void prepare(){
-        new OpenAction().performAPI(openFileNodes);
+        for(int i=0; i<openFileNodes.length; i++) {
+            new OpenAction().performAPI(openFileNodes[i]); // fix for mdr+java, opening all files at once causes never ending loop
+        }
     }
     
     public ComponentOperator open(){
@@ -84,35 +86,16 @@ public class CloseEditorTab extends testUtilities.PerformanceTestCase {
     }
     
     /**
-     * Get a prepared java file (Main20kB.java), create 10 copies and 
-     * open it in editor.
+     * Prepare ten selected file from jEdit project
      */
-    protected void openFiles(){
-        String[][] files_path = { 
-            {"bsh","Interpreter.java"},
-            {"bsh","JThis.java"},
-            {"bsh","Name.java"},
-            {"bsh","Parser.java"},
-            {"bsh","Primitive.java"},
-//TODO causes OutOfMemoryException !!!            {"com.microstar.xml","XmlParser.java"},
-//TODO causes OutOfMemoryException !!!            {"org.gjt.sp.jedit","BeanShell.java"},
-//TODO causes OutOfMemoryException !!!            {"org.gjt.sp.jedit","Buffer.java"},
-//TODO causes OutOfMemoryException !!!            {"org.gjt.sp.jedit","EditPane.java"},
-//TODO causes OutOfMemoryException !!!            {"org.gjt.sp.jedit","EditPlugin.java"},
-//TODO causes OutOfMemoryException !!!            {"org.gjt.sp.jedit","EditServer.java"} 
-        };
+    protected void prepareFiles(){
+        String[][] files_path = gui.Utilities.getTenSelectedFiles();
         
         openFileNodes = new Node[files_path.length];
             
         for(int i=0; i<files_path.length; i++) {
-                openFileNodes[i] = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),"Source Packages" + '|' +  files_path[i][0] + '|' + files_path[i][1]);
-                
-                // open file one by one, opening all files at once causes never ending loop (java+mdr)
-                new OpenAction().performAPI(openFileNodes[i]);
+                openFileNodes[i] = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"), gui.Utilities.SOURCE_PACKAGES + '|' +  files_path[i][0] + '|' + files_path[i][1]);
         }
-            
-        // try to open each file separately, it causes a very long time wait for try to open 10 big files at once
-        // new OpenAction().performAPI(openFileNodes);
-    }    
+    }
     
 }

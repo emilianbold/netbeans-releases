@@ -38,12 +38,12 @@ public class PropertyEditorColor extends PropertyEditors {
     private Property property;
     
     public void prepare(){
-        property = findProperty("Color", propertiesWindow);
+        property = findProperty("Color", propertiesWindow); //NOI18N impossible
     }
     
     public ComponentOperator open(){
         openPropertyEditor();
-        return new ColorCustomEditorOperator("Color");
+        return new ColorCustomEditorOperator("Color"); //NOI18N impossible
     }
 
 }

@@ -49,49 +49,53 @@ public class MainMenu extends testUtilities.PerformanceTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new MainMenu("testFileMenu"));
-        suite.addTest(new MainMenu("testEditMenu"));
-        suite.addTest(new MainMenu("testViewMenu"));
-        suite.addTest(new MainMenu("testBuildMenu"));
-        suite.addTest(new MainMenu("testRunMenu"));
-        suite.addTest(new MainMenu("testVersioningMenu"));
-        suite.addTest(new MainMenu("testWindowMenu"));
-        suite.addTest(new MainMenu("testHelpMenu"));
+        suite.addTest(new MainMenu("testFileMenu", "File main menu"));
+        suite.addTest(new MainMenu("testEditMenu", "Edit main menu"));
+        suite.addTest(new MainMenu("testViewMenu", "View main menu"));
+        suite.addTest(new MainMenu("testBuildMenu", "Build main menu"));
+        suite.addTest(new MainMenu("testRunMenu", "Debug main menu"));
+        suite.addTest(new MainMenu("testRefactoringMenu", "Refactoring main menu"));
+        suite.addTest(new MainMenu("testVersioningMenu", "Versioning main menu"));
+        suite.addTest(new MainMenu("testWindowMenu", "Window main menu"));
+        suite.addTest(new MainMenu("testHelpMenu", "Help main menu"));
         return suite;
     }
-
+    
     public void testFileMenu(){
         WAIT_AFTER_PREPARE = 1000;
-        testMenu("org.netbeans.core.Bundle","File");
+        testMenu("org.netbeans.core.Bundle","Menu/File");
     }
-
+    
     public void testEditMenu(){
-        testMenu("org.netbeans.core.Bundle","Edit");
+        testMenu("org.netbeans.core.Bundle","Menu/Edit");
     }
-
+    
     public void testViewMenu(){
-        testMenu("org.netbeans.core.Bundle","View");
+        testMenu("org.netbeans.core.Bundle","Menu/View");
     }
     
     public void testBuildMenu(){
-        testMenu("org.netbeans.core.Bundle","Build");
+        testMenu("org.netbeans.modules.project.ui.Bundle","Menu/BuildProject");
     }
     
-    //TODO find bundle
     public void testRunMenu(){
-        testMenu("Run");
+        testMenu("org.netbeans.modules.project.ui.Bundle","Menu/RunProject");
+    }
+    
+    public void testRefactoringMenu(){
+        testMenu("org.netbeans.modules.refactoring.ui.Bundle","LBL_Refactoring");
     }
     
     public void testVersioningMenu(){
-        testMenu("org.netbeans.modules.vcscore.actions.Bundle","Versioning");
+        testMenu("org.netbeans.modules.vcscore.actions.Bundle","Menu/Versioning");
     }
     
     public void testWindowMenu(){
-        testMenu("org.netbeans.core.Bundle","Window");
+        testMenu("org.netbeans.core.Bundle","Menu/Window");
     }
     
     public void testHelpMenu(){
-        testMenu("org.netbeans.core.Bundle","Help");
+        testMenu("org.netbeans.core.Bundle","Menu/Help");
     }
     
     
@@ -102,7 +106,7 @@ public class MainMenu extends testUtilities.PerformanceTestCase {
     
     
     protected void testMenu(String bundle, String menu) {
-        menuPath = org.netbeans.jellytools.Bundle.getStringTrimmed(bundle,"Menu/"+menu);
+        menuPath = org.netbeans.jellytools.Bundle.getStringTrimmed(bundle,menu);
         doMeasurement();
     }
     

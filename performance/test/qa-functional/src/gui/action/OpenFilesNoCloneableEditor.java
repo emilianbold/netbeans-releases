@@ -13,10 +13,7 @@
 
 package gui.action;
 
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
@@ -66,14 +63,14 @@ public class OpenFilesNoCloneableEditor extends OpenFiles {
     public ComponentOperator open(){
         JPopupMenuOperator popup =  this.openNode.callPopup();
         if (popup == null) {
-            fail ("Cannot get context menu for node ["+"Source Packages" + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
+            throw new Error ("Cannot get context menu for node [" + gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
         }
         log("------------------------- after popup invocation ------------");
         try {
             popup.pushMenu(this.menuItem);
         }
         catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
-            fail ("Cannot push menu item "+this.menuItem+" of node ["+"Source Packages" + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
+            throw new Error ("Cannot push menu item "+this.menuItem+" of node [" + gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
         }
         log("------------------------- after open ------------");
         return new TopComponentOperator(fileName);
@@ -84,7 +81,7 @@ public class OpenFilesNoCloneableEditor extends OpenFiles {
             ((TopComponentOperator)testedComponentOperator).close();
         }
         else {
-            fail ("no component to close");
+            throw new Error ("no component to close");
         }
     }
     

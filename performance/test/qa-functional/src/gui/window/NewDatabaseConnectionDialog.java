@@ -13,19 +13,22 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.DialogOperator;
+
 
 /**
  * Test of New Database Connection dialog
  *
- * @author  anebuzelsky@netbeans.org
+ * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class NewDatabaseConnectionDialog extends testUtilities.PerformanceTestCase {
+    
+    private Node thenode;
+    private String BUNDLE, MENU, TITLE;
     
     /** Creates a new instance of NewDatabaseConnectionDialog */
     public NewDatabaseConnectionDialog(String testName) {
@@ -39,11 +42,14 @@ public class NewDatabaseConnectionDialog extends testUtilities.PerformanceTestCa
         expectedTime = WINDOW_OPEN;
     }
     
-    private Node thenode;
-    
     protected void initialize() {
+        BUNDLE = "org.netbeans.modules.db.resources.Bundle";
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"ConnectUsing");
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"NewConnectionDialogTitle");
+        
+        String NODE = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"NDN_Databases") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"NDN_Drivers") + "|" + "JDBC-ODBC Bridge"; //NOI18N impossible
         // show Runtime tab and select Databases / Drivers /JDBC-ODBC Bridge node
-        thenode = new Node (RuntimeTabOperator.invoke().getRootNode(), "Databases|Drivers|JDBC-ODBC Bridge");
+        thenode = new Node (RuntimeTabOperator.invoke().getRootNode(), NODE);
         thenode.select();
     }
     
@@ -53,8 +59,8 @@ public class NewDatabaseConnectionDialog extends testUtilities.PerformanceTestCa
         
     public ComponentOperator open() {
         // invoke Connect Using from the popup
-        thenode.callPopup().pushMenu("Connect Using ...");
-        return new DialogOperator("New Database Connection");
+        thenode.callPopup().pushMenu(MENU);
+        return new NbDialogOperator(TITLE);
     }
     
 }

@@ -13,7 +13,6 @@
 
 package gui.menu;
 
-
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -48,7 +47,7 @@ public class EditorDownButtonPopupMenu extends testUtilities.PerformanceTestCase
     }
     
     protected void initialize(){
-        openFiles();
+        gui.Utilities.open10FilesFromJEdit();
         editor = new EditorWindowOperator();
     }
     
@@ -66,35 +65,4 @@ public class EditorDownButtonPopupMenu extends testUtilities.PerformanceTestCase
         editor.closeDiscard();
     }
     
-    /**
-     * Get a prepared java file (Main20kB.java), create 10 copies and 
-     * open it in editor.
-     */
-    protected void openFiles(){
-        String[][] files_path = { 
-            {"bsh","Interpreter.java"},
-            {"bsh","JThis.java"},
-            {"bsh","Name.java"},
-            {"bsh","Parser.java"},
-            {"bsh","Primitive.java"},
-            {"com.microstar.xml","XmlParser.java"},
-            {"org.gjt.sp.jedit","BeanShell.java"},
-            {"org.gjt.sp.jedit","Buffer.java"},
-            {"org.gjt.sp.jedit","EditPane.java"},
-            {"org.gjt.sp.jedit","EditPlugin.java"},
-            {"org.gjt.sp.jedit","EditServer.java"} 
-        };
-        
-        Node[] openFileNodes = new Node[files_path.length];
-            
-        for(int i=0; i<files_path.length; i++) {
-                openFileNodes[i] = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),"Source Packages" + '|' +  files_path[i][0] + '|' + files_path[i][1]);
-                
-                // open file one by one, opening all files at once causes never ending loop (java+mdr)
-                new OpenAction().performAPI(openFileNodes[i]);
-        }
-            
-        // try to open each file separately, it causes a very long time wait for try to open 10 big files at once
-        // new OpenAction().performAPI(openFileNodes);
-    }
 }

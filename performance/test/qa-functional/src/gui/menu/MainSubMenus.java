@@ -69,70 +69,73 @@ public class MainSubMenus extends testUtilities.PerformanceTestCase {
         suite.addTest(new MainSubMenus("testWinGuiMenu", "Window | GUI Editing main menu"));
         suite.addTest(new MainSubMenus("testWinDebuggingMenu", "Window | Debugging main menu"));
         suite.addTest(new MainSubMenus("testWinVersioningMenu", "Window | Versioning main menu"));
-        suite.addTest(new MainSubMenus("testWinSelectDocumentNodeInMenu", "Window | Select Document Node in main menu"));
+        suite.addTest(new MainSubMenus("testWinSelectDocumentNodeInMenu", "Window | Select Document in main menu"));
         return suite;
     }
     
-    //TODO open more than one project (nice to have open 10 projects)
+    //TODO open more than one project (nice to have open 10 projects) and close 5 projects
     public void testFileOpenRecentProjectMenu(){
-        testSubMenu("org.netbeans.core.Bundle","File", "Open Recent Project");
+        testSubMenu("org.netbeans.core.Bundle","File", "org.netbeans.modules.project.ui.actions.Bundle", "LBL_RecentProjectsAction_Name");
     }
     
     //TODO open more than one project (nice to have open 10 projects)
     public void testFileSetMainProjectMenu(){
-        testSubMenu("org.netbeans.core.Bundle","File", "Set Main Project");
+        testSubMenu("org.netbeans.core.Bundle","File", "org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetMainProjectAction_Name");
+    }
+
+    //TODO open form file
+    public void testViewEditorsMenu(){
+        testSubMenu("org.netbeans.core.Bundle","View", "org.netbeans.core.multiview.Bundle", "CTL_EditorsAction");
     }
     
+    //TODO open java file
+    public void testViewCodeFoldsMenu(){
+        testSubMenu("org.netbeans.core.Bundle","View", "org.netbeans.modules.editor.Bundle", "Menu/View/CodeFolds");
+    }
     
     public void testViewDocumentationIndicesMenu(){
-        testSubMenu("org.netbeans.core.Bundle","View", "Documentation Indices");
+        testSubMenu("org.netbeans.core.Bundle","View", "org.netbeans.modules.javadoc.search.Bundle", "CTL_INDICES_MenuItem");
     }
     
     public void testViewToolbarsMenu(){
-        testSubMenu("org.netbeans.core.Bundle","View", "Toolbars");
+        testSubMenu("org.netbeans.core.Bundle","View", "org.netbeans.core.windows.actions.Bundle", "CTL_ToolbarsListAction");
     }
     
-    public void testViewCodeFoldsMenu(){
-        testSubMenu("org.netbeans.core.Bundle","View", "Code Folds");
-    }
-    
-    //TODO find bundle
     public void testRunStackMenu(){
-        testSubMenu("Run", "Stack");
+        testSubMenu("org.netbeans.modules.project.ui.Bundle", "RunProject", "Stack"); // this can't be localized
     }
     
-    //TODO find bundle
     public void testRunRunOtherMenu(){
-        testSubMenu("Run", "Run Other");
+        testSubMenu("org.netbeans.modules.project.ui.Bundle", "RunProject", "org.netbeans.modules.project.ui.Bundle", "Menu/RunProject/RunOther");
     }
     
     public void testVersioningCVSMenu(){
-        testSubMenu("org.netbeans.modules.vcscore.actions.Bundle","Versioning", "CVS");
+        testSubMenu("org.netbeans.modules.vcscore.actions.Bundle","Versioning", "org.netbeans.modules.vcs.profiles.cvsprofiles.config.Bundle", "CVS");
     }
     
     public void testVersioningPVCSMenu(){
-        testSubMenu("org.netbeans.modules.vcscore.actions.Bundle","Versioning", "PVCS");
+        testSubMenu("org.netbeans.modules.vcscore.actions.Bundle","Versioning", "org.netbeans.modules.vcs.profiles.pvcs.config.Bundle", "PVCS");
     }
     
     public void testToolsI18nMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Tools", "Internationalization");
+        testSubMenu("org.netbeans.core.Bundle","Tools", "org.netbeans.modules.i18n.Bundle", "LBL_I18nGroupActionName");
     }
     
     public void testWinGuiMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Window", "GUI Editing");
+        testSubMenu("org.netbeans.core.Bundle","Window", "org.netbeans.modules.form.resources.Bundle", "Menu/Window/Form");
     }
     
     public void testWinDebuggingMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Window", "Debug");
+        testSubMenu("org.netbeans.core.Bundle","Window", "org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
     }
     
     public void testWinVersioningMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Window", "Versioning");
+        testSubMenu("org.netbeans.core.Bundle","Window", "org.netbeans.modules.vcscore.Bundle", "Menu/Window/Versioning");
     }
     
     //TODO open java file
     public void testWinSelectDocumentNodeInMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Window", "Select Document Node in");
+        testSubMenu("org.netbeans.core.Bundle","Window", "org.netbeans.core.actions.Bundle", "Menu/Window/SelectDocumentNode");
     }
     
     private void testSubMenu(String mainMenu, String subMenu){
@@ -142,10 +145,19 @@ public class MainSubMenus extends testUtilities.PerformanceTestCase {
     }
     
     private void testSubMenu(String bundle, String mainMenu, String subMenu) {
-        mainMenuPath = org.netbeans.jellytools.Bundle.getStringTrimmed(bundle,"Menu/"+mainMenu);
-//        subMenuPath = org.netbeans.jellytools.Bundle.getStringTrimmed(bundle,"Menu/"+subMenu);
+        mainMenuPath = getFromBundle(bundle,"Menu/"+mainMenu);
         subMenuPath = subMenu;
         doMeasurement();
+    }
+    
+    private void testSubMenu(String bundle, String mainMenu, String bundle_2, String subMenu) {
+        mainMenuPath = getFromBundle(bundle,"Menu/"+mainMenu);
+        subMenuPath = getFromBundle(bundle_2,subMenu);
+        doMeasurement();
+    }
+    
+    private String getFromBundle(String bundle, String key){
+        return org.netbeans.jellytools.Bundle.getStringTrimmed(bundle,key);
     }
     
     public void prepare(){

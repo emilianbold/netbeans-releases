@@ -14,7 +14,6 @@
 package gui.window;
 
 import org.netbeans.jellytools.OptionsOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OptionsViewAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -28,13 +27,13 @@ public class Options extends testUtilities.PerformanceTestCase {
     
     OptionsOperator options;
     
-    /** Creates a new instance of ValidateOptions */
+    /** Creates a new instance of Options */
     public Options(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
     
-    /** Creates a new instance of ValidateOptions */
+    /** Creates a new instance of Options */
     public Options(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
@@ -42,9 +41,7 @@ public class Options extends testUtilities.PerformanceTestCase {
     
     public void prepare(){
         // do nothing
-        // work around issue 35962 (Main menu popup accidentally rolled up)
-        new ActionNoBlock("Help|About", null).perform();
-        new org.netbeans.jellytools.NbDialogOperator("About").close();
+        gui.Utilities.workarroundMainMenuRolledUp();
     }
     
     public ComponentOperator open(){

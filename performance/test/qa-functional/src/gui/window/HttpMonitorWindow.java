@@ -18,26 +18,34 @@ import org.netbeans.jellytools.TopComponentOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.DialogOperator;
 
 /**
  * Test of HTTP Monitor Window
  *
- * @author  anebuzelsky@netbeans.org
+ * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class HttpMonitorWindow extends testUtilities.PerformanceTestCase {
     
-    /** Creates a new instance of ValidateHttpMonitorWindow */
+    private String MENU, TITLE;
+    
+    /** Creates a new instance of HttpMonitorWindow */
     public HttpMonitorWindow(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
     
-    /** Creates a new instance of ValidateHttpMonitorWindow */
+    /** Creates a new instance of HttpMonitorWindow */
     public HttpMonitorWindow(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
+    
+    
+    public void initialize() {
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Window") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(" org.netbeans.modules.web.monitor.client.Bundle", "MON_HTTP_Transaction_13");
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed(" org.netbeans.modules.web.monitor.client.Bundle", "MON_Title");        
+    }
+    
     
     public void prepare() {
         // do nothing
@@ -45,13 +53,13 @@ public class HttpMonitorWindow extends testUtilities.PerformanceTestCase {
     
     public ComponentOperator open() {
         // invoke Window / HTTP Monitor from the main menu
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Window|HTTP Monitor","|");
-        return new TopComponentOperator("HTTP Monitor");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        return new TopComponentOperator(TITLE);
     }
     
     public void close() {
         // close the tab
-        new TopComponentOperator("HTTP Monitor").close();
+        new TopComponentOperator(TITLE).close();
     }
     
 }

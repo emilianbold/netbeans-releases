@@ -57,7 +57,7 @@ public class ExpandNodesInComponentInspector extends testUtilities.PerformanceTe
     }
     
     public void initialize(){
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),"Source Packages|org.netbeans.test.performance|JFrame20kB.java"));
+        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|JFrame20kB.java"));
         waitNoEvent(5000);
         addClassNameToLookFor("modules.form.");
         setPrintClassNames(true);
@@ -68,7 +68,7 @@ public class ExpandNodesInComponentInspector extends testUtilities.PerformanceTe
     }
     
     public void prepare(){
-        nodeToBeExpanded = new Node(new ComponentInspectorOperator().treeComponents(), "[JFrame]");
+        nodeToBeExpanded = new Node(new ComponentInspectorOperator().treeComponents(), "[JFrame]"); //NOI18N
     }
     
     public ComponentOperator open(){
