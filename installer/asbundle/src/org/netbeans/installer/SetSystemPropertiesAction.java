@@ -13,6 +13,7 @@
 
 package org.netbeans.installer;
 
+import com.installshield.product.service.product.ProductService;
 import com.installshield.util.Log;
 import com.installshield.wizard.WizardAction;
 import com.installshield.wizard.WizardBeanEvent;
