@@ -414,6 +414,7 @@
 <mapID target="vcs.overview" url="vcs-nb/vcs_overview.html" />
 <mapID target="vcs.output" url="vcs-nb/vcs_output.html" />
 <mapID target="vcs.status" url="vcs-nb/vcs_status.html" />
+<mapID target="vcs.toolbar" url="vcs-nb/vcs_toolbar.html" />
 <mapID target="vcs.diffs" url="vcs-nb/vcs_diffs.html" />
 <mapID target="vcs.cygwin" url="vcs-nb/vcs_cygwin.html" />
 <mapID target="vcs.globalsettings" url="vcs-nb/vcs_globalsettings.html" />

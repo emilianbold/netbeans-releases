@@ -445,12 +445,13 @@
     <tocitem text="Adding Files to VCS Groups" target="vcs.groupsaddfile" />
     <tocitem text="Moving and Removing Files from VCS Groups" target="vcs.groupsmovefile" />
     <tocitem text="Calling VCS Commands on VCS Groups" target="vcs.groupscommands" />
-    <tocitem text="Preparing Groups for Check In to the Repository" target="vcs.groupsverify" />
+    <tocitem text="Preparing VCS Groups for Check In to the Repository" target="vcs.groupsverify" />
     <tocitem text="Resolving Problems With Grouped Files" target="vcs.groupsresolve" />
     <tocitem text="Setting VCS Group Properties" target="vcs.groupsproperties" />
   </tocitem>
   <tocitem text="VCS Support on Windows 95/98/ME" target="vcs.cygwin" />
   <tocitem text="The Versioning Explorer" target="vcs.revexplorer" />
+  <tocitem text="Using the Versioning Toolbar" target="vcs.toolbar" />
   <tocitem text="Comparing File Revisions Visually" target="vcs.diffs" />
   <tocitem text="Refreshing VCS File Statuses" target="vcs.refresh" />
   <tocitem text="Version Control Statuses" target="vcs.status" />
