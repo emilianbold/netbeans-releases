@@ -32,11 +32,11 @@ import org.openide.cookies.OpenCookie;
 import org.openide.loaders.*;
 import org.openide.util.NbBundle;
 import java.awt.Dimension;
-import org.openide.TopManager;
 import javax.swing.KeyStroke;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.Repository;
 import java.io.OutputStream;
+import org.openide.ErrorManager;
 import org.openide.util.Utilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -73,16 +73,20 @@ public class ShortcutIterator implements TemplateWizard.Iterator {
     // You should define what panels you want to use here:
 
     protected WizardDescriptor.Panel[] createPanels () {
-        return new WizardDescriptor.Panel[] {
-            new IntroPanel.IntroWizardPanel(),
-            new SelectTargetPanel.SelectTargetWizardPanel(),
-            new CustomizeScriptPanel.CustomizeScriptWizardPanel(),
-            new SelectFolderPanel.SelectFolderWizardPanel(NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_menu_to_add_to"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_menu_locn"), TopManager.getDefault ().getPlaces ().folders ().menus ().getNodeDelegate (), false, true, PROP_FOLDER_MENU),
-            new SelectFolderPanel.SelectFolderWizardPanel(NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_toolbar"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_toolbar_locn"), TopManager.getDefault ().getPlaces ().folders ().toolbars ().getNodeDelegate (), false, false, PROP_FOLDER_TOOL),
-            // #28214: for now, use Filesystems rather than the active Project tab:
-            new SelectFolderPanel.SelectFolderWizardPanel(NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_proj_folder"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_select_project_locn"), TopManager.getDefault ().getPlaces ().nodes ().repository(), true, false, PROP_FOLDER_PROJ),
-            new SelectKeyboardShortcutPanel.SelectKeyboardShortcutWizardPanel(),
-        };
+        try {
+            return new WizardDescriptor.Panel[] {
+                new IntroPanel.IntroWizardPanel (),
+                new SelectTargetPanel.SelectTargetWizardPanel (),
+                new CustomizeScriptPanel.CustomizeScriptWizardPanel (),
+                new SelectFolderPanel.SelectFolderWizardPanel (NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_menu_to_add_to"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_menu_locn"), DataObject.find(Repository.getDefault().getDefaultFileSystem().findResource("Menu")).getNodeDelegate (), false, true, PROP_FOLDER_MENU),
+                new SelectFolderPanel.SelectFolderWizardPanel (NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_toolbar"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_toolbar_locn"), DataObject.find(Repository.getDefault().getDefaultFileSystem().findResource("Toolbars")).getNodeDelegate (), false, false, PROP_FOLDER_TOOL),
+                new SelectFolderPanel.SelectFolderWizardPanel (NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_proj_folder"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_select_project_locn"), DataObject.find(Repository.getDefault().getDefaultFileSystem().findResource("Workplace")).getNodeDelegate(), true, false, PROP_FOLDER_PROJ),
+                new SelectKeyboardShortcutPanel.SelectKeyboardShortcutWizardPanel (),
+            };
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(e);
+        }
+        return new WizardDescriptor.Panel[0];
     }
 
     // And the list of step names:

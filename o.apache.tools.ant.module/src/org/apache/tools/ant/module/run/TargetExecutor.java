@@ -17,13 +17,18 @@ package org.apache.tools.ant.module.run;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
+import java.security.AllPermission;
+import java.security.Permissions;
 import java.util.*;
 import java.util.Map; // override org.apache.tools.ant.Map
 
 import org.openide.*;
 import org.openide.actions.ExecuteAction;
 import org.openide.awt.Actions;
+import org.openide.awt.StatusDisplayer;
 import org.openide.execution.ExecutorTask;
+import org.openide.execution.ExecutionEngine;
+import org.openide.execution.NbClassLoader;
 import org.openide.loaders.DataObject;
 import org.openide.util.*;
 import org.openide.windows.*;
@@ -151,7 +156,7 @@ public class TargetExecutor implements Runnable {
 
             // #17752: do this *after* switching workspace...
             // OutputWindow
-            io = TopManager.getDefault ().getIO (name, false);
+            io = IOProvider.getDefault ().getIO (name, false);
             // this will delete the output even if a script is still running.
             io.getOut ().reset ();
             // #16720:
@@ -159,7 +164,7 @@ public class TargetExecutor implements Runnable {
             
             // [PENDING] note that calls to System.exit() from tasks
             // are apparently not trapped! (#9953)
-            task = TopManager.getDefault ().getExecutionEngine ().execute (name, this, InputOutput.NULL);
+            task = ExecutionEngine.getDefault().execute (name, this, InputOutput.NULL);
             //System.err.println("execute #2: " + this);
             //System.err.println("execute #3: " + this);
         }
@@ -171,7 +176,7 @@ public class TargetExecutor implements Runnable {
     
     public ExecutorTask execute(OutputStream outputStream) throws IOException {
         this.outputStream = outputStream;
-        ExecutorTask task = TopManager.getDefault().getExecutionEngine().execute(
+        ExecutorTask task = ExecutionEngine.getDefault().execute(
             NbBundle.getMessage(TargetExecutor.class, "LABEL_execution_name"), this, InputOutput.NULL);
         return new WrapperExecutorTask(task, null);
     }
@@ -216,7 +221,7 @@ public class TargetExecutor implements Runnable {
         }
         
         if (AntSettings.getDefault ().getSaveAll ()) {
-            TopManager.getDefault ().saveAll ();
+            LifecycleManager.getDefault ().saveAll ();
         }
         
         // see the method body for description of this workaround
@@ -280,7 +285,11 @@ public class TargetExecutor implements Runnable {
             InputHandler inputHandler = null;
             if (inputHandlerName != null && inputHandlerName.length() > 0) {
                 try {
-                    Class clazz = Class.forName(inputHandlerName, true, TopManager.getDefault().currentClassLoader());
+                    NbClassLoader l = new NbClassLoader();
+                    Permissions perm = new Permissions();
+                    perm.add(new AllPermission());
+                    l.setDefaultPermissions(perm);
+                    Class clazz = Class.forName(inputHandlerName, true, l);
                     inputHandler = (InputHandler)clazz.newInstance();
                 } catch (Exception ex) {
                     throw new BuildException(NbBundle.getMessage (TargetExecutor.class, "MSG_input_handler_exception", inputHandlerName), ex);  //NOI18N
@@ -326,7 +335,7 @@ public class TargetExecutor implements Runnable {
             ok = true;
         } catch (ThreadDeath td) {
             if (outputStream == null) {
-                TopManager.getDefault ().setStatusText (NbBundle.getMessage (TargetExecutor.class, "MSG_target_failed_status"));
+                StatusDisplayer.getDefault ().setStatusText (NbBundle.getMessage (TargetExecutor.class, "MSG_target_failed_status"));
             }
             // don't throw ThreadDeath, just return. ThreadDeath sometimes 
             // generated when killing process in Execution Window

@@ -52,6 +52,7 @@ import java.awt.Dimension;
 import javax.swing.border.EmptyBorder;
 import java.awt.Insets;
 import org.openide.util.HelpCtx;
+import org.netbeans.api.javahelp.Help;
 
 /** A node representing an Ant build target.
  */
@@ -208,7 +209,6 @@ public class AntTargetNode extends ElementNode implements ChangeListener {
                 String target = tok.nextToken ();
                 if (! av.contains (target)) {
                     IllegalArgumentException iae = new IllegalArgumentException ("no such target: " + target); // NOI18N
-                    //TopManager.getDefault ().getErrorManager ().annotate (iae, NbBundle.getMessage (AntTargetNode.class, "EXC_target_not_exist", target));
                     AntModule.err.annotate (iae, NbBundle.getMessage (AntTargetNode.class, "EXC_target_not_exist", target));
                     throw iae;
                 }
@@ -404,8 +404,8 @@ public class AntTargetNode extends ElementNode implements ChangeListener {
                 combo.addActionListener (helplistener);
                 help.addActionListener (new ActionListener () {
                         public void actionPerformed (ActionEvent ev) {
-                            TopManager.getDefault().showHelp(
-                                AntTaskNode.helpFor((String)combo.getSelectedItem(), "task")); // NOI18N
+                            Help help = (Help)Lookup.getDefault().lookup(Help.class);
+                            help.showHelp(AntTaskNode.helpFor((String)combo.getSelectedItem(), "task"));
                         }
                     });
             
@@ -434,7 +434,7 @@ public class AntTargetNode extends ElementNode implements ChangeListener {
             DialogDescriptor dlg = new DialogDescriptor (pane, NbBundle.getMessage (AntTargetNode.class, "TITLE_select_task"));
             dlg.setHelpCtx (getHelpCtx ());
             dlg.setModal (true);
-            TopManager.getDefault ().createDialog (dlg).show ();
+            DialogDisplayer.getDefault ().createDialog (dlg).show ();
             if (dlg.getValue () != NotifyDescriptor.OK_OPTION) return;
             String name = (String) combo.getSelectedItem ();
             try {
