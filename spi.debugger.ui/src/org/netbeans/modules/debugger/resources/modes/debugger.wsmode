@@ -9,8 +9,8 @@
     <kind type="view" />
     <state type="joined" />
     <constraints>
-        <path orientation="vertical" number="1" weight="0.3" />
-        <path orientation="horizontal" number="1" weight="0.5" />
+        <path orientation="vertical" number="40" weight="0.3" />
+        <path orientation="horizontal" number="40" weight="0.5" />
     </constraints>
     <active-tc id="callstack" />
     <empty-behavior permanent="true" />

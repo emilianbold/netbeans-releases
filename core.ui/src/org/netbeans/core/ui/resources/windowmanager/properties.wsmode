@@ -9,9 +9,9 @@
     <kind type="view" />
     <state type="joined" />
     <constraints>
-        <path orientation="vertical" number="0" weight="0.7" />
-        <path orientation="horizontal" number="2" weight="0.2" />
-        <path orientation="vertical" number="2" weight="0.5" />
+        <path orientation="vertical" number="20" weight="0.7" />
+        <path orientation="horizontal" number="60" weight="0.2" />
+        <path orientation="vertical" number="60" weight="0.5" />
     </constraints>
     <active-tc id="properties" />
     <empty-behavior permanent="true" />

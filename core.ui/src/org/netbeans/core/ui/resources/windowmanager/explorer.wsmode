@@ -10,8 +10,8 @@
     <kind type="view" />
     <state type="joined" />
     <constraints>
-        <path orientation="vertical" number="0" weight="0.7" />
-        <path orientation="horizontal" number="0" weight="0.25" />
+        <path orientation="vertical" number="20" weight="0.7" />
+        <path orientation="horizontal" number="20" weight="0.25" />
     </constraints>
     <active-tc id="filesystems" />
     <empty-behavior permanent="true" />
