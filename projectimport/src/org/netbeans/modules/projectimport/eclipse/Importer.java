@@ -97,12 +97,19 @@ final class Importer {
             public void run() {
                 ProjectManager.mutex().writeAccess(new Runnable() {
                     public void run() {
-                        int pos = 0;
-                        for (Iterator it = eclProjects.iterator(); it.hasNext(); ) {
-                            EclipseProject eclPrj = (EclipseProject) it.next();
-                            nbProjects[pos++] = importProject(eclPrj);
+                        try {
+                            int pos = 0;
+                            for (Iterator it = eclProjects.iterator(); it.hasNext(); ) {
+                                EclipseProject eclPrj = (EclipseProject) it.next();
+                                nbProjects[pos++] = importProject(eclPrj);
+                            }
+                        } catch (IOException ioe) {
+                            ioe.printStackTrace();
+                            ErrorManager.getDefault().log(ErrorManager.USER,
+                                    "Error occured during project importing: " + ioe); // NOI18N
+                        } finally {
+                            done = true;
                         }
-                        done = true;
                     }
                 });
             }
@@ -137,7 +144,7 @@ final class Importer {
         return nbProjects;
     }
     
-    private J2SEProject importProject(EclipseProject eclProject) {
+    private J2SEProject importProject(EclipseProject eclProject) throws IOException {
         assert eclProject != null : "Eclipse project cannot be null"; // NOI18N
         
         // recursivity check
@@ -153,66 +160,59 @@ final class Importer {
         File nbProjectDir = new File(destination + "/" + eclProject.getName());
         Map eclRoots = eclProject.getAllSourceRoots();
         File[] testDirs = new File[0];
-        try {
-            File[] srcFiles = new File[eclRoots.size()];
-            int j = 0;
-            for (Iterator it = eclRoots.keySet().iterator(); it.hasNext(); ) {
-                srcFiles[j++] = (File) it.next();
-            }
-            // create basic NB project
-            final AntProjectHelper helper = J2SEProjectGenerator.createProject(
-                    nbProjectDir, eclProject.getName(), srcFiles, testDirs, null);
-            // get NB project
-            J2SEProject nbProject = (J2SEProject) ProjectManager.getDefault().
-                    findProject(FileUtil.toFileObject(nbProjectDir));
-            ProjectClassPathExtender nbProjectClassPath =
-                    (ProjectClassPathExtender) nbProject.getLookup().lookup(ProjectClassPathExtender.class);
-            assert nbProjectClassPath != null : "Cannot lookup ProjectClassPathExtender"; // NOI18N
-            
-            // set labels for source roots
-            SourceRoots roots = nbProject.getSourceRoots();
-            URL[] rootURLs = roots.getRootURLs();
-            String[] labels = new String[rootURLs.length];
-            for (int i = 0; i < rootURLs.length; i++) {
-                labels[i] = (String) eclRoots.get(new File(rootURLs[i].getFile()));
-            }
-            roots.putRoots(rootURLs, labels);
-            
-            // add libraries to classpath
-            File[] eclLibs = eclProject.getAllLibrariesFiles();
-            for (int i = 0; i < eclLibs.length; i++) {
-                if (eclLibs[i].exists()) {
-                    FileObject eclLib = FileUtil.toFileObject(eclLibs[i]);
-                    nbProjectClassPath.addArchiveFile(eclLib);
-                } else {
-                    logWarning(eclLibs[i] + " doesn't exist. Skipping..."); // NOI18N
-                }
-            }
-            
-            // create projects the main project depends on
-            Collection projects = eclProject.getProjects();
-            for (Iterator it = projects.iterator(); it.hasNext(); ) {
-                EclipseProject eclSubProject = (EclipseProject) it.next();
-                J2SEProject nbSubProject = importProject(eclSubProject);
-                AntArtifact[] artifact =
-                        AntArtifactQuery.findArtifactsByType(nbSubProject,
-                        JavaProjectConstants.ARTIFACT_TYPE_JAR);
-                nbProjectClassPath.addAntArtifact(
-                        artifact[0], artifact[0].getArtifactLocations()[0]);
-            }
-            
-            // set platform used by an Eclipse project
-            setJavaPlatform(eclProject, helper);
-            
-            ProjectManager.getDefault().saveProject(nbProject);
-            loadedProject.put(eclProject.getDirectory().getAbsolutePath(), nbProject);
-            return nbProject;
-        } catch (IOException e) {
-            ErrorManager.getDefault().log(ErrorManager.USER,
-                    "Error occured during project importing: " + e); // NOI18N
-            e.printStackTrace();
+        File[] srcFiles = new File[eclRoots.size()];
+        int j = 0;
+        for (Iterator it = eclRoots.keySet().iterator(); it.hasNext(); ) {
+            srcFiles[j++] = (File) it.next();
         }
-        return null;
+        // create basic NB project
+        final AntProjectHelper helper = J2SEProjectGenerator.createProject(
+                nbProjectDir, eclProject.getName(), srcFiles, testDirs, null);
+        // get NB project
+        J2SEProject nbProject = (J2SEProject) ProjectManager.getDefault().
+                findProject(FileUtil.toFileObject(nbProjectDir));
+        ProjectClassPathExtender nbProjectClassPath =
+                (ProjectClassPathExtender) nbProject.getLookup().lookup(ProjectClassPathExtender.class);
+        assert nbProjectClassPath != null : "Cannot lookup ProjectClassPathExtender"; // NOI18N
+        
+        // set labels for source roots
+        SourceRoots roots = nbProject.getSourceRoots();
+        URL[] rootURLs = roots.getRootURLs();
+        String[] labels = new String[rootURLs.length];
+        for (int i = 0; i < rootURLs.length; i++) {
+            labels[i] = (String) eclRoots.get(new File(rootURLs[i].getFile()));
+        }
+        roots.putRoots(rootURLs, labels);
+        
+        // add libraries to classpath
+        File[] eclLibs = eclProject.getAllLibrariesFiles();
+        for (int i = 0; i < eclLibs.length; i++) {
+            if (eclLibs[i].exists()) {
+                FileObject eclLib = FileUtil.toFileObject(eclLibs[i]);
+                nbProjectClassPath.addArchiveFile(eclLib);
+            } else {
+                logWarning(eclLibs[i] + " doesn't exist. Skipping..."); // NOI18N
+            }
+        }
+        
+        // create projects the main project depends on
+        Collection projects = eclProject.getProjects();
+        for (Iterator it = projects.iterator(); it.hasNext(); ) {
+            EclipseProject eclSubProject = (EclipseProject) it.next();
+            J2SEProject nbSubProject = importProject(eclSubProject);
+            AntArtifact[] artifact =
+                    AntArtifactQuery.findArtifactsByType(nbSubProject,
+                    JavaProjectConstants.ARTIFACT_TYPE_JAR);
+            nbProjectClassPath.addAntArtifact(
+                    artifact[0], artifact[0].getArtifactLocations()[0]);
+        }
+        
+        // set platform used by an Eclipse project
+        setJavaPlatform(eclProject, helper);
+        
+        ProjectManager.getDefault().saveProject(nbProject);
+        loadedProject.put(eclProject.getDirectory().getAbsolutePath(), nbProject);
+        return nbProject;
     }
     
     /** Sets <code>JavaPlatform</code> for the given project */
@@ -263,14 +263,15 @@ final class Importer {
                                 DataFolder.findFolder(platformsFolder), antName);
                         nbPlf = (JavaPlatform) dobj.getNodeDelegate().getLookup().
                                 lookup(JavaPlatform.class);
-                    }
-                    else {
-                        //tzezula: TODO: User should be notified in the UI
+                        // update installed platform
+                        nbPlfs = JavaPlatformManager.getDefault().getInstalledPlatforms();
+                    } else {
+                        // tzezula: TODO: User should be notified in the UI
                         // that the platform is JRE and can't be used
                         ErrorManager.getDefault().log(ErrorManager.ERROR,
-                            "The Eclipse Project platform can't be used," + // NOI18N
-                            "it is an JRE, the NetBeans project requires JDK," +    //NOI18N
-                            "the default platform will be used."); // NOI18N
+                                "The Eclipse Project platform can't be used, " + // NOI18N
+                                "it is an JRE, the NetBeans project requires JDK, " +    //NOI18N
+                                "the default platform will be used."); // NOI18N
                     }
                 } else {
                     // tzezula: TODO: User should be notified in the UI and
