@@ -112,6 +112,7 @@ final class CatalogMounterPanel extends javax.swing.JPanel implements ChangeList
 
     private void initAccessibility(){
         catalogComboBox.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_catalogComboBox"));
+        this.getAccessibleContext().setAccessibleName(Util.getString("ACSN_CatalogMounterPanel"));
         this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_CatalogMounterPanel"));
         
     }
