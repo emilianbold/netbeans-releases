@@ -29,6 +29,7 @@ import org.openide.util.Utilities;
 import org.openide.options.SystemOption;
 
 import org.netbeans.modules.httpserver.*;
+import org.openide.util.RequestProcessor;
 
 /**
  * The UnixBrowserImpl is implementation of browser that displays content in 
@@ -42,11 +43,9 @@ import org.netbeans.modules.httpserver.*;
  */
 public class UnixBrowserImpl extends ExtBrowserImpl {
     
-    private static ResourceBundle bundle = NbBundle.getBundle(UnixBrowserImpl.class);
-    
     private static boolean debug = false;
     
-    /** windowID of servicing window (-1 if there is no assocciated window */
+    /** windowID of servicing window (-1 if there is no assocciated window) */
     private transient int     currWinID = -1;
     
     /** number of probes to get XWindow identification of used window */
@@ -122,6 +121,17 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
      * @param url URL to show in the browser.
      */
     public void setURL(URL url) {
+        if (SwingUtilities.isEventDispatchThread ()) {
+            final URL newUrl = url;
+            RequestProcessor.postRequest (
+                new Runnable () {
+                    public void run () {
+                        UnixBrowserImpl.this.setURL (newUrl);
+                    }
+            });
+            return;
+        }
+        
         NbProcessDescriptor cmd = extBrowserFactory.getBrowserExecutable ();    // NOI18N
         Process p;
         TopManager tm = TopManager.getDefault ();
@@ -142,14 +152,12 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             if (currWinID == -1) {
                 // no browser window is assigned
                 
-                tm.setStatusText (bundle.getString("MSG_creating_new_window")+Integer.toHexString (currWinID));
-
                 // is browser running?
                 cmd = new NbProcessDescriptor ("xwininfo", "-name " + getCommand (false));   // NOI18N
                 p = cmd.exec (); 
                 if (p.waitFor () == 0) {
                     cmd = extBrowserFactory.getBrowserExecutable (); // NOI18N
-                    tm.setStatusText (bundle.getString("MSG_Running_command")+cmd);
+                    tm.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
                     p = cmd.exec (new UnixWebBrowser.UnixBrowserFormat (new ExecInfo(""), "-raise -remote openURL("+url.toString ()+",new-window)"));   // NOI18N
                     if (p.waitFor () != 0) {
                         tm.notify (
@@ -162,7 +170,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                 }
                 else {
                     cmd = extBrowserFactory.getBrowserExecutable (); // NOI18N
-                    tm.setStatusText (bundle.getString("MSG_Running_command")+cmd);
+                    tm.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
                     p = cmd.exec (new UnixWebBrowser.UnixBrowserFormat (new ExecInfo(""), url.toString ()));   // NOI18N
                 }
                 
@@ -171,10 +179,8 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             else {
                 // reuse old window
                 
-                tm.setStatusText (bundle.getString("MSG_use_win")+Integer.toHexString (currWinID));
-                
                 cmd = extBrowserFactory.getBrowserExecutable (); // NOI18N
-                tm.setStatusText (bundle.getString("MSG_Running_command")+cmd);
+                    tm.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
                 p = cmd.exec (new UnixWebBrowser.UnixBrowserFormat (
                     new ExecInfo(""), "-id 0x"+Integer.toHexString (currWinID)+" -raise -remote openURL("+url.toString ()+")")   // NOI18N
                 );
@@ -188,11 +194,19 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                 }
                 // this is too early to get window title now
             }
-            tm.setStatusText ("");   // NOI18N
-            
             URL old = this.url;
             this.url = url;
             pcs.firePropertyChange (PROP_URL, old, url);
+            // browser works on displaying, clear the message now
+            RequestProcessor.postRequest (
+                new Runnable () {
+                    public void run () {
+                        TopManager.getDefault ().setStatusText (""); // NOI18N
+                    }
+                },
+                2000,
+                Thread.MIN_PRIORITY
+            );
         }
         catch (java.io.IOException ex) {
             // occurs when executable is not found or not executable
@@ -320,7 +334,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             try {
                 for (int i=nOfProbes; i>0; i--) {
                     // now try to get win ID
-                    setStatusMessage (bundle.getString("MSG_look_for_win"));
+                    setStatusMessage (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_look_for_win"));
                     Process p = Runtime.getRuntime ().exec (new String [] {
                         "sh", "-c", "xwininfo -root -tree|grep " + getCommand (false)}); // NOI18N
                     java.io.InputStream inp = p.getInputStream ();
@@ -347,7 +361,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                     Thread.sleep (probeDelayLength);
                 }
                 // fallback - use the first one if you can't find it by URL
-                setStatusMessage (bundle.getString("MSG_look_for_win"));
+                setStatusMessage (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_look_for_win"));
                 Process p = Runtime.getRuntime ().exec (new String [] {
                     "sh", "-c", "xwininfo -root -tree|grep " + getCommand (false) }); // NOI18N
                 java.io.InputStream inp = p.getInputStream ();

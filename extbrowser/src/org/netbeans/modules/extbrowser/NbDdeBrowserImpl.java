@@ -33,12 +33,23 @@ import org.openide.options.SystemOption;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
 import org.netbeans.modules.httpserver.*;
+import org.openide.util.NbBundle;
 
 /**
+ * Class that uses DDE to communicate with web browser through DDE.
+ * Currently three browsers are supported:
+ * <UL>
+ * <LI>Netscape Navigator</LI>
+ * <LI>Internet Explorer</LI>
+ * <LI>Mozilla</LI>
+ * </UL>
  *
+ * <P>Limitations: Mozilla doesn't support WWW_Activate now
+ * IE has different implementation on Win9x and on WinNT/Win2000. 
+ * WWW_Activate creates always new window on Win9x so we don't use it.
+ * Also it accepts only "0xFFFFFFFF" for WWW_Activate on WinNT/Win2K.
  *
  * @author  rkubacki
- * @version 
  */
 public class NbDdeBrowserImpl extends ExtBrowserImpl {
 
@@ -307,6 +318,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 String winID;
                 // activate browser window (doesn't work on Win9x)
                 if (!win9xHack (task) && !mozillaHack (task)) {
+                    TopManager.getDefault ().setStatusText (NbBundle.getMessage (NbDdeBrowserImpl.class, "MSG_activatingBrowser"));
                     // IE problem
                     if (task.browser.realDDEServer().equals(WinWebBrowser.IEXPLORE))
                         winID = "0xFFFFFFFF";   // NOI18N
@@ -338,6 +350,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 }
 
 
+                TopManager.getDefault ().setStatusText (NbBundle.getMessage (NbDdeBrowserImpl.class, "MSG_openingURLInBrowser"));
                 if (task.browser.realDDEServer().equals(WinWebBrowser.IEXPLORE)) {
                     winID = (hasNoWindow && !win9xHack(task))? "0": "-1";   // NOI18N
                 }
@@ -372,6 +385,9 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 URL oldUrl = task.browser.url;
                 task.browser.url = url;
                 task.browser.pcs.firePropertyChange(PROP_URL, oldUrl, url);
+                
+                // wait for cleaning status text and processing of URL
+                Thread.currentThread ().sleep (2000);
             }
             catch (InterruptedException ex) {
                 // this can be timer interrupt
@@ -384,6 +400,9 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                         TopManager.getDefault().notifyException(ex1);
                     }
                 });
+            }
+            finally {
+                TopManager.getDefault ().setStatusText ("");    // NOI18N
             }
         }
         
@@ -409,7 +428,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
             String b;
             if (task.browser.winBrowserFactory.isStartWhenNotRunning()) {
                 NbProcessDescriptor cmd = task.browser.winBrowserFactory.getBrowserExecutable();
-                // setStatusMessage(bundle.getString("MSG_Running_command")+cmd);
+                TopManager.getDefault ().setStatusText (bundle.getString("MSG_startingBrowser"));
                 cmd.exec();
                 // wait for browser start
                 Thread.currentThread().sleep(5000);
