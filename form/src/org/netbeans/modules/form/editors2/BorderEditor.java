@@ -263,11 +263,10 @@ public final class BorderEditor extends PropertyEditorSupport
 
                 BorderDesignSupport nodeBDS = null;
                 try {
-                    Object inst = palItem.createInstance();
-                    if (inst instanceof Border)
-                        nodeBDS = new BorderDesignSupport((Border)inst);
-                    else if (inst instanceof BorderInfo)
-                        nodeBDS = new BorderDesignSupport((BorderInfo)inst);
+                    CreationFactory.InstanceSource instSource =
+                            new CreationFactory.InstanceSource(
+                                    palItem.getInstanceCookie());
+                    nodeBDS = new BorderDesignSupport(instSource);
                 }
                 catch (Exception ex) {
                     ex.printStackTrace();
