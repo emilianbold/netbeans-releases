@@ -494,7 +494,7 @@ public class FormUtils
                              radValue.userCode);
             else if (radValue.value != null)
                 return new RADConnectionPropertyEditor.RADConnectionDesignValue(
-                             radValue.requiredTypeName, radValue.userCode);
+                             radValue.requiredTypeName, radValue.value);
         }
         else if (value instanceof BorderDesignSupport) {
             try {
