@@ -40,7 +40,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
         <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
         <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/>
         <fileset dir="external">
-          <include name="ant-1.*.jar"/>
+          <include name="ant-1.5.1.jar"/>
         </fileset>
         <fileset dir="../core/external">
           <include name="xml-apis*.jar"/>
@@ -71,7 +71,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <mkdir dir="netbeans/modules/ext"/>
     <copy todir="netbeans/modules/ext">
       <fileset dir="external">
-        <include name="ant*.jar"/>
+        <include name="ant*1.5.1.jar"/>
       </fileset>
     </copy>
   </target>
@@ -277,7 +277,7 @@ After that you should be done!
             </fileset>
             <fileset dir="external">
               <include name="ant.jar"/>
-              <include name="ant-1.*.jar"/>
+              <include name="ant-1.5.1.jar"/>
             </fileset>
             <fileset dir="../core/external">
               <include name="xml-apis*.jar"/>
