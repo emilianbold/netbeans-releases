@@ -43,53 +43,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     public static final String PROP_GENERATE_SIZE = "generateSize"; // NOI18N
     public static final String PROP_GENERATE_CENTER = "generateCenter"; // NOI18N
 
-    public static final Hashtable encodingList = new Hashtable();
-    static {
-        encodingList.put("US-ASCII(English)", "US-ASCII"); // NOI18N
-        encodingList.put("UTF-8(Compressed Unicode)", "UTF-8"); // NOI18N
-        encodingList.put("UTF-16(Compressed UCS)", "UTF-16"); // NOI18N
-        encodingList.put("ISO-10646-UCS-2(Raw Unicode)", "ISO-10646-UCS-2"); // NOI18N
-        encodingList.put("ISO-10646-UCS-4(Raw UCS)", "ISO-10646-UCS-4"); // NOTE: no support for ISO-10646-UCS-4 yet. [from XmlReader] // NOI18N
-        encodingList.put("ISO-8859-1(Latin-1, western Europe)", "ISO-8859-1"); // NOI18N
-        encodingList.put("ISO-8859-2(Latin-2, eastern Europe)", "ISO-8859-2"); // NOI18N
-        encodingList.put("ISO-8859-3(Latin-3, southern Europe)", "ISO-8859-3"); // NOI18N
-        encodingList.put("ISO-8859-4(Latin-4, northern Europe)", "ISO-8859-4"); // NOI18N
-        encodingList.put("ISO-8859-5(ASCII plus Cyrillic)", "ISO-8859-5"); // NOI18N
-        encodingList.put("ISO-8859-6(ASCII plus Arabic)", "ISO-8859-6"); // NOI18N
-        encodingList.put("ISO-8859-7(ASCII plus Greek)", "ISO-8859-7"); // NOI18N
-        encodingList.put("ISO-8859-8(ASCII plus Hebrew)", "ISO-8859-8"); // NOI18N
-        encodingList.put("ISO-8859-9(Latin-5, Turkish)", "ISO-8859-9"); // NOI18N
-        encodingList.put("ISO-2022-JP(Japanese)", "ISO-2022-JP"); // NOI18N
-        encodingList.put("Shift_JIS(Japanese, Windows)", "Shift_JIS"); // NOI18N
-        encodingList.put("EUC-JP(Japanese, UNIX)", "EUC-JP"); // NOI18N
-        encodingList.put("Big5(Chinese, Taiwan)", "Big5"); // NOI18N
-        encodingList.put("GB2312(Chinese, mainland China)", "GB2312"); // NOI18N
-        encodingList.put("KOI8-R(Russian)", "KOI8-R"); // NOI18N
-        encodingList.put("ISO-2022-KR(Korea)", "ISO-2022-KR"); // NOI18N
-        encodingList.put("EUC-KR(Korean, UNIX)", "EUC-KR"); // NOI18N
-        encodingList.put("ISO-2022-CN(Chinese)", "ISO-2022-CN"); // NOI18N
-
-        encodingList.put("EBCDIC-CP-US(EBCDIC: US)", "EBCDIC-CP-US"); // NOI18N
-        encodingList.put("EBCDIC-CP-CA(EBCDIC: Canada)", "EBCDIC-CP-CA"); // NOI18N
-        encodingList.put("EBCDIC-CP-NL(EBCDIC: Netherlands)", "EBCDIC-CP-NL"); // NOI18N
-        encodingList.put("EBCDIC-CP-WT(like EBCDIC-CP-US)", "EBCDIC-CP-WT"); // NOI18N
-        encodingList.put("EBCDIC-CP-DK(EBCDIC: Denmark)", "EBCDIC-CP-DK"); // NOI18N
-        encodingList.put("EBCDIC-CP-NO(EBCDIC: Norway)", "EBCDIC-CP-NO"); // NOI18N
-        encodingList.put("EBCDIC-CP-FI(EBCDIC: Finland)", "EBCDIC-CP-FI"); // NOI18N
-        encodingList.put("EBCDIC-CP-SE(EBCDIC: Sweden)", "EBCDIC-CP-SE"); // NOI18N
-        encodingList.put("EBCDIC-CP-IT(EBCDIC: Italy)", "EBCDIC-CP-IT"); // NOI18N
-        encodingList.put("EBCDIC-CP-ES(EBCDIC: Spain, Latin America)", "EBCDIC-CP-ES"); // NOI18N
-        encodingList.put("EBCDIC-CP-GB(EBCDIC: Great Britain)", "EBCDIC-CP-GB"); // NOI18N
-        encodingList.put("EBCDIC-CP-FR(EBCDIC: France)", "EBCDIC-CP-FR"); // NOI18N
-        encodingList.put("EBCDIC-CP-AR1(EBCDIC: Arabic)", "EBCDIC-CP-AR1"); // NOI18N
-        encodingList.put("EBCDIC-CP-HE(EBCDIC: Hebrew)", "EBCDIC-CP-HE"); // NOI18N
-        encodingList.put("EBCDIC-CP-BE(like EBCDIC-CP-CH)", "EBCDIC-CP-BE"); // NOI18N
-        encodingList.put("EBCDIC-CP-CH(EBCDIC: Switzerland)", "EBCDIC-CP-CH"); // NOI18N
-        encodingList.put("EBCDIC-CP-ROECE(EBCDIC: Roece)", "EBCDIC-CP-ROECE"); // NOI18N
-        encodingList.put("EBCDIC-CP-YU(EBCDIC: Yogoslavia)", "EBCDIC-CP-YU"); // NOI18N
-        encodingList.put("EBCDIC-CP-IS(EBCDIC: Iceland)", "EBCDIC-CP-IS"); // NOI18N
-        encodingList.put("EBCDIC-CP-AR2(EBCDIC: Urdu)", "EBCDIC-CP-AR2"); // NOI18N
-    }
     protected static final String AUX_MENU_COMPONENT = "RADVisualFormContainer_MenuComponent"; // NOI18N
 
     public static final int GEN_BOUNDS = 0;
@@ -457,41 +410,16 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             }
         };
 
-        Node.Property genEncodingProperty = new EncodingProperty("encoding", String.class, // NOI18N
-                                                                 FormEditor.getFormBundle().getString("MSG_FormEncoding"),
-                                                                 FormEditor.getFormBundle().getString("MSG_FormEncodingDesc")) {
-            public void setValue(Object value) {
-                if (!(value instanceof String)) {
-                    throw new IllegalArgumentException();
-                }
-                //XXX getFormModel().setEncoding((String) value);
-            }
-
-
-            public Object getValue() {
-                Object value = "UTF-8";//XXX getFormModel().getEncoding();
-                if (value == null) {
-                    value = ""; // NOI18N
-                }
-                return value;
-            }
-
-            public boolean canWrite() {
-                return !isReadOnly();
-            }
-        };
-
         // the order of if's is important, JAppletFormInfo implements
         // JMenuBarContainer
 
         if (formInfo instanceof JAppletFormInfo) {
-            return new Node.Property[] { createMenuProperty(),
-                                         genEncodingProperty, };
+            return new Node.Property[] { createMenuProperty() };
         }
         else if (formInfo instanceof AppletFormInfo
                  || formInfo instanceof PanelFormInfo
                  || formInfo instanceof JPanelFormInfo) {
-            return new Node.Property[] { genEncodingProperty, };
+            return new Node.Property[] { };
         }
         else if (formInfo instanceof JMenuBarContainer
                  || formInfo instanceof MenuBarContainer) {
@@ -501,8 +429,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                                          policyProperty,
                                          genPositionProperty,
                                          genSizeProperty,
-                                         genCenterProperty,
-                                         genEncodingProperty,
+                                         genCenterProperty
             };
         }
         else {
@@ -511,8 +438,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                                          policyProperty,
                                          genPositionProperty,
                                          genSizeProperty,
-                                         genCenterProperty,
-                                         genEncodingProperty,
+                                         genCenterProperty
             };
         }
     }
@@ -623,83 +549,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
          */
         public void setAsText(String str) {
             setValue(str);
-        }
-    }
-
-    abstract class EncodingProperty extends PropertySupport.ReadWrite {
-        EncodingProperty(String name, Class type, String displayName, String shortDescription) {
-            super(name, type, displayName, shortDescription);
-        }
-
-        /** Editor with list of encodings */
-        public java.beans.PropertyEditor getPropertyEditor() {
-            return new EncodingEditor();
-        }
-
-        class EncodingEditor extends java.beans.PropertyEditorSupport implements EnhancedPropertyEditor {
-            /**
-             * @return true if this PropertyEditor provides a enhanced in-place custom 
-             *              property editor, false otherwise
-             */
-            public boolean hasInPlaceCustomEditor() {
-                return true;
-            }
-
-            public void setAsText(String value) {
-                String newValue =(String) encodingList.get(value);
-                if (newValue == null)
-                    newValue = value;
-
-                // XXX(-tdt) test if the encoding is supported by the JDK
-
-                try {
-                    String x = new String(new byte[0], 0, 0, newValue);
-                }
-                catch (java.io.UnsupportedEncodingException ex) {
-                    throw new IllegalArgumentException(
-                        FormEditor.getFormBundle().getString("ERR_UnsupportedEncoding"));
-                }
-
-                this.setValue(newValue);
-                if (!getFormModel().getFormDataObject().isModified()) {
-                    getFormModel().getFormDataObject().setModified(true);
-                }
-            }
-            public String getAsText() {
-                return this.getValue().toString();
-            }
-
-            public java.awt.Component getInPlaceCustomEditor() {
-                final JComboBox eventBox = new JComboBox();
-                eventBox.setEditable(true);
-
-                java.util.Iterator iter = encodingList.keySet().iterator();
-                while (iter.hasNext())
-                    eventBox.addItem(iter.next());
-
-                eventBox.setSelectedItem(getAsText());
-                eventBox.addActionListener(new java.awt.event.ActionListener() {
-                    public void actionPerformed(java.awt.event.ActionEvent e) {
-                        try {
-                            setAsText((String) eventBox.getEditor().getItem());
-                        }
-                        catch (IllegalArgumentException ex) {
-                            TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                                ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-                        }
-                    }
-                }
-                                           );
-                return eventBox;
-            }
-
-            /**
-             * @return true if this property editor provides tagged values and
-             * a custom strings in the choice should be accepted too, false otherwise
-             */
-            public boolean supportsEditingTaggedValues() {
-                return false;
-            }
         }
     }
 }

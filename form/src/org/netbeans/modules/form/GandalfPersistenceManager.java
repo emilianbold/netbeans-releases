@@ -756,20 +756,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         FileLock lock = null;
         java.io.OutputStream os = null;
-        String encoding = null;//XXX manager.getEncoding();
-
-        if (encoding == null) {
-            encoding = "UTF-8";
-        }
-        else {
-            // XXX(-tdt) test if the encoding is supported by the JDK
-            try {
-                String x = new String(new byte[0], 0, 0, encoding);
-            }
-            catch (java.io.UnsupportedEncodingException ex) {
-                encoding = "UTF-8";
-            }
-        }
+        String encoding = "UTF-8"; // NOI18N
 
         try {
             lock = formFile.lock();
