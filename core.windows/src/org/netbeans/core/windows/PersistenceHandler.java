@@ -427,10 +427,19 @@ final class PersistenceHandler implements PersistenceObserver {
         wmc.heightSeparated = separatedBounds.height;
         
         wmc.mainWindowFrameStateJoined = wmi.getMainWindowFrameStateJoined();
+        if (wmc.mainWindowFrameStateJoined == Frame.ICONIFIED) {
+            // #46646 - don't save iconified state
+            //mkleint - actually shoudn't we ignore the maximized states as well?
+            wmc.mainWindowFrameStateJoined = Frame.NORMAL;
+        }
         if(DEBUG) {
             debugLog("mainWindowFrameStateJoined=" + wmc.mainWindowFrameStateJoined); // NOI18N
         }
         wmc.mainWindowFrameStateSeparated = wmi.getMainWindowFrameStateSeparated();
+        if (wmc.mainWindowFrameStateSeparated == Frame.ICONIFIED) {
+            // #46646 - don't save iconified state
+            wmc.mainWindowFrameStateSeparated = Frame.NORMAL;
+        }
         if(DEBUG) {
             debugLog("mainWindowFrameStateSeparated=" + wmc.mainWindowFrameStateSeparated); // NOI18N
         }
