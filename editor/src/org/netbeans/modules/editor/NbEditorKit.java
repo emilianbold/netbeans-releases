@@ -22,7 +22,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
@@ -89,6 +91,7 @@ public class NbEditorKit extends ExtKit {
                                        new NbRedoAction(),
                                        new NbToggleBookmarkAction(),
                                        new NbGotoNextBookmarkAction(BaseKit.gotoNextBookmarkAction, false),
+                                       new NbBuildToolTipAction(),
                                        new NbToggleLineNumbersAction()
                                    };
         return TextAction.augmentList(super.createActions(), nbEditorActions);
@@ -429,5 +432,15 @@ public class NbEditorKit extends ExtKit {
         
     }
     
+
+    public static class NbBuildToolTipAction extends BuildToolTipAction {
+
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            if (target != null) {
+                NbToolTip.buildToolTip(target);
+            }
+        }
+
+    }
 
 }

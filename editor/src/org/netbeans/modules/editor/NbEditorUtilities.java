@@ -169,4 +169,9 @@ public class NbEditorUtilities {
         return ret;
     }
 
+    /** Get mime type of the given document. */
+    public static String getMimeType(Document doc) {
+        return (String)doc.getProperty(NbEditorDocument.MIME_TYPE_PROP);
+    }
+
 }

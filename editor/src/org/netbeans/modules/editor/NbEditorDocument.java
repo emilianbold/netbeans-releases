@@ -162,17 +162,21 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.Annotatable {
      * the whole line will be annotated
      * @param annotation annotation which is attached to this text */
     public void addAnnotation(Position startPos, int length, Annotation annotation) {
-        AnnotationDesc a = new AnnotationDescDelegate(this, startPos, length, annotation);
-        annoMap.put(annotation, a);
-        getAnnotations().addAnnotation(a);
+        if (annotation.getAnnotationType() != null) {
+            AnnotationDesc a = new AnnotationDescDelegate(this, startPos, length, annotation);
+            annoMap.put(annotation, a);
+            getAnnotations().addAnnotation(a);
+        }
     }
 
     /** Removal of added annotation.
      * @param annotation annotation which is going to be removed */
     public void removeAnnotation(Annotation annotation) {
-        AnnotationDescDelegate a = (AnnotationDescDelegate)annoMap.get(annotation);
-        a.detachListeners();
-        getAnnotations().removeAnnotation(a);
+        if (annotation.getAnnotationType() != null) {
+            AnnotationDescDelegate a = (AnnotationDescDelegate)annoMap.get(annotation);
+            a.detachListeners();
+            getAnnotations().removeAnnotation(a);
+        }
     }
 
     /** Implementation of AnnotationDesc, which delegate to Annotation instance
