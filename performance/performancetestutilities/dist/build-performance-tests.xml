@@ -19,8 +19,6 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
     
     <!-- Root folders -->
-    <property name="nball.dir" location="../../../../nb_all"/>
-    <property name="nbextra.dir" location="../../../../nbextra"/>
     <property name="nbextra.qa.performance.dist.dir" location="${nbextra.dir}/qa/performance/dist"/>
     <property name="performance.testutilities.dir" location="${nball.dir}/performance/performancetestutilities"/>
     <property name="performance.testutilities.dist.dir" location="${performance.testutilities.dir}/dist"/>

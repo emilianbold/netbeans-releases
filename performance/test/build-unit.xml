@@ -15,6 +15,10 @@ Microsystems, Inc. All Rights Reserved.
 <project name="Measure startup time and memory usage" basedir="." default="all">
 
     
+    <!-- Root folders -->
+    <property name="nball.dir" location="../../../nb_all"/>
+    <property name="nbextra.dir" location="../../../nbextra"/>
+    
     <!-- Imports defaults for Performance testing. -->
     <import file="../performancetestutilities/dist/build-performance-tests.xml"/>
 
