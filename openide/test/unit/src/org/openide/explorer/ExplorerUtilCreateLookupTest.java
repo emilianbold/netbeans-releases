@@ -53,21 +53,9 @@ public class ExplorerUtilCreateLookupTest extends org.openide.windows.TopCompone
         return new NbTestSuite(ExplorerUtilCreateLookupTest.class);
     }
     
-    /** Run all tests in AWT thread */
-    public final void run(final junit.framework.TestResult result) {
-        try {
-            // XXX ExplorerManager when updating selected nodes
-            // replanes all firing into AWT thread, therefore the test
-            // has to run in AWT.
-            javax.swing.SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                    ExplorerUtilCreateLookupTest.super.run (result);
-                }
-            });
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new IllegalStateException ();
-        }
+    
+    protected boolean runInEQ () {
+        return true;
     }
     
     /** Setup component with lookup.
