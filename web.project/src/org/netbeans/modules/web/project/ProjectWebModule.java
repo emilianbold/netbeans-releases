@@ -259,7 +259,9 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     public void setServerInstanceID(String severInstanceID) {
-        project.getWebProjectProperties().setServerInstance(severInstanceID);
+        WebProjectProperties wpp = project.getWebProjectProperties();
+        wpp.setServerInstance(severInstanceID);
+        wpp.save();
     }
     
     public Iterator getArchiveContents () throws java.io.IOException {
