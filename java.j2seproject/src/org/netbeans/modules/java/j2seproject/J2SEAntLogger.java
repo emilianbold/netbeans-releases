@@ -100,7 +100,7 @@ public final class J2SEAntLogger extends AntLogger {
         // #43968 - filter out following message
         if (!event.isConsumed() && event.getLogLevel() == AntEvent.LOG_WARN &&
             event.getMessage().startsWith("Trying to override old definition of " + // NOI18N
-                "task http://www.netbeans.org/ns/j2se-project/2:")) { // NOI18N
+                "task http://www.netbeans.org/ns/j2se-project/")) { // NOI18N
             event.consume();
         }
     }
