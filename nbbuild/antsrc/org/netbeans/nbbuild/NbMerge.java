@@ -102,7 +102,18 @@ public class NbMerge extends Task {
         project.executeTarget (dummyName);
         
         Deltree deltree = (Deltree) project.createTask ("deltree");
-        deltree.setDir (dest.getAbsolutePath ());
+        try {
+            try {
+                Deltree.class.getMethod ("setDir", new Class[] { File.class }).invoke 
+                (deltree, new Object[] { dest });
+            } catch (NoSuchMethodException nsme) {
+                Deltree.class.getMethod ("setDir", new Class[] { String.class }).invoke 
+                (deltree, new Object[] { dest.getAbsolutePath () });
+            }
+            // deltree.setDir (dest.getAbsolutePath ());
+        } catch (Exception e) {
+            throw new BuildException ("Could not set directory for deltree", e, location);
+        }
         deltree.init ();
         deltree.setLocation (location);
         deltree.execute ();
