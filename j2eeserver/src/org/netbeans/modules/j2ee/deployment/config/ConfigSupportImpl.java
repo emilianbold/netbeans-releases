@@ -364,6 +364,9 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                             primary = fo;
                     }
                     getDeploymentPlanSplitter().writeDeploymentPlanFiles(config, mds.getDeployableObject(),  files);
+                    // write should create the config files by now, so make sure
+                    if (primary == null)
+                        primary = FileUtil.toFileObject(files[0]);
                 }
             }
 
