@@ -132,7 +132,7 @@ public class CharEditor extends PropertyEditorSupport implements EnhancedPropert
      */
     public String getJavaInitializationString() {
         if ( ((Character)getValue()).charValue() == '\'' )
-            return "\\'";                   // NOI18N
+            return "'\\''";                 // NOI18N
         else
             return "'" + getAsText() + "'"; // NOI18N
     }
