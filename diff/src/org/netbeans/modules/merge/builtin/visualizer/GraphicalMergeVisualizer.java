@@ -97,4 +97,46 @@ public class GraphicalMergeVisualizer extends MergeVisualizer implements Seriali
         return merge;
     }
     
+    /** Getter for property colorUnresolvedConflict.
+     * @return Value of property colorUnresolvedConflict.
+     */
+    public java.awt.Color getColorUnresolvedConflict() {
+        return colorUnresolvedConflict;
+    }
+    
+    /** Setter for property colorUnresolvedConflict.
+     * @param colorUnresolvedConflict New value of property colorUnresolvedConflict.
+     */
+    public void setColorUnresolvedConflict(java.awt.Color colorUnresolvedConflict) {
+        this.colorUnresolvedConflict = colorUnresolvedConflict;
+    }
+    
+    /** Getter for property colorResolvedConflict.
+     * @return Value of property colorResolvedConflict.
+     */
+    public java.awt.Color getColorResolvedConflict() {
+        return colorResolvedConflict;
+    }
+    
+    /** Setter for property colorResolvedConflict.
+     * @param colorResolvedConflict New value of property colorResolvedConflict.
+     */
+    public void setColorResolvedConflict(java.awt.Color colorResolvedConflict) {
+        this.colorResolvedConflict = colorResolvedConflict;
+    }
+    
+    /** Getter for property colorOtherConflict.
+     * @return Value of property colorOtherConflict.
+     */
+    public java.awt.Color getColorOtherConflict() {
+        return colorOtherConflict;
+    }
+    
+    /** Setter for property colorOtherConflict.
+     * @param colorOtherConflict New value of property colorOtherConflict.
+     */
+    public void setColorOtherConflict(java.awt.Color colorOtherConflict) {
+        this.colorOtherConflict = colorOtherConflict;
+    }
+    
 }
