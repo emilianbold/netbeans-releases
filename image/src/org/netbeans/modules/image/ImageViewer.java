@@ -78,13 +78,8 @@ public class ImageViewer extends CloneableTopComponent {
     */
     private void initialize (ImageDataObject obj) {
         storedObject = obj;
-        if(label == null) { // when using deserialization by cloning
-            try {
-              label = new javax.swing.JLabel( new NBImageIcon(obj));
-            } catch (IOException ioe) {
-              label = new javax.swing.JLabel();
-            }
-        }
+        if(label == null) // when using deserialization by cloning
+              label = new JLabel( new NBImageIcon(obj));
         JScrollPane scroll = new JScrollPane(label);
         setLayout(new BorderLayout());
         add(scroll, "Center"); // NOI18N
@@ -173,7 +168,7 @@ public class ImageViewer extends CloneableTopComponent {
         super.readExternal(in);
         storedObject = (ImageDataObject)in.readObject();
         // to reset the listener for FileObject changes
-        ((ImageDataObject.ImageOpenSupport)storedObject.getCookie(ImageDataObject.ImageOpenSupport.class)).prepareViewer(); 
+        ((ImageOpenSupport)storedObject.getCookie(ImageOpenSupport.class)).prepareViewer(); 
         initialize(storedObject);
     }
 

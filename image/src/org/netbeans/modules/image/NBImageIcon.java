@@ -33,7 +33,7 @@ class NBImageIcon extends ImageIcon implements Serializable {
     /** Construct a new icon.
     * @param obj the data object to represent the image in
     */
-    public NBImageIcon(ImageDataObject obj) throws IOException {
+    public NBImageIcon(ImageDataObject obj) {
         //super(obj.getImageURL()); // PENDING for the time URL is incorrectly cached (in Toolkit)
         super(obj.getImageData());
         this.obj = obj;
@@ -65,11 +65,7 @@ class NBImageIcon extends ImageIcon implements Serializable {
         /** Restore with the same data object.
         */
         public Object readResolve() {
-            try {
-                return new NBImageIcon(obj);
-            } catch (IOException ioe) {
-                return new ImageIcon(new byte[0]); // empty icon
-            }
+            return new NBImageIcon(obj);
         }
     }
 }
