@@ -56,6 +56,8 @@ public class DriverNodeInfo extends DriverListNodeInfo
             int idx = drvs.indexOf(drv);
             if (idx != -1) drvs.removeElementAt(idx);
             else throw new DatabaseException("driver "+drv+" was not found");
+            // refresh list of drivers after driver delete action
+            getParent().refreshChildren();
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
