@@ -16,13 +16,7 @@ package com.netbeans.developer.modules.loaders.form;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.io.*;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
+import java.util.*;
 
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileLock;
@@ -424,6 +418,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
         } catch (IllegalAccessException e) {
           if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
           // ignore this property // [PENDING]
+        } catch (Exception e) {
+          // unexpected exception - always printed
+          e.printStackTrace ();
+          // ignore this property
         }
       }
     }
@@ -721,9 +719,18 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
   private void saveComponent (RADComponent component, StringBuffer buf, String indent) {
     // 1. Properties
-    if (component.getChangedProperties ().size () > 0) {
+    boolean doSaveProps = false;
+    RADComponent.RADProperty[] props = component.getAllProperties ();
+    for (int i = 0; i < props.length; i++) {
+      if (props[i].isChanged ()) {
+        doSaveProps = true;
+        break;
+      }
+    }
+
+    if (doSaveProps) {
       buf.append (indent); addElementOpen (buf, XML_PROPERTIES);
-      saveProperties (component.getChangedProperties (), buf, indent + ONE_INDENT);
+      saveProperties (component, buf, indent + ONE_INDENT);
       buf.append (indent); addElementClose (buf, XML_PROPERTIES);
     }
 
@@ -744,11 +751,21 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
   }
 
-  private void saveProperties (Map changedProperties, StringBuffer buf, String indent) {
-    for (Iterator it = changedProperties.keySet ().iterator (); it.hasNext (); ) {
-      RADComponent.RADProperty prop = (RADComponent.RADProperty) it.next ();
+  private void saveProperties (RADComponent component, StringBuffer buf, String indent) {
+    RADComponent.RADProperty[] props = component.getAllProperties ();
+    for (int i = 0; i < props.length; i++) {
+      if (!props[i].isChanged ()) continue;
+
+      RADComponent.RADProperty prop = (RADComponent.RADProperty) props[i];
       PropertyDescriptor desc = prop.getPropertyDescriptor ();
-      Object value = changedProperties.get (prop);
+      Object value = null;
+      try {
+        value = prop.getValue ();
+      } catch (Exception e) {
+        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+        // problem getting value => ignore this property
+        continue;
+      }
       String encodedValue = null; 
       String encodedSerializeValue = null; 
       org.w3c.dom.Node valueNode = null;
@@ -1205,8 +1222,25 @@ public class GandalfPersistenceManager extends PersistenceManager {
     org.w3c.dom.NamedNodeMap attributes = valueNode.getAttributes ();
 
     if (attributes != null) {
+      ArrayList attribList = new ArrayList (attributes.getLength ());
       for (int i = 0; i < attributes.getLength (); i++) {
-        org.w3c.dom.Node attrNode = attributes.item (i);
+        attribList.add (attributes.item (i));
+      }
+
+      // sort the attributes by attribute name
+      // probably not necessary, but there is no guarantee that 
+      // the order of attributes will remain the same in DOM
+      Collections.sort (attribList, new Comparator () {
+          public int compare(Object o1, Object o2) {
+            org.w3c.dom.Node n1 = (org.w3c.dom.Node)o1;
+            org.w3c.dom.Node n2 = (org.w3c.dom.Node)o2;
+            return n1.getNodeName ().compareTo (n2.getNodeName ());
+          }
+        }
+      );
+
+      for (Iterator it = attribList.iterator (); it.hasNext ();) {
+        org.w3c.dom.Node attrNode = (org.w3c.dom.Node)it.next ();
         String attrName = attrNode.getNodeName (); 
         String attrValue = attrNode.getNodeValue (); 
         
@@ -1320,6 +1354,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  36   Gandalf   1.35        9/24/99  Ian Formanek    New system of changed 
+ *       properties in RADComponent - Fixes bug 3584 - Form Editor should try to
+ *       enforce more order in the XML elements in .form.
  *  35   Gandalf   1.34        9/15/99  Ian Formanek    Fixes bug introduced in 
  *       Build 388, which caused layouts not to save their properties, improved 
  *       errors notification

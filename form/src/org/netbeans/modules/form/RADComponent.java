@@ -21,9 +21,7 @@ import org.openide.util.datatransfer.NewType;
 import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import javax.swing.JTextField;
 
 /* TODO
@@ -65,9 +63,9 @@ public class RADComponent {
   private Node.Property[] beanProperties;
   private Node.Property[] beanExpertProperties;
   private Node.Property[] beanEvents;
+  private RADComponent.RADProperty[] allProperties;
 
   private HashMap auxValues;
-  private HashMap changedPropertyValues;
   private HashMap valuesCache;
   private HashMap editorsCache;
   private HashMap nameToProperty;
@@ -90,7 +88,6 @@ public class RADComponent {
 
   /** Creates a new RADComponent */
   public RADComponent () {
-    changedPropertyValues = new HashMap (30);
     auxValues = new HashMap (10);
   }
 
@@ -143,7 +140,7 @@ public class RADComponent {
         Object defaultValue = defaultPropertyValues.get (props[i].getName ());
         if (!Utilities.compareObjects (currentValue, defaultValue)) {
           // add the property to the list of changed properties
-          changedPropertyValues.put (prop, currentValue);
+          prop.setChanged (true);
         }
       } catch (Exception e) {
 //        if ( // [PENDING] notify exception
@@ -182,7 +179,6 @@ public class RADComponent {
 
     beanEvents = createEventsProperties ();
 
-    changedPropertyValues = new HashMap ();
     defaultPropertyValues = BeanSupport.getDefaultPropertyValues (beanClass);
   }
 
@@ -277,11 +273,6 @@ public class RADComponent {
     return eventsList;
   }
 
-  /** @return the map of all changed properties - pairs of <RADProperty, Object> */
-  public Map getChangedProperties () {
-    return changedPropertyValues;
-  }
-
   /** @return the map of all currently set aux value - pairs of <String, Object> */
   public Map getAuxValues () {
     return auxValues;
@@ -292,6 +283,19 @@ public class RADComponent {
   */
   public NewType[] getNewTypes () {
     return NO_NEW_TYPES;
+  }
+
+  RADComponent.RADProperty[] getAllProperties () {
+    if (allProperties == null) {
+      Node.Property[] props = getComponentProperties (); 
+      Node.Property[] expertProps = getComponentExpertProperties (); 
+      ArrayList list = new ArrayList (props.length + expertProps.length);
+      list.addAll (Arrays.asList (props));
+      list.addAll (Arrays.asList (expertProps));
+      allProperties = FormEditor.sortProperties (list, beanClass);
+    }
+
+    return allProperties;
   }
 
   public Node.PropertySet[] getProperties () {
@@ -514,7 +518,7 @@ public class RADComponent {
     Object defValue = defaultPropertyValues.get (desc.getName ());
     // add the property to the list of changed properties
     RADProperty prop = (RADProperty)nameToProperty.get (desc.getName ());
-    changedPropertyValues.put (prop, value);
+    prop.setChanged (true);
   }
   
 // -----------------------------------------------------------------------------
@@ -602,10 +606,16 @@ public class RADComponent {
   public void debugChangedValues () {
     if (System.getProperty ("netbeans.debug.form.full") != null) {
       System.out.println("-- debug.form: Changed property values in: "+this+" -------------------------");
-      for (java.util.Iterator it = changedPropertyValues.keySet ().iterator (); it.hasNext ();) {
+      for (java.util.Iterator it = nameToProperty.values ().iterator (); it.hasNext ();) {
         RADProperty prop = (RADProperty)it.next ();
-        PropertyDescriptor desc = prop.getPropertyDescriptor ();
-        System.out.println("Changed Property: "+desc.getName ()+", value: "+changedPropertyValues.get (prop));
+        if (prop.isChanged ()) {
+          PropertyDescriptor desc = prop.getPropertyDescriptor ();
+          try {
+            System.out.println("Changed Property: "+desc.getName ()+", value: "+prop.getValue ());
+          } catch (Exception e) {
+            // ignore problems
+          }
+        }
       }
       System.out.println("--------------------------------------------------------------------------------------");
     }
@@ -638,6 +648,9 @@ public class RADComponent {
     public String getPostCode ();
     public void setPreCode (String value);
     public void setPostCode (String value);
+
+    public boolean isChanged ();
+    public void setChanged (boolean value);
   }
 
   private Node.Property createProperty (final PropertyDescriptor desc) {
@@ -661,6 +674,7 @@ public class RADComponent {
     private PropertyDescriptor desc;
     String preCode = null;                      // custom pre-initialization code to be used before calling the property setter
     String postCode = null;                     // custom post-initialization code to be used after calling the property setter
+    boolean changed = false;
 
     RADPropertyImpl (PropertyDescriptor desc) {
       super (desc.getPropertyType ());
@@ -748,14 +762,7 @@ public class RADComponent {
       } else { // no default => always treat is as changed
         isChanged = true;
       }
-
-      if (isChanged) {
-        // resetting to default value
-        changedPropertyValues.remove (RADPropertyImpl.this);
-      } else {
-        // add the property to the list of changed properties
-        changedPropertyValues.put (RADPropertyImpl.this, val);
-      }
+      setChanged (isChanged);
       
       debugChangedValues ();
 
@@ -786,7 +793,7 @@ public class RADComponent {
     */
     public void restoreDefaultValue () {
       // 1. remove the property from list of changed values, so that the code for it is not generated
-      changedPropertyValues.remove (RADPropertyImpl.this);
+      setChanged (false);
       
       Object old = null;
       
@@ -886,6 +893,13 @@ public class RADComponent {
       getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), null, null);
     }
 
+    public boolean isChanged () {
+      return changed;
+    }
+
+    public void setChanged (boolean value) {
+      changed = true;
+    }
   }
 
   
@@ -894,6 +908,7 @@ public class RADComponent {
     private IndexedPropertyDescriptor desc;
     String preCode = null;                      // custom pre-initialization code to be used before calling the property setter
     String postCode = null;                     // custom post-initialization code to be used after calling the property setter
+    boolean changed = false;
     
     RADIndexedPropertyImpl (IndexedPropertyDescriptor desc) {
       super (getIndexedType (desc), desc.getIndexedPropertyType ());
@@ -977,14 +992,7 @@ public class RADComponent {
       } else { // no default => always treat is as changed
         isChanged = true;
       }
-      
-      if (isChanged) {
-        // resetting to default value
-        changedPropertyValues.remove (RADIndexedPropertyImpl.this);
-      } else {
-        // add the property to the list of changed properties
-        changedPropertyValues.put (RADIndexedPropertyImpl.this, val);
-      }
+      setChanged (isChanged);
       debugChangedValues ();
       getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), old, val);
       if (componentNode != null) componentNode.firePropertyChangeHelper (RADIndexedPropertyImpl.this.getName (), old, val);
@@ -1012,7 +1020,7 @@ public class RADComponent {
     */
     public void restoreDefaultValue () {
       // 1. remove the property from list of changed values, so that the code for it is not generated
-      changedPropertyValues.remove (RADIndexedPropertyImpl.this);
+      setChanged (false);
       
       Object old = null;
       
@@ -1161,6 +1169,13 @@ public class RADComponent {
       getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), null, null);
     }
 
+    public boolean isChanged () {
+      return changed;
+    }
+
+    public void setChanged (boolean value) {
+      changed = true;
+    }
   }
 
   /** Utility method for obtaining array type for indexed properties */  
@@ -1249,6 +1264,9 @@ public class RADComponent {
 
 /*
  * Log
+ *  54   Gandalf   1.53        9/24/99  Ian Formanek    New system of changed 
+ *       properties in RADComponent - Fixes bug 3584 - Form Editor should try to
+ *       enforce more order in the XML elements in .form.
  *  53   Gandalf   1.52        9/17/99  Ian Formanek    Fixed bug 1825 - 
  *       Property sheets are not synchronized 
  *  52   Gandalf   1.51        9/12/99  Ian Formanek    Fixed setPre/PostCode

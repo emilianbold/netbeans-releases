@@ -465,14 +465,15 @@ public class JavaCodeGenerator extends CodeGenerator {
     Object genType = comp.getAuxValue (AUX_CODE_GENERATION);
     if ((genType == null) || VALUE_GENERATE_CODE.equals (genType)) {
       // not serialized ==>> save
-      Map changedProps = comp.getChangedProperties ();
-      for (Iterator it = changedProps.keySet ().iterator (); it.hasNext ();) {
-        RADComponent.RADProperty rprop = (RADComponent.RADProperty)it.next ();
+      RADComponent.RADProperty[] props = comp.getAllProperties ();
+      for (int i = 0; i < props.length; i++) {
+        if (props[i].isChanged ()) {
   /*      if (desc instanceof IndexedPropertyDescriptor) { // [PENDING]
           generateIndexedPropertySetter (comp, rprop, initCodeWriter);
         } else { */
-          generatePropertySetter (comp, rprop, initCodeWriter);
+          generatePropertySetter (comp, props[i], initCodeWriter);
   //      }
+        }
       }
     }
   }
@@ -1241,6 +1242,9 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  52   Gandalf   1.51        9/24/99  Ian Formanek    New system of changed 
+ *       properties in RADComponent - Fixes bug 3584 - Form Editor should try to
+ *       enforce more order in the XML elements in .form.
  *  51   Gandalf   1.50        9/24/99  Ian Formanek    counts with nulls 
  *       returned from DesignLayout.generateInitCode method
  *  50   Gandalf   1.49        9/17/99  Ian Formanek    Fixed last change
