@@ -36,7 +36,7 @@ import org.openide.util.NbBundle;
 *
 * @author   Jan Jancura, Ian Formanek
 */
-public final class ColorEditor implements PropertyEditor {
+public final class ColorEditor implements PropertyEditor, org.openide.explorer.propertysheet.editors.XMLPropertyEditor {
   // static .....................................................................................
 
   // the bundle to use
@@ -535,10 +535,74 @@ public final class ColorEditor implements PropertyEditor {
       }
     }
   }
+
+//--------------------------------------------------------------------------
+// XMLPropertyEditor implementation
+
+  public static final String XML_COLOR = "Color";
+
+  public static final String ATTR_TYPE = "type";
+  public static final String ATTR_RED = "red";
+  public static final String ATTR_GREEN = "green";
+  public static final String ATTR_BLUE = "blue";
+  public static final String ATTR_ID = "id";
+  public static final String ATTR_PALETTE = "palette";
+
+  public static final String VALUE_PALETTE = "palette";
+  public static final String VALUE_RGB = "rgb";
+
+  /** Called to load property value from specified XML subtree. If succesfully loaded, 
+  * the value should be available via the getValue method.
+  * An IOException should be thrown when the value cannot be restored from the specified XML element
+  * @param element the XML DOM element representing a subtree of XML from which the value should be loaded
+  * @exception IOException thrown when the value cannot be restored from the specified XML element
+  */
+  public void readFromXML (org.w3c.dom.Node element) throws java.io.IOException {
+    if (!XML_COLOR.equals (element.getNodeName ())) {
+      throw new java.io.IOException ();
+    }
+    org.w3c.dom.NamedNodeMap attributes = element.getAttributes ();
+    try {
+      String type = attributes.getNamedItem (ATTR_TYPE).getNodeValue ();
+      String red = attributes.getNamedItem (ATTR_RED).getNodeValue ();
+      String green = attributes.getNamedItem (ATTR_GREEN).getNodeValue (); 
+      String blue = attributes.getNamedItem (ATTR_BLUE).getNodeValue ();
+      if (VALUE_PALETTE.equals (type)) {
+        String id = attributes.getNamedItem (ATTR_ID).getNodeValue ();
+        String palette = attributes.getNamedItem (ATTR_PALETTE).getNodeValue (); 
+        setValue (new SuperColor (id, Integer.parseInt (palette), new Color (Integer.parseInt (red), Integer.parseInt (green), Integer.parseInt (blue))));
+      } else {
+        setValue (new SuperColor (new Color (Integer.parseInt (red), Integer.parseInt (green), Integer.parseInt (blue))));
+      }
+    } catch (NullPointerException e) {
+      throw new java.io.IOException ();
+    }
+  }
+  
+  /** Called to store current property value into XML subtree. The property value should be set using the
+  * setValue method prior to calling this method.
+  * @param doc The XML document to store the XML in - should be used for creating nodes only
+  * @return the XML DOM element representing a subtree of XML from which the value should be loaded
+  */
+  public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
+    org.w3c.dom.Element el = doc.createElement (XML_COLOR);
+    el.setAttribute (ATTR_TYPE, (color.getID () == null) ? VALUE_RGB : VALUE_PALETTE);
+    el.setAttribute (ATTR_RED, Integer.toHexString (color.getRed ()));
+    el.setAttribute (ATTR_GREEN, Integer.toHexString (color.getGreen ()));
+    el.setAttribute (ATTR_BLUE, Integer.toHexString (color.getBlue ()));
+    if (color.getID () != null) {
+      el.setAttribute (ATTR_ID, color.getID ());
+      el.setAttribute (ATTR_PALETTE, Integer.toString (color.getPalette ()));
+    }
+    return el;
+  }
+
 }
 
 /*
  * Log
+ *  14   Gandalf   1.13        7/12/99  Ian Formanek    Implements 
+ *       XMLPropertyEditor
  *  13   Gandalf   1.12        7/8/99   Jesse Glick     Context help.
  *  12   Gandalf   1.11        6/28/99  Ian Formanek    throws 
  *       IllegalArgumentException if not passed Color instance in setValue
