@@ -890,7 +890,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             }
 
             ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(transfer);
-            return mode != null && mode.getKind() == Constants.MODE_KIND_VIEW;
+            return mode != null && (mode.getKind() == Constants.MODE_KIND_VIEW || mode.getKind() == Constants.MODE_KIND_SLIDING);
         }
         
         public boolean supportsKind(int kind, TopComponent transfer) {
@@ -899,7 +899,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                 return true;
             }
 
-            return kind == Constants.MODE_KIND_VIEW;
+            return kind == Constants.MODE_KIND_VIEW || kind == Constants.MODE_KIND_SLIDING;
         }
 
     } // End of class CenterPanelDroppable.
@@ -937,7 +937,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         
         public boolean canDrop(TopComponent transfer, Point location) {
             ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(transfer);
-            return mode != null && mode.getKind() == Constants.MODE_KIND_VIEW;
+            return mode != null && (mode.getKind() == Constants.MODE_KIND_VIEW || mode.getKind() == Constants.MODE_KIND_SLIDING);
         }
         
         public boolean supportsKind(int kind, TopComponent transfer) {
@@ -946,7 +946,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                 return true;
             }
             
-            return kind == Constants.MODE_KIND_VIEW;
+            return kind == Constants.MODE_KIND_VIEW || kind == Constants.MODE_KIND_SLIDING;
         }
     } // End of class FreeAreaDroppable.
 

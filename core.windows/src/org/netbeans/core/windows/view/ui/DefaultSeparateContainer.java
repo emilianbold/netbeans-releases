@@ -229,7 +229,7 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
                 return true;
             }
 
-            return kind == Constants.MODE_KIND_VIEW;
+            return kind == Constants.MODE_KIND_VIEW || kind == Constants.MODE_KIND_SLIDING;
         }
         // TopComponentDroppable<<
     } // End of ModeFrame.

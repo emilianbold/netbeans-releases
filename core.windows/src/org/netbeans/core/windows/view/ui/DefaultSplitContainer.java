@@ -131,8 +131,12 @@ public final class DefaultSplitContainer extends AbstractModeContainer {
             || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(transfer)) {
                 return true;
             }
+            
+            boolean isNonEditor = kind == Constants.MODE_KIND_VIEW || kind == Constants.MODE_KIND_SLIDING;
+            boolean thisIsNonEditor = getKind() == Constants.MODE_KIND_VIEW || getKind() == Constants.MODE_KIND_SLIDING;
 
-            return kind == getKind();
+            return (isNonEditor == thisIsNonEditor);
+
         }
         // TopComponentDroppable<<
     } // End of ModePanel.
