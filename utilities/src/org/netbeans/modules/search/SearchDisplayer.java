@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,8 +19,8 @@ import java.io.IOException;
 
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
-import org.openide.TopManager;
 import org.openide.util.NbBundle;
+import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
@@ -30,6 +30,7 @@ import org.openide.windows.OutputWriter;
  * Presents search results in output window.
  *
  * @author  Petr Kuzel
+ * @author  Marian Petras
  */
 public class SearchDisplayer extends Object implements NodeAcceptor {
 
@@ -43,8 +44,7 @@ public class SearchDisplayer extends Object implements NodeAcceptor {
     }
 
     private void setOw (String name) {
-        searchIO = TopManager.getDefault().getIO(name, false);
-        searchIO.setFocusTaken(false);
+        searchIO = IOProvider.getDefault().getIO(name, false);
         ow = searchIO.getOut();
     }
     
@@ -66,14 +66,24 @@ public class SearchDisplayer extends Object implements NodeAcceptor {
      */
     public synchronized boolean acceptNodes(Node[] nodes) {
 
-        if (nodes == null) return false;
+        if (nodes == null) {
+            return false;
+        }
+        if (nodes.length == 0) {
+            return true;
+        }
 
-        if (nodes.length > 0 && ow == null)
-            setOw(NbBundle.getBundle(ResultViewTopComponent.class).getString("TEXT_TITLE_SEARCH_RESULTS"));
-        
-        for (int i=0; i < nodes.length; i++)
+        if (ow == null) {
+            setOw(NbBundle.getBundle(ResultViewTopComponent.class)
+                  .getString("TEXT_TITLE_SEARCH_RESULTS"));             //NOI18N
+        }
+        searchIO.select();
+        searchIO.setFocusTaken(true);
+        displayNode(nodes[0]);
+        searchIO.setFocusTaken(false);
+        for (int i = 1; i < nodes.length; i++) {
             displayNode(nodes[i]);
-
+        }
         return true;
     }
     
