@@ -37,6 +37,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
     /** Creates new form CustomizerCompile */
     public CustomizerRun(WebProjectProperties webProperties, ProjectWebModule wm) {
         initComponents();
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ACS_CustomizeRun_A11YDesc")); //NOI18N
 
         this.wm = wm;        
         vps = new VisualPropertySupport(webProperties);
@@ -86,6 +87,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EtchedBorder());
+        jLabelContextPath.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeRun_ContextPath_LabelMnemonic").charAt(0));
         jLabelContextPath.setLabelFor(jTextFieldContextPath);
         jLabelContextPath.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_ContextPath_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -99,7 +101,9 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 11, 11, 11);
         add(jTextFieldContextPath, gridBagConstraints);
+        jTextFieldContextPath.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeRun_ContextPath_A11YDesc"));
 
+        jLabelServer.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeRun_Server_LabelMnemonic").charAt(0));
         jLabelServer.setLabelFor(jComboBoxServer);
         jLabelServer.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Server_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -122,7 +126,9 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         add(jComboBoxServer, gridBagConstraints);
+        jComboBoxServer.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeRun_Server_A11YDesc"));
 
+        jCheckBoxDisplayBrowser.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeRun_DisplayBrowser_LabelMnemonic").charAt(0));
         jCheckBoxDisplayBrowser.setSelected(true);
         jCheckBoxDisplayBrowser.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_DisplayBrowser_JCheckBox"));
         jCheckBoxDisplayBrowser.addActionListener(new java.awt.event.ActionListener() {
@@ -138,6 +144,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         add(jCheckBoxDisplayBrowser, gridBagConstraints);
+        jCheckBoxDisplayBrowser.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeRun_DisplayBrowser_A11YDesc"));
 
         jLabelContextPathDesc.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_ContextPathDesc_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -148,6 +155,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         gridBagConstraints.insets = new java.awt.Insets(0, 24, 11, 11);
         add(jLabelContextPathDesc, gridBagConstraints);
 
+        jLabelRelativeURL.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeRun_RelativeURL_LabelMnemonic").charAt(0));
         jLabelRelativeURL.setLabelFor(jTextFieldRelativeURL);
         jLabelRelativeURL.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_RelativeURL_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -164,7 +172,9 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 11, 11);
         add(jTextFieldRelativeURL, gridBagConstraints);
+        jTextFieldRelativeURL.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeRun_RelativeURL_A11YDesc"));
 
+        jLabelFullURL.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeRun_FullURL_LabelMnemonic").charAt(0));
         jLabelFullURL.setLabelFor(jTextFieldFullURL);
         jLabelFullURL.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_FullURL_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -188,6 +198,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 11);
         add(jTextFieldFullURL, gridBagConstraints);
+        jTextFieldFullURL.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeRun_FullURL_A11YDesc"));
 
     }//GEN-END:initComponents
 
