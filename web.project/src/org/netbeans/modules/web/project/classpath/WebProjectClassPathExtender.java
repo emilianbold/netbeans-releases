@@ -15,6 +15,7 @@ package org.netbeans.modules.web.project.classpath;
 import java.io.IOException;
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.openide.ErrorManager;
@@ -87,6 +88,13 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties                                
                                 props.setProperty(classPathId, itemRefs);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                                //update lib references in private properties
+                                EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                                ArrayList l = new ArrayList ();
+                                l.addAll(resources);
+                                l.addAll(cs.itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
+                                WebProjectProperties.storeLibrariesLocations(l.iterator(), privateProps);
+                                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                                 ProjectManager.getDefault().saveProject(project);
                                 return Boolean.TRUE;
                             }

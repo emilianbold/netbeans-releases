@@ -16,9 +16,7 @@ package org.netbeans.modules.web.project.ui.customizer;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
-import java.text.Collator;
 import java.util.*;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
@@ -41,36 +39,23 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.MutexException;
 import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
-
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.web.project.WebProjectUtil;
-import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.modules.web.project.Utils;
 import org.netbeans.modules.web.project.WebProject;
+import org.netbeans.modules.web.project.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
-
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 
 /** Helper class. Defines constants for properties. Knows the proper
  *  place where to store the properties.
@@ -151,7 +136,7 @@ public class WebProjectProperties {
     public static final String COMPILE_JSPS = "compile.jsps"; //NOI18N
     
     public static final String TAG_WEB_MODULE_LIBRARIES = "web-module-libraries"; // NOI18N
-    private static final String TAG_WEB_MODULE__ADDITIONAL_LIBRARIES = "web-module-additional-libraries"; //NOI18N
+    public static final String TAG_WEB_MODULE__ADDITIONAL_LIBRARIES = "web-module-additional-libraries"; //NOI18N
     
     // Properties stored in the PRIVATE.PROPERTIES
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
@@ -483,6 +468,12 @@ public class WebProjectProperties {
 
         storeAdditionalProperties(projectProperties);
         
+        ArrayList libs = new ArrayList ();
+        libs.addAll(ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel()));
+        libs.addAll(WarIncludesUiSupport.getList(WAR_CONTENT_ADDITIONAL_MODEL));
+        
+        storeLibrariesLocations (libs.iterator(), privateProperties);
+        
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );        
@@ -717,5 +708,80 @@ public class WebProjectProperties {
     public ClassPathUiSupport.ClassPathTableModel getJavaClassPathModel() {
         return JAVAC_CLASSPATH_MODEL;
     }
-            
+    
+    /** Store locations of libraries in the classpath param that have more the one
+     * file into the properties in the following format:
+     * 
+     * <ul>
+     * <li>libs.foo.classpath.libdir.1=C:/foo
+     * <li>libs.foo.classpath.libdirs=1
+     * <li>libs.foo.classpath.libfile.1=C:/bar/a.jar
+     * <li>libs.foo.classpath.libfile.2=C:/bar/b.jar
+     * <li>libs.foo.classpath.libfiles=1
+     * </ul>
+     * This is needed for the Ant copy task as it cannot copy more the one file
+     * and it needs different handling for files and directories.
+     * <br>
+     * It removes all properties that match this format that were in the {@link #properties}
+     * but are not in the {@link #classpath}.
+     */
+    public static void storeLibrariesLocations (Iterator /*<Item>*/ classpath, EditableProperties privateProps) {
+        ArrayList exLibs = new ArrayList ();
+        Iterator propKeys = privateProps.keySet().iterator();
+        while (propKeys.hasNext()) {
+            String key = (String) propKeys.next();
+            if (key.endsWith(".libdirs") || key.endsWith(".libfiles") || //NOI18N
+                    key.contains(".libdir.") || key.contains(".libfile.")) { //NOI18N
+                exLibs.add(key);
+            }
+        }
+        while (classpath.hasNext()) {
+            ClassPathSupport.Item item = (Item)classpath.next();
+            if (item.getType() != ClassPathSupport.Item.TYPE_LIBRARY) {
+                continue;
+            }
+            List/*<URL>*/ roots = item.getLibrary().getContent("classpath");  //NOI18N
+            ArrayList files = new ArrayList ();
+            ArrayList dirs = new ArrayList ();
+            for (Iterator it = roots.iterator(); it.hasNext();) {
+                URL rootUrl = (URL) it.next();
+                FileObject root = URLMapper.findFileObject (rootUrl);
+                if ("jar".equals(rootUrl.getProtocol())) {  //NOI18N
+                    root = FileUtil.getArchiveFile (root);
+                }
+                if (root != null) {
+                    if (root.isData()) {
+                        files.add(root); 
+                    } else {
+                        dirs.add(root);
+                    }
+                }
+            }
+            String key;
+            if (files.size() > 0) {
+                key = getAntPropertyName(item.getRaw())+".libfiles";
+                exLibs.remove(key);
+                for (int i = 0; i < files.size(); i++) {
+                    FileObject fo = (FileObject) files.get(i);
+                    key = getAntPropertyName(item.getRaw())+".libfile." + (i+1);
+                    privateProps.setProperty (key, "" + fo.getPath ());
+                    exLibs.remove(key);
+                }
+            }
+            if (dirs.size() > 0) {
+                key = getAntPropertyName(item.getRaw())+".libdirs";
+                exLibs.remove(key);
+                for (int i = 0; i < dirs.size(); i++) {
+                    FileObject fo = (FileObject) dirs.get(i);
+                    key = getAntPropertyName(item.getRaw())+".libdir." + (i+1);
+                    privateProps.setProperty (key, "" + fo.getPath ());
+                    exLibs.remove(key);
+                }
+            }
+        }
+        Iterator unused = exLibs.iterator();
+        while (unused.hasNext()) {
+            privateProps.remove(unused.next());
+        }
+    }
 }

@@ -26,6 +26,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
+import org.openide.util.WeakListeners;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -89,7 +90,7 @@ import org.netbeans.modules.web.project.ui.BrokenServerSupport;
  * Represents one plain Web project.
  * @author Jesse Glick, et al., Pavel Buzek
  */
-public final class WebProject implements Project, AntProjectListener, FileChangeListener {
+public final class WebProject implements Project, AntProjectListener, FileChangeListener, PropertyChangeListener {
     
     private static final Icon WEB_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif")); // NOI18N
     
@@ -258,7 +259,9 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     private PropertyEvaluator createEvaluator() {
         // XXX might need to use a custom evaluator to handle active platform substitutions... TBD
         // It is currently safe to not use the UpdateHelper for PropertyEvaluator; UH.getProperties() delegates to APH
-        return helper.getStandardPropertyEvaluator();
+        PropertyEvaluator e = helper.getStandardPropertyEvaluator();
+        e.addPropertyChangeListener(WeakListeners.propertyChange(this, e));
+        return e;
     }
     
     PropertyEvaluator evaluator() {
@@ -952,4 +955,32 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         }
     }
     
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(WebProjectProperties.JAVAC_CLASSPATH) ||
+                evt.getPropertyName().equals(WebProjectProperties.WAR_CONTENT_ADDITIONAL)) {
+            ProjectManager.mutex().postWriteRequest(new Runnable () {
+                public void run() {
+                    ClassPathSupport cs = new ClassPathSupport( evaluator(), refHelper, helper, 
+                                                WebProjectProperties.WELL_KNOWN_PATHS, 
+                                                WebProjectProperties.LIBRARY_PREFIX, 
+                                                WebProjectProperties.LIBRARY_SUFFIX, 
+                                                WebProjectProperties.ANT_ARTIFACT_PREFIX );
+
+                    EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+                    //update lib references in private properties
+                    EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                    ArrayList l = new ArrayList ();
+                    l.addAll(cs.itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
+                    l.addAll(cs.itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
+                    WebProjectProperties.storeLibrariesLocations(l.iterator(), privateProps);
+                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
+                    try {
+                        ProjectManager.getDefault().saveProject(WebProject.this);
+                    } catch (IOException e) {
+                        ErrorManager.getDefault().notify(e);
+                    }
+                }
+            });
+        }
+    }
 }

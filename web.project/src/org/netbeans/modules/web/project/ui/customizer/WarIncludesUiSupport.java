@@ -63,12 +63,15 @@ public class WarIncludesUiSupport {
         return model;
     }
     
-    public static Iterator getIterator( ClasspathTableModel model ) {
+    public static List getList( ClasspathTableModel model ) {
         List items= new LinkedList();
         for (int i = 0; i < data.length; i++)
             items.add(data[i][0]);
-        
-        return items.iterator();        
+        return items;
+    }
+    
+    public static Iterator getIterator( ClasspathTableModel model ) {
+        return getList(model).iterator();        
     }
     
     /** Removes selected indices from the model. Returns the index to be selected 

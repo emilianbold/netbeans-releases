@@ -15,6 +15,7 @@ package org.netbeans.modules.web.project.classpath;
 
 import java.io.File;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -24,6 +25,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -148,7 +151,6 @@ public class ClassPathSupport {
             }
             
             items.add( item );
-           
         }
 
         return items;        
@@ -274,6 +276,8 @@ public class ClassPathSupport {
     private static final String TAG_PATH_IN_WAR = "path-in-war"; //NOI18N
     private static final String TAG_FILE = "file"; //NOI18N
     private static final String TAG_LIBRARY = "library"; //NOI18N
+    private static final String ATTR_FILES = "files"; //NOI18N
+    private static final String ATTR_DIRS = "dirs"; //NOI18N
 
     // XXX Define in the LibraryManager
     private static final String LIBRARY_PREFIX = "${libs."; // NOI18N
@@ -298,7 +302,6 @@ public class ClassPathSupport {
                     }
                 }
             }
-
         return warIncludesMap;
     }
 
@@ -331,6 +334,31 @@ public class ClassPathSupport {
     
     private static Element createLibraryElement(Document doc, String pathItem, Item item) {
         Element libraryElement = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, TAG_LIBRARY);
+        if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
+            List/*<URL>*/ roots = item.getLibrary().getContent("classpath");  //NOI18N
+            ArrayList files = new ArrayList ();
+            ArrayList dirs = new ArrayList ();
+            for (Iterator it = roots.iterator(); it.hasNext();) {
+                URL rootUrl = (URL) it.next();
+                FileObject root = org.openide.filesystems.URLMapper.findFileObject (rootUrl);
+                if ("jar".equals(rootUrl.getProtocol())) {  //NOI18N
+                    root = FileUtil.getArchiveFile (root);
+                }
+                if (root != null) {
+                    if (root.isData()) {
+                        files.add(root); 
+                    } else {
+                        dirs.add(root);
+                    }
+                }
+            }
+            if (files.size() > 0) {
+                libraryElement.setAttribute(ATTR_FILES, "" + files.size());
+            }
+            if (dirs.size() > 0) {
+                libraryElement.setAttribute(ATTR_DIRS, "" + dirs.size());
+            }
+        }
         Element webFile = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, TAG_FILE);
         libraryElement.appendChild(webFile);
         webFile.appendChild(doc.createTextNode("${" + pathItem + "}"));

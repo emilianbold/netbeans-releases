@@ -14,9 +14,12 @@
 package org.netbeans.modules.web.project;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import javax.swing.JButton;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.ui.customizer.ClassPathUiSupport;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
@@ -24,9 +27,11 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
@@ -61,6 +66,10 @@ public class UpdateHelper {
     private boolean alreadyAskedInWriteAccess;
     private Boolean isCurrent;
     private Element cachedElement;
+    private static final String TAG_FILE = "file"; //NOI18N
+    private static final String TAG_LIBRARY = "library"; //NOI18N
+    private static final String ATTR_FILES = "files"; //NOI18N
+    private static final String ATTR_DIRS = "dirs"; //NOI18N
 
     /**
      * Creates new UpdateHelper
@@ -194,7 +203,8 @@ public class UpdateHelper {
      */
     public synchronized boolean isCurrent () {
         if (this.isCurrent == null) {
-            this.isCurrent = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/web-project/1",true) == null ? //NOI18N
+            this.isCurrent = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/web-project/1",true) == null //NOI18N
+                    && this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/web-project/2",true) == null? //NOI18N
                 Boolean.TRUE : Boolean.FALSE;
         }
         return isCurrent.booleanValue();
@@ -224,7 +234,11 @@ public class UpdateHelper {
 
     private void saveUpdate (EditableProperties props) throws IOException {
         this.helper.putPrimaryConfigurationData(getUpdatedSharedConfigurationData(),true);
-        this.cfg.removeConfigurationFragment("data","http://www.netbeans.org/ns/web-project/1",true); //NOI18N
+        if (this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/web-project/1",true) != null) { //NOI18N
+            this.cfg.removeConfigurationFragment("data","http://www.netbeans.org/ns/web-project/1",true); //NOI18N
+        } else {
+            this.cfg.removeConfigurationFragment("data","http://www.netbeans.org/ns/web-project/2",true); //NOI18N
+        }
 
         //add properties needed by 4.1 project
         if(props != null) {
@@ -260,21 +274,70 @@ public class UpdateHelper {
 
     private synchronized Element getUpdatedSharedConfigurationData () {
         if (cachedElement == null) {
+            int version = 1;
             Element  oldRoot = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/web-project/1",true);    //NOI18N
+            if (oldRoot == null) {
+                version = 2;
+                oldRoot = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/web-project/2",true);    //NOI18N
+            }
+            final String ns = version == 1 ? "http://www.netbeans.org/ns/web-project/1" : "http://www.netbeans.org/ns/web-project/2"; //NOI18N
             if (oldRoot != null) {
                 Document doc = oldRoot.getOwnerDocument();
                 Element newRoot = doc.createElementNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
                 copyDocument (doc, oldRoot, newRoot);
-                Element sourceRoots = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
-                Element root = doc.createElementNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-                root.setAttribute ("id","src.dir");   //NOI18N
-                sourceRoots.appendChild(root);
-                newRoot.appendChild (sourceRoots);
-                Element testRoots = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
-                root = doc.createElementNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-                root.setAttribute ("id","test.src.dir");   //NOI18N
-                testRoots.appendChild (root);
-                newRoot.appendChild (testRoots);
+                if (version == 1) {
+                    //1->2 upgrade
+                    Element sourceRoots = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
+                    Element root = doc.createElementNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+                    root.setAttribute ("id","src.dir");   //NOI18N
+                    sourceRoots.appendChild(root);
+                    newRoot.appendChild (sourceRoots);
+                    Element testRoots = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
+                    root = doc.createElementNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+                    root.setAttribute ("id","test.src.dir");   //NOI18N
+                    testRoots.appendChild (root);
+                    newRoot.appendChild (testRoots);
+                }
+                if (version == 1 || version == 2) {
+                    //2->3 upgrade
+                    NodeList libList = newRoot.getElementsByTagNameNS(ns, TAG_LIBRARY);
+                    for (int i = 0; i < libList.getLength(); i++) {
+                        if (libList.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                            Element library = (Element) libList.item(i);
+                            Node webFile = library.getElementsByTagNameNS(ns, TAG_FILE).item(0);
+                            //remove ${ and } from the beginning and end
+                            String webFileText = findText(webFile);
+                            webFileText = webFileText.substring(2, webFileText.length() - 1);
+//                            warIncludesMap.put(webFileText, pathInWarElements.getLength() > 0 ? findText((Element) pathInWarElements.item(0)) : Item.PATH_IN_WAR_NONE);
+                            if (webFileText.startsWith ("lib.")) {
+                                String libName = webFileText.substring(6, webFileText.indexOf(".classpath")); //NOI18N
+                                List/*<URL>*/ roots = LibraryManager.getDefault().getLibrary(libName).getContent("classpath"); //NOI18N
+                                ArrayList files = new ArrayList ();
+                                ArrayList dirs = new ArrayList ();
+                                for (Iterator it = roots.iterator(); it.hasNext();) {
+                                    URL rootUrl = (URL) it.next();
+                                    FileObject root = org.openide.filesystems.URLMapper.findFileObject (rootUrl);
+                                    if ("jar".equals(rootUrl.getProtocol())) {  //NOI18N
+                                        root = FileUtil.getArchiveFile (root);
+                                    }
+                                    if (root != null) {
+                                        if (root.isData()) {
+                                            files.add(root); 
+                                        } else {
+                                            dirs.add(root);
+                                        }
+                                    }
+                                }
+                                if (files.size() > 0) {
+                                    library.setAttribute(ATTR_FILES, "" + files.size());
+                                }
+                                if (dirs.size() > 0) {
+                                    library.setAttribute(ATTR_DIRS, "" + dirs.size());
+                                }
+                            }
+                        }
+                    }
+                }
                 cachedElement = newRoot;
             }
         }
@@ -291,6 +354,12 @@ public class UpdateHelper {
                 case Node.ELEMENT_NODE:
                     Element oldElement = (Element) node;
                     newNode = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,oldElement.getTagName());
+                    NamedNodeMap m = oldElement.getAttributes();
+                    Element newElement = (Element) newNode;
+                    for (int index = 0; index < m.getLength(); index++) {
+                        Node attr = m.item(index);
+                        newElement.setAttribute(attr.getNodeName(), attr.getNodeValue());
+                    }
                     copyDocument(doc,oldElement,(Element)newNode);
                     break;
                 case Node.TEXT_NODE:
@@ -328,6 +397,23 @@ public class UpdateHelper {
                         updateOption)) == updateOption;
             }
         };
+    }
+
+    /**
+     * Extract nested text from a node.
+     * Currently does not handle coalescing text nodes, CDATA sections, etc.
+     * @param parent a parent node
+     * @return the nested text, or null if none was found
+     */
+    private static String findText(Node parent) {
+        NodeList l = parent.getChildNodes();
+        for (int i = 0; i < l.getLength(); i++) {
+            if (l.item(i).getNodeType() == Node.TEXT_NODE) {
+                Text text = (Text)l.item(i);
+                return text.getNodeValue();
+            }
+        }
+        return null;
     }
 
     /**

@@ -18,15 +18,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
-/**
- * Factory for simple J2SE projects.
- * @author Jesse Glick
- */
 public final class WebProjectType implements AntBasedProjectType {
     
     public static final String TYPE = "org.netbeans.modules.web.project";
     private static final String PROJECT_CONFIGURATION_NAME = "data";
-    public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/web-project/2";
+    public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/web-project/3";
     private static final String PRIVATE_CONFIGURATION_NAME = "data";
     private static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/web-project-private/1";
     
