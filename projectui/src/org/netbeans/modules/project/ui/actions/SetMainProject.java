@@ -33,7 +33,7 @@ import org.openide.util.actions.Presenter;
 
 public class SetMainProject extends AbstractAction implements Presenter.Menu, PropertyChangeListener {
     
-    private static final String ICON = "org/netbeans/modules/project/ui/resources/setMainProject.gif"; //NOI18N    
+    private static final String ICON = "org/netbeans/modules/project/ui/resources/empty.gif"; //NOI18N    
     
     /** Key for remembering project in JMenuItem
      */
@@ -44,7 +44,7 @@ public class SetMainProject extends AbstractAction implements Presenter.Menu, Pr
     /** Creates a new instance of BrowserAction */
     public SetMainProject() {
         super( NbBundle.getMessage( SetMainProject.class, "LBL_SetMainProjectAction_Name" ),   // NOI18N
-               new ImageIcon( Utilities.loadImage( ICON ) ) );
+               null );
         OpenProjectList.getDefault().addPropertyChangeListener( this );
     }
     
