@@ -203,6 +203,12 @@ public final class GeneratedFilesHelper {
      * @throws IllegalStateException if the project was modified (and not being saved)
      */
     public void generateBuildScriptFromStylesheet(final String path, final URL stylesheet) throws IOException, IllegalStateException {
+        if (path == null) {
+            throw new IllegalArgumentException("Null path"); // NOI18N
+        }
+        if (stylesheet == null) {
+            throw new IllegalArgumentException("Null stylesheet"); // NOI18N
+        }
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
