@@ -172,6 +172,7 @@ public class LocaleNodeCustomizer extends JPanel {
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(keyLabel, gridBagConstraints1);
         
+        keyList.setPrototypeCellValue("0123456789012345678901234567890123456789");
         keyList.setCellRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(
             JList list,
@@ -189,7 +190,6 @@ public class LocaleNodeCustomizer extends JPanel {
                 return label;
             }
         });
-        keyList.setMinimumSize(new java.awt.Dimension(250, 0));
         keyList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 keyListValueChanged(evt);

@@ -143,6 +143,7 @@ public class BundleNodeCustomizer extends JPanel {
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(localesLabel, gridBagConstraints1);
         
+        localesList.setPrototypeCellValue("0123456789012345678901234567890123456789");
         localesList.setCellRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(
             JList list,
@@ -152,6 +153,9 @@ public class BundleNodeCustomizer extends JPanel {
             boolean cellHasFocus)    // the list and the cell have the focus
             {
                 JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                
+                if(value instanceof String)
+                    return label;
                 
                 Locale locale = (Locale)value;
                 
@@ -170,7 +174,6 @@ public class BundleNodeCustomizer extends JPanel {
                 return label;
             }
         });
-        localesList.setMinimumSize(new java.awt.Dimension(250, 0));
         localesList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 localesListValueChanged(evt);
