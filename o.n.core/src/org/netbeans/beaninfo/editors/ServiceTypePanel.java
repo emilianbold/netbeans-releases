@@ -220,38 +220,37 @@ public class ServiceTypePanel extends ExplorerPanel {
         listView1 = new org.openide.explorer.view.ListView();
         propertySheetView1 = new org.openide.explorer.propertysheet.PropertySheetView();
         label = new javax.swing.JLabel();
-        
+
         setLayout(new java.awt.BorderLayout(0, 2));
-        
+
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 0, 11)));
-        setPreferredSize(new java.awt.Dimension(480, 320));
         jSplitPane1.setDividerSize(5);
         jSplitPane1.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
                 jSplitPane1ComponentResized(evt);
             }
         });
-        
-        listView1.setTraversalAllowed(false);
+
         listView1.setDefaultProcessor(new java.awt.event.ActionListener() { public void actionPerformed(java.awt.event.ActionEvent e) {} });
         listView1.setPopupAllowed(false);
         listView1.setSelectionMode(1);
+        listView1.setTraversalAllowed(false);
         listView1.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
                 listView1ComponentResized(evt);
             }
         });
-        
+
         jSplitPane1.setLeftComponent(listView1);
-        
+
         jSplitPane1.setRightComponent(propertySheetView1);
-        
+
         add(jSplitPane1, java.awt.BorderLayout.CENTER);
-        
-        label.setText("jLabel1");
+
         label.setLabelFor(listView1);
+        label.setText("jLabel1");
         add(label, java.awt.BorderLayout.NORTH);
-        
+
     }//GEN-END:initComponents
 
     private void listView1ComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_listView1ComponentResized
@@ -282,9 +281,9 @@ public class ServiceTypePanel extends ExplorerPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JLabel label;
     private org.openide.explorer.view.ListView listView1;
     private org.openide.explorer.propertysheet.PropertySheetView propertySheetView1;
-    private javax.swing.JLabel label;
     // End of variables declaration//GEN-END:variables
 
     /** Node for displaying services */
