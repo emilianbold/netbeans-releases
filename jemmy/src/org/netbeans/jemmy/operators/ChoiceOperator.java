@@ -313,6 +313,29 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
 	    throw(new JemmyException("Interrupted!", e));
 	}
 	driver.selectItem(this, index);
+	if(getVerification()) {
+            waitItemSelected(index);
+        }
+    }
+
+    /**
+     * Waits for item to be selected.
+     * @param index Item index.
+     */
+    public void waitItemSelected(final int index) {
+	getOutput().printLine("Wait " + Integer.toString(index) + 
+			      "'th item to be selected in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait " + Integer.toString(index) + 
+				"'th item to be selected");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+		    return(getSelectedIndex() == index);
+		}
+		public String getDescription() {
+		    return("Has " + Integer.toString(index) + "'th item selected");
+		}
+	    });
     }
 
     /**

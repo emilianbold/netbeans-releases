@@ -357,6 +357,9 @@ public class AbstractButtonOperator extends JComponentOperator
 	if(isSelected() != selected) {
 	    push();
 	}
+	if(getVerification()) {
+            waitSelected(selected);
+        }
     }
 
     /**
@@ -400,6 +403,24 @@ public class AbstractButtonOperator extends JComponentOperator
             throw(new JemmyException("Interrupted", e));
         }
 	driver.release(this);
+    }
+
+    /**
+     * Waits for button to be selected.
+     */
+    public void waitSelected(final boolean selected) {
+	getOutput().printLine("Wait button to be selected \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait button to be selected");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+                    return(isSelected() == selected);
+		}
+		public String getDescription() {
+		    return("Items has been " + 
+			   (selected ? "" : "un") + "selected");
+		}
+	    });
     }
 
     /**

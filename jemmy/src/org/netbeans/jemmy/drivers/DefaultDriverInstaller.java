@@ -17,6 +17,8 @@
 
 package org.netbeans.jemmy.drivers;
 
+import org.netbeans.jemmy.JemmyProperties;
+
 import org.netbeans.jemmy.drivers.buttons.ButtonMouseDriver;
 
 import org.netbeans.jemmy.drivers.focus.APIFocusDriver;
@@ -30,6 +32,7 @@ import org.netbeans.jemmy.drivers.lists.JListMouseDriver;
 import org.netbeans.jemmy.drivers.lists.ListKeyboardDriver;
 
 import org.netbeans.jemmy.drivers.menus.DefaultJMenuDriver;
+import org.netbeans.jemmy.drivers.menus.QueueJMenuDriver;
 
 import org.netbeans.jemmy.drivers.scrolling.JScrollBarDriver;
 import org.netbeans.jemmy.drivers.scrolling.ScrollbarDriver;
@@ -48,7 +51,7 @@ import org.netbeans.jemmy.drivers.windows.DefaultInternalFrameDriver;
 import org.netbeans.jemmy.drivers.windows.DefaultWindowDriver;
 
 public class DefaultDriverInstaller extends ArrayDriverInstaller {
-    public DefaultDriverInstaller() {
+    public DefaultDriverInstaller(boolean shortcutEvents) {
 	super(new String[] {
 	      DriverManager.LIST_DRIVER_ID,
 	      DriverManager.MULTISELLIST_DRIVER_ID,
@@ -101,7 +104,11 @@ public class DefaultDriverInstaller extends ArrayDriverInstaller {
 	      new DefaultInternalFrameDriver(),
 	      new APIFocusDriver(),
 	      new MouseFocusDriver(),
-	      new DefaultJMenuDriver(),
+              (shortcutEvents ? ((Driver)new QueueJMenuDriver()) : ((Driver)new DefaultJMenuDriver())),
 	      new JTableHeaderDriver()});
+    }
+    public DefaultDriverInstaller() {
+        this((JemmyProperties.getCurrentDispatchingModel() &
+              JemmyProperties.SHORTCUT_MODEL_MASK) != 0);
     }
 }

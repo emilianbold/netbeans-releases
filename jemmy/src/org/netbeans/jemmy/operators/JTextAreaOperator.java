@@ -343,7 +343,6 @@ public class JTextAreaOperator extends JTextComponentOperator
     public void typeText(String text, int row, int column) {
 	if(!hasFocus()) {
 	    makeComponentVisible();
-	    clickMouse(1);
 	}
 	changeCaretPosition(row, column);
 	typeText(text);
@@ -391,7 +390,6 @@ public class JTextAreaOperator extends JTextComponentOperator
     public void selectLines(int startLine, int endLine) {
 	if(!hasFocus()) {
 	    makeComponentVisible();
-	    clickMouse(1);
 	}
 	selectText(startLine, 0, endLine + 1, 0);
     }

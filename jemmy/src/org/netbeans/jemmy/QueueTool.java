@@ -21,18 +21,22 @@ import java.awt.AWTEvent;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
 
+import java.awt.event.InvocationEvent;
+
+import java.util.Hashtable;
+
 import java.lang.reflect.InvocationTargetException;
 
 /**
  * 
- * Provides functionality to check and wait java.awt.EventQueue empty.
+ * Provides functionality to work with java.awt.EventQueue empty. 
  *
  * <BR><BR>Timeouts used: <BR>
  * QueueTool.WaitQueueEmptyTimeout - timeout to wait queue emptied<BR>
  * QueueTool.QueueCheckingDelta - time delta to check result<BR>
  * QueueTool.LockTimeout - time to wait queue locked after lock action has been put there<BR>
  * QueueTool.InvocationTimeout - time for action was put into queue to be started<BR>
- * QueueTool.MaximumLockingTime - maximum time to lock queue.
+ * QueueTool.MaximumLockingTime - maximum time to lock queue.<br>
  *
  * @see Timeouts
  *
@@ -46,6 +50,8 @@ public class QueueTool implements Outputable, Timeoutable {
     private final static long LOCK_TIMEOUT = 180000;
     private final static long MAXIMUM_LOCKING_TIME = 180000;
     private final static long INVOCATION_TIMEOUT = 180000;
+
+    private final static JemmyQueue jemmyQueue;
 
     private TestOut output;
     private Timeouts timeouts;
@@ -73,9 +79,12 @@ public class QueueTool implements Outputable, Timeoutable {
      * Returns system EventQueue.
      */
     public static EventQueue getQueue() {
-	return(Toolkit.getDefaultToolkit().getSystemEventQueue());
+        return(jemmyQueue);
     }
 
+    /**
+     * Map to <code>EventQueue.isDispatchThread()</code>
+     */
     public static boolean isDispatchThread() {
 	return(getQueue().isDispatchThread());
     }
@@ -87,7 +96,41 @@ public class QueueTool implements Outputable, Timeoutable {
 	return(getQueue().peekEvent() == null);
     }
 
+    /**
+     * Shortcuts event if 
+     * <code>((JemmyProperties.getCurrentDispatchingModel() & JemmyProperties.SHORTCUT_MODEL_MASK) != 0)</code>
+     * and if executed in the dispatch thread.
+     * Otherwise posts event.
+     * @param event Event to dispatch.
+     */
+    public static void processEvent(AWTEvent event) {
+        if((JemmyProperties.getCurrentDispatchingModel() & 
+            JemmyProperties.SHORTCUT_MODEL_MASK) != 0 &&
+           isDispatchThread()) {
+            shortcutEvent(event);
+        } else {
+            postEvent(event);
+        }
+    }
+
+    /**
+     * Simply posts events into the system event queue.
+     * @param event Event to dispatch.
+     */
+    public static void postEvent(AWTEvent event) {
+        getQueue().postEvent(event);
+    }
+
+    /**
+     * Dispatches event ahead of all events staying in the event queue.
+     */
+    public static void shortcutEvent(AWTEvent event) {
+        jemmyQueue.shortcutEvent(event);
+    }
+
     static {
+        jemmyQueue = new JemmyQueue();
+        Toolkit.getDefaultToolkit().getSystemEventQueue().push(jemmyQueue);
 	Timeouts.initDefault("QueueTool.WaitQueueEmptyTimeout", WAIT_QUEUE_EMPTY_TIMEOUT);
 	Timeouts.initDefault("QueueTool.QueueCheckingDelta", QUEUE_CHECKING_DELTA);
 	Timeouts.initDefault("QueueTool.LockTimeout", LOCK_TIMEOUT);
@@ -239,8 +282,7 @@ public class QueueTool implements Outputable, Timeoutable {
             try {
                 return(action.launch());
             } catch(Exception e) {
-                throw(new JemmyException("Exception in " + action.getDescription(), 
-                                         action.getException()));
+                throw(new JemmyException("Exception in " + action.getDescription(), e));
             }
         }
     }
@@ -269,20 +311,31 @@ public class QueueTool implements Outputable, Timeoutable {
      * was not executed in "QueueTool.InvocationTimeout" milliseconds.
      */
     public Object invokeAndWait(QueueAction action) {
+	
+        class JemmyInvocationLock {}
+        Object lock = new JemmyInvocationLock();
+        InvocationEvent event = 
+            new InvocationEvent(Toolkit.getDefaultToolkit(), 
+                                action, 
+                                lock,
+				true);
 	try {
-	    EventQueue.invokeAndWait(action);
+            synchronized (lock) {
+                getQueue().postEvent(event);
+                lock.wait();
+            }
 	} catch(InterruptedException e) {
 	    throw(new JemmyException("InterruptedException during " + 
-				     action.getDescription() + 
-				     " execution", e));
-	} catch(InvocationTargetException e) {
-	    throw(new JemmyException("InvocationTargetException during " + 
 				     action.getDescription() + 
 				     " execution", e));
 	}
 	if(action.getException() != null) {
 	    throw(new JemmyException("Exception in " + action.getDescription(), 
 				     action.getException()));
+	}
+	if(event.getException() != null) {
+	    throw(new JemmyException("Exception in " + action.getDescription(), 
+				     event.getException()));
 	}
 	return(action.getResult());
     }
@@ -385,7 +438,7 @@ public class QueueTool implements Outputable, Timeoutable {
 	    finished = false;
 	    exception = null;
 	    result = null;
-	}
+        }
 	/**
 	 * Method to implement action functionality.
 	 */
@@ -430,6 +483,24 @@ public class QueueTool implements Outputable, Timeoutable {
 	public boolean getFinished() {
 	    return(finished);
 	}
+    }
+
+    private static class JemmyQueue extends EventQueue {
+        public void shortcutEvent(AWTEvent event) {
+            super.dispatchEvent(event);
+        }
+        protected void dispatchEvent(AWTEvent event) {
+            //it's necessary to catch exception here.
+            //because test might already fail by timeout
+            //but generated events are still in stack
+            try {
+                super.dispatchEvent(event);
+            } catch(Exception e) {
+                //the exceptions should be printed into
+                //Jemmy output - not System.out
+                JemmyProperties.getCurrentOutput().printStackTrace(e);
+            }
+        }
     }
 
     private class EventWaiter implements Runnable {
@@ -545,5 +616,4 @@ public class QueueTool implements Outputable, Timeoutable {
 	    unlock();
 	}
     }
-
 }

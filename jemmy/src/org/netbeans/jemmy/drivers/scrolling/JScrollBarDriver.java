@@ -24,6 +24,7 @@ import javax.swing.JButton;
 import javax.swing.JScrollBar;
 
 import org.netbeans.jemmy.ComponentSearcher;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.Timeout;
 
 import org.netbeans.jemmy.drivers.DriverManager;
@@ -38,8 +39,12 @@ public class JScrollBarDriver extends AbstractScrollDriver {
     private final static int SMALL_INCREMENT = 1;
     private final static int MINIMAL_DRAGGER_SIZE = 5;
     private final static int RELATIVE_DRAG_STEP_LENGTH = 20;
+
+    private QueueTool queueTool;
+
     public JScrollBarDriver() {
 	super(new Class[] {JScrollBarOperator.class});
+        queueTool = new QueueTool();
     }
     public void scrollToMinimum(ComponentOperator oper, int orientation) {
 	startDragging(oper);
@@ -68,35 +73,40 @@ public class JScrollBarDriver extends AbstractScrollDriver {
 	JButtonOperator boper = findAButton(oper, adj.getScrollDirection());
 	DriverManager.getButtonDriver(boper).push(boper);
     }
-    protected void jump(ComponentOperator oper, ScrollAdjuster adj) {
-	JButtonOperator lessButton = findAButton(oper, adj.DECREASE_SCROLL_DIRECTION);
-	JButtonOperator moreButton = findAButton(oper, adj.INCREASE_SCROLL_DIRECTION);
-	if(adj.getScrollDirection() != ScrollAdjuster.DO_NOT_TOUCH_SCROLL_DIRECTION) {
-	    int x, y;
-	    if       (((JScrollBarOperator)oper).getOrientation() == JScrollBar.HORIZONTAL) {
-		if       (adj.getScrollDirection() == ScrollAdjuster.INCREASE_SCROLL_DIRECTION) {
-		    x = moreButton.getX() - 1;
-		} else if(adj.getScrollDirection() == ScrollAdjuster.DECREASE_SCROLL_DIRECTION) {
-		    x = lessButton  .getX() + lessButton.getWidth();
-		} else {
-		    return;
-		}
-		y = lessButton.getHeight() / 2;
-	    } else if(((JScrollBarOperator)oper).getOrientation() == JScrollBar.VERTICAL) {
-		if       (adj.getScrollDirection() == ScrollAdjuster.INCREASE_SCROLL_DIRECTION) {
-		    y = moreButton.getY() - 1;
-		} else if(adj.getScrollDirection() == ScrollAdjuster.DECREASE_SCROLL_DIRECTION) {
-		    y = lessButton  .getY() + lessButton.getHeight();
-		} else {
-		    return;
-		}
-		x = lessButton.getWidth() / 2;
-	    } else {
-		return;
-	    }
-	    DriverManager.getMouseDriver(oper).
-		clickMouse(oper, x, y, 1, oper.getDefaultMouseButton(), 0, new Timeout("", 0));
-	}
+    protected void jump(final ComponentOperator oper, final ScrollAdjuster adj) {
+        final JButtonOperator lessButton = findAButton(oper, adj.DECREASE_SCROLL_DIRECTION);
+        final JButtonOperator moreButton = findAButton(oper, adj.INCREASE_SCROLL_DIRECTION);
+        queueTool.invokeSmoothly(new QueueTool.QueueAction("Choise expanding") {
+                public Object launch() {
+                    if(adj.getScrollDirection() != ScrollAdjuster.DO_NOT_TOUCH_SCROLL_DIRECTION) {
+                        int x, y;
+                        if       (((JScrollBarOperator)oper).getOrientation() == JScrollBar.HORIZONTAL) {
+                            if       (adj.getScrollDirection() == ScrollAdjuster.INCREASE_SCROLL_DIRECTION) {
+                                x = moreButton.getX() - 1;
+                            } else if(adj.getScrollDirection() == ScrollAdjuster.DECREASE_SCROLL_DIRECTION) {
+                                x = lessButton  .getX() + lessButton.getWidth();
+                            } else {
+                                return(null);
+                            }
+                            y = lessButton.getHeight() / 2;
+                        } else if(((JScrollBarOperator)oper).getOrientation() == JScrollBar.VERTICAL) {
+                            if       (adj.getScrollDirection() == ScrollAdjuster.INCREASE_SCROLL_DIRECTION) {
+                                y = moreButton.getY() - 1;
+                            } else if(adj.getScrollDirection() == ScrollAdjuster.DECREASE_SCROLL_DIRECTION) {
+                                y = lessButton  .getY() + lessButton.getHeight();
+                            } else {
+                                return(null);
+                            }
+                            x = lessButton.getWidth() / 2;
+                        } else {
+                            return(null);
+                        }
+                        DriverManager.getMouseDriver(oper).
+                            clickMouse(oper, x, y, 1, oper.getDefaultMouseButton(), 0, new Timeout("", 0));
+                    }
+                    return(null);
+                }
+            });
     }
     protected void startPushAndWait(ComponentOperator oper, int direction, int orientation) {
 	JButtonOperator boper = findAButton(oper, direction);

@@ -145,9 +145,6 @@ public class TestOut {
     public void print(String line) {
 	if(output != null) {
 	    output.print(line);
-	    if(autoFlushMode) {
-		output.flush();
-	    }
 	}
     }
 

@@ -24,6 +24,7 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JInternalFrameOperator;
 
 import org.netbeans.jemmy.drivers.FrameDriver;
@@ -45,7 +46,7 @@ public class DefaultInternalFrameDriver extends SupportiveDriver
     public void close(ComponentOperator oper) {
 	checkSupported(oper);
 	((JInternalFrameOperator)oper).moveToFront();
-	((JInternalFrameOperator)oper).getCloseButton().clickMouse();
+	((JButtonOperator)((JInternalFrameOperator)oper).getCloseButton()).push();
     }
     public void move(ComponentOperator oper, int x, int y) {
 	checkSupported(oper);
@@ -65,7 +66,7 @@ public class DefaultInternalFrameDriver extends SupportiveDriver
     }
     public void iconify(ComponentOperator oper) {
 	checkSupported(oper);
-	((JInternalFrameOperator)oper).getMinimizeButton().clickMouse();
+	((JButtonOperator)((JInternalFrameOperator)oper).getMinimizeButton()).clickMouse();
     }
     public void deiconify(ComponentOperator oper) {
 	checkSupported(oper);

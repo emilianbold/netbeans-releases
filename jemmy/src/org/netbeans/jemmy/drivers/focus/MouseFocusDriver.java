@@ -19,6 +19,8 @@ package org.netbeans.jemmy.drivers.focus;
 
 import java.awt.event.FocusEvent;
 
+import org.netbeans.jemmy.QueueTool;
+
 import org.netbeans.jemmy.drivers.DriverManager;
 import org.netbeans.jemmy.drivers.FocusDriver;
 import org.netbeans.jemmy.drivers.MouseDriver;
@@ -40,6 +42,7 @@ import org.netbeans.jemmy.operators.TextComponentOperator;
 import org.netbeans.jemmy.operators.TextFieldOperator;
 
 public class MouseFocusDriver extends SupportiveDriver implements FocusDriver {
+    private QueueTool queueTool;
     public MouseFocusDriver() {
 	super(new Class[] {
 		JListOperator.class, 
@@ -53,13 +56,20 @@ public class MouseFocusDriver extends SupportiveDriver implements FocusDriver {
 		TextAreaOperator.class, 
 		TextComponentOperator.class, 
 		TextFieldOperator.class});
+        queueTool = new QueueTool();
     }
-    public void giveFocus(ComponentOperator oper) {
+    public void giveFocus(final ComponentOperator oper) {
 	if(!oper.hasFocus()) {
-	    DriverManager.getMouseDriver(oper).
-		clickMouse(oper, oper.getCenterXForClick(), oper.getCenterYForClick(),
-			   1, oper.getDefaultMouseButton(), 0, 
-			   oper.getTimeouts().create("ComponentOperator.MouseClickTimeout"));
+            queueTool.invokeSmoothly(new QueueTool.QueueAction("Mouse click to get focus") {
+                    public Object launch() {
+                        DriverManager.getMouseDriver(oper).
+                            clickMouse(oper, oper.getCenterXForClick(), oper.getCenterYForClick(),
+                                       1, oper.getDefaultMouseButton(), 0, 
+                                       oper.getTimeouts().create("ComponentOperator.MouseClickTimeout"));
+                        return(null);
+                    }
+                });
+            oper.waitHasFocus();
 	}
     }
 }

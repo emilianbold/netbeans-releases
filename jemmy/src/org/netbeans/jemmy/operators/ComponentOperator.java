@@ -23,6 +23,7 @@ import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.EventDispatcher;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Outputable;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.Timeoutable;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -99,7 +100,8 @@ import java.util.Locale;
  * ComponentOperator.BeforeDragTimeout - time to sleep before grag'n'drop operations <BR>
  * ComponentOperator.AfterDragTimeout - time to sleep after grag'n'drop operations <BR>
  * ComponentOperator.WaitFocusTimeout - time to wait component focus <BR>
- * ComponentOperator.WaitStateTimeout
+ * ComponentOperator.WaitStateTimeout- time to wait component to be in some state. 
+ * Typically used from methods like <code>Operator.wait<something happened>(*)</code><br>
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -273,6 +275,7 @@ public class ComponentOperator extends Operator
 	Timeouts.initDefault("ComponentOperator.WaitComponentTimeout", WAIT_COMPONENT_TIMEOUT);
 	Timeouts.initDefault("ComponentOperator.WaitComponentEnabledTimeout", WAIT_COMPONENT_ENABLED_TIMEOUT);
 	Timeouts.initDefault("ComponentOperator.WaitStateTimeout", WAIT_STATE_TIMEOUT);
+	Timeouts.initDefault("ComponentOperator.WaitFocusTimeout", WAIT_FOCUS_TIMEOUT);
     }
 
     /**
@@ -371,9 +374,15 @@ public class ComponentOperator extends Operator
      * @param modifiers Modifiers (combination of InputEvent.*_MASK values)
      * @param forPopup
      */
-    public void clickMouse(int x, int y, int clickCount, int mouseButton, int modifiers, boolean forPopup) {
-	mDriver.clickMouse(this, x, y, clickCount, mouseButton, modifiers,
-			   timeouts.create("ComponentOperator.MouseClickTimeout"));
+    public void clickMouse(final int x, final int y, final int clickCount, final int mouseButton, 
+                           final int modifiers, final boolean forPopup) {
+        getQueueTool().invokeSmoothly(new QueueTool.QueueAction("Path selecting") {
+                public Object launch() {
+                    mDriver.clickMouse(ComponentOperator.this, x, y, clickCount, mouseButton, modifiers,
+                                       timeouts.create("ComponentOperator.MouseClickTimeout"));
+                    return(null);
+                }
+            });
     }
 
     /**
@@ -540,8 +549,13 @@ public class ComponentOperator extends Operator
      * @param mouseButton Mouse button (InputEvent.BUTTON1/2/3_MASK value)
      * @see #clickMouse(int, int, int, int)
      */
-    public void clickMouse(int clickCount, int mouseButton) {
-	clickMouse(getCenterXForClick(), getCenterYForClick(), clickCount, mouseButton);
+    public void clickMouse(final int clickCount, final int mouseButton) {
+        getQueueTool().invokeSmoothly(new QueueTool.QueueAction("Choise expanding") {
+                public Object launch() {
+                    clickMouse(getCenterXForClick(), getCenterYForClick(), clickCount, mouseButton);
+                    return(null);
+                }
+            });
     }
 
     /**
@@ -581,14 +595,24 @@ public class ComponentOperator extends Operator
      * Press mouse.
      */
     public void pressMouse() {
-	pressMouse(getCenterXForClick(), getCenterYForClick());
+        getQueueTool().invokeSmoothly(new QueueTool.QueueAction("Choise expanding") {
+                public Object launch() {
+                    pressMouse(getCenterXForClick(), getCenterYForClick());
+                    return(null);
+                }
+            });
     }
 
     /**
      * Releases mouse.
      */
     public void releaseMouse() {
-	releaseMouse(getCenterXForClick(), getCenterYForClick());
+        getQueueTool().invokeSmoothly(new QueueTool.QueueAction("Choise expanding") {
+                public Object launch() {
+                    releaseMouse(getCenterXForClick(), getCenterYForClick());
+                    return(null);
+                }
+            });
     }
 
     /** 

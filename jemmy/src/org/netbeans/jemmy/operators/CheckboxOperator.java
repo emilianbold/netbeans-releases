@@ -280,6 +280,9 @@ public class CheckboxOperator extends ComponentOperator implements Outputable {
 			     "\n    :" + getSource().toString());
 	    output.printGolden("Change checkbox selection to " + new Boolean(newValue).toString());
 	    driver.push(this);
+            if(getVerification()) {
+                waitSelected(newValue);
+            }
 	}
     }
 
@@ -290,6 +293,24 @@ public class CheckboxOperator extends ComponentOperator implements Outputable {
 		    return(null);
 		}
 	    }, new Boolean(selected));
+    }
+
+    /**
+     * Waits for button to be selected.
+     */
+    public void waitSelected(final boolean selected) {
+	getOutput().printLine("Wait button to be selected \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait button to be selected");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+                    return(getState() == selected);
+		}
+		public String getDescription() {
+		    return("Items has been " + 
+			   (selected ? "" : "un") + "selected");
+		}
+	    });
     }
 
     /**

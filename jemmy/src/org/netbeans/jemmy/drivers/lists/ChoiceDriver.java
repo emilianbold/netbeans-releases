@@ -32,7 +32,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.ChoiceOperator;
 
 public class ChoiceDriver extends SupportiveDriver implements ListDriver {
-    private final static int RIGHT_INDENT = 3;
+    private final static int RIGHT_INDENT = 10;
     public ChoiceDriver() {
 	super(new Class[] {ChoiceOperator.class});
     }

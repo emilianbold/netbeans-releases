@@ -419,35 +419,45 @@ implements Outputable{
 
     /**Maps <code>Window.isFocused()</code> through queue*/
     public boolean isFocused() {
-        return(runMapping(new MapBooleanAction("isFocused") {
-                public boolean map() {
-                    try {
-                        return(((Boolean)new ClassReference(getSource()).
-                                invokeMethod("isFocused", null, null)).booleanValue());
-                    } catch(InvocationTargetException e) {
-                        return(false);
-                    } catch(NoSuchMethodException e) {
-                        return(false);
-                    } catch(IllegalAccessException e) {
-                        return(false);
-                    }
-                    }}));}
+        if(System.getProperty("java.version").startsWith("1.4")) {
+            return(runMapping(new MapBooleanAction("isFocused") {
+                    public boolean map() {
+                        try {
+                            return(((Boolean)new ClassReference(getSource()).
+                                    invokeMethod("isFocused", null, null)).booleanValue());
+                        } catch(InvocationTargetException e) {
+                            return(false);
+                        } catch(NoSuchMethodException e) {
+                            return(false);
+                        } catch(IllegalAccessException e) {
+                            return(false);
+                        }
+                    }}));
+        } else {
+            return(getFocusOwner() != null);
+        }
+    }
 
     /**Maps <code>Window.isActive()</code> through queue*/
     public boolean isActive() {
-	return(runMapping(new MapBooleanAction("isActive") {
-		public boolean map() {
-                    try {
-                        return(((Boolean)new ClassReference(getSource()).
-                                invokeMethod("isActive", null, null)).booleanValue());
-                    } catch(InvocationTargetException e) {
-                        return(false);
-                    } catch(NoSuchMethodException e) {
-                        return(false);
-                    } catch(IllegalAccessException e) {
-                        return(false);
-                    }
-		}}));}
+        if(System.getProperty("java.version").startsWith("1.4")) {
+            return(runMapping(new MapBooleanAction("isActive") {
+                    public boolean map() {
+                        try {
+                            return(((Boolean)new ClassReference(getSource()).
+                                    invokeMethod("isActive", null, null)).booleanValue());
+                        } catch(InvocationTargetException e) {
+                            return(false);
+                        } catch(NoSuchMethodException e) {
+                            return(false);
+                        } catch(IllegalAccessException e) {
+                            return(false);
+                        }
+                    }}));
+        } else {
+            return(isShowing());
+        }
+    }
 
     //End of mapping 1.4                                  //
     ////////////////////////////////////////////////////////

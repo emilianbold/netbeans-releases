@@ -593,6 +593,9 @@ public class JListOperator extends JComponentOperator
     public void selectItem(int index) {
         checkIndex(index);
         driver.selectItem(this, index);
+	if(getVerification()) {
+            waitItemSelection(index, true);
+        }
     }
 
     public void selectItem(final String item) {
@@ -608,6 +611,9 @@ public class JListOperator extends JComponentOperator
     public void selectItems(int[] indices) {
         checkIndices(indices);
 	driver.selectItems(this, indices);
+	if(getVerification()) {
+            waitItemsSelection(indices, true);
+        }
     }
 
     public void selectItem(String[] items) {
@@ -619,25 +625,40 @@ public class JListOperator extends JComponentOperator
     }
 
     /**
+     * Waits for items to be selected.
+     * @param itemIndices
+     * @param selected Selected (true) or unselected (false).
+     */
+    public void waitItemsSelection(final int[] itemIndices, final boolean selected) {
+	getOutput().printLine("Wait items to be " +
+			      (selected ? "" : "un") + "selected in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait items to be " +
+				(selected ? "" : "un") + "selected");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+                    int[] indices = getSelectedIndices();
+                    for(int i = 0; i < indices.length; i++) {
+                        if(indices[i] != itemIndices[i]) {
+                            return(false);
+                        }
+                    }
+                    return(true);
+		}
+		public String getDescription() {
+		    return("Item has been " + 
+			   (selected ? "" : "un") + "selected");
+		}
+	    });
+    }
+
+    /**
      * Waits for item to be selected.
      * @param itemIndex
      * @param selected Selected (true) or unselected (false).
      */
     public void waitItemSelection(final int itemIndex, final boolean selected) {
-	getOutput().printLine("Wait \"" + Integer.toString(itemIndex) + "\"'th item to be " +
-			      (selected ? "" : "un") + "selected in component \n    : "+
-			      getSource().toString());
-	getOutput().printGolden("Wait \"" + Integer.toString(itemIndex) + "\"'th item to be " +
-				(selected ? "" : "un") + "selected");
-	waitState(new ComponentChooser() {
-		public boolean checkComponent(Component comp) {
-		    return(isSelectedIndex(itemIndex) == selected);
-		}
-		public String getDescription() {
-		    return(Integer.toString(itemIndex) + "'th item has been " + 
-			   (selected ? "" : "un") + "selected");
-		}
-	    });
+        waitItemsSelection(new int[] {itemIndex}, selected);
     }
 
     /**

@@ -238,6 +238,9 @@ public class ListOperator extends ComponentOperator
 			 getSource().toString());
 	output.printGolden("Select " + Integer.toString(index) + "`th item in list");
 	driver.selectItem(this, index);
+	if(getVerification()) {
+            waitItemSelection(index, true);
+        }
     }
 
     public void selectItems(int from, int to) {
@@ -247,8 +250,50 @@ public class ListOperator extends ComponentOperator
 	output.printGolden("Select items from " + Integer.toString(from) + 
 			 "`th to " + Integer.toString(from) + "'th");
 	driver.selectItems(this, new int[] {from, to});
+	if(getVerification()) {
+            waitItemsSelection(from, to, true);
+        }
     }
     
+    /**
+     * Waits for items to be selected.
+     * @param from Start selection inex
+     * @param to End selection inex
+     * @param selected Selected (true) or unselected (false).
+     */
+    public void waitItemsSelection(final int from, final int to, final boolean selected) {
+	getOutput().printLine("Wait items to be " +
+			      (selected ? "" : "un") + "selected in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait items to be " +
+				(selected ? "" : "un") + "selected");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+                    int[] indices = getSelectedIndexes();
+                    for(int i = 0; i < indices.length; i++) {
+                        if(indices[i] < from ||
+                           indices[i] > to) {
+                            return(false);
+                        }
+                    }
+                    return(true);
+		}
+		public String getDescription() {
+		    return("Items has been " + 
+			   (selected ? "" : "un") + "selected");
+		}
+	    });
+    }
+
+    /**
+     * Waits for item to be selected.
+     * @param itemIndex
+     * @param selected Selected (true) or unselected (false).
+     */
+    public void waitItemSelection(final int itemIndex, final boolean selected) {
+        waitItemsSelection(itemIndex, itemIndex, selected);
+    }
+
     /**
      * Returns information about component.
      */

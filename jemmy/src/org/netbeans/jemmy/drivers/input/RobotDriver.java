@@ -94,9 +94,10 @@ public class RobotDriver extends SupportiveDriver {
 			new Class[] {Integer.TYPE});
     }
 
-    protected void makeAnOperation(String method, Object[] params, Class[] paramClasses) {
-	try {
-	    robotReference.invokeMethod(method, params, paramClasses);
+    protected void makeAnOperation(final String method, final Object[] params, final Class[] paramClasses) {
+        try {
+            robotReference.invokeMethod(method, params, paramClasses);
+            synchronizeRobot();
 	} catch(InvocationTargetException e) {
 	    throw(new JemmyException("Exception during java.awt.Robot accessing", e));
 	} catch(IllegalStateException e) {
@@ -106,20 +107,15 @@ public class RobotDriver extends SupportiveDriver {
 	} catch(IllegalAccessException e) {
 	    throw(new JemmyException("Exception during java.awt.Robot accessing", e));
 	}
+    }
+    protected void synchronizeRobot() {
         if(!qtool.isDispatchThread()) {
-            try {
-                robotReference.invokeMethod("waitForIdle", null, null);
-            } catch(InvocationTargetException e) {
-                throw(new JemmyException("Exception during java.awt.Robot accessing", e));
-            } catch(IllegalStateException e) {
-                throw(new JemmyException("Exception during java.awt.Robot accessing", e));
-            } catch(NoSuchMethodException e) {
-                throw(new JemmyException("Exception during java.awt.Robot accessing", e));
-            } catch(IllegalAccessException e) {
-                throw(new JemmyException("Exception during java.awt.Robot accessing", e));
-            }
             if ((JemmyProperties.getCurrentDispatchingModel() & JemmyProperties.QUEUE_MODEL_MASK) != 0) {
-                qtool.waitEmpty();
+                try {
+                    robotReference.invokeMethod("waitForIdle", null, null);
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

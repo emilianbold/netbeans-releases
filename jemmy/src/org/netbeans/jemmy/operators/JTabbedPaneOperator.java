@@ -336,6 +336,9 @@ public class JTabbedPaneOperator extends JComponentOperator
 	output.printLine("Selecting " + index + "'th page in tabbed pane\n    :" + getSource().toString());
         makeComponentVisible();
 	driver.selectItem(this, index);
+	if(getVerification()) {
+            waitSelected(index);
+        }
 	return(getComponentAt(index));
     }
 

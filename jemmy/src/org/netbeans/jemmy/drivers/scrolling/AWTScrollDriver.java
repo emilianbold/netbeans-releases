@@ -20,6 +20,7 @@ package org.netbeans.jemmy.drivers.scrolling;
 import java.awt.Adjustable;
 import java.awt.Point;
 
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.Timeout;
 
 import org.netbeans.jemmy.drivers.DriverManager;
@@ -29,35 +30,52 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 public abstract class AWTScrollDriver extends AbstractScrollDriver {
+    private QueueTool queueTool;
     public AWTScrollDriver(Class[] supported) {
 	super(supported);
+        queueTool = new QueueTool();
     }
-    protected void step(ComponentOperator oper, ScrollAdjuster adj) {
+    protected void step(final ComponentOperator oper, final ScrollAdjuster adj) {
 	if(adj.getScrollDirection() != ScrollAdjuster.DO_NOT_TOUCH_SCROLL_DIRECTION) {
-	    Point clickPoint = getClickPoint(oper, adj.getScrollDirection(), adj.getScrollOrientation());
-	    DriverManager.getMouseDriver(oper).
-		clickMouse(oper, clickPoint.x, clickPoint.y, 1, 
-			   Operator.getDefaultMouseButton(),
-			   0, 
-			   oper.getTimeouts().
-			   create("ComponentOperator.MouseClickTimeout"));
+            queueTool.invokeSmoothly(new QueueTool.QueueAction("Choise expanding") {
+                    public Object launch() {
+                        Point clickPoint = getClickPoint(oper, adj.getScrollDirection(), adj.getScrollOrientation());
+                        DriverManager.getMouseDriver(oper).
+                            clickMouse(oper, clickPoint.x, clickPoint.y, 1, 
+                                       Operator.getDefaultMouseButton(),
+                                       0, 
+                                       oper.getTimeouts().
+                                       create("ComponentOperator.MouseClickTimeout"));
+                        return(null);
+                    }
+                });
 	}
     }
     protected void jump(ComponentOperator oper, ScrollAdjuster adj) {}
-    protected void startPushAndWait(ComponentOperator oper, int direction, int orientation) {
-	Point clickPoint = getClickPoint(oper, direction, orientation);
-	MouseDriver mdriver = DriverManager.getMouseDriver(oper);
-	mdriver.moveMouse(oper, clickPoint.x, clickPoint.y);
-	mdriver.pressMouse(oper, clickPoint.x, clickPoint.y,
-			   Operator.getDefaultMouseButton(),
-			   0);
+    protected void startPushAndWait(final ComponentOperator oper, final int direction, final int orientation) {
+        queueTool.invokeSmoothly(new QueueTool.QueueAction("Choise expanding") {
+                public Object launch() {
+                    Point clickPoint = getClickPoint(oper, direction, orientation);
+                    MouseDriver mdriver = DriverManager.getMouseDriver(oper);
+                    mdriver.moveMouse(oper, clickPoint.x, clickPoint.y);
+                    mdriver.pressMouse(oper, clickPoint.x, clickPoint.y,
+                                       Operator.getDefaultMouseButton(),
+                                       0);
+                    return(null);
+                }
+            });
     }
-    protected void stopPushAndWait(ComponentOperator oper, int direction, int orientation) {
-	Point clickPoint = getClickPoint(oper, direction, orientation);
-	MouseDriver mdriver = DriverManager.getMouseDriver(oper);
-	mdriver.releaseMouse(oper, clickPoint.x, clickPoint.y,
-			     Operator.getDefaultMouseButton(),
-			     0);
+    protected void stopPushAndWait(final ComponentOperator oper, final int direction, final int orientation) {
+        queueTool.invokeSmoothly(new QueueTool.QueueAction("Choise expanding") {
+                public Object launch() {
+                    Point clickPoint = getClickPoint(oper, direction, orientation);
+                    MouseDriver mdriver = DriverManager.getMouseDriver(oper);
+                    mdriver.releaseMouse(oper, clickPoint.x, clickPoint.y,
+                                         Operator.getDefaultMouseButton(),
+                                         0);
+                    return(null);
+                }
+            });
     }
     protected Point startDragging(ComponentOperator oper) {
 	return(null);
