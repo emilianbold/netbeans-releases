@@ -1,4 +1,17 @@
 /*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+/*
  * Abbreviations.java
  *
  * Created on 1/2/03 4:04 PM
@@ -237,9 +250,16 @@ public class Abbreviations extends JDialogOperator {
         int row = tabAbbreviations().findCellRow(abbreviation,
         new Operator.DefaultStringComparator(true, true));
         
-        if (row == (-1))
+        if (row == (-1)) {
+            System.out.println("Didn't find "+abbreviation);
+            TableModel model = tabAbbreviations().getModel();
+            int rowCount = model.getRowCount();
+            for (int cntr = 0; cntr < rowCount; cntr++) {
+                System.out.print(model.getValueAt(cntr, 0)+" ");
+            }
+            System.out.println("");
             return false;
-        
+        }
         tabAbbreviations().selectCell(row, 0);
         btRemove().pushNoBlock();
         
@@ -319,7 +339,12 @@ public class Abbreviations extends JDialogOperator {
      */
     public static void main(String args[]) {
         Abbreviations.addAbbreviation("Java Editor","aaa","All abbrev");
-        
+        try {
+            Thread.currentThread().sleep(5000);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        Abbreviations.removeAbbreviation("Java Editor","aaa");
         /*
         try {
             //java.io.PrintWriter pw= new java.io.PrintWriter(new java.io.FileWriter("/tmp/abbrevs.java"));

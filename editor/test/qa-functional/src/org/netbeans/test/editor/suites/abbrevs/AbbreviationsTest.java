@@ -1,4 +1,17 @@
 /*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+/*
  * AbbreviationsTest.java
  *
  * Created on August 28, 2002, 11:15 AM
@@ -105,7 +118,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
         editor.pushKey(KeyEvent.VK_END);
         editor.pushKey(KeyEvent.VK_ENTER);
     }
-    
+ /*   
     public void testAbbreviationTest() {
         log("testAbbreviationTest start");
         try {
@@ -302,7 +315,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
             log("testAbbreviationRemoveCancel finished");
         }
     }
-    
+    */
     public void testAbbreviationRemove() {
         log("testAbbreviationRemove start");
         Object backup = Utilities.saveAbbreviationsState();
@@ -328,7 +341,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
                     log("Remained abbreviation: "+keys[i]);
                     for (int j=0;j < keysold.length;j++) {
                         if (((String)keysold[j]).compareTo((String)keys[i]) == 0) {
-                            log("........................is in default list.");
+                            log("is in default list.");
                             break;
                         }
                     }
@@ -342,22 +355,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
                 //Test whether the old abbreviation does NOT work:
                 useAbbreviation((String)keys[cntr], true);
             }
-            
-            /*Add back all abbreviations:*/
-            dialog = Abbreviations.invoke(getEditorName());
-            Abbreviation[] abbrevs=getDefaultAbbreviations();
-            
-            for (int cntr = 0; cntr < abbrevs.length; cntr++) {
-                dialog.addAbbreviation(abbrevs[cntr].getName(), abbrevs[cntr].getExpansion());
-            }
-            dialog.oK();
-            log("Add abbrevitaions back confirmed.");
-            for (int cntr = 0; cntr < abbrevs.length; cntr++) {
-                moveCaretIntoCode();
-                //Test whether the newly added (old) abbreviation does NOT work:
-                useAbbreviation(abbrevs[cntr].getName(), true);
-            }
-            
+                        
             log("testAbbreviationRemove flush results:");
             
             flushResult();
@@ -379,6 +377,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
     public void setUp() {
         log("Starting abbreviations test. Test class=" + getClass());
         log("Test name=" + getName());
+        System.setOut(getLog());
     }
     
     public void tearDown() throws Exception {
