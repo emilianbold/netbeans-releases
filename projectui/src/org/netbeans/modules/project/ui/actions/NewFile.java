@@ -82,24 +82,30 @@ public class NewFile extends ProjectAction implements PropertyChangeListener {
             
             while (it.hasNext ()) {
                 Object obj = it.next ();
-                assert !(obj instanceof FileObject) : obj;
-                try {
-                    DataObject newDO = DataObject.find ((FileObject)obj);
-                    if (newDO != null) {
-                        // Same what template wizard does - not very nice
-                        // run default action (hopefully should be here)
-                        final Node node = newDO.getNodeDelegate ();
-                        Action a = node.getPreferredAction();
-                        if (a instanceof ContextAwareAction) {
-                            a = ((ContextAwareAction)a).createContextAwareInstance(node.getLookup ());
-                        }
-                        if (a != null) {
-                            a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-                        }
+                DataObject newDO = null;
+                if (obj instanceof DataObject) {
+                    newDO = (DataObject) obj;
+                } else if (obj instanceof FileObject) {
+                    try {
+                        newDO = DataObject.find ((FileObject) obj);
+                    } catch (DataObjectNotFoundException x) {
+                        // XXX
+                        assert false : obj;
                     }
-                } catch (DataObjectNotFoundException x) {
-                    // XXX
+                } else {
                     assert false : obj;
+                }
+                if (newDO != null) {
+                    // Same what template wizard does - not very nice
+                    // run default action (hopefully should be here)
+                    final Node node = newDO.getNodeDelegate ();
+                    Action a = node.getPreferredAction();
+                    if (a instanceof ContextAwareAction) {
+                        a = ((ContextAwareAction)a).createContextAwareInstance(node.getLookup ());
+                    }
+                    if (a != null) {
+                        a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                    }
                 }
             }
         }
