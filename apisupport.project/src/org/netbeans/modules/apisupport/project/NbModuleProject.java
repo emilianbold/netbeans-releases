@@ -552,8 +552,11 @@ final class NbModuleProject implements Project {
             // register project's classpaths to GlobalClassPathRegistry
             ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, boot = cpProvider.getProjectClassPaths(ClassPath.BOOT));
+            assert boot != null : "No BOOT path";
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, source = cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+            assert source != null : "No SOURCE path";
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, compile = cpProvider.getProjectClassPaths(ClassPath.COMPILE));
+            assert compile != null : "No COMPILE path";
         }
         
         protected void projectClosed() {
@@ -566,9 +569,13 @@ final class NbModuleProject implements Project {
             // XXX could discard caches, etc.
             
             // unregister project's classpaths to GlobalClassPathRegistry
+            assert boot != null && source != null && compile != null : "#46802: project being closed which was never opened?? " + NbModuleProject.this;
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, boot);
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, source);
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, compile);
+            boot = null;
+            source = null;
+            compile = null;
         }
         
     }
