@@ -175,14 +175,16 @@ public class DataViewWindow extends TopComponent {
         queryarea.setText(command);
     }
 
-    public void executeCommand() {
+    public boolean executeCommand() {
         try {
             String command = queryarea.getText().trim();
             dbadaptor.execute(command);
             RecentCommand rcmd = new RecentCommand(command);
             ((ComboModel)rcmdscombo.getModel()).addElement(rcmd);
+            return true;
         } catch (Exception e) {
             TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DataViewFetchErrorPrefix") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
+            return false;
         }
     }
 

@@ -28,6 +28,7 @@ import org.openide.nodes.*;
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.dlg.*;
+import org.netbeans.modules.db.explorer.dataview.*;
 
 public class RecreateTableAction extends DatabaseAction {
     static final long serialVersionUID =6992569917995229492L;
@@ -71,15 +72,32 @@ public class RecreateTableAction extends DatabaseAction {
 
             String newtab = cmd.getObjectName();
             String msg = MessageFormat.format(bundle.getString("RecreateTableRenameNotes"), new String[] {cmd.getCommand()}); //NOI18N
+            msg = cmd.getCommand();
             LabeledTextFieldDialog dlg = new LabeledTextFieldDialog(bundle.getString("RecreateTableRenameTable"), bundle.getString("RecreateTableNewName"), msg); //NOI18N
             dlg.setStringValue(newtab);
-            if (dlg.run()) {
-                newtab = dlg.getStringValue();
-                cmd.setObjectName(newtab);
-                cmd.execute();
-                nfo.addTable(newtab);
+            boolean noResult = true;
+            while(noResult) {
+                if (dlg.run()) { // OK option
+                    try {
+                        if(!dlg.isEditable()) { // from file
+                            newtab = dlg.getStringValue();
+                            cmd.setObjectName(newtab);
+                            cmd.execute();
+                            noResult = false;
+                            nfo.addTable(newtab);
+                        } else { // from editable text area
+                            DataViewWindow win = new DataViewWindow(info, dlg.getEditedCommand());
+                            if(win.executeCommand())
+                                noResult = false;
+                        }
+                    } catch(Exception exc) {
+                        String message = MessageFormat.format(bundle.getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); // NOI18N
+                        TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                    }
+                } else { // CANCEL option
+                    noResult = false;
+                }
             }
-
         } catch(Exception exc) {
             String message = MessageFormat.format(bundle.getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); // NOI18N
             TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
