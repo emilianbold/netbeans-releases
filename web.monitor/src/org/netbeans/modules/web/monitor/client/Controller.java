@@ -434,7 +434,8 @@ public class Controller  {
     public void replayTransaction(Node node) {
 
 	if(debug) 
-	    log("Replay transaction from node " + node.getName()); // NOI18N
+	    log("replayTransaction(Node node) from node " + 
+		node.getName()); // NOI18N
 
 	if(!checkServer(true)) return;
 
@@ -490,6 +491,11 @@ public class Controller  {
 	}
 	catch(IOException ioe) {
 
+	    if(debug) { 
+		log(ioe.getMessage()); 
+		ioe.printStackTrace();
+	    }
+	    
 	    // Notify the user that the server is not running
 	    Object[] options = {
 		NbBundle.getBundle(Controller.class).getString("MON_OK"),
@@ -527,8 +533,7 @@ public class Controller  {
 	// data should cause the transaction to be removed from the
 	// pane. 
 	
-	if(debug) log("replayTransaction(MD)"); //NOI18N
-
+	if(debug) log("replayTransaction(MonitorData md)"); //NOI18N
 
 	FileObject fo; 	
 	FileLock lock = null;
@@ -540,16 +545,59 @@ public class Controller  {
 	String id = md.getAttributeValue("id"); // NOI18N
 
 	try {
+	    // This will fail if the file already exists. This can
+	    // happen if the replay previously failed because the
+	    // server was not running. This is dealt with in the
+	    // catch clause below. 
 	    fo = getReplayDir().createData(id, "xml"); //NOI18N
+	    if(debug) log(" Created file for replay data"); 
 	}
 	catch(IOException ioex) { 
-	    throw ioex;
+
+	    try { 
+		fo = getReplayDir().getFileObject(id, "xml"); 
+	    }
+	    catch(IllegalArgumentException iaex) { 
+		// This is only thrown if getReplayDir() is not a
+		// folder. This should not happen. 
+		throw new IOException("No replay dir"); 
+	    } 
+
+	    if(!fo.isData()) { 
+		throw new IOException("Can't create file, giving up"); 
+	    } 
+
+	    try { 
+		 lock = fo.lock(); 
+	    } 
+	    catch(FileAlreadyLockedException falex) { 
+		throw new IOException("Old file exist, islocked"); 
+	    } 
+
+	    try { 
+		fo.delete(lock); 
+	    } 
+	    catch(IOException ioex2) { 
+		throw new IOException("Couldn't delete old file"); 
+	    }
+	    finally { 
+		if(lock != null) lock.releaseLock(); 
+	    }
+	
+	    try { 
+		fo = getReplayDir().createData(id, "xml"); //NOI18N
+	    }
+	    catch(IOException ioex2) { 
+		if(debug) log(" Couldn't create file for replay data"); 
+		throw ioex2;
+	    }
 	} 
 
 	try { 
 	    lock = fo.lock();
 	} 
 	catch(FileAlreadyLockedException fale) { 
+	    if(debug) log("Can't get a file lock for the replay file");
 	    throw new IOException(); 
 	} 
 
@@ -599,8 +647,8 @@ public class Controller  {
     public void replayTransaction(MonitorData md, String status)
 	throws UnknownHostException, IOException  {
 	
-	if(debug) 
-	    log("Replay transaction from transaction file "); //NOI18N 
+	if(debug) log("replayTransaction(MonitorData md, String status )"); //NOI18N
+
 	URL url = null;
 	try {
 	    String name = md.getServerName();
@@ -1225,11 +1273,12 @@ public class Controller  {
     private void showReplay(URL url) throws UnknownHostException,
 	                                    IOException {
 	
-	if(debug) log("showReplay()"); // NOI18N
-	if(debug) log("showReplay() url is " + url.toString()); // NOI18N
+	if(debug) 
+	    log("showReplay(URL url) url is " + url.toString()); // NOI18N
 	// First we check that we can find a host of the name that's
 	// specified 
 	ServerCheck sc = new ServerCheck(url.getHost());
+	if(debug) log("host is " + url.getHost()); //NOI18N
 	Thread t = new Thread(sc);
 	t.start();
 	try {
@@ -1392,11 +1441,19 @@ public class Controller  {
 
 
     boolean checkServer(boolean replay) { 
+
 	try { 
 	    HttpServer.getRepositoryRoot();
+	    if(debug) log("Got the HTTP server");
 	    return true;
 	}
 	catch(Throwable t) { 
+
+	    if(debug) { 
+		log("Exception: " + t.getMessage());
+		t.printStackTrace();
+	    }
+
 	    Object[] options = {
 		NbBundle.getBundle(Controller.class).getString("MON_OK"),
 	    };
