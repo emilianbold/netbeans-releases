@@ -473,7 +473,7 @@ is divided into following sections:
                      config="${{{$wsname}.config.name}}"
                      features="${{wscompile.service.{$wsname}.features}}"
                      mapping="${{web.docbase.dir}}/WEB-INF/wsdl/${{{$wsname}.mapping}}"
-                     classpath="${{wscompile.classpath}}" 
+                     classpath="${{wscompile.classpath}}:${{javac.classpath}}" 
                      nonClassDir="${{build.web.dir.real}}/WEB-INF/wsdl" 
                      verbose="true" 
                      xPrintStackTrace="true" 
@@ -493,7 +493,7 @@ is divided into following sections:
                      xPrintStackTrace="true"
                      verbose="true"
                      nonClassDir="${{build.web.dir.real}}/WEB-INF/wsdl"
-                     classpath="${{wscompile.classpath}}:${{build.classes.dir.real}}"
+                     classpath="${{wscompile.classpath}}:${{build.classes.dir.real}}:${{javac.classpath}}"
                      mapping="${{build.web.dir.real}}/WEB-INF/wsdl/${{{$wsname}.mapping}}"
                      config="${{{$wsname}.config.name}}"
                      features="${{wscompile.service.{$wsname}.features}}">
@@ -540,7 +540,7 @@ is divided into following sections:
                         features="${{wscompile.client.{$wsclientname}.features}}"
                         base="${{build.classes.dir.real}}"
                         sourceBase="${{build.generated.dir}}/wssrc"
-                        classpath="${{wscompile.classpath}}"
+                        classpath="${{wscompile.classpath}}:${{javac.classpath}}"
                         mapping="${{build.web.dir.real}}/WEB-INF/wsdl/{$wsclientname}-mapping.xml"
                         config="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml">
                     </wscompile>

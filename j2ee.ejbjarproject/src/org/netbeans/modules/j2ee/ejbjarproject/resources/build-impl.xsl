@@ -398,7 +398,7 @@ is divided into following sections:
                      config="${{{$wsname}.config.name}}"
                      features="${{wscompile.service.{$wsname}.features}}"
                      mapping="${{meta.inf}}/wsdl/${{{$wsname}.mapping}}"
-                     classpath="${{wscompile.classpath}}" 
+                     classpath="${{wscompile.classpath}}:${{javac.classpath}}" 
                      nonClassDir="${{classes.dir}}/META-INF/wsdl" 
                      verbose="true" 
                      xPrintStackTrace="true" 
@@ -419,7 +419,7 @@ is divided into following sections:
                      xPrintStackTrace="true"
                      verbose="true"
                      nonClassDir="${{classes.dir}}/META-INF/wsdl"
-                     classpath="${{wscompile.classpath}}:${{classes.dir}}"
+                     classpath="${{wscompile.classpath}}:${{classes.dir}}:${{javac.classpath}}"
                      mapping="${{classes.dir}}/META-INF/wsdl/${{{$wsname}.mapping}}"
                      config="${{{$wsname}.config.name}}"
                      features="${{wscompile.service.{$wsname}.features}}">
@@ -466,7 +466,7 @@ is divided into following sections:
                         features="${{wscompile.client.{$wsclientname}.features}}"
                         base="${{classes.dir}}"
                         sourceBase="${{build.generated.dir}}/wssrc"
-                        classpath="${{wscompile.classpath}}"
+                        classpath="${{wscompile.classpath}}:${{javac.classpath}}"
                         mapping="${{classes.dir}}/META-INF/wsdl/{$wsclientname}-mapping.xml"
                         config="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml">
                     </wscompile>
