@@ -31,12 +31,12 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
   
   private FormInfo formInfo;
   private Container topContainer;
-  private Dimension formSize;
+  private Dimension formSize = new Dimension (FormEditor.DEFAULT_FORM_WIDTH, FormEditor.DEFAULT_FORM_HEIGHT);
   private Point formPosition;
   private boolean generatePosition = true;
   private boolean generateSize = true;
   private boolean generateCenter = true;
-  private int formSizePolicy = GEN_PACK;
+  private int formSizePolicy = GEN_NOTHING;
   
   public RADVisualFormContainer (FormInfo formInfo) {
     super ();
@@ -130,74 +130,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
   }
 
   protected Node.Property[] createSyntheticProperties () {
-    Node.Property[] inherited = super.createSyntheticProperties ();
-/*    sizeProperty = new PropertySupport.ReadWrite () {
-  
-      public Object getValue () throws
-      IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        return getPropertyValue (desc);
-      }
-  
-      public void setValue (Object val) throws IllegalAccessException,
-      IllegalArgumentException, InvocationTargetException {
-        Object old = null;
-        
-        try {
-          old = getValue ();
-        } catch (IllegalArgumentException e) {  // no problem -> keep null
-        } catch (IllegalAccessException e) {    // no problem -> keep null
-        } catch (InvocationTargetException e) { // no problem -> keep null
-        }
-        
-        try {
-          setPropertyValue (desc, val);
-        } catch (IllegalArgumentException e) {  // no problem -> keep null
-        } catch (IllegalAccessException e) {    // no problem -> keep null
-        } catch (InvocationTargetException e) { // no problem -> keep null
-        }
-        
-        Object defValue = defaultPropertyValues.get (desc.getName ());
-        if ((defValue != null) && (val != null) && (defValue.equals (val))) {
-          // resetting to default value
-          changedPropertyValues.remove (RADProperty.this);
-        } else {
-          // add the property to the list of changed properties
-          changedPropertyValues.put (RADProperty.this, val);
-        }
-        debugChangedValues ();
-        getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), old, val);
-      }
-  
-      /** Test whether the property had a default value.
-      * @return <code>true</code> if it does
-      * /
-      public boolean supportsDefaultValue () {
-        return true;
-      }
-  
-      /** Restore this property to its default value, if supported.
-      * /
-      public void restoreDefaultValue () {
-        // 1. remove the property from list of changed values, so that the code for it is not generated
-        changedPropertyValues.remove (RADProperty.this);
-        
-        // 2. restore the default property value
-        Object def = defaultPropertyValues.get (desc.getName ());
-        if (def != null) {
-          try {
-            setValue (def);
-          } catch (IllegalAccessException e) {
-            // what to do, ignore...
-          } catch (IllegalArgumentException e) {
-            // what to do, ignore...
-          } catch (InvocationTargetException e) {
-            // what to do, ignore...
-          }
-        }
-        // [PENDING - test]
-      }
-  
-    }; */
 
     Node.Property policyProperty = new PropertySupport.ReadWrite ("form size policy", Integer.TYPE, "form size policy", "form size policy") {
       public Object getValue () throws
@@ -210,6 +142,12 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         if (!(val instanceof Integer)) throw new IllegalArgumentException ();
         setFormSizePolicy (((Integer)val).intValue ());
       }
+
+      /** Editor for alignment */
+      public java.beans.PropertyEditor getPropertyEditor () {
+        return new SizePolicyEditor ();
+      }
+      
     };
 
 
@@ -278,21 +216,57 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       }
     };
 
-    Node.Property[] ret = new Node.Property [inherited.length + 6];
-    System.arraycopy (inherited, 0, ret, 0, inherited.length);
-    ret[ret.length - 6] = sizeProperty;
-    ret[ret.length - 5] = positionProperty;
-    ret[ret.length - 4] = policyProperty;
-    ret[ret.length - 3] = genPositionProperty;
-    ret[ret.length - 2] = genSizeProperty;
-    ret[ret.length - 1] = genCenterProperty;
+    Node.Property[] ret = new Node.Property [6];
+    ret[0] = sizeProperty;
+    ret[1] = positionProperty;
+    ret[2] = policyProperty;
+    ret[3] = genPositionProperty;
+    ret[4] = genSizeProperty;
+    ret[5] = genCenterProperty;
     return ret;
+  }
+
+
+// ------------------------------------------------------------------------------------------
+// Innerclasses
+
+  final public static class SizePolicyEditor extends java.beans.PropertyEditorSupport {
+    /** Display Names for alignment. */
+    private static final String[] names = { 
+      FormEditor.getFormBundle ().getString ("VALUE_sizepolicy_full"),
+      FormEditor.getFormBundle ().getString ("VALUE_sizepolicy_pack"),
+      FormEditor.getFormBundle ().getString ("VALUE_sizepolicy_none"),
+    }; 
+
+    /** @return names of the possible directions */
+    public String[] getTags () {
+      return names;
+    }
+
+    /** @return text for the current value */
+    public String getAsText () {
+      int value = ((Integer)getValue ()).intValue ();
+      return names[value];
+    }
+
+    /** Setter.
+    * @param str string equal to one value from directions array
+    */
+    public void setAsText (String str) {
+      if (names[0].equals (str))
+        setValue (new Integer (0));
+      else if (names[1].equals (str))
+        setValue (new Integer (1)); 
+      else if (names[2].equals (str))
+        setValue (new Integer (2)); 
+    }
   }
 
 }
 
 /*
  * Log
+ *  5    Gandalf   1.4         6/25/99  Ian Formanek    Improved Size Policy 
  *  4    Gandalf   1.3         6/24/99  Ian Formanek    Generation of size for 
  *       visaul forms
  *  3    Gandalf   1.2         6/6/99   Ian Formanek    New FormInfo design 
