@@ -21,6 +21,8 @@ import java.awt.event.MouseEvent;
 import java.awt.SystemColor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.border.LineBorder;
@@ -34,14 +36,6 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
-import org.netbeans.editor.Coloring;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsChangeEvent;
-import org.netbeans.editor.SettingsChangeListener;
-
-import org.netbeans.modules.properties.syntax.PropertiesOptions;
-import org.netbeans.modules.properties.syntax.PropertiesTokenContext;
-
 import org.openide.DialogDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
@@ -49,6 +43,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.options.SystemOption;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListener;
 import org.openide.windows.Mode;
 import org.openide.windows.Workspace;
 
@@ -66,14 +61,24 @@ public class BundleEditPanel extends javax.swing.JPanel {
 
     static final long serialVersionUID =-843810329041244483L;
 
-    // colors for table view 
-    private static Color keyColor;
-    private static Color valueColor;
-    private static Color shadowColor;
-    private static Color keyBackground;
-    private static Color valueBackground;
+    /** Default implementation of PropertiesColors inetrface. */
+    public static final PropertiesColors DEFAULTCOLORS = new PropertiesColors() {
+        public Color getKeyColor() {return Color.blue;}
+        public Color getValueColor() {return Color.magenta;}
+        public Color getShadowColor() {return new Color(SystemColor.controlHighlight.getRGB());}
+        public Color getKeyBackground() {return Color.white;}
+        public Color getValueBackground() {return Color.white;}
+
+        public void colorsUpdated() {}
+        public void addPropertyChangeListener(PropertyChangeListener listener) {}
+        public void removePropertyChangeListener(PropertyChangeListener listener) {}
+    };
     
-    private SettingsChangeListener settingsListener;
+    /** Class representing colors in table view. */
+    private static PropertiesColors colors;
+    
+    /** Listener on color changes. */    
+    private PropertyChangeListener colorsListener;
 
     
     /** Creates new form BundleEditPanel */
@@ -82,6 +87,8 @@ public class BundleEditPanel extends javax.swing.JPanel {
         this.ptm = ptm;
 
         initComponents ();
+        
+        initColors();
         
         // header renderer
         final javax.swing.table.DefaultTableCellRenderer headerRenderer = new javax.swing.table.DefaultTableCellRenderer() {
@@ -135,19 +142,6 @@ public class BundleEditPanel extends javax.swing.JPanel {
         theTable.setDefaultEditor(PropertiesTableModel.StringPair.class,
                                   new PropertiesTableCellEditor(textField, textComment, textValue));
 
-        // set listening on changes of color settings
-        Settings.addSettingsChangeListener(settingsListener = new SettingsChangeListener() {
-                public void settingsChange(SettingsChangeEvent evt) {
-                    // maybe could be refined
-                    updateColors((PropertiesOptions)SystemOption.findObject(PropertiesOptions.class, true));
-                    BundleEditPanel.this.repaint();
-                }
-            }
-        );
-        
-        // set colors
-        updateColors((PropertiesOptions)SystemOption.findObject(PropertiesOptions.class, true));
-        
         // set renderer
         theTable.setDefaultRenderer(PropertiesTableModel.StringPair.class, new javax.swing.table.DefaultTableCellRenderer() {
             public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table,
@@ -161,19 +155,19 @@ public class BundleEditPanel extends javax.swing.JPanel {
                 
                 // set backgound
                 if(sp.isKeyType())
-                    c.setBackground(keyBackground);
+                    c.setBackground(colors.getKeyBackground());
                 else {
                     if( sp.getValue() != null)
-                        c.setBackground(valueBackground);
+                        c.setBackground(colors.getValueBackground());
                     else
-                        c.setBackground(shadowColor);
+                        c.setBackground(colors.getShadowColor());
                 }
 
                 // set foregound
                 if(sp.isKeyType())
-                    c.setForeground(keyColor);
+                    c.setForeground(colors.getKeyColor());
                 else
-                    c.setForeground(valueColor);
+                    c.setForeground(colors.getValueColor());
                 
                 return c;
             }
@@ -221,27 +215,6 @@ public class BundleEditPanel extends javax.swing.JPanel {
 
     }
 
-    /** Updates colors from properties options. */
-    private void updateColors(PropertiesOptions options) {
-        Map map = options.getColoringMap();
-        Coloring keyColoring = (Coloring)map.get(PropertiesTokenContext.contextPath.getFullTokenName(
-            PropertiesTokenContext.KEY));
-        keyColor = keyColoring.getForeColor();
-        keyBackground = keyColoring.getBackColor();
-        Coloring valueColoring = (Coloring)map.get(PropertiesTokenContext.contextPath.getFullTokenName(
-            PropertiesTokenContext.VALUE));
-        valueColor = valueColoring.getForeColor();
-        valueBackground = valueColoring.getBackColor();
-
-        shadowColor = options.getShadowTableCell();
-
-        if(keyColor == null) keyColor = ((Coloring)map.get("default")).getBackColor(); // NOI18N
-        if(keyBackground == null) keyBackground = ((Coloring)map.get("default")).getBackColor(); // NOI18N
-        if(valueColor == null) valueColor = ((Coloring)map.get("default")).getBackColor(); // NOI18N
-        if(valueBackground == null) valueBackground = ((Coloring)map.get("default")).getBackColor(); // NOI18N
-        if(shadowColor == null) shadowColor = new Color(SystemColor.controlHighlight.getRGB());
-    }
-    
     /** Calculates width of columns from the table component. 
     */
     void setColumnWidths() {
@@ -350,6 +323,34 @@ public class BundleEditPanel extends javax.swing.JPanel {
         return theTable;
     }
 
+    /** Initializes colors variable. */
+    private void initColors() {
+        try {
+            Class options = Class.forName
+                            ("org.netbeans.modules.properties.syntax.PropertiesOptions",
+                             false, this.getClass().getClassLoader());
+            Method colorsMethod = options.getMethod ("getColors", null);
+            colors = (PropertiesColors)colorsMethod.invoke (options.newInstance(), null);
+        } catch (ClassNotFoundException e) {
+        } catch (NoSuchMethodException e) {
+        } catch (InvocationTargetException e) {
+        } catch (IllegalAccessException e) {
+        } catch (InstantiationException e) {
+        }
+
+        // colors were not gained (editor module is probably not installed), use our defaults
+        if(colors == null)
+            colors = DEFAULTCOLORS;        
+
+        // listen on changes of color settings
+        colors.addPropertyChangeListener(WeakListener.propertyChange(colorsListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                // colors changed repaint table
+                BundleEditPanel.this.repaint();
+            }
+        }, colors));
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -602,4 +603,21 @@ public class BundleEditPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel4;
     // End of variables declaration//GEN-END:variables
 
+
+    /** Inner interface used for gainng colors for table view. There are two implemenations.
+     * The default one in this class, containing default colors, and implementaion 
+     * in syntax/PropertiesOptions class which passes colors from editor settings. That 
+     * implementaiton is available only when Editor module is installed. */
+    public interface PropertiesColors {
+        public Color getKeyColor();
+        public Color getValueColor();
+        public Color getShadowColor();
+        public Color getKeyBackground();
+        public Color getValueBackground();
+
+        public void colorsUpdated();
+        public void addPropertyChangeListener(PropertyChangeListener listener);
+        public void removePropertyChangeListener(PropertyChangeListener listener);
+   } // end of inner inaterface PropertiesColors
+   
 }
