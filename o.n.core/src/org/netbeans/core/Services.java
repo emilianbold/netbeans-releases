@@ -40,6 +40,7 @@ import org.netbeans.beaninfo.editors.CompilerTypeEditor;
 import org.netbeans.beaninfo.editors.DebuggerTypeEditor;
 
 import org.netbeans.core.lookup.InstanceLookup;
+import org.netbeans.core.lookup.ProxyLookup;
 
 /** Works with all service types.
 *
@@ -55,12 +56,16 @@ final class Services extends ServiceType.Registry implements LookupListener {
     /** instance */
     private static final Services INSTANCE = new Services ();
     
+    /** Lookup containing all current non-default services. */
+    private InstanceLookup lookup = new InstanceLookup();
+    /** Lookup containing all current default services. */
+    private InstanceLookup lookupDefTypes = new InstanceLookup();
     /** Lookup containing all current services. */
-    private final InstanceLookup lookup = new InstanceLookup();
+    private ProxyLookup proxyLookup;
     /** Result containing all current services. */
     private Lookup.Result allTypes;
     /** Result containing all services declared in manifest files. */
-    private Lookup.Result allDefaultTypes;
+    private Lookup.Result allServiceSections;
     
     /** listeners to the services */
     private static PropertyChangeSupport supp = new PropertyChangeSupport (INSTANCE);
@@ -124,28 +129,40 @@ final class Services extends ServiceType.Registry implements LookupListener {
     
     /** Register new instance.
      * @param obj source
+     * @param isDefault Is this service type default? That means should it be placed
+     * in front of other services?
      */
-    public synchronized void register (ServiceType obj) {
-        lookup.add(obj, null);
+    public synchronized void register (ServiceType obj, boolean isDefault) {
+        if (isDefault) {
+            lookupDefTypes.add(obj, null);
+        } else {
+            lookup.add(obj, null);
+        }
     }
     
     /** Unregisters all instances wich class is same like obj.getClass.
      */
     public synchronized void unregister (ServiceType obj) {
+        tryUnregister(lookup, obj);
+        tryUnregister(lookupDefTypes, obj);
+    }
+    
+    private void tryUnregister (InstanceLookup lk, ServiceType obj) {
         String clazzName = obj.getClass().getName();
-        Iterator it = lookup.lookup(new Lookup.Template(obj.getClass())).allInstances().iterator();
+        Iterator it = lk.lookup(new Lookup.Template(obj.getClass())).allInstances().iterator();
         Object st;
         while (it.hasNext()) {
             st = it.next();
             if (clazzName.equals(st.getClass().getName())) {
-                lookup.remove (st, null);
+                lk.remove (st, null);
             }
         }
     }
     
     /** Lookup containing all current services. */
     public Lookup getLookup() {
-        return lookup;
+        proxyLookup = new ProxyLookup(new Lookup[] {lookupDefTypes, lookup});
+        return proxyLookup;
     }
     
     /** Adds property change listener (holds it weakly)
@@ -178,13 +195,13 @@ final class Services extends ServiceType.Registry implements LookupListener {
     }
 
     /** Result containing all services declared in manifest files. */
-    private synchronized Lookup.Result getDefaultTypesResult() {
-        if (allDefaultTypes == null) {
-            allDefaultTypes = Lookup.getDefault().lookup(
+    private synchronized Lookup.Result getServiceSectionsResult() {
+        if (allServiceSections == null) {
+            allServiceSections = Lookup.getDefault().lookup(
                 new Lookup.Template(ManifestSection.ServiceSection.class)
             );
         }
-        return allDefaultTypes;
+        return allServiceSections;
     }
     
     /** Result containing all current services. */
@@ -243,25 +260,28 @@ final class Services extends ServiceType.Registry implements LookupListener {
     * @param arr list of ServiceTypes 
     */
     public synchronized void setServiceTypes (java.util.List arr) {
+        lookup = new InstanceLookup();
+        lookupDefTypes = new InstanceLookup();
         if (arr == null) {
-            Lookup.Result r = getDefaultTypesResult();
-            lookup.set(convertServiceSections(r.allInstances()), null);
+            Lookup.Result r = getServiceSectionsResult();
+            registerServiceSections(r.allInstances());
         } else {
-            lookup.set(arr, null);
+            Iterator it = arr.iterator();
+            while (it.hasNext()) {
+                register((ServiceType) it.next(), false);
+            }
         }
+        proxyLookup.setLookups(new Lookup[] {lookupDefTypes, lookup});
     }
     
-    /** Convert list of ManifestSection.ServiceSections to list of ServiceTypes. */
-    private Collection convertServiceSections (Collection col) {
-        if (col == null) return Collections.EMPTY_LIST;
-        
+    /** Convert list of ManifestSection.ServiceSections ServiceTypes and register them. */
+    private void registerServiceSections (Collection col) {
         Iterator it = col.iterator();
-        ArrayList list = new ArrayList(col.size());
         ManifestSection.ServiceSection ms;
         while (it.hasNext()) {
             ms = (ManifestSection.ServiceSection) it.next();
             try {
-                list.add(ms.getServiceType());
+                register(ms.getServiceType(), ms.isDefault());
             } catch (InstantiationException ex) {
                 TopManager.getDefault ().getErrorManager ().notify (
                   ErrorManager.INFORMATIONAL,
@@ -269,7 +289,6 @@ final class Services extends ServiceType.Registry implements LookupListener {
                 );
             }
         }
-        return list;
     }
 
     /** all services */
@@ -293,8 +312,7 @@ final class Services extends ServiceType.Registry implements LookupListener {
     */
     public synchronized void addServiceType (ServiceType t) 
     throws IOException, ClassNotFoundException {
-        List current = getServiceTypes();
-        if (current.contains(t)) {
+        if (find(t.getName()) != null) {
             // if adding already existing service, create its clone
             t = t.createClone ();
         }
@@ -321,7 +339,7 @@ final class Services extends ServiceType.Registry implements LookupListener {
             Set added = new HashSet ();            
 
             // construct new service types from the registered sections
-            Iterator it = getDefault().getDefaultTypesResult().allInstances().iterator();
+            Iterator it = getDefault().getServiceSectionsResult().allInstances().iterator();
             ManifestSection.ServiceSection section;
             while (it.hasNext()) {
                 section = (ManifestSection.ServiceSection) it.next();
@@ -497,6 +515,9 @@ final class Services extends ServiceType.Registry implements LookupListener {
 
 /*
 * $Log$
+* Revision 1.46  2001/05/25 12:33:31  jpokorsky
+* #12233 fixed: Services are added in an unpredictable way
+*
 * Revision 1.45  2001/05/16 20:16:25  jpokorsky
 * Changed initialization of services. Now it uses Lookup.
 *
