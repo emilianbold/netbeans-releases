@@ -20,6 +20,12 @@ import java.util.*;
 
 import javax.swing.KeyStroke;
 
+import org.openide.actions.ToolsAction;
+import org.openide.actions.OpenAction;
+import org.openide.actions.ViewAction;
+// import org.openide.actions.CustomizeAction;
+// import org.openide.actions.PropertiesAction;
+// import org.openide.actions.NewAction;
 import org.openide.windows.TopComponent;
 
 import org.netbeans.editor.Settings;
@@ -36,6 +42,10 @@ import org.netbeans.editor.TokenContext;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.editor.ext.ExtSettingsNames;
+
+import org.netbeans.modules.xml.core.actions.CollectXMLAction;
+import org.netbeans.modules.xml.core.actions.CollectDTDAction;
+
 
 public class XMLSettingsInitializer extends Settings.AbstractInitializer {
 
@@ -55,20 +65,36 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
         }
 
 
-        List commonActionNames = new ArrayList (Arrays.asList
-                                                (new String[] {
-                                                    BaseKit.formatAction,
-                                                    null,
-                                                    TopComponent.class.getName(),
-                                                    null,
-                                                    BaseKit.cutAction,
-                                                    BaseKit.copyAction,
-                                                    BaseKit.pasteAction,
-                                                    null,
-                                                    BaseKit.removeSelectionAction,
-                                                }));
+        List commonActionNames = null;
+        if ( ( kitClass == XMLKit.class ) ||
+             ( kitClass == DTDKit.class ) ) {
+            commonActionNames = new ArrayList
+                (Arrays.asList (new String[] {
+                    BaseKit.formatAction,
+                    null,
+                    TopComponent.class.getName(),
+                    null,
+                    BaseKit.cutAction,
+                    BaseKit.copyAction,
+                    BaseKit.pasteAction,
+                    null,
+                    BaseKit.removeSelectionAction,
+                    null,
+// <comment> Wait for context sensitive activated nodes implementation.
+//                     NewAction.class.getName(),
+//                     null,
+// </comment>
+                    ToolsAction.class.getName(),
+// <comment> Wait for context sensitive activated nodes implementation.
+//                     CustomizeAction.class.getName(),
+//                     PropertiesAction.class.getName(),
+// </comment>
+                }));
+        }
 
-        if (kitClass == DTDKit.class) { // ----- DTDKit Settings ---------------
+
+        /** Add editor actions to DTD Kit. */
+        if (kitClass == DTDKit.class) {
 
             settingsMap.put (SettingsNames.ABBREV_MAP, getDTDAbbrevMap());
 
@@ -76,17 +102,20 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
                     new TokenContext[] { DTDTokenContext.context }
             );
 
-            List dtdActionNames = new ArrayList (Arrays.asList
-                                                 (new String[] {
-                                                     "org.netbeans.modules.xml.tools.actions.CheckDTDAction", // NOI18N
-                                                     null,
-                                                 }));
+            List dtdActionNames = new ArrayList
+                (Arrays.asList (new String[] {
+                    OpenAction.class.getName(),
+                    null,
+                    CollectDTDAction.class.getName(),
+//                     "org.netbeans.modules.xml.tools.actions.CheckDTDAction", // NOI18N
+                    null,
+                }));
             dtdActionNames.addAll (commonActionNames);
             settingsMap.put (ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST, dtdActionNames);
         }
 
 
-        /** Add editor actions to XML kit. */
+        /** Add editor actions to XML Kit. */
         if (kitClass == XMLKit.class) {
 
             settingsMap.put (SettingsNames.ABBREV_MAP, getXMLAbbrevMap());
@@ -95,13 +124,16 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
                     new TokenContext[] { XMLDefaultTokenContext.context }
             );
 
-            List xmlActionNames = new ArrayList (Arrays.asList
-                                                 (new String[] {
-                                                     "org.netbeans.modules.xml.tools.actions.CheckAction", // NOI18N
-                                                     "org.netbeans.modules.xml.tools.actions.ValidateAction", // NOI18N
-//                                                       "org.netbeans.modules.xml.action.FormatAction", // NOI18N
-                                                     null,
-                                                 }));
+            List xmlActionNames = new ArrayList
+                (Arrays.asList (new String[] {
+                    OpenAction.class.getName(),
+                    ViewAction.class.getName(),
+                    null,
+                    CollectXMLAction.class.getName(),
+//                     "org.netbeans.modules.xml.tools.actions.CheckAction", // NOI18N
+//                     "org.netbeans.modules.xml.tools.actions.ValidateAction", // NOI18N
+                    null,
+                }));
             xmlActionNames.addAll (commonActionNames);
             settingsMap.put (ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST, xmlActionNames);
             
