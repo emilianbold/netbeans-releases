@@ -36,7 +36,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel {
         vps.register(jCheckBoxDisplayBrowser, WebProjectProperties.DISPLAY_BROWSER);
         vps.register(jTextFieldLaunchURL, WebProjectProperties.LAUNCH_URL);
         
-        jTextFieldLaunchURL.setEnabled(jCheckBoxDisplayBrowser.isSelected());
+        jTextFieldLaunchURL.setEditable(jCheckBoxDisplayBrowser.isSelected());
     } 
     
     /** This method is called from within the constructor to
@@ -94,9 +94,9 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(jLabelLaunchURL, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -113,7 +113,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel {
     }//GEN-END:initComponents
 
     private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxDisplayBrowserActionPerformed
-        jTextFieldLaunchURL.setEnabled(jCheckBoxDisplayBrowser.isSelected());
+        jTextFieldLaunchURL.setEditable(jCheckBoxDisplayBrowser.isSelected());
     }//GEN-LAST:event_jCheckBoxDisplayBrowserActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

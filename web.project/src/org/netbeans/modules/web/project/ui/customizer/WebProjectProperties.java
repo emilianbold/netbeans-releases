@@ -61,6 +61,7 @@ public class WebProjectProperties {
     // Special properties of the project
     public static final String J2SE_PROJECT_NAME = "j2se.project.name";
     public static final String JAVA_PLATFORM = "platform.active";
+    public static final String J2EE_PLATFORM = "j2ee.platform";
     
     // Properties stored in the PROJECT.PROPERTIES    
     public static final String DIST_DIR = "dist.dir";
@@ -118,6 +119,7 @@ public class WebProjectProperties {
     // Info about the property destination
     private PropertyDescriptor PROPERTY_DESCRIPTORS[] = {
         new PropertyDescriptor( J2SE_PROJECT_NAME, null, STRING_PARSER ),
+        new PropertyDescriptor( J2EE_PLATFORM, PROJECT, STRING_PARSER ),
                 
         new PropertyDescriptor( DIST_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_JAR, PROJECT, STRING_PARSER ),
