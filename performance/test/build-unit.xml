@@ -73,7 +73,7 @@ Microsystems, Inc. All Rights Reserved.
             <classpath refid="jemmy.and.jelly.path"/>
             
             <!-- Opens project at specified location -->
-            <property name="xtest.ide.open.project" location="${xtest.sketchpad}/jEdit41"/>
+            <property name="xtest.ide.open.project" location="${xtest.tmpdir}/jEdit41"/>
             
             <property name="xtest.timeout" value="3600000" />
         </executeTests>
@@ -119,7 +119,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Copy and unzip project JEdit from close source path, will be used for Performance tests -->
     <target name="copy_unzip_jedit_project">
-        <unzip src="${nbextra.dir}/qa/projectized/jEdit41.zip" dest="${xtest.sketchpad}/"/>
+        <unzip src="${nbextra.dir}/qa/projectized/jEdit41.zip" dest="${xtest.tmpdir}/"/>
     </target>
         
     <!-- Make ide executable -->
