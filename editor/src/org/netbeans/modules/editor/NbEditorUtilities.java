@@ -31,6 +31,13 @@ import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import org.openide.windows.TopComponent;
+import org.openide.util.Lookup;
+import java.lang.IllegalArgumentException;
+import org.openide.ErrorManager;
+import java.util.ResourceBundle;
+import org.openide.util.NbBundle;
+import java.util.MissingResourceException;
+import java.awt.Toolkit;
 
 /**
 * Various utilities
@@ -173,5 +180,28 @@ public class NbEditorUtilities {
     public static String getMimeType(Document doc) {
         return (String)doc.getProperty(NbEditorDocument.MIME_TYPE_PROP);
     }
+
+    /** Displays ErrorManager window with the localized message. If bundleKey parameter is not founded in bundle
+     *  it is considered as displayable text value. */
+    public static void invalidArgument(String bundleKey) {
+        IllegalArgumentException iae=new IllegalArgumentException("Invalid argument"); //NOI18N
+        Toolkit.getDefaultToolkit().beep();
+        ErrorManager errMan=(ErrorManager)Lookup.getDefault().lookup(ErrorManager.class);
+        
+        if (errMan!=null) {
+            errMan.annotate(iae, ErrorManager.USER, iae.getMessage(), getString(bundleKey), null, null); //NOI18N
+        }
+        throw iae;
+    }
+    
+    private static String getString(String key) {
+        try {
+            return NbBundle.getBundle(FormatterIndentEngine.class).getString(key);
+        } catch (MissingResourceException e) {
+            if(Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
+            return key;
+        }
+    }
+
 
 }

@@ -29,9 +29,9 @@ import org.openide.text.IndentEngine;
 
 public abstract class FormatterIndentEngine extends IndentEngine {
 
-    public static final String EXPAND_TABS_PROP = "expandTabs";
+    public static final String EXPAND_TABS_PROP = "expandTabs"; //NOI18N
 
-    public static final String SPACES_PER_TAB_PROP = "spacesPerTab";
+    public static final String SPACES_PER_TAB_PROP = "spacesPerTab"; //NOI18N
 
     static final long serialVersionUID = -3408217516931076216L;
 
@@ -115,7 +115,7 @@ public abstract class FormatterIndentEngine extends IndentEngine {
 
     public void setSpacesPerTab(int spacesPerTab) {
         if (spacesPerTab <= 0) {
-            Toolkit.getDefaultToolkit().beep();
+            NbEditorUtilities.invalidArgument("MSG_NegativeValue"); // NOI18N
             return; // value unchanged
         }
 
@@ -136,6 +136,8 @@ public abstract class FormatterIndentEngine extends IndentEngine {
     public String[] getAcceptedMimeTypes() {
         return acceptedMimeTypes;
     }
+    
+    
 
     // Serialization ------------------------------------------------------------
 

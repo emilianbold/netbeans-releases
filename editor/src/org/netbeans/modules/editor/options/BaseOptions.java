@@ -69,6 +69,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Lookup.Template;
 import org.openide.util.Lookup.Item;
 import java.util.StringTokenizer;
+import org.netbeans.modules.editor.NbEditorUtilities;
 
 /**
  * Options for the base editor kit
@@ -318,10 +319,11 @@ public class BaseOptions extends OptionSupport {
         return getSettingInteger(SettingsNames.TAB_SIZE);
     }
     public void setTabSize(int tabSize) {
-        if (tabSize > 0)
-            setSettingInteger(SettingsNames.TAB_SIZE, tabSize, TAB_SIZE_PROP);
-        else
-            Toolkit.getDefaultToolkit().beep();
+        if (tabSize < 0) {
+            NbEditorUtilities.invalidArgument("MSG_NegativeValue"); // NOI18N
+            return;
+        }
+        setSettingInteger(SettingsNames.TAB_SIZE, tabSize, TAB_SIZE_PROP);
     }
     
 /*    public boolean getExpandTabs() {
@@ -495,6 +497,10 @@ public class BaseOptions extends OptionSupport {
         return getSettingInteger(SettingsNames.CARET_BLINK_RATE);
     }
     public void setCaretBlinkRate(int rate) {
+        if (rate < 0) {
+            NbEditorUtilities.invalidArgument("MSG_NegativeValue"); // NOI18N
+            return;
+        }
         setSettingInteger(SettingsNames.CARET_BLINK_RATE, rate,
         CARET_BLINK_RATE_PROP);
     }
@@ -694,6 +700,10 @@ public class BaseOptions extends OptionSupport {
     }
     
     public void setFontSize(final int size) {
+        if (size < 0) {
+            NbEditorUtilities.invalidArgument("MSG_NegativeValue"); // NOI18N
+            return;
+        }
         final int oldSize = getFontSize();
         Map cm = SettingsUtil.getColoringMap(getKitClass(), false, true); // !!! !evaluateEvaluators
         if (cm != null) {
@@ -722,6 +732,10 @@ public class BaseOptions extends OptionSupport {
         return ((Float) getSettingValue(SettingsNames.LINE_HEIGHT_CORRECTION)).floatValue();
     }
     public void setLineHeightCorrection(float f) {
+        if (f <= 0) {
+            NbEditorUtilities.invalidArgument("MSG_OutOfRange"); // NOI18N
+            return;
+        }
         setSettingValue(SettingsNames.LINE_HEIGHT_CORRECTION, new Float(f),
         LINE_HEIGHT_CORRECTION_PROP);
     }
@@ -813,6 +827,10 @@ public class BaseOptions extends OptionSupport {
         return getSettingInteger(SettingsNames.STATUS_BAR_CARET_DELAY);
     }
     public void setStatusBarCaretDelay(int delay) {
+        if (delay < 0) {
+            NbEditorUtilities.invalidArgument("MSG_NegativeValue"); // NOI18N
+            return;
+        }
         setSettingInteger(SettingsNames.STATUS_BAR_CARET_DELAY, delay,
         STATUS_BAR_CARET_DELAY_PROP);
     }
@@ -839,6 +857,10 @@ public class BaseOptions extends OptionSupport {
     }
     
     public void setFindIncSearchDelay(int delay) {
+        if (delay < 0) {
+            NbEditorUtilities.invalidArgument("MSG_NegativeValue"); // NOI18N
+            return;
+        }
         setSettingInteger(SettingsNames.FIND_INC_SEARCH_DELAY, delay,
         FIND_INC_SEARCH_DELAY_PROP);
     }
@@ -912,6 +934,10 @@ public class BaseOptions extends OptionSupport {
     }
     
     public void setTextLimitWidth(int width) {
+        if (width <= 0) {
+            NbEditorUtilities.invalidArgument("MSG_OutOfRange"); // NOI18N
+            return;
+        }
         setSettingInteger(SettingsNames.TEXT_LIMIT_WIDTH, width,
         TEXT_LIMIT_WIDTH_PROP);
     }
