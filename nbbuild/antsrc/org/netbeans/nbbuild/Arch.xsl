@@ -134,7 +134,7 @@ Microsystems, Inc. All Rights Reserved.
             </xsl:attribute>
             <xsl:value-of select="$name" />
         </a>
-        
+        - <xsl:apply-templates />
     </xsl:template>
 
     <xsl:template name="api">
