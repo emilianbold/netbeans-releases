@@ -101,16 +101,17 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
     private void refreshView() {
         
         Project p = OpenProjectList.getDefault().getMainProject();
+        boolean noOpenProject = OpenProjectList.getDefault ().getOpenProjects ().length == 0;
         
         if ( command == null ) {
             setEnabled( performer.enable( p ) );
         }
         else {
             if ( p == null ) {
-                setEnabled( true );
+                setEnabled( !noOpenProject );
             }
             else if ( ActionsUtil.commandSupported ( p, command, Lookup.EMPTY ) ) {
-                setEnabled( true );
+                setEnabled( !noOpenProject );
             }
             else {
                 setEnabled( false );
