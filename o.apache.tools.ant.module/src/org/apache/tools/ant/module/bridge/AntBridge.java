@@ -241,6 +241,7 @@ public final class AntBridge {
     private static File[] getNblibs() throws IOException {
         // XXX this will not work for modules installed in the user dir...
         // pending stronger semantics from IFL re. directories
+        // (cf. #36701)
         // -> when this is fixed, remove ant/nblib check from org.netbeans.modules.autoupdate.ModuleUpdate
         File nblibdir = InstalledFileLocator.getDefault().locate("ant/nblib", "org.apache.tools.ant.module", false); // NOI18N
         File bridgeJar = new File(nblibdir, "bridge.jar");
@@ -308,6 +309,7 @@ public final class AntBridge {
                 throw ioe;
             } catch (NoClassDefFoundError ncdfe) {
                 // Normal for e.g. tasks dumped there by disabled modules.
+                // Cf. #36702 for possible better solution.
                 AntModule.err.log("AntBridge.loadDefs: skipping " + clazzname + ": " + ncdfe);
             } catch (LinkageError e) {
                 // Not normal; if it is there it ought to be resolvable etc.
