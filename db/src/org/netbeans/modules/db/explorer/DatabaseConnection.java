@@ -287,7 +287,14 @@ public class DatabaseConnection implements DBConnection {
             Class.forName(drv);
             Connection connection = DriverManager.getConnection(db, dbprops);
             return connection;
-
+            
+        } catch (SQLException e) {
+            // hack for Pointbase Network Server
+            String message = MessageFormat.format(bundle.getString("EXC_CannotEstablishConnection"), new String[] {db, drv, e.getMessage()}); // NOI18N
+            if(drv.equals(PointbasePlus.DRIVER))
+                if(e.getErrorCode()==PointbasePlus.ERR_SERVER_REJECTED)
+                    message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message}); // NOI18N
+            throw new DDLException(message);
         } catch (Exception exc) {
             String message = MessageFormat.format(bundle.getString("EXC_CannotEstablishConnection"), new String[] {db, drv, exc.getMessage()}); // NOI18N
             throw new DDLException(message);

@@ -116,6 +116,15 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                             if(!schemaPanel.setSchemas(items, schemaTemp))
                                 dlg.setException(new DDLException("User name is not in the list of accessible schemas")); // NOI18N
                         }
+                    } catch (SQLException exc) {
+                        // hack for Pointbase Network Server
+                        String message = MessageFormat.format(bundle.getString("ERR_UnableObtainSchemas"), new String[] {exc.getMessage()}); // NOI18N
+                        if(con.getDriver().equals(PointbasePlus.DRIVER))
+                            if(exc.getErrorCode()==86024/*error code if pointbase network server doesn't run*/)
+                                message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message}); // NOI18N
+                        TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                        dlg.setSelectedComponent(basePanel);
+                        dlg.setException(new DatabaseException("Unable to obtain schema. "+exc.getMessage())); // NOI18N
                     } catch(Exception exc) {
                         String message = MessageFormat.format(bundle.getString("ERR_UnableObtainSchemas"), new String[] {exc.getMessage()}); //NOI18N
                         TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
