@@ -41,6 +41,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -175,7 +176,7 @@ public class PhysicalView {
             this.group = group;
             this.isProjectDir = isProjectDir;
             pi.addPropertyChangeListener(this);
-            group.addPropertyChangeListener(this);
+            group.addPropertyChangeListener( WeakListeners.propertyChange( this, group ) );
         }
 
         // XXX May need to change icons as well
