@@ -474,11 +474,13 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             } else {
                 enableOK = false;
             }
-            if (enableOK) {
-                if (multiSelection) {
-                    myEditor.setValue(dObjArray);
-                } else {
+            if (multiSelection) {
+                myEditor.setValue(dObjArray);
+            } else {
+                if (dObjArray.length > 0) {
                     myEditor.setValue(dObjArray[0]);
+                } else {
+                    myEditor.setValue(null);
                 }
             }
             setOkButtonEnabled(enableOK);
