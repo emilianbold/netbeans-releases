@@ -126,7 +126,8 @@ Microsystems, Inc. All Rights Reserved.
     <target name="parser-db">
         <taskdef name="makeparserdb" classname="org.netbeans.nbbuild.MakeParserDB" classpath="../../nbbuild/nbantext.jar"/>
         <mkdir dir="netbeans/system/ParserDB"/>
-        <makeparserdb db="release/system/ParserDB/servlet23jsp12" sources="P:/jakarta/jakarta-servletapi-4/src/share" nbroot="../.."/>
+        <makeparserdb db="release/system/ParserDB/servlet24" sources="e:/software/jakarta-tomcat-5.0.16-src/jakarta-servletapi-5/jsr154/src/share" nbroot="../.."/>
+        <makeparserdb db="release/system/ParserDB/jsp20"     sources="e:/software/jakarta-tomcat-5.0.16-src/jakarta-servletapi-5/jsr152/src/share" nbroot="../.."/>
     </target>
 
 </project>
