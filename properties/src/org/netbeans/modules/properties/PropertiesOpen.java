@@ -45,6 +45,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.OpenSupport;
+import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -55,6 +56,7 @@ import org.openide.util.*;
 import org.openide.windows.*;
 import org.openide.util.Utilities;
 import java.io.File;
+import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileUtil;
 
 
@@ -63,7 +65,8 @@ import org.openide.filesystems.FileUtil;
  * 
  * @author Petr Jiricka, Peter Zavadsky
  */
-public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, CloseCookie {
+public class PropertiesOpen extends CloneableOpenSupport
+                            implements OpenCookie, CloseCookie {
 
     /** Main properties dataobject */
     PropertiesDataObject propDataObject;
@@ -90,39 +93,55 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
 
 
     /** 
-     * Overrides superclass method.
-     * Tests whether all data is saved, and if not, prompt the user to save.
+     * Tests whether all data is saved, and if not, prompts the user to save.
+     *
      * @return <code>true</code> if everything can be closed
      */
     protected boolean canClose() {
-        SaveCookie savec = (SaveCookie)propDataObject.getCookie(SaveCookie.class);
-        if (savec != null) {
-            if (!shouldAskSave())
-                return true;
-            MessageFormat format = new MessageFormat(NbBundle.getBundle(PropertiesOpen.class).getString("MSG_SaveFile"));
-            String msg = format.format(new Object[] { propDataObject.getName()});
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_CANCEL_OPTION);
-            Object ret = DialogDisplayer.getDefault().notify(nd);
-
-
-            if (NotifyDescriptor.YES_OPTION.equals(ret)) {
-                try {
-                    savec.save();
-                    propDataObject.updateModificationStatus();
-                }
-                catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
-                    return false;
-                }
-            }
-
-            propDataObject.updateModificationStatus();
-            
-            if (NotifyDescriptor.CANCEL_OPTION.equals(ret))
-                return false;
-            
+        Node.Cookie saveCookie = propDataObject.getCookie(SaveCookie.class);
+        if (saveCookie == null) {
+            return true;
         }
-        return true;
+        if (!shouldAskSave()) {
+            return true;
+        }
+        
+        /* Create and display a confirmation dialog - Save/Discard/Cancel: */
+        String question = NbBundle.getMessage(PropertiesOpen.class,
+                                              "MSG_SaveFile",       //NOI18N
+                                              propDataObject.getName());
+        String optionSave = NbBundle.getMessage(PropertiesOpen.class,
+                                                "CTL_Save");        //NOI18N
+        String optionDiscard = NbBundle.getMessage(PropertiesOpen.class,
+                                                   "CTL_Discard");  //NOI18N
+        NotifyDescriptor descr = new DialogDescriptor(
+                question,
+                null,                               //title
+                true,                               //modal
+                new Object[] {optionSave,
+                              optionDiscard,
+                              NotifyDescriptor.CANCEL_OPTION},
+                optionSave,                         //default option
+                DialogDescriptor.DEFAULT_ALIGN,     //alignment of the options
+                null,                               //help context
+                (ActionListener) null);
+        descr.setMessageType(NotifyDescriptor.QUESTION_MESSAGE);
+        Object answer = DialogDisplayer.getDefault().notify(descr);
+        
+        /* Save the file if the answer was "Save": */
+        if (answer == optionSave) {
+            try {
+                ((SaveCookie) saveCookie).save();
+                propDataObject.updateModificationStatus();
+            }
+            catch (IOException e) {
+                ErrorManager.getDefault().notify(e);
+                return false;
+            }
+        }
+        propDataObject.updateModificationStatus();
+
+        return (answer == optionSave || answer == optionDiscard);
     }
     
     /** 
