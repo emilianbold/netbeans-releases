@@ -189,8 +189,17 @@ public class PropertiesDataNode extends DataNode {
                 FileObject fileObject = entry.getFile();
                 FileLock lock = entry.takeLock();
                 
+                // removing secondary entry from original data object
+                ((PropertiesDataObject) entry.getDataObject()).removeSecondaryEntry2(entry);
                 try {
-                    fileObject.move(lock, folder, newName, fileObject.getExt());
+                    FileObject fo2 = fileObject.move(lock, folder, newName, fileObject.getExt());
+                    try {
+                        // Invokes the method for recognition fo2's primary fila and data object.
+                        // Secondary entry in destination data object is created and registered
+                        DataObject.find(fo2);
+                    }
+                    catch (Exception e) {
+                    }
                 } finally {
                     lock.releaseLock ();
                 }

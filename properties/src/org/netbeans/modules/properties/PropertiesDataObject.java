@@ -128,7 +128,14 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
     String getPasteSuffix() {
         return pasteSuffix;
     }
-    
+
+    /** Only accessible method, it is necessary to call MultiDataObject's method
+     * from this package.
+     */
+    void removeSecondaryEntry2(Entry fe) {
+        removeSecondaryEntry (fe);
+    }
+
     /** Creates new name for this instance when moving/copying to new folder destination. 
      * @param folder new folder destination. */
     private String createPasteSuffix(DataFolder folder) {

@@ -21,9 +21,10 @@ import org.openide.actions.*;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.ExtensionList;
-import org.openide.loaders.UniFileLoader;
+import org.openide.loaders.MultiFileLoader;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
+import org.openide.util.io.SafeException;
 
 
 /** 
@@ -33,7 +34,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ian Formanek, Petr Jiricka
  */
-public final class PropertiesDataLoader extends UniFileLoader {
+public final class PropertiesDataLoader extends MultiFileLoader {
 
     /** Extension for properties files. */
     static final String PROPERTIES_EXTENSION = "properties"; // NOI18N
@@ -44,6 +45,8 @@ public final class PropertiesDataLoader extends UniFileLoader {
     /** Generated serial version UID. */
     static final long serialVersionUID =4384899552891479449L;
     
+    /** name of property with extensions */
+    public static final String PROP_EXTENSIONS = "extensions"; // NOI18N
     
     /** Creates new PropertiesDataLoader. */
     public PropertiesDataLoader() {
@@ -116,8 +119,9 @@ public final class PropertiesDataLoader extends UniFileLoader {
                 index = fName.indexOf(PRB_SEPARATOR_CHAR, index + 1);
             }
             return fo;
-        } else
+        } else {
             return getExtensions().isRegistered(fo) ? fo : null;
+        }
     }
 
     /** 
@@ -139,4 +143,51 @@ public final class PropertiesDataLoader extends UniFileLoader {
         PropertiesFileEntry pfe = new PropertiesFileEntry(obj, secondaryFile);
         return pfe;
     }
+    
+
+    /** Set the extension list for this data loader.
+    * @param ext new list of extensions
+    */
+    public void setExtensions(ExtensionList ext) {
+        putProperty (PROP_EXTENSIONS, ext, true);
+    }
+
+    /** Get the extension list for this data loader.
+    * @return list of extensions
+    */
+    public ExtensionList getExtensions() {
+        ExtensionList l = (ExtensionList)getProperty (PROP_EXTENSIONS);
+        if (l == null) {
+            l = new ExtensionList ();
+            putProperty (PROP_EXTENSIONS, l, false);
+        }
+        return l;
+    }
+
+    /** Writes extensions to the stream.
+    * @param oo ignored
+    */
+    public void writeExternal (java.io.ObjectOutput oo) throws IOException {
+        super.writeExternal (oo);
+
+        oo.writeObject (getProperty (PROP_EXTENSIONS));
+    }
+
+    /** Reads nothing from the stream.
+    * @param oi ignored
+    */
+    public void readExternal (java.io.ObjectInput oi)
+    throws IOException, ClassNotFoundException {
+        SafeException se;
+        try {
+            super.readExternal (oi);
+            se = null;
+        } catch (SafeException se2) {
+            se = se2;
+        }
+
+        setExtensions ((ExtensionList)oi.readObject ());
+        if (se != null) throw se;
+    }
+    
 }
