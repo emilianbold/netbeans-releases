@@ -139,7 +139,7 @@ public class PropertyPattern extends Pattern {
             } catch (SourceException e) {
                 TopManager.getDefault().notify(
                     new NotifyDescriptor.Message(
-                        bundle.getString("MSG_Cannot_Create_Field"),
+                        PatternNode.getString("MSG_Cannot_Create_Field"),
                         NotifyDescriptor.WARNING_MESSAGE));
             }
         }
