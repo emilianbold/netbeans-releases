@@ -43,6 +43,11 @@ public class ProjectWebModuleProvider implements WebModuleProvider {
             if (build != null && (build.equals (file) || FileUtil.isParentOf (build, file))) {
                 return wp.getAPIWebModule();
             }
+
+            FileObject prjdir = wp.getProjectDirectory();
+            if (prjdir != null && (prjdir.equals (file) || FileUtil.isParentOf(prjdir, file))) {
+                return wp.getAPIWebModule();
+            }
         }
         return null;
     }
