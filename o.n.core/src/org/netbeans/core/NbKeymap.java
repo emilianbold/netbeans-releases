@@ -145,6 +145,17 @@ final class NbKeymap implements Keymap {
     fireChangeEvent(new ChangeEvent(this));
   }
 
+  void addActionForKeyStrokeMap(HashMap map) {
+    synchronized (this) {
+      for (Iterator it = map.keySet ().iterator (); it.hasNext (); ) {
+        Object key = it.next ();
+        bindings.put(key, map.get (key));
+      }
+      actions = null;
+    }
+    fireChangeEvent(new ChangeEvent(this));
+  }
+
   public void removeKeyStrokeBinding(KeyStroke key) {
     synchronized (this) {
       bindings.remove(key);
@@ -184,6 +195,8 @@ final class NbKeymap implements Keymap {
 
 /*
 * Log
+*  8    src-jtulach1.7         12/21/99 Ian Formanek    Optimized adding multiple
+*       <action, shortcut> pairs into Keymap
 *  7    src-jtulach1.6         12/1/99  Ian Formanek    Fixed multiple KeyStrokes
 *       per Action bug
 *  6    src-jtulach1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
