@@ -165,10 +165,11 @@ public class NbExecutor extends Task {
         String dir = testrundir + File.separator + "logs";
         File dirfile = new File(dir);
         if (!dirfile.exists()) dirfile.mkdirs();
-        File file = new File(dirfile, prefix + ".log");
+        String new_prefix = prefix.replace('/','_');
+        File file = new File(dirfile, new_prefix + ".log");
         int c = 1;
         while (file.exists()) {
-            file = new File(dirfile, prefix + "_"+ c + ".log");
+            file = new File(dirfile, new_prefix + "_"+ c + ".log");
             c++;
         }
         return file;
