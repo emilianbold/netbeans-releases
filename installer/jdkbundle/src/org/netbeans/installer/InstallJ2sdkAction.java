@@ -191,7 +191,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                 //Install public JRE only when it is not already installed.
                 if (!Util.isJREAlreadyInstalled()) {
                     cmdArray[0] = "msiexec.exe /qn /i \"" + resolveString("$D(common)")
-                    + "\\Java\\Update\\Base Images\\jdk1.5.0.b64\\patch-jdk1.5.0.b64\\jre.msi\""
+                    + "\\Java\\Update\\Base Images\\jdk1.5.0_01.b06\\patch-jdk1.5.0_01.b06\\jre.msi\""
                     + " IEXPLORER=1 MOZILLA=1";
                     runCommand(cmdArray, envP, support);
                 }
@@ -552,23 +552,23 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
      */
     private boolean createUninstallScript(String template, String scriptName)
 	throws Exception {
-
+        
 	File templateFile = new File(template);
 	String parent = templateFile.getParent();
 	if (parent == null) {
 	    return false; // should always have j2se as parent
 	}
         File scriptFile = new File(parent + File.separator + scriptName);
-
+        
         BufferedReader reader = new BufferedReader(new FileReader(templateFile));
         BufferedWriter writer = new BufferedWriter(new FileWriter(scriptFile));
-
+        
         String line;
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("J2SE_INSTALL_DIR=")) {
                 line = "J2SE_INSTALL_DIR=" + origJ2SEInstallDir;
             } else if (line.startsWith("J2SE_VER=")) {
-                line = "J2SE_VER=" + "1.5.0";
+                line = "J2SE_VER=" + resolveString("$L(org.netbeans.installer.Bundle,JDK.version)");
             }
             writer.write(line + System.getProperty("line.separator"));
         }
@@ -616,7 +616,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             } else if (line.startsWith("SET JRE_MSI_PROJECT=")) {
                 //Installation of public JRE. Path must be set according to JDK version.
                 line = "SET JRE_MSI_PROJECT=\"" + resolveString("$D(common)") 
-                + "\\Java\\Update\\Base Images\\jdk1.5.0.b64\\patch-jdk1.5.0.b64\\jre.msi\"";
+                + "\\Java\\Update\\Base Images\\jdk1.5.0_01.b06\\patch-jdk1.5.0_01.b06\\jre.msi\"";
                 logEvent(this, Log.DBG, "JRE line:" + line);
             }
             if (line.startsWith("start /w msiexec")) {

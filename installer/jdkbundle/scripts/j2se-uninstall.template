@@ -15,7 +15,7 @@ if [ ! -x $RM ] ; then
 fi
 
 if [ -d $J2SE_INSTALL_DIR ] ; then
-	echo "Uninstalling J2sdk $J2SE_VER ..." 
+	echo "Uninstalling JDK $J2SE_VER ..." 
 	/bin/rm -rf $J2SE_INSTALL_DIR 2>&1
 else
 	echo "$J2SE_INSTALL_DIR does not exist!" 

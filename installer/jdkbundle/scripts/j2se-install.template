@@ -21,7 +21,7 @@ echo "yes" > $INPUT
 if [ -f $J2SDK ]; then
     /bin/sh $J2SDK < $INPUT > /dev/null
 else
-    echo "Error: $J2SDK doesn't exist.  Cannot install Java 2 Platform Standard Edition 1.5.0" >> $LOGFILE
+    echo "Error: $J2SDK doesn't exist.  Cannot install Java 2 Platform Standard Edition 5.0 Update 1" >> $LOGFILE
     exit 1
 fi
 /bin/rm $INPUT > /dev/null 2>&1
