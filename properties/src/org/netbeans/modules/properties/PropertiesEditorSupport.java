@@ -15,10 +15,7 @@ package com.netbeans.developer.modules.loaders.properties;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.BufferedInputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Iterator;
 import java.text.MessageFormat;
 import javax.swing.event.DocumentListener;
@@ -50,7 +47,7 @@ import org.openide.NotifyDescriptor;
 
  
 /** Support for viewing porperties files (EditCookie) by opening them in a text editor */
-public class PropertiesEditorSupport extends EditorSupport implements EditCookie {
+public class PropertiesEditorSupport extends EditorSupport implements EditCookie, Serializable {
 
   /** Timer which countdowns the auto-reparsing time. */
   javax.swing.Timer timer;
@@ -76,10 +73,14 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
 
   /** Properties Settings */
   static final PropertiesSettings settings = new PropertiesSettings();
-
+                                 
   /** Constructor */
   public PropertiesEditorSupport(PropertiesFileEntry entry) {
     super (entry);
+    initialize();
+  }
+  
+  public void initialize() {
     super.setModificationListening(false);
     setMIMEType ("text/x-properties");
     initTimer();
@@ -100,8 +101,26 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
       SystemAction.get (CopyAction.class),
       SystemAction.get (PasteAction.class),
     });*/
-  }      
-                                 
+  }
+  
+  Object writeReplace() throws ObjectStreamException {
+    return new SerialProxy(myEntry);
+  }
+  
+  public static class SerialProxy implements Serializable {
+    
+    public SerialProxy(PropertiesFileEntry serialEntry) {
+      this.serialEntry = serialEntry;
+    }
+  
+    private PropertiesFileEntry serialEntry;
+     
+    Object readResolve() throws ObjectStreamException {
+System.out.println("read resolve");
+      return new PropertiesEditorSupport(serialEntry);
+    }
+  }
+  
   /** Visible view of underlying file entry */
   PropertiesFileEntry myEntry = (PropertiesFileEntry)entry;
   
@@ -211,7 +230,7 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     prepareDocument ();
 
     DataObject obj = myEntry.getDataObject ();
-    Editor editor = new PropertiesEditor (obj, myEntry);
+    Editor editor = new PropertiesEditor (obj, this);
     return editor;
   }
   
@@ -380,25 +399,33 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
 
   /** Cloneable top component to hold the editor kit.
   */
-  class PropertiesEditor extends EditorSupport.Editor {
+  static class PropertiesEditor extends EditorSupport.Editor {
                                           
     /** Holds the file being edited */                                                                   
-    protected PropertiesFileEntry entry;
+    protected transient PropertiesFileEntry entry;
+    
+    private transient PropertiesEditorSupport propSupport;
                                                                        
     /** Listener for entry's save cookie changes */
-    private PropertyChangeListener saveCookieLNode;
+    private transient PropertyChangeListener saveCookieLNode;
     /** Listener for entry's name changes */
-    private NodeAdapter nodeL;
-
+    private transient NodeAdapter nodeL;
+           
+    /** Constructor for deserialization */       
     public PropertiesEditor() {
       super();
     }
 
     /** Creates new editor */
-    public PropertiesEditor(DataObject obj, PropertiesFileEntry entry) {
-      super(obj, PropertiesEditorSupport.this);
-      this.entry = entry;
-
+    public PropertiesEditor(DataObject obj, PropertiesEditorSupport support) {
+      super(obj, support);
+      this.propSupport = support;
+      initMe();
+    }
+    
+    /** initialization after construction and deserialization */
+    private void initMe() {
+      this.entry = propSupport.myEntry;
       entry.getNodeDelegate().addNodeListener (
         new WeakListener.Node(nodeL = 
         new NodeAdapter () {
@@ -434,7 +461,7 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
       boolean canClose = super.closeLast();
       if (!canClose)
         return false;
-      PropertiesEditorSupport.this.closeDocumentEntry();
+      propSupport.closeDocumentEntry();
       return true;
     }
 
@@ -449,12 +476,32 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
       else {
         String name = entry.getFile().getName();
         if (entry.getCookie(SaveCookie.class) != null)
-          setName(name + PropertiesEditorSupport.this.getModifiedAppendix());
+          setName(name + propSupport.getModifiedAppendix());
         else
           setName(name);
       }  
     }
   
+    /* Serialize this top component.
+    * @param out the stream to serialize to
+    */
+    public void writeExternal (ObjectOutput out)
+                throws IOException {
+      super.writeExternal(out);
+      out.writeObject(propSupport);
+    }
+
+    /* Deserialize this top component.
+    * @param in the stream to deserialize from
+    */
+    public void readExternal (ObjectInput in)
+              throws IOException, ClassNotFoundException {
+      super.readExternal(in);
+      propSupport = (PropertiesEditorSupport)in.readObject();
+System.out.println("reading propsupport " + propSupport);
+      initMe();
+    }
+
   } // end of PropertiesEditor inner class
   
   /** EntrySavingManager manages two tasks concerning saving:<P>
