@@ -612,11 +612,24 @@ class HandleLayer extends JPanel
     }
 
     private void checkResizing(Point p) {
-        RADComponent comp = getMetaComponentAt(p, COMP_SELECTED);
-        if (!(comp instanceof RADVisualComponent))
+        // check wheteher all selected components are in the same container
+        RADVisualContainer parentCont = null;
+        Iterator selected = formDesigner.getSelectedComponents().iterator();
+        while (selected.hasNext()) {
+            Object comp = selected.next();
+            if (comp instanceof RADVisualComponent) {
+                if (parentCont == null)
+                    parentCont = ((RADVisualComponent)comp).getParentContainer();
+                else if (((RADVisualComponent)comp).getParentContainer() != parentCont)
+                    return; // selected components are not in the same container
+            }
+        }
+
+        RADComponent compAtPoint = getMetaComponentAt(p, COMP_SELECTED);
+        if (!(compAtPoint instanceof RADVisualComponent))
             return;
 
-        RADVisualComponent metacomp = (RADVisualComponent) comp;
+        RADVisualComponent metacomp = (RADVisualComponent) compAtPoint;
         int resizing = 0;
 
         if (!formDesigner.isComponentSelected(metacomp)) {
