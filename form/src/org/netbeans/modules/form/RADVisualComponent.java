@@ -18,6 +18,7 @@ import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
 
 import java.awt.Component;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /** 
 *
@@ -99,10 +100,24 @@ public class RADVisualComponent extends RADComponent {
   HashMap getConstraintsMap () {
     return constraints;
   }
+
+// -----------------------------------------------------------------------------
+// Debug methods
+
+  public String toString () {
+    String ret = super.toString () + ", constraints: ---------------\n";
+    for (Iterator it = constraints.keySet ().iterator (); it.hasNext (); ) {
+      Object key = it.next ();
+      ret = ret + "class: "+ key + ", constraints: "+constraints.get (key) + "\n";
+    }
+    return ret + "---------------------------";
+  }
+  
 }
 
 /*
  * Log
+ *  9    Gandalf   1.8         5/26/99  Ian Formanek    toString
  *  8    Gandalf   1.7         5/15/99  Ian Formanek    
  *  7    Gandalf   1.6         5/15/99  Ian Formanek    
  *  6    Gandalf   1.5         5/14/99  Ian Formanek    

@@ -31,7 +31,7 @@ import java.awt.Container;
 public class RADVisualContainer extends RADVisualComponent implements ComponentContainer {
   private RADVisualComponent[] subComponents;
   private DesignLayout designLayout;
-  private DesignLayout previousDesignLayout;
+  private DesignLayout previousLayout;
 
   transient private Container containerDelegate;
   
@@ -59,7 +59,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 // Layout Manager management
 
   public DesignLayout getPreviousDesignLayout () {
-    return previousDesignLayout;
+    return previousLayout;
   }
   
   public DesignLayout getDesignLayout () {
@@ -77,7 +77,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     }
     if (layout == null) return;
 
-    previousDesignLayout = designLayout;
+    previousLayout = designLayout;
     designLayout = layout;
     designLayout.setRADContainer (this);
 
@@ -99,7 +99,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
   }
 
 // -----------------------------------------------------------------------------
-// Subcomponents management
+// SubComponents Management
 
   public RADComponent[] getSubBeans () {
     return subComponents;
@@ -152,10 +152,22 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     }
     return -1;
   }
+
+// -----------------------------------------------------------------------------
+// Debug methods
+
+  public String toString () {
+    String ret = super.toString () + ", layout: ---------------\n";
+    ret = ret + "current: "+ designLayout +"\n";
+    ret = ret + "previous: "+ previousLayout + "\n";
+    return ret + "---------------------------";
+  }
+  
 }
 
 /*
  * Log
+ *  13   Gandalf   1.12        5/26/99  Ian Formanek    toString
  *  12   Gandalf   1.11        5/17/99  Ian Formanek    Fixed bug 1850 - An 
  *       exception is thrown when opening form, which contains JInternalFrame 
  *       component. 
