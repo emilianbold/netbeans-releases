@@ -549,9 +549,13 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                         comp = (Component) component.getBeanInstance();
                         size = comp.getPreferredSize();
                     }
-                    else { 
-                        size = formModel.getFormDesigner().isOpened() ?
-                               comp.getSize() : comp.getPreferredSize();
+                    else {
+                        if (formModel.getFormDesigner().isOpened()) {
+                            size = comp.getSize();
+                            if (size.width > 4096) // [hack for issue 32311]
+                                size.width = comp.getPreferredSize().width;
+                        }
+                        else size = comp.getPreferredSize();
                     }
 
                     if (comp instanceof JComponent && !(comp instanceof JPanel)) {
