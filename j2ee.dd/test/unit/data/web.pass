@@ -24,10 +24,10 @@
       <param-value>Ford</param-value>
     </init-param>
     <init-param>
-      <description>the color of the car</description>
       <description xml:lang="cz">barva automobilu</description>
       <description xml:lang="sk">farba automobilu</description>
       <description xml:lang="en">the colour of the car</description>
+      <description>the color of the car</description>
       <param-name>color</param-name>
       <param-value>red</param-value>
     </init-param>
