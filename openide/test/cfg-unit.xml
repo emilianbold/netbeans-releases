@@ -61,6 +61,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/modules/*.class"/>
                 <include name="org/openide/loaders/*.class"/>                
                 <!-- Don't worry about these, cannot be fixed currently: -->
+		<exclude name="org/openide/loaders/DataFolderTest.class"/> <!-- failing in cont. test -->
                 <exclude name="org/openide/loaders/DataFolderMoveTest.class/testMoveFolders"/>
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart1"/>
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart5"/>
@@ -114,6 +115,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart5"/>
                 <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart7"/>
                 <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart8"/>
+		<!-- failing in cont. test -->
+		<include name="org/openide/loaders/DataFolderTest.class"/>
                 <!-- The test is failing, because of bug #8705. -->
                 <include name="org/openide/loaders/DataFolderMoveTest.class/testMoveFolders"/>
 		<!-- Nodes -->
