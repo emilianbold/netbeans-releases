@@ -81,7 +81,7 @@ public class ReplaceTest extends EditorTestCase {
         try {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
-            // choose the "testFindSelectionRepeated" word
+            // choose the "testReplaceSelectionRepeated" word
             editor.select(13, 14, 41);
             new EventTool().waitNoEvent(REPLACE_TIMEOUT);
             new ReplaceAction().perform();
@@ -105,7 +105,7 @@ public class ReplaceTest extends EditorTestCase {
             log(editor.lblStatusBar().getText());
             waitForLabel("'testReplaceSelectionRepeated' found at 16:12");
             
-            // choose the "testFindSelectionRepeated" word
+            // choose the "testReplaceSelectionRepeated" word
             editor.select(15, 35, 62);
             new ReplaceAction().perform();
             Replace replace2 = new Replace();
@@ -138,7 +138,7 @@ public class ReplaceTest extends EditorTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
             editor.setCaretPosition(1,1);
-            new ReplaceAction().perform();
+            editor.txtEditorPane().pushKey(KeyEvent.VK_H, KeyEvent.CTRL_MASK);
             Replace replace = new Replace();            
             replace.cboFindWhat().removeAllItems();
             replace.cboReplaceWith().removeAllItems();
