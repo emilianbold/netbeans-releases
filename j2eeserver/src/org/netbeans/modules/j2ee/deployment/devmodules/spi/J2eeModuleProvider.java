@@ -86,6 +86,12 @@ public abstract class J2eeModuleProvider {
 	return confSupp;
     }
     
+    /**
+     * Return server debug info.
+     * Note: if server is not running and needs to be up for retrieving debug info, 
+     * this call will return null.  This call is also used by UI so it should not 
+     * try to ping or start the server.
+     */
     public final ServerDebugInfo getServerDebugInfo () {
         ServerInstance si = ServerRegistry.getInstance ().getServerInstance (getServerInstanceID ());
         StartServer ss = si.getStartServer();
@@ -95,7 +101,7 @@ public abstract class J2eeModuleProvider {
         // AS8.1 needs to have server running to get accurate debug info, and also need a non-null target 
         // But getting targets from AS8.1 require start server which would hang UI, so avoid start server
         // Note: for debug info after deploy, server should already start.
-        if (! si.isRunning() && ss.needsStartForTargetList()) {
+        if (! si.isRunningLastCheck() && ss.needsStartForTargetList()) {
             if (ss.isAlsoTargetServer(null)) {
                 return ss.getDebugInfo(null);
             } else {

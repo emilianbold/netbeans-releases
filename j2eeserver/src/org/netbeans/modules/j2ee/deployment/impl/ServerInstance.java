@@ -273,6 +273,12 @@ public class ServerInstance implements Node.Cookie {
     //---------- State API's:  running, debuggable, startedByIDE -----------
     long lastCheck = 0;
     boolean isRunning = false;
+    public boolean isRunningLastCheck() {
+        if (lastCheck > 0)
+            return isRunning;
+        else
+            return false;
+    }
     public boolean isReallyRunning() {
         return isRunningWithinMillis(0);
     }
@@ -388,16 +394,13 @@ public class ServerInstance implements Node.Cookie {
                     start(null);
                 }
             }, 0, Thread.MAX_PRIORITY);
-            return;
         } else {            
             String title = NbBundle.getMessage(ServerInstance.class, "LBL_StartServerProgressMonitor", getDisplayName());
             final DeployProgressUI ui = new DeployProgressMonitor(title, false, true);  // modeless with stop/cancel buttons
             ui.startProgressUI(5);
             if (start(ui)) {
                 ui.recordWork(5);
-                return;
             }
-            return;
         }
     }
     
