@@ -21,10 +21,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Watch;
@@ -62,8 +58,9 @@ public class WatchesModel implements TreeModel {
     private Listener            listener;
     private Vector              listeners = new Vector ();
     private ContextProvider     lookupProvider;
-    private Map                 watchToJPDAWatch = new HashMap ();
-    
+    // Watch to Expression or Exception
+    private WeakHashMap         watchToExpression = new WeakHashMap();
+
     
     public WatchesModel (ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.
@@ -87,7 +84,7 @@ public class WatchesModel implements TreeModel {
     throws UnknownTypeException {
         if (parent == ROOT) {
             
-            // 1) get Watches
+            // 1) ger Watches
             Watch[] ws = DebuggerManager.getDebuggerManager ().
                 getWatches ();
             Watch[] fws = new Watch [to - from];
@@ -95,17 +92,40 @@ public class WatchesModel implements TreeModel {
             
             // 2) create JPDAWatches for Watches
             int i, k = fws.length;
-            Object[] result = new Object [k];
+            JPDAWatch[] jws = new JPDAWatch [k];
             for (i = 0; i < k; i++) {
-                if (watchToJPDAWatch.containsKey (fws [i]))
-                    result [i] = watchToJPDAWatch.get (fws [i]);
+                
+                // 2.1) get Expression
+                Object expression = watchToExpression.get (
+                    fws [i].getExpression ()
+                );
+                    // expression contains Expression or Exception 
+                if (expression == null) {
+                    try {
+                        expression = Expression.parse (
+                            fws [i].getExpression (), 
+                            Expression.LANGUAGE_JAVA_1_5
+                        );
+                    } catch (ParseException e) {
+                        expression = e;
+                    }
+                    watchToExpression.put (
+                        fws [i].getExpression (), 
+                        expression
+                    );
+                }
+                
+                // 2.2) create a new JPDAWatch
+                if (expression instanceof Exception)
+                    jws [i] = new JPDAWatchImpl 
+                        (this, fws [i], (Exception) expression);
                 else
-                    result [i] = fws [i];
+                    jws [i] = evaluate (fws [i], (Expression) expression);
             }
             
             if (listener == null)
                 listener = new Listener (this, debugger);
-            return result;
+            return jws;
         }
         if (parent instanceof JPDAWatchImpl) {
             return getLocalsTreeModel ().getChildren (parent, from, to);
@@ -138,8 +158,6 @@ public class WatchesModel implements TreeModel {
         if (node == ROOT) return false;
         if (node instanceof JPDAWatchImpl) 
             return ((JPDAWatchImpl) node).isPrimitive ();
-        if (node instanceof Watch) 
-            return true;
         return getLocalsTreeModel ().isLeaf (node);
     }
 
@@ -181,41 +199,6 @@ public class WatchesModel implements TreeModel {
         return localsTreeModel;
     }
 
-    // map from expression to Expression or Exception
-    private WeakHashMap         watchToExpression = new WeakHashMap();
-
-    private void evaluate (Watch watch) {
-        String text = watch.getExpression ();
-        
-        // 1) resolve text expression to Expression or Exception
-        Object expression = watchToExpression.get (text);
-        if (expression == null) {
-            try {
-                expression = Expression.parse (
-                    text, 
-                    Expression.LANGUAGE_JAVA_1_5
-                );
-            } catch (ParseException e) {
-                expression = e;
-            }
-            watchToExpression.put (
-                text, 
-                expression
-            );
-        }
-
-        // 2) create a new JPDAWatch
-        JPDAWatch jpdaWatch = null;
-        if (expression instanceof Exception)
-            jpdaWatch = new JPDAWatchImpl 
-                (this, watch, (Exception) expression);
-        else
-            jpdaWatch = evaluate (watch, (Expression) expression);
-        
-        watchToJPDAWatch.put (watch, jpdaWatch);
-        fireTreeChanged ();
-    }
-    
     JPDAWatch evaluate (Watch w, Expression expr) {
         try {
             Value v = debugger.evaluateIn (expr);
@@ -227,27 +210,6 @@ public class WatchesModel implements TreeModel {
         }
     }
 
-/*
-    JPDAWatch evaluate (Watch w) {
-        Value v = null;
-        String exception = null;
-        try {
-            v = debugger.evaluateIn (w.getExpression ());
-        } catch (InvalidExpressionException e) {
-            e.printStackTrace ();
-            exception = e.getMessage ();
-        }
-        JPDAWatch wi;
-        if (exception != null)
-            wi = new JPDAWatchImpl (this, w, exception);
-        else
-            if (v instanceof ObjectReference)
-                wi = new JPDAObjectWatchImpl (this, w, (ObjectReference) v);
-            else
-                wi = new JPDAWatchImpl (this, w, v);
-        return wi;
-    }
-*/
 
     // innerclasses ............................................................
     
@@ -295,9 +257,9 @@ public class WatchesModel implements TreeModel {
             m.fireTreeChanged ();
         }
         
-        // currently waiting / running refresh tasks
+        // currently waiting / running refresh task
         // there is at most one
-        private RequestProcessor.Task[] tasks = new RequestProcessor.Task [0];
+        private RequestProcessor.Task task;
         
         public void propertyChange (PropertyChangeEvent evt) {
             final WatchesModel m = getModel ();
@@ -311,38 +273,23 @@ public class WatchesModel implements TreeModel {
                 m.fireTreeChanged ();
             }
 
-            synchronized (tasks) {
-                // cancel old tasks
-                int i, k = tasks.length;
-                for (i = 0; i < k; i++) {
-                    tasks [i].cancel ();
+            if (task != null) {
+                // cancel old task
+                task.cancel ();
+                if (verbose)
+                    System.out.println("WM cancel old task " + task);
+                task = null;
+            }
+            
+            task = RequestProcessor.getDefault ().post (new Runnable () {
+                public void run () {
                     if (verbose)
-                        System.out.println("WM cancel old task " + tasks [i]);
+                        System.out.println("WM do task " + task);
+                    m.fireTreeChanged ();
                 }
-
-                Watch[] ws = DebuggerManager.getDebuggerManager ().
-                    getWatches ();
-                k = ws.length;
-                tasks = new RequestProcessor.Task [k];
-                for (i = 0; i < k; i++) {
-                    final Watch watch = ws [i];
-                    final int in = i;
-                    tasks [i] = RequestProcessor.
-                        getDefault ().post (
-                            new Runnable () {
-                                public void run () {
-                                    if (verbose)
-                                        System.out.println 
-                                            ("WM do task " + tasks [in]);
-                                    m.evaluate (watch);
-                                }
-                            }, 
-                            500
-                        );
-                    if (verbose)
-                        System.out.println("WM  create task " + tasks [i]);
-                } // for
-            } // synchronized
+            }, 500);
+            if (verbose)
+                System.out.println("WM  create task " + task);
         }
         
         private void destroy () {
@@ -360,14 +307,12 @@ public class WatchesModel implements TreeModel {
             for (i = 0; i < k; i++)
                 ws [i].removePropertyChangeListener (this);
 
-            synchronized (tasks) {
-                // cancel old tasks
-                k = tasks.length;
-                for (i = 0; i < k; i++) {
-                    tasks [i].cancel ();
-                    if (verbose)
-                        System.out.println("WM cancel old task " + tasks [i]);
-                }
+            if (task != null) {
+                // cancel old task
+                task.cancel ();
+                if (verbose)
+                    System.out.println("WM cancel old task " + task);
+                task = null;
             }
         }
     }
