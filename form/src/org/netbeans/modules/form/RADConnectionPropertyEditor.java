@@ -64,7 +64,7 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
     } else {
       currentValue = emptyValue;
     }
-    support.firePropertyChange ("", null, null);
+    support.firePropertyChange ("", null, null); // NOI18N
   }
 
   public void setAsText (String string) {
@@ -101,10 +101,10 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
     if (currentValue != null) {
       switch (currentValue.type) {
         case RADConnectionDesignValue.TYPE_VALUE: 
-            if ("java.lang.String".equals (currentValue.requiredTypeName)) return "\""+currentValue.value+"\"";
-            else if ("long".equals (currentValue.requiredTypeName)) return currentValue.value+"L";
-            else if ("float".equals (currentValue.requiredTypeName)) return currentValue.value+"F";
-            else if ("double".equals (currentValue.requiredTypeName)) return currentValue.value+"D";
+            if ("java.lang.String".equals (currentValue.requiredTypeName)) return "\""+currentValue.value+"\""; // NOI18N
+            else if ("long".equals (currentValue.requiredTypeName)) return currentValue.value+"L"; // NOI18N
+            else if ("float".equals (currentValue.requiredTypeName)) return currentValue.value+"F"; // NOI18N
+            else if ("double".equals (currentValue.requiredTypeName)) return currentValue.value+"D"; // NOI18N
             else return currentValue.value;
         case RADConnectionDesignValue.TYPE_CODE: return currentValue.userCode;
         case RADConnectionDesignValue.TYPE_PROPERTY: 
@@ -119,13 +119,13 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
             } 
         case RADConnectionDesignValue.TYPE_METHOD: 
             if (currentValue.radComponent instanceof RADFormContainer) {
-              return currentValue.methodName + " ()";
+              return currentValue.methodName + " ()"; // NOI18N
             } else {
-              return currentValue.radComponentName + "." + currentValue.methodName + " ()";
+              return currentValue.radComponentName + "." + currentValue.methodName + " ()"; // NOI18N
             }
         case RADConnectionDesignValue.TYPE_BEAN: 
             if (currentValue.radComponent instanceof RADFormContainer) {
-              return "this";
+              return "this"; // NOI18N
             } else {
               return currentValue.radComponentName;
             }
@@ -329,23 +329,23 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
 
   private static Object parseValue (String typeName, String value) {
     try {
-      if ("java.lang.String".equals (typeName)) {
+      if ("java.lang.String".equals (typeName)) { // NOI18N
         return value;
-      } else if ("int".equals (typeName)) {
+      } else if ("int".equals (typeName)) { // NOI18N
         return Integer.valueOf (value);
-      } else if ("short".equals (typeName)) {
+      } else if ("short".equals (typeName)) { // NOI18N
         return Short.valueOf (value);
-      } else if ("long".equals (typeName)) {
+      } else if ("long".equals (typeName)) { // NOI18N
         return Long.valueOf (value);
-      } else if ("byte".equals (typeName)) {
+      } else if ("byte".equals (typeName)) { // NOI18N
         return Byte.valueOf (value);
-      } else if ("float".equals (typeName)) {
+      } else if ("float".equals (typeName)) { // NOI18N
         return Float.valueOf (value);
-      } else if ("double".equals (typeName)) {
+      } else if ("double".equals (typeName)) { // NOI18N
         return Double.valueOf (value);
-      } else if ("boolean".equals (typeName)) {
+      } else if ("boolean".equals (typeName)) { // NOI18N
         return Boolean.valueOf (value);
-      } else if ("char".equals (typeName)) {
+      } else if ("char".equals (typeName)) { // NOI18N
         if (value.length () > 0) return new Character (value.charAt (0));
       }
       return FormDesignValue.IGNORED_VALUE;
@@ -358,20 +358,20 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
 //--------------------------------------------------------------------------
 // XMLPropertyEditor implementation
 
-  public static final String XML_CONNECTION = "Connection";
+  public static final String XML_CONNECTION = "Connection"; // NOI18N
 
-  public static final String ATTR_TYPE = "type";
-  public static final String ATTR_COMPONENT = "component";
-  public static final String ATTR_NAME = "name";
-  public static final String ATTR_CODE = "code";
-  public static final String ATTR_VALUE = "value";
-  public static final String ATTR_REQUIRED_TYPE = "valueType";
+  public static final String ATTR_TYPE = "type"; // NOI18N
+  public static final String ATTR_COMPONENT = "component"; // NOI18N
+  public static final String ATTR_NAME = "name"; // NOI18N
+  public static final String ATTR_CODE = "code"; // NOI18N
+  public static final String ATTR_VALUE = "value"; // NOI18N
+  public static final String ATTR_REQUIRED_TYPE = "valueType"; // NOI18N
 
-  public static final String VALUE_VALUE = "value";
-  public static final String VALUE_PROPERTY = "property";
-  public static final String VALUE_METHOD = "method";
-  public static final String VALUE_BEAN = "bean";
-  public static final String VALUE_CODE = "code";
+  public static final String VALUE_VALUE = "value"; // NOI18N
+  public static final String VALUE_PROPERTY = "property"; // NOI18N
+  public static final String VALUE_METHOD = "method"; // NOI18N
+  public static final String VALUE_BEAN = "bean"; // NOI18N
+  public static final String VALUE_CODE = "code"; // NOI18N
 
   /** Called to load property value from specified XML subtree. If succesfully loaded, 
   * the value should be available via the getValue method.
@@ -461,7 +461,7 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
            el.setAttribute (ATTR_COMPONENT, currentValue.radComponentName);
            break;
       case RADConnectionDesignValue.TYPE_CODE: 
-           el.setAttribute (ATTR_CODE, org.openide.util.Utilities.replaceString (currentValue.userCode, "\n", "\\n"));
+           el.setAttribute (ATTR_CODE, org.openide.util.Utilities.replaceString (currentValue.userCode, "\n", "\\n")); // NOI18N
            break;
     }
 

@@ -32,7 +32,7 @@ static final long serialVersionUID =-1822120439841761193L;
   * @return the name of the action
   */
   public String getName() {
-    return "DefaultRADAction";
+    return FormEditor.getFormBundle().getString ("MSG_DefaultRADAction");
   }
 
   /** Get a help context for the action.
@@ -83,6 +83,7 @@ static final long serialVersionUID =-1822120439841761193L;
 
 /*
  * Log
+ *  4    Gandalf   1.3         1/12/00  Pavel Buzek     I18N
  *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  2    Gandalf   1.1         8/10/99  Ian Formanek    Generated Serial Version

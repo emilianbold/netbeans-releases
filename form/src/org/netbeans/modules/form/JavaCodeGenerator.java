@@ -116,8 +116,8 @@ public class JavaCodeGenerator extends CodeGenerator {
   * @param component The RADComponent for which the properties are to be obtained
   */
   public Node.Property[] getSyntheticProperties (final RADComponent component) {
-    Node.Property variableProperty = new PropertySupport.ReadWrite ("variableName", String.class, "Variable Name", // [PENDING - localize]
-                                   "The name of the global variable generated for this component") {
+    Node.Property variableProperty = new PropertySupport.ReadWrite ("variableName", String.class, FormEditor.getFormBundle ().getString ("MSG_JC_VariableName"),
+                                   FormEditor.getFormBundle ().getString ("MSG_JC_VariableDesc")) {
       public void setValue (Object value) {
         if (!(value instanceof String)) {
           throw new IllegalArgumentException ();
@@ -137,8 +137,8 @@ public class JavaCodeGenerator extends CodeGenerator {
     } else {
       Node.Property[] props = new Node.Property[] {
         variableProperty,
-        new PropertySupport.ReadWrite ("useDefaultModifiers", Boolean.TYPE, "Use Default Modifiers",  // [PENDING - localize]
-                                       "If true, the global modifiers from Control Panel | Form Settings are used") {
+        new PropertySupport.ReadWrite ("useDefaultModifiers", Boolean.TYPE, FormEditor.getFormBundle ().getString ("MSG_JC_UseDefaultMod"),
+                                       FormEditor.getFormBundle ().getString ("MSG_JC_UseDefaultModDesc")) {
           public void setValue (Object value) {
             if (!(value instanceof Boolean)) {
               throw new IllegalArgumentException ();
@@ -159,8 +159,8 @@ public class JavaCodeGenerator extends CodeGenerator {
           }
           
         },
-        new PropertySupport.ReadWrite ("modifiers", Integer.class, "Variable Modifiers",  // [PENDING - localize]
-                                       "The modifiers of the global variable generated for this component") {
+        new PropertySupport.ReadWrite ("modifiers", Integer.class, FormEditor.getFormBundle ().getString ("MSG_JC_VariableModifiers"),
+                                       FormEditor.getFormBundle ().getString ("MSG_JC_VariableModifiersDesc")) {
           public void setValue (Object value) {
             if (!(value instanceof Integer)) {
               throw new IllegalArgumentException ();
@@ -184,8 +184,8 @@ public class JavaCodeGenerator extends CodeGenerator {
           }
           
         },
-        new PropertySupport.ReadWrite ("codeGeneration", Integer.TYPE, "Code Generation",  // [PENDING - localize]
-                                       "Type of code generation for this component") {
+        new PropertySupport.ReadWrite ("codeGeneration", Integer.TYPE, FormEditor.getFormBundle ().getString ("MSG_JC_CodeGeneration"),
+                                       FormEditor.getFormBundle ().getString ("MSG_JC_CodeGenerationDesc")) {
           public void setValue (Object value) {
             if (!(value instanceof Integer)) {
               throw new IllegalArgumentException ();
@@ -217,8 +217,8 @@ public class JavaCodeGenerator extends CodeGenerator {
           }
           
         },
-        new CodePropertySupportRW ("creationCodePre", String.class, "Pre Creation Code",  // [PENDING - localize]
-                                       "Code before creation of this component") {
+        new CodePropertySupportRW ("creationCodePre", String.class, FormEditor.getFormBundle ().getString ("MSG_JC_PreCreationCode"),
+                                       FormEditor.getFormBundle ().getString ("MSG_JC_PreCreationCodeDesc")) {
           public void setValue (Object value) {
             if (!(value instanceof String)) {
               throw new IllegalArgumentException ();
@@ -236,8 +236,8 @@ public class JavaCodeGenerator extends CodeGenerator {
             return value;
           }          
         },
-        new CodePropertySupportRW ("creationCodePost", String.class, "Post Creation Code",  // [PENDING - localize]
-                                       "Code after creation of this component") {
+        new CodePropertySupportRW ("creationCodePost", String.class, FormEditor.getFormBundle ().getString ("MSG_JC_PostCreationCode"),
+                                       FormEditor.getFormBundle ().getString ("MSG_JC_PostCreationCodeDesc")) {
           public void setValue (Object value) {
             if (!(value instanceof String)) {
               throw new IllegalArgumentException ();
@@ -255,8 +255,8 @@ public class JavaCodeGenerator extends CodeGenerator {
             return value;
           }
         },
-        new CodePropertySupportRW ("initCodePre", String.class, "Pre Init Code",  // [PENDING - localize]
-                                       "Code before initialization of this component") {
+        new CodePropertySupportRW ("initCodePre", String.class, FormEditor.getFormBundle ().getString ("MSG_JC_PreInitCode"),
+                                       FormEditor.getFormBundle ().getString ("MSG_JC_PreInitCodeDesc")) {
           public void setValue (Object value) {
             if (!(value instanceof String)) {
               throw new IllegalArgumentException ();
@@ -274,8 +274,8 @@ public class JavaCodeGenerator extends CodeGenerator {
             return value;
           }          
         },
-        new CodePropertySupportRW ("initCodePost", String.class, "Post Init Code",  // [PENDING - localize]
-                                       "Code after initialization of this component") {
+        new CodePropertySupportRW ("initCodePost", String.class, FormEditor.getFormBundle ().getString ("MSG_JC_PostInitCode"),
+                                       FormEditor.getFormBundle ().getString ("MSG_JC_PostInitCodeDesc")) {
           public void setValue (Object value) {
             if (!(value instanceof String)) {
               throw new IllegalArgumentException ();
@@ -293,8 +293,8 @@ public class JavaCodeGenerator extends CodeGenerator {
             return value;
           }
         },
-        new PropertySupport.ReadWrite ("serializeTo", String.class, "Serialize To",  // [PENDING - localize]
-                                       "The file into which this component is serialized") {
+        new PropertySupport.ReadWrite ("serializeTo", String.class, FormEditor.getFormBundle ().getString ("MSG_JC_SerializeTo"),
+                                       FormEditor.getFormBundle ().getString ("MSG_JC_SerializeToDesc")) {
           public void setValue (Object value) {
             if (!(value instanceof String)) {
               throw new IllegalArgumentException ();
@@ -320,8 +320,8 @@ public class JavaCodeGenerator extends CodeGenerator {
           moreProps [i] = props [i];
         }
         moreProps [moreProps.length -1] = 
-          new CodePropertySupportRW ("creationCodeCustom", String.class, "Custom Creation Code",  // [PENDING - localize]
-                                         "Custom code for creation of the component") {
+          new CodePropertySupportRW ("creationCodeCustom", String.class, FormEditor.getFormBundle ().getString ("MSG_JC_CustomCreationCode"),
+                                         FormEditor.getFormBundle ().getString ("MSG_JC_CustomCreationCodeDesc")) {
             public void setValue (Object value) {
               if (!(value instanceof String)) {
                 throw new IllegalArgumentException ();
@@ -1457,6 +1457,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  65   Gandalf   1.64        1/12/00  Pavel Buzek     I18N
  *  64   Gandalf   1.63        1/10/00  Ian Formanek    Fixed bug 2880 - I can 
  *       change variable modifier in component to abstract or native
  *  63   Gandalf   1.62        1/10/00  Pavel Buzek     refreshing property sets

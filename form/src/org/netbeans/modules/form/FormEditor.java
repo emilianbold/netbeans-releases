@@ -59,7 +59,7 @@ final public class FormEditor extends Object {
   * E.g. for Direction layout property, the property is named "__LAYOUT__mousePressed"
   */
   public static final String LAYOUT_PREFIX = "__LAYOUT__"; // NOI18N
-  public static final String GUI_EDITING_WORKSPACE_NAME = "GUI Editing";
+  public static final String GUI_EDITING_WORKSPACE_NAME = "GUI Editing"; // NOI18N
 
   /** The resource bundle for the form editor */
   private static java.util.ResourceBundle formBundle = org.openide.util.NbBundle.getBundle (FormEditor.class);
@@ -208,7 +208,7 @@ final public class FormEditor extends Object {
           (tm.getRowCount () == 0) && (tm.getColumnCount () == 0))) 
       {
         propValue = new com.netbeans.developer.editors.TableModelEditor.NbTableModel (new javax.swing.table.DefaultTableModel (
-            new String[] {"Title 1", "Title 2", "Title 3", "Title 4"},
+            new String[] {"Title 1", "Title 2", "Title 3", "Title 4"}, // NOI18N
             4
           ));
         propName = "model"; // NOI18N
@@ -610,12 +610,12 @@ static final long serialVersionUID =7424646018839457544L;
       for (Iterator it = errorLog.iterator (); it.hasNext ();) {
         ErrorLogItem item = (ErrorLogItem)it.next ();
         if (item.getType () == ErrorLogItem.WARNING) {
-          System.out.println("WARNING: "+item.getDescription ());
+          System.out.println("WARNING: "+item.getDescription ()); // NOI18N
         } else {
-          System.out.println("ERROR: "+item.getDescription ());
+          System.out.println("ERROR: "+item.getDescription ()); // NOI18N
         }
         if (item.getThrowable () != null) {
-          System.out.println("Details:");
+          System.out.println("Details:"); // NOI18N
           item.getThrowable ().printStackTrace ();
         }
       }
@@ -636,6 +636,7 @@ static final long serialVersionUID =7424646018839457544L;
 
 /*
  * Log
+ *  43   Gandalf   1.42        1/12/00  Pavel Buzek     I18N
  *  42   Gandalf   1.41        1/11/00  Pavel Buzek     
  *  41   Gandalf   1.40        1/5/00   Ian Formanek    NOI18N
  *  40   Gandalf   1.39        12/8/99  Pavel Buzek     FormEditor and 

@@ -196,7 +196,7 @@ public final class BeanInstaller extends Object {
     }
 
     FileObject root = TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot();
-    FileObject paletteFolder = root.getFileObject ("Palette");
+    FileObject paletteFolder = root.getFileObject ("Palette"); // NOI18N
     if (paletteFolder == null) {
       return;
     }
@@ -298,7 +298,7 @@ public final class BeanInstaller extends Object {
   }
 
   private static String formatName (String className) {
-    String ret = className.substring(className.lastIndexOf (".") + 1) + "[" + className.replace ('.', '-') + "]";
+    String ret = className.substring(className.lastIndexOf (".") + 1) + "[" + className.replace ('.', '-') + "]"; // NOI18N
     return ret;
   }
 
@@ -510,7 +510,7 @@ public final class BeanInstaller extends Object {
       FileOutputStream fos = null;
       try {
         fos = new FileOutputStream(localBase + "installed.properties"); // NOI18N
-        alreadyInstalled.store(fos, "Installed Archives");
+        alreadyInstalled.store(fos, com.netbeans.developer.modules.loaders.form.FormEditor.getFormBundle().getString ("MSG_InstalledArchives"));
       } catch (IOException e) {
         if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
         // ignore 
@@ -716,6 +716,7 @@ static final long serialVersionUID =-6038414545631774041L;
 
 /*
  * Log
+ *  27   Gandalf   1.26        1/12/00  Pavel Buzek     I18N
  *  26   Gandalf   1.25        1/5/00   Ian Formanek    NOI18N
  *  25   Gandalf   1.24        11/5/99  Jaroslav Tulach ComponentPalette.getDefault
  *        is back.

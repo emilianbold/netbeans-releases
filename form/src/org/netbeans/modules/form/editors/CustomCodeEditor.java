@@ -13,6 +13,8 @@
 
 package com.netbeans.developer.modules.loaders.form.editors;
 
+import com.netbeans.developer.modules.loaders.form.FormEditor;
+
 import org.openide.nodes.PropertySupport;
 
 /** 
@@ -47,7 +49,7 @@ public class CustomCodeEditor extends javax.swing.JDialog {
     codeEditorPane = new javax.swing.JEditorPane ();
     getContentPane ().setLayout (new java.awt.GridBagLayout ());
     java.awt.GridBagConstraints gridBagConstraints1;
-    setTitle ("Property Editor: " + propertySupport.getDisplayName ());
+    setTitle (FormEditor.getFormBundle ().getString ("CTL_CC_PROPERTY_EDITOR") + ": " + propertySupport.getDisplayName ());
     addWindowListener (new java.awt.event.WindowAdapter () {
       public void windowClosing (java.awt.event.WindowEvent evt) {
         closeDialog (evt);
@@ -57,7 +59,7 @@ public class CustomCodeEditor extends javax.swing.JDialog {
 
     jPanel1.setLayout (new java.awt.FlowLayout (2, 5, 5));
 
-      okButton.setText ("Ok");
+      okButton.setLabel (FormEditor.getFormBundle ().getString ("CTL_OK"));
       okButton.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           okButtonActionPerformed (evt);
@@ -67,7 +69,7 @@ public class CustomCodeEditor extends javax.swing.JDialog {
   
       jPanel1.add (okButton);
   
-      cancelButton.setText ("Cancel");
+      cancelButton.setLabel (FormEditor.getFormBundle ().getString ("CTL_CANCEL"));
       cancelButton.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           cancelButtonActionPerformed (evt);
@@ -87,7 +89,7 @@ public class CustomCodeEditor extends javax.swing.JDialog {
     getContentPane ().add (jPanel1, gridBagConstraints1);
 
 
-      codeEditorPane.setContentType ("text/x-java");
+      codeEditorPane.setContentType ("text/x-java"); // NOI18N
       try {
         codeEditorPane.setText((String) propertySupport.getValue ());
       } catch (java.lang.reflect.InvocationTargetException e1) {
@@ -146,6 +148,7 @@ private void cancelButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN
 
 /*
  * Log
+ *  7    Gandalf   1.6         1/12/00  Pavel Buzek     I18N
  *  6    Gandalf   1.5         1/8/00   Pavel Buzek     #5181
  *  5    Gandalf   1.4         1/5/00   Ian Formanek    NOI18N
  *  4    Gandalf   1.3         12/13/99 Pavel Buzek     scrollPane added

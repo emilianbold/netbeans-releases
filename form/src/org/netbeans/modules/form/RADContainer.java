@@ -75,12 +75,13 @@ public class RADContainer extends RADComponent implements ComponentContainer {
   * @return the prefix code for generating code to add subcomponents to this container
   */
   public String getContainerGenName () {
-    return "";
+    return ""; // NOI18N
   }
 }
 
 /*
  * Log
+ *  11   Gandalf   1.10        1/12/00  Pavel Buzek     I18N
  *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         8/15/99  Ian Formanek    getContainerGenName 

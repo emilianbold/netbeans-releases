@@ -43,11 +43,11 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
   public static DataFlavor RAD_COMPONENT_COPY_FLAVOR = new RADDataFlavor (
     RADComponentNode.class,
-    "RAD_COMPONENT_COPY_FLAVOR"
+    "RAD_COMPONENT_COPY_FLAVOR" // NOI18N
   );
   public static DataFlavor RAD_COMPONENT_CUT_FLAVOR = new RADDataFlavor (
     RADComponentNode.class,
-    "RAD_COMPONENT_CUT_FLAVOR"
+    "RAD_COMPONENT_CUT_FLAVOR" // NOI18N
   );
 
 
@@ -61,7 +61,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   public void finalize () throws Throwable {
     super.finalize ();
     if (System.getProperty ("netbeans.debug.form.finalize") != null) {
-      System.out.println("finalized: "+this.getClass ().getName ()+", instance: "+this);
+      System.out.println("finalized: "+this.getClass ().getName ()+", instance: "+this); // NOI18N
     }
   } // FINALIZE DEBUG METHOD
   
@@ -537,7 +537,7 @@ static final long serialVersionUID =3851021533468196849L;
         ((RADVisualContainer)copyComponent).setDesignLayout (newLayout);
       } catch (Exception e) {
         // ignore problem with cloning layout
-        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
       }
     }
 
@@ -563,7 +563,7 @@ static final long serialVersionUID =3851021533468196849L;
         }
       } catch (Exception e) {
         // ignore property with problem
-        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
       }
     }
 
@@ -576,7 +576,7 @@ static final long serialVersionUID =3851021533468196849L;
         copyComponent.setAuxValue (auxName, FormUtils.cloneObject (auxValue));
       } catch (Exception e) {
         // ignore aux value with problem
-        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
       }
     }
 
@@ -591,7 +591,7 @@ static final long serialVersionUID =3851021533468196849L;
           newConstraints.put (layoutClass, FormUtils.cloneObject (cd));
         } catch (Exception e) {
           // ignore aux value with problem
-          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
         }
       }
       ((RADVisualComponent)copyComponent).initConstraints (newConstraints);
@@ -731,6 +731,7 @@ static final long serialVersionUID =3851021533468196849L;
 
 /*
  * Log
+ *  43   Gandalf   1.42        1/12/00  Pavel Buzek     I18N
  *  42   Gandalf   1.41        1/10/00  Pavel Buzek     refreshing property sets
  *  41   Gandalf   1.40        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

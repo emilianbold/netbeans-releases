@@ -41,50 +41,50 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
   public static final Hashtable encodingList = new Hashtable ();
   static {
-    encodingList.put ("US-ASCII (English)", "US-ASCII");
-    encodingList.put ("UTF-8 (Compressed Unicode)", "UTF-8");
-    encodingList.put ("UTF-16 (Compressed UCS)", "UTF-16");
-    encodingList.put ("ISO-10646-UCS-2 (Raw Unicode)", "ISO-10646-UCS-2");
+    encodingList.put ("US-ASCII (English)", "US-ASCII"); // NOI18N
+    encodingList.put ("UTF-8 (Compressed Unicode)", "UTF-8"); // NOI18N
+    encodingList.put ("UTF-16 (Compressed UCS)", "UTF-16"); // NOI18N
+    encodingList.put ("ISO-10646-UCS-2 (Raw Unicode)", "ISO-10646-UCS-2"); // NOI18N
     encodingList.put ("ISO-10646-UCS-4 (Raw UCS)", "ISO-10646-UCS-4"); // NOTE: no support for ISO-10646-UCS-4 yet. [from XmlReader]
-    encodingList.put ("ISO-8859-1 (Latin-1, western Europe)", "ISO-8859-1");
-    encodingList.put ("ISO-8859-2 (Latin-2, eastern Europe)", "ISO-8859-2");
-    encodingList.put ("ISO-8859-3 (Latin-3, southern Europe)", "ISO-8859-3");
-    encodingList.put ("ISO-8859-4 (Latin-4, northern Europe)", "ISO-8859-4");
-    encodingList.put ("ISO-8859-5 (ASCII plus Cyrillic)", "ISO-8859-5");
-    encodingList.put ("ISO-8859-6 (ASCII plus Arabic)", "ISO-8859-6");
-    encodingList.put ("ISO-8859-7 (ASCII plus Greek)", "ISO-8859-7");
-    encodingList.put ("ISO-8859-8 (ASCII plus Hebrew)", "ISO-8859-8");
-    encodingList.put ("ISO-8859-9 (Latin-5, Turkish)", "ISO-8859-9");
-    encodingList.put ("ISO-2022-JP (Japanese)", "ISO-2022-JP");
-    encodingList.put ("Shift_JIS (Japanese, Windows)", "Shift_JIS");
-    encodingList.put ("EUC-JP (Japanese, UNIX)", "EUC-JP");
-    encodingList.put ("Big5 (Chinese, Taiwan)", "Big5");
-    encodingList.put ("GB2312 (Chinese, mainland China)", "GB2312");
-    encodingList.put ("KOI8-R (Russian)", "KOI8-R");
-    encodingList.put ("ISO-2022-KR (Korea)", "ISO-2022-KR");
-    encodingList.put ("EUC-KR (Korean, UNIX)", "EUC-KR");
-    encodingList.put ("ISO-2022-CN (Chinese)", "ISO-2022-CN");
+    encodingList.put ("ISO-8859-1 (Latin-1, western Europe)", "ISO-8859-1"); // NOI18N
+    encodingList.put ("ISO-8859-2 (Latin-2, eastern Europe)", "ISO-8859-2"); // NOI18N
+    encodingList.put ("ISO-8859-3 (Latin-3, southern Europe)", "ISO-8859-3"); // NOI18N
+    encodingList.put ("ISO-8859-4 (Latin-4, northern Europe)", "ISO-8859-4"); // NOI18N
+    encodingList.put ("ISO-8859-5 (ASCII plus Cyrillic)", "ISO-8859-5"); // NOI18N
+    encodingList.put ("ISO-8859-6 (ASCII plus Arabic)", "ISO-8859-6"); // NOI18N
+    encodingList.put ("ISO-8859-7 (ASCII plus Greek)", "ISO-8859-7"); // NOI18N
+    encodingList.put ("ISO-8859-8 (ASCII plus Hebrew)", "ISO-8859-8"); // NOI18N
+    encodingList.put ("ISO-8859-9 (Latin-5, Turkish)", "ISO-8859-9"); // NOI18N
+    encodingList.put ("ISO-2022-JP (Japanese)", "ISO-2022-JP"); // NOI18N
+    encodingList.put ("Shift_JIS (Japanese, Windows)", "Shift_JIS"); // NOI18N
+    encodingList.put ("EUC-JP (Japanese, UNIX)", "EUC-JP"); // NOI18N
+    encodingList.put ("Big5 (Chinese, Taiwan)", "Big5"); // NOI18N
+    encodingList.put ("GB2312 (Chinese, mainland China)", "GB2312"); // NOI18N
+    encodingList.put ("KOI8-R (Russian)", "KOI8-R"); // NOI18N
+    encodingList.put ("ISO-2022-KR (Korea)", "ISO-2022-KR"); // NOI18N
+    encodingList.put ("EUC-KR (Korean, UNIX)", "EUC-KR"); // NOI18N
+    encodingList.put ("ISO-2022-CN (Chinese)", "ISO-2022-CN"); // NOI18N
 
-    encodingList.put ("EBCDIC-CP-US (EBCDIC: US)", "EBCDIC-CP-US");
-    encodingList.put ("EBCDIC-CP-CA (EBCDIC: Canada)", "EBCDIC-CP-CA");
-    encodingList.put ("EBCDIC-CP-NL (EBCDIC: Netherlands)", "EBCDIC-CP-NL");
-    encodingList.put ("EBCDIC-CP-WT (like EBCDIC-CP-US)", "EBCDIC-CP-WT");
-    encodingList.put ("EBCDIC-CP-DK (EBCDIC: Denmark)", "EBCDIC-CP-DK");
-    encodingList.put ("EBCDIC-CP-NO (EBCDIC: Norway)", "EBCDIC-CP-NO");
-    encodingList.put ("EBCDIC-CP-FI (EBCDIC: Finland)", "EBCDIC-CP-FI");
-    encodingList.put ("EBCDIC-CP-SE (EBCDIC: Sweden)", "EBCDIC-CP-SE");
-    encodingList.put ("EBCDIC-CP-IT (EBCDIC: Italy)", "EBCDIC-CP-IT");
-    encodingList.put ("EBCDIC-CP-ES (EBCDIC: Spain, Latin America)", "EBCDIC-CP-ES");
-    encodingList.put ("EBCDIC-CP-GB (EBCDIC: Great Britain)", "EBCDIC-CP-GB");
-    encodingList.put ("EBCDIC-CP-FR (EBCDIC: France)", "EBCDIC-CP-FR");
-    encodingList.put ("EBCDIC-CP-AR1 (EBCDIC: Arabic)", "EBCDIC-CP-AR1");
-    encodingList.put ("EBCDIC-CP-HE (EBCDIC: Hebrew)", "EBCDIC-CP-HE");
-    encodingList.put ("EBCDIC-CP-BE (like EBCDIC-CP-CH)", "EBCDIC-CP-BE");
-    encodingList.put ("EBCDIC-CP-CH (EBCDIC: Switzerland)", "EBCDIC-CP-CH");
-    encodingList.put ("EBCDIC-CP-ROECE (EBCDIC: Roece)", "EBCDIC-CP-ROECE");
-    encodingList.put ("EBCDIC-CP-YU (EBCDIC: Yogoslavia)", "EBCDIC-CP-YU");
-    encodingList.put ("EBCDIC-CP-IS (EBCDIC: Iceland)", "EBCDIC-CP-IS");
-    encodingList.put ("EBCDIC-CP-AR2 (EBCDIC: Urdu)", "EBCDIC-CP-AR2");
+    encodingList.put ("EBCDIC-CP-US (EBCDIC: US)", "EBCDIC-CP-US"); // NOI18N
+    encodingList.put ("EBCDIC-CP-CA (EBCDIC: Canada)", "EBCDIC-CP-CA"); // NOI18N
+    encodingList.put ("EBCDIC-CP-NL (EBCDIC: Netherlands)", "EBCDIC-CP-NL"); // NOI18N
+    encodingList.put ("EBCDIC-CP-WT (like EBCDIC-CP-US)", "EBCDIC-CP-WT"); // NOI18N
+    encodingList.put ("EBCDIC-CP-DK (EBCDIC: Denmark)", "EBCDIC-CP-DK"); // NOI18N
+    encodingList.put ("EBCDIC-CP-NO (EBCDIC: Norway)", "EBCDIC-CP-NO"); // NOI18N
+    encodingList.put ("EBCDIC-CP-FI (EBCDIC: Finland)", "EBCDIC-CP-FI"); // NOI18N
+    encodingList.put ("EBCDIC-CP-SE (EBCDIC: Sweden)", "EBCDIC-CP-SE"); // NOI18N
+    encodingList.put ("EBCDIC-CP-IT (EBCDIC: Italy)", "EBCDIC-CP-IT"); // NOI18N
+    encodingList.put ("EBCDIC-CP-ES (EBCDIC: Spain, Latin America)", "EBCDIC-CP-ES"); // NOI18N
+    encodingList.put ("EBCDIC-CP-GB (EBCDIC: Great Britain)", "EBCDIC-CP-GB"); // NOI18N
+    encodingList.put ("EBCDIC-CP-FR (EBCDIC: France)", "EBCDIC-CP-FR"); // NOI18N
+    encodingList.put ("EBCDIC-CP-AR1 (EBCDIC: Arabic)", "EBCDIC-CP-AR1"); // NOI18N
+    encodingList.put ("EBCDIC-CP-HE (EBCDIC: Hebrew)", "EBCDIC-CP-HE"); // NOI18N
+    encodingList.put ("EBCDIC-CP-BE (like EBCDIC-CP-CH)", "EBCDIC-CP-BE"); // NOI18N
+    encodingList.put ("EBCDIC-CP-CH (EBCDIC: Switzerland)", "EBCDIC-CP-CH"); // NOI18N
+    encodingList.put ("EBCDIC-CP-ROECE (EBCDIC: Roece)", "EBCDIC-CP-ROECE"); // NOI18N
+    encodingList.put ("EBCDIC-CP-YU (EBCDIC: Yogoslavia)", "EBCDIC-CP-YU"); // NOI18N
+    encodingList.put ("EBCDIC-CP-IS (EBCDIC: Iceland)", "EBCDIC-CP-IS"); // NOI18N
+    encodingList.put ("EBCDIC-CP-AR2 (EBCDIC: Urdu)", "EBCDIC-CP-AR2"); // NOI18N
   }
   protected static final String AUX_MENU_COMPONENT = "RADVisualFormContainer_MenuComponent"; // NOI18N
 
@@ -296,7 +296,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       }
     }
 
-    Node.Property policyProperty = new PropertySupport.ReadWrite (PROP_FORM_SIZE_POLICY, Integer.TYPE, "form size policy", "form size policy") {
+    Node.Property policyProperty = new PropertySupport.ReadWrite (PROP_FORM_SIZE_POLICY, Integer.TYPE, 
+        FormEditor.getFormBundle ().getString ("MSG_FormSizePolicy"), 
+        FormEditor.getFormBundle ().getString ("MSG_FormSizePolicy")) {
       public Object getValue () throws
       IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
         return new Integer (getFormSizePolicy ());
@@ -316,7 +318,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     };
 
 
-    Node.Property sizeProperty = new PropertySupport.ReadWrite (PROP_FORM_SIZE, Dimension.class, "form size", "form size") {
+    Node.Property sizeProperty = new PropertySupport.ReadWrite (PROP_FORM_SIZE, Dimension.class, 
+        FormEditor.getFormBundle ().getString ("MSG_FormSize"), 
+        FormEditor.getFormBundle ().getString ("MSG_FormSize")) {
       public Object getValue () throws
       IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
         return getFormSize ();
@@ -329,7 +333,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       }
     };
 
-    Node.Property positionProperty = new PropertySupport.ReadWrite (PROP_FORM_POSITION, Point.class, "form position", "form position") {
+     Node.Property positionProperty = new PropertySupport.ReadWrite (PROP_FORM_POSITION, Point.class, 
+        FormEditor.getFormBundle ().getString ("MSG_FormPosition"), 
+        FormEditor.getFormBundle ().getString ("MSG_FormPosition")) {
       public Object getValue () throws
       IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
         return getFormPosition ();
@@ -342,7 +348,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       }
     };
 
-    Node.Property genPositionProperty = new PropertySupport.ReadWrite (PROP_GENERATE_POSITION, Boolean.TYPE, "generate position", "generate position") {
+    Node.Property genPositionProperty = new PropertySupport.ReadWrite (PROP_GENERATE_POSITION, Boolean.TYPE, 
+        FormEditor.getFormBundle ().getString ("MSG_GeneratePosition"), 
+        FormEditor.getFormBundle ().getString ("MSG_GeneratePosition")) {
       public Object getValue () throws
       IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
         return new Boolean (getGeneratePosition ());
@@ -355,7 +363,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       }
     };
 
-    Node.Property genSizeProperty = new PropertySupport.ReadWrite (PROP_GENERATE_SIZE, Boolean.TYPE, "generate size", "generate size") {
+    Node.Property genSizeProperty = new PropertySupport.ReadWrite (PROP_GENERATE_SIZE, Boolean.TYPE, 
+        FormEditor.getFormBundle ().getString ("MSG_GenerateSize"), 
+        FormEditor.getFormBundle ().getString ("MSG_GenerateSize")) {
       public Object getValue () throws
       IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
         return new Boolean (getGenerateSize ());
@@ -368,7 +378,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       }
     };
 
-    Node.Property genCenterProperty = new PropertySupport.ReadWrite (PROP_GENERATE_CENTER, Boolean.TYPE, "generate center", "generate center") {
+    Node.Property genCenterProperty = new PropertySupport.ReadWrite (PROP_GENERATE_CENTER, Boolean.TYPE, 
+        FormEditor.getFormBundle ().getString ("MSG_GenerateCenter"), 
+        FormEditor.getFormBundle ().getString ("MSG_GenerateCenter")) {
       public Object getValue () throws
       IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
         return new Boolean (getGenerateCenter ());
@@ -381,8 +393,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       }
     };
 
-    Node.Property genEncodingProperty = new EncodingProperty ("encoding", String.class, "form encoding",  // [PENDING - localize]
-                                   "encoding used for serialization") {
+    Node.Property genEncodingProperty = new EncodingProperty ("encoding", String.class, // NOI18N
+        FormEditor.getFormBundle ().getString ("MSG_FormEncoding"),
+        FormEditor.getFormBundle ().getString ("MSG_FormEncodingDesc")) {
       public void setValue (Object value) {
         if (!(value instanceof String)) {
           throw new IllegalArgumentException ();
@@ -427,7 +440,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
   }
 
   private Node.Property createMenuProperty () {
-    return new PropertySupport.ReadWrite (PROP_MENU_BAR, String.class, "menu bar", "menu bar of the form") {
+    return new PropertySupport.ReadWrite (PROP_MENU_BAR, String.class, 
+        FormEditor.getFormBundle ().getString ("MSG_MenuBar"), 
+        FormEditor.getFormBundle ().getString ("MSG_MenuBarDesc")) {
       public Object getValue () throws
       IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
         String s = getFormMenu ();
@@ -589,6 +604,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
 /*
  * Log
+ *  24   Gandalf   1.23        1/12/00  Pavel Buzek     I18N
  *  23   Gandalf   1.22        1/11/00  Pavel Buzek     
  *  22   Gandalf   1.21        1/10/00  Pavel Buzek     #5088
  *  21   Gandalf   1.20        1/5/00   Ian Formanek    NOI18N

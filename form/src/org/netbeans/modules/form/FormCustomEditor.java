@@ -86,7 +86,7 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
         add (allCustomEditors[0] = allEditors[0].getCustomEditor (), BorderLayout.CENTER);
       } else {
         // [FUTURE - add property sheet line component]
-        add (allCustomEditors[0] = new JLabel ("PropertyEditor does not support custom editing"), BorderLayout.CENTER);
+        add (allCustomEditors[0] = new JLabel (FormEditor.getFormBundle ().getString ("CTL_PropertyEditorDoesNot")), BorderLayout.CENTER);
       }
       
     } else {
@@ -138,7 +138,7 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
           tabs.addTab (tabName, allCustomEditors[i] = allEditors[i].getCustomEditor ());
         } else {
           // [FUTURE - add property sheet line component]
-          tabs.addTab (tabName, allCustomEditors[i] = new JLabel ("PropertyEditor does not support custom editing"));
+          tabs.addTab (tabName, allCustomEditors[i] = new JLabel (FormEditor.getFormBundle ().getString ("CTL_PropertyEditorDoesNot")));
         }
       }
 
@@ -184,7 +184,7 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
     FormCustomEditorAdvanced fcea = new FormCustomEditorAdvanced (preCode, postCode);
     DialogDescriptor dd = new DialogDescriptor (
       fcea,
-      "Advanced Initialization Code"
+      FormEditor.getFormBundle ().getString ("CTL_AdvancedInitializationCode")
     );
     dd.setHelpCtx (new HelpCtx (FormCustomEditorAdvanced.class));
     TopManager.getDefault ().createDialog (dd).show ();
@@ -247,6 +247,7 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
 
 /*
  * Log
+ *  20   Gandalf   1.19        1/12/00  Pavel Buzek     I18N
  *  19   Gandalf   1.18        1/5/00   Ian Formanek    NOI18N
  *  18   Gandalf   1.17        11/5/99  Jesse Glick     Context help jumbo 
  *       patch.

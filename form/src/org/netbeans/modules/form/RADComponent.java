@@ -342,7 +342,7 @@ public class RADComponent {
         // No expert properties
         beanPropertySets = new Node.PropertySet [] {
           new Node.PropertySet (
-            "properties", 
+            "properties", // NOI18N
             FormEditor.getFormBundle().getString("CTL_PropertiesTab"),
             FormEditor.getFormBundle().getString("CTL_PropertiesTabHint")
           ) {
@@ -351,7 +351,7 @@ public class RADComponent {
             }
           },
           new Node.PropertySet (
-            "events", 
+            "events", // NOI18N
             FormEditor.getFormBundle().getString("CTL_EventsTab"),
             FormEditor.getFormBundle().getString("CTL_EventsTabHint")
           ) {
@@ -360,7 +360,7 @@ public class RADComponent {
             }
           }, 
           new Node.PropertySet (
-            "synthetic", 
+            "synthetic", // NOI18N
             FormEditor.getFormBundle().getString("CTL_SyntheticTab"),
             FormEditor.getFormBundle().getString("CTL_SyntheticTabHint")
           ) {
@@ -373,7 +373,7 @@ public class RADComponent {
         // With expert properties
         beanPropertySets = new Node.PropertySet [] {
           new Node.PropertySet (
-            "properties", 
+            "properties", // NOI18N
             FormEditor.getFormBundle().getString("CTL_PropertiesTab"),
             FormEditor.getFormBundle().getString("CTL_PropertiesTabHint")
           ) {
@@ -382,7 +382,7 @@ public class RADComponent {
             }
           },
           new Node.PropertySet (
-            "expert", 
+            "expert", // NOI18N
             FormEditor.getFormBundle().getString("CTL_ExpertTab"),
             FormEditor.getFormBundle().getString("CTL_ExpertTabHint")
           ) {
@@ -391,7 +391,7 @@ public class RADComponent {
             }
           },
           new Node.PropertySet (
-            "events", 
+            "events", // NOI18N
             FormEditor.getFormBundle().getString("CTL_EventsTab"),
             FormEditor.getFormBundle().getString("CTL_EventsTabHint")
           ) {
@@ -400,7 +400,7 @@ public class RADComponent {
             }
           }, 
           new Node.PropertySet (
-            "synthetic", 
+            "synthetic", // NOI18N
             FormEditor.getFormBundle().getString("CTL_SyntheticTab"),
             FormEditor.getFormBundle().getString("CTL_SyntheticTabHint")
           ) {
@@ -1444,6 +1444,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  71   Gandalf   1.70        1/12/00  Pavel Buzek     I18N
  *  70   Gandalf   1.69        1/10/00  Pavel Buzek     
  *  69   Gandalf   1.68        1/7/00   Pavel Buzek     patch created in rev. 63
  *       was removed (fixed in bean info)

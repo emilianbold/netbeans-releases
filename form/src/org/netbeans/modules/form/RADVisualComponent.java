@@ -86,7 +86,7 @@ public class RADVisualComponent extends RADComponent {
       visualPropertySet = new Node.PropertySet[inh.length+1];
       System.arraycopy (inh, 0, visualPropertySet, 0, inh.length-1);
       visualPropertySet[visualPropertySet.length-2] = 
-        new Node.PropertySet ("layout", "Layout", "Layout Properties") {
+        new Node.PropertySet ("layout", FormEditor.getFormBundle().getString ("MSG_Layout"), FormEditor.getFormBundle().getString ("MSG_LayoutProps")) {
           public Node.Property[] getProperties () {
             return parent.getDesignLayout ().getComponentProperties (RADVisualComponent.this);
           }
@@ -117,6 +117,7 @@ public class RADVisualComponent extends RADComponent {
 
 /*
  * Log
+ *  15   Gandalf   1.14        1/12/00  Pavel Buzek     I18N
  *  14   Gandalf   1.13        1/5/00   Ian Formanek    NOI18N
  *  13   Gandalf   1.12        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

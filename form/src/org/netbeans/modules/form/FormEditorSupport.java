@@ -132,7 +132,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     }
 
     String fromWorkspace = FormEditor.getFormSettings ().getWorkspace ();
-    if (!fromWorkspace.equalsIgnoreCase ("None")) {
+    if (!fromWorkspace.equalsIgnoreCase (FormEditor.getFormBundle ().getString ("VALUE_WORKSPACE_NONE"))) {
       Workspace visualWorkspace = TopManager.getDefault().getWindowManager().findWorkspace(fromWorkspace);
       if (visualWorkspace != null) visualWorkspace.activate ();
     }
@@ -181,7 +181,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     }
   
     String fromWorkspace = FormEditor.getFormSettings ().getWorkspace ();
-    if (!fromWorkspace.equalsIgnoreCase ("None")) {
+    if (!fromWorkspace.equalsIgnoreCase (FormEditor.getFormBundle ().getString ("VALUE_WORKSPACE_NONE"))) {
       Workspace visualWorkspace = TopManager.getDefault().getWindowManager().findWorkspace(fromWorkspace);
       if (visualWorkspace != null) visualWorkspace.activate ();
     }
@@ -208,7 +208,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
   private boolean isCurrentWorkspaceEditing () {
     String name = TopManager.getDefault ().getWindowManager ().getCurrentWorkspace ().getName ();
-    if (!("Browsing".equals (name) || "Running".equals (name) || "Debugging".equals (name))) {
+    if (!("Browsing".equals (name) || "Running".equals (name) || "Debugging".equals (name))) { // NOI18N
       return true;
     } else {
       return false;
@@ -475,6 +475,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  44   Gandalf   1.43        1/12/00  Pavel Buzek     I18N
  *  43   Gandalf   1.42        1/9/00   Pavel Buzek     
  *  42   Gandalf   1.41        1/9/00   Pavel Buzek     
  *  41   Gandalf   1.40        1/9/00   Pavel Buzek     #2918
