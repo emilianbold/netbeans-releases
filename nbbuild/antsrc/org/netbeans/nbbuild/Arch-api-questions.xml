@@ -510,7 +510,15 @@ openide/www/tutorial/questions.html.
 
         <question id="perf-menus" when="final">
             Does your module use dynamically updated context menus, or
-            context-sensitive actions with complicated enablement logic?
+            context-sensitive actions with complicated and slow enablement logic?
+            <hint>
+                If you do a lot of tricks when adding actions to regular or context menus, you can significantly
+                slow down display of the menu, even when the user is not using your action. Pay attention to
+                actions you add to the main menu bar, and to context menus of foreign nodes or components. If
+                the action is conditionally enabled, or changes its display dynamically, you need to check the
+                impact on performance. In some cases it may be more appropriate to make a simple action that is
+                always enabled but does more detailed checks in a dialog if it is actually run.
+            </hint>
         </question>
         
         <question  id="perf-spi" when="init">
