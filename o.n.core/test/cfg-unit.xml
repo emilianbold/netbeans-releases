@@ -24,6 +24,17 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <mconfig name="core unit test config">
+
+    <!-- Tests which should be run before commit to validate IDE. -->
+    <testbag testattribs="commit" executor="code" name="Before Commit Validation" resultsprocessor="unit">
+        <testset dir="unit/src">
+            <patternset>
+                <!-- this shall be enabled! <exclude name="org/netbeans/core/AutomountSupportTest.class"/> -->
+                <include name="org/netbeans/core/BundleKeysTest.class"/> <!-- see JellyTools_compatibility -->
+                <include name="org/netbeans/core/projects/SystemFileSystemTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
   
     <testbag testattribs="stable" executor="ide" name="testbag_1" resultsprocessor="unit">
         <testset dir="unit/src">

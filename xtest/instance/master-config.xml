@@ -55,7 +55,7 @@ Microsystems, Inc. All Rights Reserved.
   <config name="qa-functional-nb">
       <module name="beans"  	testtypes="qa-func"        attributes="validation"/>
       <testtype name="qa-functional" attributes="validation"
-                modules="ant,clazz,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,openide,properties,qa,vcscore,vcsgeneric"/>
+                modules="ant,clazz,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,openide,properties,ide,vcscore,vcsgeneric"/>
       <testtype name="qa-functional" attributes="validation"
                 modules="xml,xml/catalog,xml/core,xml/text-edit,xml/tools,xml/tax/lib,xml/tree-edit"/>
       <module name="qa"       	testtypes="serialization"  attributes="validation"/>
@@ -84,7 +84,7 @@ Microsystems, Inc. All Rights Reserved.
       <!-- no longer in validation suite
       <module name="projects" 	testtypes="qa-functional"  attributes="validation,jdk13"/>  -->
       <!-- temporarily removed because it crashes all testing
-      <module name="qa"       	testtypes="qa-functional"  attributes="validation"/>    -->
+      <module name="ide"       	testtypes="qa-functional"  attributes="validation"/>    -->
       <!-- it freezes
       module name="autoupdate" testtypes="gui"  	   attributes="validation"/ -->
   </config>
@@ -95,7 +95,7 @@ Microsystems, Inc. All Rights Reserved.
   <config name="qa-functional-nb-full">
       <module name="beans"  	testtypes="qa-func"        attributes="validation,full"/>
       <testtype name="qa-functional" attributes="validation,full"
-                modules="ant,clazz,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,junit,openide,properties,qa,vcscore,vcsgeneric"/>
+                modules="ant,clazz,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,junit,openide,properties,ide,vcscore,vcsgeneric"/>
       <testtype name="qa-functional" attributes="validation,full"
                 modules="xml,xml/catalog,xml/core,xml/text-edit,xml/tools,xml/tax/lib,xml/tree-edit"/>
       <module name="jndi"    	testtypes="qa-functional"  attributes="validation,full">
@@ -124,7 +124,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="projects" 	testtypes="qa-functional"  attributes="validation,full,jdk13"/> 
 
       <!-- temporarily removed because it crashes all testing
-      <module name="qa"       	testtypes="qa-functional"  attributes="validation,full"/> -->
+      <module name="ide"       	testtypes="qa-functional"  attributes="validation,full"/> -->
       <!-- module name="autoupdate" testtypes="gui"  	   attributes="validation,full"/ -->
       <module name="corba" 	testtypes="qa-functional"  attributes="validation,full"/>
   </config>
@@ -133,7 +133,7 @@ Microsystems, Inc. All Rights Reserved.
   <config name="qa-functional-ffjee">
       <module name="beans"  	testtypes="qa-func"        attributes="validation,full"/>
       <testtype name="qa-functional" attributes="validation,full"
-                modules="ant,clazz,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,junit,openide,properties,qa,vcscore,vcsgeneric"/>
+                modules="ant,clazz,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,junit,openide,properties,ide,vcscore,vcsgeneric"/>
       <testtype name="qa-functional" attributes="validation,full"
                 modules="xml,xml/catalog,xml/core,xml/text-edit,xml/tools,xml/tax/lib,xml/tree-edit"/>
       <module name="jndi"    	testtypes="qa-functional"  attributes="validation,full">
@@ -160,7 +160,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="projects" 	testtypes="qa-functional"   attributes="validation,full,jdk13"/>
 
       <!-- removed because it falls with OutOfMemoryError
-      <module name="qa"       	testtypes="qa-functional"   attributes="validation,full"/>
+      <module name="ide"       	testtypes="qa-functional"   attributes="validation,full"/>
       -->
       <module name="corba" 	testtypes="qa-functional"  attributes="validation,full"/>
   </config>
@@ -169,7 +169,7 @@ Microsystems, Inc. All Rights Reserved.
   <config name="qa-functional-ffjee-validation">
       <module name="beans"  	testtypes="qa-func"        attributes="validation"/>
       <testtype name="qa-functional" attributes="validation"
-                modules="ant,clazz,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,junit,openide,properties,qa,vcscore,vcsgeneric"/>
+                modules="ant,clazz,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,junit,openide,properties,ide,vcscore,vcsgeneric"/>
       <testtype name="qa-functional" attributes="validation"
                 modules="xml,xml/catalog,xml/core,xml/text-edit,xml/tools,xml/tax/lib,xml/tree-edit"/>
       <module name="qa"       	testtypes="serialization"  attributes="validation"/>  
@@ -187,7 +187,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="debuggercore"      testtypes="qa-gui"  attributes="validation"/>
 
       <!-- removed because it falls with OutOfMemoryError
-      <module name="qa"       	testtypes="qa-functional"   attributes="validation"/>
+      <module name="ide"       	testtypes="qa-functional"   attributes="validation"/>
       -->
   </config>
 
@@ -217,7 +217,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="openide" testtypes="unit" attributes="stable"/>
       <module name="openide/compat" testtypes="unit" attributes="stable"/>
       <!-- qa's functional tests -->
-      <module name="qa"       	testtypes="qa-functional"  attributes="validation"/>
+      <module name="ide"       	testtypes="qa-functional"  attributes="validation"/>
   </config>
   
   <config name="re-validation-original">
@@ -238,7 +238,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="java"   	testtypes="qa-functional"  attributes="validation"/>
       <module name="openide"  	testtypes="qa-functional"  attributes="validation"/>
       <module name="qa"       	testtypes="serialization"  attributes="validation"/>
-      <module name="qa"       	testtypes="qa-functional"  attributes="validation"/>
+      <module name="ide"       	testtypes="qa-functional"  attributes="validation"/>
       <module name="vcscore"	testtypes="qa-functional"  attributes="validation"/>      
       <module name="vcsgeneric"	testtypes="qa-functional"  attributes="validation"/>      
       <module name="xml"	testtypes="qa-functional"  attributes="validation"/>
@@ -260,6 +260,13 @@ Microsystems, Inc. All Rights Reserved.
       <module name="xml/tax/lib"	testtypes="qa-functional"  attributes="full"/>
       <module name="xml/tree-edit"	testtypes="qa-functional"  attributes="full"/>
   </config>  
+
+  <!-- validation suite before commit -->
+  <config name="commit-validation-nb">
+      <module name="core" testtypes="unit" attributes="commit"/>
+      <module name="openide" testtypes="unit" attributes="commit"/>
+      <module name="ide" testtypes="qa-functional" attributes="commit"/>
+  </config>
 
 </testconfig>
 
