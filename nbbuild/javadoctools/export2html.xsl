@@ -154,16 +154,16 @@ Microsystems, Inc. All Rights Reserved.
                     </div>
                 </xsl:if>
 
-                <p/>
-                <table border="3" cellpadding="6" width="90%">
-                    <thead>
-                        <th valign="bottom" width="30%"><b>Interface Name</b></th>
-                        <th valign="bottom" width="15%"><b>Stability Classification</b></th>
-                        <th valign="bottom" width="45%"><b>Specified in What Document?</b></th>
-                    </thead>
+                <p/><table CELLPADDING="1" CELLSPACING="0" BORDER="0" class="tablebg" width="100%"><tr><td>
+                  <table BORDER="0" CELLPADDING="3" CELLSPACING="1" WIDTH="100%">
+<!--                    <tr><td COLSPAN="5" class="tablecbg" ALIGN="CENTER"><font CLASS="titlectable">Do not duplicate any files</font></td></tr> -->
+                    <tr class="tablersh">
+                      <td ALIGN="CENTER" width="30%"><font CLASS="titlectable">Interface Name</font></td>
+                      <td ALIGN="CENTER" width="15%"><font CLASS="titlectable">Stability Classification</font></td>
+                      <td ALIGN="CENTER" ><font CLASS="titlectable">Specified in What Document?</font></td>
+                    </tr>
 
                     <xsl:for-each select="$interfaces">
-                        <tr/>
                         <xsl:if test="@group='java'" >
                             <xsl:call-template name="api" />
                         </xsl:if>
@@ -177,17 +177,19 @@ Microsystems, Inc. All Rights Reserved.
 
                             <xsl:variable name="allOfTheGroup" select="$module/api[@group=$grp]" />
                             <xsl:if test="$allOfTheGroup">
-                                <tr/>
+                              <tr class="tabler">
                                 <td>Set of <xsl:value-of select="$grp"/> APIs</td>
                                 <td>Individual</td>
                                 <td>
                                     <a href="{$arch.target}#group-{$grp}">table with definitions</a>
                                 </td>
+                              </tr>
                             </xsl:if>
                         </xsl:if>
                     </xsl:for-each>
 
-                </table>
+                  </table>
+                </td></tr></table>
             </xsl:if>
 
 
@@ -201,7 +203,7 @@ Microsystems, Inc. All Rights Reserved.
         <xsl:variable name="category" select="@category" />
         <xsl:variable name="url" select="@url" />
 
-        <tbody>
+        <tr class="tabler">
             <td>
                 <xsl:value-of select="$name"/>
             </td>
@@ -240,7 +242,7 @@ Microsystems, Inc. All Rights Reserved.
             <td> <!-- url -->
                 <a href="{$url}"><xsl:value-of select="$url"/></a>
             </td>
-        </tbody>
+        </tr>
 
     </xsl:template>
 
