@@ -22,6 +22,8 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.openide.util.Lookup;
 import org.openide.ErrorManager;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import java.util.*;
@@ -181,8 +183,8 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
             URL url = new URL(urlString);
             org.openide.awt.HtmlBrowser.URLDisplayer.getDefault().showURL (url);
         } catch (Exception io) {
-            //PENDING better feedback
-            io.printStackTrace();
+            String msg = NbBundle.getMessage(DeploymentTargetImpl.class, "MSG_StartWebClientFailed", urlString, io.getMessage()); 
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
         }
     }
     

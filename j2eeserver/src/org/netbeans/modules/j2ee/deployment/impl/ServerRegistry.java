@@ -91,19 +91,18 @@ public final class ServerRegistry implements java.io.Serializable {
         return instances;
     }
     private synchronized void addPlugin(FileObject fo) {
+        String name = ""; //NOI18N
         try {
             if(fo.isFolder()) {
-                String name = fo.getName();
+                name = fo.getName();
                 if(serversMap().containsKey(name)) return;
                 Server server = new Server(fo);
                 serversMap().put(name,server);
                 firePluginListeners(server,true);
             }
-            
         } catch (Exception e) {
-            
-            e.printStackTrace(System.err);
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Plugin installation failed"));
+            ErrorManager.getDefault().log(ErrorManager.WARNING, ("Plugin "+name+" installation failed")); //NOI18N
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
     }
     

@@ -151,7 +151,6 @@ public class ServerFileDistributor extends ServerProgress {
         FileObject contentDir = null;
         contentDir = getJ2eeModule(target).getContentDirectory();
         
-        //System.out.println("In-place deployment at: "+FileUtil.toFile(contentDir));
         
         Enumeration contentFiles = contentDir.getChildren(true);
         Date lastDeployed = new Date(lastDeployTime);
@@ -214,7 +213,7 @@ public class ServerFileDistributor extends ServerProgress {
                 FileObject destFolder;
                 if (sourceFO.isFolder()) {
                     destMap.remove(relativePath);
-                    System.out.println("entering folder:"+relativePath);
+                    //System.out.println("entering folder:"+relativePath);
                     continue;
                 }
                 if (targetFO == null) {
@@ -230,7 +229,7 @@ public class ServerFileDistributor extends ServerProgress {
                     }
                     destFolder = targetFO.getParent();
                     
-                    System.out.println("Prepare for copy by deleting old target file: "+targetFO.getPath());
+                    //System.out.println("Prepare for copy by deleting old target file: "+targetFO.getPath());
                     targetFO.delete();
                 }
                 mc.record(relativePath);
@@ -280,7 +279,6 @@ public class ServerFileDistributor extends ServerProgress {
             return mc;
             
         } catch (Exception e) {
-            e.printStackTrace();
             String msg = NbBundle.getMessage(ServerFileDistributor.class, "MSG_IncrementalDeployFailed", e);
             setStatusDistributeFailed(msg);
             throw new RuntimeException(e);
@@ -364,18 +362,15 @@ public class ServerFileDistributor extends ServerProgress {
                 boolean libs = importantLib && (relativePath.endsWith(".jar") || relativePath.endsWith(".zip")); //NOI18N
                 if (classes || libs) {
                     classesChanged = true;
-                    System.out.println("First class change is from:" + relativePath);
                     return;
                 }
             }
             if (! descriptorChanged && descriptorRelativePaths != null && descriptorRelativePaths.contains(relativePath)) {
                 descriptorChanged = true;
-                System.out.println("Fist descriptor change is from: "+relativePath);
                 return;
             }
             if (! serverDescriptorChanged && serverDescriptorRelativePaths != null && serverDescriptorRelativePaths.contains(relativePath)) {
                 serverDescriptorChanged = true;
-                System.out.println("Fist server descriptor change is from: "+relativePath);
                 return;
             }
         }

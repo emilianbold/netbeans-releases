@@ -98,8 +98,7 @@ public class ServerTarget implements Node.Cookie {
                 registry.addNotificationListener(objects[i], eventLog, null, null);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            org.openide.ErrorManager.getDefault().notify(e);
+            org.openide.ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
     }
     
