@@ -17,6 +17,7 @@ import org.openide.util.Lookup;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  * A filtering classloader (isolator) ensuring that a particuler version of
@@ -36,13 +37,16 @@ public final class ParserLoader extends URLClassLoader {
     private static final String PARSER_PACKAGE = "org.apache.xerces";  // NOI18N
     private static final String USER_PREFIXES[] = new String[] {
         "org.netbeans.tax.io.XNIBuilder", // NOI18N
-        "org.netbeans.modules.xml.tools.action.XMLCompiler" // NOI18N
+        "org.netbeans.modules.xml.tools.action.XMLCompiler" //!!! outdated // NOI18N
     };
 
-    // parser library relative to module directory
-    // library itself can not have a jar extension 
-    // to avoid loading it by module classloader    
-    private static final String PARSER_MODULES_LIB = "/modules/autoload/ext/xerces2.jar"; // NOI18N
+    private static final String CODENAME_BASE = "org.netbeans.modules.xml.tax"; // NOI18N
+
+    // parser library relative to installed or users directoty
+    private static final String XERCES_ARCHIVE = "modules/autoload/ext/xerces2.jar"; // NOI18N
+
+    // module.jar relative to installed or users directoty
+    private static final String MODULE_ARCHIVE = "modules/autoload/xml-tax.jar"; // NOI18N
     
     // delegating classloader
     private ClassLoader parentLoader;
@@ -51,8 +55,8 @@ public final class ParserLoader extends URLClassLoader {
     private static ParserLoader instance = null;
     
     /** Creates new ParserLoader */
-    private ParserLoader(URL library) {
-        super(new URL[] { library });
+    private ParserLoader(URL[] locations) {
+        super(locations);
         parentLoader = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
     }
 
@@ -65,31 +69,21 @@ public final class ParserLoader extends URLClassLoader {
         if (instance != null) return instance;
         
         try {
-            String prop;
-            URL xer2url;
+            InstalledFileLocator installedFileLocator = InstalledFileLocator.getDefault();
 
-            prop = System.getProperty("netbeans.user"); // NOI18N
-            xer2url = new URL("file:" + prop + PARSER_MODULES_LIB); // NOI18N
+            URL xer2url = installedFileLocator.locate(XERCES_ARCHIVE, CODENAME_BASE, false).toURL(); // NOI18N
+            if ( Util.THIS.isLoggable() ) Util.THIS.debug ("Isolated library URL=" + xer2url); // NOI18N
 
-            try {
-                // just skip netbeans home
-                xer2url.openStream();
-            } catch (IOException ex) {
-                prop = System.getProperty("netbeans.home"); // NOI18N
-                xer2url = new URL("file:" + prop + PARSER_MODULES_LIB); // NOI18N
-            }
+            // The isolating classloader itself (not parent) must also see&load interface
+            // implementation class because all subsequent classes must be loaded by the
+            // isolating classloader (not its parent that does not see isolated jar)
+            URL module = installedFileLocator.locate(MODULE_ARCHIVE, CODENAME_BASE, false).toURL(); // NOI18N
+            if ( Util.THIS.isLoggable() ) Util.THIS.debug ("Isolated module URL=" + module); // NOI18N
 
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Isolated jar URL=" + xer2url); // NOI18N
+            instance = new ParserLoader(new URL[] {xer2url, module});
 
-            instance = new ParserLoader(xer2url);
-//              URL module = instance.getClass().getProtectionDomain().getCodeSource().getLocation();            
-            URL module = org.netbeans.tax.io.XNIBuilder.class.getProtectionDomain().getCodeSource().getLocation();
-
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Isolated module URL=" + module); // NOI18N
-
-            instance.addURL(module);
         } catch (MalformedURLException ex) {
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug (ex);
+            if ( Util.THIS.isLoggable() )  Util.THIS.debug (ex);
         }
                
         return instance;
