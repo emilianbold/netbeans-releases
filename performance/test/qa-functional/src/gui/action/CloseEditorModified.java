@@ -77,7 +77,9 @@ public class CloseEditorModified extends testUtilities.PerformanceTestCase {
     }
     
     public ComponentOperator open(){
-        new CloseViewAction().performPopup(editorOperator);
+        //TODO issue 44593 new CloseViewAction().performPopup(editorOperator); 
+        new CloseViewAction().performMenu(editorOperator); 
+
         dialog = new NbDialogOperator("Question");
         return dialog;
     }

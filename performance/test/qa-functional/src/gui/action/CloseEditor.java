@@ -87,7 +87,8 @@ public class CloseEditor extends testUtilities.PerformanceTestCase {
     }
     
     public ComponentOperator open(){
-        new CloseViewAction().performPopup(new EditorOperator(fileName));
+        //TODO issue 44593 new CloseViewAction().performPopup(new EditorOperator(fileName)); 
+        new CloseViewAction().performMenu(new EditorOperator(fileName)); 
         return null;
     }
     
