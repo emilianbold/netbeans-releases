@@ -13,9 +13,11 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.BrowseFolders;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.src.ClassElement;
 
 import javax.swing.*;
 import java.awt.*;
@@ -80,5 +82,13 @@ public class Utils {
             }
         }
         return null;
+    }
+
+    public static ClassElement getBeanClass(FileObject ejbJarFile, Ejb ejb) {
+        return org.netbeans.modules.j2ee.ejbjarproject.Utils.getBeanClass(ejbJarFile, ejb);
+    }
+
+    public static void scrollToVisible(JComponent component) {
+        org.netbeans.modules.xml.multiview.Utils.scrollToVisible(component);
     }
 }

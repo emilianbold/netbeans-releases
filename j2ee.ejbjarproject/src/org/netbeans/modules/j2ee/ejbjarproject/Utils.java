@@ -15,7 +15,13 @@
 package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.io.File;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.openide.src.ClassElement;
+import org.openide.filesystems.FileObject;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
 
 public class Utils {
     
@@ -31,5 +37,18 @@ public class Utils {
             }
         }
         return classpath.toString();
+    }
+
+    public static void notifyError(Exception ex) {
+        NotifyDescriptor ndd = new NotifyDescriptor.Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
+        DialogDisplayer.getDefault().notify(ndd);
+    }
+
+    public static ClassElement getBeanClass(FileObject ejbJarFile, final Ejb ejb) {
+        EjbJarProject enterpriseProject = (EjbJarProject) FileOwnerQuery.getOwner(ejbJarFile);
+        String ejbClassName = ejb.getEjbClass();
+        ClassPath classPath = enterpriseProject.getEjbModule().getJavaSources();
+        FileObject src = classPath.findResource(ejbClassName.replace('.', '/') + ".java");
+        return ClassElement.forName(ejbClassName, src);
     }
 }

@@ -195,7 +195,7 @@ public class InnerTablePanel extends SectionInnerPanel {
         table.setPreferredSize(null);
         size.height = table.getPreferredSize().height;
         table.setPreferredSize(size);
-        org.netbeans.modules.xml.multiview.Utils.scrollToVisible(InnerTablePanel.this);
+        Utils.scrollToVisible(InnerTablePanel.this);
     }
 
     protected void editCell(final int row, final int column) {

@@ -17,9 +17,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import org.openide.filesystems.FileObject;
 
 /**
  * @author pfiala
@@ -31,18 +29,14 @@ class CmpFieldsNode extends SectionNode {
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(),
-                new CmpFieldsTableModel((Entity) key));
+        final Entity entity = (Entity) key;
+        final FileObject ejbJarFile = getSectionNodeView().getDataObject().getPrimaryFile();
+        final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(),
+                new CmpFieldsTableModel(ejbJarFile, entity));
         innerTablePanel.getEditButton().setVisible(false);
         innerTablePanel.getRemoveButton().setVisible(false);
-
-        innerTablePanel.getAddButton().setVisible(false);
-        innerTablePanel.getAddButton().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                // TODO: Add CMP Field
-            }
-        });
         return innerTablePanel;
 
     }
+
 }
