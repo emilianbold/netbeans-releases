@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -413,12 +414,26 @@ public class NonGui extends NbTopManager implements Runnable {
                         //System.setProperty("import.canceled", canceled ? "true" : "false"); // NOI18N
                         
                         // Let's use reflection
-                        File coreide = new InstalledFileLocatorImpl().locate("modules/core-ide.jar", null, false);
+                        File coreide = new InstalledFileLocatorImpl().locate("modules/core-ide.jar", null, false); // NOI18N
                         if (coreide != null) {
                             // This module is included in our distro somewhere... may or may not be turned on.
                             // Whatever - try running some classes from it anyway.
                             try {
-                                ClassLoader l = new URLClassLoader(new URL[] {Utilities.toURL(coreide)}, NonGui.class.getClassLoader());
+                                // #30502: don't forget locale variants!
+                                List urls = new ArrayList();
+                                urls.add(Utilities.toURL(coreide));
+                                File localeDir = new File(coreide.getParentFile(), "locale"); // NOI18N
+                                if (localeDir.isDirectory()) {
+                                    Iterator it = NbBundle.getLocalizingSuffixes();
+                                    while (it.hasNext()) {
+                                        String suffix = (String)it.next();
+                                        File v = new File(localeDir, "core-ide" + suffix + ".jar"); // NOI18N
+                                        if (v.isFile()) {
+                                            urls.add(Utilities.toURL(v));
+                                        }
+                                    }
+                                }
+                                ClassLoader l = new URLClassLoader((URL[])urls.toArray(new URL[urls.size()]), NonGui.class.getClassLoader());
                                 Class wizardClass = Class.forName("org.netbeans.core.upgrade.UpgradeWizard", true, l); // NOI18N
                                 Method showMethod = wizardClass.getMethod( "showWizard", new Class[] { Splash.SplashOutput.class } ); // NOI18N
 
