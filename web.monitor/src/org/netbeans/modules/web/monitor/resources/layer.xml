@@ -26,8 +26,7 @@ Microsystems, Inc. All Rights Reserved.
 
 
   <folder name="Toolbars">
-
-    <folder name="DebugFull">
+    <folder name="Debug">
 	<attr name="org-openide-actions-AddWatchAction.instance/org-netbeans-modules-web-monitor-client-MonitorAction.instance" boolvalue="true" />
        <file name="org-netbeans-modules-web-monitor-client-MonitorAction.instance"/>
     </folder>
