@@ -576,6 +576,17 @@ public class RADComponent {
       return getChangedValue (desc);
     }
     Method readMethod = desc.getReadMethod ();
+    // [PANDING] an ugly patch 
+    // java.beans.Inspector does not recognize reader for Cursor property
+    if (readMethod == null && desc.getPropertyType().equals(java.awt.Cursor.class) 
+      && java.awt.Component.class.isAssignableFrom (beanClass)) {
+      try {
+        readMethod = java.awt.Component.class.getMethod("getCursor", new Class[0]);
+      } catch (NoSuchMethodException e) {
+        // silently catch
+        e.printStackTrace();
+      }
+      }
     if (readMethod == null) {
       throw new IllegalAccessException ();
     }
@@ -1418,6 +1429,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  64   Gandalf   1.63        12/17/99 Pavel Buzek     patch for 
+ *       java.beans.Inspector error (incorrect inspection of java.awt.Cursor)
  *  63   Gandalf   1.62        12/16/99 Pavel Buzek     
  *  62   Gandalf   1.61        12/13/99 Pavel Buzek     
  *  61   Gandalf   1.60        11/26/99 Pavel Buzek     
