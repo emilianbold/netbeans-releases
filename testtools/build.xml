@@ -91,7 +91,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <ant dir="../jellytools/" target="javadoc"/>
       <zip zipfile="netbeans/docs/jelly-API.zip"
-             basedir="../jellytools/apidoc"
+             basedir="../jellytools/javadoc"
              compress="false">
       </zip>
   </target>

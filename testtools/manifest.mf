@@ -1,7 +1,7 @@
 OpenIDE-Module: org.netbeans.modules.testtools/1
 OpenIDE-Module-Name: TestTools
 OpenIDE-Module-Display-Category: Tools
-OpenIDE-Module-Specification-Version: 1.0.2
+OpenIDE-Module-Specification-Version: 1.0.3
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/testtools/mf-layer.xml
 OpenIDE-Module-Short-Description: XTest, Jemmy and Jelly technology preview module. 
