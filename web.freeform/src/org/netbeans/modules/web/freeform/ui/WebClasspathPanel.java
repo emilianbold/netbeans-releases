@@ -46,6 +46,8 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private DefaultListModel listModel;
     /** Original project folder (not nbproject folder) */
     private File projectFolder = null;
+    /** Freeform Project base folder */
+    private File nbProjectFolder;
     private File lastChosenFile = null;
     private boolean isSeparateClasspath = true;
     private boolean ignoreEvent;
@@ -296,17 +298,21 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
    
     /** Called from WizardDescriptor.Panel and ProjectCustomizer.Panel
      * to set base folder. Panel will use this for default position of JFileChooser.
-     * @param folder original project base folder
+     * @param baseFolder original project base folder
+     * @param nbProjectFolder Freeform Project base folder
      */
-    public void setProjectFolder(File folder){
-        this.projectFolder = folder;
+    public void setProjectFolders(File baseFolder, File nbProjectFolder) {
+        this.projectFolder = baseFolder;
+        this.nbProjectFolder = nbProjectFolder;
     }
     
     public String getClasspath(){
         StringBuffer sf = new StringBuffer();
-        
         for (int i = 1; i < listModel.getSize(); i++){
-            sf.append(listModel.get(i));
+            File f = new File((String)listModel.get(i));
+            String path = org.netbeans.modules.ant.freeform.spi.support.Util
+                    .relativizeLocation(projectFolder, nbProjectFolder, f);
+            sf.append(path);
             if (i < listModel.getSize()-1)
                 sf.append(File.pathSeparatorChar);
         }
@@ -320,7 +326,12 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
         listModel.clear();
         listModel.addElement(JAVA_SOURCES_CLASSPATH);
         while (ts.hasMoreTokens()){
-            listModel.addElement(ts.nextToken());
+            String path = ts.nextToken();
+            path = org.netbeans.spi.project.support.ant.PropertyUtils.resolveFile(
+                    nbProjectFolder, path).getAbsolutePath();
+            if (path != null) {
+                listModel.addElement(path);
+            }
         }
         
     }
@@ -365,8 +376,9 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
                 List l = WebProjectGenerator.getWebmodules(projectHelper, aux);
                 if (l != null){
                     WebProjectGenerator.WebModule wm = (WebProjectGenerator.WebModule)l.get(0);
+                    panel.setProjectFolders(Util.getProjectLocation(projectHelper, projectEvaluator), 
+                            FileUtil.toFile(projectHelper.getProjectDirectory()));
                     panel.setClasspath(wm.classpath);
-                    panel.setProjectFolder(FileUtil.toFile(project.getProjectDirectory()));
                     panel.updateButtons();
                 }
             }

@@ -88,7 +88,8 @@ public class WebClasspathWizardPanel implements WizardDescriptor.Panel {
         wizardDescriptor = (WizardDescriptor) settings;
         wizardDescriptor.putProperty("NewProjectWizard_Title", component.getClientProperty("NewProjectWizard_Title")); // NOI18N
         File baseFolder = (File)wizardDescriptor.getProperty(NewFreeformProjectSupport.PROP_PROJECT_LOCATION);
-        component.setProjectFolder(baseFolder);
+        File nbProjectFolder = (File)wizardDescriptor.getProperty(NewFreeformProjectSupport.PROP_PROJECT_FOLDER);
+        component.setProjectFolders(baseFolder, nbProjectFolder);
     }
 
     public void storeSettings(Object settings) {
