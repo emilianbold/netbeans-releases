@@ -1,0 +1,143 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="J2EE Cluster Installer Kit" default="build" basedir=".">
+
+  <property file="nbproject/private/private.properties"/>  
+  <property file="build.properties" />
+  
+  <property name="cluster.dir" location="enterprise1"/>
+  <property name="ismp.project" value="j2ee.xml"/>
+  <property name="installer.basename" value="NetBeansJ2EE"/>
+  
+  <target name="init" />
+  
+  <target name="set-ismp.cp" unless="ismp.cp-set">
+    <path id="ismp.cp">        
+        <pathelement path="${ismp.home}" />
+        <pathelement path="${ismp.home}/i18n" />
+        <fileset dir="${ismp.home}">
+          <include name="lib/*.jar"/>
+          <include name="ppk/*.jar"/>
+          <exclude name="lib/conversion.jar"/>
+        </fileset>        
+    </path>
+    <property name="ismp.cp-set" value="true" />
+  </target>
+
+  <target name="xsl-win32" depends="init">
+    <java classname="com.installshield.isje.ISJE" fork="true">
+      <arg value="${ismp.project}" />
+      <arg value="-xsl" />
+      <arg value="win32.xsl"/>
+      <arg value="-saveas"/>
+      <arg value="build/${ismp.project}-win32"/>
+      <classpath>
+        <path refid="ismp.cp"/>
+      </classpath>
+    </java>
+  </target>
+
+  <target name="xsl-unix" depends="init">
+    <java classname="com.installshield.isje.ISJE" fork="true">
+      <arg value="${ismp.project}" />
+      <arg value="-xsl" />
+      <arg value="unix.xsl"/>
+      <arg value="-saveas"/>
+      <arg value="build/${ismp.project}-unix"/>
+      <classpath>
+        <path refid="ismp.cp"/>
+      </classpath>
+    </java>
+  </target>
+
+  <target name="build-win32" depends="init, compile, xsl-win32">
+    <java classname="com.installshield.isje.ISJE" fork="true">
+      <arg value="build/${ismp.project}-win32" />
+      <arg value="-build" />
+      <arg value="-alias"/>
+      <arg value="cluster.basedir=${basedir}"/>
+      <arg value="-alias"/>
+      <arg value="cluster.dir=${cluster.dir}"/>      
+      <classpath>
+        <pathelement path="build/classes" />      
+        <path refid="ismp.cp"/>
+      </classpath>
+    </java>
+    <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>    
+  </target>
+
+  <target name="build-unix" depends="init, compile, xsl-unix">
+    <java classname="com.installshield.isje.ISJE" fork="true">
+      <arg value="build/${ismp.project}-unix" />
+      <arg value="-build" />
+      <arg value="-alias"/>
+      <arg value="cluster.basedir=${basedir}"/>
+      <arg value="-alias"/>
+      <arg value="cluster.dir=${cluster.dir}"/>      
+      <classpath>
+        <pathelement path="build/classes" />      
+        <path refid="ismp.cp"/>
+      </classpath>
+    </java>
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}.jar"/>
+    <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
+  </target>
+  
+  <target name="build" depends="init, build-win32, build-unix" description="build the installers" />
+
+  <target name="compile" depends="init" description="compile custom beans and panels">
+    <mkdir dir="build/classes"/>
+    
+    <javac destdir="build/classes" srcdir="src" source="1.4" target="1.4" debug="true" deprecation="true">
+      <classpath>
+        <path refid="ismp.cp"/>
+      </classpath>
+    </javac>
+    <copy todir="build/classes">
+        <fileset dir="src">
+            <include name="**/*.properties"/>
+        </fileset>
+    </copy>
+  </target>
+
+  <target name="run" depends="init" description="run the installer">
+    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${basedir}/dist/${installer.basename}-win.exe" failonerror="yes"/>
+    <exec os="Linux"  executable="${basedir}/dist/${installer.basename}-linux.bin" failonerror="yes"/>
+  </target>
+    
+  <target name="test" depends="init, compile" description="run the installer in debug mode">
+    <java classname="run" fork="true">
+      <sysproperty key="is.debug" value="true" />
+      <classpath>
+        <pathelement path="build/classes" />
+        <pathelement path="dist/${installer.basename}.jar"/>
+      </classpath>
+    </java>
+  </target>
+  
+  <target name="clean" depends="init" description="Clean all build products and temp/backup files.">
+    <delete>
+      <fileset dir=".">
+        <include name="**/*~"/>
+      </fileset>
+    </delete>
+    <delete dir="dist"/>
+    <delete dir="build"/>
+  </target>
+  
+  <target name="ismp" depends="init, compile" description="launch ISMP IDE">
+    <exec os="Linux" command="sh -c &quot;${ismp.home}/ismp ${ismp.project} &amp;&quot;" />
+  </target>
+  
+</project>
