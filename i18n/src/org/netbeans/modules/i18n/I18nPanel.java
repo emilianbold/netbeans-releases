@@ -214,14 +214,16 @@ public class I18nPanel extends JPanel {
     
     /** Enables/disables buttons based on the contents of the dialog. */
     private void buttonsEnableDisable() {
-        if (contentsShown) enableButtons(ALL_BUTTONS);
-        else  enableButtons(CANCEL_BUTTON | HELP_BUTTON);
+        if (contentsShown) {
+            enableButtons(ALL_BUTTONS);
+            boolean isBundle = (i18nString != null) && (i18nString.getSupport().getResourceHolder().getResource() != null);
+            boolean keyEmpty = (getI18nString()==null || 
+                                getI18nString().getKey()==null || 
+                                getI18nString().getKey().trim().length()==0);
+            replaceButton.setEnabled(isBundle && !keyEmpty);
+        } else  
+            enableButtons(CANCEL_BUTTON | HELP_BUTTON);
         
-        boolean isBundle = (i18nString != null) && (i18nString.getSupport().getResourceHolder().getResource() != null);
-        boolean keyEmpty = (getI18nString()==null || 
-                            getI18nString().getKey()==null || 
-                            getI18nString().getKey().trim().length()==0);
-        replaceButton.setEnabled(isBundle && !keyEmpty);
     }
 
     public void setDefaultResource(DataObject dataObject) {
