@@ -11,81 +11,110 @@
 	<mapID target="j2ee_about" url="j2ee_about.html" />
 	<mapID target="tbd" url="tbd.html" />
 
-<!-- Start of web apps help -->
-	<mapID target="intro" url="web/overvw/Intro.html" />
-	<mapID target="proj_creating" url="web/overvw/proj_creating.html" />
-	<mapID target="concepts_jspsyn" url="web/concepts/jspsyntax.html" />
-	<mapID target="concepts_deploydes" url="web/concepts/deployd.html" />
-	<mapID target="concepts_jsp" url="web/concepts/jsp.html" />
-	<mapID target="concepts_servlet" url="web/concepts/servlet.html" />
-	<mapID target="concepts_tldfile" url="web/concepts/tldfile.html" />
-	<mapID target="concepts_war" url="web/concepts/concepts_war.html" />
-	<mapID target="concepts_filter" url="web/concepts/filter.html" />
-	<mapID target="concepts_listener" url="web/concepts/listener.html" />
-	<mapID target="spec_version" url="web/concepts/spec_version.html" />
-	<mapID target="concepts_html" url="web/concepts/html.html" />
-	<mapID target="taglib_createtaglib" url="web/taglib/createtaglib.html" />
-	<mapID target="edit_taghandler" url="web/taglib/edit_taghandler.html" />
-	<mapID target="taglib_packlib" url="web/taglib/packlib.html" />
-	<mapID target="ctx_taglibcust" url="web/taglib/ctx_taglibcust.html" />
-	<mapID target="ctx_tagcust" url="web/taglib/ctx_tagcust.html" />
-	<mapID target="ctx_repaddto" url="web/taglibUI/ctx_repaddto.html" />
-	<mapID target="tagsupport_fromfilesys" url="web/taglibUI/addfilesys.html" />
-	<mapID target="jsp_create" url="web/create_jsp/jsp_create.html" />
-	<mapID target="jsp_edit" url="web/create_jsp/jsp_edit.html" />
-	<mapID target="jsp_queryparams" url="web/create_jsp/jsp_queryparams.html" />
-	<mapID target="jsp_validate" url="web/create_jsp/jsp_validate.html" />
-	<mapID target="jsp_servletview" url="web/create_jsp/jsp_servletview.html" />
-	<mapID target="jsp_debug" url="web/jsp/jsp_debug.html" />
-	<mapID target="jsp_encode" url="web/create_jsp/jsp_encoding.html" />
-	<mapID target="servlet_create" url="web/servlet/servlet_create.html" />	
-	<mapID target="servlet_edit" url="web/servlet/servlet_edit.html" />	
-	<mapID target="webmod_addservlet" url="web/webmod/mod_addservlet.html" />
-	<mapID target="webmod_usetags" url="web/webmod/mod_usetags.html" />
-	<mapID target="mod_framework" url="web/webmod/mod_framework.html" />
-	<mapID target="mod_setstruts" url="web/webmod/mod_setstruts.html" />
-	<mapID target="mod_addstruts" url="web/webmod/mod_addstruts.html" />
-	<mapID target="mod_setjsf" url="web/webmod/mod_setjsf.html" />
-	<mapID target="mod_addjsf" url="web/webmod/mod_addjsf.html" />
-	<mapID target="webmod_editdd" url="web/webmod/mod_editdd.html" />
-	<mapID target="webmod_placefiles" url="web/webmod/mod_placefiles.html" />
-	<mapID target="webmod_struct" url="web/concepts/webmod_struct.html" />
-	<mapID target="webmod_techsupport" url="web/concepts/webmod_techsupport.html" />
-	<mapID target="webmod_idesupport" url="web/concepts/webmod_idesupport.html" />
-	<mapID target="webmod_servconfig" url="web/webmod/mod_servconfig.html" />
-	<mapID target="webmod_server_set" url="web/webmod/mod_server_set.html" />
-	<mapID target="webmod_packagewar" url="web/webmod/mod_packagewar.html" />
-	<mapID target="webmod_xml" url="web/webmod/mod_xml.html" />
-	<mapID target="webmod_browser" url="web/webmod/mod_browser.html" />
-	<mapID target="webmod_addtglb" url="web/webmod/mod_addtglb.html" />
-	<mapID target="webmod_jstl" url="web/webmod/mod_jstl.html" />
-	<mapID target="webmod_addcompapplet" url="web/webmod/mod_addcompapplet.html" />
-	<mapID target="webmod_addapplet" url="web/webmod/mod_addapplet.html" />
-	<mapID target="webmod_runapplet" url="web/webmod/mod_runapplet.html" />
-	<mapID target="webmod_addtagf" url="web/webmod/mod_tagf_add.html" />
-	<mapID target="webmod_abouttagf" url="web/webmod/mod_tagf_about.html" />
-	<mapID target="war_delete" url="web/warpkg/war_delete.html" />
-	<mapID target="war_xtrafiles" url="web/warpkg/war_xtrafiles.html" />
-	<mapID target="mod_process" url="web/overvw/mod_process.html" />
-	<mapID target="mod_quickref" url="web/overvw/mod_quickref.html" />
-	<mapID target="filter_addtodd" url="web/servlet/filter_addtodd.html" />
-	<mapID target="filter_create" url="web/servlet/filter_create.html" />
-	<mapID target="filter_run" url="web/servlet/filter_run.html" />
-	<mapID target="listener_run" url="web/servlet/listener_run.html" />
-	<mapID target="listen_addtodd" url="web/servlet/listen_addtodd.html" />
-	<mapID target="listen_create" url="web/servlet/listen_create.html" />
-	<mapID target="ieglossary_URL_query_string" url="web/glossary/URL_query_string.html" />
-	<mapID target="debug.attachvm.window" url="debug/debug_remote.html" />
-	<mapID target="run_jsp" url="web/create_jsp/jsp_run.html" />
-	<mapID target="run_servlet" url="web/servlet/servlet_run.html" />
-	<mapID target="run_webapp" url="web/webmod/mod_singletest.html" />
-        <mapID target="use_dbcp_in_jsp" url="nbdocs:/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html" />
-	<mapID target="password_tomcat_manager" url="nbdocs:/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_edit_tomcatuser.html" />
-	<mapID target="deploying_tasks" url="web/webmod/run_web_quickref.html" />
-	<mapID target="config_webapp_about" url="web/webmod/config_webapp_about.html" />
-	<mapID target="proj_webfree_debug" url="nbdocs:/org/netbeans/modules/usersguide/project/proj_webfree_debug.html" />
-	<mapID target="add_web_to_j2ee_app" url="web/warpkg/add_web_to_j2ee_app.html" /> 
+<!-- Start of "Developing Web Applications" help -->
 
+        <!-- Start of "About" section -->
+        <mapID target="about_webapps" url="web/about/about_webapps.html" />
+        <mapID target="webapps_process" url="web/about/webapps_process.html" />
+        <mapID target="webapps_quickref" url="web/about/webapps_quickref.html" />
+	<mapID target="webapps_idesupport" url="web/about/webapps_idesupport.html" />
+	<mapID target="webapps_techsupport" url="web/about/webapps_techsupport.html" />
+	<!-- End of "About" section -->
+
+        <!-- Start of "Create" section -->
+		<!-- Start of "Create/About" subsection -->
+		<mapID target="about_create_webapps" url="web/create/about/about_create_webapps.html" />
+		<mapID target="about_struct_webapps" url="web/create/about/about_struct_webapps.html" />
+		<mapID target="create_webapps_proj" url="web/create/about/create_webapps_proj.html" />
+		<mapID target="upgrade_to_j2ee14" url="web/create/about/upgrade_to_j2ee14.html" />
+		<!-- End of "Create/About" subsection -->
+	        <!-- Start of "Create/Applet" subsection -->
+		<mapID target="applet_create" url="web/create/applet/applet_create.html" />
+		<mapID target="applet_addtowar" url="web/create/applet/applet_addtowar.html" />
+		<mapID target="applet_run" url="web/create/applet/applet_run.html" />
+		<!-- End of "Create/Applet" subsection -->
+		<!-- Start of "Create/Filter" subsection -->
+       		<mapID target="about_filter" url="web/create/filter/about_filter.html" />
+		<mapID target="filter_addtodd" url="web/create/filter/filter_addtodd.html" />
+		<mapID target="filter_create" url="web/create/filter/filter_create.html" />
+		<mapID target="filter_run" url="web/create/filter/filter_run.html" />
+		<!-- End of "Create/Filter" subsection -->
+		<!-- Start of "Create/HTML" subsection -->
+		<mapID target="html_create" url="web/create/html/html_create.html" />
+		<!-- End of "Create/HTML" subsection -->
+		<!-- Start of "Create/JSP" subsection -->
+		<mapID target="about_jsp_syntax" url="web/create/jsp/about_jsp_syntax.html" />
+		<mapID target="about_jsp_technology" url="web/create/jsp/about_jsp_technology.html" />
+		<mapID target="jsp_compile" url="web/create/jsp/jsp_compile.html" />
+        	<mapID target="jsp_create" url="web/create/jsp/jsp_create.html" />
+		<mapID target="jsp_edit" url="web/create/jsp/jsp_edit.html" />
+		<mapID target="jsp_queryparams" url="web/create/jsp/jsp_queryparams.html" />
+		<mapID target="jsp_run" url="web/create/jsp/jsp_run.html" />
+		<mapID target="jsp_servletview" url="web/create/jsp/jsp_servletview.html" />
+		<mapID target="jsp_usetaglib" url="web/create/jsp/jsp_usetaglib.html" />
+		<mapID target="jsp_encoding" url="web/create/jsp/jsp_encoding.html" />
+		<!-- End of "Create/JSP" subsection -->
+		<!-- Start of "Create/Listener" subsection -->
+       		<mapID target="about_listener" url="web/create/listener/about_listener.html" />
+		<mapID target="listener_addtodd" url="web/create/listener/listener_addtodd.html" />
+		<mapID target="listener_create" url="web/create/listener/listener_create.html" />
+		<mapID target="listener_run" url="web/create/listener/listener_run.html" />
+		<!-- End of "Create/Listener" subsection -->
+	        <!-- Start of "Create/Servlet" subsection -->
+       		<mapID target="about_servlet" url="web/create/servlet/about_servlet.html" />
+		<mapID target="servlet_addtowar" url="web/create/servlet/servlet_addtowar.html" />
+		<mapID target="servlet_create" url="web/create/servlet/servlet_create.html" />
+		<mapID target="servlet_run" url="web/create/servlet/servlet_run.html" />
+		<mapID target="servlet_edit" url="web/create/servlet/servlet_edit.html" />
+		<!-- End of "Create/Servlet" subsection -->
+		<!-- Start of "Create/Tag" subsection -->
+		<mapID target="about_jstl" url="web/create/tag/about/about_jstl.html" />
+		<mapID target="about_taglib" url="web/create/tag/about/about_taglib.html" />
+		<mapID target="about_framework" url="web/create/tag/framework/about_framework.html" />
+		<mapID target="framework_jsf_create" url="web/create/tag/framework/framework_jsf_create.html" />
+		<mapID target="framework_jsf_add" url="web/create/tag/framework/framework_jsf_add.html" />
+		<mapID target="framework_struts_create" url="web/create/tag/framework/framework_struts_create.html" />
+		<mapID target="framework_struts_add" url="web/create/tag/framework/framework_struts_add.html" />
+		<mapID target="about_tagfile" url="web/create/tag/tagfile/about_tagfile.html" />
+		<mapID target="tagfile_create" url="web/create/tag/tagfile/tagfile_create.html" />
+		<mapID target="taghandler_create" url="web/create/tag/taghandler/taghandler_create.html" />
+		<mapID target="taghandler_edit" url="web/create/tag/taghandler/taghandler_edit.html" />
+		<mapID target="taglib_addtowar" url="web/create/tag/taglib/taglib_addtowar.html" />
+		<mapID target="taglib_manage" url="web/create/tag/taglib/taglib_manage.html" />
+		<mapID target="taglib_create_separate" url="web/create/tag/taglib/taglib_create_separate.html" />
+		<mapID target="about_tld" url="web/create/tag/tld/about_tld.html" />
+		<mapID target="tld_edit" url="web/create/tag/tld/tld_edit.html" />
+		<mapID target="tld_create" url="web/create/tag/tld/tld_create.html" />
+		<!-- End of "Create" section -->
+
+	<!-- Start of "Configure" section -->
+        <mapID target="about_webapp_configure" url="web/configure/about_webapp_configure.html" />
+	<mapID target="configure_webapp_dd" url="web/configure/configure_webapp_dd.html" />
+	<!-- End of "Configure" section -->
+
+	<!-- Start of "Build" section -->
+        <mapID target="about_build" url="web/build/about_build.html" />
+	<mapID target="build_warfile" url="web/build/build_warfile.html" />
+	<mapID target="build_externalresources" url="web/build/build_externalresource.html" />
+	<mapID target="build_remove" url="web/build/build_remove.html" />
+	<!-- End of "Build" section -->
+
+	<!-- Start of "Deploy" section -->
+        <mapID target="about_deploy" url="web/deploy/about_deploy.html" />
+        <mapID target="deploy_quickref" url="web/deploy/deploy_quickref.html" />
+	<mapID target="deploy_webapp" url="web/deploy/deploy_webapp.html" />
+	<mapID target="deploy_changebrowser" url="web/deploy/deploy_changebrowser.html" />
+	<mapID target="deploy_changeserver" url="web/deploy/deploy_changeserver.html" />
+	<!-- End of "Deploy" section -->
+
+	<!-- Start of "Debug" section -->
+        <mapID target="about_debug" url="web/debug/about_debug.html" />
+	<!-- End of "Debug" section -->
+
+<!-- End of "Developing Web Applications" help -->
+
+<!-- Start of "Developing Web Services" help -->
+	
 	<mapID target="about_web_service" url="web/webservice/about_jwsd.html" />
 	<mapID target="about_wsdl" url="web/webservice/about_wsdl.html" />
 	<mapID target="about_jwsd_architecture" url="web/webservice/about_jwsd_architecture.html" />
@@ -116,7 +145,9 @@
 	<mapID target="about_wsc" url="web/webserviceclient/about_wsc.html" />
 	<mapID target="call_ws_operation" url="web/webserviceclient/call_ws_operation.html" />
 	<mapID target="config_ws_about" url="web/webservice/config_ws_about.html" />
-        <mapID target="config_ws_dd" url="web/webservice/config_ws_dd.html" />
+	<mapID target="config_ws_dd" url="web/webservice/config_ws_dd.html" />
+
+<!-- End of "Developing Web Services" help -->
 	
 <!-- Standard Web Project Properties dialog box-->
 <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerGeneral" url="web/overvw/WebCustomizerGeneral.html" />
