@@ -25,27 +25,24 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.*;
 import javax.swing.plaf.BorderUIResource;
 import javax.swing.plaf.BorderUIResource.BevelBorderUIResource;
 import javax.swing.table.*;
 
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
-import org.openide.windows.Workspace;
 
 
 /**
  * @author  Petr Jiricka
  */
 public class BundleEditPanel extends JPanel {
+    
     /** PropertiesDataObject this panel presents. */
     private PropertiesDataObject obj;
 
@@ -55,10 +52,6 @@ public class BundleEditPanel extends JPanel {
     /** Reference to column selection model for managing editing cells, together with #rowSelections.*/
     private ListSelectionModel columnSelections;
     
-    /** Helper listener used in <code>setColumnWidths</code> method only. 
-     * @see #setColumnWidths */
-    private PropertyChangeListener workspaceListener;
-
     /** Generated serialized version UID. */
     static final long serialVersionUID =-843810329041244483L;
 
@@ -197,9 +190,14 @@ public class BundleEditPanel extends JPanel {
 
         };
 
-        // this subclass of Default column model is provided due correct set of column widths 
-        // see the JTable and horizontal scrolling problem in Java Discussion Forum
-        theTable.setColumnModel(new DefaultTableColumnModel() {
+        // This subclass of Default column model is provided due correct set of column widths,
+        // see the JTable and horizontal scrolling problem in Java Discussion Forum.
+        table.setColumnModel(new DefaultTableColumnModel() {
+            
+            /** Helper listener. */
+            private AncestorListener ancestorListener;
+
+            /** Overrides superclass method. */
             public void addColumn(TableColumn aColumn) {
                 if (aColumn == null) {
                     throw new IllegalArgumentException("Object is null"); // NOI18N
@@ -209,9 +207,7 @@ public class BundleEditPanel extends JPanel {
                 aColumn.addPropertyChangeListener(this);
 
                 // this method call is only difference with overriden superclass method
-                setColumnWidths();
-                
-                recalcWidthCache();
+                adjustColumnWidths();
                 
                 // set header renderer this 'ugly' way (for each column),
                 // in jdk1.2 is not possible to set default renderer
@@ -219,22 +215,100 @@ public class BundleEditPanel extends JPanel {
                 aColumn.setHeaderRenderer(headerRenderer);
                 
                 // Post columnAdded event notification
-                fireColumnAdded(new javax.swing.event.TableColumnModelEvent(this, 0,
+                    fireColumnAdded(new TableColumnModelEvent(this, 0,
                     getColumnCount() - 1));
+            }
+
+            /** Helper method adjusting the table according top component or mode which contains it, the
+             * minimal width of column is 1/10 of screen width. */
+            private void adjustColumnWidths() {
+                // The least initial width of column (1/10 of screen witdh).
+                int columnWidth = Toolkit.getDefaultToolkit().getScreenSize().width/10;
+
+                // Try to set widths according parent (viewport) width.
+                int totalWidth = 0;
+                TopComponent tc = (TopComponent)SwingUtilities.getAncestorOfClass(TopComponent.class, table);
+                if(tc != null) {
+                    totalWidth = tc.getBounds().width;
+                } else {
+                    if(ancestorListener == null) {
+                        table.addAncestorListener(ancestorListener = new AncestorListener() {
+                            /** If the ancestor is TopComponent adjustColumnWidths. */
+                            public void ancestorAdded(AncestorEvent evt) {
+                                if(evt.getAncestor() instanceof TopComponent) {
+                                    adjustColumnWidths();
+                                    table.removeAncestorListener(ancestorListener);
+                                    ancestorListener = null;
+                                }
+                            }
+
+                            /** Does nothing. */
+                            public void ancestorMoved(AncestorEvent evt) {
+                            }
+
+                            /** Does nothing. */
+                            public void ancestorRemoved(AncestorEvent evt) {
+                            }
+                        });
+                    }
+                }
+
+                // Decrease of insets of scrollpane and insets set in layout manager.
+                // Note: Layout constraints hardcoded instead of getting via method call -> 
+                // keep consistent with numbers in initComponents method.
+                totalWidth -= scrollPane.getInsets().left + scrollPane.getInsets().right + 12 + 11;
+
+                // Helper variable for keeping additional pixels which remains after division.
+                int remainder = 0;
+                
+                // If calculations were succesful try to set the widths in case calculated width
+                // for one column is not less than 1/10 of screen width.
+                if(totalWidth > 0) {
+                    int computedColumnWidth = totalWidth / table.getColumnCount();
+                    if(computedColumnWidth > columnWidth) {
+                        columnWidth = computedColumnWidth - table.getColumnModel().getColumnMargin();
+                        remainder = totalWidth % table.getColumnCount();
+                    }
+                }
+                
+                // Set the column widths.
+                for (int i = 0; i < table.getColumnCount(); i++) {
+                    TableColumn column = table.getColumnModel().getColumn(i);
+                    
+                    // Add remainder to first column.
+                    if(i==0) {
+                        // It is necessary to set both 'widths', see javax.swing.TableColumn.
+                        column.setPreferredWidth(columnWidth + remainder);
+                        column.setWidth(columnWidth + remainder); 
+                    } else {                    
+                        // It is necessary to set both 'widths', see javax.swing.TableColumn.
+                        column.setPreferredWidth(columnWidth);
+                        column.setWidth(columnWidth);
+                    }
+                }
+                
+                // Recalculate total column width.
+                recalcWidthCache();
+
+                // Revalidate table so the widths will fit properly.
+                table.revalidate();
+
+                // Repaint header afterwards. Seems stupid but necessary.
+                table.getTableHeader().repaint();
             }
         });
         
         // Sets table model.
-        theTable.setModel(ptm);
+        table.setModel(ptm);
 
         // table cell editor
         JTextField textField = new JTextField();
         textField.setBorder(new LineBorder(Color.black));
-        theTable.setDefaultEditor(PropertiesTableModel.StringPair.class,
+        table.setDefaultEditor(PropertiesTableModel.StringPair.class,
             new PropertiesTableCellEditor(textField, textComment, textValue));
 
         // set renderer
-        theTable.setDefaultRenderer(PropertiesTableModel.StringPair.class, new DefaultTableCellRenderer() {
+        table.setDefaultRenderer(PropertiesTableModel.StringPair.class, new DefaultTableCellRenderer() {
             public Component getTableCellRendererComponent(JTable table,
                     Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
@@ -267,9 +341,9 @@ public class BundleEditPanel extends JPanel {
                 super.paintComponent(g);
 
                 // If there is a highlihgt flag set do additional drawings.
-                if(FindPerformer.getFindPerformer(BundleEditPanel.this.theTable).isHighlightSearch()) {
+                if(FindPerformer.getFindPerformer(BundleEditPanel.this.table).isHighlightSearch()) {
                     String text = getText();
-                    String findString = FindPerformer.getFindPerformer(BundleEditPanel.this.theTable).getFindString();
+                    String findString = FindPerformer.getFindPerformer(BundleEditPanel.this.table).getFindString();
 
                     // If there is a findString and the cell could contain it go ahead.
                     if(text != null && text.length()>0 && findString != null && findString.length()>0) {
@@ -298,7 +372,7 @@ public class BundleEditPanel extends JPanel {
         });
 
         // selection listeners
-        rowSelections = theTable.getSelectionModel();
+        rowSelections = table.getSelectionModel();
 
         rowSelections.addListSelectionListener(
             new ListSelectionListener() {
@@ -312,7 +386,7 @@ public class BundleEditPanel extends JPanel {
                 }
             });
         
-        columnSelections = theTable.getColumnModel().getSelectionModel();
+        columnSelections = table.getColumnModel().getSelectionModel();
         columnSelections.addListSelectionListener(
             new ListSelectionListener() {
                 public void valueChanged(ListSelectionEvent e) {
@@ -326,7 +400,7 @@ public class BundleEditPanel extends JPanel {
             });
             
         // property change listener - listens to editing state of the table
-        theTable.addPropertyChangeListener(new PropertyChangeListener() {
+        table.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals("tableCellEditor")) { // NOI18N
                     updateEnabled();
@@ -335,10 +409,13 @@ public class BundleEditPanel extends JPanel {
         });
 
         // listens on clikcs on table header, detects column and sort accordingly to chosen one
-        theTable.getTableHeader().addMouseListener(new MouseAdapter() {
+        table.getTableHeader().addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                TableColumnModel colModel = theTable.getColumnModel();
+                TableColumnModel colModel = table.getColumnModel();
                 int columnModelIndex = colModel.getColumnIndexAtX(e.getX());
+                // No column was clicked.
+                if(columnModelIndex < 0)
+                    return;
                 int modelIndex = colModel.getColumn(columnModelIndex).getModelIndex();
                 // not detected column
                 if (modelIndex < 0)
@@ -346,81 +423,18 @@ public class BundleEditPanel extends JPanel {
                 obj.getBundleStructure().sort(modelIndex);
             }
         });
-    } // End fo constructor.
+    } // End of constructor.
+
     
-
-    /** 
-    * Calculates the initial widths of columns of the table component.
-    */
-    private void setColumnWidths() {
-        // The least initial width of column (1/10 of screen witdh).
-        int columnWidth = Toolkit.getDefaultToolkit().getScreenSize().width/10;        
-
-        // Try to set widths according parent (viewport) width.
-        int totalWidth = 0;
-        TopComponent tc = (TopComponent)SwingUtilities.getAncestorOfClass(TopComponent.class, theTable);
-        if(tc != null)
-            totalWidth = tc.getBounds().width - scrollPane.getInsets().left - scrollPane.getInsets().right;
-        
-        // If previous was not succesful try to set width according EDITOR_MODE width.
-        if(totalWidth == 0) {
-            final Workspace currWS = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
-            Mode editorMode = currWS.findMode(CloneableEditorSupport.EDITOR_MODE);
-            if(editorMode != null) {
-                totalWidth = editorMode.getBounds().width;
-            } else {
-                // Again one ugly trick to set columns.
-                // This is used when IDE starts and one table was opened last time.
-                // It has to determine its size from Mode but it was not created yet.
-                // Therefore we have to listen on creation of the mode and just then 
-                // set the columns. It should work properly and the set of columns 
-                // should succed before the table appears on the screen.
-                currWS.addPropertyChangeListener(WeakListener.propertyChange(
-                    workspaceListener = new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            if(evt.getPropertyName().equals(Workspace.PROP_MODES)) {
-                                if(currWS.findMode(CloneableEditorSupport.EDITOR_MODE) != null) {
-                                    // Finally set the columns from Mode.
-                                    setColumnWidths();
-                                    // Causes removing listener.
-                                    BundleEditPanel.this.workspaceListener = null;
-                                }
-                            }
-                        }
-                    },
-                    currWS)
-                );
-            }
-        }
-        
-        // If calculations were succesful try to set the widths in case calculated width
-        // for one column is not less than 1/10 of screen width.
-        if(totalWidth != 0) {
-            int computedColumnWidth = totalWidth / theTable.getColumnCount();
-            if(computedColumnWidth > columnWidth)
-                columnWidth = computedColumnWidth;
-        }
-        
-        // set the column widths
-        for (int i = 0; i < theTable.getColumnCount(); i++) {
-            TableColumn column = theTable.getColumnModel().getColumn(i);
-            
-            // It is necessary to set both 'widths', see javax.swing.TableColumn
-            column.setPreferredWidth(columnWidth);
-            column.setWidth(columnWidth);
-        }
-
-        // Revalidate table so the widths will fit properly.
-        theTable.revalidate();
-    }
-
-    void stopEditing() {
-        if (!theTable.isEditing()) return;
-        TableCellEditor cellEdit = theTable.getCellEditor();
+    /** Stops editing if editing is in run. */
+    private void stopEditing() {
+        if (!table.isEditing()) return;
+        TableCellEditor cellEdit = table.getCellEditor();
         if (cellEdit != null)
             cellEdit.stopCellEditing();
     }
 
+    /** Selection changed event handler. */
     private void selectionChanged() {
         // label for the key/value
         if (columnSelections.isSelectionEmpty() || (columnSelections.getMaxSelectionIndex() > 0))
@@ -440,29 +454,29 @@ public class BundleEditPanel extends JPanel {
         if (rowSelections.isSelectionEmpty() || columnSelections.isSelectionEmpty() ||
                 rowSelections.getMinSelectionIndex()    != rowSelections.getMaxSelectionIndex() ||
                 columnSelections.getMinSelectionIndex() != columnSelections.getMaxSelectionIndex()) {
-            if (!theTable.isEditing()) {
+            if (!table.isEditing()) {
                 textComment.setText("");
                 textValue.setText("");
             }
         } else {
-            if (!theTable.isEditing()) {
+            if (!table.isEditing()) {
                 PropertiesTableModel.StringPair sp =
-                    (PropertiesTableModel.StringPair)theTable.getModel().getValueAt(rowSelections.getMinSelectionIndex(),
+                    (PropertiesTableModel.StringPair)table.getModel().getValueAt(rowSelections.getMinSelectionIndex(),
                             columnSelections.getMinSelectionIndex());
                 textComment.setText(sp.getComment());
                 textValue.setText(sp.getValue());
 
-                //          boolean edit = theTable.editCellAt(rowSelections.getMinSelectionIndex(),
+                //          boolean edit = table.editCellAt(rowSelections.getMinSelectionIndex(),
                 //                                           columnSelections.getMinSelectionIndex());
             }
 
             // the selection is ok - set cell editable if:
             // 1) it is not going to be edited as a search result (client property TABLE_SEARCH_RESULT)
             // 2) and if it is not already editing this field
-            if (theTable.getClientProperty(FindPerformer.TABLE_SEARCH_RESULT) == null 
-                && (theTable.getEditingRow() != rowSelections.getMinSelectionIndex()
-                || theTable.getEditingColumn() != columnSelections.getMinSelectionIndex()) ) {
-                    theTable.editCellAt(rowSelections.getMinSelectionIndex(), columnSelections.getMinSelectionIndex());
+            if (table.getClientProperty(FindPerformer.TABLE_SEARCH_RESULT) == null 
+                && (table.getEditingRow() != rowSelections.getMinSelectionIndex()
+                || table.getEditingColumn() != columnSelections.getMinSelectionIndex()) ) {
+                    table.editCellAt(rowSelections.getMinSelectionIndex(), columnSelections.getMinSelectionIndex());
             }
         }
     }
@@ -470,11 +484,11 @@ public class BundleEditPanel extends JPanel {
     /** Updates the enabled status of the fields */
     private void updateEnabled() {
         // always edit value
-        textValue.setEditable(theTable.isEditing());
-        textValue.setEnabled(theTable.isEditing());
+        textValue.setEditable(table.isEditing());
+        textValue.setEnabled(table.isEditing());
         // sometimes edit the comment
-        if (theTable.isEditing()) {
-            PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)theTable.getCellEditor().getCellEditorValue();
+        if (table.isEditing()) {
+            PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)table.getCellEditor().getCellEditorValue();
             textComment.setEditable(sp.isCommentEditable());
             textComment.setEnabled(sp.isCommentEditable());
         } else {
@@ -485,7 +499,7 @@ public class BundleEditPanel extends JPanel {
 
     /** Returns the main table with all values */
     public JTable getTable() {
-        return theTable;
+        return table;
     }
 
     /** Initializes #settings variable. */
@@ -526,58 +540,55 @@ public class BundleEditPanel extends JPanel {
      * always regenerated by the FormEditor.
      */
     private void initComponents() {//GEN-BEGIN:initComponents
-        jPanel1 = new javax.swing.JPanel();
+        tablePanel = new javax.swing.JPanel();
         scrollPane = new javax.swing.JScrollPane();
-        theTable = new javax.swing.JTable();
-        jPanel2 = new javax.swing.JPanel();
+        table = new javax.swing.JTable();
+        valuePanel = new javax.swing.JPanel();
         commentLabel = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         textComment = new javax.swing.JTextArea();
         valueLabel = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
         textValue = new javax.swing.JTextArea();
-        jPanel3 = new javax.swing.JPanel();
+        buttonPanel = new javax.swing.JPanel();
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
-        jPanel4 = new javax.swing.JPanel();
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
         
-        jPanel1.setLayout(new java.awt.GridBagLayout());
+        tablePanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints2;
         
         
-          theTable.setCellSelectionEnabled(true);
-            theTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-            scrollPane.setViewportView(theTable);
+          table.setCellSelectionEnabled(true);
+            table.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+            scrollPane.setViewportView(table);
             
             gridBagConstraints2 = new java.awt.GridBagConstraints();
-          gridBagConstraints2.gridwidth = 0;
-          gridBagConstraints2.gridheight = 0;
           gridBagConstraints2.fill = java.awt.GridBagConstraints.BOTH;
-          gridBagConstraints2.insets = new java.awt.Insets(8, 8, 8, 8);
+          gridBagConstraints2.insets = new java.awt.Insets(12, 12, 0, 11);
           gridBagConstraints2.weightx = 1.0;
           gridBagConstraints2.weighty = 1.0;
-          jPanel1.add(scrollPane, gridBagConstraints2);
+          tablePanel.add(scrollPane, gridBagConstraints2);
           
           
         gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridwidth = 0;
-        gridBagConstraints1.gridheight = -1;
+        gridBagConstraints1.gridwidth = 2;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints1.weightx = 1.0;
         gridBagConstraints1.weighty = 1.0;
-        add(jPanel1, gridBagConstraints1);
+        add(tablePanel, gridBagConstraints1);
         
         
-        jPanel2.setLayout(new java.awt.GridBagLayout());
+        valuePanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints3;
         
         commentLabel.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_CommentLabel"));
           gridBagConstraints3 = new java.awt.GridBagConstraints();
-          gridBagConstraints3.insets = new java.awt.Insets(0, 8, 0, 8);
-          gridBagConstraints3.anchor = java.awt.GridBagConstraints.WEST;
-          jPanel2.add(commentLabel, gridBagConstraints3);
+          gridBagConstraints3.fill = java.awt.GridBagConstraints.HORIZONTAL;
+          gridBagConstraints3.insets = new java.awt.Insets(11, 11, 0, 0);
+          gridBagConstraints3.anchor = java.awt.GridBagConstraints.NORTHWEST;
+          valuePanel.add(commentLabel, gridBagConstraints3);
           
           
         
@@ -588,20 +599,21 @@ public class BundleEditPanel extends JPanel {
             jScrollPane2.setViewportView(textComment);
             
             gridBagConstraints3 = new java.awt.GridBagConstraints();
-          gridBagConstraints3.gridwidth = 0;
           gridBagConstraints3.fill = java.awt.GridBagConstraints.BOTH;
-          gridBagConstraints3.insets = new java.awt.Insets(0, 0, 8, 0);
+          gridBagConstraints3.insets = new java.awt.Insets(11, 11, 0, 0);
           gridBagConstraints3.weightx = 1.0;
           gridBagConstraints3.weighty = 1.0;
-          jPanel2.add(jScrollPane2, gridBagConstraints3);
+          valuePanel.add(jScrollPane2, gridBagConstraints3);
           
           
         valueLabel.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_ValueLabel"));
           gridBagConstraints3 = new java.awt.GridBagConstraints();
+          gridBagConstraints3.gridx = 0;
+          gridBagConstraints3.gridy = 1;
           gridBagConstraints3.fill = java.awt.GridBagConstraints.HORIZONTAL;
-          gridBagConstraints3.insets = new java.awt.Insets(0, 8, 0, 8);
-          gridBagConstraints3.anchor = java.awt.GridBagConstraints.WEST;
-          jPanel2.add(valueLabel, gridBagConstraints3);
+          gridBagConstraints3.insets = new java.awt.Insets(11, 11, 11, 0);
+          gridBagConstraints3.anchor = java.awt.GridBagConstraints.NORTHWEST;
+          valuePanel.add(valueLabel, gridBagConstraints3);
           
           
         
@@ -612,26 +624,25 @@ public class BundleEditPanel extends JPanel {
             jScrollPane3.setViewportView(textValue);
             
             gridBagConstraints3 = new java.awt.GridBagConstraints();
-          gridBagConstraints3.gridwidth = 0;
-          gridBagConstraints3.gridheight = 0;
+          gridBagConstraints3.gridx = 1;
+          gridBagConstraints3.gridy = 1;
           gridBagConstraints3.fill = java.awt.GridBagConstraints.BOTH;
-          gridBagConstraints3.insets = new java.awt.Insets(0, 0, 8, 0);
+          gridBagConstraints3.insets = new java.awt.Insets(7, 11, 11, 0);
           gridBagConstraints3.weightx = 1.0;
           gridBagConstraints3.weighty = 1.0;
-          jPanel2.add(jScrollPane3, gridBagConstraints3);
+          valuePanel.add(jScrollPane3, gridBagConstraints3);
           
           
         gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridwidth = -1;
-        gridBagConstraints1.gridheight = 0;
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 1;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.insets = new java.awt.Insets(8, 0, 0, 0);
         gridBagConstraints1.weightx = 1.0;
-        gridBagConstraints1.weighty = 0.3;
-        add(jPanel2, gridBagConstraints1);
+        gridBagConstraints1.weighty = 1.0;
+        add(valuePanel, gridBagConstraints1);
         
         
-        jPanel3.setLayout(new java.awt.GridBagLayout());
+        buttonPanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints4;
         
         addButton.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_AddPropertyButton"));
@@ -642,10 +653,11 @@ public class BundleEditPanel extends JPanel {
           }
           );
           gridBagConstraints4 = new java.awt.GridBagConstraints();
-          gridBagConstraints4.gridwidth = 0;
           gridBagConstraints4.fill = java.awt.GridBagConstraints.HORIZONTAL;
-          gridBagConstraints4.insets = new java.awt.Insets(0, 8, 0, 8);
-          jPanel3.add(addButton, gridBagConstraints4);
+          gridBagConstraints4.insets = new java.awt.Insets(11, 11, 0, 11);
+          gridBagConstraints4.anchor = java.awt.GridBagConstraints.SOUTH;
+          gridBagConstraints4.weighty = 1.0;
+          buttonPanel.add(addButton, gridBagConstraints4);
           
           
         removeButton.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_RemovePropertyButton"));
@@ -656,32 +668,25 @@ public class BundleEditPanel extends JPanel {
           }
           );
           gridBagConstraints4 = new java.awt.GridBagConstraints();
-          gridBagConstraints4.gridwidth = 0;
+          gridBagConstraints4.gridx = 0;
+          gridBagConstraints4.gridy = 1;
           gridBagConstraints4.fill = java.awt.GridBagConstraints.HORIZONTAL;
-          gridBagConstraints4.insets = new java.awt.Insets(8, 8, 8, 8);
-          jPanel3.add(removeButton, gridBagConstraints4);
-          
-          
-        gridBagConstraints4 = new java.awt.GridBagConstraints();
-          gridBagConstraints4.gridwidth = 0;
-          gridBagConstraints4.gridheight = 0;
-          gridBagConstraints4.fill = java.awt.GridBagConstraints.BOTH;
-          gridBagConstraints4.weightx = 1.0;
-          gridBagConstraints4.weighty = 1.0;
-          jPanel3.add(jPanel4, gridBagConstraints4);
+          gridBagConstraints4.insets = new java.awt.Insets(5, 11, 11, 11);
+          gridBagConstraints4.anchor = java.awt.GridBagConstraints.SOUTH;
+          buttonPanel.add(removeButton, gridBagConstraints4);
           
           
         gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridwidth = 0;
+        gridBagConstraints1.gridx = 1;
+        gridBagConstraints1.gridy = 1;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.insets = new java.awt.Insets(8, 0, 0, 0);
-        add(jPanel3, gridBagConstraints1);
+        add(buttonPanel, gridBagConstraints1);
         
     }//GEN-END:initComponents
 
     private void removeButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         stopEditing();
-        String key = ((PropertiesTableModel.StringPair)theTable.getModel().getValueAt(rowSelections.getMinSelectionIndex(), 0)).getValue();
+        String key = ((PropertiesTableModel.StringPair)table.getModel().getValueAt(rowSelections.getMinSelectionIndex(), 0)).getValue();
         
         // dont't remove elemnt with key == null ( this is only case -> when there is an empty file with comment only)
         if(key == null) return; 
@@ -748,20 +753,19 @@ public class BundleEditPanel extends JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel tablePanel;
     private javax.swing.JScrollPane scrollPane;
-    private javax.swing.JTable theTable;
-    private javax.swing.JPanel jPanel2;
+    private javax.swing.JTable table;
+    private javax.swing.JPanel valuePanel;
     private javax.swing.JLabel commentLabel;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea textComment;
     private javax.swing.JLabel valueLabel;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTextArea textValue;
-    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel buttonPanel;
     private javax.swing.JButton addButton;
     private javax.swing.JButton removeButton;
-    private javax.swing.JPanel jPanel4;
     // End of variables declaration//GEN-END:variables
 
 
