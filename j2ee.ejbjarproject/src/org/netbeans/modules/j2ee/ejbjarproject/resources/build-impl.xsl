@@ -527,7 +527,7 @@ is divided into following sections:
                                     <xsl:variable name="base.prop.name">
                                         <xsl:value-of select="concat('${included.lib.', ., '}')"/>
                                     </xsl:variable>
-                                    <xsl:if test="position()>1">,</xsl:if>
+                                    <xsl:if test="position()>1"><xsl:text> </xsl:text></xsl:if>
                                     <xsl:value-of select="$base.prop.name"/>
                                 </xsl:for-each>  
                             </xsl:attribute>

@@ -803,7 +803,7 @@ is divided into following sections:
                                     <xsl:variable name="base.prop.name">
                                         <xsl:value-of select="concat('${included.lib.', substring-before(substring-after(webproject3:file,'{'),'}'), '}')"/>
                                     </xsl:variable>
-                                    <xsl:if test="position()>1">,</xsl:if>
+                                    <xsl:if test="position()>1"><xsl:text> </xsl:text></xsl:if>
                                     <xsl:value-of select="$base.prop.name"/>
                                 </xsl:for-each>  
                             </xsl:attribute>
@@ -1409,6 +1409,7 @@ to simulate
                     <xsl:attribute name="unless">dist.ear.dir</xsl:attribute>
                 </xsl:otherwise>
             </xsl:choose>
+            
             <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
             <xsl:for-each select="$references/projdeps:reference[not($type) or projdeps:artifact-type = $type]">
                 <xsl:variable name="subproj" select="projdeps:foreign-project"/>
