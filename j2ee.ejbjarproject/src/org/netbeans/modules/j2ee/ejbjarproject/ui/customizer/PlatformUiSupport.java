@@ -107,7 +107,7 @@ public class PlatformUiSupport {
                 SpecificationVersion jdk13 = new SpecificationVersion("1.3"); // NOI18N
                 String explicitSourceAttrValue = explicitPlatform.getAttribute("explicit-source-supported"); // NOI18N
                 if (jdk13.compareTo(platform.getSpecification().getVersion())>=0 &&
-                    "true".equals(explicitSourceAttrValue)) {   //NOI18N
+                    !"false".equals(explicitSourceAttrValue)) {   //NOI18N
                     explicitPlatform.setAttribute("explicit-source-supported","false"); //NOI18N
                     changed = true;
                 }
