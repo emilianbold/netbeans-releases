@@ -109,7 +109,7 @@ workspaceswitcher
   </target>
 
   <!-- How to build the IDE core: -->
-  <target name="all-openide" depends="check-for-binaries">
+  <target name="all-openide" depends="init">
     <echo message="Building Open APIs..."/>
     <ant dir="../openide" target="netbeans"/>
   </target>
@@ -221,7 +221,7 @@ workspaceswitcher
     <echo message="Building module innertesters..."/>
     <ant dir="../innertesters" target="netbeans"/>
   </target>
-  <target name="all-j2eeserver" depends="setup-jdkhome-4,all-openide,all-jarpackager,all-debuggercore,all-debuggerjpda">
+  <target name="all-j2eeserver" depends="all-openide,all-jarpackager,all-debuggercore,all-debuggerjpda">
     <echo message="Building module j2eeserver..."/>
     <ant dir="../j2eeserver" target="netbeans"/>
   </target>
