@@ -140,7 +140,7 @@ public final class TestSupport {
     }
     
     private static class MemoryAuxiliaryConfiguration implements AuxiliaryConfiguration {
-        private Document xml = XMLUtil.createDocument ("private", "http://www.netbeans.org/ns/j2se-project-private/1", null, null);
+        private Document xml = XMLUtil.createDocument ("private", "http://www.netbeans.org/ns/test-support-project-private/1", null, null);
 
         public Element getConfigurationFragment (String elementName, String namespace, boolean shared) {
             if (shared) {
