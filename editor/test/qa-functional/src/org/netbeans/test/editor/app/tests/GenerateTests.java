@@ -170,13 +170,16 @@ public class GenerateTests extends Object {
             result.println("import org.openide.filesystems.*;");
             result.println("import org.netbeans.junit.NbTestCase;");
             result.println("import org.netbeans.junit.NbTestSuite;");
+            result.println("import java.io.File;");
+            result.println("import org.netbeans.junit.diff.SimpleDiff;");
 
             result.println("public class AppTestPerformer extends NbTestCase {");
             result.println("public AppTestPerformer(String name) {");
             result.println("super(name);");
             result.println("}");
-            result.println("public void tearDown() {");
-            result.println("compareReferenceFiles();");
+            result.println("public void tearDown() throws Exception {");
+//            result.println("compareReferenceFiles();");
+	    result.println("    assertFile(\"Output does not match golden file.\", getGoldenFile(), new File(getWorkDir(), this.getName() + \".ref\"), null, new SimpleDiff());");
             result.println("}");
             NodeList nodes = tests.getElementsByTagName("Test");
             
