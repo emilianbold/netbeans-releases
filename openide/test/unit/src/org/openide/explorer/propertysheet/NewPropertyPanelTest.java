@@ -482,7 +482,7 @@ public class NewPropertyPanelTest extends NbTestCase {
         
         requestFocus(stringPanel);
         Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
-        assertTrue ("Requesting focus on a property panel for a string property should set focus to a JTextField",
+        assertTrue ("Requesting focus on a property panel for a string property should set focus to a JTextField not " + focusOwner,
             focusOwner instanceof JTextField);
         
         typeKey(stringPanel, KeyEvent.VK_T);
