@@ -223,6 +223,10 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
         browserComponent.setToolbarVisible (v);
     }
 
+    protected java.lang.String preferredID() {
+        return "HtmlBrowserComponent"; //NOI18N
+    }
+
 public static final class BrowserReplacer implements java.io.Externalizable {
     
     /** serial version UID */
