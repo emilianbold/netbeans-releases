@@ -181,7 +181,7 @@ public class NbPath extends Task {
         String junit_path = getProject().getProperty(JUNIT_PATH);
         if (null == junit_path) {
             list.setLength(0);
-            addPath(list, appendSlash(xthome) + "lib/junit-ext.jar");
+            addPath(list, appendSlash(xthome) + "lib/nbjunit.jar");
             addPath(list, junit_jar);
             junit_path = list.toString();
             getProject().setProperty(JUNIT_PATH, junit_path);

@@ -297,7 +297,7 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${xtest.home}/lib/xtest-junit-testrunner.jar" todir="${xtest.workdir.idejars}"/>
         
         <copy file="${xtest.home}/lib/junit.jar" todir="${netbeans.home}/lib/ext"/>
-        <copy file="${xtest.home}/lib/junit-ext.jar" todir="${netbeans.home}/lib/ext"/>
+        <copy file="${xtest.home}/lib/nbjunit.jar" todir="${netbeans.home}/lib/ext"/>
         
 
         <antcall target="copy-user-jars"/>
@@ -348,7 +348,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="${netbeans.home}/lib/xtest.jar"/>
         <delete file="${xtest.workdir.idejars}/xtest-junit-testrunner.jar"/>
         <delete file="${netbeans.home}/lib/ext/junit.jar"/>
-        <delete file="${netbeans.home}/lib/ext/junit-ext.jar"/>
+        <delete file="${netbeans.home}/lib/ext/nbjunit.jar"/>
         
                 
         <antcall target="delete-user-jars"/>

@@ -24,65 +24,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="init">
     <ant dir="external" target="unscramble"/>
   </target>
-
-  <target name="compile-junit-extensions" depends="init">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <include name="org/netbeans/junit/**"/>
-      <classpath>        
-        <fileset dir="external">
-          <include name="junit*.jar"/>
-        </fileset>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-        <!-- XXX -->
-        <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
-      </classpath>
-    </javac>
-  </target>
-
-  <target name="jar-junit-extensions" depends="compile-junit-extensions">
-      <mkdir dir="netbeans/modules/ext"/>
-      <jar jarfile="netbeans/modules/ext/junit-ext.jar"
-            basedir="src"
-            excludesfile="../nbbuild/standard-jar-excludes.txt"
-            compress="false"
-            includes="org/netbeans/junit/**"/>
-  </target>
-
-  <target name="clean-junit-extensions">
-    <delete>
-      <fileset dir="src">
-        <include name="org/netbeans/junit/**/*.class"/>
-      </fileset>
-    </delete>
-    <delete file="netbeans/lib/modules/junit-ext.jar"/>
-  </target>
-
- <target name="javadoc-junit-extensions">
-      <mkdir dir="javadoc/nbjunit-api"/>
-      <javadoc packagenames="org.netbeans.junit" 
-               sourcepath="src" 
-	       destdir="javadoc/nbjunit-api"
-	       windowtitle="NetBeans extensions to JUnit"
-	       doctitle="NetBeans extensions to JUnit"
-      >  
-        <classpath>
-          <fileset dir="external">
-            <include name="junit*.jar"/>
-          </fileset>
-            <!-- XXX -->
-            <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
-        </classpath>
-      </javadoc>
-      <mkdir dir="netbeans/docs"/>
-      <zip zipfile="netbeans/docs/nbjunit-api.zip"
-           basedir="javadoc/nbjunit-api"
-       />
-  </target>
-
-  <target name="clean-javadoc-junit-extensions">
-      <delete dir="javadoc/nbjunit-api"/>
-      <delete file="netbeans/docs/nbjunit-api.zip"/>
-  </target>
+  
 
   <target name="compile" depends="init">
     <javac srcdir="src" destdir="src"
@@ -147,7 +89,7 @@ Microsystems, Inc. All Rights Reserved.
     </copy>
   </target>
 
-  <target name="netbeans" depends="jar-junit-extensions,jars,javadoc-junit-extensions,javahelp,parserdb,release"/>
+  <target name="netbeans" depends="jars,javahelp,parserdb,release"/>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="junit.nbm"
@@ -175,16 +117,6 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="netbeans"/>
     <delete file="junit.nbm"/>
     <delete dir="Info"/>
-    <delete dir="javadoc"/>
-  </target>
-
-  <target name="clean-junit-ext">
-    <delete file="netbeans/modules/ext/junit-ext.jar"/>
-    <delete>
-      <fileset dir="src">
-        <include name="org/netbeans/junit/**/*.class"/>
-      </fileset>
-    </delete>
   </target>
 
   <target name="test" depends="netbeans">

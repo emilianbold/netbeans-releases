@@ -22,12 +22,9 @@ Microsystems, Inc. All Rights Reserved.
             <binary clear="xerces-2.0.1.jar" scrambled="xerces-2.0.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
             <!-- LFI #1078: -->
             <binary clear="xml-apis-1.0b2.jar" scrambled="xml-apis-1.0b2.jar.scrambled" license="../../core/external/xml-apis-license.txt"/>            
-            <!-- No LFI #? -->
-            <!--
-            <binary clear="xtest-ext.jar" scrambled="xtest-ext.jar.scrambled" license="xtest-ext-license.txt"/>
-            -->
             <!-- LFI #105463: -->
             <binary clear="ant-1.4.1.jar" scrambled="ant-1.4.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
+            <binary clear="junit-3.7.jar" scrambled="junit-3.7.jar.scrambled" license="ibm-public-license.txt"/>
         </unscramble>
     </target>
     <target name="scramble">
@@ -36,19 +33,15 @@ Microsystems, Inc. All Rights Reserved.
             <binary clear="xalan-2.3.1.jar.master" scrambled="xalan-2.3.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
             <binary clear="xerces-2.0.1.jar.master" scrambled="xerces-2.0.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
             <binary clear="xml-apis-1.0b2.jar.master" scrambled="xml-apis-1.0b2.jar.scrambled" license="../../core/external/xml-apis-license.txt"/>
-            <!--
-            <binary clear="xtest-ext.jar.master" scrambled="xtest-ext.jar.scrambled" license="xtest-ext-license.txt"/>
-            -->
             <binary clear="ant-1.4.1.jar.master" scrambled="ant-1.4.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
+            <binary clear="junit-3.7.jar.master" scrambled="junit-3.7.jar.scrambled" license="ibm-public-license.txt"/>
         </scramble>
     </target>
     <target name="clean">
         <delete file="xalan-2.3.1.jar"/>
         <delete file="xerces-2.0.1.jar"/>
         <delete file="xml-apis-1.0b2.jar"/>
-        <!--
-        <delete file="xtest-ext.jar"/>
-        -->
         <delete file="ant-1.4.1.jar"/>
+        <delete file="junit-3.7.jar"/>
     </target>
 </project>

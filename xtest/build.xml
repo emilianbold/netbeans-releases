@@ -27,10 +27,10 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext}/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar"/>
   
-  <target name="prepare-junit-extensions">
-    <ant dir="../junit" antfile="build.xml" target="jar-junit-extensions"/>
+  <target name="prepare-nbjunit">
+    <ant dir="nbjunit" antfile="build.xml" target="jar-nbjunit"/>
     <mkdir dir="lib"/>
-    <copy file="../junit/netbeans/modules/ext/junit-ext.jar" todir="lib"/>
+    <copy file="nbjunit/netbeans/modules/ext/nbjunit.jar" todir="lib"/>
   </target>
 
   <target name="init">
@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
     <ant dir="../core/output" antfile="build.xml" target="jars"/>
   </target>
 
-  <target name="compile" depends="init,prepare-junit-extensions">
+  <target name="compile" depends="init,prepare-nbjunit">
     <path id="basecp">
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
         <fileset dir="../openide/netbeans/lib">
@@ -68,7 +68,7 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="../junit/external">
           <include name="junit*.jar"/>
         </fileset>
-	<pathelement location="lib/junit-ext.jar"/>
+	<pathelement location="lib/nbjunit.jar"/>
     </path>
     <javac srcdir="src" destdir="src"
            deprecation="${build.compiler.deprecation}"
@@ -155,7 +155,10 @@ Microsystems, Inc. All Rights Reserved.
   <target name="netbeans" depends="jars"/>
 
   <target name="clean">
-    <ant dir="../junit" antfile="build.xml" target="clean-junit-ext"/>
+    
+    <ant dir="nbjunit" antfile="build.xml" target="clean-nbjunit"/>
+    <delete file="lib/nbjunit.jar"/>
+    
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
@@ -167,8 +170,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="manifest-subst.mf"/>
     <delete file="module-manifest-subst.mf"/>
     <delete dir="lib/patches"/>
-    <delete file="lib/xtest.jar"/>
-    <delete file="lib/junit-ext.jar"/>
+    <delete file="lib/xtest.jar"/>    
     <delete file="lib/junit.jar"/>
     <delete file="lib/xerces.jar"/>
     <delete file="lib/xml-apis.jar"/>
@@ -242,8 +244,16 @@ Microsystems, Inc. All Rights Reserved.
         <format property="buildnumber" pattern="yyyyMMddhhmm"/>
     </tstamp>
   </target>
+  
+  <target name="nbjunit-module">
+    <ant dir="nbjunit" antfile="build.xml" target="netbeans"/>
+    <mkdir dir="netbeans"/>       
+    <copy todir="netbeans">
+       <fileset dir="nbjunit/netbeans"/>
+    </copy>
+  </target>
 
-  <target name="nbm" depends="makedist,timestamp">
+  <target name="nbm" depends="nbjunit-module,makedist,timestamp">
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="module-manifest.mf" tofile="module-manifest-subst.mf" filtering="on"/>
     <mkdir dir="netbeans/modules"/>

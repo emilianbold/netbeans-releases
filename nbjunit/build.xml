@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="NbJUnit">
+  
+  <target name="init">
+    <ant dir="../external" target="unscramble"/>
+  </target>
+  
+  <target name="compile-nbjunit" depends="init">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <include name="org/netbeans/junit/**"/>
+      <classpath>        
+        <fileset dir="../external">
+          <include name="junit*.jar"/>
+        </fileset>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="jar-nbjunit" depends="compile-nbjunit">
+      <mkdir dir="netbeans/modules/ext"/>
+      <jar jarfile="netbeans/modules/ext/nbjunit.jar"
+            basedir="src"
+            excludesfile="../../nbbuild/standard-jar-excludes.txt"
+            compress="true"
+            includes="org/netbeans/junit/**"/>
+  </target>
+
+
+  <target name="javadoc-nbjunit">
+      <mkdir dir="javadoc/nbjunit-api"/>
+      <javadoc packagenames="org.netbeans.junit" 
+               sourcepath="src" 
+	       destdir="javadoc/nbjunit-api"
+	       windowtitle="NetBeans extensions to JUnit"
+	       doctitle="NetBeans extensions to JUnit">  
+        <classpath>
+          <fileset dir="../external">
+            <include name="junit*.jar"/>
+          </fileset>
+        </classpath>
+      </javadoc>
+      <mkdir dir="netbeans/docs"/>
+      <zip zipfile="netbeans/docs/nbjunit-api.zip"
+           basedir="javadoc/nbjunit-api"/>
+  </target>
+  
+  <target name="parserdb">
+  	<mkdir dir="netbeans/system/ParserDB"/>
+  	<copy toDir="netbeans/system/ParserDB">
+  		<fileset dir="parserdb"/>
+  	</copy>
+  </target>
+  
+  <target name="netbeans" depends="compile-nbjunit, jar-nbjunit, javadoc-nbjunit, parserdb"/>
+
+  <target name="clean-javadoc-nbjunit">
+      <delete dir="javadoc/nbjunit-api"/>
+      <delete file="netbeans/docs/nbjunit-api.zip"/>
+  </target>
+  
+  <target name="clean-nbjunit">
+    <delete file="netbeans/modules/ext/nbjunit.jar"/>
+    <delete>
+      <fileset dir="src">
+        <include name="org/netbeans/junit/**/*.class"/>
+      </fileset>
+    </delete>
+  </target>
+      
+  <target name="clean" depends="clean-javadoc-nbjunit, clean-nbjunit">
+     <delete dir="netbeans"/>
+     <delete dir="javadoc"/>
+  </target>
+  
+</project>

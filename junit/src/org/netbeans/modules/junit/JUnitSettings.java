@@ -73,8 +73,8 @@ public class JUnitSettings extends SystemOption {
         super.initialize();
         
         putProperty(PROP_FILE_SYSTEM, "", true);
-        putProperty(PROP_SUITE_TEMPLATE, "Templates/JUnit/SimpleNbJUnitTest.java", true);
-        putProperty(PROP_CLASS_TEMPLATE, "Templates/JUnit/SimpleNbJUnitTest.java", true);
+        putProperty(PROP_SUITE_TEMPLATE, "Templates/JUnit/SimpleJUnitTest.java", true);
+        putProperty(PROP_CLASS_TEMPLATE, "Templates/JUnit/SimpleJUnitTest.java", true);
         putProperty(PROP_MEMBERS_PUBLIC, Boolean.TRUE, true);
         putProperty(PROP_MEMBERS_PROTECTED, Boolean.TRUE, true);
         putProperty(PROP_MEMBERS_PACKAGE, Boolean.TRUE, true);
@@ -86,7 +86,7 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_EXECUTOR_TYPE, new Integer(EXECUTOR_EXTERNAL), true);
         putProperty(PROP_GENERATE_ABSTRACT_IMPL, Boolean.TRUE, true);
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, Boolean.FALSE, true);
-        putProperty(PROP_TEST_RUNNER, "org.netbeans.junit.NbTestRunner", true);
+        putProperty(PROP_TEST_RUNNER, "org.netbeans.modules.junit.JUnitTestRunner", true);
         putProperty(PROP_PROPERTIES, NbBundle.getMessage(JUnitSettings.class, "PROP_properties_default_value"), true);
         putProperty(PROP_GENERATE_NBJUNIT, Boolean.TRUE, true);
         putProperty(PROP_REGENERATE_SUITE_METHOD, Boolean.TRUE, true);

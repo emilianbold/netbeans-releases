@@ -39,8 +39,8 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../core/netbeans/lib/core.jar"/>
         <pathelement location="../core/term/netbeans/modules/autoload/terminalemulator.jar"/>
         <pathelement location="../jemmy/jemmy.jar"/>
-        <pathelement location="../xtest/lib/junit.jar"/>
-        <pathelement location="../xtest/lib/junit-ext.jar"/>
+        <pathelement location="../xtest/external/junit-3.7.jar"/>
+        <pathelement location="../xtest/nbjunit/netbeans/modules/ext/nbjunit.jar"/>
     </path>
 
     <target name="all" depends="jars,zipsrc,javadoc,javadocWithJemmy" description="Create jars, source zip and javadoc zip">
@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans" depends="jars">
     </target>
 
-    <target name="compile" depends="buildJemmy,buildXTest">
+    <target name="compile" depends="buildJemmy,buildNbJUnit">
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
           <classpath>
             <path refid="jellytools.classpath"/>
@@ -61,8 +61,8 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="../jemmy" target="jar"/>
     </target>
     
-    <target name="buildXTest" description="Build XTest">
-        <ant dir="../xtest" target="jars"/>
+    <target name="buildNbJUnit" description="Build NbJUnitt">
+        <ant dir="../xtest/nbjunit" target="jar-nbjunit"/>
     </target>
 
     <target name="timestamp" unless="buildnumber">
