@@ -61,6 +61,8 @@ workspaceswitcher
   <!-- Ditto (note: need not necessarily be a number at all): -->
   <property name="buildnumber" value="dev-000"/>
 
+  <property name="binroot" value=".."/>
+
   <!-- Best to leave this alone, though, unless you know what you are doing: -->
   <property name="firststart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true"/>
   <!-- But this it is OK to change: -->
