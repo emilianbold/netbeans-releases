@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+
+<!-- XTEST configuration file. Where is DTD and documentation? -->
+
+<mconfig name="vcscore">
+
+    <testbag testattribs="stable" compiler="myunit-compiler" executor="myunit-executor" name="vcscore">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="**/*Test.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
+    <compiler name="myunit-compiler" antfile="build-unit.xml" target="myunit-compiler"/>
+
+
+    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
+    <executor name="myunit-executor" antfile="build-unit.xml" target="myrun-unit-test"/>
+
+</mconfig>
