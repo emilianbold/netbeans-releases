@@ -47,10 +47,14 @@ import org.netbeans.modules.xml.tax.beans.Lib;
 /**
  * Table oriented customizer of TreeElement attribute list.
  *
- * @author  Petr Kuzel, Vladimir Zboril
+ * @author  Petr Kuzel
+ * @author  Vladimir Zboril
+ * @author  Libor Kramolis
  * @version 1.0
  */
 public class TreeElementAttributeListCustomizer extends JPanel implements Customizer, PropertyChangeListener {
+    private static final boolean DEBUG = false;
+
     
     /** Serial Version UID */
     private static final long serialVersionUID = 1071471854210683733L;
@@ -83,18 +87,35 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
         // Set ListSelectionModel
         attrTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         ListSelectionModel rowsm = attrTable.getSelectionModel();
-        rowsm.addListSelectionListener(new ListSelectionListener(){
-                public void valueChanged(ListSelectionEvent e) {
-                    if (e.getValueIsAdjusting()) return;
+        rowsm.addListSelectionListener (new ListSelectionListener(){
+                public void valueChanged (ListSelectionEvent e) {
+                    if ( DEBUG ) {
+                        Util.debug ("\n#=- TreeElementAttributeListCustomizer::ListSelectionListener.valueChanged: event = " + e);
+                        Util.debug ("#=-     event.getValueIsAdjusting() = " + e.getValueIsAdjusting());
+                        Util.debug ("#=-     event.getFirstIndex()       = " + e.getFirstIndex());
+                        Util.debug ("#=-     event.getLastIndex()        = " + e.getLastIndex());
+                    }
+
+                    if (e.getValueIsAdjusting())
+                        return;
                     ListSelectionModel lsm = (ListSelectionModel)e.getSource();
-                    if (lsm.isSelectionEmpty()) {
-                        upButton.setEnabled(false);
-                        downButton.setEnabled(false);
-                        removeButton.setEnabled(false);
+
+                    if ( DEBUG ) {
+                        Util.debug ("#=-     event.getSource()                 = " + lsm);
+                        Util.debug ("#=-     selectionModel.isSelectionEmpty() = " + lsm.isSelectionEmpty());
+                        Util.debug ("#=-     attrTable.getSelectedRow()        = " + attrTable.getSelectedRow());
+                        Util.debug ("#=-     attrTable.getRowCount()           = " + attrTable.getRowCount());
+                    }
+
+                    if ( lsm.isSelectionEmpty() ||
+                         ( attrTable.getRowCount() == 0 ) ) {
+                        upButton.setEnabled (false);
+                        downButton.setEnabled (false);
+                        removeButton.setEnabled (false);
                     }else {
-                        upButton.setEnabled(attrTable.getSelectedRow() > 0);
-                        downButton.setEnabled(attrTable.getSelectedRow() < numRows()-1);
-                        removeButton.setEnabled(true);
+                        upButton.setEnabled (attrTable.getSelectedRow() > 0);
+                        downButton.setEnabled (attrTable.getSelectedRow() < (numRows() - 1));
+                        removeButton.setEnabled (true);
                     }
                 }
             });
