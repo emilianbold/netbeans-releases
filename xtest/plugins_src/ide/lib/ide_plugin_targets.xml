@@ -44,7 +44,16 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.ide.jvmargs" value=""/>
         <property name="junit.properties.file" value=""/>
         <property name="xtest.ide.reuse.userdir" value="false"/>
-        <property name="xtest.ide.winsys" value="mdi"/>
+        <!-- Set IDE window system to mdi only if userdir is not reused. -->
+        <condition property="xtest.ide.winsys" value="mdi">
+           <equals arg1="${xtest.ide.reuse.userdir}" arg2="false"/>
+        </condition>
+        <!-- else set it to empty value -->
+        <condition property="xtest.ide.winsys" value="">
+            <not>
+                <isset property="xtest.ide.winsys"/>
+            </not>
+        </condition>
         <property name="xtest.ide.exit" value="true"/>
         <!-- create an empty Java project in IDE -->
         <property name="xtest.ide.create.project" value="false"/>
@@ -57,7 +66,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.ide.use.classloader" value=""/>
         
         <condition property="xtest.reuse.ide.false">
-           <equals arg1="${xtest.reuse.ide}" arg2="false"/>
+           <equals arg1="${xtest.ide.reuse.userdir}" arg2="false"/>
         </condition>
         <antcall target="delete-userdir"/>
 
