@@ -66,7 +66,15 @@ public class DefaultRADAction extends CookieAction {
      * @return <code>true</code> to enable
      */
     protected boolean enable(Node[] activatedNodes) {
-        RADComponent comp =((RADComponentCookie)activatedNodes[0].getCookie(RADComponentCookie.class)).getRADComponent();
+        if (activatedNodes.length == 0)
+            return false;
+
+        RADComponentCookie radCookie = (RADComponentCookie)
+            activatedNodes[0].getCookie(RADComponentCookie.class);
+        if (radCookie == null)
+            return false;
+
+        RADComponent comp = radCookie.getRADComponent();
         return comp.hasDefaultEvent();
     }
 
@@ -76,9 +84,16 @@ public class DefaultRADAction extends CookieAction {
      * @param activatedNodes gives array of actually activated nodes.
      */
     protected void performAction(Node[] activatedNodes) {
-        RADComponent comp =((RADComponentCookie)activatedNodes[0].getCookie(RADComponentCookie.class)).getRADComponent();
+        if (activatedNodes.length == 0)
+            return;
+
+        RADComponentCookie radCookie = (RADComponentCookie)
+            activatedNodes[0].getCookie(RADComponentCookie.class);
+        if (radCookie == null)
+            return;
+
+        RADComponent comp = radCookie.getRADComponent();
         if (comp.hasDefaultEvent())
             comp.attachDefaultEvent();
     }
-
 }

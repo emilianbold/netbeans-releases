@@ -131,20 +131,12 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
                         
             Node[] selectedNodes = getExplorerManager().getSelectedNodes();
 
-            if (CPManager.getDefault().getMode() ==
-                PaletteAction.MODE_CONNECTION) {
-                if (selectedNodes.length < 1)
+            if (CPManager.getDefault().getMode() == PaletteAction.MODE_CONNECTION) {
+                if (selectedNodes.length == 0)
                     return;
-                
-                RADComponentCookie cookie =
-                    (RADComponentCookie) selectedNodes[0]
-                    .getCookie(RADComponentCookie.class);
-                
-                try {
-                    getExplorerManager().setSelectedNodes(new Node[0]);
-                }
-                catch (PropertyVetoException ex) {}
-                
+
+                RADComponentCookie cookie = (RADComponentCookie)
+                    selectedNodes[0].getCookie(RADComponentCookie.class);
                 if (cookie != null)
                     designer.connectBean(cookie.getRADComponent(), true);
             }

@@ -155,7 +155,10 @@ public class FormDesigner extends TopComponent
         ComponentInspector ci = ComponentInspector.getInstance();
         if (ci.getFocusedForm() != formEditorSupport) {
             ComponentInspector.getInstance().focusForm(formEditorSupport);
-            updateActivatedNodes();
+            if (CPManager.getDefault().getMode() == PaletteAction.MODE_CONNECTION)
+                clearSelection();
+            else
+                updateActivatedNodes();
         }
 
         FormEditor.actions.attach(ci.getExplorerManager());
@@ -618,7 +621,7 @@ public class FormDesigner extends TopComponent
             if (showDialog) {
                 if (connectionTarget != null) 
                     createConnection(connectionSource, connectionTarget);
-                resetConnection();
+//                resetConnection();
                 CPManager.getDefault().setMode(PaletteAction.MODE_SELECTION);
             }
         }
@@ -633,9 +636,11 @@ public class FormDesigner extends TopComponent
     }
 
     public void resetConnection() {
-        connectionSource = null;
-        connectionTarget = null;
-        handleLayer.repaint();
+        if (connectionSource != null || connectionTarget != null) {
+            connectionSource = null;
+            connectionTarget = null;
+            handleLayer.repaint();
+        }
     }
 
     private void createConnection(RADComponent source, RADComponent target) {

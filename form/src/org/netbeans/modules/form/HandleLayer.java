@@ -732,32 +732,26 @@ class HandleLayer extends JPanel
                 }
                 
                 CPManager palette = CPManager.getDefault();
-                
-                if (palette.getMode() == PaletteAction.MODE_CONNECTION) {
-                    RADComponent hitMetaComp = getMetaComponentAt(e.getPoint(),
-                            e.isControlDown() || e.isAltDown() ?
-                            COMP_SELECTED : COMP_DEEPEST);
 
-                    if (hitMetaComp != null)
-                        formDesigner.connectBean(hitMetaComp, true);
-                }
-                else if (componentDragger != null) {
-                    componentDragger.dropComponents(e.getPoint());
-                    componentDragger = null;
-                    repaint();
-                }
-                else if (draggingCanceled) {
-                    draggingCanceled = false;
-                }
-                else if (prevLeftMousePoint != null
-                         && e.getClickCount() == 1
-                         && prevLeftMousePoint.distance(e.getPoint()) <= 2
-                         && !e.isShiftDown()
-                         && !e.isControlDown()
-                         && !e.isAltDown())
-                {
-                    formDesigner.startInPlaceEditing(
-                        getMetaComponentAt(e.getPoint(), COMP_SELECTED));
+                if (palette.getMode() == PaletteAction.MODE_SELECTION) {
+                    if (componentDragger != null) {
+                        componentDragger.dropComponents(e.getPoint());
+                        componentDragger = null;
+                        repaint();
+                    }
+                    else if (draggingCanceled) {
+                        draggingCanceled = false;
+                    }
+                    else if (prevLeftMousePoint != null
+                             && e.getClickCount() == 1
+                             && prevLeftMousePoint.distance(e.getPoint()) <= 2
+                             && !e.isShiftDown()
+                             && !e.isControlDown()
+                             && !e.isAltDown())
+                    {
+                        formDesigner.startInPlaceEditing(
+                            getMetaComponentAt(e.getPoint(), COMP_SELECTED));
+                    }
                 }
 
                 if ((e.getModifiers() & InputEvent.SHIFT_MASK) == 0) {
@@ -839,15 +833,15 @@ class HandleLayer extends JPanel
                     }
                 }
                 else if (!viewOnly) {
-                    RADComponent hitMetaComp = getMetaComponentAt(e.getPoint(),
-                            e.isControlDown() || e.isAltDown() ?
-                            COMP_SELECTED : COMP_DEEPEST);
-                            
                     if (palette.getMode() == PaletteAction.MODE_CONNECTION) {
-                        if (hitMetaComp != null)
-                            formDesigner.connectBean(hitMetaComp, false);
+                        selectComponent(e);
                     }
                     else if (paletteMode == PaletteAction.MODE_ADD) {
+                        RADComponent hitMetaComp = getMetaComponentAt(
+                            e.getPoint(),
+                            e.isControlDown() || e.isAltDown() ?
+                                COMP_SELECTED : COMP_DEEPEST);
+
                         PaletteItem item = palette.getSelectedItem();
                         Object constraints;
 
