@@ -59,7 +59,7 @@ public final class IteratorIterator implements Iterator {
         if (next != null) return true;
         
         if (it == null) it = iterators.iterator();
-        if (current == null) {
+        while (current == null) {
             if (it.hasNext()) {
                 current = (Iterator) it.next();
             } else {
