@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="nbm" depends="netbeans">
 	<delete file="Info/info.xml"/>
-    <makenbm file="schema2beans.nbm"
+    <makenbm file="../schema2beans.nbm"
              topdir="."
              module="netbeans/modules/autoload/schema2beans.jar"
 	     homepage="http://${homepage.base}/schema2beans.html"
