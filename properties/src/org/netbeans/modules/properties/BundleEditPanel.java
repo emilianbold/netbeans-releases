@@ -74,6 +74,10 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         
         // Sets table cell editor.
         JTextField textField = new JTextField();
+        // Force the document to accept newlines. The textField doesn't like
+        // it, but the same document is used by the <code>textValue</code> text
+        // area that must accept newlines.
+        textField.getDocument().putProperty("filterNewlines",  Boolean.FALSE); // NOI18N
         textField.setBorder(new LineBorder(Color.black));
         table.setDefaultEditor(PropertiesTableModel.StringPair.class,
         new PropertiesTableCellEditor(textField, textComment, textValue, valueLabel));
