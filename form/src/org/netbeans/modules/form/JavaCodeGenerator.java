@@ -142,15 +142,15 @@ public class JavaCodeGenerator extends CodeGenerator {
       Point formPosition = visualForm.getFormPosition ();
 
       String sizeText = "";
+      String twoIndents = oneIndent+oneIndent;
 
       switch (formPolicy) {
         case RADVisualFormContainer.GEN_PACK: 
-            sizeText = "pack ();\n";
+            sizeText = twoIndents + "pack ();\n";
             break;
         case RADVisualFormContainer.GEN_BOUNDS: 
             if (genCenter) {
               StringBuffer sizeBuffer = new StringBuffer ();
-              String twoIndents = oneIndent+oneIndent;
               if (genSize) {
                 sizeBuffer.append (twoIndents);
                 sizeBuffer.append ("pack ();\n");
@@ -161,7 +161,7 @@ public class JavaCodeGenerator extends CodeGenerator {
                 sizeBuffer.append (twoIndents);
                 sizeBuffer.append ("setSize (new java.awt.Dimension ("+formSize.width + ", " + formSize.height + "));\n");
                 sizeBuffer.append (twoIndents);
-                sizeBuffer.append ("setLocation((screenSize.width-"+formSize.width+")/2, (screenSize.height-"+formSize.height+")/2)\n");
+                sizeBuffer.append ("setLocation((screenSize.width-"+formSize.width+")/2, (screenSize.height-"+formSize.height+")/2);\n");
               } else {
                 sizeBuffer.append (twoIndents);
                 sizeBuffer.append ("pack ();\n");
@@ -170,7 +170,7 @@ public class JavaCodeGenerator extends CodeGenerator {
                 sizeBuffer.append (twoIndents);
                 sizeBuffer.append ("java.awt.Dimension dialogSize = getSize();\n");
                 sizeBuffer.append (twoIndents);
-                sizeBuffer.append ("setLocation((screenSize.width-dialogSize.width)/2, (screenSize.height-dialogSize.height)/2)\n");
+                sizeBuffer.append ("setLocation((screenSize.width-dialogSize.width)/2, (screenSize.height-dialogSize.height)/2);\n");
               }
 
               sizeText = sizeBuffer.toString ();
@@ -802,6 +802,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  26   Gandalf   1.25        6/25/99  Ian Formanek    Improved size policy 
+ *       code generation
  *  25   Gandalf   1.24        6/24/99  Ian Formanek    Generation of size for 
  *       visaul forms
  *  24   Gandalf   1.23        6/10/99  Ian Formanek    Regeneration on layout 
