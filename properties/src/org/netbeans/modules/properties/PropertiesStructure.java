@@ -168,10 +168,11 @@ public class PropertiesStructure extends Element {
         System.out.println("------------------STRUCTURE------------------");
         System.out.println(toString());
         System.out.println("------------------END STRUCTURE------------------");*/
-        if (key == null)
+        /*if (key == null)
             key = "";
         if (key.length() == 0)
-            return false;
+            return false;*/
+
         Element.ItemElem item = getItem(key);
         //System.out.println("-------------item --------------------\n" + item);
         if (item == null)
@@ -202,14 +203,15 @@ public class PropertiesStructure extends Element {
     * @return true if the item has been added successfully, false if another item with the same name exists.
     */                         
     public synchronized boolean addItem(String key, String value, String comment) {
-        if (key == null)
-            key = "";
-        if (value == null)
-            value = "";
-        if (comment == null)
-            comment = "";
-        if (key.length() == 0 /*&& value.length() == 0 && comment.length() == 0*/)
-            return false;
+
+        //if (key == null)
+        //    key = "";
+        //if (value == null)
+        //    value = "";
+        //if (comment == null)
+        //    comment = "";
+        //if (key.length() == 0 /*&& value.length() == 0 && comment.length() == 0*/)
+        //    return false;
 
         Element.ItemElem item = getItem(key);
         if (item != null)
