@@ -135,6 +135,7 @@ public class AntActionInstance implements
                     return new Integer (pname.charAt (idx + 1));
                 }
             }
+            return new Integer (0); // #: 13084
         }
         return null;
     }
