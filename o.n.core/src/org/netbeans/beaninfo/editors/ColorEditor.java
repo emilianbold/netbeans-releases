@@ -349,7 +349,6 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     public void paintValue(Graphics g, Rectangle rectangle) {
         int px;
 
-        rectangle.x += 4;
         if (this.color != null) {
             Color color = g.getColor();
             g.drawRect(rectangle.x, rectangle.y + rectangle.height / 2 - 5 , 10, 10);

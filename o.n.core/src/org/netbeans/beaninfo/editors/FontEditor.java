@@ -120,11 +120,14 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
         
         // Fix of 21713, set default value
         if ( font == null ) setValue( null );
-        
         FontMetrics fm = g.getFontMetrics (font);
+        if (fm.getHeight() > rectangle.height) {
+            font = font.deriveFont(12f);
+            fm = g.getFontMetrics (font);
+        }
         g.setFont (font);
         g.drawString (fontName,
-                      rectangle.x + (rectangle.width - fm.stringWidth(fontName)) / 2,
+                      rectangle.x,  // + (rectangle.width - fm.stringWidth(fontName)) / 2,
                       rectangle.y + (rectangle.height - fm.getHeight ()) / 2 + fm.getAscent ());
         g.setFont (f);
     }
