@@ -275,24 +275,34 @@ public class EditablePropertiesTest extends NbTestCase {
         EditableProperties ep = new EditableProperties(false);
         ep.setProperty("a a", "a space a");
         ep.setProperty("b"+(char)0x4567, "val"+(char)0x1234);
-        ep.setProperty("@!#$%^", "!@#$%^&*(){}");
+        ep.setProperty("@!#$%^\\", "!@#$%^&*(){}\\");
+        ep.setProperty("d\nd", "d\nnewline\nd");
         ep.setProperty("_a a", new String[]{"a space a"});
         ep.setProperty("_b"+(char)0x4567, new String[]{"val"+(char)0x1234});
-        ep.setProperty("_@!#$%^", new String[]{"!@#$%^&*(){}"});
+        ep.setProperty("_@!#$%^\\", new String[]{"!@#$%^&*\\", "(){}\\"});
+        ep.setProperty("_d\nd", new String[]{"d\nnew","line\nd", "\n", "end"});
         String output = getAsString(ep);
         String expected = "a\\ a=a space a"+System.getProperty("line.separator")+
                 "b\\u4567=val\\u1234"+System.getProperty("line.separator")+
-                "@!#$%^=!@#$%^&*(){}"+System.getProperty("line.separator")+
+                "@!#$%^\\\\=!@#$%^&*(){}\\\\"+System.getProperty("line.separator")+
+                "d\\nd=d\\nnewline\\nd"+System.getProperty("line.separator")+
                 "_a\\ a=\\"+System.getProperty("line.separator")+"    a space a"+System.getProperty("line.separator")+
                 "_b\\u4567=\\"+System.getProperty("line.separator")+"    val\\u1234"+System.getProperty("line.separator")+
-                "_@!#$%^=\\"+System.getProperty("line.separator")+"    !@#$%^&*(){}"+System.getProperty("line.separator");
+                "_@!#$%^\\\\=\\"+System.getProperty("line.separator")+"    !@#$%^&*\\\\\\"+System.getProperty("line.separator")+
+                    "    (){}\\\\"+System.getProperty("line.separator")+
+                "_d\\nd=\\"+System.getProperty("line.separator")+"    d\\nnew\\"+System.getProperty("line.separator")+
+                    "    line\\nd\\"+System.getProperty("line.separator")+
+                    "    \\n\\"+System.getProperty("line.separator")+
+                    "    end"+System.getProperty("line.separator");
         assertEquals(expected, output);
         assertEquals("a space a", ep.getProperty("a a"));
         assertEquals("val"+(char)0x1234, ep.getProperty("b"+(char)0x4567));
-        assertEquals("!@#$%^&*(){}", ep.getProperty("@!#$%^"));
+        assertEquals("!@#$%^&*(){}\\", ep.getProperty("@!#$%^\\"));
+        assertEquals("d\nnewline\nd", ep.getProperty("d\nd"));
         assertEquals("a space a", ep.getProperty("_a a"));
         assertEquals("val"+(char)0x1234, ep.getProperty("_b"+(char)0x4567));
-        assertEquals("!@#$%^&*(){}", ep.getProperty("_@!#$%^"));
+        assertEquals("!@#$%^&*\\(){}\\", ep.getProperty("_@!#$%^\\"));
+        assertEquals("d\nnewline\nd\nend", ep.getProperty("_d\nd"));
     }
     
     // test that iterator implementation is OK

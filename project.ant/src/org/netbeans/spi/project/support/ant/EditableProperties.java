@@ -623,16 +623,16 @@ public final class EditableProperties extends AbstractMap implements Cloneable {
                         output.append("\\\\");
                         break;
                     case '\t':
-                        output.append("\t");
+                        output.append("\\t");
                         break;
                     case '\n':
-                        output.append("\n");
+                        output.append("\\n");
                         break;
                     case '\r':
-                        output.append("\r");
+                        output.append("\\r");
                         break;
                     case '\f':
-                        output.append("\f");
+                        output.append("\\f");
                         break;
                     default:
                         if ((ch < 0x0020) || (ch > 0x007e)) {
