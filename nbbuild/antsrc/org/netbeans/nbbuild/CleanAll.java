@@ -160,6 +160,7 @@ public class CleanAll extends Task {
                 }
                 ant.setTarget (targetname);
                 try {
+                    log("Process '"+ module + "' location with '" + targetname + "' target", Project.MSG_INFO);
                     ant.execute ();
                 } catch (BuildException BE) {
                     if (failonerror) {
