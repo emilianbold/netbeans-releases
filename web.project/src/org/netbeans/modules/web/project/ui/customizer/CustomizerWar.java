@@ -139,8 +139,8 @@ public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSe
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
         add(jPanel1, gridBagConstraints);
 
-        jCheckBoxCommpress.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_Commpres_LabelMnemonic").charAt(0));
         jCheckBoxCommpress.setText(org.openide.util.NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_Commpres_JCheckBox"));
+        jCheckBoxCommpress.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_Commpres_LabelMnemonic").charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -152,13 +152,13 @@ public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSe
         jCheckBoxCommpress.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeWAR_Commpres_A11YDesc"));
 
         jLabelExContent.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_Content_LabelMnemonic").charAt(0));
-        jLabelExContent.setLabelFor(jListExContent);
         jLabelExContent.setText(org.openide.util.NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_Content_JLabel"));
+        jLabelExContent.setLabelFor(jListExContent);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 2, 11);
         add(jLabelExContent, gridBagConstraints);
 
         jScrollPane1.setViewportView(jListExContent);
@@ -168,7 +168,7 @@ public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSe
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 11);
         add(jScrollPane1, gridBagConstraints);
 
         jButtonAddFilter.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_AddFilter_LabelMnemonic").charAt(0));
@@ -187,8 +187,8 @@ public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSe
         add(jButtonAddFilter, gridBagConstraints);
         jButtonAddFilter.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeWAR_AddFilter_A11YDesc"));
 
-        jButtonRemoveFilter.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_Remove_LabelMnemonic").charAt(0));
         jButtonRemoveFilter.setText(NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_Remove_JButton"));
+        jButtonRemoveFilter.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_Remove_LabelMnemonic").charAt(0));
         jButtonRemoveFilter.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonRemoveFilterActionPerformed(evt);
@@ -201,19 +201,19 @@ public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSe
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 11);
         add(jButtonRemoveFilter, gridBagConstraints);
         jButtonRemoveFilter.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeWAR_Remove_A11YDesc"));
 
         jLabelAddContent.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_AddContent_LabelMnemonic").charAt(0));
-        jLabelAddContent.setLabelFor(jListAddContent);
         jLabelAddContent.setText(NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_AddContent_JLabel"));
+        jLabelAddContent.setLabelFor(jListAddContent);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 2, 11);
         add(jLabelAddContent, gridBagConstraints);
 
         jScrollPane2.setViewportView(jListAddContent);
@@ -227,25 +227,25 @@ public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSe
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         add(jScrollPane2, gridBagConstraints);
 
-        jButtonAddJar.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_AddJar_LabelMnemonic").charAt(0));
         jButtonAddJar.setText(NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_AddJar_JButton"));
+        jButtonAddJar.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_AddJar_LabelMnemonic").charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
         add(jButtonAddJar, gridBagConstraints);
         jButtonAddJar.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeWAR_AddJar_A11YDesc"));
 
-        jButtonAddLib.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_AddLib_LabelMnemonic").charAt(0));
         jButtonAddLib.setText(NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_AddLib_JButton"));
+        jButtonAddLib.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_AddLib_LabelMnemonic").charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
         add(jButtonAddLib, gridBagConstraints);
         jButtonAddLib.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeWAR_AddLib_A11YDesc"));
 
