@@ -26,9 +26,7 @@ import com.sun.jdi.request.EventRequest;
 public class Operator {
 
   private boolean           resume = false;
-  
-  /** current event set */ 
-  private EventSet          eventSet;
+  private boolean           stopRequest = false;
   
   /**
   * Creates operator for given event queue.
@@ -44,7 +42,8 @@ public class Operator {
         try {
           for (;;) {
             EventSet set = queue.remove ();
-            eventSet = set;
+            resume = false;
+            stopRequest = false;
             EventIterator i = set.eventIterator ();
             while (i.hasNext ()) {
               Event e = i.nextEvent ();
@@ -78,10 +77,8 @@ public class Operator {
                 }
             }
 //            S ystem.out.println ("END (" + set.suspendPolicy () + ") ==========================================================================="); // NOI18N
-            if (resume) {
-              resume = false;
+            if (resume && !stopRequest)
               virtualMachine.resume ();
-            }
           }
         } catch (InterruptedException e) {
         } catch (VMDisconnectedException e) {
@@ -97,17 +94,17 @@ public class Operator {
   }
   
   /**
-  * Calls resume after curent event set dispatch.
+  * Requests resume after curent event set dispatch.
   */
   public void resume () {
     resume = true;
   }
 
   /**
-  * Returns current event set.
+  * Requests stop after curent event set dispatch.
   */
-  public EventSet getEventSet () {
-    return eventSet;
+  public void stopRequest () {
+    stopRequest = true;
   }
   
   private void printEvent (Event e, Executor exec) {
@@ -153,6 +150,8 @@ public class Operator {
 
 /*
  * Log
+ *  13   Jaga      1.9.3.2     3/6/00   Jan Jancura     Non java languages 
+ *       support  + JDK1.2 patches
  *  12   Jaga      1.9.3.1     3/2/00   Jan Jancura     
  *  11   Jaga      1.9.3.0     2/25/00  Daniel Prusa    post 1.0 changes
  *  10   Gandalf   1.9         1/14/00  Daniel Prusa    NOI18N
