@@ -55,9 +55,6 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
              </module-dependencies>
-	     <public-packages>
-                <package>com.sun.management.jmx.modules.mbeanwizard</package>
-            </public-packages> 
         </data>
     </configuration>
 </project>
