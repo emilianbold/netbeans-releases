@@ -359,7 +359,6 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                 }
                 hconn.setRequestProperty("User-Agent", // NOI18N
                                          "NetBeansIDE-Tomcat-Manager/1.0"); // NOI18N
-
                 // Set up an authorization header with our credentials
                 String input = tm.getUsername () + ":" + tm.getPassword ();
                 String auth = new String(Base64.encode(input.getBytes()));
@@ -374,7 +373,6 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     System.out.println(message);
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new Exception(message));
                 }
-
                 // Send the request data (if any)
                 if (istream != null) {
                     BufferedOutputStream ostream =
@@ -393,9 +391,10 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                 }
 
                 // Process the response message
-                reader = new InputStreamReader(hconn.getInputStream());
+                reader = new InputStreamReader(hconn.getInputStream(),"UTF-8"); //NOI18N
                 retries = -1;
                 StringBuffer buff = new StringBuffer();
+                String error = null;
                 msg = null;
                 boolean first = !command.startsWith ("jmxproxy");   // NOI18N
                 while (true) {
@@ -408,7 +407,14 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                         buff.setLength(0);
                         TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, line);
                         if (first) {
-                            msg = line;
+                            // hard fix to accept the japanese localization of manager app
+                            String japaneseOK="\u6210\u529f"; //NOI18N
+                            if (!(line.startsWith("OK -") || line.startsWith(japaneseOK))) { // NOI18N
+                                error = line;
+                            }
+                            else { 
+                                msg = line;
+                            }
                             first = false;
                         }
                         pes.fireHandleProgressEvent (
@@ -422,6 +428,11 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                 }
                 if (buff.length() > 0) {
                     TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, buff.toString());
+                }
+                if (error != null) {
+                    TomcatFactory.getEM().log("TomcatManagerImpl connecting to: " + urlToConnectTo); // NOI18N
+                    TomcatFactory.getEM ().log (error);
+                    pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, error, StateType.FAILED));
                 }
 
             } catch (Exception e) {
