@@ -213,6 +213,7 @@ public class JarClassLoader extends ProxyClassLoader {
                     while (prefix.length() < 3) prefix += "x"; // NOI18N
                     File temp = File.createTempFile(prefix, suffix);
                     temp.deleteOnExit();
+                    // XXX should use NIO for speed
                     InputStream is = new FileInputStream(orig);
                     try {
                         OutputStream os = new FileOutputStream(temp);
