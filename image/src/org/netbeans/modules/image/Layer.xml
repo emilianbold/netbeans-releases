@@ -15,9 +15,14 @@ Microsystems, Inc. All Rights Reserved.
 
 <filesystem>
 
-    <folder name="Shortcuts">
-        <file name="PLUS[org.netbeans.modules.image.ZoomInAction].instance" />
-	<file name="MINUS[org.netbeans.modules.image.ZoomOutAction].instance" />
+    <folder name="Actions">
+        <folder name="View">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.image.Bundle"/>
+
+            <file name="[org.netbeans.modules.image.ZoomInAction].instance" />
+            <file name="[org.netbeans.modules.image.ZoomOutAction].instance" />
+        </folder>
     </folder>
+
 
 </filesystem>

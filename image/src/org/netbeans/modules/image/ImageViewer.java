@@ -16,8 +16,8 @@ package org.netbeans.modules.image;
 
 
 import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
@@ -51,11 +51,11 @@ public class ImageViewer extends CloneableTopComponent {
     /** <code>ImageDataObject</code> which image is viewed. */
     private ImageDataObject storedObject;
 
-    /** Component showing image. */
-    private JLabel label;
-    
     /** Viewed image is serializable. */
     private NBImageIcon storedImage;
+
+    /** Component showing image. */
+    private JPanel panel;
     
     /** Height to width image factor. */
     private float factor;
@@ -86,19 +86,16 @@ public class ImageViewer extends CloneableTopComponent {
         super(obj);
         initialize(obj);
     }
+
     
-    /** Private constructor, used for cloning. */
-    private ImageViewer(ImageDataObject obj, JLabel label) {
-        super(obj);
-        Icon icon = label.getIcon();
-        this.label = (icon != null) ? new JLabel(icon) : new JLabel();
-        initialize(obj);
-    }
-    
-    /** Reloads icon, call from event-dispaching thread only! */
-    protected void reloadIcon(Icon icon) {
-        label.setIcon(icon);
-        this.repaint();
+    /** Reloads icon. */
+    protected void reloadIcon(NBImageIcon icon) {
+        // Reset values.
+        storedImage = icon;
+        scaled = 0;
+        factor = (float)storedImage.getIconHeight() / storedImage.getIconWidth(); // y/x
+
+        redrawImage();
     }
     
     /** Initializes member variables and set listener for name changes on DataObject. */
@@ -106,19 +103,42 @@ public class ImageViewer extends CloneableTopComponent {
         storedObject = obj;
         storedImage = new NBImageIcon(storedObject);
         
-        factor = storedImage.getIconHeight() / storedImage.getIconWidth(); // x/y
+        factor = (float)storedImage.getIconHeight() / storedImage.getIconWidth(); // y/x
+   
+        panel = new JPanel() {
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                
+                g.drawImage(
+                    storedImage.getImage(),
+                    0,
+                    0,
+                    storedImage.getIconWidth() + scaled,
+                    (int)((storedImage.getIconHeight() + scaled) * factor),
+                    0,
+                    0,
+                    storedImage.getIconWidth(),
+                    storedImage.getIconHeight(), 
+                    this
+                );
+                
+            }
+            
+            /** Calculates factor of image when fully loaded. Overrides superclass method. */
+            public boolean imageUpdate(Image img, int infoflags, int x, int y, int w, int h) {
+                if ((infoflags & (FRAMEBITS|ALLBITS)) != 0) {
+                    factor = (float)h/w;
+                }
+                
+                return (infoflags & (ALLBITS|ABORT)) == 0;
+            }
+            
+        };
+
+        storedImage.setImageObserver(panel);
         
-        if(label == null) // when using deserialization by cloning
-            label = new JLabel(new NBImageIcon(obj));
-        
-        JPanel panel = new JPanel(new GridBagLayout());
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.weightx = 1.0;
-        constraints.weighty = 1.0;
-        constraints.anchor = GridBagConstraints.NORTHWEST;
-        
-        panel.add(label, constraints);
-        
+        panel.setPreferredSize(new Dimension(storedImage.getIconWidth(), storedImage.getIconHeight() ));
+
         JScrollPane scroll = new JScrollPane(panel);
         
         setLayout(new BorderLayout());
@@ -203,7 +223,7 @@ public class ImageViewer extends CloneableTopComponent {
     
     /** Creates cloned object which uses the same underlying data object. */
     protected CloneableTopComponent createClonedObject () {
-        return new ImageViewer(storedObject, label);
+        return new ImageViewer(storedObject);
     }
     
     /** Overrides superclass method. Gets actions for this top component. */
@@ -223,30 +243,32 @@ public class ImageViewer extends CloneableTopComponent {
         return icon;
     }
     
-    /** Creates a new image with a bigger size.
-     */
+    /** Draws zoom in scaled image. */
     public void zoomIn() {
         scaled += 10;
-        performZoom();
+        redrawImage();
     }
     
-    /** Creates a new image with a smaller size. */
+    /** Draws zoom out scaled image. */
     public void zoomOut() {
         if (isNewSizeOK()) { // You can't still make picture smaller, but bigger why not? 
             scaled -= 10;
-            performZoom();
+            redrawImage();
         } // Show dialog ? I thing no.
     }
     
-    /** Perform zooming of stored image. */
-    private void performZoom() {
-        label.setIcon(new NBImageIcon(storedImage.getImage().getScaledInstance(storedImage.getIconWidth()+scaled,
-            (int)((storedImage.getIconWidth()+scaled)*factor), Image.SCALE_FAST),storedObject)
-        );
+    /** Redraws image and resets size of panel. */
+    private void redrawImage() {
+        int x = storedImage.getIconWidth() + scaled;
+        int y = (int)((storedImage.getIconHeight()+scaled)*factor);
+        
+        panel.setPreferredSize(new Dimension(x, y));
+        panel.revalidate();
+        panel.repaint(0, 0, x+10, y+10);
     }
     
-    /** This method test a new size of image. If image is smaller than  minimum
-     *  size(10x10) zooming will nor perform.
+    /** Tests new size of image. If image is smaller than  minimum
+     *  size(10x10) zooming will be not performed.
      */
     private boolean isNewSizeOK() {
         int loc_scaled = scaled - 10;

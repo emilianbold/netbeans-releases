@@ -31,6 +31,7 @@ import org.openide.TopManager;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 
 /** 
@@ -49,6 +50,9 @@ public class ImageOpenSupport extends OpenSupport implements OpenCookie {
     /** Listens for changes on file. */
     private FileChangeListener fileChangeL; 
 
+    /** Reloading task. */
+    private Task reloadTask;
+    
 
     /** Constructs ImageOpenSupportObject on given MultiDataObject.Entry. */
     public ImageOpenSupport (MultiDataObject.Entry ent) {
@@ -69,14 +73,18 @@ public class ImageOpenSupport extends OpenSupport implements OpenCookie {
                 public void fileChanged(final FileEvent evt) {
                     if (evt.getTime() > lastSaveTime) {
                         lastSaveTime = System.currentTimeMillis();
-                        // post in AWT event thread because of possible dialog popup
-                        SwingUtilities.invokeLater(
-                            new Runnable() {
-                                public void run() {
-                                    reload(evt);
+                        
+                        // Post in new task.
+                        if(reloadTask == null || reloadTask.isFinished()) {
+                        
+                            reloadTask = RequestProcessor.postRequest(
+                                new Runnable() {
+                                    public void run() {
+                                        reload(evt);
+                                    }
                                 }
-                            }
-                        );
+                            );
+                        }
                     }
                 }
             };
@@ -98,22 +106,18 @@ public class ImageOpenSupport extends OpenSupport implements OpenCookie {
             final ImageDataObject imageObj = (ImageDataObject)entry.getDataObject();
             final CloneableTopComponent.Ref editors = allEditors;
 
-            RequestProcessor.postRequest(new Runnable() {
-                // load icon from file
-                public void run() {
-                    final Icon icon = new NBImageIcon(imageObj);
+            // Icon to reload.
+            final NBImageIcon icon = new NBImageIcon(imageObj);
 
-                    Enumeration e = editors.getComponents();
-                    while(e.hasMoreElements()) {
-                        final Object pane = e.nextElement();
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                ((ImageViewer)pane).reloadIcon(icon);
-                            }
-                        });
+            Enumeration e = editors.getComponents();
+            while(e.hasMoreElements()) {
+                final Object pane = e.nextElement();
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        ((ImageViewer)pane).reloadIcon(icon);
                     }
-                }
-            });
+                });
+            }
         }
     }
 }

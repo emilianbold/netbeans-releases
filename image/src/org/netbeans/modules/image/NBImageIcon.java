@@ -33,6 +33,7 @@ class NBImageIcon extends ImageIcon implements Serializable {
     /** Appropriate image data object */
     ImageDataObject obj;
 
+    
     /** Construct a new icon.
      * @param obj the data object to represent the image in
      */
@@ -42,12 +43,6 @@ class NBImageIcon extends ImageIcon implements Serializable {
         this.obj = obj;
     }
     
-    /** This constructor is used for zooming. */
-    public NBImageIcon(Image im, ImageDataObject obj) {
-        super(im);
-        this.obj = obj;
-    }
-
     
     /** Get an object to be written to the stream instead of this object. */
     public Object writeReplace() {
