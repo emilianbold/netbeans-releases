@@ -214,7 +214,12 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
         try {
 
             // Create a connection for this command
-            conn = (new URL(tm.getUri () + command)).openConnection();
+            String uri = tm.getUri ();
+            if (uri.indexOf ("http:") > 0) {  // NOI18N
+                // strip home & base
+                uri = uri.substring (uri.indexOf ("http:")); // NOI18N
+            }
+            conn = (new URL(uri + command)).openConnection();
             HttpURLConnection hconn = (HttpURLConnection) conn;
 
             // Set up standard connection characteristics
