@@ -53,7 +53,11 @@ public class UnitTestForSourceQueryImpl implements UnitTestForSourceQueryImpleme
         }
         String path = helper.resolvePath(evaluator.getProperty(to));
         try {
-            return helper.resolveFile(path).toURI().normalize().toURL();
+            URL url = helper.resolveFile(path).toURI().normalize().toURL();
+            if (!url.toExternalForm().endsWith("/")) {
+                url = new URL (url.toExternalForm()+'/');
+            }
+            return url;
         } catch (MalformedURLException e) {
             ErrorManager.getDefault().log(ErrorManager.EXCEPTION, e.toString());
             return null;
