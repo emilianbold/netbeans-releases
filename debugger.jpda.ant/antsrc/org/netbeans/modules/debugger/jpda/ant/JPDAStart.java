@@ -121,13 +121,13 @@ public class JPDAStart extends Task implements Runnable {
 
         debug ("Execute started");
         if (name == null)
-            throw new BuildException ("name attribute must specify name of this debugging session", getLocation());
+            throw new BuildException ("name attribute must specify name of this debugging session", getLocation ());
         if (addressProperty == null)
-            throw new BuildException("addressproperty attribute must specify name of property to which address will be set", getLocation());
+            throw new BuildException ("addressproperty attribute must specify name of property to which address will be set", getLocation ());
         if (transport == null)
             transport = "dt_socket";
 
-        debug("Entering synch lock");
+        debug ("Entering synch lock");
         lock = new Object [2];
         synchronized (lock) {
             debug ("Entered synch lock");
@@ -177,19 +177,12 @@ public class JPDAStart extends Task implements Runnable {
                 }
 
                 debug ("Creating source path");
-                ClassPath sessionSourcePath = (classpath == null) ? 
-                    null : 
-                    createSourcePath (getProject (), classpath);
-                if (sourcepath != null)
-                    sessionSourcePath = appendPath (
-                        getProject (), 
-                        sessionSourcePath, 
-                        sourcepath
-                    );
-                ClassPath bootcp = (bootclasspath == null) ? 
-                    null : //JavaPlatform.getDefault ().getSourceFolders () : 
-                    createSourcePath (getProject (), bootclasspath);
-
+                ClassPath sourcePath = createSourcePath (
+                    getProject (),
+                    classpath, 
+                    sourcepath, 
+                    bootclasspath
+                );
                 debug ("Creating cookie");
                 ListeningDICookie ldic = ListeningDICookie.create (lc, args);
                 debug ("Cookie created");
@@ -197,7 +190,7 @@ public class JPDAStart extends Task implements Runnable {
                     ListeningDICookie.ID, 
                     new Object [] {
                         ldic, 
-                        sessionSourcePath
+                        sourcePath
                     }
                 );
 
@@ -218,13 +211,42 @@ public class JPDAStart extends Task implements Runnable {
         System.out.println (new Date() + " [" + Thread.currentThread().getName() + "] - " + msg);
     }
 
+    static ClassPath createSourcePath (
+        Project project, 
+        Path classpath,
+        Path sourcepath,
+        Path bootclasspath
+    ) {
+        ClassPath sourcePath = convertToSourcePath 
+           (project, classpath);
+        if (sourcepath != null)
+            sourcePath = ClassPathSupport.createProxyClassPath (
+                new ClassPath[] {
+                    sourcePath,
+                    convertToSourcePath (project, sourcepath)
+                }
+            );
+        sourcePath = ClassPathSupport.createProxyClassPath (
+            new ClassPath[] {
+                sourcePath,
+                (bootclasspath == null) ? 
+                    ClassPathSupport.createClassPath (
+                        (FileObject[]) JavaPlatform.getDefault ().
+                            getSourceFolders ().toArray (new FileObject [0])
+                    ): 
+                    convertToSourcePath (project, bootclasspath)
+            }
+        );
+        return sourcePath;
+    }
+
     /**
      * This method uses SourceForBinaryQuery to find sources for each
      * path item and returns them as ClassPath instance. All path items for which
      * the sources were not found are omitted.
      *
      */
-    public static ClassPath createSourcePath (Project project, Path path) {
+    static ClassPath convertToSourcePath (Project project, Path path) {
         String[] paths = path.list ();
         List l = new ArrayList ();
         List exist = new ArrayList ();
@@ -244,10 +266,10 @@ public class JPDAStart extends Task implements Runnable {
                     u = f.toURI().toURL();
                 }
             } catch (MalformedURLException e) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
                 continue;
             }
-            FileObject fos[] = SourceForBinaryQuery.findSourceRoot(u);
+            FileObject fos[] = SourceForBinaryQuery.findSourceRoot (u);
             if (fos.length > 0) {
                 try {
                     u = FileUtil.toFile(fos[0]).toURI().toURL();
@@ -269,31 +291,31 @@ public class JPDAStart extends Task implements Runnable {
      *
      * @param cp classpath; can be null
      */
-    public static ClassPath appendPath (Project project, ClassPath cp, Path path) {
-        String[] paths = path.list ();
-        List l = new ArrayList ();
-        for (int i = 0; i < paths.length; i++) {
-            URL u = null;
-            try {
-                File f = FileUtil.normalizeFile (project.resolveFile (paths [i]));
-                if (!isValid (f, project)) {
-                    continue;
-                }
-                u = f.toURI ().toURL ();
-            } catch (MalformedURLException e) {
-                ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
-                continue;
-            }
-            l.add (ClassPathSupport.createResource (u));
-        }
-        if (cp != null) {
-            return ClassPathSupport.createProxyClassPath (
-                new ClassPath [] {cp, ClassPathSupport.createClassPath (l)}
-            );
-        } else {
-            return ClassPathSupport.createClassPath (l);
-        }
-    }
+//    public static ClassPath appendPath (Project project, ClassPath cp, Path path) {
+//        String[] paths = path.list ();
+//        List l = new ArrayList ();
+//        for (int i = 0; i < paths.length; i++) {
+//            URL u = null;
+//            try {
+//                File f = FileUtil.normalizeFile (project.resolveFile (paths [i]));
+//                if (!isValid (f, project)) {
+//                    continue;
+//                }
+//                u = f.toURI ().toURL ();
+//            } catch (MalformedURLException e) {
+//                ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
+//                continue;
+//            }
+//            l.add (ClassPathSupport.createResource (u));
+//        }
+//        if (cp != null) {
+//            return ClassPathSupport.createProxyClassPath (
+//                new ClassPath [] {cp, ClassPathSupport.createClassPath (l)}
+//            );
+//        } else {
+//            return ClassPathSupport.createClassPath (l);
+//        }
+//    }
 
     private static boolean isValid (File f, Project project) {
         if (f.getPath ().indexOf ("${") != -1 && !f.exists ()) { // NOI18N

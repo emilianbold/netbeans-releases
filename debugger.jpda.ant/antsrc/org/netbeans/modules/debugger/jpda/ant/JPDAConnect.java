@@ -52,43 +52,36 @@ public class JPDAConnect extends Task {
      * JPDA server port to connect to.
      * By default, 8888.
      */
-    public void setPort(int p) {
+    public void setPort (int p) {
         port = p;
     }
     
-    public void addClasspath(Path path) {
-        if (classpath != null) {
-            throw new BuildException("Only one classpath subelement is supported");
-        }
+    public void addClasspath (Path path) {
+        if (classpath != null)
+            throw new BuildException ("Only one classpath subelement is supported");
         classpath = path;
     }
     
-    public void addBootclasspath(Path path) {
-        if (bootclasspath != null) {
-            throw new BuildException("Only one bootclasspath subelement is supported");
-        }
+    public void addBootclasspath (Path path) {
+        if (bootclasspath != null)
+            throw new BuildException ("Only one bootclasspath subelement is supported");
         bootclasspath = path;
     }
     
-    public void addSourcepath(Path path) {
-        if (sourcepath != null) {
-            throw new BuildException("Only one sourcepath subelement is supported");
-        }
+    public void addSourcepath (Path path) {
+        if (sourcepath != null)
+            throw new BuildException ("Only one sourcepath subelement is supported");
         sourcepath = path;
     }
     
-    public void execute() throws BuildException {
+    public void execute () throws BuildException {
         final Object[] exc = new Object [1];
-        ClassPath sourcePath = (classpath == null) ? 
-            null : 
-            JPDAStart.createSourcePath (getProject (), classpath);
-        if (sourcepath != null) {
-            sourcePath = JPDAStart.appendPath (getProject (), sourcePath, sourcepath);
-        }
-        final ClassPath cp = sourcePath;
-        final ClassPath bootcp = (bootclasspath == null) ? 
-            null : 
-            JPDAStart.createSourcePath (getProject (), bootclasspath);
+        final ClassPath sourcePath = JPDAStart.createSourcePath (
+            getProject (),
+            classpath, 
+            sourcepath, 
+            bootclasspath
+        );
             
         synchronized (exc) {
             RequestProcessor.getDefault ().post (new Runnable () {
@@ -103,7 +96,7 @@ public class JPDAConnect extends Task {
                             AttachingDICookie.ID, 
                             new Object [] {
                                 info, 
-                                sourcepath
+                                sourcePath
                             }
                         );
                     }
