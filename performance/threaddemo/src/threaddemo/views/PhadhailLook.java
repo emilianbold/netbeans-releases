@@ -34,10 +34,10 @@ import threaddemo.model.*;
  */
 final class PhadhailLook extends Look implements PhadhailListener, LookupListener, ChangeListener {
     
-    private static final Map phadhails2Results = new HashMap(); // Map<Phadhail,Lookup.Result>
-    private static final Map results2Phadhails = new HashMap(); // Map<Lookup.Result,Phadhail>
-    private static final Map phadhails2DomProviders = new HashMap(); // Map<Phadhail,DomProvider>
-    private static final Map domProviders2Phadhails = new HashMap(); // Map<DomProvider,Phadhail>
+    private static final Map phadhails2Results = new IdentityHashMap(); // Map<Phadhail,Lookup.Result>
+    private static final Map results2Phadhails = new IdentityHashMap(); // Map<Lookup.Result,Phadhail>
+    private static final Map phadhails2DomProviders = new IdentityHashMap(); // Map<Phadhail,DomProvider>
+    private static final Map domProviders2Phadhails = new IdentityHashMap(); // Map<DomProvider,Phadhail>
     
     PhadhailLook() {
         super("PhadhailLook");
