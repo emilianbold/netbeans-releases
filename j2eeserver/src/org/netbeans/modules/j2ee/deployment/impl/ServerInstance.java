@@ -66,6 +66,7 @@ public class ServerInstance implements Node.Cookie {
     }
     
     public void refresh() {
+        manager.release();
         targets = null;
         
         FileObject fo = ServerRegistry.getInstanceFileObject(url);
@@ -536,4 +537,5 @@ public class ServerInstance implements Node.Cookie {
     private void showStatusText(String msg) {
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(msg);
     }
+    
 }

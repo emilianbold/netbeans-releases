@@ -27,6 +27,7 @@ import org.openide.nodes.Node;
 import java.util.*;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.FindServer;
 
 public class Server implements Node.Cookie {
     
@@ -141,10 +142,10 @@ public class Server implements Node.Cookie {
         return dep.getContainerLimitation() == null || dep.getContainerLimitation().isEjbjarDeploy();
     }
     
-    public javax.swing.JPanel getFindServer() {
+    public FindServer getFindServer() {
         Object o = getClassFromPlugin(dep.getFinderUi());
-        if (o instanceof javax.swing.JPanel)
-            return (javax.swing.JPanel) o;
+        if (o instanceof FindServer)
+            return (FindServer) o;
         return null;
     }
         
