@@ -660,8 +660,15 @@ public final class ClassPath {
 
         public void addRoot (URL url) {
             if (!initialized) {
-                Repository.getDefault().addFileChangeListener (this);
-                initialized = true;
+                FileObject fo = URLMapper.findFileObject (url);
+                if (fo != null) {
+                    try {
+                        fo.getFileSystem().addFileChangeListener (this);
+                        initialized = true;
+                    } catch (FileStateInvalidException e) {
+                        ErrorManager.getDefault().notify (e);
+                    }
+                }
             }
             String path = url.getPath();
             if (path.endsWith("/")) {
