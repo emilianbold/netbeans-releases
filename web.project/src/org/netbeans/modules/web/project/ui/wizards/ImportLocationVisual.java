@@ -132,10 +132,9 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         }
         settings.putProperty (WizardProperties.SOURCE_ROOT, srcRoot);
         settings.putProperty (WizardProperties.NAME, projectNameTextField.getText());
+        
         File projectsDir = new File(projectLocationTextField.getText());
-
-        if (projectsDir != null && projectsDir.isDirectory())
-            settings.putProperty (WizardProperties.PROJECT_DIR, projectsDir);
+        settings.putProperty (WizardProperties.PROJECT_DIR, projectsDir);        
         projectsDir = projectsDir.getParentFile();
         if (projectsDir != null && projectsDir.isDirectory())
             ProjectChooser.setProjectsFolder (projectsDir);
