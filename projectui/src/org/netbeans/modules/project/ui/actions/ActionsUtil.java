@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,6 +30,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.WeakSet;
 
 /** Nice utility methods to be used in ProjectBased Actions
@@ -36,26 +39,12 @@ import org.openide.util.WeakSet;
  * @author Pet Hrebejk 
  */
 class ActionsUtil {
-         
+    
+    public static LookupResultsCache lookupResultsCache;
+    
     public static final ShortcutsManager SHORCUTS_MANAGER = new ShortcutsManager();
     
     public static HashMap /*<String,MessageFormat>*/ pattern2format = new HashMap(); 
-    
-    /** Registers property change listener on given lookup. (Or on the default
-     *  lookup (if the paramater is null). The listener is notified when the
-     *  set of currently selected projects changes.
-     */          
-    /*
-    public static Project getProjectFromLookup( Lookup lookup, String command ) {
-        Collection projects = getProjectsFromLookup( lookup, command );
-        if ( projects.isEmpty() || projects.size() > 1 ) {
-            return null;
-        }
-        else {
-            return (Project)projects.iterator().next();
-        }
-    }
-    */
     
     /** Finds all projects in given lookup. If the command is not null it will check 
      * whther given command is enabled on all projects. If and only if all projects
@@ -63,31 +52,13 @@ class ActionsUtil {
      * is one project with the command disabled it will return empty array.
      */
     public static Project[] getProjectsFromLookup( Lookup lookup, String command ) {    
-        Set result = new HashSet();
-
-        // First find out whether there is a project directly in the Lookup                        
-        Collection projects = lookup.lookup( new Lookup.Template( Project.class ) ).allInstances();            
-        for( Iterator it = projects.iterator(); it.hasNext(); ) {
-            Project p = (Project)it.next();
-            result.add(p);
-        }
-
-        // Now try to guess the project from dataobjects
-        Collection dataObjects = lookup.lookup( new Lookup.Template( DataObject.class ) ).allInstances();
-        for( Iterator it = dataObjects.iterator(); it.hasNext(); ) {
-
-            DataObject dObj = (DataObject)it.next();
-            FileObject fObj = dObj.getPrimaryFile();
-            Project p = FileOwnerQuery.getOwner(fObj);
-            if ( p != null ) {
-                result.add( p );                                        
-            }
-
-        }
         
-        Project[] projectsArray = new Project[ result.size() ];
-        result.toArray( projectsArray );        
-        
+        if ( lookupResultsCache == null ) {
+            lookupResultsCache = new LookupResultsCache( new Class[] { Project.class, DataObject.class } );
+        }
+         
+        Project[] projectsArray = lookupResultsCache.getProjects( lookup );
+                
         if ( command != null ) {
             // All projects have to have the command enabled
             for( int i = 0; i < projectsArray.length; i++ ) {
@@ -272,8 +243,92 @@ class ActionsUtil {
                 
     }
     
-    
-    
+    /** Caches the projects and files included in the last quried lookup
+     */
+    private static class LookupResultsCache implements LookupListener {
+        
+        private Class watch[];
+        
+        private Lookup lruLookup;
+        private Lookup.Result lruResults[];
+        private Project[] projects;
+                
+        LookupResultsCache( Class[] watch ) {
+            this.watch = watch;
+        }
+        
+        public Project[] getProjects( Lookup lookup ) {
+            
+            if ( lookup != lruLookup ) { // Lookup changed
+                if ( lruResults != null ) {
+                    for( int i = 0; i < watch.length; i++ ) {
+                        lruResults[i].removeLookupListener( this ); // Deregister
+                    }        
+                    lruResults = null;
+                }
+                makeDirty();
+                lruLookup = null;
+            }
+            
+            if ( lruLookup == null ) { // Needs to attach to lookup
+                lruLookup = lookup;
+                lruResults = new Lookup.Result[watch.length];
+                for ( int i = 0; i < watch.length; i++ ) {
+                    lruResults[i] = lookup.lookup( new Lookup.Template( watch[i] ) );
+                    lruResults[i].allItems();
+                    lruResults[i].addLookupListener( this ); 
+                }                
+            }
+            
+            if ( isDirty() ) { // Needs to recompute the result
+                
+                Set result = new HashSet();
+
+                // First find out whether there is a project directly in the Lookup                        
+                Collection currentProjects = lruLookup.lookup( new Lookup.Template( Project.class ) ).allInstances();
+                
+                for( Iterator it = currentProjects.iterator(); it.hasNext(); ) {
+                    Project p = (Project)it.next();
+                    result.add(p);
+                }
+
+                // Now try to guess the project from dataobjects
+                Collection currentDataObjects = lruLookup.lookup( new Lookup.Template( DataObject.class ) ).allInstances();
+                for( Iterator it = currentDataObjects.iterator(); it.hasNext(); ) {
+
+                    DataObject dObj = (DataObject)it.next();
+                    FileObject fObj = dObj.getPrimaryFile();
+                    Project p = FileOwnerQuery.getOwner(fObj);
+                    if ( p != null ) {
+                        result.add( p );                                        
+                    }
+
+                }
+
+                projects = new Project[ result.size() ];
+                result.toArray( projects );        
+
+            }
+                        
+            return projects;
+        }
+                        
+                
+        private boolean isDirty() {
+            return projects == null;
+        }
+        
+        private void makeDirty() {
+            projects = null;
+        }
+                
+        // Lookup listener implementation --------------------------------------
+        
+        public void resultChanged( LookupEvent e ) {
+            makeDirty();
+        }
+        
+    }
     
 
 }
