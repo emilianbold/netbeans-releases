@@ -727,7 +727,16 @@ class HandleLayer extends JPanel
                     wasDragged = false;
                 }
                 
-                if (componentDragger != null) {
+                CPManager palette = CPManager.getDefault();
+                
+                if (palette.getMode() == PaletteAction.MODE_CONNECTION) {
+                    RADComponent hitMetaComp = getMetaComponentAt(e.getPoint(),
+                            e.isControlDown() || e.isAltDown() ?
+                            COMP_SELECTED : COMP_DEEPEST);
+
+                    formDesigner.connectBean(hitMetaComp, true);
+                }
+                else if (componentDragger != null) {
                     componentDragger.dropComponents(e.getPoint());
                     componentDragger = null;
                     repaint();
@@ -747,8 +756,7 @@ class HandleLayer extends JPanel
                 }
 
                 if ((e.getModifiers() & InputEvent.SHIFT_MASK) == 0) {
-                    CPManager palette = CPManager.getDefault();
-                    if (palette.getMode() != PaletteAction.MODE_SELECTION)
+                    if (palette.getMode() == PaletteAction.MODE_ADD)
                         palette.setMode(PaletteAction.MODE_SELECTION);
                 }
 
@@ -822,10 +830,10 @@ class HandleLayer extends JPanel
                     RADComponent hitMetaComp = getMetaComponentAt(e.getPoint(),
                             e.isControlDown() || e.isAltDown() ?
                             COMP_SELECTED : COMP_DEEPEST);
-
-                    if (paletteMode == PaletteAction.MODE_CONNECTION) {
+                            
+                    if (palette.getMode() == PaletteAction.MODE_CONNECTION) {
                         if (hitMetaComp != null)
-                            formDesigner.connectBean(hitMetaComp);
+                            formDesigner.connectBean(hitMetaComp, false);
                     }
                     else if (paletteMode == PaletteAction.MODE_ADD) {
                         PaletteItem item = palette.getSelectedItem();

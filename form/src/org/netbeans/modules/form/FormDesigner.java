@@ -599,21 +599,27 @@ public class FormDesigner extends TopComponent
     // ------------------
     // bean connection
 
-    void connectBean(RADComponent metacomp) {
+    void connectBean(RADComponent metacomp, boolean showDialog) {
         if (connectionSource == null) {
             connectionSource = metacomp;
             handleLayer.repaint();
         }
         else {
-            if (metacomp == connectionSource)
+            if (metacomp == connectionSource) {
+                if (connectionTarget != null) {
+                    resetConnection();
+                    CPManager.getDefault().setMode(PaletteAction.MODE_SELECTION);                    
+                }
                 return;
+            }
             connectionTarget = metacomp;
             handleLayer.repaint();
-            createConnection(connectionSource, metacomp);
-            connectionSource = null;
-            connectionTarget = null;
-            handleLayer.repaint();
-            CPManager.getDefault().setMode(PaletteAction.MODE_SELECTION);
+            if (showDialog) {
+                if (connectionTarget != null) 
+                    createConnection(connectionSource, connectionTarget);
+                resetConnection();
+                CPManager.getDefault().setMode(PaletteAction.MODE_SELECTION);
+            }
         }
     }
 
