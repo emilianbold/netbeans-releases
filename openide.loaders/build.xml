@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <property name="nbm_alias" value="nb_ide"/>
     <property name="homepage.base" value="netbeans.org"/>
-    <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+    <property name="dist.base" value="www.netbeans.org/download/nbms/alpha/dev"/>
     <property name="license.file" value="${nb_all}/nbbuild/standard-nbm-license.txt"/>
 
     <path id="cp">
