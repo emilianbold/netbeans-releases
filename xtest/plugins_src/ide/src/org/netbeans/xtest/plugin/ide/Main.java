@@ -219,6 +219,23 @@ public class Main extends Object {
     private static final String IDE_CREATE_PROJECT = "xtest.ide.create.project";
     private static final String IDE_OPEN_PROJECT = "xtest.ide.open.project";
     private static final String XTEST_USERDIR  = "xtest.userdir";
+
+    private static MainWithProjectsInterface projectsHandle;
+
+    /** Gets projects handle only when needed. It doesn't fail when used for
+     * platform (http://www.netbeans.org/issues/show_bug.cgi?id=47928)
+     */
+    private static MainWithProjectsInterface getProjectsHandle() {
+        if(projectsHandle == null) {
+            try {
+                projectsHandle = (MainWithProjectsInterface)new WithProjectsClassLoader().loadClass("org.netbeans.xtest.plugin.ide.MainWithProjects").newInstance();
+            } catch (Exception e) {
+                errMan.notify(e);
+                return null;
+            }
+        }
+        return projectsHandle;
+    }
     
     private static void doTestPart() {
         
@@ -243,14 +260,6 @@ public class Main extends Object {
         }
          */
 
-        final MainWithProjectsInterface projectsHandle;
-        try {
-            projectsHandle = (MainWithProjectsInterface)new WithProjectsClassLoader().loadClass("org.netbeans.xtest.plugin.ide.MainWithProjects").newInstance();
-        } catch (Exception e) {
-            errMan.notify(e);
-            return;
-        }
-        
         long testTimeout;
         
         try {
@@ -287,11 +296,11 @@ public class Main extends Object {
                         
                         // create an empty Java project
                         if (System.getProperty(IDE_CREATE_PROJECT,"false").equals("true")) {
-                            projectsHandle.createProject(System.getProperty(XTEST_USERDIR));
+                            getProjectsHandle().createProject(System.getProperty(XTEST_USERDIR));
                         }
                         // open project at specified location
                         if (!System.getProperty(IDE_OPEN_PROJECT,"").equals("")) {
-                            projectsHandle.openProject(System.getProperty(IDE_OPEN_PROJECT));
+                            getProjectsHandle().openProject(System.getProperty(IDE_OPEN_PROJECT));
                         }
                     }
                         
