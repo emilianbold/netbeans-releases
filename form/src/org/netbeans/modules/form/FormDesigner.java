@@ -94,9 +94,6 @@ public class FormDesigner extends TopComponent
     }
 
     FormDesigner(FormModel formModel) {
-        // instruct winsys to save state of this top component only if opened
-        putClientProperty("PersistenceType", "OnlyOpened"); // NOI18N
-
         setIcon(Utilities.loadImage(iconURL));
 
         formToolBar = new FormToolBar(this);
@@ -122,7 +119,13 @@ public class FormDesigner extends TopComponent
     public void initialize() {
         updateWholeDesigner();
     }
-
+    
+    /** Overriden to explicitely set persistence type of FormDesigner
+     * to PERSISTENCE_ONLY_OPENED */
+    public int getPersistenceType() {
+        return TopComponent.PERSISTENCE_ONLY_OPENED;
+    }
+    
     void setModel(FormModel m) {
         if (formModel != null) {
             if (formModelListener != null)
