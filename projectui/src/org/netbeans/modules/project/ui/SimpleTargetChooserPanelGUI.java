@@ -66,7 +66,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         String text = folderTextField.getText().trim();
         
         if ( text.length() == 0 ) {
-            return null;
+            return FileUtil.toFile( project.getProjectDirectory() ).getPath();
         }
         else {
             // XXX have to account for FU.tF returning null
