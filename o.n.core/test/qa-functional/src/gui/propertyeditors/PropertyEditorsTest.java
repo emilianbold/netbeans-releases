@@ -216,7 +216,8 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
      * @return Informational dialog
      */    
     public NbDialogOperator getInformationDialog() {
-        String title = "Information";                           // NOI18N
+        String title = org.netbeans.jellytools.Bundle.getString("org.openide.Bundle", "NTF_InformationTitle");
+        
         err.println(CAPTION + " Waiting dialog {"+title+"} .");
         NbDialogOperator dialog = new NbDialogOperator(title);
         err.println(CAPTION + " Waiting dialog {"+title+"} - finished.");
@@ -303,10 +304,10 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
         JemmyProperties.setCurrentTimeout(waitFrameTimeout, 3000);
 
         try{
-            propertiesWindow = new FrameOperator("Properties of TestNode");  // NOI18N
+            propertiesWindow = new FrameOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties", new Object[]{new Integer(1),"TestNode"}));
         }catch(org.netbeans.jemmy.TimeoutExpiredException exception){
-           new PropertiesTest();
-           propertiesWindow = new FrameOperator("Properties of TestNode");
+            new PropertiesTest();
+            propertiesWindow = new FrameOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties", new Object[]{new Integer(1),"TestNode"}));
         }
         
         JemmyProperties.setCurrentTimeout(waitFrameTimeout, findTimeout);
