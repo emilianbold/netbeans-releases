@@ -671,6 +671,7 @@ public abstract class NbTopManager extends TopManager {
                 if (getModuleSystem().shutDown()) {
                     // save project
                     NbProjectOperation.storeLastProject ();
+                    org.netbeans.core.projects.XMLSettingsHandler.saveOptions();
     
                     Runtime.getRuntime().exit ( 0 );
                 }
