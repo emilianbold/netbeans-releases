@@ -26,7 +26,6 @@ import java.util.List;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.TopManager;
@@ -61,20 +60,20 @@ public class DataObjectSearchGroup extends SearchGroup {
      * Actuall search implementation. Fires PROP_FOUND notifications.
      * Implements superclass abstract method. */
     public void doSearch() {
-        DataFolder[] rootFolders = getDataFolders();
+        DataObject.Container [] roots = getContainers();
         
-        if(rootFolders == null)
+        if(roots == null)
             return;
         
-        for(int i = 0; i < rootFolders.length; i++) {
-            if(!scanFolder(rootFolders[i])) {
+        for(int i = 0; i < roots.length; i++) {
+            if(!scanContainer(roots[i])) {
                 return;
             }
         }
     }
     
     /** Gets data folder roots on which to search. */
-    private DataFolder[] getDataFolders() {
+    private DataObject.Container[] getContainers() {
         Node[] nodes = normalizeNodes((Node[])searchRoots.toArray(new Node[searchRoots.size()]));
 
         List children = new ArrayList(nodes.length);
@@ -94,7 +93,7 @@ public class DataObjectSearchGroup extends SearchGroup {
                             children.add(DataObject.find(fs.getRoot()));
                     }
 
-                    return (DataFolder[])children.toArray(new DataFolder[children.size()]);
+                    return (DataObject.Container[])children.toArray(new DataObject.Container[children.size()]);
                 }
             } catch(IOException ioe) {
                 ioe.printStackTrace();                    
@@ -105,20 +104,20 @@ public class DataObjectSearchGroup extends SearchGroup {
 
 
         for(int i = 0; i<nodes.length; i++) {
-            DataFolder dataFolder = (DataFolder)nodes[i].getCookie(DataFolder.class);
-            if(dataFolder != null) {
-                children.add(dataFolder);
+            DataObject.Container container = (DataObject.Container)nodes[i].getCookie(DataObject.Container.class);
+            if(container != null) {
+                children.add(container);
             }
         }
 
-        return (DataFolder[])children.toArray(new DataFolder[children.size()]);
+        return (DataObject.Container[])children.toArray(new DataObject.Container[children.size()]);
     }
     
     /** Scans data folder recursivelly. 
      * @return <code>true</code> if scanned entire folder successfully
      * or <code>false</code> if scanning was stopped. */
-    private boolean scanFolder(DataFolder folder) {
-        DataObject[] children = folder.getChildren();
+    private boolean scanContainer(DataObject.Container container) {
+        DataObject[] children = container.getChildren();
 
         for(int i = 0; i < children.length; i++) {
             // Test if the search was stopped.
@@ -126,9 +125,10 @@ public class DataObjectSearchGroup extends SearchGroup {
                 stopped = true;
                 return false;
             }
-            
-            if(children[i] instanceof DataFolder) {
-                if(!scanFolder((DataFolder)children[i])) {
+
+            DataObject.Container c = (DataObject.Container)children[i].getCookie(DataObject.Container.class);
+            if(c != null) {
+                if(!scanContainer(c)) {
                     return false;
                 }
             } else {
