@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="unit-compiler">
         <!-- build guitracker library first -->
-        <ant antfile="../guitracker/nbproject/build-impl.xml" target="jar"/>
+        <ant dir="../guitracker" antfile="../guitracker/build-for-tests.xml" target="jar"/>
         
         <buildTests srcDir="unit/src" compileexcludes="**/data/**">
             <classpath refid="jemmy.and.jelly.path"/>
