@@ -158,9 +158,18 @@ final class BrokenDataShadow extends MultiDataObject {
             src = ((OperationEvent)ev).getObject();
         }
         
+        FileObject file = null;
+        if (src != null) {
+            file = src.getPrimaryFile ();
+        } else {
+            if (ev instanceof FileEvent) {
+                file = ((FileEvent)ev).getFile();
+            }
+        }
+        
         // #43315 hotfix: disable validity checking for non-SFS filesystem
         try {
-            if (!src.getPrimaryFile().getFileSystem().equals(
+            if (!file.getFileSystem().equals(
                     Repository.getDefault().getDefaultFileSystem())) {
                 return;
             }
@@ -173,7 +182,7 @@ final class BrokenDataShadow extends MultiDataObject {
 
         String key;
         try {
-            key = src.getPrimaryFile().getURL().toExternalForm();
+            key = file.getURL().toExternalForm();
         } catch (FileStateInvalidException ex) {
             // OK, exit
             return;

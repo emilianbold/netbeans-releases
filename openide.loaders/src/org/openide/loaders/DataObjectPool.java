@@ -555,6 +555,7 @@ implements ChangeListener {
                 DataObject dobj = ((Item)it.next()).getDataObjectOrNull();
                 if (dobj != null) dobj.notifyFileDataCreated(fe);
             }
+            ShadowChangeAdapter.checkBrokenDataShadows(fe);
         }
         
         public void fileAttributeChanged (FileAttributeEvent fe) {
@@ -562,6 +563,10 @@ implements ChangeListener {
                 DataObject dobj = ((Item)it.next()).getDataObjectOrNull();
                 if (dobj != null) dobj.notifyAttributeChanged(fe);
             }
+        }
+
+        public void fileFolderCreated(FileEvent fe) {
+            ShadowChangeAdapter.checkBrokenDataShadows(fe);
         }
     }
     
