@@ -102,13 +102,6 @@ public final class BeanInstaller extends Object {
           String pal = selectPaletteCategory();
           if (pal != null) {
             finishInstall(jar, sel.getSelectedBeans(), pal);
-            java.awt.EventQueue.invokeLater (
-              new Runnable () {
-                public void run () {
-                  ComponentPalette.getDefault ().updatePalette ();
-                }
-              }
-            );
           }
         }
       }
@@ -415,6 +408,7 @@ public final class BeanInstaller extends Object {
     }
     
     if (autoLoadFolders(globalFolder, localFolder)) {
+/* JST: Why? A hack?      
       java.awt.EventQueue.invokeLater (
         new Runnable () {
           public void run () {
@@ -422,6 +416,7 @@ public final class BeanInstaller extends Object {
           }
         }
       );
+*/      
     }
   }
 
@@ -494,7 +489,7 @@ public final class BeanInstaller extends Object {
       }
     }
 
-    String[] categories = ComponentPalette.getDefault ().getPaletteCategories();
+    String[] categories = ComponentPalette.sharedInstance ().getPaletteCategories();
     for (int i = 0; i < list.length; i++) {
       if (list[i].getName ().endsWith(JAR_EXT)) {
         if (alreadyInstalled.get(list[i].getName ()) == null) {
@@ -596,7 +591,7 @@ public final class BeanInstaller extends Object {
     /** Creates a new ExceptionBox for given exception descriptor. */
     public PaletteSelector() {
       super(null);
-      String[] categories = ComponentPalette.getDefault ().getPaletteCategories();
+      String[] categories = ComponentPalette.sharedInstance ().getPaletteCategories();
 
       list = new JList(categories);
       list.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -721,6 +716,8 @@ static final long serialVersionUID =-6038414545631774041L;
 
 /*
  * Log
+ *  24   Gandalf   1.23        11/4/99  Jaroslav Tulach Component palette is 
+ *       faster/better/etc.
  *  23   Gandalf   1.22        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  22   Gandalf   1.21        10/12/99 Ian Formanek    Fixed multi-user 
