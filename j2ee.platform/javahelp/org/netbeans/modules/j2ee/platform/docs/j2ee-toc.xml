@@ -192,7 +192,7 @@
             <tocitem text="Creating a Container-Managed Relationship in an EJB Module" target="tbd" /> 
         </tocitem>
         <tocitem text="Building and Deploying EJB Modules" >
-            <tocitem text="Building an EJB Module" target="tbd" />
+            <tocitem text="Building an EJB Module" target="build_ejb" />
             <tocitem text="Validating an EJB Module" target="tbd" />
             <tocitem text="Deploying an EJB Module" target="tbd" />
         </tocitem>

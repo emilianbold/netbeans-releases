@@ -111,6 +111,9 @@
     <mapID target="call_ejb" url="ejb/editing/call_ejb.html" />
 
     <mapID target="add_ejb_to_j2ee_app" url="ejb/configuring/add_ejb_to_j2ee_app.html" />
-<!-- End of EJB help -->
+
+    <mapID target="build_ejb" url="ejb/deploy/build_ejb.html" />
+    
+    <!-- End of EJB help -->
 
 </map>

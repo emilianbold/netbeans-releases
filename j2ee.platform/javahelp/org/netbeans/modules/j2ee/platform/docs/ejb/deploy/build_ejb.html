@@ -1,0 +1,90 @@
+ 
+<html>
+<!--
+  *     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+  *     Use is subject to license terms.
+-->
+<head>
+<title>Building an EJB Module</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Building an EJB Module</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>In general, you build an EJB module project just as you would build any other 
+  project. The main difference is whether you want to package the JAR files on 
+  the project's classpath with the EJB module JAR file. </p>
+<p>If you are deploying the EJB module as a stand-alone module, you generally 
+  want to package the necessary JAR files with the EJB module JAR file. If, on 
+  the other hand, the module is part of a J2EE application, you should package 
+  all of the necessary JAR files as part of the J2EE application and not as part 
+  of the individual modules.</p>
+<p>The IDE automatically detects whether an EJB project is part of a J2EE application 
+  and sets whether to package the JAR files on the classpath accordingly. The 
+  IDE does not package API libraries like the Servlet API in your EJB module JAR 
+  file. You can adjust which JAR files are packaged with your EJB module in the 
+  EJB module project's Project Properties dialog box.</p>
+<table border="0" >
+  <tr valign="top"> 
+    <td><img src="../../images/tip.gif" alt="tip" ></td>
+    <td>How do you remove JAR files from a J2EE application if you're planning 
+      on making them available to all applications and modules deployed on the 
+      server?</td>
+  </tr>
+</table>
+<p><b>To build an EJB module, do one of the following:</b></p>
+<ul>
+  <li>If the EJB module is part of a J2EE application, make sure the J2EE application 
+    is set as the main project and choose Build <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Build 
+    Main Project (F11).</li>
+  <li>If the project is a stand-alone EJB module, or if you want to build the 
+    EJB module without building the other modules in the J2EE application, right-click 
+    the project's node in the Projects window and choose Build Project.</li>
+</ul>
+<p><b>To define which JAR files are packaged with the EJB module JAR file:</b></p>
+<ol>
+  <li>In the Projects window, right-click the project's node and choose Properties.</li>
+  <li>Click Compiling Sources in the left panel of the Project Properties dialog 
+    box.</li>
+  <li>In the Compilation Classpath list, select the checkbox for each classpath 
+    item that you want to package with the EJB module JAR file.</li>
+</ol>
+<table border="0">
+  <tr>
+    <th colspan="2" align="left" ><a name="seealso">See Also</a></th>
+  </tr>
+  <tr valign="top"> 
+    <td width="23px" nowrap>&nbsp;</td>
+    <!--
+      
+    <td nowrap><a href="add_ejbql.html">Enterprise JavaBeans Query Language</a><br>
+      <a href="">EJBQL Property Editor</a><br>
+      <a href="define_finder_method.html">Defining a Finder Method</a><br>
+      <a href="define_select_method.html">Defining a Select Method</a><br>
+      <a href="add_ejbql.html">Creating an Enterprise Bean</a><br>
+      <a href="add_ejbql.html">Working With Enterprise Beans</a></td>
+    -->
+  </tr>
+</table>
+<!--Index entries:
+ 		EJB modules - building
+		Classpath - packaging JARs on with EJB module
+		JAR files - packaging in EJB module
+				  - packaging in a J2EE application
+  -->
+<hr>
+<small> <a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="150" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>
