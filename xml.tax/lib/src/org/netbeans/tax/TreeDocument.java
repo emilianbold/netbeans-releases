@@ -135,7 +135,7 @@ public class TreeDocument extends AbstractTreeDocument implements TreeDocumentRo
      * during merging superclass TreeObjectList.
      */
     public void merge (TreeObject treeObject) throws CannotMergeException {
-        Util.THIS.debug ("TreeDocument::merge: " + treeObject);//, new RuntimeException ()); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeDocument::merge: " + treeObject);//, new RuntimeException ()); // NOI18N
         
         super.merge (treeObject);
         
@@ -423,8 +423,8 @@ public class TreeDocument extends AbstractTreeDocument implements TreeDocumentRo
      * @throws InvalidArgumentException
      */
     public final void setDocumentElement (TreeElement newElement) throws ReadOnlyException, InvalidArgumentException {
-        Util.THIS.debug ("\nTreeDocument::setDocumentElement: oldDocumentElement = " + this.rootElement); // NOI18N
-        Util.THIS.debug ("            ::setDocumentElement: newDocumentElement = " + newElement); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\nTreeDocument::setDocumentElement: oldDocumentElement = " + this.rootElement); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("            ::setDocumentElement: newDocumentElement = " + newElement); // NOI18N
         
         if ( newElement == null ) {
             removeChild (this.rootElement);
@@ -477,18 +477,18 @@ public class TreeDocument extends AbstractTreeDocument implements TreeDocumentRo
                     }
                     TreeDocument.this.documentType = (TreeDocumentType)obj;
                 } else if (obj instanceof TreeElement) {
-                    Util.THIS.debug ("\nTreeDocument::ChildListContentManager::objectInserted: obj = " + obj); // NOI18N
-                    Util.THIS.debug ("            ::                       ::objectInserted: old root element = " + TreeDocument.this.rootElement); // NOI18N
+                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\nTreeDocument::ChildListContentManager::objectInserted: obj = " + obj); // NOI18N
+                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("            ::                       ::objectInserted: old root element = " + TreeDocument.this.rootElement); // NOI18N
 
                     if (TreeDocument.this.rootElement != null && TreeDocument.this.rootElement != obj) {
                         removeChild (TreeDocument.this.rootElement);
                     }
                     TreeDocument.this.rootElement = (TreeElement)obj;
                     
-                    Util.THIS.debug ("            ::                       ::objectInserted: NEW root element = " + TreeDocument.this.rootElement);//, new RuntimeException ()); // NOI18N
+                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("            ::                       ::objectInserted: NEW root element = " + TreeDocument.this.rootElement);//, new RuntimeException ()); // NOI18N
                 }
             } catch (Exception exc) {
-                Util.THIS.debug ("TreeDocument::ChildListContentManager.objectInserted", exc); // NOI18N
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeDocument::ChildListContentManager.objectInserted", exc); // NOI18N
             }
         }
         

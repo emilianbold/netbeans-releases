@@ -229,7 +229,7 @@ public class TreeNamedObjectMap extends TreeObjectList {
     protected Object removeImpl (int index) {
         Object oldObj = super.removeImpl (index);
         
-        Util.THIS.debug ("\nTreeNamedObjectMap::removeImpl [ " + index + " ] = " + oldObj); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\nTreeNamedObjectMap::removeImpl [ " + index + " ] = " + oldObj); // NOI18N
         
         if (oldObj != null) {
             mapRemove ((NamedObject)oldObj);

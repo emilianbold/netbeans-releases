@@ -274,7 +274,7 @@ public class TreeStreamResult implements TreeOutputResult {
         /**
          */
         public void writeNode (TreeNode node) throws TreeException {
-            //Util.THIS.debug("wriritng " + node); // NOI18N
+            //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("wriritng " + node); // NOI18N
             if ( node instanceof TreeAttlistDecl ) {
                 writeAttlistDecl ((TreeAttlistDecl)node);
             } else if ( node instanceof TreeAttribute ) {

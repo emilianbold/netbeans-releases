@@ -41,7 +41,7 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
         
         initComponents ();
         
-        Util.THIS.debug ("TreeDocumentCustomizer::init"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeDocumentCustomizer::init"); // NOI18N
         
         versionLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_document_version")); // NOI18N
         encodingLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_document_encoding")); // NOI18N

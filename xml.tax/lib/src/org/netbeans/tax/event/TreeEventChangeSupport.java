@@ -84,11 +84,11 @@ public final class TreeEventChangeSupport {
     public final void addPropertyChangeListener (PropertyChangeListener listener) {
         getPropertyChangeSupport ().addPropertyChangeListener (listener);
         
-        Util.THIS.debug ("-\n- TreeEventChangeSupport::addPropertyChangeListener: listener = " + listener); // NOI18N
-        Util.THIS.debug ("-                       ::addPropertyChangeListener: propertyChangeSupport = " + listListeners ()); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("-\n- TreeEventChangeSupport::addPropertyChangeListener: listener = " + listener); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("-                       ::addPropertyChangeListener: propertyChangeSupport = " + listListeners ()); // NOI18N
             
         if ( listener == null ) {
-            Util.THIS.debug ("-                       ::addPropertyChangeListener: eventSource = " + eventSource); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("-                       ::addPropertyChangeListener: eventSource = " + eventSource); // NOI18N
 
         }
     }
@@ -98,13 +98,13 @@ public final class TreeEventChangeSupport {
     public final void addPropertyChangeListener (String propertyName, PropertyChangeListener listener) {
         getPropertyChangeSupport ().addPropertyChangeListener (propertyName, listener);
         
-        Util.THIS.debug ("-\n- TreeEventChangeSupport::addPropertyChangeListener: propertyName = " + propertyName); // NOI18N
-        Util.THIS.debug ("-                       ::addPropertyChangeListener: listener = " + listener); // NOI18N
-        Util.THIS.debug ("-                       ::addPropertyChangeListener: propertyChangeSupport = " + listListeners ()); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("-\n- TreeEventChangeSupport::addPropertyChangeListener: propertyName = " + propertyName); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("-                       ::addPropertyChangeListener: listener = " + listener); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("-                       ::addPropertyChangeListener: propertyChangeSupport = " + listListeners ()); // NOI18N
         
         if ( listener == null ) {
-            Util.THIS.debug ("-                       ::addPropertyChangeListener: eventSource = " + eventSource); // NOI18N
-            Util.THIS.debug ("-\n", new RuntimeException ("TreeEventChangeSupport.addPropertyChangeListener")); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("-                       ::addPropertyChangeListener: eventSource = " + eventSource); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("-\n", new RuntimeException ("TreeEventChangeSupport.addPropertyChangeListener")); // NOI18N
         }
     }
     
@@ -115,8 +115,8 @@ public final class TreeEventChangeSupport {
     public final void removePropertyChangeListener (PropertyChangeListener listener) {
         getPropertyChangeSupport ().removePropertyChangeListener (listener);
         
-        Util.THIS.debug ("\n- TreeEventChangeSupport::removePropertyChangeListener: listener = " + listener); // NOI18N
-        Util.THIS.debug ("-                       ::removePropertyChangeListener: propertyChangeSupport = " + listListeners ()); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\n- TreeEventChangeSupport::removePropertyChangeListener: listener = " + listener); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("-                       ::removePropertyChangeListener: propertyChangeSupport = " + listListeners ()); // NOI18N
     }
     
     /**
@@ -124,9 +124,9 @@ public final class TreeEventChangeSupport {
     public final void removePropertyChangeListener (String propertyName, PropertyChangeListener listener) {
         getPropertyChangeSupport ().removePropertyChangeListener (propertyName, listener);
         
-        Util.THIS.debug ("\n- TreeEventChangeSupport::removePropertyChangeListener: propertyName = " + propertyName); // NOI18N
-        Util.THIS.debug ("-                       ::removePropertyChangeListener: listener = " + listener); // NOI18N
-        Util.THIS.debug ("-                       ::removePropertyChangeListener: propertyChangeSupport = " + listListeners ()); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\n- TreeEventChangeSupport::removePropertyChangeListener: propertyName = " + propertyName); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("-                       ::removePropertyChangeListener: listener = " + listener); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("-                       ::removePropertyChangeListener: propertyChangeSupport = " + listListeners ()); // NOI18N
     }
     
     /**
@@ -146,9 +146,9 @@ public final class TreeEventChangeSupport {
      * @param evt  The PropertyChangeEvent object.
      */
     public final void firePropertyChange (TreeEvent evt) {
-        Util.THIS.debug ("- TreeEventChangeSupport::firePropertyChange ( " + evt + " )"); // NOI18N
-        Util.THIS.debug ("-     eventSource  = " + eventSource); // NOI18N
-        Util.THIS.debug ("-     EventManager = " + eventSource.getEventManager ()); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("- TreeEventChangeSupport::firePropertyChange ( " + evt + " )"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("-     eventSource  = " + eventSource); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("-     EventManager = " + eventSource.getEventManager ()); // NOI18N
         
         if ( eventSource.getEventManager () == null )
             return;

@@ -36,7 +36,7 @@ public class EncodingHelper extends Object {
     public static String detectEncoding(InputStream in) throws IOException {
 
         if (! in.markSupported()) {
-            Util.THIS.debug("EncodingHelper got unmarkable stream: " + in.getClass()); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("EncodingHelper got unmarkable stream: " + in.getClass()); // NOI18N
             return null;
         }
 

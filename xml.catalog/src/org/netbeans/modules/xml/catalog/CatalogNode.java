@@ -114,19 +114,19 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
      * The node listens on some changes
      */
     public void propertyChange(PropertyChangeEvent e) {
-        Util.THIS.debug(e.toString());
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(e.toString());
         
         if (CatalogDescriptor.PROP_CATALOG_NAME.equals(e.getPropertyName())) {
-            Util.THIS.debug(" Setting name: " + (String) e.getNewValue()); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(" Setting name: " + (String) e.getNewValue()); // NOI18N
 
             setName((String) e.getNewValue());
             setDisplayName((String) e.getNewValue());
         } else if (CatalogDescriptor.PROP_CATALOG_DESC.equals(e.getPropertyName())) {
-            Util.THIS.debug(" Setting desc: " + (String) e.getNewValue()); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(" Setting desc: " + (String) e.getNewValue()); // NOI18N
 
             setShortDescription((String) e.getNewValue());
         } else if (CatalogDescriptor.PROP_CATALOG_ICON.equals(e.getPropertyName())) { 
-            Util.THIS.debug(" Updating icon"); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(" Updating icon"); // NOI18N
 
             fireIconChange();
         }
@@ -136,13 +136,13 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
     // ~~~~~~~~~~~~~~~~~~~~~~ Serialization stuff ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        Util.THIS.debug("Reading Catalog node " + this); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Reading Catalog node " + this); // NOI18N
 
         in.defaultReadObject();        
     }
     
     private void writeObject(ObjectOutputStream out) throws IOException {
-        Util.THIS.debug("Writing " + this); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Writing " + this); // NOI18N
 
         out.defaultWriteObject();        
     }
@@ -200,7 +200,7 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
           * Reloads catalog content
           */
         public void reload() {
-            Util.THIS.debug(" Reloading kids of " + peer + "..."); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(" Reloading kids of " + peer + "..."); // NOI18N
 
             keys.clear();
             Iterator it = peer.getPublicIDs();

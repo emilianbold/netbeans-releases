@@ -254,16 +254,16 @@ public final class Catalog
                     return res;                
                 } catch (RuntimeException ex) {
                     setShortDescription(Util.THIS.getString("DESC_error_loading", ex.getLocalizedMessage()));
-                    Util.THIS.debug("Internal resolvers library error!", ex);
+                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Internal resolvers library error!", ex);
                 }
             }
             
         } catch (IOException ex) {
             setShortDescription(Util.THIS.getString("DESC_error_loading", ex.getLocalizedMessage()));
-            Util.THIS.debug("I/O error loading catalog " + location, ex);
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("I/O error loading catalog " + location, ex);
         } catch (CatalogException ex) {
             setShortDescription(Util.THIS.getString("DESC_error_loading", ex.getLocalizedMessage()));
-            Util.THIS.debug("Error loading catalog " + location, ex);
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Error loading catalog " + location, ex);
         }
         
         // return dumb peer

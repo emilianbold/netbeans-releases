@@ -101,7 +101,7 @@ public abstract class TreeData extends TreeChild {
         
         this.data = newData;
         
-        Util.THIS.debug ("TreeData::setDataImpl: firing data change " + oldData + " => " +newData); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeData::setDataImpl: firing data change " + oldData + " => " +newData); // NOI18N
         
         firePropertyChange (PROP_DATA, oldData, newData);
     }
@@ -228,11 +228,11 @@ public abstract class TreeData extends TreeChild {
     /**
      */
     public final boolean onlyWhiteSpaces () {
-        Util.THIS.debug ("TreeData::onlyWhiteSpaces: data = '" + data + "'"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeData::onlyWhiteSpaces: data = '" + data + "'"); // NOI18N
         
         String trimed = data.trim ();
         
-        Util.THIS.debug ("        ::onlyWhiteSpaces: trimed = '" + trimed + "'"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("        ::onlyWhiteSpaces: trimed = '" + trimed + "'"); // NOI18N
         
         return (trimed.length () == 0);
     }

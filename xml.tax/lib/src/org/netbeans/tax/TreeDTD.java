@@ -56,7 +56,7 @@ public class TreeDTD extends AbstractTreeDTD implements TreeDocumentRoot, TreeDT
         this.version      = version;
         this.encoding     = encoding;
         
-        Util.THIS.debug ("TreeDTD::init: encoding = " + this.encoding); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeDTD::init: encoding = " + this.encoding); // NOI18N
         
         this.eventManager = new TreeEventManager ();
     }
@@ -75,7 +75,7 @@ public class TreeDTD extends AbstractTreeDTD implements TreeDocumentRoot, TreeDT
         this.version      = dtd.version;
         this.encoding     = dtd.encoding;
         
-        Util.THIS.debug ("TreeDTD::init [copy]: encoding = " + this.encoding); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeDTD::init [copy]: encoding = " + this.encoding); // NOI18N
         
         this.eventManager = new TreeEventManager (dtd.eventManager);
     }
@@ -182,7 +182,7 @@ public class TreeDTD extends AbstractTreeDTD implements TreeDocumentRoot, TreeDT
         
         this.encoding = newEncoding;
         
-        Util.THIS.debug ("TreeDTD::setEncodingImpl: encoding = " + this.encoding); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeDTD::setEncodingImpl: encoding = " + this.encoding); // NOI18N
         
         firePropertyChange (PROP_ENCODING, oldEncoding, newEncoding);
     }

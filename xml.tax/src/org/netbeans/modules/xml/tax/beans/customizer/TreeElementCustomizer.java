@@ -96,11 +96,11 @@ public class TreeElementCustomizer extends AbstractTreeCustomizer {
     protected void ownInitComponents () {
         TreeNamedObjectMap attributes = getElement ().getAttributes ();
         
-        Util.THIS.debug ("TreeElementCustomizer::ownInitComponents: attributes = " + attributes); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeElementCustomizer::ownInitComponents: attributes = " + attributes); // NOI18N
 
         attributesCustomizer = Lib.getCustomizer (TreeElement.class, attributes, "attributes"); // "attributes" - name of TreeElement property // NOI18N
         
-        Util.THIS.debug ("TreeElementCustomizer::ownInitComponents: attributesCustomizer = " + attributesCustomizer); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeElementCustomizer::ownInitComponents: attributesCustomizer = " + attributesCustomizer); // NOI18N
 
         if (attributesCustomizer != null) {
             attributeListPanel.add (attributesCustomizer, BorderLayout.CENTER);

@@ -77,7 +77,7 @@ public class ParserReader extends PushbackReader {
         char buf[] = new char[prefix.length ()];
         try {
             read (buf);
-            //                Util.THIS.debug("startsWith(" + prefix + " got " + new String(buf)); // NOI18N
+            //                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("startsWith(" + prefix + " got " + new String(buf)); // NOI18N
             boolean ret = new String (buf).equals (prefix);
             if (ret) return true;
         } catch (IOException ex) {
@@ -144,7 +144,7 @@ public class ParserReader extends PushbackReader {
         }
         
         String toret = sb.toString ();
-        //            Util.THIS.debug("Token: " + toret); // NOI18N
+        //            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Token: " + toret); // NOI18N
         return toret;
     }
 }

@@ -52,7 +52,7 @@ public class NullStringEditor extends PropertyEditorSupport implements ExPropert
     /**
      */
     public void setAsText (String text) throws IllegalArgumentException {
-        Util.THIS.debug ("NullStringEditor::setAsText: text = " + text); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("NullStringEditor::setAsText: text = " + text); // NOI18N
 
 	if ( DEFAULT_NULL.equals (text) ) {
 	    setValue (null);
@@ -68,7 +68,7 @@ public class NullStringEditor extends PropertyEditorSupport implements ExPropert
     public String getAsText () {
 	Object value = super.getValue();
 
-        Util.THIS.debug ("NullStringEditor::getAsText: value = " + value); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("NullStringEditor::getAsText: value = " + value); // NOI18N
 
 	if ( value == null ) {
 	    return DEFAULT_NULL;

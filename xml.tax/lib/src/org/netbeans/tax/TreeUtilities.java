@@ -742,18 +742,18 @@ public final class TreeUtilities {
         /**
          */
         private static void checkEncoding (String argName, String encoding) throws InvalidArgumentException {
-            Util.THIS.debug ("TreeUtilities::checkEncoding: encoding = " + encoding); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeUtilities::checkEncoding: encoding = " + encoding); // NOI18N
             
             ByteArrayInputStream stream = new ByteArrayInputStream (new byte[0]);
             
-            Util.THIS.debug ("      ::checkEncoding: stream = " + stream); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("      ::checkEncoding: stream = " + stream); // NOI18N
             
             try {
                 InputStreamReader reader = new InputStreamReader (stream, iana2java (encoding));
                 
-                Util.THIS.debug ("      ::checkEncoding: reader = " + reader); // NOI18N
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("      ::checkEncoding: reader = " + reader); // NOI18N
             } catch (IOException exc) {
-                Util.THIS.debug ("      ::checkEncoding: IOException !!!", exc); // NOI18N
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("      ::checkEncoding: IOException !!!", exc); // NOI18N
 
                 throw new InvalidArgumentException (argName, Util.THIS.getString ("EXC_Invalid_encoding", encoding));
             }
@@ -1436,7 +1436,7 @@ public final class TreeUtilities {
          */
         public void checkElementDeclContentType (TreeElementDecl.ContentType contentType) throws InvalidArgumentException {
             checkNullArgument (Util.THIS.getString ("PROP_ElementDeclContentType"), contentType);
-            //       Util.THIS.debug ("[PENDING]: TreeUtilities::TreeConstraints.checkElementDeclContentType"); // NOI18N
+            //       if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[PENDING]: TreeUtilities::TreeConstraints.checkElementDeclContentType"); // NOI18N
         }
         
         /**

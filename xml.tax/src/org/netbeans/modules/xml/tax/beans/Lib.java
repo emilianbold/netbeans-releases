@@ -40,7 +40,7 @@ public class Lib {
      * @return the component or <CODE>null</CODE> if there is no customizer
      */
     public static Component getCustomizer (Object object) {
-        Util.THIS.debug ("Lib::getCustomizer: object = " + object); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Lib::getCustomizer: object = " + object); // NOI18N
 
         if (object == null)
             return null;
@@ -49,7 +49,7 @@ public class Lib {
         try {
             beanInfo = Introspector.getBeanInfo (object.getClass());
         } catch (IntrospectionException e) {
-            Util.THIS.debug ("Lib::getCustomizer: exception = " + e); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Lib::getCustomizer: exception = " + e); // NOI18N
 
             return null;
         }
@@ -62,18 +62,18 @@ public class Lib {
         try {
             o = clazz.newInstance ();
         } catch (InstantiationException e) {
-            Util.THIS.debug ("Lib::getCustomizer: exception = " + e); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Lib::getCustomizer: exception = " + e); // NOI18N
 
             return null;
         } catch (IllegalAccessException e) {
-            Util.THIS.debug ("Lib::getCustomizer: exception = " + e); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Lib::getCustomizer: exception = " + e); // NOI18N
 
             return null;
         }
 
         if (!!! (o instanceof Customizer) ) {
             // no customizer => no fun
-            Util.THIS.debug ("Lib::getCustomizer: is NOT instanceof Customizer: " + o); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Lib::getCustomizer: is NOT instanceof Customizer: " + o); // NOI18N
 
             return null;
         }
@@ -86,7 +86,7 @@ public class Lib {
             comp = (Component)o;
         } else {
             // no component provided
-            Util.THIS.debug ("Lib::getCustomizer: is NOT instanceof Component: " + o); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Lib::getCustomizer: is NOT instanceof Component: " + o); // NOI18N
 
             return null;
         }
@@ -103,11 +103,11 @@ public class Lib {
         try {
             beanInfo = Introspector.getBeanInfo (classClass);
         } catch (IntrospectionException e) {
-            Util.THIS.debug ("Lib::getCustomizer: exception = " + e); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Lib::getCustomizer: exception = " + e); // NOI18N
 
             return null;
         }
-        Util.THIS.debug ("Lib::getCustomizer: beaninfo = " + beanInfo); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Lib::getCustomizer: beaninfo = " + beanInfo); // NOI18N
 
 	PropertyDescriptor[] propDescrs = beanInfo.getPropertyDescriptors();
 	PropertyDescriptor propertyDescriptor = null;
@@ -118,15 +118,15 @@ public class Lib {
 	    }
 	}
 	if ( propertyDescriptor == null ) {
-            Util.THIS.debug ("Lib::getCustomizer: have NOT property: " + propertyName); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Lib::getCustomizer: have NOT property: " + propertyName); // NOI18N
 
 	    return null;
 	}
-        Util.THIS.debug ("Lib::getCustomizer: propertyDescriptor: " + propertyDescriptor); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Lib::getCustomizer: propertyDescriptor: " + propertyDescriptor); // NOI18N
 
         Class clazz = propertyDescriptor.getPropertyEditorClass();
 
-        Util.THIS.debug ("Lib::getCustomizer: propertyEditorClass: " + clazz); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Lib::getCustomizer: propertyEditorClass: " + clazz); // NOI18N
 
         if (clazz == null) {
             return null;
@@ -135,18 +135,18 @@ public class Lib {
         try {
             peo = clazz.newInstance ();
         } catch (InstantiationException e) {
-            Util.THIS.debug ("Lib::getCustomizer: exception = " + e); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Lib::getCustomizer: exception = " + e); // NOI18N
 
             return null;
         } catch (IllegalAccessException e) {
-            Util.THIS.debug ("Lib::getCustomizer: exception = " + e); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Lib::getCustomizer: exception = " + e); // NOI18N
 
             return null;
         }
 	
         if (!!! (peo instanceof PropertyEditor) ) {
             // no customizer => no fun
-            Util.THIS.debug ("Lib::getCustomizer: is NOT instanceof PropertyEditor: " + peo); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Lib::getCustomizer: is NOT instanceof PropertyEditor: " + peo); // NOI18N
 
             return null;
         }
@@ -155,13 +155,13 @@ public class Lib {
 	editor.setValue (property);
 	Component comp = editor.getCustomEditor();
 	if ( comp == null ) {
-            Util.THIS.debug ("Lib::getCustomizer: have NOT customizer: " + editor); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Lib::getCustomizer: have NOT customizer: " + editor); // NOI18N
 
 	    return null;
 	}
 	if (!!! (comp instanceof Customizer) ) {
 	    // no customizer => no fun
-            Util.THIS.debug ("Lib::getCustomizer: is NOT instanceof Customizer: " + comp); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Lib::getCustomizer: is NOT instanceof Customizer: " + comp); // NOI18N
 
             return null;
         }

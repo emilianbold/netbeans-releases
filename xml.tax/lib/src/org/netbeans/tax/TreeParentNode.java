@@ -167,13 +167,13 @@ public abstract class TreeParentNode extends TreeChild {
      * @throws ReadOnlyException
      */
     public final void replaceChild (TreeChild oldChild, TreeChild newChild) throws ReadOnlyException {
-        Util.THIS.debug ("\nTreeParentNode::replaceChild: oldChild = " + oldChild); // NOI18N
-        Util.THIS.debug ("              ::replaceChild: newChild = " + newChild); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\nTreeParentNode::replaceChild: oldChild = " + oldChild); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("              ::replaceChild: newChild = " + newChild); // NOI18N
         
         childList.checkReadOnly ();
         int index = childList.indexOf (oldChild);
         
-        Util.THIS.debug ("              ::replaceChild: childList [oldChild]  = " + index); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("              ::replaceChild: childList [oldChild]  = " + index); // NOI18N
         
         if (index < 0) {
             return;

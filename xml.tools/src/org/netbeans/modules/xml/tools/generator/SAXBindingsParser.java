@@ -147,7 +147,7 @@ public class SAXBindingsParser extends org.xml.sax.helpers.DefaultHandler {
         return new ErrorHandler() {
             public void error(SAXParseException ex) throws SAXException  {
                 if (context.isEmpty()) {
-                    Util.THIS.debug ("Missing DOCTYPE."); // NOI18N
+                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Missing DOCTYPE."); // NOI18N
                 }
                 throw ex;
             }

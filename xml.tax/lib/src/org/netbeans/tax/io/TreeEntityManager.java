@@ -30,7 +30,7 @@ public final class TreeEntityManager extends TreeEntityResolver {
      * @return Resolved entity or <CODE>null</CODE>.
      */
     public TreeInputSource resolveEntity (String publicId, String systemId, String baseSystemId) {
-        Util.THIS.debug ("[PENDING]: TreeEntityManager.resolveEntity ( " + publicId + " , " + systemId + " , " + baseSystemId + " ) : null"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[PENDING]: TreeEntityManager.resolveEntity ( " + publicId + " , " + systemId + " , " + baseSystemId + " ) : null"); // NOI18N
         return null;
     }
     
@@ -38,14 +38,14 @@ public final class TreeEntityManager extends TreeEntityResolver {
      * @param entityResolver entity resolver to add
      */
     public void addEntityResolver (TreeEntityResolver entityResolver) {
-        Util.THIS.debug ("[PENDING]: TreeEntityManager.addEntityResolver ( " + entityResolver.getClass ().getName () + " )"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[PENDING]: TreeEntityManager.addEntityResolver ( " + entityResolver.getClass ().getName () + " )"); // NOI18N
     }
     
     /** Remove entity resolver from list of used.
      * @param entityResolver entity resolver to remove
      */
     public void removeEntityResolver (TreeEntityResolver entityResolver) {
-        Util.THIS.debug ("[PENDING]: TreeEntityManager.removeEntityResolver ( " + entityResolver.getClass ().getName () + " )"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[PENDING]: TreeEntityManager.removeEntityResolver ( " + entityResolver.getClass ().getName () + " )"); // NOI18N
     }
     
     /** Resolve entity.

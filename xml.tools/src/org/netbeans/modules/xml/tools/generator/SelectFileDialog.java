@@ -154,9 +154,9 @@ public class SelectFileDialog extends JPanel {
         Object[] options = selectDD.getOptions();
 
         for (int i = 0; i<options.length; i++) {
-            Util.THIS.debug("   " + options[i]);
+            if ( Util.THIS.isLoggable() ) /* then * / Util.THIS.debug("   " + options[i]);
             if (options[i].equals(DialogDescriptor.OK_OPTION)) {
-                Util.THIS.debug("++++");                        
+                if ( Util.THIS.isLoggable() ) /* then * / Util.THIS.debug("++++");                        
             }
         }
 */        

@@ -100,12 +100,12 @@ public class XCatalogCustomizer extends javax.swing.JPanel implements Customizer
     //!!! find out whether action performed is not enought
     
     private void locationTextFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_locationTextFieldFocusLost
-        Util.THIS.debug("FocusLost-setting location: " + locationTextField.getText()); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("FocusLost-setting location: " + locationTextField.getText()); // NOI18N
         model.setSource(locationTextField.getText());
     }//GEN-LAST:event_locationTextFieldFocusLost
 
     private void locationTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationTextFieldActionPerformed
-        Util.THIS.debug("ActionPerformed-setting location: " + locationTextField.getText()); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("ActionPerformed-setting location: " + locationTextField.getText()); // NOI18N
         model.setSource(locationTextField.getText());
     }//GEN-LAST:event_locationTextFieldActionPerformed
 

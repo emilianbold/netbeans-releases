@@ -130,13 +130,13 @@ public final class CatalogRootNode extends AbstractNode {
     // ~~~~~~~~~~~~~~~~~~~~~~ Serialization stuff ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        Util.THIS.debug("Reading CatalogRoot node " + this); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Reading CatalogRoot node " + this); // NOI18N
 
         in.defaultReadObject();        
     }
     
     private void writeObject(ObjectOutputStream out) throws IOException {
-        Util.THIS.debug("Writing " + this); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Writing " + this); // NOI18N
 
         out.defaultWriteObject();        
     }

@@ -97,19 +97,19 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
         ListSelectionModel rowsm = attrTable.getSelectionModel();
         rowsm.addListSelectionListener (new ListSelectionListener(){
                 public void valueChanged (ListSelectionEvent e) {
-                    Util.THIS.debug ("\n#=- TreeElementAttributeListCustomizer::ListSelectionListener.valueChanged: event = " + e);
-                    Util.THIS.debug ("#=-     event.getValueIsAdjusting() = " + e.getValueIsAdjusting());
-                    Util.THIS.debug ("#=-     event.getFirstIndex()       = " + e.getFirstIndex());
-                    Util.THIS.debug ("#=-     event.getLastIndex()        = " + e.getLastIndex());
+                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\n#=- TreeElementAttributeListCustomizer::ListSelectionListener.valueChanged: event = " + e);
+                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("#=-     event.getValueIsAdjusting() = " + e.getValueIsAdjusting());
+                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("#=-     event.getFirstIndex()       = " + e.getFirstIndex());
+                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("#=-     event.getLastIndex()        = " + e.getLastIndex());
 
                     if (e.getValueIsAdjusting())
                         return;
                     ListSelectionModel lsm = (ListSelectionModel)e.getSource();
 
-                    Util.THIS.debug ("#=-     event.getSource()                 = " + lsm);
-                    Util.THIS.debug ("#=-     selectionModel.isSelectionEmpty() = " + lsm.isSelectionEmpty());
-                    Util.THIS.debug ("#=-     attrTable.getSelectedRow()        = " + attrTable.getSelectedRow());
-                    Util.THIS.debug ("#=-     attrTable.getRowCount()           = " + attrTable.getRowCount());
+                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("#=-     event.getSource()                 = " + lsm);
+                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("#=-     selectionModel.isSelectionEmpty() = " + lsm.isSelectionEmpty());
+                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("#=-     attrTable.getSelectedRow()        = " + attrTable.getSelectedRow());
+                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("#=-     attrTable.getRowCount()           = " + attrTable.getRowCount());
 
                     if ( lsm.isSelectionEmpty() ||
                          ( attrTable.getRowCount() == 0 ) ) {
@@ -394,7 +394,7 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
         /**
          */
         public void keyReleased (KeyEvent e) {
-            //Util.THIS.debug("Event: " + e); // NOI18N
+            //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Event: " + e); // NOI18N
             if (e.getKeyCode() == KeyEvent.VK_DELETE) {
                 tableModel.removeRow (table.getSelectedRow());
 //                  peer.remove (peer.get (table.getSelectedRow()));

@@ -187,7 +187,7 @@ public class TreeAttlistDeclAttributeListCustomizer extends JPanel implements Cu
 	/**
 	 */
         public void keyReleased (KeyEvent e) {
-            //Util.THIS.debug("Event: " + e); // NOI18N
+            //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Event: " + e); // NOI18N
             if (e.getKeyCode() == KeyEvent.VK_DELETE) {
                 peer.remove (peer.get (table.getSelectedRow()));
                 tableModel.fireTableDataChanged();

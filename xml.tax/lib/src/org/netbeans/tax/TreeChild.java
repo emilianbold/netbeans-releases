@@ -95,7 +95,7 @@ public abstract class TreeChild extends TreeNode {
     /**
      */
     protected final void setParentNode (TreeParentNode newParentNode) {
-        Util.THIS.debug ("TreeChild::setParentNode [ " + this + " ] : newParentNode = " + newParentNode); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeChild::setParentNode [ " + this + " ] : newParentNode = " + newParentNode); // NOI18N
         
         //
         // check new value
@@ -134,17 +134,17 @@ public abstract class TreeChild extends TreeNode {
     /**
      */
     public final TreeChild getNextSibling () {
-        Util.THIS.debug ("TreeChild [ " + this + " ] ::getNextSibling: parentNode = " + getParentNode ()); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeChild [ " + this + " ] ::getNextSibling: parentNode = " + getParentNode ()); // NOI18N
         
         int index = index ();
         
-        Util.THIS.debug ("    index : " + index); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    index : " + index); // NOI18N
         
         if ( index == -1 ) { // does not have parent node
             return null;
         }
         
-        Util.THIS.debug ("    parentNode.childNodes.size : " + getParentNode ().getChildNodes ().size ()); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    parentNode.childNodes.size : " + getParentNode ().getChildNodes ().size ()); // NOI18N
         
         if ( (index + 1) == getParentNode ().getChildNodes ().size () ) { // it is last node of parent node
             return null;

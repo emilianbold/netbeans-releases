@@ -177,9 +177,9 @@ public abstract class TreeObject implements TreeEventModel {
     /**
      */
     protected final void checkMergeObject (TreeObject treeObject) throws CannotMergeException {
-        Util.THIS.debug ("TreeObject::checkMergeObject: this        = " + this); // NOI18N
-        Util.THIS.debug ("          ::checkMergeObject: treeObject  = " + treeObject); // NOI18N
-        Util.THIS.debug ("            checkMergeObject: isSameClass ? " + isInstance (treeObject)); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeObject::checkMergeObject: this        = " + this); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("          ::checkMergeObject: treeObject  = " + treeObject); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("            checkMergeObject: isSameClass ? " + isInstance (treeObject)); // NOI18N
         
         if ( (treeObject == null) || (!!! isInstance (treeObject)) ) {
             throw new CannotMergeException (treeObject);
@@ -271,7 +271,7 @@ public abstract class TreeObject implements TreeEventModel {
      * @param listener The listener to add.
      */
     public final void addPropertyChangeListener (PropertyChangeListener listener) {
-        Util.THIS.debug ("Tree " + this + "attached listener" + listener); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Tree " + this + "attached listener" + listener); // NOI18N
 
         getEventChangeSupport ().addPropertyChangeListener (listener);
     }
@@ -292,7 +292,7 @@ public abstract class TreeObject implements TreeEventModel {
      * @param evt  The TreeEvent object.
      */
     protected final void firePropertyChange (TreeEvent evt) {
-        Util.THIS.debug ("TreeObject firing " + evt); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeObject firing " + evt); // NOI18N
         
         getEventChangeSupport ().firePropertyChange (evt);
         bubblePropertyChange (evt);
@@ -344,7 +344,7 @@ public abstract class TreeObject implements TreeEventModel {
      * Propagate event to parents' listeners.
      */
     protected final void bubblePropertyChange (TreeEvent origEvt) {
-        Util.THIS.debug ("\nTreeObject [ " + this + " ]::bubblePropertyChange: origEvt = " + origEvt.getPropertyName ()); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\nTreeObject [ " + this + " ]::bubblePropertyChange: origEvt = " + origEvt.getPropertyName ()); // NOI18N
         
         TreeObject source = (TreeObject)origEvt.getSource ();
         if ( source instanceof TreeAttribute ) {
@@ -358,7 +358,7 @@ public abstract class TreeObject implements TreeEventModel {
                 TreeChild child = (TreeChild)source;
                 TreeParentNode parent = child.getParentNode ();
                 
-                Util.THIS.debug ("    ::bubblePropertyChange::parentNode = " + parent); // NOI18N
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    ::bubblePropertyChange::parentNode = " + parent); // NOI18N
                 
                 if ( parent != null ) {
                     parent.getEventChangeSupport ().firePropertyChange (origEvt.createBubbling (parent));

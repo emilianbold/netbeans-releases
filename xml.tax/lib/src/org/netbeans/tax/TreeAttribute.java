@@ -74,7 +74,7 @@ public class TreeAttribute extends TreeNode implements Element.Attribute, TreeNa
         this.valueList = new TreeObjectList (createValueListContentManager ());
         setValueImpl (value);
         
-        Util.THIS.debug ("TreeAttribute::INIT : name = " + qName + " : specified = " + specified); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeAttribute::INIT : name = " + qName + " : specified = " + specified); // NOI18N
     }
     
     /**

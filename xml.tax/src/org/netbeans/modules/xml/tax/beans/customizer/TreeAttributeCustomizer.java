@@ -115,12 +115,12 @@ public class TreeAttributeCustomizer extends AbstractTreeCustomizer {
      */
     protected final void updateAttributeValue () {
         try {
-            Util.THIS.debug ("\nTreeAttributeCustomizer::updateAttributeValue: valueField.getText() = " + valueField.getText ());//, new RuntimeException()); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\nTreeAttributeCustomizer::updateAttributeValue: valueField.getText() = " + valueField.getText ());//, new RuntimeException()); // NOI18N
             
             getAttribute ().setValue (valueField.getText ());
             //            TAXUtil.setAttributeValue (getAttribute(), valueField.getText());
         } catch (TreeException ex) {
-            Util.THIS.debug ("                       ::updateAttributeValue: ex = " + ex + "\n"); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("                       ::updateAttributeValue: ex = " + ex + "\n"); // NOI18N
             
             updateValueComponent ();
             Util.THIS.notifyTreeException (ex);
@@ -130,7 +130,7 @@ public class TreeAttributeCustomizer extends AbstractTreeCustomizer {
     /**
      */
     protected final void updateValueComponent () {
-        Util.THIS.debug ("\nTreeAttributeCustomizer::updateValueComponent: getAttribute().getValue() = " + getAttribute ().getValue ());//, new RuntimeException()); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\nTreeAttributeCustomizer::updateValueComponent: getAttribute().getValue() = " + getAttribute ().getValue ());//, new RuntimeException()); // NOI18N
         
         valueField.setText (getAttribute ().getValue ());
     }
@@ -257,7 +257,7 @@ public class TreeAttributeCustomizer extends AbstractTreeCustomizer {
      */
     private void valueFieldFocusLost (java.awt.event.FocusEvent evt) {//GEN-FIRST:event_valueFieldFocusLost
         // Add your handling code here:
-        Util.THIS.debug ("TreeAttributeCustomizer::valueFieldFocusLost"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeAttributeCustomizer::valueFieldFocusLost"); // NOI18N
         
         updateAttributeValue ();        
     }//GEN-LAST:event_valueFieldFocusLost
@@ -273,7 +273,7 @@ public class TreeAttributeCustomizer extends AbstractTreeCustomizer {
      */
     private void valueFieldActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_valueFieldActionPerformed
         // Add your handling code here:
-        Util.THIS.debug ("TreeAttributeCustomizer::valueFieldActionPerformed"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeAttributeCustomizer::valueFieldActionPerformed"); // NOI18N
         
         updateAttributeValue ();
     }//GEN-LAST:event_valueFieldActionPerformed

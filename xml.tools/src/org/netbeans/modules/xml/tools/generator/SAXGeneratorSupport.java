@@ -235,7 +235,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             
             GuiUtil.setStatusText(Util.THIS.getString("MSG_sax_progress_1"));
             
-            Util.THIS.debug(model.toString());
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(model.toString());
             
             sax = model.getSAXversion();
             
@@ -373,10 +373,10 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 
         } catch (IOException ex) {
             // last settings are not restored
-            Util.THIS.debug("Cannot read settings", ex); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Cannot read settings", ex); // NOI18N
         } catch (SAXException ex) {
             // last settings are not restored
-            Util.THIS.debug("Cannot read settings", ex); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Cannot read settings", ex); // NOI18N
         } finally {
             try {
                 if (in != null) in.close();

@@ -42,7 +42,7 @@ public abstract class TreeEntityResolver {
      * @return Resolver system identifier.
      */
     public String expandSystemId (String systemId, String baseSystemId) {
-        Util.THIS.debug ("[PENDING]: TreeEntityResolver.expandSystemId ( " + systemId + " , " + baseSystemId + " ) : " + systemId); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[PENDING]: TreeEntityResolver.expandSystemId ( " + systemId + " , " + baseSystemId + " ) : " + systemId); // NOI18N
         
         return systemId;
     }

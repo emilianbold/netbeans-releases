@@ -103,7 +103,7 @@ public class NameType extends LeafType {
         if (Util.equals (this.name, name))
             return;
         this.name = name;
-        Util.THIS.debug ("[NameType] firePropertyChange(PROP_TYPE_NAME, name);"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[NameType] firePropertyChange(PROP_TYPE_NAME, name);"); // NOI18N
     }
     
     /**

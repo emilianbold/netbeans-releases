@@ -320,7 +320,7 @@ public class TreeAttlistDeclAttributeDef extends TreeNodeDecl.Content implements
     }
     
     public static final String[] createEnumeratedType (String enumeratedType) {
-        Util.THIS.debug ("TreeAttlistDeclAttributeDef.createEnumeratedType: enumeratedType = " + enumeratedType);
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeAttlistDeclAttributeDef.createEnumeratedType: enumeratedType = " + enumeratedType);
 
         if ( enumeratedType == null ) {
             return null;
@@ -328,8 +328,8 @@ public class TreeAttlistDeclAttributeDef extends TreeNodeDecl.Content implements
         int begin = enumeratedType.indexOf ("("); // NOI18N
         int end = enumeratedType.indexOf (")"); // NOI18N
 
-        Util.THIS.debug ("    begin = " + begin);
-        Util.THIS.debug ("    end   = " + end);
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    begin = " + begin);
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    end   = " + end);
 
         if ( ( begin == -1 ) ||
              ( end   == -1 ) ) {
@@ -342,14 +342,14 @@ public class TreeAttlistDeclAttributeDef extends TreeNodeDecl.Content implements
             tokens.add (st.nextToken ().trim ());
         }
 
-        Util.THIS.debug ("    tokens = " + tokens);
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    tokens = " + tokens);
 
         if ( tokens.isEmpty () )
             return null;
 
         String[] arrayType = (String[])tokens.toArray (new String[0]);
 
-        Util.THIS.debug ("    RETURN arrayType = " + arrayType);
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    RETURN arrayType = " + arrayType);
 
         return arrayType;
     }
@@ -372,9 +372,9 @@ public class TreeAttlistDeclAttributeDef extends TreeNodeDecl.Content implements
      * @throws InvalidArgumentException
      */
     public final void setType (short newType, String[] newEnumeratedType) throws ReadOnlyException, InvalidArgumentException {
-        Util.THIS.debug ("TreeAttlistDeclAttributeDef.setType");
-        Util.THIS.debug ("    newType           = " + newType);
-        Util.THIS.debug ("    newEnumeratedType = " + ( newEnumeratedType == null ? null : Arrays.asList (newEnumeratedType)));
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeAttlistDeclAttributeDef.setType");
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    newType           = " + newType);
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    newEnumeratedType = " + ( newEnumeratedType == null ? null : Arrays.asList (newEnumeratedType)));
 
         //
         // check new value
@@ -382,7 +382,7 @@ public class TreeAttlistDeclAttributeDef extends TreeNodeDecl.Content implements
         boolean setType           = this.type != newType;
         boolean setEnumeratedType = !!! Arrays.equals (this.enumeratedType, newEnumeratedType);
 
-        Util.THIS.debug ("    setEnumeratedType = " + setEnumeratedType);
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    setEnumeratedType = " + setEnumeratedType);
 
         if ( !!! setType &&
              !!! setEnumeratedType ) {
@@ -408,16 +408,16 @@ public class TreeAttlistDeclAttributeDef extends TreeNodeDecl.Content implements
     /**
      */
     public static final short findType (String type) {
-        Util.THIS.debug ("TreeAttlistDeclAttributeDef::findType: type = " + type); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeAttlistDeclAttributeDef::findType: type = " + type); // NOI18N
 
         for ( short i = 0; i < NAMED_TYPE_LIST.length; i++ ) {
-            Util.THIS.debug ("    test_type = " + NAMED_TYPE_LIST[i]); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    test_type = " + NAMED_TYPE_LIST[i]); // NOI18N
 
             if ( Util.equals (NAMED_TYPE_LIST[i], type) ) {
                 return i;
             }
         }
-        Util.THIS.debug ("    type[" + type + "] not found"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    type[" + type + "] not found"); // NOI18N
 
         return -1;
     }
@@ -466,9 +466,9 @@ public class TreeAttlistDeclAttributeDef extends TreeNodeDecl.Content implements
      * @throws InvalidArgumentException
      */
     public final void setDefaultType (short newDefaultType, String newDefaultValue) throws ReadOnlyException, InvalidArgumentException {
-        Util.THIS.debug ("TreeAttlistDeclAttributeDef.setDefaultType");
-        Util.THIS.debug ("    newDefaultType  = " + NAMED_DEFAULT_TYPE_LIST [newDefaultType]);
-        Util.THIS.debug ("    newDefaultValue = " + newDefaultValue);
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeAttlistDeclAttributeDef.setDefaultType");
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    newDefaultType  = " + NAMED_DEFAULT_TYPE_LIST [newDefaultType]);
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    newDefaultValue = " + newDefaultValue);
 
         //
         // check new value

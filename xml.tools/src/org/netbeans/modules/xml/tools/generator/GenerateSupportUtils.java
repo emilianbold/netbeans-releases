@@ -48,7 +48,7 @@ public class GenerateSupportUtils {
      */
     public static void performDefaultAction (FileObject fo) {
         if (fo == null) {
-            Util.THIS.debug ("FileObject can not be null.", new IllegalArgumentException());  // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("FileObject can not be null.", new IllegalArgumentException());  // NOI18N
             return;            
         }
 

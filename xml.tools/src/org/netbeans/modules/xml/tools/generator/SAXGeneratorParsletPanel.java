@@ -303,7 +303,7 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
                        break;  // can not set a value
                     } else {
                         if (binds.getParsletUsageCount(currentParslet)>1) {
-                            Util.THIS.debug("Cannot change"); // NOI18N
+                            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Cannot change"); // NOI18N
                         } else {
                             Type returnType = 
                                 Type.createClass(Identifier.create((String)value));
@@ -337,7 +337,7 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
                     break;
 
             }
-//            Util.THIS.debug(model.toString());
+//            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(model.toString());
 
         }
 

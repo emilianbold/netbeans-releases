@@ -102,20 +102,20 @@ public final class TreeNodeFilter {
             isNotInstanceReturn = FILTER_ACCEPT;
         }
         
-        Util.THIS.debug ("+ TreeNodeFilter::acceptNode: this = " + this); // NOI18N
-        Util.THIS.debug ("+               ::acceptNode: node = " + node); // NOI18N
-        Util.THIS.debug ("+               ::acceptNode: acceptPolicy = " + acceptPolicy); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("+ TreeNodeFilter::acceptNode: this = " + this); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("+               ::acceptNode: node = " + node); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("+               ::acceptNode: acceptPolicy = " + acceptPolicy); // NOI18N
         
         for (int i = 0; i < nodeTypes.length; i++) {
             if ( nodeTypes[i].isInstance (node) ) {
                 
-                Util.THIS.debug ("+               ::acceptNode: RETURN " + isInstanceReturn); // NOI18N
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("+               ::acceptNode: RETURN " + isInstanceReturn); // NOI18N
                 
                 return isInstanceReturn;
             }
         }
         
-        Util.THIS.debug ("+               ::acceptNode: RETURN " + isNotInstanceReturn); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("+               ::acceptNode: RETURN " + isNotInstanceReturn); // NOI18N
         
         return isNotInstanceReturn;
     }
@@ -124,7 +124,7 @@ public final class TreeNodeFilter {
     /**
      */
     public boolean equals (Object object) {
-        Util.THIS.debug ("-=#| TreeNodeFilter.equals");
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("-=#| TreeNodeFilter.equals");
         
         if ( (object instanceof TreeNodeFilter) == false ) {
             return false;
@@ -135,10 +135,10 @@ public final class TreeNodeFilter {
         Set thisSet = new HashSet (Arrays.asList (this.nodeTypes));
         Set peerSet = new HashSet (Arrays.asList (peer.nodeTypes));
         
-        Util.THIS.debug ("-=#|    thisSet = " + thisSet);
-        Util.THIS.debug ("-=#|    peerSet = " + peerSet);
-        Util.THIS.debug ("-=#|    acceptPolicy? " + (this.acceptPolicy == peer.acceptPolicy));
-        Util.THIS.debug ("-=#|    nodeTypes   ? " + (thisSet.equals (peerSet)));
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("-=#|    thisSet = " + thisSet);
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("-=#|    peerSet = " + peerSet);
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("-=#|    acceptPolicy? " + (this.acceptPolicy == peer.acceptPolicy));
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("-=#|    nodeTypes   ? " + (thisSet.equals (peerSet)));
         
         if ( this.acceptPolicy != peer.acceptPolicy ) {
             return false;

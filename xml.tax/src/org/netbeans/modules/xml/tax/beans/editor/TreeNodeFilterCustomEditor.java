@@ -95,7 +95,7 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
         ownInitComponents();
         initAccessibility();
 
-        HelpCtx.setHelpIDString (this, TreeNodeFilterCustomEditor.class.getName());
+        HelpCtx.setHelpIDString (this, this.getClass().getName());
     }
 
 
@@ -378,9 +378,9 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
         public Object getValueAt (int row, int column) {
             Object retVal = new Item (new NamedClass ((Class)nodeTypesList.get (row)));
 
-            Util.THIS.debug ("<-- getValue: row    = " + row); // NOI18N
-            Util.THIS.debug ("<-- getValue: column = " + column); // NOI18N
-            Util.THIS.debug ("<-- getValue: " + retVal.getClass().getName() + " -- '" + retVal + "'"); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("<-- getValue: row    = " + row); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("<-- getValue: column = " + column); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("<-- getValue: " + retVal.getClass().getName() + " -- '" + retVal + "'"); // NOI18N
 
             return retVal;
         }
@@ -400,9 +400,9 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
 
             Class type = null;
 
-            Util.THIS.debug ("--> setValue: " + val.getClass().getName() + " -- '" + val + "'"); // NOI18N
-            Util.THIS.debug ("--> setValue: row    = " + row); // NOI18N
-            Util.THIS.debug ("--> setValue: column = " + column); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("--> setValue: " + val.getClass().getName() + " -- '" + val + "'"); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("--> setValue: row    = " + row); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("--> setValue: column = " + column); // NOI18N
 
             if ( val instanceof String ) {
                 try {
@@ -520,7 +520,7 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
      */
     private static Vector getPublicNodeTypesInheritanceTree () {
         if ( publicNodeTypesInheritanceTree == null ) {
-            Util.THIS.debug ("Init Set"); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Init Set"); // NOI18N
             
             Item rootItem = new Item();
             Object[] array = publicNodeTypeNamesMap.keySet().toArray();
@@ -562,7 +562,7 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
             }
             Item newItem = new Item (item, itemPrefix);
             
-            Util.THIS.debug (">>" + newItem.toString() + "<<"); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug (">>" + newItem.toString() + "<<"); // NOI18N
 
             publicNodeTypesInheritanceTree.add (newItem);
 
@@ -632,8 +632,8 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
                 return false;
             }
 
-            Util.THIS.debug ("___ Item::equals: this = " + this); // NOI18N
-            Util.THIS.debug ("___     ::equals: obj  = " + obj); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("___ Item::equals: this = " + this); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("___     ::equals: obj  = " + obj); // NOI18N
 
             Item peer = (Item)obj;
             return clazz.equals (peer.clazz);
@@ -657,8 +657,8 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
         /**
          */
         private static void insertItemIntoLayer (Set layer, Item newItem) {
-            Util.THIS.debug ("\n\nInsert newItem : " + newItem); // NOI18N
-            Util.THIS.debug ("       Item : set = " + layer); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\n\nInsert newItem : " + newItem); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("       Item : set = " + layer); // NOI18N
 
             boolean inserted = false;
 
@@ -666,19 +666,19 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
             for (int i = 0; i < array.length; i++) {
                 Item item = (Item) array[i];
             
-                Util.THIS.debug ("       Item : item [" + i + "] = " + item); // NOI18N
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("       Item : item [" + i + "] = " + item); // NOI18N
 
                 if ( item.clazz.clazz == newItem.clazz.clazz ) { // previously inserted
-                    Util.THIS.debug ("       Item : #1 -= [ ITEM.clazz.clazz == NEW_ITEM.clazz.clazz   => IGNORE insert ]=-"); // NOI18N
+                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("       Item : #1 -= [ ITEM.clazz.clazz == NEW_ITEM.clazz.clazz   => IGNORE insert ]=-"); // NOI18N
                     // DO NOTHING
                     inserted = true;
                 } else if ( item.clazz.clazz.isAssignableFrom (newItem.clazz.clazz) ) { // II.
-                    Util.THIS.debug ("       Item : #2 -= [ NEW_ITEM is subclass of actual ITEM   => insert to ITEM.LAYER ]=-"); // NOI18N
+                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("       Item : #2 -= [ NEW_ITEM is subclass of actual ITEM   => insert to ITEM.LAYER ]=-"); // NOI18N
 
                     insertItemIntoLayer (item.layer, newItem);
                     inserted = true;
                 } else if ( newItem.clazz.clazz.isAssignableFrom (item.clazz.clazz) ) { // I.
-                    Util.THIS.debug ("       Item : #3 -= [ actual ITEM '" + item + "' is subclass of NEW_ITEM   => item REMOVED & insert to NEW_ITEM.LAYER ]=-"); // NOI18N
+                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("       Item : #3 -= [ actual ITEM '" + item + "' is subclass of NEW_ITEM   => item REMOVED & insert to NEW_ITEM.LAYER ]=-"); // NOI18N
                 
                     if ( newItem.clazz.clazz.isInterface() == false ) {
                         layer.remove (item);
@@ -688,7 +688,7 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
             }
 
             if ( inserted == false ) { // III.
-                Util.THIS.debug ("       Item : #4 -= [ item '" + newItem + "' INSERTED into " + layer + " ] =-"); // NOI18N
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("       Item : #4 -= [ item '" + newItem + "' INSERTED into " + layer + " ] =-"); // NOI18N
 
                 layer.add (newItem);
             }

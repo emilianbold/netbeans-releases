@@ -149,8 +149,8 @@ public final class XNIBuilder implements TreeBuilder {
             
             if ((exception instanceof DTDStopException) == false ) {
                 
-                Util.THIS.debug ("sex", sex); // NOI18N
-                Util.THIS.debug ("exception", exception); // NOI18N
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("sex", sex); // NOI18N
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("exception", exception); // NOI18N
                 
                 if (exception instanceof XNIException) {
                     exception = ((XNIException)exception).getException ();
@@ -166,7 +166,7 @@ public final class XNIBuilder implements TreeBuilder {
             }
             
         } catch (IOException exc) {
-            Util.THIS.debug ("exc", exc); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("exc", exc); // NOI18N
 
             throw new TreeException (exc);
         }
@@ -517,12 +517,12 @@ public final class XNIBuilder implements TreeBuilder {
             int now, last = -1;  // tmps
             char delimiter;
             
-            Util.THIS.debug ("TreeStreamBuilderXercesImpl: going to inspect:\n" + idtd);
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeStreamBuilderXercesImpl: going to inspect:\n" + idtd);
             
             final String DOCTYPE = "<!DOCTYPE";
             int pos = idtd.lastIndexOf (DOCTYPE);
             if (pos == -1) {
-                Util.THIS.debug ("TreeStreamBuilderXercesImpl: no DOCTYPE detected.");
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeStreamBuilderXercesImpl: no DOCTYPE detected.");
 
                 return;
             }
@@ -536,7 +536,7 @@ public final class XNIBuilder implements TreeBuilder {
             
             // SYSTEM or PUBLIC or [
             
-            Util.THIS.debug ("\nTesting DOCTYPE kind-----\n" + idtd.substring (pos));
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\nTesting DOCTYPE kind-----\n" + idtd.substring (pos));
             
             if (idtd.charAt (pos) == '[') {  // just internal dtd
                 start = ++pos;
@@ -567,11 +567,11 @@ public final class XNIBuilder implements TreeBuilder {
             }
             
             if (start == -1) {
-                Util.THIS.debug ("TreeStreamBuilderXercesImpl: it does not have internal DTD.");
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeStreamBuilderXercesImpl: it does not have internal DTD.");
 
                 return;
             } else {
-                Util.THIS.debug ("\n---Analyzing internal DTD:\n" + idtd.substring (start));
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\n---Analyzing internal DTD:\n" + idtd.substring (start));
             }
             
             // search for internal DTD end
@@ -613,14 +613,14 @@ public final class XNIBuilder implements TreeBuilder {
             }
             
             if (last == pos) {
-                Util.THIS.debug ("TreeStreamBuilderXercesImpl: end not reached");
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeStreamBuilderXercesImpl: end not reached");
 
                 return;
             }
             
             String internalDTDText = idtd.substring (start, pos);
 
-            Util.THIS.debug ("Internal DTD:" + internalDTDText + "\n--");
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Internal DTD:" + internalDTDText + "\n--");
             
             // use introspectio to set it
             
@@ -634,7 +634,7 @@ public final class XNIBuilder implements TreeBuilder {
                 throw ex;
             } catch (Exception ex) {
                 // ignore introspection exceptions
-                Util.THIS.debug ("TreeStreamBuilderXercesImpl.settingInternaDTDText", ex);
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeStreamBuilderXercesImpl.settingInternaDTDText", ex);
             }
             
         }
@@ -650,7 +650,7 @@ public final class XNIBuilder implements TreeBuilder {
                 
                 if (inDTD) {
                     if (currentParentNode () instanceof TreeConditionalSection) {
-                        Util.THIS.debug ("\n*** TreeStreamBuilderXercesImpl::characters: XMLString = '" + text + "'"); // NOI18N
+                        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\n*** TreeStreamBuilderXercesImpl::characters: XMLString = '" + text + "'"); // NOI18N
                         
                         ((TreeConditionalSection)currentParentNode ()).setIgnoredContent (
                         text.toString ()
@@ -735,9 +735,9 @@ public final class XNIBuilder implements TreeBuilder {
             trace ("endDocument()"); // NOI18N
             
             if (parentStack.isEmpty () == false) {
-                Util.THIS.debug ("Inconsistency at parentStack: " + parentStack ); // NOI18N
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Inconsistency at parentStack: " + parentStack ); // NOI18N
             } else if (elementStack.isEmpty () == false) {
-                Util.THIS.debug ("Inconsistency at elementStack: " + parentStack ); // NOI18N
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Inconsistency at elementStack: " + parentStack ); // NOI18N
             } else {
                 isCorrect = true;
             }
@@ -1167,7 +1167,7 @@ public final class XNIBuilder implements TreeBuilder {
         
         public void startContentModel (String elementName) {
             
-            Util.THIS.debug ("startContentModel(" + elementName + ")"); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("startContentModel(" + elementName + ")"); // NOI18N
             
             lastType = null;
             contentModelMembersStack = new Stack ();
@@ -1189,14 +1189,14 @@ public final class XNIBuilder implements TreeBuilder {
         
         // it is not called for mixed type
         public void startGroup () {
-            Util.THIS.debug ("startGroup()"); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("startGroup()"); // NOI18N
 
             startMembers ();
         }
         
         public void element (String elementName) {
             
-            Util.THIS.debug ("element(" + elementName + ")"); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("element(" + elementName + ")"); // NOI18N
             
             lastType = new NameType (elementName);
             addMember (lastType);
@@ -1204,7 +1204,7 @@ public final class XNIBuilder implements TreeBuilder {
         
         // determine type of content model group
         public void separator (short separator) {
-            Util.THIS.debug ("childrenSeparator()"); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("childrenSeparator()"); // NOI18N
             
             switch (separator) {
                 case SEPARATOR_SEQUENCE:
@@ -1222,7 +1222,7 @@ public final class XNIBuilder implements TreeBuilder {
         // INPUT lastType field
         //
         public void occurrence (short occurrence) {
-            Util.THIS.debug ("childrenOccurrence()"); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("childrenOccurrence()"); // NOI18N
             
             switch (occurrence) {
                 case OCCURS_ZERO_OR_ONE:
@@ -1241,7 +1241,7 @@ public final class XNIBuilder implements TreeBuilder {
         }
         
         public void endGroup () {
-            Util.THIS.debug ("childrenEndGroup()"); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("childrenEndGroup()"); // NOI18N
 
             ChildrenType group = getMembersType ();
             group.addTypes (endMembers ());
@@ -1250,7 +1250,7 @@ public final class XNIBuilder implements TreeBuilder {
         }
         
         public void endContentModel () {
-            Util.THIS.debug ("endContentModel()"); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("endContentModel()"); // NOI18N
 
             if (contentModel == null && lastType == null) { // #PCDATA
                 contentModel = new MixedType ();
@@ -1371,7 +1371,7 @@ public final class XNIBuilder implements TreeBuilder {
         private TreeDocumentRoot getDocumentRoot () {
             TreeDocumentRoot doc = (TreeDocumentRoot) (errors > 0 ? null : returnDocument);
             
-            Util.THIS.debug ("TreeStreamBuilderXercesImpl returns: " + doc); // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeStreamBuilderXercesImpl returns: " + doc); // NOI18N
             
             return doc;
         }
@@ -1468,7 +1468,7 @@ public final class XNIBuilder implements TreeBuilder {
                 location =  entity + "/" + locator.getLineNumber () + ":" + locator.getColumnNumber () ;
             }
             
-            Util.THIS.debug ("X2T " + location + " " + msg);  // NOI18N
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("X2T " + location + " " + msg);  // NOI18N
         }
         
         private void doAssert (boolean asrt) {

@@ -73,7 +73,7 @@ public final class TreeNodeIterator {
             throw new InvalidStateException (Util.THIS.getString ("EXC_TreeNodeIterator.nextNode"));
         }
         
-        Util.THIS.debug ("[PENDING]: TreeNodeIterator.nextNode ()"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[PENDING]: TreeNodeIterator.nextNode ()"); // NOI18N
         return null;
     }
     
@@ -84,7 +84,7 @@ public final class TreeNodeIterator {
             throw new InvalidStateException (Util.THIS.getString ("EXC_TreeNodeIterator.previousNode"));
         }
         
-        Util.THIS.debug ("[PENDING]: TreeNodeIterator.nextNode ()"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[PENDING]: TreeNodeIterator.nextNode ()"); // NOI18N
         return null;
     }
     

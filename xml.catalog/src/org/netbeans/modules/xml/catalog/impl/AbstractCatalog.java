@@ -172,7 +172,7 @@ public abstract class AbstractCatalog {
      * Clean content of all internal structures
      */
     protected void clearAll() {
-        Util.THIS.debug ("AbstractCatalog: clearing maps"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("AbstractCatalog: clearing maps"); // NOI18N
 
         publicMap.clear();
         systemMap.clear();

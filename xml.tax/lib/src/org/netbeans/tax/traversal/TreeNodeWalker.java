@@ -90,7 +90,7 @@ public final class TreeNodeWalker {
     /**
      */
     public TreeNode parentNode () {
-        Util.THIS.debug ("[PENDING]: TreeNodeWalker.parentNode ()"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[PENDING]: TreeNodeWalker.parentNode ()"); // NOI18N
         
         return null;
     }
@@ -98,7 +98,7 @@ public final class TreeNodeWalker {
     /**
      */
     public TreeNode firstChild () {
-        Util.THIS.debug ("[PENDING]: TreeNodeWalker.firstChild ()"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[PENDING]: TreeNodeWalker.firstChild ()"); // NOI18N
         
         return null;
     }
@@ -106,7 +106,7 @@ public final class TreeNodeWalker {
     /**
      */
     public TreeNode lastChild () {
-        Util.THIS.debug ("[PENDING]: TreeNodeWalker.lastChild ()"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[PENDING]: TreeNodeWalker.lastChild ()"); // NOI18N
         
         return null;
     }
@@ -114,7 +114,7 @@ public final class TreeNodeWalker {
     /**
      */
     public TreeNode previousSibling () {
-        Util.THIS.debug ("[PENDING]: TreeNodeWalker.previousSibling ()"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[PENDING]: TreeNodeWalker.previousSibling ()"); // NOI18N
         
         return null;
     }
@@ -122,7 +122,7 @@ public final class TreeNodeWalker {
     /**
      */
     public TreeNode nextSibling () {
-        Util.THIS.debug ("[PENDING]: TreeNodeWalker.nextSibling ()"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[PENDING]: TreeNodeWalker.nextSibling ()"); // NOI18N
         
         return null;
     }
@@ -130,7 +130,7 @@ public final class TreeNodeWalker {
     /**
      */
     public TreeNode previousNode () {
-        Util.THIS.debug ("[PENDING]: TreeNodeWalker.previousNode ()"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[PENDING]: TreeNodeWalker.previousNode ()"); // NOI18N
         
         return null;
     }
@@ -138,7 +138,7 @@ public final class TreeNodeWalker {
     /**
      */
     public TreeNode nextNode () {
-        Util.THIS.debug ("[PENDING]: TreeNodeWalker.nextNode ()"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[PENDING]: TreeNodeWalker.nextNode ()"); // NOI18N
         
         return null;
     }

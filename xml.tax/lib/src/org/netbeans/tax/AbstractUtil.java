@@ -42,7 +42,8 @@ public abstract class AbstractUtil {
      * Just for debugging purposes.
      */
     public final void debug (String message, Throwable ex) {
-        if ( (Integer.getInteger (this.getPackageName(), -1)).intValue() >= 0 ) {
+//         if ( (Integer.getInteger (this.getPackageName(), -1)).intValue() >= 0 ) {
+        if ( isLoggable() ) {
             System.err.println ("[" + getPackageName() + "] " + message);
             if ( ex != null ) {
                 ex.printStackTrace (System.err);
@@ -58,6 +59,12 @@ public abstract class AbstractUtil {
         debug (message, null);
     }
 
+
+    /** Test if <code>debug (...)</code> will log something.
+     */
+    public final boolean isLoggable () {
+        return ( Boolean.getBoolean (this.getPackageName()) );
+    }
 
     /**
      * @return package name of this instance

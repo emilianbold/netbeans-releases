@@ -210,7 +210,7 @@ try_next_provider:
     public synchronized void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         //super.readExternal(in);        
 
-        Util.THIS.debug("CatalogSettings.readExternal()"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("CatalogSettings.readExternal()"); // NOI18N
 
         int version = in.readInt();  //IN version
         
@@ -248,7 +248,7 @@ try_next_provider:
     public synchronized void writeExternal(ObjectOutput out) throws IOException  {
         //super.writeExternal(out);
 
-        Util.THIS.debug("CatalogSettings.writeExternal()"); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("CatalogSettings.writeExternal()"); // NOI18N
 
         out.writeInt(VERSION_1);  //OUT version
         

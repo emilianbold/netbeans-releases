@@ -114,8 +114,8 @@ public class TreeConditionalSection extends AbstractTreeDTD implements DTD.Child
     /**
      */
     private final void setIncludeImpl (boolean newInclude) {
-        Util.THIS.debug ("\nTreeConditionalSection::setIncludeImpl: oldInclude = " + this.include); // NOI18N
-        Util.THIS.debug ("                      ::setIncludeImpl: newInclude = " + newInclude); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\nTreeConditionalSection::setIncludeImpl: oldInclude = " + this.include); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("                      ::setIncludeImpl: newInclude = " + newInclude); // NOI18N
         
         boolean oldInclude = this.include;
         
@@ -129,8 +129,8 @@ public class TreeConditionalSection extends AbstractTreeDTD implements DTD.Child
      * @throws InvalidArgumentException
      */
     public final void setInclude (boolean newInclude) throws ReadOnlyException, InvalidArgumentException {
-        Util.THIS.debug ("\nTreeConditionalSection::setInclude: oldInclude = " + this.include); // NOI18N
-        Util.THIS.debug ("                      ::setInclude: newInclude = " + newInclude); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\nTreeConditionalSection::setInclude: oldInclude = " + this.include); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("                      ::setInclude: newInclude = " + newInclude); // NOI18N
         
         //
         // check new value

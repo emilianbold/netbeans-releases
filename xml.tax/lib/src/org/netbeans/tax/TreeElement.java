@@ -78,7 +78,7 @@ public class TreeElement extends TreeParentNode implements Document.Child, Docum
         this.namespaceContext = new TreeNamespaceContext (this);
         this.attributes       = new TreeNamedObjectMap (createAttributesContentManager ());
         
-        Util.THIS.debug ("TreeElement:: : name = " + tagName + " : empty = " + empty); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeElement:: : name = " + tagName + " : empty = " + empty); // NOI18N
     }
     
     
