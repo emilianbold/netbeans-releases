@@ -130,7 +130,7 @@ class WebActionProvider implements ActionProvider {
             commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
             // the target name is run, except for Java files with main method, where it is run-main
             commands.put(COMMAND_RUN_SINGLE, new String[] {"run"}); // NOI18N
-            commands.put(WebProjectConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
+            commands.put(WebProjectConstants.COMMAND_REDEPLOY, new String[] {"run-deploy"}); // NOI18N
             commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
             // the target name is debug, except for Java files with main method, where it is debug-single-main
             commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug"}); // NOI18N
