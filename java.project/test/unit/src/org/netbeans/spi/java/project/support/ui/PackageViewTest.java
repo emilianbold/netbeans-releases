@@ -14,6 +14,7 @@
 package org.netbeans.spi.java.project.support.ui;
 
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import javax.swing.Icon;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.TestUtil;
@@ -209,6 +210,69 @@ public class PackageViewTest extends NbTestCase {
         
     }
     
+    public void testNodeDestroy() throws Exception {
+        // Prepare test data
+        FileObject root = TestUtil.makeScratchDir( this );
+                
+	FileObject srcRoot;
+        FileObject toDelete;
+        SourceGroup group;
+        Node rootNode;
+        Node n;
+        
+        // Empty parent
+        srcRoot = FileUtil.createFolder( root, "ep" );
+        toDelete = FileUtil.createFolder( srcRoot, "a/aa" );
+        group = new SimpleSourceGroup( srcRoot );
+        rootNode = PackageView.createPackageView( group );
+
+        n = PackageView.findPath( rootNode, toDelete );
+        n.destroy();        
+        assertFileObjects( srcRoot, new String[0] );
+        
+        // Non-Empty parent
+        srcRoot = FileUtil.createFolder( root, "nep" );
+        toDelete = FileUtil.createFolder( srcRoot, "a/aa" );
+        FileUtil.createData( srcRoot, "a/some.java" );
+        group = new SimpleSourceGroup( srcRoot );
+        rootNode = PackageView.createPackageView( group );
+
+        n = PackageView.findPath( rootNode, toDelete );
+        n.destroy();        
+        assertFileObjects( srcRoot, new String[]{ "a" } );
+        
+               
+        // Non empty siblings
+        srcRoot = FileUtil.createFolder( root, "es" );
+        FileObject a = FileUtil.createFolder( srcRoot, "a" );
+        FileUtil.createFolder( a, "aa" );
+        FileUtil.createData( srcRoot, "a/aa/some.java" );
+        toDelete = FileUtil.createFolder( srcRoot, "a/b" );
+        group = new SimpleSourceGroup( srcRoot );
+        rootNode = PackageView.createPackageView( group );
+        
+        n = PackageView.findPath( rootNode, toDelete );
+        n.destroy();        
+        assertFileObjects( srcRoot, new String[]{ "a" } );
+        assertFileObjects( a, new String[]{ "aa" } );
+        
+        // Empty siblings
+        srcRoot = FileUtil.createFolder( root, "nes" );
+        a = FileUtil.createFolder( srcRoot, "a" );
+        FileUtil.createFolder( a, "aa" );
+        toDelete = FileUtil.createFolder( srcRoot, "a/b" );
+        group = new SimpleSourceGroup( srcRoot );
+        rootNode = PackageView.createPackageView( group );
+        
+        n = PackageView.findPath( rootNode, toDelete );
+        n.destroy();        
+        assertFileObjects( srcRoot, new String[]{ "a" } );
+        assertFileObjects( a, new String[]{ "aa" } );
+        
+                
+    }
+    
+    
     public void testFindPath() throws Exception {
         
         // Prepare test data
@@ -300,6 +364,23 @@ public class PackageViewTest extends NbTestCase {
         else {
             assertNull( "No node should be found", n );
         }
+        
+    }
+    
+    public static void assertFileObjects( FileObject folder, String[] names ) {
+        
+        assertTrue( "Has to be a folder ", folder.isFolder() );
+        
+        FileObject[] children = folder.getChildren();
+        String[] chNames = new String[ children.length ];
+        for( int i = 0; i < children.length; i++ ) {            
+            chNames[i] = children[i].getNameExt();
+        }
+        
+        Arrays.sort( names );
+        Arrays.sort( chNames );
+        
+        assertTrue( "Arrays have to be equal ", Arrays.equals( names, chNames ) );
         
     }
     

@@ -489,7 +489,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             // First; delete the package
             super.destroy();
             // Second; delete empty super packages
-            while( !parent.equals( root ) && isEmpty( parent ) ) {
+            while( !parent.equals( root ) && parent.getChildren().length == 0  ) {
                 FileObject newParent = parent.getParent();
                 parent.delete();
                 parent = newParent;
