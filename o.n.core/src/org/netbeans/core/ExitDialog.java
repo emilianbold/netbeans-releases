@@ -252,11 +252,17 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
             exitDialog = null;
             
             if (exitDialog == null) {
+                JButton buttonSave;
+                JButton buttonSaveAll;
+                JButton buttonDiscardAll;
                 exitOptions = new JButton[] {
-                                  new JButton (NbBundle.getBundle(ExitDialog.class).getString("CTL_Save")),
-                                  new JButton (NbBundle.getBundle(ExitDialog.class).getString("CTL_SaveAll")),
-                                  new JButton (NbBundle.getBundle(ExitDialog.class).getString("CTL_DiscardAll")),
+                                  buttonSave = new JButton (NbBundle.getBundle(ExitDialog.class).getString("CTL_Save")),
+                                  buttonSaveAll = new JButton (NbBundle.getBundle(ExitDialog.class).getString("CTL_SaveAll")),
+                                  buttonDiscardAll = new JButton (NbBundle.getBundle(ExitDialog.class).getString("CTL_DiscardAll")),
                               };
+                buttonSave.setMnemonic(NbBundle.getBundle(ExitDialog.class).getString("CTL_Save_Mnemonic").charAt(0));
+                buttonSaveAll.setMnemonic(NbBundle.getBundle(ExitDialog.class).getString("CTL_SaveAll_Mnemonic").charAt(0));
+                buttonDiscardAll.setMnemonic(NbBundle.getBundle(ExitDialog.class).getString("CTL_DiscardAll_Mnemonic").charAt(0));
                 secondaryExitOptions = new Object[] {
                                            new JButton (NbBundle.getBundle(ExitDialog.class).getString("CTL_Cancel")),
                                        };
