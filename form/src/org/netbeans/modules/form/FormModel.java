@@ -850,8 +850,10 @@ public class FormModel
         return eventBroker;
     }
 
-    // [EventBroker could be more independent and extensible - interface
-    //  definition here, implementation separated elsewhere.]
+    /** Class that collects events and fires them on FormModel in one batch
+     * later. Collecting the events works only if the events are passed
+     * to the broker from AWT event dispatch thread.
+     */
     private class EventBroker implements Runnable {
         private List eventList;
         private boolean compoundUndoStarted;
@@ -869,7 +871,11 @@ public class FormModel
         }
 
         public void sendEventLater(FormModelEvent ev) {
-            assert java.awt.EventQueue.isDispatchThread();
+            // works properly only if called from AWT event dispatch thread
+            if (!java.awt.EventQueue.isDispatchThread()) {
+                sendEventImmediately(ev);
+                return;
+            }
 
             if (eventList == null) {
                 eventList = new ArrayList();
