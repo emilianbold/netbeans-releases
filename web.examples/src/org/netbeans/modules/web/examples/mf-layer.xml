@@ -4,10 +4,10 @@
 <filesystem>
     <folder name="Templates">
         <folder name="Project">
-	    <folder name="Web">
-		<folder name="Samples">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.examples.Bundle"/>
-                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/examples/descriptions/webSamplesCategory.html"/>
+            <folder name="Samples">
+                <folder name="Web">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.examples.Bundle"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/examples/descriptions/webSamplesCategory.html"/>
                     <file name="jstl.zip" url="jstl.zip">
                       <attr name="template" boolvalue="true"/>
                       <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/examples/descriptions/jstl.html"/>
@@ -30,7 +30,7 @@
                       <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.examples.WebSampleProjectIterator"/>
                     </file>
                 </folder>
-	    </folder>
+            </folder>
         </folder>
     </folder>
 </filesystem>

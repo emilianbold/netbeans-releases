@@ -1,0 +1,73 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.web.examples;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+/**
+ * Create a sample web project by unzipping a template into some directory
+ *
+ * @author Martin Grebac
+ */
+public class WebSampleProjectGenerator {
+    
+    private WebSampleProjectGenerator() {}
+
+    public static FileObject createProjectFromTemplate(final FileObject template, File projectLocation, final String name) throws IOException {
+        FileObject prjLoc = null;
+        if (template.getExt().endsWith("zip")) {  //NOI18N
+            unzip(template.getInputStream(), projectLocation);
+            try {
+                prjLoc = FileUtil.toFileObject(projectLocation);
+            } catch (Exception e) {
+                throw new IOException(e.toString());
+            }
+            prjLoc.refresh(false);
+        }
+        return prjLoc;
+    }     
+    
+    private static void unzip(InputStream source, File targetFolder) throws IOException {
+        //installation
+        ZipInputStream zip=new ZipInputStream(source);
+        try {
+            ZipEntry ent;
+            while ((ent = zip.getNextEntry()) != null) {
+                File f = new File(targetFolder, ent.getName());
+                if (ent.isDirectory()) {
+                    f.mkdirs();
+                } else {
+                    f.getParentFile().mkdirs();
+                    FileOutputStream out = new FileOutputStream(f);
+                    try {
+                        FileUtil.copy(zip, out);
+                    } finally {
+                        out.close();
+                    }
+                }
+            }
+        } finally {
+            zip.close();
+        }
+    }
+    
+}
