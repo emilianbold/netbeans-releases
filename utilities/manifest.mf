@@ -5,6 +5,7 @@ OpenIDE-Module-Implementation-Version: 0.9.3
 OpenIDE-Module-Install: com/netbeans/developer/modules/utilities/Installer.class
 OpenIDE-Module-Module-Dependencies: org.openidex.util/1 > 0.9.3
 Class-Path: ext/regexp.jar
+Main-Class: com.netbeans.developer.modules.openfile.Main
 
 Name: com/netbeans/developer/modules/search/types/FullTextType.class
 OpenIDE-Module-Class: Service
