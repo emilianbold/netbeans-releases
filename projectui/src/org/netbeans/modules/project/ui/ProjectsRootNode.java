@@ -257,8 +257,6 @@ public class ProjectsRootNode extends AbstractNode {
         
     private static final class BadgingNode extends FilterNode implements PropertyChangeListener {
 
-        private static Image mainProjectBadge = Utilities.loadImage( "org/netbeans/modules/project/ui/resources/mainProjectBadge.gif" ); // NOI18N
-        
         private static String badgedNamePattern = NbBundle.getMessage( ProjectsRootNode.class, "LBL_MainProject_BadgedNamePattern" );
         
         public BadgingNode( Node n) {
@@ -286,16 +284,6 @@ public class ProjectsRootNode extends AbstractNode {
             }
             return isMain() ? "<b>" + (htmlName == null ? dispName : htmlName) + "</b>" : htmlName; //NOI18N
         }
-
-        public Image getIcon( int type ) {
-            Image original = super.getIcon( type );                
-            return isMain() ? Utilities.mergeImages( original, mainProjectBadge, 7, 7 ) : original;
-        }
-
-        public Image getOpenedIcon( int type ) {
-            Image original = super.getOpenedIcon(type);                
-            return isMain() ? Utilities.mergeImages( original, mainProjectBadge, 7, 7 ) : original;            
-        }            
 
         public void propertyChange( PropertyChangeEvent e ) {
             if ( OpenProjectList.PROPERTY_MAIN_PROJECT.equals( e.getPropertyName() ) ) {
