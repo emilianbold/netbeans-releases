@@ -67,13 +67,6 @@ public final class AttributeMap {
 	return new AttributeMap(map);
     }
 
-    /*
-     * version of InputStream.skip() which will skip the actual
-     * number of requested bytes.
-     */
-    private static void skip(InputStream in, int len) throws IOException {
-    }
-
     AttributeMap(Map attributes) {
 	this.map = attributes;
     }
