@@ -39,25 +39,24 @@ public class PropertyPanel extends JPanel {
     private static final String DUMMY_ACTION = "dont_proceed"; // NOI18N
     
     /** Customized <code>I18nString</code>. */
-    private I18nString i18nString;
+    protected I18nString i18nString;
 
     
     /** Creates new <code>PropertyPanel</code>. */
     public PropertyPanel() {
         initComponents();
-
     }
 
     /** Seter for <code>i18nString</code> property. */
     public void setI18nString(I18nString i18nString) {
         this.i18nString = i18nString;
         
-        initAllValues();
+        updateAllValues();
     }
 
     
     /** Initializes UI values. */
-    private void initAllValues() {
+    private void updateAllValues() {
         updateKey();
         updateValue();
         updateComment();
@@ -101,7 +100,7 @@ public class PropertyPanel extends JPanel {
     }
     
     /** Updates <code>replaceFormatTextField</code>. */
-    private void updateReplaceText() {
+    void updateReplaceText() {
         replaceFormatTextField.setText(i18nString.getReplaceString());
     }
     

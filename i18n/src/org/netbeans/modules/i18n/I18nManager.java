@@ -239,7 +239,7 @@ public class I18nManager {
         if(i18nPanel == null) {
             
             // Create i18n panel.
-            i18nPanel = new I18nPanel();
+            i18nPanel = new I18nPanel(support.getPropertyPanel());
 
             // Helper final.
             final I18nPanel panel = i18nPanel;

@@ -131,6 +131,12 @@ public abstract class I18nSupport {
         return resourceHolder;
     }
 
+    /** Gets <code>PropertyPanel</code> which is used for customizing <code>i18nStrings</code>
+     * linked to this support instance. Is possible to override in subclasses if any additional customization is needed. */
+    public PropertyPanel getPropertyPanel() {
+        return new PropertyPanel();
+    }
+    
     /** Indicates if supports customizer for additional source specific values. Override in subclasses if nedded.
      * @return false 
      * @see #getAdditionalCustommizer */

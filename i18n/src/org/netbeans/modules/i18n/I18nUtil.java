@@ -15,6 +15,8 @@
 package org.netbeans.modules.i18n;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import org.openide.util.NbBundle;
@@ -28,158 +30,126 @@ import org.openide.util.SharedClassObject;
  */
 public abstract class I18nUtil {
 
-    /** Property name of debug flag. */
-    private static final String DEBUG = "netbeans.debug.exceptions"; // NOI18N
-    
     /** Items for init format customizer. */
-    private static String[] initFormatItems;
+    private static List initFormatItems;
 
     /** Help description for init format customizer. */
-    private static String[][] initHelpItems;
+    private static List initHelpItems;
 
     /** Items for replace format customizer. */
-    private static String[] replaceFormatItems;
+    private static List replaceFormatItems;
 
     /** Help description for replace format customizer. */
-    private static String[][] replaceHelpItems;
+    private static List replaceHelpItems;
 
     /** Items for regular expression customizer. */
-    private static String[] regExpItems;
+    private static List regExpItems;
 
     /** Help description for regular expression customizer. */
-    private static String[][] regExpHelpItems;
+    private static List regExpHelpItems;
     
     /** Items for i18n regular expression customizer. */
-    private static String[] i18nRegExpItems;
+    private static List i18nRegExpItems;
 
     /** Resource bundle used in i18n module. */
     private static ResourceBundle bundle;
     
     
     /** Gets <code>initFormatItems</code>. */
-    public static String[] getInitFormatItems() { 
+    public static List getInitFormatItems() { 
         if(initFormatItems == null) {
-            initFormatItems = new String[] {
-                "java.util.ResourceBundle.getBundle(\"{bundleNameSlashes}\")", // NOI18N
-                "org.openide.util.NbBundle.getBundle({sourceFileName}.class)" // NOI18N
-            };
+            initFormatItems = new ArrayList(2);
+            initFormatItems.add("java.util.ResourceBundle.getBundle(\"{bundleNameSlashes}\")"); // NOI18N
+            initFormatItems.add("org.openide.util.NbBundle.getBundle({sourceFileName}.class)"); // NOI18N
         }
               
         return initFormatItems;
     }
 
     /** Gets <code>InitHelpFormats</code>. */
-    public static String[][] getInitHelpItems() {
+    public static List getInitHelpItems() {
         if(initHelpItems == null) {
-            initHelpItems = new String[][] {
-                new String[] {"{bundleNameSlashes}","{bundleNameDots}","{sourceFileName}"}, // NOI18N
-                new String[] {
-                    getBundle().getString("TXT_PackageNameSlashes"),
-                    getBundle().getString("TXT_PackageNameDots"),
-                    getBundle().getString("TXT_SourceDataObjectName")
-                }
-            };
+            initHelpItems = new ArrayList(3);
+            initHelpItems.add("{bundleNameSlashes} - "+ getBundle().getString("TXT_PackageNameSlashes")); // NOI18N
+            initHelpItems.add("{bundleNameDots} - " + getBundle().getString("TXT_PackageNameDots")); // NOI18N
+            initHelpItems.add("{sourceFileName} - " + getBundle().getString("TXT_SourceDataObjectName")); // NOI18N
         }
          
         return initHelpItems;
     }
 
     /** Gets <code>replaceFormatItems</code>. */
-    public static String[] getReplaceFormatItems() {
+    public static List getReplaceFormatItems() {
         if(replaceFormatItems == null) {
-            replaceFormatItems = new String[] {
-                "{identifier}.getString(\"{key}\")", // NOI18N
-                "Utilities.getString(\"{key}\")", // NOI18N
-                "java.util.ResourceBundle.getBundle(\"{bundleNameSlashes}\").getString(\"{key}\")", // NOI18N
-                "org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(\"{key}\")" // NOI18N
-            };
+            replaceFormatItems = new ArrayList(6);
+            replaceFormatItems.add("{identifier}.getString(\"{key}\")"); // NOI18N
+            replaceFormatItems.add("Utilities.getString(\"{key}\")"); // NOI18N
+            replaceFormatItems.add("java.util.ResourceBundle.getBundle(\"{bundleNameSlashes}\").getString(\"{key}\")"); // NOI18N
+            replaceFormatItems.add("org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(\"{key}\")"); // NOI18N
+            replaceFormatItems.add("java.text.MessageFormat(java.util.ResourceBundle.getBundle(\"{bundleNameSlashes}\").getString(\"{key}\"), {arguments})"); // NOI18N
+            replaceFormatItems.add("org.openide.NbBundle.getMessage({sourceFileName}.class, \"{key}\", {arguments})"); // NOI18N
         }
             
         return replaceFormatItems;
     }
 
     /** Gets <code>replaceHeplItems</code>.*/
-    public static String[][] getReplaceHelpItems() {
+    public static List getReplaceHelpItems() {
         if(replaceHelpItems == null) {
-            replaceHelpItems = new String[][] { 
-                new String[] {"{identifier}", "{key}", "{bundleNameSlashes}", "{bundleNameDots}", "{sourceFileName}"}, // NOI18N
-                new String[] {
-                    getBundle().getString("TXT_FieldIdentifier"),
-                    getBundle().getString("TXT_KeyHelp"),
-                    getBundle().getString("TXT_PackageNameSlashes"),
-                    getBundle().getString("TXT_PackageNameDots"),
-                    getBundle().getString("TXT_SourceDataObjectName")
-                }
-            };
+            replaceHelpItems = new ArrayList(5);
+            replaceHelpItems.add("{identifier} - " + getBundle().getString("TXT_FieldIdentifier")); // NOI18N
+            replaceHelpItems.add("{key} - " + getBundle().getString("TXT_KeyHelp")); // NOI18N
+            replaceHelpItems.add("{bundleNameSlashes} - " + getBundle().getString("TXT_PackageNameSlashes")); // NOI18N
+            replaceHelpItems.add("{bundleNameDots} - " + getBundle().getString("TXT_PackageNameDots")); // NOI18N
+            replaceHelpItems.add("{sourceFileName} - " + getBundle().getString("TXT_SourceDataObjectName")); // NOI18N
+            replaceHelpItems.add("{arguments} - " + getBundle().getString("TXT_Arguments")); // NOI18N
         }
             
         return replaceHelpItems;
     }
 
     /** Gets <code>regExpItems</code>. */
-    public static String[] getRegExpItems() {
+    public static List getRegExpItems() {
         if(regExpItems == null) {
-            regExpItems = new String[] {
-                "(getString|getBundle)([:space:]*)\\(([:space:])*{hardString}", // NOI18N
-                "// NOI18N", // NOI18N
-                "((getString|getBundle)([:space:]*)\\(([:space:])*{hardString})|(// NOI18N)" // NOI18N
-            };
+            regExpItems = new ArrayList(3);
+            regExpItems.add("(getString|getBundle)([:space:]*)\\(([:space:])*{hardString}"); // NOI18N
+            regExpItems.add("// NOI18N"); // NOI18N
+            regExpItems.add("((getString|getBundle)([:space:]*)\\(([:space:])*{hardString})|(// NOI18N)"); // NOI18N
         }
             
         return regExpItems;
     }
     
     /** Gets <code>i18nRegExpItems</code>. */
-    public static String[] getI18nRegExpItems() {
+    public static List getI18nRegExpItems() {
         if(i18nRegExpItems == null) {
-            i18nRegExpItems = new String[] {
-                "(getString)([:space:]*)\\(([:space:])*{hardString}", // NOI18N
-                "(getString|getMessage)([:space:]*)\\(([:space:])*{hardString}", // NOI18N
-            };
+            i18nRegExpItems = new ArrayList(2);
+            i18nRegExpItems.add("(getString)([:space:]*)\\(([:space:])*{hardString}"); // NOI18N
+            i18nRegExpItems.add("(getString|getMessage)([:space:]*)\\(([:space:])*{hardString}"); // NOI18N
         }
             
         return i18nRegExpItems;
     }
     
     /** Gets <code>regExpHelpItems</code>. */
-    public static String[][] getRegExpHelpItems() {
+    public static List getRegExpHelpItems() {
         if(regExpHelpItems == null) {
-            regExpHelpItems = new String[][] {
-                new String[] {
-                    "{hardString}", // NOI18N
-                    "[:alnum:]", // NOI18N
-                    "[:alpha:]", // NOI18N
-                    "[:blank:]", // NOI18N
-                    "[:cntrl:]", // NOI18N
-                    "[:digit:]", // NOI18N
-                    "[:graph:]", // NOI18N
-                    "[:lower:]", // NOI18N
-                    "[:print:]", // NOI18N
-                    "[:punct:]", // NOI18N
-                    "[:space:]", // NOI18N
-                    "[:upper:]", // NOI18N
-                    "[:xdigit:]", // NOI18N
-                    "[:javastart:]", // NOI18N
-                    "[:javapart:]" // NOI18N
-                },
-                new String[] {
-                    getBundle().getString("TXT_HardString"),
-                    getBundle().getString("TXT_Alnum"),
-                    getBundle().getString("TXT_Alpha"),
-                    getBundle().getString("TXT_Blank"),
-                    getBundle().getString("TXT_Cntrl"),
-                    getBundle().getString("TXT_Digit"),
-                    getBundle().getString("TXT_Graph"),
-                    getBundle().getString("TXT_Lower"),
-                    getBundle().getString("TXT_Print"),
-                    getBundle().getString("TXT_Punct"),
-                    getBundle().getString("TXT_Space"),
-                    getBundle().getString("TXT_Upper"),
-                    getBundle().getString("TXT_Xdigit"),
-                    getBundle().getString("TXT_Javastart"),
-                    getBundle().getString("TXT_Javapart")
-                }
-            };
+            regExpHelpItems = new ArrayList(15);
+            regExpHelpItems.add("{hardString} - " + getBundle().getString("TXT_HardString")); // NOI18N
+            regExpHelpItems.add("[:alnum:] - " + getBundle().getString("TXT_Alnum")); // NOI18N
+            regExpHelpItems.add("[:alpha:] - " + getBundle().getString("TXT_Alpha")); // NOI18N
+            regExpHelpItems.add("[:blank:] - " + getBundle().getString("TXT_Blank")); // NOI18N
+            regExpHelpItems.add("[:cntrl:] - " + getBundle().getString("TXT_Cntrl")); // NOI18N
+            regExpHelpItems.add("[:digit:] - " + getBundle().getString("TXT_Digit")); // NOI18N
+            regExpHelpItems.add("[:graph:] - " + getBundle().getString("TXT_Graph")); // NOI18N
+            regExpHelpItems.add("[:lower:] - " + getBundle().getString("TXT_Lower")); // NOI18N
+            regExpHelpItems.add("[:print:] - " + getBundle().getString("TXT_Print")); // NOI18N
+            regExpHelpItems.add("[:punct:] - " + getBundle().getString("TXT_Punct")); // NOI18N
+            regExpHelpItems.add("[:space:] - " + getBundle().getString("TXT_Space")); // NOI18N
+            regExpHelpItems.add("[:upper:] - " + getBundle().getString("TXT_Upper")); // NOI18N
+            regExpHelpItems.add("[:xdigit:] - " + getBundle().getString("TXT_Xdigit")); // NOI18N
+            regExpHelpItems.add("[:javastart:] - " + getBundle().getString("TXT_Javastart")); // NOI18N
+            regExpHelpItems.add("[:javapart:] - " + getBundle().getString("TXT_Javapart")); // NOI18N
         }
         
         return regExpHelpItems;

@@ -106,7 +106,7 @@ public class InsertI18nStringAction extends CookieAction {
 
         final I18nSupport support = factory.create(dataObject);
         
-        final I18nPanel i18nPanel = new I18nPanel(false, true);
+        final I18nPanel i18nPanel = new I18nPanel(support.getPropertyPanel(), false);
         
         i18nPanel.setI18nString(support.getDefaultI18nString());
         

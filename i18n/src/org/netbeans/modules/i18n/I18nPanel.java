@@ -31,7 +31,8 @@ import org.openide.util.WeakListener;
 
 /**
  * Panel which provides GUI for i18n action.
- * Customizes <code>I18nString</code> object and is used by <code>I18nSupport<code> for i18n-izing source.
+ * Customizes <code>I18nString</code> object and is used by <code>I18nSupport<code> for i18n-izing 
+ * one source.
  *
  * @author  Peter Zavadsky
  */
@@ -51,27 +52,24 @@ public class I18nPanel extends JPanel {
     
     
     /** Creates new I18nPanel. */
-    public I18nPanel() {
-        this(true, true);
+    public I18nPanel(PropertyPanel propertyPanel) {
+        this(propertyPanel, true);
     }
 
     /** Creates i18n panel.
-     * @param withButtons if panel with replace, skip ect. buttons shoudl be added 
-     * @param advanced if advanced button should be added in case additional info is supported */
-    public I18nPanel(boolean withButtons, boolean advanced) {
-        
+     * @param propertyPanel panel for customizing i18n strings 
+     * @param withButtons if panel with replace, skip ect. buttons should be added */
+    public I18nPanel(PropertyPanel propertyPanel, boolean withButtons) {
         // Init bundle.
         bundle = I18nUtil.getBundle();
+        
+        this.propertyPanel = propertyPanel;
+        
         initComponents();
         
         if(!withButtons)
             remove(buttonsPanel);
         
-
-        // Get additional customizer if exist.
-        if(!advanced)
-            remove(advancedButton);
-
     }
 
     
@@ -94,9 +92,6 @@ public class I18nPanel extends JPanel {
 
         ((PropertyPanel)propertyPanel).setI18nString(i18nString);
         ((ResourcePanel)resourcePanel).setI18nString(i18nString);
-        
-        if(!i18nString.getSupport().hasAdditionalCustomizer() && SwingUtilities.isDescendingFrom(advancedButton, this))
-            remove(advancedButton);
         
         // Set listener to enable/disable replace button.
         resourcePanel.addPropertyChangeListener(WeakListener.propertyChange(
@@ -162,9 +157,8 @@ public class I18nPanel extends JPanel {
         infoButton = new javax.swing.JButton();
         helpButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
-        propertyPanel = createPropertyPanel();
+        propertyPanel = propertyPanel; // Ugly trick to cheat form.
         resourcePanel = createResourcePanel();
-        advancedButton = new javax.swing.JButton();
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
         
@@ -241,40 +235,7 @@ public class I18nPanel extends JPanel {
         gridBagConstraints1.weightx = 1.0;
         add(resourcePanel, gridBagConstraints1);
         
-        
-        advancedButton.setText("Advanced...");
-        advancedButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                advancedButtonActionPerformed(evt);
-            }
-        }
-        );
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 2;
-        gridBagConstraints1.insets = new java.awt.Insets(11, 12, 0, 11);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.EAST;
-        add(advancedButton, gridBagConstraints1);
-        
     }//GEN-END:initComponents
-
-    private void advancedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_advancedButtonActionPerformed
-        if(!i18nString.getSupport().hasAdditionalCustomizer()) {
-            throw new InternalError("I18N: Button has to be disabled. Has no additional cutomizer."); // NOI18N
-        }
-
-        JPanel additionalCustomizer = i18nString.getSupport().getAdditionalCustomizer();
-                
-        DialogDescriptor dd = new DialogDescriptor(additionalCustomizer, bundle.getString("LBL_Replace"));
-        dd.setModal(true);
-        dd.setOptionType(DialogDescriptor.DEFAULT_OPTION);
-        dd.setOptions(new Object[] {DialogDescriptor.OK_OPTION});
-        dd.setAdditionalOptions(new Object[0]);
-        
-        Dialog replaceDialog = TopManager.getDefault().createDialog(dd);
-        replaceDialog.setVisible(true);
-    }//GEN-LAST:event_advancedButtonActionPerformed
 
   private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
       HelpCtx help = new HelpCtx(I18nPanel.class);
@@ -296,7 +257,6 @@ public class I18nPanel extends JPanel {
   private javax.swing.JButton cancelButton;
   private javax.swing.JPanel propertyPanel;
   private javax.swing.JPanel resourcePanel;
-  private javax.swing.JButton advancedButton;
   // End of variables declaration//GEN-END:variables
 
 }

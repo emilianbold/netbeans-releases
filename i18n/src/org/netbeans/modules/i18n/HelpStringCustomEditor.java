@@ -19,6 +19,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.SystemColor;
+import java.util.List;
+import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -36,30 +38,18 @@ import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
  */
 public class HelpStringCustomEditor extends JPanel implements EnhancedCustomPropertyEditor {
 
-    /** Holds strings which will be inserted according selected item in list box. */
-    private String[] replaceItems;
-
-    
     /** Creates new form CodeCustomEditor.
      * @param value value to be customized 
      * @param items for sleecteing in combo box
      * @param help patterns described in list
      */
-    public HelpStringCustomEditor(String value, String[] items, String[][] help) {
+    public HelpStringCustomEditor(String value, List items, List helpItems) {
         initComponents();
         
-        combo.setModel(new DefaultComboBoxModel(items));
+        combo.setModel(new DefaultComboBoxModel(items.toArray()));
         combo.setSelectedItem(value);
 
-        String[] helpItems = new String[help[0].length];
-        
-        for(int i=0; i<helpItems.length; i++) {
-            helpItems[i] = help[0][i] + " - " + help[1][i]; // NOI18N
-        }
-        
-        replaceItems = help[0];
-        
-        list.setListData(helpItems);
+        list.setListData(helpItems.toArray());
         list.setBackground(new Color(SystemColor.window.getRGB()));
     }
 
@@ -121,27 +111,32 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
     }//GEN-END:initComponents
 
     private void listKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_listKeyPressed
-        if(evt.getKeyCode() == KeyEvent.VK_ENTER && list.getSelectedValue() != null) {
+        String selected = (String)list.getSelectedValue();
+        if(evt.getKeyCode() == KeyEvent.VK_ENTER && selected != null) {
             evt.consume();
-            insertInFormat(list.getSelectedIndex());
+            insertInFormat(selected);
         }
     }//GEN-LAST:event_listKeyPressed
 
     private void listMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_listMouseClicked
-        if(evt.getClickCount() == 2 && list.getSelectedValue() != null) {
-            insertInFormat(list.getSelectedIndex());
+        String selected = (String)list.getSelectedValue();
+        if(evt.getClickCount() == 2 && selected != null) {
+            insertInFormat(selected);
         }
     }//GEN-LAST:event_listMouseClicked
 
     /** Helper method. */
-    private void insertInFormat(int selected) {
-        // Check for valid value.
-        if(selected < 0 || selected >= replaceItems.length)
+    private void insertInFormat(String selected) {
+        int index = selected.indexOf(' ');
+        
+        if(index < 0 || index > selected.length())
             return;
+        
+        String replace = selected.substring(0, index);
         
         JTextField textField = (JTextField)combo.getEditor().getEditorComponent();
         try {
-            textField.getDocument().insertString(textField.getCaretPosition(), replaceItems[selected], null); // NOI18N
+            textField.getDocument().insertString(textField.getCaretPosition(), replace, null); // NOI18N
         } catch(BadLocationException ble) {
             if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                 System.err.println("I18N: Text not inserted in property editor"); // NOI18N
