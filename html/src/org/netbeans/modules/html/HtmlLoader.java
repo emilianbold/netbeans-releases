@@ -32,6 +32,7 @@ import org.openide.loaders.OpenSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.nodes.Children;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.CloneableTopComponent;
@@ -88,6 +89,10 @@ public class HtmlLoader extends UniFileLoader {
         n.setDefaultAction (SystemAction.get (ViewAction.class));
         return n;
       }
+
+      public HelpCtx getHelpCtx () {
+        return new HelpCtx (HtmlLoader.class.getName () + ".Obj");
+      }
     };
 
     MultiDataObject obj = new Obj (primaryFile, this);
@@ -108,6 +113,7 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  19   Gandalf   1.18        7/8/99   Jesse Glick     Context help.
 *  18   Gandalf   1.17        7/8/99   Michal Fadljevic FileSystemAction added  
 *  17   Gandalf   1.16        6/10/99  Jan Jancura     Bug 1772
 *  16   Gandalf   1.15        6/9/99   Ian Formanek    ToolsAction
