@@ -205,9 +205,19 @@ SystemFileSystem
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JSplitPaneColor16.gif" />
                 <attr name="beaninfo" boolvalue="false"/>
             </file>
+            <file name="javax-swing-JFormattedTextField.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JFormattedTextFieldColor16.gif" />
+                <attr name="beaninfo" boolvalue="false"/>
+            </file>
             <file name="javax-swing-JPasswordField.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JPasswordFieldColor16.gif" />
+                <attr name="beaninfo" boolvalue="false"/>
+            </file>
+            <file name="javax-swing-JSpinner.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JSpinnerColor16.gif" />
                 <attr name="beaninfo" boolvalue="false"/>
             </file>
             <file name="javax-swing-JSeparator.instance">
@@ -284,8 +294,10 @@ SystemFileSystem
 
             <attr name="javax-swing-JSlider.instance/javax-swing-JProgressBar.instance" boolvalue="true" />
             <attr name="javax-swing-JProgressBar.instance/javax-swing-JSplitPane.instance" boolvalue="true" />
-            <attr name="javax-swing-JSplitPane.instance/javax-swing-JPasswordField.instance" boolvalue="true" />
-            <attr name="javax-swing-JPasswordField.instance/javax-swing-JSeparator.instance" boolvalue="true" />
+            <attr name="javax-swing-JSplitPane.instance/javax-swing-JFormattedTextField.instance" boolvalue="true" />
+            <attr name="javax-swing-JFormattedTextField.instance/javax-swing-JPasswordField.instance" boolvalue="true" />
+            <attr name="javax-swing-JPasswordField.instance/javax-swing-JSpinner.instance" boolvalue="true" />
+            <attr name="javax-swing-JSpinner.instance/javax-swing-JSeparator.instance" boolvalue="true" />
             <attr name="javax-swing-JSeparator.instance/javax-swing-JTextPane.instance" boolvalue="true" />
             <attr name="javax-swing-JTextPane.instance/javax-swing-JEditorPane.instance" boolvalue="true" />
             <attr name="javax-swing-JEditorPane.instance/javax-swing-JTree.instance" boolvalue="true" />
