@@ -41,7 +41,7 @@ public class CurrNode extends AbstractNode {
 
     protected SystemAction[] createActions () {
 	return new SystemAction[] {
-	    SystemAction.get(DeleteCurrentAction.class),
+	    SystemAction.get(org.netbeans.modules.web.monitor.client.DeleteCurrentAction.class),
 	};
     }
 } // CurrNode

@@ -55,6 +55,7 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
@@ -76,6 +77,7 @@ public class Controller  {
 
     // REPLAY strings - must be coordinated with server.MonitorFilter
     public final static String REPLAY="netbeans.replay"; //NOI18N
+    public final static String PORT="netbeans.replay.port"; //NOI18N
     public final static String REPLAYSTATUS="netbeans.replay.status"; //NOI18N
     public final static String REPLAYSESSION="netbeans.replay.session"; //NOI18N
     public static final boolean debug = false;
@@ -171,9 +173,9 @@ public class Controller  {
 
 
     protected static FileObject getMonDir() throws FileNotFoundException {
-	 
+	
 	if(monDir == null || !monDir.isFolder()) {
-	    try{
+	    try {
 		createDirectories();
 	    }
 	    catch(FileNotFoundException ex) {
@@ -249,8 +251,6 @@ public class Controller  {
     private static void createDirectories() throws FileNotFoundException {
 
 	if(debug) log("Now in createDirectories()"); // NOI18N
-
-	FileLock lock = null;
 	
 	FileObject rootdir = 
 	    Repository.getDefault().getDefaultFileSystem().getRoot();
@@ -261,12 +261,14 @@ public class Controller  {
 		rootF.getAbsolutePath());
 	}
 
-	if(monDir == null || !monDir.isFolder()) {
+	FileLock lock = null;
 
+	if(monDir == null || !monDir.isFolder()) {
 	    try {
 		monDir = rootdir.getFileObject(monDirStr);
 	    }
-	    catch(Exception ex) { }
+	    catch(Exception ex) {
+	    }
 	    
 	    if(monDir == null || !monDir.isFolder()) {
 		if(monDir != null) {
@@ -274,17 +276,21 @@ public class Controller  {
 			lock = monDir.lock();
 			monDir.delete(lock);
 		    }
+		    catch(FileAlreadyLockedException falex) {
+			throw new FileNotFoundException();
+		    }
 		    catch(IOException ex) {
 			throw new FileNotFoundException();
 		    }
-		    lock.releaseLock();
-			
+		    finally { 
+			if(lock != null) lock.releaseLock();
+		    }
 		}
 		try {
 		    monDir = rootdir.createFolder(monDirStr);
 		}
-		catch(Exception ex) {
-		    if(debug) ex.printStackTrace();
+		catch(IOException ioex) {
+		    if(debug) ioex.printStackTrace();
 		}
 	    }
 	    if(monDir == null || !monDir.isFolder()) 
@@ -304,20 +310,26 @@ public class Controller  {
 	    catch(Exception ex) { }
 	    
 	    if(currDir == null || !currDir.isFolder()) {
+		lock = null;
 		if(currDir != null) {
 		    try {
 			lock = currDir.lock();
 			currDir.delete(lock);
 		    }
+		    catch(FileAlreadyLockedException falex) {
+			throw new FileNotFoundException();
+		    }
 		    catch(IOException ex) {
 			throw new FileNotFoundException();
 		    }
-		    lock.releaseLock();
+		    finally { 
+			if(lock != null) lock.releaseLock();
+		    }
 		}
 		try {
 		    currDir = monDir.createFolder(currDirStr);
 		}
-		catch(Exception ex) {
+		catch(IOException ex) {
 		    if(debug) ex.printStackTrace();
 		}
 	    }
@@ -327,12 +339,8 @@ public class Controller  {
 	
 	if(debug) log("curr directory is " + currDir.getName()); // NOI18N
 
-
-
 	// Save Directory
-
 	if(saveDir == null || !saveDir.isFolder()) {
-
 	    try {
 		saveDir = monDir.getFileObject(saveDirStr);
 	    }
@@ -340,19 +348,25 @@ public class Controller  {
 	    
 	    if(saveDir == null || !saveDir.isFolder()) {
 		if(saveDir != null) {
+		    lock = null;
 		    try {
 			lock = saveDir.lock();
 			saveDir.delete(lock);
 		    }
+		    catch(FileAlreadyLockedException falex) {
+			throw new FileNotFoundException();
+		    }
 		    catch(IOException ex) {
 			throw new FileNotFoundException();
 		    }
-		    lock.releaseLock();
+		    finally { 
+			if(lock != null) lock.releaseLock();
+		    }
 		}
 		try {
 		    saveDir = monDir.createFolder(saveDirStr);
 		}
-		catch(Exception ex) {
+		catch(IOException ex) {
 		    if(debug) ex.printStackTrace();
 		}
 	    }
@@ -374,14 +388,20 @@ public class Controller  {
 	    
 	    if(replayDir == null || !replayDir.isFolder()) {
 		if(replayDir != null) {
+		    lock = null;
 		    try {
 			lock = replayDir.lock();
 			replayDir.delete(lock);
 		    }
+		    catch(FileAlreadyLockedException falex) {
+			throw new FileNotFoundException();
+		    }
 		    catch(IOException ex) {
 			throw new FileNotFoundException();
 		    }
-		    lock.releaseLock();
+		    finally { 
+			if(lock != null) lock.releaseLock();
+		    }
 		}
 		try {
 		    replayDir = monDir.createFolder(replayDirStr);
@@ -406,9 +426,7 @@ public class Controller  {
      * PENDING - it would be better if the nodes know which server
      * they were processed on. This would be the case if we listed the 
      * nodes separately depending on the server that collected the
-     * data. In that case we wouldn't have to get the MonitorData
-     * object at all, and the ReplaySendXML servlet could just 
-     * pass on the data. 
+     * data. 
      *
      */
     public void replayTransaction(Node node) {
@@ -435,28 +453,10 @@ public class Controller  {
 	if(debug) { 
 	    log("Replace is " +  // NOI18N
 		String.valueOf(md.getRequestData().getReplaceSessionCookie()));
-    
-	    try {
-		StringBuffer buf = new StringBuffer
-		    (System.getProperty("java.io.tmpdir")); // NOI18N
-		buf.append(System.getProperty("file.separator")); // NOI18N
-		buf.append("control-replay.xml"); // NOI18N
-		File file = new File(buf.toString()); 
-		FileOutputStream fout = new FileOutputStream(file);
-		PrintWriter pw2 = new PrintWriter(fout);
-		md.write(pw2);
-		pw2.close();
-		fout.close();
-		log("Wrote replay data to " + // NOI18N 
-		    file.getAbsolutePath()); 
-		
-	    }
-	    catch(Throwable t) {
-	    }
+	    String fname = md.createTempFile("control-replay.xml"); // NOI18N
+	    log("Wrote replay data to " + fname);// NOI18N 
 	}
-
-
-
+    
 	String status;
 	if(tn.isCurrent()) status = currDirStr; 
 	else status = saveDirStr; 
@@ -517,49 +517,57 @@ public class Controller  {
      */
     public void replayTransaction(MonitorData md) 
 	throws UnknownHostException, IOException  {
+
+	// PENDING - can't make UI changes right now for Sierra
+	// any exception thrown in this method indicates that we
+	// couldn't even get to the monitor data, and we should add an
+	// additional panel to that effect. Also, unreadable monitor
+	// data should cause the transaction to be removed from the
+	// pane. 
 	
-	if(debug)
-	    log("replayTransaction(MD)"); //NOI18N
-	
+	if(debug) log("replayTransaction(MD)"); //NOI18N
+
+
+	FileObject fo; 	
 	FileLock lock = null;
 	OutputStream out = null;
 	PrintWriter pw = null;
 
+	if(debug) log("Creating record for replay"); //NOI18N
+
+	String id = md.getAttributeValue("id"); // NOI18N
+
 	try {
-	    
-	    if(debug) 
-		log("Creating record for replay"); //NOI18N
-	    String id = md.getAttributeValue("id"); // NOI18N
-	    FileObject fo = getReplayDir().createData(id, "xml"); //NOI18N
+	    fo = getReplayDir().createData(id, "xml"); //NOI18N
+	}
+	catch(IOException ioex) { 
+	    throw ioex;
+	} 
+
+	try { 
 	    lock = fo.lock();
+	} 
+	catch(FileAlreadyLockedException fale) { 
+	    throw new IOException(); 
+	} 
+
+	try { 
 	    out = fo.getOutputStream(lock);
 	    pw = new PrintWriter(out);
 	    md.write(pw);	    
 	    if(debug) log("...record complete"); //NOI18N
 
 	    if(debug) {
-		try {
-
-		    StringBuffer buf = new StringBuffer
-			(System.getProperty("java.io.tmpdir")); // NOI18N
-		    buf.append(System.getProperty("file.separator")); // NOI18N
-		    buf.append("control-record.xml"); // NOI18N
-		    File file = new File(buf.toString()); 
-		    FileOutputStream fout = new FileOutputStream(file);
-		    PrintWriter pw2 = new PrintWriter(fout);
-		    md.write(pw2);
-		    pw2.close();
-		    fout.close();
-		    log("Wrote replay data to " + file.getAbsolutePath()); // NOI18N
-		}
-		catch(Throwable t) {
-		}
+		String fname = 
+		    md.createTempFile("control-record.xml"); // NOI18N
+		log("Wrote replay data to " + fname); // NOI18N
 	    }
 	}
 	catch(IOException ioex) {
-	    // PENDING WARN THE USER
+	    throw ioex;
 	}
 	finally {
+	    if(lock != null) lock.releaseLock(); 
 	    try {
 		pw.close();
 	    }
@@ -569,17 +577,6 @@ public class Controller  {
 		out.close();
 	    }
 	    catch(Throwable t) {
-	    }  
-	    try {
-		lock.releaseLock();
-		if(debug) 
-		    log("Released lock on replay file"); // NOI18N
-		
-	    }
-	    catch(Throwable t) {
-		if(debug) 
-		    log("Failed to release lock on replay file"); // NOI18N
-		
 	    }  
 	}
 	
@@ -617,6 +614,22 @@ public class Controller  {
 	    uriBuf.append(REPLAYSTATUS); 
 	    uriBuf.append("="); //NOI18N 
 	    uriBuf.append(status);
+
+	    String portS = null; 
+	    try { 
+		portS = 
+		    String.valueOf(HttpServer.getRepositoryRoot().getPort());
+	    }
+	    catch(Exception ex) {
+		// No internal HTTP server, do nothing
+	    } 
+	    if(portS != null) { 
+		uriBuf.append("&"); //NOI18N 
+		uriBuf.append(PORT); 
+		uriBuf.append("="); //NOI18N 
+		uriBuf.append(portS);
+	    }
+
 
 	    if(md.getRequestData().getReplaceSessionCookie()) { 
 		uriBuf.append("&"); //NOI18N 
@@ -658,6 +671,8 @@ public class Controller  {
 	TransactionNode mvNode; 
 	String id;
 	 
+	boolean error = false; 
+
 	for(int i=0; i < nodes.length; ++i) {
 	    
 	    mvNode = (TransactionNode)nodes[i];
@@ -670,25 +685,36 @@ public class Controller  {
 	    
 	    // Note I didn't load the bean here yet. Will only do that 
 	    // if the data is displayed. 
-			      
+		
+	    FileLock lock = null; 
 	    try {
 		FileObject fold = 
 		    currDir.getFileObject(id, "xml"); //NOI18N
-		FileLock lock = fold.lock();
+		lock = fold.lock();
 		fold.copy(saveDir, id, "xml"); //NOI18N
 		if(debug) log(fold.getName());
 		fold.delete(lock);
-		lock.releaseLock();
-
 		mvNode.setCurrent(false);
 		newNodes[i] = mvNode;
 	    }
-	    catch(Exception ex) {
+	    catch(FileAlreadyLockedException falex) {
+		error = true;
 		// PENDING report properly
+	    }
+	    catch(IOException ioex) {
+		error = true;
+		// PENDING report properly
+	    }
+	    catch(Exception ex) {
+		error = true; 
+		// PENDING report properly
+	    }
+	    finally { 
+		if(lock != null) lock.releaseLock(); 
 	    }
 	    
 	}
-	currTrans.remove(nodes);
+	if(!error) currTrans.remove(nodes);
 	savedTrans.add(newNodes);
     }
   
@@ -709,49 +735,51 @@ public class Controller  {
 	if((nodes == null) || (nodes.length == 0)) return;
 
 	TransactionNode n = null;
-	FileObject fold = null;
-	FileLock lock = null;
-	 
 	for(int i=0; i < nodes.length; ++i) {
 	    
 	    n = (TransactionNode)nodes[i];
 	    if(debug) 
 		log("Deleting :" + n.toString()); //NOI18N 
 	    
-	    try {
-		if(n.isCurrent()) {
-		    if(debug) log("Deleting current"); //NOI18N 
-		    fold = currDir.getFileObject(n.getID(), "xml"); //NOI18N
-		    // PENDING
-		    Node[] ns = { n };
-		    currTrans.remove(ns);
-		    currBeans.remove(n.getID());
-		}
-		
-		else {
-		    if(debug) log("Deleting saved"); //NOI18N 
-		    fold = saveDir.getFileObject(n.getID(), "xml");//NOI18N
-		    // PENDING
-		    Node[] ns = { n };
-		    savedTrans.remove(ns);
-		    saveBeans.remove(n.getID());
-		}
-		lock = fold.lock();
-		if(debug) 
-		    log("Deleting: " + fold.getName()); //NOI18N 
-			
-		
-		fold.delete(lock); 
-		lock.releaseLock();
-	    }
-	    catch(Exception ex) {
-		// PENDING report properly
-		if(debug) log("Failed :" + n.getID()); //NOI18N 
-					     
-	    }
+	    if(n.isCurrent()) delete(n, currTrans, currBeans, true); 
+	    else delete(n, savedTrans, saveBeans, false); 
+	} 
+    }
+
+    private void delete(TransactionNode node, 
+			Children.SortedArray transactions, 
+			Hashtable beans,
+			boolean current) { 
+
+	FileObject fold = null;
+	FileLock lock = null;
+
+	try { 
+	    if(current) 
+		fold = currDir.getFileObject(node.getID(), "xml"); //NOI18N
+	    else 
+		fold = saveDir.getFileObject(node.getID(), "xml"); //NOI18N
+	    lock = fold.lock();
+	    if(debug) log("Deleting: " + fold.getName()); //NOI18N 
+	    fold.delete(lock); 
+	    // We only do this if we could delete the file. 
+	    Node[] nodes = { node };
+	    transactions.remove(nodes);
+	    beans.remove(node.getID());
+	}
+	catch(FileAlreadyLockedException ex) {
+	    // PENDING report properly
+	    if(debug) log("Couldn't lock file:" + node.getID()); //NOI18N 
+	}
+	catch(IOException ex) {
+	    // PENDING report properly
+	    if(debug) log("Couldn't delete file:" + node.getID()); //NOI18N 
+	}
+	finally { 
+	    if(lock != null) lock.releaseLock();
 	}
     }
-    
+
     void deleteDirectory(String dir) {
 
 	if(!haveDirectories()) {
@@ -778,14 +806,21 @@ public class Controller  {
 	Enumeration e = directory.getData(false);
 	while(e.hasMoreElements()) {
 	    FileObject fo = (FileObject) e.nextElement();
+	    lock = null;
 	    try {
 		lock = fo.lock();
 		fo.delete(lock);
-		lock.releaseLock();
 	    }
-	    catch(Exception ex) {
+	    catch(FileAlreadyLockedException falex) {
 		// PENDING report properly
 	    }
+	    catch(IOException IOex) {
+		// PENDING report properly
+	    }
+	    finally { 
+		if(lock != null) lock.releaseLock();
+	    }
+	    
 	}
     }
 
@@ -867,9 +902,7 @@ public class Controller  {
     private TransactionNode createTransactionNode(String str) {
 
 	if(debug) log("createTransactionNode(String)"); //NOI18N 
-	
-	String id = 
-	    str.substring(0, str.indexOf(Constants.Punctuation.itemSep));
+	String id = str.substring(0, str.indexOf("|")); //NOI18N
 	if(debug) log ("id is " + id); //NOI18N 
 	// Retrieve the monitordata 
 	MonitorData md = retrieveMonitorData(id, currDirStr); 
@@ -949,29 +982,16 @@ public class Controller  {
 	else {
 	    newloc = new int[1]; 
 	    newloc[0] = index;
-	    
 	}
 	
 	// No dispatched requests, we add a regular transaction node
 	if(dis == null || dis.sizeDispatchData() == 0 ) {
-
 	    node = new NestedNode(dd.getAttributeValue("resource"),// NOI18N
 				  method, newloc); 
 	}
-
 	else {
 	    int numChildren = dis.sizeDispatchData();
-	    // Create all the children. 
 	    Children.Array nested = new Children.Array();
-	    //Comparator comp = new CompTime(true);
-	    
-	    // Can we have a null comparator? This order should be
-	    // fixed. 
-	    //nested.addComparator(comp);
-	    
-	    // First we create an array of children that has the same
-	    // size as the set of nodes. 
-	    
 	    NestedNode[] nds = new NestedNode[numChildren];
 	    for(int i=0; i<numChildren; ++i) {
 		nds[i] = createNestedNode(dis.getDispatchData(i),
@@ -979,12 +999,10 @@ public class Controller  {
 	    }
 	    
 	    nested.add(nds);
-	    
 	    node = new NestedNode(dd.getAttributeValue("resource"), // NOI18N
 				  method, nested, newloc); 
 	}
 	return node;
-	
     }
 
 
@@ -1155,6 +1173,9 @@ public class Controller  {
 
     MonitorData retrieveMonitorData(String id, FileObject dir) {
 
+	// PENDING - this method needs an error reporting mechanism in
+	// case the monitor data cannot be retrieved. Now it will just
+	// return null. 
 	if(debug)
 	    log("retrieveMonitorData(String, FileObject)"); //NOI18N 
 	if(!haveDirectories()) {
@@ -1164,44 +1185,47 @@ public class Controller  {
 	}
 	
 	MonitorData md = null;
-
 	FileObject fo = null;
-	
-
 	FileLock lock = null; 
 	InputStreamReader in = null;
 	
 	try {
 	    fo = dir.getFileObject(id, "xml"); // NOI18N
-	    if(debug) log("From file: " + fo.getName()); //NOI18N 
-	    if(debug) log("Locking " + fo.getName()); //NOI18N 
+	    if(debug) log("From file: " + //NOI18N 
+			  FileUtil.toFile(fo).getAbsolutePath()); 
+	    if(debug) log("Locking it..."); //NOI18N 
 	    lock = fo.lock();
 	    if(debug) log("Getting InputStreamReader"); //NOI18N 
 	    in = new InputStreamReader(fo.getInputStream()); 
-	    if(debug) log("Creating monitordata"); //NOI18N 
+	    if(debug) log("Creating monitor data"); //NOI18N 
 	    md = MonitorData.createGraph(in);
+	    try {
+		if(dir == replayDir) fo.delete(lock);
+	    }
+	    catch(IOException ioex2) {} 
 	} 
+	catch(FileAlreadyLockedException falex) {
+	    if(debug) { 
+		log("File is locked: " + fo.getNameExt()); //NOI18N 
+		falex.printStackTrace();
+	    }
+	}
+	catch(IOException ioex) {
+	    if(debug) { 
+		log("Couldn't read data file: " + fo.getNameExt()); //NOI18N 
+		ioex.printStackTrace();
+	    }
+	}
 	catch(Exception ex) {
-	    log(" couldn't read the file..."); //NOI18N 
-	    ex.printStackTrace();
+	    if(debug) { 
+		log("Something went wrong when retrieving record"); //NOI18N 
+		ex.printStackTrace();
+	    }
 	}
 	finally {
-	    try {
-		if(dir == replayDir) 
-		    fo.delete(lock);
-	    }
-	    catch(Exception ex) {
-	    }
-	    
-	    try {
-		in.close();
-	    }
+	    try { in.close(); }
 	    catch(Throwable t) {}
-	    try {
-		lock.releaseLock();
-	    }
-	    catch(Throwable t) {}
-	    fo = null;
+	    if(lock != null) lock.releaseLock();
 	}
 	if(debug) log("We're done!"); //NOI18N 
 	return md;
