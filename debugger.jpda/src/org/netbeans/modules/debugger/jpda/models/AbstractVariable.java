@@ -85,11 +85,13 @@ public class AbstractVariable implements ObjectVariable {
         if (v == null) return "null";
         if (v instanceof VoidValue) return "void";
         if (v instanceof CharValue)
-            return "\'" + v.toString () + "\'";
+            return "\'" + convertToStringInitializer (v.toString ()) + "\'";
         if (v instanceof PrimitiveValue)
             return v.toString ();
         if (v instanceof StringReference)
-            return "\"" + ((StringReference) v).value () + "\"";
+            return "\"" + convertToStringInitializer (
+                ((StringReference) v).value ()
+            ) + "\"";
         if (v instanceof ClassObjectReference)
             return "class " + ((ClassObjectReference) v).reflectedType ().name ();
         if (v instanceof ArrayReference)
@@ -430,8 +432,7 @@ public class AbstractVariable implements ObjectVariable {
             this.fields = new Field [0];
             this.staticFields = new Field [0];
             this.inheritedFields = new Field [0];
-        }
-        else {
+        } else {
             ObjectReference or = (ObjectReference) this.getInnerValue();
             ReferenceType rt = (ReferenceType) type;
             if (or instanceof ArrayReference) {
@@ -471,9 +472,9 @@ public class AbstractVariable implements ObjectVariable {
         }
 
     private void initFieldsOfClass (
-            ObjectReference or, 
-            ReferenceType rt,
-            String parentID)
+        ObjectReference or, 
+        ReferenceType rt,
+        String parentID)
     {
         List fields = new ArrayList();
         List staticFields = new ArrayList();
@@ -501,21 +502,56 @@ public class AbstractVariable implements ObjectVariable {
     }
     
     FieldVariable getField (
-            com.sun.jdi.Field f, 
-            ObjectReference or, 
-            String parentID
-        ) {
-            Value v = or.getValue (f);
-            if ( (v == null) || (v instanceof ObjectReference))
-                return new ObjectFieldVariable (
-                    this.getModel(),
-                    (ObjectReference) v,
-                    f,
-                    parentID,
-                    JPDADebuggerImpl.getGenericSignature(f),
-                    or
-                );
-            return new FieldVariable (this.getModel(), v, f, parentID, or);
-        }
+        com.sun.jdi.Field f, 
+        ObjectReference or, 
+        String parentID
+    ) {
+        Value v = or.getValue (f);
+        if ( (v == null) || (v instanceof ObjectReference))
+            return new ObjectFieldVariable (
+                this.getModel(),
+                (ObjectReference) v,
+                f,
+                parentID,
+                JPDADebuggerImpl.getGenericSignature(f),
+                or
+            );
+        return new FieldVariable (this.getModel(), v, f, parentID, or);
+    }
+    
+    private static String convertToStringInitializer (String s) {
+        StringBuffer sb = new StringBuffer ();
+        int i, k = s.length ();
+        for (i = 0; i < k; i++)
+            switch (s.charAt (i)) {
+                case '\b':
+                    sb.append ("\\b");
+                    break;
+                case '\f':
+                    sb.append ("\\f");
+                    break;
+                case '\\':
+                    sb.append ("\\\\");
+                    break;
+                case '\t':
+                    sb.append ("\\t");
+                    break;
+                case '\r':
+                    sb.append ("\\r");
+                    break;
+                case '\n':
+                    sb.append ("\\n");
+                    break;
+                case '\"':
+                    sb.append ("\\\"");
+                    break;
+                case '\'':
+                    sb.append ("\\\'");
+                    break;
+                default:
+                    sb.append (s.charAt (i));
+            }
+        return new String (sb);
+    }
 }
 
