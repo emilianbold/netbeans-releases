@@ -23,12 +23,13 @@ workspaceswitcher
 -->
 
 <project name="nbbuild" default="all" basedir=".">
+<!--  <property name="build.sysclasspath" value="ignore"/>-->
 
   <!-- To make people happy who want to do `ant clean all': -->
   <target name="all" depends="depucelee"/>
 
   <target name="bootstrap-init">
-    <property name="binroot" value=".."/>
+    <property name="binroot" location="../../nbextra"/>
     <available property="have-binaries-already" file="${binroot}/core/release/lib/ext/jh.jar"/>
   </target>
 
@@ -39,6 +40,8 @@ workspaceswitcher
       <classpath>
         <!-- Needed for CheckLinks: -->
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
+        <!-- For running inside IDE, to pick up ant.jar -->
+        <pathelement location="${netbeans.library.path}"/>
       </classpath>
     </javac>
     <jar jarfile="nbantext.jar" basedir="antsrc">

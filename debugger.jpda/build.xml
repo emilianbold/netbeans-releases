@@ -25,7 +25,11 @@ ToDo:
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <target name="check">
-    <available property="jpda" classname="com.sun.jdi.ObjectReference"/>
+    <available property="jpda" classname="com.sun.jdi.ObjectReference">
+      <classpath>
+        <pathelement location="${jdkhome}/lib/tools.jar"/>
+      </classpath>
+    </available>
   </target>
   <target name="no-such-luck" depends="check" unless="jpda">
     <echo message="Sorry, JPDA module will not be built unless you are running JDK 1.3"/>
@@ -35,6 +39,8 @@ ToDo:
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
+        <!-- Hopefully set up bu nbbuild/build.xml: -->
+        <pathelement location="$jdkhome}/lib/tools.jar"/>
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>

@@ -87,6 +87,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
 <!--    <pathelement location="${binroot}/core/release/lib/ext/parser.jar"/> -->
+        <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
       </classpath>
     </javac>
     <postprocess file="compatkit-work/org/openide/util/actions/SystemAction.class"
