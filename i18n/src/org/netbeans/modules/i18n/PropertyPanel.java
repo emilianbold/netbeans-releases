@@ -62,9 +62,8 @@ public class PropertyPanel extends JPanel {
         updateValue();
         updateComment();
         updateBundleKeys();
-        
-        replaceFormatTextField.setText(i18nString.getReplaceFormat());
-    }
+
+    } 
     
     /** Updates selected item of <code>keyBundleCombo</code> UI. */
     private void updateKey() {
@@ -79,6 +78,8 @@ public class PropertyPanel extends JPanel {
             
             keyBundleCombo.setActionCommand(oldActionCommand);
         }
+        
+        updateReplaceText();
     }
 
     /** Updates <code>valueText</code> UI. */
@@ -87,6 +88,8 @@ public class PropertyPanel extends JPanel {
         
         if(!valueText.getText().equals(value))
             valueText.setText(value == null ? "" : value); // NOI18N
+            
+        updateReplaceText();            
     }
     
     /** Updates <code>commentText</code> UI. */
@@ -95,6 +98,11 @@ public class PropertyPanel extends JPanel {
         
         if(!commentText.getText().equals(comment))
             commentText.setText(comment == null ? "" : comment); // NOI18N
+    }
+    
+    /** Updates <code>replaceFormatTextField</code>. */
+    private void updateReplaceText() {
+        replaceFormatTextField.setText(i18nString.getReplaceString());
     }
     
     /** Updates <code>keyBundleCombo</code> UI. */
@@ -235,7 +243,7 @@ public class PropertyPanel extends JPanel {
         add(replaceFormatTextField, gridBagConstraints1);
         
         
-        replaceFormatButton.setText("...");
+        replaceFormatButton.setText(I18nUtil.getBundle().getString("CTL_Format"));
         replaceFormatButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 replaceFormatButtonActionPerformed(evt);
@@ -246,7 +254,7 @@ public class PropertyPanel extends JPanel {
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 2;
         gridBagConstraints1.gridy = 0;
-        gridBagConstraints1.insets = new java.awt.Insets(12, 0, 0, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(12, 5, 0, 11);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.EAST;
         add(replaceFormatButton, gridBagConstraints1);
         
@@ -264,7 +272,7 @@ public class PropertyPanel extends JPanel {
 
     private void replaceFormatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceFormatButtonActionPerformed
         final Dialog[] dialogs = new Dialog[1];
-        final HelpStringCustomEditor customPanel = new HelpStringCustomEditor(replaceFormatTextField.getText(), I18nUtil.getReplaceFormatItems(), I18nUtil.getReplaceHelpItems());
+        final HelpStringCustomEditor customPanel = new HelpStringCustomEditor(i18nString.getReplaceFormat(), I18nUtil.getReplaceFormatItems(), I18nUtil.getReplaceHelpItems());
 
         DialogDescriptor dd = new DialogDescriptor(
             customPanel,
@@ -278,8 +286,8 @@ public class PropertyPanel extends JPanel {
                         String newText = (String)customPanel.getPropertyValue();
                         
                         if(!newText.equals(replaceFormatTextField.getText())) {
-                            replaceFormatTextField.setText(newText);
                             i18nString.setReplaceFormat(newText);
+                            updateReplaceText();
                             
                             // Reset option as well.
                             I18nUtil.getOptions().setReplaceJavaCode(newText);

@@ -117,7 +117,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="replaceFormatButton">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.beaninfo.editors.StringEditor" value="..."/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_Format" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
 
       <Events>
@@ -125,7 +127,7 @@
       </Events>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints anchor="13" fill="0" gridHeight="1" gridWidth="1" gridX="2" gridY="0" insetsBottom="0" insetsLeft="0" insetsRight="11" insetsTop="12" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+          <GridBagConstraints anchor="13" fill="0" gridHeight="1" gridWidth="1" gridX="2" gridY="0" insetsBottom="0" insetsLeft="5" insetsRight="11" insetsTop="12" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
         </Constraint>
       </Constraints>
     </Component>
