@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -41,7 +41,7 @@ public class FileStatePropertyTest extends NbTestCase {
             assertTrue("SettingChildren class is public", Modifier.isPublic(SettingChildren.class.getModifiers()));
             assertTrue("FileStateProperty class is public", Modifier.isPublic(FileStateProperty.class.getModifiers()));
             try {
-                new FileStateProperty("Project-Layer").getValue();
+                new FileStateProperty("Modules-Layer").getValue();
             } catch (NullPointerException npe) {}
         } catch (Exception e) {
             throw new AssertionFailedErrorException("JellyTools compatibility conflict, please contact QA or any JellyTools developer.", e);
