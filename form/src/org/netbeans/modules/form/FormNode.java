@@ -82,4 +82,38 @@ public class FormNode extends AbstractNode implements FormCookie {
     protected abstract static class FormNodeChildren extends Children.Keys {
         protected void updateKeys() {}
     }
+
+    // ----------
+    // Persistence hacks - for the case the node is selected in some
+    // (standalone) properties window when IDE exits. We don't restore the
+    // original node after IDE restarts (would require to load the form), but
+    // provide a fake node which destroys itself immediately - closing the
+    // properties window. [Would be nice to find some better soultion...]
+
+    public Node.Handle getHandle() {
+        return new Handle();
+    }
+
+    static class Handle implements Node.Handle {
+        public Node getNode() throws java.io.IOException {
+            return new ClosingNode();
+        }
+    }
+
+    static class ClosingNode extends AbstractNode implements Runnable {
+        ClosingNode() {
+            super(Children.LEAF);
+        }
+        public String getName() {
+            java.awt.EventQueue.invokeLater(this);
+            return super.getName();
+        }
+        public Node.PropertySet[] getPropertySets() {
+            java.awt.EventQueue.invokeLater(this);
+            return super.getPropertySets();
+        }
+        public void run() {
+            this.fireNodeDestroyed();
+        }
+    }
 }
