@@ -263,7 +263,7 @@ workspaceswitcher
     <echo message="Building module remotefs..."/>
     <ant dir="../remotefs" target="netbeans"/>
   </target>
-  <target name="all-rmi" depends="all-openide,all-openidex,all-java,all-debuggercore">
+  <target name="all-rmi" depends="all-openide,all-java,all-debuggercore">
     <echo message="Building module rmi..."/>
     <ant dir="../rmi" target="netbeans"/>
   </target>
