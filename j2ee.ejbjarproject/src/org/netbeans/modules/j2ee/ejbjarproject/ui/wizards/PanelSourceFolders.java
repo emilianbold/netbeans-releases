@@ -24,6 +24,8 @@ import java.util.Iterator;
 import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -47,6 +49,20 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 
     private Panel firer;
     private WizardDescriptor wizardDescriptor;
+    
+    private DocumentListener configFilesDocumentListener = new DocumentListener() {
+        public void changedUpdate(DocumentEvent e) {
+            configFilesChanged();
+        }
+        
+        public void insertUpdate(DocumentEvent e) {
+            configFilesChanged();
+        }
+        
+        public void removeUpdate(DocumentEvent e) {
+            configFilesChanged();
+        }
+    };
 
     /** Creates new form PanelSourceFolders */
     public PanelSourceFolders (Panel panel) {
@@ -58,6 +74,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelSourceFolders.class,"AD_PanelSourceFolders"));
         this.sourcePanel.addPropertyChangeListener (this);
         this.testsPanel.addPropertyChangeListener(this);
+        this.jTextFieldConfigFiles.getDocument().addDocumentListener(configFilesDocumentListener);
     }
 
     public void initValues(FileObject fo) {
@@ -122,11 +139,12 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     
     boolean valid (WizardDescriptor settings) {
         File projectLocation = (File) settings.getProperty (WizardProperties.PROJECT_DIR);  //NOI18N
+        File configFilesLocation = jTextFieldConfigFiles.getText().trim().length() > 0 ? getConfigFiles() : null;
         File[] sourceRoots = ((FolderList)this.sourcePanel).getFiles();
         File[] testRoots = ((FolderList)this.testsPanel).getFiles();
-        String result = checkValidity (projectLocation, sourceRoots, testRoots);
+        String result = checkValidity (projectLocation, configFilesLocation, sourceRoots, testRoots);
         if (result == null) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage","");   //NOI18N
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage"," ");   //NOI18N
             return true;
         }
         else {
@@ -135,10 +153,19 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         }
     }
 
-    static String checkValidity (final File projectLocation, final File[] sources, final File[] tests ) {
+    static String checkValidity (final File projectLocation, final File configFilesLocation, final File[] sources, final File[] tests ) {
         String ploc = projectLocation.getAbsolutePath ();
+        if (configFilesLocation != null) {
+            FileObject fo = FileUtil.toFileObject(configFilesLocation);
+            FileObject ejbJarXml = null;
+            if (fo != null) {
+                ejbJarXml = fo.getFileObject("ejb-jar.xml"); // NOI18N
+            }
+            if (ejbJarXml == null || !ejbJarXml.isData()) 
+                return NbBundle.getMessage(PanelSourceFolders.class, "MSG_NoEjbJarXml");
+        }
         if (sources.length ==0) {
-            return "";  //NOI18N
+            return " ";  //NOI18N
         }
         for (int i=0; i<sources.length;i++) {
             if (!sources[i].isDirectory() || !sources[i].canRead()) {
@@ -480,5 +507,8 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     public File getLibraries() {
         return getAsFile(jTextFieldLibraries.getText());
     }
-
+    
+    private void configFilesChanged() {
+        dataChanged();
+    }
 }
