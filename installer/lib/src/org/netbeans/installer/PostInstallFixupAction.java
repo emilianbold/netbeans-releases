@@ -25,8 +25,8 @@ import com.installshield.util.ProcessOutputHandler;
 import com.installshield.wizard.platform.win32.Win32RegistryService;
 import com.installshield.wizard.service.ServiceException;
 import com.installshield.wizard.service.file.FileService;
+import com.installshield.wizard.service.system.SystemUtilService;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -143,6 +143,10 @@ public class PostInstallFixupAction extends ProductAction {
             if (Util.isUnixOS()) {
                 uninstallGnomeIcon();
             }
+            
+            logEvent(this, Log.DBG, "uninstall Delete install dir on exit: " + rootInstallDir);
+            SystemUtilService systemUtilService = (SystemUtilService) getServices().getService(SystemUtilService.NAME);
+            systemUtilService.deleteDirectoryOnExit(rootInstallDir,false);
         }
         catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
