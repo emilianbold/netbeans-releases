@@ -43,7 +43,7 @@ final class DataSystem extends AbstractNode {
   static final long serialVersionUID = -7272169513973465669L;
 
   /** the file system pool to work with */
-  private transient FileSystemPool fileSystemPool;
+  private transient Repository fileSystemPool;
 
   /** list of folders. Vector of DataFolder.
   * This item is non-transient because DataObjects are in the ObjectStream
@@ -59,7 +59,7 @@ final class DataSystem extends AbstractNode {
   DataFilter filter;
 
   /** listener for file system pool actions. */
-  private transient FileSystemPoolListener fsPoolL;
+  private transient RepositoryListener fsPoolL;
 
   /** listeners for changes in hidden state of the file system */
   transient PropertyChangeListener propL;
@@ -68,7 +68,7 @@ final class DataSystem extends AbstractNode {
   * @param fsp file system pool
   * @param filter the filter for filtering files
   */
-  private DataSystem(Children ch, FileSystemPool fsp, DataFilter filter) {
+  private DataSystem(Children ch, Repository fsp, DataFilter filter) {
     super (ch);
     fileSystemPool = fsp;
     preinitialize (filter);
@@ -87,7 +87,7 @@ final class DataSystem extends AbstractNode {
   * @param filter the filter to use
   */
   private DataSystem(Children ch, DataFilter filter) {
-    this (ch, FileSystemPool.getDefault (), filter);
+    this (ch, Repository.getDefault (), filter);
   }
 
 
@@ -116,28 +116,28 @@ final class DataSystem extends AbstractNode {
   /** Initializes object. Called from constructor and read method.
   */
   void initialize () {
-    fsPoolL = new FileSystemPoolListener () {
+    fsPoolL = new RepositoryListener () {
       /** Called when new file system is added to the pool.
       * @param ev event describing the action
       */
-      public void fileSystemAdded (FileSystemPoolEvent ev) {
+      public void fileSystemAdded (RepositoryEvent ev) {
         addFS (ev.getFileSystem (), false);
       }
 
       /** Called when a file system is deleted from the pool.
       * @param ev event describing the action
       */
-      public void fileSystemRemoved (FileSystemPoolEvent ev) {
+      public void fileSystemRemoved (RepositoryEvent ev) {
         removeFS (ev.getFileSystem (), false);
       }
       /** Called when the fsp is reordered */
-      public void fileSystemPoolReordered(FileSystemPoolReorderedEvent ev) {
+      public void fileSystemPoolReordered(RepositoryReorderedEvent ev) {
         reorder(ev);
       }
     };
     // PENDING - turn the listener to weak one in JDK 1.2
     //   and add removing of the listener when this object is finalized
-    fileSystemPool.addFileSystemPoolListener (fsPoolL);
+    fileSystemPool.addRepositoryListener (fsPoolL);
 
     propL = new PropertyChangeListener () {
       public void propertyChange (PropertyChangeEvent ev) {
@@ -267,9 +267,9 @@ final class DataSystem extends AbstractNode {
   * 3,4,1,5 (from original 3,4,1,0,2,5 where 0,2 are hidden). This new permutation
   * is then changed to 1,2,0,3 and sent to ChildrenMap.reorder().
   */
-  final void reorder(FileSystemPoolReorderedEvent ev) {
+  final void reorder(RepositoryReorderedEvent ev) {
     if (getChildren().getNodesCount() < 2) return; // nothing to do
-    final FileSystem[] fss = ev.getFileSystemPool().toArray();
+    final FileSystem[] fss = ev.getRepository().toArray();
     Heap heap = new Heap();
 
     int[] perm = ev.getPermutation();
@@ -317,7 +317,7 @@ final class DataSystem extends AbstractNode {
     // must not be called from constructor of DataSystem
     protected java.util.Map initMap() {
       if (ref == null) throw new RuntimeException();
-      Enumeration en = FileSystemPool.getDefault().getFileSystems();
+      Enumeration en = Repository.getDefault().getFileSystems();
       java.util.Map map = new java.util.HashMap();
       while (en.hasMoreElements ()) {
         // the root that should represent the file system
@@ -420,6 +420,8 @@ final class DataSystem extends AbstractNode {
 
 /*
  * Log
+ *  6    Gandalf   1.5         2/11/99  Ian Formanek    Renamed FileSystemPool 
+ *       -> Repository
  *  5    Gandalf   1.4         1/7/99   Jan Jancura     
  *  4    Gandalf   1.3         1/7/99   Ian Formanek    fixed resource names
  *  3    Gandalf   1.2         1/6/99   Ian Formanek    Reflecting change in 

@@ -127,11 +127,11 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
    */
   private DataFolder findSessionFolder (String name) {
     try {
-      FileObject fo = FileSystemPool.getDefault().findResource(name);
+      FileObject fo = Repository.getDefault().findResource(name);
 
       if (fo == null) {
         // resource not found, try to create new folder
-        fo = FileSystemPool.getDefault ().getDefaultFileSystem ().getRoot ().createFolder (name);
+        fo = Repository.getDefault ().getDefaultFileSystem ().getRoot ().createFolder (name);
       }
       
       DataFolder df = df = DataFolder.findFolder(fo);
@@ -146,6 +146,8 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  8    Gandalf   1.7         2/11/99  Ian Formanek    Renamed FileSystemPool ->
+*       Repository
 *  7    Gandalf   1.6         2/2/99   Jaroslav Tulach Tries to create non 
 *       existing folders
 *  6    Gandalf   1.5         1/25/99  Jaroslav Tulach Added default project, 
