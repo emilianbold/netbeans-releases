@@ -12,7 +12,6 @@ OpenIDE-Module-Module-Dependencies:
  org.netbeans.modules.settings/1 > 1.0,
  org.openide.io > 1.0
 OpenIDE-Module-Requires: org.openide.windows.IOProvider, org.openide.modules.InstalledFileLocator
-OpenIDE-Module-Package-Dependencies: org.apache.regexp[RE]
 Main-Class: org.netbeans.modules.openfile.Main
 
 Name: org/netbeans/modules/url/URLDataLoader.class
