@@ -96,6 +96,7 @@ public class CheckoutNeeded extends Task {
                     cvs.setTag( branch );
                 cvs.setPackage( module );
                 cvs.setQuiet( quiet );
+                cvs.setFailOnError(true);
                 
                 cvs.setCommand( "-z6 " + action ); //NOI18N
                 
