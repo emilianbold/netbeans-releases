@@ -376,7 +376,8 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                     } else if (d == currentModalDialog()) {
                         currentModalDialogs.pop();
                         showDialogStack();
-                        if ((frameViewer == null || !frameViewer.isVisible()) &&
+                        if ((frameViewer == null || !frameViewer.isVisible() ||
+                             /* 14393 */frameViewer.getState() == Frame.ICONIFIED) &&
                             (dialogViewer == null || !dialogViewer.isVisible())) {
                             if (!reparentToFrameLater) {
                                 Installer.err.log("2. No viewer open, !rTFL. Top dialog closed. Pop it.");
@@ -400,7 +401,8 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                     if (d != dialogViewer) {
                         currentModalDialogs.push(d);
                         showDialogStack();
-                        if ((frameViewer == null || !frameViewer.isVisible()) &&
+                        if ((frameViewer == null || !frameViewer.isVisible() ||
+                             /* 14393 */frameViewer.getState() == Frame.ICONIFIED) &&
                             (dialogViewer == null || !dialogViewer.isVisible())) {
                             Installer.err.log("1. No viewer open. Dialog opened. Push it on stack. rTFL = false.");
                             reparentToFrameLater = false;
