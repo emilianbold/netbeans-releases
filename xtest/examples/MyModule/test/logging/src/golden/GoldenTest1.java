@@ -38,9 +38,8 @@ public class GoldenTest1 extends NbTestCase {
     public void testPart1() throws Exception {
         // print path where log and ref files will be stored
         System.out.println("WORKDIR="+getWorkDirPath());
-        ref("Output to ref file called testPart1.refddd");
+        ref("Output to ref file called testPart1.ref");
         log("message to log file testPart1.log");
-        System.out.println("AFTERRRRRR");
         log("mySpecialLog.log", "message to log file mySpecialLog.log");
         // here write body of the test
     }
