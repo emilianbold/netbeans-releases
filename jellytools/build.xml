@@ -38,7 +38,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="all" depends="jars,zipsrc,javadoc,javadocWithJemmy" description="Create jars, source zip and javadoc zip">
     </target>
 
-    <target name="compile" depends="jemmy">
+    <target name="compile" depends="buildJemmy,buildXTest">
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
           <classpath>
             <path refid="jellytools.classpath"/>
@@ -46,10 +46,14 @@ Microsystems, Inc. All Rights Reserved.
         </javac>
     </target>
 
-    <target name="jemmy" description="Build jemmy.jar">
+    <target name="buildJemmy" description="Build jemmy.jar">
         <ant dir="../jemmy" target="jar"/>
     </target>
     
+    <target name="buildXTest" description="Build XTest">
+        <ant dir="../xtest" target="jars"/>
+    </target>
+
     <target name="jars" depends="compile" description="Create jars">
         <tstamp>
             <format property="buildnumber" pattern="yyyyMMddHHmm"/>
