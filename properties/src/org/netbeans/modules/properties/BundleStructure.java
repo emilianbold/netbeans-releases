@@ -11,6 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.properties;
 
 import java.awt.Image;
@@ -30,7 +31,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.datatransfer.*;
 import org.openide.actions.InstantiateAction;
 import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
@@ -84,8 +84,7 @@ public class BundleStructure extends PropertyChangeSupport {
                   public void propertyChange(PropertyChangeEvent evt) {
                       if (evt.getPropertyName().equals(PropertiesDataObject.PROP_FILES)) {
                           updateEntries();
-                          // PENDING
-                          firePropertyChange (evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+                          support.fireBundleStructureChanged();
                       }
                   }
 
@@ -274,7 +273,3 @@ public class BundleStructure extends PropertyChangeSupport {
     }
 
 }
-
-/*
- * <<Log>>
- */
