@@ -32,7 +32,15 @@ import org.openide.util.NbBundle;
 public final class NbErrorManager extends ErrorManager {
 
     public NbErrorManager() {
-        this(null, defaultSeverity());
+        this(null, defaultSeverity(), null);
+    }
+    
+    /**
+     * Construct for testing.
+     * @see "#18141"
+     */
+    NbErrorManager(PrintWriter pw) {
+        this(null, defaultSeverity(), pw);
     }
     
     private static int defaultSeverity() {
@@ -49,9 +57,10 @@ public final class NbErrorManager extends ErrorManager {
         return ErrorManager.INFORMATIONAL + 1;
     }
     
-    private NbErrorManager(String pfx, int sev) {
+    private NbErrorManager(String pfx, int sev, PrintWriter pw) {
         prefix = pfx;
         minLogSeverity = sev;
+        logWriter = pw;
         synchronized (uniquifiedIds) {
             Integer i = (Integer)uniquifiedIds.get(pfx);
             if (i == null) {
@@ -106,18 +115,6 @@ public final class NbErrorManager extends ErrorManager {
         }
     }
 
-    /** Adds these values. All the
-    * previous annotations are kept and this new is added at 
-    * the top of the annotation stack (index 0 of the annotation
-    * array).
-    *
-    * @param severity integer describing severity (one of const values
-    *   from this class)
-    * @param date date or null
-    * @param message message to attach to the exception or null
-    * @param localizedMessage localized message for the user or null
-    * @param stackTrace exception representing the stack trace or null
-    */
     public synchronized Throwable annotate (
         Throwable t,
         int severity, String message, String localizedMessage,
@@ -186,6 +183,27 @@ public final class NbErrorManager extends ErrorManager {
             return;
         }
 
+        Exc ex = createExc(t, severity);
+
+        PrintWriter log = getLogWriter ();
+        
+        if (prefix != null)
+            log.print ("[" + prefix + "] "); // NOI18N        
+        String level = ex.getSeverity() == INFORMATIONAL ? "INFORMATIONAL " : "";// NOI18N
+        log.println (level + "*********** Exception occurred ************ at " + ex.getDate()); // NOI18N
+        ex.printStackTrace(log);
+        log.flush();
+
+        if (ex.getSeverity () > INFORMATIONAL) {
+            NotifyException.notify (ex);
+        }
+    }
+    
+    /**
+     * Just create the exception information for a throwable being notified.
+     * Useful for the unit test.
+     */
+    Exc createExc(Throwable t, int severity) {
         Annotation[] ann = findAnnotations (t);
 
         if (ann == null) {
@@ -202,20 +220,7 @@ public final class NbErrorManager extends ErrorManager {
         }
         lastException.remove (Thread.currentThread ());
 
-        Exc ex = new Exc (t, severity, ann, findAnnotations0(t, true, new HashSet()));
-
-        PrintWriter log = getLogWriter ();
-        
-        if (prefix != null)
-            log.print ("[" + prefix + "] "); // NOI18N        
-        String level = ex.getSeverity() == INFORMATIONAL ? "INFORMATIONAL " : "";// NOI18N
-        log.println (level + "*********** Exception occurred ************ at " + ex.getDate()); // NOI18N
-        ex.printStackTrace(log);
-        log.flush();
-
-        if (ex.getSeverity () > INFORMATIONAL) {
-            NotifyException.notify (ex);
-        }
+        return new Exc (t, severity, ann, findAnnotations0(t, true, new HashSet()));
     }
 
     public void log(int severity, String s) {
@@ -288,7 +293,7 @@ public final class NbErrorManager extends ErrorManager {
             }
         }
         //System.err.println ("getInstance: prefix=" + prefix + " mls=" + minLogSeverity + " name=" + name + " prefix2=" + newEM.prefix + " mls2=" + newEM.minLogSeverity);
-        return new NbErrorManager(pfx, sev);
+        return new NbErrorManager(pfx, sev, logWriter);
     }    
     
     /** Method (or field) names in various exception classes which give
