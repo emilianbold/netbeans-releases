@@ -310,6 +310,16 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
                 }
             }
         }
+        if (MergeDialogComponent.PROP_PANEL_CLOSING.equals(propertyChangeEvent.getPropertyName())) {
+            MergePanel panel = (MergePanel) propertyChangeEvent.getNewValue();
+            if (this.panel == panel) {
+                resultSource.close();
+            }
+        }
+        if (MergeDialogComponent.PROP_ALL_CLOSED.equals(propertyChangeEvent.getPropertyName()) ||
+            MergeDialogComponent.PROP_ALL_CANCELLED.equals(propertyChangeEvent.getPropertyName())) {
+                resultSource.close();
+        }
     }
     
 }
