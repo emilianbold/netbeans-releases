@@ -136,9 +136,9 @@ final class Util {
             Node node = activatedNodes[i];
             Object container = node.getCookie(DataObject.Container.class);
             if (container != null) continue;
-            if (node.getCookie(EditorCookie.class) == null) {
-                return false;
-            }
+//            if (node.getCookie(EditorCookie.class) == null) {
+//                return false;
+//            }
 
 	    DataObject dobj = (DataObject)node.getCookie(DataObject.class);
 	    if (dobj == null) return false;
