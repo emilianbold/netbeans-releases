@@ -16,6 +16,7 @@ package org.netbeans.modules.tomcat5;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /** Factory capable to create DeploymentManager that can deploy to 
@@ -25,31 +26,41 @@ import org.openide.util.NbBundle;
  */
 public class TomcatFactory implements DeploymentFactory {
     
+    private static final String tomcatUriPrefix = "tomcat:"; // NOI18N
+    
     private static TomcatFactory instance;
+    
+    private static ErrorManager err = ErrorManager.getDefault ().getInstance ("org.netbeans.modules.tomcat5");  // NOI18N
     
     /** Factory method to create DeploymentFactory for Tomcat.
      */
     public static synchronized TomcatFactory create() {
         if (instance == null) {
+            if (err.isLoggable (ErrorManager.INFORMATIONAL)) err.log ("Creating TomcatFactory");
             instance = new TomcatFactory ();
+            javax.enterprise.deploy.shared.factories.DeploymentFactoryManager
+                .getInstance ().registerDeploymentFactory (instance);
         }
         return instance;
+    }
+    
+    /** Get the ErrorManager that logs module events. */
+    public static ErrorManager getEM () {
+        return err;
     }
     
     /** Creates a new instance of TomcatFactory */
     public TomcatFactory() {
     }
     
-    public DeploymentManager getDeploymentManager(String str, String str1, String str2) 
+    public DeploymentManager getDeploymentManager(String uri, String uname, String passwd) 
     throws DeploymentManagerCreationException {
-        // PENDING
-        return null;
+        return new TomcatManager (true, uri, uname, passwd);
     }
     
-    public DeploymentManager getDisconnectedDeploymentManager(String str) 
+    public DeploymentManager getDisconnectedDeploymentManager(String uri) 
     throws DeploymentManagerCreationException {
-        // PENDING
-        return null;
+        return new TomcatManager (false, uri, null, null);
     }
     
     public String getDisplayName() {
@@ -57,12 +68,11 @@ public class TomcatFactory implements DeploymentFactory {
     }
     
     public String getProductVersion() {
-        // PENDING
-        return null;
+        return NbBundle.getMessage (TomcatFactory.class, "LBL_TomcatFactoryVersion");
     }
     
     public boolean handlesURI(String str) {
-        return false;
+        return str.startsWith (tomcatUriPrefix);
     }
     
 }

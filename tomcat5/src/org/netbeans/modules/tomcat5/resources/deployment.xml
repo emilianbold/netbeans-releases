@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <netbeans-deployment>
     
-    <icon>/org/netbeans/modules/tomcat5/resources/tomcat5</icon>
+    <icon>org/netbeans/modules/tomcat5/resources/tomcat5</icon>
     
     <!--
     The disconnected-string element contains the String parameter to DeploymentFactory.getDisconnectedDeploymentManager()
@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
     The  name-mapper must be a class-name that implements TargetNameResolver.
     This class provides mapping between names in jsr88 and jsr77
     -->
-    <name-mapper></name-mapper>
+    <name-mapper>org.netbeans.modules.tomcat5.TargetMapper</name-mapper>
     
     <container-limitation><war-deploy/></container-limitation>
     
