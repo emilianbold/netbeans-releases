@@ -55,7 +55,6 @@ public class TreeModelNode extends AbstractNode {
     private TreeModelRoot       treeModelRoot;
     private Object              object;
     
-    private String              name;
     private String              htmlDisplayName;
     private String              shortDescription;
     private Map                 properties = new HashMap ();
@@ -80,7 +79,7 @@ public class TreeModelNode extends AbstractNode {
         this.treeModelRoot = treeModelRoot;
         this.object = object;
         treeModelRoot.registerNode (object, this); 
-        refresh ();
+        refreshNode ();
         initProperties ();
     }
 
@@ -229,14 +228,11 @@ public class TreeModelNode extends AbstractNode {
     }
 
     private Task task;
+    
     void refresh () {
-        
         // 1) empty cache
-        if (name != null) {
-            setName (name, true);
-            name = null;
-        }
         shortDescription = null;
+        htmlDisplayName = null;
         oldProperties = properties;
         properties = new HashMap ();
         
@@ -245,29 +241,7 @@ public class TreeModelNode extends AbstractNode {
             task.cancel ();
         task = getRequestProcessor ().post (new Runnable () {
             public void run () {
-                try {
-                    name = model.getDisplayName (object);
-                    if (name == null) 
-                        new NullPointerException (
-                            "Model: " + model + ".getDisplayName (" + object + 
-                            ") = null!"
-                        ).printStackTrace ();
-                    setName (name, false);
-                    String iconBase = model.getIconBase (object);
-                    if (iconBase != null)
-                        setIconBase (iconBase);
-                    else
-                        setIconBase ("org/openide/resources/actions/empty");
-                } catch (UnknownTypeException e) {
-                    if (object instanceof String) {
-                        name = (String) object;
-                        setName (name, false);
-                    } else {
-                        e.printStackTrace ();
-                        System.out.println (model);
-                        System.out.println ();
-                    }
-                }
+                refreshNode ();
             }
         });
         
@@ -295,6 +269,32 @@ public class TreeModelNode extends AbstractNode {
         } else {
             htmlDisplayName = null;
             setDisplayName (name);
+        }
+    }
+    
+    private void refreshNode () {
+        try {
+            String name = model.getDisplayName (object);
+            if (name == null) 
+                new NullPointerException (
+                    "Model: " + model + ".getDisplayName (" + object + 
+                    ") = null!"
+                ).printStackTrace ();
+            setName (name, false);
+            String iconBase = model.getIconBase (object);
+            if (iconBase != null)
+                setIconBase (iconBase);
+            else
+                setIconBase ("org/openide/resources/actions/empty");
+        } catch (UnknownTypeException e) {
+            if (object instanceof String) {
+                String name = (String) object;
+                setName (name, false);
+            } else {
+                e.printStackTrace ();
+                System.out.println (model);
+                System.out.println ();
+            }
         }
     }
     
