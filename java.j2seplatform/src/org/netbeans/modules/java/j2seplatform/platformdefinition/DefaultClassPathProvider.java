@@ -169,7 +169,7 @@ public class DefaultClassPathProvider implements ClassPathProvider {
             for (int i=elements.size()-1; i>=0; i--) {
                 String name = (String)elements.get(i);
                 tmp = tmp.getParent();
-                if (!tmp.getName().equals(name)) {
+                if (tmp == null || !tmp.getName().equals(name)) {
                     tmp = fo;
                     break;
                 }                
