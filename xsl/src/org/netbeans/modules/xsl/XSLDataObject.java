@@ -69,12 +69,6 @@ public final class XSLDataObject extends MultiDataObject implements XMLDataObjec
         cookieManager = new DataObjectCookieManager (this, set);
         set.add (cookieManager);
     
-        // editor support defines MIME type understood by EditorKits registry         
-        TextEditorSupport.TextEditorSupportFactory editorFactory =
-            new TextEditorSupport.TextEditorSupportFactory (this, org.netbeans.modules.xml.core.XMLDataObject.MIME_TYPE);
-        editorFactory.registerCookies (set);
-
-        
         // add check and validate cookies
         InputSource is = DataObjectAdapters.inputSource (this);
         set.add(new CheckXMLSupport (is));
@@ -84,8 +78,14 @@ public final class XSLDataObject extends MultiDataObject implements XMLDataObjec
         Source source = DataObjectAdapters.source (this);
         set.add (new TransformableSupport (source));
 
+        // add Scenario support
         set.add (new ScenarioSupport (this));    
         set.add(new ScenarioExecSupport(this));
+
+        // editor support defines MIME type understood by EditorKits registry         
+        TextEditorSupport.TextEditorSupportFactory editorFactory =
+            new TextEditorSupport.TextEditorSupportFactory (this, org.netbeans.modules.xml.core.XMLDataObject.MIME_TYPE);
+        editorFactory.registerCookies (set);     
     }
 
 
@@ -101,7 +101,7 @@ public final class XSLDataObject extends MultiDataObject implements XMLDataObjec
     public HelpCtx getHelpCtx() {
         return new HelpCtx (XSLDataObject.class);
     }
-
+    
     // XMLDataObjectLook to be deprecated ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     public DataObjectCookieManager getCookieManager() {
