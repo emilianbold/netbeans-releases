@@ -16,7 +16,7 @@ package com.netbeans.developer.editors;
 import java.awt.Point;
 import java.util.ResourceBundle;
 
-import org.openide.explorer.propertysheet.NbCustomPropertyEditor;
+import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.NbBundle;
 
 /**
@@ -24,7 +24,7 @@ import org.openide.util.NbBundle;
 * @author   Ian Formanek
 * @version  1.00, 01 Sep 1998
 */
-public class PointCustomEditor extends javax.swing.JPanel implements NbCustomPropertyEditor {
+public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
 
   // the bundle to use
   static ResourceBundle bundle = NbBundle.getBundle (
@@ -152,6 +152,8 @@ public class PointCustomEditor extends javax.swing.JPanel implements NbCustomPro
 
 /*
  * Log
+ *  6    Gandalf   1.5         6/30/99  Ian Formanek    Reflecting changes in 
+ *       editors packages and enhanced property editor interfaces
  *  5    Gandalf   1.4         6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  4    Gandalf   1.3         6/2/99   Ian Formanek    Fixed event handlers

@@ -17,14 +17,14 @@ import java.awt.Rectangle;
 import java.util.ResourceBundle;
 
 import org.openide.util.NbBundle;
-import org.openide.explorer.propertysheet.NbCustomPropertyEditor;
+import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
 /**
 *
 * @author   Ian Formanek
 * @version  1.00, 01 Sep 1998
 */
-public class RectangleCustomEditor extends javax.swing.JPanel implements NbCustomPropertyEditor {
+public class RectangleCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
 
   // the bundle to use
   static ResourceBundle bundle = NbBundle.getBundle (
@@ -208,6 +208,8 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements NbCusto
 
 /*
  * Log
+ *  6    Gandalf   1.5         6/30/99  Ian Formanek    Reflecting changes in 
+ *       editors packages and enhanced property editor interfaces
  *  5    Gandalf   1.4         6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  4    Gandalf   1.3         6/2/99   Ian Formanek    Fixed event handlers

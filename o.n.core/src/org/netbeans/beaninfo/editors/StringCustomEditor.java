@@ -13,7 +13,7 @@
 
 package com.netbeans.developer.editors;
 
-import org.openide.explorer.propertysheet.NbCustomPropertyEditor;
+import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import java.util.Vector;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -23,7 +23,7 @@ import javax.swing.border.*;
 * @author  Ian Formanek
 * @version 1.00, Sep 21, 1998
 */
-public class StringCustomEditor extends javax.swing.JPanel implements NbCustomPropertyEditor {
+public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
 
   private StringEditor editor;
 
@@ -75,6 +75,8 @@ public class StringCustomEditor extends javax.swing.JPanel implements NbCustomPr
 
 /*
  * Log
+ *  5    Gandalf   1.4         6/30/99  Ian Formanek    Reflecting changes in 
+ *       editors packages and enhanced property editor interfaces
  *  4    Gandalf   1.3         6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  3    Gandalf   1.2         5/31/99  Ian Formanek    Updated to X2 format
