@@ -723,6 +723,8 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
               
       if (nextToRead == '\r') { 
         nextToRead = bufis.read();
+        while (nextToRead == '\r')
+          nextToRead = bufis.read();
         if (nextToRead == '\n') {     
           nextToRead = bufis.read();
           newLineTypes[NEW_LINE_RN]++;
