@@ -1752,9 +1752,6 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
                     case 0:
                         break;
                     case 1:
-                        if (c instanceof JComboBox) {
-                            System.out.println("FOUND COMBO!");
-                        }
                         stack.add(content[0]);
                         lastIndex++;
                         break;
