@@ -61,10 +61,11 @@ public class Operator {
      *                    (may be <TT>null</TT>)
     */
     public Operator (
-        EventQueue eventQueue,
+        VirtualMachine virtualMachine,
         Executor starter,
         Runnable finalizer
     ) {
+        EventQueue eventQueue = virtualMachine.eventQueue ();
         if (eventQueue == null) 
             throw new NullPointerException ();
         final Object[] params = new Object[] {eventQueue, starter, finalizer};

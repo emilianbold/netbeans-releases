@@ -99,7 +99,7 @@ public class StartActionProvider extends ActionsProvider {
         VirtualMachine virtualMachine
     ) {
         return new Operator (
-            virtualMachine.eventQueue (),
+            virtualMachine,
             null,
             new Runnable () {
                 public void run () {
