@@ -38,7 +38,7 @@ Microsystems, Inc. All Rights Reserved.
     <ant dir="../core/output" antfile="build.xml" target="jars"/>
   </target>
 
-  <target name="compile" depends="init,compile-dependend-modules,prepare-junit-extensions">
+  <target name="compile" depends="init,prepare-junit-extensions">
     <path id="basecp">
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
         <fileset dir="../openide/netbeans/lib">
@@ -119,7 +119,7 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="external/xtest-ext.jar" todir="lib"/>
   </target>
   
-  <target name="makedist" depends="jars">
+  <target name="makedist" depends="compile-dependend-modules,jars">
      <zip zipfile="xtest-distribution.zip">
      
 	<zipfileset dir="lib" prefix="lib" includes="**/*.xml,**/*.jar,**/*.xsl,**/*.exe,**/*.so,**/*.dll"/>
@@ -132,15 +132,6 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="clean">
     <ant dir="../junit" antfile="build.xml" target="clean-junit-ext"/>
-
-    <ant dir="../openide" antfile="build.xml" target="clean"/>
-    <ant dir="../openide/io" antfile="build.xml" target="clean"/>
-    <ant dir="../openide/execution" antfile="build.xml" target="clean"/>
-    <ant dir="../core" antfile="build.xml" target="clean"/>
-    <ant dir="../core/execution" antfile="build.xml" target="clean"/>
-    <ant dir="../core/term" antfile="build.xml" target="clean"/>
-    <ant dir="../core/output" antfile="build.xml" target="clean"/>
-
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
@@ -159,7 +150,15 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="xtest-pes-distribution.zip"/>
   </target>
   
-  
+  <target name="real-clean" depends="clean">
+    <ant dir="../openide" antfile="build.xml" target="clean"/>
+    <ant dir="../openide/io" antfile="build.xml" target="clean"/>
+    <ant dir="../openide/execution" antfile="build.xml" target="clean"/>
+    <ant dir="../core" antfile="build.xml" target="clean"/>
+    <ant dir="../core/execution" antfile="build.xml" target="clean"/>
+    <ant dir="../core/term" antfile="build.xml" target="clean"/>
+    <ant dir="../core/output" antfile="build.xml" target="clean"/>
+  </target>  
   
   <!-- PES targets -->
   <target name="compile-pes" depends="init">
@@ -196,12 +195,16 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="external/xalan-2.3.1.jar" tofile="lib/xalan.jar"/>
   </target>
   
-  <target name="makedist-pes" depends="jar-pes">
+  <target name="makedist-pes" depends="compile-dependend-modules,jar-pes">
     <zip zipfile="xtest-pes-distribution.zip">
      	<zipfileset dir="lib" prefix="lib" includes="**/*.jar,**/*.xsl"/>
      	<zipfileset dir="bin" prefix="bin" includes="xtest-pes.sh"/>
      	<zipfileset  dir="external/" prefix="lib" includes="ant-1.4.1.jar"/>
      </zip>  
+  </target>
+  
+  <target name="all-xtest">
+     <ant dir="../nbbuild" antfile="build.xml" target="all-xtest"/>
   </target>
 
 </project>
