@@ -45,7 +45,8 @@ public class FormDataLoader extends JavaDataLoader {
 
     /** Gets default actions. Overrides superclass method. */
     protected SystemAction[] defaultActions() {
-        SystemAction[] javaActions = super.defaultActions();
+        DataLoader javaLoader = getLoader(JavaDataLoader.class);          
+        SystemAction[] javaActions = javaLoader.getActions();
         SystemAction[] formActions = new SystemAction[javaActions.length+2];
         formActions[0] = javaActions[0]; // OpenAction            
         formActions[1] = SystemAction.get(EditAction.class);
