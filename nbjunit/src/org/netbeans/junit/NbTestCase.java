@@ -691,5 +691,22 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         return path;
     }
 
+    
+    /** Assert GC. Tries to GC ref's referent.
+     * @param text the text to show when test fails.
+     * @param ref the referent to object that
+     * should be GCed
+     */
+    public static void assertGC(String text, java.lang.ref.Reference ref) {
+        for (int i = 0; i < 10; i++) {
+            if (ref.get() == null) {
+                return;
+            }
+            System.gc();
+            System.runFinalization();
+        }
+        fail(text + " " + ref.get());
+    }
+
 
 }
