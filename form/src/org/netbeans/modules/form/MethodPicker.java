@@ -91,7 +91,6 @@ public class MethodPicker extends javax.swing.JDialog {
         componentLabel.setText(FormEditor.getFormBundle().getString("CTL_CW_Component")); // "Component:"
         okButton.setText(FormEditor.getFormBundle().getString("CTL_OK")); // "OK"
         cancelButton.setText(FormEditor.getFormBundle().getString("CTL_CANCEL")); //"Cancel"
-        //    parametersButton.setText(FormEditor.getFormBundle().getString("CTL_CW_Parameters")); // "Parameters"
 
         updateButtons();
 
@@ -186,17 +185,13 @@ public class MethodPicker extends javax.swing.JDialog {
     }
 
     private void updateButtons() {
-        //    parametersButton.setEnabled(false); // [FUTURE: - disabled for now]
         if ((getSelectedComponent() == null) ||(getSelectedMethod() == null)) {
             okButton.setEnabled(false);
-            //      parametersButton.setEnabled(false);
         } else {
             if (getSelectedMethod().getMethod().getParameterTypes().length > 0) {
                 okButton.setEnabled(false);
-                //        parametersButton.setEnabled(true);
             } else {
                 okButton.setEnabled(true);
-                //        parametersButton.setEnabled(false);
             }
         }
     }
@@ -214,21 +209,17 @@ public class MethodPicker extends javax.swing.JDialog {
         componentLabel = new javax.swing.JLabel();
         componentsCombo = new javax.swing.JComboBox();
         buttonsPanel = new javax.swing.JPanel();
-        leftButtonsPanel = new javax.swing.JPanel();
-        parametersButton = new javax.swing.JButton();
         rightButtonsPanel = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
 
         insidePanel.setLayout(new java.awt.BorderLayout(0, 5));
 
-
         methodList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 methodListValueChanged(evt);
             }
-        }
-                                            );
+        });
 
         propertiesScrollPane.setViewportView(methodList);
 
@@ -237,42 +228,30 @@ public class MethodPicker extends javax.swing.JDialog {
         jPanel1.setLayout(new java.awt.BorderLayout(8, 0));
 
         componentLabel.setText(FormEditor.getFormBundle().getString("CTL_Component"));
-
         jPanel1.add(componentLabel, java.awt.BorderLayout.WEST);
 
         componentsCombo.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 componentsComboItemStateChanged(evt);
             }
-        }
-                                        );
+        });
 
         jPanel1.add(componentsCombo, java.awt.BorderLayout.CENTER);
 
         insidePanel.add(jPanel1, java.awt.BorderLayout.NORTH);
 
-
         getContentPane().add(insidePanel, java.awt.BorderLayout.CENTER);
 
         buttonsPanel.setLayout(new java.awt.BorderLayout());
 
-        leftButtonsPanel.setLayout(new java.awt.FlowLayout(0, 5, 5));
-
-        parametersButton.setText(FormEditor.getFormBundle().getString("CTL_CW_Parameters"));
-
-        leftButtonsPanel.add(parametersButton);
-
-        buttonsPanel.add(leftButtonsPanel, java.awt.BorderLayout.WEST);
-
-        rightButtonsPanel.setLayout(new java.awt.FlowLayout(2, 5, 5));
+        rightButtonsPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
 
         okButton.setText(FormEditor.getFormBundle().getString("CTL_OK"));
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
-        }
-                                   );
+        });
 
         rightButtonsPanel.add(okButton);
 
@@ -281,13 +260,11 @@ public class MethodPicker extends javax.swing.JDialog {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
-        }
-                                       );
+        });
 
         rightButtonsPanel.add(cancelButton);
 
         buttonsPanel.add(rightButtonsPanel, java.awt.BorderLayout.EAST);
-
 
         getContentPane().add(buttonsPanel, java.awt.BorderLayout.SOUTH);
 
@@ -336,8 +313,6 @@ public class MethodPicker extends javax.swing.JDialog {
     private javax.swing.JLabel componentLabel;
     private javax.swing.JComboBox componentsCombo;
     private javax.swing.JPanel buttonsPanel;
-    private javax.swing.JPanel leftButtonsPanel;
-    private javax.swing.JButton parametersButton;
     private javax.swing.JPanel rightButtonsPanel;
     private javax.swing.JButton okButton;
     private javax.swing.JButton cancelButton;
