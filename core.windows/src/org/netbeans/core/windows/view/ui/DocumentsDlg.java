@@ -300,7 +300,13 @@ implements PropertyChangeListener {
         //Call using invokeLater to make sure it is performed after dialog
         //is closed.
         SwingUtilities.invokeLater(new Runnable () {
-            public void run () {
+            public void run() {
+                // #37226-41075 Unmaximized the other mode if needed.
+                WindowManagerImpl wm = WindowManagerImpl.getInstance();
+                ModeImpl mode = (ModeImpl)wm.findMode(tc);
+                if(mode != null && mode != wm.getMaximizedMode()) {
+                    wm.setMaximizedMode(null);
+                }
                 tc.requestActive();
             }
         });
