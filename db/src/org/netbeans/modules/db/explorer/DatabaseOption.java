@@ -49,7 +49,7 @@ public class DatabaseOption extends SystemOption
 	public Vector getAvailableDrivers() 
 	{
 		Vector rvec = null;
-		if (drivers == null) {			
+		if (drivers.size() == 0) {			
 			Map xxx = (Map)DatabaseNodeInfo.getGlobalNodeInfo(DatabaseNode.DRIVER_LIST);
 			Vector def = (Vector)xxx.get("defaultdriverlist");
 			if (def != null && def.size()>0) {

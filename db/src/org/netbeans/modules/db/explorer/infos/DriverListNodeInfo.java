@@ -71,6 +71,7 @@ implements DriverOperations
 	
 	/** Removes node from list and node list.
 	*/
+/*
 	public void removeDriver(DatabaseDriver drv)
 	throws DatabaseException
 	{
@@ -85,4 +86,5 @@ implements DriverOperations
 		else throw new DatabaseException("driver node "+drv+" was not found");
 		drvs.removeElementAt(idx);
 	}	
+*/
 }

@@ -14,6 +14,7 @@
 package com.netbeans.enterprise.modules.db.explorer.infos;
 
 import java.io.InputStream;
+import java.io.IOException;
 import java.util.*;
 import java.sql.*;
 import com.netbeans.ddl.*;
@@ -21,6 +22,7 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 import com.netbeans.ide.nodes.Node;
 import com.netbeans.ddl.util.PListReader;
+import com.netbeans.ddl.impl.*;
 import com.netbeans.enterprise.modules.db.*;
 import com.netbeans.enterprise.modules.db.explorer.*;
 import com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
@@ -40,5 +42,19 @@ public class DriverNodeInfo extends DriverListNodeInfo
 		put(DatabaseNodeInfo.NAME, drv.getName());
 		put(DatabaseNodeInfo.URL, drv.getURL());
 		put(DatabaseNodeInfo.DBDRIVER, drv);
+	}
+
+	public void delete()
+	throws IOException
+	{
+		try {
+			DatabaseDriver drv = getDatabaseDriver();
+			Vector drvs = RootNode.getOption().getAvailableDrivers();
+			int idx = drvs.indexOf(drv);
+			if (idx != -1) drvs.removeElementAt(idx);
+			else throw new DatabaseException("driver "+drv+" was not found");
+		} catch (Exception e) {
+			throw new IOException(e.getMessage());
+		}
 	}
 }

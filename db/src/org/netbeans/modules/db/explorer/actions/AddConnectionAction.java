@@ -36,7 +36,9 @@ public class AddConnectionAction extends DatabaseAction
 		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
 		else return;
 		try {
-			ConnectionOwnerOperations nfo = (ConnectionOwnerOperations)findInfo((DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class));
+			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+			ConnectionOwnerOperations nfo = (ConnectionOwnerOperations)info.getParent(nodename);
+
 			Vector drvs = RootNode.getOption().getAvailableDrivers();
 			DatabaseConnection cinfo = new DatabaseConnection();
 			
@@ -46,7 +48,7 @@ public class AddConnectionAction extends DatabaseAction
 			NewConnectionDialog cdlg = new NewConnectionDialog(drvs, cinfo);
 			if (cdlg.run()) nfo.addConnection((DBConnection)cinfo);
 		} catch(Exception e) {
-			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to add driver, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to perform action, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 		}
 	}
 }

@@ -35,6 +35,12 @@ public class ColumnListCommand extends AbstractCommand
 		columns = new Vector();
 	}
 	
+	/** Returns list of columns */
+	public Vector getColumns()
+	{
+		return columns;
+	}
+	
 	/** Creates specification of command
 	* @param type Type of column
 	* @param name Name of column
@@ -89,10 +95,27 @@ public class ColumnListCommand extends AbstractCommand
 		args.put("columns", cols);
 		return args;	
 	}
+
+	/** Reads object from stream */
+	public void readObject(java.io.ObjectInputStream in) 
+	throws java.io.IOException, ClassNotFoundException 
+	{
+		super.readObject(in);
+		columns = (Vector)in.readObject();
+	}
+
+	/** Writes object to stream */
+	public void writeObject(java.io.ObjectOutputStream out)
+	throws java.io.IOException 
+	{
+		super.writeObject(out);
+		out.writeObject(columns);
+	}
 }
 
 /*
 * <<Log>>
+*  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
 * $

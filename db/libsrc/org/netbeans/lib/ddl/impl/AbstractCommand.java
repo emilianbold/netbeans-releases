@@ -15,6 +15,7 @@ package com.netbeans.ddl.impl;
 
 import java.util.*;
 import java.sql.*;
+import java.io.Serializable;
 import java.text.ParseException;
 import com.netbeans.ddl.*;
 import com.netbeans.ddl.util.*;
@@ -25,7 +26,8 @@ import com.netbeans.ddl.util.*;
 *
 * @author Slavek Psenicka
 */
-public class AbstractCommand implements DDLCommand 
+public class AbstractCommand 
+implements Serializable, DDLCommand 
 {
 	/** Command owner */
 	private DBSpec spec;
@@ -145,22 +147,22 @@ public class AbstractCommand implements DDLCommand
 		}
 				
 		// In case of debug mode, you simply print command and don't execute
-		if (!spec.getSpecificationFactory().isDebugMode()) {					
-			try {
-				fcon = spec.getJDBCConnection();
-				if (fcon == null) {
-					fcon = spec.openJDBCConnection();
-					opened = true;
-				}
-				
-				Statement stat = fcon.createStatement();
-				stat.executeUpdate(fcmd);
-			} catch (Exception e) {
-				if (opened && fcon != null) spec.closeJDBCConnection();
-				throw new DDLException("unable to execute a command "+fcmd+": "+e.getMessage());
+		if (spec.getSpecificationFactory().isDebugMode()) System.out.println("cmd: "+fcmd);				
+		try {
+			fcon = spec.getJDBCConnection();
+			if (fcon == null) {
+				fcon = spec.openJDBCConnection();
+				opened = true;
 			}
-			if (opened) spec.closeJDBCConnection();
-		} else System.out.println("cmd: "+fcmd);
+			
+			Statement stat = fcon.createStatement();
+			stat.executeUpdate(fcmd);
+			stat.close();
+		} catch (Exception e) {
+			if (opened && fcon != null) spec.closeJDBCConnection();
+			throw new DDLException("unable to execute a command "+fcmd+": "+e.getMessage());
+		}
+		if (opened) spec.closeJDBCConnection();
 	}
 
 	/** 
@@ -181,10 +183,32 @@ public class AbstractCommand implements DDLCommand
 			throw new DDLException(e.getMessage());
 		}
 	}
+
+	/** Reads object from stream */
+	public void readObject(java.io.ObjectInputStream in) 
+	throws java.io.IOException, ClassNotFoundException 
+	{
+		format = (String)in.readObject();
+		owner = (String)in.readObject();
+		name = (String)in.readObject();
+		addprops = (Map)in.readObject();
+	}
+
+	/** Writes object to stream */
+	public void writeObject(java.io.ObjectOutputStream out)
+	throws java.io.IOException 
+	{
+		System.out.println("Writing command "+name);
+		out.writeObject(format);
+		out.writeObject(owner);
+		out.writeObject(name);
+		out.writeObject(addprops);
+	}
 }
 
 /*
 * <<Log>>
+*  5    Gandalf   1.4         5/14/99  Slavek Psenicka new version
 *  4    Gandalf   1.3         4/23/99  Slavek Psenicka Chyba v createSpec pri 
 *       ConnectAs
 *  3    Gandalf   1.2         4/23/99  Slavek Psenicka Opravy v souvislosti se 

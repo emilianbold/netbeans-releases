@@ -27,6 +27,10 @@ public class PrintDebugInfoAction extends DatabaseAction
 		Node node;
 		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
 		else return;
-		System.out.println("Node info: "+node.getCookie(DatabaseNodeInfo.class));
+		DatabaseNodeInfo dnode = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+
+		System.out.println("Node cookie code: "+dnode.getCode());
+		System.out.println("Node class: "+dnode.getNode().getClass());
+		System.out.println("Node cookie class: "+dnode.getClass());
 	}
 }

@@ -13,6 +13,7 @@
 
 package com.netbeans.enterprise.modules.db.explorer.nodes;
 
+import java.io.IOException;
 import java.util.Vector;
 import java.util.Enumeration;
 import java.util.Map;
@@ -21,6 +22,7 @@ import com.netbeans.ide.*;
 import com.netbeans.ide.nodes.*;
 import com.netbeans.ide.util.MapFormat;
 import com.netbeans.ide.util.actions.SystemAction;
+import java.awt.datatransfer.Transferable;
 import com.netbeans.enterprise.modules.db.explorer.*;
 import com.netbeans.enterprise.modules.db.explorer.actions.*;
 import com.netbeans.enterprise.modules.db.DatabaseException;
@@ -30,16 +32,22 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 {
 	private DatabaseNodeInfo info;
 	private boolean writable = false;
+	private boolean cutflag = false, copyflag = false, delflag = false;
 	
 	public static final String ROOT = "root";
 	public static final String DRIVER_LIST = "driverlist";
 	public static final String DRIVER = "driver";
 	public static final String CONNECTION = "connection";
 	public static final String CATALOG = "catalog";
+	public static final String TABLELIST = "tablelist";
 	public static final String TABLE = "table";
 	public static final String VIEW = "view";
+	public static final String VIEWCOLUMN = "viewcolumn";
+	public static final String INDEX = "index";
 	public static final String COLUMN = "column";
-	public static final String PRIMARY_KEY = "icolumn";
+	public static final String INDEXCOLUMN = "indexcolumn";
+	public static final String PRIMARY_KEY = "pcolumn";
+	public static final String INDEXED_COLUMN = "icolumn";
 	public static final String FOREIGN_KEY = "fcolumn";
 	public static final String EXPORTED_KEY = "ekey";
 	public static final String PROCEDURE = "procedure";
@@ -72,6 +80,19 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 			if (dname != null) setDisplayName(dname);
 		}
 		
+		// Read options
+		// Cut, copy and delete flags
+		
+		Map opts = (Map)info.get("options");
+		if (opts != null) {
+			String str = (String)opts.get("cut");
+			if (str != null) cutflag = str.toUpperCase().equals("YES");
+			str = (String)opts.get("copy");
+			if (str != null) copyflag = str.toUpperCase().equals("YES");
+			str = (String)opts.get("delete");
+			if (str != null) delflag = str.toUpperCase().equals("YES");
+		}
+
 		try {
     		Vector prop = (Vector)info.get(DatabaseNodeInfo.PROPERTIES);
 			Enumeration prop_i = prop.elements();
@@ -93,6 +114,36 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 	public boolean canRename()
 	{
 		return writable;
+	}
+
+    /** 
+    * Can be cut only if copyable flag is set.
+    */
+    public boolean canCut () 
+    {
+		return cutflag;
+    }
+
+     /** 
+    * Can be copied only if copyable flag is set.
+    */
+    public boolean canCopy () 
+    {
+		return copyflag;
+    }
+    
+    /** 
+    * Can be destroyed only if copyable flag is set.
+    */
+	public boolean canDestroy()
+	{
+		return delflag;
+	}
+
+	public void destroy() throws IOException
+	{
+		info.delete();
+		super.destroy();
 	}
 
 	public Node.Cookie getCookie(Class cls) 
@@ -118,6 +169,11 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 		return null;
 	}
 	
+	protected PropertySupport createPropertySupport(String name, Class type, String displayName, String shortDescription, DatabaseNodeInfo rep, boolean writable)
+	{
+		return new DatabasePropertySupport(name, type, displayName, shortDescription, rep, writable);
+	}
+	
 	/** Sheet for this node.
 	*/
 	protected Sheet createSheet() 
@@ -127,7 +183,7 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
     	Vector prop = (Vector)info.get(DatabaseNodeInfo.PROPERTIES);
 		Enumeration prop_i = prop.elements();
 		while (prop_i.hasMoreElements()) {
-			boolean canWrite = writable;
+			boolean canWrite;
 			Map propmap = (Map)prop_i.nextElement();
 			String key = (String)propmap.get(DatabaseNodeInfo.CODE);
 			
@@ -144,14 +200,15 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 				else {
 					Class pc = null;
 					pname = (String)propmap.get(DatabaseNodeInfo.NAME);
-					pdesc = (String)propmap.get(DatabaseNodeInfo.DESCRIPTION);
-					pclass = (String)propmap.get(DatabaseNodeInfo.CLASS);
-					String wflag = (String)propmap.get(DatabaseNodeInfo.WRITABLE);
-					if (wflag != null) canWrite = wflag.toUpperCase().equals("YES");
-					if (pclass.equals("java.lang.Boolean")) pc = Boolean.TYPE;
-					else if (pclass.equals("java.lang.Integer")) pc = Integer.TYPE;
-					else pc = Class.forName(pclass);
-					psitem = new DatabasePropertySupport(key, pc, pname, pdesc, info, canWrite);				
+					if (info.canAdd(propmap, pname)) {
+						pdesc = (String)propmap.get(DatabaseNodeInfo.DESCRIPTION);
+						pclass = (String)propmap.get(DatabaseNodeInfo.CLASS);
+						canWrite = info.canWrite(propmap, pname, writable);
+						if (pclass.equals("java.lang.Boolean")) pc = Boolean.TYPE;
+						else if (pclass.equals("java.lang.Integer")) pc = Integer.TYPE;
+						else pc = Class.forName(pclass);
+						psitem = createPropertySupport(key, pc, pname, pdesc, info, canWrite);	
+					}
 				}
 			
 				if (psitem != null) ps.put(psitem);

@@ -14,26 +14,29 @@
 
 package com.netbeans.enterprise.modules.db.explorer.actions;
 
-import java.sql.Connection;
+import java.util.ResourceBundle;
 import com.netbeans.ide.*;
-import com.netbeans.ide.nodes.*;
-import com.netbeans.enterprise.modules.db.explorer.nodes.*;
+import com.netbeans.ide.util.NbBundle;
+import com.netbeans.ide.nodes.Node;
+import com.netbeans.enterprise.modules.db.explorer.DatabaseDriver;
+import com.netbeans.enterprise.modules.db.explorer.infos.DatabaseNodeInfo;
+import com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
 
 public class CreateProcedureAction extends DatabaseAction
 {
-	public void performAction (Node[] activatedNodes) 
+	public void performAction(Node[] activatedNodes) 
 	{
 		Node node;
 		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
 		else return;
+
+		ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
 		try {
-			ConnectionNodeInfo nfo = (ConnectionNodeInfo)findInfo((DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class));
-
-			// here
-
+			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+			TableOperations nfo = (TableOperations)info.getParent(nodename);
 		} catch(Exception e) {
-			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to disconnect from "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+			TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DropTableErrorPrefix")+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 		}
 	}
 }

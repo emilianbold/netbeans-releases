@@ -27,7 +27,8 @@ public class DisableDebugAction extends DatabaseAction
 		Node node;
 		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
 		else return false;
-		DatabaseNodeInfo nfo = findInfo((DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class));
+		
+		DatabaseNodeInfo nfo = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
 		return nfo.isDebugMode();
 	}
 
@@ -36,7 +37,8 @@ public class DisableDebugAction extends DatabaseAction
 		Node node;
 		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
 		else return;
-		DatabaseNodeInfo nfo = findInfo((DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class));
+		
+		DatabaseNodeInfo nfo = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
 		nfo.setDebugMode(false);
 		DriverManager.setLogStream(null);
 	}

@@ -22,22 +22,43 @@
 		name = Databases;
 		class = com.netbeans.enterprise.modules.db.explorer.nodes.RootNode;
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.RootNodeInfo;
+		children_ordering = {
+			com.netbeans.enterprise.modules.db.explorer.nodes.DriverListNode = 0;
+			com.netbeans.enterprise.modules.db.explorer.nodes.ConnectionNode = 1;
+		};
 		iconbase = "/com/netbeans/enterprise/modules/db/resources/database";
 		children = (driverlist);
 		properties = ();
+		options = {};
 		actions = (
 			{
-				name = "Add connection";
+				name = "AddConnection";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddConnectionAction;
 			},
 			delimiter,
 			{
-				name = "Enable debug";
+				name = "EnableDebug";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.EnableDebugAction;
 			},
 			{
-				name = "Disable debug";
+				name = "DisableDebug";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.DisableDebugAction;
+			},
+			delimiter,
+			{
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				system = YES;
+			},
+			{
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				system = YES;
 			}
 		);
 	};
@@ -55,6 +76,7 @@
 		iconbase = "/com/netbeans/ide/resources/defaultFolder";
 		children = ();
 		properties = ();
+		options = {};
 		defaultdriverlist = (
 			{
 				name = "Oracle";
@@ -77,6 +99,22 @@
 			{
 				name = "Add new driver";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddDriverAction;
+			},
+			delimiter,
+			{
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				system = YES;
+			},
+			{
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				system = YES;
 			}
 		);
 	};
@@ -93,6 +131,11 @@
 		creator = driverlist;
 		iconbase = "/com/netbeans/enterprise/modules/db/resources/driver";
 		children = ();
+		options = {
+			cut = YES;
+			copy = YES;
+			delete = YES;
+		};	
 		properties = (
 			{
 				code = name;
@@ -119,10 +162,30 @@
 			},
 			delimiter,
 			{
-				name = "Remove driver";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.RemoveDriverAction;
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
 				node = driverlist;
-			}
+				system = YES;
+			},
+			{
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				node = driverlist;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				node = driverlist;
+				system = YES;
+			},
+			delimiter,
+			{
+				name = "Remove driver";
+				class = com.netbeans.ide.actions.DeleteAction;
+				node = driverlist;
+				system = YES;
+			},
 		);
 	};
 
@@ -141,7 +204,18 @@
 		iconbase = "/com/netbeans/enterprise/modules/db/resources/connectionDisconnected";
 		activeiconbase = "/com/netbeans/enterprise/modules/db/resources/connection";
 		children = ();
+		options = {
+			cut = YES;
+			copy = YES;
+			delete = YES;
+		};	
 		actions = (
+			{
+				name = "Add connection";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddConnectionAction;
+				node = root;
+			},
+			delimiter,
 			{
 				name = "Connect";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.ConnectAction;
@@ -156,19 +230,29 @@
 			},
 			delimiter,
 			{
-				name = "Add connection";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddConnectionAction;
-				node = root;
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				node = driverlist;
+				system = YES;
 			},
 			{
-				name = "Delete connection";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.RemoveConnectionAction;
-				node = root;
-			}, 
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				node = driverlist;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				node = driverlist;
+				system = YES;
+			},
 			delimiter,
 			{
-				name = "Get info";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.PrintDebugInfoAction;
+				name = "Remove connection";
+				class = com.netbeans.ide.actions.DeleteAction;
+				node = driverlist;
+				system = YES;
 			}
 		);
 		properties = (
@@ -237,7 +321,7 @@
 			},
 			{
 				code = rememberpassword;
-				name = "Remember PWD";
+				name = "Remember password";
 				description = "Remembers password or not";
 				class = java.lang.Boolean;
 				writable = YES;
@@ -257,14 +341,34 @@
 		iconbase = "/com/netbeans/enterprise/modules/db/resources/catalog";
 		resultset = (name);
 		children = (tablelist,viewlist,procedurelist);
+		options = {};	
+		properties = ();
 		actions = (
+/*
 			{
 				name = "Grab structure";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.GrabCatalogAction;
 			},
 			{
-				name = "Recreate...";
+				name = "Recreate";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.RecreateCatalogAction;
+			},
+			delimiter,
+*/
+			{
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				system = YES;
+			},
+			{
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				system = YES;
 			}
 		);
 	};
@@ -281,21 +385,49 @@
 		iconbase = "/com/netbeans/ide/resources/defaultFolder";
 		children = ();
 		properties = ();
+		options = {};	
 		actions = (
 			{
 				name = "Create Table";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateTableAction;
 			},
+			{
+				name = "Recreate table";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.RecreateTableAction;
+			},
 			delimiter,
+/*
 			{
 				name = "Grab structure";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.GrabCatalogAction;
 				node = catalog;
 			},
 			{
-				name = "Recreate...";
+				name = "Recreate";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.RecreateCatalogAction;
 				node = catalog;
+			},
+			delimiter,
+*/
+			{
+				name = "Refresh";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.RefreshChildrenAction;
+			},
+			delimiter,
+			{
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				system = YES;
+			},
+			{
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				system = YES;
 			}
 		);
 	};
@@ -310,27 +442,29 @@
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.TableNodeInfo;
 		creator = tablelist;
 		iconbase = "/com/netbeans/enterprise/modules/db/resources/table";
-		children = (ekeylist);
+		children = (ilist);
 		resultset = (catalog,schema,name,type,remarks);
+		options = {
+			cut = YES;
+			copy = YES;
+			delete = YES;
+		};	
+		children_ordering = {
+			com.netbeans.enterprise.modules.db.explorer.nodes.ColumnNode = 0;
+		};
 		actions = (
 			{
 				name = "Create Table";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateTableAction;
-			},
-			{
-				name = "Drop table";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.DropTableAction;
 				node = tablelist;
 			},
-			delimiter,
 			{
-				name = "Create index";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateIndexAction;
+				name = "Add column";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
 			},
 			{
-				name = "Drop index";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.DropIndexAction;
-				node = tablelist;
+				name = "Refresh columns";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.RefreshChildrenAction;
 			},
 			delimiter,
 			{
@@ -338,8 +472,31 @@
 				class = com.netbeans.enterprise.modules.db.explorer.actions.GrabTableAction;
 			},
 			{
-				name = "Recreate...";
+				name = "Recreate";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.RecreateTableAction;
+				node = tablelist;
+			},
+			delimiter,
+			{
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				system = YES;
+			},
+			{
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				system = YES;
+			},
+			delimiter,
+			{
+				name = "Remove table";
+				class = com.netbeans.ide.actions.DeleteAction;
+				system = YES;
 			}
 		);
 		properties = (
@@ -387,49 +544,44 @@
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ColumnNodeInfo;
 		iconbase = "/com/netbeans/enterprise/modules/db/resources/column";
 		resultset = (catalog,schema,tablename,name,datatype,typename,columnsize,bufflen,decdigits,radix,nullable,remarks,coldef,reserved1,reserved2,octetlen,ordpos,isnullable);
-
+		options = {
+			cut = YES;
+			copy = YES;
+			delete = YES;
+		};	
 		actions = (
-			{
-				name = "Create Table";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateTableAction;
-			},
-			{
-				name = "Create index";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateIndexAction;
-			},
-			{
-				name = "Drop index";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.DropIndexAction;
-			},
-			delimiter,
 			{
 				name = "Add column";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
+				node = table;
+			},
+			delimiter,
+			{
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				system = YES;
 			},
 			{
-				name = "Delete column";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.RemoveColumnAction;
-				node = table;
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				system = YES;
+			},
+			delimiter,
+			{
+				name = "Remove column";
+				class = com.netbeans.ide.actions.DeleteAction;
+				system = YES;
 			}
 		);
 		properties = (
 			{
 				code = name;
 				writable = YES;
-			},
-			{
-				code = catalog;
-				name = "Catalog";
-				description = "Catalog name";
-				class = java.lang.String;
-				writable = NO;
-			},
-			{
-				code = schema;
-				name = "Schema";
-				description = "Schema name";
-				class = java.lang.String;
-				writable = NO;
 			},
 			{
 				code = type;
@@ -439,18 +591,32 @@
 				writable = NO;
 			},
 			{
+				code = isnullable;
+				name = "Null";
+				description = "Null allowed for this column";
+				class = java.lang.Boolean;
+				writable = YES;
+			},
+			{
+				code = datatype;
+				name = "Datatype";
+				description = "Data type";
+				class = java.lang.Integer;
+				writable = YES;
+			},
+			{
+				code = coldef;
+				name = "Default";
+				description = "Default value";
+				class = java.lang.String;
+				writable = YES;
+			},
+			{
 				code = columnsize;
 				name = "Column size";
 				description = "Size of column";
 				class = java.lang.Integer;
-				writable = NO;
-			},
-			{
-				code = bufflen;
-				name = "Buffer size";
-				description = "Size of buffer";
-				class = java.lang.Integer;
-				writable = NO;
+				writable = YES;
 			},
 			{
 				code = decdigits;
@@ -458,66 +624,92 @@
 				description = "Decimal digits";
 				class = java.lang.Integer;
 				writable = NO;
+			},
+			{
+				code = ordpos;
+				name = "Position";
+				description = "Ordinal position in table";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = remarks;
+				name = "Remarks";
+				description = "Remarks";
+				class = java.lang.String;
+				writable = YES;
 			}
 		);
 	};
 
-	/** 
-	* Primary key section.
-	* This section describes list of one column.
+	/** Indexed column section
 	*/
 	icolumn = {
-		name = "Primary key";
+		name = "Index";
 		class = com.netbeans.enterprise.modules.db.explorer.nodes.ColumnNode;
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.IndexColumnNodeInfo;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/columnPrimary";
-		resultset = (catalog,schema,tablename,name,keyseq,pkname);
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/columnIndex";
+		resultset = (catalog,schema,tablename,unique,qual,name,type,ordpos,colname,ord,card,pages,filter);
+		options = {};	
 		actions = (
 			{
 				name = "Add column";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
-			},
-			{
-				name = "Delete primary key";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.DeleteAction;
-			},
-			{
-				name = "Create Table";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateTableAction;
+				node = table;
 			},
 			delimiter,
 			{
-				name = "Create index";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateIndexAction;
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				system = YES;
 			},
 			{
-				name = "Drop index";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.DropIndexAction;
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				system = YES;
 			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				system = YES;
+			},
+			delimiter,
+			{
+				name = "Remove column";
+				class = com.netbeans.ide.actions.DeleteAction;
+				system = YES;
+			}
 		);
 		properties = (
 			{
 				code = name;
-				writable = YES;
-			},
-			{
-				code = catalog;
-				name = "Catalog";
-				description = "Catalog name";
-				class = java.lang.String;
-				writable = NO;
-			},
-			{
-				code = schema;
-				name = "Schema";
-				description = "Schema name";
-				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = type;
 				name = "Type";
 				description = "Column Type";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = isnullable;
+				name = "Null";
+				description = "Null allowed for this column";
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = datatype;
+				name = "Datatype";
+				description = "Data type";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = coldef;
+				name = "Default";
+				description = "Default value";
 				class = java.lang.String;
 				writable = NO;
 			},
@@ -529,9 +721,110 @@
 				writable = NO;
 			},
 			{
-				code = keyseq;
-				name = "Key seq";
-				description = "Key seq";
+				code = decdigits;
+				name = "Decimal digits";
+				description = "Decimal digits";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = ordpos;
+				name = "Position";
+				description = "Ordinal position in table";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = remarks;
+				name = "Remarks";
+				description = "Remarks";
+				class = java.lang.String;
+				writable = YES;
+			}
+		);
+	};
+	
+	/** 
+	* Primary key section.
+	* This section describes list of one column.
+	*/
+	pcolumn = {
+		name = "Primary key";
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.ColumnNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.PrimaryColumnNodeInfo;
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/columnPrimary";
+		resultset = (catalog,schema,tablename,name,keyseq,pkname);
+		options = {
+			cut = YES;
+			copy = YES;
+			delete = YES;
+		};	
+		actions = (
+			{
+				name = "Add column";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
+				node = table;
+			},
+			delimiter,
+			{
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				system = YES;
+			},
+			{
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				system = YES;
+			},
+			delimiter,
+			{
+				name = "Remove column";
+				class = com.netbeans.ide.actions.DeleteAction;
+				system = YES;
+			}
+		);
+		properties = (
+			{
+				code = name;
+				writable = NO;
+			},
+			{
+				code = type;
+				name = "Type";
+				description = "Column Type";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = isnullable;
+				name = "Null";
+				description = "Null allowed for this column";
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = datatype;
+				name = "Datatype";
+				description = "Data type";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = coldef;
+				name = "Default";
+				description = "Default value";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = columnsize;
+				name = "Column size";
+				description = "Size of column";
 				class = java.lang.Integer;
 				writable = NO;
 			},
@@ -541,6 +834,20 @@
 				description = "Decimal digits";
 				class = java.lang.Integer;
 				writable = NO;
+			},
+			{
+				code = ordpos;
+				name = "Position";
+				description = "Ordinal position in table";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = remarks;
+				name = "Remarks";
+				description = "Remarks";
+				class = java.lang.String;
+				writable = YES;
 			}
 		);
 	};
@@ -554,43 +861,70 @@
 		class = com.netbeans.enterprise.modules.db.explorer.nodes.ColumnNode;
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ForeignColumnNodeInfo;
 		iconbase = "/com/netbeans/enterprise/modules/db/resources/columnForeign";
+		options = {
+			cut = YES;
+			copy = YES;
+			delete = YES;
+		};	
 		actions = (
 			{
 				name = "Add column";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
+				node = table;
+			},
+			delimiter,
+			{
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				system = YES;
 			},
 			{
-				name = "Create Table";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateTableAction;
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				system = YES;
 			},
 			{
-				name = "Delete foreign key";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.DeleteAction;
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				system = YES;
+			},
+			delimiter,
+			{
+				name = "Remove column";
+				class = com.netbeans.ide.actions.DeleteAction;
+				system = YES;
 			}
 		);
 		properties = (
 			{
 				code = name;
-				writable = YES;
-			},
-			{
-				code = catalog;
-				name = "Catalog";
-				description = "Catalog name";
-				class = java.lang.String;
-				writable = NO;
-			},
-			{
-				code = schema;
-				name = "Schema";
-				description = "Schema name";
-				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = type;
 				name = "Type";
 				description = "Column Type";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = isnullable;
+				name = "Null";
+				description = "Null allowed for this column";
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = datatype;
+				name = "Datatype";
+				description = "Data type";
+				class = java.lang.Integer;
+				writable = YES;
+			},
+			{
+				code = coldef;
+				name = "Default";
+				description = "Default value";
 				class = java.lang.String;
 				writable = NO;
 			},
@@ -602,53 +936,227 @@
 				writable = NO;
 			},
 			{
-				code = keyseq;
-				name = "Key seq";
-				description = "Key seq";
-				class = java.lang.Integer;
-				writable = NO;
-			},
-			{
 				code = decdigits;
 				name = "Decimal digits";
 				description = "Decimal digits";
 				class = java.lang.Integer;
 				writable = NO;
+			},
+			{
+				code = ordpos;
+				name = "Position";
+				description = "Ordinal position in table";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = remarks;
+				name = "Remarks";
+				description = "Remarks";
+				class = java.lang.String;
+				writable = YES;
 			}
 		);
 	};
 
-	// fresultsetnames = ekeycatalog;pkeyscheme;pkeytable;pkeyname;ekeycatalog;ekeyscheme;ekeytable;ekeycolumn;keyseq;urule;drule;fkname;pkname;defer
-
 	ekeylist = {
 		name = "Exported keys";
 		class = com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ExportedColumnListNodeInfo;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.RefTableListNodeInfo;
 		iconbase = "/com/netbeans/ide/resources/defaultFolder";
 		children = ();
 		properties = ();
+		options = {};	
+		actions = ();
+	};
+
+	ilist = {
+		name = "Indexes";
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.IndexListNodeInfo;
+		iconbase = "/com/netbeans/ide/resources/defaultFolder";
+		children = ();
+		properties = ();
+		options = {
+			cut = YES;
+			copy = YES;
+			delete = YES;
+		};	
+		actions = (			
+			{
+				name = "Add index";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddIndexAction;
+			},
+			delimiter,
+			{
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				system = YES;
+			},
+			{
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				system = YES;
+			}
+		);
+	};
+
+	index = {
+		name = "Index";
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.IndexNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.IndexNodeInfo;
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/index";
+		resultset = (unused,unused,unused,unused,unused,name);
+		children = ();
+		options = {
+			cut = YES;
+			copy = YES;
+			delete = YES;
+		};	
+		actions = (			
+			{
+				name = "Add table column";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddToIndexAction;
+			},
+			{
+				name = "Add index";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddIndexAction;
+				node = ilist;
+			},
+			{
+				name = "Refresh columns";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.RefreshChildrenAction;
+			},
+			delimiter,
+			{
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				system = YES;
+			},
+			{
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				system = YES;
+			},
+			delimiter,
+			{
+				name = "Remove index";
+				class = com.netbeans.ide.actions.DeleteAction;
+				node = ilist;
+				system = YES;
+			}
+		);
+		properties = ();
+	};
+
+	indexcolumn = {
+		name = "IndexColumn";
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.LeafNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.IndexColumnNodeInfo;
+		iconbaseA = "/com/netbeans/enterprise/modules/db/resources/indexDown";
+		iconbaseD = "/com/netbeans/enterprise/modules/db/resources/indexUp";
+		resultset = (catalog,schema,tablename,unique,qual,ixname,type,ordpos,name,ord,card,pages,filter);
+		options = {
+			cut = YES;
+			copy = YES;
+			delete = YES;
+		};	
 		actions = (
 			{
-				name = "Add foreign key";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddForeignKeyAction;
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				system = YES;
+			},
+			{
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				system = YES;
+			}
+		);
+		properties = (
+			{
+				code = name;
+				writable = NO;
+			},
+			{
+				code = unique;
+				name = "Unique";
+				description = "Unique columns only";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = qual;
+				name = "Qualifier";
+				description = "Index qualifier";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = filter;
+				name = "Filter";
+				description = "Filter condition";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = ordpos;
+				name = "Position";
+				description = "Ordinal position";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = ord;
+				name = "Ordinal";
+				description = "Up or down";
+				class = java.lang.String;
+				writable = NO;
 			}
 		);
 	};
 
 	ekey = {
 		name = "Exported key";
-		class = com.netbeans.enterprise.modules.db.explorer.node.DatabaseNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ColumnNodeInfo;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/ekey";
+		class = com.netbeans.enterprise.modules.db.explorer.node.LeafNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.RefTableNodeInfo;
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/tableReferenced";
+		resultset = (pcatalog,pschema,pname,pcolname,catalog,schema,name,colname,keyseq,updaterule,deleterule,fkname,pkname,defer);
 		children = ();
+		options = {};	
 		actions = (
 			{
-				name = "Add foreign key";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddForeignKeyAction;
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				node = driverlist;
+				system = YES;
 			},
 			{
-				name = "Delete foreign key";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddForeignKeyAction;
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				node = driverlist;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				node = driverlist;
+				system = YES;
 			}
 		);
 		properties = (
@@ -657,31 +1165,52 @@
 				writable = YES;
 			},
 			{
+				code = pcatalog;
+				name = "Primary catalog";
+				description = "Primary catalog name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = pschema;
+				name = "Primary schema";
+				description = "Primary schema name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = pname;
+				name = "Primary table";
+				description = "Primary table name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = pcolname;
+				name = "Primary column";
+				description = "Foreign column name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
 				code = catalog;
-				name = "Catalog";
-				description = "Catalog name";
+				name = "Foreign catalog";
+				description = "Foreign catalog name";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = schema;
-				name = "Schema";
-				description = "Schema name";
+				name = "Foreign schema";
+				description = "Foreign schema name";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
-				code = type;
-				name = "Type";
-				description = "Column Type";
+				code = colname;
+				name = "Foreign column";
+				description = "Foreign column name";
 				class = java.lang.String;
-				writable = NO;
-			},
-			{
-				code = columnsize;
-				name = "Column size";
-				description = "Size of column";
-				class = java.lang.Integer;
 				writable = NO;
 			},
 			{
@@ -690,19 +1219,10 @@
 				description = "Key seq";
 				class = java.lang.Integer;
 				writable = NO;
-			},
-			{
-				code = decdigits;
-				name = "Decimal digits";
-				description = "Decimal digits";
-				class = java.lang.Integer;
-				writable = NO;
 			}
 		);
 	};
 		
-//		resultsetnames = pkeycatalog;pkeyscheme;pkeytable;name;ekeycatalog;ekeyscheme;ekeytable;ekeycolumn;keyseq;urule;drule;fkname;pkname;defer
-
 	viewlist = {
 		name = "Views";
 		displayname = "{name}";
@@ -711,10 +1231,31 @@
 		iconbase = "/com/netbeans/ide/resources/defaultFolder";
 		children = ();
 		properties = ();
+		options = {
+			cut = YES;
+			copy = YES;
+			delete = YES;
+		};	
 		actions = (
 			{
 				name = "Create view";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateViewAction;
+			},
+			delimiter,
+			{
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				system = YES;
+			},
+			{
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				system = YES;
 			}
 		);
 	};
@@ -725,14 +1266,38 @@
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ViewNodeInfo;
 		iconbase = "/com/netbeans/enterprise/modules/db/resources/view";
 		resultset = (catalog,schema,name,type,remarks);
+		options = {
+			cut = YES;
+			copy = YES;
+			delete = YES;
+		};	
 		actions = (
 			{
-				name = "Create view";
+				name = "Add view";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateViewAction;
+				node = viewlist;
+			},
+			delimiter,
+			{
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				system = YES;
 			},
 			{
-				name = "Drop view";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.DropViewAction;
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				system = YES;
+			},
+			delimiter,
+			{
+				name = "Remove view";
+				class = com.netbeans.ide.actions.DeleteAction;
+				system = YES;
 			}
 		);
 		properties = (
@@ -741,30 +1306,55 @@
 				writable = YES;
 			},
 			{
-				code = catalog;
-				name = "Catalog";
-				description = "Catalog name";
-				class = java.lang.String;
-				writable = NO;
-			},
-			{
-				code = schema;
-				name = "Schema";
-				description = "Schema name";
-				class = java.lang.String;
-				writable = NO;
-			},
-			{
-				code = type;
-				name = "Type";
-				description = "Column Type";
-				class = java.lang.String;
-				writable = NO;
-			},
-			{
 				code = remarks;
 				name = "Remarks";
 				description = "Remarks";
+				class = java.lang.String;
+				writable = YES;
+			}
+		);
+	};
+		
+	viewcolumn = {
+		name = "Column";
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.LeafNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.DatabaseNodeInfo;
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/columnView";
+		resultset = (catalog,schema,tablename,name,datatype,typename,columnsize,bufflen,decdigits,radix,nullable,remarks,coldef,reserved1,reserved2,octetlen,ordpos,isnullable);
+		options = {};	
+		actions = (
+			{
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				system = YES;
+			},
+			{
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				system = YES;
+			},
+		);
+		properties = (
+			{
+				code = name;
+				writable = NO;
+			},
+			{
+				code = datatype;
+				name = "Datatype";
+				description = "Data type";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = coldef;
+				name = "Default";
+				description = "Default value";
 				class = java.lang.String;
 				writable = NO;
 			},
@@ -776,21 +1366,28 @@
 				writable = NO;
 			},
 			{
-				code = keyseq;
-				name = "Key seq";
-				description = "Key seq";
-				class = java.lang.Integer;
-				writable = NO;
-			},
-			{
 				code = decdigits;
 				name = "Decimal digits";
 				description = "Decimal digits";
 				class = java.lang.Integer;
 				writable = NO;
+			},
+			{
+				code = ordpos;
+				name = "Position";
+				description = "Ordinal position in table";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = remarks;
+				name = "Remarks";
+				description = "Remarks";
+				class = java.lang.String;
+				writable = NO;
 			}
 		);
-	};
+	};	
 		
 	procedurelist = {
 		name = "Procedures";
@@ -800,10 +1397,31 @@
 		iconbase = "/com/netbeans/ide/resources/defaultFolder";
 		children = ();
 		properties = ();
+		options = {
+			cut = YES;
+			copy = YES;
+			delete = YES;
+		};	
 		actions = (
 			{
-				name = "Create procedure";
+				name = "Add procedure";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateProcedureAction;
+			},
+			delimiter,
+			{
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				system = YES;
+			},
+			{
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				system = YES;
 			}
 		);
 	};
@@ -814,35 +1432,43 @@
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ProcedureNodeInfo;
 		iconbase = "/com/netbeans/enterprise/modules/db/resources/procedure";
 		resultset = (catalog,schema,name,reserved1,reserverd2,reserverd3,remarks,type);
+		options = {
+			cut = YES;
+			copy = YES;
+			delete = YES;
+		};	
 		actions = (
 			{
-				name = "Create procedure";
+				name = "Add procedure";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateProcedureAction;
 				node = procedurelist;
 			},
+			delimiter,
 			{
-				name = "Delete procedure";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.RemoveProcedureAction;
-				node = procedurelist;
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				system = YES;
+			},
+			{
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				system = YES;
+			},
+			delimiter,
+			{
+				name = "Remove procedure";
+				class = com.netbeans.ide.actions.DeleteAction;
+				system = YES;
 			}
 		);
 		properties = (
 			{
 				code = name;
-				writable = YES;
-			},
-			{
-				code = catalog;
-				name = "Catalog";
-				description = "Catalog name";
-				class = java.lang.String;
-				writable = NO;
-			},
-			{
-				code = schema;
-				name = "Schema";
-				description = "Schema name";
-				class = java.lang.String;
 				writable = NO;
 			},
 			{
@@ -873,35 +1499,44 @@
 		iconbase_result = "/com/netbeans/enterprise/modules/db/resources/paramResult";
 		iconbase_return = "/com/netbeans/enterprise/modules/db/resources/paramReturn";
 		resultset = (catalog, schema, procname, name, type, dtype, typename, precision, length, scale, radix, nullable, remarks);
+		options = {
+			cut = YES;
+			copy = YES;
+			delete = YES;
+		};	
 		actions = (
 			{
-				name = "Create procedure";
+				name = "Add procedure";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateProcedureAction;
 				node = procedurelist;
 			},
+			delimiter,
 			{
-				name = "Delete procedure";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.RemoveProcedureAction;
+				name = "Cut";
+				class = com.netbeans.ide.actions.CutAction;
+				system = YES;
+			},
+			{
+				name = "Copy";
+				class = com.netbeans.ide.actions.CopyAction;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = com.netbeans.ide.actions.PasteAction;
+				system = YES;
+			},
+			delimiter,
+			{
+				name = "Remove table";
+				class = com.netbeans.ide.actions.DeleteAction;
 				node = procedurelist;
+				system = YES;
 			}
 		);
 		properties = (
 			{
 				code = name;
-				writable = YES;
-			},
-			{
-				code = catalog;
-				name = "Catalog";
-				description = "Catalog name";
-				class = java.lang.String;
-				writable = NO;
-			},
-			{
-				code = schema;
-				name = "Schema";
-				description = "Schema name";
-				class = java.lang.String;
 				writable = NO;
 			},
 			{

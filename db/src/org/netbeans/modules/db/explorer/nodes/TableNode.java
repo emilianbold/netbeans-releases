@@ -13,12 +13,20 @@
 
 package com.netbeans.enterprise.modules.db.explorer.nodes;
 
+import java.io.IOException;
 import java.util.*;
+import java.text.MessageFormat;
 import com.netbeans.ddl.*;
 import com.netbeans.ddl.impl.*;
 import com.netbeans.enterprise.modules.db.*;
 import com.netbeans.enterprise.modules.db.explorer.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
+import com.netbeans.ide.util.datatransfer.PasteType;
+import java.awt.datatransfer.Transferable;
+import com.netbeans.ide.nodes.NodeTransfer;
+import com.netbeans.ide.nodes.Node;
+import javax.swing.SwingUtilities;
+import com.netbeans.ide.util.NbBundle;
 
 // Node for Table/View/Procedure things.
 
@@ -35,6 +43,159 @@ public class TableNode extends DatabaseNode
 			info.put(DatabaseNode.TABLE, newname);
 		} catch (Exception e) {
 			System.out.println("Unable to change the name: "+e);
+		}
+	}
+
+	protected void createPasteTypes(Transferable t, List s) 
+	{
+		super.createPasteTypes(t, s);
+		DatabaseNodeInfo nfo;
+		Node n = NodeTransfer.node(t, true);
+		if (n != null && n.canDestroy ()) {
+			
+			nfo = (TableNodeInfo)n.getCookie(TableNodeInfo.class);
+			if (nfo != null) {
+				System.out.println(nfo.getName()+": table cut/paste allowed");
+				s.add(new TablePasteType((TableNodeInfo)nfo, n));
+				return;
+			}  
+			nfo = (ColumnNodeInfo)n.getCookie(ColumnNodeInfo.class);
+			if (nfo != null) {
+				System.out.println(nfo.getName()+": column cut/paste allowed");
+				s.add(new ColumnPasteType((ColumnNodeInfo)nfo, n));
+				return;
+			}
+			
+		} else {
+			
+			nfo = (DatabaseNodeInfo)NodeTransfer.copyCookie(t, TableNodeInfo.class);
+			if (nfo != null) {
+				System.out.println(nfo.getName()+": table copy/paste allowed");
+				s.add(new TablePasteType((TableNodeInfo)nfo, null));
+				return;
+			}
+	
+			nfo = (DatabaseNodeInfo)NodeTransfer.copyCookie(t, ColumnNodeInfo.class);
+			if (nfo != null) {
+				System.out.println(nfo.getName()+": column copy/paste allowed");
+				s.add(new ColumnPasteType((ColumnNodeInfo)nfo, null));
+				return;
+			}
+		}
+	}	
+
+	/** Paste type for transfering tables.
+	*/
+	private class TablePasteType extends PasteType 
+	{
+		/** transferred info */
+		private DatabaseNodeInfo info;
+		
+		/** the node to destroy or null */
+		private Node node;
+		
+		/** Constructs new TablePasteType for the specific type of operation paste.
+		*/
+		public TablePasteType(TableNodeInfo info, Node node)
+		{
+			this.info = info;
+			this.node = node;
+		}
+	
+		/* @return Human presentable name of this paste type. */
+		public String getName() 
+		{
+			ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+			return bundle.getString("PasteTableName");
+		}
+
+		/** Performs the paste action.
+		* @return Transferable which should be inserted into the clipboard after
+		*         paste action. It can be null, which means that clipboard content
+		*         should stay the same.
+		*/
+		public Transferable paste() throws IOException 
+		{
+			TableNodeInfo info = (TableNodeInfo)getInfo();
+			ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+			TableListNodeInfo ownerinfo = (TableListNodeInfo)getInfo().getParent(DatabaseNode.TABLELIST);
+			if (info != null) {
+				System.out.println("Pasting "+info.getName());
+				TableNodeInfo exinfo = ownerinfo.getChildrenTableInfo(info);
+				DatabaseNodeChildren chi = (DatabaseNodeChildren)getChildren();
+				String name = info.getName();
+				if (exinfo != null) {
+					String namefmt = bundle.getString("PasteTableNameFormat");
+					name = MessageFormat.format(namefmt, new String[] {name});
+				} 
+
+				try {
+				
+					// Create in database
+					// PENDING
+				
+					ownerinfo.addTable(name);
+					if (node != null) node.destroy ();
+		
+				} catch (Exception e) {
+					throw new IOException(e.getMessage());
+				}
+				
+			} else throw new IOException("can't find table owner info");
+			return null;
+		}
+	}
+
+	/** Paste type for transfering columns.
+	*/
+	private class ColumnPasteType extends PasteType 
+	{
+		/** transferred info */
+		private DatabaseNodeInfo info;
+		
+		/** the node to destroy or null */
+		private Node node;
+		
+		/** Constructs new TablePasteType for the specific type of operation paste.
+		*/
+		public ColumnPasteType(ColumnNodeInfo info, Node node)
+		{
+			this.info = info;
+			this.node = node;
+		}
+	
+		/* @return Human presentable name of this paste type. */
+		public String getName() 
+		{
+			ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+			return bundle.getString("PasteColumnName");
+		}
+
+		/** Performs the paste action.
+		* @return Transferable which should be inserted into the clipboard after
+		*         paste action. It can be null, which means that clipboard content
+		*         should stay the same.
+		*/
+		public Transferable paste() throws IOException 
+		{
+			ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+			TableNodeInfo ownerinfo = (TableNodeInfo)getInfo();
+			if (info != null) {
+				try {
+					String name = info.getName();
+					ColumnNodeInfo coli = (ColumnNodeInfo)info;
+					TableColumn col = coli.getColumnSpecification();
+					Specification spec = (Specification)/*owner*/info.getSpecification();
+					AddColumn cmd = (AddColumn)spec.createCommandAddColumn(ownerinfo.getTable());
+					cmd.getColumns().add(col);
+					cmd.execute();
+					ownerinfo.addColumn(name);
+					if (node != null) node.destroy();
+				} catch (Exception e) {
+					throw new IOException(e.getMessage());
+				}
+			} else throw new IOException("can't find Column owner info");
+			return null;
 		}
 	}
 }

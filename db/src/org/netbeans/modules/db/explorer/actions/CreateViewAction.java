@@ -14,10 +14,12 @@
 
 package com.netbeans.enterprise.modules.db.explorer.actions;
 
-import java.sql.Connection;
+import java.sql.*;
+import com.netbeans.ddl.impl.*;
 import com.netbeans.ide.*;
 import com.netbeans.ide.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
+import com.netbeans.enterprise.modules.db.explorer.dlg.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
 
 public class CreateViewAction extends DatabaseAction
@@ -27,12 +29,25 @@ public class CreateViewAction extends DatabaseAction
 		Node node;
 		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
 		else return;
+		
 		try {
 
-			// here
+			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+			ViewListNodeInfo nfo = (ViewListNodeInfo)info.getParent(nodename);
+			Specification spec = (Specification)nfo.getSpecification();
+
+			// Create and execute command
+			
+			AddViewDialog dlg = new AddViewDialog();
+			if (dlg.run()) {
+				CreateView cmd = spec.createCommandCreateView(dlg.getViewName());
+				cmd.setQuery(dlg.getViewCode());
+				cmd.execute();
+				nfo.addView(dlg.getViewName());
+			}
 
 		} catch(Exception e) {
-			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to create view "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to perform operation "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 		}
 	}
 }

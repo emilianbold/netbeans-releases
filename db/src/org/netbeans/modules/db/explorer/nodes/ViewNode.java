@@ -26,11 +26,12 @@ import com.netbeans.enterprise.modules.db.explorer.infos.*;
 
 public class ViewNode extends DatabaseNode
 {
+/*
 	public ViewNode()
 	{
 		super(Children.LEAF);
 	}
-
+*/
 	public void setName(String newname)
 	{
 		try {

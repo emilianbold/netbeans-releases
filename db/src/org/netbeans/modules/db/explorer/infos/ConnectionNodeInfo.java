@@ -15,6 +15,7 @@ package com.netbeans.enterprise.modules.db.explorer.infos;
 
 import java.sql.*;
 import java.util.*;
+import java.io.IOException;
 import com.netbeans.ddl.*;
 import com.netbeans.ddl.impl.*;
 import com.netbeans.ide.nodes.Node;
@@ -25,7 +26,7 @@ import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
 
 public class ConnectionNodeInfo extends DatabaseNodeInfo
-implements ConnectionOperations, DeleteOperations
+implements ConnectionOperations
 {
 	public void connect(String dbsys)
 	throws DatabaseException
@@ -35,9 +36,6 @@ implements ConnectionOperations, DeleteOperations
 		Properties dbprops = getConnectionProperties();
 		try {
 			Class xxx = Class.forName(drvurl);
-//			Driver xxxdrv = (Driver)xxx.newInstance();
-//			DriverManager.registerDriver(xxxdrv);
-//			xxxdrv.connect(dburl, dbprops);
 	    	Connection connection = DriverManager.getConnection(dburl, dbprops);
 			SpecificationFactory factory = (SpecificationFactory)getSpecificationFactory();
 			System.out.println("factory: "+factory);
@@ -74,10 +72,18 @@ implements ConnectionOperations, DeleteOperations
 			}
 	    }
 	}
-	
+
 	public void delete()
-	throws DatabaseException
+	throws IOException
 	{
-		
+		try {
+			disconnect();
+			Vector cons = RootNode.getOption().getConnections();
+			DatabaseConnection cinfo = (DatabaseConnection)getDatabaseConnection();
+			if (!cons.contains(cinfo)) throw new Exception("connection does not exist");
+			cons.remove(cinfo);
+		} catch (Exception e) {
+			throw new IOException(e.getMessage());
+		}
 	}
 }

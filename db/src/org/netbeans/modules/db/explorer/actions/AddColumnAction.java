@@ -17,8 +17,10 @@ package com.netbeans.enterprise.modules.db.explorer.actions;
 import java.sql.Connection;
 import com.netbeans.ide.*;
 import com.netbeans.ide.nodes.*;
+import com.netbeans.ddl.impl.Specification;
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
+import com.netbeans.enterprise.modules.db.explorer.dlg.AddTableColumnDialog;
 
 public class AddColumnAction extends DatabaseAction
 {
@@ -27,13 +29,16 @@ public class AddColumnAction extends DatabaseAction
 		Node node;
 		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
 		else return;
+		
 		try {
 
-			ConnectionNodeInfo nfo = (ConnectionNodeInfo)findInfo((DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class));
-			// here
+			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+			TableNodeInfo nfo = (TableNodeInfo)info.getParent(nodename);
+			AddTableColumnDialog dlg = new AddTableColumnDialog((Specification)nfo.getSpecification(), nfo);
+			if (dlg.run()) nfo.addColumn(dlg.getColumnName());
 
 		} catch(Exception e) {
-			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to disconnect from "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to add column, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 		}
 	}
 }

@@ -17,8 +17,10 @@ package com.netbeans.enterprise.modules.db.explorer.actions;
 import java.sql.Connection;
 import com.netbeans.ide.*;
 import com.netbeans.ide.nodes.*;
+import com.netbeans.ddl.impl.Specification;
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
+import com.netbeans.enterprise.modules.db.explorer.infos.DatabaseNodeInfo;
+import com.netbeans.enterprise.modules.db.explorer.infos.TableOwnerOperations;
 import com.netbeans.enterprise.modules.db.explorer.dlg.CreateTableDialog;
 
 public class CreateTableAction extends DatabaseAction
@@ -30,9 +32,11 @@ public class CreateTableAction extends DatabaseAction
 		else return;
 
 		try {
-			CreateTableDialog dlg = new CreateTableDialog();
-			if (dlg.run()) {
-			}
+			DatabaseNodeInfo xnfo = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+			TableOwnerOperations nfo = (TableOwnerOperations)xnfo.getParent(nodename);
+			Specification spec = (Specification)xnfo.getSpecification();
+			CreateTableDialog dlg = new CreateTableDialog(spec, (DatabaseNodeInfo)nfo);
+			if (dlg.run()) nfo.addTable(dlg.getTableName());
 		} catch(Exception e) {
 			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to create table "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 		}

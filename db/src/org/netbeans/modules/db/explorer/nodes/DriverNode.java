@@ -19,13 +19,8 @@ import com.netbeans.enterprise.modules.db.*;
 import com.netbeans.enterprise.modules.db.explorer.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
 
-public class DriverNode extends DatabaseNode implements PropertyChangeListener
+public class DriverNode extends LeafNode implements PropertyChangeListener
 {
-	public DriverNode()
-	{
-		super(Children.LEAF);
-	}
-	
 	public void setInfo(DatabaseNodeInfo info)
 	{
 		super.setInfo(info);

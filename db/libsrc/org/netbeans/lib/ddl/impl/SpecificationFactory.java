@@ -39,7 +39,7 @@ public class SpecificationFactory implements DBSpecFactory {
 	/** Database description file
 	* You should use PListReader to parse it.
 	*/		
-	private final String sfile = "/com/netbeans/ddl/resources/dbspec.plist";	
+	private final String sfile = "com/netbeans/ddl/resources/dbspec.plist";	
 			
 	/** Array of SpecificationFiles, found (but not read) files 
 	* which describes database products.
@@ -219,6 +219,7 @@ public class SpecificationFactory implements DBSpecFactory {
 
 /*
 * <<Log>>
+*  5    Gandalf   1.4         5/14/99  Slavek Psenicka new version
 *  4    Gandalf   1.3         4/23/99  Slavek Psenicka Chyba v createSpec pri 
 *       ConnectAs
 *  3    Gandalf   1.2         4/23/99  Slavek Psenicka Opravy v souvislosti se 

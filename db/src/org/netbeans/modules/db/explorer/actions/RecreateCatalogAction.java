@@ -29,8 +29,8 @@ public class RecreateCatalogAction extends DatabaseAction
 		else return;
 		try {
 
-			ConnectionNodeInfo nfo = (ConnectionNodeInfo)findInfo((DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class));
-			// here
+			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+			DatabaseNodeInfo nfo = info.getParent(nodename);
 
 		} catch(Exception e) {
 			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to disconnect from "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));

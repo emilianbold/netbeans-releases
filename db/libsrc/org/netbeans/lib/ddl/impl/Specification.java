@@ -36,6 +36,7 @@ public class Specification implements DBSpec {
 	public static final String DROP_TABLE = "DropTableCommand";
 	public static final String COMMENT_TABLE = "CommentTableCommand";
 	public static final String ADD_COLUMN = "AddColumnCommand";
+	public static final String MODIFY_COLUMN = "ModifyColumnCommand";
 	public static final String RENAME_COLUMN = "RenameColumnCommand";
 	public static final String REMOVE_COLUMN = "RemoveColumnCommand";
 	public static final String CREATE_INDEX = "CreateIndexCommand";
@@ -44,6 +45,7 @@ public class Specification implements DBSpec {
 	public static final String DROP_CONSTRAINT = "DropConstraintCommand";	
 	public static final String CREATE_VIEW = "CreateViewCommand";
 	public static final String RENAME_VIEW = "RenameViewCommand";
+	public static final String COMMENT_VIEW = "CommentViewCommand";
 	public static final String DROP_VIEW = "DropViewCommand";
 	public static final String CREATE_PROCEDURE = "CreateProcedureCommand";
 	public static final String DROP_PROCEDURE = "DropProcedureCommand";
@@ -216,6 +218,14 @@ public class Specification implements DBSpec {
 		return (AddColumn)createCommand(ADD_COLUMN, tableName);
 	}
 
+	/** Modify column */
+	public ModifyColumn createCommandModifyColumn(String tableName)
+	throws CommandNotSupportedException
+	{
+		ModifyColumn cmd = (ModifyColumn)createCommand(MODIFY_COLUMN, tableName);
+		return cmd;
+	}
+
 	/** Rename column */
 	public RenameColumn createCommandRenameColumn(String tableName)
 	throws CommandNotSupportedException
@@ -238,11 +248,10 @@ public class Specification implements DBSpec {
 	* @param indexName Name of index
 	* @param tableName Name of the table
 	*/
-	public CreateIndex createCommandCreateIndex(String indexName, String tableName)
+	public CreateIndex createCommandCreateIndex(String tableName)
 	throws CommandNotSupportedException
 	{
-		CreateIndex cicmd = (CreateIndex)createCommand(CREATE_INDEX, indexName);
-		cicmd.setTableName(tableName);
+		CreateIndex cicmd = (CreateIndex)createCommand(CREATE_INDEX, tableName);
 		return cicmd;
 	}	
 
@@ -272,6 +281,18 @@ public class Specification implements DBSpec {
 	{
 		RenameView cmd = (RenameView)createCommand(RENAME_VIEW, tableName);
 		cmd.setNewName(newName);
+		return cmd;
+	}
+
+	/** Comment view command 
+	* @param tableName Name of the view
+	* @param comment New comment
+	*/
+	public CommentView createCommandCommentView(String viewName, String comment)
+	throws CommandNotSupportedException
+	{
+		CommentView cmd = (CommentView)createCommand(COMMENT_VIEW, viewName);
+		cmd.setComment(comment);
 		return cmd;
 	}
 	
@@ -340,12 +361,18 @@ public class Specification implements DBSpec {
 	{
 		return (AbstractCommand)createCommand(DROP_TRIGGER, name);
 	}	
-			
+
+	/** Returns type map */
+	public Map getTypeMap()
+	{
+		return (Map)desc.get("TypeMap");
+	}
+	
 	/** Returns DBType where maps specified java type */
 	public String getType(int type)
 	{
 		String typestr = "";
-		Map typemap = (Map)desc.get("TypeMap");
+		Map typemap = getTypeMap();
 
 		switch(type) {
 			case java.sql.Types.ARRAY: typestr = "ARRAY"; break;
@@ -377,10 +404,42 @@ public class Specification implements DBSpec {
 
 		return (String)typemap.get("java.sql.Types."+typestr);
 	}
+	
+	/** Returns DBType where maps specified java type */
+	public static int getType(String type)
+	{
+		if (type.equals("java.sql.Types.ARRAY")) return java.sql.Types.ARRAY;
+		if (type.equals("java.sql.Types.BIGINT")) return java.sql.Types.BIGINT;
+		if (type.equals("java.sql.Types.BINARY")) return java.sql.Types.BINARY;
+		if (type.equals("java.sql.Types.BIT")) return java.sql.Types.BIT;
+		if (type.equals("java.sql.Types.BLOB")) return java.sql.Types.BLOB;
+		if (type.equals("java.sql.Types.CHAR")) return java.sql.Types.CHAR;
+		if (type.equals("java.sql.Types.DATE")) return java.sql.Types.DATE;
+		if (type.equals("java.sql.Types.DECIMAL")) return java.sql.Types.DECIMAL;
+		if (type.equals("java.sql.Types.DISTINCT")) return java.sql.Types.DISTINCT;
+		if (type.equals("java.sql.Types.DOUBLE")) return java.sql.Types.DOUBLE;
+		if (type.equals("java.sql.Types.FLOAT")) return java.sql.Types.FLOAT;
+		if (type.equals("java.sql.Types.INTEGER")) return java.sql.Types.INTEGER;
+		if (type.equals("java.sql.Types.JAVA_OBJECT")) return java.sql.Types.JAVA_OBJECT;
+		if (type.equals("java.sql.Types.LONGVARBINARY")) return java.sql.Types.LONGVARBINARY;
+		if (type.equals("java.sql.Types.LONGVARCHAR")) return java.sql.Types.LONGVARCHAR;
+		if (type.equals("java.sql.Types.NUMERIC")) return java.sql.Types.NUMERIC;
+		if (type.equals("java.sql.Types.REAL")) return java.sql.Types.REAL;
+		if (type.equals("java.sql.Types.REF")) return java.sql.Types.REF;
+		if (type.equals("java.sql.Types.SMALLINT")) return java.sql.Types.SMALLINT;
+		if (type.equals("java.sql.Types.TIME")) return java.sql.Types.TIME;
+		if (type.equals("java.sql.Types.TIMESTAMP")) return java.sql.Types.TIMESTAMP;
+		if (type.equals("java.sql.Types.TINYINT")) return java.sql.Types.TINYINT;
+		if (type.equals("java.sql.Types.VARBINARY")) return java.sql.Types.VARBINARY;
+		if (type.equals("java.sql.Types.VARCHAR")) return java.sql.Types.VARCHAR;
+		
+		return -1;
+	}		
 }
 
 /*
 * <<Log>>
+*  5    Gandalf   1.4         5/14/99  Slavek Psenicka new version
 *  4    Gandalf   1.3         4/23/99  Slavek Psenicka Chyba v createSpec pri 
 *       ConnectAs
 *  3    Gandalf   1.2         4/23/99  Slavek Psenicka Opravy v souvislosti se 

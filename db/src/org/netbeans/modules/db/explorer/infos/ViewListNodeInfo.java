@@ -44,4 +44,26 @@ public class ViewListNodeInfo extends DatabaseNodeInfo
 			throw new DatabaseException(e.getMessage());	
 		}
 	}
+
+	public void addView(String name)
+	throws DatabaseException
+	{
+ 		try {
+			DatabaseMetaData dmd = getConnection().getMetaData();
+			String[] filter = new String[] {"VIEW"};
+			String catalog = (String)get(DatabaseNode.CATALOG);
+			ResultSet rs = dmd.getTables(catalog, getUser(), null, filter);
+			while (rs.next()) {
+				String fview = rs.getString("TABLE_NAME");
+				if (fview.equals(name)) {
+					DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, rs);
+					if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
+				 	else throw new Exception("unable to create node info for view");
+				}
+			}
+			rs.close();
+ 		} catch (Exception e) {
+			throw new DatabaseException(e.getMessage());	
+		}
+	}
 }

@@ -13,7 +13,11 @@
 
 package com.netbeans.enterprise.modules.db.explorer;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Vector;
+import java.util.Arrays;
 import java.sql.*;
 import com.netbeans.ide.nodes.Node;
 import com.netbeans.ide.nodes.Children;
@@ -42,6 +46,37 @@ public class DatabaseNodeChildren extends Children.Array
 		}
 		
 		return children;
+	}
+
+	protected Node[] createNodes()
+	{
+		Node[] nodeorg = super.createNodes();
+		DatabaseNodeInfo nodeinfo = ((DatabaseNode)getNode()).getInfo();
+		java.util.Map nodeord = (java.util.Map)nodeinfo.get(DatabaseNodeInfo.CHILDREN_ORDERING);
+		if (nodeord != null) Arrays.sort(nodeorg, new NodeComparator(nodeord));
+		return nodeorg;
+	}
+
+	class NodeComparator implements Comparator 
+	{
+		private java.util.Map map = null;
+		
+		public NodeComparator(java.util.Map map) 
+		{
+			this.map = map;
+		}
+		
+		public int compare(Object o1, Object o2) 
+		{
+			int o1val, o2val;
+			Integer o1i = (Integer)map.get(o1.getClass().getName());
+			if (o1i != null) o1val = o1i.intValue();
+			else o1val = Integer.MAX_VALUE;
+			Integer o2i = (Integer)map.get(o2.getClass().getName());
+			if (o2i != null) o2val = o2i.intValue();
+			else o2val = Integer.MAX_VALUE;
+			return (o1val-o2val);
+		}
 	}
 
 	public DatabaseNode createNode(DatabaseNodeInfo info)

@@ -27,9 +27,10 @@ public class DisconnectAction extends DatabaseAction
 		Node node;
 		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
 		else return false;
-		ConnectionOperations nfo = (ConnectionOperations)findInfo((DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class));
-		Connection connection = (Connection)((DatabaseNodeInfo)nfo).getConnection();
-		return (connection != null);
+		
+		DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+		DatabaseNodeInfo nfo = info.getParent(DatabaseNode.CONNECTION);
+		return (nfo.getConnection() != null);
 	}
 
 	public void performAction (Node[] activatedNodes) 
@@ -38,7 +39,8 @@ public class DisconnectAction extends DatabaseAction
 		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
 		else return;
 		try {
-			ConnectionNodeInfo nfo = (ConnectionNodeInfo)findInfo((DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class));
+			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+			ConnectionNodeInfo nfo = (ConnectionNodeInfo)info.getParent(DatabaseNode.CONNECTION);
 			nfo.disconnect();
 		} catch(Exception e) {
 			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to disconnect from "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));

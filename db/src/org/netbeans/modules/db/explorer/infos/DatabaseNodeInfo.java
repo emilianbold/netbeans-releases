@@ -14,6 +14,7 @@
 package com.netbeans.enterprise.modules.db.explorer.infos;
 
 import java.io.InputStream;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.sql.*;
@@ -26,6 +27,8 @@ import com.netbeans.enterprise.modules.db.explorer.*;
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
 import com.netbeans.ide.nodes.Node;
+import com.netbeans.ide.util.actions.SystemAction;
+import com.netbeans.ide.util.NbBundle;
 
 public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 {
@@ -48,15 +51,19 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 	public static final String PASSWORD = "password";
 	public static final String CHILDREN = "children";
 	public static final String ACTIONS = "actions";
+	public static final String ICONBASE = "iconbase";
 	public static final String PROPERTIES = "properties";
 	public static final String RESULTSET = "resultset";
 	public static final String REMEMBER_PWD = "rememberpwd";
 	public static final String WRITABLE = "writable";
+	public static final String DELETABLE = "deletable";
 	public static final String DESCRIPTION = "description";
 	public static final String READONLYDB = "readonlydatabase";
 	public static final String GROUPSUP = "groupbysupport";
 	public static final String OJOINSUP = "outerjoinsupport";
 	public static final String UNIONSUP = "unionsupport";
+	public static final String SYSTEM_ACTION = "system";
+	public static final String CHILDREN_ORDERING = "children_ordering";
 	
 	private static Map gtab = null;
 	private static final String gtabfile = "com/netbeans/enterprise/modules/db/resources/explorer.plist";
@@ -112,8 +119,11 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 			Hashtable data = new Hashtable();
 			while (rsnames_i.hasNext()) {
 				key = (String)rsnames_i.next();
-				Object value = rset.getObject(colidx++);
-				if (value != null) data.put(key, value);
+				if (!key.equals("unused")) {
+					Object value = rset.getObject(colidx);
+					if (value != null) data.put(key, value);
+				}
+				colidx++;
 			}
 			nfo.putAll(data);
 			nfo.put(nodecode, nfo.getName());
@@ -124,7 +134,10 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 		return nfo;
 	}		
 
-
+	/* Parent of info in node hierarchy */
+	private DatabaseNodeInfo parent = null;
+	
+	/* Owning node */
 	WeakReference nodewr = null;
 	private PropertyChangeSupport pcs = null;
 		
@@ -146,13 +159,50 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 	public void setParentInfo(DatabaseNodeInfo parent, String sname)	
 	throws DatabaseException
 	{
-		if (parent != null) putAll(parent);
+		if (parent != null) {
+			putAll(parent);
+			this.parent = parent;
+		}
 		Map ltab = (Map)getGlobalNodeInfo(sname);
 		if (ltab != null) putAll(ltab);
 		else throw new DatabaseException("unable to read nfo for "+sname);
 		put(CODE, sname);
 	}
 	
+	public DatabaseNodeInfo getParent()
+	{
+		return parent;
+	}
+	
+	/** Returns parent of nodeinfo defined by <code>parent</code> variable.
+	* If no info was found, it returns null.
+	*/
+	public DatabaseNodeInfo getParent(String code)
+	{
+		DatabaseNodeInfo iinfo = this;
+		if (code != null) {
+			while (iinfo != null) {
+				String iicode = iinfo.getCode();
+				if (iicode.equals(code)) return iinfo;
+				else iinfo = iinfo.getParent();
+			}
+		}
+		
+		return iinfo;	
+	}		
+
+	public boolean canAdd(Map propmap, String propname)
+	{
+		return true;
+	}	
+	
+	public boolean canWrite(Map propmap, String propname, boolean defa)
+	{
+		String wflag = (String)propmap.get(DatabaseNodeInfo.WRITABLE);
+		if (wflag != null) return wflag.toUpperCase().equals("YES");
+		return defa;
+	}	
+				
 	public DatabaseNode getNode()
 	{
 		if (nodewr != null) return (DatabaseNode)nodewr.get();
@@ -162,6 +212,15 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 	public void setNode(DatabaseNode node)
 	{
 		nodewr = new WeakReference(node);
+	}
+
+	private PropertyChangeSupport getConnectionPCS()
+	{
+		if (pcs == null) {
+			pcs = new PropertyChangeSupport(this);
+		}
+		
+		return pcs;
 	}
 
 	/** Returns PropertyChangeSupport used for driver change monitoring */
@@ -194,6 +253,14 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 		return old;
 	}
 
+	public void delete() throws IOException
+	{
+	}
+
+	public void refreshChildren() throws DatabaseException
+	{
+	}
+
 	/** Called by property editor */
 	public Object getProperty(String key)
 	{
@@ -209,8 +276,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
   	/** Add property change listener */
   	public void addConnectionListener(PropertyChangeListener l) 
   	{
-		if (pcs == null) pcs = new PropertyChangeSupport(this);	
-    	pcs.addPropertyChangeListener(l);
+    	getConnectionPCS().addPropertyChangeListener(l);
   	}
 
   	/** Remove property change listener */
@@ -272,7 +338,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 			if (oldval != null && oldval.equals(con)) return;
 			put(CONNECTION, con);
 		} else remove(CONNECTION);
-		pcs.firePropertyChange(CONNECTION, oldval, con);
+		getConnectionPCS().firePropertyChange(CONNECTION, oldval, con);
 	}
 
 	public DBConnection getDatabaseConnection()
@@ -280,6 +346,11 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 		DatabaseConnection con = new DatabaseConnection(getDriver(), getDatabase(), getUser(), getPassword());		
 		if (get(REMEMBER_PWD) != null) con.setRememberPassword(true);
 		return con;
+	}
+
+	public DatabaseDriver getDatabaseDriver()
+	{
+		return (DatabaseDriver)get(DBDRIVER);
 	}
 
 	public void setDatabaseConnection(DBConnection cinfo)
@@ -401,11 +472,6 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 	{
 	}
 
-	protected void completeChildren(Vector children)
-	throws DatabaseException
-	{
-	}	
-
 	public Vector getChildren()
 	throws DatabaseException
 	{
@@ -425,7 +491,6 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 				}
 			}
 			
-			completeChildren(chalt);
 			children = chalt;
 			put(CHILDREN, children);
 			
@@ -450,20 +515,36 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 		}
 		
 		if (actions.size() == 0) return actions;
+		ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");		
 		Object xaction = actions.elementAt(0);
 		if (xaction != null && xaction instanceof DatabaseAction) return actions;
 		for (int i=0; i<actions.size();i++) {
 			
 			Object e_act = actions.elementAt(i);
-			DatabaseAction action = null;
+			SystemAction action = null;
 			if (e_act instanceof Map) {
 				Map e_action = (Map)e_act;
 				try {
+					boolean systemact = false;
+					String sysactstr = (String)e_action.get(SYSTEM_ACTION);
+					if (sysactstr != null) systemact = sysactstr.toUpperCase().equals("YES");
 					String actnode = (String)e_action.get(NODE);
 					String actcn = (String)e_action.get(CLASS);
-					action = (DatabaseAction)Class.forName(actcn).newInstance();
-					action.setName((String)e_action.get(NAME));		
-					action.setNode(actnode); 	
+					
+					if (!systemact) {
+						String locname, xname = (String)e_action.get(NAME);
+						try {
+							locname = bundle.getString(xname);
+						} catch (MissingResourceException e) {
+							locname = xname;
+							System.out.println("unable to locate localized menu item "+xname);
+						}
+						
+						action = (SystemAction)Class.forName(actcn).newInstance();
+						((DatabaseAction)action).setName(locname);		
+						((DatabaseAction)action).setNode(actnode); 	
+					} else action = SystemAction.get(Class.forName(actcn));
+					
 				} catch (Exception e) {
 					System.out.println("unable to create action \""+e_action.get(NAME)+"\", "+e.getMessage());
 				}
@@ -497,7 +578,6 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 	{
 		DBSpecFactory fac = (DBSpecFactory)get(SPECIFICATION_FACTORY);
 		fac.setDebugMode(mode);
-		if (!mode) System.out.println("Debugging is off, commands will be executed!");
-		else System.out.println("Debugging is on, commands will be NOT executed");
+		System.out.println("Debugging is "+(mode ? "on" : "off"));
 	}
 }

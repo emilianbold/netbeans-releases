@@ -25,7 +25,7 @@ import com.netbeans.ddl.impl.*;
 * @author Slavek Psenicka
 */
 
-public class AddColumn extends ColumnCommand 
+public class AddColumn extends ColumnListCommand 
 {
 	public AbstractTableColumn specifyColumn(String type, String name)
 	throws ClassNotFoundException, IllegalAccessException, InstantiationException
@@ -38,10 +38,45 @@ public class AddColumn extends ColumnCommand
 	{
 		return specifyColumn(TableColumn.COLUMN, name, Specification.ADD_COLUMN);
 	}
+
+	public TableColumn createUniqueColumn(String name)
+	throws ClassNotFoundException, IllegalAccessException, InstantiationException
+	{
+		TableColumn col = specifyColumn(TableColumn.UNIQUE, name, Specification.ADD_COLUMN);
+		col.setObjectName(name+"_UQ");
+		return col;
+	}	
+
+	public TableColumn createPrimaryKeyColumn(String name)
+	throws ClassNotFoundException, IllegalAccessException, InstantiationException
+	{
+		TableColumn col = specifyColumn(TableColumn.PRIMARY_KEY, name, Specification.ADD_COLUMN);
+		col.setObjectName(name+"_PK");
+		return col;
+	}	
+
+	public TableColumn createCheckColumn(String name, String expression)
+	throws ClassNotFoundException, IllegalAccessException, InstantiationException
+	{
+		TableColumn col = specifyColumn(TableColumn.CHECK, name, Specification.ADD_COLUMN);
+		col.setObjectName(name+"_CH");
+		col.setCheckCondition(expression);
+		return col;
+	}	
+
+	public TableColumn createCheckConstraint(String name, String expression)
+	throws ClassNotFoundException, IllegalAccessException, InstantiationException
+	{
+		TableColumn col = specifyColumn(TableColumn.CHECK_CONSTRAINT, name, Specification.ADD_COLUMN);
+		col.setObjectName(name+"_CH");
+		col.setCheckCondition(expression);
+		return col;
+	}	
 }
 
 /*
 * <<Log>>
+*  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
 * $

@@ -14,16 +14,30 @@
 package com.netbeans.enterprise.modules.db.explorer.nodes;
 
 import com.netbeans.ide.nodes.Children;
+import java.io.IOException;
+import java.util.*;
+import java.text.MessageFormat;
 import com.netbeans.ddl.*;
 import com.netbeans.ddl.impl.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.DatabaseNodeInfo;
-import com.netbeans.enterprise.modules.db.DatabaseException;
+import com.netbeans.enterprise.modules.db.*;
+import com.netbeans.enterprise.modules.db.explorer.*;
+import com.netbeans.enterprise.modules.db.explorer.infos.*;
+import com.netbeans.ide.util.datatransfer.PasteType;
+import java.awt.datatransfer.Transferable;
+import com.netbeans.ide.nodes.NodeTransfer;
+import com.netbeans.ide.nodes.Node;
+import com.netbeans.ide.util.NbBundle;
+import com.netbeans.ide.nodes.*;
 
-public class ColumnNode extends DatabaseNode
+public class ColumnNode extends LeafNode
 {		
-	public ColumnNode()
+	protected PropertySupport createPropertySupport(String name, Class type, String displayName, String shortDescription, DatabaseNodeInfo rep, boolean writable)
 	{
-		super(Children.LEAF);
+		PropertySupport ps;
+		if (name.equals("datatype")) {
+			ps = new DatabaseTypePropertySupport(name, type, displayName, shortDescription, rep, writable);
+		} else ps = super.createPropertySupport(name, type, displayName, shortDescription, rep, writable);
+		return ps;
 	}
 
 	public void setName(String newname)

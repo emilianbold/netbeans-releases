@@ -14,11 +14,20 @@
 
 package com.netbeans.enterprise.modules.db.explorer.actions;
 
-import java.sql.Connection;
+import java.util.ResourceBundle;
 import com.netbeans.ide.*;
+import com.netbeans.ide.util.NbBundle;
+import java.util.*;
+import java.awt.FileDialog;
+import java.io.*;
+import java.sql.Connection;
+import java.text.MessageFormat;
 import com.netbeans.ide.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
+import com.netbeans.enterprise.modules.db.explorer.dlg.*;
+import javax.swing.JFileChooser;
+import com.netbeans.ddl.impl.*;
 
 public class RecreateTableAction extends DatabaseAction
 {
@@ -29,11 +38,52 @@ public class RecreateTableAction extends DatabaseAction
 		else return;
 		try {
 
-			ConnectionNodeInfo nfo = (ConnectionNodeInfo)findInfo((DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class));
-			// here
+			final ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+			TableListNodeInfo nfo = (TableListNodeInfo)info.getParent(nodename);
+			Specification spec = (Specification)nfo.getSpecification();
+			String tablename = (String)nfo.get(DatabaseNode.TABLE);
+			AbstractCommand cmd;
 
+			// Get filename
+
+			JFileChooser chooser = new JFileChooser();
+			chooser.setDialogType(JFileChooser.OPEN_DIALOG);
+			chooser.setDialogTitle(bundle.getString("RecreateTableFileOpenDialogTitle"));
+			chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+				public boolean accept(File f) {
+					return (f.isDirectory() || f.getName().endsWith(".grab"));
+				}
+				public String getDescription() {
+					return bundle.getString("GrabTableFileTypeDescription");
+				}
+			});
+			
+			java.awt.Component par = TopManager.getDefault().getWindowManager().getMainWindow();
+			if (chooser.showOpenDialog(par) == JFileChooser.APPROVE_OPTION) {
+				File file = chooser.getSelectedFile();
+				if (file != null && file.isFile()) {
+					FileInputStream fstream = new FileInputStream(file);
+					ObjectInputStream istream = new ObjectInputStream(fstream);
+					cmd = (AbstractCommand)istream.readObject();
+					istream.close();
+					cmd.setSpecification(spec);
+				} else return;
+			} else return;
+
+			String newtab = cmd.getObjectName();		
+			String msg = MessageFormat.format(bundle.getString("RecreateTableRenameNotes"), new String[] {cmd.getCommand()});
+			LabeledTextFieldDialog dlg = new LabeledTextFieldDialog(bundle.getString("RecreateTableRenameTable"), bundle.getString("RecreateTableNewName"), msg);
+			dlg.setStringValue(newtab);
+			if (dlg.run()) {
+				newtab = dlg.getStringValue();
+				cmd.setObjectName(newtab);
+				cmd.execute();
+				nfo.addTable(newtab);
+			}
+			
 		} catch(Exception e) {
-			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to disconnect from "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to recreate, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 		}
 	}
 }

@@ -13,8 +13,7 @@
 
 package com.netbeans.enterprise.modules.db.explorer.infos;
 
-import com.netbeans.enterprise.modules.db.*;
-import com.netbeans.enterprise.modules.db.explorer.DatabaseDriver;
+import com.netbeans.enterprise.modules.db.DatabaseException;
 
 /** 
 * Interface of driver-related nodes.
@@ -25,22 +24,13 @@ public interface TableOwnerOperations
 	/** Add driver operation 
 	* @param drv Driver to add
 	*/
-	public void createTable(DatabaseNodeInfo tinfo) 
-	throws DatabaseException;
-
-	/** Remove driver operation 
-	* @param drv Driver to remove
-	* @param node Owning node info
-	*/
-	public void dropTable(DatabaseNodeInfo tinfo) 
-	throws DatabaseException;
-
-	public void dropIndex(DatabaseNodeInfo tinfo) 
+	public void addTable(String tname) 
 	throws DatabaseException;
 }
 
 /*
 * <<Log>>
+*  2    Gandalf   1.1         5/14/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
 * $
 */

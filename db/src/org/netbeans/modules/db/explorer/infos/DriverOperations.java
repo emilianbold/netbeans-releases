@@ -27,17 +27,11 @@ public interface DriverOperations
 	*/
 	public void addDriver(DatabaseDriver drv) 
 	throws DatabaseException;
-
-	/** Remove driver operation 
-	* @param drv Driver to remove
-	* @param node Owning node info
-	*/
-	public void removeDriver(DatabaseDriver drv) 
-	throws DatabaseException;
 }
 
 /*
 * <<Log>>
+*  2    Gandalf   1.1         5/14/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
 * $
 */

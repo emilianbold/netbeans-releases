@@ -18,6 +18,7 @@ import java.sql.*;
 import java.text.ParseException;
 import com.netbeans.ddl.*;
 import com.netbeans.ddl.util.*;
+import java.io.Serializable;
 
 /** 
 * Default implementation of database column. It handles name, column name, it's 
@@ -26,7 +27,8 @@ import com.netbeans.ddl.util.*;
 *
 * @author Slavek Psenicka
 */
-public class AbstractTableColumn  
+public class AbstractTableColumn
+implements Serializable
 {	
 	/** Name and column name. */
 	private String name, cname, format;
@@ -173,10 +175,37 @@ public class AbstractTableColumn
 			throw new DDLException(e.getMessage());
 		}
 	}
+
+	/** Reads object from stream */
+	public void readObject(java.io.ObjectInputStream in) 
+	throws java.io.IOException, ClassNotFoundException 
+	{
+		name = (String)in.readObject();
+		cname = (String)in.readObject();
+		format = (String)in.readObject();
+		otype = (String)in.readObject();
+		addprops = (Map)in.readObject();
+		reftab = (String)in.readObject();
+		refcol = (String)in.readObject();
+	}
+
+	/** Writes object to stream */
+	public void writeObject(java.io.ObjectOutputStream out)
+	throws java.io.IOException 
+	{
+		out.writeObject(name);
+		out.writeObject(cname);
+		out.writeObject(format);
+		out.writeObject(otype);
+		out.writeObject(addprops);
+		out.writeObject(reftab);
+		out.writeObject(refcol);
+	}
 }
 
 /*
 * <<Log>>
+*  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
 * $

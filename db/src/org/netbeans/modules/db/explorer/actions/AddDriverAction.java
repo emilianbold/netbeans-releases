@@ -31,7 +31,8 @@ public class AddDriverAction extends DatabaseAction
 		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
 		else return;
 		try {
-			DriverOperations nfo = (DriverOperations)findInfo((DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class));
+			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+			DriverOperations nfo = (DriverOperations)info.getParent(nodename);
 			AddDriverDialog dlg = new AddDriverDialog();
 			if (dlg.run()) nfo.addDriver(dlg.getDriver());
 		} catch(Exception e) {

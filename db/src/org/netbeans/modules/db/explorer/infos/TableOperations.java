@@ -22,15 +22,11 @@ import com.netbeans.enterprise.modules.db.explorer.DatabaseDriver;
 */
 public interface TableOperations
 {
-	public void removeColumn(DatabaseNodeInfo tinfo) 
-	throws DatabaseException;
-
-	public void dropIndex(DatabaseNodeInfo tinfo) 
-	throws DatabaseException;
 }
 
 /*
 * <<Log>>
+*  2    Gandalf   1.1         5/14/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
 * $
 */

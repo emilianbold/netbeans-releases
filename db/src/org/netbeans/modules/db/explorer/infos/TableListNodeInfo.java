@@ -47,34 +47,64 @@ implements TableOwnerOperations
 		}
 	}
 	
-	/** Add driver operation 
-	* @param drv Driver to add
+	/** Adds driver specified in drv into list.
+	* Creates new node info and adds node into node children.
 	*/
-	public void createTable(DatabaseNodeInfo tinfo) 
+	public void addTable(String tname)
 	throws DatabaseException
 	{
-	}	
-
-	/** Remove driver operation 
-	* @param drv Driver to remove
-	* @param node Owning node info
-	*/
-	public void dropTable(DatabaseNodeInfo tinfo) 
-	throws DatabaseException
-	{
-		DatabaseNode node = (DatabaseNode)tinfo.getNode();
-		DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();
 		try {
-			String tname = tinfo.getName();
-			Specification spec = (Specification)getSpecification();
-			AbstractCommand cmd = spec.createCommandDropTable(tname);
-			cmd.execute();
-			getNode().getChildren().remove(new Node[]{node});
+			DatabaseMetaData dmd = getConnection().getMetaData();
+			String[] filter = new String[] {"TABLE","BASE"};
+			String catalog = (String)get(DatabaseNode.CATALOG);
+			ResultSet rs = dmd.getTables(catalog, getUser(), tname, filter);
+			rs.next();
+			DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, rs);
+			rs.close();
+			if (info != null) info.put(DatabaseNode.TABLE, info.getName());
+			else throw new Exception("unable to create node info for table");
+			DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();		
+			chld.createSubnode(info, true);
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());
 		}
-	}		
+	}
 
+	public void refreshChildren() throws DatabaseException
+	{
+		Vector charr = new Vector();
+		DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
+
+		put(DatabaseNodeInfo.CHILDREN, charr);
+		chil.remove(chil.getNodes());		
+		initChildren(charr);
+		Enumeration en = charr.elements();
+		while(en.hasMoreElements()) {
+			DatabaseNode subnode = chil.createNode((DatabaseNodeInfo)en.nextElement());
+			chil.add(new Node[] {subnode});
+		}
+	}
+
+	/** Returns tablenodeinfo specified by info
+	* Compares code and name only.
+	*/
+	public TableNodeInfo getChildrenTableInfo(TableNodeInfo info)
+	{
+		String scode = info.getCode();
+		String sname = info.getName();
+
+		try {		
+			Enumeration enu = getChildren().elements();
+			while (enu.hasMoreElements()) {
+				TableNodeInfo elem = (TableNodeInfo)enu.nextElement();
+				if (elem.getCode().equals(scode) && elem.getName().equals(sname)) {
+					return elem;
+				}
+			}
+		} catch (Exception e) {}
+		return null;
+	}
+/*
 	public void dropIndex(DatabaseNodeInfo tinfo) 
 	throws DatabaseException
 	{
@@ -90,4 +120,5 @@ implements TableOwnerOperations
 			throw new DatabaseException(e.getMessage());
 		}
 	}		
+*/
 }

@@ -21,10 +21,6 @@ import com.netbeans.enterprise.modules.db.*;
 import com.netbeans.enterprise.modules.db.explorer.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
 
-public class ProcedureParamNode extends DatabaseNode 
+public class ProcedureParamNode extends LeafNode 
 {		
-	public ProcedureParamNode()
-	{
-		super(Children.LEAF);
-	}
 }

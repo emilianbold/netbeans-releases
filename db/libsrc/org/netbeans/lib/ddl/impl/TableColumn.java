@@ -17,6 +17,7 @@ import java.util.*;
 import java.sql.*;
 import java.text.ParseException;
 import com.netbeans.ddl.*;
+import java.io.Serializable;
 
 /** 
 * Implementation of table column.
@@ -24,7 +25,7 @@ import com.netbeans.ddl.*;
 * @author Slavek Psenicka
 */
 public class TableColumn extends AbstractTableColumn 
-implements TableColumnDescriptor, CheckConstraintDescriptor
+implements Serializable, TableColumnDescriptor, CheckConstraintDescriptor
 {	
 	/** String constant for column type */
 	public static final String COLUMN = "COLUMN";
@@ -180,10 +181,37 @@ implements TableColumnDescriptor, CheckConstraintDescriptor
 		if (checke != null) args.put("check.condition", checke);
 		return args;
 	}	
+
+	/** Reads object from stream */
+	public void readObject(java.io.ObjectInputStream in) 
+	throws java.io.IOException, ClassNotFoundException 
+	{
+		super.readObject(in);
+		type = in.readInt();
+		size = in.readInt();
+		decsize = in.readInt();
+		nullable = in.readBoolean();
+		defval = (String)in.readObject();
+		checke = (String)in.readObject();
+	}
+
+	/** Writes object to stream */
+	public void writeObject(java.io.ObjectOutputStream out)
+	throws java.io.IOException 
+	{
+		super.writeObject(out);
+		out.writeInt(type);
+		out.writeInt(size);
+		out.writeInt(decsize);
+		out.writeBoolean(nullable);
+		out.writeObject(defval);
+		out.writeObject(checke);
+	}
 }
 
 /*
 * <<Log>>
+*  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
 * $

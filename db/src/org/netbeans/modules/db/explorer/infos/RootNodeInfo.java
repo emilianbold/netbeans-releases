@@ -25,7 +25,7 @@ import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
 public class RootNodeInfo extends DatabaseNodeInfo
 implements ConnectionOwnerOperations
 {
-	public void completeChildren(Vector children)
+	public void initChildren(Vector children)
 	throws DatabaseException
 	{
  		try {
@@ -38,6 +38,7 @@ implements ConnectionOwnerOperations
 					ninfo.setUser(cinfo.getUser());
 					ninfo.setDatabase(cinfo.getDatabase());
 					ninfo.setDatabaseConnection(cinfo);
+					if (cinfo.rememberPassword()) ninfo.put(DatabaseNodeInfo.REMEMBER_PWD, Boolean.TRUE);
 					children.add(ninfo);
 				}
 			}
@@ -61,13 +62,13 @@ implements ConnectionOwnerOperations
 			ninfo.setDatabaseConnection(cinfo);
 			System.out.println("Adding "+cinfo);
 			cons.add(cinfo);
-			children.createSubnode(ninfo, true);
-			if (cinfo.getPassword() != null) ninfo.connect();
+			DatabaseNode cnode = children.createSubnode(ninfo, true);
+			if (cinfo.getPassword() != null) ((ConnectionNodeInfo)cnode.getInfo()).connect();
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());
 		}
 	}
-
+/*
 	public void removeConnection(DBConnection cinfo, DatabaseNode xnode)
 	throws DatabaseException
 	{
@@ -83,4 +84,5 @@ implements ConnectionOwnerOperations
 			throw new DatabaseException(e.getMessage());
 		}
 	}
+*/
 }

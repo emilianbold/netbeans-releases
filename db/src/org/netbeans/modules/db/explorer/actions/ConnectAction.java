@@ -35,9 +35,10 @@ public class ConnectAction extends DatabaseAction
 		Node node;
 		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
 		else return false;
-		ConnectionOperations nfo = (ConnectionOperations)findInfo((DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class));
-		Connection connection = (Connection)((DatabaseNodeInfo)nfo).getConnection();
-		return (connection == null);
+		
+		DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+		DatabaseNodeInfo nfo = info.getParent(DatabaseNode.CONNECTION);
+		return (nfo.getConnection() == null);
 	}
 
 	public void performAction(Node[] activatedNodes) 
@@ -45,15 +46,20 @@ public class ConnectAction extends DatabaseAction
 		Node node;
 		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
 		else return;
+		
 		try {
-			ConnectionNodeInfo nfo = (ConnectionNodeInfo)findInfo((DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class));
+			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+			ConnectionNodeInfo nfo = (ConnectionNodeInfo)info.getParent(DatabaseNode.CONNECTION);
 			Connection connection = nfo.getConnection();
 			if (connection != null) return;
+			
 			String drvurl = (String)nfo.get(DatabaseNodeInfo.DRIVER);
 			String dburl = (String)nfo.get(DatabaseNodeInfo.DATABASE);
 			String user = (String)nfo.getUser();
 			String pwd = (String)nfo.getPassword();
-			if (user == null || pwd == null || !nfo.containsKey("rememberspassword")) {
+			Boolean rpwd = (Boolean)nfo.get(DatabaseNodeInfo.REMEMBER_PWD);
+			boolean remember = ((rpwd != null) ? rpwd.booleanValue() : false);
+			if (user == null || pwd == null || !remember) {
 				ConnectDialog dlg = new ConnectDialog(user);
 				if (dlg.run()) {
 					user = dlg.getUser();
