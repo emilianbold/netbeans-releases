@@ -598,7 +598,6 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- default workspaces, frames and their layout defined by core-->
   <folder name="windows">
-    <attr name="global-layer" boolvalue="false" />
     <file name="windowmanager.wswmgr" url="windowmanager/windowmanager.wswmgr" />
     <folder name="windowmanager">
       <attr name="Editing/Running" boolvalue="true" />
