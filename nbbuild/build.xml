@@ -23,7 +23,6 @@ workspaceswitcher
 
 <project name="nbbuild" default="all" basedir=".">
   <property name="build.sysclasspath" value="ignore"/>
-  <property file="build.properties"/>
 
   <!-- To make people happy who want to do `ant clean all': -->
   <target name="all" depends="build,sanity-check" description="Build the IDE and run a sanity check."/>
