@@ -194,7 +194,7 @@ public class EditorWindowOperator extends JFrameOperator {
         JComponent tabsComp = ta.getTabsDisplayer().getComponent();
         if(btLeft().isEnabled()) {
             // click left corner
-            new JComponentOperator(tabsComp).clickMouse(tabsComp.getX()+1, tabsComp.getY(), 1);
+            new JComponentOperator(tabsComp).clickMouse(tabsComp.getX()+1, tabsComp.getY()+tabsComp.getHeight()/2, 1);
             return true;
         }
         return false;
