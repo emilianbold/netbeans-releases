@@ -14,7 +14,6 @@
 package org.netbeans.jellytools.nodes;
 
 import javax.swing.tree.TreePath;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.*;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
@@ -42,25 +41,34 @@ public class UnrecognizedNode extends Node {
        super(treeOperator, path);
     }
 
+    static final OpenAction openAction = new OpenAction();
     static final CutAction cutAction = new CutAction();
     static final CopyAction copyAction = new CopyAction();
     static final PasteAction pasteAction = new PasteAction();
     static final DeleteAction deleteAction = new DeleteAction();
     static final RenameAction renameAction = new RenameAction();
+    static final SaveAsTemplateAction saveAsTemplateAction = new SaveAsTemplateAction();
     static final PropertiesAction propertiesAction = new PropertiesAction();
-   
+
     /** tests popup menu items for presence */    
     public void verifyPopup() {
         verifyPopup(new Action[]{
+            openAction,
             cutAction,
             copyAction,
             pasteAction,
             deleteAction,
             renameAction,
+            saveAsTemplateAction,
             propertiesAction
         });
     }
     
+    /** performs OpenAction with this node */    
+    public void open() {
+        openAction.perform(this);
+    }
+
     /** performs CutAction with this node */    
     public void cut() {
         cutAction.perform(this);
@@ -86,6 +94,11 @@ public class UnrecognizedNode extends Node {
         renameAction.perform(this);
     }
 
+    /** performs SaveAsTemplateAction with this node */    
+    public void saveAsTemplate() {
+        saveAsTemplateAction.perform(this);
+    }
+    
     /** performs PropertiesAction with this node */    
     public void properties() {
         propertiesAction.perform(this);
