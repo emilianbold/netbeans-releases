@@ -15,6 +15,8 @@ package org.netbeans.modules.j2ee.dd.impl.ejb;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 
+import java.math.BigDecimal;
+
 /**
  *
  * @author  mk115033
@@ -97,7 +99,7 @@ public class EjbJarProxy implements EjbJar {
     }
     
     public java.math.BigDecimal getVersion() {
-        return new java.math.BigDecimal(version);
+        return version == null ? BigDecimal.valueOf(0) : new BigDecimal(version);
     }
     public org.xml.sax.SAXParseException getError() {
         return error;
