@@ -92,7 +92,7 @@ public final class Workspace {
     private File workspaceDir;
     
     private Set variables;
-    private Set projects;
+    private Set projects = new HashSet();
     private Map jreContainers;
     private Map userLibraries;
     
@@ -154,9 +154,6 @@ public final class Workspace {
     }
     
     void addProject(EclipseProject project) {
-        if (projects == null) {
-            projects = new HashSet();
-        }
         projects.add(project);
     }
     

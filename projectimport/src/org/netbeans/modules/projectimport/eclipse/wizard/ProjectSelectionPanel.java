@@ -228,10 +228,10 @@ final class ProjectSelectionPanel extends JPanel {
             requiredProjects.addAll(reqProjects);
             if (solved.contains(project)) {
                 NotifyDescriptor d = new DialogDescriptor.Message(
-                        ProjectImporterWizard.getMessage("MSG_CycleDependencies"),
+                        ProjectImporterWizard.getMessage("MSG_CycleDependencies"), // NOI18N
                         NotifyDescriptor.WARNING_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
-                logger.warning("Cycle dependencies was detected. Project: " + project);
+                logger.warning("Cycle dependencies was detected. Project: " + project); // NOI18N
                 return;
             }
             solved.add(project); // this one is as solved
@@ -261,7 +261,7 @@ final class ProjectSelectionPanel extends JPanel {
         projectTable.setDefaultRenderer(Boolean.class, new ProjectCellRenderer());
         projectTable.setDefaultEditor(Boolean.class, new ProjectCellEditor());
         projectTableSP.getViewport().setBackground(projectTable.getBackground());
-        destination.setText(System.getProperty("user.home"));
+        destination.setText(System.getProperty("user.home")); // NOI18N
     }
     
     /** Loads project from workspace in the given <code>workspaceDir</code>. */
@@ -270,11 +270,11 @@ final class ProjectSelectionPanel extends JPanel {
         try {
             workspace = WorkspaceFactory.getInstance().load(workspaceDir);
         } catch (ProjectImporterException e) {
-            ProjectImporterWizard.getMessage("MSG_WorkspaceIsInvalid");
+            setErrorMessage(ProjectImporterWizard.getMessage(
+                    "MSG_WorkspaceIsInvalid", workspaceDir)); // NOI18N
             return;
         }
-        Set wsPrjs = new TreeSet();
-        wsPrjs.addAll(workspace.getProjects());
+        Set wsPrjs = new TreeSet(workspace.getProjects());
         projects = new EclipseProject[wsPrjs.size()];
         int i = 0;
         for (Iterator it = wsPrjs.iterator(); it.hasNext(); ) {
@@ -282,9 +282,12 @@ final class ProjectSelectionPanel extends JPanel {
         }
         selectedProjects = new HashSet();
         requiredProjects = new HashSet();
-        //        projectTable.setPreferredScrollableViewportSize(projectTable.getPreferredSize());
-        //        projectTableSP.setMinimumSize(projectTableSP.getPreferredSize());
-        updateValidity();
+        if (projects == null || projects.length == 0) {
+            setErrorMessage(ProjectImporterWizard.getMessage(
+                    "MSG_WorkspaceIsEmpty", workspaceDir)); // NOI18N
+        } else {
+            updateValidity();
+        }
     }
     
     /** Returns projects selected by selection panel */
@@ -310,7 +313,7 @@ final class ProjectSelectionPanel extends JPanel {
     void setErrorMessage(String newMessage) {
         String oldMessage = this.errorMessage;
         this.errorMessage = newMessage;
-        firePropertyChange("errorMessage", oldMessage, newMessage);
+        firePropertyChange("errorMessage", oldMessage, newMessage); // NOI18N
     }
     
     /** This method is called from within the constructor to
