@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-                Sun Public License Notice
+Sun Public License Notice
 
 The contents of this file are subject to the Sun Public License
 Version 1.0 (the "License"). You may not use this file except in
@@ -17,12 +17,17 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Menu">
         <folder name="File">
-            <attr name="Separator2.instance/org-netbeans-modules-projectimport-eclipse-ImportProjectAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-projectimport-eclipse-ImportProjectAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.projectimport.eclipse.ImportProjectAction" />
-            </file>
+            <attr name="Separator2.instance/Import" boolvalue="true" />
+            <folder name="Import">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.projectimport.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif" />
+                <file name="org-netbeans-modules-projectimport-eclipse-ImportProjectAction.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.projectimport.eclipse.ImportProjectAction" />
+                </file>
+            </folder>
+
             <!-- TODO is this correct way? -->
-            <attr name="org-netbeans-modules-projectimport-eclipse-ImportProjectAction.instance/ImporterSeparator1.instance" boolvalue="true" />
+            <attr name="Import/ImporterSeparator1.instance" boolvalue="true" />
             <file name="ImporterSeparator1.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
             </file>
