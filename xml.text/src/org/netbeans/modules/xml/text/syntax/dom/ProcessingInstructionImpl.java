@@ -17,6 +17,7 @@ import org.w3c.dom.*;
 
 import org.netbeans.editor.TokenItem;
 
+import org.netbeans.modules.xml.spi.dom.*;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.modules.xml.text.syntax.XMLDefaultTokenContext;
 /**

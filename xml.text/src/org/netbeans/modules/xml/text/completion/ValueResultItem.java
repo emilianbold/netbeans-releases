@@ -14,7 +14,7 @@ package org.netbeans.modules.xml.text.completion;
 
 import java.awt.Color;
 
-import org.netbeans.modules.xml.spi.model.*;
+import org.netbeans.modules.xml.api.model.*;
 
 /**
  * Represents value option (attribute one or element content one).

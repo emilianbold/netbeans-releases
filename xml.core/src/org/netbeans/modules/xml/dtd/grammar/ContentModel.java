@@ -1,0 +1,526 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.xml.dtd.grammar;
+
+import java.util.*;
+import org.openide.util.enum.*;
+
+/**
+ * Implementation of queriable DTD content models. It is a hungry
+ * automaton.
+ *
+ * @see ContentModelTest
+ *
+ * @author  Petr Kuzel
+ */
+abstract class ContentModel {
+    
+    /**
+     * Create model by parsing its string representation "|,*?+()WS".
+     * Caller must filter out <code>ANY</code>, <code>EMPTY</code> and 
+     * <code>(#PCDATA)</codE> content models.
+     */
+    public static final ContentModel parseContentModel(String model) {
+        
+        if (model == null || model.length() == 0) throw new IllegalArgumentException();
+
+        PushbackStringTokenizer tokens = 
+            new PushbackStringTokenizer(model, "|,*?+() \t\n", true);           // NOI18N
+        String next = tokens.nextToken();            
+        if (next.charAt(0) != '(' ) throw new IllegalStateException();
+        return parseContentModel(tokens);
+    }
+
+    private static ContentModel parseContentModel(PushbackStringTokenizer tokens) {
+
+        ContentModel model = null;;
+        List models = new ArrayList(7);
+        char type = 'E';
+        char ch;            
+        String next;
+
+        do {
+
+            next = tokens.nextToken();
+            ch = next.charAt(0);
+            if (ch == ' ' || ch == '\t' || ch == '\n') continue;
+            if (ch == '#') { // #PCDATA
+                do {
+                    ch = tokens.nextToken().charAt(0);
+                } while (ch == ' ' || ch == '\t' || ch == '\n');
+                ch = tokens.nextToken().charAt(0);
+                if (ch != '|') throw new IllegalStateException();
+                continue; 
+            } else if (ch == '(') {
+                models.add(parseContentModel(tokens));
+            } else if (ch == '|') {
+                type = '|';
+            } else if (ch == ',') {
+                type = ',';
+            } else if (ch == ')') {
+                break;
+            } else {
+                model = new Element(next);
+
+                // optional element multiplicity
+
+                do {
+                    next = tokens.nextToken();
+                    ch = next.charAt(0);
+                } while (ch == ' ' || ch == '\t' || ch == '\n');
+                if (ch == '+') {
+                    model = new MultiplicityGroup(model, 1, -1);
+                } else if (ch == '?') {
+                    model = new MultiplicityGroup(model, 0, 1);
+                } else if (ch == '*') {
+                    model = new MultiplicityGroup(model, 0, -1);
+                } else if (ch == ')') {
+                    // do not pushback!
+                } else {
+                    tokens.pushback(next);
+                }
+                models.add(model);
+            }
+
+        } while (ch != ')');
+
+        // create models
+
+        if (type == '|') {
+            model = new Choice((ContentModel[])models.toArray(new ContentModel[0]));
+        } else if (type == ',') {
+            model = new Sequence((ContentModel[])models.toArray(new ContentModel[0]));
+        } else {
+            // note model contains last Element
+        }
+
+        // determine optional group multiplicity
+
+        do {
+            if (tokens.hasMoreTokens() == false) break;
+            next = tokens.nextToken();
+            ch = next.charAt(0);
+        } while (ch == ' ' || ch == '\t' || ch == '\n');
+
+        if (ch == '?') {
+            model = new MultiplicityGroup(model, 0, 1);
+        } else if (ch == '*') {
+            model = new MultiplicityGroup(model, 0, -1);
+        } else if (ch == '+') {
+            model = new MultiplicityGroup(model, 1, -1);
+        } else {
+            tokens.pushback(next);
+        }
+
+        return model;
+    }
+
+    /**
+     * @return enumeration&lt;String&gt; or null if document is not valid.
+     */
+    public final Enumeration whatCanFollow(Enumeration en) {
+        reset();
+        Food food = new Food(en);
+        if (eat(food)) {
+            return possibilities();
+        } else {
+            return null;
+        }                        
+    }
+
+    /**
+     * Reinitialize the content model to initial state.
+     */
+    protected void reset() {
+    }
+
+    /**
+     * Move the automaton to next state. It is may not be called
+     * twice without reset!
+     * @return true if moved, false at root model indicate document error
+     */
+    protected abstract boolean eat(Food food);
+
+    /**
+     * Enumerate all <b>FIRST</b>s at current state.
+     * It must not be called if <code>eat</code> returned <code>false</code>
+     * @return possible completion
+     */
+    protected abstract Enumeration possibilities();
+
+    /**
+     * Does need the content model a reset because it is in final state?
+     * @return true if it i sin final state
+     */
+    protected boolean terminated() {
+        return false;
+    }
+    
+    /**
+     * Is the content model optional in current state?
+     * Called from possibilities.
+     */
+    protected boolean isOptional() {
+        return false;
+    }
+
+    // ~~~~~~~~~~~~~~~~~~~~~~ Implemenation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    /**
+     * Single element
+     */
+    private static class Element extends ContentModel {
+
+        private final String name;
+
+        private boolean full = false;
+
+        public Element (String name) {
+            this.name = name;
+        }
+
+        protected void reset() {
+            full = false;
+        }
+        
+        protected boolean eat(Food food) {
+            if (food.hasNext() == false) {
+                return true;
+            } else {
+                String next = food.next();
+                if (this.name.equals(next)) {                
+                    full = true;
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        protected Enumeration possibilities() {
+            if (terminated() == false) {
+                return new SingletonEnumeration(name);
+            } else {
+                return EmptyEnumeration.EMPTY;
+            }
+        }
+
+        protected boolean terminated() {
+            return full;
+        }
+                
+        public String toString() {
+            return "Element[" + name + "]";
+        }
+    }
+
+    
+    /**
+     * Mandatory sequence of models.
+     */
+    private static class Sequence extends ContentModel {
+
+        private ContentModel[] models;
+
+        // index of current model to use <0, models.length>
+        private int current = 0;
+
+        public Sequence(ContentModel[] models) {
+            this.models = models;
+        }
+        
+        /**
+         * If used <code>init</code> must be called immediatelly
+         */
+        protected Sequence() {
+        }
+        
+        protected final void init(ContentModel[] models) {
+            this.models = models;
+        }
+
+        /**
+         * Reset all models upto (inclusive) current one.
+         */
+        protected void reset() {
+            for (int i = 0; i<=current; i++) {
+                models[i].reset();
+            }
+            current = 0;
+        }
+
+        /**
+         * Feed all sequence models until is enough food.
+         */
+        protected boolean eat(Food food) {
+
+            while (food.hasNext()) {
+                
+                if (current == models.length) return true;
+                
+                int store = food.mark();
+                boolean accept = models[current].eat(food);
+                boolean more = food.hasNext();
+                
+                if (accept == false) {
+                    return false;
+                } else if (more) {
+                    current++;
+                } else {
+                    
+                    // last model is possibly partially full, it could disapprove
+                    // if more food was provided -> move all subsequent automatons
+                    // to have accurate possibilities()
+                    
+                    for (int i = current + 1; i<models.length; i++) {
+                        food.reset(store);
+                        if (models[i].eat(food)) continue;
+                    }
+                    
+                    // it accepted and is complete
+                    if (models[current].terminated()) current++;
+                }
+            }
+                                    
+            return true;
+        }
+
+        protected boolean terminated() {
+            if (current == models.length) return true;
+            if (current < models.length - 1) return false;
+            // last model may be active
+            return models[current].terminated();
+        }
+
+        protected Enumeration possibilities() {
+            if (terminated() == false) {
+                Enumeration en = EmptyEnumeration.EMPTY;
+                for ( int i = current; i<models.length; i++) {
+                    ContentModel next = models[i];                    
+                    en = new SequenceEnumeration(en, next.possibilities());
+                    if (next.isOptional() == false) break;
+                }
+                return en;
+            } else {
+                return EmptyEnumeration.EMPTY;
+            }
+        }
+
+        public String toString() {
+            String ret = "Sequence[";
+            for (int i = 0; i<models.length; i++) {
+                ret += models[i].toString() + ", ";
+            }
+            return ret + " current=" + current + "]";
+        }
+    }
+        
+    /**
+     * This content model allows options :-(.
+     */
+    private static class MultiplicityGroup extends ContentModel {
+
+        private final int min; // 0 or 1
+        private final int max; // -1 for infinity (we must always test for ==)
+        private final ContentModel peer;
+
+        // current occurence count
+        private int current = 0;
+
+        public MultiplicityGroup (ContentModel model, int min, int max) {
+            this.peer = model;
+            this.min = min;
+            this.max = max;
+            current = 0;
+        }
+
+        protected void reset() {
+            current = 0;
+            peer.reset();
+        }
+
+        protected boolean eat(Food food) {
+
+            while (food.hasNext()) {
+                
+                if (current == max) return true;
+                
+                int store = food.mark();                
+                boolean accepted = peer.eat(food);                
+                
+                if (accepted == false) {
+                    if (current < min) {
+                        return false;
+                    } else {
+                        // back trace, it was OPTIONAL
+                        food.reset(store);
+                        return true;                        
+                    }
+                } else if (food.hasNext()) {
+                    current ++;
+                    peer.reset();                    
+                } else {                
+                    // no more food, do not increment current for unterminated
+                    if (peer.terminated()) current ++;
+                }
+            }
+            
+            return true;
+        }
+
+        public Enumeration possibilities() {
+            if (terminated() == false) {
+                // we force peer reinitialization
+                if (peer.terminated()) peer.reset();
+                return peer.possibilities();
+            } else {
+                return EmptyEnumeration.EMPTY;
+            }
+        }
+
+        protected boolean terminated() {
+            boolean self = current == max;
+            if (self == false) return false;
+            return peer.terminated();
+        }
+
+        protected boolean isOptional() {
+            return current >= min && current != max;
+        }
+        
+        public String toString() {
+            return "MultiplicityGroup[peer=" + peer + ", min=" + min + ", max=" + max + ", current=" + current + "]";
+        }
+    }
+
+    /**
+     * At least one sub-content model must eat.     
+     */
+    private static class Choice extends Sequence {
+
+        public Choice(ContentModel[] models) {
+            //??? IT IS SIMPLIFICATION may provide more options than dictated by grammar
+            for (int i = 0; i<models.length; i++) {
+                models[i] = new MultiplicityGroup(models[i], 0, 1);
+            }
+            init(models);
+        }
+        
+        public String toString() {
+            return "Choice[" + super.toString() + "]";            
+        }
+    }
+    
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~ Utility classes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    
+    /**
+     * Feeding for content model automaton. It is a kind of lazy initialized
+     * stack with fast backtracking.
+     */
+    private static class Food {
+
+        // stack emulator
+        private final List list = new ArrayList(13);
+        
+        // source of lazy stack initilization
+        private final Enumeration en;
+        
+        // current stack position
+        private int current;
+        
+        public Food (Enumeration en) {
+            this.en = en;
+            current = 0;
+        }
+
+        /**
+         * @return current stack location
+         */
+        public int mark() {
+            return current;
+        }
+        
+        /**
+         * Set new current
+         */
+        public void reset(int pos) {
+            current = pos;
+        }
+        
+        /**
+         * Return next available element.
+         * Must not be called if <code>hasNext</code> returns <code>null</code>
+         */
+        public String next() {
+            if (hasNext() == false) {
+                throw new IllegalStateException();
+            } else {
+                String next  = (String) list.get(current);
+                current++;
+                return next;
+            }
+        }
+        
+        /** 
+         * @return true if it is assured that next is available. 
+         */
+        public boolean hasNext() {
+            if (list.size() > current) return true;
+            if (en.hasMoreElements()) {
+                String next = (String) en.nextElement();
+                return list.add(next);                
+            } else {
+                return false;
+            }
+        }
+    }
+    
+    /**
+     * Partial implementation of single-pushback tokenizer.
+     */
+    private static class PushbackStringTokenizer extends StringTokenizer {
+        
+        private String pushback = null;
+        
+        public PushbackStringTokenizer(String tokens, String delim, boolean inc) {
+            super(tokens, delim, inc);
+        }
+        
+        public String nextToken() {
+            String next;
+            if (pushback != null) {
+                next = pushback;
+                pushback = null;
+            } else {
+                next = super.nextToken();
+            }            
+            return next;
+        }
+        
+        public boolean hasMoreTokens() {
+            if (pushback != null) {
+                return true;
+            } else {
+                return super.hasMoreTokens();
+            }
+        }
+        
+        public void pushback(String pushback) {
+            if (this.pushback != null) throw new IllegalStateException();
+            this.pushback = pushback;
+        }
+    }
+    
+}

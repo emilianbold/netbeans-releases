@@ -1,0 +1,25 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<HTML>
+  <HEAD>
+    <TITLE>Simple DTD completion grammar</TITLE>
+  </HEAD>
+<BODY>
+  
+<H2>Simple DTD based Completion Grammar Package</H2>
+
+This package implements simple DTD grammar. It means
+that the grammar can resolve queries by using no
+document context. It means that if a content model declaration 
+prescribes a sequence and a document already contains
+starting sequence members the grammar will provide
+these also because it does not support document context.
+
+<p>
+This simplification is same as for HTML grammar provided
+by editor module. 
+<p>On the other hand there it prepared class {@link ContentModel}
+that handles it. It is ready to be inntegrated.
+
+</BODY>
+</HTML>

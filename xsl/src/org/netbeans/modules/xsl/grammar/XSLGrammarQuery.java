@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.Icon;
 
-import org.netbeans.modules.xml.spi.model.*;
+import org.netbeans.modules.xml.api.model.*;
 import org.openide.util.enum.*;
 
 import org.w3c.dom.*;

@@ -6,3 +6,5 @@ OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.19
 OpenIDE-Module-Module-Dependencies: org.netbeans.api.xml/1 > @API_SPEC_VERS_SUBST@
 Class-Path: ext/tax.jar ext/xerces2.jar
+OpenIDE-Module-Public-Packages: -
+

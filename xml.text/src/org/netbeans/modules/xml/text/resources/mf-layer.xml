@@ -34,17 +34,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder> <!-- Hidden -->
     </folder> <!-- Services -->
 
-    <folder name="Plugins">
-        <folder name="XML">
-            <folder name="GrammarQueryManagers">
-                <!-- register generic grammar -->
-                <attr name="semantics-grammar-to-generic-grammar-separator/org-netbeans-modules-xml-text-completion-dtd-DTDGrammarQueryProvider.instance" boolvalue="true"/>
-                <file name="org-netbeans-modules-xml-text-completion-dtd-DTDGrammarQueryProvider.instance"/>
-                <attr name="org-netbeans-modules-xml-text-completion-dtd-DTDGrammarQueryProvider.instance/generic-grammar-to-universal-grammar-separator" boolvalue="true"/>
-            </folder>
-        </folder>
-    </folder>
-    
     <folder name="Editors">
 
         <folder name="text">

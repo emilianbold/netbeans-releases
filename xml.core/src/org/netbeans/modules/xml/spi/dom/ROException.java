@@ -11,27 +11,26 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.xml.text.syntax.dom;
+package org.netbeans.modules.xml.spi.dom;
 
 import org.w3c.dom.*;
-import org.netbeans.modules.xml.text.syntax.*;
-import org.netbeans.modules.xml.spi.dom.*;
-import org.netbeans.editor.*;
 
 /**
- * It should in future promote to EntityReference implementation.
- * Holds entity reference.
+ * Read-only eception is thrown from all modification methods.
+ * In DOM level 1 is DOMException abstract.
  *
- * @author Petr Kuzel
+ * @author  Petr Kuzel
  */
-public class EntityReferenceImpl  {
+public final class ROException extends DOMException {
+
+    private static final long serialVersionUID = -2953952370813340306L;
     
-    EntityReferenceImpl(Node p) {
+    /**
+     * Creates new <code>ROException</code> without detail message.
+     */
+    public ROException() {
+        super(DOMException.NO_MODIFICATION_ALLOWED_ERR, null);
     }
-    
-    public short getNodeType() {
-        return Node.ENTITY_REFERENCE_NODE;
-    }
-    
 }
+
 

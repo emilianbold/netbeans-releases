@@ -15,7 +15,7 @@ package org.netbeans.modules.xml.text.completion;
 
 import java.awt.Color;
 
-import org.netbeans.modules.xml.spi.model.*;
+import org.netbeans.modules.xml.api.model.*;
 
 /**
  * It represents attribute name (or namespace prefix).

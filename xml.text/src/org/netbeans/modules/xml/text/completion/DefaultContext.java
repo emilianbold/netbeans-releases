@@ -15,8 +15,8 @@ package org.netbeans.modules.xml.text.completion;
 
 import org.w3c.dom.*;
 
-import org.netbeans.modules.xml.spi.model.*;
-import org.netbeans.modules.xml.text.syntax.dom.*;
+import org.netbeans.modules.xml.api.model.*;
+import org.netbeans.modules.xml.spi.dom.*;
 
 /**
  * Mutable delegator to passed <code>HintContext</code> delegee.
@@ -30,7 +30,7 @@ class DefaultContext implements HintContext, Attr {
     private Node peer;
     private String text;
 
-    // virtual context has lisnk to surrounding world
+    // virtual context has links to surrounding world
     private Node parent, previous, next;
     private boolean virtual;
     private short type;

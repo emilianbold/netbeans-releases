@@ -15,6 +15,7 @@ package org.netbeans.modules.xml.text.syntax.dom;
 
 import org.w3c.dom.*;
 import org.netbeans.modules.xml.text.syntax.*;
+import org.netbeans.modules.xml.spi.dom.*;
 import javax.swing.text.BadLocationException;
 
 public class DocumentImpl extends AbstractNode implements org.w3c.dom.Document {

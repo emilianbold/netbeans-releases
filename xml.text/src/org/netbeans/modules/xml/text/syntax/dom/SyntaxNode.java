@@ -15,6 +15,7 @@ package org.netbeans.modules.xml.text.syntax.dom;
 
 import org.w3c.dom.*;
 import org.netbeans.modules.xml.text.syntax.*;
+import org.netbeans.modules.xml.spi.dom.*;
 import org.netbeans.editor.*;
 
 /**
