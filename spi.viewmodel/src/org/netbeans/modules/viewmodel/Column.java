@@ -44,7 +44,7 @@ public class Column extends PropertySupport.ReadWrite {
         this.treeTable = treeTable;
         setValue (
             "ComparableColumnTTV", 
-            new Boolean (columnModel.isSortable ())
+            Boolean.valueOf (columnModel.isSortable ())
         );
         if (columnModel.getType () == null)
             // Default column!
@@ -85,11 +85,11 @@ public class Column extends PropertySupport.ReadWrite {
             if (columnModel.getCurrentOrderNumber () != -1)
                 return new Integer (columnModel.getCurrentOrderNumber ());
         if ("InvisibleInTreeTableView".equals (propertyName)) 
-            return new Boolean (!columnModel.isVisible ());
+            return Boolean.valueOf (!columnModel.isVisible ());
         if ("SortingColumnTTV".equals (propertyName)) 
-            return new Boolean (columnModel.isSorted ());
+            return Boolean.valueOf (columnModel.isSorted ());
         if ("DescendingOrderTTV".equals (propertyName)) 
-            return new Boolean (columnModel.isSortedDescending ());
+            return Boolean.valueOf (columnModel.isSortedDescending ());
         return super.getValue (propertyName);
     }
     

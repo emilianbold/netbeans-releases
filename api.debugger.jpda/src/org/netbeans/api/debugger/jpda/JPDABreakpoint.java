@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,8 +19,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import org.netbeans.api.debugger.Breakpoint;
-import org.openide.util.NbBundle;
-
 
 /**
  * Abstract definition of JPDA breakpoint.
@@ -101,7 +99,7 @@ public class JPDABreakpoint extends Breakpoint {
         if (h == hidden) return;
         boolean old = hidden;
         hidden = h;
-        firePropertyChange (PROP_HIDDEN, new Boolean (old), new Boolean (h));
+        firePropertyChange (PROP_HIDDEN, Boolean.valueOf (old), Boolean.valueOf (h));
     }
     
     /**
