@@ -237,9 +237,13 @@ public abstract class J2eeModuleProvider {
      */
     public boolean hasVerifierSupport() {
         String serverId = getServerID();
-        if (serverId == null)
-            return false;
-        return ServerRegistry.getInstance().getServer(serverId).canVerify(getJ2eeModule().getModuleType());
+        if (serverId != null) {
+            Server server = ServerRegistry.getInstance().getServer(serverId);
+            if (server != null) {
+                return server.canVerify(getJ2eeModule().getModuleType());
+            }
+        }
+        return false;
     }
     
     /**
