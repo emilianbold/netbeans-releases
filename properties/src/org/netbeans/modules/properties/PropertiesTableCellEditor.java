@@ -13,13 +13,19 @@
 
 package org.netbeans.modules.properties;
 
+import java.awt.Component;
 import java.util.EventObject;
 import javax.swing.DefaultCellEditor;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
 
 public class PropertiesTableCellEditor extends DefaultCellEditor {
+    /** Value holding info if the editing cell is a key or value.
+    */
+    boolean isKeyCell;
+
     static final long serialVersionUID =-5292598860635851664L;
     /** Constructs a PropertiesTableCellEditor that uses a text field.
     * @param x  a JTextField object ...
@@ -36,6 +42,17 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
     /** Visible component */
     JComponent getEditorComponent() {
         return editorComponent;
+    }
+
+
+    /** Overriding super class method. This is a hack with only reason to figure out 
+    * which cell is going to be edited, if a key or a value.
+    */
+    public Component getTableCellEditorComponent(JTable table,
+        Object value, boolean isSelected, int row, int column) {
+        // only in the first column are keys
+        isKeyCell = (column == 0) ? true : false;
+        return super.getTableCellEditorComponent(table, value, isSelected, row, column);
     }
 
 
@@ -68,8 +85,13 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
         }
 
         public Object getCellEditorValue() {
-            return new PropertiesTableModel.StringPair(commentComponent.getText(),
-                    UtilConvert.charsToUnicodes(UtilConvert.escapeJavaSpecialChars(UtilConvert.escapePropertiesSpecialChars(((JTextField)getEditorComponent()).getText())))); // TEMP
+            if(isKeyCell) // the cell is a properties key
+                return new PropertiesTableModel.StringPair(commentComponent.getText(),
+                    UtilConvert.charsToUnicodes(UtilConvert.escapeJavaSpecialChars(UtilConvert.escapePropertiesSpecialChars(((JTextField)getEditorComponent()).getText()))), isKeyCell);
+            else // the cell is a properties value
+                return new PropertiesTableModel.StringPair(commentComponent.getText(),
+                    UtilConvert.charsToUnicodes(UtilConvert.escapeJavaSpecialChars(UtilConvert.escapeLineContinuationChar(((JTextField)getEditorComponent()).getText()))), isKeyCell);
+
         }
 
         public boolean startCellEditing(EventObject anEvent) {
