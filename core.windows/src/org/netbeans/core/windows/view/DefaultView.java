@@ -229,7 +229,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 if(DEBUG) {
                     debugLog("Active mode changed, mode=" + viewEvent.getNewValue()); // NOI18N
                 }
-                System.out.println("active mode changed.");
                 hierarchy.updateDesktop(wsa);
                 hierarchy.activateMode(wsa.getActiveModeAccessor());
             } else if(changeType == CHANGE_TOOLBAR_CONFIGURATION_CHANGED) {
