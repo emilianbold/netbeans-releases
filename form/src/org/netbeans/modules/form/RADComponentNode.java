@@ -382,18 +382,27 @@ public class RADComponentNode extends AbstractNode
 
         customizer.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                try {
-                    RADProperty property = component.getPropertyByName(
-                                                     evt.getPropertyName());
-                    if (property != null) {
-                        property.reinstateProperty();
-                        property.firePropertyValueChange(evt.getOldValue(),
-                                                         evt.getNewValue());
-                    }
+                RADProperty[] properties;
+                if (evt.getPropertyName() != null) {
+                    RADProperty changedProperty = component.getPropertyByName(
+                                                         evt.getPropertyName());
+                    if (changedProperty != null)
+                        properties = new RADProperty[] { changedProperty };
+                    else return;
                 }
-                catch (Exception ex) {
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                        ex.printStackTrace();
+                else properties = component.getAllBeanProperties();
+
+                for (int i=0; i < properties.length; i++) {
+                    RADProperty prop = properties[i];
+                    try {
+                        prop.reinstateProperty();
+                        prop.firePropertyValueChange(evt.getOldValue(),
+                                                     evt.getNewValue());
+                    }
+                    catch (Exception ex) { // unlikely to happen
+                        if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                            ex.printStackTrace();
+                    }
                 }
             }
         });

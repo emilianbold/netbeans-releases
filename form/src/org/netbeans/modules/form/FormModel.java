@@ -418,7 +418,8 @@ public class FormModel
         // the source file - so the form data object is not marked as modified and
         // cannot be saved - though there are unsaved changes.
         // So form should be marked as modified explicitly if needed.
-        getFormEditorSupport().markFormModified();
+        if (!readOnly)
+            getFormEditorSupport().markFormModified();
     }
 
     public void fireComponentPropertyChanged(RADComponent metacomp,
@@ -441,7 +442,8 @@ public class FormModel
         // generated code of the source file - so the form data object is not
         // marked as modified and cannot be saved - though there are unsaved
         // changes. So form should be marked as modified explicitly if needed.
-        getFormEditorSupport().markFormModified();
+        if (!readOnly)
+            getFormEditorSupport().markFormModified();
     }
 
     public void fireComponentAdded(RADComponent metacomp,

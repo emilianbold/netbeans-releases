@@ -167,18 +167,15 @@ public class RADProperty extends FormProperty {
         if (isChangeFiring() && component.getFormModel() != null)
             component.getFormModel().fireComponentPropertyChanged(component,
                                                   desc.getName(), old, current);
-//        RADComponentNode node = component.getNodeReference();
-//        if (node != null)
-//            node.firePropertyChangeHelper(getName(), old, current);
     }
 
-//    protected void fireCurrentEditorChange(PropertyEditor old, PropertyEditor current) {
-//        super.fireCurrentEditorChange(old, current);
-//
-//        RADComponentNode node = component.getNodeReference();
-//        if (node != null)
-//            node.notifyPropertySetsChange();
-//    }
+    protected void fireCurrentEditorChange(PropertyEditor old, PropertyEditor current) {
+        super.fireCurrentEditorChange(old, current);
+
+        if (isChangeFiring() && component.getFormModel() != null)
+            component.getFormModel().fireComponentPropertyChanged(component,
+                                                  desc.getName(), null, null);
+    }
 
     // -------------------
     // innerclasses

@@ -190,7 +190,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     /** Marks the form as modified if it's not yet. Used if changes made 
      * in form data don't affect the java source file (generated code). */
     void markFormModified() {
-        if (formLoaded && !formObject.isReadOnly() && !formObject.isModified())
+        if (formLoaded && !formObject.isModified())
             super.notifyModified();
     }
 
