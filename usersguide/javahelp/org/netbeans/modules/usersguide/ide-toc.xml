@@ -190,7 +190,7 @@
     <tocitem text="Using Bookmarks" target="editing.bookmarks"/>
     <tocitem text="Using Quick Browse for Java Elements" target="editing.toolbar"/>
     <tocitem text="Using 'Go To' Shortcuts" target="editing.goto"/>
-    <tocitem text="Opening a Java File With Fast Open" target="editing.fastopen"/>
+    <tocitem text="Opening a Java File With 'Go To Class'" target="editing.fastopen"/>
     <tocitem text="Adding an Import Statement With Fast Import" target="editing.fastimport"/>
   </tocitem>
   <tocitem text="Updating the Parser Database" target="editing.parserdatabase"/>
