@@ -58,6 +58,7 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
             mgr.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws Exception {
                     m1 = mgr.create(jar1, new ModuleHistory(), false, false);
+                    if (!m1.getProblems().isEmpty()) throw new IllegalStateException("m1 is uninstallable: " + m1.getProblems());
                     m2 = mgr.create(jar2, new ModuleHistory(), false, false);
                     return null;
                 }
