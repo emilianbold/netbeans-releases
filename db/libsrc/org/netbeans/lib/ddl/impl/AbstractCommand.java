@@ -146,6 +146,7 @@ static final long serialVersionUID =-560515030304320086L;
 		try {
 			fcmd = getCommand();
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new DDLException("unable to format a command "+format+": "+e.getMessage());
 		}
 				
@@ -159,7 +160,8 @@ static final long serialVersionUID =-560515030304320086L;
 				if (ow != null) ow.println(fcmd);
 				else throw new Exception();	
 					
-			} catch (Exception ex) {	
+			} catch (Exception e) {	
+				e.printStackTrace();
 				System.out.println(fcmd);
 			}
 		}
@@ -175,6 +177,7 @@ static final long serialVersionUID =-560515030304320086L;
 			stat.execute(fcmd);
 			stat.close();
 		} catch (Exception e) {
+			e.printStackTrace();
 			if (opened && fcon != null) spec.closeJDBCConnection();
 			throw new DDLException("unable to execute a command "+fcmd+": "+e.getMessage());
 		}
@@ -196,6 +199,7 @@ static final long serialVersionUID =-560515030304320086L;
 			Map props = getCommandProperties();
 			return CommandFormatter.format(format, props);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new DDLException(e.getMessage());
 		}
 	}
@@ -224,6 +228,7 @@ static final long serialVersionUID =-560515030304320086L;
 
 /*
 * <<Log>>
+*  11   Gandalf   1.10        9/15/99  Slavek Psenicka 
 *  10   Gandalf   1.9         9/13/99  Slavek Psenicka 
 *  9    Gandalf   1.8         9/10/99  Slavek Psenicka 
 *  8    Gandalf   1.7         8/17/99  Ian Formanek    Generated serial version 

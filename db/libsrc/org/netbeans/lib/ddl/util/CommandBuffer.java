@@ -131,6 +131,7 @@ public class CommandBuffer
 				if (debugmode) System.out.println(e_cmd);
 				e_cmd.execute();
 			} catch (Exception e) {
+				e.printStackTrace();
 				boolean exres = false;
 				if (handler != null) exres = handler.shouldContinueAfterException(e);
 				if (!exres) throw new DDLException("command buffer fatal exception: "+e.getMessage());
@@ -143,6 +144,7 @@ public class CommandBuffer
 
 /*
 * <<Log>>
+*  5    Gandalf   1.4         9/15/99  Slavek Psenicka 
 *  4    Gandalf   1.3         9/10/99  Slavek Psenicka 
 *  3    Gandalf   1.2         6/8/99   Ian Formanek    ---- Package Change To 
 *       org.openide ----

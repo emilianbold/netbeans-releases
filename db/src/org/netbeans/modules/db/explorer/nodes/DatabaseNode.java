@@ -175,6 +175,13 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 	{
 		return new DatabasePropertySupport(name, type, displayName, shortDescription, rep, writable);
 	}
+
+	protected PropertySupport createPropertySupport(String name, Class type, String displayName, String shortDescription, DatabaseNodeInfo rep, boolean writable, boolean expert)
+	{
+		PropertySupport ps =  new DatabasePropertySupport(name, type, displayName, shortDescription, rep, writable);
+		ps.setExpert(expert);
+		return ps;
+	}
 	
 	/** Sheet for this node.
 	*/
@@ -186,9 +193,11 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 		Enumeration prop_i = prop.elements();
 		ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
 		while (prop_i.hasMoreElements()) {
-			boolean canWrite;
+			boolean canWrite, expert = false;
 			Map propmap = (Map)prop_i.nextElement();
 			String key = (String)propmap.get(DatabaseNodeInfo.CODE);
+			String expkey = (String)propmap.get("expert");
+			if (expkey != null) expert = expkey.toUpperCase().equals("YES");
 			
 			try {
 
@@ -218,7 +227,7 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 							pdesc = "";
 						}
 						
-						psitem = createPropertySupport(key, pc, pname, pdesc, info, canWrite);	
+						psitem = createPropertySupport(key, pc, pname, pdesc, info, canWrite, expert);	
 					}
 				}
 			

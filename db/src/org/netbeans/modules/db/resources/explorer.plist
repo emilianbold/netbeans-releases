@@ -89,6 +89,11 @@
 				prefix = "jdbc:rmi://<HOST>:<PORT>/jdbc:cloudscape:<DB>";
 			},
 			{
+				name = "Hypersonic SQL";
+				driver = "hSql.hDriver";
+				prefix = "jdbc:HypersonicSQL:<DB>";
+			},
+			{
 				name = "ODBC Bridge";
 				driver = "sun.jdbc.odbc.JdbcOdbcDriver";
 				prefix = "jdbc:odbc:<DB>";
@@ -295,430 +300,538 @@
 		);
 		properties = (
 			{
+				code = db;
+				name = "DatabaseURL";
+				class = java.lang.String;
+				writable = YES;
+			},
+			{
+				code = driver;
+				name = "DriverURL";
+				class = java.lang.String;
+				writable = YES;
+			},
+			{
+				code = user;
+				name = "User";
+				class = java.lang.String;
+				writable = YES;
+			},
+			{
+				code = databaseProductName;
+				name = databaseProductName;
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = databaseProductVersion;
+				name = databaseProductVersion;
+				class = java.lang.String;
+				writable = NO;
+				expert = YES;
+			},
+			{
+				code = rememberpwd;
+				name = "RememberPassword";
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
 				code = proceduresAreCallable;
 				name = proceduresAreCallable;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = tablesAreSelectable;
 				name = tablesAreSelectable;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = readOnly;
 				name = readOnly;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = localFiles;
 				name = localFiles;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = localFilePerTable;
 				name = localFilePerTable;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = mixedCaseIdentifiers;
 				name = mixedCaseIdentifiers;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = mixedCaseQuotedIdentifiers;
 				name = mixedCaseQuotedIdentifiers;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = alterTableWithAddColumn;
 				name = alterTableWithAddColumn;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = alterTableWithDropColumn;
 				name = alterTableWithDropColumn;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = columnAliasing;
 				name = columnAliasing;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = nullPlusNonNullIsNull;
 				name = nullPlusNonNullIsNull;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = convert;
 				name = convert;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = tableCorrelationNames;
 				name = tableCorrelationNames;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = differentTableCorrelationNames;
 				name = differentTableCorrelationNames;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = expressionsInOrderBy;
 				name = expressionsInOrderBy;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = orderByUnrelated;
 				name = orderByUnrelated;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = groupBy;
 				name = groupBy;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = groupByUnrelated;
 				name = groupByUnrelated;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = groupByBeyondSelect;
 				name = groupByBeyondSelect;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = likeEscapeClause;
 				name = likeEscapeClause;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = multipleResultSets;
 				name = multipleResultSets;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = multipleTransactions;
 				name = multipleTransactions;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = nonNullableColumns;
 				name = nonNullableColumns;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = minimumSQLGrammar;
 				name = minimumSQLGrammar;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = coreSQLGrammar;
 				name = coreSQLGrammar;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = extendedSQLGrammar;
 				name = extendedSQLGrammar;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = ANSI92EntryLevelSQL;
 				name = ANSI92EntryLevelSQL;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = ANSI92IntermediateSQL;
 				name = ANSI92IntermediateSQL;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = ANSI92FullSQL;
 				name = ANSI92FullSQL;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = IntegrityEnhancementFacility;
 				name = IntegrityEnhancementFacility;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = outerJoins;
 				name = outerJoins;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = fullOuterJoins;
 				name = fullOuterJoins;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = limitedOuterJoins;
 				name = limitedOuterJoins;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = catalogAtStart;
 				name = catalogAtStart;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = schemasInDataManipulation;
 				name = schemasInDataManipulation;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = schemasInProcedureCalls;
 				name = schemasInProcedureCalls;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = schemasInTableDefinitions;
 				name = schemasInTableDefinitions;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = schemasInIndexDefinitions;
 				name = schemasInIndexDefinitions;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = schemasInPrivilegeDefinitions;
 				name = schemasInPrivilegeDefinitions;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = catalogsInDataManipulation;
 				name = catalogsInDataManipulation;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = catalogsInProcedureCalls;
 				name = catalogsInProcedureCalls;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = catalogsInTableDefinitions;
 				name = catalogsInTableDefinitions;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = catalogsInIndexDefinitions;
 				name = catalogsInIndexDefinitions;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = catalogsInPrivilegeDefinitions;
 				name = catalogsInPrivilegeDefinitions;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = positionedDelete;
 				name = positionedDelete;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = positionedUpdate;
 				name = positionedUpdate;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = selectForUpdate;
 				name = selectForUpdate;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = storedProcedures;
 				name = storedProcedures;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = subqueriesInComparisons;
 				name = subqueriesInComparisons;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = subqueriesInExists;
 				name = subqueriesInExists;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = subqueriesInIns;
 				name = subqueriesInIns;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = subqueriesInQuantifieds;
 				name = subqueriesInQuantifieds;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = correlatedSubqueries;
 				name = correlatedSubqueries;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = union;
 				name = union;
 				class = java.lang.Boolean;
-				writable = NO;
+				writable = NO;			
+				expert = YES;
 			},
 			{
 				code = unionAll;
 				name = unionAll;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = openCursorsAcrossCommit;
 				name = openCursorsAcrossCommit;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = openCursorsAcrossRollback;
 				name = openCursorsAcrossRollback;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = openStatementsAcrossCommit;
 				name = openStatementsAcrossCommit;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = openStatementsAcrossRollback;
 				name = openStatementsAcrossRollback;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxRowSizeIncludeBlobs;
 				name = maxRowSizeIncludeBlobs;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = transactions;
 				name = transactions;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = dataDefinitionAndDataManipulationTransactions;
 				name = dataDefinitionAndDataManipulationTransactions;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = dataManipulationTransactionsOnly;
 				name = dataManipulationTransactionsOnly;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = dataDefinitionCausesTransactionCommit;
 				name = dataDefinitionCausesTransactionCommit;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = dataDefinitionIgnoredInTransactions;
 				name = dataDefinitionIgnoredInTransactions;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = batchUpdates;
 				name = batchUpdates;
 				class = java.lang.Boolean;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = nullSort;
 				name = nullSort;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = identifierStore;
 				name = identifierStore;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = quotedIdentifierStore;
 				name = quotedIdentifierStore;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxBinaryLiteralLength;
 				name = maxBinaryLiteralLength;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxCharLiteralLength;
 				name = maxCharLiteralLength;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxColumnNameLength;
@@ -731,108 +844,126 @@
 				name = maxColumnsInGroupBy;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxColumnsInIndex;
 				name = maxColumnsInIndex;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxColumnsInOrderBy;
 				name = maxColumnsInOrderBy;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxColumnsInSelect;
 				name = maxColumnsInSelect;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxColumnsInTable;
 				name = maxColumnsInTable;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxConnections;
 				name = maxConnections;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxCursorNameLength;
 				name = maxCursorNameLength;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxIndexLength;
 				name = maxIndexLength;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxSchemaNameLength;
 				name = maxSchemaNameLength;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxProcedureNameLength;
 				name = maxProcedureNameLength;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxCatalogNameLength;
 				name = maxCatalogNameLength;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxRowSize;
 				name = maxRowSize;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxStatementLength;
 				name = maxStatementLength;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxStatements;
 				name = maxStatements;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxTableNameLength;
 				name = maxTableNameLength;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxTablesInSelect;
 				name = maxTablesInSelect;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = maxUserNameLength;
 				name = maxUserNameLength;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = defaultTransactionIsolation;
 				name = defaultTransactionIsolation;
 				class = java.lang.Integer;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = driverName;
@@ -851,84 +982,98 @@
 				name = driverMajorVersion;
 				class = java.lang.String;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = driverMinorVersion;
 				name = driverMinorVersion;
 				class = java.lang.String;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = identifierQuoteString;
 				name = identifierQuoteString;
 				class = java.lang.String;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = SQLKeywords;
 				name = SQLKeywords;
 				class = java.lang.String;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = numericFunctions;
 				name = numericFunctions;
 				class = java.lang.String;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = stringFunctions;
 				name = stringFunctions;
 				class = java.lang.String;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = systemFunctions;
 				name = systemFunctions;
 				class = java.lang.String;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = timeDateFunctions;
 				name = timeDateFunctions;
 				class = java.lang.String;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = searchStringEscape;
 				name = searchStringEscape;
 				class = java.lang.String;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = extraNameCharacters;
 				name = extraNameCharacters;
 				class = java.lang.String;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = schemaTerm;
 				name = schemaTerm;
 				class = java.lang.String;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = procedureTerm;
 				name = procedureTerm;
 				class = java.lang.String;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = catalogTerm;
 				name = catalogTerm;
 				class = java.lang.String;
 				writable = NO;
+				expert = YES;
 			},
 			{
 				code = catalogSepa;
 				name = catalogSepa;
 				class = java.lang.String;
 				writable = NO;
+				expert = YES;
 			}
 		);
 	};

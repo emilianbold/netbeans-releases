@@ -158,11 +158,10 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
 			} else {
 	
 				DatabaseMetaData dmd = info.getSpecification().getMetaData();
-				info.put(DatabaseNodeInfo.DBPRODUCT, dmd.getDatabaseProductName());
-				info.put(DatabaseNodeInfo.DBVERSION, dmd.getDatabaseProductVersion());
-				info.put(DatabaseNodeInfo.READONLYDB, new Boolean(dmd.isReadOnly()));
 	
 				try {
+
+					info.put(DefaultAdaptor.PROP_PRODUCTNAME, dmd.getDatabaseProductName());
 					
 					info.put(DefaultAdaptor.PROP_MIXEDCASE_IDENTIFIERS, new Boolean(dmd.supportsMixedCaseIdentifiers()));
 					info.put(DefaultAdaptor.PROP_MIXEDCASE_QUOTED_IDENTIFIERS, new Boolean(dmd.supportsMixedCaseQuotedIdentifiers()));
@@ -243,7 +242,6 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
 									
 					info.put(DefaultAdaptor.PROP_URL, dmd.getURL());
 					info.put(DefaultAdaptor.PROP_USERNAME, dmd.getUserName());
-					info.put(DefaultAdaptor.PROP_PRODUCTNAME, dmd.getDatabaseProductName());
 					info.put(DefaultAdaptor.PROP_PRODUCTVERSION, dmd.getDatabaseProductVersion());
 					info.put(DefaultAdaptor.PROP_DRIVERNAME, dmd.getDriverName());
 					info.put(DefaultAdaptor.PROP_DRIVER_VERSION, dmd.getDriverVersion());
@@ -281,7 +279,7 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+/*		
 		PropertySupport newdbprop = createPropertySupport(dbprop.getName(), dbprop.getValueType(), dbprop.getDisplayName(), dbprop.getShortDescription(), info, !connecting);
 		set.put(newdbprop);
 		firePropertyChange("db",dbprop,newdbprop);
@@ -294,5 +292,6 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
 		PropertySupport newrememberprop = createPropertySupport(rememberprop.getName(), rememberprop.getValueType(), rememberprop.getDisplayName(), rememberprop.getShortDescription(), info, connecting);
 		set.put(newrememberprop);
 		firePropertyChange("rememberpassword",rememberprop,newrememberprop);
+*/
 	}
 }

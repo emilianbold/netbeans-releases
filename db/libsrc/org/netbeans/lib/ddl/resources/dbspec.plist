@@ -618,6 +618,51 @@
 			Format = "check ({check.condition})";
 		};			
 	};
+
+	"HypersonicSQL" = {
+		DatabaseProductName = "HypersonicSQL";
+		DatabaseProductVersion = 1;
+		TriggerEventListDelimiter = ", ";
+
+		TypeMap = {
+			java.sql.Types.BINARY = BINARY;	
+			java.sql.Types.BIT = BOOLEAN;
+			java.sql.Types.CHAR = CHAR;		
+			java.sql.Types.DATE = DATE;
+			java.sql.Types.DECIMAL = DECIMAL;	
+			java.sql.Types.DOUBLE = DOUBLE;
+			java.sql.Types.REAL = REAL;		
+			java.sql.Types.LONGVARBINARY = LONGVARBINARY;
+			java.sql.Types.LONGVARCHAR = LONGVARCHAR;
+			java.sql.Types.BIGINT = BIGINT;	
+			java.sql.Types.NUMERIC = NUMERIC;			
+			java.sql.Types.SMALLINT = SMALLINT;	
+			java.sql.Types.TIME = TIME;		
+			java.sql.Types.TIMESTAMP = TIMESTAMP;	
+			java.sql.Types.TINYINT = TINYINT;		
+			java.sql.Types.VARCHAR = VARCHAR;	
+			java.sql.Types.INTEGER = INTEGER;
+		};
+
+		CreateTableCommand = {
+			Class = com.netbeans.ddl.impl.CreateTable;
+			Format = "create table [{object.owner}.]{object.name}\n(\n\t{columns}\n)";
+			Binding = {
+				COLUMN = Column;
+				PRIMARY_KEY = PrimaryKeyColumn;
+			};
+		};
+
+		Column = {
+			Class = com.netbeans.ddl.impl.TableColumn;
+			Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}]";
+		};
+		
+		PrimaryKeyColumn = {
+			Class = com.netbeans.ddl.impl.TableColumn;
+			Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] primary key";
+		};
+	};
 }
 
 

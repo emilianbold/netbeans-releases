@@ -3143,7 +3143,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	*/
 	public ResultSet getProcedures(String catalog, String schemaPattern, String procedureNamePattern) throws SQLException
 	{
-		if (getCapitializeUsername()) schemaPattern = schemaPattern.toUpperCase();
+		if (getCapitializeUsername() && schemaPattern != null) schemaPattern = schemaPattern.toUpperCase();
 		String query = (String)properties.get(PROP_PROCEDURES_QUERY);
 		if (query != null) {
 			if (con != null) {
@@ -3175,7 +3175,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	*/
 	public ResultSet getProcedureColumns(String catalog, String schemaPattern, String procedureNamePattern, String columnNamePattern) throws SQLException
 	{
-		if (getCapitializeUsername()) schemaPattern = schemaPattern.toUpperCase();
+		if (getCapitializeUsername() && schemaPattern != null) schemaPattern = schemaPattern.toUpperCase();
 		String query = (String)properties.get(PROP_PROCEDURE_COLUMNS_QUERY);
 		if (query != null) {
 			if (con != null) {
@@ -3287,7 +3287,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	*/
 	public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
 	{
-		if (getCapitializeUsername()) schemaPattern = schemaPattern.toUpperCase();
+		if (getCapitializeUsername() && schemaPattern != null) schemaPattern = schemaPattern.toUpperCase();
 		String query = (String)properties.get(PROP_COLUMNS_QUERY);
 		if (query != null) {
 			if (con != null) {
@@ -3319,7 +3319,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	*/
 	public ResultSet getColumnPrivileges(String catalog, String schema, String table, String columnNamePattern) throws SQLException
 	{
-		if (getCapitializeUsername()) schema = schema.toUpperCase();
+		if (getCapitializeUsername() && schema != null) schema = schema.toUpperCase();
 		String query = (String)properties.get(PROP_COLUMNS_PRIVILEGES_QUERY);
 		if (query != null) {
 			if (con != null) {
@@ -3354,7 +3354,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	*/
 	public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) throws SQLException
 	{
-		if (getCapitializeUsername()) schemaPattern = schemaPattern.toUpperCase();
+		if (getCapitializeUsername() && schemaPattern!= null) schemaPattern = schemaPattern.toUpperCase();
 		String query = (String)properties.get(PROP_TABLES_QUERY);
 		if (query != null) {
 			if (con != null) {
@@ -3399,7 +3399,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	*/
 	public ResultSet getTablePrivileges(String catalog, String schemaPattern, String tableNamePattern) throws SQLException
 	{
-		if (getCapitializeUsername()) schemaPattern = schemaPattern.toUpperCase();
+		if (getCapitializeUsername() && schemaPattern!= null) schemaPattern = schemaPattern.toUpperCase();
 		String query = (String)properties.get(PROP_TABLE_PRIVILEGES_QUERY);
 		if (query != null) {
 			if (con != null) {
@@ -3431,7 +3431,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	*/
 	public ResultSet getBestRowIdentifier(String catalog, String schema, String table, int scope, boolean nullable) throws SQLException
 	{
-		if (getCapitializeUsername()) schema = schema.toUpperCase();
+		if (getCapitializeUsername() && schema != null) schema = schema.toUpperCase();
 		String query = (String)properties.get(PROP_BEST_ROW_IDENTIFIER);
 		if (query != null) {
 			if (con != null) {
@@ -3466,7 +3466,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	*/
 	public ResultSet getVersionColumns(String catalog, String schema, String table) throws SQLException
 	{
-		if (getCapitializeUsername()) schema = schema.toUpperCase();
+		if (getCapitializeUsername() && schema != null) schema = schema.toUpperCase();
 		String query = (String)properties.get(PROP_VERSION_COLUMNS);
 		if (query != null) {
 			if (con != null) {
@@ -3498,7 +3498,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	*/
 	public ResultSet getPrimaryKeys(String catalog, String schema, String table) throws SQLException
 	{
-		if (getCapitializeUsername()) schema = schema.toUpperCase();
+		if (getCapitializeUsername() && schema != null) schema = schema.toUpperCase();
 		String query = (String)properties.get(PROP_PK_QUERY);
 		if (query != null) {
 			if (con != null) {
@@ -3533,7 +3533,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	*/
 	public ResultSet getImportedKeys(String catalog, String schema, String table) throws SQLException
 	{
-		if (getCapitializeUsername()) schema = schema.toUpperCase();
+		if (getCapitializeUsername() && schema != null) schema = schema.toUpperCase();
 		String query = (String)properties.get(PROP_IK_QUERY);
 		if (query != null) {
 			if (con != null) {
@@ -3568,7 +3568,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	*/
 	public ResultSet getExportedKeys(String catalog, String schema, String table) throws SQLException
 	{
-		if (getCapitializeUsername()) schema = schema.toUpperCase();
+		if (getCapitializeUsername() && schema != null) schema = schema.toUpperCase();
 		String query = (String)properties.get(PROP_EK_QUERY);
 		if (query != null) {
 			if (con != null) {
@@ -3605,7 +3605,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	*/
 	public ResultSet getCrossReference(String catalog, String schema, String table, String foreignCatalog, String foreignSchema, String foreignTable) throws SQLException
 	{
-		if (getCapitializeUsername()) schema = schema.toUpperCase();
+		if (getCapitializeUsername() && schema != null) schema = schema.toUpperCase();
 		String query = (String)properties.get(PROP_CROSSREF_QUERY);
 		if (query != null) {
 			if (con != null) {
@@ -3668,7 +3668,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	*/
 	public ResultSet getIndexInfo(String catalog, String schema, String table, boolean unique, boolean approximate) throws SQLException
 	{
-		if (getCapitializeUsername()) schema = schema.toUpperCase();
+		if (getCapitializeUsername() && schema != null) schema = schema.toUpperCase();
 		String query = (String)properties.get(PROP_INDEX_INFO_QUERY);
 		if (query != null) {
 			if (con != null) {
@@ -3872,7 +3872,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	*/
     public ResultSet getUDTs(String catalog, String schemaPattern, String typeNamePattern, int[] types) throws SQLException
     {
-		if (getCapitializeUsername()) schemaPattern = schemaPattern.toUpperCase();
+		if (getCapitializeUsername() && schemaPattern != null) schemaPattern = schemaPattern.toUpperCase();
 		String query = (String)properties.get(PROP_UDT_QUERY);
 		if (query != null) {
 			if (con != null) {
