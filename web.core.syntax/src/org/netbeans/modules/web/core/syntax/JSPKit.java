@@ -23,6 +23,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
+import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.Completion;
@@ -121,6 +122,9 @@ public class JSPKit extends NbEditorKit {
                     new ExpandAllCommentsFolds(),
                     new CollapseAllScriptingFolds(),
                     new ExpandAllScriptingFolds(),
+                    new JspInsertBreakAction(),
+                    new JspDefaultKeyTypedAction(),
+                    new JspDeleteCharAction(deletePrevCharAction, false),
         };
         
         return TextAction.augmentList(super.createActions(), javaActions);
@@ -414,5 +418,89 @@ public class JSPKit extends NbEditorKit {
             FoldUtilities.collapse(hierarchy, JspFoldTypes.DECLARATION);
         }
     }
+
+    private static TokenContextPath getTokenContextPath(Caret caret, Document doc){
+        if (doc instanceof BaseDocument){
+            int dotPos = caret.getDot();
+            ExtSyntaxSupport sup = (ExtSyntaxSupport)((BaseDocument)doc).getSyntaxSupport();
+            if (dotPos>0){
+                try{
+                    TokenItem token = sup.getTokenChain(dotPos-1, dotPos);
+                    if (token != null){
+                        return token.getTokenContextPath();
+                    }
+                }catch(BadLocationException ble){
+                    ErrorManager.getDefault().notify(ErrorManager.WARNING, ble);
+                }
+            }
+        }
+        return null;
+    }
+    
+    public static class JspInsertBreakAction extends InsertBreakAction {
+        public void actionPerformed(ActionEvent e, JTextComponent target) {
+            if (target!=null){
+                TokenContextPath path = getTokenContextPath(target.getCaret(), target.getDocument());
+
+                if (path != null && path.contains(JavaTokenContext.contextPath)){
+                    JavaKit jkit = (JavaKit)getKit(JavaKit.class);
+                    if (jkit!=null){
+                        Action action = jkit.getActionByName(DefaultEditorKit.insertBreakAction);
+                        if (action != null && action instanceof JavaKit.JavaInsertBreakAction){
+                            ((JavaKit.JavaInsertBreakAction)action).actionPerformed(e, target);
+                            return;
+                        }
+                    }
+                }
+            }            
+            super.actionPerformed(e, target);
+        }
+    }    
+    
+    public static class JspDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
+        public void actionPerformed(ActionEvent e, JTextComponent target) {
+            if (target!=null){
+                TokenContextPath path = getTokenContextPath(target.getCaret(), target.getDocument());
+
+                if (path != null && path.contains(JavaTokenContext.contextPath)){
+                    JavaKit jkit = (JavaKit)getKit(JavaKit.class);
+                    if (jkit!=null){
+                        Action action = jkit.getActionByName(DefaultEditorKit.defaultKeyTypedAction);
+                        if (action != null && action instanceof JavaKit.JavaDefaultKeyTypedAction){
+                            ((JavaKit.JavaDefaultKeyTypedAction)action).actionPerformed(e, target);
+                            return;
+                        }
+                    }
+                }
+            }            
+            super.actionPerformed(e, target);
+        }
+    }
+
+    public static class JspDeleteCharAction extends ExtDeleteCharAction {
+        
+        public JspDeleteCharAction(String nm, boolean nextChar) {
+            super(nm, nextChar);
+        }
+
+        public void actionPerformed(ActionEvent e, JTextComponent target) {
+            if (target!=null){
+                TokenContextPath path = getTokenContextPath(target.getCaret(), target.getDocument());
+
+                if (path != null && path.contains(JavaTokenContext.contextPath)){
+                    JavaKit jkit = (JavaKit)getKit(JavaKit.class);
+                    if (jkit!=null){
+                        Action action = jkit.getActionByName(DefaultEditorKit.deletePrevCharAction);
+                        if (action != null && action instanceof JavaKit.JavaDeleteCharAction){
+                            ((JavaKit.JavaDeleteCharAction)action).actionPerformed(e, target);
+                            return;
+                        }
+                    }
+                }
+            }            
+            super.actionPerformed(e, target);
+        }
+    }
     
 }
+    
