@@ -15,7 +15,7 @@ package org.netbeans.spi.java.queries;
 import org.openide.filesystems.FileObject;
 
 /**
- * Permits providers to return source level of Java source file.
+ * Permits providers to return specification source level of Java source file.
  * <p>
  * A default implementation is registered by the
  * <code>org.netbeans.modules.java.project</code> module which looks up the
@@ -28,6 +28,7 @@ import org.openide.filesystems.FileObject;
  * @see org.netbeans.api.java.queries.SourceLevelQuery
  * @see org.netbeans.api.queries.FileOwnerQuery
  * @see org.netbeans.api.project.Project#getLookup
+ * @see org.netbeans.api.java.classpath.ClassPath#BOOT
  * @author David Konecny
  * @since org.netbeans.api.java/1 1.5
  */

@@ -24,6 +24,7 @@ import org.netbeans.api.project.Project;
  * used in it as dependencies; or they may just be contained or agglomerated in
  * it somehow.
  * @see Project#getLookup
+ * @see <a href="@ANT/PROJECT@/org/netbeans/spi/project/support/ant/ReferenceHelper.html#createSubprojectProvider()"><code>ReferenceHelper.createSubprojectProvider</code></a>
  * @author Jesse Glick
  */
 public interface SubprojectProvider {

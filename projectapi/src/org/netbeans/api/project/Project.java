@@ -29,6 +29,7 @@ import org.openide.util.Lookup;
  * tools or services should <em>not</em> need to explicitly model projects, and
  * should not be using this API much or at all.</p>
  * </div>
+ * @see <a href="http://projects.netbeans.org/buildsys/howto.html">NetBeans 4.0 Project &amp; Build System How-To</a>
  * @author Jesse Glick
  */
 public interface Project extends Lookup.Provider {
@@ -74,6 +75,7 @@ public interface Project extends Lookup.Provider {
      * <li><a href="@PROJECTS/PROJECTUIAPI@/org/netbeans/spi/project/ui/PrivilegedTemplates.html"><code>PrivilegedTemplates</code></a></li>
      * <li><a href="@JAVA/API@/org/netbeans/spi/java/classpath/ClassPathProvider.html"><code>ClassPathProvider</code></a></li>
      * <li><a href="@JAVA/API@/org/netbeans/spi/java/queries/SourceForBinaryQueryImplementation.html"><code>SourceForBinaryQueryImplementation</code></a></li>
+     * <li><a href="@JAVA/API@/org/netbeans/spi/java/queries/SourceLevelQueryImplementation.html"><code>SourceLevelQueryImplementation</code></a></li>
      * <li><a href="@JAVA/API@/org/netbeans/spi/java/queries/JavadocForBinaryQueryImplementation.html"><code>JavadocForBinaryQueryImplementation</code></a></li>
      * <li><a href="@JAVA/API@/org/netbeans/spi/java/queries/AccessibilityQueryImplementation.html"><code>AccessibilityQueryImplementation</code></a></li>
      * <li><a href="@JAVA/API@/org/netbeans/spi/java/queries/UnitTestForSourceQueryImplementation.html"><code>UnitTestForSourceQueryImplementation</code></a></li>

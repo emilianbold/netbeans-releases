@@ -58,6 +58,7 @@ public class CommonProjectActions {
      * You might include this in the context menu of a logical view.
      * </p>
      * @return an action
+     * @see org.netbeans.spi.project.SubprojectProvider
      */
     public static Action openSubprojectsAction() {
         return Utilities.getActionsFactory().openSubprojectsAction();
