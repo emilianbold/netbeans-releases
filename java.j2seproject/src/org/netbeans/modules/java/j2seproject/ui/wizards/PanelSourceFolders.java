@@ -114,6 +114,10 @@ public class PanelSourceFolders extends SettingsPanel {
         }
         else {
             projectLocation = projectLocation.getParentFile();
+            //Workaround of "bad" (web) template iterators which set projdir to illegal value
+            if (projectLocation == null) {
+                projectLocation = ProjectChooser.getProjectsFolder();
+            }
         }
         this.projectLocation.setText (projectLocation.getAbsolutePath());
         String projectName = (String) settings.getProperty ("displayName"); //NOI18N
