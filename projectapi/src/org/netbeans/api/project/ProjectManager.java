@@ -263,6 +263,7 @@ public final class ProjectManager {
                             }
                         }
                     }
+    // Workaround for issue #51911:
     // Log project creation exception here otherwise it can get lost
     // in following scenario:
     // If project creation calls ProjectManager.postWriteRequest() (what for 
@@ -275,6 +276,9 @@ public final class ProjectManager {
     // its helperRef cache) then only this second fail is logged, but the cause - 
     // the failure to create project - is never logged. So, better log it here:
                 } catch (Error e) {
+                    ErrorManager.getDefault().notify(e);
+                    throw e;
+                } catch (RuntimeException e) {
                     ErrorManager.getDefault().notify(e);
                     throw e;
                 } catch (IOException e) {
