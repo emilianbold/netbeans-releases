@@ -87,6 +87,7 @@ final class NbModuleProject implements Project {
             new LogicalView(this),
             new SubprojectProviderImpl(this),
             fileBuilt,
+            new AccessibilityQueryImpl(this),
             // XXX need, in rough descending order of importance:
             // AntArtifactProvider - should it run netbeans target, or all-foo/bar?
             // CustomizerProvider - ???
