@@ -549,11 +549,16 @@ public final class TestCreator {
         return tgtClass.getMethod("suite", Collections.EMPTY_LIST, false)!= null;
     }
     
-    static private Method createSuiteMethod(JavaModelPackage pkg) {
-        Method ret = pkg.getMethod().createMethod();
-        ret.setName("suite");
-        ret.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
-        ret.setTypeName(TestUtil.getTypeReference(pkg, "Test"));        //NOI18N
+    private static Method createSuiteMethod(JavaModelPackage pkg, String javadocText, String bodyText) {
+        Method ret = pkg.getMethod().createMethod("suite", 
+                Collections.EMPTY_LIST,
+                Modifier.STATIC | Modifier.PUBLIC,
+                javadocText, null, null, bodyText, 
+                Collections.EMPTY_LIST,
+                Collections.EMPTY_LIST,
+                Collections.EMPTY_LIST,
+                TestUtil.getTypeReference(pkg, "Test"),
+                0);
         return ret;
     }
     
@@ -566,14 +571,11 @@ public final class TestCreator {
         
         JavaModelPackage pkg = (JavaModelPackage)tgtClass.refImmediatePackage();
         
-        // create header of function
-        Method method = createSuiteMethod(pkg);
-        
         StringBuffer body = new StringBuffer(1024);
         body.append("TestSuite suite = new TestSuite(");                //NOI18N
         body.append(tgtClass.getSimpleName());
         body.append(".class);\n");
-        
+      
         Collection innerClasses = TestUtil.filterFeatures(tgtClass, JavaClass.class);
         Iterator itic = innerClasses.iterator();
         while (itic.hasNext()) {
@@ -586,7 +588,10 @@ public final class TestCreator {
         }
         
         body.append("\nreturn suite;\n");
-        method.setBodyText(body.toString());
+
+        // create header of function
+        Method method = createSuiteMethod(pkg, null, body.toString());
+
         return method;
     }
     
@@ -862,16 +867,14 @@ public final class TestCreator {
         Method suiteMethod = tgtClass.getMethod("suite", Collections.EMPTY_LIST, false);
         tgtClass.getFeatures().remove(suiteMethod);
         
-        suiteMethod = createSuiteMethod(pkg);
-        if (generateSourceCodeHints) {
-            String javadocText = NbBundle.getMessage(TestCreator.class,"TestCreator.suiteMethod.JavaDoc.comment");
-            JavaDoc jd = pkg.getJavaDoc().createJavaDoc(javadocText, Collections.EMPTY_LIST);
-            suiteMethod.setJavadoc(jd);
-        }
-        
+        String javadocText = generateSourceCodeHints ? NbBundle.getMessage(TestCreator.class,"TestCreator.suiteMethod.JavaDoc.comment") : null;
+
         StringBuffer newBody = new StringBuffer();
         generateSuiteBody(pkg, tgtClass.getSimpleName(), newBody, listMembers, true);
-        suiteMethod.setBodyText(newBody.toString());
+        String bodyText = newBody.toString();
+
+        suiteMethod = createSuiteMethod(pkg, javadocText, bodyText);
+        
         tgtClass.getFeatures().add(suiteMethod);
         
     }
