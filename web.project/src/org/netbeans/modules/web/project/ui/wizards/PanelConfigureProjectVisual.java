@@ -31,7 +31,8 @@ public class PanelConfigureProjectVisual extends JPanel {
     public PanelConfigureProjectVisual(PanelConfigureProject panel) {
         this.panel = panel;
         initComponents();
-
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelConfigureProjectVisual.class, "ACS_NWP1_NamePanel_A11YDesc"));  // NOI18N
+        
         projectLocationPanel = new PanelProjectLocationVisual(panel);
         locationContainer.add(projectLocationPanel, java.awt.BorderLayout.NORTH);
 

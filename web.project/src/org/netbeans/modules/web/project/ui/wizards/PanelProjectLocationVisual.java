@@ -59,6 +59,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
         setLayout(new java.awt.GridBagLayout());
 
+        projectNameLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectName_LabelMnemonic").charAt(0));
         projectNameLabel.setLabelFor(projectNameTextField);
         projectNameLabel.setText(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_ProjectName_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -72,7 +73,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         add(projectNameTextField, gridBagConstraints);
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NWP1_ProjectName_A11YDesc"));
 
+        projectLocationLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectLocation_LabelMnemonic").charAt(0));
         projectLocationLabel.setLabelFor(projectLocationTextField);
         projectLocationLabel.setText(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_ProjectLocation_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -88,6 +91,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(projectLocationTextField, gridBagConstraints);
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NPW1_ProjectLocation_A11YDesc"));
 
         Button.setText(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_BrowseLocation_Button"));
         Button.setActionCommand("BROWSE");
@@ -102,7 +106,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
         add(Button, gridBagConstraints);
+        Button.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NWP1_BrowseLocation_A11YDesc"));
 
+        createdFolderLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_LablelMnemonic").charAt(0));
         createdFolderLabel.setLabelFor(createdFolderTextField);
         createdFolderLabel.setText(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_CreatedProjectFolder_Lablel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -120,6 +126,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(createdFolderTextField, gridBagConstraints);
+        createdFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NWP1_CreatedProjectFolder_A11YDesc"));
 
     }//GEN-END:initComponents
 

@@ -51,6 +51,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
+        setAsMainCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBoxMnemonic").charAt(0));
         setAsMainCheckBox.setSelected(true);
         setAsMainCheckBox.setText(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_SetAsMain_CheckBox"));
         setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -61,7 +62,9 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(setAsMainCheckBox, gridBagConstraints);
+        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_SetAsMain_A11YDesc"));
 
+        jLabelContextPath.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_ContextPath_CheckBoxMnemonic").charAt(0));
         jLabelContextPath.setLabelFor(jTextFieldContextPath);
         jLabelContextPath.setText(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_ContextPath_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -84,7 +87,9 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jTextFieldContextPath, gridBagConstraints);
+        jTextFieldContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_ContextPath_A11YDesc"));
 
+        j2eeSpecLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_J2EESpecLevel_CheckBoxMnemonic").charAt(0));
         j2eeSpecLabel.setLabelFor(j2eeSpecComboBox);
         j2eeSpecLabel.setText(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_J2EESpecLevel_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -107,6 +112,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(j2eeSpecComboBox, gridBagConstraints);
+        j2eeSpecComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NPW1_J2EESpecLevel_A11YDesc"));
 
         j2eeSpecDescLabel.setLabelFor(j2eeSpecDescTextPane);
         j2eeSpecDescLabel.setText(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_J2EESpecLevelDesc_Label"));
@@ -122,6 +128,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         j2eeSpecDescTextPane.setFocusable(false);
         j2eeSpecDescTextPane.setEnabled(false);
         jScrollPane1.setViewportView(j2eeSpecDescTextPane);
+        j2eeSpecDescTextPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_J2EESpecLevelDesc_A11YDesc"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
