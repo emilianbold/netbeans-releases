@@ -80,10 +80,6 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
         Node n = getParentNode();
         if (n != null)
             ctx = n.getHelpCtx();
-        if (ctx == null ||
-            ctx == HelpCtx.DEFAULT_HELP) {
-            ctx = new HelpCtx(LookupNode.class);
-        }
         return ctx;
     }
 
@@ -289,9 +285,6 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
                 n = parent;
             if (n != null)
                 ctx = n.getHelpCtx();
-            if (ctx == null ||
-                ctx == HelpCtx.DEFAULT_HELP)
-                ctx = new HelpCtx(LookupNode.class);
             return ctx;
         }
         
