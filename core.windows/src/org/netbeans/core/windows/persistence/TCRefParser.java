@@ -50,6 +50,8 @@ class TCRefParser {
     public static final String INSTANCE_DTD_ID_2_0
     = "-//NetBeans//DTD Top Component in Mode Properties 2.0//EN"; // NOI18N
     
+    private static final boolean DEBUG = Debug.isLoggable(TCRefParser.class);
+    
     /** Unique id from file name */
     private String tc_id;
     
@@ -74,8 +76,7 @@ class TCRefParser {
     
     /** Load tcref configuration. */
     TCRefConfig load () throws IOException {
-        //log("");
-        //log("++ TCRefParser.load ENTER" + " tcRef:" + tc_id);
+        if (DEBUG) Debug.log(TCRefParser.class, "load ENTER" + " tcRef:" + tc_id);
         TCRefConfig tcRefCfg = new TCRefConfig();
         if (propertyHandler == null) {
             propertyHandler = new PropertyHandler();
@@ -83,20 +84,19 @@ class TCRefParser {
         InternalConfig internalCfg = getInternalConfig();
         internalCfg.clear();
         propertyHandler.readData(tcRefCfg, internalCfg);
-        //log("++ TCRefParser.load LEAVE" + " tcRef:" + tc_id);
-        //log("");
+        if (DEBUG) Debug.log(TCRefParser.class, "load LEAVE" + " tcRef:" + tc_id);
         return tcRefCfg;
     }
     
     /** Save tcref configuration. */
     void save (TCRefConfig tcRefCfg) throws IOException {
-        //log("-- TCRefParser.save ENTER" + " tcRef:" + tc_id);
+        if (DEBUG) Debug.log(TCRefParser.class, "save ENTER" + " tcRef:" + tc_id);
         if (propertyHandler == null) {
             propertyHandler = new PropertyHandler();
         }
         InternalConfig internalCfg = getInternalConfig();
         propertyHandler.writeData(tcRefCfg, internalCfg);
-        //log("-- TCRefParser.save LEAVE" + " tcRef:" + tc_id);
+        if (DEBUG) Debug.log(TCRefParser.class, "save LEAVE" + " tcRef:" + tc_id);
     }
     
     String getName () {

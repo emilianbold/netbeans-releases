@@ -486,13 +486,13 @@ public class WindowManagerParser {
         }
         
         FileObject groupsModuleFolder = pm.getRootModuleFolder().getFileObject(PersistenceManager.GROUPS_FOLDER);
-        if (DEBUG) Debug.log(WindowManagerParser.class, "readGroups groupsModuleFolder: " + groupsModuleFolder);
+        //if (DEBUG) Debug.log(WindowManagerParser.class, "readGroups groupsModuleFolder: " + groupsModuleFolder);
         
         if (groupsModuleFolder != null) {
             FileObject [] files;
             files = groupsModuleFolder.getChildren();
             for (int i = 0; i < files.length; i++) {
-                if (DEBUG) Debug.log(WindowManagerParser.class, "readGroups fo[" + i + "]: " + files[i]);
+                //if (DEBUG) Debug.log(WindowManagerParser.class, "readGroups fo[" + i + "]: " + files[i]);
                 if (!files[i].isFolder() && PersistenceManager.GROUP_EXT.equals(files[i].getExt())) {
                     GroupParser groupParser;
                     //wsgrp file
@@ -510,10 +510,10 @@ public class WindowManagerParser {
         
         FileObject groupsLocalFolder = pm.getRootLocalFolder().getFileObject(PersistenceManager.GROUPS_FOLDER);
         if (groupsLocalFolder != null) {
-            if (DEBUG) Debug.log(WindowManagerParser.class, "readGroups groupsLocalFolder: " + groupsLocalFolder);
+            //if (DEBUG) Debug.log(WindowManagerParser.class, "readGroups groupsLocalFolder: " + groupsLocalFolder);
             FileObject [] files = groupsLocalFolder.getChildren();
             for (int i = 0; i < files.length; i++) {
-                if (DEBUG) Debug.log(WindowManagerParser.class, "readGroups fo[" + i + "]: " + files[i]);
+                //if (DEBUG) Debug.log(WindowManagerParser.class, "readGroups fo[" + i + "]: " + files[i]);
                 if (!files[i].isFolder() && PersistenceManager.GROUP_EXT.equals(files[i].getExt())) {
                     //wsgrp file
                     GroupParser groupParser;
@@ -529,12 +529,12 @@ public class WindowManagerParser {
             }
         }
         
-        for (Iterator it = groupParserMap.keySet().iterator(); it.hasNext(); ) {
+        /*for (Iterator it = groupParserMap.keySet().iterator(); it.hasNext(); ) {
             GroupParser groupParser = (GroupParser) groupParserMap.get(it.next());
             if (DEBUG) Debug.log(WindowManagerParser.class, "readGroups groupParser: " + groupParser.getName()
             + " isInModuleFolder:" + groupParser.isInModuleFolder()
             + " isInLocalFolder:" + groupParser.isInLocalFolder());
-        }
+        }*/
         
         //Check if corresponding module is present and enabled.
         //We must load configuration data first because module info is stored in XML.
@@ -649,9 +649,9 @@ public class WindowManagerParser {
         if (DEBUG) Debug.log(WindowManagerParser.class, "writeGroups ENTER");
         //Step 1: Clean obsolete group parsers
         HashMap groupConfigMap = new HashMap();
-        if (DEBUG) Debug.log(WindowManagerParser.class, "writeGroups List of groups to be saved:");
+        //if (DEBUG) Debug.log(WindowManagerParser.class, "writeGroups List of groups to be saved:");
         for (int i = 0; i < wmc.groups.length; i++) {
-            if (DEBUG) Debug.log(WindowManagerParser.class, "writeGroups group[" + i + "]: " + wmc.groups[i].name);
+            //if (DEBUG) Debug.log(WindowManagerParser.class, "writeGroups group[" + i + "]: " + wmc.groups[i].name);
             groupConfigMap.put(wmc.groups[i].name, wmc.groups[i]);
         }
         List toDelete = new ArrayList(10);
@@ -680,12 +680,12 @@ public class WindowManagerParser {
         if ((groupsLocalFolder == null) && (groupParserMap.size() > 0)) {
             groupsLocalFolder = pm.getGroupsLocalFolder();
         }
-        if (DEBUG) Debug.log(WindowManagerParser.class, "writeGroups groupsLocalFolder:" + groupsLocalFolder);
+        //if (DEBUG) Debug.log(WindowManagerParser.class, "writeGroups groupsLocalFolder:" + groupsLocalFolder);
         for (Iterator it = groupParserMap.keySet().iterator(); it.hasNext(); ) {
             GroupParser groupParser = (GroupParser) groupParserMap.get(it.next());
             groupParser.setLocalParentFolder(groupsLocalFolder);
             groupParser.setInLocalFolder(true);
-            if (DEBUG) Debug.log(WindowManagerParser.class, "writeGroups save group:" + groupParser.getName());
+            //if (DEBUG) Debug.log(WindowManagerParser.class, "writeGroups save group:" + groupParser.getName());
             groupParser.save((GroupConfig) groupConfigMap.get(groupParser.getName()));
         }
         

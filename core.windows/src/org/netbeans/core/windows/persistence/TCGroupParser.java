@@ -48,6 +48,8 @@ class TCGroupParser {
     public static final String INSTANCE_DTD_ID_2_0
     = "-//NetBeans//DTD Top Component in Group Properties 2.0//EN"; // NOI18N
     
+    private static final boolean DEBUG = Debug.isLoggable(TCGroupParser.class);
+    
     /** Unique id from file name */
     private String tc_id;
     
@@ -72,8 +74,7 @@ class TCGroupParser {
     
     /** Load tcgroup configuration. */
     TCGroupConfig load () throws IOException {
-        //log("");
-        //log("++ TCGroupParser.load ENTER" + " tcRef:" + tc_id);
+        if (DEBUG) Debug.log(TCGroupParser.class, "load ENTER" + " tcGrp:" + tc_id);
         TCGroupConfig tcGroupCfg = new TCGroupConfig();
         if (propertyHandler == null) {
             propertyHandler = new PropertyHandler();
@@ -81,25 +82,19 @@ class TCGroupParser {
         InternalConfig internalCfg = getInternalConfig();
         internalCfg.clear();
         propertyHandler.readData(tcGroupCfg, internalCfg);
-        
-        /*log("               specVersion: " + internalCfg.specVersion);
-        log("        moduleCodeNameBase: " + internalCfg.moduleCodeNameBase);
-        log("     moduleCodeNameRelease: " + internalCfg.moduleCodeNameRelease);
-        log("moduleSpecificationVersion: " + internalCfg.moduleSpecificationVersion);*/
-        //log("++ TCGroupParser.load LEAVE" + " tcGroup:" + tc_id);
-        //log("");
+        if (DEBUG) Debug.log(TCGroupParser.class, "load LEAVE" + " tcGrp:" + tc_id);
         return tcGroupCfg;
     }
     
     /** Save tcGroup configuration. */
     void save (TCGroupConfig tcGroupCfg) throws IOException {
-        //log("-- TCGroupParser.save ENTER" + " tcGroup:" + tc_id);
+        if (DEBUG) Debug.log(TCGroupParser.class, "save ENTER" + " tcGrp:" + tc_id);
         if (propertyHandler == null) {
             propertyHandler = new PropertyHandler();
         }
         InternalConfig internalCfg = getInternalConfig();
         propertyHandler.writeData(tcGroupCfg, internalCfg);
-        //log("-- TCGroupParser.save LEAVE" + " tcGroup:" + tc_id);
+        if (DEBUG) Debug.log(TCGroupParser.class, "save LEAVE" + " tcGrp:" + tc_id);
     }
     
     String getName () {

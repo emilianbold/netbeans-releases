@@ -361,17 +361,17 @@ class ModeParser {
     }
     
     private void writeProperties (ModeConfig mc) throws IOException {
-        //if (DEBUG) Debug.log(ModeParser.class, "writeProperties ENTER");
+        if (DEBUG) Debug.log(ModeParser.class, "writeProperties ENTER" + " mo:" + getName());
         if (propertyHandler == null) {
             propertyHandler = new PropertyHandler();
         }
         InternalConfig internalCfg = getInternalConfig();
         propertyHandler.writeData(mc, internalCfg);
-        //if (DEBUG) Debug.log(ModeParser.class, "writeProperties LEAVE");
+        if (DEBUG) Debug.log(ModeParser.class, "writeProperties LEAVE" + " mo:" + getName());
     }
     
     private void writeTCRefs (ModeConfig mc) throws IOException {
-        //if (DEBUG) Debug.log(ModeParser.class, "writeTCRefs ENTER" + " mo:" + getName());
+        if (DEBUG) Debug.log(ModeParser.class, "writeTCRefs ENTER" + " mo:" + getName());
         //Step 0: Create order
         if (mc.tcRefConfigs.length > 0) {
             if (tcRefOrder == null) {
@@ -433,7 +433,7 @@ class ModeParser {
             tcRefParser.save((TCRefConfig) tcRefConfigMap.get(tcRefParser.getName()));
         }
         
-        //if (DEBUG) Debug.log(ModeParser.class, "writeTCRefs LEAVE" + " mo:" + getName());
+        if (DEBUG) Debug.log(ModeParser.class, "writeTCRefs LEAVE" + " mo:" + getName());
     }
     
     private void deleteLocalTCRef (String tcRefName) {

@@ -246,17 +246,17 @@ class GroupParser {
     }
     
     private void writeProperties (GroupConfig sc) throws IOException {
-        if (DEBUG) Debug.log(GroupParser.class, "writeProperties ENTER");
+        if (DEBUG) Debug.log(GroupParser.class, "writeProperties ENTER" + " group:" + getName());
         if (propertyHandler == null) {
             propertyHandler = new PropertyHandler();
         }
         InternalConfig internalCfg = getInternalConfig();
         propertyHandler.writeData(sc, internalCfg);
-        if (DEBUG) Debug.log(GroupParser.class, "writeProperties LEAVE");
+        if (DEBUG) Debug.log(GroupParser.class, "writeProperties LEAVE" + " group:" + getName());
     }
     
     private void writeTCGroups (GroupConfig sc) throws IOException {
-        if (DEBUG) Debug.log(GroupParser.class, "writeTCGroups ENTER");
+        if (DEBUG) Debug.log(GroupParser.class, "writeTCGroups ENTER" + " group:" + getName());
         //Step 1: Clean obsolete tcGroup parsers
         Map tcGroupConfigMap = new HashMap(19);
         for (int i = 0; i < sc.tcGroupConfigs.length; i++) {
@@ -302,11 +302,11 @@ class GroupParser {
             tcGroupParser.save((TCGroupConfig) tcGroupConfigMap.get(tcGroupParser.getName()));
         }
         
-        if (DEBUG) Debug.log(GroupParser.class, "writeTCGroups LEAVE");
+        if (DEBUG) Debug.log(GroupParser.class, "writeTCGroups LEAVE" + " group:" + getName());
     }
     
     private void deleteLocalTCGroup (String tcGroupName) {
-        if (DEBUG) Debug.log(GroupParser.class, "deleteLocalTCGroup" + " tcGroupName:" + tcGroupName);
+        if (DEBUG) Debug.log(GroupParser.class, "deleteLocalTCGroup" + " group:" + tcGroupName);
         if (localParentFolder == null) {
             return;
         }
