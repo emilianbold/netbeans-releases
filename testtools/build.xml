@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext}/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar"/>
 
-  <target name="compile">
+  <target name="compile" depends="prepare-lib">
     <mkdir dir="netbeans/modules"/>
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
@@ -44,6 +44,12 @@ Microsystems, Inc. All Rights Reserved.
         </fileset>
         <fileset dir="${nbroot}/utilities/netbeans/modules">
           <include name="utilities.jar" />
+        </fileset>
+        <fileset dir="${nbroot}/jemmy">
+          <include name="jemmy.jar" />
+        </fileset>
+        <fileset dir="${nbroot}/jellytools">
+          <include name="jelly2-nb.jar" />
         </fileset>
         <!-- Hopefully set up by nbbuild/build.xml: -->
         <pathelement location="${jdkhome}/lib/tools.jar"/>
@@ -68,7 +74,7 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="../jellytools/jelly2-nb-javadoc.zip" tofile="netbeans/docs/jelly2-nb-javadoc.zip" filtering="off"/>
   </target>
 
-  <target name="jars" depends="compile,prepare-lib">
+  <target name="jars" depends="compile">
     <tstamp>
         <format property="buildnumber" pattern="yyyyMMddhhmm"/>
     </tstamp>

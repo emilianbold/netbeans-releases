@@ -39,8 +39,8 @@ public class NodeGeneratorAction extends NodeAction {
      */    
     public boolean enable (Node[] node) {
         try {
-            Class.forName("org.netbeans.jemmy.operators.ComponentOperator"); // NOI18N
-            Class.forName("org.netbeans.jellytools.actions.Action"); // NOI18N
+            Class.forName("org.netbeans.jemmy.operators.ComponentOperator"); 
+            Class.forName("org.netbeans.jellytools.actions.Action"); 
             return true;
         } catch (ClassNotFoundException e) {
             return false;
@@ -51,14 +51,14 @@ public class NodeGeneratorAction extends NodeAction {
      * @return String name of the action
      */    
     public String getName() {
-        return "Jelly Nodes & Actions Generator"; // NOI18N
+        return "Jelly Nodes & Actions Generator"; 
     }
 
     /** method returning icon for the action
      * @return String path to action icon
      */    
     protected String iconResource() {
-       return "/org/netbeans/modules/testtools/generator/NodeGeneratorAction.gif"; // NOI18N
+       return "/org/netbeans/modules/testtools/generator/NodeGeneratorAction.gif"; 
     }
     
     /** method returning action Help Context

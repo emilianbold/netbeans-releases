@@ -43,7 +43,7 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
     public static void showDialog(Node[] nodes){
         if (dialog==null) {
             panel = new NodeGeneratorPanel(nodes);
-            dialog = org.openide.TopManager.getDefault().createDialog(new org.openide.DialogDescriptor(panel, "Jelly Node Generator", false, new Object[0], null, org.openide.DialogDescriptor.BOTTOM_ALIGN, null, null)); // NOI18N
+            dialog = org.openide.TopManager.getDefault().createDialog(new org.openide.DialogDescriptor(panel, "Jelly Node Generator", false, new Object[0], null, org.openide.DialogDescriptor.BOTTOM_ALIGN, null, null)); 
             dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                 public void windowClosing(java.awt.event.WindowEvent evt) {
                     panel.closeButtonActionPerformed(null);
@@ -68,7 +68,7 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
         DataFolder df;
         if (packagesTreeView.isEnabled() && nodes!=null && nodes.length>0 && (df=(DataFolder)nodes[0].getCookie(DataFolder.class))!=null) {
             try {
-                StringTokenizer packageName = new StringTokenizer(df.getPrimaryFile().getPackageName('.'), "."); // NOI18N
+                StringTokenizer packageName = new StringTokenizer(df.getPrimaryFile().getPackageName('.'), "."); 
                 Node node = packagesPanel.getExplorerManager().getRootContext().getChildren().findChild(df.getPrimaryFile().getFileSystem().getSystemName());
                 while (packageName.hasMoreTokens()) {
                     node = node.getChildren().findChild(packageName.nextToken());
@@ -316,7 +316,7 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
         if (thread!=null) {
             thread.interrupt();
         }
-        helpLabel.setText("Use Ctrl-F11 key to grab popup menu content."); // NOI18N
+        helpLabel.setText("Use Ctrl-F11 key to grab popup menu content."); 
         thread = new Thread(new NodeGeneratorRunnable(directory, nodeField.getText(), actionField.getText(), inlineCheck.isSelected(), noBlockCheck.isSelected(), this));
         thread.start();
     }//GEN-LAST:event_startButtonActionPerformed
@@ -346,7 +346,7 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
         if (org.openide.explorer.ExplorerManager.PROP_SELECTED_NODES.equals (ev.getPropertyName ())) {
             Node n[] = (Node[])ev.getNewValue();
             if (n.length > 1 ) {
-                throw new java.beans.PropertyVetoException ("Only single selection allowed", ev); // NOI18N
+                throw new java.beans.PropertyVetoException ("Only single selection allowed", ev); 
             } 
         }
     }

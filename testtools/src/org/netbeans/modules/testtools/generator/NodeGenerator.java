@@ -9,10 +9,12 @@ package org.netbeans.modules.testtools.generator;
 import java.io.*;
 import java.util.*;
 import java.awt.Component;
+import java.awt.event.KeyEvent;
 import java.lang.reflect.Modifier;
 import java.text.SimpleDateFormat;
-import javax.swing.AbstractButton;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
 import javax.swing.MenuElement;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -44,7 +46,7 @@ public class NodeGenerator {
 
         public abstract String getName();
 
-        protected abstract String getPopupPath();
+        public abstract String getPopupPath();
         
         public abstract String getConstructorCode();
         
@@ -124,8 +126,11 @@ public class NodeGenerator {
         private boolean noBlock;
         private boolean inline;
         
-        public NewActionRecord(String popupPath) {
+        public NewActionRecord(String popupPath, String shortcut) {
             this.popupPath=popupPath;
+            if (shortcut!=null && shortcut.length()>0) {
+                this.shortcuts=new String[]{shortcut};
+            }
             name=toJavaIdentifier(popupPath)+"Action";
             noBlock=defaultNoBlock;
             inline=defaultInline;
@@ -182,7 +187,7 @@ public class NodeGenerator {
             sb.append(new SimpleDateFormat().format(new Date()));
             sb.append("\n */\n\npackage ");
             sb.append(actionsPackage);
-            sb.append(";\n\nimport org.netbeans.jellytools.actions.*;\n\n/** ");
+            sb.append(";\n\nimport org.netbeans.jellytools.actions.*;\nimport java.awt.event.KeyEvent;\n\n/** ");
             sb.append(name);
             sb.append(" Class\n * author ");
             sb.append(System.getProperty("user.name"));
@@ -223,15 +228,15 @@ public class NodeGenerator {
             }
             if (shortcuts!=null && shortcuts.length>0) {
                 if (shortcuts.length==1) {
-                    sb.append(", new Shortcut(");
+                    sb.append(", new Action.Shortcut(");
                     sb.append(translateShortcut(shortcuts[0]));
                     sb.append(')');
                 } else {
-                    sb.append(", new Shortcut[] {new ShortCut(");
+                    sb.append(", new Action.Shortcut[] {new Action.Shortcut(");
                     sb.append(translateShortcut(shortcuts[0]));
                     sb.append(')');
                     for (int i=1; i<shortcuts.length; i++) {
-                        sb.append(", new Shortcut(");
+                        sb.append(", new Action.Shortcut(");
                         sb.append(translateShortcut(shortcuts[i]));
                         sb.append(')');
                     }
@@ -258,10 +263,16 @@ public class NodeGenerator {
             return modifiers+", "+key;
         }
             
-        protected String getPopupPath() {
+        public String getPopupPath() {
             return popupPath;
         }
         
+        public void setPopupPath(String popupPath) {
+            if (popupPath.equals("null")) popupPath=null;
+            this.popupPath = popupPath;
+            fireStateChanged(this);
+        }
+
         public boolean isInline() {
             return inline;
         }
@@ -327,11 +338,7 @@ public class NodeGenerator {
     private boolean defaultInline;
     private boolean defaultNoBlock;
     
-    public NodeGenerator(String actionsPackage, String nodePackage, String nodeName, JPopupMenuOperator popupMenu, boolean defaultInline, boolean defaultNoBlock) {
-        this(actionsPackage, nodePackage, nodeName, getPopupPaths(popupMenu), defaultInline, defaultNoBlock);
-    }
-    
-    public NodeGenerator(String actionsPackage, String nodePackage, String nodeName, String popupPaths[], boolean defaultInline, boolean defaultNoBlock) {
+    private NodeGenerator(String actionsPackage, String nodePackage, String nodeName, boolean defaultInline, boolean defaultNoBlock) {
         this.actionsPackage=actionsPackage;
         this.nodePackage=nodePackage;
         this.nodeName=nodeName;
@@ -339,8 +346,43 @@ public class NodeGenerator {
         this.defaultNoBlock=defaultNoBlock;
         searchForActions();
         matchingRecords=new ArrayList();
-        for (int i=0; i<popupPaths.length; i++)
-            matchingRecords.add(getActionRecord(popupPaths[i]));
+    }
+    
+    public NodeGenerator(String actionsPackage, String nodePackage, String nodeName, JPopupMenuOperator popupMenu, boolean defaultInline, boolean defaultNoBlock) {
+        this(actionsPackage, nodePackage, nodeName, defaultInline, defaultNoBlock);
+        ArrayList paths=new ArrayList();
+        tool=new EventTool();
+        getPopupPaths("", popupMenu);
+    }
+    
+    private void getPopupPaths(String path, JPopupMenuOperator popup) {
+        tool.waitNoEvent(1000);
+        MenuElement el[]=popup.getSubElements();
+        for (int i=0; i<el.length; i++) {
+            Component c=el[i].getComponent();
+            if (c.isShowing()) {
+                if (c instanceof JMenu && c.isEnabled()) {
+                    JMenuOperator m=new JMenuOperator((JMenu)c);
+                    m.push();
+                    getPopupPaths(path+m.getText()+"|", new JPopupMenuOperator(m.getPopupMenu()));
+                } else if (c instanceof JMenuItem) {
+                    String text=((JMenuItem)c).getText();
+                    if (text!=null && text.length()>0) {
+                        ActionRecord rec=getActionRecord(path+text, getShortcutFor((JMenuItem)c));
+                        if (!matchingRecords.contains(rec)) {
+                            matchingRecords.add(rec);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private String getShortcutFor(JMenuItem it) {
+        KeyStroke key=it.getAccelerator();
+        if (key==null) return null;
+        String s=KeyEvent.getKeyModifiersText(key.getModifiers());
+        return s+(s.length()>0?"+":"")+KeyEvent.getKeyText(key.getKeyCode());
     }
     
     public String getNodeName() {
@@ -370,38 +412,12 @@ public class NodeGenerator {
     
     private static EventTool tool;
     
-    private static String[] getPopupPaths(JPopupMenuOperator popup) {
-        ArrayList paths=new ArrayList();
-        tool=new EventTool();
-        getPopupPaths(paths, "", popup);
-        return (String[])paths.toArray(new String[0]);
-    }
-    
-    private static void getPopupPaths(ArrayList paths, String path, JPopupMenuOperator popup) {
-        tool.waitNoEvent(1000);
-        MenuElement el[]=popup.getSubElements();
-        for (int i=0; i<el.length; i++) {
-            Component c=el[i].getComponent();
-            if (c.isShowing()) {
-                if (c instanceof JMenu && c.isEnabled()) {
-                    JMenuOperator m=new JMenuOperator((JMenu)c);
-                    m.push();
-                    getPopupPaths(paths, path+m.getText()+"|", new JPopupMenuOperator(m.getPopupMenu()));
-                } else if (c instanceof AbstractButton) {
-                    String text=((AbstractButton)c).getText();
-                    if (text!=null && text.length()>0 && !paths.contains(path+text))
-                        paths.add(path+text);
-                }
-            }
-        }
-    }
-    
-    private ActionRecord getActionRecord(String popupPath) {
+    private ActionRecord getActionRecord(String popupPath, String shortcut) {
         Iterator it = allRecords.iterator();
         ActionRecord record=null;
         while (it.hasNext() && !(record=(ActionRecord)it.next()).isForPopup(popupPath));
         if (!record.isForPopup(popupPath)) {
-            record = new NewActionRecord(popupPath);
+            record = new NewActionRecord(popupPath, shortcut);
             allRecords.add(record);
         }
         return record;
@@ -637,11 +653,5 @@ public class NodeGenerator {
             node=new DefaultMutableTreeNode(this);
         }
         return node;
-    }
-
-    public static void main(String[] args) throws Exception {
-        NodeGenerator gen=new NodeGenerator("org.mypackage.actions", "org.mypackage.nodes", "MyNewNode", new JPopupMenuOperator(), false, false);
-        NodeEditorPanel.showDialog(gen);
-        //gen.saveNewSources("c:/xxx");
     }
 }

@@ -85,27 +85,27 @@ public class NodeGeneratorRunnable implements Runnable, AWTEventListener {
                     Thread.currentThread().sleep(100);
                 }
                 start=false;
-                help.setText("Waiting for popup menu ..."); // NOI18N
+                help.setText("Waiting for popup menu ..."); 
                 try {
                     JPopupMenuOperator popup=new JPopupMenuOperator();
-                    help.setText("Please wait, processing ..."); // NOI18N
+                    help.setText("Please wait, processing ..."); 
                     int i=2;
                     String name = "NewNode";
                     String index = "";
-                    while ((file=new File(directory+"/"+nodesPackage.replace('.', '/')+"/"+name+index+".java")).exists()) { // NOI18N
+                    while ((file=new File(directory+"/"+nodesPackage.replace('.', '/')+"/"+name+index+".java")).exists()) { 
                         index = String.valueOf(i++);
                     }
                     NodeGenerator gen = new NodeGenerator(actionsPackage, nodesPackage, name+index, popup, defaultInline, defaultNoBlock);
                     if (NodeEditorPanel.showDialog(gen)) {
                         gen.saveNewSources(directory);
-                        help.setText("Finished: "+name+index); // NOI18N
+                        help.setText("Finished: "+gen.getNodeName()); 
                     } else {
-                        help.setText("Operation canceled."); // NOI18N
+                        help.setText("Operation canceled."); 
                     }
                 } catch (JemmyException je) {
                     help.setText("No Popup menu found, try it again (Use CTRL-F11).");
                 } catch (Exception e) {
-                    help.setText("Exception: "+e.getMessage()); // NOI18N
+                    help.setText("Exception: "+e.getMessage()); 
 //                    e.printStackTrace();
                 }
             }

@@ -58,18 +58,18 @@ public class NodeEditorPanel extends javax.swing.JPanel implements ChangeListene
     
     static {
         try {
-            InputStream in = NodeEditorPanel.class.getClassLoader().getResourceAsStream("org/netbeans/modules/testtools/generator/class.gif"); // NOI18N
+            InputStream in = NodeEditorPanel.class.getClassLoader().getResourceAsStream("org/netbeans/modules/testtools/generator/class.gif"); 
             byte b[] = new byte[in.available()];
             in.read(b);
             in.close();
             rootIcon = new ImageIcon(b);
             existIcon=rootIcon;
-            in = NodeEditorPanel.class.getClassLoader().getResourceAsStream("org/netbeans/modules/testtools/generator/new.gif"); // NOI18N
+            in = NodeEditorPanel.class.getClassLoader().getResourceAsStream("org/netbeans/modules/testtools/generator/new.gif"); 
             b = new byte[in.available()];
             in.read(b);
             in.close();
             newIcon = new ImageIcon(b);
-            in = NodeEditorPanel.class.getClassLoader().getResourceAsStream("org/netbeans/modules/testtools/generator/inline.gif"); // NOI18N
+            in = NodeEditorPanel.class.getClassLoader().getResourceAsStream("org/netbeans/modules/testtools/generator/inline.gif"); 
             b = new byte[in.available()];
             in.read(b);
             in.close();
@@ -236,7 +236,7 @@ public class NodeEditorPanel extends javax.swing.JPanel implements ChangeListene
      * @param gen ComponentGenerator instance
      * @return boolean false when operation canceled */    
     public static boolean showDialog(NodeGenerator gen) {
-        DialogDescriptor desc = new DialogDescriptor(new NodeEditorPanel(gen), "Node Editor", true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null); // NOI18N
+        DialogDescriptor desc = new DialogDescriptor(new NodeEditorPanel(gen), "Node Editor", true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null); 
         TopManager.getDefault().createDialog(desc).show();
         return desc.getValue()==DialogDescriptor.OK_OPTION;
     }
