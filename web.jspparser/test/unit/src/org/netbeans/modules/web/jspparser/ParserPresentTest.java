@@ -19,7 +19,6 @@ import java.io.PrintStream;
 import java.util.StringTokenizer;
 
 import junit.framework.*;
-import org.netbeans.api.projects.Project;
 import org.netbeans.junit.*;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;

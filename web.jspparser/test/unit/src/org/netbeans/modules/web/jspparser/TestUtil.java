@@ -17,12 +17,10 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.StringTokenizer;
-import org.netbeans.api.projects.Project;
-import org.netbeans.api.projects.ProjectDescriptor;
-import org.netbeans.api.projects.ProjectManager;
-import org.netbeans.api.projects.ProjectUpgradeException;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.core.jsploader.WebModule;
+import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -61,34 +59,6 @@ class TestUtil {
         }
     }
     
-    static Project openProject(FileObject projectFile, NbTestCase test) throws IOException {
-        try {
-            ProjectDescriptor pd;
-            DataObject prj = DataObject.find (projectFile);
-            pd = (ProjectDescriptor) prj.getCookie (ProjectDescriptor.class);
-            if (pd == null) {
-                test.fail ("test project not found");
-            }
-
-            Project p = ProjectManager.getDefault ().open (pd);
-            return p;
-        }
-        catch (DataObjectNotFoundException e) {
-            IOException ioe = new IOException(e.getMessage());
-            ioe.initCause(e);
-            throw ioe;
-        }
-        catch (ProjectUpgradeException e) {
-            IOException ioe = new IOException(e.getMessage());
-            ioe.initCause(e);
-            throw ioe;
-        }
-    }
-    
-    static Project getProjectInWorkDir(String path, NbTestCase test) throws Exception {
-        return openProject(getFileInWorkDir(path, test), test);
-    }
-    
     static FileObject getFileInWorkDir(String path, NbTestCase test) throws Exception {
         File f = new File(Manager.getWorkDirPath());
         FileObject workDirFO = mountRoot(f, test);
@@ -98,6 +68,10 @@ class TestUtil {
             tempFile = tempFile.getFileObject(st.nextToken());
         }
         return tempFile;
+    }
+    
+    static JspParserAPI.WebModule getWebModule(FileObject jspFile) {
+        return WebModule.getJspParserWM();
     }
     
 }

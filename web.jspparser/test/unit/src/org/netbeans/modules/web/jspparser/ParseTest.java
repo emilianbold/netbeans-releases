@@ -21,11 +21,9 @@ import java.io.PrintWriter;
 import java.util.StringTokenizer;
 
 import junit.framework.*;
-import org.netbeans.api.projects.Project;
 import org.netbeans.junit.*;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
-import org.netbeans.modules.web.jsps.JspUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -81,24 +79,12 @@ public class ParseTest extends NbTestCase {
     public void midnightAppTest(String path) throws Exception {
         try{
             log(Manager.getWorkDirPath());
-            Project p = TestUtil.getProjectInWorkDir("jspparser-data2/test_jsp_parser.project", this);
             FileObject wmRoot = TestUtil.getFileInWorkDir("jspparser-data2/midnight-jsp2.0", this);
             FileObject res = TestUtil.getFileInWorkDir(path, this);
             if (!FileUtil.isParentOf (wmRoot, res)) {
                 wmRoot = null;
             }
-            analyzeIt(wmRoot, res, p);
-            
-/*            File f = new File(Manager.getWorkDirPath(), "jspparser-data2");
-            FileObject fo = TestUtil.mountRoot(f, this);
-            FileObject wmRoot = fo.getFileObject("midnight-jsp2.0");
-            FileObject projectFile = fo.getFileObject("test_jsp_parser.project");
-            StringTokenizer st = new StringTokenizer(path, "/");
-            FileObject tempFile = wmRoot;
-            while (st.hasMoreTokens()) {
-                tempFile = tempFile.getFileObject(st.nextToken());
-            }
-            Project p = TestUtil.openProject(projectFile, this);*/
+            analyzeIt(wmRoot, res);
         }catch(RuntimeException e){
             e.printStackTrace();
             e.printStackTrace(getRef());
@@ -113,13 +99,12 @@ public class ParseTest extends NbTestCase {
      */
     public void jspExamplesAppTest(String path) throws Exception {
         try{
-            Project p = TestUtil.getProjectInWorkDir("jspparser-data3/Jsp_Examples.project", this);
             FileObject wmRoot = TestUtil.getFileInWorkDir("jspparser-data3/jsp-examples", this);
             FileObject res = TestUtil.getFileInWorkDir(path, this);
             if (!FileUtil.isParentOf (wmRoot, res)) {
                 wmRoot = null;
             }
-            analyzeIt(wmRoot, res, p);
+            analyzeIt(wmRoot, res);
             
         }catch(RuntimeException e){
             e.printStackTrace();
@@ -130,11 +115,10 @@ public class ParseTest extends NbTestCase {
     
     private static int fileNr = 1;
     
-    private void analyzeIt(FileObject root, FileObject jspFile, Project p) throws IOException {
+    private void analyzeIt(FileObject root, FileObject jspFile) throws IOException {
         log("calling parseIt, root: " + root + "  file: " + jspFile);
         JspParserAPI api = JspParserFactory.getJspParser();
-        log("found api " + api + ", project " + p);
-        JspParserAPI.ParseResult result = api.analyzePage(root, jspFile, JspUtils.getWebModule(p), JspParserAPI.ERROR_IGNORE);
+        JspParserAPI.ParseResult result = api.analyzePage(root, jspFile, TestUtil.getWebModule(jspFile), JspParserAPI.ERROR_IGNORE);
         
         File goldenF = null;
         File outFile = null;

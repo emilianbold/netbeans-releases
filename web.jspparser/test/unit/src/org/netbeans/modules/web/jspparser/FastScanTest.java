@@ -19,11 +19,9 @@ import java.io.PrintStream;
 import java.util.StringTokenizer;
 
 import junit.framework.*;
-import org.netbeans.api.projects.Project;
 import org.netbeans.junit.*;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
-import org.netbeans.modules.web.jsps.JspUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -58,14 +56,12 @@ public class FastScanTest extends NbTestCase {
             File f = new File(Manager.getWorkDirPath(), "jspparser-data");
             FileObject fo = TestUtil.mountRoot(f, this);
             FileObject wmRoot = fo.getFileObject("wmroot");
-            FileObject projectFile = fo.getFileObject("OpenTestProject.project");
             StringTokenizer st = new StringTokenizer(path, "/");
             FileObject tempFile = wmRoot;
             while (st.hasMoreTokens()) {
                 tempFile = tempFile.getFileObject(st.nextToken());
             }
-            Project p = TestUtil.openProject(projectFile, this);
-            parseIt(wmRoot, tempFile, p);
+            parseIt(wmRoot, tempFile);
         }catch(RuntimeException e){
             e.printStackTrace();
             e.printStackTrace(getRef());
@@ -73,10 +69,10 @@ public class FastScanTest extends NbTestCase {
         }
     }
     
-    private void parseIt(FileObject root, FileObject jspFile, Project p) {
+    private void parseIt(FileObject root, FileObject jspFile) {
         log("calling parseIt, root: " + root + "  file: " + jspFile);
         JspParserAPI api = JspParserFactory.getJspParser();
-        JspParserAPI.JspOpenInfo info = api.getJspOpenInfo(root, jspFile, JspUtils.getWebModule(p));
+        JspParserAPI.JspOpenInfo info = api.getJspOpenInfo(root, jspFile, TestUtil.getWebModule(jspFile));
         log("file: " + jspFile + "   enc: " + info.getEncoding() + "   isXML: " + info.isXmlSyntax());
         assertEquals(new JspParserAPI.JspOpenInfo(false, "ISO-8859-1"), info);
     }
