@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
     <Toolbar name="File" />
     <Toolbar name="Edit" />
     <Toolbar name="Build" />
-    <Toolbar name="Debug" visible="false" />
+    <Toolbar name="Debug" />
     <Toolbar name="Memory"/>
     <Toolbar name="Versioning" visible="false" />
   </Row>

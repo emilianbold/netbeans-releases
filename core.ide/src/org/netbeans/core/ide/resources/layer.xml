@@ -90,7 +90,14 @@ Microsystems, Inc. All Rights Reserved.
              if you modify this file, please review
              org/netbeans/core/ui/resources/Standard.xml also, and sync
              the changes if appropriate -->
-        <file name="Standard.xml" url="Standard.xml"/>
+        <file name="Standard.xml" url="Standard.xml">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+        </file>
+        <attr name="Standard.xml/Debugging.xml" boolvalue="true" />
+        <file name="Debugging.xml" url="Debugging.xml">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+        </file>
+ 
     </folder> <!-- Toolbars -->
         
 </filesystem>
