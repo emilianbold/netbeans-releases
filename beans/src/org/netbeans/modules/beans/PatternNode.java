@@ -55,7 +55,7 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
     private static ResourceBundle bundle;
 
     /** Options for the display name format. */
-    protected static final SourceOptions sourceOptions = (SourceOptions) SharedClassObject.findObject (SourceOptions.class, true);
+    protected static SourceOptions sourceOptions = null;
 
     /** Default return value of getIconAffectingProperties method. */
     private static final String[] ICON_AFFECTING_PROPERTIES = new String[] {
@@ -99,6 +99,10 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
         super(children);
         this.pattern = pattern;
         this.writeable = writeable;
+        
+        if( sourceOptions == null ){
+            sourceOptions = (SourceOptions) SharedClassObject.findObject (SourceOptions.class, true);
+        }        
         setIconBase(resolveIconBase());
         setDefaultAction(SystemAction.get(OpenAction.class));
         setActions(DEFAULT_ACTIONS);
