@@ -2,8 +2,11 @@ ant/src/org/apache/tools/ant/module/Bundle.properties
 ant/src/org/apache/tools/ant/module/loader/Bundle.properties
 ant/src/org/apache/tools/ant/module/nodes/Bundle.properties
 ant/src/org/apache/tools/ant/module/resources/AntDescription.html
+ant/src/org/apache/tools/ant/module/resources/AntShortcut.html
 ant/src/org/apache/tools/ant/module/resources/Bundle.properties
 ant/src/org/apache/tools/ant/module/resources/CustomTaskDescription.html
 ant/src/org/apache/tools/ant/module/resources/ProjectDescription.html
 ant/src/org/apache/tools/ant/module/resources/SampleProjectDescription.html
 ant/src/org/apache/tools/ant/module/run/Bundle.properties
+ant/src/org/apache/tools/ant/module/wizards/properties/Bundle.properties
+ant/src/org/apache/tools/ant/module/wizards/shortcut/Bundle.properties
