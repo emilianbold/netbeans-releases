@@ -75,6 +75,8 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <!-- run also window system tests -->
                 <include name="org/openide/windows/*Test.class"/>
+		<!-- random filed test of change the activated nodes (issue 31244) -->
+                <exclude name="org/openide/windows/TopComponentActivatedNodesTest.class/testOnceChange"/>
             </patternset>
         </testset>      
     </testbag>
@@ -128,6 +130,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/nodes/ChildrenArrayTest.class/testNodeEventsFiredAtOnce"/>
                 <!-- Implementation was apparently killed during a refactoring (see #16430): -->
                 <include name="org/openide/explorer/propertysheet/FindHelpTest.class/testFindHelpOnPropertySheetRow"/>
+		<!-- random filed test of change the activated nodes (issue 31244) -->
+                <include name="org/openide/windows/TopComponentActivatedNodesTest.class/testOnceChange"/>
             </patternset>
         </testset>      
     </testbag>
