@@ -371,7 +371,8 @@ public class ServerInstance implements Node.Cookie {
             return null; //attempt to start server (serverInstance remains null)
         ServerDebugInfo thisSDI = getServerDebugInfo(target);
         if (thisSDI == null) {
-            thisSDI = _retrieveDebugInfo(target);
+            Target t = _retrieveTarget(target);
+            thisSDI = thisSS.getDebugInfo(t);
             if (thisSDI == null) {
                 ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + this.toString());
                 return null;
@@ -425,7 +426,9 @@ public class ServerInstance implements Node.Cookie {
             if (o == null) continue;
             AttachingDICookie attCookie = (AttachingDICookie)o;
             if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
-                if (attCookie.getSharedMemoryName().equalsIgnoreCase(sdi.getShmemName())) {
+                String shmem = attCookie.getSharedMemoryName();
+                if (shmem == null) continue;
+                if (shmem.equalsIgnoreCase(sdi.getShmemName())) {
                     Object d = s.lookupFirst(null, JPDADebugger.class);
                     if (d != null) {
                         JPDADebugger jpda = (JPDADebugger)d;
@@ -435,7 +438,9 @@ public class ServerInstance implements Node.Cookie {
                     }
                 }
             } else {
-                if (attCookie.getHostName().equalsIgnoreCase(sdi.getHost())) {
+                String host = attCookie.getHostName();
+                if (host == null) continue;
+                if (host.equalsIgnoreCase(sdi.getHost())) {
                     if (attCookie.getPortNumber() == sdi.getPort()) {
                         Object d = s.lookupFirst(null, JPDADebugger.class);
                         if (d != null) {
@@ -603,7 +608,8 @@ public class ServerInstance implements Node.Cookie {
             return false;
         //try to stop running server
         if (si.getStartServer().supportsStartDeploymentManager()) {
-            if (!si._stop(ui)) //stopping unsuccessful =>
+            si.stop(ui);
+            if (si.isReallyRunning()) //stopping unsuccessful =>
                 return false;  //starting target server impossible
         } else {
             return si.errorCannotControlAdmin(ui);
@@ -829,7 +835,7 @@ public class ServerInstance implements Node.Cookie {
     private synchronized boolean _stop(DeployProgressUI ui) {
         String displayName = getDisplayName();
         output(ui, NbBundle.getMessage(ServerInstance.class, "MSG_StoppingServer", displayName));
-        
+
         DeployProgressUI.CancelHandler ch = getCancelHandler();
         StartProgressHandler handler = new StartProgressHandler();
         ProgressObject po = null;
@@ -1168,7 +1174,7 @@ public class ServerInstance implements Node.Cookie {
         Target t = null;
         
         // Getting targets from AS8.1 requires start server which would hang UI, so avoid start server
-        if (! isRunningLastCheck() && ss.needsStartForTargetList()) {
+        if (! isReallyRunning() && ss.needsStartForTargetList()) {
             if (t == null) {
                 for (Iterator it = debugInfo.keySet().iterator(); t == null && it.hasNext(); ) {
                     Target cachedTarget = (Target) it.next();
