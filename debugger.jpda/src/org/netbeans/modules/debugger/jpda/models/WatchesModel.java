@@ -14,7 +14,6 @@
 package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.ObjectReference;
-import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.Value;
 
 import java.beans.PropertyChangeEvent;
@@ -22,11 +21,9 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.*;
 
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.LookupProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -59,7 +56,7 @@ public class WatchesModel implements TreeModel {
     private Listener            listener;
     private Vector              listeners = new Vector ();
     private LookupProvider      lookupProvider;
-    WeakHashMap watchToExpression = new WeakHashMap();
+    private WeakHashMap         watchToExpression = new WeakHashMap();
 
     
     public WatchesModel (LookupProvider lookupProvider) {
@@ -134,8 +131,8 @@ public class WatchesModel implements TreeModel {
         for (i = 0; i < k; i++)
             ((TreeModelListener) v.get (i)).treeChanged ();
     }
-    
-    
+
+
     // other methods ...........................................................
     
     JPDADebuggerImpl getDebugger () {
