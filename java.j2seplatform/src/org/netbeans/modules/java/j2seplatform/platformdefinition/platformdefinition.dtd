@@ -1,4 +1,19 @@
 <!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!-- "-//NetBeans//DTD Java PlatformDefinition 1.0//EN" "http://www.netbeans.org/dtds/java-platformdefinition-1_0.dtd" -->
+
+<!--
     DTD to describe a standard JDK/JRE installation
 -->
 
@@ -44,5 +59,4 @@ Definition of one property: it has a name and some optional string data
 <!ATTLIST property
     name CDATA #REQUIRED
     value CDATA #IMPLIED
- >
- 
+>
