@@ -67,7 +67,6 @@ import org.openide.text.NbDocument;
 import org.openide.debugger.Debugger;
 import org.openide.debugger.Breakpoint;
 
-
 public class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, EditorCookie.Observable, OpenCookie, LineCookie, CloseCookie, PrintCookie {
     
     private static final int AUTO_PARSING_DELAY = 2000;//ms
@@ -382,11 +381,19 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
                 resultChanged(null);
             }
             
+            public boolean isEnabled() {
+                if (((BaseJspEditorSupport)cloneableEditorSupport()).getDataObject().getPrimaryFile().getExt().equalsIgnoreCase(JspLoader.JSP_EXTENSION)) {
+                    return true;
+                }
+                return false;
+            }
+            
             public void actionPerformed(ActionEvent e) {
                 int lineNumber = NbDocument.findLineNumber (
                 ((BaseJspEditorSupport)cloneableEditorSupport()).getDocument(), 
                     getEditorPane ().getCaret ().getDot ()
                 );
+
                 Line line = ((BaseJspEditorSupport)cloneableEditorSupport()).getLineSet ().getCurrent (lineNumber);
                 synchronized (this) {
                     Iterator it = debuggerR.allInstances().iterator();
