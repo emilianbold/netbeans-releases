@@ -346,6 +346,7 @@
 <mapID target="debug.breakpoint.exception" url="debug/breakpoint/breakpoint_exception.html" />
 <mapID target="debug.breakpoint.class" url="debug/breakpoint/breakpoint_class.html" />
 <mapID target="debug.breakpoint.group" url="debug/breakpoint/group.html" />
+<mapID target="debug.breakpoint.properties" url="debug/breakpoint/breakpoint_properties.html" />
 <mapID target="debug.breakpoint.source" url="debug/breakpoint/breakpoint_source.html" />
 <mapID target="debug.breakpoint.enable" url="debug/breakpoint/breakpoint_enable.html" />
 <mapID target="debug.breakpoint.remove" url="debug/breakpoint/breakpoint_remove.html" />
@@ -399,23 +400,30 @@
 <mapID target="debug.debugger.template" url="debug/debugger/template.html" />
 
 <mapID target="javadoc.jump" url="javadoc/javadoc_jump.html" />
+<mapID target="javadoc.search" url="javadoc/search.html" />
+<mapID target="javadoc.jdkdocs" url="javadoc/jdkdocs.html" />
+<mapID target="javadoc.comment.jump" url="javadoc/comment_jump.html" />
+<mapID target="javadoc.addcomment" url="javadoc/addcomment.html" />
+<mapID target="javadoc.comment" url="javadoc/comment.html" />
+<mapID target="javadoc.accuracy" url="javadoc/accuracy.html" />
 <mapID target="javadoc.generate" url="javadoc/generate.html" />
+<mapID target="javadoc.filesystem.jump" url="javadoc/javadoc_filesystem.html" />
+<mapID target="javadoc.search.path" url="javadoc/search_path.html" />
+<mapID target="javadoc.filesystem.configure" url="javadoc/filesystems_configure.html" />
+<mapID target="javadoc.filesystem.unmount" url="javadoc/filesystems_removing.html" />
+<mapID target="javadoc.filesystem.jump" url="javadoc/javadoc_filesystems.html" />
+<mapID target="javadoc.settings.jump" url="javadoc/settings_jump.html" />
+<mapID target="javadoc.case.sensitive" url="javadoc/case_sensitive.html" />
 <mapID target="javadoc.output" url="javadoc/output.html" />
-<mapID target="javadoc.searchengine" url="javadoc/searchengine.html" />
-<mapID target="javadoc.doclet" url="javadoc/doclet.html" />
 <mapID target="javadoc.stylesheet" url="javadoc/stylesheet.html" />
+<mapID target="javadoc.doclet" url="javadoc/doclet.html" />
+<mapID target="javadoc.searchengine" url="javadoc/searchengine.html" />
 <mapID target="javadoc.executor" url="javadoc/executor.html" />
 <mapID target="javadoc.externaljavadoc" url="javadoc/externaljavadoc.html" />
 <mapID target="javadoc.internaljavadoc" url="javadoc/internaljavadoc.html" />
-<mapID target="javadoc.search" url="javadoc/search.html" />
-<mapID target="javadoc.search.path" url="javadoc/search_path.html" />
-<mapID target="javadoc.case.sensitive" url="javadoc/case_sensitive.html" />
-<mapID target="javadoc.addcomment" url="javadoc/addcomment.html" />
-<mapID target="javadoc.accuracy" url="javadoc/accuracy.html" />
-<mapID target="javadoc.jdkdocs" url="javadoc/jdkdocs.html" />
+
 <mapID target="javadoc.search.window" url="javadoc/search_window.html" />
 <mapID target="javadoc.auto.comment" url="javadoc/auto_comment_window.html" />
-<mapID target="javadoc.comment" url="javadoc/comment.html" />
 <mapID target="javadoc.doc.window" url="javadoc/doc_comment_window.html" />
 
 <mapID target="jarpackager" url="jarpackager/jarpackager.html" />
@@ -814,7 +822,7 @@
    <mapID target="org.netbeans.modules.debugger.support.actions.ConnectAction" url="pending.html" />
    <mapID target="org.netbeans.modules.java.FastJavacCompilerType" url="compile/fastjavac.html" />
    <mapID target="org.netbeans.modules.java.gj.JavaCompilerType" url="compile/internal.html" />
-   <mapID target="org.netbeans.modules.java.compilation.Jikes" url="compile/fastjavac.html" />
+   <mapID target="org.netbeans.modules.java.compilation.Jikes" url="compile/jikes.html" />
 
    <mapID target="org.netbeans.modules.java.settings.CompilerSettings" url="pending.html" />
    <mapID target="org.netbeans.modules.java.settings.ErrorExpressionPanel" url="pending.html" />
@@ -892,6 +900,8 @@
    <mapID target="org.netbeans.modules.form.RADLayoutNode" url="pending.html" /> 
    <mapID target="org.netbeans.modules.form.RADChildren$NonVisualNode" url="pending.html" />
    <mapID target="org.netbeans.modules.editor.java.JCUpdateAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.javadoc.search.JavaDocNode" url="javadoc/javadoc_tab.html" />
+
    <mapID target="org.netbeans.modules.javadoc.search.SearchDocAction" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.nodes.BreakpointsView" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.nodes.ThreadsView" url="pending.html" />
