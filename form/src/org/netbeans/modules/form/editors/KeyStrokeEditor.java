@@ -55,8 +55,8 @@ public class KeyStrokeEditor extends PropertyEditorSupport
     }
 
     public String getAsText() {
-        KeyStroke key =(KeyStroke) getValue();
-        return keyStrokeAsString(key);
+        KeyStroke key = (KeyStroke) getValue();
+        return key != null ? keyStrokeAsString(key) : "null"; // NOI18N
     }
 
     public void setAsText(String text) throws IllegalArgumentException {
