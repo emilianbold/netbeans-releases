@@ -79,7 +79,7 @@ final class FileStateManager {
             WeakListener.propertyChange (propL, SessionManager.getDefault ()));
     }
 
-    public void define (FileObject mfo, int layer, boolean revert) throws IOException {
+    public void define (final FileObject mfo, int layer, boolean revert) throws IOException {
         // ignore request when file is already defined on layer
         if (FSTATE_DEFINED == getFileState (mfo, layer))
             return;
@@ -100,8 +100,12 @@ final class FileStateManager {
         // create file on specified layer if it doesn't exist
         if (fo == null) {
             String parent = mfo.getParent ().getPackageNameExt ('/', '.');
-            FileObject fparent = FileUtil.createFolder (fsLayer.getRoot (), parent);
-            mfo.copy (fparent, mfo.getName (), mfo.getExt ());
+            final FileObject fparent = FileUtil.createFolder (fsLayer.getRoot (), parent);
+            fparent.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                public void run () throws IOException {
+                    mfo.copy (fparent, mfo.getName (), mfo.getExt ());
+                }
+            });
         }
 
         // remove above defined files
