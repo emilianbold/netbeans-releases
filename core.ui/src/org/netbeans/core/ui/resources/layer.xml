@@ -542,10 +542,6 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="originalFile" stringvalue="Services/org-netbeans-core-output-OutputSettings.settings"/>
                     </file>
 
-                    <file name="org-openide-explorer-propertysheet-PropertySheetSettings.shadow">
-                        <attr name="originalFile" stringvalue="Services/org-openide-explorer-propertysheet-PropertySheetSettings.settings"/>
-                    </file>
-
                     <file name="Toolbar.instance">
                         <attr name="instanceCreate" newvalue="org.netbeans.core.windows.ToolbarFolderNode" />
                         <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
