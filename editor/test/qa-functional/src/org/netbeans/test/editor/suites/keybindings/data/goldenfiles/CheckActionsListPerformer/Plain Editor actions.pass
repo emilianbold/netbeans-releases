@@ -36,6 +36,7 @@ Find Next Occurrence [find-next]: F3
 Find Previous Occurrence [find-previous]: Shift+F3 
 Find Selection [find-selection]: Ctrl+F3 
 Find [find]: Ctrl+F Find 
+Generate Goto Popup [generate-goto-popup]: 
 Go to First Non-whitespace Char [first-non-white]: 
 Go to Last Non-whitespace Char [last-non-white]: 
 Go to Line [goto]: Ctrl+G 
@@ -105,7 +106,6 @@ To Uppercase [to-upper-case]: Alt+U U
 Toggle Bookmark [bookmark-toggle]: Ctrl+F2 
 Toggle Highlight Search [toggle-highlight-search]: Alt+Shift+H 
 Toggle Line Numbers [toggle-line-numbers]: 
+Toggle Toolbar [toggle-toolbar]: 
 Toggle Typing Mode [toggle-typing-mode]: Insert 
 Undo [undo]: Ctrl+Z Undo 
-generate-goto-popup [generate-goto-popup]: 
-toggle-toolbar [toggle-toolbar]: 
