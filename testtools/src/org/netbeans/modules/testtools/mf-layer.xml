@@ -68,37 +68,15 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
     </folder>
     <folder name="Services">
       <folder name="CompilerType">
-          <file name="org-netbeans-modules-testtools-XTestCompiler.settings">
+          <file name="org-netbeans-modules-testtools-XTestCompiler.settings" url="XTestCompiler.settings">
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
               <attr name="template" boolvalue="true"/>
-              <![CDATA[
-                  <?xml version="1.0"?>
-                  <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                  <settings version="1.0">
-                      <module name="org.netbeans.modules.testtools"/>
-                      <instanceof class="org.openide.ServiceType"/>
-                      <instanceof class="org.openide.compiler.CompilerType"/>
-                      <instanceof class="org.netbeans.modules.testtools.XTestCompilerType"/>
-                      <instance class="org.netbeans.modules.testtools.XTestCompilerType"/>
-                  </settings>
-              ]]>
           </file>
       </folder>
       <folder name="Executor">
-          <file name="org-netbeans-modules-testtools-XTestExecutor.settings">
+          <file name="org-netbeans-modules-testtools-XTestExecutor.settings" url="XTestExecutor.settings">
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
               <attr name="template" boolvalue="true"/>
-              <![CDATA[
-                  <?xml version="1.0"?>
-                  <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                  <settings version="1.0">
-                      <module name="org.netbeans.modules.testtools"/>
-                      <instanceof class="org.openide.ServiceType"/>
-                      <instanceof class="org.openide.execution.Executor"/>
-                      <instanceof class="org.netbeans.modules.testtools.XTestExecutor"/>
-                      <instance class="org.netbeans.modules.testtools.XTestExecutor"/>
-                  </settings>
-              ]]>
           </file>
       </folder>
     </folder>
@@ -106,35 +84,13 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
 
   <folder name="Services">
     <folder name="CompilerType">
-        <file name="org-netbeans-modules-testtools-XTestCompiler.settings">
+        <file name="org-netbeans-modules-testtools-XTestCompiler.settings" url="XTestCompiler.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
-            <![CDATA[
-                <?xml version="1.0"?>
-                <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                <settings version="1.0">
-                    <module name="org.netbeans.modules.testtools"/>
-                    <instanceof class="org.openide.ServiceType"/>
-                    <instanceof class="org.openide.compiler.CompilerType"/>
-                    <instanceof class="org.netbeans.modules.testtools.XTestCompilerType"/>
-                    <instance class="org.netbeans.modules.testtools.XTestCompilerType"/>
-                </settings>
-            ]]>
         </file>
     </folder>
     <folder name="Executor">
-        <file name="org-netbeans-modules-testtools-XTestExecutor.settings">
+        <file name="org-netbeans-modules-testtools-XTestExecutor.settings" url="XTestExecutor.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
-            <![CDATA[
-                <?xml version="1.0"?>
-                <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                <settings version="1.0">
-                    <module name="org.netbeans.modules.testtools"/>
-                    <instanceof class="org.openide.ServiceType"/>
-                    <instanceof class="org.openide.execution.Executor"/>
-                    <instanceof class="org.netbeans.modules.testtools.XTestExecutor"/>
-                    <instance class="org.netbeans.modules.testtools.XTestExecutor"/>
-                </settings>
-            ]]>
         </file>
     </folder>
     <folder name="Hidden">
@@ -145,12 +101,7 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
     </folder>
     <folder name="JavaHelp">
         <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-testtools-helpset.xml" boolvalue="true"/>
-        <file name="org-netbeans-modules-testtools-helpset.xml">
-            <![CDATA[
-                <?xml version="1.0"?>
-                <!DOCTYPE helpsetref PUBLIC "-//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN" "http://www.netbeans.org/dtds/helpsetref-1_0.dtd">
-                <helpsetref url="nbdocs:/org/netbeans/modules/testtools/docs/testtools.hs"/>
-            ]]>
+        <file name="org-netbeans-modules-testtools-helpset.xml" url="helpset.xml">
         </file>
         <attr name="org-netbeans-modules-testtools-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
     </folder>
@@ -162,13 +113,8 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
         <folder name="Help">
            <folder name="HelpShortcuts">
                <attr name="org-netbeans-modules-usersguide-sep.instance/org-netbeans-modules-testtools-mainpage.xml" boolvalue="true"/>
-               <file name="org-netbeans-modules-testtools-mainpage.xml">
+               <file name="org-netbeans-modules-testtools-mainpage.xml" url="mainpage.xml">
                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
-                      <![CDATA[
-                          <?xml version="1.0"?>
-                          <!DOCTYPE helpctx PUBLIC "-//NetBeans//DTD Help Context 1.0//EN" "http://www.netbeans.org/dtds/helpcontext-1_0.dtd">
-                          <helpctx id="testtools_intro"/>
-                      ]]>
                </file>
                <attr name="org-netbeans-modules-testtools-mainpage.xml/org-netbeans-modules-usersguide-lower-sep.instance" boolvalue="true"/>
             </folder>

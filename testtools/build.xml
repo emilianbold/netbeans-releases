@@ -21,8 +21,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="nbm_alias" value="nb_ide"/>
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="module.license.file" value="../nbbuild/standard-nbm-license.txt"/>
-  <property name="xtest.license.file" location="xtest-license.txt"/>
+  <property name="license.file" value="${nbext}/standard-nbm-license.txt"/>
 
   <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext}/nbantext.jar"/>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
@@ -85,12 +84,7 @@ Microsystems, Inc. All Rights Reserved.
              module="netbeans/modules/testtools.jar"
              homepage="http://testtools.${homepage.base}"
 	         distribution="http://${dist.base}/testtools.nbm">
-      <license name="testtools-license.txt">
-        <text>For the Test Tools Module itself:</text>
-        <file location="${module.license.file}"/>
-        <text>For the XTest binary distribution:</text>
-        <file location="${xtest.license.file}"/>
-      </license>
+      <license file="${license.file}"/>
 <!--      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/> -->
     </makenbm>
   </target>
@@ -107,7 +101,8 @@ Microsystems, Inc. All Rights Reserved.
     <delete>
       <fileset dir="." includes="*.nbm"/>
     </delete>
-    <delete dir="netbeans"/>
+    <delete dir="netbeans/modules"/>
+    <delete dir="netbeans/update_tracking"/>
     <delete dir="Info"/>
     <delete dir="javahelp/org/netbeans/modules/testtools/docs/JavaHelpSearch2"/>
     <delete dir="javahelp/org/netbeans/modules/usersguide"/>
@@ -119,6 +114,8 @@ Microsystems, Inc. All Rights Reserved.
      <copy file="${nbroot}/junit/junit.nbm" tofile="junit.nbm" filtering="off"/>
      <ant dir="${nbroot}/xtest/" target="nbm"/>
      <copy file="${nbroot}/xtest/xtest.nbm" tofile="xtest.nbm" filtering="off"/>
+     <ant dir="${nbroot}/jemmy/" target="nbm"/>
+     <copy file="${nbroot}/jemmy/jemmy.nbm" tofile="jemmy.nbm" filtering="off"/>
      <ant dir="${nbroot}/jemmysupport/" target="nbm"/>
      <copy file="${nbroot}/jemmysupport/jemmysupport.nbm" tofile="jemmysupport.nbm" filtering="off"/>
      <ant dir="${nbroot}/jellytools/" target="nbm"/>
@@ -132,7 +129,8 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="realclean" depends="clean">
-    <ant dir="${nbroot}/jemmysupport" antfile="build.xml" target="realclean"/>
+    <ant dir="${nbroot}/jemmy" antfile="build.xml" target="clean"/>
+    <ant dir="${nbroot}/jemmysupport" antfile="build.xml" target="clean"/>
     <ant dir="${nbroot}/jellytools" antfile="build.xml" target="clean"/>
     <ant dir="${nbroot}/xtest" antfile="build.xml" target="clean"/>
     <ant dir="${nbroot}/junit" antfile="build.xml" target="clean"/>
