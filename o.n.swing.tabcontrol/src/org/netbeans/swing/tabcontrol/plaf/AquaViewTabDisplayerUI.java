@@ -173,7 +173,7 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
 
     }
 
-    private static final GenericGlowingChiclet chicklet = GenericGlowingChiclet.INSTANCE;
+    private static final ChicletWrapper chiclet = new ChicletWrapper();
 
     protected void paintTabBackground(Graphics g, int index, int x, int y,
                                       int width, int height) {
@@ -187,12 +187,14 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             state |= GenericGlowingChiclet.STATE_SELECTED;
         }
 
-        chicklet.setState(state);
-        chicklet.setBounds(x, y, width, height);
-        chicklet.setArcs(first ? 0.5f : 0f, last ? 0.5f : 0f,
+        chiclet.setState(state);
+        chiclet.setBounds(x, y, width, height);
+        chiclet.setArcs(first ? 0.5f : 0f, last ? 0.5f : 0f,
                          first ? 0.0f : 0f, last ? 0.0f : 0f);
-        chicklet.setNotch(false, false);
-        chicklet.draw((Graphics2D) g);
+        chiclet.setNotch(false, false);
+        g.translate (x, y);
+        chiclet.draw((Graphics2D) g);
+        g.translate (-x, -y);
     }
 
 

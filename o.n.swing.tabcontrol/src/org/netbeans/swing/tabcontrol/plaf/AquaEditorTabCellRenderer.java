@@ -37,7 +37,7 @@ final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
     static final int BOTTOM_INSET = 2;
 
 
-    private static final GenericGlowingChiclet chiclet = GenericGlowingChiclet.INSTANCE;
+    private static final ChicletWrapper chiclet = new ChicletWrapper();
 
     public AquaEditorTabCellRenderer() {
         super(AquaTabPainter, AquaTabPainter, AquaTabPainter,
