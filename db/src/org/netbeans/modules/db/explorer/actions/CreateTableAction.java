@@ -20,6 +20,7 @@ import org.openide.*;
 import org.openide.nodes.*;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.TableOwnerOperations;
 import org.netbeans.modules.db.explorer.dlg.CreateTableDialog;
@@ -40,7 +41,10 @@ public class CreateTableAction extends DatabaseAction {
             Specification spec = (Specification)xnfo.getSpecification();
             CreateTableDialog dlg = new CreateTableDialog(spec, (DatabaseNodeInfo)nfo);
             if (dlg.run())
+                try {
                 nfo.addTable(dlg.getTableName());
+                } catch ( DatabaseException de ) {
+                }
         } catch(Exception exc) {
             String message = MessageFormat.format(bundle.getString("EXC_UnableToCreateTable"), new String[] {node.getName(), exc.getMessage()}); // NOI18N
             TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
