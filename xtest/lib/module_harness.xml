@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -303,8 +303,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="prepare-tests" depends="prepare-tests-init,test-unjared" unless="unjared">
         <unjar dest="${xtest.tests.dir}" 
                src="${xtest.build}/${xtest.file.location}/${xtest.file.name}"/>
-        <!-- src is added to xtest.netbeans.systemclassloader.patches, so it must exist. -->
-        <mkdir dir="${xtest.tests.dir}/${xtest.testtype}/src"/>
     </target>
     
     <!-- Just test whether tests are already unzipped -->

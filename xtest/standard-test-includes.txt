@@ -1,10 +1,8 @@
-**/src/**/*.class
-**/src/**/data/**
-**/src/**/*.jar
-**/src/**/*.xml
-**/src/**/*.ser
-**/src/**/*.txt
-**/src/**/*.properties
-**/src/META-INF/**
-**/classes/**
+**/*.class
 **/data/**
+**/*.jar
+**/*.xml
+**/*.ser
+**/*.txt
+**/*.properties
+META-INF/**

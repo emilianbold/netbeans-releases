@@ -156,14 +156,6 @@ public class MTestExecutor extends Task {
                 }
                 
                 for (int j=0; j<testbag.getTestsets().length; j++) {
-                    // sources don't need to be on classpath (work/sys/test/${xtest.testtype}/src)
-                    // but for golden files it has to be there
-                    stb.append( ant_new.getProject().getProperty("xtest.tests.dir"));
-                    stb.append( "/" );
-                    String testsetDir = testbag.getTestsets()[j].getDir();
-                    stb.append( testsetDir );
-                    stb.append(File.pathSeparatorChar);
-                    
                     // add compiled tests to classpath (work/sys/test/${xtest.testtype}/classes)
                     
                     stb.append( ant_new.getProject().getProperty("xtest.tests.dir") );
@@ -175,9 +167,8 @@ public class MTestExecutor extends Task {
 
                     // check if this testset contains setup dir
                     if ( ! testsetContainsSetupDir) {
-                        if (testbag.getSetupDir().equals(testsetDir)) {
-                            testsetContainsSetupDir = true;
-                        }
+                        String testsetDir = testbag.getTestsets()[j].getDir();
+                        testsetContainsSetupDir = testbag.getSetupDir().equals(testsetDir);
                     }
                 }
                 // add setup/teardown dir if available

@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project default="forbidden" name="compilation_targets">
@@ -37,6 +37,23 @@ Microsystems, Inc. All Rights Reserved.
 		<pathelement path="${compile.classpath}"/>
             </classpath>
         </javac>
+        <!-- Copy all resources from test sources (e.g. **/data/**, *.properties etc.) 
+             to compile.destdir.
+             It needs to be on classpath to enable to find resources in runtime.  -->
+        <copy todir="${compile.destdir}">
+            <fileset dir="${compile.srcdir.parsed}"
+                includesfile="${xtest.home}/standard-test-includes.txt"
+                includes="${package.tests.includes}"
+                excludesfile="${xtest.home}/standard-test-excludes.txt"
+                excludes="${package.tests.excludes}"/>
+        </copy>
+        <!-- Copy ${xtest.testtype}/data to compile.destdir.root -->
+        <copy todir="${compile.destdir.root}">
+            <fileset dir="${basedir}">
+                <include name="**/data/**"/>
+                <exclude name="**/src/**"/>
+            </fileset>
+        </copy>
     </target>
     
     <!-- =============== -->
