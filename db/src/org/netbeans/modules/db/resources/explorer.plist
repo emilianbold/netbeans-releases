@@ -127,7 +127,7 @@
 			{
 				name = "Microsoft SQL Server (Sprinta driver)";
 				driver = "com.inet.tds.TdsDriver";
-				prefix = "jdbc:inetdae:<HOST>:<POR>?database=<DB>";
+				prefix = "jdbc:inetdae:<HOST>:<PORT>?database=<DB>";
 			},
 			{
 				name = "MySQL (MM.MySQL driver)";
@@ -165,12 +165,12 @@
 				prefix = "jdbc:postgresql://<HOST>:<PORT>/<DB>";
 			},
 			{
-				name = "Sybase (JDK 1.1)";
+				name = "Sybase (JDBC 1.x driver)";
 				driver = "com.sybase.jdbc.SybDriver";
 				prefix = "jdbc:sybase:Tds:<HOST>:<PORT>";
 			},
 			{
-				name = "Sybase (JDK 1.2)";
+				name = "Sybase (JDBC 2.0 driver)";
 				driver = "com.sybase.jdbc2.jdbc.SybDriver";
 				prefix = "jdbc:sybase:Tds:<HOST>:<PORT>";
 			}
