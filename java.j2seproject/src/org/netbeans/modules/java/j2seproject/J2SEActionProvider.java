@@ -14,6 +14,7 @@
 package org.netbeans.modules.java.j2seproject;
 
 import java.awt.Dialog;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +29,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassWarning;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -170,7 +172,7 @@ class J2SEActionProvider implements ActionProvider {
             // check project's main class
             String mainClass = (String)ep.get ("main.class"); // NOI18N
             
-            while (!isSetMainClass (mainClass)) {
+            while (!isSetMainClass (project.getSourceDirectory(), mainClass)) {
                 // show warning, if cancel then return
                 if (showMainClassWarning (mainClass, antProjectHelper.getDisplayName (), ep)) {
                     return ;
@@ -277,8 +279,15 @@ class J2SEActionProvider implements ActionProvider {
         return null;
     }    
     
-    private boolean isSetMainClass (String mainClass) {
-        return (mainClass != null && mainClass.length () > 0);
+    private boolean isSetMainClass (FileObject sourcesRoot, String mainClass) {
+        if (mainClass == null || mainClass.length () == 0) {
+            return false;
+        }
+        // replace '.' with '/'
+        mainClass = mainClass.replace ('.', File.separatorChar); // XXX // NOI18N
+        // find mainclass's FileObject
+        FileObject mainFO = sourcesRoot.getFileObject (mainClass, "java"); // XXX // NOI18N
+        return MainClassChooser.hasMainMethod (mainFO);
     }
     
     private boolean showMainClassWarning (String mainClass, String projectName, EditableProperties ep) {

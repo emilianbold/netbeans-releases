@@ -130,8 +130,16 @@ public class MainClassChooser extends JPanel {
         return null;
     }
     
-    // temporary method
+    /** Checks if given file object contains the main method.
+     *
+     * @param classFO file object represents java 
+     * @return false if parameter is null or doesn't contain SourceCookie
+     * or SourceCookie doesn't contain the main method
+     */    
     public static boolean hasMainMethod (FileObject classFO) {
+        if (classFO == null) {
+            return false;
+        }
         try {
             DataObject classDO = DataObject.find (classFO);
             return getMainMethod (classDO.getCookie (SourceCookie.class), null) != null;
