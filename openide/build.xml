@@ -307,12 +307,13 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
   <target name="open-apis" depends="open-apis-check-timestamps,open-apis-maybe-skip" unless="open-apis-up-to-date"
           description="Create Open API documentation.">
     <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.3/docs/api"/>
+    <property name="xml-docs-location" value="http://xml.apache.org/apiDocs"/>
     <tstamp/>
     <property name="open-apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2000 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
     <echo message="Build Open API documentation..."/>
     <mkdir dir="OpenAPIs"/>
     <javadoc destdir="OpenAPIs"
-             packagenames="org.openide,org.openide.actions,org.openide.awt,org.openide.compiler,org.openide.cookies,org.openide.debugger,org.openide.execution,org.openide.explorer,org.openide.explorer.propertysheet,org.openide.explorer.view,org.openide.filesystems,org.openide.loaders,org.openide.modules,org.openide.nodes,org.openide.options,org.openide.src,org.openide.src.nodes,org.openide.text,org.openide.util,org.openide.util.actions,org.openide.util.datatransfer,org.openide.util.enum,org.openide.util.io,org.openide.windows"
+             packagenames="org.openide,org.openide.actions,org.openide.awt,org.openide.compiler,org.openide.cookies,org.openide.debugger,org.openide.execution,org.openide.explorer,org.openide.explorer.propertysheet,org.openide.explorer.view,org.openide.filesystems,org.openide.loaders,org.openide.modules,org.openide.nodes,org.openide.options,org.openide.src,org.openide.src.nodes,org.openide.text,org.openide.util,org.openide.util.actions,org.openide.util.datatransfer,org.openide.util.enum,org.openide.util.io,org.openide.windows,org.openide.xml"
              doctitle="NetBeans Open APIs"
              windowtitle="NetBeans APIs"
              overview="api/doc/overview.html"
@@ -334,6 +335,10 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
       <link href="${jdk-docs-location}"
             offline="true"
             packagelistLoc="api/doc"
+      />
+      <link href="${xml-docs-location}"
+            offline="true"
+            packagelistLoc="api/doc/org/openide/xml"
       />
       <group title="&lt;a href=&quot;@TOP@org/openide/modules/doc-files/api.html&quot;&gt;Modules API&lt;/a&gt;"
              packages="org.openide.modules"/>
@@ -361,6 +366,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
              packages="org.openide.windows"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/options/doc-files/api.html&quot;&gt;Options API&lt;/a&gt;"
              packages="org.openide.options"/>
+      <group title="XML API" packages="org.openide.xml"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/src/doc-files/api.html&quot;&gt;Java Hierarchy API&lt;/a&gt;"
              packages="org.openide.src:org.openide.src.nodes"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/util/doc-files/api.html&quot;&gt;Utility Classes&lt;/a&gt;"
