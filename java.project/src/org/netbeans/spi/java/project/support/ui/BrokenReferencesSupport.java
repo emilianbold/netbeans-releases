@@ -99,7 +99,8 @@ public class BrokenReferencesSupport {
             ReferenceHelper referenceHelper, String[] properties, String[] platformProperties) {
         BrokenReferencesModel model = new BrokenReferencesModel(projectHelper, referenceHelper, properties, platformProperties);
         BrokenReferencesCustomizer customizer = new BrokenReferencesCustomizer(model);
-        Object close = NbBundle.getMessage(BrokenReferencesCustomizer.class,"LBL_BrokenLinksCustomizer_Close");
+        JButton close = new JButton (NbBundle.getMessage(BrokenReferencesCustomizer.class,"LBL_BrokenLinksCustomizer_Close")); // NOI18N
+        close.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(BrokenReferencesCustomizer.class,"ACSD_BrokenLinksCustomizer_Close")); // NOI18N
         String projectDisplayName = "???"; // NOI18N
         try {
             Project project = ProjectManager.getDefault().findProject(projectHelper.getProjectDirectory());
@@ -111,7 +112,7 @@ public class BrokenReferencesSupport {
         }
         DialogDescriptor dd = new DialogDescriptor(customizer, 
             NbBundle.getMessage(BrokenReferencesCustomizer.class, 
-            "LBL_BrokenLinksCustomizer_Title", projectDisplayName),
+            "LBL_BrokenLinksCustomizer_Title", projectDisplayName), // NOI18N
             true, new Object[] {close}, close, DialogDescriptor.DEFAULT_ALIGN, null, null);
         Dialog dlg = null;
         try {

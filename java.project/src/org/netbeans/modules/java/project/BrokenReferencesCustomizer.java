@@ -44,8 +44,6 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         errorList.setModel(model);
         errorList.setSelectedIndex(0);
         errorList.setCellRenderer(new ListCellRendererImpl(model));
-        Mnemonics.setLocalizedText(fix, fix.getText());
-        Mnemonics.setLocalizedText(errorListLabel, errorListLabel.getText());
     }
     
     /** This method is called from within the constructor to
@@ -67,12 +65,15 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(450, 300));
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BrokenReferencesCustomizer.class, "ACSN_BrokenReferencesCustomizer"));
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BrokenReferencesCustomizer.class, "ACSD_BrokenReferencesCustomizer"));
         errorListLabel.setLabelFor(errorList);
-        errorListLabel.setText(org.openide.util.NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_List"));
+        org.openide.awt.Mnemonics.setLocalizedText(errorListLabel, org.openide.util.NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_List"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 3, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 3, 0);
         add(errorListLabel, gridBagConstraints);
+        errorListLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BrokenReferencesCustomizer.class, "ACSD_BrokenLinksCustomizer_List"));
 
         errorList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         errorList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
@@ -93,7 +94,7 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(jScrollPane1, gridBagConstraints);
 
-        fix.setText(org.openide.util.NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_Fix"));
+        org.openide.awt.Mnemonics.setLocalizedText(fix, org.openide.util.NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_Fix"));
         fix.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fixActionPerformed(evt);
@@ -107,15 +108,17 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 12);
         add(fix, gridBagConstraints);
+        fix.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BrokenReferencesCustomizer.class, "ACSD_BrokenLinksCustomizer_Fix"));
 
         descriptionLabel.setLabelFor(description);
-        descriptionLabel.setText(org.openide.util.NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_Description"));
+        org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_Description"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 3, 0);
         add(descriptionLabel, gridBagConstraints);
+        descriptionLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BrokenReferencesCustomizer.class, "ACSD_BrokenLinksCustomizer_Description"));
 
         description.setEditable(false);
         description.setLineWrap(true);
