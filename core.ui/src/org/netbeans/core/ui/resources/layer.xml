@@ -531,9 +531,7 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
 
                     <!--file name="org-openide-src-nodes-SourceOptions.shadow">
-<![CDATA[Services/org-openide-src-nodes-SourceOptions.settings
-SystemFileSystem
-]]>
+                        <attr name="originalFile" stringvalue="Services/org-openide-src-nodes-SourceOptions.settings"/>
                     </file -->
 
                     <file name="Menu.instance">
@@ -542,15 +540,11 @@ SystemFileSystem
                     </file>
 
                     <file name="org-netbeans-core-output-OutputSettings.shadow">
-<![CDATA[Services/org-netbeans-core-output-OutputSettings.settings
-SystemFileSystem
-]]>
+                        <attr name="originalFile" stringvalue="Services/org-netbeans-core-output-OutputSettings.settings"/>
                     </file>
 
                     <file name="org-openide-explorer-propertysheet-PropertySheetSettings.shadow">
-<![CDATA[Services/org-openide-explorer-propertysheet-PropertySheetSettings.settings
-SystemFileSystem
-]]>
+                        <attr name="originalFile" stringvalue="Services/org-openide-explorer-propertysheet-PropertySheetSettings.settings"/>
                     </file>
 
                     <file name="Toolbar.instance">
@@ -584,9 +578,7 @@ SystemFileSystem
                     </file>
 
                     <file name="org-openide-text-PrintSettings.shadow">
-<![CDATA[Services/org-openide-text-PrintSettings.settings
-SystemFileSystem
-]]>
+                        <attr name="originalFile" stringvalue="Services/org-openide-text-PrintSettings.settings"/>
                     </file>
 
                     <file name="Startup.instance">
@@ -595,9 +587,7 @@ SystemFileSystem
                     </file>
 
                     <file name="org-netbeans-core-IDESettings.shadow">
-<![CDATA[Services/org-netbeans-core-IDESettings.settings
-SystemFileSystem
-]]>
+                        <attr name="originalFile" stringvalue="Services/org-netbeans-core-IDESettings.settings"/>
                     </file>
 
                     <file name="Welcome.instance">
@@ -606,9 +596,7 @@ SystemFileSystem
                     </file>
 
                     <file name="MIMEResolver.shadow">
-<![CDATA[Services/MIMEResolver
-SystemFileSystem
-]]>
+                        <attr name="originalFile" stringvalue="Services/MIMEResolver"/>
                     </file>
 
                 </folder> <!-- System -->
@@ -618,15 +606,11 @@ SystemFileSystem
 
                     <!-- link to HTML browsers -->
                     <file name="Browsers.shadow">
-<![CDATA[Services/Browsers
-SystemFileSystem
-]]>
+                        <attr name="originalFile" stringvalue="Services/Browsers"/>
                     </file>
 
                     <file name="ScriptTypes.shadow">
-<![CDATA[Services/ScriptType
-SystemFileSystem
-]]>
+                        <attr name="originalFile" stringvalue="Services/ScriptType"/>
                     </file>
                 </folder> <!-- ServerAndExternalToolSettings -->
             </folder> <!-- IDEConfiguration -->
@@ -634,9 +618,7 @@ SystemFileSystem
             <folder name="Editing">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
                 <file name="IndentationEngines.shadow">
-<![CDATA[Services/IndentEngine
-SystemFileSystem
-]]>
+                        <attr name="originalFile" stringvalue="Services/IndentEngine"/>
                 </file>
             </folder> <!-- EDITING -->
         </folder> <!-- Services -->

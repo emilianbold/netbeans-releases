@@ -54,22 +54,16 @@ Microsystems, Inc. All Rights Reserved.
             <!-- Now the help set. -->
             <file name="org-netbeans-modules-usersguide-helpset.xml" url="helpset.xml"/>
             <attr name="org-netbeans-modules-usersguide-helpset.xml/org-netbeans-modules-usersguide-above-regular.txt" boolvalue="true"/>
-            <file name="org-netbeans-modules-usersguide-above-regular.txt">
-                <![CDATA[Only a marker: above regular helpsets, below IDE help.]]>
-            </file>
+            <!-- Only a marker: above regular helpsets, below IDE help. -->
+            <file name="org-netbeans-modules-usersguide-above-regular.txt"/>
             <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
-            <file name="org-netbeans-modules-usersguide-below-regular.txt">
-                <![CDATA[Only a marker: below regular helpsets, above third-party helpsets.]]>
-            </file>
+            <!-- Only a marker: below regular helpsets, above third-party helpsets. -->
+            <file name="org-netbeans-modules-usersguide-below-regular.txt"/>
         </folder>
     </folder>
     <!-- #13860: mount the examples dir: -->
     <folder name="Mount">
         <file name="org-netbeans-modules-usersguide-sampledir.settings" url="sampledir.xml">
-<!--
-            <attr name="instanceClass" methodvalue="org.netbeans.modules.usersguide.UGModule.createFileSystemClass"/>
-            <attr name="instanceCreate" methodvalue="org.netbeans.modules.usersguide.UGModule.createFileSystem"/>
--->
             <!-- #14403: make it look better: -->
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/localFS.gif"/>

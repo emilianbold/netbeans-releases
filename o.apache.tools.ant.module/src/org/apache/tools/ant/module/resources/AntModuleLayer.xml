@@ -127,9 +127,7 @@ Microsystems, Inc. All Rights Reserved.
 
       <folder name="Building">
         <file name="org-apache-tools-ant-module-AntSettings.shadow">
-<![CDATA[Services/org-apache-tools-ant-module-AntSettings.settings
-SystemFileSystem
-]]>
+          <attr name="originalFile" stringvalue="Services/org-apache-tools-ant-module-AntSettings.settings"/>
         </file>
       </folder> <!-- Building -->
 

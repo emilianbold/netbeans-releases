@@ -60,9 +60,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="IDEConfiguration">
             <folder name="System">
                 <file name="SearchType.shadow">
-<![CDATA[Services/SearchType
-SystemFileSystem
-]]>
+                    <attr name="originalFile" stringvalue="Services/SearchType"/>
                 </file>
             </folder>
         </folder>
