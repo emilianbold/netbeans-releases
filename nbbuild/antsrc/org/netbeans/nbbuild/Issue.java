@@ -52,6 +52,7 @@ public final class Issue extends Object implements Comparable {
     static final String CREATED = "creation_ts";
     static final String VOTES = "votes";
     static final String KEYWORDS = "keywords";
+    static final String STATUS_WHITEBOARD = "status_whiteboard";
     
     /** The target milestone attribute name. */
     static final String TARGET_MILESTONE = "target_milestone";
@@ -195,6 +196,23 @@ public final class Issue extends Object implements Comparable {
      */
     public String getSubcomponent () {
         return string (SUBCOMPONENT);
+    }
+
+    public String getDuration () {
+        String duration = "";
+        String swb = string (STATUS_WHITEBOARD);
+//         System.out.println (STATUS_WHITEBOARD + "='" + swb + "'");
+        StringTokenizer st = new StringTokenizer (swb);
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+//             System.out.println ("    token <" + token + ">");
+            if ( token.startsWith ("duration=") ) {
+                duration = token.substring (token.indexOf ('=') + 1);
+                break;
+            }
+        }
+//         System.out.println (" => '" + duration + "'");
+        return duration;
     }
     
     /** Number of votes for given component.

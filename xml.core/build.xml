@@ -51,7 +51,6 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
                 <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
                 <pathelement location="${nbroot}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
-                <pathelement location="${nbroot}/openidex/netbeans/modules/autoload/openidex.jar"/>
                 <pathelement location="${tax_lib_root}/src/"/>
                 <pathelement location="${api_root}/src/"/>
                 <fileset dir="${nbroot}/core/external">

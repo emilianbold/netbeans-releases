@@ -593,7 +593,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../xml/tax" target="netbeans"/>
   </target>
 
-  <target name="all-xml/core" depends="all-openide, all-openidex, all-xml/api, all-xml/tax,all-openide/deprecated">
+  <target name="all-xml/core" depends="all-openide, all-xml/api, all-xml/tax,all-openide/deprecated">
       <echo message="Building module xml/core..."/>
       <ant dir="../xml/core" target="netbeans"/>
   </target>
@@ -613,7 +613,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../xml/text-edit" target="netbeans"/>
   </target>
 
-  <target name="all-xml/tree-edit" depends="all-openide, all-openidex, all-xml/api, all-xml/tax, all-xml/core,all-openide/deprecated">
+  <target name="all-xml/tree-edit" depends="all-openide, all-xml/api, all-xml/tax, all-xml/core,all-openide/deprecated">
       <echo message="Building module xml/tree-edit..."/>
       <ant dir="../xml/tree-edit" target="netbeans"/>
   </target>

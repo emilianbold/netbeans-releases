@@ -149,10 +149,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
 
-        <folder name="Looks">
-            <file name="org-netbeans-modules-xml-core-XMLDefaultLook$Basic.xml" url="XMLLooks.xml"/>
-        </folder>
-
         <!-- Settings -->
         <file name="org-netbeans-modules-xml-core-settings-CoreSettings.settings" url="CoreSettings.xml">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.settings.Bundle"/>

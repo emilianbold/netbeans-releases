@@ -77,7 +77,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="all-xml" depends="all-depend,clean,netbeans"/>
 
     <target name="all-depend">
-        <property name="modules" value="../openide, ../openidex, ../core, ../editor"/>
+        <property name="modules" value="../openide, ../core, ../editor"/>
         <for-each locations="${modules}" target="clean"/>
         <for-each locations="${modules}" target="jars"/>
     </target>
