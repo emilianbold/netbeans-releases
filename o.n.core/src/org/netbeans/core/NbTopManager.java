@@ -125,7 +125,7 @@ public class NbTopManager extends TopManager {
   * @param url Url of WWW document to be showen.
   */
   public void showUrl (URL url) {
-    NbDialog d = NbDialog.currentModalDialog;
+    NbPresenter d = NbPresenter.currentModalDialog;
     if (d != null) {
       HtmlBrowser htmlViewer = new HtmlBrowser ();
       htmlViewer.setURL (url);
@@ -207,19 +207,7 @@ public class NbTopManager extends TopManager {
   /** Prints the stack.
   */
   public void notifyException (Throwable t) {
-    /** If netbeans.debug.exceptions is set, print the exception to console */
-    if (System.getProperty ("netbeans.debug.exceptions") != null) {
-      t.printStackTrace ();
-    }
-    
-    if (t instanceof NotImplementedException) {
-      NotifyDescriptor nd = new NotifyDescriptor.Message("This feature is not yet implemented.");
-      nd.setTitle("Information");
-      notify(nd);
-    }
-    else {
-      super.notifyException (t);
-    }
+    NotifyException.notify (t);
   }
 
   /** Notifies user by a dialog.
@@ -233,7 +221,7 @@ public class NbTopManager extends TopManager {
     while ((win != null) && (!(win instanceof Window))) win = win.getParent ();
     if (win != null) focusOwner = ((Window)win).getFocusOwner ();
 
-    final NotifyPresenter presenter = new NotifyPresenter(descriptor);
+    final NbPresenter presenter = new NbPresenter(descriptor);
     presenter.setVisible(true);
 
     if (focusOwner != null) { // if the focusOwner is null (meaning that MainWindow was focused before), the focus will be back on main window
@@ -364,8 +352,7 @@ public class NbTopManager extends TopManager {
           new Object[] { ((DataObject)ee.next()).getPrimaryFile().getName() }
         )
       );
-      final NotifyPresenter presenter = new NotifyPresenter(descriptor);
-      presenter.setVisible(true);
+      TopManager.getDefault ().notify (descriptor);
     }
     // notify user that everything is done
     TopManager.getDefault().setStatusText(
