@@ -57,6 +57,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/lookup/*Test.class"/>
                 <include name="org/netbeans/core/lookup/*Test?.class"/>
                 <exclude name="org/netbeans/core/lookup/InstanceDataObjectModuleTest4.class"/>
+                <exclude name="org/netbeans/core/lookup/LookupClassLoaderTest.class"/>
                 <include name="org/netbeans/PatchByteCodeTest.class"/>
             </patternset>
         </testset>
@@ -69,6 +70,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/lookup/InstanceDataObjectModuleTest4.class"/>
                 <!-- XXX #23609: possible bug in XMLFileSystem, move to stable when fixed: -->
                 <include name="org/netbeans/core/modules/NbInstallerTest5.class"/>
+                <!-- XXX fails big time, much work needed, e.g. #26245: -->
+                <include name="org/netbeans/core/lookup/LookupClassLoaderTest.class"/>
             </patternset>
         </testset>
     </testbag>

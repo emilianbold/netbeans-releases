@@ -1,0 +1,30 @@
+package ims;
+
+import java.net.URL;
+import org.openide.ServiceType;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+
+public class Foo extends ServiceType {
+    private static final long serialVersionUID = 54629387456L;
+    public final transient ClassLoader loader;
+    public final transient String loaderToString;
+    public final transient URL resource;
+    public final transient String text;
+    public Foo() {
+        loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+        loaderToString = loader != null ? loader.toString() : null;
+        resource = loader != null ? loader.getResource("ims/Bundle.properties") : null;
+        text = NbBundle.getMessage(Foo.class, "foo");
+        if (loader == null) throw new NullPointerException("no classloader");
+        if (resource == null) throw new NullPointerException("no ims/Bundle.properties from " + loaderToString);
+        System.err.println("loader=" + loaderToString + " resource=" + resource + " text=" + text);
+    }
+    public String getName() {
+        return "foo";
+    }
+    public HelpCtx getHelpCtx() {
+        return null;
+    }
+}
