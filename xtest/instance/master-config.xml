@@ -38,7 +38,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="debuggercore" testtypes="qa-functional" attributes="stable"/>
       -->
       <module name="i18n" testtypes="qa-functional" attributes="stable"/>
-      <module name="qa" testtypes="serialization" attributes="nb3.4"/>
+      <module name="qa" testtypes="serialization" attributes="nb34"/>
       <module name="openide" testtypes="qa-functional" attributes="stable"/>
       <module name="java" testtypes="qa-functional" attributes="stable"/>
   </config>
