@@ -169,7 +169,6 @@ final class TestStringWizardPanel extends JPanel {
         });
         
         testStringTable.setDefaultRenderer(I18nString.class, new DefaultTableCellRenderer() {
-            private final JButton dotButton = new JButton("..."); // NOI18N
             
             public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
