@@ -192,8 +192,8 @@ public class NbMerge extends Task {
             }
         }
 
-        builtmodules.addAll(fixedmodules); // add already built fixed modules to the list
-        log("fixedmodules=\"" + fixedmodules.toString() + "\"", Project.MSG_DEBUG);
+        builtmodules.addAll(buildfixedmodules); // add already built fixed modules to the list
+        log("fixedmodules=\"" + buildfixedmodules.toString() + "\"", Project.MSG_DEBUG);
         log("builtmodules=\"" + builtmodules.toString() + "\"", Project.MSG_VERBOSE);
     }
     
@@ -201,7 +201,6 @@ public class NbMerge extends Task {
     private void ModulesBuild () throws BuildException {
         String module;
         if ( ! failonerror ) {
-            project.setProperty("modules-built",  "1" );
             // build the rest of modules
             for (int i = 0; i < buildmodules.size (); i++) {
                 module = (String) buildmodules.elementAt (i);
@@ -237,6 +236,8 @@ public class NbMerge extends Task {
                         failedmodules.addElement(module);
                 }
             }
+            log("builtmodules=\"" + builtmodules.toString() + "\"", Project.MSG_VERBOSE);
+            log("failedmodules=\"" + failedmodules.toString() + "\"", Project.MSG_VERBOSE);
         }
     }
     
@@ -327,7 +328,7 @@ public class NbMerge extends Task {
                 String target = (String) builttargets.elementAt(i);
                 if (target.startsWith(targetprefix)) {
                     String module = target.substring(targetprefix.length());
-                    if ( builtmodules.indexOf(module) < 0 ) {
+                    if ( mergemodules.indexOf(module) < 0 ) {
                         mergemodules.addElement(module);
                     }
                 }
@@ -362,7 +363,7 @@ public class NbMerge extends Task {
                 copy.execute ();
             }
         }
-        log("mergemodules=\"" + mergemodules.toString() + "\"");
+        log("mergedmodules=\"" + mergemodules.toString() + "\"");
         it = suppressedlocales.iterator ();
         UpdateTracking tr = new UpdateTracking( dest.getAbsolutePath() );
         log ( dest.getAbsolutePath() );
