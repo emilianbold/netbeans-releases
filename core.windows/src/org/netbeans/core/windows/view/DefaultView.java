@@ -557,6 +557,13 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         
         ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
         ModeImpl mode = getModeForModeAccessor(modeAccessor);
+        
+        // #37127 Refine the index if the TC is moving inside the mode.
+        int position = Arrays.asList(modeAccessor.getOpenedTopComponents()).indexOf(tcs[0]);
+        if(position > -1 && position <= index) {
+            index--;
+        }
+                
         controllerHandler.userDroppedTopComponents(mode, tcs, index);
     }
     
