@@ -186,8 +186,8 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
         Settings.Evaluator italicSubst = new SettingsUtil.FontStylePrintColoringEvaluator(Font.ITALIC);
         Settings.Evaluator lightGraySubst = new SettingsUtil.ForeColorPrintColoringEvaluator(Color.lightGray);
 
-        Coloring commentColoring = new Coloring(italicFont, Coloring.FONT_MODE_APPLY_STYLE,
-                            Color.gray, null);
+        // #48502 - changed comment coloring to have non-italic font
+        Coloring commentColoring = new Coloring(null, Color.gray, null);
 
         Coloring numbersColoring = new Coloring(null, Color.red, null);
 
@@ -219,8 +219,7 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
                         return new Coloring(null, new Color (153,0,107) /*Color.magenta*/, null);
                         
                     case XMLDefaultTokenContext.BLOCK_COMMENT_ID:
-                        return new Coloring(italicFont, Coloring.FONT_MODE_APPLY_STYLE,
-                        Color.gray, null);
+                        return commentColoring;
                                                 
                     case XMLDefaultTokenContext.DECLARATION_ID:
                         return new Coloring(boldFont, Color.blue.darker().darker(), null);
@@ -312,8 +311,8 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
         Settings.Evaluator italicSubst = new SettingsUtil.FontStylePrintColoringEvaluator(Font.ITALIC);
         Settings.Evaluator lightGraySubst = new SettingsUtil.ForeColorPrintColoringEvaluator(Color.lightGray);
 
-        Coloring commentColoring = new Coloring(italicFont, Coloring.FONT_MODE_APPLY_STYLE,
-                            Color.gray, null);
+        // #48502 -  changed comment coloring to use non-italic font style
+        Coloring commentColoring = new Coloring(null, Color.gray, null);
 
         Coloring numbersColoring = new Coloring(null, Color.red, null);
 
@@ -340,8 +339,7 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
                         return new Coloring(null, Color.black, null);
 
                     case DTDTokenContext.COMMENT_ID:
-                        return new Coloring(italicFont, Coloring.FONT_MODE_APPLY_STYLE,
-                                                  Color.gray, null);
+                        return commentColoring;
 
                     case DTDTokenContext.KW_ID:
                         return new Coloring(boldFont, Color.blue.darker().darker(), null);
