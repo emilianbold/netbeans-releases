@@ -341,15 +341,14 @@
 
 <tocitem text="About Web Modules" target="intro" >
    <tocitem text="About Web Modules" target="intro" />
+   <tocitem text="Working with Web Modules" target="mod_process" />
    <tocitem text="How the IDE Supports Web Module Development" target="webmod_idesupport" />
    <tocitem text="Which Technology Versions Are Supported" target="webmod_techsupport" />
    <tocitem text="How to Structure Web Modules" target="webmod_struct" />
    <tocitem text="Where to Put Web Module Files" target="webmod_placefiles" />
 </tocitem> <!-- About Web Modules -->
 
-<tocitem text="Creating Web Modules" target="tbd">
-	 <tocitem text="About Creating Web Modules" target="tbd" />
-    <tocitem text="Working with Projects" target="proj_process"/>
+<tocitem text="Creating Web Projects" target="tbd">
     <tocitem text="Project Tasks: Quick Reference" target="proj_quickref"/>
     <tocitem text="Java Project Templates" target="proj_templates" />
     <tocitem text="Setting the Main Project" target="proj_main" />

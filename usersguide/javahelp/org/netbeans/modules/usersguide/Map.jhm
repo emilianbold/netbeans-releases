@@ -385,7 +385,6 @@
 <mapID target="jsp_servletview" url="web/create_jsp/jsp_servletview.html" />
 <mapID target="jsp_debug" url="web/jsp/jsp_debug.html" />
 <mapID target="jsp_encode" url="web/create_jsp/jsp_encoding.html" />
-<mapID target="quickref_webmod" url="web/overvw/mod_quickref.html" />
 <mapID target="servlet_create" url="web/servlet/servlet_create.html" />	
 <mapID target="servlet_edit" url="web/servlet/servlet_edit.html" />	
 <mapID target="webmod_cvs" url="web/webmod/mod_cvs.html" />
@@ -418,7 +417,7 @@
 <mapID target="war_unpack" url="web/warpkg/war_unpack.html" />
 <mapID target="war_viewcont" url="web/warpkg/war_viewcont.html" />
 <mapID target="war_xtrafiles" url="web/warpkg/war_xtrafiles.html" />
-<mapID target="workingwith_webmod" url="web/overvw/mod_process.html" />
+<mapID target="mod_process" url="web/overvw/mod_process.html" />
 <mapID target="filter_addtodd" url="web/servlet/filter_addtodd.html" />
 <mapID target="filter_create" url="web/servlet/filter_create.html" />
 <mapID target="filter_props" url="web/servlet/filter_props.html" />
@@ -613,9 +612,6 @@
 <mapID target="debug.add.breakpoint.java.thread" url="debug/breakpoint/breakpoint_thread.html" />
 
 <mapID target="org.netbeans.modules.httpserver.HttpServerNode_properties" url="webbrowser/httpserver_properties.html" />
-
-<!--most likely obsolete - since there is no expert tab anymore-->
-<mapID target="org.netbeans.modules.httpserver.HttpServerNode_expert" url="webbrowser/httpserver_expert.html" />
 
 
   <mapID target="org.openide.util.HelpCtx.DEFAULT_HELP" url="pending.html" />
@@ -1156,7 +1152,7 @@
         url="web/webmod/mod_webinf_props.html" />
 
 <mapID target="org.netbeans.modules.web.context.BaseWizardPanel" 
-    url="web/webmod/mod_newdir.html" />  
+	url="web/overvw/BasicProjectInfoWizPanel.html" />  
 
 <mapID target="org.netbeans.modules.web.dd.wizards.ListenerPanel" 
         url="web/servlet/listen_addtodd.html" />
@@ -1172,10 +1168,6 @@
        WEB-INF property sheet. This was an error -->
 <mapID target="org.netbeans.modules.web.war.ui.WarFilterPropertyEditorSupport" 
         url="web/warpkg/war_editprop.html" />
-
-<!-- Web Module Node in Projects Window -->
-<mapID target="org.netbeans.modules.web.context.WebAppNode" 
-    url="web/concepts/webmod.html" />
 
 <!-- reference issue 39843 -->
 
