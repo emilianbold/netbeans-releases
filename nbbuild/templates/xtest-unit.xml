@@ -23,11 +23,15 @@ Microsystems, Inc. All Rights Reserved.
             <not><isset property="module.classpath" /></not>
         </or>
     </condition>
+    <available file="../nbproject/project.properties" property="do.we.need.to.process.properties.file" />
     
-    <target name="init-read-property-files" >
+    <target name="init-nbproject-property-files" >
         <!-- Synch the following property loads with NbModuleProject.makeEvalDefs: -->
         <property file="../nbproject/private/private.properties"/>
         <property file="../nbproject/project.properties"/>
+    </target>
+    
+    <target name="init-read-property-files" depends="init-nbproject-property-files" if="do.we.need.to.process.properties.file" >
         <!-- #45947 - properties from project.properties with test-unit-sys-prop
             prefix are treated as system properties. -->
         <property name="temp.properties.path" location="${xtest.workdir}/sys/temp.properties"/>
