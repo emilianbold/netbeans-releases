@@ -11,6 +11,7 @@
 <map version="2.0">
 
 <mapID target="ide.credits" url="credits.html" />
+<mapID target="ide.welcome" url="workspace/welcome.html" />
 <mapID target="pending" url="pending.html" />
 
 <mapID target="gs.ide" url="getstart/ide.html" />
@@ -187,13 +188,13 @@
 <mapID target="beans.settings" url="beans/settings.html" />
 <mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="beans/settings.html" />
 
-<!--jsp topics probably not used in usersguide; leaving in mapped to pending just in case-->
-<mapID target="jsp.jsp_jump" url="pending.html" />
-<mapID target="jsp.jsp_create" url="pending.html" />
-<mapID target="jsp.jsp_edit" url="pending.html" />
-<mapID target="jsp.jsp_compile" url="pending.html" />
-<mapID target="jsp.jsp_run" url="pending.html" />
-<mapID target="jsp.jsp_queryparams" url="pending.html" />
+
+
+
+
+
+
+
 
 <mapID target="java.intro" url="java/intro.html" />
 <mapID target="java.sync.intro" url="java/synchronizing/intro.html" />
@@ -215,7 +216,9 @@
 <mapID target="java.jdks.jump" url="java/jdks_jump.html" />
 
 <!--csh page for Options|IDE Configuration|System|Filesystems Settings|Java Libraries-->
-<mapID target="org.netbeans.modules.java.Filesystem.libraries" url="filesystems/filesystems_classpath.html" />
+<mapID target="org.netbeans.modules.java.Filesystem.libraries" url="filesystems/filesystems_settings.html" />
+<!--csh page for Options|IDE Configuration|System|Filesystems Settings|Java Libraries|[Fileystem]-->
+<mapID target="org.netbeans.modules.java.Filesystem.libraryFS" url="filesystems/filesystems_settings.html" />
 <!--csh page for Options|IDE Configuration|System|Filesystems Settings|Javadoc Documentation-->
 <mapID target="org.netbeans.modules.javadoc.FileSystem.docroots" url="javadoc/search_path.html" />
 <!--csh page for projects|settings|Java Sources-->
@@ -308,7 +311,7 @@
 <mapID target="run.run" url="run/run.html" />
 <mapID target="run.debugmode" url="run/run_debug.html" />
 <mapID target="run.debug.applet" url="run/run_applet.html" />
-<mapID target="run.startup" url="run/startup.html" />
+
 <mapID target="run.arguments" url="run/arguments.html" />
 <mapID target="run.options.jump" url="run/run_options_jump.html" />
 <mapID target="run.options" url="run/options.html" />
@@ -399,7 +402,7 @@
 <mapID target="editing.fonts" url="editing/configuring/fontsandcolors.html" />
 
 <!-- Csh page for Code Completion Data Manager -->
-<mapID target="editing.completion.manager" url="editing/codecompletion/intro.html" />
+<mapID target="editing.completion.manager" url="editing/parserdatabase_customizer.html" />
 
 
 <mapID target="debug.overview" url="debug/debug.html" />
@@ -568,6 +571,18 @@
 <mapID target="cvs.local" url="vcs-nb/cvs-nb/cvs_local.html" />
 <mapID target="cvs.commandopts" url="vcs-nb/cvs-nb/cvs_commandopts-save.html" />
 <mapID target="cvs.wizard" url="vcs-nb/cvs-nb/cvs_wizard.html" />
+<mapID target="args_add" url="vcs-nb/cvs-nb/args/args_add.html"/>
+<mapID target="args_annotate" url="vcs-nb/cvs-nb/args/args_annotate.html"/>
+<mapID target="args_checkout" url="vcs-nb/cvs-nb/args/args_checkout.html"/>
+<mapID target="args_commit" url="vcs-nb/cvs-nb/args/args_commit.html"/>
+<mapID target="args_diff" url="vcs-nb/cvs-nb/args/args_diff.html"/>
+<mapID target="args_global" url="vcs-nb/cvs-nb/args/args_global.html"/>
+<mapID target="args_log" url="vcs-nb/cvs-nb/args/args_log.html"/>
+<mapID target="args_remove" url="vcs-nb/cvs-nb/args/args_remove.html"/>
+<mapID target="args_status" url="vcs-nb/cvs-nb/args/args_status.html"/>
+<mapID target="args_tag" url="vcs-nb/cvs-nb/args/args_tag.html"/>
+<mapID target="args_update" url="vcs-nb/cvs-nb/args/args_update.html"/>
+<mapID target="cvs_args_intro" url="vcs-nb/cvs-nb/args/cvs_args_intro.html"/>
 <mapID target="vcs.vcsgeneric" url="vcs-nb/vcsgeneric/vcs_vcsgeneric.html" />
 <mapID target="vcsgeneric.mounting" url="vcs-nb/vcsgeneric/vcsgeneric_mounting.html" />
 <mapID target="vcsgeneric.wizard" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />
@@ -669,6 +684,7 @@
 <mapID target="ant.ant-docs" url="ant/ant-docs.html" />
 <mapID target="ant.add-task" url="ant/add-task.html" />
 <mapID target="ant.input-handler" url="ant/input_handler.html" />
+<mapID target="ant.target-jdk" url="ant/target-jdk.html" />
 
 <mapID target="configure" url="configure/configure.html" />
 <mapID target="configure.options" url="configure/configure_options.html" />
@@ -734,7 +750,7 @@
 <mapID target="org.netbeans.modules.extbrowser.UnixWebBrowser" url="webbrowser/unixwebbrowser.html" />
 <mapID target="org.netbeans.modules.extbrowser.SimpleExtBrowser" url="webbrowser/simpleextbrowser.html" />
 <mapID target="org.openide.awt.SwingBrowser" url="webbrowser/swingbrowser.html" />
-<mapID target="org.netbeans.modules.icebrowser.IceBrowser" url="webbrowser/webbrowser.html" />
+
 
 
 <mapID target="NetbeansDebuggerDebuggerNode" url="objects/objects_runtime.html" />
@@ -843,7 +859,7 @@
   <mapID target="org.openide.actions.ViewAction" url="pending.html" />
   <mapID target="org.openide.actions.UndockAction" url="pending.html" />
   <mapID target="org.openide.actions.WorkspaceSwitchAction" url="pending.html" />
-  <mapID target="org.openide.awt.HtmlBrowser$BrowserComponent" url="pending.html" />
+  <mapID target="org.openide.awt.HtmlBrowser$BrowserComponent" url="webbrowser/swingbrowser.html" />
   <mapID target="org.openide.execution.ProcessExecutor" url="run/external.html" />
   <mapID target="org.openide.execution.ThreadExecutor" url="run/internal.html" />
   <mapID target="org.netbeans.modules.java.JavaProcessExecutor" url="run/external.html" />
@@ -1239,7 +1255,7 @@
    <mapID target="org.netbeans.modules.editor.options.BasePrintOptions" url="pending.html" />
    <mapID target="org.netbeans.modules.form.PropertyPicker" url="pending.html" />
    <mapID target="org.netbeans.core.NbNodeOperation$Sheet" url="pending.html" /> 
-   <mapID target="org.netbeans.modules.icebrowser.ICEBrowserSettings" url="pending.html" />
+
    <mapID target="org.netbeans.modules.projects.ProjectManagerAction" url="project/project.html" />
    <mapID target="org.netbeans.modules.projects.settings.ProjectOption" url="project/project_adding-new.html" />
    <mapID target="org.netbeans.modules.projects.settings.OptionsAction" url="project/project_adding-new.html" />
@@ -1320,32 +1336,32 @@
    <mapID target="VCS_VariableEditor" url="vcs-nb/vcsgeneric/vcsgeneric_variables.html" />
    <mapID target="VCS_CommandEditor" url="vcs-nb/vcsgeneric/vcsgeneric_command-props.html" />
    <mapID target="org.netbeans.modules.vcs.advanced.VcsCustomizer" url="vcs-nb/vcsgeneric/vcsgeneric_customizer.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsCustomizer" url="vcs-nb/cvs-nb/cvs_create-fs.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.commands.CvsRevisionChooserPanel" url="pending.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.commands.CvsBranchFrame" url="pending.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.LIST" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.LIST_SUB" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.INIT" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.UPDATE" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.COMMIT" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.ADD" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.REMOVE" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.IMPORT" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.CHECKOUT" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.STATUS" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.LOG" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.CHECKOUT_REV" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.UPDATE_REV" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.COMMIT_REV" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.MERGE" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.REM_STICKY" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.TAGS" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.BRANCHES" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.DIFF" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.commands.AddTagDialog" url="pending.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.AdditionalCommandDialog" url="pending.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.ErrorCommandDialog" url="pending.html" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
    <mapID target="org.netbeans.modules.vcs.RetrievingDialog" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.nodes.DebuggerView" url="pending.html" />
    <mapID target="org.netbeans.modules.group.CreateGroupAction" url="pending.html" />
@@ -1421,10 +1437,10 @@
    
    <mapID target="org.netbeans.editor.GO_TO_DECLARATION" url="pending.html" />
    <mapID target="org.netbeans.editor.REFORMAT_CODE" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ide.netbeans.JSPPageWizardAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.core.ServletSettings" url="pending.html" />
 
-   <mapID target="org.netbeans.modules.web.core.execution.JakartaExecutor" url="pending.html" />
+
+
+
 
    <mapID target="org.netbeans.modules.editor.java.NbEditorJavaKit$ToggleBreakpointAction" url="pending.html" />
    <mapID target="org.netbeans.modules.editor.java.NbEditorJavaKit$AddWatchAction" url="pending.html" />
@@ -1438,15 +1454,15 @@
    <mapID target="org.netbeans.editor.BaseKit$CopyAction" url="pending.html" />
    <mapID target="org.netbeans.editor.BaseKit$PasteAction" url="pending.html" />
 
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPBeansSelectionPanel" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPBizMethodsPanel" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPDisplayFieldsPanel" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPInputFieldsPanel" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPPageGenerationPanel" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPPageNameAndStyleInfoPanel" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPPageTypeOptionPanel" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPSubmitAndErrorURLInfoPanel" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPSubmitProcessOptionPanel" url="pending.html" />
+
+
+
+
+
+
+
+
+
 
    <mapID target="org.netbeans.modules.search.ResultViewTopComponent" url="objects/search/search_results-window.html" />
    <mapID target="org.netbeans.modules.search.RepositorySearchAction" url="objects/search/search.html" />
@@ -1458,10 +1474,10 @@
 <!--DataObjectType needs helpID assigned in code??-->
    <mapID target="org.netbeans.modules.search.types.ObjectTypeType" url="objects/search/search_filetype.html" />
 
-   <mapID target="org.netbeans.modules.web.core.EditQueryStringAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.core.jsploader.EditServletAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.core.jswdk.Execute2Action" url="pending.html" />
- 
+
+
+
+
    <mapID target="org.netbeans.beaninfo.LoaderActionsPanel" url="pending.html" />
    <mapID target="org.openide.src.nodes.MethodCustomizer" url="pending.html" />
    <mapID target="org.openide.src.nodes.FieldCustomizer" url="pending.html" />
@@ -1484,13 +1500,13 @@
 <!--was used for root node of a Javadoc filesystem on the javadoc tab in the Explorer-->
    <mapID target="org.netbeans.modules.javadoc.search.JavaDocNode" url="pending.html" />
 
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.UNCONFIG" url="pending.html" />
+
    <mapID target="org.openide.windows.TopComponent" url="pending.html" /> 
    <mapID target="org.openide.text.NbDocument$Colors" url="pending.html" />
    <mapID target="org.netbeans.core.ServicesNode$MakeDefaultAction" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.DebuggerTypeEditor$NoDebugger" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.ExecutorEditor$NoExecutor" url="pending.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.diff.DiffComponent" url="pending.html"/>
+
    <mapID target="org.netbeans.core.ui.LookupNode" url="pending.html" />
 <!--for Filesystems Settings in customizer and in Options window-->
    <mapID target="org.netbeans.core.ui.MountNode" url="filesystems/filesystems_settings.html" />
@@ -1504,7 +1520,7 @@
    <mapID target="org.openide.text.CloneableEditor" url="pending.html" />
    <mapID target="org.openide.actions.ClassNamePanel" url="pending.html" />
 
-   <mapID target="org.netbeans.core.ui.UINodes$StartupNode" url="run/startup.html" />
+
    <mapID target="org.netbeans.core.ui.WelcomeFolderNode" url="configure/welcome_node.html" />
 
 
@@ -1555,16 +1571,16 @@
 
 
 <!--PENDING - map these IDs if possible-->
-  <!--Options .... Script Types-->
-  <mapID target="org.netbeans.core.services.ScriptTypes" url="pending.html" />
-  <!--Options .... Script Types|various types-->
-  <mapID target="org.netbeans.modules.scripting.AbstractScriptType" url="pending.html" />
+
+
+
+
 
   <mapID target="org.netbeans.modules.pdf.PDFSettings" url="pending.html" />
 
-  <!--Options .... Telnet Server-->  
-  <mapID target="org.netbeans.modules.scripting.remote.ServerSettings" url="pending.html" />
-  
+
+
+
  <!--Options | Source Creation and Management | Templates-->  
   <mapID target="org.netbeans.core.ui.UINodes$TemplatesNode" url="pending.html" />
   <!--for all subnodes of Templates category-->
@@ -1614,10 +1630,10 @@
    <mapID target="org.netbeans.beaninfo.editors.DimensionCustomEditor" url="pending.html" /> 
    <mapID target="org.netbeans.core.MainWindow" url="pending.html" />
    <mapID target="org.netbeans.core.ActionsPoolNode" url="pending.html" />
-   <mapID target="org.netbeans.core.Desktop$TemplatesNode" url="pending.html" /> 
-   <mapID target="org.netbeans.core.DesktopNode$TemplatesNode" url="pending.html" /> 
-   <mapID target="org.netbeans.core.DesktopNode" url="pending.html" /> 
-   <mapID target="org.netbeans.core.DesktopNode$StartupNode" url="run/startup.html" />      
+
+
+
+
    <mapID target="org.openide.actions.FindAction" url="pending.html" />
    <mapID target="org.openide.actions.ReplaceAction" url="pending.html" />
  
@@ -1631,6 +1647,10 @@
    <mapID target="org.netbeans.core.JavaHelp$HelpComponent" url="pending.html" />  
    <mapID target="org.openide.actions.OpenLocalExplorerAction" url="pending.html" />
    <mapID target="org.openide.actions.PrintAction" url="pending.html" />
+   <mapID target="org.netbeans.core.actions.EmptyAction" url="pending.html" />
+   <mapID target="org.openide.actions.NewAction" url="pending.html" />   
+
+<!--Swing and AWT components - could conceivably eventually be mapped to JDK docs-->      
    <mapID target="java.awt.Button" url="pending.html" />
    <mapID target="java.awt.Label" url="pending.html" />
    <mapID target="java.awt.TextField" url="pending.html" /> 
@@ -1673,7 +1693,7 @@
    <mapID target="javax.swing.JLayeredPane" url="pending.html" />
    <mapID target="javax.swing.JDesktopPane" url="pending.html" />
    <mapID target="javax.swing.JOptionPane" url="pending.html" />
-   <mapID target="org.netbeans.core.actions.EmptyAction" url="pending.html" />
-   <mapID target="org.openide.actions.NewAction" url="pending.html" />
+
+
  
 </map>
