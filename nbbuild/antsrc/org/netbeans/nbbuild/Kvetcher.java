@@ -19,6 +19,7 @@ import java.util.*;
 import org.apache.tools.ant.*;
 import org.apache.tools.mail.MailMessage;
 
+// XXX use java.util.regex.* instead
 import org.apache.regexp.*;
 
 /** Task to complain (via email) to people when things fail in a build.
