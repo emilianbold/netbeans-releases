@@ -15,7 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 <project name="xml/core" default="netbeans" basedir=".">
 
     <property name="xml_root" location=".."/>
-    <property name="tax_root" location="../tax"/>
+    <property name="tax_root" location="${xml_root}/tax"/>
 
     <property name="nbroot" location="${xml_root}/.."/>
     <property name="binroot" location="${nbroot}/../nbextra"/>
@@ -33,6 +33,7 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="genjavadoc" classname="org.netbeans.nbbuild.GenerateJavadoc" classpath="${nbext_root}/nbantext.jar"/>
+    <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext_root}/nbantext.jar"/>
 
     <property name="build.compiler.debug" value="on"/>
 
@@ -60,6 +61,8 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${tax_root}/libsrc/"/>
             </classpath>
         </javac>
+
+        <for-each locations="compat"/>
     </target>
 
     <target name="jars" depends="init,compile">
@@ -71,8 +74,14 @@ Microsystems, Inc. All Rights Reserved.
                 manifest="manifest-subst.mf"
                 compress="false">
             <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
+            <fileset dir="compat/src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
             <locale name="ja"/>
         </locjar>    
+
+        <for-each locations="../compat"/>
+        <copy todir="netbeans">
+            <fileset dir="../compat/netbeans"/>
+        </copy>
     </target>
 
     <target name="release">
@@ -125,6 +134,9 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="netbeans"/>
         <delete dir="Info"/>
         <delete dir="javahelp/org/netbeans/modules/xml/core/docs/JavaHelpSearch"/>
+
+        <for-each locations="compat"/>
+        <for-each locations="../compat"/>
     </target>
 
     <target name="all" depends="clean,nbm"/>

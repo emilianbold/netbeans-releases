@@ -71,6 +71,7 @@ Microsystems, Inc. All Rights Reserved.
                 manifest="manifest-subst.mf"
                 compress="false">
             <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
+            <fileset dir="compat/src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
             <locale name="ja"/>
         </locjar>    
     </target>

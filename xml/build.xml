@@ -32,12 +32,12 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="compile">
         <for-each locations="${submodules}"/>
-        <for-each locations="compat"/>
+<!--        <for-each locations="compat"/>-->
     </target>
 
     <target name="jars" depends="init,compile">
         <for-each locations="${submodules}"/>
-        <for-each locations="compat"/>
+<!--        <for-each locations="compat"/>-->
     </target>
 
     <target name="release">
@@ -51,28 +51,28 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans" depends="jars,release,javahelp">
         <mkdir dir="netbeans"/>
         <for-each locations="${submodules}"/>
-        <for-each locations="compat"/>
+<!--        <for-each locations="compat"/>-->
     </target>
 
     <target name="nbm" depends="netbeans">
         <for-each locations="${submodules}"/>
-        <for-each locations="compat"/>
+<!--        <for-each locations="compat"/>-->
     </target>
 
     <target name="clean">
         <delete dir="netbeans"/>
         <for-each locations="${submodules}"/>
-        <for-each locations="compat"/>
+<!--        <for-each locations="compat"/>-->
     </target>
 
     <target name="all" depends="clean,nbm">
         <for-each locations="${submodules}"/>
-        <for-each locations="compat"/>
+<!--        <for-each locations="compat"/>-->
     </target>
 
     <target name="javadoc">
         <for-each locations="${submodules}"/>
-        <for-each locations="compat"/>
+<!--        <for-each locations="compat"/>-->
     </target>
 
 
