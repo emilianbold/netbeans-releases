@@ -2291,16 +2291,8 @@ public abstract class BaseBean implements Cloneable, Bean {
 	Document 	doc = null;
 	BaseBean	bean = null;
 
-	/*try {*/
-	    doc = GraphManager.createXmlDocument(new org.xml.sax.InputSource(in), 
-						 validate, er, eh);
-        /*}
-	catch (Throwable t) {
-	    TraceLogger.error(t);
-	    throw new Schema2BeansException(Common.
-		getMessage("DDCreationFailed_msg", t.getMessage()));
-        }*/
-		
+    doc = GraphManager.createXmlDocument(new org.xml.sax.InputSource(in), 
+                                         validate, er, eh);
 	try {
 	    Class[] cc = new Class[] {org.w3c.dom.Node.class,
 				      int.class};

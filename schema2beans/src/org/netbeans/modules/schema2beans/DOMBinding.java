@@ -80,13 +80,13 @@ public class DOMBinding {
     }
     
     class CacheAttr {
-	String name;
-	String value;
+        String name;
+        String value;
 	
-	CacheAttr(String name, String value) {
-	    this.name = name;
-	    this.value = value;
-	}
+        CacheAttr(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
     }
     
     private BeanProperty prop;
@@ -227,26 +227,32 @@ public class DOMBinding {
      *	or from the cache, depending on the existance of the DOM Node.
      */
     String getAttributeValue(BeanProp prop, String name) {
-	if (this.node != null) {
-	    //	Get the value from the DOM Node
-	    Attr a = ((Element)this.node).getAttributeNode(name);
-	    if (a != null)
-		return a.getValue();
-	    else
-		return null;
-	}
-	else {
-	    //	Get the value from the cache
-	    BeanProperty bp = this.getBeanProperty(prop);
-	    if (bp != null && bp.attributes != null) {
-		for (int i=0; i<bp.attributes.size(); i++) {
-		    CacheAttr ca = (CacheAttr)bp.attributes.get(i);
-		    if (ca.name.equals(name))
-			return ca.value;
-		}
-	    }
-	}
-	return null;
+        if (this.node != null) {
+            //	Get the value from the DOM Node
+            Attr a = ((Element)this.node).getAttributeNode(name);
+            if (a != null)
+                return a.getValue();
+            else
+                return null;
+        } else {
+            //	Get the value from the cache
+            BeanProperty bp = this.getBeanProperty(prop);
+            if (bp != null && bp.attributes != null) {
+                CacheAttr ca = findCacheAttr(bp, name);
+                if (ca != null)
+                    return ca.value;
+            }
+        }
+        return null;
+    }
+
+    private CacheAttr findCacheAttr(BeanProperty bp, String name) {
+        for (int i = 0; i < bp.attributes.size(); i++) {
+            CacheAttr ca = (CacheAttr)bp.attributes.get(i);
+            if (ca.name.equals(name))
+                return ca;
+        }
+        return null;
     }
     
     /**
@@ -254,35 +260,39 @@ public class DOMBinding {
      *	or from the cache, depending on the existance of the DOM Node.
      */
     void setAttributeValue(BeanProp prop, String name, String value) {
-	if (this.node != null) {
-	    if (value != null)
-		((Element)this.node).setAttribute(name, value);
-	    else {
-		String v = ((Element)this.node).getAttribute(name);
-		if (v != null) {
-		    //
-		    //	An empty string might either mean that the attribute
-		    //	has an empty value or that the attribute is not
-		    //	defined at all (ID type for example).
-		    //	The following tries to remove it and ignore the
-		    //	fact that the attribute might not be defined.
-		    //
-		    try {
-			((Element)this.node).removeAttribute(name);
-		    } catch(DOMException e) {
-			// Ignore it
-		    }
-		}
-	    }
-	}
-	else {
-	    //	There is no DOM Node, cache the value
-	    CacheAttr ca = new CacheAttr(name, value);
-	    BeanProperty bp = this.getBeanProperty(prop);
-	    if (bp.attributes == null)
-		bp.attributes = new ArrayList();
-	    bp.attributes.add(ca);
-	}
+        if (this.node != null) {
+            if (value != null)
+                ((Element)this.node).setAttribute(name, value);
+            else {
+                String v = ((Element)this.node).getAttribute(name);
+                if (v != null) {
+                    //
+                    //	An empty string might either mean that the attribute
+                    //	has an empty value or that the attribute is not
+                    //	defined at all (ID type for example).
+                    //	The following tries to remove it and ignore the
+                    //	fact that the attribute might not be defined.
+                    //
+                    try {
+                        ((Element)this.node).removeAttribute(name);
+                    } catch(DOMException e) {
+                        // Ignore it
+                    }
+                }
+            }
+        } else {
+            //	There is no DOM Node, cache the value
+            BeanProperty bp = this.getBeanProperty(prop);
+            if (bp.attributes == null)
+                bp.attributes = new ArrayList();
+            CacheAttr ca = findCacheAttr(bp, name);
+            if (ca == null) {
+                ca = new CacheAttr(name, value);
+                bp.attributes.add(ca);
+            } else {
+                ca.value = value;
+            }
+        }
     }
     
     /**
