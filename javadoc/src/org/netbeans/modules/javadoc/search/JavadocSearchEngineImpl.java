@@ -20,6 +20,8 @@
 package org.netbeans.modules.javadoc.search;
 
 import java.util.ArrayList;
+import org.openide.ErrorManager;
+
 import org.openide.filesystems.FileObject;
 
 /**
@@ -63,16 +65,14 @@ class JavadocSearchEngineImpl extends JavadocSearchEngine {
             
             JavadocSearchType st = JavadocRegistry.getDefault().findSearchType( docRoots[i] );
             if (st == null) {
-                System.out.println("NO Search type for " + docRoots[i]);
+                ErrorManager.getDefault().log ("NO Search type for " + docRoots[i]);
                 continue;
             }
             FileObject indexFo = st.getDocFileObject( docRoots[i] );
             if (indexFo == null) {
-                System.out.println("NO Index files fot " + docRoots[i] );
+                ErrorManager.getDefault().log ("NO Index files fot " + docRoots[i] );
                 continue;
-            }
-            
-            System.out.println("IndexFo " + indexFo);
+            }            
             
             IndexSearchThread searchThread = st.getSearchThread( toFind, indexFo, diiConsumer );
 

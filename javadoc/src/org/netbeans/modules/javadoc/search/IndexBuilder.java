@@ -17,6 +17,10 @@ import java.io.*;
 import java.lang.ref.*;
 import java.text.Collator;
 import java.util.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+
 import javax.swing.text.html.parser.*;
 
 import org.openide.ErrorManager;
@@ -24,11 +28,12 @@ import org.openide.filesystems.*;
 
 import org.openide.util.RequestProcessor;
 
+
 /**
  * Builds index of Javadoc filesystems.
  * @author Svata Dedic, Jesse Glick
  */
-public class IndexBuilder implements Runnable /*, RepositoryListener */ {
+public class IndexBuilder implements Runnable, ChangeListener {
 
     private static final String[] INDEX_FILE_NAMES = {
         "overview-summary.html", // NOI18N
@@ -43,6 +48,8 @@ public class IndexBuilder implements Runnable /*, RepositoryListener */ {
     private final ErrorManager err;
     
     private Reference cachedData;
+    
+    private JavadocRegistry jdocRegs;
 
     /**
      * WeakMap<FileSystem : info> of information extracted from filesystems.
@@ -62,7 +69,8 @@ public class IndexBuilder implements Runnable /*, RepositoryListener */ {
     }
 
     private IndexBuilder() {
-//        Repository.getDefault().addRepositoryListener(this);
+        this.jdocRegs = JavadocRegistry.getDefault();
+        this.jdocRegs.addChangeListener(this);
         err = ErrorManager.getDefault().getInstance("org.netbeans.modules.javadoc.search.IndexBuilder"); // NOI18N
         if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
             err.log("new IndexBuilder");
@@ -84,6 +92,10 @@ public class IndexBuilder implements Runnable /*, RepositoryListener */ {
     public void run() {
         cachedData = null;
         refreshIndex();
+    }
+    
+    public void stateChanged (ChangeEvent event) {
+        scheduleTask ();
     }
 
     /**
@@ -151,7 +163,7 @@ public class IndexBuilder implements Runnable /*, RepositoryListener */ {
             oldMap = this.filesystemInfo;
         }
         //Enumeration e = FileSystemCapability.DOC.fileSystems();
-        FileObject docRoots[] = JavadocRegistry.getDefault().getDocRoots();
+        FileObject docRoots[] = jdocRegs.getDocRoots();
         // XXX needs to be able to listen to result; when it changes, call scheduleTask()
         Map m = new WeakHashMap();
 
@@ -206,7 +218,7 @@ public class IndexBuilder implements Runnable /*, RepositoryListener */ {
                 // Try to find a title.
                 String title = parseTitle(index);
                 if (title != null) {
-                    JavadocSearchType st = JavadocRegistry.getDefault().findSearchType( fo );
+                    JavadocSearchType st = jdocRegs.findSearchType( fo );
                     if (st == null)
                         continue;
                     title = st.getOverviewTitleBase(title);

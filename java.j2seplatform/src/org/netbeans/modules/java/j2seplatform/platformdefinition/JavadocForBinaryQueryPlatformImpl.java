@@ -117,9 +117,10 @@ public class JavadocForBinaryQueryPlatformImpl implements JavadocForBinaryQueryI
         JavaPlatform platforms[] = jpm.getInstalledPlatforms();
         for (int i=0; i<platforms.length; i++) {
             JavaPlatform jp = platforms[i];
-            if (jp.getJavadocFolders().size() == 0) {
-                continue;
-            }
+//Not valid assumption: May change in the future result should be returned, since the result is live.            
+//            if (jp.getJavadocFolders().size() == 0) {
+//                continue;
+//            }
             Iterator it = jp.getBootstrapLibraries().entries().iterator();
             while (it.hasNext()) {
                 ClassPath.Entry entry = (ClassPath.Entry)it.next();
