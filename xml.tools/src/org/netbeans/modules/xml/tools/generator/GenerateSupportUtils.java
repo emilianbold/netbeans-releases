@@ -12,14 +12,18 @@
  */
 package org.netbeans.modules.xml.tools.generator;
 
+import java.awt.event.ActionEvent;
 import java.util.*;
 import java.text.DateFormat;
 
+import org.openide.TopManager;
 import org.openide.filesystems.FileObject;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.loaders.*;
+import org.openide.nodes.Node;
 import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
 
 public class GenerateSupportUtils {
     
@@ -38,36 +42,30 @@ public class GenerateSupportUtils {
         return sb.toString();
     }
 
-    /** 
-     * Obtain OpenCookie and if exist open.
+
+    /**
+     * Try to perform default action on specified file object.
      */
-    public static void tryOpenFile (FileObject fo) {
+    public static void performDefaultAction (FileObject fo) {
         if (fo == null) {
-            Util.debug ("FileObject must not be null.", new IllegalArgumentException());  // NOI18N
+            Util.debug ("FileObject can not be null.", new IllegalArgumentException());  // NOI18N
             return;            
         }
-        
+
         try {
-            DataObject DO = DataObject.find (fo);
-            OpenCookie oc = (OpenCookie)DO.getCookie (OpenCookie.class);
-            if (oc != null)
-                oc.open();
+            DataObject obj = DataObject.find (fo);
+            Node node = obj.getNodeDelegate();
+            SystemAction action = node.getDefaultAction();
+        
+            if (action != null) {
+                TopManager.getDefault().getActionManager().invokeAction
+                    (action, new ActionEvent (node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+            }
         } catch (DataObjectNotFoundException e) {
+            // Data Object not found -- strange, but OK -> DO NOTHING
         }
     }
 
-    /** 
-     * Obtain EditCookie and if exist open in editor.
-     */    
-    public static void tryEditFile (FileObject fo) {
-        try {
-            DataObject DO = DataObject.find (fo);
-            EditCookie ec = (EditCookie)DO.getCookie (EditCookie.class);
-            if (ec != null)
-                ec.edit();
-        } catch (DataObjectNotFoundException e) {
-        }
-    }
 
     /*
      * Generate default java header.

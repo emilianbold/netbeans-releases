@@ -313,9 +313,9 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             GuiUtil.setStatusText(Util.getString("MSG_sax_progress_3"));
 
             if (model.hasParslets()) {
-                GenerateSupportUtils.tryOpenFile(folder.getFileObject(model.getParsletImpl(), JAVA_EXT));
+                GenerateSupportUtils.performDefaultAction (folder.getFileObject(model.getParsletImpl(), JAVA_EXT));
             }
-            GenerateSupportUtils.tryOpenFile(folder.getFileObject(model.getHandlerImpl(), JAVA_EXT));
+            GenerateSupportUtils.performDefaultAction (folder.getFileObject(model.getHandlerImpl(), JAVA_EXT));
 
         } catch (FileStateInvalidException e) {
             Util.debug ("Ignoring:", e);  // NOI18N

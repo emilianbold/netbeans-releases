@@ -94,7 +94,7 @@ public class GenerateDOMScannerSupport implements XMLGenerateCookie {
                 if (lock != null)
                     lock.releaseLock();
             }
-            GenerateSupportUtils.tryOpenFile (generFile);
+            GenerateSupportUtils.performDefaultAction (generFile);
 
         } catch (UserCancelException e) {
         } catch (SourceException e) {
