@@ -28,11 +28,9 @@ package lib;
 
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
 import org.netbeans.jellytools.*;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.*;
 import org.netbeans.jellytools.nodes.*;
 import org.netbeans.jellytools.nodes.Node;
@@ -48,7 +46,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  * @author Petr Felenda ( e-mail petr.felenda@sun.com )
  * @version 1
  */
-public class PropertiesEditorTestCase extends NbTestCase {
+public class PropertiesEditorTestCase extends JellyTestCase {
     
     protected static final String defaultProjectName = "properties_test";
     private String projectName;
