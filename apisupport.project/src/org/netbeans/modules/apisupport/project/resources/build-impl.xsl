@@ -66,8 +66,8 @@ NOTE: nbbuild/build.xml should contain:
         <property file="nbproject/private/private.properties"/>
         <!--
         <property name="user.properties.file" location="${{netbeans.user}}/build.properties"/>
-        -->
         <property file="${{user.properties.file}}"/>
+        -->
         <property file="nbproject/project.properties"/>
         <property name="code.name.base.dashes" value="{translate(/p:project/p:name, '.', '-')}"/>
         <property name="domain" value="{substring-before(/p:project/p:configuration/nbm:data/nbm:path, '/')}"/>
@@ -165,6 +165,7 @@ NOTE: nbbuild/build.xml should contain:
                     <xsl:attribute name="value">
                         <xsl:call-template name="public.packages">
                             <xsl:with-param name="glob" select="'.*'"/>
+                            <xsl:with-param name="whenempty" select="'-'"/>
                         </xsl:call-template>
                     </xsl:attribute>
                 </attribute>
@@ -347,10 +348,11 @@ NOTE: nbbuild/build.xml should contain:
 
     <xsl:template name="public.packages">
         <xsl:param name="glob"/>
-        <xsl:variable name="pkgs" select="/p:project/p:configuration/nbm:data/nbm:public-packages"/>
+        <xsl:param name="whenempty" select="''"/>
+        <xsl:variable name="pkgs" select="/p:project/p:configuration/nbm:data/nbm:public-packages/nbm:package"/>
         <xsl:choose>
             <xsl:when test="count($pkgs) &gt; 0">
-                <xsl:for-each select="$pkgs/nbm:package">
+                <xsl:for-each select="$pkgs">
                     <xsl:if test="position() &gt; 1">
                         <xsl:text>, </xsl:text>
                     </xsl:if>
@@ -359,7 +361,7 @@ NOTE: nbbuild/build.xml should contain:
                 </xsl:for-each>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:text>-</xsl:text>
+                <xsl:value-of select="$whenempty"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
