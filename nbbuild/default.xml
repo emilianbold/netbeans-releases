@@ -51,25 +51,27 @@
   <target name="setup-jdkhome-1">
     <!-- Note: user-configured -Djavahome=... will always override this: -->
     <property name="javahome" location="${java.home}"/>
-    <available property="javahome-valid" file="${javahome}/lib/tools.jar"/>
-    <available classname="com.apple.eawt.Application" property="is-mac"/>
+    <condition property="jdkhome" value="${javahome}">
+        <or>
+            <available file="${javahome}/lib/tools.jar"/>
+            <!-- on Mac -->
+            <available file="${javahome}/../Classes/classes.jar"/>
+        </or>
+    </condition>
+  </target>
+  
+  <target name="setup-jdkhome-2" unless="jdkhome">
+    <property name="javahomeParent" location="${java.home}/.."/>
+    <condition property="jdkhome" value="${javahomeParent}">
+        <or>
+            <available file="${javahomeParent}/lib/tools.jar"/>
+            <!-- on Mac -->
+            <available file="${javahomeParent}/../Classes/classes.jar"/>
+        </or>
+    </condition>
   </target>
 
-  <target name="setup-jdkhome-2" depends="setup-jdkhome-1" if="javahome-valid">
-    <property name="jdkhome" value="${javahome}"/>
-    <property name="jdkhome-valid" value="true"/>
-  </target>
-
-  <target name="setup-jdkhome-3" depends="setup-jdkhome-1" unless="javahome-valid">
-    <property name="jdkhome" location="${javahome}/.."/>
-    <available property="jdkhome-valid" file="${jdkhome}/lib/tools.jar"/>
-  </target>
-
-  <target name="setup-jdkhome-4" depends="setup-jdkhome-1" if="is-mac">
-      <property name="jdkhome-valid" value="${java.home}/../Classes/classes.jar"/> 
-  </target>
-
-  <target name="setup-jdkhome" depends="setup-jdkhome-2,setup-jdkhome-3,setup-jdkhome-4" unless="jdkhome-valid">
-    <fail message="No tools.jar found in ${javahome}! Set -Djavahome=... as needed."/>
+  <target name="setup-jdkhome" depends="setup-jdkhome-1,setup-jdkhome-2" unless="jdkhome">
+    <fail message="No tools.jar or classes.jar found in ${javahome}! Set -Djavahome=... as needed."/>
   </target>
 </project>
