@@ -118,6 +118,7 @@ public final class NbClipboard extends ExClipboard
         data = contents;
         dataOwner = owner;
         syncTask.schedule(0);
+        fireClipboardChange();
     }
 
     public synchronized Transferable getContents(Object requestor) {
@@ -158,7 +159,6 @@ public final class NbClipboard extends ExClipboard
         }
         if (contents != null) {
             systemClipboard.setContents(contents, owner);
-            fireClipboardChange();
             return;
         }
 
