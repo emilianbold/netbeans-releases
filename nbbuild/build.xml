@@ -685,7 +685,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-xml" depends="all-xml/api, all-xml/tax, all-xml/core, all-xml/catalog, all-xml/tools, all-xml/text-edit, all-xml/tree-edit, all-xml/css, all-xml/xsl, all-xml/schema"/>
 
-
   <target name="all-treefs" depends="all-openide">
     <echo message="Building module treefs..."/>
     <ant dir="../treefs" target="netbeans"/>
@@ -699,6 +698,12 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="all-utilities/loaderswitcher" depends="all-openide">
       <echo message="Building module utilities/loaderswitcher..."/>
       <ant dir="../utilities/loaderswitcher" target="netbeans"/>
+  </target>
+
+  <target name="all-xtest">
+      <ant dir="../xtest" antfile="build.xml" target="compile-dependend-modules"/>
+      <ant dir="../xtest" antfile="build.xml" target="makedist"/>
+      <ant dir="../xtest" antfile="build.xml" target="makedist-pes"/>
   </target>
   
   <!-- build NBMs for selected modules -->
