@@ -28,15 +28,15 @@ public class MeasureDialogs  {
         NbTestSuite suite = new NbTestSuite();
 
         // dialogs and windows which don't require any preparation
-        suite.addTest(new About("measureTime", "About dialog open"));
-        suite.addTest(new About_2("measureTime", "About details open"));
+        //remove from test run for NB4.1        suite.addTest(new About("measureTime", "About dialog open"));
+        //remove from test run for NB4.1        suite.addTest(new About_2("measureTime", "About details open"));
         
         suite.addTest(new SetupWizard("measureTime", "Setup Wizard open"));
-        suite.addTest(new SetupWizard_2("measureTime", "Setup Wizard next open"));
-        suite.addTest(new SetupWizard_3("measureTime", "Setup Wizard next next open"));
+        //remove from test run for NB4.1        suite.addTest(new SetupWizard_2("measureTime", "Setup Wizard next open"));
+        //remove from test run for NB4.1        suite.addTest(new SetupWizard_3("measureTime", "Setup Wizard next next open"));
         
         suite.addTest(new KeyboardShortcuts("measureTime", "Keyboard Shortcut dialog open"));
-        suite.addTest(new KeyboardShortcuts_2("measureTime", "Keyboard Shortcut shortcuts open"));
+        //remove from test run for NB4.1        suite.addTest(new KeyboardShortcuts_2("measureTime", "Keyboard Shortcut shortcuts open"));
  
         suite.addTest(new Options("measureTime", "Options dialog open"));
  
@@ -46,16 +46,18 @@ public class MeasureDialogs  {
         suite.addTest(new OpenFileDialog("measureTime", "Open File dialog open"));
  
         suite.addTest(new UpdateCenter("measureTime", "Update Center wizard open"));
-        suite.addTest(new ProxyConfiguration("measureTime", "Proxy Configuration open"));
+        //remove from test run for NB4.1        suite.addTest(new ProxyConfiguration("measureTime", "Proxy Configuration open"));
+        
         suite.addTest(new VersioningManager("measureTime", "Versioning Manager open"));
+//TODO       suite.addTest(new AddVersionedDirectoryDialog("measureTime", "Add Versioned Directory open"));
         
-        suite.addTest(new FilesWindow("measureTime", "Files window open"));
-        suite.addTest(new ProjectsWindow("measureTime", "Projects window open"));
-        suite.addTest(new RuntimeWindow("measureTime", "Runtime window open"));
-        suite.addTest(new VersioningWindow("measureTime", "Versioning window open"));
         suite.addTest(new FavoritesWindow("measureTime", "Favorites window open"));
+        //remove from test run for NB4.1        suite.addTest(new FilesWindow("measureTime", "Files window open"));
+        //remove from test run for NB4.1        suite.addTest(new ProjectsWindow("measureTime", "Projects window open"));
+        //remove from test run for NB4.1        suite.addTest(new RuntimeWindow("measureTime", "Runtime window open"));
+        //remove from test run for NB4.1        suite.addTest(new VersioningWindow("measureTime", "Versioning window open"));
         
-//TODO it still fails in Promo D       suite.addTest(new OutputWindow("measureTime", "Output window open"));
+//TODO       suite.addTest(new OutputWindow("measureTime", "Output window open"));
         suite.addTest(new ToDoWindow("measureTime", "To Do window open"));
         suite.addTest(new HttpMonitorWindow("measureTime", "Http Monitor window open"));
 
@@ -66,13 +68,15 @@ public class MeasureDialogs  {
         
         suite.addTest(new AddJDBCDriverDialog("measureTime", "Add JDBC Driver dialog open"));
         suite.addTest(new NewDatabaseConnectionDialog("measureTime", "New Database Connection dialog open"));
-//        suite.addTest(new AddNewServerInstanceDialog("measureTime", "Add Server Instance dialog open"));
-        suite.addTest(new SetDefaultServerDialog("measureTime", "Set Default Server dialog open"));
+//TODO        suite.addTest(new AddNewServerInstanceDialog("measureTime", "Add Server Instance dialog open"));
+        //remove from test run for NB4.1        suite.addTest(new SetDefaultServerDialog("measureTime", "Set Default Server dialog open"));
         suite.addTest(new MountXMLCatalogDialog("measureTime", "Mount XML Catalog dialog open"));
         
         suite.addTest(new FindInProjects("measureTime", "Find in Projects dialog open"));
         suite.addTest(new ProjectPropertiesWindow("measureTime", "Project Properties window open"));
  
+        suite.addTest(new DeleteFileDialog("measureTime", "Delete Object dialog open"));
+        
         suite.addTest(new AttachDialog("measureTime", "Attach dialog open"));
         suite.addTest(new NewBreakpointDialog("measureTime", "New Breakpoint dialog open"));
         suite.addTest(new NewWatchDialog("measureTime", "New Watch dialog open"));
@@ -83,24 +87,20 @@ public class MeasureDialogs  {
         suite.addTest(new LibrariesManager("measureTime", "Libraries Manager open"));
         
         // dialogs and windows which first open a file in the editor
-        suite.addTest(new GotoClassDialog("measureTime", "Go To Class dialog open"));
         suite.addTest(new OverrideMethods("measureTime", "Override and Implement Methods dialog open"));
+        suite.addTest(new GotoClassDialog("measureTime", "Go To Class dialog open"));
         suite.addTest(new GotoLineDialog("measureTime", "Go to Line dialog open"));
         suite.addTest(new AutoCommentWindow("measureTime", "Auto Comment Tool open"));
         suite.addTest(new FindInSourceEditor("measureTime", "Find in Source Editor dialog open"));
         suite.addTest(new InternationalizeDialog("measureTime", "Internationalize dialog open"));
         
+//TODO        suite.addTest(new DocumentsDialog("measureTime", "Documents dialog open"));
+        
         suite.addTest(new RefactorFindUsagesDialog("measureTime", "Refactor find usages dialog open"));
         suite.addTest(new RefactorRenameDialog("measureTime", "Refactor rename dialog open"));
-//        suite.addTest(new RefactorMoveClassDialog("measureTime", "Refactor move class dialog open"));
-        
-        suite.addTest(new DeleteFileDialog("measureTime", "Delete Object dialog open"));
+//TODO        suite.addTest(new RefactorMoveClassDialog("measureTime", "Refactor move class dialog open"));
         
         
-/* TEMPORARY commented -> try to solve never finixhed tests
-
-        suite.addTest(new DocumentsDialog("measureTime", "Documents dialog open"));
-*/        
         return suite;
     }
     

@@ -54,26 +54,6 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
         setTestCaseName(testName, performanceDataName);
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        // recent prj menu is empty and disabled
-//        suite.addTest(new MainSubMenus("testFileOpenRecentProjectMenu", "File | Open Recent Project main menu")); 
-        suite.addTest(new MainSubMenus("testFileSetMainProjectMenu", "File | Set Main Project main menu"));
-        suite.addTest(new MainSubMenus("testViewDocumentationIndicesMenu", "View | Documentation Indices main menu"));
-        suite.addTest(new MainSubMenus("testViewToolbarsMenu", "View | Toolbars main menu"));
-        suite.addTest(new MainSubMenus("testViewCodeFoldsMenu", "View | Code Folds main menu"));
-        suite.addTest(new MainSubMenus("testRunRunOtherMenu", "Run | Run Other main menu"));
-        suite.addTest(new MainSubMenus("testRunStackMenu", "Run | Stack main menu"));
-        suite.addTest(new MainSubMenus("testVersioningCVSMenu", "Versioning | CVS main menu"));
-        suite.addTest(new MainSubMenus("testVersioningPVCSMenu", "Versioning | PVCS main menu"));
-        suite.addTest(new MainSubMenus("testToolsI18nMenu", "Tools | Internationalization main menu"));
-        suite.addTest(new MainSubMenus("testWinGuiMenu", "Window | GUI Editing main menu"));
-        suite.addTest(new MainSubMenus("testWinDebuggingMenu", "Window | Debugging main menu"));
-        suite.addTest(new MainSubMenus("testWinVersioningMenu", "Window | Versioning main menu"));
-        suite.addTest(new MainSubMenus("testWinSelectDocumentNodeInMenu", "Window | Select Document in main menu"));
-        return suite;
-    }
-    
     //TODO open more than one project (nice to have open 10 projects) and close 5 projects
     public void testFileOpenRecentProjectMenu(){
         testSubMenu("org.netbeans.core.Bundle","File", "org.netbeans.modules.project.ui.actions.Bundle", "LBL_RecentProjectsAction_Name");
