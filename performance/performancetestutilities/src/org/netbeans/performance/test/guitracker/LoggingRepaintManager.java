@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -25,26 +25,6 @@ public class LoggingRepaintManager extends RepaintManager {
     
     private static final long MAX_TIMEOUT = 60*1000L;
     
-    /** Utility method used from NetBeans to measure startup time.
-     * Initializes RepaintManager and associated ActionTracker and than 
-     * waits until paint happens and there is 5 seconds of inactivity.
-     *
-     * @return time of last paint
-     */
-    public static long measureStartup () {
-        long waitAfterStartup = Long.getLong("org.netbeans.performance.waitafterstartup", 5000).longValue();
-        
-        // XXX load our EQ and repaint manager
-        ActionTracker tr = ActionTracker.getInstance();
-        LoggingRepaintManager rm = new LoggingRepaintManager(tr);
-        rm.setEnabled(true);
-//        leq = new LoggingEventQueue(tr);
-//        leq.setEnabled(true);
-        long time = rm.waitNoEvent(waitAfterStartup, true);
-        rm.setEnabled(false);
-        return time;
-    }
-    
     private ActionTracker tr;
     
     private RepaintManager orig = null;
@@ -61,7 +41,7 @@ public class LoggingRepaintManager extends RepaintManager {
      * Enable / disable our Repaint Manager
      * @param val true - enable, false - disable
      */
-    public void setEnabled (boolean val) {
+    public void setEnabled(boolean val) {
         if (isEnabled() != val) {
             if (val) {
                 enable();
@@ -99,7 +79,7 @@ public class LoggingRepaintManager extends RepaintManager {
      * Measure onle explorer
      * @param ignore true - measure only explorer, false - measure everything
      */
-    public void setOnlyExplorer (boolean ignore) {
+    public void setOnlyExplorer(boolean ignore) {
         if (ignore) {
             setRegionFilter(EXPLORER_FILTER);
         } else {
@@ -111,7 +91,7 @@ public class LoggingRepaintManager extends RepaintManager {
      * Measure onle editor
      * @param ignore true - measure only editor, false - measure everything
      */
-    public void setOnlyEditor (boolean ignore) {
+    public void setOnlyEditor(boolean ignore) {
         if (ignore) {
             setRegionFilter(EDITOR_FILTER);
         } else {
@@ -156,25 +136,25 @@ public class LoggingRepaintManager extends RepaintManager {
     }
     
     private static final RegionFilter EXPLORER_FILTER =
-        new RegionFilter() {
-            public boolean accept(JComponent c) {
-                Class clz = null;
-                for (clz = c.getClass(); clz != null; clz = clz.getSuperclass()) {  // some components as ProjectsView uses own class for View so we are looking for those have superclass explorer.view
-                    if (clz.getPackage().getName().equals("org.openide.explorer.view")) { // if it's explorer.view log this paint event
-                        return true;
-                    }
+            new RegionFilter() {
+        public boolean accept(JComponent c) {
+            Class clz = null;
+            for (clz = c.getClass(); clz != null; clz = clz.getSuperclass()) {  // some components as ProjectsView uses own class for View so we are looking for those have superclass explorer.view
+                if (clz.getPackage().getName().equals("org.openide.explorer.view")) { // if it's explorer.view log this paint event
+                    return true;
                 }
-                return false;
             }
-        };
-        
+            return false;
+        }
+    };
+    
     private static final RegionFilter EDITOR_FILTER =
-        new RegionFilter() {
-            public boolean accept(JComponent c) {
-                Class clz = null;
-                return c.getClass().getName().equals("org.openide.text.QuietEditorPane");
-            }
-        };
+            new RegionFilter() {
+        public boolean accept(JComponent c) {
+            Class clz = null;
+            return c.getClass().getName().equals("org.openide.text.QuietEditorPane");
+        }
+    };
     
     public void  setRegionFilter(RegionFilter filter) {
         regionFilter = filter;
@@ -197,26 +177,25 @@ public class LoggingRepaintManager extends RepaintManager {
      *
      * @return time of last painting
      */
-    public long waitNoEvent (long timeout) {
+    public long waitNoEvent(long timeout) {
         return waitNoEvent(timeout, false);
     }
     
     /** waits and returns when there is at least timeout millies without any
      * painting processing.
      *
-     * @param afterPaint when set to true then this method checks if there was any paint 
+     * @param afterPaint when set to true then this method checks if there was any paint
      *        and measures quiet period from this time
      *
      * @return time of last painting
      */
-    private long waitNoEvent (long timeout, boolean afterPaint) {
+    private long waitNoEvent(long timeout, boolean afterPaint) {
         long current = System.currentTimeMillis();
         long first = current;
         while (((current - lastPaint) < timeout) || ((lastPaint == 0L) && afterPaint)) {
             try {
                 Thread.currentThread().sleep(Math.min(current - lastPaint + 20, timeout));
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 // XXX what to do here?
             }
             current = System.currentTimeMillis();
@@ -225,7 +204,27 @@ public class LoggingRepaintManager extends RepaintManager {
         }
         return lastPaint;
     }
-
+    
+    /** Utility method used from NetBeans to measure startup time.
+     * Initializes RepaintManager and associated ActionTracker and than
+     * waits until paint happens and there is 5 seconds of inactivity.
+     *
+     * @return time of last paint
+     */
+    public static long measureStartup() {
+        long waitAfterStartup = Long.getLong("org.netbeans.performance.waitafterstartup", 5000).longValue();
+        
+        // XXX load our EQ and repaint manager
+        ActionTracker tr = ActionTracker.getInstance();
+        LoggingRepaintManager rm = new LoggingRepaintManager(tr);
+        rm.setEnabled(true);
+//        leq = new LoggingEventQueue(tr);
+//        leq.setEnabled(true);
+        long time = rm.waitNoEvent(waitAfterStartup, true);
+        rm.setEnabled(false);
+        return time;
+    }
+    
     /*
     public synchronized void addInvalidComponent(JComponent c) {
         if (filter.match(c)) {
@@ -234,13 +233,13 @@ public class LoggingRepaintManager extends RepaintManager {
         }
         super.addInvalidComponent(c);
     }
-    
+     
     public void validateInvalidComponents() {
         if (hasValidateMatches) {
             logger.log("validateInvalidComponents");
             hasValidateMatches = false;
         }
         super.validateInvalidComponents();
-    }    
-    */
+    }
+     */
 }

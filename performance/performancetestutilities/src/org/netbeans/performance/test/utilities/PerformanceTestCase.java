@@ -161,10 +161,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * SetUp test cases: redirect log/ref, initialize performance data.
      */
     public void setUp() {
-        //if scan dialog rises wait some time after scan finished
-        if(org.netbeans.junit.ide.ProjectSupport.waitScanFinished())
-            waitNoEvent(1000);
         
+        checkScanFinished();
         checkWarmup ();
         
         // XXX load our EQ and repaint manager
@@ -246,6 +244,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                 "iteration "+MAX_ITERATION);
         
         String performanceDataName = setPerformanceName();
+        
+        checkScanFinished(); // just to be sure, that during measurement we will not wait for scanning dialog
         
         try {
             initialize();
@@ -603,6 +603,15 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             fail(e);
         }
     }
+    
+    /**
+     * If scan dialog rises wait some time after scan finished
+     */
+    public void checkScanFinished() {
+        if(org.netbeans.junit.ide.ProjectSupport.waitScanFinished())
+            waitNoEvent(1000);
+    }
+    
     
     /**
      * Get measured time from overwritten JDK class EventQueue().</p>
