@@ -176,7 +176,6 @@ public class LocalizedJar extends MatchingTask {
                 File thisBaseDir = scanner.getBasedir ();
                 String[] files = scanner.getIncludedFiles ();
                 for (int i = 0; i < files.length; i++) {
-                    File f = new File (thisBaseDir, files[i]);
                     String name = files[i].replace (File.separatorChar, '/');
                     if (name.equalsIgnoreCase ("META-INF/MANIFEST.MF")) {
                         log ("Warning: ignoring META-INF/MANIFEST.MF found among scanned files", Project.MSG_WARN);
