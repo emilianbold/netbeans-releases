@@ -407,15 +407,20 @@ final class J2SESourceRootsUi {
         }
         
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,int row, int column) {
-            File root = (File) value;
-            String pfPath = projectFolder.getAbsolutePath() + File.separatorChar;
-            String srPath = root.getAbsolutePath();
             String displayName;
-            if (srPath.startsWith(pfPath)) {
-                displayName = srPath.substring(pfPath.length());
+            if (value instanceof File) {
+                File root = (File) value;
+                String pfPath = projectFolder.getAbsolutePath() + File.separatorChar;
+                String srPath = root.getAbsolutePath();            
+                if (srPath.startsWith(pfPath)) {
+                    displayName = srPath.substring(pfPath.length());
+                }
+                else {
+                    displayName = srPath;
+                }
             }
             else {
-                displayName = srPath;
+                displayName = null;
             }
             Component c = super.getTableCellRendererComponent(table, displayName, isSelected, hasFocus, row, column);
             if (c instanceof JComponent) {
