@@ -408,7 +408,7 @@ public class EjbJarClassPathUi {
                 Set/*<Library>*/includedLibraries = new HashSet ();
                 for (int i=0; i< listModel.getSize(); i++) {
                     ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.get(i);
-                    if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
+                    if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken() ) {
                         includedLibraries.add( item.getLibrary() );
                     }
                 }
