@@ -520,9 +520,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
         }
 
         // Make common list of all properites
-        ArrayList allProperties = new ArrayList( getProperties().size() + getIdxProperties().size() );
-        allProperties.addAll( getProperties() );
-        allProperties.addAll( getIdxProperties() );
+        Collection allProperties = new java.util.TreeSet(getProperties());
+        allProperties.addAll(getIdxProperties());
 
         sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_PropertyIdentifiers" ) );  // NOI18N
 
@@ -605,8 +604,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         }
 
         // Make common list of all methods
-        ArrayList allMethods = new ArrayList( getMethods().size());
-        allMethods.addAll( getMethods() );
+        Collection allMethods = new java.util.TreeSet( getMethods() );
 
         sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_MethodIdentifiers" ) );  // NOI18N
 
@@ -693,7 +691,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
         sb.append( TAB + GenerateBeanInfoAction.getString("COMMENT_EventSetsIdentifiers") );  // NOI18N
 
-        Iterator it = eventSets.iterator();
+        Collection events = new java.util.TreeSet(eventSets);
+        Iterator it = events.iterator();
         while ( it.hasNext() ) {
             BiFeature bif = ( BiFeature )it.next();
 
@@ -730,7 +729,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
             }
         }
 
-        it = eventSets.iterator();
+        it = events.iterator();
         for ( int i = 0; it.hasNext(); i++ ) {
             BiFeature bif = ( BiFeature )it.next();
             if ( bif.isIncluded() ) {

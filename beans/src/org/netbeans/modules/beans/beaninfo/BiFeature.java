@@ -31,7 +31,7 @@ import org.netbeans.modules.beans.EventSetPattern;
 * 
 * @author Petr Hrebejk
 */
-public abstract class BiFeature extends Object implements IconBases, Node.Cookie {
+public abstract class BiFeature extends Object implements IconBases, Node.Cookie, Comparable {
 
     /** generated Serialized Version UID */
     //static final long serialVersionUID = -8680621542479107034L;
@@ -873,6 +873,13 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
             this.setName(realName);
         }
 
+    }
+
+    public int compareTo(Object other) {
+        if (!(other instanceof BiFeature))
+            return -1;
+        BiFeature bf = (BiFeature)other;
+        return getName().compareToIgnoreCase(bf.getName());
     }
 }
 /*
