@@ -54,10 +54,10 @@ implements PropertyChangeListener {
             return;
         }
 
-        if(!(evt.getSource() instanceof javax.swing.JMenuItem)) {
         // XXX Show dialog only if the action was invoked by shortcut (not from menu).
-            Object accelerator = getValue(ACCELERATOR_KEY);
-            KeyStroke keyStroke = accelerator instanceof KeyStroke ? (KeyStroke)accelerator : null;
+        if(!(evt.getSource() instanceof javax.swing.JMenuItem)) {
+            // #46800: fetch key directly from action command
+            KeyStroke keyStroke = Utilities.stringToKey(evt.getActionCommand());
             
             if(keyStroke != null) {
                 int triggerKey = keyStroke.getKeyCode();
