@@ -213,7 +213,7 @@ public class TargetServer {
             List maybeRedistributeWhenSharedDetected = new ArrayList();
             List maybeRemoveFromRedeployWhenSharedDetected = new ArrayList();
             for (int i=0; i<haveSameReferences.length; i++) {
-                TargetModule hasSameReferences = new TargetModule(haveSameReferences[i]); 
+                TargetModule hasSameReferences = new TargetModule(keyOf(haveSameReferences[i]), haveSameReferences[i]); 
                 if (! toRedeploy.contains(hasSameReferences)) {
                     shared = true;
                 } else {

@@ -40,11 +40,6 @@ public class TargetModule implements TargetModuleID, java.io.Serializable {
         this.delegate = delegate;
     }
     
-    public TargetModule(String url, long timestamp, String contentDir, String contextRoot, TargetModuleID delegate) {
-        this(delegate.toString(), url, delegate.getTarget().getName(), timestamp, contentDir, contextRoot);
-        this.delegate = delegate;
-    }
-
     public TargetModule(String id, String url, String targetName, long timestamp, String contentDir, String contextRoot) {
         if (id == null || url == null || targetName == null || timestamp <= 0) {
             java.util.List args = Arrays.asList(new Object[] { id, url, targetName, new Long(timestamp)});
@@ -59,13 +54,18 @@ public class TargetModule implements TargetModuleID, java.io.Serializable {
     }
 
     /* wrapper for map/set operation only */
-    public TargetModule(TargetModuleID delegate) {
-        this("bogus", 1, null, null,delegate);
+    public TargetModule(String id, TargetModuleID delegate) {
+        this(id, "someurl", 1, null, null,delegate);
     }
     
     public String getId() { return id; }
     public String getInstanceUrl() { return instanceUrl; }
-    public String getTargetName() { return targetName; }
+    public String getTargetName() { 
+        if (delegate != null) 
+            return delegate.getTarget().getName();
+        else
+            return targetName;
+    }
     public long getTimestamp() { return timestamp; }
     //public void setTimestamp(long ts) { this.timestamp = ts; }
     public String getContentDirectory() {
@@ -162,11 +162,12 @@ public class TargetModule implements TargetModuleID, java.io.Serializable {
             return delegate.toString();
     }
     public int hashCode() {
-        return id.hashCode();
+        return getId().hashCode();
     }
     public boolean equals(Object obj) {
         if (obj instanceof TargetModuleID) {
-            return id.equals(((TargetModuleID)obj).toString());
+            TargetModuleID that = (TargetModuleID) obj;
+            return this.getModuleID().equals(that.getModuleID()) && this.getTargetName().equals(that.getTarget().getName());
         }
         return false;
     }
