@@ -92,29 +92,7 @@ public class NbEditorUI extends ExtEditorUI {
     public void stateChanged(final ChangeEvent evt) {
         super.stateChanged(evt);
         SwingUtilities.invokeLater(
-        new Runnable() {
-            private Action getSystemAction(Action a) {
-                Action systemAction = null;
-                    if (a != null) {
-                        String saClassName = (String)a.getValue(NbEditorKit.SYSTEM_ACTION_CLASS_NAME_PROPERTY);
-                        if (saClassName != null) {
-                            Class saClass;
-                            try {
-                                saClass = Class.forName(saClassName);
-                            } catch (ClassNotFoundException cnfe) {
-                                saClass = null;
-                            }
-
-                            if (saClass != null) {
-                                if (NbEditorUtilities.getTopManager() != null) {
-                                    systemAction = SystemAction.get(saClass);
-                                }
-                            }
-                        }
-                    }
-                return systemAction;
-            }
-            
+        new Runnable() {            
             private void setEnabledGuardedAction(Action a){
                 JTextComponent component = getComponent();
                 if (component == null)  return;
@@ -125,10 +103,6 @@ public class NbEditorUI extends ExtEditorUI {
                         gdoc.isPosGuarded(component.getSelectionStart()) ||
                         gdoc.isPosGuarded(component.getSelectionEnd()));
                     a.setEnabled(!inGuardedBlock);
-                    Action sysAction = getSystemAction(a);
-                    if (sysAction != null ){
-                        sysAction.setEnabled(!inGuardedBlock);
-                    }
                 }
             }
             
