@@ -15,11 +15,11 @@
 package org.netbeans.modules.properties;
 
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.awt.Event;
 import java.awt.Rectangle;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.SoftReference;
 import java.util.HashSet;
 import javax.swing.DefaultComboBoxModel;
@@ -35,7 +35,9 @@ import org.openide.DialogDescriptor;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.SystemAction;
 import org.openide.TopManager;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListener;
 
 
 /**
@@ -60,34 +62,94 @@ public class FindPerformer extends java.lang.Object implements ActionPerformer {
      */
     private int[] searchValues;
 
+    /** Flag if it is set highliht search. */
+    private boolean highlightSearch = true;
+    
     /** Flag if it is set match case search. */
-    private boolean matchCase;
+    private boolean matchCaseSearch = false;
     
     /** Flag if it is set forward search. */
-    private boolean forwardSearch;
+    private boolean backwardSearch = false;
     
     /** Flag if it is set wrap search. */
-    private boolean wrapSearch;
+    private boolean wrapSearch = true;
     
     /** Flag if it is set search by rows. */
-    private boolean rowSearch;
+    private boolean rowSearch = true;
+    
+    /** Listener for registering keystrokes to find next action. */
+    private final ActionListener findNextActionListener;
+    
+    /** Listener for registering keystrokes to find previous action. */
+    private final ActionListener findPreviousActionListener;
+    
+    /** Listener for registering keystrokes to toggle highlight action. */
+    private final ActionListener toggleHighlightListener;
+    
+    /** Listens on changes on BundleEditPanel#settings object. It updates
+     * registered key strokes on table. */
+    private final PropertyChangeListener settingsListener;
   
     /** Keeps history of found strings. */
     private HashSet history = new HashSet();
 
+    // Initializes action listener use to register for key strokes to table.
+    {
+        findNextActionListener = new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                // Find next action invoked (default F3) -> search next occurence.
+                if(searchValues != null) {
+                    synchronized(this) {
+                        backwardSearch = false;
+                        performSearch();
+                    }
+                }
+            }
+        };
+        findPreviousActionListener = new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                // Find previous action invoked (default Shift-F3)-> search previous occurence.
+                if(searchValues != null) {
+                    synchronized(this) {
+                        backwardSearch = true;
+                        performSearch();
+                    }
+                }
+            }
+        };
+
+        toggleHighlightListener = new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                // Toggle highlight action invoked (defauilt Shift-Alt-H) -> toggle highlight.
+                highlightSearch = !highlightSearch;
+                table.repaint();
+            }
+        };
+    } // end of initializer
+    
     /** Soft reference for caching singleton find performer on last table view. */
     private static SoftReference softRef;
     
-    /** Dialog on perform search. */
+    /** Dialog for perform search. */
     private static JDialog findDialog;
     
     /** Name of client property used to store search result values. */
     public static final String TABLE_SEARCH_RESULT = "table.search.result"; // NOI18N
     
     
-    /** Creates new FindPerformer. */
+    /** Creates new FindPerformer. Used internally only, for getting the singleton use #getFindPerformer method. */
     private  FindPerformer(JTable table) {
         this.table = table;
+        
+        settingsListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    // Settings were changed reset registered key strokes.
+                    registerKeyStrokes();
+                }
+            };
+        BundleEditPanel.settings.addPropertyChangeListener(WeakListener.propertyChange(
+            settingsListener, BundleEditPanel.settings));
+        
         registerKeyStrokes();
     }
     
@@ -126,37 +188,44 @@ public class FindPerformer extends java.lang.Object implements ActionPerformer {
     }
     
     /** Register key strokes F3 and Shift-F3 (next & previous search) to table. */
-    private void registerKeyStrokes() {
-        // next search
-        table.registerKeyboardAction(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    if(searchValues != null) {
-                        synchronized(this) {
-                            forwardSearch = true;
-                            performSearch();
-                        }
-                    }
-                }
-            },
-            KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0),
-            JComponent.WHEN_IN_FOCUSED_WINDOW
-        );
-        // previous search
-        table.registerKeyboardAction(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    if(searchValues != null) {
-                        synchronized(this) {
-                            forwardSearch = false;
-                            performSearch();
-                        }
-                    }
-                }
-            },
-            KeyStroke.getKeyStroke(KeyEvent.VK_F3, Event.SHIFT_MASK),
-            JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-        );
+    private synchronized void registerKeyStrokes() {
+        // Register key strokes to table.
+        KeyStroke[] keyStrokes = BundleEditPanel.settings.getKeyStrokesFindNext();
+        for(int i=0; i<keyStrokes.length; i++) {
+            table.registerKeyboardAction(
+                findNextActionListener,
+                keyStrokes[i],
+                JComponent.WHEN_IN_FOCUSED_WINDOW
+            );
+        }
+
+        keyStrokes = BundleEditPanel.settings.getKeyStrokesFindPrevious();
+        for(int i=0; i<keyStrokes.length; i++) {
+            table.registerKeyboardAction(
+                findPreviousActionListener,
+                keyStrokes[i],
+                JComponent.WHEN_IN_FOCUSED_WINDOW
+            );
+        }
+
+        keyStrokes = BundleEditPanel.settings.getKeyStrokesToggleHighlight();
+        for(int i=0; i<keyStrokes.length; i++) {
+            table.registerKeyboardAction(
+                toggleHighlightListener,
+                keyStrokes[i],
+                JComponent.WHEN_IN_FOCUSED_WINDOW
+            );
+        }
+    }
+    
+    /** Getter for find string. */
+    public String getFindString() {
+        return findString;
+    }
+    
+    /** Getter for highlight search flag. */
+    public boolean isHighlightSearch() {
+        return highlightSearch;
     }
 
     // ActionPerformer implementation.
@@ -178,7 +247,7 @@ public class FindPerformer extends java.lang.Object implements ActionPerformer {
         final FindPanel panel = new FindPanel();
         DialogDescriptor dd = new DialogDescriptor(
             panel,
-            "Find", // title // NOI18N
+            NbBundle.getBundle(PropertiesModule.class).getString("LBL_Title"), // title
             false, // modal
             new JButton[0], // empty options, we provide our owns
             null, // initvalue
@@ -203,10 +272,11 @@ public class FindPerformer extends java.lang.Object implements ActionPerformer {
                     findString = ((JTextField)panel.getComboBox().getEditor().getEditorComponent()).getText();
 
                     // Set flags.
-                    matchCase = panel.isMatchCaseSearch();
-                    forwardSearch = !panel.isBackwardSearch();
-                    wrapSearch = panel.isWrapSearch();
-                    rowSearch = panel.isRowSearch();
+                    highlightSearch = panel.getHighlightCheck().isSelected();
+                    matchCaseSearch = panel.getMatchCaseCheck().isSelected();
+                    backwardSearch = panel.getBackwardCheck().isSelected();
+                    wrapSearch = panel.getWrapCheck().isSelected();
+                    rowSearch = panel.getRowCheck().isSelected();
                     
                     dialog[0].setVisible(false);
                     dialog[0].dispose();
@@ -233,6 +303,13 @@ public class FindPerformer extends java.lang.Object implements ActionPerformer {
                 }
             }
         );
+        
+        // Set flags.
+        panel.getHighlightCheck().setSelected(highlightSearch);
+        panel.getMatchCaseCheck().setSelected(matchCaseSearch);
+        panel.getBackwardCheck().setSelected(backwardSearch);
+        panel.getWrapCheck().setSelected(wrapSearch);
+        panel.getRowCheck().setSelected(rowSearch);
 
         // Set combo box list items.
         panel.getComboBox().setModel(new DefaultComboBoxModel(history.toArray()));
@@ -281,9 +358,7 @@ public class FindPerformer extends java.lang.Object implements ActionPerformer {
             searchValues = new int[] {row, column, startOffset, endOffset};
         } else {
             // Nothing is selected, set first (last) cell by forward (backward) search.
-            if(forwardSearch) {
-                searchValues = new int[] {0, 0, 0, 0};
-            } else {
+            if(backwardSearch) {
                 int lastRow = table.getRowCount()-1;
                 int lastColumn = table.getColumnCount()-1;
                 int startOffset, endOffset;
@@ -291,6 +366,8 @@ public class FindPerformer extends java.lang.Object implements ActionPerformer {
                 startOffset = endOffset = ((PropertiesTableModel.StringPair)table.getValueAt(lastRow, lastColumn)).getValue().length()-1;
 
                 searchValues = new int[] {lastRow, lastColumn, startOffset, endOffset};
+            } else {
+                searchValues = new int[] {0, 0, 0, 0};
             }
         }
         
@@ -307,15 +384,13 @@ public class FindPerformer extends java.lang.Object implements ActionPerformer {
                     boolean wrap = false;
                     
                     do {
-                        final int[] result = search(searchValues[0], searchValues[1], forwardSearch ? searchValues[3] : searchValues[2]-1 );
+                        final int[] result = search(searchValues[0], searchValues[1], backwardSearch ? searchValues[2]-1 : searchValues[3]);
                         
                         if(wrapSearch && !wrap && result == null) {
                             // Do wrapping.
                             
                             // Wrap search if was found something in second to last search.
-                            if(forwardSearch) {
-                                searchValues = new int[] {0, 0, 0, 0};
-                            } else {
+                            if(backwardSearch) {
                                 int lastRow = table.getRowCount()-1;
                                 int lastColumn = table.getColumnCount()-1;
 
@@ -323,7 +398,10 @@ public class FindPerformer extends java.lang.Object implements ActionPerformer {
                                     lastColumn,
                                     ((PropertiesTableModel.StringPair)table.getValueAt(lastRow, lastColumn)).getValue().length()-1,
                                     0};
+                            } else {
+                                searchValues = new int[] {0, 0, 0, 0};
                             }
+ 
                             wrap = true;
                         } else {
                             if(result != null) {
@@ -371,12 +449,12 @@ public class FindPerformer extends java.lang.Object implements ActionPerformer {
         
         // If rowSearch->row loop else->column loop.
         for(int i= rowSearch ? startRow : startColumn; 
-                forwardSearch ? i<(rowSearch ? table.getRowCount() : table.getColumnCount()) : i>=0 ; 
-                i = forwardSearch ? i+1 : i-1 ) {
+                backwardSearch ?  i>=0 : i<(rowSearch ? table.getRowCount() : table.getColumnCount()); 
+                i = backwardSearch ? i-1 : i+1 ) {
             // If rowSearch->column loop else->row loop.
             for(int j= rowSearch ? startColumn : startRow; 
-                    forwardSearch ? j<(rowSearch ? table.getColumnCount() : table.getRowCount()) : j>=0; 
-                    j = forwardSearch ? j+1 : j-1) {
+                    backwardSearch ?  j>=0 : j<(rowSearch ? table.getColumnCount() : table.getRowCount()); 
+                    j = backwardSearch ? j-1 : j+1) {
                 // Set row and column indexes for this iteration.        
                 int row = rowSearch ? i : j;
                 int column = rowSearch ? j : i;
@@ -387,7 +465,7 @@ public class FindPerformer extends java.lang.Object implements ActionPerformer {
                     continue;
                 
                 if(!firstIteration)
-                    startOffset = forwardSearch ? 0 : str.length()-findString.length();
+                    startOffset = backwardSearch ? str.length()-findString.length() : 0;
                 
                 int offset = containsFindString(str, startOffset);
                 
@@ -403,9 +481,9 @@ public class FindPerformer extends java.lang.Object implements ActionPerformer {
             
             // Next inner loop from beginning(end) for forward (backward) search.
             if(rowSearch)
-                startColumn = forwardSearch ? 0 : table.getColumnCount()-1;
+                startColumn = backwardSearch ? table.getColumnCount()-1 : 0;
             else 
-                startRow = forwardSearch ? 0 : table.getRowCount()-1;
+                startRow = backwardSearch ? table.getRowCount()-1 : 0;
         }
         
         return null;
@@ -420,10 +498,10 @@ public class FindPerformer extends java.lang.Object implements ActionPerformer {
             return -1;
         
         for(int i=startOffset;
-                forwardSearch ? i<(str.length()-findString.length()+1) : i>=0;
-                i = forwardSearch ? i+1 : i-1) {
+                backwardSearch ?  i>=0 : i<(str.length()-findString.length()+1);
+                i = backwardSearch ? i-1 : i+1) {
                     
-            if(findString.regionMatches(!matchCase, 0, str, i, findString.length()))
+            if(findString.regionMatches(!matchCaseSearch, 0, str, i, findString.length()))
                 return i;
         }
         
