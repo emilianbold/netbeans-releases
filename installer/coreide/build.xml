@@ -16,7 +16,6 @@ Microsystems, Inc. All Rights Reserved.
   <property file="nbproject/private/private.properties"/>  
   <property file="build.properties" />
 
-  <property name="nb.dir" location="build/netbeans"/>
   <property name="ismp.project" value="coreide.xml"/>
   
   <target name="init" depends="set-buildnumber, set-installer.basename, set-nb.dir" unless="inited">
@@ -35,6 +34,7 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="${ismp.home}">
           <include name="lib/*.jar"/>
           <include name="ppk/*.jar"/>
+          <include name="lib/ppk/*.jar"/>
           <exclude name="lib/conversion.jar"/>
         </fileset>        
     </path>
