@@ -11,3 +11,6 @@ OpenIDE-Module-Long-Description: The Editor module enables you to edit source fi
   and other basic and advanced features.
 Class-Path: ext/nb-editor.jar
 
+Name: org/netbeans/modules/editor/java/JCUpdateAction.class
+OpenIDE-Module-Class: Action
+
