@@ -38,6 +38,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${debuggercore/api.dir}/${nb.modules.dir}/org-netbeans-api-debugger.jar"/>
         <pathelement location="${debuggerjpda/api.dir}/${nb.modules.dir}/org-netbeans-api-debugger-jpda.jar"/>
         <pathelement location="${nb_all}/libs/external/xerces-2.6.0.jar"/>
+        <pathelement location="${nb_all}/nbbuild/netbeans/ide4/modules/org-netbeans-api-java.jar"/>	
     </path>
   </target>
   

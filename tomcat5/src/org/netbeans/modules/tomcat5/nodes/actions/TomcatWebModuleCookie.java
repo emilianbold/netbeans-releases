@@ -14,6 +14,7 @@
 package org.netbeans.modules.tomcat5.nodes.actions;
 
 import org.openide.nodes.Node;
+import java.io.File;
 
 /** 
 *
@@ -28,5 +29,9 @@ public interface TomcatWebModuleCookie extends Node.Cookie {
     public void stop ();
     
     public boolean isRunning();
+    
+    public void openLog();
+    
+    public boolean hasLogger();
 
 }

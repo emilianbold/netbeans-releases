@@ -14,6 +14,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.j2eeserver/3,
  org.netbeans.api.debugger.jpda/1,
  org.openide.io,
  org.netbeans.modules.schema2beans/1,
- org.netbeans.libs.xerces/1 > 1.2
+ org.netbeans.libs.xerces/1 > 1.2,
+ org.netbeans.api.java/1
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.30
 Class-Path: docs/tomcat5.jar

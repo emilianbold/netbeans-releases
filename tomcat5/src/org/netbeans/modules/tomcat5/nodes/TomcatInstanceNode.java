@@ -29,7 +29,7 @@ import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 import javax.enterprise.deploy.spi.DeploymentManager;
 
 import org.netbeans.modules.tomcat5.nodes.actions.RefreshWebModulesAction;
-
+import org.netbeans.modules.tomcat5.nodes.actions.SharedContextLogAction;
 import org.netbeans.modules.tomcat5.ide.MonitorSupport;
 import org.openide.actions.PropertiesAction;
 import org.openide.util.HelpCtx;
@@ -88,7 +88,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     /** Returns the TomcatManager for this node, or null if TomcatManager was not found - which 
      * should never happen.
      */
-    private TomcatManager getTomcatManager() {
+    public TomcatManager getTomcatManager() {
         DeploymentManager m = getDeploymentManager();
         return (m instanceof TomcatManager) ? (TomcatManager)m : null;
     }
@@ -179,7 +179,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         return new SystemAction[] {
                    null,
                    //SystemAction.get (AccessLogAction.class),
-                   SystemAction.get (ContextLogAction.class),
+                   SystemAction.get (SharedContextLogAction.class),
                    null,
                    SystemAction.get(PropertiesAction.class)
                };        

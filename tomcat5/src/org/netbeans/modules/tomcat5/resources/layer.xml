@@ -114,4 +114,10 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     -->
 
+    <folder name="Editors">
+        <folder name="AnnotationTypes">
+            <file name="org-netbeans-modules-tomcat5-error.xml" url="error-annotation.xml"/>
+	</folder>
+    </folder>
+			
 </filesystem>

@@ -54,6 +54,11 @@ import org.netbeans.api.debugger.jpda.*;
 
 import org.openide.util.Lookup;
 
+import org.netbeans.modules.tomcat5.util.LogViewer;
+import org.netbeans.modules.tomcat5.util.UnsupportedLoggerException;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
+
 /** DeploymentManager that can deploy to 
  * Tomcat 5 using manager application.
  *
@@ -143,6 +148,9 @@ public class TomcatManager implements DeploymentManager {
     private StartTomcat sTomcat;
     
     private Server root = null;
+    
+    /** thread which handles log file displaying */
+    private LogViewer logViewer;
 
     /** Creates an instance of connected TomcatManager
      * @param conn <CODE>true</CODE> to create connected manager
@@ -1195,5 +1203,127 @@ public class TomcatManager implements DeploymentManager {
         }
         return true;
     }
+    
+    /**
+     * Returns engine element from server.xml if defined.
+     * Looks only for the first appearance of the service element.
+     * (ide currently does not support multiple service and host elements).
+     */
+    private Engine getEngineElement() {
+        Server server = getRoot();
+        if (server == null) return null;
+        Service[] service = server.getService();
+        if (service.length > 0) {
+            return service[0].getEngine();            
+        }
+        return null;
+    }
+    
+    /**
+     * Returns host element from server.xml if defined.
+     * Looks only for the first appearance of the service and host element.
+     * (ide currently does not support multiple service and host elements).
+     */
+    private Host getHostElement() {
+        Server server = getRoot();
+        if (server == null) return null;
+        Service[] service = server.getService();
+        if (service.length > 0) {
+            Engine engine = service[0].getEngine();
+            if (engine != null) {
+                Host[] host = engine.getHost();
+                if (host.length > 0) {
+                    return host[0];                    
+                }
+            }
+        }
+        return null;
+    }    
+    
+    private Object lock = new Object();
+    
+    /**
+     * Opens shared log file in the output window. Shared log file can be defined
+     * in the host or engine element. Definition in host element overrides definition 
+     * in engine element.
+     */
+    public void openLog() {        
+        File catalinaDir = getCatalinaDir();
+        String className = null;
+        String dir = null;
+        String prefix = null;
+        String suffix = null;
+        String timestamp = null;
+        
+        Host host = getHostElement();
+        if (host != null && host.isLogger()) {
+            className = host.getAttributeValue(SContext.LOGGER, "className"); // NOI18N
+            dir = host.getAttributeValue(SContext.LOGGER, "directory"); // NOI18N
+            prefix = host.getAttributeValue(SContext.LOGGER, "prefix"); // NOI18N
+            suffix = host.getAttributeValue(SContext.LOGGER, "suffix"); // NOI18N
+            timestamp = host.getAttributeValue(SContext.LOGGER, "timestamp"); // NOI18N              
+        } else {
+            Engine engine = getEngineElement();
+            if (engine == null || !engine.isLogger()) return;
+            className = engine.getAttributeValue(SContext.LOGGER, "className"); // NOI18N
+            dir = engine.getAttributeValue(SContext.LOGGER, "directory"); // NOI18N
+            prefix = engine.getAttributeValue(SContext.LOGGER, "prefix"); // NOI18N
+            suffix = engine.getAttributeValue(SContext.LOGGER, "suffix"); // NOI18N
+            timestamp = engine.getAttributeValue(SContext.LOGGER, "timestamp"); // NOI18N         
+        }
+        boolean isTimestamped = Boolean.valueOf(timestamp).booleanValue();
+        
+        String msg = null; // error message
+        // ensure only one thread will be opened
+        synchronized(lock) {
+            if (logViewer != null && logViewer.isOpen()) {
+                logViewer.takeFocus();
+                return;
+            }
+            try {
+                logViewer = new LogViewer(catalinaDir, className, dir, prefix, 
+                        suffix, isTimestamped, true);
+                logViewer.start();                
+                return;
+            } catch (UnsupportedLoggerException e) {
+                msg = NbBundle.getMessage(TomcatManager.class, 
+                        "MSG_UnsupportedLogger", e.getLoggerClassName());
+            } catch (NullPointerException npe) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
+            }
+        }
+        if (msg != null) DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
+    }
+    
+    /**
+     * Stops log viewer thread if active
+     */
+    private void closeLog() {
+        synchronized(lock) {
+            if (logViewer != null) {
+                logViewer.close();
+                logViewer = null;
+            }
+        }
+    }
+    
+    /**
+     * Returns <code>true</code> if there is a logger defined in the first host 
+     * or engine element in server.xml, <code>false</code> otherwise.
+     * @return <code>true</code> if there is a logger defined in the first host 
+     * or engine element in server.xml, <code>false</code> otherwise.
+     */
+    public boolean hasLogger() {
+        Host host = getHostElement();
+        if (host != null && host.isLogger()) {
+            return true;
+        } else {
+            Engine engine = getEngineElement();
+            if  (engine != null && engine.isLogger()) {
+                return true;
+            }            
+        }
+        return false;
+    }  
     
 }

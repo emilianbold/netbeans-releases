@@ -51,6 +51,9 @@ public class TomcatWebModuleNode extends AbstractNode {
             SystemAction.get (StartAction.class),
             SystemAction.get (StopAction.class),
             null,
+            SystemAction.get(OpenURLAction.class),
+            SystemAction.get(org.netbeans.modules.tomcat5.nodes.actions.ContextLogAction.class),
+            null,
             SystemAction.get (UndeployAction.class)
         };
     }
