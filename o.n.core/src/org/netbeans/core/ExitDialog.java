@@ -228,9 +228,9 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
                                                          bundle.getString("CTL_ExitTitle"), // title
                                                          true,                                                            // modal
                                                          exitOptions,                                                     // options
-                                                         NotifyDescriptor.CANCEL_OPTION,                                        // initial value
+                                                         NotifyDescriptor.CANCEL_OPTION,                                  // initial value
                                                          DialogDescriptor.RIGHT_ALIGN,                                    // option align
-                                                         new org.openide.util.HelpCtx (ExitDialog.class.getName () + ".dialog"), // HelpCtx // NOI18N
+                                                         null,                                                            // HelpCtx
                                                          exitComponent                                                    // Action Listener
                                                      );
                 exitDlgDescriptor.setAdditionalOptions (new Object[] {NotifyDescriptor.CANCEL_OPTION});
