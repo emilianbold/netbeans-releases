@@ -95,9 +95,6 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
     protected void initDisplayer () {
         super.initDisplayer();
         TopComponent tc = getSelectedTopComponent();
-        if (tc != null) {
-            WindowManagerImpl.getInstance().componentShowing(tc);
-        }
     }
     
     public void setIconAt(int index, javax.swing.Icon icon) {
@@ -405,11 +402,6 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
     public void stateChanged (javax.swing.event.ChangeEvent e) {
         TopComponent tc = getSelectedTopComponent();
         
-        if (tc != null) {
-            //Make sure the window manager notifies the component to initialize
-            //itself
-            WindowManagerImpl.getInstance().componentShowing(tc);
-        }
         super.stateChanged(e);  //move this after?
         fireStateChanged(new ChangeEvent (this));
     }

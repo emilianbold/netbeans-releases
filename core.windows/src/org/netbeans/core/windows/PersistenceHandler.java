@@ -170,7 +170,14 @@ final class PersistenceHandler implements PersistenceObserver {
         if(activeMode != null) {
             TopComponent active = activeMode.getSelectedTopComponent();
             if(active != null) {
-                WindowManagerImpl.getInstance().componentShowing(active);
+                try {
+                    WindowManagerImpl.getInstance().componentShowing(active);
+                } catch(RuntimeException re) {
+                    IllegalStateException ise = new IllegalStateException("[Winsys] TopComponent tc=" + active // NOI18N
+                    + " throws runtime exception from its componentShowing method. Repair it!"); // NOI18N
+                    ErrorManager.getDefault().annotate(ise, re);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ise);
+                }
             }
         }
         

@@ -37,6 +37,7 @@ import javax.swing.SwingUtilities;
 
 import org.openide.awt.ToolbarPool; // Why is this in open API?
 import org.openide.ErrorManager;
+import org.openide.util.WeakSet;
 import org.openide.windows.TopComponent;
 
 import org.netbeans.core.windows.Constants;
@@ -64,6 +65,8 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     private final ControllerHandler controllerHandler;
     
     private final MainWindowListener mainWindowListener = new MainWindowListener(this);
+    
+    private final Set showingTopComponents = new WeakSet(10);
 
     
     public DefaultView(ControllerHandler controllerHandler) {
@@ -87,27 +90,49 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         // Change to view understandable-convenient structure.
         WindowSystemAccessor wsa = ViewHelper.createWindowSystemAccessor(snapshot);
         
+        debugLog(""); // NOI18N
+        debugLog("Structure=" + wsa); // NOI18N
+        debugLog(""); // NOI18N
+
+        // Update accessors.
+        if(wsa != null) { // wsa == null during hiding.
+            hierarchy.updateViewHierarchy(wsa.getModeStructureAccessor(),
+                wsa.getMaximizedModeAccessor() == null || wsa.getEditorAreaState() == Constants.EDITOR_AREA_SEPARATED);
+        }
+
+        // Update showing TopComponents.
+        Set oldShowing = new HashSet(showingTopComponents);
+        Set newShowing = hierarchy.getShowingTopComponents();
+        showingTopComponents.clear();
+        showingTopComponents.addAll(newShowing);
+        
+        Set toShow = new HashSet(newShowing);
+        toShow.removeAll(oldShowing);
+        for(Iterator it = toShow.iterator(); it.hasNext(); ) {
+            TopComponent tc = (TopComponent)it.next();
+            try {
+                WindowManagerImpl.getInstance().componentShowing(tc);
+            } catch(RuntimeException re) {
+                IllegalStateException ise = new IllegalStateException("[Winsys] TopComponent tc=" + tc // NOI18N
+                + " throws runtime exception from its componentShowing method. Repair it!"); // NOI18N
+                ErrorManager.getDefault().annotate(ise, re);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ise);
+            }
+        }
+        
         // PENDING Find main event first.
         for(int i = 0; i < viewEvents.length; i++) {
             ViewEvent viewEvent = viewEvents[i];
             int changeType = viewEvent.getType();
-
+            
             if(changeType == CHANGE_VISIBILITY_CHANGED) {
                 debugLog("Winsys visibility changed, visible=" + viewEvent.getNewValue()) ; // NOI18N
-
+                
                 windowSystemVisibilityChanged(((Boolean)viewEvent.getNewValue()).booleanValue(), wsa);
                 // PENDING this should be processed separatelly, there is nothing to coallesce.
                 return;
-            } 
+            }
         }
-
-        debugLog(""); // NOI18N
-        debugLog("Structure=" + wsa); // NOI18N
-        debugLog(""); // NOI18N
-        
-        // Update accessors.
-        hierarchy.updateViewHierarchy(wsa.getModeStructureAccessor(),
-            wsa.getMaximizedModeAccessor() == null || wsa.getEditorAreaState() == Constants.EDITOR_AREA_SEPARATED);
         
         // Process all event types.
         for(int i = 0; i < viewEvents.length; i++) {
@@ -237,7 +262,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             } else if(changeType == CHANGE_TOPCOMPONENT_DISPLAY_NAME_CHANGED) {
                 debugLog("TopComponent display name changed, tc=" + viewEvent.getNewValue()); // NOI18N
 
-                hierarchy.updateAccessors(wsa.getModeStructureAccessor());
                 ModeView modeView = hierarchy.getModeViewForAccessor(wsa.findModeAccessor((String)viewEvent.getSource())); // XXX
                 if(modeView != null) { // PENDING investigate
                     modeView.updateName((TopComponent)viewEvent.getNewValue());
@@ -245,7 +269,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             } else if(changeType == CHANGE_TOPCOMPONENT_DISPLAY_NAME_ANNOTATION_CHANGED) {
                 debugLog("TopComponent display name annotation changed, tc=" + viewEvent.getNewValue()); // NOI18N
 
-                hierarchy.updateAccessors(wsa.getModeStructureAccessor());
                 ModeView modeView = hierarchy.getModeViewForAccessor(wsa.findModeAccessor((String)viewEvent.getSource())); // XXX
                 if(modeView != null) { // PENDING investigate
                     modeView.updateName((TopComponent)viewEvent.getNewValue());
@@ -253,7 +276,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             } else if(changeType == CHANGE_TOPCOMPONENT_TOOLTIP_CHANGED) {
                 debugLog("TopComponent tooltip changed, tc=" + viewEvent.getNewValue()); // NOI18N
 
-                hierarchy.updateAccessors(wsa.getModeStructureAccessor());
                 ModeView modeView = hierarchy.getModeViewForAccessor(wsa.findModeAccessor((String)viewEvent.getSource())); // XXX
                 if(modeView != null) { // PENDING investigate
                     modeView.updateToolTip((TopComponent)viewEvent.getNewValue());
@@ -261,7 +283,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             } else if(changeType == CHANGE_TOPCOMPONENT_ICON_CHANGED) {
                 debugLog("TopComponent icon changed"); // NOI18N
 
-                hierarchy.updateAccessors(wsa.getModeStructureAccessor());
                 ModeView modeView = hierarchy.getModeViewForAccessor(wsa.findModeAccessor((String)viewEvent.getSource())); // XXX
                 if(modeView != null) { // PENDING investigate
                     modeView.updateIcon((TopComponent)viewEvent.getNewValue());
@@ -306,6 +327,20 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 hierarchy.updateUI();
             }
         }
+        
+        Set toHide = new HashSet(oldShowing);
+        toHide.removeAll(newShowing);
+        for(Iterator it = toHide.iterator(); it.hasNext(); ) {
+            TopComponent tc = (TopComponent)it.next();
+            try {
+                WindowManagerImpl.getInstance().componentHidden(tc);
+            } catch(RuntimeException re) {
+                IllegalStateException ise = new IllegalStateException("[Winsys] TopComponent tc=" + tc // NOI18N
+                + " throws runtime exception from its componentHidden method. Repair it!"); // NOI18N
+                ErrorManager.getDefault().annotate(ise, re);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ise);
+            }
+        }
     }
     
     /** Whether the window system should show or hide its GUI. */
@@ -326,11 +361,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     //////////////////////////////////////////////////////////
     private void showWindowSystem(WindowSystemAccessor wsa) {
         long start = System.currentTimeMillis();
-        
-        hierarchy.updateViewHierarchy(wsa.getModeStructureAccessor(),
-            wsa.getMaximizedModeAccessor() == null || wsa.getEditorAreaState() == Constants.EDITOR_AREA_SEPARATED);
-
-        debugLog("Init view 1="+(System.currentTimeMillis() - start) + " ms"); // NOI18N
         
         hierarchy.getMainWindow().initializeComponents();
         // Init toolbar.

@@ -84,7 +84,6 @@ public abstract class AbstractModeContainer implements ModeContainer {
     protected abstract Component getModeComponent();
 
     public void addTopComponent(TopComponent tc) {
-        WindowManagerImpl.getInstance().componentShowing(tc); // PENDING
         tabbedHandler.addTopComponent(tc, kind);
     }
 

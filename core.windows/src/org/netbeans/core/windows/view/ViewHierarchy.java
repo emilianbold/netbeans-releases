@@ -56,8 +56,8 @@ final class ViewHierarchy {
 
     /** Split root element. */
     private ViewElement splitRoot;
-    /** Set of separate mode views. */
-    private final Set separateModeViews = new HashSet(10);
+    /** Map of separate mode views (view <-> accessor). */
+    private final Map separateModeViews = new HashMap(10);
     
     /** Component in which is editor area, when the editor state is separated. */
     private EditorAreaFrame editorAreaFrame;
@@ -218,18 +218,18 @@ final class ViewHierarchy {
     }
     
     private void updateSeparateViews(ModeAccessor[] separateModeAccessors) {
-        Set newViews = new HashSet();
+        Map newViews = new HashMap();
         for(int i = 0; i < separateModeAccessors.length; i++) {
             ModeAccessor ma = separateModeAccessors[i];
             ModeView mv = (ModeView)updateViewForAccessor(ma, true);
-            newViews.add(mv);
+            newViews.put(mv, ma);
         }
         
-        Set oldViews = new HashSet(separateModeViews);
-        oldViews.removeAll(newViews);
+        Set oldViews = new HashSet(separateModeViews.keySet());
+        oldViews.removeAll(newViews.keySet());
         
         separateModeViews.clear();
-        separateModeViews.addAll(newViews);
+        separateModeViews.putAll(newViews);
         
         // PENDING Close all old views.
         for(Iterator it = oldViews.iterator(); it.hasNext(); ) {
@@ -240,7 +240,7 @@ final class ViewHierarchy {
         }
         
         // Open all new views.
-        for(Iterator it = newViews.iterator(); it.hasNext(); ) {
+        for(Iterator it = newViews.keySet().iterator(); it.hasNext(); ) {
             ModeView mv = (ModeView)it.next();
             mv.getComponent().setVisible(true);
         }
@@ -310,8 +310,8 @@ final class ViewHierarchy {
         Object accessor = view2accessor.remove(modeView);
         accessor2view.remove(accessor);
 
-        if(separateModeViews.contains(modeView)) {
-            separateModeViews.remove(modeView);
+        if(separateModeViews.keySet().contains(modeView)) {
+            separateModeViews.keySet().remove(modeView);
             modeView.getComponent().setVisible(false);
             return;
         }
@@ -336,7 +336,7 @@ final class ViewHierarchy {
     /** Gets set of separate mode view frames and editor frame (if separated). */
     public Set getSeparateModeFrames() {
         Set s = new HashSet();
-        for(Iterator it = separateModeViews.iterator(); it.hasNext(); ) {
+        for(Iterator it = separateModeViews.keySet().iterator(); it.hasNext(); ) {
             ModeView modeView = (ModeView)it.next();
             s.add(modeView.getComponent());
         }
@@ -410,7 +410,7 @@ final class ViewHierarchy {
             editorAreaFrame.setVisible(visible);
         }
         
-        for(Iterator it = separateModeViews.iterator(); it.hasNext(); ) {
+        for(Iterator it = separateModeViews.keySet().iterator(); it.hasNext(); ) {
             ModeView mv = (ModeView)it.next();
             mv.getComponent().setVisible(visible);
         }
@@ -423,7 +423,7 @@ final class ViewHierarchy {
     }
     
     public void updateFrameStates() {
-        for(Iterator it = separateModeViews.iterator(); it.hasNext(); ) {
+        for(Iterator it = separateModeViews.keySet().iterator(); it.hasNext(); ) {
             ModeView mv = (ModeView)it.next();
             mv.updateFrameState();
         }
@@ -639,14 +639,32 @@ final class ViewHierarchy {
         if(editorAreaFrame != null) {
             SwingUtilities.updateComponentTreeUI(editorAreaFrame);
         }
-        for(Iterator it = separateModeViews.iterator(); it.hasNext(); ) {
+        for(Iterator it = separateModeViews.keySet().iterator(); it.hasNext(); ) {
             ModeView mv = (ModeView)it.next();
             SwingUtilities.updateComponentTreeUI(mv.getComponent());
         }
     }
     
+    public Set getShowingTopComponents() {
+        Set s = new HashSet();
+        for(Iterator it = accessor2view.keySet().iterator(); it.hasNext(); ) {
+            Object accessor = it.next();
+            if(accessor instanceof ModeAccessor) {
+                s.add(((ModeAccessor)accessor).getSelectedTopComponent());
+            }
+        }
+        for(Iterator it = separateModeViews.values().iterator(); it.hasNext(); ) {
+            Object accessor = it.next();
+            if(accessor instanceof ModeAccessor) {
+                s.add(((ModeAccessor)accessor).getSelectedTopComponent());
+            }
+        }
+        
+        return s;
+    }
+    
     public String toString() {
-        return dumpElement(splitRoot, 0) + "\nseparateViews=" + separateModeViews; // NOI18N
+        return dumpElement(splitRoot, 0) + "\nseparateViews=" + separateModeViews.keySet(); // NOI18N
     }
     
     private String dumpElement(ViewElement view, int indent) {

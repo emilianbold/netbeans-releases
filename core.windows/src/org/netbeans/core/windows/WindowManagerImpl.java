@@ -682,12 +682,16 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
     /** Overrides superclass method, to enhance access modifier. */
     public void componentShowing(TopComponent tc) {
-        super.componentShowing(tc);
+        if(tc != null) {
+            super.componentShowing(tc);
+        }
     }
     
     /** Overrides superclass method, to enhance access modifier. */
     public void componentHidden(TopComponent tc) {
-        super.componentHidden(tc);
+        if(tc != null) {
+            super.componentHidden(tc);
+        }
     }
 
     
