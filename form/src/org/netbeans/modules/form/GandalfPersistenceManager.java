@@ -183,13 +183,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
     {
         FileObject formFile = formObject.getFormEntry().getFile();
 
-        org.w3c.dom.Document doc;
         org.w3c.dom.Element mainElement;
         try { // parse document, get the main element
-            doc = XMLUtil.parse(
-                new org.xml.sax.InputSource(formFile.getURL().toExternalForm()),
-                false, false, null, null);
-            mainElement = doc.getDocumentElement();
+            mainElement = XMLUtil.parse(new org.xml.sax.InputSource(
+                                            formFile.getURL().toExternalForm()),
+                                        false, false, null, null)
+                          .getDocumentElement();
         }
         catch (IOException ex) {
             PersistenceException pe = new PersistenceException(
@@ -223,43 +222,55 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
 
         // check the form version
-        String version = mainElement.getAttribute(ATTR_FORM_VERSION);
-        if (!isSupportedFormatVersion(version)) {
+        if (!isSupportedFormatVersion(mainElement.getAttribute(ATTR_FORM_VERSION))) {
             PersistenceException ex = new PersistenceException(
                                      "Unsupported form version"); // NOI18N
             ErrorManager.getDefault().annotate(
                 ex,
                 ErrorManager.ERROR,
                 null,
-                FormUtils.getFormattedBundleString("FMT_ERR_UnsupportedVersion", // NOI18N
-                                                   new Object[] { version }),
+                FormUtils.getFormattedBundleString(
+                    "FMT_ERR_UnsupportedVersion", // NOI18N
+                    new Object[] { mainElement.getAttribute(ATTR_FORM_VERSION) }),
                 null,
                 null);
             throw ex;
         }
 
-        // find out what's the form base class
-        String formBaseClassName = null;
+        // --------
+        // get the form base class and set it to FormModel
+        String declaredSuperclassName = null;
         Class formBaseClass = null;
         Throwable formBaseClassEx = null;
-        try {
+
+        // get the formerly used FormInfo type (to be used as fallback alternative)
+        String formInfoName = mainElement.getAttribute(ATTR_FORM_TYPE);
+        if ("".equals(formInfoName)) // NOI18N
+            formInfoName = null; // not available
+
+        try { // try declared superclass from java source first
             ClassElement[] classes = formObject.getSource().getClasses();
-            Identifier superclass = null;
+            Identifier superclassId = null;
             for (int i=0; i < classes.length; i++)
                 if (classes[i].getName().getName().equals(formObject.getName())) {
-                    superclass = classes[i].getSuperclass();
+                    superclassId = classes[i].getSuperclass();
                     break;
                 }
 
-            if (superclass != null) {
-                formBaseClassName = superclass.getFullName();
-                formBaseClass = TopManager.getDefault().currentClassLoader()
-                                           .loadClass(formBaseClassName);
+            Class superclass;
+            if (superclassId != null) {
+                declaredSuperclassName = superclassId.getFullName();
+                superclass = TopManager.getDefault().currentClassLoader()
+                                         .loadClass(declaredSuperclassName);
             }
-            else {
-                formBaseClass = Object.class;
-                formBaseClassName = formBaseClass.getName();
-            }
+            else superclass = Object.class;
+
+            formBaseClass = checkDeclaredSuperclass(superclass, formInfoName);
+
+            if (formBaseClass != superclass)
+                System.err.println(FormUtils.getFormattedBundleString(
+                    "FMT_IncompatibleFormTypeWarning", // NOI18N
+                    new Object[] { formObject.getName() }));
 
             formModel.setFormBaseClass(formBaseClass);
         }
@@ -271,46 +282,35 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
 
         if (formModel.getFormBaseClass() == null) {
-            // superclass declared in java source cannot be used as the form
-            // base class (due to some error in loading/using the class),
-            // try to use some "standard" superclass (like JPanel, JFrame, etc)
+            // using superclass declared in java source failed, so try to use
+            // some well-known substitute class instead
             Class substClass = null;
-            if (formBaseClass != null)
+
+            if (formBaseClass != null) // try to honor the declared superclass
                 substClass = getCompatibleFormClass(formBaseClass);
-            if (substClass == null) {
-                String formInfoName = mainElement.getAttribute(ATTR_FORM_TYPE);
-                if ("".equals(formInfoName)) // NOI18N
-                    formInfoName = null; // formerly used FormInfo type not available
-                if (formInfoName != null)
-                    substClass = getCompatibleFormClass(formInfoName);
-            }
+ 
+            if (substClass == null && formInfoName != null) // fall back to FormInfo type
+                substClass = getCompatibleFormClass(formInfoName);
 
-            if (substClass != null) { // there's a possible substitute class
-                System.err.println("[WARNING] Form type falls back to: " // NOI18N
-                                   + substClass.getName());
-
+            if (substClass != null) { // succeeded, there is a substitute class
                 try {
                     formModel.setFormBaseClass(substClass);
 
-                    // add warning to list of errors
-                    Throwable ex = formBaseClassEx != null ? formBaseClassEx :
-                        new PersistenceException("Form type falls back to: " // NOI18N
-                                                 + substClass.getName());
+                    // print a warning about using fallback type
                     String msg = FormUtils.getFormattedBundleString(
-                        "FMT_FormTypeFallsBack", // NOI18N
-                        new Object[] { formBaseClassName,
+                        "FMT_FormTypeWarning", // NOI18N
+                        new Object[] { formObject.getName(),
                                        substClass.getName(),
-                                       new java.io.File(System.getProperty(
-                                                               "netbeans.user"), // NOI18N
-                                                        "system") }); // NOI18N
-                    ErrorManager.getDefault().annotate(
-                        ex, ErrorManager.WARNING, null, msg, null, null);
-                    nonfatalErrors.add(ex);
+                                       declaredSuperclassName != null ?
+                                         declaredSuperclassName : "<unknown class>" }); // NOI18N
+                    System.err.println(msg);
+                    if (formBaseClassEx != null)
+                        formBaseClassEx.printStackTrace();
                 }
-                catch (Exception ex) { // should not happen for the standard types
+                catch (Exception ex) { // should not happen for the substitute types
                     ex.printStackTrace();
                 }
-                catch (LinkageError ex) { // should not happen for the standard types
+                catch (LinkageError ex) { // should not happen for the substitute types
                     ex.printStackTrace();
                 }
             }
@@ -318,12 +318,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
             if (formModel.getFormBaseClass() == null) {
                 // after all, we still cannot determine the form base class
                 String annotation;
-                if (formBaseClassName != null) {
-                    // the class from java source can be loaded, but cannot be
-                    // used as the form base class; no substitute available
+                if (declaredSuperclassName != null) {
+                    // the class from java source at least can be loaded, but
+                    // cannot be used as the form type; no substitute available
                     annotation = FormUtils.getFormattedBundleString(
                                      "FMT_ERR_InvalidBaseClass", // NOI18N
-                                     new Object[] { formBaseClassName });
+                                     new Object[] { declaredSuperclassName });
                 }
                 else { // cannot determine form base class at all;
                        // no substitute available
@@ -346,6 +346,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 throw ex;
             }
         }
+        // base class set
+        // ---------
 
         // initial cleanup
         if (loadedComponents != null)
@@ -4798,7 +4800,26 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
 
     // --------------
-    // NB 3.2 compatibility - FormInfo conversions
+    // NB 3.2 compatibility - dealing with FormInfo
+
+    /** In NB 3.2, the declared superclass in java source was not used, so
+     * it could be changed incompatibly to the FormInfo type (typically to
+     * some unrelated non-visual class, moving the generated code to an
+     * innerclass). We try to detect this and use the FormInfo type
+     * preferentially in such case.
+     */
+    private static Class checkDeclaredSuperclass(Class declaredSuperclass,
+                                                 String formInfoName)
+    {
+        if (!java.awt.Component.class.isAssignableFrom(declaredSuperclass)
+            && formInfoName != null)
+        {
+            Class formInfoType = getCompatibleFormClass(formInfoName);
+            if (formInfoType != null)
+                return formInfoType;
+        }
+        return declaredSuperclass;
+    }
 
     /**
      * @return class corresponding to given FormInfo class name
