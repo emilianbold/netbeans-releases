@@ -66,6 +66,8 @@ public class AttrProp implements BaseAttribute {
     
     //	Name of the attribute
     String 		dtdName;
+
+    String 		namespace;
     
     //	Its type (CDATA, ID, ...)
     int			type;
@@ -162,6 +164,10 @@ public class AttrProp implements BaseAttribute {
     }
     
     public void addValue(String value) {
+        addValue(value, null);
+    }
+    
+    public void addValue(String value, String namespace) {
         //
         //	Get rid of both heading and trailing " character
         //	(we assume that they live in pair)
@@ -176,6 +182,7 @@ public class AttrProp implements BaseAttribute {
 	    case NEED_NAME:
             //	name of the attribute
             this.dtdName = value;
+            this.namespace = namespace;
             this.name = Common.convertName(value);
             this.state = NEED_TYPE;
             break;
@@ -280,6 +287,10 @@ public class AttrProp implements BaseAttribute {
     
     public String getDtdName() {
         return this.dtdName;
+    }
+
+    public String getNamespace() {
+        return this.namespace;
     }
     
     public String typeAsString() {

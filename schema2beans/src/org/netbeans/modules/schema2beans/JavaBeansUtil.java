@@ -755,6 +755,8 @@ public class JavaBeansUtil {
 
     /**
      * Used for generating Java code for reading complicated types.
+     * @param typeName  the java type to generate the method about, can also
+     *                  be "base64Binary".
      */
     public static void genReadType(Writer out, String typeName) throws IOException {
         typeName = typeName.intern();
@@ -791,11 +793,57 @@ public class JavaBeansUtil {
             out.write("cal.setTime(date);\n");
             out.write("return cal;\n");
             out.write("}\n");
+        } else if (typeName == "base64Binary") {
+            out.write("public static byte[] decodeBase64BinaryString(String text) {\n");
+            out.write("final int decodeBase64Table[] = {62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1, -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51};\n");
+            out.write("StringBuffer cleanedEncoding = new StringBuffer();\n");
+            out.write("int len = text.length();\n");
+            out.write("// Get rid of extraneous characters (like whitespace).\n");
+            out.write("for (int i = 0; i < len; ++i) {\n");
+            out.write("if (text.charAt(i) > 0x20) {\n");
+            out.write("cleanedEncoding.append(text.charAt(i));\n");
+            out.write("}\n");
+            out.write("}\n");
+            out.write("char[] encodedText = cleanedEncoding.toString().toCharArray();\n");
+            out.write("len = encodedText.length;\n");
+            out.write("if (len == 0) {\n");
+            out.write("return new byte[0];\n");
+            out.write("}\n");
+            out.write("int howManyBlocks = len / 4;\n");
+            out.write("int partialLen = 3;\n");
+            out.write("if (encodedText[len-1] == '=') {\n");
+            out.write("partialLen -= 1;\n");
+            out.write("if (encodedText[len-2] == '=') {\n");
+            out.write("partialLen -= 1;\n");
+            out.write("}\n");
+            out.write("}\n");
+            out.write("int resultLen = partialLen + (howManyBlocks - 1) * 3;\n");
+            out.write("byte[] result = new byte[resultLen];\n");
+            out.write("int resultIndex = 0;\n");
+            out.write("int encodedTextIndex = 0;\n");
+            out.write("for (int blockNum = 0; blockNum < howManyBlocks; ++blockNum) {\n");
+            out.write("int a = decodeBase64Table[encodedText[encodedTextIndex++] - '+'];\n");
+            out.write("int b = decodeBase64Table[encodedText[encodedTextIndex++] - '+'];\n");
+            out.write("int c = decodeBase64Table[encodedText[encodedTextIndex++] - '+'];\n");
+            out.write("int d = decodeBase64Table[encodedText[encodedTextIndex++] - '+'];\n");
+            
+            out.write("result[resultIndex++] = (byte) ( (b >> 4) | (a << 2) );\n");
+            out.write("if (resultIndex < resultLen) {\n");
+            out.write("result[resultIndex++] = (byte) ( ((b & 0xf) << 4) | (c >> 2) );\n");
+            out.write("}\n");
+            out.write("if (resultIndex < resultLen) {\n");
+            out.write("result[resultIndex++] = (byte) ( ((c & 0x3) << 6) | d);\n");
+            out.write("}\n");
+            out.write("}\n");
+            out.write("return result;\n");
+            out.write("}\n");
         }
     }
 
     /**
      * Used for generating Java code for writing complicated types.
+     * @param typeName  the java type to generate the method about, can also
+     *                  be "base64Binary".
      */
     public static void genWriteType(Writer out, String typeName) throws IOException {
         typeName = typeName.intern();
@@ -836,6 +884,58 @@ public class JavaBeansUtil {
             out.write("}\n");
             out.write("result += minutes;\n");
             out.write("return result;\n");
+            out.write("}\n");
+        } else if (typeName == "base64Binary") {
+            out.write("public static String encodeBase64BinaryString(byte[] instance) {\n");
+            out.write("final char encodeBase64Table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};\n");
+            out.write("byte[] value = (byte[]) instance;\n");
+            out.write("int len = value.length;\n");
+            out.write("if (len == 0) {\n");
+            out.write("return \"\";\n");
+            out.write("}\n");
+            out.write("int howManyBlocks = len / 3;\n");
+            out.write("int partialLen = len % 3;\n");
+            out.write("if (partialLen != 0) {\n");
+            out.write("howManyBlocks += 1;\n");
+            out.write("}\n");
+            out.write("int resultLen = howManyBlocks * 4;\n");
+            out.write("StringBuffer result = new StringBuffer(resultLen);\n");
+            out.write("int valueIndex = 0;\n");
+            out.write("for (int blockNum = 0; blockNum < howManyBlocks; ++blockNum) {\n");
+            out.write("int a = value[valueIndex++];\n");
+            out.write("int b;\n");
+            out.write("int c;\n");
+            out.write("if (valueIndex < len) {\n");
+            out.write("b = value[valueIndex++];\n");
+            out.write("} else {\n");
+            out.write("b = 0;\n");
+            out.write("}\n");
+            out.write("if (valueIndex < len) {\n");
+            out.write("c = value[valueIndex++];\n");
+            out.write("} else {\n");
+            out.write("c = 0;\n");
+            out.write("}\n");
+            out.write("if (a < 0) {\n");
+            out.write("a += 256;\n");
+            out.write("}\n");
+            out.write("if (b < 0) {\n");
+            out.write("b += 256;\n");
+            out.write("}\n");
+            out.write("if (c < 0) {\n");
+            out.write("c += 256;\n");
+            out.write("}\n");
+            out.write("result.append(encodeBase64Table[a >> 2]);\n");
+            out.write("result.append(encodeBase64Table[((a & 0x3) << 4) | (b >> 4)]);\n");
+            out.write("result.append(encodeBase64Table[((b & 0xf) << 2) | (c >> 6)]);\n");
+            out.write("result.append(encodeBase64Table[c & 0x3f]);\n");
+            out.write("}\n");
+            out.write("if (partialLen == 1) {\n");
+            out.write("result.setCharAt(resultLen - 1, '=');\n");
+            out.write("result.setCharAt(resultLen - 2, '=');\n");
+            out.write("} else if (partialLen == 2) {\n");
+            out.write("result.setCharAt(resultLen - 1, '=');\n");
+            out.write("}\n");
+            out.write("return result.toString();\n");
             out.write("}\n");
         }
     }
