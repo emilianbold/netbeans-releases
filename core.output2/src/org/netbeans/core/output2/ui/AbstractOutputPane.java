@@ -333,7 +333,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
 
     protected abstract void caretEnteredLine (int line);
     
-    protected abstract void lineClicked (int line);
+    protected abstract void lineClicked (int line, Point p);
     
     protected abstract void postPopupMenu (Point p, Component src);
     
@@ -392,6 +392,12 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     }
 
     private void maybeSendCaretEnteredLine() {
+        if (EventQueue.getCurrentEvent() instanceof MouseEvent) {
+            //User may have clicked a hyperlink, in which case, we'll test
+            //it and see if it's really in the text of the hyperlink - so
+            //don't do anything here
+            return;
+        }
         //Don't message the controller if we're programmatically setting
         //the selection, or if the caret moved because output was written - 
         //it can cause the controller to send events to OutputListeners which
@@ -457,10 +463,14 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     }
 
     private int mouseLine = -1;
-    public void setMouseLine (int line) {
+    public void setMouseLine (int line, Point p) {
         if (mouseLine != line) {
             mouseLine = line;
         }
+    }
+    
+    public final void setMouseLine (int line) {
+        setMouseLine (line, null);
     }
 
     public int getMouseLine() {
@@ -478,12 +488,15 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
                     lineStart;
 
             int left = getInsets().left;
-            int maxX = left + (fontWidth * lineLength);
-//            System.err.println ("maxX " + maxX + " x " + p.x + " lineLength " + lineLength + " pos " + pos + " lineStart " + lineStart);
-
-            if (p.x <= maxX) {
-                setMouseLine (line);
-            } else {
+            try {
+                Rectangle r = textView.modelToView(lineStart + lineLength -1);
+                int maxX = r.x + r.width;
+                if (p.x <= maxX) {
+                    setMouseLine (line, p);
+                } else {
+                    setMouseLine(-1);
+                }
+            } catch (BadLocationException ble) {
                 setMouseLine(-1);
             }
         }
@@ -499,7 +512,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     }
 
     public final void mousePressed(MouseEvent e) {
-        if (locked) {
+        if (locked && !e.isPopupTrigger()) {
             Element el = getDocument().getDefaultRootElement().getElement(getLineCount()-1);
             getCaret().setDot(el.getStartOffset());
             unlockScroll();
@@ -526,7 +539,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             if (pos != -1) {
                 int line = textView.getDocument().getDefaultRootElement().getElementIndex(pos);
                 if (line >= 0) {
-                    lineClicked(line);
+                    lineClicked(line, e.getPoint());
                 }
             }
         }

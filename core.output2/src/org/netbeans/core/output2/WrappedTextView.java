@@ -409,12 +409,14 @@ public class WrappedTextView extends View {
                         g.drawChars(seg.array, charpos, lenToDraw, margin, y);
                         if (g.getColor() == unselectedLinkFg) {
                             int underlineStart = margin();
-                            if (true) {//currLogicalLine == 0) {
+                            int underlineEnd = underlineStart + g.getFontMetrics().charsWidth(seg.array, charpos, lenToDraw);
+                            if (currLogicalLine == 0) {
                                 //#47263 - start hyperlink underline at first
                                 //non-whitespace character
-                                for (int k=0; k < lenToDraw; k++) {
+                                for (int k=1; k < lenToDraw; k++) {
                                     if (Character.isWhitespace(seg.array[charpos + k])) {
                                         underlineStart += charWidth();
+                                        underlineEnd -= charWidth();
                                     } else {
                                         break;
                                     }
@@ -422,7 +424,7 @@ public class WrappedTextView extends View {
                             } else {
                                 underlineStart = margin();
                             }
-                            g.drawLine (underlineStart, y+1, g.getFontMetrics().charsWidth(seg.array, charpos, lenToDraw), y+1);
+                            g.drawLine (underlineStart, y+1, underlineEnd, y+1);
                         }
                         y += charHeight();
                     }

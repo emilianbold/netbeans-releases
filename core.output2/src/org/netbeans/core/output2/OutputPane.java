@@ -12,7 +12,10 @@
  */
 package org.netbeans.core.output2;
 
+import java.awt.Point;
 import java.awt.event.MouseEvent;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Segment;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
 
 import javax.swing.*;
@@ -33,8 +36,10 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
         findOutputTab().caretEnteredLine(line);
     }
 
-    protected void lineClicked(int line) {
-        findOutputTab().lineClicked(line);
+    protected void lineClicked(int line, Point p) {
+        if (!(getDocument() instanceof OutputDocument) || !inLeadingOrTrailingWhitespace(line, p)) {
+            findOutputTab().lineClicked(line);
+        }
     }
 
     protected void postPopupMenu(Point p, Component src) {
@@ -45,18 +50,66 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
         return findOutputTab().shouldRelockScrollBar(currVal);
     }
 
-    public void setMouseLine (int line) {
-        if (line != getMouseLine()) {
-            Document doc = getDocument();
-            if (doc instanceof OutputDocument) {
-                boolean link = line != -1 && ((OutputDocument) doc).isHyperlink(line);
-                textView.setCursor(link ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) :
-                        Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+    public void setMouseLine (int line, Point p) {
+        Document doc = getDocument();
+        if (doc instanceof OutputDocument) {
+            boolean link = line != -1 && ((OutputDocument) doc).isHyperlink(line);
+            if (link && p != null) {
+                //#47256 - Don't set the cursor if the mouse if over
+                //whitespace
+                if (inLeadingOrTrailingWhitespace(line, p)) {
+                    link = false;
+                    line = -1;
+                }
             }
+            textView.setCursor(link ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) :
+                    Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
         }
-        super.setMouseLine(line);
+        super.setMouseLine(line, p);
     }
     
+    private boolean inLeadingOrTrailingWhitespace (int line, Point p) {
+        if (line == -1) {
+            return true;
+        }
+        assert getDocument() instanceof OutputDocument;
+        assert p != null;
+        OutputDocument doc = (OutputDocument) getDocument();
+        int lineStart = ((OutputDocument) doc).getLineStart(line);
+        int lineEnd = ((OutputDocument) doc).getLineEnd(line);
+
+        try {
+            doc.getText (lineStart, lineEnd - lineStart, seg);
+            char curr = seg.first();
+            while (Character.isWhitespace(curr) && curr != Segment.DONE) {
+                lineStart++;
+                curr = seg.next();
+            }
+            curr = seg.last();
+            while (Character.isWhitespace(curr) && curr != Segment.DONE) {
+                lineEnd--;
+                curr = seg.previous();
+            }
+            if (lineEnd <= lineStart) {
+                line = -1;
+            } else {
+                Rectangle startRect = textView.modelToView(lineStart);
+                Rectangle endRect = textView.modelToView(lineEnd);
+                boolean cursorIsNotOverLeadingOrTrailingWhitespace = 
+                    p.x >= startRect.x && p.y >= startRect.y &&
+                    p.x <= endRect.x + endRect.width &&
+                    p.y <= endRect.y + endRect.height;
+                if (!cursorIsNotOverLeadingOrTrailingWhitespace) {
+                    line = -1;
+                }
+            }
+        } catch (BadLocationException e) {
+            //do nothing
+        }
+        return line == -1;
+    }
+    
+    private Segment seg = new Segment();
     
     /**
      * Only calls super if there are hyperlinks in the document to avoid huge
