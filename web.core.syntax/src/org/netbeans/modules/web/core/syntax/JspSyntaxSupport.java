@@ -42,7 +42,6 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 /**
  *
  * @author  Petr Jiricka, Petr Nejedly
- * @version 
  */
 public class JspSyntaxSupport extends ExtSyntaxSupport {
 
@@ -90,6 +89,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
 
     protected DataObject dobj;
     
+    /** Content language SyntaxSupport cached for getContentLanguageSyntaxSupport */
+    private ExtSyntaxSupport contentLanguageSyntaxSupport = null;
+    
     /** Special bracket finder is used when caret is in JSP context */
     private boolean useCustomBracketFinder = true;
 
@@ -131,7 +133,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     /** Returns SyntaxSupport corresponding to content type of JSP data object. 
      *  HTMLSyntaxSupport is used when we can't find it. */
     protected ExtSyntaxSupport getContentLanguageSyntaxSupport() {
-        ExtSyntaxSupport contentLanguageSyntaxSupport = null;
+        if (contentLanguageSyntaxSupport != null) {
+            return contentLanguageSyntaxSupport;
+        }
         DataObject dobj = NbEditorUtilities.getDataObject(getDocument());
         JspDataObject jspdo = (JspDataObject)dobj.getCookie (JspDataObject.class);
         if (jspdo != null) {
