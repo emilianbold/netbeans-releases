@@ -53,6 +53,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import java.io.File;
 import org.netbeans.modules.group.GroupShadow;
+import org.openide.TopManager;
+import org.openide.NotifyDescriptor;
 
 /**
  *
@@ -203,14 +205,21 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
             fo=fo2.createFolder(source.getName());
         fo.createData(name,"pass");
     }
-
-    protected static boolean detectTestWorkspace(DataObject folder) throws IOException {
-        FileObject test=folder.getPrimaryFile().getFileObject("test");
-        return ((test!=null)&&(test.getFileObject("build","xml")!=null));
-    }
     
-    protected static boolean detectBuildScript(DataObject folder) throws IOException {
-        return folder.getPrimaryFile().getFileObject("build","xml")!=null;
+    protected static boolean detectBuildScript(DataFolder folder) {
+        FileObject fo=folder.getPrimaryFile();
+        return (fo!=null)&&
+               ((fo=fo.getFileObject("test"))!=null)&&
+               (fo.isFolder())&&
+               (fo.getFileObject("build","xml")!=null);
+   }
+    
+    protected static boolean detectTestType(DataFolder folder, String name) {
+        FileObject fo=folder.getPrimaryFile();
+        if (fo==null)  return false;
+        return (fo.getFileObject(name)!=null)||
+               (fo.getFileObject("cfg-"+name,"xml")!=null)||
+               (fo.getFileObject("build-"+name,"xml")!=null);
     }
     
     protected static int detectWorkspaceLevel(DataObject folder) {
@@ -226,13 +235,18 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
     protected static Set instantiateTestSuite(TemplateWizard wizard) throws IOException {
         JavaDataObject template=(JavaDataObject)wizard.getProperty(SUITE_TEMPLATE_PROPERTY);
         String targetName=(String)wizard.getProperty(SUITE_NAME_PROPERTY);
-        if (targetName==null)
-            targetName=template.getPrimaryFile().getName();
         Vector methods=(Vector)wizard.getProperty(METHODS_PROPERTY);
         MethodElement[] templates=(MethodElement[])wizard.getProperty(TEMPLATE_METHODS_PROPERTY);
         DataFolder targetFolder=(DataFolder)wizard.getProperty(SUITE_TARGET_PROPERTY);
 
-        template=(JavaDataObject)template.createFromTemplate(targetFolder, targetName);
+        try {
+            template=(JavaDataObject)template.createFromTemplate(targetFolder, targetName);
+        } catch (IOException ioe) {
+            if (targetName==null)
+                targetName=template.getPrimaryFile().getName();
+            throw new IOException("Could not create Test Suite \""+targetName+"\" in package \""+targetFolder.getPrimaryFile().getPackageName('/')+"\". Reason is: "+ioe.getMessage());
+        }
+            
         try {
             transformTemplateMethods(template, (CaseElement[])methods.toArray(new CaseElement[methods.size()]), templates);
         } catch (SourceException se) {
@@ -247,12 +261,19 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         String name=(String)wizard.getProperty(TESTTYPE_NAME_PROPERTY);
         DataFolder targetFolder=(DataFolder)wizard.getProperty(TESTTYPE_TARGET_PROPERTY);
         DataObject template=(DataObject)wizard.getProperty(TESTTYPE_TEMPLATE_PROPERTY);
-        if (name==null)
-            name=template.getPrimaryFile().getName();
 
         HashSet set=new HashSet();
-        set.add(template.createFromTemplate(targetFolder, name));
-
+        DataObject dob=null;
+        try {
+            dob=template.createFromTemplate(targetFolder, name);
+        } catch (IOException ioe) {
+            if (name==null)
+                name=template.getPrimaryFile().getName();
+            throw new IOException("Could not create Test Type \""+name+"\" in package \""+targetFolder.getPrimaryFile().getPackageName('/')+"\". Reason is: "+ioe.getMessage());
+        }
+        set.add(dob);
+        name=dob.getPrimaryFile().getName();
+        
         DataFolder suiteTarget=DataFolder.create(targetFolder, name+"/src");
         File root=FileUtil.toFile(suiteTarget.getPrimaryFile());
         if (root!=null) try {
@@ -272,9 +293,18 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
     
     protected static Set instantiateTestWorkspace(TemplateWizard wizard) throws IOException {
         HashSet set=new HashSet();
+        
         DataFolder df=DataFolder.create(wizard.getTargetFolder(),"test");
-        set.add(wizard.getTemplate().createFromTemplate(df, "build"));
         wizard.putProperty(TESTTYPE_TARGET_PROPERTY, df);
+        
+        DataObject buildScript=null;
+        try {
+            buildScript=wizard.getTemplate().createFromTemplate(df, "build");
+        } catch (IOException ioe) {
+            throw new IOException("Could not create Test Workspace in package \""+df.getPrimaryFile().getPackageName('/')+"\". Reason is: "+ioe.getMessage());
+        }
+        
+        set.add(buildScript);
         
         if (((Boolean)wizard.getProperty(CREATE_TESTTYPE_PROPERTY)).booleanValue()) {
             set.addAll(instantiateTestType(wizard));

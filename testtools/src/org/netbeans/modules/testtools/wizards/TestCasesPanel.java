@@ -76,8 +76,8 @@ public class TestCasesPanel extends javax.swing.JPanel implements WizardDescript
         down = new javax.swing.JButton();
         scroll = new javax.swing.JScrollPane();
         testCases = new javax.swing.JList();
-        label1 = new javax.swing.JLabel();
-        label2 = new javax.swing.JLabel();
+        nameLabel = new javax.swing.JLabel();
+        templateLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -92,6 +92,13 @@ public class TestCasesPanel extends javax.swing.JPanel implements WizardDescript
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(testCaseTypes, gridBagConstraints);
 
+        caseName.setText("testMyTestCase");
+        caseName.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                caseNameActionPerformed(evt);
+            }
+        });
+
         caseName.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 caseNameFocusGained(evt);
@@ -103,7 +110,7 @@ public class TestCasesPanel extends javax.swing.JPanel implements WizardDescript
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 3.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
@@ -111,8 +118,8 @@ public class TestCasesPanel extends javax.swing.JPanel implements WizardDescript
 
         add.setMnemonic('a');
         add.setText("Add");
-        add.setPreferredSize(new java.awt.Dimension(100, 27));
-        add.setMinimumSize(new java.awt.Dimension(100, 27));
+        add.setPreferredSize(new java.awt.Dimension(80, 27));
+        add.setMinimumSize(new java.awt.Dimension(80, 27));
         add.setEnabled(false);
         add.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -123,16 +130,16 @@ public class TestCasesPanel extends javax.swing.JPanel implements WizardDescript
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(add, gridBagConstraints);
 
         remove.setMnemonic('r');
         remove.setText("Remove");
-        remove.setPreferredSize(new java.awt.Dimension(100, 27));
-        remove.setMinimumSize(new java.awt.Dimension(100, 27));
+        remove.setPreferredSize(new java.awt.Dimension(80, 27));
+        remove.setMinimumSize(new java.awt.Dimension(80, 27));
         remove.setEnabled(false);
         remove.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -149,9 +156,9 @@ public class TestCasesPanel extends javax.swing.JPanel implements WizardDescript
         add(remove, gridBagConstraints);
 
         up.setMnemonic('u');
-        up.setText("Move Up");
-        up.setPreferredSize(new java.awt.Dimension(100, 27));
-        up.setMinimumSize(new java.awt.Dimension(100, 27));
+        up.setText("Up");
+        up.setPreferredSize(new java.awt.Dimension(80, 27));
+        up.setMinimumSize(new java.awt.Dimension(80, 27));
         up.setEnabled(false);
         up.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -162,15 +169,15 @@ public class TestCasesPanel extends javax.swing.JPanel implements WizardDescript
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(up, gridBagConstraints);
 
         down.setMnemonic('d');
-        down.setText("Move Down");
-        down.setPreferredSize(new java.awt.Dimension(100, 27));
-        down.setMinimumSize(new java.awt.Dimension(100, 27));
+        down.setText("Down");
+        down.setPreferredSize(new java.awt.Dimension(80, 27));
+        down.setMinimumSize(new java.awt.Dimension(80, 27));
         down.setEnabled(false);
         down.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -202,31 +209,38 @@ public class TestCasesPanel extends javax.swing.JPanel implements WizardDescript
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(scroll, gridBagConstraints);
 
-        label1.setText("Test Case Name:");
-        label1.setLabelFor(caseName);
+        nameLabel.setText("Test Case Name:");
+        nameLabel.setDisplayedMnemonic(110);
+        nameLabel.setLabelFor(caseName);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 3.0;
         gridBagConstraints.weighty = 1.0;
-        add(label1, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        add(nameLabel, gridBagConstraints);
 
-        label2.setText("Template:");
-        label2.setLabelFor(caseName);
+        templateLabel.setText("Template:");
+        templateLabel.setDisplayedMnemonic(116);
+        templateLabel.setLabelFor(testCaseTypes);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(label2, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        add(templateLabel, gridBagConstraints);
 
     }//GEN-END:initComponents
+
+    private void caseNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_caseNameActionPerformed
+        if (add.isEnabled())
+            addActionPerformed(evt);
+    }//GEN-LAST:event_caseNameActionPerformed
 
     private void caseNameFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_caseNameFocusGained
         caseName.selectAll();
@@ -292,6 +306,8 @@ public class TestCasesPanel extends javax.swing.JPanel implements WizardDescript
     
     public void readSettings(Object obj) {
         testCaseTypes.setModel(new DefaultComboBoxModel((Object[])((TemplateWizard)obj).getProperty(WizardIterator.TEMPLATE_METHODS_PROPERTY)));
+        refreshAdd();
+        refreshButtons();
     }
 
     public void removeChangeListener(javax.swing.event.ChangeListener changeListener) {
@@ -307,13 +323,13 @@ public class TestCasesPanel extends javax.swing.JPanel implements WizardDescript
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel nameLabel;
     private javax.swing.JScrollPane scroll;
     private javax.swing.JTextField caseName;
+    private javax.swing.JLabel templateLabel;
     private javax.swing.JComboBox testCaseTypes;
     private javax.swing.JButton up;
     private javax.swing.JButton remove;
-    private javax.swing.JLabel label2;
-    private javax.swing.JLabel label1;
     private javax.swing.JButton down;
     private javax.swing.JList testCases;
     private javax.swing.JButton add;

@@ -70,6 +70,7 @@ public class TestSuiteWizardIterator extends WizardIterator {
     public java.util.Set instantiate(TemplateWizard wizard) throws java.io.IOException {
         wizard.putProperty(SUITE_TARGET_PROPERTY, wizard.getTargetFolder());
         wizard.putProperty(SUITE_NAME_PROPERTY, wizard.getTargetName());
+        wizard.putProperty(SUITE_TEMPLATE_PROPERTY, wizard.getTemplate());
         return instantiateTestSuite(wizard);
     }
     

@@ -79,14 +79,16 @@ public class TestTypeTemplatePanel extends javax.swing.JPanel implements WizardD
         setLayout(new java.awt.GridBagLayout());
 
         nameLabel.setText("Name: ");
+        nameLabel.setDisplayedMnemonic(78);
         nameLabel.setLabelFor(nameField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(nameLabel, gridBagConstraints);
 
         nameField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -96,17 +98,18 @@ public class TestTypeTemplatePanel extends javax.swing.JPanel implements WizardD
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(nameField, gridBagConstraints);
 
         templateLabel.setText("Select a Template: ");
+        templateLabel.setDisplayedMnemonic(84);
         templateLabel.setLabelFor(templateCombo);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -128,13 +131,14 @@ public class TestTypeTemplatePanel extends javax.swing.JPanel implements WizardD
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(templateCombo, gridBagConstraints);
 
         descriptionLabel.setText("Template Description: ");
+        descriptionLabel.setDisplayedMnemonic(68);
         descriptionLabel.setLabelFor(htmlBrowser);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -165,9 +169,10 @@ public class TestTypeTemplatePanel extends javax.swing.JPanel implements WizardD
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 100.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(descriptionPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
