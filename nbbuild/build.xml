@@ -268,6 +268,7 @@ treefs (complete yet?)
     <exec os="SunOS" dir="firststart/bin" command="sh runide.sh ${firststart.args}" failonerror="yes"/>
     <exec os="Solaris" dir="firststart/bin" command="sh runide.sh ${firststart.args}" failonerror="yes"/>
     <!-- XXX ideal would be a timeout after which the process would get SIGQUIT then SIGINT then SIGKILL -->
+    <!-- This is possible in newer Ants but not in 1.1 -->
     <echo message="Successfully started, cleaning up detritus..."/>
     <delete file="firststart/system/ide.log"/>
     <delete file="firststart/system/project.basic"/>
