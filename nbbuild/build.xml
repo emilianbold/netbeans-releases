@@ -96,11 +96,11 @@ workspaceswitcher
       <config name="superslim" modules="classfile,clazz,editor,html,image,java,openidex,projects,text,utilities"/>
       <config name="slim" modules="autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,image,java,openidex,projects,text,utilities"/>
       <!-- [PENDING] A poor name; 'standard' would be more in line with the CVS pseudomodule. -->
-      <config name="stable" modules="ant,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web"/>
-      <config name="stable-with-apisupport" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web"/>
-      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,html,httpserver,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web"/>
+      <config name="stable" modules="ant,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web"/>
+      <config name="stable-with-apisupport" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web"/>
+      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web"/>
       <!-- You are on your own for getting the binaries for some of these: -->
-      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,html,httpserver,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web"/>
+      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web"/>
     </configmods>
   </target>
 
@@ -176,10 +176,18 @@ workspaceswitcher
     <echo message="Building module extbrowser..."/>
     <ant dir="../extbrowser" target="netbeans"/>
   </target>
+  <target name="all-extbrowser/webclient" depends="all-openide,all-httpserver">
+    <echo message="Building module webclient..."/>
+    <ant dir="../extbrowser/webclient" target="netbeans"/>
+  </target>
   <!-- XXX illegal dependence on core! -->
   <target name="all-form" depends="all-openide,all-openidex,all-java,all-clazz,all-core">
     <echo message="Building module form..."/>
     <ant dir="../form" target="netbeans"/>
+  </target>
+  <target name="all-freestylebrowser" depends="all-openide,all-openidex,all-beans,all-java,all-clazz">
+    <echo message="Building module freestylebrowser..."/>
+    <ant dir="../freestylebrowser" target="netbeans"/>
   </target>
   <target name="all-html" depends="all-openide">
     <echo message="Building module html..."/>
@@ -291,6 +299,10 @@ workspaceswitcher
   <target name="all-text" depends="all-openide">
     <echo message="Building module text..."/>
     <ant dir="../text" target="netbeans"/>
+  </target>
+  <target name="all-tomcatint/tomcat32" depends="all-openide,all-web">
+    <echo message="Building module tomcatint/tomcat32..."/>
+    <ant dir="../tomcatint/tomcat32" target="netbeans"/>
   </target>
   <target name="all-usersguide" depends="all-openide">
     <echo message="Building module usersguide..."/>
