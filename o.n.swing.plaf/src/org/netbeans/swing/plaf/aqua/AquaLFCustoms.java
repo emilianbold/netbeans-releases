@@ -113,7 +113,8 @@ public final class AquaLFCustoms extends LFCustoms {
             EXPLORER_MINISTATUSBAR_BORDER, BorderFactory.createEmptyBorder(),
             
             "floatingBorder", new DropShadowBorder(),
-
+                    
+            TAB_ACTIVE_SELECTION_FOREGROUND, new GuaranteedValue ("textText", Color.BLACK),
         }; //NOI18N
         return result;
     }
