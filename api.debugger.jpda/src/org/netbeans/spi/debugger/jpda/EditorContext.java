@@ -111,30 +111,30 @@ public abstract class EditorContext {
     );
 
     /**
-     * Returns number of line currently selected in editor or <code>null</code>.
+     * Returns number of line currently selected in editor or <code>-1</code>.
      *
-     * @return number of line currently selected in editor or <code>0</code>
+     * @return number of line currently selected in editor or <code>-1</code>
      */
     public abstract int getCurrentLineNumber ();
 
     /**
-     * Returns name of class currently selected in editor or <code>null</code>.
+     * Returns name of class currently selected in editor or empty string.
      *
-     * @return name of class currently selected in editor or <code>null</code>
+     * @return name of class currently selected in editor or empty string
      */
     public abstract String getCurrentClassName ();
 
     /**
-     * Returns URL of source currently selected in editor or <code>null</code>.
+     * Returns URL of source currently selected in editor or empty string.
      *
-     * @return URL of source currently selected in editor or <code>null</code>
+     * @return URL of source currently selected in editor or empty string
      */
     public abstract String getCurrentURL ();
 
     /**
-     * Returns name of method currently selected in editor or <code>null</code>.
+     * Returns name of method currently selected in editor or empty string.
      *
-     * @return name of method currently selected in editor or <code>null</code>
+     * @return name of method currently selected in editor or empty string
      */
     public abstract String getCurrentMethodName ();
 
@@ -153,9 +153,9 @@ public abstract class EditorContext {
     public abstract String getSelectedIdentifier ();
 
     /**
-     * Returns method name currently selected in editor or <code>null</code>.
+     * Returns method name currently selected in editor or empty string.
      *
-     * @return method name currently selected in editor or <code>null</code>
+     * @return method name currently selected in editor or empty string
      */
     public abstract String getSelectedMethodName ();
     

@@ -376,7 +376,7 @@ public class EditorContextBridge {
 
         public String getCurrentURL () {
             String s = cp1.getCurrentURL ();
-            if ( (s == null) || (s.trim ().length () < 1))
+            if (s.trim ().length () < 1)
                 return cp2.getCurrentURL ();
             return s;
         }

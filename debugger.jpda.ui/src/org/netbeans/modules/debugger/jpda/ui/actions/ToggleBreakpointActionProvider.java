@@ -62,7 +62,6 @@ implements PropertyChangeListener {
         setEnabled (
             ActionsManager.ACTION_TOGGLE_BREAKPOINT,
             (EditorContextBridge.getCurrentLineNumber () >= 0) && 
-            (EditorContextBridge.getCurrentURL () != null) &&
             (EditorContextBridge.getCurrentURL ().endsWith (".java"))
         );
         if ( debugger != null && 
@@ -81,7 +80,7 @@ implements PropertyChangeListener {
         // 1) get source name & line number
         int ln = EditorContextBridge.getCurrentLineNumber ();
         String url = EditorContextBridge.getCurrentURL ();
-        if (url == null) return;
+        if (url.trim ().equals ("")) return;
         
         // 2) find and remove existing line breakpoint
         LineBreakpoint lb = getBreakpointAnnotationListener ().findBreakpoint (
