@@ -123,9 +123,9 @@ Constants {
             sb.append (Integer.toHexString ((color.getRGB () & 0xffffff)));
             sb.append (">");
         }
-        text = text.replace ("&", "&amp;");
-        text = text.replace ("<", "&lt;");
-        text = text.replace (">", "&gt;");
+        text = text.replaceAll ("&", "&amp;");
+        text = text.replaceAll ("<", "&lt;");
+        text = text.replaceAll (">", "&gt;");
         sb.append (text);
         if (color != null) sb.append ("</font>");
         if (italics) sb.append ("</i>");
