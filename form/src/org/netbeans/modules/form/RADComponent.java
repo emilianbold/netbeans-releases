@@ -758,7 +758,7 @@ public class RADComponent {
       boolean isChanged = false;
       if (defaultPropertyValues.containsKey (desc.getName ())) { // if there is reasonable default
         Object defValue = defaultPropertyValues.get (desc.getName ());
-        isChanged = Utilities.compareObjects (defValue, val);
+        isChanged = !Utilities.compareObjects (defValue, val);
       } else { // no default => always treat is as changed
         isChanged = true;
       }
@@ -898,7 +898,7 @@ public class RADComponent {
     }
 
     public void setChanged (boolean value) {
-      changed = true;
+      changed = value;
     }
   }
 
@@ -988,7 +988,7 @@ public class RADComponent {
       boolean isChanged = false;
       if (defaultPropertyValues.containsKey (desc.getName ())) { // if there is reasonable default
         Object defValue = defaultPropertyValues.get (desc.getName ());
-        isChanged = Utilities.compareObjects (defValue, val);
+        isChanged = !Utilities.compareObjects (defValue, val);
       } else { // no default => always treat is as changed
         isChanged = true;
       }
@@ -1174,7 +1174,7 @@ public class RADComponent {
     }
 
     public void setChanged (boolean value) {
-      changed = true;
+      changed = value;
     }
   }
 
@@ -1264,6 +1264,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  55   Gandalf   1.54        9/24/99  Ian Formanek    Fixed bug with 
+ *       setChanged flag on properties
  *  54   Gandalf   1.53        9/24/99  Ian Formanek    New system of changed 
  *       properties in RADComponent - Fixes bug 3584 - Form Editor should try to
  *       enforce more order in the XML elements in .form.
