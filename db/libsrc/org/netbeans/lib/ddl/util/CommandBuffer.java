@@ -52,6 +52,9 @@ public class CommandBuffer
 
     /** Debug mode */
     boolean debugmode;
+    
+    /** Execution command with some exception */
+    boolean executionWithException;
 
     /** Adds command to buffer
     * @param cmd Command to add.
@@ -118,6 +121,7 @@ public class CommandBuffer
     throws DDLException
     {
         boolean opencon = false;
+        executionWithException = false;
         DatabaseSpecification spec = null;
         Enumeration cmd_e = commands.elements();
         while (cmd_e.hasMoreElements()) {
@@ -134,16 +138,21 @@ public class CommandBuffer
                 e_cmd.execute();
             } catch (Exception e) {
                 //				e.printStackTrace();
+		executionWithException = true;
                 boolean exres = false;
                 if (handler != null)
                     exres = handler.shouldContinueAfterException(e);
                 if (!exres)
                     TopManager.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-                //          throw new DDLException("command buffer fatal exception: "+e.getMessage());
             }
         }
 
         if (opencon) spec.closeJDBCConnection();
+    }
+    
+    /** information about appearance some exception in the last execute a bunch of commands */
+    public boolean wasException() {
+        return executionWithException;
     }
 }
 
