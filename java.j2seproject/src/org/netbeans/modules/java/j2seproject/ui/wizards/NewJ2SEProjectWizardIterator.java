@@ -129,7 +129,8 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
                 }
             }
             if ( type == TYPE_LIB ) {
-                resultSet.add( h.getProjectDirectory ().getFileObject ("src") );        //NOI18N 
+                // resultSet.add( h.getProjectDirectory ().getFileObject ("src") );        //NOI18N 
+                // resultSet.add( h.getProjectDirectory() ); // Only expand the project directory
             }
         }
         FileObject dir = FileUtil.toFileObject(dirF);
