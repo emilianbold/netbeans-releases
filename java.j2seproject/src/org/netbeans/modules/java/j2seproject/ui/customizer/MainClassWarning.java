@@ -18,7 +18,7 @@ import javax.swing.event.ChangeListener;
 
 import org.openide.filesystems.FileObject;
 
-/** Show a warning that no main class is set and allows choose a main class.
+/** Shows a warning that no main class is set and allows choose a main class.
  *
  * @author  Jiri Rechtacek
  */
@@ -35,7 +35,7 @@ public class MainClassWarning extends JPanel {
         // add MainClassChooser
     }
     
-    /** Returns the selected main class, other types of classes doesn't return.
+    /** Returns the selected main class.
      *
      * @return name of class or null if no class with the main method is selected
      */ 

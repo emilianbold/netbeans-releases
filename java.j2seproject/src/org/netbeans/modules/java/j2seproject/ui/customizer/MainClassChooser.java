@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,6 +24,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.openide.awt.MouseUtils;
 import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -35,7 +38,7 @@ import org.openide.util.NbBundle;
 
 
 
-/** Browse and allow to chooser a project's main class.
+/** Browses and allows to choose a project's main class.
  *
  * @author  Jiri Rechtacek
  */
@@ -61,6 +64,22 @@ public class MainClassChooser extends JPanel {
                 }
             }
         });
+        // support for double click to finish dialog with selected class
+        jMainClassList.addMouseListener (new MouseListener () {
+            public void mouseClicked (MouseEvent e) {
+                if (MouseUtils.isDoubleClick (e)) {
+                    if (getSelectedMainClass () != null) {
+                        if (changeListener != null) {
+                            changeListener.stateChanged (new ChangeEvent (e));
+                        }
+                    }
+                }
+            }
+            public void mousePressed (MouseEvent e) {}
+            public void mouseReleased (MouseEvent e) {}
+            public void mouseEntered (MouseEvent e) {}
+            public void mouseExited (MouseEvent e) {}
+        });
     }
     
     // XXX temporary obtain the main classes in project's sources
@@ -75,7 +94,7 @@ public class MainClassChooser extends JPanel {
                     DataObject classDo = DataObject.find (fo);
                     result.add (getMainMethod (classDo.getCookie (SourceCookie.class), null));
                 } catch (DataObjectNotFoundException ex) {
-                    // alreary checked, must passes
+                    // already checked, must passes
                     assert false : fo;
                 }
             }
@@ -84,7 +103,7 @@ public class MainClassChooser extends JPanel {
     }
 
 
-    /** Returns the selected main class, other types of classes doesn't return.
+    /** Returns the selected main class.
      *
      * @return name of class or null if no class with the main method is selected
      */    

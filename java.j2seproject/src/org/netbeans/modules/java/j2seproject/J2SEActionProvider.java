@@ -14,6 +14,7 @@
 package org.netbeans.modules.java.j2seproject;
 
 import java.awt.Dialog;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -324,7 +326,12 @@ class J2SEActionProvider implements ActionProvider {
         
         panel.addChangeListener (new ChangeListener () {
            public void stateChanged (ChangeEvent e) {
-               okButton.setEnabled (panel.getSelectedMainClass () != null);
+               if (e.getSource () instanceof MouseEvent && MouseUtils.isDoubleClick (((MouseEvent)e.getSource ()))) {
+                   // click button and the finish dialog with selected class
+                   okButton.doClick ();
+               } else {
+                   okButton.setEnabled (panel.getSelectedMainClass () != null);
+               }
            }
         });
         
