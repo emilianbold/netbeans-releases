@@ -429,13 +429,12 @@ Microsystems, Inc. All Rights Reserved.
     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
     <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesRootDescription.html"/>
 
-        <file name="Folder" url="Folder.template">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/defaultFolder.gif" />
+        <folder name="Folder">
             <attr name="template" boolvalue="true"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesFolder.html" />
-            <attr name="templateWizardIterator" methodValue="org.netbeans.core.ui.FolderIterator.create"/>
-        </file>
+            <attr name="templateWizardIterator" methodvalue="org.netbeans.core.ui.FolderIterator.create" />
+        </folder>
 
       <!-- templates for services in Lookup, should have the same subdirectory as objects under the -->
 
