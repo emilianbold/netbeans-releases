@@ -16,6 +16,7 @@ package org.netbeans.modules.debugger.jpda;
 import javax.swing.JComponent;
 import org.openide.debugger.Debugger;
 
+import org.netbeans.modules.debugger.DebuggerImpl;
 import org.netbeans.modules.debugger.support.DebuggerImplSupport;
 import org.netbeans.modules.debugger.support.CoreBreakpoint;
 import org.netbeans.modules.debugger.support.AbstractDebugger;
@@ -26,7 +27,8 @@ import org.netbeans.modules.debugger.support.AbstractDebugger;
  *
  * @author Jan Jancura
  */
-public class JPDADebuggerImpl extends DebuggerImplSupport {
+public class JPDADebuggerImpl extends DebuggerImpl 
+implements DebuggerImplSupport {
     
     private static CoreBreakpoint.Event[]      breakpointEvents;
     private static CoreBreakpoint.Action[]     breakpointActions;
