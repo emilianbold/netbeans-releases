@@ -107,38 +107,32 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="Info"/>
   </target>
 
+  <path id="cp">
+    <pathelement location="src" />
+    <pathelement location="libsrc"/>
+    <pathelement location="../openide/openide-13javac-workaround.jar"/>
+    <pathelement location="../openide/netbeans/lib/openide.jar"/>
+    <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
+  </path>
+
   <target name="javadoc" description="Build editor module API documentation.">
-    <tstamp/>
-    <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
-    <echo message="Build editor module API documentation..."/>
-    <mkdir dir="javadoc"/>
-    <javadoc destdir="javadoc"
-             packagenames="org.netbeans.editor,org.netbeans.editor.ext,org.netbeans.editor.ext.html,org.netbeans.editor.ext.java,org.netbeans.editor.ext.plain,org.netbeans.editor.ext.html.dtd,org.netbeans.modules.editor,org.netbeans.modules.editor.html,org.netbeans.modules.editor.java,org.netbeans.modules.editor.options,org.netbeans.modules.editor.plain"
-             doctitle="NetBeans editor module APIs"
-             windowtitle="NetBeans editor module APIs"
-             bottom="${apis-footer}"
-             use="true"
-             splitindex="true"
-             author="false"
-             version="false"
-             maxmemory="384m"
-    >
-      <sourcepath>
-        <pathelement location="libsrc"/>
-        <pathelement location="src"/>
-      </sourcepath>
-      <classpath>
-        <pathelement location="../core/netbeans/lib/core.jar"/>
-        <pathelement location="libsrc"/>
-	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
-        <fileset dir="../libs/external">
-          <include name="regexp*.jar"/>
-        </fileset>
-      </classpath>
-    </javadoc>    
+     <selector id="editor_javadoc_files" >
+       <or>
+         <filename name="src/**/*.java" />
+         <filename name="libsrc/**/*.java" />
+       </or>
+     </selector>
+
+    <ant dir="../nbbuild/javadoctools" antfile="template.xml" target="javadoc" inheritRefs="true">
+        <property name="javadoc.base" location="."/>
+        <property name="javadoc.name" value="EditorAPI"/>
+        <property name="javadoc.title" value="Editor module API"/>
+		<property name="javadoc.packages" value="org.netbeans.editor,org.netbeans.editor.ext,org.netbeans.editor.ext.html,org.netbeans.editor.ext.java,org.netbeans.editor.ext.plain,org.netbeans.editor.ext.html.dtd,org.netbeans.modules.editor,org.netbeans.modules.editor.html,org.netbeans.modules.editor.java,org.netbeans.modules.editor.options,org.netbeans.modules.editor.plain"/>
+        <property name="javadoc.classpath" refid="cp"/>
+        <property name="javadoc.src" value="../../editor"/>
+        <property name="javadoc.files" value="editor_javadoc_files" />
+        <property name="javadoc.arch" location="arch/arch-editor.xml"/>
+    </ant>
   </target>
 
 </project>
