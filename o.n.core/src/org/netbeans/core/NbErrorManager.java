@@ -160,6 +160,19 @@ final class NbErrorManager extends ErrorManager {
         }
     }
     
+    /** Allows to test whether messages with given severity will be logged
+     * or not prior to constraction of complicated and time expensive
+     * logging messages.
+     *
+     * @param severity the severity to check
+     * @return false if the next call to log method with the same severity will
+     *    discard the message
+     */
+    public boolean isLoggable (int severity) {
+        return severity >= minLogSeverity;
+    }
+    
+    
     /** Returns an instance with given name. The name
      * can be dot separated list of names creating
      * a hierarchy.
