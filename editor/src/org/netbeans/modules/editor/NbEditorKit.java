@@ -145,6 +145,21 @@ public class NbEditorKit extends ExtKit {
 
         static final long serialVersionUID =-8623762627678464181L;
 
+        protected JPopupMenu buildPopupMenu(JTextComponent target) {        
+            // Force running of pending delayed frame activation requests
+            // before node menu is constructed.
+            // This is hack because of the bug #7794
+            // Please see org.netbeans.core.windows.frames.DefaultContainerImpl$2 for details
+            // This hack has been also used for showing popup on explorer nodes, see
+            // org.openide.nodes.NodeOp.findContextMenu()
+            Object pendingNodeActivator =
+                System.getProperties().remove("hack.pendingNodeActivator"); // NOI18N
+            if ( pendingNodeActivator instanceof Runnable) {
+                ((Runnable)pendingNodeActivator).run();
+            }
+            return super.buildPopupMenu(target);
+        }
+        
         protected void addAction(JTextComponent target, JPopupMenu popupMenu,
         String actionName) {
             if (actionName != null) { // try if it's an action class name
