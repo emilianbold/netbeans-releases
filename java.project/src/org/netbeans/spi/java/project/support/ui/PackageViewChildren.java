@@ -385,7 +385,6 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             this.root = root;
             this.dataFolder = dataFolder;
             this.isDefaultPackage = root.equals( dataFolder.getPrimaryFile() );
-            
         }
                        
         public String getName() {
@@ -472,7 +471,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         
         public void update() {
             fireIconChange();
-            fireOpenedIconChange();
+            fireOpenedIconChange();            
         }
         
         public void updateDisplayName() {
@@ -481,11 +480,12 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             fireShortDescriptionChange(null, null);
         }
         
-        public void updateChildren() {
+        public void updateChildren() {            
             boolean leaf = isLeaf();
             DataFolder df = getDataFolder();
-            if ( leaf != isEmpty( df ) ) {
-                setChildren( leaf ? df.createNodeChildren( NO_FOLDERS_FILTER ) : Children.LEAF);
+            boolean empty = isEmpty( df ); 
+            if ( leaf != empty ) {
+                setChildren( empty ? Children.LEAF: df.createNodeChildren( NO_FOLDERS_FILTER ) );                
                 update();
             }
         }
