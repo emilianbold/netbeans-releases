@@ -17,18 +17,14 @@ import org.openide.DialogDescriptor;
 import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.ActionPerformer;
-import org.openide.util.actions.CallableSystemAction;
 
 import com.netbeans.developer.impl.ShortcutsEditor;
 
-/** The action that shows the AboutBox.
+/** The action that shows the Configere Shortcuts dialog.
 *
 * @author Ian Formanek
 */
-public class ConfigureShortcutsAction extends CallableSystemAction {
-  /** generated Serialized Version UID */
-//  static final long serialVersionUID = 6074126305723764618L;
+public class ConfigureShortcutsAction extends org.openide.util.actions.CallableSystemAction {
 
   /** Shows the dialog.
   */
@@ -38,18 +34,7 @@ public class ConfigureShortcutsAction extends CallableSystemAction {
     TopManager.getDefault ().createDialog (dd).show ();
     if (dd.getValue() == DialogDescriptor.OK_OPTION) {
       try {
-        // 1. check whether preset is used
-        // 2. if no:
-        // 2a. store current bindngs into UserDefined.keys
-        // 2b update Shortcuts.properties to point to UserDefined 
-        // 3. if yes => only update shortucts.properties file
-
-        String preset = null; //dd.getUsedPreset ();
-        if (preset == null) { // i.e. user defined is used
-          ShortcutsEditor.saveCustomKeys ();
-          preset = ShortcutsEditor.USER_KEYS_FILE;
-        }
-        ShortcutsEditor.savePreset (preset);
+        if (se.isModified ()) ShortcutsEditor.saveCustomKeys ();
       } catch (java.io.IOException e) {
         TopManager.getDefault ().notifyException (e); // [PENDING]
       }
@@ -62,7 +47,7 @@ public class ConfigureShortcutsAction extends CallableSystemAction {
   * @return URL to the action icon
   */
   public String iconResource () {
-    return "/com/netbeans/developer/impl/resources/actions/empty.gif";
+    return "/com/netbeans/developer/impl/resources/actions/empty.gif"; /* NO I18N */
   }
 
   public HelpCtx getHelpCtx() {
@@ -77,6 +62,7 @@ public class ConfigureShortcutsAction extends CallableSystemAction {
 
 /*
  * Log
+ *  5    Gandalf   1.4         1/4/00   Ian Formanek    
  *  4    Gandalf   1.3         12/21/99 Ian Formanek    
  *  3    Gandalf   1.2         12/1/99  Ian Formanek    
  *  2    Gandalf   1.1         11/30/99 Ian Formanek    
