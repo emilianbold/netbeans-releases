@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project basedir="." default="all" name="XML modules tests build script">
+    <!-- Points to directory with IDE to test-->
+    <property name="netbeans.home" location="../../../nb_all/nbbuild/netbeans"/>
+    <property name="nbextra.repository" location="../../../nbextra"/>
+    <property name="nb.repository" location="../../../nb_all"/>
+
+    <property name="nbext.root" location="../../nbbuild"/>
+    <taskdef  name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext.root}/nbantext.jar"/>
+    <!--property name="submodules" value="api, tax, core, catalog, tools, text-edit, tree-edit, css"/-->
+    <property name="submodules" value="../core/test"/>
+ 
+    <!-- ============ -->
+    <!-- Main targets -->
+    <!-- ============ -->
+    
+    <target depends="runtests" name="all"/>
+    
+    <!-- This calls target which will call compilers according to cfg file.          You should not change this target unless you realy know what you are doing -->
+    <target name="buildtests">
+        <for-each locations="${submodules}"/>
+    </target>
+    
+    <!-- This calls common clean process. -->
+    <!-- You can write your own if you need something special -->
+    <target name="cleantests">
+        <for-each locations="${submodules}"/>
+    </target> 
+
+    <!-- This target runs tests. You should not change this --> 
+    <!-- target unless you realy know what you are doing -->
+    <target depends="buildtests" name="runtests">
+        <for-each locations="${submodules}"/>
+    </target>
+   
+    <!-- This target is executed from test-executor in newly created Project -->
+    <!-- Name of this task is defined in cfg-xxx.xml -->
+    <target name="test_report">
+        <for-each locations="${submodules}"/>
+    </target>
+    
+    <target name="cleanresults">
+        <for-each locations="${submodules}"/>
+    </target>
+    
+    <target depends="cleantests,cleanresults" name="realclean">
+        <for-each locations="${submodules}"/>
+    </target>
+    
+    <target name="printconfig">
+        <for-each locations="${submodules}"/>
+    </target>
+    
+    <target name="build-xml-lib">
+        <javac classpathref="xmllib.classpath" srcdir="qa-functional/src"/>
+        <mkdir dir="qa-functional/lib"/>
+        <jar basedir="qa-functional/src" jarfile="qa-functional/lib/xml-test-lib.jar"/>
+    </target>
+    
+    <path id="xmllib.classpath">   
+        <!-- If you need e.g. openide.jar, write this: 
+             <pathelement location="${netbeans.home}/lib/openide.jar"/>
+             If you need e.g. your tested module, write this:
+             <pathelement location="${netbeans.home}/modules/somemodule.jar"/>
+        -->
+        <pathelement location="${netbeans.home}/lib/openide.jar"/>
+        <pathelement location="${netbeans.home}/lib/core.jar"/>
+        <pathelement location="${netbeans.home}/modules/ext/tax.jar"/>
+        <pathelement location="${netbeans.home}/modules/xml-core.jar"/>
+        <!--
+        <pathelement location="${netbeans.home}/modules/css.jar"/>
+        <pathelement location="${netbeans.home}/modules/xml-catalog.jar"/>
+        <pathelement location="${netbeans.home}/modules/xml-syntax.jar"/>
+        <pathelement location="${netbeans.home}/modules/xml-text-edit.jar"/>
+        <pathelement location="${netbeans.home}/modules/xml-tools.jar"/>
+        <pathelement location="${netbeans.home}/modules/xml-tree-edit.jar"/>                      
+        -->
+        <pathelement location="${netbeans.home}/modules/editor.jar"/>                      
+        <pathelement location="${netbeans.home}/modules/ext/nb-editor.jar"/>
+        <pathelement location="${nbextra.repository}/jemmy/jemmy.jar"/>                    
+        <pathelement location="${nbextra.repository}/jellytools/jelly-nb.jar"/>                    
+        <pathelement location="${nb.repository}/xtest/lib/junit.jar"/>                    
+        <pathelement location="${nb.repository}/xtest/lib/junit-ext.jar"/>                    
+        <pathelement location="${nb.repository}/xtest/lib/xtest.jar"/>                    
+    </path>
+</project>
