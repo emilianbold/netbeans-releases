@@ -56,39 +56,45 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         try {
             if ((breakpointType & ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED) != 0
             ) {
-                ClassPrepareRequest cpr = getEventRequestManager ().
-                    createClassPrepareRequest ();
                 int i, k = classFilters.length;
                 for (i = 0; i < k; i++) {
+                    ClassPrepareRequest cpr = getEventRequestManager ().
+                        createClassPrepareRequest ();
                     cpr.addClassFilter (classFilters [i]);
                     if (verbose)
                         System.out.println ("B     set class load request: " + classFilters [i]);
+                    addEventRequest (cpr);
                 }
                 k = classExclusionFilters.length;
                 for (i = 0; i < k; i++) {
+                    ClassPrepareRequest cpr = getEventRequestManager ().
+                        createClassPrepareRequest ();
                     cpr.addClassExclusionFilter (classExclusionFilters [i]);
                     if (verbose)
                         System.out.println ("B     set class load exclusion request: " + classExclusionFilters [i]);
+                    addEventRequest (cpr);
                 }
-                addEventRequest (cpr);
             }
             if ((breakpointType & ClassLoadUnloadBreakpoint.TYPE_CLASS_UNLOADED) != 0
             ) {
-                ClassUnloadRequest cur = getEventRequestManager ().
-                    createClassUnloadRequest ();
                 int i, k = classFilters.length;
                 for (i = 0; i < k; i++) {
+                    ClassUnloadRequest cur = getEventRequestManager ().
+                        createClassUnloadRequest ();
                     cur.addClassFilter (classFilters [i]);
                     if (verbose)
                         System.out.println ("B     set class unload request: " + classFilters [i]);
+                    addEventRequest (cur);
                 }
                 k = classExclusionFilters.length;
                 for (i = 0; i < k; i++) {
+                    ClassUnloadRequest cur = getEventRequestManager ().
+                        createClassUnloadRequest ();
                     cur.addClassExclusionFilter (classExclusionFilters [i]);
                     if (verbose)
                         System.out.println ("B     set class unload exclusion request: " + classExclusionFilters [i]);
+                    addEventRequest (cur);
                 }
-                addEventRequest (cur);
             }
         } catch (VMDisconnectedException e) {
         }

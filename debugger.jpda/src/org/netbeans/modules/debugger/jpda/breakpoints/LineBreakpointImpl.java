@@ -82,7 +82,11 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         if (className == null) 
             className = breakpoint.getURL ();
         setClassRequests (
-            new String[] {className + '*'}, // innerclasses
+            new String[] {
+                className,
+                className + ".*", // innerclasses
+                className + "$*", // innerclasses
+            }, 
             new String [0],
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
         );
