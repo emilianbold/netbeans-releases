@@ -36,6 +36,14 @@ Microsystems, Inc. All Rights Reserved.
               <attr name="instanceClass" stringvalue="org.netbeans.beaninfo.editors.ExecutorEditor$NoExecutor" />
               <attr name="instanceCreate" methodvalue="org.netbeans.beaninfo.editors.ExecutorEditor.getNoExecutor" />
             </file>
+            <file name="NoIndentEngine.instance">
+              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.beaninfo.editors.Bundle"/>
+              <!-- The special icon for no indentaion doesn't exits yet #, using the default one -->
+              <!-- <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/editors/resources/noIndentationEngine.gif"/> -->
+              <attr name="instanceOf" stringvalue="org.openide.ServiceType,org.openide.text.IndentEngine,org.openide.text.IndentEngine$Default" />
+              <attr name="instanceClass" stringvalue="org.openide.text.IndentEngine$Default" />
+              <attr name="instanceCreate" methodvalue="org.openide.text.IndentEngine.getDefault" />
+            </file>
         </folder>
     
         <!-- 
