@@ -33,6 +33,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.FileChangeSupport;
 import org.netbeans.modules.project.ant.FileChangeSupportEvent;
 import org.netbeans.modules.project.ant.FileChangeSupportListener;
@@ -190,13 +191,7 @@ public final class SourcesHelper {
     }
     
     private Project getProject() {
-        try {
-            Project p = ProjectManager.getDefault().findProject(project.getProjectDirectory());
-            assert p != null : "no project found in " + project.getProjectDirectory();
-            return p;
-        } catch (IOException e) {
-            throw new AssertionError(e);
-        }
+        return AntBasedProjectFactorySingleton.getProjectFor(project);
     }
     
     /**
