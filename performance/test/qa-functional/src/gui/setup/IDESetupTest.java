@@ -30,11 +30,13 @@ public class IDESetupTest extends org.netbeans.junit.NbTestCase {
         super(testName);
     }
 
-    
+    public void testOpenDataProject() {
+        org.netbeans.junit.ide.ProjectSupport.openProject(System.getProperty("xtest.data")+"/PerformanceTestData");
+    }
+
     public void testOpenWebProject() {
         org.netbeans.junit.ide.ProjectSupport.openProject(System.getProperty("xtest.data")+"/PerformanceTestWebApplication");
     }
-
     
     /** 
      * Close Welcome. 
