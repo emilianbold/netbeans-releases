@@ -4,7 +4,7 @@ OpenIDE-Module-Display-Category: Web
 OpenIDE-Module-Long-Description: External HTML browser for viewing HTML and applets from the IDE.
 OpenIDE-Module-Install: org/netbeans/modules/extbrowser/ExtHtmlBrowser.class
 OpenIDE-Module-Layer: org/netbeans/modules/extbrowser/resources/layer.xml
-OpenIDE-Module-Specification-Version: 0.2
+OpenIDE-Module-Specification-Version: 0.3
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.httpserver/1
 

@@ -6,7 +6,7 @@ OpenIDE-Module-Long-Description: Supports editing of HTML files and viewing them
   web browser.
 OpenIDE-Module-Install: org/netbeans/modules/html/HtmlModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/html/mf-layer.xml
-OpenIDE-Module-Specification-Version: 1.7
+OpenIDE-Module-Specification-Version: 1.8
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 
 Name: org/netbeans/modules/html/HtmlLoader.class
