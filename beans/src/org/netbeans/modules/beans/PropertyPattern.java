@@ -324,6 +324,9 @@ public class PropertyPattern extends Pattern {
       if ( TopManager.getDefault().notify( nd ).equals( NotifyDescriptor.YES_OPTION ) ) {
         estimatedField.setType(type);
       }
+      else {
+        estimatedField = null;
+      }
     }
     
   }
@@ -719,6 +722,8 @@ public class PropertyPattern extends Pattern {
 
 /* 
  * Log
+ *  13   Gandalf   1.12        1/15/00  Petr Hrebejk    BugFix 5386, 5385, 5393 
+ *       and new WeakListener implementation
  *  12   Gandalf   1.11        1/13/00  Petr Hrebejk    i18n mk3
  *  11   Gandalf   1.10        1/12/00  Petr Hrebejk    i18n  
  *  10   Gandalf   1.9         1/4/00   Petr Hrebejk    Various bugfixes - 5036,

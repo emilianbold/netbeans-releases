@@ -81,6 +81,10 @@ class BeanPatternGenerator extends Object {
           setterBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
           setterBody.append( ", " ).append( name ).append( ");\n" ); // NOI18N
         }
+        if ( !bound ) {
+          setterBody.append( TAB + "this." ).append( name ); // NOI18N
+          setterBody.append( " = " ).append( name ).append( ";\n"); // NOI18N
+        }
       }
       if ( bound ) {
         setterBody.append( TAB + "this." ).append( name ); // NOI18N
@@ -113,7 +117,7 @@ class BeanPatternGenerator extends Object {
 
   /** Generates the body of the setter method of IndexedProperty.
    * @param name Name of the property
-   * @param type Type of the property
+   * @param indexedType Indexed type of the property
    * @param bound Is the property bound?
    * @param constrained Is the property constrained?
    * @param withSet Should be the set command of property private field generated.
@@ -122,7 +126,7 @@ class BeanPatternGenerator extends Object {
    * @param vetoSupportName Name of field containing <CODE>VetoableChangeListeners</CODE>.
    * @return Sring containing the body of the setter method.
    */
-  static String idxPropertySetterBody( String name, Type type,
+  static String idxPropertySetterBody( String name, Type indexedType,
                                     boolean bound, boolean constrained,
                                     boolean withSet, boolean withSupport,
                                     String supportName,
@@ -130,6 +134,13 @@ class BeanPatternGenerator extends Object {
     StringBuffer setterBody = new StringBuffer( 200 );
     setterBody.append( "\n" ); // NOI18N
 
+    if ( withSupport && constrained ) {
+      
+      setterBody.append( TAB + indexedType.toString() );
+      setterBody.append( " old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
+      setterBody.append( " = this." ).append( name ).append( ";\n"); // NOI18N
+    }
+    
     if ( withSet || withSupport ) {
       /* Generates body in the form:
          this.propName = propName;
@@ -138,11 +149,20 @@ class BeanPatternGenerator extends Object {
       setterBody.append( name );
       setterBody.append( "[index] = " ).append( name ).append( ";\n" ); // NOI18N
     }
-
+    
     if ( withSupport && constrained ) {
-      setterBody.append( TAB + vetoSupportName ).append( ".fireVetoableChange (\"").append( name ).append( "\", " ); // NOI18N
+      setterBody.append( TAB + "try {\n" ); // NOI18N
+      setterBody.append( TABx2 + vetoSupportName ).append( ".fireVetoableChange (\"").append( name ).append( "\", " ); // NOI18N
       setterBody.append( "null, null );\n" ); // NOI18N
+      setterBody.append( TAB + "}\n" ); // NOI18N 
+      setterBody.append( TAB + "catch(java.beans.PropertyVetoException vetoException ) {\n" ); //NOI18N
+      setterBody.append( TABx2 + "this." ); // NOI18N
+      setterBody.append( name );
+      setterBody.append( "[index] = old").append( Pattern.capitalizeFirstLetter( name ) ).append( ";\n" ) ; // NOI18N
+      setterBody.append( TABx2 + "throw vetoException;\n" ); //NOI18N
+      setterBody.append( TAB  + "}\n" ); //NOI18N
     }
+
     if ( withSupport && bound ) {
       setterBody.append( TAB + supportName ).append( ".firePropertyChange (\"").append( name ).append( "\", " ); // NOI18N
       setterBody.append( "null, null );\n" ); // NOI18N
@@ -842,6 +862,8 @@ class BeanPatternGenerator extends Object {
 }
 /* 
  * Log
+ *  9    Gandalf   1.8         1/15/00  Petr Hrebejk    BugFix 5386, 5385, 5393 
+ *       and new WeakListener implementation
  *  8    Gandalf   1.7         1/13/00  Petr Hrebejk    i18n mk3
  *  7    Gandalf   1.6         1/12/00  Petr Hrebejk    i18n  
  *  6    Gandalf   1.5         11/10/99 Petr Hrebejk    Generation of new 

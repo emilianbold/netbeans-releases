@@ -15,9 +15,7 @@ package com.netbeans.developer.modules.beans;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
+import java.util.*;
 
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -38,8 +36,10 @@ public class PatternChildren extends ClassChildren {
   private MethodElementListener methodListener = new MethodElementListener();
   private FieldElementListener fieldListener = new FieldElementListener();
 
-  private WeakListener.PropertyChange weakMethodListener = new WeakListener.PropertyChange( methodListener );
-  private WeakListener.PropertyChange weakFieldListener = new WeakListener.PropertyChange( fieldListener );  
+  private PropertyChangeListener weakMethodListener = WeakListener.propertyChange( methodListener, null);  
+    // = new WeakListener.PropertyChange( methodListener );
+  private PropertyChangeListener weakFieldListener = WeakListener.propertyChange( fieldListener, null);  ;   
+    // = new WeakListener.PropertyChange( fieldListener );  
 
   static {
     Integer i = new Integer (PatternFilter.METHOD | PatternFilter.PROPERTY | 
@@ -153,13 +153,29 @@ public class PatternChildren extends ClassChildren {
   protected Collection getKeysOfType (int elementType) {
     
     LinkedList keys = (LinkedList) super.getKeysOfType (elementType);
+    LinkedList temp = null;
     
-    if ((elementType & PatternFilter.PROPERTY) != 0)  
-      keys.addAll( patternAnalyser.getPropertyPatterns() );
-    if ((elementType & PatternFilter.IDXPROPERTY) != 0) 
-      keys.addAll( patternAnalyser.getIdxPropertyPatterns() );
-    if ((elementType & PatternFilter.EVENT_SET) != 0) 
-      keys.addAll( patternAnalyser.getEventSetPatterns() );
+    if ((elementType & PatternFilter.PROPERTY) != 0)  {
+      temp = new LinkedList();
+      temp.addAll( patternAnalyser.getPropertyPatterns() );
+      Collections.sort( temp, new PatternComparator() );
+      keys.addAll( temp );
+      //keys.addAll( patternAnalyser.getPropertyPatterns() );
+    }
+    if ((elementType & PatternFilter.IDXPROPERTY) != 0) {
+      temp = new LinkedList();
+      temp.addAll( patternAnalyser.getIdxPropertyPatterns() );
+      Collections.sort( temp, new PatternComparator() );
+      keys.addAll( temp );
+      //keys.addAll( patternAnalyser.getIdxPropertyPatterns() );
+    }
+    if ((elementType & PatternFilter.EVENT_SET) != 0) {
+      temp = new LinkedList();
+      temp.addAll( patternAnalyser.getEventSetPatterns() );
+      Collections.sort( temp, new PatternComparator() );
+      keys.addAll( temp );
+      //keys.addAll( patternAnalyser.getEventSetPatterns() );
+    }
 
 //    if ((filter == null) || filter.isSorted ()) 
 //      Collections.sort (keys, comparator);
@@ -210,10 +226,25 @@ public class PatternChildren extends ClassChildren {
       //patternAnalyser.resolveFields();
     }
   }
+  
+  private static final class PatternComparator implements Comparator {
+    
+    public int compare( Object a, Object b ) {
+      return ((Pattern)a).getName().compareTo( ((Pattern)b ).getName() ); 
+    }
+    
+    public boolean equals( Object c ) {
+      return c instanceof PatternComparator; 
+    }
+    
+  }
+  
 }
 
 /* 
  * Log
+ *  11   Gandalf   1.10        1/15/00  Petr Hrebejk    BugFix 5386, 5385, 5393 
+ *       and new WeakListener implementation
  *  10   Gandalf   1.9         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         7/28/99  Petr Hrebejk    Property Mode change fix

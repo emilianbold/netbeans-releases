@@ -102,7 +102,8 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
     setDefaultAction(SystemAction.get(OpenAction.class));
     setActions(DEFAULT_ACTIONS);
 
-    this.pattern.addPropertyChangeListener(new WeakListener.PropertyChange (this));
+    //this.pattern.addPropertyChangeListener(new WeakListener.PropertyChange (this));
+    this.pattern.addPropertyChangeListener( WeakListener.propertyChange (this, this.pattern));
     displayFormat = null;
   }
 
@@ -340,6 +341,8 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
 
 /*
  * Log
+ *  9    Gandalf   1.8         1/15/00  Petr Hrebejk    BugFix 5386, 5385, 5393 
+ *       and new WeakListener implementation
  *  8    Gandalf   1.7         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  7    Gandalf   1.6         9/24/99  Petr Hrebejk    Rename of properties 

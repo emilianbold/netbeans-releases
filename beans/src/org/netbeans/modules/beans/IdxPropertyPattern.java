@@ -166,8 +166,13 @@ public class IdxPropertyPattern extends PropertyPattern {
         ipp.generateGetterMethod( BeanPatternGenerator.propertyGetterBody( name, niWithReturn), true );
     }
     if ( mode == READ_WRITE || mode == WRITE_ONLY ) {
+      /*
       ipp.generateIndexedSetterMethod( BeanPatternGenerator.idxPropertySetterBody( name, ipp.getType(),
           bound, constrained, withSet, withSupport, supportName, vetoSupportName ), constrained, true );
+      */
+      ipp.generateIndexedSetterMethod( BeanPatternGenerator.idxPropertySetterBody( name, ipp.getIndexedType(),
+          bound, constrained, withSet, withSupport, supportName, vetoSupportName ), constrained, true );
+
       if ( ipp.type != null && niSetter )
         ipp.generateSetterMethod( BeanPatternGenerator.propertySetterBody( name, ipp.getType(),
           bound, constrained, niWithSet, withSupport, supportName, vetoSupportName ), constrained, true );
@@ -225,7 +230,7 @@ public class IdxPropertyPattern extends PropertyPattern {
    * @param type New non-indexed type of the indexed property
    * @throws SourceException If the modification of source code is impossible
    */
-  public void setType( Type type ) throws SourceException {
+  public void setType(Type type) throws SourceException {
     
     if ( this.type != null && this.type.compareTo( type, true ) )
       return;
@@ -261,6 +266,9 @@ public class IdxPropertyPattern extends PropertyPattern {
           indexedSetterMethod.setParameters( params );
         }
       }
+      
+      // Set the type  to new type
+      setIndexedType( newType );
     }
   }
 
@@ -681,6 +689,8 @@ public class IdxPropertyPattern extends PropertyPattern {
 
 /* 
  * Log
+ *  12   Gandalf   1.11        1/15/00  Petr Hrebejk    BugFix 5386, 5385, 5393 
+ *       and new WeakListener implementation
  *  11   Gandalf   1.10        1/13/00  Petr Hrebejk    i18n mk3
  *  10   Gandalf   1.9         1/12/00  Petr Hrebejk    i18n  
  *  9    Gandalf   1.8         1/4/00   Petr Hrebejk    Various bugfixes - 5036,
