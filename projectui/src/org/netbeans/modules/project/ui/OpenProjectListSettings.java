@@ -17,6 +17,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.File;
+import javax.swing.filechooser.FileSystemView;
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 
@@ -108,6 +109,12 @@ public class OpenProjectListSettings extends SystemOption {
     public File getProjectsFolder () {
         String result = (String) this.getProperty (PROP_PROJECTS_FOLDER);
         if (result == null) {
+            if ( org.openide.util.Utilities.isWindows() ) { // HACK for 50143 - Default project location on Windows should be in My Documents
+                File myDocuments = FileSystemView.getFileSystemView().getDefaultDirectory();
+                if ( myDocuments != null && myDocuments.exists() && myDocuments.isDirectory() ) {
+                    return myDocuments;
+                }
+            }
             result = System.getProperty("user.home");   //NOI18N
         }
         return new File(result);
