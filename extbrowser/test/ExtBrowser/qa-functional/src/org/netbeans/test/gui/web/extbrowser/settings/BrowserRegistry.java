@@ -42,8 +42,14 @@ public class BrowserRegistry extends JellyTestCase {
     private static String fSep = System.getProperty("file.separator");
     private static String iSep = "|";
     private static String classes = "Classes";
-   
-
+    private static boolean wa = false;
+    private static String ideConfiguration = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration");
+    private static String sets = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/ServerAndExternalToolSettings");
+    private static String browsers = Bundle.getString("org.netbeans.core.Bundle", "Services/Browsers");
+    private static String cl = Bundle.getString("org.netbeans.modules.extbrowser.Bundle","CTL_SimpleExtBrowser");
+    private static String ub = Bundle.getString("org.netbeans.modules.extbrowser.Bundle","CTL_UnixBrowserName");
+    private static String pnameBrowserExecutable = Bundle.getString("org.netbeans.modules.extbrowser.Bundle" ,"PROP_browserExecutable");
+    private static String pnameBrowserDescr = Bundle.getString("org.netbeans.modules.extbrowser.Bundle" ,"PROP_Description");
     public BrowserRegistry(java.lang.String testName) {
         super(testName);
     }
@@ -56,7 +62,22 @@ public class BrowserRegistry extends JellyTestCase {
     public static junit.framework.Test suite() {
 	workDir = System.getProperty("extbrowser.workdir").replace('/', fSep.charAt(0));
 	webModule = workDir + fSep + wmName;
-	return new NbTestSuite(BrowserRegistry.class);
+
+	//WorkAround for 27177
+	 OptionsOperator oo = OptionsOperator.invoke();
+	 try {
+	     oo.selectOption(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl);
+	 }catch(Exception e) {
+	     try {
+		 sets = "ServerAndExternalToolSettings";
+		 oo.selectOption(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl);
+		 wa = true;
+	     }catch(Exception e1) {
+		 System.err.println("BrowserRegistry:suite():Looks like something is wrong with options");
+	     }
+	 }
+	 oo.close();
+	 return new NbTestSuite(BrowserRegistry.class);
     }
 
     /**
@@ -65,25 +86,15 @@ public class BrowserRegistry extends JellyTestCase {
     public void testChangeBrowserDescrEBCL() {
 	String newDescr = "CL Browser";
 	OptionsOperator oo = OptionsOperator.invoke();
-	String ideConfiguration = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration");
-	String sets = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/ServerAndExternalToolSettings");
-	String browsers = Bundle.getString("org.netbeans.core.Bundle", "Services/Browsers");
-	String cl = Bundle.getString("org.netbeans.modules.extbrowser.Bundle","CTL_SimpleExtBrowser");
-	oo.selectOption(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl);
-	PropertySheetOperator pso = PropertySheetOperator.invoke();
-        PropertySheetTabOperator psto = new PropertySheetTabOperator(pso);
-	String pnameBrowserDescr = Bundle.getString("org.netbeans.modules.extbrowser.Bundle" ,"PROP_Description");
-	TextFieldProperty pr = new TextFieldProperty(psto, pnameBrowserDescr);
+	TextFieldProperty pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl, pnameBrowserDescr);
 	pr.setValue(newDescr);
 	if (!pr.getValue().equals(newDescr)) {
 	    fail("Browser Description field not editable");
 	}
-	oo.close();
+	pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl, pnameBrowserDescr);
+	oo.close(); //Closing options
 	oo = OptionsOperator.invoke();
-	oo.selectOption(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl);
-	pso = PropertySheetOperator.invoke();
-        psto = new PropertySheetTabOperator(pso);
-	pr = new TextFieldProperty(psto, pnameBrowserDescr);
+	pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl, pnameBrowserDescr);
 	if (!pr.getValue().equals(newDescr)) {
 	    fail("Browser Description field not saved");
 	}
@@ -96,28 +107,17 @@ public class BrowserRegistry extends JellyTestCase {
     public void testSetProcessToBrowserInPathEBCL() {
 	String newExec = "netscape {URL}";
 	OptionsOperator oo = OptionsOperator.invoke();
-	String ideConfiguration = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration");
-	String sets = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/ServerAndExternalToolSettings");
-	String browsers = Bundle.getString("org.netbeans.core.Bundle", "Services/Browsers");
-	String cl = Bundle.getString("org.netbeans.modules.extbrowser.Bundle","CTL_SimpleExtBrowser");
-	oo.selectOption(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl);
-	PropertySheetOperator pso = PropertySheetOperator.invoke();
-        PropertySheetTabOperator psto = new PropertySheetTabOperator(pso);
-	String pnameBrowserExecutable = Bundle.getString("org.netbeans.modules.extbrowser.Bundle" ,"PROP_browserExecutable");
-	TextFieldProperty pr = new TextFieldProperty(psto, pnameBrowserExecutable);
+	TextFieldProperty pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl, pnameBrowserExecutable);
 	pr.setValue(newExec);
 	if (!pr.getValue().equals(newExec)) {
 	    fail("Browser Executable field not editable");
 	}
 	oo.close();
 	oo = OptionsOperator.invoke();
-	oo.selectOption(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl);
-	pso = PropertySheetOperator.invoke();
-        psto = new PropertySheetTabOperator(pso);
-	pr = new TextFieldProperty(psto, pnameBrowserExecutable);
+	pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl, pnameBrowserExecutable);
 	if (!pr.getValue().equals(newExec)) {
 	    fail("Browser Executable field not saved");
-	  }
+	}
     }
     /**
        External Browser (Command Line) :  Set Process with Full Path to Browser
@@ -127,17 +127,8 @@ public class BrowserRegistry extends JellyTestCase {
 
     public void testSetProcessWithFullPathToBrowserEBCL() {
 	String newExec = fullPathCommand();
-	System.out.println("##$$##Executable full path is \"" + newExec + "\"");
 	OptionsOperator oo = OptionsOperator.invoke();
-	String ideConfiguration = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration");
-	String sets = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/ServerAndExternalToolSettings");
-	String browsers = Bundle.getString("org.netbeans.core.Bundle", "Services/Browsers");
-	String cl = Bundle.getString("org.netbeans.modules.extbrowser.Bundle","CTL_SimpleExtBrowser");
-	oo.selectOption(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl);
-	PropertySheetOperator pso = PropertySheetOperator.invoke();
-        PropertySheetTabOperator psto = new PropertySheetTabOperator(pso);
-	String pnameBrowserExecutable = Bundle.getString("org.netbeans.modules.extbrowser.Bundle" ,"PROP_browserExecutable");
-	TextFieldProperty pr = new TextFieldProperty(psto, pnameBrowserExecutable);
+	TextFieldProperty pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl, pnameBrowserExecutable);
 	pr.openEditor();
 	NbDialogOperator nbo = new NbDialogOperator(pnameBrowserExecutable);
 	if(!(new JTextComponentOperator(nbo, 1)).getText().equals("{URL}")) {
@@ -145,22 +136,18 @@ public class BrowserRegistry extends JellyTestCase {
 	}
 	String custom = "..."; //Correct bundle Not found currently
 	new JButtonOperator(nbo, custom).pushNoBlock();
-	System.out.println("Before wait for open");
 	NbDialogOperator nbo1 = new NbDialogOperator("Open");
-	System.out.println("After wait for open");
 	new JTextFieldOperator(nbo1, 0).setText(newExec);
 	String openTitle =  Bundle.getString("org.openide.explorer.propertysheet.editors.Bundle", "CTL_OpenButtonName");
 	new JButtonOperator(nbo1, openTitle).push();
 	nbo.ok();
+	pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl, pnameBrowserExecutable);
 	if (!pr.getValue().equals(newExec + " {URL}")) {
 	    fail("Browser Executable not set via editor. \"" + pr.getValue() + "\" instead of \"" + newExec + " {URL}\"");
 	}
 	oo.close();
 	oo = OptionsOperator.invoke();
-	oo.selectOption(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl);
-	pso = PropertySheetOperator.invoke();
-        psto = new PropertySheetTabOperator(pso);
-	pr = new TextFieldProperty(psto, pnameBrowserExecutable);
+	pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl, pnameBrowserExecutable);
 	if (!pr.getValue().equals(newExec + " {URL}")) {
 	    fail("Browser Executable field not saved, if set via editor. "+ pr.getValue() + " instead of \"" + newExec + " {URL}\"");
 	}
@@ -172,20 +159,13 @@ public class BrowserRegistry extends JellyTestCase {
     public void testChangeProcessCancelEBCL() {
 	String newExec = "UnReal";
 	OptionsOperator oo = OptionsOperator.invoke();
-	String ideConfiguration = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration");
-	String sets = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/ServerAndExternalToolSettings");
-	String browsers = Bundle.getString("org.netbeans.core.Bundle", "Services/Browsers");
-	String cl = Bundle.getString("org.netbeans.modules.extbrowser.Bundle","CTL_SimpleExtBrowser");
-	oo.selectOption(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl);
-	PropertySheetOperator pso = PropertySheetOperator.invoke();
-        PropertySheetTabOperator psto = new PropertySheetTabOperator(pso);
-	String pnameBrowserExecutable = Bundle.getString("org.netbeans.modules.extbrowser.Bundle" ,"PROP_browserExecutable");
-	TextFieldProperty pr = new TextFieldProperty(psto, pnameBrowserExecutable);
+	TextFieldProperty pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl, pnameBrowserExecutable);
 	String origExec = pr.getValue();
 	pr.openEditor();
 	NbDialogOperator nbo = new NbDialogOperator(pnameBrowserExecutable);
 	new JTextFieldOperator(nbo, 0).setText(newExec);
 	nbo.cancel();
+	pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl, pnameBrowserExecutable);
 	if (!pr.getValue().equals(origExec)) {
 	    fail("\"" + pr.getValue() + "\" instead of \"" + origExec + "\"");
 	}
@@ -198,20 +178,13 @@ public class BrowserRegistry extends JellyTestCase {
     public void testChangeArgumentsCancelEBCL() {
 	String newArg = "UnRealArgs";
 	OptionsOperator oo = OptionsOperator.invoke();
-	String ideConfiguration = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration");
-	String sets = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/ServerAndExternalToolSettings");
-	String browsers = Bundle.getString("org.netbeans.core.Bundle", "Services/Browsers");
-	String cl = Bundle.getString("org.netbeans.modules.extbrowser.Bundle","CTL_SimpleExtBrowser");
-	oo.selectOption(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl);
-	PropertySheetOperator pso = PropertySheetOperator.invoke();
-        PropertySheetTabOperator psto = new PropertySheetTabOperator(pso);
-	String pnameBrowserExecutable = Bundle.getString("org.netbeans.modules.extbrowser.Bundle" ,"PROP_browserExecutable");
-	TextFieldProperty pr = new TextFieldProperty(psto, pnameBrowserExecutable);
+	TextFieldProperty pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl, pnameBrowserExecutable);
 	String origExec = pr.getValue();
 	pr.openEditor();
 	NbDialogOperator nbo = new NbDialogOperator(pnameBrowserExecutable);
 	new JTextComponentOperator(nbo, 1).setText(newArg);
 	nbo.cancel();
+	pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl, pnameBrowserExecutable);
 	if (!pr.getValue().equals(origExec)) {
 	    fail("\"" + pr.getValue() + "\" instead of \"" + origExec + "\"");
 	}
@@ -226,17 +199,9 @@ public class BrowserRegistry extends JellyTestCase {
     public void testChangeBrowserDescrEBU() {
 	String newDescr = "CL Browser";
 	OptionsOperator oo = OptionsOperator.invoke();
-	String ideConfiguration = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration");
-	String sets = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/ServerAndExternalToolSettings");
-	String browsers = Bundle.getString("org.netbeans.core.Bundle", "Services/Browsers");
-	String cl = Bundle.getString("org.netbeans.modules.extbrowser.Bundle","CTL_UnixBrowserName");
-	oo.selectOption(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl);
-	PropertySheetOperator pso = PropertySheetOperator.invoke();
-        PropertySheetTabOperator psto = new PropertySheetTabOperator(pso);
-	String pnameBrowserDescr = Bundle.getString("org.netbeans.modules.extbrowser.Bundle" ,"PROP_Description");
-	TextFieldProperty pr = new TextFieldProperty(psto, pnameBrowserDescr);
+	TextFieldProperty pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + ub, pnameBrowserDescr);
 	if (pr.isEditable()) {
-	    fail("Browser Description field editable");
+	    fail("Browser Description field is editable");
 	}
 	oo.close();
 	
@@ -249,28 +214,17 @@ public class BrowserRegistry extends JellyTestCase {
     public void testSetProcessToBrowserInPathEBU() {
 	String newExec = "netscape {params}";
 	OptionsOperator oo = OptionsOperator.invoke();
-	String ideConfiguration = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration");
-	String sets = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/ServerAndExternalToolSettings");
-	String browsers = Bundle.getString("org.netbeans.core.Bundle", "Services/Browsers");
-	String cl = Bundle.getString("org.netbeans.modules.extbrowser.Bundle","CTL_UnixBrowserName");
-	oo.selectOption(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl);
-	PropertySheetOperator pso = PropertySheetOperator.invoke();
-        PropertySheetTabOperator psto = new PropertySheetTabOperator(pso);
-	String pnameBrowserExecutable = Bundle.getString("org.netbeans.modules.extbrowser.Bundle" ,"PROP_browserExecutable");
-	TextFieldProperty pr = new TextFieldProperty(psto, pnameBrowserExecutable);
+	TextFieldProperty pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + ub, pnameBrowserExecutable);
 	pr.setValue(newExec);
 	if (!pr.getValue().equals(newExec)) {
 	    fail("Browser Executable field not editable");
 	}
 	oo.close();
 	oo = OptionsOperator.invoke();
-	oo.selectOption(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl);
-	pso = PropertySheetOperator.invoke();
-        psto = new PropertySheetTabOperator(pso);
-	pr = new TextFieldProperty(psto, pnameBrowserExecutable);
+	pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + ub, pnameBrowserExecutable);
 	if (!pr.getValue().equals(newExec)) {
 	    fail("Browser Executable field not saved");
-	  }
+	}
     }
     /**
        External Browser (Unix) :  Set Process with Full Path to Browser
@@ -280,17 +234,8 @@ public class BrowserRegistry extends JellyTestCase {
 
     public void testSetProcessWithFullPathToBrowserEBU() {
 	String newExec = fullPathCommand();
-	System.out.println("##$$##Executable full path is \"" + newExec + "\"");
 	OptionsOperator oo = OptionsOperator.invoke();
-	String ideConfiguration = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration");
-	String sets = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/ServerAndExternalToolSettings");
-	String browsers = Bundle.getString("org.netbeans.core.Bundle", "Services/Browsers");
-	String cl = Bundle.getString("org.netbeans.modules.extbrowser.Bundle","CTL_UnixBrowserName");
-	oo.selectOption(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl);
-	PropertySheetOperator pso = PropertySheetOperator.invoke();
-        PropertySheetTabOperator psto = new PropertySheetTabOperator(pso);
-	String pnameBrowserExecutable = Bundle.getString("org.netbeans.modules.extbrowser.Bundle" ,"PROP_browserExecutable");
-	TextFieldProperty pr = new TextFieldProperty(psto, pnameBrowserExecutable);
+	TextFieldProperty pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + ub, pnameBrowserExecutable);
 	pr.openEditor();
 	NbDialogOperator nbo = new NbDialogOperator(pnameBrowserExecutable);
 	if(!(new JTextComponentOperator(nbo, 1)).getText().equals("{params}")) {
@@ -305,15 +250,13 @@ public class BrowserRegistry extends JellyTestCase {
 	String openTitle =  Bundle.getString("org.openide.explorer.propertysheet.editors.Bundle", "CTL_OpenButtonName");
 	new JButtonOperator(nbo1, openTitle).push();
 	nbo.ok();
+	pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + ub, pnameBrowserExecutable);
 	if (!pr.getValue().equals(newExec + " {params}")) {
 	    fail("Browser Executable not set via editor. \"" + pr.getValue() + "\" instead of \"" + newExec + " {params}\"");
 	}
 	oo.close();
 	oo = OptionsOperator.invoke();
-	oo.selectOption(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl);
-	pso = PropertySheetOperator.invoke();
-        psto = new PropertySheetTabOperator(pso);
-	pr = new TextFieldProperty(psto, pnameBrowserExecutable);
+	pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + ub, pnameBrowserExecutable);
 	if (!pr.getValue().equals(newExec + " {params}")) {
 	    fail("Browser Executable field not saved, if set via editor. "+ pr.getValue() + " instead of \"" + newExec + " {params}\"");
 	}
@@ -325,20 +268,13 @@ public class BrowserRegistry extends JellyTestCase {
     public void testChangeProcessCancelEBU() {
 	String newExec = "UnReal";
 	OptionsOperator oo = OptionsOperator.invoke();
-	String ideConfiguration = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration");
-	String sets = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/ServerAndExternalToolSettings");
-	String browsers = Bundle.getString("org.netbeans.core.Bundle", "Services/Browsers");
-	String cl = Bundle.getString("org.netbeans.modules.extbrowser.Bundle","CTL_UnixBrowserName");
-	oo.selectOption(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl);
-	PropertySheetOperator pso = PropertySheetOperator.invoke();
-        PropertySheetTabOperator psto = new PropertySheetTabOperator(pso);
-	String pnameBrowserExecutable = Bundle.getString("org.netbeans.modules.extbrowser.Bundle" ,"PROP_browserExecutable");
-	TextFieldProperty pr = new TextFieldProperty(psto, pnameBrowserExecutable);
+	TextFieldProperty pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + ub, pnameBrowserExecutable);
 	String origExec = pr.getValue();
 	pr.openEditor();
 	NbDialogOperator nbo = new NbDialogOperator(pnameBrowserExecutable);
 	new JTextFieldOperator(nbo, 0).setText(newExec);
 	nbo.cancel();
+	pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + ub, pnameBrowserExecutable);
 	if (!pr.getValue().equals(origExec)) {
 	    fail("\"" + pr.getValue() + "\" instead of \"" + origExec + "\"");
 	}
@@ -351,32 +287,30 @@ public class BrowserRegistry extends JellyTestCase {
     public void testChangeArgumentsCancelEBU() {
 	String newArg = "UnRealArgs";
 	OptionsOperator oo = OptionsOperator.invoke();
-	String ideConfiguration = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration");
-	String sets = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/ServerAndExternalToolSettings");
-	String browsers = Bundle.getString("org.netbeans.core.Bundle", "Services/Browsers");
-	String cl = Bundle.getString("org.netbeans.modules.extbrowser.Bundle","CTL_UnixBrowserName");
-	oo.selectOption(ideConfiguration + iSep + sets + iSep + browsers + iSep + cl);
-	PropertySheetOperator pso = PropertySheetOperator.invoke();
-        PropertySheetTabOperator psto = new PropertySheetTabOperator(pso);
-	String pnameBrowserExecutable = Bundle.getString("org.netbeans.modules.extbrowser.Bundle" ,"PROP_browserExecutable");
-	TextFieldProperty pr = new TextFieldProperty(psto, pnameBrowserExecutable);
+	TextFieldProperty pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + ub, pnameBrowserExecutable);
 	String origExec = pr.getValue();
 	pr.openEditor();
 	NbDialogOperator nbo = new NbDialogOperator(pnameBrowserExecutable);
 	new JTextComponentOperator(nbo, 1).setText(newArg);
 	nbo.cancel();
+	pr = getTFProperty(ideConfiguration + iSep + sets + iSep + browsers + iSep + ub, pnameBrowserExecutable);
 	if (!pr.getValue().equals(origExec)) {
 	    fail("\"" + pr.getValue() + "\" instead of \"" + origExec + "\"");
 	}
     }
 
+    /**
+       Please use this method to request properties.
+       It allow workaround focus problems.
+     */
 
-
-
-
-
-
-
+    private TextFieldProperty getTFProperty(String path, String pname) { 
+	OptionsOperator oo = OptionsOperator.invoke();
+	oo.selectOption(path);
+	PropertySheetOperator pso = PropertySheetOperator.invoke();
+        PropertySheetTabOperator psto = new PropertySheetTabOperator(pso);
+	return new TextFieldProperty(psto, pname);
+    }
 
 
 

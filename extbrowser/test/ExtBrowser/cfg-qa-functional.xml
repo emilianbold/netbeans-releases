@@ -146,6 +146,17 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+
+
+    <testbag testattribs="registry" executor="ide" name="Browser Registry tests">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/settings/BrowserRegistry.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+
     <!-- ====================================== -->
     <!-- COMPILERS, EXECUTORS, RESULTPROCESSORS -->
     <!-- ====================================== -->
