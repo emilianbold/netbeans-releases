@@ -13,7 +13,9 @@
 
 package com.netbeans.developer.impl.actions;
 
+import com.netbeans.ide.TopManager;
 import com.netbeans.ide.util.HelpCtx;
+import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.util.actions.ActionPerformer;
 import com.netbeans.ide.util.actions.CallableSystemAction;
 
@@ -39,13 +41,14 @@ public class HTMLViewAction extends CallableSystemAction {
   }
 
   public void performAction() {
-    com.netbeans.ide.TopManager.getDefault ().setStatusText (com.netbeans.developer.impl.Actions.getActionsBundle().getString("CTL_OpeningBrowser"));
-    com.netbeans.ide.TopManager.getDefault ().showUrl (com.netbeans.developer.impl.IDESettings.getRealHomeURL ());
-    com.netbeans.ide.TopManager.getDefault ().setStatusText ("");
+    TopManager tm = TopManager.getDefault();
+    tm.setStatusText (NbBundle.getBundle(this).getString("CTL_OpeningBrowser"));
+    tm.showUrl (com.netbeans.developer.impl.IDESettings.getRealHomeURL ());
+    tm.setStatusText ("");
   }
 
   public String getName() {
-    return com.netbeans.developer.impl.Actions.getActionsBundle().getString("HTMLView");
+    return NbBundle.getBundle(this).getString("HTMLView");
   }
 
   /** @return the action's help context */
@@ -57,6 +60,8 @@ public class HTMLViewAction extends CallableSystemAction {
 
 /*
  * Log
+ *  3    Gandalf   1.2         1/21/99  David Simonek   Removed references to 
+ *       "Actions" class
  *  2    Gandalf   1.1         1/7/99   Ian Formanek    fixed resource names
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
