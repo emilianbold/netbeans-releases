@@ -374,6 +374,7 @@
 <mapID target="debug.source.editor" url="debug/environment/debug_sourceeditor.html" />
 <mapID target="debug.options" url="debug/environment/options.html" />
 <mapID target="debug.java.options" url="debug/environment/java_options.html" />
+<mapID target="debug.view.customize" url="debug/environment/customize_views.html" />
 
 <mapID target="debug.sessions.jump" url="debug/sessions/sessions.html" />
 <mapID target="debug.running.debugger" url="debug/sessions/start_first.html" />

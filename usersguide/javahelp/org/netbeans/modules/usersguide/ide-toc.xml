@@ -218,6 +218,7 @@
       <tocitem text="Watches View" target="debug.window.watches"></tocitem>
       <tocitem text="Classes View" target="debug.window.classes"></tocitem>
       <tocitem text="Breakpoints View" target="debug.window.breakpoints"></tocitem>
+      <tocitem text="Customizing the Display of a View" target="debug.view.customize"></tocitem>
     </tocitem>
   </tocitem>
   <tocitem text="Running a Program in the Debugger" target="debug.sessions.jump">
@@ -236,7 +237,7 @@
 
   <tocitem text="Debugging in the Source Editor" target="debug.source.editor"></tocitem>
 
-  <tocitem text="Fixing Your Program" target="debug.fix"></tocitem>
+  <tocitem text="Fixing and Continuing" target="debug.fix"></tocitem>
 
   <tocitem text="Finishing a Session" target="debug.sessions.finishsession" />
 
