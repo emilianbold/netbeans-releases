@@ -32,6 +32,7 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.junit</code-name-base>
+                    <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
                     </run-dependency>

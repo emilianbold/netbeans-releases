@@ -88,6 +88,7 @@ final class NbModuleProject implements Project {
             new ClassPathProviderImpl(this),
             new SourceForBinaryImpl(this),
             new JavadocForBinaryQueryImpl(this),
+            new UnitTestForSourceQueryImpl(this),
             new LogicalView(this),
             new SubprojectProviderImpl(this),
             fileBuilt,
