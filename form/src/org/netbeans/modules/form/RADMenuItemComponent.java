@@ -11,28 +11,20 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form;
 
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import javax.swing.*;
-import java.text.MessageFormat;
-import java.util.*;
 
-/** The RADMenuItemComponent represents one menu item component placed on the Form.
+/**
+ * RADMenuItemComponent represents one menu item component in the Form.
  *
  * @author Petr Hamernik, Ian Formanek
  */
+
 public class RADMenuItemComponent extends RADComponent {
 
-    static final Object DUMMY_SEPARATOR_INSTANCE = new Object();
-
-    /** A JDK 1.1 serial version UID */
-    //  static final long serialVersionUID = -6333847833552116543L;
-
-    /** Type of container */
+    /** Type of menu */
     private int type;
 
     /** Possible constants for type variable */
@@ -59,22 +51,10 @@ public class RADMenuItemComponent extends RADComponent {
     static final int MASK_ROOT              = 0x01000;
     static final int MASK_SEPARATOR         = 0x10000;
 
-    /** The MessageFormat for component names */
-    private static MessageFormat menuNameFormat =
-        new MessageFormat(FormEditor.getFormBundle().getString("FMT_MenuName"));
 
-    // -----------------------------------------------------------------------------
-    // Private properties
-
-    transient private RADMenuComponent parent;
-    private static Map menusByFM = new HashMap();
-
-
-    // -----------------------------------------------------------------------------
-    // Initialization
-
-    void initParent(RADMenuComponent parent) {
-        this.parent = parent;
+    public Object initInstance(Class beanClass) throws Exception {
+        type = recognizeType(beanClass);
+        return super.initInstance(beanClass);
     }
 
     /** No synthetic properties for AWT Separator */
@@ -83,209 +63,41 @@ public class RADMenuItemComponent extends RADComponent {
         else return super.createSyntheticProperties();
     }
 
-    public RADMenuComponent getParentMenu() {
-        return parent;
-    }
-
-    // -----------------------------------------------------------------------------
-    // Public interface
-
-    public Object initInstance(Class beanClass) throws Exception {
-        type = recognizeType(beanClass);
-
-        Object instance = super.initInstance(beanClass);
-
-        if (instance instanceof MenuItem && !(instance instanceof Menu)) {
-            JMenuItem designItem = (JMenuItem)
-                getDesignTimeMenus(getFormModel()).getDesignTime(instance);
-            designItem.addActionListener(getDefaultActionListener());
-        }
-        else if (instance instanceof JMenuItem) {
-            ((JMenuItem)instance).addActionListener(getDefaultActionListener());
-        }
-        return instance;
-    }
-
     int getMenuItemType() {
         return type;
     }
 
-    /** Test the given class if is is subclass of one of four basic classes and
-     * return adequate T_XXX constant.
+    /** Recognizes type of the menu from its class.
+     * @return adequate T_XXX constant
      */
     static int recognizeType(Class cl) {
-        if (JSeparator.class.isAssignableFrom(cl)) return T_JSEPARATOR;
-        if (org.netbeans.modules.form.Separator.class.isAssignableFrom(cl)) return T_SEPARATOR;
-        if (PopupMenu.class.isAssignableFrom(cl)) return T_POPUPMENU;
-        if (Menu.class.isAssignableFrom(cl)) return  T_MENU;
-        if (CheckboxMenuItem.class.isAssignableFrom(cl)) return T_CHECKBOXMENUITEM;
-        if (MenuItem.class.isAssignableFrom(cl)) return  T_MENUITEM;
-        if (MenuBar.class.isAssignableFrom(cl)) return T_MENUBAR;
-        if (JRadioButtonMenuItem.class.isAssignableFrom(cl)) return T_JRADIOBUTTONMENUITEM;
-        if (JMenu.class.isAssignableFrom(cl)) return T_JMENU;
-        if (JCheckBoxMenuItem.class.isAssignableFrom(cl)) return T_JCHECKBOXMENUITEM;
-        if (JMenuItem.class.isAssignableFrom(cl)) return T_JMENUITEM;
-        if (JMenuBar.class.isAssignableFrom(cl)) return T_JMENUBAR;
-        if (JPopupMenu.class.isAssignableFrom(cl)) return T_JPOPUPMENU;
+        if (JSeparator.class.isAssignableFrom(cl))
+            return T_JSEPARATOR;
+        if (org.netbeans.modules.form.Separator.class.isAssignableFrom(cl))
+            return T_SEPARATOR;
+        if (PopupMenu.class.isAssignableFrom(cl))
+            return T_POPUPMENU;
+        if (Menu.class.isAssignableFrom(cl))
+            return  T_MENU;
+        if (CheckboxMenuItem.class.isAssignableFrom(cl))
+            return T_CHECKBOXMENUITEM;
+        if (MenuItem.class.isAssignableFrom(cl))
+            return  T_MENUITEM;
+        if (MenuBar.class.isAssignableFrom(cl))
+            return T_MENUBAR;
+        if (JRadioButtonMenuItem.class.isAssignableFrom(cl))
+            return T_JRADIOBUTTONMENUITEM;
+        if (JMenu.class.isAssignableFrom(cl))
+            return T_JMENU;
+        if (JCheckBoxMenuItem.class.isAssignableFrom(cl))
+            return T_JCHECKBOXMENUITEM;
+        if (JMenuItem.class.isAssignableFrom(cl))
+            return T_JMENUITEM;
+        if (JMenuBar.class.isAssignableFrom(cl))
+            return T_JMENUBAR;
+        if (JPopupMenu.class.isAssignableFrom(cl))
+            return T_JPOPUPMENU;
 
-        throw new IllegalArgumentException("Cannot create RADMenuItemComponent for nonmenu class: "+cl.getName()); // NOI18N
-    }
-
-
-    private ActionListener getDefaultActionListener() {
-        return new ActionListener() {
-            public void actionPerformed(ActionEvent ev) {
-                JMenuItem source = (JMenuItem) ev.getSource();
-                if (source instanceof JCheckBoxMenuItem
-                        || source instanceof JRadioButtonMenuItem)
-                    source.setSelected(!source.isSelected());
-
-                if (!getFormModel().isTestMode() && hasDefaultEvent())
-                    attachDefaultEvent();
-            }
-        };
-    }
-
-    static DesignTimeMenus getDesignTimeMenus(FormModel fm) {
-        DesignTimeMenus dtm =(DesignTimeMenus) menusByFM.get(fm);
-        if (dtm == null) {
-            dtm = new DesignTimeMenus(fm);
-            menusByFM.put(fm, dtm);
-        }
-        return dtm;
-    }
-
-    // to find existing menu if caller does not know about formModel
-    public static Object findDesignTimeMenu(Object awtMenu) {
-        Object result;
-        Iterator it = menusByFM.keySet().iterator();
-        while (it.hasNext()) {
-            DesignTimeMenus dtm = (DesignTimeMenus) menusByFM.get(it.next());
-            if ((result = dtm.designTimeMenus.get(awtMenu)) != null)
-                return result;
-        }
-        return null;
-    }
-
-    void freeMenu() {
-        DesignTimeMenus dtm =(DesignTimeMenus) menusByFM.get(getFormModel());
-        if (dtm != null)
-            dtm.removeDesignTime(getBeanInstance());
-    }
-
-    static void freeDesignTimeMenus(FormModel model) {
-        DesignTimeMenus dtm =(DesignTimeMenus) menusByFM.remove(model);
-        if (dtm != null) {
-            model.removeFormModelListener(dtm.listener);
-            dtm.listener = null;
-        }
-    }
-
-    // -----------------------------------------------------------------------------
-    // Inner classes
-    static class DesignTimeMenus {
-        final Map designTimeMenus = new HashMap();
-        FormModelListener listener;
-
-        DesignTimeMenus(FormModel fm) {
-            listener = new FormModelAdapter() {
-                public void componentPropertyChanged(FormModelEvent e) {
-                    if (e.getComponent() instanceof RADMenuItemComponent) {
-                        Object bean = e.getComponent().getBeanInstance();
-                        copyMenuProperties(bean, getDesignTime(bean));
-                    }
-                }
-                
-                public void formLoaded() {
-                    for (java.util.Iterator it = designTimeMenus.keySet().iterator(); it.hasNext();) {
-                        Object menu = it.next();
-                        copyMenuProperties(menu, getDesignTime(menu));
-                    }
-                }
-            };
-            fm.addFormModelListener(listener);
-        }
-
-        Object getDesignTime(Object awtMenu) {
-            Object swingMenu = designTimeMenus.get(awtMenu);
-            if (swingMenu == null) {
-                // create swingMenu with copy of awtMenu aplicable properties
-                switch (recognizeType(awtMenu.getClass())) {
-                    case T_MENUBAR:          swingMenu = new JMenuBar();          break;
-                    case T_MENU:             swingMenu = new JMenu();             break;
-                    case T_POPUPMENU:        swingMenu = new JPopupMenu();        break;
-                    case T_MENUITEM:         swingMenu = new JMenuItem();         break;
-                    case T_CHECKBOXMENUITEM: swingMenu = new JCheckBoxMenuItem(); break;
-                    case T_JMENUBAR:
-                    case T_JMENU:
-                    case T_JPOPUPMENU:
-                    case T_JMENUITEM:
-                    case T_JCHECKBOXMENUITEM:
-                    case T_JRADIOBUTTONMENUITEM:
-                    case T_JSEPARATOR:
-                        swingMenu = awtMenu;
-                        break;
-                        // PENDING - T_SEPARATOR
-                }
-                designTimeMenus.put(awtMenu, swingMenu);
-                copyMenuProperties(awtMenu, swingMenu);
-            }
-            return swingMenu;
-        }
-
-        void removeDesignTime(Object awtMenu) {
-            designTimeMenus.remove(awtMenu);
-        }
-
-        // copy all aplicable properties into swing equivalent of awt component
-        void copyMenuProperties(Object awtMenu, Object swingMenu) {
-            switch (recognizeType(awtMenu.getClass())) {
-                case T_MENUBAR:
-                    MenuBar mb =(MenuBar) awtMenu;
-                    JMenuBar jmb =(JMenuBar) swingMenu;
-                    jmb.setFont(mb.getFont());
-                    jmb.setName(mb.getName());
-                    break;
-                case T_MENU:
-                    Menu m =(Menu) awtMenu;
-                    JMenu jm =(JMenu) swingMenu;
-                    jm.setActionCommand(m.getActionCommand());
-                    jm.setEnabled(m.isEnabled());
-                    jm.setFont(m.getFont());
-                    jm.setText(m.getLabel());
-                    jm.setName(m.getName());
-                    jm.getPopupMenu().setLightWeightPopupEnabled(false);
-                    break;
-                case T_POPUPMENU:
-                    PopupMenu pm =(PopupMenu) awtMenu;
-                    JPopupMenu jpm =(JPopupMenu) swingMenu;
-                    jpm.setEnabled(pm.isEnabled());
-                    jpm.setFont(pm.getFont());
-                    jpm.setLabel(pm.getLabel());
-                    jpm.setName(pm.getName());
-                    jpm.setLightWeightPopupEnabled(false);
-                    break;
-                case T_MENUITEM:
-                    MenuItem mi =(MenuItem) awtMenu;
-                    JMenuItem jmi =(JMenuItem) swingMenu;
-                    jmi.setActionCommand(mi.getActionCommand());
-                    jmi.setEnabled(mi.isEnabled());
-                    jmi.setFont(mi.getFont());
-                    jmi.setText(mi.getLabel());
-                    jmi.setName(mi.getName());
-                    break;
-                case T_CHECKBOXMENUITEM:
-                    CheckboxMenuItem cm =(CheckboxMenuItem) awtMenu;
-                    JCheckBoxMenuItem jcm =(JCheckBoxMenuItem) swingMenu;
-                    jcm.setActionCommand(cm.getActionCommand());
-                    jcm.setEnabled(cm.isEnabled());
-                    jcm.setFont(cm.getFont());
-                    jcm.setText(cm.getLabel());
-                    jcm.setName(cm.getName());
-                    jcm.setState(cm.getState());
-                    break;
-                    // PENDING - T_SEPARATOR
-            }
-        }
+        throw new IllegalArgumentException("Cannot create RADMenuItemComponent for class: "+cl.getName()); // NOI18N
     }
 }

@@ -14,7 +14,7 @@
 package org.netbeans.modules.form;
 
 import java.awt.*;
-import java.beans.*;
+import javax.swing.*;
 import java.util.ArrayList;
 
 import org.openide.nodes.Node;
@@ -26,6 +26,8 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     private ArrayList subComponents = new ArrayList(10);
     private LayoutSupport layoutSupport;
     private LayoutNode layoutNode;
+
+    private RADMenuComponent containerMenu;
 
     public void setInstance(Object beanInstance) {
         super.setInstance(beanInstance);
@@ -94,10 +96,10 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
      */
     
     public Container getContainerDelegate(Object container) {
-        // XXX is it needed?  Does it mean we cannot rely on @beaninfo tags?
-        if (container instanceof javax.swing.RootPaneContainer) {
-            return ((javax.swing.RootPaneContainer) container).getContentPane();
-        }
+        if (container instanceof javax.swing.RootPaneContainer)
+            return ((javax.swing.RootPaneContainer)container).getContentPane();
+        else if (container instanceof javax.swing.JRootPane)
+            return ((javax.swing.JRootPane)container).getContentPane();
         
         Container containerDelegate = (Container) container;
         
@@ -125,6 +127,23 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
     boolean shouldHaveLayoutNode() {
         return layoutSupport != null && layoutSupport.getLayoutClass() != null;
+    }
+
+//    void setContainerMenu(RADMenuComponent menu) {
+//        containerMenu = menu;
+//    }
+
+    RADMenuComponent getContainerMenu() {
+        return containerMenu;
+    }
+
+    boolean canHaveMenu(Class menuClass) {
+        return (JMenuBar.class.isAssignableFrom(menuClass)
+                  && RootPaneContainer.class.isAssignableFrom(getBeanClass()))
+               ||
+               (MenuBar.class.isAssignableFrom(menuClass)
+                  && Frame.class.isAssignableFrom(getBeanClass())
+                  && !JFrame.class.isAssignableFrom(getBeanClass()));
     }
 
     // -----------------------------------------------------------------------------
@@ -234,23 +253,42 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     // -----------------------------------------------------------------------------
     // SubComponents Management
 
-    public RADComponent[] getSubBeans() {
-        RADVisualComponent[] components = new RADVisualComponent [subComponents.size()];
-        subComponents.toArray(components);
-        return components;
-    }
-
+    /** @return visual subcomponents (not the menu component) */
     public RADVisualComponent[] getSubComponents() {
         RADVisualComponent[] components = new RADVisualComponent [subComponents.size()];
         subComponents.toArray(components);
         return components;
     }
 
+    // the following methods implement ComponentContainer interface
+
+    /** @return all subcomponents (including the menu component) */
+    public RADComponent[] getSubBeans() {
+        int n = subComponents.size();
+        if (containerMenu != null)
+            n++;
+
+        RADComponent[] components = new RADComponent[n];
+        subComponents.toArray(components);
+        if (containerMenu != null)
+            components[n-1] = containerMenu;
+
+        return components;
+    }
+
     public void initSubComponents(RADComponent[] initComponents) {
         subComponents = new ArrayList(initComponents.length);
         for (int i = 0; i < initComponents.length; i++) {
-            subComponents.add(initComponents[i]);
-            ((RADVisualComponent)initComponents[i]).initParent(this);
+            RADComponent comp = initComponents[i];
+
+            if (comp instanceof RADVisualComponent)
+                subComponents.add(comp);
+            else if (comp instanceof RADMenuComponent)
+                containerMenu = (RADMenuComponent) comp; // [what with the current menu?]
+            else
+                continue; // [just ignore?]
+
+            comp.setParentComponent(this);
         }
     }
 
@@ -267,30 +305,43 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
             }
         }
         //XXXgetDesignLayout().updateLayout();
-        getFormModel().fireComponentsReordered(this);
+//        getFormModel().fireComponentsReordered(this);
     }
 
     public void add(RADComponent comp) {
-        if (!(comp instanceof RADVisualComponent)) throw new IllegalArgumentException();
-        subComponents.add(comp);
-        ((RADVisualComponent)comp).initParent(this);
-        if (getNodeReference() != null) { // it can be null in the case when copying containers with components
-            ((RADChildren)getNodeReference().getChildren()).updateKeys();
-        }
+        if (comp instanceof RADVisualComponent)
+            subComponents.add(comp);
+        else if (comp instanceof RADMenuComponent)
+            containerMenu = (RADMenuComponent) comp;  // [what with the current menu?]
+        else
+            return; // [just ignore?]
+
+        comp.setParentComponent(this);
+
+//        if (getNodeReference() != null) { // it can be null in the case when copying containers with components
+//            getNodeReference().updateChildren();
+//            ((RADChildren)getNodeReference().getChildren()).updateKeys();
+//        }
     }
 
     public void remove(RADComponent comp) {
-        if (!(comp instanceof RADVisualComponent)) throw new IllegalArgumentException();
-        layoutSupport.removeComponent(((RADVisualComponent)comp));
-        int index = subComponents.indexOf(comp);
-        if (index != -1) {
-            subComponents.remove(index);
+        if (comp instanceof RADVisualComponent) {
+            layoutSupport.removeComponent(((RADVisualComponent)comp));
+            if (subComponents.remove(comp))
+                comp.setParentComponent(null);
         }
-        ((RADChildren)getNodeReference().getChildren()).updateKeys();
+        else if (comp == containerMenu) {
+            containerMenu = null;
+            comp.setParentComponent(null);
+        }
+        else return;
+
+//        getNodeReference().updateChildren();
+//        ((RADChildren)getNodeReference().getChildren()).updateKeys();
     }
 
     public int getIndexOf(RADComponent comp) {
-        if (!(comp instanceof RADVisualComponent)) throw new IllegalArgumentException();
+//        if (!(comp instanceof RADVisualComponent)) throw new IllegalArgumentException();
         return subComponents.indexOf(comp);
     }
 }

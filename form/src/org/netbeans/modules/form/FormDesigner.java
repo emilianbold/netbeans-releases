@@ -1,16 +1,15 @@
 /*
  *                 Sun Public License Notice
- *
+ * 
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- *
+ * 
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 
 package org.netbeans.modules.form;
 
@@ -53,18 +52,22 @@ public class FormDesigner extends TopComponent
     private InPlaceEditLayer textEditLayer;
     private RADProperty editedProperty;
 
-    private RADVisualContainer topDesignContainer;
+    private RADVisualComponent topDesignComponent;
 
     private JMenuBar formJMenuBar;
     private MenuBar formMenuBar;
-
+    
     private FormModel formModel;
     private FormModelListener formModelListener;
 
+    private FormEditorSupport formEditorSupport;
+
     private VisualReplicator replicator = new VisualReplicator(
         null,
-        new Class[] { Window.class, Applet.class, RootPaneContainer.class },
-        VisualReplicator.ATTACH_FAKE_PEERS | VisualReplicator.DISABLED_FOCUSING);
+        new Class[] { Window.class, Applet.class,
+                      RootPaneContainer.class,
+                      MenuComponent.class },
+        VisualReplicator.ATTACH_FAKE_PEERS | VisualReplicator.DISABLE_FOCUSING);
 
     private VisualUpdater updater = new VisualUpdater();
     private boolean updateTaskPlaced;
@@ -80,18 +83,10 @@ public class FormDesigner extends TopComponent
 
     void initialize() {
         updateWholeDesigner();
-
-        // set menu bar
-        Object menuVal = topDesignContainer.getAuxValue(
-            RADVisualFormContainer.AUX_MENU_COMPONENT);
-        if (menuVal != null && menuVal instanceof String) {
-            ((RADVisualFormContainer)topDesignContainer)
-                .setFormMenu((String)menuVal);
-        }
     }
-
+    
     //////
-
+    
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.formeditor"); // NOI18N
     }
@@ -103,10 +98,10 @@ public class FormDesigner extends TopComponent
     //
     //
     //
-
+    
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
-        out.writeObject(formModel.getFormDataObject());
+        out.writeObject(FormEditorSupport.getFormDataObject(formModel));
     }
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -115,11 +110,12 @@ public class FormDesigner extends TopComponent
         if (o instanceof FormDataObject) {
             FormEditorSupport formSupport = ((FormDataObject)o).getFormEditor();
             if (formSupport.loadForm()) {
-                FormModel model = formSupport.getFormModel();
-                model.setFormDesigner(this);
-                setModel(model);
+//                FormModel model = formSupport.getFormModel();
+//                model.setFormDesigner(this);
+                setModel(formSupport.getFormModel());
                 initialize();
-                ComponentInspector.getInstance().focusForm(model);
+                formSupport.setFormDesigner(this);
+                ComponentInspector.getInstance().focusForm(formSupport);
             }
         }
     }
@@ -129,11 +125,11 @@ public class FormDesigner extends TopComponent
             return;
         if (isOpened())
             return;
-
+        
         if (workspace == null)
             workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
 
-        String formName = "Form " + formModel.getFormDataObject().getName(); // NOI18N
+        String formName = "Form " + formModel.getName(); // NOI18N
         String modeName = formName;
         int modeVar = 0;
 
@@ -169,8 +165,8 @@ public class FormDesigner extends TopComponent
         super.componentActivated();
 
         ComponentInspector ci = ComponentInspector.getInstance();
-        if (ci.getFocusedForm() != formModel) {
-            ComponentInspector.getInstance().focusForm(formModel);
+        if (ci.getFocusedForm() != formEditorSupport) {
+            ComponentInspector.getInstance().focusForm(formEditorSupport);
             updateActivatedNodes();
         }
 
@@ -189,7 +185,7 @@ public class FormDesigner extends TopComponent
 
     void updateActivatedNodes() {
         ComponentInspector ci = ComponentInspector.getInstance();
-        if (ci.getFocusedForm() != formModel)
+        if (ci.getFocusedForm() != formEditorSupport)
             return;
 
         Node[] selectedNodes = new Node[selectedComponents.size()];
@@ -200,36 +196,36 @@ public class FormDesigner extends TopComponent
             selectedNodes[i++] = metacomp.getNodeReference();
         }
         try {
-            ci.setSelectedNodes(selectedNodes, formModel);
+            ci.setSelectedNodes(selectedNodes, formEditorSupport);
         }
         catch (PropertyVetoException ex) {
             ex.printStackTrace();
         }
-
+            
         setActivatedNodes(selectedNodes);
     }
 
-    void updateName() {
-        String name = formModel.getFormDataObject().getName();
-        if (!(topDesignContainer instanceof FormContainer))
-            name += " / " + topDesignContainer.getName(); // NOI18N
+    void updateName(String name) {
+        if (topDesignComponent != null
+                && topDesignComponent != formModel.getTopRADComponent())
+            name += " / " + topDesignComponent.getName(); // NOI18N
         if (formModel.isReadOnly())
             name += " " + FormEditor.getFormBundle().getString("CTL_FormTitle_RO"); // NOI18N
         setName(name);
     }
 
     ////////////////
-
+    
     FormDesigner(FormModel formModel) {
         formModelListener = new FormListener();
-
+        
         componentLayer = new ComponentLayer();
         FakePeerContainer fakeContainer = new FakePeerContainer();
         fakeContainer.setLayout(new BorderLayout());
         fakeContainer.add(componentLayer, BorderLayout.CENTER);
 
         handleLayer = new HandleLayer(this);
-
+        
         layeredPane = new JLayeredPane();
         layeredPane.setLayout(new OverlayLayout(layeredPane));
         layeredPane.add(fakeContainer, new Integer(1000));
@@ -244,20 +240,27 @@ public class FormDesigner extends TopComponent
     void setModel(FormModel m) {
         if (formModel != null) {
             formModel.removeFormModelListener(formModelListener);
-            topDesignContainer = null;
+            topDesignComponent = null;
         }
 
         formModel = m;
-
+        
         if (formModel != null) {
             formModel.addFormModelListener(formModelListener);
-            topDesignContainer = (RADVisualContainer) formModel.getTopRADComponent();
+            formEditorSupport = FormEditorSupport.getSupport(formModel);
+            resetTopDesignComponent();
+            updateName(formModel.getName());
             handleLayer.setViewOnly(formModel.isReadOnly());
         }
+        else formEditorSupport = null;
     }
 
     FormModel getModel() {
         return formModel;
+    }
+
+    FormEditorSupport getFormEditorSupport() {
+        return formEditorSupport;
     }
 
     public Object getComponent(RADComponent metacomp) {
@@ -304,7 +307,7 @@ public class FormDesigner extends TopComponent
         removeComponentFromSelectionImpl(metacomp);
         updateActivatedNodes();
     }
-
+    
     void clearSelectionImpl() {
         selectedComponents.clear();
         handleLayer.repaint();
@@ -321,49 +324,52 @@ public class FormDesigner extends TopComponent
 
     private void ensureComponentIsShown(RADVisualComponent metacomp) {
         Component comp = (Component) getComponent(metacomp);
+        RADVisualContainer metacont = metacomp.getParentContainer();
 
         if (comp == null) { // visual component doesn't exist yet
-            RADVisualContainer parent = metacomp.getParentContainer();
             LayoutSupport ls;
-            if (parent != null && (ls = parent.getLayoutSupport())
+            if (metacont != null && (ls = metacont.getLayoutSupport())
                                   instanceof LayoutSupportArranging)
                 ((LayoutSupportArranging)ls).selectComponent(metacomp);
 
             return;
         }
 
-        if (comp.isShowing()) return; // component is showing
-        if (!isInDesignedTree(metacomp)) return; // component is not in designer
+        if (comp.isShowing())
+            return; // component is showing
+        if (!isInDesignedTree(metacomp))
+            return; // component is not in designer
 
-        Component topComp = (Component) getComponent(topDesignContainer);
-        if (!topComp.isShowing()) return; // designer is not showing
+        Component topComp = (Component) getComponent(topDesignComponent);
+        if (!topComp.isShowing())
+            return; // designer is not showing
 
-        RADVisualContainer parent = metacomp.getParentContainer();
         RADVisualComponent child = metacomp;
         Container parentComp;
         Component childComp = comp;
 
-        while (parent != null) {
-            parentComp = (Container) getComponent(parent);
-            if (parent.getLayoutSupport() instanceof LayoutSupportArranging) {
+        while (metacont != null) {
+            parentComp = (Container) getComponent(metacont);
+            if (metacont.getLayoutSupport() instanceof LayoutSupportArranging) {
                 LayoutSupportArranging lsa =
-                    (LayoutSupportArranging)parent.getLayoutSupport();
+                    (LayoutSupportArranging)metacont.getLayoutSupport();
                 lsa.selectComponent(child);
                 lsa.arrangeContainer(parentComp);
             }
-            if (parent == topDesignContainer || parentComp.isShowing()) break;
-            child = parent;
+            if (metacont == topDesignComponent || parentComp.isShowing())
+                break;
+            child = metacont;
             childComp = parentComp;
-            parent = parent.getParentContainer();
+            metacont = metacont.getParentContainer();
         }
     }
 
     /** Finds out what component follows after currently selected component
-     * when TAB (forward true) or Shift+TAB (forward false) is pressed.
+     * when TAB (forward true) or Shift+TAB (forward false) is pressed. 
      * @returns the next or previous component for selection
      */
     RADVisualComponent getNextVisualComponent(boolean forward) {
-        if (selectedComponents.size() != 1
+        if (selectedComponents.size() != 1 
             || (!(selectedComponents.get(0) instanceof RADVisualComponent)))
             return null;
 
@@ -372,9 +378,12 @@ public class FormDesigner extends TopComponent
 
     /** @returns the next or prevoius component to component comp
      */
-    RADVisualComponent getNextVisualComponent(RADVisualComponent comp, boolean forward) {
-        if (comp == null) return null;
-        if (getComponent(comp) == null) return null;
+    RADVisualComponent getNextVisualComponent(RADVisualComponent comp,
+                                              boolean forward) {
+        if (comp == null)
+            return null;
+        if (getComponent(comp) == null)
+            return null;
 
         RADVisualContainer cont;
         RADVisualComponent[] subComps;
@@ -388,9 +397,11 @@ public class FormDesigner extends TopComponent
             }
 
             // try the next component (or the next of the parent then)
-            if (comp == topDesignContainer) return topDesignContainer;
+            if (comp == topDesignComponent)
+                return topDesignComponent;
             cont = comp.getParentContainer();
-            if (cont == null) return null; // should not happen
+            if (cont == null)
+                return null; // should not happen
 
             int i = cont.getIndexOf(comp);
             while (i >= 0) {
@@ -398,21 +409,23 @@ public class FormDesigner extends TopComponent
                 if (i+1 < subComps.length)
                     return subComps[i+1];
 
-                if (cont == topDesignContainer) break;
+                if (cont == topDesignComponent)
+                    break;
                 comp = cont; // one level up
                 cont = comp.getParentContainer();
-                if (cont == null) return null; // should not happen
+                if (cont == null)
+                    return null; // should not happen
                 i = cont.getIndexOf(comp);
             }
 
-            return topDesignContainer;
-            //(RADVisualComponent) formModel.getTopRADComponent();
+            return topDesignComponent;
         }
         else { // backward
             // take the previuos component
-            if (comp != topDesignContainer) {
+            if (comp != topDesignComponent) {
                 cont = comp.getParentContainer();
-                if (cont == null) return null; // should not happen
+                if (cont == null)
+                    return null; // should not happen
                 int i = cont.getIndexOf(comp);
                 if (i >= 0) { // should be always true
                     if (i == 0) return cont; // the opposite to the 1st forward step
@@ -420,7 +433,7 @@ public class FormDesigner extends TopComponent
                     subComps = cont.getSubComponents();
                     comp = subComps[i-1];
                 }
-                else comp = topDesignContainer; //(RADVisualComponent) formModel.getTopRADComponent();
+                else comp = topDesignComponent;
             }
 
             // find the last subcomponent of it
@@ -439,33 +452,6 @@ public class FormDesigner extends TopComponent
         }
     }
 
-    // ------------
-    // menu bar hacks
-
-    void setFormJMenuBar(JMenuBar menubar) {
-        if (menubar == formJMenuBar)
-            return;
-        if (formJMenuBar != null)
-            remove(formJMenuBar);
-        formJMenuBar = menubar;
-        if (formJMenuBar != null)
-            add(formJMenuBar, BorderLayout.NORTH);
-    }
-
-    void setFormMenuBar(MenuBar menubar) {
-        if (menubar == formMenuBar)
-            return;
-        if (formJMenuBar != null)
-            remove(formJMenuBar);
-        formMenuBar = menubar;
-        if (menubar != null) {
-            formJMenuBar = (JMenuBar) RADMenuItemComponent.findDesignTimeMenu(menubar);
-            add(formJMenuBar, BorderLayout.NORTH);
-        }
-        else
-            formJMenuBar = null;
-    }
-
     // ------------------
     // designer content
 
@@ -473,29 +459,34 @@ public class FormDesigner extends TopComponent
         return componentLayer;
     }
 
-    public void setTopDesignContainer(RADVisualContainer container) {
-        topDesignContainer = container;
+    public void setTopDesignComponent(RADVisualComponent component) {
+        topDesignComponent = component;
         updateWholeDesigner();
     }
 
-    public RADVisualContainer getTopDesignContainer() {
-        return topDesignContainer;
+    public RADVisualComponent getTopDesignComponent() {
+        return topDesignComponent;
+    }
+
+    public void resetTopDesignComponent() {
+        if (formModel.getTopRADComponent() instanceof RADVisualComponent)
+            topDesignComponent = (RADVisualComponent)
+                                 formModel.getTopRADComponent();
+        else topDesignComponent = null;
     }
 
     /** Tests whether top designed container is some parent of given component
      * (whether the component is in the tree under top designed container).
      */
     public boolean isInDesignedTree(RADVisualComponent metacomp) {
-        while (metacomp != null) {
-            if (metacomp == topDesignContainer) return true;
-            metacomp = metacomp.getParentContainer();
-        }
-        return false;
+        return topDesignComponent != null
+               && (topDesignComponent == metacomp
+                   || topDesignComponent.isParentComponent(metacomp));
     }
 
     void updateWholeDesigner() {
         placeUpdateTask(UpdateTask.ALL, null);
-        updateName();
+        updateName(formModel.getName());
     }
 
     void placeUpdateTask(int type, Object updateObj) {
@@ -693,7 +684,7 @@ public class FormDesigner extends TopComponent
             RADComponent metacomp = e.getComponent();
             if (metacomp instanceof RADVisualComponent) {
                 placeUpdateTask(UpdateTask.LAYOUT,
-                        ((RADVisualComponent)metacomp).getParentContainer());
+                                metacomp.getParentComponent());
             }
         }
 
@@ -703,26 +694,21 @@ public class FormDesigner extends TopComponent
 
         public void componentRemoved(FormModelEvent e) {
             RADComponent removed = e.getComponent();
-            placeUpdateTask(UpdateTask.REMOVE, removed);
+
+            // test whether topDesignComponent or some of its parents
+            // were not removed - then whole designer would be re-created
+            if (removed instanceof RADVisualComponent
+                && (removed == topDesignComponent
+                    || removed.isParentComponent(topDesignComponent)))
+            {
+                resetTopDesignComponent();
+                placeUpdateTask(UpdateTask.ALL, null);
+            }
+            else
+                placeUpdateTask(UpdateTask.REMOVE, removed);
 
             if (isComponentSelected(removed))
                 removeComponentFromSelection(removed);
-
-            // test whether topDesignContainer or some of its parents
-            // were not removed - then whole designer would be re-created
-            if (removed instanceof RADVisualContainer) {
-                RADVisualContainer metacont = topDesignContainer;
-                do {
-                    if (metacont == removed) {
-                        topDesignContainer = (RADVisualContainer)
-                                             formModel.getTopRADComponent();
-                        placeUpdateTask(UpdateTask.ALL, null);
-                        break;
-                    }
-                    metacont = metacont.getParentContainer();
-                }
-                while (metacont != null);
-            }
         }
 
         public void componentsReordered(FormModelEvent e) {
@@ -836,10 +822,11 @@ public class FormDesigner extends TopComponent
             switch (type) {
                 case ALL:
                     componentLayer.removeAll();
-                    replicator.setTopMetaComponent(topDesignContainer);
+                    replicator.setTopMetaComponent(topDesignComponent);
                     Component formClone = (Component) replicator.createClone();
-                    componentLayer.add(formClone, BorderLayout.CENTER);
-                    updateName();
+                    if (formClone != null)
+                        componentLayer.add(formClone, BorderLayout.CENTER);
+                    updateName(formModel.getName());
                     break;
 
                 case LAYOUT:
@@ -872,8 +859,8 @@ public class FormDesigner extends TopComponent
                         return param == prevTask.param;
                     if (prevTask.type == ADD || prevTask.type == REMOVE)
                         return prevTask.param instanceof RADVisualComponent
-                                && ((RADVisualComponent)prevTask.param)
-                                    .getParentContainer() == param;
+                                && ((RADComponent)prevTask.param)
+                                    .getParentComponent() == param;
                     break;
 
                 case ADD:

@@ -200,7 +200,7 @@ public class EventProperty extends PropertySupport.ReadWrite {
      */
     class EventEditor extends PropertyEditorSupport implements EnhancedPropertyEditor
     {
-        boolean advancedFeatures;
+//        boolean advancedFeatures;
 
         ActionListener comboSelectListener = null;
         FocusListener comboEditFocusListener = null;
@@ -208,8 +208,8 @@ public class EventProperty extends PropertySupport.ReadWrite {
         javax.swing.JComboBox eventCombo;
 
         EventEditor() {
-            FormEditorSupport s = event.getComponent().getFormModel().getFormEditorSupport();
-            advancedFeatures = s.supportsAdvancedFeatures();
+//            FormEditorSupport s = event.getComponent().getFormModel().getFormEditorSupport();
+//            advancedFeatures = s.supportsAdvancedFeatures();
         }
 
         public String getAsText() {
@@ -233,83 +233,83 @@ public class EventProperty extends PropertySupport.ReadWrite {
          */
         public java.awt.Component getInPlaceCustomEditor() {
             Vector handlers = event.getHandlers();
-            if (advancedFeatures) {
-                eventCombo = new javax.swing.JComboBox();
-                eventCombo.setEditable(!EventProperty.this.isReadOnly());
+//            if (advancedFeatures) {
+            eventCombo = new javax.swing.JComboBox();
+            eventCombo.setEditable(!EventProperty.this.isReadOnly());
 
-                if (handlers.size() == 0) {
-                    eventCombo.getEditor().setItem(FormUtils.getDefaultEventName(
-                            event.getComponent(), event.getListenerMethod()));
-                } else {
-                    for (int i=0, n=handlers.size(); i < n; i++) {
-                        eventCombo.addItem(((EventHandler) handlers.get(i)).getName()); // [PENDING]
-                    }
-                    if (lastSelectedHandler != null)
-                        eventCombo.setSelectedItem(lastSelectedHandler.getName());
+            if (handlers.size() == 0) {
+                eventCombo.getEditor().setItem(FormUtils.getDefaultEventName(
+                        event.getComponent(), event.getListenerMethod()));
+            } else {
+                for (int i=0, n=handlers.size(); i < n; i++) {
+                    eventCombo.addItem(((EventHandler) handlers.get(i)).getName()); // [PENDING]
                 }
+                if (lastSelectedHandler != null)
+                    eventCombo.setSelectedItem(lastSelectedHandler.getName());
+            }
 
-                // listening on combobox selection
-                if (comboSelectListener == null)
-                    comboSelectListener = new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            if (event.getHandlers().size() > 0) {
-                                int i = eventCombo.getSelectedIndex();
-                                if (i >= 0) {
-                                    lastSelectedHandler = (EventHandler) event.getHandlers().get(i);
-                                    String selected = lastSelectedHandler.getName();
-                                    EventEditor.this.setValue(selected);
-                                    event.gotoEventHandler(selected);
-                                } 
+            // listening on combobox selection
+            if (comboSelectListener == null)
+                comboSelectListener = new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        if (event.getHandlers().size() > 0) {
+                            int i = eventCombo.getSelectedIndex();
+                            if (i >= 0) {
+                                lastSelectedHandler = (EventHandler) event.getHandlers().get(i);
+                                String selected = lastSelectedHandler.getName();
+                                EventEditor.this.setValue(selected);
+                                event.gotoEventHandler(selected);
+                            } 
+                        }
+                    }
+                };
+            eventCombo.addActionListener(comboSelectListener);
+
+            // listening on combobox focus
+            if (!EventProperty.this.isReadOnly()) {
+                eventCombo.addFocusListener(new FocusAdapter() {
+                    public void focusGained(FocusEvent evt) {
+                        Vector ehandlers = event.getHandlers();
+                        eventCombo.removeAllItems();
+                        if (ehandlers.size() == 0) {
+                            eventCombo.getEditor().setItem(FormUtils.getDefaultEventName(
+                                    event.getComponent(), event.getListenerMethod()));
+                        } else {
+                            for (int i=0, n = ehandlers.size(); i < n; i++) {
+                                eventCombo.addItem(((EventHandler) ehandlers.get(i)).getName());
                             }
+                            if (lastSelectedHandler != null)
+                                eventCombo.setSelectedItem(lastSelectedHandler.getName());
+                        }
+                    }
+                });
+
+                // listening on combobox's editor focus
+                if (comboEditFocusListener == null)
+                    comboEditFocusListener = new FocusAdapter() {
+                        public void focusLost(FocusEvent evt) {
+                            EventEditor.this.setValue(null);
                         }
                     };
-                eventCombo.addActionListener(comboSelectListener);
+                eventCombo.getEditor().getEditorComponent().addFocusListener(
+                                                   comboEditFocusListener);
 
-                // listening on combobox focus
-                if (!EventProperty.this.isReadOnly()) {
-                    eventCombo.addFocusListener(new FocusAdapter() {
-                        public void focusGained(FocusEvent evt) {
-                            Vector ehandlers = event.getHandlers();
-                            eventCombo.removeAllItems();
-                            if (ehandlers.size() == 0) {
-                                eventCombo.getEditor().setItem(FormUtils.getDefaultEventName(
-                                        event.getComponent(), event.getListenerMethod()));
-                            } else {
-                                for (int i=0, n = ehandlers.size(); i < n; i++) {
-                                    eventCombo.addItem(((EventHandler) ehandlers.get(i)).getName());
-                                }
-                                if (lastSelectedHandler != null)
-                                    eventCombo.setSelectedItem(lastSelectedHandler.getName());
-                            }
-                        }
-                    });
-
-                    // listening on combobox's editor focus
-                    if (comboEditFocusListener == null)
-                        comboEditFocusListener = new FocusAdapter() {
-                            public void focusLost(FocusEvent evt) {
-                                EventEditor.this.setValue(null);
-                            }
-                        };
-                    eventCombo.getEditor().getEditorComponent().addFocusListener(
-                                                       comboEditFocusListener);
-
-                    // listening on combobox's editor action
-                    eventCombo.getEditor().addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            eventCombo.removeActionListener(comboSelectListener);
-                            eventCombo.getEditor().getEditorComponent()
-                                .removeFocusListener(comboEditFocusListener);
-                            String selected = (String) eventCombo.getEditor().getItem();
-                            EventEditor.this.setValue(selected);
-                            if (!"".equals(selected))
-                                event.gotoEventHandler(selected);
-                        }
-                    });
-                }
-
-                return eventCombo;
+                // listening on combobox's editor action
+                eventCombo.getEditor().addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        eventCombo.removeActionListener(comboSelectListener);
+                        eventCombo.getEditor().getEditorComponent()
+                            .removeFocusListener(comboEditFocusListener);
+                        String selected = (String) eventCombo.getEditor().getItem();
+                        EventEditor.this.setValue(selected);
+                        if (!"".equals(selected))
+                            event.gotoEventHandler(selected);
+                    }
+                });
             }
+
+            return eventCombo;
+/*            }
             else {
                 final javax.swing.JTextField eventField = new javax.swing.JTextField();
                 if (handlers.size() > 0)
@@ -329,7 +329,7 @@ public class EventProperty extends PropertySupport.ReadWrite {
                 }
 
                 return eventField;
-            }
+            } */
         }
 
         /** @return true if this PropertyEditor provides a enhanced in-place
@@ -341,7 +341,7 @@ public class EventProperty extends PropertySupport.ReadWrite {
         }
 
         public boolean supportsCustomEditor() {
-            return advancedFeatures;
+            return true; //advancedFeatures;
 //                     && !EventProperty.this.isReadOnly();
         }
 

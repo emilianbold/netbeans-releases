@@ -41,8 +41,7 @@ public class EditFormAction extends NodeAction {
                                       radCookie.getRADComponent();
             if (metacomp instanceof RADVisualContainer) {
                 FormDesigner designer = metacomp.getFormModel().getFormDesigner();
-                designer.setTopDesignContainer((RADVisualContainer)
-                                metacomp.getFormModel().getTopRADComponent());
+                designer.resetTopDesignComponent();
                 designer.open();
                 designer.requestFocus();
             }
@@ -64,7 +63,7 @@ public class EditFormAction extends NodeAction {
                                       radCookie.getRADComponent();
             if (metacomp instanceof RADVisualContainer) {
                 FormModel formModel = metacomp.getFormModel();
-                return formModel.getFormDesigner().getTopDesignContainer()
+                return formModel.getFormDesigner().getTopDesignComponent()
                        != formModel.getTopRADComponent();
             }
         }

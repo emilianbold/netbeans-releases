@@ -14,14 +14,9 @@
 
 package org.netbeans.modules.form;
 
-import org.netbeans.modules.form.forminfo.FormInfo;
-
 /**
  *
  * @author  Ian Formanek
  */
 public interface FormContainer extends ComponentContainer {
-
-    public FormInfo getFormInfo();
-
 }

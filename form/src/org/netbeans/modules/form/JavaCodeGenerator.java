@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- *
+ * 
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- *
+ * 
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -26,8 +26,6 @@ import org.netbeans.modules.java.JavaEditor;
 
 import org.netbeans.modules.form.editors.CustomCodeEditor;
 import org.netbeans.modules.form.layoutsupport.LayoutSupport;
-import org.netbeans.modules.form.forminfo.MenuBarContainer;
-import org.netbeans.modules.form.forminfo.JMenuBarContainer;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -38,13 +36,6 @@ import java.io.Writer;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
-
-/* TODO
-   - Exception handling in guarded blocks - from FormSettings???, or as a property of formModel
-
-   - BeanContext support
-   - External Event Handlers
-*/
 
 /**
  * JavaCodeGenerator is the default code generator which produces a Java source
@@ -101,6 +92,8 @@ class JavaCodeGenerator extends CodeGenerator {
                    SharedClassObject.findObject(FormLoaderSettings.class, true);
 
     private FormModel formModel;
+    private FormEditorSupport formEditorSupport;
+
     private boolean initialized = false;
     private boolean canGenerate = true;
 
@@ -117,15 +110,18 @@ class JavaCodeGenerator extends CodeGenerator {
     public void initialize(FormModel formModel) {
         if (!initialized) {
             this.formModel = formModel;
-            if (!formModel.getFormDataObject().isReadOnly()) {
+            formEditorSupport = FormEditorSupport.getSupport(formModel);
+
+            if (!formModel.isReadOnly()) {
                 canGenerate = true;
                 formModel.addFormModelListener(new JCGFormListener());
             }
             else canGenerate = false;
 
-            FormEditorSupport s = formModel.getFormEditorSupport();
-            initComponentsSection = s.findSimpleSection(SECTION_INIT_COMPONENTS);
-            variablesSection = s.findSimpleSection(SECTION_VARIABLES);
+            initComponentsSection =
+                formEditorSupport.findSimpleSection(SECTION_INIT_COMPONENTS);
+            variablesSection =
+                formEditorSupport.findSimpleSection(SECTION_VARIABLES);
 
             if (initComponentsSection == null || variablesSection == null) {
                 System.out.println("ERROR: Cannot initialize guarded sections... code generation is disabled."); // NOI18N
@@ -171,279 +167,279 @@ class JavaCodeGenerator extends CodeGenerator {
             }
         };
 
-        if (!component.getFormModel().getFormEditorSupport().supportsAdvancedFeatures()) {
-            return new Node.Property[] { variableProperty };
-        }
-        else {
-            Node.Property[] props = new Node.Property[] {
-                variableProperty,
-                new PropertySupport.ReadWrite(
-                    "useDefaultModifiers",
-                    Boolean.TYPE,
-                    FormEditor.getFormBundle().getString("MSG_JC_UseDefaultMod"),
-                    FormEditor.getFormBundle().getString("MSG_JC_UseDefaultModDesc"))
-                {
-                    public void setValue(Object value) {
-                        if (!(value instanceof Boolean)) {
-                            throw new IllegalArgumentException();
+//        if (!component.getFormModel().getFormEditorSupport().supportsAdvancedFeatures()) {
+//            return new Node.Property[] { variableProperty };
+//        }
+//        else {
+        Node.Property[] props = new Node.Property[] {
+            variableProperty,
+            new PropertySupport.ReadWrite(
+                "useDefaultModifiers",
+                Boolean.TYPE,
+                FormEditor.getFormBundle().getString("MSG_JC_UseDefaultMod"),
+                FormEditor.getFormBundle().getString("MSG_JC_UseDefaultModDesc"))
+            {
+                public void setValue(Object value) {
+                    if (!(value instanceof Boolean)) {
+                        throw new IllegalArgumentException();
+                    }
+                    boolean useDefaultModifiers =((Boolean)value).booleanValue();
+                    if (useDefaultModifiers) {
+                        component.setAuxValue(AUX_VARIABLE_MODIFIER, null);
+                    } else {
+                        component.setAuxValue(AUX_VARIABLE_MODIFIER, new Integer(FormEditor.getFormSettings().getVariablesModifier()));
+                    }
+                    regenerateVariables();
+                    component.getNodeReference().fireComponentPropertiesChange();
+                    component.getNodeReference().fireComponentPropertySetsChange();
+                }
+
+                public Object getValue() {
+                    return new Boolean(component.getAuxValue(AUX_VARIABLE_MODIFIER) == null);
+                }
+
+                public boolean canWrite() {
+                    return JavaCodeGenerator.this.canGenerate;
+                }
+            },
+            new PropertySupport.ReadWrite(
+                "modifiers",
+                Integer.class,
+                FormEditor.getFormBundle().getString("MSG_JC_VariableModifiers"),
+                FormEditor.getFormBundle().getString("MSG_JC_VariableModifiersDesc"))
+            {
+                public void setValue(Object value) {
+                    if (!(value instanceof Integer)) {
+                        throw new IllegalArgumentException();
+                    }
+                    component.setAuxValue(AUX_VARIABLE_MODIFIER, value);
+                    regenerateVariables();
+                    component.getNodeReference().fireComponentPropertiesChange();
+                }
+
+                public Object getValue() {
+                    return component.getAuxValue(AUX_VARIABLE_MODIFIER);
+                }
+
+                public boolean canWrite() {
+                    return JavaCodeGenerator.this.canGenerate
+                           && component.getAuxValue(AUX_VARIABLE_MODIFIER) != null;
+                }
+
+                public PropertyEditor getPropertyEditor() {
+                    return new ModifierEditor(Modifier.PUBLIC
+                                              | Modifier.PROTECTED
+                                              | Modifier.PRIVATE
+                                              | Modifier.STATIC
+                                              | Modifier.FINAL
+                                              | Modifier.TRANSIENT
+                                              | Modifier.VOLATILE);
+                }
+            },
+            new PropertySupport.ReadWrite(
+                "codeGeneration",
+                Integer.TYPE,
+                FormEditor.getFormBundle().getString("MSG_JC_CodeGeneration"),
+                FormEditor.getFormBundle().getString("MSG_JC_CodeGenerationDesc"))
+            {
+                public void setValue(Object value) {
+                    if (!(value instanceof Integer)) {
+                        throw new IllegalArgumentException();
+                    }
+                    component.setAuxValue(AUX_CODE_GENERATION, value);
+                    if (value.equals(VALUE_SERIALIZE)) {
+                        if (component.getAuxValue(AUX_SERIALIZE_TO) == null) {
+                            component.setAuxValue(AUX_SERIALIZE_TO,
+                                                  getDefaultSerializedName(component));
                         }
-                        boolean useDefaultModifiers =((Boolean)value).booleanValue();
-                        if (useDefaultModifiers) {
-                            component.setAuxValue(AUX_VARIABLE_MODIFIER, null);
+                    }
+                    regenerateInitializer();
+                    component.getNodeReference().fireComponentPropertiesChange();
+                }
+
+                public Object getValue() {
+                    Object value = component.getAuxValue(AUX_CODE_GENERATION);
+                    if (value == null) {
+                        if (component.hasHiddenState()) {
+                            value = VALUE_SERIALIZE;
                         } else {
-                            component.setAuxValue(AUX_VARIABLE_MODIFIER, new Integer(FormEditor.getFormSettings().getVariablesModifier()));
+                            value = VALUE_GENERATE_CODE;
                         }
-                        regenerateVariables();
-                        component.getNodeReference().fireComponentPropertiesChange();
-                        component.getNodeReference().fireComponentPropertySetsChange();
                     }
-
-                    public Object getValue() {
-                        return new Boolean(component.getAuxValue(AUX_VARIABLE_MODIFIER) == null);
-                    }
-
-                    public boolean canWrite() {
-                        return JavaCodeGenerator.this.canGenerate;
-                    }
-                },
-                new PropertySupport.ReadWrite(
-                    "modifiers",
-                    Integer.class,
-                    FormEditor.getFormBundle().getString("MSG_JC_VariableModifiers"),
-                    FormEditor.getFormBundle().getString("MSG_JC_VariableModifiersDesc"))
-                {
-                    public void setValue(Object value) {
-                        if (!(value instanceof Integer)) {
-                            throw new IllegalArgumentException();
-                        }
-                        component.setAuxValue(AUX_VARIABLE_MODIFIER, value);
-                        regenerateVariables();
-                        component.getNodeReference().fireComponentPropertiesChange();
-                    }
-
-                    public Object getValue() {
-                        return component.getAuxValue(AUX_VARIABLE_MODIFIER);
-                    }
-
-                    public boolean canWrite() {
-                        return JavaCodeGenerator.this.canGenerate
-                               && component.getAuxValue(AUX_VARIABLE_MODIFIER) != null;
-                    }
-
-                    public PropertyEditor getPropertyEditor() {
-                        return new ModifierEditor(Modifier.PUBLIC
-                                                  | Modifier.PROTECTED
-                                                  | Modifier.PRIVATE
-                                                  | Modifier.STATIC
-                                                  | Modifier.FINAL
-                                                  | Modifier.TRANSIENT
-                                                  | Modifier.VOLATILE);
-                    }
-                },
-                new PropertySupport.ReadWrite(
-                    "codeGeneration",
-                    Integer.TYPE,
-                    FormEditor.getFormBundle().getString("MSG_JC_CodeGeneration"),
-                    FormEditor.getFormBundle().getString("MSG_JC_CodeGenerationDesc"))
-                {
-                    public void setValue(Object value) {
-                        if (!(value instanceof Integer)) {
-                            throw new IllegalArgumentException();
-                        }
-                        component.setAuxValue(AUX_CODE_GENERATION, value);
-                        if (value.equals(VALUE_SERIALIZE)) {
-                            if (component.getAuxValue(AUX_SERIALIZE_TO) == null) {
-                                component.setAuxValue(AUX_SERIALIZE_TO,
-                                                      getDefaultSerializedName(component));
-                            }
-                        }
-                        regenerateInitializer();
-                        component.getNodeReference().fireComponentPropertiesChange();
-                    }
-
-                    public Object getValue() {
-                        Object value = component.getAuxValue(AUX_CODE_GENERATION);
-                        if (value == null) {
-                            if (component.hasHiddenState()) {
-                                value = VALUE_SERIALIZE;
-                            } else {
-                                value = VALUE_GENERATE_CODE;
-                            }
-                        }
-                        return value;
-                    }
-
-                    public boolean canWrite() {
-                        return JavaCodeGenerator.this.canGenerate;
-                    }
-
-                    public PropertyEditor getPropertyEditor() {
-                        return new CodeGenerateEditor(component);
-                    }
-                },
-                new CodePropertySupportRW(
-                    "creationCodePre",
-                    String.class,
-                    FormEditor.getFormBundle().getString("MSG_JC_PreCreationCode"),
-                    FormEditor.getFormBundle().getString("MSG_JC_PreCreationCodeDesc"))
-                {
-                    public void setValue(Object value) {
-                        if (!(value instanceof String)) {
-                            throw new IllegalArgumentException();
-                        }
-                        component.setAuxValue(AUX_CREATE_CODE_PRE, value);
-                        regenerateInitializer();
-                        component.getNodeReference().fireComponentPropertiesChange();
-                    }
-
-                    public Object getValue() {
-                        Object value = component.getAuxValue(AUX_CREATE_CODE_PRE);
-                        if (value == null) {
-                            value = ""; // NOI18N
-                        }
-                        return value;
-                    }
-                },
-                new CodePropertySupportRW(
-                    "creationCodePost",
-                    String.class,
-                    FormEditor.getFormBundle().getString("MSG_JC_PostCreationCode"),
-                    FormEditor.getFormBundle().getString("MSG_JC_PostCreationCodeDesc"))
-                {
-                    public void setValue(Object value) {
-                        if (!(value instanceof String)) {
-                            throw new IllegalArgumentException();
-                        }
-                        component.setAuxValue(AUX_CREATE_CODE_POST, value);
-                        regenerateInitializer();
-                        component.getNodeReference().fireComponentPropertiesChange();
-                    }
-
-                    public Object getValue() {
-                        Object value = component.getAuxValue(AUX_CREATE_CODE_POST);
-                        if (value == null) {
-                            value = ""; // NOI18N
-                        }
-                        return value;
-                    }
-                },
-                new CodePropertySupportRW(
-                    "initCodePre",
-                    String.class,
-                    FormEditor.getFormBundle().getString("MSG_JC_PreInitCode"),
-                    FormEditor.getFormBundle().getString("MSG_JC_PreInitCodeDesc"))
-                {
-                    public void setValue(Object value) {
-                        if (!(value instanceof String)) {
-                            throw new IllegalArgumentException();
-                        }
-                        component.setAuxValue(AUX_INIT_CODE_PRE, value);
-                        regenerateInitializer();
-                        component.getNodeReference().fireComponentPropertiesChange();
-                    }
-
-                    public Object getValue() {
-                        Object value = component.getAuxValue(AUX_INIT_CODE_PRE);
-                        if (value == null) {
-                            value = ""; // NOI18N
-                        }
-                        return value;
-                    }
-                },
-                new CodePropertySupportRW(
-                    "initCodePost",
-                    String.class,
-                    FormEditor.getFormBundle().getString("MSG_JC_PostInitCode"),
-                    FormEditor.getFormBundle().getString("MSG_JC_PostInitCodeDesc"))
-                {
-                    public void setValue(Object value) {
-                        if (!(value instanceof String)) {
-                            throw new IllegalArgumentException();
-                        }
-                        component.setAuxValue(AUX_INIT_CODE_POST, value);
-                        regenerateInitializer();
-                        component.getNodeReference().fireComponentPropertiesChange();
-                    }
-
-                    public Object getValue() {
-                        Object value = component.getAuxValue(AUX_INIT_CODE_POST);
-                        if (value == null) {
-                            value = ""; // NOI18N
-                        }
-                        return value;
-                    }
-                },
-                new PropertySupport.ReadWrite(
-                    "serializeTo",
-                    String.class,
-                    FormEditor.getFormBundle().getString("MSG_JC_SerializeTo"),
-                    FormEditor.getFormBundle().getString("MSG_JC_SerializeToDesc"))
-                {
-                    public void setValue(Object value) {
-                        if (!(value instanceof String)) {
-                            throw new IllegalArgumentException();
-                        }
-                        component.setAuxValue(AUX_SERIALIZE_TO, value);
-                        regenerateInitializer();
-                        component.getNodeReference().fireComponentPropertiesChange();
-                    }
-
-                    public Object getValue() {
-                        Object value = component.getAuxValue(AUX_SERIALIZE_TO);
-                        if (value == null) {
-                            value = getDefaultSerializedName(component);
-                        }
-                        return value;
-                    }
-
-                    public boolean canWrite() {
-                        return JavaCodeGenerator.this.canGenerate;
-                    }
+                    return value;
                 }
-            };
 
-            Integer generationType =(Integer) component.getAuxValue(AUX_CODE_GENERATION);
-            if ((generationType == null) ||(generationType.equals(VALUE_GENERATE_CODE))) {
-                Node.Property[] moreProps = new Node.Property[props.length + 1];
-                for (int i=0, n=props.length; i<n; i++) {
-                    moreProps [i] = props [i];
+                public boolean canWrite() {
+                    return JavaCodeGenerator.this.canGenerate;
                 }
-                moreProps [moreProps.length -1] =
-                    new CodePropertySupportRW(
-                        "creationCodeCustom",
-                        String.class,
-                        FormEditor.getFormBundle().getString("MSG_JC_CustomCreationCode"),
-                        FormEditor.getFormBundle().getString("MSG_JC_CustomCreationCodeDesc"))
-                    {
-                        public void setValue(Object value) {
-                            if (!(value instanceof String)) {
-                                throw new IllegalArgumentException();
-                            }
-                            component.setAuxValue(AUX_CREATE_CODE_CUSTOM, value);
-                            regenerateInitializer();
-                            component.getNodeReference().fireComponentPropertiesChange();
-                        }
 
-                        public Object getValue() {
-                            Object value = component.getAuxValue(AUX_CREATE_CODE_CUSTOM);
-                            if (value == null) {
-                                value = ""; // NOI18N
-                            }
-                            return value;
-                        }
+                public PropertyEditor getPropertyEditor() {
+                    return new CodeGenerateEditor(component);
+                }
+            },
+            new CodePropertySupportRW(
+                "creationCodePre",
+                String.class,
+                FormEditor.getFormBundle().getString("MSG_JC_PreCreationCode"),
+                FormEditor.getFormBundle().getString("MSG_JC_PreCreationCodeDesc"))
+            {
+                public void setValue(Object value) {
+                    if (!(value instanceof String)) {
+                        throw new IllegalArgumentException();
+                    }
+                    component.setAuxValue(AUX_CREATE_CODE_PRE, value);
+                    regenerateInitializer();
+                    component.getNodeReference().fireComponentPropertiesChange();
+                }
 
-                        public boolean canWrite() {
-                            if (!JavaCodeGenerator.this.canGenerate)
-                                return false;
-                            Integer genType =(Integer)component.getAuxValue(AUX_CODE_GENERATION);
-                            return((genType == null) ||(genType.equals(VALUE_GENERATE_CODE)));
-                        }
-                    };
-                return moreProps;
-            } else {
-                return props;
+                public Object getValue() {
+                    Object value = component.getAuxValue(AUX_CREATE_CODE_PRE);
+                    if (value == null) {
+                        value = ""; // NOI18N
+                    }
+                    return value;
+                }
+            },
+            new CodePropertySupportRW(
+                "creationCodePost",
+                String.class,
+                FormEditor.getFormBundle().getString("MSG_JC_PostCreationCode"),
+                FormEditor.getFormBundle().getString("MSG_JC_PostCreationCodeDesc"))
+            {
+                public void setValue(Object value) {
+                    if (!(value instanceof String)) {
+                        throw new IllegalArgumentException();
+                    }
+                    component.setAuxValue(AUX_CREATE_CODE_POST, value);
+                    regenerateInitializer();
+                    component.getNodeReference().fireComponentPropertiesChange();
+                }
+
+                public Object getValue() {
+                    Object value = component.getAuxValue(AUX_CREATE_CODE_POST);
+                    if (value == null) {
+                        value = ""; // NOI18N
+                    }
+                    return value;
+                }
+            },
+            new CodePropertySupportRW(
+                "initCodePre",
+                String.class,
+                FormEditor.getFormBundle().getString("MSG_JC_PreInitCode"),
+                FormEditor.getFormBundle().getString("MSG_JC_PreInitCodeDesc"))
+            {
+                public void setValue(Object value) {
+                    if (!(value instanceof String)) {
+                        throw new IllegalArgumentException();
+                    }
+                    component.setAuxValue(AUX_INIT_CODE_PRE, value);
+                    regenerateInitializer();
+                    component.getNodeReference().fireComponentPropertiesChange();
+                }
+
+                public Object getValue() {
+                    Object value = component.getAuxValue(AUX_INIT_CODE_PRE);
+                    if (value == null) {
+                        value = ""; // NOI18N
+                    }
+                    return value;
+                }
+            },
+            new CodePropertySupportRW(
+                "initCodePost",
+                String.class,
+                FormEditor.getFormBundle().getString("MSG_JC_PostInitCode"),
+                FormEditor.getFormBundle().getString("MSG_JC_PostInitCodeDesc"))
+            {
+                public void setValue(Object value) {
+                    if (!(value instanceof String)) {
+                        throw new IllegalArgumentException();
+                    }
+                    component.setAuxValue(AUX_INIT_CODE_POST, value);
+                    regenerateInitializer();
+                    component.getNodeReference().fireComponentPropertiesChange();
+                }
+
+                public Object getValue() {
+                    Object value = component.getAuxValue(AUX_INIT_CODE_POST);
+                    if (value == null) {
+                        value = ""; // NOI18N
+                    }
+                    return value;
+                }
+            },
+            new PropertySupport.ReadWrite(
+                "serializeTo",
+                String.class,
+                FormEditor.getFormBundle().getString("MSG_JC_SerializeTo"),
+                FormEditor.getFormBundle().getString("MSG_JC_SerializeToDesc"))
+            {
+                public void setValue(Object value) {
+                    if (!(value instanceof String)) {
+                        throw new IllegalArgumentException();
+                    }
+                    component.setAuxValue(AUX_SERIALIZE_TO, value);
+                    regenerateInitializer();
+                    component.getNodeReference().fireComponentPropertiesChange();
+                }
+
+                public Object getValue() {
+                    Object value = component.getAuxValue(AUX_SERIALIZE_TO);
+                    if (value == null) {
+                        value = getDefaultSerializedName(component);
+                    }
+                    return value;
+                }
+
+                public boolean canWrite() {
+                    return JavaCodeGenerator.this.canGenerate;
+                }
             }
+        };
+
+        Integer generationType =(Integer) component.getAuxValue(AUX_CODE_GENERATION);
+        if ((generationType == null) ||(generationType.equals(VALUE_GENERATE_CODE))) {
+            Node.Property[] moreProps = new Node.Property[props.length + 1];
+            for (int i=0, n=props.length; i<n; i++) {
+                moreProps [i] = props [i];
+            }
+            moreProps [moreProps.length -1] =
+                new CodePropertySupportRW(
+                    "creationCodeCustom",
+                    String.class,
+                    FormEditor.getFormBundle().getString("MSG_JC_CustomCreationCode"),
+                    FormEditor.getFormBundle().getString("MSG_JC_CustomCreationCodeDesc"))
+                {
+                    public void setValue(Object value) {
+                        if (!(value instanceof String)) {
+                            throw new IllegalArgumentException();
+                        }
+                        component.setAuxValue(AUX_CREATE_CODE_CUSTOM, value);
+                        regenerateInitializer();
+                        component.getNodeReference().fireComponentPropertiesChange();
+                    }
+
+                    public Object getValue() {
+                        Object value = component.getAuxValue(AUX_CREATE_CODE_CUSTOM);
+                        if (value == null) {
+                            value = ""; // NOI18N
+                        }
+                        return value;
+                    }
+
+                    public boolean canWrite() {
+                        if (!JavaCodeGenerator.this.canGenerate)
+                            return false;
+                        Integer genType =(Integer)component.getAuxValue(AUX_CODE_GENERATION);
+                        return((genType == null) ||(genType.equals(VALUE_GENERATE_CODE)));
+                    }
+                };
+            return moreProps;
+        } else {
+            return props;
         }
+//        }
     }
 
     //
@@ -451,7 +447,7 @@ class JavaCodeGenerator extends CodeGenerator {
     //
 
     private String getDefaultSerializedName(RADComponent component) {
-        return component.getFormModel().getFormDataObject().getName()
+        return component.getFormModel().getName()
             + "_" + component.getName(); // NOI18N
     }
 
@@ -460,13 +456,13 @@ class JavaCodeGenerator extends CodeGenerator {
             return;
 
         IndentEngine indentEngine = IndentEngine.find(
-            formModel.getFormEditorSupport().getDocument());
+                                        formEditorSupport.getDocument());
 
         StringWriter initCodeBuffer = new StringWriter(1024);
         Writer initCodeWriter;
         if (formSettings.getUseIndentEngine())
             initCodeWriter = indentEngine.createWriter(
-                               formModel.getFormEditorSupport().getDocument(),
+                               formEditorSupport.getDocument(),
                                initComponentsSection.getBegin().getOffset(),
                                initCodeBuffer);
         else
@@ -496,26 +492,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 RADVisualFormContainer visualForm =
                     (RADVisualFormContainer) formModel.getTopRADComponent();
 
-                // 1. generate code for menu, if the form is menu bar container and has
-                // a menu associated
-
-                String menuComp = visualForm.getFormMenu();
-                if (menuComp != null) {
-                    //XXX initCodeWriter.write("\n"); // NOI18N
-                    String menuText = null;
-                    if (visualForm.getFormInfo() instanceof JMenuBarContainer) {
-                        menuText = "setJMenuBar("; // NOI18N
-                    } else if (visualForm.getFormInfo() instanceof MenuBarContainer) {
-                        menuText = "setMenuBar("; // NOI18N
-                    }
-                    if (menuText != null) {
-                        menuText = menuText + menuComp + ");\n"; // NOI18N
-                        initCodeWriter.write(menuText);
-                    }
-                }
-
-                // 2. generate size code according to form size policy
-
+                // generate size code according to form size policy
                 int formPolicy = visualForm.getFormSizePolicy();
                 boolean genSize = visualForm.getGenerateSize();
                 boolean genPosition = visualForm.getGeneratePosition();
@@ -582,15 +559,15 @@ class JavaCodeGenerator extends CodeGenerator {
     private void regenerateVariables() {
         if (!initialized || !canGenerate)
             return;
-
+        
         IndentEngine indentEngine = IndentEngine.find(
-            formModel.getFormEditorSupport().getDocument());
+                                        formEditorSupport.getDocument());
 
         StringWriter variablesBuffer = new StringWriter(1024);
         Writer variablesWriter;
         if (formSettings.getUseIndentEngine())
             variablesWriter = indentEngine.createWriter(
-                               formModel.getFormEditorSupport().getDocument(),
+                               formEditorSupport.getDocument(),
                                variablesSection.getBegin().getOffset(),
                                variablesBuffer);
         else
@@ -600,9 +577,10 @@ class JavaCodeGenerator extends CodeGenerator {
             variablesWriter.write(VARIABLES_HEADER);
             variablesWriter.write("\n"); // NOI18N
 
-            addVariables(formModel.getNonVisualsContainer(), variablesWriter);
-            addVariables((ComponentContainer)formModel.getTopRADComponent(),
-                         variablesWriter);
+            addVariables(formModel.getModelContainer(), variablesWriter);
+//            addVariables(formModel.getNonVisualsContainer(), variablesWriter);
+//            addVariables((ComponentContainer)formModel.getTopRADComponent(),
+//                         variablesWriter);
 
             variablesWriter.write(VARIABLES_FOOTER);
             variablesWriter.write("\n"); // NOI18N
@@ -634,6 +612,9 @@ class JavaCodeGenerator extends CodeGenerator {
     private void addCreateCode(RADComponent comp, Writer initCodeWriter)
         throws IOException
     {
+        if (comp == null)
+            return;
+
         if (!(comp instanceof FormContainer)) {
             generateComponentCreate(comp, initCodeWriter);
         }
@@ -648,30 +629,34 @@ class JavaCodeGenerator extends CodeGenerator {
     private void addInitCode(RADComponent comp,
                              Writer initCodeWriter,
                              int level) throws IOException {
+        if (comp == null)
+            return;
         generateComponentInit(comp, initCodeWriter);
         generateComponentEvents(comp, initCodeWriter);
 
         if (comp instanceof ComponentContainer) {
             RADComponent[] children =((ComponentContainer)comp).getSubBeans();
             for (int i = 0; i < children.length; i++) {
-                addInitCode(children[i], initCodeWriter, level);
+                RADComponent subcomp = children[i];
+                addInitCode(subcomp, initCodeWriter, level);
 
                 if (comp instanceof RADVisualContainer) {
-                    if (comp instanceof RADVisualFormContainer) {
-                        // no indent for top-level container
-                        //XXX initCodeWriter.write("\n"); // NOI18N
-                        generateComponentAddCode(children[i],(RADVisualContainer)comp, initCodeWriter);
-                    } else {
-                        generateComponentAddCode(children[i],(RADVisualContainer)comp, initCodeWriter);
-                    }
-                } else if (comp instanceof RADMenuComponent) {
-                    generateMenuAddCode(children[i],(RADMenuComponent)comp, initCodeWriter);
+                    // visual container
+                    generateComponentAddCode(subcomp,
+                                             (RADVisualContainer)comp,
+                                             initCodeWriter);
+                }
+                else if (comp instanceof RADMenuComponent) {
+                    // menu
+                    generateMenuAddCode(subcomp,
+                                        (RADMenuComponent) comp,
+                                        initCodeWriter);
                 } // [PENDING - adding to non-visual containers]
 
                 initCodeWriter.write("\n"); // NOI18N
             }
 
-            // hack for properties that can't be set until all children
+            // hack for properties that can't be set until all children 
             // are added to the container
             List postProps;
             if (containerDependentProperties != null
@@ -715,7 +700,8 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write(comp.getBeanClass().getName());
             initCodeWriter.write(")java.beans.Beans.instantiate(getClass().getClassLoader(), \""); // NOI18N
             // write package name
-            String packageName = formModel.getFormDataObject().getPrimaryFile().getParent().getPackageName('.');
+            String packageName = formEditorSupport.getFormDataObject()
+                            .getPrimaryFile().getParent().getPackageName('.');
             if (!"".equals(packageName)) { // NOI18N
                 initCodeWriter.write(packageName + "."); // NOI18N
             }
@@ -776,7 +762,7 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write(preCode);
             initCodeWriter.write("\n"); // NOI18N
         }
-        if (!comp.hasHiddenState()
+        if (!comp.hasHiddenState() 
                 && (genType == null || VALUE_GENERATE_CODE.equals(genType))) {
             // not serialized
             RADProperty[] props = comp.getAllBeanProperties();
@@ -819,14 +805,34 @@ class JavaCodeGenerator extends CodeGenerator {
     private void generateComponentAddCode(RADComponent comp,
                                           RADVisualContainer container,
                                           Writer initCodeWriter) throws IOException {
-        LayoutSupport layoutSupp = container.getLayoutSupport();
-        if (layoutSupp != null) {
-            initCodeWriter.write(
-                layoutSupp.getJavaAddComponentString((RADVisualComponent)comp));
-//                layoutSupp.getJavaAddComponentString(container, (RADVisualComponent)comp));
+        if (comp instanceof RADVisualComponent) {
+            LayoutSupport layoutSupp = container.getLayoutSupport();
+            if (layoutSupp != null) {
+                initCodeWriter.write(layoutSupp.getJavaAddComponentString(
+                                                    (RADVisualComponent)comp));
+            }
         }
-        else {
-            // XXX add fallback code here
+        else if (comp instanceof RADMenuComponent) {
+            String menuText;
+            RADMenuComponent menuComp = (RADMenuComponent) comp;
+            Class contClass = container.getBeanClass();
+
+            if (menuComp.getMenuItemType() == RADMenuItemComponent.T_JMENUBAR
+                    && javax.swing.RootPaneContainer.class.isAssignableFrom(contClass))
+                menuText = "setJMenuBar"; // NOI18N
+            else if (menuComp.getMenuItemType() == RADMenuItemComponent.T_MENUBAR
+                     && java.awt.Frame.class.isAssignableFrom(contClass))
+                menuText = "setMenuBar"; // NOI18N
+            else
+                menuText = null;
+
+            if (menuText != null) {
+                initCodeWriter.write(getVariableGenString(container));
+                initCodeWriter.write(menuText);
+                initCodeWriter.write("(");
+                initCodeWriter.write(menuComp.getName());
+                initCodeWriter.write(");\n");
+            }
         }
     }
 
@@ -1004,23 +1010,31 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private void addVariables(ComponentContainer cont, Writer variablesWriter) throws IOException {
         RADComponent[] children = cont.getSubBeans();
+        RADComponent topComp = formModel.getTopRADComponent();
 
         for (int i = 0; i < children.length; i++) {
-            if ((children[i] instanceof RADMenuItemComponent) &&(((RADMenuItemComponent)children[i]).getMenuItemType() == RADMenuItemComponent.T_SEPARATOR)) {
+            RADComponent comp = children[i];
+
+            if (comp instanceof RADMenuItemComponent
+                && ((RADMenuItemComponent)comp).getMenuItemType()
+                     == RADMenuItemComponent.T_SEPARATOR)
                 // treat AWT Separator specially - it is not a component
                 continue;
+
+            if (comp != topComp) {
+                Integer m = (Integer) comp.getAuxValue(AUX_VARIABLE_MODIFIER);
+                int modifiers = m != null ? m.intValue() :
+                            FormEditor.getFormSettings().getVariablesModifier();
+                variablesWriter.write(java.lang.reflect.Modifier.toString(modifiers));
+                variablesWriter.write(" "); // NOI18N
+                variablesWriter.write(comp.getBeanClass().getName());
+                variablesWriter.write(" "); // NOI18N
+                variablesWriter.write(comp.getName());
+                variablesWriter.write(";\n"); // NOI18N
             }
-            Integer m =(Integer) children[i].getAuxValue(AUX_VARIABLE_MODIFIER);
-            int modifiers =(m != null) ? m.intValue() : FormEditor.getFormSettings().getVariablesModifier();
-            variablesWriter.write(java.lang.reflect.Modifier.toString(modifiers));
-            variablesWriter.write(" "); // NOI18N
-            variablesWriter.write(children[i].getBeanClass().getName());
-            variablesWriter.write(" "); // NOI18N
-            variablesWriter.write(children[i].getName());
-            variablesWriter.write(";\n"); // NOI18N
-            if (children[i] instanceof ComponentContainer) {
-                addVariables((ComponentContainer)children[i], variablesWriter);
-            }
+
+            if (comp instanceof ComponentContainer)
+                addVariables((ComponentContainer)comp, variablesWriter);
         }
     }
 
@@ -1078,7 +1092,7 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write(varName);
             initCodeWriter.write(".printStackTrace();\n"); // NOI18N
             initCodeWriter.write("}"); // NOI18N
-
+                        
         }
         initCodeWriter.write("\n"); // NOI18N
     }
@@ -1099,15 +1113,19 @@ class JavaCodeGenerator extends CodeGenerator {
               || getEventHandlerSection(handlerName) != null)
             return false;
 
-        FormEditorSupport s = formModel.getFormEditorSupport();
-        IndentEngine engine = IndentEngine.find(s.getDocument());
+//        FormEditorSupport s = formModel.getFormEditorSupport();
+        IndentEngine engine = IndentEngine.find(formEditorSupport.getDocument());
         StringWriter buffer = new StringWriter();
-        Writer codeWriter = engine.createWriter(s.getDocument(),
-                                                initComponentsSection.getPositionAfter().getOffset(),
-                                                buffer);
+        Writer codeWriter = engine.createWriter(
+                        formEditorSupport.getDocument(),
+                        initComponentsSection.getPositionAfter().getOffset(),
+                        buffer);
+
         synchronized(GEN_LOCK) {
             try {
-                JavaEditor.InteriorSection sec = s.createInteriorSectionAfter(initComponentsSection, getEventSectionName(handlerName));
+                JavaEditor.InteriorSection sec =
+                    formEditorSupport.createInteriorSectionAfter(
+                        initComponentsSection, getEventSectionName(handlerName));
                 int i1, i2;
 
                 codeWriter.write(getEventHandlerHeader(handlerName, paramTypes, exceptTypes));
@@ -1124,7 +1142,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 sec.setBottom(buffer.getBuffer().substring(i2));
 
                 codeWriter.close();
-            }
+            } 
             catch (javax.swing.text.BadLocationException e) {
                 return false;
             }
@@ -1149,10 +1167,10 @@ class JavaCodeGenerator extends CodeGenerator {
         if (sec == null || !initialized || !canGenerate)
             return false;
 
-        FormEditorSupport s = formModel.getFormEditorSupport();
-        IndentEngine engine = IndentEngine.find(s.getDocument());
+//        FormEditorSupport s = formModel.getFormEditorSupport();
+        IndentEngine engine = IndentEngine.find(formEditorSupport.getDocument());
         StringWriter buffer = new StringWriter();
-        Writer codeWriter = engine.createWriter(s.getDocument(),
+        Writer codeWriter = engine.createWriter(formEditorSupport.getDocument(),
                                                 sec.getPositionBefore().getOffset(),
                                                 buffer);
         synchronized(GEN_LOCK) {
@@ -1263,10 +1281,10 @@ class JavaCodeGenerator extends CodeGenerator {
         if (sec == null || !initialized || !canGenerate)
             return false;
 
-        FormEditorSupport s = formModel.getFormEditorSupport();
-        IndentEngine engine = IndentEngine.find(s.getDocument());
+//        FormEditorSupport s = formModel.getFormEditorSupport();
+        IndentEngine engine = IndentEngine.find(formEditorSupport.getDocument());
         StringWriter buffer = new StringWriter();
-        Writer codeWriter = engine.createWriter(s.getDocument(),
+        Writer codeWriter = engine.createWriter(formEditorSupport.getDocument(),
                                                 sec.getPositionBefore().getOffset(),
                                                 buffer);
         synchronized(GEN_LOCK) {
@@ -1282,7 +1300,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 sec.setName(getEventSectionName(newHandlerName));
 
                 codeWriter.close();
-            }
+            } 
             catch (java.beans.PropertyVetoException e) {
                 return false;
             }
@@ -1299,11 +1317,11 @@ class JavaCodeGenerator extends CodeGenerator {
         JavaEditor.InteriorSection sec = getEventHandlerSection(handlerName);
         if (sec != null && initialized) {
             sec.openAt();
-            formModel.getFormEditorSupport().gotoEditor();
+            formEditorSupport.gotoEditor();
         }
     }
 
-    /**
+    /** 
      * Returns whether the specified event handler is empty (with no user
      * code). Empty handlers can be deleted without user confirmation.
      * @return true if the event handler exists and is empty
@@ -1323,14 +1341,14 @@ class JavaCodeGenerator extends CodeGenerator {
 
     /** Clears undo buffer after code generation */
     private void clearUndo() {
-        formModel.getFormEditorSupport().getUndoManager().discardAllEdits();
+        formEditorSupport.getUndoManager().discardAllEdits();
     }
 
     // sections acquirement
 
     private JavaEditor.InteriorSection getEventHandlerSection(String eventName) {
-        FormEditorSupport s = formModel.getFormEditorSupport();
-        return s.findInteriorSection(getEventSectionName(eventName));
+//        FormEditorSupport s = formModel.getFormEditorSupport();
+        return formEditorSupport.findInteriorSection(getEventSectionName(eventName));
     }
 
     // other
@@ -1384,7 +1402,7 @@ class JavaCodeGenerator extends CodeGenerator {
      * not necessary to regenerate the code.
      */
     private boolean needsRegeneration() {
-        FormDataObject fdo = formModel.getFormDataObject();
+        FormDataObject fdo = formEditorSupport.getFormDataObject();
         Entry primary = fdo.getPrimaryEntry();
         Entry form = fdo.formEntry;
 
@@ -1598,12 +1616,10 @@ class JavaCodeGenerator extends CodeGenerator {
         /** Called when the form is about to be saved */
 
         public void formToBeSaved(FormModelEvent e) {
-            serializeComponentsRecursively(formModel.getTopRADComponent());
-
-            RADComponent[] nonVisuals = formModel.getNonVisualComponents();
-            for (int i = 0; i < nonVisuals.length; i++) {
-                serializeComponentsRecursively(nonVisuals[i]);
-            }
+//            serializeComponentsRecursively(formModel.getTopRADComponent());
+            RADComponent[] components = formModel.getModelContainer().getSubBeans();
+            for (int i = 0; i < components.length; i++)
+                serializeComponentsRecursively(components[i]);
         }
 
         private void serializeComponentsRecursively(RADComponent comp) {
@@ -1613,7 +1629,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 String serializeTo =(String)comp.getAuxValue(AUX_SERIALIZE_TO);
                 if (serializeTo != null) {
                     try {
-                        FileObject fo = formModel.getFormDataObject().getPrimaryFile();
+                        FileObject fo = formEditorSupport.getFormDataObject().getPrimaryFile();
                         FileObject serFile = fo.getParent().getFileObject(serializeTo, "ser"); // NOI18N
                         if (serFile == null) {
                             serFile = fo.getParent().createData(serializeTo, "ser"); // NOI18N

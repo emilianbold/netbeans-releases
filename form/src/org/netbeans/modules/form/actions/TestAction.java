@@ -88,35 +88,12 @@ public class TestAction extends CallableSystemAction {
             Frame frame = (Frame)
                 FormDesigner.createContainerView(formContainer, frameClass);
 
-            // add menu bar with menus
-            String menuName = formContainer.getFormMenu();
-            if (menuName != null) {
-                RADMenuComponent menuBarComp = null;
-                java.util.List menus = formContainer.getAvailableMenus();
-                for (java.util.Iterator it=menus.iterator(); it.hasNext(); ) {
-                    RADComponent metacomp = (RADComponent) it.next();
-                    if (menuName.equals(metacomp.getName())) {
-                        menuBarComp = (RADMenuComponent) metacomp;
-                        break;
-                    }
-                }
-                if (menuBarComp != null) { // there's a valid menu bar - clone it
-                    Object menuBar = menuBarComp.cloneMenuInstance();
-                    if (frame instanceof JFrame) {
-                        if (menuBar instanceof JMenuBar)
-                            ((JFrame)frame).setJMenuBar((JMenuBar)menuBar);
-                    }
-                    else if (menuBar instanceof MenuBar)
-                        frame.setMenuBar((MenuBar)menuBar);
-                }
-            }
-
             // set title
             String title = frame.getTitle();
             if (title == null || "".equals(title))
                 frame.setTitle(java.text.MessageFormat.format(
                     NbBundle.getBundle(TestAction.class).getString("FMT_TestingForm"), // NOI18N
-                    new Object[] { formModel.getFormDataObject().getName() }
+                    new Object[] { formModel.getName() }
                 ));
 
             // prepare close operation
@@ -161,7 +138,7 @@ public class TestAction extends CallableSystemAction {
 
     public void setFormModel(FormModel model) {
         formModel = model;
-        setEnabled(formModel != null);
+        setEnabled(formModel != null); // [also test the top metacomponent]
     }
 
     private FormModel formModel;

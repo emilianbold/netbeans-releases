@@ -24,11 +24,11 @@ import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
-import org.openide.cookies.InstanceCookie;
-import org.openide.loaders.InstanceDataObject;
 
-import org.netbeans.modules.form.fakepeer.FakePeerSupport;
-
+/**
+ *
+ * @author Ian Formanek
+ */
 
 public class RADComponent implements FormDesignValue {
 
@@ -44,8 +44,6 @@ public class RADComponent implements FormDesignValue {
 
     // -----------------------------------------------------------------------------
     // Private variables
-
-    private RADComponentNode componentNode;
 
     private Class beanClass;
     private Object beanInstance;
@@ -66,8 +64,14 @@ public class RADComponent implements FormDesignValue {
     private HashMap auxValues;
     protected HashMap nameToProperty;
 
+    private RADComponent parentComponent;
+
     private FormModel formModel;
+
     private ComponentEventHandlers eventsList;
+
+    private RADComponentNode componentNode;
+
 //    private String gotoMethod;
 
     private String storedName; // component name preserved between Cut and Paste
@@ -87,6 +91,10 @@ public class RADComponent implements FormDesignValue {
     public void initialize(FormModel formModel) {
         this.formModel = formModel;
         readOnly = formModel.isReadOnly();
+    }
+
+    public void setParentComponent(RADComponent parentComp) {
+        parentComponent = parentComp;
     }
 
     /** Initializes the bean instance represented by this RADComponent.
@@ -228,12 +236,6 @@ public class RADComponent implements FormDesignValue {
      * other instance of another metacomponent needs to be modified too.
      */
     protected void setBeanInstance(Object beanInstance) {
-        if (beanInstance instanceof Component) {
-            boolean attached = FakePeerSupport.attachFakePeer((Component)beanInstance);
-            if (attached && beanInstance instanceof Container)
-                FakePeerSupport.attachFakePeerRecursively((Container)beanInstance);
-        }
-
         this.beanInstance = beanInstance;
     }
 
@@ -266,6 +268,24 @@ public class RADComponent implements FormDesignValue {
      */
     public final Object getBeanInstance() {
         return beanInstance;
+    }
+
+    public final RADComponent getParentComponent() {
+        return parentComponent;
+    }
+
+    public final boolean isParentComponent(RADComponent comp) {
+        if (comp == null)
+            return false;
+
+        do {
+            comp = comp.getParentComponent();
+            if (comp == this)
+                return true;
+        }
+        while (comp != null);
+
+        return false;
     }
 
     /** FormDesignValue implementation.
@@ -901,7 +921,7 @@ public class RADComponent implements FormDesignValue {
         public ButtonGroupPropertyEditor() {
             super();
             setBeanTypes(new Class[] { javax.swing.ButtonGroup.class });
-            setComponentCategory(NONVISUAL_COMPONENTS);
+            setComponentCategory(OTHER_COMPONENTS);
         }
     }
 }

@@ -33,6 +33,7 @@ public class RADContainer extends RADComponent implements ComponentContainer {
         subComponents = new ArrayList(initComponents.length);
         for (int i = 0; i < initComponents.length; i++) {
             subComponents.add(initComponents[i]);
+            initComponents[i].setParentComponent(this);
         }
     }
 
@@ -48,20 +49,17 @@ public class RADContainer extends RADComponent implements ComponentContainer {
                 subComponents.add(to, value);
             }
         }
-        getFormModel().fireComponentsReordered(this);
+//        getFormModel().fireComponentsReordered(this);
     }
 
     public void add(RADComponent comp) {
         subComponents.add(comp);
-        ((RADChildren)getNodeReference().getChildren()).updateKeys();
+        comp.setParentComponent(this);
     }
 
     public void remove(RADComponent comp) {
-        int index = subComponents.indexOf(comp);
-        if (index != -1) {
-            subComponents.remove(index);
-        }
-        ((RADChildren)getNodeReference().getChildren()).updateKeys();
+        if (subComponents.remove(comp))
+            comp.setParentComponent(null);
     }
 
     public int getIndexOf(RADComponent comp) {

@@ -31,21 +31,25 @@ import org.netbeans.modules.form.actions.*;
  * @author Tran Duc Trung, Tomas Pavek
  */
 
-public class LayoutNode extends AbstractNode implements FormLayoutCookie
+public class LayoutNode extends FormNode implements FormLayoutCookie
 {
     private LayoutSupport layoutSupport;
     
     public LayoutNode(RADVisualContainer cont) {
-        this(cont.getLayoutSupport());
+//        this(cont.getLayoutSupport());
+        super(Children.LEAF, cont.getFormModel());
+        layoutSupport = cont.getLayoutSupport();
+        setName(layoutSupport.getDisplayName());
+//        getCookieSet().add(this);
         cont.setLayoutNodeReference(this);
     }
 
-    public LayoutNode(LayoutSupport layoutSupport) {
+/*    public LayoutNode(LayoutSupport layoutSupport) {
         super(Children.LEAF);
         this.layoutSupport = layoutSupport;
         setName(layoutSupport.getDisplayName());
         getCookieSet().add(this);
-    }
+    } */
 
     public LayoutNode getLayoutNode() {
         return this;
@@ -77,7 +81,7 @@ public class LayoutNode extends AbstractNode implements FormLayoutCookie
             return false;
 
         RADVisualContainer container = layoutSupport.getContainer();
-        FormDesigner designer = container.getFormModel().getFormDesigner();
+        FormDesigner designer = getFormModel().getFormDesigner();
         return designer.isInDesignedTree(container);
     }
 
@@ -103,16 +107,19 @@ public class LayoutNode extends AbstractNode implements FormLayoutCookie
             return null;
     }
 
-    protected SystemAction [] createActions() {
-        ArrayList actions = new ArrayList();
+    protected SystemAction[] createActions() {
+        ArrayList actions = new ArrayList(10);
 
         if (!layoutSupport.getContainer().isReadOnly()) {
             actions.add(SystemAction.get(SelectLayoutAction.class));
 //            actions.add(SystemAction.get(CustomizeLayoutAction.class));
             actions.add(null);
-//        actions.add(SystemAction.get(ToolsAction.class));
         }
-        actions.add(SystemAction.get(PropertiesAction.class));
+
+        SystemAction[] superActions = super.createActions();
+        for (int i=0; i < superActions.length; i++)
+            actions.add(superActions[i]);
+//        actions.add(SystemAction.get(PropertiesAction.class));
 
         SystemAction[] array = new SystemAction[actions.size()];
         actions.toArray(array);
@@ -124,46 +131,22 @@ public class LayoutNode extends AbstractNode implements FormLayoutCookie
         String helpID = null;
         if (layoutClass != null) {
             if (layoutClass == BorderLayout.class)
-                helpID = "gui.layouts.managers.border";
+                helpID = "gui.layouts.managers.border"; // NOI18N
             else if (layoutClass == FlowLayout.class)
-                helpID = "gui.layouts.managers.flow";
+                helpID = "gui.layouts.managers.flow"; // NOI18N
             else if (layoutClass == GridLayout.class)
-                helpID = "gui.layouts.managers.grid";
+                helpID = "gui.layouts.managers.grid"; // NOI18N
             else if (layoutClass == GridBagLayout.class)
-                helpID = "gui.layouts.managers.gridbag";
+                helpID = "gui.layouts.managers.gridbag"; // NOI18N
             else if (layoutClass == CardLayout.class)
-                helpID = "gui.layouts.managers.card";
+                helpID = "gui.layouts.managers.card"; // NOI18N
             else if (layoutClass == javax.swing.BoxLayout.class)
-                helpID = "gui.layouts.managers.box";
+                helpID = "gui.layouts.managers.box"; // NOI18N
             else if (layoutClass == org.netbeans.lib.awtextra.AbsoluteLayout.class)
-                helpID = "gui.layouts.managers.absolute";
+                helpID = "gui.layouts.managers.absolute"; // NOI18N
         }
         if (helpID != null)
             return new HelpCtx(helpID);
         return super.getHelpCtx();
-    }
-
-    public Node.Cookie getCookie(Class type) {
-        Node.Cookie inh = super.getCookie(type);
-        if (inh != null)
-            return inh;
-        
-        if (CompilerCookie.class.isAssignableFrom(type) ||
-            SaveCookie.class.isAssignableFrom(type) ||
-            DataObject.class.isAssignableFrom(type) ||
-            ExecCookie.class.isAssignableFrom(type) ||
-            DebuggerCookie.class.isAssignableFrom(type) ||
-            CloseCookie.class.isAssignableFrom(type) ||
-            ArgumentsCookie.class.isAssignableFrom(type) ||
-            PrintCookie.class.isAssignableFrom(type))
-        {
-            RADVisualContainer container = layoutSupport.getContainer();
-            if (container == null)
-                return null;
-            
-            return container.getFormModel().getFormDataObject().getCookie(type);
-        }
-        else
-            return null;
     }
 }

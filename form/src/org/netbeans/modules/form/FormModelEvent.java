@@ -31,7 +31,7 @@ public class FormModelEvent extends EventObject
     private Object propertyNewValue;
     private LayoutSupport oldLayoutSupport;
     private LayoutSupport newLayoutSupport;
-    
+
     FormModelEvent(FormModel source) {
         super(source);
     }
@@ -41,6 +41,7 @@ public class FormModelEvent extends EventObject
                    String propName, Object propOldVal, Object propNewVal) {
         this(source);
         component = metacomp;
+        deriveContainer(metacomp);
         propertyName = propName;
         propertyOldValue = propOldVal;
         propertyNewValue = propNewVal;
@@ -58,6 +59,7 @@ public class FormModelEvent extends EventObject
                    RADComponent metacomp) {
         this(source);
         component = metacomp;
+        deriveContainer(metacomp);
     }
 
     FormModelEvent(FormModel source,
@@ -70,41 +72,51 @@ public class FormModelEvent extends EventObject
                    RADVisualContainer metacont,
                    LayoutSupport oldLayoutSupp, LayoutSupport newLayoutSupp) {
         this(source);
+        component = metacont;
         container = metacont;
         oldLayoutSupport = oldLayoutSupp;
         newLayoutSupport = newLayoutSupp;
     }
 
-    ComponentContainer getContainer() {
+    private void deriveContainer(RADComponent comp) {
+        if (comp.getParentComponent() instanceof ComponentContainer)
+            container = (ComponentContainer) comp.getParentComponent();
+        else if (comp.getParentComponent() == null)
+            container = comp.getFormModel().getModelContainer();
+    }
+
+    // -------
+
+    public final ComponentContainer getContainer() {
         return container;
     }
 
-    RADComponent getComponent() {
+    public final RADComponent getComponent() {
         return component;
     }
 
-    String getPropertyName() {
+    public final String getPropertyName() {
         return propertyName;
     }
 
-    RADProperty getComponentProperty() {
+    public final RADProperty getComponentProperty() {
         return component != null && propertyName != null ?
                component.getPropertyByName(propertyName) : null;
     }
 
-    Object getPropertyOldValue() {
+    public final Object getPropertyOldValue() {
         return propertyOldValue;
     }
 
-    Object getPropertyNewValue() {
+    public final Object getPropertyNewValue() {
         return propertyNewValue;
     }
 
-    LayoutSupport getOldLayoutSupport() {
+    public final LayoutSupport getOldLayoutSupport() {
         return oldLayoutSupport;
     }
 
-    LayoutSupport getNewLayoutSupport() {
+    public final LayoutSupport getNewLayoutSupport() {
         return newLayoutSupport;
     }
 }

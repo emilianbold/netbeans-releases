@@ -15,23 +15,25 @@ package org.netbeans.modules.form;
 
 import java.util.*;
 import java.beans.*;
-import java.awt.Component;
 
 import org.openide.nodes.*;
 import org.netbeans.modules.form.layoutsupport.LayoutSupport;
 import org.netbeans.modules.form.compat2.layouts.DesignLayout;
 
+import org.netbeans.modules.form.fakepeer.FakePeerSupport;
+
 /**
  *
  * @author Ian Formanek
  */
+
 public class RADVisualComponent extends RADComponent {
 
     // -----------------------------------------------------------------------------
     // Private properties
 
     private HashMap constraints = new HashMap();
-    transient private RADVisualContainer parent;
+//    transient private RADVisualContainer parent;
 
     private Node.Property[] constraintsProperties;
     private PropertyChangeListener constraintsListener;
@@ -39,25 +41,38 @@ public class RADVisualComponent extends RADComponent {
     // -----------------------------------------------------------------------------
     // Initialization
 
-    void initParent(RADVisualContainer parent) {
-        this.parent = parent;
+//    void initParent(RADVisualContainer parent) {
+//        this.parent = parent;
+//    }
+
+    protected void setBeanInstance(Object beanInstance) {
+        if (beanInstance instanceof java.awt.Component) {
+            boolean attached = FakePeerSupport.attachFakePeer(
+                                            (java.awt.Component)beanInstance);
+            if (attached && beanInstance instanceof java.awt.Container)
+                FakePeerSupport.attachFakePeerRecursively(
+                                            (java.awt.Container)beanInstance);
+        }
+
+        super.setBeanInstance(beanInstance);
     }
 
     // -----------------------------------------------------------------------------
     // Public interface
 
     /** @return The JavaBean visual component represented by this RADVisualComponent */
-    public Component getComponent() {
-        return(Component)getBeanInstance();
+    public java.awt.Component getComponent() { // [is it needed ???]
+        return (java.awt.Component) getBeanInstance();
     }
 
-    public RADVisualContainer getParentContainer() {
-        return parent;
+    public final RADVisualContainer getParentContainer() {
+        return (RADVisualContainer) getParentComponent();
     }
 
     /** @return The index of this component within all the subcomponents of its parent */
-    public int getComponentIndex() {
-        return getParentContainer().getIndexOf(this);
+    public int getComponentIndex() { // [is it needed ???]
+        return ((ComponentContainer)getParentComponent()).getIndexOf(this);
+//        return getParentContainer().getIndexOf(this);
     }
 
     // -----------------------------------------------------------------------------
@@ -77,11 +92,13 @@ public class RADVisualComponent extends RADComponent {
     }
 
     public LayoutSupport.ConstraintsDesc getCurrentConstraintsDesc() {
-        if (parent == null) return null;
-        LayoutSupport laySup = parent.getLayoutSupport();
-        if (laySup == null) return null;
-
-        return laySup.getConstraints(this);
+        RADVisualContainer parent = (RADVisualContainer) getParentComponent();
+        if (parent != null) {
+            LayoutSupport laySup = parent.getLayoutSupport();
+            if (laySup != null)
+                return laySup.getConstraints(this);
+        }
+        return null;
     }
 
     /** Setter for attaching old version of constraints description
@@ -205,8 +222,6 @@ public class RADVisualComponent extends RADComponent {
         }
     }
 
-    /** Called when parent's layout is changed (contstraints are changed too).
-     */
     void resetConstraintsProperties() {
         constraintsProperties = null;
         beanPropertySets = null;
@@ -227,9 +242,9 @@ public class RADVisualComponent extends RADComponent {
             super.propertyChange(evt);
 
             // re-add components to reflect changed constraints
-            RADVisualContainer parentCont = getParentContainer();
-            LayoutSupport laysup = parentCont.getLayoutSupport();
-            RADVisualComponent[] components = parentCont.getSubComponents();
+            RADVisualContainer parent = (RADVisualContainer) getParentComponent();
+            LayoutSupport laysup = parent.getLayoutSupport();
+            RADVisualComponent[] components = parent.getSubComponents();
 
             for (int i=0; i < components.length; i++)
                 laysup.removeComponent(components[i]);

@@ -11,21 +11,11 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form;
 
-import org.openide.*;
-import org.openide.nodes.*;
-import org.openide.explorer.propertysheet.editors.*;
-import org.netbeans.modules.form.compat2.layouts.*;
-import org.netbeans.modules.form.forminfo.*;
-
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import javax.swing.JMenuBar;
-import javax.swing.JComboBox;
-import java.util.Hashtable;
+
+import org.openide.nodes.*;
 
 /**
  * RADVisualFormContainer represents the top-level container of the form and
@@ -33,9 +23,9 @@ import java.util.Hashtable;
  *
  * @author Ian Formanek
  */
+
 public class RADVisualFormContainer extends RADVisualContainer implements FormContainer
 {
-    public static final String PROP_MENU_BAR = "menuBar"; // NOI18N
     public static final String PROP_FORM_SIZE_POLICY = "formSizePolicy"; // NOI18N
     public static final String PROP_FORM_SIZE = "formSize"; // NOI18N
     public static final String PROP_FORM_POSITION = "formPosition"; // NOI18N
@@ -43,40 +33,18 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     public static final String PROP_GENERATE_SIZE = "generateSize"; // NOI18N
     public static final String PROP_GENERATE_CENTER = "generateCenter"; // NOI18N
 
-    protected static final String AUX_MENU_COMPONENT = "RADVisualFormContainer_MenuComponent"; // NOI18N
-
     public static final int GEN_BOUNDS = 0;
     public static final int GEN_PACK = 1;
     public static final int GEN_NOTHING = 2;
 
-    /** Localized string for no menu. */
-    static final String NO_MENU = FormEditor.getFormBundle().getString("CTL_NoMenu");
-
-    private FormInfo formInfo;
-    private Container topContainer;
-    private Container topAddContainer;
-
     // Synthetic properties of form
-    private RADComponent menu;
-    private boolean menuInitialized = false;
-    private Dimension formSize = new Dimension(FormEditor.DEFAULT_FORM_WIDTH, FormEditor.DEFAULT_FORM_HEIGHT);
+    private Dimension formSize;// = new Dimension(FormEditor.DEFAULT_FORM_WIDTH, FormEditor.DEFAULT_FORM_HEIGHT);
     private Point formPosition;
     private boolean generatePosition = true;
     private boolean generateSize = true;
     private boolean generateCenter = true;
     private int formSizePolicy = GEN_NOTHING;
 
-    public RADVisualFormContainer(FormInfo formInfo) {
-        super();
-        this.formInfo = formInfo;
-        topContainer = formInfo.getTopContainer();
-        topAddContainer = formInfo.getTopAddContainer();
-    }
-
-    /** @return The JavaBean visual container represented by this RADVisualComponent */
-    public Container getContainer() {
-        return topAddContainer;
-    }
 
     public String getJavaContainerDelegateString() {
         String delegateGetter = getContainerDelegateGetterName();
@@ -87,18 +55,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             return "";          // NOI18N
     }
     
-    /**
-     * Called to create the instance of the bean. Default implementation
-     * simply creates instance of the bean's class using the default
-     * constructor.  Top-level container(the form object itself) will redefine
-     * this to use FormInfo to create the instance, as e.g. Dialogs cannot be
-     * created using the default constructor
-     * @return the instance of the bean that will be used during design time
-     */
-//    protected Object createBeanInstance() {
-//        return formInfo.getFormInstance();
-//    }
-
     /** Called to obtain a Java code to be used to generate code to access the
      * container for adding subcomponents.  It is expected that the returned
      * code is either ""(in which case the form is the container) or is a name
@@ -121,10 +77,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     // ------------------------------------------------------------------------------
     // Form synthetic properties
 
-    public FormInfo getFormInfo() {
-        return formInfo;
-    }
-
     /**
      * Getter for the Name property of the component - overriden to provide
      * non-null value, as the top-level component does not have a variable
@@ -143,70 +95,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         // noop in forms
     }
 
-    public String getFormMenu() {
-        if (!menuInitialized) {
-            String menuName =(String)getAuxValue(AUX_MENU_COMPONENT);
-            if (menuName != null) {
-                ArrayList list = getAvailableMenus();
-                for (Iterator it = list.iterator(); it.hasNext();) {
-                    RADComponent comp =(RADComponent)it.next();
-                    if (comp.getName().equals(menuName)) {
-                        menu = comp;
-                        break;
-                    }
-                }
-            }
-            menuInitialized = true;
-        }
-        if (menu == null) return null;
-        else return menu.getName();
-    }
-
-    public void setFormMenu(String value) {
-        setAuxValue(AUX_MENU_COMPONENT, value);
-
-        if (!getFormModel().isFormLoaded())
-            return;
-
-        FormDesigner designer = getFormModel().getFormDesigner();
-        
-        if (value == null) {
-            menu = null;
-            if (formInfo instanceof JMenuBarContainer) {
-                designer.setFormJMenuBar(null);
-            } else if (formInfo instanceof MenuBarContainer) {
-                designer.setFormMenuBar(null);
-            }
-        }
-        else {
-            ArrayList list = getAvailableMenus();
-            for (Iterator it = list.iterator(); it.hasNext();) {
-                RADComponent comp =(RADComponent)it.next();
-                if (comp.getName().equals(value)) {
-                    menu = comp;
-                }
-            }
-
-            if (menu == null)
-                return;
-            
-            Object menubar = menu.getBeanInstance();
-            
-            if (formInfo instanceof JMenuBarContainer
-                && menubar instanceof JMenuBar) {
-                designer.setFormJMenuBar((JMenuBar) menubar);
-            }
-            else if (formInfo instanceof MenuBarContainer
-                     && menu.getBeanInstance() instanceof MenuBar) {
-                designer.setFormMenuBar((MenuBar)menubar);
-            }
-        }
-//        getFormModel().fireFormChanged();
-    }
-
     public Point getFormPosition() {
         if (formPosition == null) {
-            formPosition = topContainer.getLocation();
+            formPosition = new Point(0,0);//topContainer.getLocation();
         }
         return formPosition;
     }
@@ -220,7 +111,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
     public Dimension getFormSize() {
         if (formSize == null) {
-            formSize = topContainer.getSize();
+            formSize = new Dimension(300, 200); //topContainer.getSize();
         }
         return formSize;
     }
@@ -269,14 +160,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     public int getFormSizePolicy() {
-        if (formInfo instanceof JAppletFormInfo
-            || formInfo instanceof AppletFormInfo
-            || formInfo instanceof JPanelFormInfo
-            || formInfo instanceof PanelFormInfo) {
-            return GEN_NOTHING;
-        }
-
-        return formSizePolicy;
+        return java.awt.Window.class.isAssignableFrom(getBeanClass()) ?
+               formSizePolicy : GEN_NOTHING;
     }
 
     public void setFormSizePolicy(int value) {
@@ -291,13 +176,16 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     // End of form synthetic properties
 
     protected Node.Property[] createSyntheticProperties() {
-        if (!getFormModel().getFormEditorSupport().supportsAdvancedFeatures()) {
-            if ((formInfo instanceof JMenuBarContainer) ||(formInfo instanceof MenuBarContainer)) {
-                return new Node.Property[] { createMenuProperty() } ;
-            } else {
-                return new Node.Property[0];
-            }
-        }
+/*        if (!getFormModel().getFormEditorSupport().supportsAdvancedFeatures()) {
+            return getFormMenuType() > 0 ?
+                     new Node.Property[] { createMenuProperty() } :
+                     new Node.Property[] { };
+//            if ((formInfo instanceof JMenuBarContainer) ||(formInfo instanceof MenuBarContainer)) {
+//                return new Node.Property[] { createMenuProperty() } ;
+//            } else {
+//                return new Node.Property[0];
+//            }
+        } */
 
         Node.Property policyProperty = new PropertySupport.ReadWrite(PROP_FORM_SIZE_POLICY, Integer.TYPE,
                                                                      FormEditor.getFormBundle().getString("MSG_FormSizePolicy"),
@@ -420,85 +308,20 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             }
         };
 
-        // the order of if's is important, JAppletFormInfo implements
-        // JMenuBarContainer
+        java.util.List propList = new java.util.ArrayList();
 
-        if (formInfo instanceof JAppletFormInfo) {
-            return new Node.Property[] { createMenuProperty() };
+        if (java.awt.Window.class.isAssignableFrom(getBeanClass())) {
+            propList.add(sizeProperty);
+            propList.add(positionProperty);
+            propList.add(policyProperty);
+            propList.add(genPositionProperty);
+            propList.add(genSizeProperty);
+            propList.add(genCenterProperty);
         }
-        else if (formInfo instanceof AppletFormInfo
-                 || formInfo instanceof PanelFormInfo
-                 || formInfo instanceof JPanelFormInfo) {
-            return new Node.Property[] { };
-        }
-        else if (formInfo instanceof JMenuBarContainer
-                 || formInfo instanceof MenuBarContainer) {
-            return new Node.Property[] { createMenuProperty(),
-                                         sizeProperty,
-                                         positionProperty,
-                                         policyProperty,
-                                         genPositionProperty,
-                                         genSizeProperty,
-                                         genCenterProperty
-            };
-        }
-        else {
-            return new Node.Property[] { sizeProperty,
-                                         positionProperty,
-                                         policyProperty,
-                                         genPositionProperty,
-                                         genSizeProperty,
-                                         genCenterProperty
-            };
-        }
-    }
 
-    private Node.Property createMenuProperty() {
-        return new PropertySupport.ReadWrite(PROP_MENU_BAR, String.class,
-                                             FormEditor.getFormBundle().getString("MSG_MenuBar"),
-                                             FormEditor.getFormBundle().getString("MSG_MenuBarDesc")) {
-            public Object getValue() throws
-                IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                String s = getFormMenu();
-                return(s == null) ? NO_MENU : s;
-            }
-
-            public void setValue(Object val) throws IllegalAccessException,
-                                                    IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                if (!(val instanceof String)) throw new IllegalArgumentException();
-                Object old = getFormMenu();
-                String s = (String) val;
-                setFormMenu(s.equals(NO_MENU) ? null : s);
-                getFormModel().fireSyntheticPropertyChanged(
-                        RADVisualFormContainer.this, PROP_MENU_BAR, old, val);
-            }
-
-            public boolean canWrite() {
-                return !isReadOnly();
-            }
-
-            /** Editor for alignment */
-            public java.beans.PropertyEditor getPropertyEditor() {
-                return new FormMenuEditor();
-            }
-        };
-    }
-
-    public ArrayList getAvailableMenus() {
-        ArrayList list = new ArrayList();
-        RADComponent[] comps = getFormModel().getNonVisualComponents();
-        int size = comps.length;
-        boolean swing =(formInfo instanceof JMenuBarContainer);
-
-        for (int i = 0; i < size; i++) {
-            if (comps[i] instanceof RADMenuComponent) {
-                RADMenuComponent n =(RADMenuComponent) comps[i];
-                if ((swing &&(n.getMenuItemType() == RADMenuComponent.T_JMENUBAR)) ||
-                    (!swing &&(n.getMenuItemType() == RADMenuComponent.T_MENUBAR)))
-                    list.add(n);
-            }
-        }
-        return list;
+        Node.Property[] props = new Node.Property[propList.size()];
+        propList.toArray(props);
+        return props;
     }
 
     // ------------------------------------------------------------------------------------------
@@ -533,34 +356,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                 setValue(new Integer(1));
             else if (names[2].equals(str))
                 setValue(new Integer(2));
-        }
-    }
-
-    final public class FormMenuEditor extends java.beans.PropertyEditorSupport {
-
-        /** @return names of the possible directions */
-        public String[] getTags() {
-            ArrayList list = getAvailableMenus();
-            RADComponent[] comps = new RADComponent [list.size()];
-            list.toArray(comps);
-            String[] names = new String[comps.length + 1];
-            names[0] = NO_MENU; // No Menu
-            for (int i = 0; i < comps.length; i++) {
-                names[i+1] = comps[i].getName();
-            }
-            return names;
-        }
-
-        /** @return text for the current value */
-        public String getAsText() {
-            return(String)getValue();
-        }
-
-        /** Setter.
-         * @param str string equal to one value from directions array
-         */
-        public void setAsText(String str) {
-            setValue(str);
         }
     }
 }

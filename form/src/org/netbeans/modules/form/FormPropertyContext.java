@@ -57,9 +57,9 @@ public interface FormPropertyContext {
 
         public boolean useMultipleEditors() {
             FormModel formModel = getFormModel();
-            return formModel != null ?
-                     formModel.getFormEditorSupport().supportsAdvancedFeatures() :
-                     false;
+            return formModel != null;
+//                     formModel.getFormEditorSupport().supportsAdvancedFeatures() :
+//                     false;
         }
         
         public void initPropertyEditor(PropertyEditor prEd) {

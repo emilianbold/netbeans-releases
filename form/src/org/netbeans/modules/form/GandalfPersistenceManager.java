@@ -28,14 +28,14 @@ import org.openide.util.io.NbObjectInputStream;
 
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.compat2.layouts.*;
-import org.netbeans.modules.form.forminfo.*;
 
 /**
  *
  * @author Ian Formanek
  */
 public class GandalfPersistenceManager extends PersistenceManager {
-    public static final String CURRENT_VERSION = "1.0"; // NOI18N
+    public static final String NB32_VERSION = "1.0"; // NOI18N
+    public static final String CURRENT_VERSION = "1.1"; // NOI18N
 
     public static final String XML_FORM = "Form"; // NOI18N
     public static final String XML_NON_VISUAL_COMPONENTS = "NonVisualComponents"; // NOI18N
@@ -87,6 +87,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private Map containerDependentProperties;
 
     private FileObject formFile;
+
+    private String formInfoName; // name of FormInfo class loaded from the form file
+    private String formatVersion; // format version for saving the form file
 
 
     /** A method which allows the persistence manager to provide infotrmation
@@ -236,45 +239,52 @@ public class GandalfPersistenceManager extends PersistenceManager {
         } catch (org.xml.sax.SAXException e) {
             throw new IOException(e.getMessage());
         }
-        //    walkTree(mainElement, ""); // NOI18N
-        // A. Do various checks
 
         // 1. check the top-level element name
-        if (!XML_FORM.equals(mainElement.getTagName())) {
+        if (!XML_FORM.equals(mainElement.getTagName()))
             throw new IOException(FormEditor.getFormBundle().getString("ERR_BadXMLFormat"));
-        }
 
         // 2. check the form version
-        if (!CURRENT_VERSION.equals(mainElement.getAttribute(ATTR_FORM_VERSION))) {
+        String version = mainElement.getAttribute(ATTR_FORM_VERSION);
+        if (!NB32_VERSION.equals(version) && !CURRENT_VERSION.equals(version))
             throw new IOException(FormEditor.getFormBundle().getString("ERR_BadXMLVersion"));
-        }
-        String infoClass = mainElement.getAttribute(ATTR_FORM_TYPE);
-        FormInfo formInfo = null;
-        if (infoClass == null) {
-            return null;
-        }
-        try {
-            formInfo =(FormInfo) PersistenceObjectRegistry.createInstance(infoClass);
-        } catch (Exception e) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                e.printStackTrace();
-            throw new IOException(
-                java.text.MessageFormat.format(
-                    FormEditor.getFormBundle().getString("FMT_ERR_FormInfoNotFound"),
-                    new String[] { infoClass }
-                    )
-                );
-        }
 
-        //XXX RADForm radForm = new RADForm(formInfo);
+        formInfoName = mainElement.getAttribute(ATTR_FORM_TYPE);
+
         FormModel formModel = new FormModel();
-        formModel.setFormDataObject(formObject);
-        formModel.setFormInfo(formInfo);
-        //XXX formModel.setEncoding(encoding);
-        RADVisualContainer topComp =(RADVisualContainer) formModel.getTopRADComponent();
+        formModel.setName(formObject.getName());
 
-        // B. process top-element's subnodes(all required)
+        try {
+            formModel.initialize(formObject.getSource());
+        }
+        catch (Throwable ex) {
+            if (ex instanceof ThreadDeath)
+                throw (ThreadDeath) ex;
+            ex.printStackTrace();
+        }
 
+        if (formModel.getFormBaseClass() == null) {
+            // derive the form type from the FormInfo type saved in form file
+            // [user should be warned that the form type is not taken from java]
+            Class formClass = getCompatibleFormClass(formInfoName);
+            if (formClass != null) {
+                try {
+                    System.out.println("[WARNING] Form type detection falls back to FormInfo type."); // NOI18N
+                    formModel.setFormBaseClass(formClass);
+                }
+                catch (Throwable ex) {
+                    if (ex instanceof ThreadDeath)
+                        throw (ThreadDeath) ex;
+                    ex.printStackTrace();
+                }
+            }
+
+            if (formModel.getFormBaseClass() == null) {
+                // cannot determine form base class
+                throw new IOException(FormEditor.getFormBundle()
+                                      .getString("MSG_ERR_FormType")); // NOI18N
+            }
+        }
         org.w3c.dom.NodeList childNodes = mainElement.getChildNodes();
         if (childNodes == null) {
             throw new IOException(FormEditor.getFormBundle().getString("ERR_BadXMLFormat"));
@@ -283,274 +293,249 @@ public class GandalfPersistenceManager extends PersistenceManager {
         containerDependentProperties = null;
 
         loadNonVisuals(mainElement, formModel);
-        loadContainer(mainElement, formModel, topComp, null);
+
+        RADComponent topComp = formModel.getTopRADComponent();
+        if (topComp != null) {
+            try {
+                loadComponent(mainElement, topComp);
+                if (topComp instanceof ComponentContainer)
+                    loadContainer(mainElement, topComp);
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
 
         containerDependentProperties = null;
 
-        formModel.fireFormLoaded();
         return formModel;
     }
 
-    private boolean loadNonVisuals(org.w3c.dom.Node node, FormModel formModel2) {
-        org.w3c.dom.Node nonVisualsNode = findSubNode(node, XML_NON_VISUAL_COMPONENTS);
-        org.w3c.dom.NodeList childNodes =(nonVisualsNode == null) ? null : nonVisualsNode.getChildNodes();
-        //    System.out.println("NonVisual children: "+childNodes); // NOI18N
+    private void loadNonVisuals(org.w3c.dom.Node node, FormModel formModel) {
+        org.w3c.dom.Node nonVisualsNode =
+                                findSubNode(node, XML_NON_VISUAL_COMPONENTS);
+        org.w3c.dom.NodeList childNodes = nonVisualsNode == null ? null :
+                                          nonVisualsNode.getChildNodes();
         ArrayList list = new ArrayList();
+
         if (childNodes != null) {
-            //    System.out.println("NonVisual children len: "+childNodes.getLength()); // NOI18N
             for (int i = 0; i < childNodes.getLength(); i++) {
-                if (childNodes.item(i).getNodeType() == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
-                //        System.out.println("Processing node: "+childNodes.item(i).getNodeName()); // NOI18N
-                if (XML_COMPONENT.equals(childNodes.item(i).getNodeName())) {
-                    RADComponent comp = new RADComponent();
-                    if (loadComponent(childNodes.item(i), formModel2, comp, null)) {
-                        list.add(comp);
-                    }
-                } else if (XML_CONTAINER.equals(childNodes.item(i).getNodeName())) {
-                    RADContainer cont = new RADContainer();
-                    if (loadContainer(childNodes.item(i), formModel2, cont, null)) {
-                        list.add(cont);
-                    }
-                } else if (XML_MENU_COMPONENT.equals(childNodes.item(i).getNodeName())) {
-                    //          System.out.println("$$$MenuItem"); // NOI18N
-                    RADMenuItemComponent comp = new RADMenuItemComponent();
-                    if (loadComponent(childNodes.item(i), formModel2, comp, null)) {
-                        list.add(comp);
-                    }
-                } else if (XML_MENU_CONTAINER.equals(childNodes.item(i).getNodeName())) {
-                    //          System.out.println("$$$Menu"); // NOI18N
-                    RADMenuComponent cont = new RADMenuComponent();
-                    if (loadContainer(childNodes.item(i), formModel2, cont, null)) {
-                        list.add(cont);
-                    }
-                }
+                org.w3c.dom.Node subnode = childNodes.item(i);
+                if (subnode.getNodeType() == org.w3c.dom.Node.TEXT_NODE)
+                    continue; // ignore text nodes
+
+                RADComponent comp = restoreComponent(subnode, formModel);
+                if (comp != null)
+                    list.add(comp);
             }
         }
 
         RADComponent[] nonVisualComps = new RADComponent[list.size()];
         list.toArray(nonVisualComps);
-        formModel2.initNonVisualComponents(nonVisualComps);
-        return true;
+        formModel.getModelContainer().initSubComponents(nonVisualComps);
     }
 
-    private boolean loadComponent(org.w3c.dom.Node node,
-                                  FormModel formModel2,
-                                  RADComponent comp,
-                                  ComponentContainer parentContainer) {
+    // recognizes, creates, initializes and loads a meta component
+    private RADComponent restoreComponent(org.w3c.dom.Node node,
+                                          FormModel formModel) {
+        String className = findAttribute(node, ATTR_COMPONENT_CLASS);
+        String compName = findAttribute(node, ATTR_COMPONENT_NAME);
+
         try {
-            Class compClass = null;
-            if (!(comp instanceof FormContainer)) {
-                comp.initialize(formModel2);
-                String className = findAttribute(node, ATTR_COMPONENT_CLASS);
-                String compName = findAttribute(node, ATTR_COMPONENT_NAME);
-                try {
-                    compClass = PersistenceObjectRegistry.loadClass(className);
-                } catch (Exception e) {
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                        e.printStackTrace();
+            Class compClass = PersistenceObjectRegistry.loadClass(className);
 
-                    FormEditor.fileError(java.text.MessageFormat.format(
-                        FormEditor.getFormBundle().getString("FMT_ERR_ClassNotFound"),
-                        new Object [] {
-                            e.getMessage(),
-                            e.getClass().getName(),
-                        }
-                        ), e);
-                    return false; // failed to load the component!!!
-                }
-//                comp.setComponent(compClass);
-                comp.initInstance(compClass);
-                comp.setName(compName);
+            RADComponent newComp;
+
+            if (XML_COMPONENT.equals(node.getNodeName())) {
+                if (java.awt.Component.class.isAssignableFrom(compClass))
+                    newComp = new RADVisualComponent();
+                else newComp = new RADComponent();
             }
-
-            org.w3c.dom.NodeList childNodes = node.getChildNodes();
-            if (childNodes == null)
-                return true;
-
-            for (int i = 0; i < childNodes.getLength(); i++) {
-                org.w3c.dom.Node componentNode = childNodes.item(i);
-                if (componentNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
-
-                if (XML_PROPERTIES.equals(componentNode.getNodeName())) {
-                    loadProperties(componentNode, comp);
-                }
-                else if (XML_EVENTS.equals(componentNode.getNodeName())) {
-                    Collection events = loadEvents(componentNode);
-                    if (events != null) {
-                        comp.getEventHandlers().initEvents(events);
-                    }
-                }
-                else if (XML_AUX_VALUES.equals(componentNode.getNodeName())) {
-                    HashMap auxValues = loadAuxValues(componentNode);
-                    if (auxValues != null) {
-                        for (Iterator it = auxValues.keySet().iterator(); it.hasNext();) {
-                            String auxName =(String)it.next();
-                            comp.setAuxValue(auxName, auxValues.get(auxName));
-                        }
-
-                        // if the component is serialized, deserialize it
-                        if (JavaCodeGenerator.VALUE_SERIALIZE.equals(
-                                auxValues.get(JavaCodeGenerator.AUX_CODE_GENERATION)))
-                        {
-                            try {
-                                String serFile = (String) auxValues.get(
-                                                 JavaCodeGenerator.AUX_SERIALIZE_TO);
-                                if (serFile == null)
-                                    serFile = formFile.getName() + "_" + comp.getName(); // NOI18N
-
-                                String serName = formFile.getParent().getPackageName('.');
-                                if (!"".equals(serName)) // NOI18N
-                                    serName += "."; // NOI18N
-                                serName += serFile;
-
-                                Object instance = Beans.instantiate(
-                                    TopManager.getDefault().currentClassLoader(),
-                                    serName);
-
-                                comp.setInstance(instance);
-                            }
-                            catch (Exception ex) { // ignore
-                                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                                    ex.printStackTrace();
-                            }
-                        }
-                    }
-                }
-                else if (XML_SYNTHETIC_PROPERTIES.equals(componentNode.getNodeName())) {
-                    loadSyntheticProperties(componentNode, comp);
-                }
+            else if (XML_MENU_COMPONENT.equals(node.getNodeName())) {
+                newComp = new RADMenuItemComponent();
             }
+            else if (XML_MENU_CONTAINER.equals(node.getNodeName())) {
+                newComp = new RADMenuComponent();
+            }
+            else if (XML_CONTAINER.equals(node.getNodeName())) {
+                if (java.awt.Container.class.isAssignableFrom(compClass))
+                    newComp = new RADVisualContainer();
+                else newComp = new RADContainer();
+            }
+            else return null;
 
-            return true;
+            newComp.initialize(formModel);
+            newComp.initInstance(compClass);
+            newComp.setName(compName);
+
+            loadComponent(node, newComp);
+            if (newComp instanceof ComponentContainer)
+                loadContainer(node, newComp);
+
+            return newComp;
         }
-        catch (Exception e) {
+        catch (Exception ex) { // or Throwable?
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                e.printStackTrace();
-            return false; // [PENDING - undo already processed init?]
+                ex.printStackTrace();
+
+            FormEditor.fileError(
+                java.text.MessageFormat.format(
+                    FormEditor.getFormBundle().getString("FMT_ERR_ComponentLoading"), // NOI18N
+                    new Object [] { compName,
+                                    ex.getMessage(),
+                                    ex.getClass().getName() }),
+                ex);
+
+            return null;
         }
     }
 
-    private boolean loadVisualComponent(org.w3c.dom.Node node,
-                                        FormModel formModel,
-                                        RADVisualComponent comp,
-                                        ComponentContainer parentContainer) {
+    private void loadComponent(org.w3c.dom.Node node,
+                               RADComponent comp)
+    throws Exception {
+        org.w3c.dom.NodeList childNodes = node.getChildNodes();
+        if (childNodes == null)
+            return;
 
-        if (!loadComponent(node, formModel, comp, parentContainer))
-            return false;
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            org.w3c.dom.Node componentNode = childNodes.item(i);
+            if (componentNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE)
+                continue; // ignore text nodes
 
-        if (comp instanceof FormContainer)
-            return true;
+            if (XML_PROPERTIES.equals(componentNode.getNodeName())) {
+                loadProperties(componentNode, comp);
+            }
+            else if (XML_EVENTS.equals(componentNode.getNodeName())) {
+                Collection events = loadEvents(componentNode);
+                if (events != null) {
+                    comp.getEventHandlers().initEvents(events);
+                }
+            }
+            else if (XML_AUX_VALUES.equals(componentNode.getNodeName())) {
+                HashMap auxValues = loadAuxValues(componentNode);
+                if (auxValues != null) {
+                    for (Iterator it = auxValues.keySet().iterator(); it.hasNext();) {
+                        String auxName =(String)it.next();
+                        comp.setAuxValue(auxName, auxValues.get(auxName));
+                    }
 
-        // load constraints
+                    // if the component is serialized, deserialize it
+                    if (JavaCodeGenerator.VALUE_SERIALIZE.equals(
+                            auxValues.get(JavaCodeGenerator.AUX_CODE_GENERATION)))
+                    {
+                        try {
+                            String serFile = (String) auxValues.get(
+                                             JavaCodeGenerator.AUX_SERIALIZE_TO);
+                            if (serFile == null)
+                                serFile = formFile.getName() + "_" + comp.getName(); // NOI18N
+
+                            String serName = formFile.getParent().getPackageName('.');
+                            if (!"".equals(serName)) // NOI18N
+                                serName += "."; // NOI18N
+                            serName += serFile;
+
+                            Object instance = Beans.instantiate(
+                                TopManager.getDefault().currentClassLoader(),
+                                serName);
+
+                            comp.setInstance(instance);
+                        }
+                        catch (Exception ex) { // ignore
+                            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                                ex.printStackTrace();
+                        }
+                    }
+                }
+            }
+            else if (XML_SYNTHETIC_PROPERTIES.equals(componentNode.getNodeName())) {
+                loadSyntheticProperties(componentNode, comp);
+            }
+        }
+
+        if (!(comp instanceof RADVisualComponent))
+            return; // not a visual component
+
         org.w3c.dom.Node constraintsNode = findSubNode(node, XML_CONSTRAINTS);
-        if (constraintsNode != null) {
-            org.w3c.dom.Node[] constrNodes = findSubNodes(constraintsNode, XML_CONSTRAINT);
-            for (int i = 0; i < constrNodes.length; i++) {
-                String designLayoutName = findAttribute(constrNodes[i],
-                                                        ATTR_CONSTRAINT_LAYOUT);
-                String cdName = findAttribute(constrNodes[i],
-                                              ATTR_CONSTRAINT_VALUE);
-                if (designLayoutName == null || cdName == null)
-                    continue;
+        if (constraintsNode == null)
+            return; // no constraints
 
-                try {
-                    DesignLayout.ConstraintsDescription cd =
-                        (DesignLayout.ConstraintsDescription)
-                        PersistenceObjectRegistry.createInstance(cdName);
+        // load layout constraints of the visual component
+        RADVisualComponent vcomp = (RADVisualComponent) comp;
 
-                    org.w3c.dom.NodeList children = constrNodes[i].getChildNodes();
-                    if (children != null) {
-                        for (int j = 0; j < children.getLength(); j++) {
-                            if (children.item(j).getNodeType()
-                                    == org.w3c.dom.Node.ELEMENT_NODE) {
-                                cd.readFromXML(children.item(j));
-                                break;
-                            }
-                        }
-                    }
+        org.w3c.dom.Node[] constrNodes = findSubNodes(constraintsNode, XML_CONSTRAINT);
+        for (int i = 0; i < constrNodes.length; i++) {
+            org.w3c.dom.Node constrNode = constrNodes[i];
+            String designLayoutName = findAttribute(constrNode,
+                                                    ATTR_CONSTRAINT_LAYOUT);
+            String cdName = findAttribute(constrNode,
+                                          ATTR_CONSTRAINT_VALUE);
+            if (designLayoutName == null || cdName == null)
+                continue;
 
-                    String layoutSupportName = Compat31LayoutFactory
-                             .getCompatibleLayoutSupportName(designLayoutName);
-                    if (layoutSupportName != null) { // convert constraints
-                        LayoutSupport.ConstraintsDesc lsDesc =
-                            Compat31LayoutFactory.createCompatibleConstraints(cd);
-                        if (lsDesc != null) // use converted constraints for LayoutSupport
-                            comp.setConstraintsDesc(PersistenceObjectRegistry
-                                        .loadClass(layoutSupportName), lsDesc);
+            DesignLayout.ConstraintsDescription cd =
+                (DesignLayout.ConstraintsDescription)
+                    PersistenceObjectRegistry.createInstance(cdName);
+
+            org.w3c.dom.NodeList children = constrNode.getChildNodes();
+            if (children != null) {
+                for (int j = 0; j < children.getLength(); j++) {
+                    if (children.item(j).getNodeType()
+                            == org.w3c.dom.Node.ELEMENT_NODE) {
+                        cd.readFromXML(children.item(j));
+                        break;
                     }
-                    else { // use the original constraints (of DesignLayout)
-                        comp.setConstraints(PersistenceObjectRegistry
-                                             .loadClass(designLayoutName), cd);
-                    }
-                }
-                catch (Exception e) { // ignore and try another constraints
-                    if (Boolean.getBoolean("netbeans.debug.exceptions"))
-                        e.printStackTrace(); // NOI18N
-                    // [PENDING - add to errors list]
                 }
             }
-        }
 
-        return true;
+            String layoutSupportName = Compat31LayoutFactory
+                     .getCompatibleLayoutSupportName(designLayoutName);
+
+            if (layoutSupportName != null) { // convert constraints
+                LayoutSupport.ConstraintsDesc lsDesc =
+                    Compat31LayoutFactory.createCompatibleConstraints(cd);
+                if (lsDesc != null) { // use converted constraints for LayoutSupport
+                    ((RADVisualComponent)comp).setConstraintsDesc(
+                        PersistenceObjectRegistry.loadClass(layoutSupportName),
+                        lsDesc);
+                }
+            }
+            else { // use the original constraints (of DesignLayout)
+                ((RADVisualComponent)comp).setConstraints(
+                    PersistenceObjectRegistry.loadClass(designLayoutName), cd);
+            }
+        }
     }
 
-    private boolean loadContainer(org.w3c.dom.Node node,
-                                  FormModel formModel,
-                                  RADComponent comp,
-                                  ComponentContainer parentContainer) {
-        if (comp instanceof RADVisualComponent) {
-            if (!loadVisualComponent(node, formModel,(RADVisualComponent)comp, parentContainer))
-                return false;
-        } else {
-            if (!loadComponent(node, formModel, comp, parentContainer))
-                return false;
-        }
+    // expects that the component has been already loaded by loadComponent(...)
+    private void loadContainer(org.w3c.dom.Node node,
+                               RADComponent comp)
+    throws Exception {
+        if (!(comp instanceof ComponentContainer))
+            return;
 
-        //        System.out.println("1..."); // NOI18N
-        if (comp instanceof ComponentContainer) {
-            //        System.out.println("2..."); // NOI18N
-            org.w3c.dom.Node subCompsNode = findSubNode(node, XML_SUB_COMPONENTS);
-            org.w3c.dom.NodeList children = null;
-            if (subCompsNode != null) children = subCompsNode.getChildNodes();
-            //        System.out.println("3..."); // NOI18N
-            if (children != null) {
-                //        System.out.println("4..."); // NOI18N
-                ArrayList list = new ArrayList();
-                for (int i = 0; i < children.getLength(); i++) {
-                    org.w3c.dom.Node componentNode = children.item(i);
-                    //        System.out.println("Processing node: "+componentNode.getNodeName()); // NOI18N
-                    if (componentNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
+        org.w3c.dom.Node subCompsNode = findSubNode(node, XML_SUB_COMPONENTS);
+        org.w3c.dom.NodeList children = null;
+        if (subCompsNode != null)
+            children = subCompsNode.getChildNodes();
+        if (children != null) {
+            ArrayList list = new ArrayList();
+            for (int i = 0; i < children.getLength(); i++) {
+                org.w3c.dom.Node componentNode = children.item(i);
+                if (componentNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE)
+                    continue; // ignore text nodes
 
-                    if (XML_COMPONENT.equals(componentNode.getNodeName())) {  // [PENDING - visual x non-visual]
-                        RADVisualComponent newComp = new RADVisualComponent();
-                        if (loadVisualComponent(componentNode, formModel, newComp,(ComponentContainer)comp)) {
-                            list.add(newComp);
-                        }
-                    } else if (XML_MENU_COMPONENT.equals(componentNode.getNodeName())) {  // [PENDING - visual x non-visual]
-                        RADMenuItemComponent newComp = new RADMenuItemComponent();
-                        //        System.out.println("Processing menu node: "+componentNode.getNodeName()); // NOI18N
-                        if (loadContainer(componentNode, formModel, newComp,(ComponentContainer)comp)) {
-                            list.add(newComp);
-                        }
-                    } else if (XML_MENU_CONTAINER.equals(componentNode.getNodeName())) {  // [PENDING - visual x non-visual]
-                        RADMenuComponent newComp = new RADMenuComponent();
-                        //        System.out.println("Processing menu container node: "+componentNode.getNodeName()); // NOI18N
-                        if (loadContainer(componentNode, formModel, newComp,(ComponentContainer)comp)) {
-                            list.add(newComp);
-                        }
-                    } else {
-                        RADVisualContainer newComp = new RADVisualContainer();
-                        if (loadContainer(componentNode, formModel, newComp,(ComponentContainer)comp)) {
-                            list.add(newComp);
-                        }
-                    }
-                }
-                RADComponent[] childComps = new RADComponent[list.size()];
-                list.toArray(childComps);
-                ((ComponentContainer)comp).initSubComponents(childComps);
-            } else {
-                ((ComponentContainer)comp).initSubComponents(new RADComponent[0]);
+                RADComponent newComp = restoreComponent(componentNode,
+                                                        comp.getFormModel());
+                if (newComp != null)
+                    list.add(newComp);
             }
+
+            RADComponent[] childComps = new RADComponent[list.size()];
+            list.toArray(childComps);
+            ((ComponentContainer)comp).initSubComponents(childComps);
+        }
+        else {
+            ((ComponentContainer)comp).initSubComponents(new RADComponent[0]);
         }
 
         if (comp instanceof RADVisualContainer) {
@@ -558,38 +543,39 @@ public class GandalfPersistenceManager extends PersistenceManager {
             if (layoutNode != null
                     && LayoutSupportRegistry.getLayoutSupportForContainer(
                                                 comp.getBeanClass()) == null) {
-                String className = findAttribute(layoutNode, ATTR_LAYOUT_CLASS);
-                try {
-                    DesignLayout dl =(DesignLayout)
-                        PersistenceObjectRegistry.createInstance(className);
+                String dlClassName = findAttribute(layoutNode, ATTR_LAYOUT_CLASS);
+//                try {
+                DesignLayout dl = (DesignLayout)
+                    PersistenceObjectRegistry.createInstance(dlClassName);
 
-                    org.w3c.dom.Node[] propNodes = findSubNodes(layoutNode, XML_PROPERTY);
-                    if (propNodes.length > 0) {
-                        HashMap propsMap = new HashMap(propNodes.length * 2);
-                        for (int i = 0; i < propNodes.length; i++) {
-                            try {
-                                Object propValue = getEncodedPropertyValue(propNodes[i], null);
-                                String propName = findAttribute(propNodes[i], ATTR_PROPERTY_NAME);
-                                if ((propName != null) &&(propValue != null) &&(propValue != NO_VALUE)) {
-                                    propsMap.put(propName, propValue);
-                                }
-                            } catch (Exception e) {
-                                if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
-                                // ignore property with problem
-                                // [PENDING - notify problem]
+                org.w3c.dom.Node[] propNodes = findSubNodes(layoutNode, XML_PROPERTY);
+                if (propNodes.length > 0) {
+                    HashMap propsMap = new HashMap(propNodes.length * 2);
+                    for (int i = 0; i < propNodes.length; i++) {
+                        try {
+                            Object propValue = getEncodedPropertyValue(propNodes[i], null);
+                            String propName = findAttribute(propNodes[i], ATTR_PROPERTY_NAME);
+                            if ((propName != null) &&(propValue != null) &&(propValue != NO_VALUE)) {
+                                propsMap.put(propName, propValue);
                             }
+                        } catch (Exception e) {
+                            if (Boolean.getBoolean("netbeans.debug.exceptions"))
+                                e.printStackTrace(); // NOI18N
+                            // ignore property with problem
+                            // [PENDING - notify problem]
                         }
-                        dl.initChangedProperties(propsMap);
-                        dl.setRADContainer((RADVisualContainer)comp);
                     }
-                    LayoutSupport layoutSupp =
-                        Compat31LayoutFactory.createCompatibleLayoutSupport(dl);
-                    ((RADVisualContainer)comp).setLayoutSupport(layoutSupp);
-                } catch (Exception e) {
-                    // if (System.getProperty("netbeans.debug.exceptions") != null) // [PENDING]
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
-                    return false; // [PENDING - notify]
+                    dl.initChangedProperties(propsMap);
+                    dl.setRADContainer((RADVisualContainer)comp);
                 }
+                LayoutSupport layoutSupp =
+                    Compat31LayoutFactory.createCompatibleLayoutSupport(dl);
+                ((RADVisualContainer)comp).setLayoutSupport(layoutSupp);
+//                } catch (Exception e) {
+//                    // if (System.getProperty("netbeans.debug.exceptions") != null) // [PENDING]
+//                    if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
+//                    return false; // [PENDING - notify]
+//                }
             }
             else { // no layout saved, or it is a dedicated layout support
                 ((RADVisualContainer)comp).initLayoutSupport();
@@ -601,7 +587,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         List postProps;
         if (containerDependentProperties != null
             && (postProps = (List) containerDependentProperties
-                                   .get(comp)) != null)
+                                       .get(comp)) != null)
         {
             for (Iterator it = postProps.iterator(); it.hasNext(); ) {
                 RADProperty prop = (RADProperty) it.next();
@@ -615,8 +601,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 }
             }
         }
-
-        return true;
     }
 
     private void loadProperties(org.w3c.dom.Node node, RADComponent comp) {
@@ -729,6 +713,26 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
                     // [PENDING - handle error]
                 }
+
+                // compatibility hack for loading form's menu bar
+                if ("menuBar".equals(propName) && propValue instanceof String
+                    && comp instanceof RADVisualFormContainer)
+                {
+                    RADComponent[] nvComps = comp.getFormModel().getNonVisualComponents();
+                    for (int j=0; j < nvComps.length; j++)
+                        if (nvComps[j] instanceof RADMenuComponent
+                            && propValue.equals(nvComps[j].getName()))
+                        {
+                            RADMenuComponent menuComp = (RADMenuComponent) nvComps[j];
+                            RADVisualFormContainer formCont = (RADVisualFormContainer) comp;
+                            menuComp.getFormModel().removeComponent(menuComp);
+                            formCont.add(menuComp);
+                            menuComp.setParentComponent(formCont);
+                            break;
+                        }
+                    continue;
+                }
+
                 //System.out.println("......encoded to:"+propValue); // NOI18N
 
                 Node.Property [] props = comp.getSyntheticProperties();
@@ -847,107 +851,163 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         try {
             lock = formFile.lock();
-            StringBuffer buf = new StringBuffer();
+            StringBuffer buf1 = new StringBuffer();
+            StringBuffer buf2 = new StringBuffer();
 
-            // 1.store XML file header
-            buf.append("<?xml version=\"1.0\""); // NOI18N
-            buf.append(" encoding=\"" + encoding + "\""); // NOI18N
-            buf.append(" ?>\n"); // NOI18N
-            buf.append("\n"); // NOI18N
+            // start with the lowest version; if there is nothing in the
+            // form that requires higher format version, then the form file
+            // will be compatible with NB 3.2
+            formatVersion = NB32_VERSION;
 
-            // 2.store Form element
-            addElementOpenAttr(
-                buf,
-                XML_FORM,
-                new String[] { ATTR_FORM_VERSION, ATTR_FORM_TYPE },
-                new String[] { CURRENT_VERSION,
-                               PersistenceObjectRegistry.getPrimaryName(
-                                   manager.getFormInfo()) }
-                );
+            RADComponent topComp = manager.getTopRADComponent();
+            RADVisualFormContainer formCont =
+                topComp instanceof RADVisualFormContainer ?
+                    (RADVisualFormContainer) topComp : null;
 
-            // 3.store Non-Visual Components
+            // store XML file header
+            buf1.append("<?xml version=\"1.0\" encoding=\"");
+            buf1.append(encoding);
+            buf1.append("\" ?>\n\n"); // NOI18N
+
+            // store "Other Components"
             RADComponent[] nonVisuals = manager.getNonVisualComponents();
-            if (nonVisuals.length > 0) {
-                buf.append(ONE_INDENT); addElementOpen(buf, XML_NON_VISUAL_COMPONENTS);
-                for (int i = 0; i < nonVisuals.length; i++) {
-                    String elementType;
 
-                    if (nonVisuals[i] instanceof RADMenuComponent) elementType = XML_MENU_CONTAINER;
-                    else if (nonVisuals[i] instanceof RADMenuItemComponent) elementType = XML_MENU_COMPONENT;
-                    else if (nonVisuals[i] instanceof ComponentContainer) elementType = XML_CONTAINER;
-                    else elementType = XML_COMPONENT;
-
-                    buf.append(ONE_INDENT + ONE_INDENT);
-                    addElementOpenAttr(
-                        buf,
-                        elementType,
-                        new String[] { ATTR_COMPONENT_CLASS, ATTR_COMPONENT_NAME },
-                        new String[] { nonVisuals[i].getBeanClass().getName(), nonVisuals[i].getName() }
-                        );
-
-                    if (nonVisuals[i] instanceof RADMenuItemComponent) {
-                        saveMenuComponent((RADMenuItemComponent)nonVisuals[i], buf, ONE_INDENT + ONE_INDENT + ONE_INDENT);
-                    } else if (nonVisuals[i] instanceof ComponentContainer) {
-                        saveContainer((ComponentContainer)nonVisuals[i], buf, ONE_INDENT + ONE_INDENT + ONE_INDENT);
-                    } else {
-                        saveComponent(nonVisuals[i], buf, ONE_INDENT + ONE_INDENT + ONE_INDENT);
-                    }
-
-                    buf.append(ONE_INDENT + ONE_INDENT); addElementClose(buf, elementType);
-                }
-                buf.append(ONE_INDENT); addElementClose(buf, XML_NON_VISUAL_COMPONENTS);
+            // compatibility hack for saving form's menu bar (part I)
+            if (formCont != null && formCont.getContainerMenu() != null) {
+                RADComponent[] comps = new RADComponent[nonVisuals.length + 1];
+                System.arraycopy(nonVisuals, 0, comps, 0, nonVisuals.length);
+                comps[nonVisuals.length] = formCont.getContainerMenu();
+                nonVisuals = comps;
             }
-            // 4.store form and its visual components hierarchy
-            saveContainer((ComponentContainer)manager.getTopRADComponent(), buf, ONE_INDENT);
-            addElementClose(buf, XML_FORM);
+
+            if (nonVisuals.length > 0) {
+                buf2.append(ONE_INDENT);
+                addElementOpen(buf2, XML_NON_VISUAL_COMPONENTS);
+
+                for (int i = 0; i < nonVisuals.length; i++)
+                    saveAnyComponent(nonVisuals[i],
+                                     buf2, ONE_INDENT + ONE_INDENT,
+                                     true);
+
+                buf2.append(ONE_INDENT);
+                addElementClose(buf2, XML_NON_VISUAL_COMPONENTS);
+            }
+
+            // store form main hierarchy
+            if (topComp != null) {
+                saveAnyComponent(topComp, buf2, ONE_INDENT, false);
+
+                if (!(topComp instanceof RADVisualContainer))
+                    raiseFormatVersion(CURRENT_VERSION);
+            }
+            addElementClose(buf2, XML_FORM);
+
+            // determine FormInfo type (for backward compatibility)
+            String compatFormInfo = getCompatibleFormInfoName(
+                                                   manager.getFormBaseClass(),
+                                                   formInfoName);
+
+            // add form specification element at the beginning of the form file
+            // (this is done in the end because the required form version is
+            // not determined until all data is saved)
+            if (compatFormInfo == null) {
+                raiseFormatVersion(CURRENT_VERSION);
+
+                addElementOpenAttr(buf1, XML_FORM,
+                    new String[] { ATTR_FORM_VERSION },
+                    new String[] { formatVersion });
+            }
+            else {
+                addElementOpenAttr(buf1, XML_FORM,
+                    new String[] { ATTR_FORM_VERSION, ATTR_FORM_TYPE },
+                    new String[] { formatVersion, compatFormInfo });
+            }
 
             os = formFile.getOutputStream(lock); // [PENDING - first save to ByteArray for safety]
-            os.write(buf.toString().getBytes(encoding));
-        } finally {
+            os.write(buf1.toString().getBytes(encoding));
+            os.write(buf2.toString().getBytes(encoding));
+        }
+        finally {
             if (os != null) os.close();
             if (lock != null) lock.releaseLock();
         }
     }
 
+    private void raiseFormatVersion(String ver) {
+        if (NB32_VERSION.equals(formatVersion) && CURRENT_VERSION.equals(ver))
+            formatVersion = CURRENT_VERSION;
+    }
+
+    private void saveAnyComponent(RADComponent comp,
+                                  StringBuffer buf,
+                                  String indent,
+                                  boolean createElement) {
+        String elementType = null;
+        String elementIndent = indent;
+        if (createElement) {
+            if (comp instanceof RADMenuComponent)
+                elementType = XML_MENU_CONTAINER;
+            else if (comp instanceof RADMenuItemComponent)
+                elementType = XML_MENU_COMPONENT;
+            else if (comp instanceof ComponentContainer)
+                elementType = XML_CONTAINER;
+            else elementType = XML_COMPONENT;
+
+            buf.append(elementIndent);
+            addElementOpenAttr(buf, elementType,
+                new String[] { ATTR_COMPONENT_CLASS,
+                               ATTR_COMPONENT_NAME },
+                new String[] { comp.getBeanClass().getName(),
+                               comp.getName() });
+
+            indent += ONE_INDENT;
+        }
+
+        if (comp instanceof RADMenuItemComponent) {
+            saveMenuComponent((RADMenuItemComponent) comp, buf, indent);
+        }
+        else if (comp instanceof ComponentContainer) {
+            saveContainer((ComponentContainer) comp, buf, indent);
+        }
+        else if (comp instanceof RADVisualComponent) {
+            saveVisualComponent((RADVisualComponent) comp, buf, indent);
+        }
+        else {
+            saveComponent(comp, buf, indent);
+        }
+
+        if (createElement) {
+            buf.append(elementIndent);
+            addElementClose(buf, elementType);
+        }
+    }
 
     private void saveContainer(ComponentContainer container, StringBuffer buf, String indent) {
+        RADComponent[] children = null;
+
         if (container instanceof RADVisualContainer) {
             saveVisualComponent((RADVisualComponent)container, buf, indent);
             saveLayout(((RADVisualContainer)container).getLayoutSupport(), buf, indent);
-        } else {
-            saveComponent((RADComponent)container, buf, indent);
-        }
-        RADComponent[] children = container.getSubBeans();
+
+            // compatibility hack for saving form's menu bar (part II)
+            if (container instanceof RADVisualFormContainer)
+                children = ((RADVisualContainer)container).getSubComponents();
+        } 
+        else saveComponent((RADComponent)container, buf, indent);
+
+        if (children == null)
+            children = container.getSubBeans();
+
         if (children.length > 0) {
             buf.append(indent); addElementOpen(buf, XML_SUB_COMPONENTS);
             for (int i = 0; i < children.length; i++) {
-                if (children[i] instanceof ComponentContainer) {
-                    buf.append(indent + ONE_INDENT);
-                    addElementOpenAttr(
-                        buf,
-                        XML_CONTAINER,
-                        new String[] { ATTR_COMPONENT_CLASS, ATTR_COMPONENT_NAME },
-                        new String[] { children[i].getBeanClass().getName(), children[i].getName() }
-                        );
-                    saveContainer((ComponentContainer)children[i], buf, indent + ONE_INDENT + ONE_INDENT);
-                    buf.append(indent + ONE_INDENT); addElementClose(buf, XML_CONTAINER);
-                } else {
-                    buf.append(indent + ONE_INDENT);
-                    addElementOpenAttr(
-                        buf,
-                        XML_COMPONENT,
-                        new String[] { ATTR_COMPONENT_CLASS, ATTR_COMPONENT_NAME },
-                        new String[] { children[i].getBeanClass().getName(), children[i].getName() }
-                        );
-                    if (children[i] instanceof RADVisualComponent) {
-                        saveVisualComponent((RADVisualComponent)children[i], buf, indent + ONE_INDENT + ONE_INDENT);
-                    } else {
-                        saveComponent(children[i], buf, indent + ONE_INDENT + ONE_INDENT);
-                    }
-                    buf.append(indent + ONE_INDENT); addElementClose(buf, XML_COMPONENT);
-                }
+                if (children[i] instanceof RADMenuItemComponent)
+                    raiseFormatVersion(CURRENT_VERSION);
+
+                saveAnyComponent(children[i], buf, indent+ONE_INDENT, true);
             }
-            buf.append(indent); addElementClose(buf, XML_SUB_COMPONENTS);
+            buf.append(indent);
+            addElementClose(buf, XML_SUB_COMPONENTS);
         }
     }
 
@@ -1248,6 +1308,23 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
 
     private void saveSyntheticProperties(RADComponent component, StringBuffer buf, String indent) {
+        // compatibility hack for saving form's menu bar (part III)
+        if (component instanceof RADVisualFormContainer) {
+            RADMenuComponent menuComp =
+                ((RADVisualFormContainer)component).getContainerMenu();
+            if (menuComp != null) {
+                buf.append(indent);
+                addLeafElementOpenAttr(buf,
+                    XML_SYNTHETIC_PROPERTY,
+                    new String[] { ATTR_PROPERTY_NAME,
+                                   ATTR_PROPERTY_TYPE,
+                                   ATTR_PROPERTY_VALUE },
+                    new String[] { "menuBar",
+                                   "java.lang.String",
+                                   menuComp.getName() });
+            }
+        }
+
         Node.Property[] props = component.getSyntheticProperties();
         for (int i = 0; i < props.length; i++) {
             Node.Property prop = props[i];
@@ -1895,5 +1972,116 @@ public class GandalfPersistenceManager extends PersistenceManager {
         org.w3c.dom.Node valueNode = attributes.getNamedItem(attributeName);
         if (valueNode == null) return null;
         else return valueNode.getNodeValue();
+    }
+
+    // --------------
+    // FormInfo conversion methods
+
+    /**
+     * @return class corresponding to given FormInfo class name
+     */
+    private static Class getCompatibleFormClass(String formInfoName) {
+        if (formInfoName == null)
+            return null; // no FormInfo name found in form file
+
+        Class formClass = getClassForKnownFormInfo(formInfoName);
+        if (formClass != null)
+            return formClass; // a well-known FormInfo
+
+        try { // try to instantiate the unknown FormInfo
+            org.netbeans.modules.form.forminfo.FormInfo formInfo =
+                (org.netbeans.modules.form.forminfo.FormInfo)
+                    PersistenceObjectRegistry.createInstance(formInfoName);
+            return formInfo.getFormInstance().getClass();
+        }
+        catch (Throwable ex) { // ignore
+            if (ex instanceof ThreadDeath)
+                throw (ThreadDeath) ex;
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                ex.printStackTrace();
+        }
+
+        return null;
+    }
+
+    /**
+     * @return compatible FormInfo class name for given form base class
+     */
+    private static String getCompatibleFormInfoName(Class formClass,
+                                                    String loadedFormInfo) {
+        if (loadedFormInfo != null) {
+            Class loadedFormClass = getClassForKnownFormInfo(loadedFormInfo);
+            if (loadedFormClass == null || loadedFormClass == formClass)
+                return loadedFormInfo; // don't change unknown or convenient FormInfo
+        }
+
+        return getFormInfoForKnownClass(formClass);
+    }
+
+
+    // FormInfo names used in NB 3.2
+    private static final String[] defaultFormInfoNames = {
+        "JFrameFormInfo", // NOI18N
+        "JPanelFormInfo", // NOI18N
+        "JDialogFormInfo", // NOI18N
+        "JInternalFrameFormInfo", // NOI18N
+        "JAppletFormInfo", // NOI18N
+        "FrameFormInfo", // NOI18N
+        "PanelFormInfo", // NOI18N
+        "DialogFormInfo", // NOI18N
+        "AppletFormInfo" }; // NOI18N
+
+    private static Class getClassForKnownFormInfo(String infoName) {
+        if (infoName == null)
+            return null;
+        int i = infoName.lastIndexOf('.');
+        String shortName = infoName.substring(i+1);
+
+        if (defaultFormInfoNames[0].equals(shortName))
+            return javax.swing.JFrame.class;
+        else if (defaultFormInfoNames[1].equals(shortName))
+            return javax.swing.JPanel.class;
+        else if (defaultFormInfoNames[2].equals(shortName))
+            return javax.swing.JDialog.class;
+        else if (defaultFormInfoNames[3].equals(shortName))
+            return javax.swing.JInternalFrame.class;
+        else if (defaultFormInfoNames[4].equals(shortName))
+            return javax.swing.JApplet.class;
+        else if (defaultFormInfoNames[5].equals(shortName))
+            return java.awt.Frame.class;
+        else if (defaultFormInfoNames[6].equals(shortName))
+            return java.awt.Panel.class;
+        else if (defaultFormInfoNames[7].equals(shortName))
+            return java.awt.Dialog.class;
+        else if (defaultFormInfoNames[8].equals(shortName))
+            return java.applet.Applet.class;
+
+        return null;
+    }
+
+    private static String getFormInfoForKnownClass(Class formType) {
+        String shortName;
+
+        if (javax.swing.JFrame.class.isAssignableFrom(formType))
+            shortName = defaultFormInfoNames[0];
+        else if (javax.swing.JPanel.class.isAssignableFrom(formType))
+            shortName = defaultFormInfoNames[1];
+        else if (javax.swing.JDialog.class.isAssignableFrom(formType))
+            shortName = defaultFormInfoNames[2];
+        else if (javax.swing.JInternalFrame.class.isAssignableFrom(formType))
+            shortName = defaultFormInfoNames[3];
+        else if (javax.swing.JApplet.class.isAssignableFrom(formType))
+            shortName = defaultFormInfoNames[4];
+        else if (java.awt.Frame.class.isAssignableFrom(formType))
+            shortName = defaultFormInfoNames[5];
+        else if (java.awt.Panel.class.isAssignableFrom(formType))
+            shortName = defaultFormInfoNames[6];
+        else if (java.awt.Dialog.class.isAssignableFrom(formType))
+            shortName = defaultFormInfoNames[7];
+        else if (java.applet.Applet.class.isAssignableFrom(formType))
+            shortName = defaultFormInfoNames[7];
+        else return null;
+
+        return "org.netbeans.modules.form.forminfo." + shortName; // NOI18N
     }
 }

@@ -11,22 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form;
-
-import org.openide.TopManager;
-import org.openide.actions.*;
-import org.openide.cookies.*;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.util.*;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.datatransfer.PasteType;
-import org.openide.util.datatransfer.NewType;
-import org.openide.explorer.propertysheet.editors.NodeCustomizer;
-
-import org.netbeans.modules.form.actions.*;
-import org.netbeans.modules.form.layoutsupport.*;
 
 import java.awt.*;
 import java.awt.datatransfer.*;
@@ -34,61 +19,59 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.beans.*;
 
+import org.openide.actions.*;
+import org.openide.cookies.*;
+import org.openide.loaders.*;
+import org.openide.nodes.*;
+import org.openide.util.*;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.NewType;
+import org.openide.explorer.propertysheet.editors.NodeCustomizer;
 
-public class RADComponentNode extends AbstractNode
-    implements RADComponentCookie, FormCookie
+import org.netbeans.modules.form.actions.*;
+import org.netbeans.modules.form.layoutsupport.*;
+
+
+public class RADComponentNode extends FormNode
+    implements RADComponentCookie//, FormCookie
 {
-    public static DataFlavor RAD_COMPONENT_COPY_FLAVOR = new RADDataFlavor(
-        RADComponentNode.class,
-        "RAD_COMPONENT_COPY_FLAVOR" // NOI18N
-        );
-    public static DataFlavor RAD_COMPONENT_CUT_FLAVOR = new RADDataFlavor(
-        RADComponentNode.class,
-        "RAD_COMPONENT_CUT_FLAVOR" // NOI18N
-        );
-
-
-    private final static MessageFormat nameFormat =
-        new MessageFormat(NbBundle.getBundle(RADComponentNode.class).getString("FMT_ComponentName"));
-    private final static MessageFormat formNameFormat =
-        new MessageFormat(NbBundle.getBundle(RADComponentNode.class).getString("FMT_FormName"));
+   private final static MessageFormat nodeNameFormat =
+        new MessageFormat(
+            FormEditor.getFormBundle().getString("FMT_ComponentNodeName")); // NOI18N
+    private final static MessageFormat nodeNoNameFormat =
+        new MessageFormat(
+            FormEditor.getFormBundle().getString("FMT_UnnamedComponentNodeName")); // NOI18N
 
     private RADComponent component;
     private RADComponentInstance radComponentInstance;
 
+
     public RADComponentNode(RADComponent component) {
-        super((component instanceof ComponentContainer)
-              ? new RADChildren((ComponentContainer)component) : Children.LEAF);
+        this(component instanceof ComponentContainer ?
+                new RADChildren((ComponentContainer)component) : Children.LEAF,
+             component);
+    }
+
+    public RADComponentNode(Children children, RADComponent component) {
+        super(children, component.getFormModel());
         this.component = component;
         radComponentInstance = new RADComponentInstance(component);
         component.setNodeReference(this);
-        getCookieSet().add(this);
-        if (component instanceof ComponentContainer) {
+//        getCookieSet().add(this);
+        if (component instanceof ComponentContainer)
             getCookieSet().add(new ComponentsIndex());
-        }
         updateName();
     }
 
     void updateName() {
         Class compClass = component.getBeanClass();
-        if (component instanceof FormContainer) {
-            Class formClass =((FormContainer)component).getFormInfo().getFormInstance().getClass();
-            setDisplayName(formNameFormat.format(
-                new Object[] {
-                    component.getFormModel().getFormDataObject().getName() ,
-                    formClass.getName(),
-                    Utilities.getShortClassName(formClass) }));
-        } else {
-            setDisplayName(nameFormat.format(
-                new Object[] {
-                    getName(),
-                    compClass.getName(),
-                    Utilities.getShortClassName(compClass) }));
-        }
-    }
-
-    void updateChildren() {
-        ((RADChildren)getChildren()).updateKeys();
+        if (component instanceof FormContainer)
+            setDisplayName(nodeNoNameFormat.format(
+                new Object[] { Utilities.getShortClassName(compClass) }));
+        else
+            setDisplayName(nodeNameFormat.format(
+                new Object[] { getName(),
+                               Utilities.getShortClassName(compClass) }));
     }
 
     public void fireComponentPropertiesChange() {
@@ -175,7 +158,7 @@ public class RADComponentNode extends AbstractNode
      * If necessary, call {@link NodeOp#getDefaultActions} to merge in.
      * @return array of actions for this node, or <code>null</code> to use the default node actions
      */
-    protected SystemAction [] createActions() {
+    protected SystemAction[] createActions() {
         ArrayList actions = new ArrayList(20);
 
         if (component.isReadOnly()) {
@@ -183,12 +166,7 @@ public class RADComponentNode extends AbstractNode
                 actions.add(SystemAction.get(EventsAction.class));
                 actions.add(null);
             }
-            actions.add(SystemAction.get(GotoFormAction.class));
-            actions.add(SystemAction.get(GotoEditorAction.class));
-            actions.add(SystemAction.get(GotoInspectorAction.class));
-            actions.add(null);
             actions.add(SystemAction.get(CopyAction.class));
-            actions.add(null);
         }
         else {
             if (component instanceof RADVisualContainer) {
@@ -210,49 +188,45 @@ public class RADComponentNode extends AbstractNode
             actions.add(null);
 
             if (component instanceof ComponentContainer) {
-                actions.add(SystemAction.get(ReorderAction.class));
-                if (!(component instanceof FormContainer)) {
-                    actions.add(SystemAction.get(MoveUpAction.class));
-                    actions.add(SystemAction.get(MoveDownAction.class));
-                }
-                actions.add(null);
-                actions.add(SystemAction.get(GotoFormAction.class));
-                actions.add(SystemAction.get(GotoEditorAction.class));
-                actions.add(SystemAction.get(GotoInspectorAction.class));
-                actions.add(null);
-                actions.add(SystemAction.get(CutAction.class));
+                if (!(component instanceof FormContainer))
+                    actions.add(SystemAction.get(CutAction.class));
                 actions.add(SystemAction.get(CopyAction.class));
                 actions.add(SystemAction.get(PasteAction.class));
+                actions.add(null);
+                if (!(component instanceof FormContainer)) {
+                    actions.add(SystemAction.get(RenameAction.class));
+                    actions.add(SystemAction.get(DeleteAction.class));
+                    actions.add(null);
+                }
+                actions.add(SystemAction.get(ReorderAction.class));
             } else {
                 actions.add(SystemAction.get(InPlaceEditAction.class));
                 actions.add(null);
-                actions.add(SystemAction.get(GotoFormAction.class));
-                actions.add(SystemAction.get(GotoEditorAction.class));
-                actions.add(SystemAction.get(GotoInspectorAction.class));
-                actions.add(null);
-                actions.add(SystemAction.get(MoveUpAction.class));
-                actions.add(SystemAction.get(MoveDownAction.class));
-                actions.add(null);
                 actions.add(SystemAction.get(CutAction.class));
                 actions.add(SystemAction.get(CopyAction.class));
-            }
-
-            actions.add(null);
-            if (!(component instanceof FormContainer)) {
+                actions.add(null);
                 actions.add(SystemAction.get(RenameAction.class));
                 actions.add(SystemAction.get(DeleteAction.class));
                 actions.add(null);
             }
+
+            if (!(component instanceof FormContainer)) {
+                actions.add(SystemAction.get(MoveUpAction.class));
+                actions.add(SystemAction.get(MoveDownAction.class));
+            }
+
             if (getNewTypes().length != 0) {
                 actions.add(SystemAction.get(NewAction.class));
-                actions.add(null);
             }
         }
 
-//        actions.add(SystemAction.get(ToolsAction.class));
-        actions.add(SystemAction.get(PropertiesAction.class));
+        actions.add(null);
 
-        SystemAction[] array = new SystemAction [actions.size()];
+        SystemAction[] superActions = super.createActions();
+        for (int i=0; i < superActions.length; i++)
+            actions.add(superActions[i]);
+
+        SystemAction[] array = new SystemAction[actions.size()];
         actions.toArray(array);
         return array;
     }
@@ -301,7 +275,11 @@ public class RADComponentNode extends AbstractNode
      * @exception IOException if something fails
      */
     public void destroy() throws java.io.IOException {
+        // turn on notifying the user about deleting event handlers
+        FormEventHandlers.setNotifyUser(true);
         component.getFormModel().deleteComponent(component);
+        FormEventHandlers.restorePreviousNotifySettings();
+
         super.destroy();
     }
 
@@ -312,23 +290,10 @@ public class RADComponentNode extends AbstractNode
      * @return the cookie or <code>null</code>
      */
     public Node.Cookie getCookie(Class type) {
-        if (InstanceCookie.class.equals(type)) {
+        if (InstanceCookie.class.equals(type))
             return radComponentInstance;
-        }
-        Node.Cookie inh = super.getCookie(type);
-        if (inh == null) {
-            if (CompilerCookie.class.isAssignableFrom(type) ||
-                SaveCookie.class.isAssignableFrom(type) ||
-                DataObject.class.isAssignableFrom(type) ||
-                ExecCookie.class.isAssignableFrom(type) ||
-                DebuggerCookie.class.isAssignableFrom(type) ||
-                CloseCookie.class.isAssignableFrom(type) ||
-                ArgumentsCookie.class.isAssignableFrom(type) ||
-                PrintCookie.class.isAssignableFrom(type)) {
-                return component.getFormModel().getFormDataObject().getCookie(type);
-            }
-        }
-        return inh;
+
+        return super.getCookie(type);
     }
 
     /** Test whether there is a customizer for this node. If true,
@@ -423,7 +388,7 @@ public class RADComponentNode extends AbstractNode
      * @return <code>true</code> if it can
      */
     public boolean canCopy() {
-        return !(component instanceof FormContainer);
+        return true; //!(component instanceof FormContainer);
     }
 
     /** Test whether this node can be cut.
@@ -440,7 +405,8 @@ public class RADComponentNode extends AbstractNode
      * @throws IOException if it could not copy
      */
     public Transferable clipboardCopy() throws java.io.IOException {
-        return new RADTransferable(RAD_COMPONENT_COPY_FLAVOR, component);
+        return new CopySupport.RADTransferable(
+                                 CopySupport.COMPONENT_COPY_FLAVOR, component);
     }
 
     /** Store original name of component and subcomponents. */
@@ -460,7 +426,8 @@ public class RADComponentNode extends AbstractNode
      * @throws IOException if it could not cut
      */
     public Transferable clipboardCut() throws java.io.IOException {
-        return new RADTransferable(RAD_COMPONENT_CUT_FLAVOR, component);
+        return new CopySupport.RADTransferable(
+                                 CopySupport.COMPONENT_CUT_FLAVOR, component);
     }
 
     /** Accumulate the paste types that this node can handle
@@ -475,35 +442,55 @@ public class RADComponentNode extends AbstractNode
      *    valid for this node
      */
     protected void createPasteTypes(Transferable t, java.util.List s) {
-        if (component.isReadOnly()) return;
+        if (component.isReadOnly())
+            return;
 
-        boolean copy = t.isDataFlavorSupported(RAD_COMPONENT_COPY_FLAVOR);
-        boolean cut = t.isDataFlavorSupported(RAD_COMPONENT_CUT_FLAVOR);
+        boolean copy = t.isDataFlavorSupported(CopySupport.COMPONENT_COPY_FLAVOR);
+        boolean cut = t.isDataFlavorSupported(CopySupport.COMPONENT_CUT_FLAVOR);
 
-        if (copy || cut) {
+        if (copy || cut) { // copy or cut some RADComponent
+            if (!(component instanceof ComponentContainer))
+                return; // component can be pasted only to a container
+
+            RADComponent transComp = null;
             try {
-                RADComponent transComp = (RADComponent)
-                        t.getTransferData(t.getTransferDataFlavors()[0]);
-
-                if (transComp instanceof RADMenuItemComponent) {
-                    // pasting menu component, check if it is possible
-                    if (canPasteMenuComponent((RADMenuItemComponent)transComp, cut))
-                        s.add(new RADPaste(t));
-                }
-                else if (component instanceof RADVisualContainer // including the form
-                         && (!cut || canPasteCut(transComp)))
-                    // pasting to visual container (not only visual components)
-                    s.add(new RADPaste(t));
+                transComp = (RADComponent) t.getTransferData(
+                                                t.getTransferDataFlavors()[0]);
             }
             catch (UnsupportedFlavorException e) {} // should not happen
             catch (java.io.IOException e) {} // should not happen
+
+            if (transComp == null)
+                return;
+
+            if (component instanceof RADMenuComponent
+                    && transComp instanceof RADMenuItemComponent) {
+                // pasting menu component, check if it is possible
+                if (!canPasteMenuComponent((RADMenuItemComponent)transComp, cut))
+                    return;
+            }
+            else if (component instanceof RADVisualContainer
+                     && transComp instanceof RADVisualComponent) {
+                // pasting a visual component
+                if (cut && !canPasteCut(transComp))
+                    return;
+            }
+            else return; // not allowed combination of source/target
+
+            s.add(new CopySupport.RADPaste(t,
+                                           (ComponentContainer) component,
+                                           component.getFormModel()));
         }
         else { // if there is not a RADComponent in the clipboard,
                // try if it is not InstanceCookie
-            InstanceCookie ic = (InstanceCookie)NodeTransfer.cookie(t,
-                                      NodeTransfer.COPY, InstanceCookie.class);
+            InstanceCookie ic =
+                (InstanceCookie) NodeTransfer.cookie(t,
+                                                     NodeTransfer.COPY,
+                                                     InstanceCookie.class);
             if (ic != null)
-                s.add(new InstancePaste(t));
+                s.add(new CopySupport.InstancePaste(t,
+                                                    component,
+                                                    component.getFormModel()));
         }
     }
 
@@ -514,13 +501,12 @@ public class RADComponentNode extends AbstractNode
 
         if (!(component instanceof RADMenuComponent)) {
             // target component is not a menu component
-            if (component instanceof RADVisualFormContainer) {
-                // target component is the form
-                int sourceMenuType = sourceMenuComp.getMenuItemType();
-                canPaste = sourceMenuType == RADMenuItemComponent.T_MENUBAR
-                        || sourceMenuType == RADMenuItemComponent.T_POPUPMENU
-                        || sourceMenuType == RADMenuItemComponent.T_JMENUBAR
-                        || sourceMenuType == RADMenuItemComponent.T_JPOPUPMENU;
+            if (component instanceof RADVisualContainer
+                && sourceMenuComp instanceof RADMenuComponent)
+            {
+                RADVisualContainer cont = (RADVisualContainer) component;
+                canPaste = cont.getContainerMenu() == null
+                           && cont.canHaveMenu(sourceMenuComp.getBeanClass());
             }
         }
         else { // target component is some menu container
@@ -538,37 +524,9 @@ public class RADComponentNode extends AbstractNode
         if (sourceComp.getFormModel() != component.getFormModel())
             return true; // source component is from another form
 
-        if (sourceComp instanceof RADVisualComponent) {
-            if (!(component instanceof RADVisualContainer)) return false;
-            RADVisualContainer targetContainer = (RADVisualContainer)component;
-            RADVisualContainer sourceContainer =
-                ((RADVisualComponent)sourceComp).getParentContainer();
-            if (targetContainer == sourceContainer) return false;
-
-            // target container also cannot be in source container tree
-            do {
-                if (targetContainer == sourceComp) return false;
-                targetContainer = targetContainer.getParentContainer();
-            }
-            while (targetContainer != null);
-        }
-        else if (sourceComp instanceof RADMenuItemComponent) {
-            if (!(component instanceof RADMenuComponent)) return false;
-            RADMenuComponent targetContainer = (RADMenuComponent)component;
-            RADMenuComponent sourceContainer =
-                ((RADMenuItemComponent)sourceComp).getParentMenu();
-            if (targetContainer == sourceContainer) return false;
-
-            // target container also cannot be in source container tree
-            do {
-                if (targetContainer == sourceComp) return false;
-                targetContainer = targetContainer.getParentMenu();
-            }
-            while (targetContainer != null);
-        }
-        else return false;
-
-        return true;
+        return sourceComp != component
+               && sourceComp.getParentComponent() != component
+               && !sourceComp.isParentComponent(component);
     }
 
     // -----------------------------------------------------------------------------
@@ -578,220 +536,88 @@ public class RADComponentNode extends AbstractNode
         return component;
     }
 
-    // -------------------------------------------------------------------------------
-    // FormCookie implementation
-
-    /** Focuses the source editor */
-    public void gotoEditor() {
-        component.getFormModel().getFormEditorSupport().gotoEditor();
-    }
-
-    /** Focuses the form */
-    public void gotoForm() {
-        component.getFormModel().getFormEditorSupport().gotoForm();
-    }
-
     // -----------------------------------------------------------------------------
     // Innerclasses
 
-    /** Index support for reordering of file system pool.
-     */
+    public static class RADChildren extends FormNodeChildren {
+        private ComponentContainer container;
+        private Object keyLayout;
+
+        public RADChildren(ComponentContainer container) {
+            super();
+            this.container = container;
+            updateKeys();
+        }
+
+        // FormNodeChildren implementation
+        protected void updateKeys() {
+            RADComponent[] subComps = container.getSubBeans();
+            ArrayList keys = new ArrayList(subComps.length + 2);
+
+            if (container instanceof RADVisualContainer) {
+                RADVisualContainer visualCont = (RADVisualContainer) container;
+
+                RADComponent menuComp = visualCont.getContainerMenu();
+                if (menuComp != null)
+                    keys.add(menuComp);
+
+                if (visualCont.shouldHaveLayoutNode()) {
+                    keyLayout = new Object();
+                    keys.add(keyLayout);
+                }
+
+                for (int i=0; i < subComps.length; i++)
+                    if (subComps[i] != menuComp)
+                        keys.add(subComps[i]);
+            }
+            else {
+                for (int i=0; i < subComps.length; i++)
+                    keys.add(subComps[i]);
+            }
+
+            setKeys(keys);
+        }
+
+        protected Node[] createNodes(Object key) {
+            Node node;
+            if (key == keyLayout)
+                node = new LayoutNode((RADVisualContainer)container);
+            else {
+                node = new RADComponentNode((RADComponent)key);
+                node.getChildren().getNodes(); // enforce subnodes creation
+            }
+            return new Node[] { node };
+        }
+    }
+
     private final class ComponentsIndex extends org.openide.nodes.Index.Support {
 
-        /** Get the nodes; should be overridden if needed.
-         * @return the nodes
-         * @throws NotImplementedException always
-         */
         public Node[] getNodes() {
-            RADComponent[] comps =((ComponentContainer)getRADComponent()).getSubBeans();
-            Node[] nodes = new Node[comps.length];
-            for (int i = 0; i < comps.length; i++) {
+            RADComponent[] comps;
+            if (component instanceof RADVisualContainer)
+                comps = ((RADVisualContainer)component).getSubComponents();
+            else if (component instanceof ComponentContainer)
+                comps = ((ComponentContainer)component).getSubBeans();
+            else
+                comps = null;
+
+            Node[] nodes = new Node[comps != null ? comps.length : 0];
+            for (int i = 0; i < comps.length; i++)
                 nodes[i] = comps[i].getNodeReference();
-            }
+
             return nodes;
         }
 
-        /** Get the node count. Subclasses must provide this.
-         * @return the count
-         */
         public int getNodesCount() {
             return getNodes().length;
         }
 
-        /** Reorder by permutation. Subclasses must provide this.
-         * @param perm the permutation
-         */
         public void reorder(int[] perm) {
-            ((ComponentContainer)getRADComponent()).reorderSubComponents(perm);
-            ((RADChildren)getChildren()).updateKeys();
-        }
-    }
-
-    static class RADDataFlavor extends DataFlavor {
-        static final long serialVersionUID =3851021533468196849L;
-        RADDataFlavor(Class representationClass, String name) {
-            super(representationClass, name);
-        }
-    }
-
-    public static class RADTransferable implements Transferable {
-        private RADComponent radComponent;
-        private DataFlavor[] flavors;
-
-        RADTransferable(DataFlavor flavor, RADComponent radComponent) {
-            this(new DataFlavor[] { flavor }, radComponent);
-        }
-
-        RADTransferable(DataFlavor[] flavors, RADComponent radComponent) {
-            this.flavors = flavors;
-            this.radComponent = radComponent;
-        }
-
-        /** Returns an array of DataFlavor objects indicating the flavors the data
-         * can be provided in.  The array should be ordered according to preference
-         * for providing the data(from most richly descriptive to least descriptive).
-         * @return an array of data flavors in which this data can be transferred
-         */
-        public DataFlavor[] getTransferDataFlavors() {
-            return flavors;
-        }
-
-        /** Returns whether or not the specified data flavor is supported for
-         * this object.
-         * @param flavor the requested flavor for the data
-         * @return boolean indicating wjether or not the data flavor is supported
-         */
-        public boolean isDataFlavorSupported(DataFlavor flavor) {
-            for (int i = 0; i < flavors.length; i++) {
-                if (flavors[i] == flavor) { // comparison based on exact instances, as these are static in this node
-                    return true;
-                }
+            if (component instanceof ComponentContainer) {
+                ComponentContainer cont = (ComponentContainer) component;
+                cont.reorderSubComponents(perm);
+                component.getFormModel().fireComponentsReordered(cont);
             }
-            return false;
-        }
-
-        /** Returns an object which represents the data to be transferred.  The class
-         * of the object returned is defined by the representation class of the flavor.
-         *
-         * @param flavor the requested flavor for the data
-         * @see DataFlavor#getRepresentationClass
-         * @exception IOException                if the data is no longer available
-         *              in the requested flavor.
-         * @exception UnsupportedFlavorException if the requested data flavor is
-         *              not supported.
-         */
-        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, java.io.IOException {
-            if (flavor instanceof RADDataFlavor) {
-                return radComponent;
-            }
-            throw new UnsupportedFlavorException(flavor);
-        }
-    }
-
-    // -----------------------------------------------------------------------------
-    // Paste types
-
-    /** Paste type for meta components.
-     */
-    private final class RADPaste extends PasteType {
-        private Transferable transferable;
-
-        public RADPaste(Transferable t) {
-            this.transferable = t;
-        }
-
-        public Transferable paste() throws java.io.IOException {
-            boolean fromCut =
-                transferable.isDataFlavorSupported(RAD_COMPONENT_CUT_FLAVOR);
-
-            RADComponent sourceComponent = null;
-            try {
-                sourceComponent = (RADComponent) transferable.getTransferData(
-                    fromCut ? RAD_COMPONENT_CUT_FLAVOR : RAD_COMPONENT_COPY_FLAVOR);
-            }
-            catch (java.io.IOException e) { } // ignore - should not happen
-            catch (UnsupportedFlavorException e) { } // ignore - should not happen
-
-            if (sourceComponent == null) return null;
-
-            FormModel targetForm = component.getFormModel();
-
-            if (!fromCut) { // pasting copy of RADComponent
-                targetForm.getComponentCreator()
-                    .copyComponent(sourceComponent, component);
-                return null;
-            }
-            else { // pasting cut RADComponent (same instance)
-                FormModel sourceForm = sourceComponent.getFormModel();
-                if (sourceForm != targetForm) { // taken from another form
-                    Node sourceNode = sourceComponent.getNodeReference();
-                    // delete component in the source
-                    if (sourceNode != null) sourceNode.destroy();
-                    else sourceForm.deleteComponent(sourceComponent);
-                    sourceComponent.initialize(targetForm);
-                }
-                else { // same form
-                    if (!canPasteCut(sourceComponent))
-                        return transferable; // ignore paste to itself
-
-                    // remove source component from its parent
-                    sourceForm.removeComponent(sourceComponent);
-                }
-
-                if (sourceComponent instanceof RADVisualComponent) {
-                    addVisualComponentCopy((RADVisualComponent)sourceComponent,
-                                           (RADVisualContainer)component,
-                                           targetForm);
-                }
-                else {
-                    if (sourceComponent instanceof RADMenuItemComponent
-                            && component instanceof RADMenuComponent) {
-                        targetForm.addNonVisualComponent(sourceComponent, 
-                                                 (ComponentContainer)component);
-                    }
-                    else targetForm.addNonVisualComponent(sourceComponent, null);
-                }
-
-                // put copy flavor as the new one, as the first instance was used already
-                return new RADTransferable(RAD_COMPONENT_COPY_FLAVOR, sourceComponent);
-            }
-        }
-    }
-
-    private void addVisualComponentCopy(RADVisualComponent comp,
-                                        RADVisualContainer cont,
-                                        FormModel form) {
-        LayoutSupport laysup = cont.getLayoutSupport();
-        if (laysup != null) {
-            LayoutSupport.ConstraintsDesc cd = laysup.getConstraints(comp);
-            form.addVisualComponent(comp, cont, laysup.fixConstraints(cd));
-        }
-    }
-
-    /** Paste type for InstanceCookie.
-     */
-    private final class InstancePaste extends PasteType {
-        private Transferable transferable;
-        
-        /**
-         * @param obj object to work with
-         */
-        public InstancePaste(Transferable t) {
-            transferable = t;
-        }
-    
-        /** Paste.
-         */
-        public final Transferable paste() throws java.io.IOException {
-            InstanceCookie ic = (InstanceCookie)
-                                NodeTransfer.cookie(transferable,
-                                                    NodeTransfer.COPY,
-                                                    InstanceCookie.class);
-
-            component.getFormModel().getComponentCreator()
-                .createComponent(ic, component, null);
-
-            return transferable;
         }
     }
 }

@@ -129,7 +129,7 @@ final public class FormEditor extends Object
 
     public static String getSerializedBeanName(RADComponent comp) {
         StringBuffer name =
-            new StringBuffer(comp.getFormModel().getFormDataObject().getName());
+            new StringBuffer(comp.getFormModel().getName());
         name.append("$"); // NOI18N
         name.append(comp.getName());
         name.append(".ser"); // NOI18N

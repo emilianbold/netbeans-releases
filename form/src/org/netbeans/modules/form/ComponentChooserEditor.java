@@ -28,7 +28,7 @@ public class ComponentChooserEditor extends PropertyEditorSupport
 
     public static final int ALL_COMPONENTS = 0;
     public static final int VISUAL_COMPONENTS = 1;
-    public static final int NONVISUAL_COMPONENTS = 2;
+    public static final int OTHER_COMPONENTS = 2;
 
     private static String noneText = null;
 
@@ -120,27 +120,25 @@ public class ComponentChooserEditor extends PropertyEditorSupport
         else
             components.clear();
 
-        if (componentCategory == ALL_COMPONENTS
-              || componentCategory == VISUAL_COMPONENTS) {
-            // visual components
-            RADComponent[] comps = formModel.getVisualComponents();
-            for (int i=0; i < comps.length; i++)
-                if (checkBeanType(comps[i]))
-                    components.add(comps[i]);
+        RADComponent[] comps;
+        if (componentCategory == VISUAL_COMPONENTS)
+            comps = formModel.getVisualComponents();
+        else if (componentCategory == OTHER_COMPONENTS)
+            comps = formModel.getOtherComponents(true);
+        else {
+            java.util.List allComps = formModel.getMetaComponents();
+            comps = (RADComponent[])
+                    allComps.toArray(new RADComponent[allComps.size()]);
         }
 
-        if (componentCategory == ALL_COMPONENTS
-              || componentCategory == NONVISUAL_COMPONENTS) {
-            // nonvisual components
-            RADComponent[] comps = formModel.getNonVisualComponents();
-            for (int i=0; i < comps.length; i++)
-                if (checkBeanType(comps[i]))
-                    components.add(comps[i]);
-        }
+        for (int i=0; i < comps.length; i++)
+            if (checkBeanType(comps[i]))
+                components.add(comps[i]);
     }
 
     protected boolean checkBeanType(RADComponent comp) {
-        if (beanTypes == null) return true;
+        if (beanTypes == null)
+            return true;
 
         boolean match = false;
         for (int i=0; i < beanTypes.length && !match; i++)

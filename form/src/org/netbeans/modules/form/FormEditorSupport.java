@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- *
+ * 
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- *
+ * 
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -14,7 +14,7 @@
 package org.netbeans.modules.form;
 
 import java.beans.*;
-import java.io.*;
+import java.io.IOException;
 import java.util.*;
 
 import org.openide.*;
@@ -22,7 +22,6 @@ import org.openide.nodes.*;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditCookie;
 import org.openide.loaders.*;
-import org.openide.text.*;
 import org.openide.util.Utilities;
 import org.openide.windows.*;
 
@@ -34,34 +33,49 @@ import org.netbeans.modules.java.JavaEditor;
  */
 public class FormEditorSupport extends JavaEditor implements FormCookie, EditCookie
 {
-    /** The reference to FormDataObject */
-    private FormDataObject formObject;
+    /** The FormModel instance holding the form itself */
+    private FormModel formModel;
 
-    /** True, if the design form has been loaded from the form file */
-    transient private boolean formLoaded = false;
+    /** The DataObject of the form */
+    private FormDataObject formDataObject;
 
-    /** True, if the form has been opened on non-Editing workspace and shoul dbe
-     * opened when the user switches back to Editing
-     * */
-    transient private boolean openOnEditing = false;
+    /** The root node of form hierarchy presented in Component Inspector */
+    private FormRootNode formRootNode;
+
+    /** The designer of the form */
+    private FormDesigner formDesigner;
+
+    /** The code generator for the form */
+//    private CodeGenerator codeGenerator;
+
+    /** Persistence manager responsible for saving the form */
+    private PersistenceManager saveManager;
+
+    /** An indicator whether form has been loaded from the .form file */
+    private boolean formLoaded = false; 
+
+    /** An indicator whether the form should be opened additionally when
+     * switching back from a non-editing workspace to an editing one */
+    private boolean openOnEditing = false;
 
     // listeners
+    private FormModelListener formListener;
     private PropertyChangeListener workspacesListener;
     private static PropertyChangeListener settingsListener;
     private static PropertyChangeListener topcompsListener;
 
     private UndoRedo.Manager undoManager;
-    private RADComponentNode formRootNode;
-    private FormModel formModel;
-    private PersistenceManager saveManager;
 
-    /** Table of FormModel instances of open forms */
+    /** Table of FormModel instances (FormModel to FormEditorSupport map) */
     private static Hashtable openForms = new Hashtable();
 
+    // --------------
+    // constructor
+
     public FormEditorSupport(MultiDataObject.Entry javaEntry,
-                             FormDataObject formObject) {
+                             FormDataObject formDataObject) {
         super(javaEntry);
-        this.formObject = formObject;
+        this.formDataObject = formDataObject;
         formLoaded = false;
     }
 
@@ -78,7 +92,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                 TopManager.getDefault().setStatusText(
                     java.text.MessageFormat.format(
                         FormEditor.getFormBundle().getString("FMT_OpeningForm"), // NOI18N
-                        new Object[] { formObject.getName() }));
+                        new Object[] { formDataObject.getName() }));
 
                 if (loadForm())
                     openGUI();
@@ -93,17 +107,19 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     /** Main loading method - loads form data from file.
      */
     public synchronized boolean loadForm() {
-        if (formLoaded) return true; // form already loaded
+        if (formLoaded)
+            return true; // form already loaded
 
         // first find PersistenceManager for loading the form
-        PersistenceManager[] pms = recognizeForm(formObject);
-        if (pms == null) return false;
+        PersistenceManager[] pms = recognizeForm(formDataObject);
+        if (pms == null)
+            return false;
         PersistenceManager loadManager = pms[0];
         saveManager = pms[1];
 
         // load the form data (FormModel) and report errors
         try {
-            formModel = loadManager.loadForm(formObject);
+            formModel = loadManager.loadForm(formDataObject);
 
             reportErrors(formModel==null, null);
         }
@@ -113,19 +129,23 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
 
             reportErrors(true, t);
         }
-        if (formModel == null) return false;
-
-        // create form nodes hierarchy and add it to SourceChildren
-        formRootNode = new RADComponentNode(formModel.getTopRADComponent());
-//        enforceNodesCreation(formRootNode);
-        formRootNode.getChildren().getNodes();
-        formObject.getNodeDelegate().getChildren()
-                .add(new RADComponentNode [] { formRootNode });
+        if (formModel == null)
+            return false;
 
         // form is successfully loaded...
         formLoaded = true;
-        openForms.put(this, formModel);
+        openForms.put(formModel, this);
+        formModel.setName(formDataObject.getName());
+//        getCodeGenerator().initialize(formModel);
+        formModel.fireFormLoaded();
 
+        // create form nodes hierarchy and add it to SourceChildren
+        formRootNode = new FormRootNode(formModel);
+        formRootNode.getChildren().getNodes();
+        formDataObject.getNodeDelegate().getChildren()
+                                          .add(new Node[] { formRootNode });
+
+        attachFormListener();
         attachSettingsListener();
         attachTopComponentsListener();
 
@@ -165,8 +185,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     // ------------
     // other interface methods
 
-    public FormDataObject getFormObject() {
-        return formObject;
+    public FormDataObject getFormDataObject() {
+        return formDataObject;
     }
 
     public Node getFormRootNode() {
@@ -174,28 +194,65 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     }
 
     /** @return the FormModel of this form */
-    public FormModel getFormModel() {
+    public final FormModel getFormModel() {
         return formModel;
     }
 
-    /** @return the FormDesigner window */
+    /** @return the FormDesigner for this form */
     FormDesigner getFormDesigner() {
-        return formLoaded ? formModel.getFormDesigner() : null;
+        if (!formLoaded)
+            return null;
+        if (formDesigner == null)
+            formDesigner = new FormDesigner(formModel);
+        return formDesigner;
     }
+
+    void setFormDesigner(FormDesigner formDesigner) {
+        this.formDesigner = formDesigner;
+    }
+
+//    CodeGenerator getCodeGenerator() {
+//        if (codeGenerator == null)
+//            codeGenerator = new JavaCodeGenerator();
+//        return codeGenerator;
+//    }
 
     boolean supportsAdvancedFeatures() {
         return saveManager.supportsAdvancedFeatures();
     }
 
-    /** Marks the form as modified if it's not yet. Used if changes made
+    /** Marks the form as modified if it's not yet. Used if changes made 
      * in form data don't affect the java source file (generated code). */
     void markFormModified() {
-        if (formLoaded && !formObject.isModified())
+        if (formLoaded && !formDataObject.isModified())
             super.notifyModified();
     }
 
-    /** Creates an undo/redo manager.
-     */
+    void updateFormName(String name) {
+        if (!formLoaded)
+            return;
+
+        formModel.setName(name);
+        formModel.getFormDesigner().updateName(name);
+        formRootNode.updateName(name);
+    }
+
+    void updateNodeChildren(ComponentContainer metacont) {
+        FormNode node;
+
+        if (metacont == null || metacont == formModel.getModelContainer())
+            node = formRootNode != null ?
+                       formRootNode.getOthersNode() : null;
+
+        else if (metacont instanceof RADComponent)
+            node = ((RADComponent)metacont).getNodeReference();
+
+        else node = null;
+
+        if (node != null)
+            node.updateChildren();
+    }
+
     protected UndoRedo.Manager createUndoRedoManager() {
         undoManager = super.createUndoRedoManager();
         return undoManager;
@@ -203,6 +260,40 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
 
     UndoRedo.Manager getUndoManager() {
         return undoManager;
+    }
+
+    // ------------
+    // static getters
+
+    /** @return an array of all opened forms */
+    public static FormModel[] getOpenedForms() {
+        Set forms = openForms.keySet();
+        FormModel[] formArray = new FormModel[forms.size()];
+        forms.toArray(formArray);
+        return formArray;
+    }
+
+    /** @return FormDesigner for given form */
+    public static FormDesigner getFormDesigner(FormModel formModel) {
+        FormEditorSupport fes = (FormEditorSupport) openForms.get(formModel);
+        return fes != null ? fes.getFormDesigner() : null;
+    }
+
+    /** @return CodeGenerator for given form */
+//    public static CodeGenerator getCodeGenerator(FormModel formModel) {
+//        FormEditorSupport fes = (FormEditorSupport) openForms.get(formModel);
+//        return fes != null ? fes.getCodeGenerator() : null;
+//    }
+
+    /** @return FormDataObject of given form */
+    public static FormDataObject getFormDataObject(FormModel formModel) {
+        FormEditorSupport fes = (FormEditorSupport) openForms.get(formModel);
+        return fes != null ? fes.getFormDataObject() : null;
+    }
+
+    /** @return FormEditorSupport instance for given form */
+    public static FormEditorSupport getSupport(FormModel formModel) {
+        return (FormEditorSupport) openForms.get(formModel);
     }
 
     // ------------
@@ -224,14 +315,14 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     /** Finds PersistenceManager that can load and save the form.
      * Returns array of two managers - the first for loading, second for saving.
      */
-    private PersistenceManager[] recognizeForm(FormDataObject formObject) {
+    private PersistenceManager[] recognizeForm(FormDataObject formDO) {
         PersistenceManager loadManager = null;
         PersistenceManager saveManager = null;
 
         for (Iterator it = PersistenceManager.getManagers(); it.hasNext(); ) {
             PersistenceManager man = (PersistenceManager)it.next();
             try {
-                if (man.canLoadForm(formObject)) {
+                if (man.canLoadForm(formDO)) {
                     loadManager = man;
                     break;
                 }
@@ -272,7 +363,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                     new NotifyDescriptor.Message(
                         java.text.MessageFormat.format(
                             FormEditor.getFormBundle().getString("FMT_ERR_LoadingForm"),
-                            new Object[] { formObject.getName() }),
+                            new Object[] { formDataObject.getName() }),
                         NotifyDescriptor.ERROR_MESSAGE));
             }
             else {
@@ -283,7 +374,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                     new NotifyDescriptor.Message(
                         java.text.MessageFormat.format(
                             FormEditor.getFormBundle().getString("FMT_ERR_LoadingFormDetails"),
-                            new Object[] { formObject.getName(),
+                            new Object[] { formDataObject.getName(),
                                            Utilities.getShortClassName(ex.getClass()),
                                            ex.getMessage() }),
                         NotifyDescriptor.ERROR_MESSAGE));
@@ -311,7 +402,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
             designer.open();
             designer.requestFocus();
 
-            ComponentInspector.getInstance().focusForm(formModel, true);
+            ComponentInspector.getInstance().focusForm(this, true);
         }
         // if this is not "editing" workspace, attach a listener on
         // workspace switching and wait for the editing one
@@ -329,10 +420,10 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     // saving
 
     private void saveForm() {
-        if (formLoaded && !formObject.formFileReadOnly()) {
+        if (formLoaded && !formDataObject.formFileReadOnly()) {
             formModel.fireFormToBeSaved();
             try {
-                saveManager.saveForm(formObject, formModel);
+                saveManager.saveForm(formDataObject, formModel);
             }
             catch (IOException e) {
                 e.printStackTrace();
@@ -366,13 +457,14 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
      */
     private void closeForm() {
 //        formModel.fireFormToBeClosed();
-        openForms.remove(this);
+        openForms.remove(formModel);
 
         // remove nodes hierarchy
-        formObject.getNodeDelegate().getChildren()
-            .remove(new RADComponentNode [] { formRootNode });
+        formDataObject.getNodeDelegate().getChildren()
+                                          .remove(new Node[] { formRootNode });
 
         // remove listeners
+        detachFormListener();
         detachWorkspacesListener();
         if (openForms.isEmpty()) {
             ComponentInspector.getInstance().focusForm(null, false);
@@ -380,19 +472,17 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
             detachTopComponentsListener();
         }
         else { // still any opened forms - focus some
-            FormModel model = (FormModel) openForms.values().iterator().next();
-            ComponentInspector.getInstance().focusForm(model);
+            FormEditorSupport next = (FormEditorSupport)
+                                     openForms.values().iterator().next();
+            ComponentInspector.getInstance().focusForm(next);
         }
 
         // close the designer
-        TopComponent formWin = getFormDesigner();
-        if (formWin != null) {
-            formWin.setCloseOperation(TopComponent.CLOSE_EACH);
-            formWin.close();
-
+        if (formDesigner != null) {
+            formDesigner.setCloseOperation(TopComponent.CLOSE_EACH);
+            formDesigner.close();
+            formDesigner = null;
         }
-
-        RADMenuItemComponent.freeDesignTimeMenus(formModel);
 
         // reset references
         formRootNode = null;
@@ -403,9 +493,51 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     // -----------
     // listeners
 
+    private void attachFormListener() {
+        if (formListener != null || formDataObject.isReadOnly())
+            return;
+
+        // this listener ensures necessary updates according to changes in form
+        formListener = new FormModelAdapter() {
+            public void formChanged(FormModelEvent e) {
+                // Mark form document modified explicitly when something changes
+                // (so it must have been saved then). This is normally
+                // done automatically by code regeneration, but not always.
+                markFormModified();
+            }
+
+            // the following methods perform node updates
+            public void containerLayoutChanged(FormModelEvent e) {
+                updateNodeChildren(e.getContainer());
+            }
+            public void componentLayoutChanged(FormModelEvent e) {
+                updateNodeChildren(e.getContainer());
+            }
+            public void componentAdded(FormModelEvent e) {
+                updateNodeChildren(e.getContainer());
+            }
+            public void componentRemoved(FormModelEvent e) {
+                updateNodeChildren(e.getContainer());
+            }
+            public void componentsReordered(FormModelEvent e) {
+                updateNodeChildren(e.getContainer());
+            }
+        };
+
+        formModel.addFormModelListener(formListener);
+    }
+
+    private void detachFormListener() {
+        if (formListener != null) {
+            formModel.removeFormModelListener(formListener);
+            formListener = null;
+        }
+    }
+
     private void attachWorkspacesListener() {
         openOnEditing = true;
-        if (workspacesListener != null) return;
+        if (workspacesListener != null)
+            return;
 
         workspacesListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -434,16 +566,14 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     }
 
     private static void attachSettingsListener() {
-        if (settingsListener != null) return;
+        if (settingsListener != null)
+            return;
 
         settingsListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 Enumeration enum = openForms.keys();
                 while (enum.hasMoreElements()) {
-                    FormEditorSupport fes = (FormEditorSupport)enum.nextElement();
-                    if (!fes.isOpened()) continue;
-
-                    FormModel formModel = fes.getFormModel();
+                    FormModel formModel = (FormModel)enum.nextElement();
                     String propName = evt.getPropertyName();
 
                     if (FormLoaderSettings.PROP_USE_INDENT_ENGINE.equals(propName)
@@ -474,17 +604,20 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     }
 
     private static void attachTopComponentsListener() {
-        if (topcompsListener != null) return;
+        if (topcompsListener != null)
+            return;
 
         topcompsListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 // we are interested in changing active TopComponent
                 if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
                     TopComponent tc = TopComponent.getRegistry().getActivated();
-//                    if (tc == null) return;
-                    if (!(tc instanceof JavaEditor.JavaEditorComponent)) return;
+                    if (!(tc instanceof JavaEditor.JavaEditorComponent))
+                        return;
+
                     Node[] nodes = tc.getActivatedNodes();
-                    if (nodes == null || nodes.length != 1) return;
+                    if (nodes == null || nodes.length != 1)
+                        return;
 
                     String componentName = tc.getName();
                     if (componentName.endsWith("*"))
@@ -492,15 +625,14 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                     componentName.trim();
                     boolean ext = componentName.endsWith(".java"); // NOI18N
 
-                    Enumeration enum = openForms.keys();
-                    while (enum.hasMoreElements()) {
-                        FormEditorSupport fes = (FormEditorSupport)enum.nextElement();
-                        String formName = fes.getFormObject().getName();
-                        if (ext) formName = formName + ".java"; // NOI18N
+                    Iterator it = openForms.values().iterator();
+                    while (it.hasNext()) {
+                        FormEditorSupport fes = (FormEditorSupport) it.next();
+                        String formName = fes.getFormDataObject().getName();
+                        if (ext)
+                            formName += ".java"; // NOI18N
                         if (formName.equals(componentName)) {
-//                            if (nodes[0].getCookie(DataObject.class) == fes.getFormObject()) {
-                            ComponentInspector.getInstance().focusForm(fes.getFormModel());
-//                            }
+                            ComponentInspector.getInstance().focusForm(fes);
                             break;
                         }
                     }
@@ -520,7 +652,6 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     }
 
     // ----------
-    // FormCookie implementation
 
     public void gotoEditor() {
         super.open();

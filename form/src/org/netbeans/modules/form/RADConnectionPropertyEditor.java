@@ -537,15 +537,24 @@ public class RADConnectionPropertyEditor
                 el.setAttribute(ATTR_REQUIRED_TYPE, designValue.requiredTypeName);
                 break;
             case RADConnectionDesignValue.TYPE_PROPERTY:
-                el.setAttribute(ATTR_COMPONENT, designValue.radComponent.getName());
+                el.setAttribute(ATTR_COMPONENT,
+                                designValue.radComponent != null ?
+                                    designValue.radComponent.getName() :
+                                    designValue.radComponentName);
                 el.setAttribute(ATTR_NAME, designValue.propertyName);
                 break;
             case RADConnectionDesignValue.TYPE_METHOD:
-                el.setAttribute(ATTR_COMPONENT, designValue.radComponent.getName());
+                el.setAttribute(ATTR_COMPONENT,
+                                designValue.radComponent != null ?
+                                    designValue.radComponent.getName() :
+                                    designValue.radComponentName);
                 el.setAttribute(ATTR_NAME, designValue.methodName);
                 break;
             case RADConnectionDesignValue.TYPE_BEAN:
-                el.setAttribute(ATTR_COMPONENT, designValue.radComponent.getName());
+                el.setAttribute(ATTR_COMPONENT,
+                                designValue.radComponent != null ?
+                                    designValue.radComponent.getName() :
+                                    designValue.radComponentName);
                 break;
             case RADConnectionDesignValue.TYPE_CODE:
                 el.setAttribute(ATTR_CODE, designValue.userCode);

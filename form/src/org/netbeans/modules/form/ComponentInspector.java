@@ -61,8 +61,9 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
     private static ResourceBundle formBundle = FormEditor.getFormBundle();
     
     /** Currently focused form or null if no form is opened/focused */
-    private FormModel formModel;
-    private boolean focusingOnModel = false;
+    private FormEditorSupport focusedForm;
+//    private FormModel formModel;
+    private boolean focusingOnForm = false;
 
     private SplittedPanel split;
     private PropertySheetView sheet;
@@ -114,10 +115,10 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
         public void propertyChange(PropertyChangeEvent evt) {
             if (!ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()))
                 return;
-            if (formModel == null)
+            if (focusedForm == null)
                 return;
             
-            FormDesigner designer = formModel.getFormDesigner();
+            FormDesigner designer = focusedForm.getFormDesigner();
             if (designer == null)
                 return;
                         
@@ -140,7 +141,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
                 if (cookie != null)
                     designer.connectBean(cookie.getRADComponent());
             }
-            else if (!focusingOnModel) {
+            else if (!focusingOnForm) {
                 designer.clearSelectionImpl();
                 
                 for (int i = 0; i < selectedNodes.length; i++) {
@@ -190,61 +191,66 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
     }
 
     /** This method focuses the ComponentInspector on given form.
-     * @param formModel form to be focused on
+     * @param form the form to focus on
      */
-    public void focusForm(final FormModel formModel) {
-        if (this.formModel != formModel)
-            focusFormInAwtThread(formModel, 0);
+    public void focusForm(final FormEditorSupport form) {
+        if (focusedForm != form)
+            focusFormInAwtThread(form, 0);
     }
 
     /** This method focuses the ComponentInspector on given form.
-     * @param formModel form to be focused on
+     * @param form the form to focus on
      * @param visible true to open inspector, false to close
      */
-    public void focusForm(final FormModel formModel, boolean visible) {
-        if (this.formModel != formModel)
-            focusFormInAwtThread(formModel, visible ? 1 : -1);
+    public void focusForm(final FormEditorSupport form, boolean visible) {
+        if (focusedForm != form)
+            focusFormInAwtThread(form, visible ? 1 : -1);
     }
 
-    private void focusFormInAwtThread(final FormModel formModel, final int visibility) {
+    private void focusFormInAwtThread(final FormEditorSupport form,
+                                      final int visibility) {
         if (java.awt.EventQueue.isDispatchThread()) {
-            focusFormImpl(formModel, visibility);
+            focusFormImpl(form, visibility);
         }
         else {
             java.awt.EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    focusFormImpl(formModel, visibility);
+                    focusFormImpl(form, visibility);
                 }
             });
         }
     }
 
-    private void focusFormImpl(FormModel formModel, int visibility) {
-        this.formModel = formModel;
-        
-        testAction.setFormModel(formModel);
-        inspectorAction.setEnabled(formModel != null);
+    private void focusFormImpl(FormEditorSupport form, int visibility) {
+        focusedForm = form;
 
-        if (formModel == null) {
+        if (form == null) {
+            testAction.setFormModel(null);
+            inspectorAction.setEnabled(false);
+
             // swing memory leak workaround
             remove(split);
             createSplit();
+
             getExplorerManager().setRootContext(emptyInspectorNode);
         }
         else {
-            Node formNode = formModel.getFormEditorSupport().getFormRootNode();
+            testAction.setFormModel(form.getFormModel());
+            inspectorAction.setEnabled(true);
+
+            Node formNode = form.getFormRootNode();
             // XXX how can it be null?
             if (formNode == null) {
                 System.err.println("Warning: FormEditorSupport.getFormRootNode() returns null");
                 getExplorerManager().setRootContext(emptyInspectorNode);
             }
             else {
-                sheet.setDisplayWritableOnly(!formModel.isReadOnly()
+                sheet.setDisplayWritableOnly(!form.getFormModel().isReadOnly()
                      && FormEditor.getFormSettings().getDisplayWritableOnly());
 
-                focusingOnModel = true;
+                focusingOnForm = true;
                 getExplorerManager().setRootContext(formNode);
-                focusingOnModel = false;
+                focusingOnForm = false;
             }
         }
         updateTitle();
@@ -260,18 +266,20 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
     protected void updateTitle() {
         String title;
 
-        if (formModel == null)
+        if (focusedForm == null)
             setName(formBundle.getString("CTL_InspectorTitle"));
         else
-            setName(formModel.getFormDataObject().getName());
+            setName(focusedForm.getFormModel().getName());
     }
 
-    FormModel getFocusedForm() {
-        return formModel;
+    FormEditorSupport getFocusedForm() {
+        return focusedForm;
     }
 
-    void setSelectedNodes(Node[] nodes, FormModel model) throws PropertyVetoException {
-        if (model == formModel) {
+    void setSelectedNodes(Node[] nodes, FormEditorSupport form)
+    throws PropertyVetoException
+    {
+        if (form == focusedForm) {
             getExplorerManager().setSelectedNodes(nodes);
         }
     }

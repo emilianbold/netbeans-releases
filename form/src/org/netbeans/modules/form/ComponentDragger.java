@@ -136,7 +136,7 @@ class ComponentDragger
             RADVisualComponent metacomp = (RADVisualComponent) newComponents.get(i);
             if (metacomp != null) {
                 RADVisualContainer parentCont = metacomp.getParentContainer();
-                if (metacomp.getParentContainer() == targetMetaContainer)
+                if (parentCont == targetMetaContainer)
                     layoutSupport.removeComponent(metacomp);
                 else
                     parentCont.remove(metacomp);
@@ -169,7 +169,6 @@ class ComponentDragger
             layoutSupport.addComponent(metacomp, constr);
         }
 
-        targetMetaContainer.getNodeReference().updateChildren();
         formDesigner.getModel().fireContainerLayoutChanged(targetMetaContainer,
                                                            null, null);
 
@@ -324,11 +323,11 @@ class ComponentDragger
         if (!(metacomp instanceof RADVisualContainer))
             return true;
 
-        RADVisualContainer targetCont = targetMetaContainer;
+        RADComponent targetCont = targetMetaContainer;
         while (targetCont != null) {
             if (targetCont == metacomp)
                 return false;
-            targetCont = targetCont.getParentContainer();
+            targetCont = targetCont.getParentComponent();
         }
 
         return true;

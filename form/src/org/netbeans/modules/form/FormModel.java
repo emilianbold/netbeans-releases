@@ -11,61 +11,114 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form;
 
-import java.awt.*;
 import java.util.*;
-import java.util.List;
-import java.text.MessageFormat;
 import javax.swing.event.EventListenerList;
-
-import org.openide.*;
-import org.openide.nodes.*;
-
-import org.netbeans.modules.form.forminfo.*;
-import org.netbeans.modules.form.palette.*;
+import org.openide.src.*;
 import org.netbeans.modules.form.layoutsupport.LayoutSupport;
 
 /**
  * Holds all data of a form.
  * 
- * @author Tran Duc Trung
+ * @author Tran Duc Trung, Tomas Pavek
  */
 
 public class FormModel
 {
-    private FormDataObject formDataObject;
+    // the top metacomponent of the form (null if form is based on Object)
+    private RADComponent topRADComponent;
+
+    // the class on which the form is based (which is extended in the java file)
+    private Class formBaseClass;
+
+    // other components - out of the main hierarchy under topRADComponent
+    private ArrayList otherComponents = new ArrayList(10);
+
+    // holds both topRADComponent and otherComponents
+    private ComponentContainer modelContainer;
+
+    // name of the form (name of the DataObject)
+    private String formName;
+
     private boolean readOnly = false;
     private boolean formLoaded = false;
 
-    private FormInfo formInfo;
-    private RADComponent topRADComponent;
-
-    private CodeGenerator codeGenerator;
     private FormEventHandlers eventHandlers;
     private VariablePool variablePool;
 
-    private ArrayList nonVisualComponents = new ArrayList(10);
-    private NonVisualChildren nonVisualChildren;
-    private ComponentContainer nonVisualsContainer;
-
+    // list of listeners registered on FormModel
     private final EventListenerList listenerList = new EventListenerList();
 
     private MetaComponentCreator metaCreator;
 
-    private FormDesigner formDesigner;
+    private CodeGenerator codeGenerator; // [the reference should be removed]
+
+    // -------------
+    // initialization
 
     FormModel() {
     }
 
-    void setFormDataObject(FormDataObject fdo) {
-        formDataObject = fdo;
-        readOnly = fdo.isReadOnly();
+    /** This methods sets the form base class (which is in fact the superclass
+     * of the form class in source java file). It is used for initializing
+     * the top meta component, and is also presented as the top component
+     * in designer and inspector.
+     */
+    public void setFormBaseClass(Class formClass) throws Exception {
+        if (formBaseClass != null)
+            throw new IllegalStateException("Form type already initialized."); // NOI18N
+
+        RADComponent topComp;
+        if (java.awt.Component.class.isAssignableFrom(formClass))
+            topComp = new RADVisualFormContainer();
+        else if (java.lang.Object.class != formClass)
+            topComp = new RADFormContainer();
+        else topComp = null;
+
+        if (topComp != null) {
+            topComp.initialize(this);
+            topComp.initInstance(formClass);
+        }
+
+        formBaseClass = formClass;
+        topRADComponent = topComp;
     }
 
-    public final FormDataObject getFormDataObject() {
-        return formDataObject;
+    public Class getFormBaseClass() {
+        return formBaseClass;
+    }
+
+    /** Initializes the form from SourceElement (representing a source file).
+     */
+    public void initialize(SourceElement source) throws Exception {
+        initialize(source.getClasses()[0]);
+    }
+
+    /** Initializes the form from a ClassElement (representing one class
+     * in a source file).
+     */
+    public void initialize(ClassElement cle) throws Exception {
+        Class formClass;
+        Identifier superClass = cle.getSuperclass();
+
+        if (superClass != null)
+            formClass = org.openide.TopManager.getDefault().currentClassLoader()
+                                           .loadClass(superClass.getFullName());
+        else formClass = Object.class;
+
+        setFormBaseClass(formClass);
+    }
+
+    void setName(String name) {
+        formName = name;
+    }
+
+    // -----------
+    // getters
+
+    public final String getName() {
+        return formName;
     }
 
     public final boolean isReadOnly() {
@@ -76,68 +129,81 @@ public class FormModel
         return formLoaded;
     }
 
-    void setFormInfo(FormInfo fi) {
-        formInfo = fi;
-        if (formInfo.getTopContainer() != null) {
-            topRADComponent = new RADVisualFormContainer(formInfo);
-        }
-        else {
-            topRADComponent = new RADFormContainer(formInfo);
-        }
-        topRADComponent.initialize(this);
-        topRADComponent.setComponent(formInfo.getFormInstance().getClass());
-
-        Object refInstance = formInfo.getFormInstance();
-        Object instance = topRADComponent.getBeanInstance();
-        if (refInstance instanceof java.applet.Applet
-            || refInstance instanceof Frame
-            || refInstance instanceof Panel
-            || refInstance instanceof Dialog)
-        {
-            Component refComp = (Component) refInstance;
-            Component comp = (Component) instance;
-            
-            comp.setBackground(refComp.getBackground());
-            comp.setForeground(refComp.getForeground());
-            comp.setFont(refComp.getFont());
-        }
-        topRADComponent.setName(formDataObject.getName());
+    public final FormDesigner getFormDesigner() {
+        return FormEditorSupport.getFormDesigner(this);
     }
 
-    FormInfo getFormInfo() {
-        return formInfo;
+    // for compatibility with previous version
+    public final FormDataObject getFormDataObject() {
+        return FormEditorSupport.getFormDataObject(this);
     }
 
-    public RADComponent getTopRADComponent() {
+    public ComponentContainer getModelContainer() {
+        if (modelContainer == null)
+            modelContainer = new ModelContainer();
+        return modelContainer;
+    }
+
+    public final RADComponent getTopRADComponent() {
         return topRADComponent;
     }
 
-    public List getMetaComponents() {
-        ArrayList list = new ArrayList();
-
-        list.add(topRADComponent);
-        if (topRADComponent instanceof ComponentContainer)
-            collectMetaComponents((ComponentContainer)topRADComponent, list);
-
-        for (Iterator it=nonVisualComponents.iterator(); it.hasNext(); ) {
-            Object comp = it.next();
-            list.add(comp);
-            if (comp instanceof ComponentContainer)
-                collectMetaComponents((ComponentContainer)comp, list);
+    public RADComponent findRADComponent(String name) {
+        Iterator allComps = getMetaComponents().iterator();
+        while (allComps.hasNext()) {
+            RADComponent comp = (RADComponent) allComps.next();
+            if (name.equals(comp.getName()))
+                return comp;
         }
 
-        return Collections.unmodifiableList(list);
+        return null;
     }
 
-    public RADComponent[] getVisualComponents() {
+    /** Returns all meta components in the model. The components are collected
+     * recursively, and placed in a List.
+     */
+    public java.util.List getMetaComponents() {
         ArrayList list = new ArrayList();
-        list.add(topRADComponent);
-        if (topRADComponent instanceof ComponentContainer)
-            collectMetaComponents((ComponentContainer) topRADComponent, list);
+        collectMetaComponents(getModelContainer(), list);
+        return list; //Collections.unmodifiableList(list);
+    }
+
+    /** Collects and returns all components in the main visual hierarchy.
+     */
+    public RADVisualComponent[] getVisualComponents() {
+        ArrayList list = new ArrayList();
+        if (topRADComponent instanceof RADVisualComponent)
+            list.add(topRADComponent);
+        if (topRADComponent instanceof RADVisualContainer)
+            collectVisualMetaComponents((RADVisualContainer)topRADComponent, list);
+
+        return (RADVisualComponent[])
+               list.toArray(new RADVisualComponent[list.size()]);
+    }
+
+    /** Returns all "other components" (not in the main hierarchy).
+     * @param recursively whether also all sub-componets should be collected
+     */
+    public RADComponent[] getOtherComponents(boolean recursively) {
+        ArrayList list = new ArrayList();
+        for (Iterator it=otherComponents.iterator(); it.hasNext(); ) {
+            RADComponent comp = (RADComponent) it.next();
+            list.add(comp);
+            if (recursively && comp instanceof ComponentContainer)
+                collectMetaComponents((ComponentContainer) comp, list);
+        }
+
         return (RADComponent[]) list.toArray(new RADComponent[list.size()]);
     }
 
-    private static void collectMetaComponents(ComponentContainer cont, ArrayList list) {
+    // for compatibility with previous version
+    public RADComponent[] getNonVisualComponents() {
+        return (RADComponent[]) otherComponents.toArray(
+                                new RADComponent[otherComponents.size()]); 
+    }
+
+    private static void collectMetaComponents(ComponentContainer cont,
+                                              java.util.List list) {
         RADComponent[] comps = cont.getSubBeans();
         for (int i = 0; i < comps.length; i++) {
             RADComponent comp = comps[i];
@@ -147,131 +213,48 @@ public class FormModel
         }
     }
 
-    RADComponent getParentComponent(RADComponent comp) {
-        if (comp instanceof RADVisualComponent)
-            return ((RADVisualComponent)comp).getParentContainer();
-
-        if (comp instanceof RADMenuItemComponent)
-            return ((RADMenuItemComponent)comp).getParentMenu();
-
-        return null;
-    }
-
-    //
-    // {{{ non-visual components
-    //
-
-    void initNonVisualComponents(RADComponent[] comps) {
+    private static void collectVisualMetaComponents(RADVisualContainer cont,
+                                                    java.util.List list) {
+        RADVisualComponent[] comps = cont.getSubComponents();
         for (int i = 0; i < comps.length; i++) {
-            nonVisualComponents.add(comps[i]);
+            RADComponent comp = comps[i];
+            list.add(comp);
+            if (comp instanceof RADVisualContainer)
+                collectVisualMetaComponents((RADVisualContainer) comp, list);
         }
     }
 
-    void addNonVisualComponent(RADComponent comp, ComponentContainer parentContainer) {
-//        comp.setName(variablePool.getNewName(comp.getBeanClass()));
-        checkComponentNames(comp);
-        if (parentContainer == null) {
-            nonVisualComponents.add(comp);
-            getNonVisualChildren().updateKeys(this);
-        } else {
-            parentContainer.add(comp);
-        }
+    // -----------
+    // adding/deleting components, setting layout, etc
 
-        fireComponentAdded(comp, parentContainer);
-    }
-    
-    public ComponentContainer getNonVisualsContainer() {
-        if (nonVisualsContainer == null) {
-            nonVisualsContainer = new ComponentContainer() {
-                public RADComponent[] getSubBeans() {
-                    return getNonVisualComponents();
-                }
-
-                public void initSubComponents(RADComponent[] initComponents) {
-                    initNonVisualComponents(initComponents);
-                }
-
-                public void reorderSubComponents(int[] perm) {
-                    reorderNonVisualComponents(perm);
-                }
-
-                public void add(RADComponent comp) {
-                    throw new InternalError(); // should not be used
-                }
-
-                public void remove(RADComponent comp) {
-                    throw new InternalError(); // should not be used
-                }
-
-                public int getIndexOf(RADComponent comp) {
-                    throw new InternalError(); // should not be used
-                }
-            };
-        }
-        return nonVisualsContainer;
-    }
-
-    public RADComponent[] getNonVisualComponents() {
-        return (RADComponent[]) nonVisualComponents.toArray(
-                                new RADComponent[nonVisualComponents.size()]); 
-    }
-
-    void reorderNonVisualComponents(int[] perm) {
-        for (int i = 0; i < perm.length; i++) {
-            int from = i;
-            int to = perm[i];
-            if (from == to) continue;
-            Object value = nonVisualComponents.remove(from);
-            if (from < to) {
-                nonVisualComponents.add(to - 1, value);
-            } else {
-                nonVisualComponents.add(to, value);
-            }
-        }
-        fireComponentsReordered(null); // no container for non-visuals...
-    }
-
-    NonVisualChildren getNonVisualChildren() {
-        if (nonVisualChildren == null) {
-            nonVisualChildren = new NonVisualChildren(this);
-        }
-        return nonVisualChildren;
-    }
-
-    // }}}
-
-
-    //
-    // {{{ adding/deleting components, setting layout
-    //
-
-    MetaComponentCreator getComponentCreator() {
+    /** Returns MetaComponentCreator which is responsible for creating new
+     * components and adding them to the model.
+     */
+    public MetaComponentCreator getComponentCreator() {
         if (metaCreator == null)
             metaCreator = new MetaComponentCreator(this);
         return metaCreator;
     }
 
-    /**
-     * Check if the names of all subcomponents are valid variables.  This check
-     * must be done for cut/paste between two different forms since names of
-     * pasted components(valid in form from which they were cutted) can be
-     * already used in target form.
-     */
-    private void checkComponentNames(RADComponent comp) {
-        comp.useStoredName();
-        if (comp instanceof ComponentContainer) {
-            RADComponent comps[] =((ComponentContainer) comp).getSubBeans();
-            for (int i=0, n=comps.length; i<n; i++) {
-                checkComponentNames(comps[i]);
-            }
+    public void addComponent(RADComponent comp,
+                      ComponentContainer parentContainer) {
+        checkComponentNames(comp);
+
+        if (parentContainer != null) {
+            parentContainer.add(comp);
         }
+        else {
+            comp.setParentComponent(null);
+            otherComponents.add(comp);
+        }
+
+        fireComponentAdded(comp);
     }
 
     public void setContainerLayout(RADVisualContainer metacont,
                                    LayoutSupport layoutSupport) {
         LayoutSupport current = metacont.getLayoutSupport();
         metacont.setLayoutSupport(layoutSupport);
-        ((RADChildren)metacont.getNodeReference().getChildren()).updateKeys();
         fireContainerLayoutChanged(metacont, current, layoutSupport);
     }
 
@@ -288,54 +271,34 @@ public class FormModel
         if (layoutSup != null)
             layoutSup.addComponent(comp, constraints);
 
-        fireComponentAdded(comp, parentContainer);
+        fireComponentAdded(comp);
     }
 
-    void removeComponent(RADComponent comp) {
-        if (comp instanceof RADVisualComponent) {
-            RADVisualComponent vcomp = (RADVisualComponent) comp;
-            vcomp.getParentContainer().remove(vcomp);
-            vcomp.resetConstraintsProperties();
-        }
-        else if (comp instanceof RADMenuItemComponent) {
-            RADMenuItemComponent menuComp = (RADMenuItemComponent)comp;
-            if (menuComp.getParentMenu() == null) { // top-level menu
-                nonVisualComponents.remove(comp);
-                getNonVisualChildren().updateKeys(this);
+    public void removeComponent(RADComponent comp) {
+        RADComponent parent = comp.getParentComponent();
+        ComponentContainer parentContainer =
+            parent instanceof ComponentContainer ?
+                (ComponentContainer) parent : getModelContainer();
 
-                // if removing menu currently used as form's main menu, remove it
-                if (comp instanceof RADMenuComponent) {
-                    RADVisualFormContainer form = (RADVisualFormContainer)topRADComponent;
-                    if (form.getFormMenu() != null
-                            && form.getFormMenu().equals(comp.getName()))
-                        form.setFormMenu(null);
-                }
-            }
-            else menuComp.getParentMenu().remove(menuComp);
-        }
-        else {
-            nonVisualComponents.remove(comp);
-            getNonVisualChildren().updateKeys(this);
-        }
+        parentContainer.remove(comp);
 
-        fireComponentRemoved(comp);
+        if (comp instanceof RADVisualComponent)
+            ((RADVisualComponent)comp).resetConstraintsProperties();
+
+        fireComponentRemoved(comp, parentContainer);
     }
 
-    void deleteComponent(RADComponent comp) {
-        // remove component from its parent
+    public void deleteComponent(RADComponent comp) {
+        if (eventHandlers != null)
+            deleteEventHandlersRecursively(comp);
+
         removeComponent(comp);
 
-        if (comp instanceof RADMenuItemComponent)
-            ((RADMenuItemComponent)comp).freeMenu();
-        
-        deleteEventHandlersRecursively(comp);
-        if (eventHandlers!=null) 
-            eventHandlers.setNeed2Notify(true);
         deleteVariables(comp);
     }
 
     // recursively searches for subcomponents and deletes their attached events
-    void deleteEventHandlersRecursively(RADComponent comp) {
+    private void deleteEventHandlersRecursively(RADComponent comp) {
         if (comp instanceof ComponentContainer) {
             RADComponent[] subcomps = ((ComponentContainer)comp).getSubBeans();
             if (subcomps!=null) {
@@ -348,7 +311,7 @@ public class FormModel
     }
     
     // delete attached events
-    void deleteEventHandlers(RADComponent comp) {
+    private void deleteEventHandlers(RADComponent comp) {
         EventSet[] eventSets = comp.getEventHandlers().getEventSets();
         for (int i = 0; i < eventSets.length; i++) {
             Event[] events = eventSets[i].getEvents();
@@ -359,14 +322,9 @@ public class FormModel
             }
         }
     }
-    
-    
-    
-    // }}}
 
-    //
-    // {{{ event and listeners
-    // 
+    // ----------
+    // events and listeners
 
     public void addFormModelListener(FormModelListener l) {
         listenerList.add(FormModelListener.class, l);
@@ -386,9 +344,6 @@ public class FormModel
   		((FormModelListener)listeners[i+1]).formChanged(e);
   	    }
   	}
-
-        if (!readOnly) // form should be marked as modified explicitly
-            getFormEditorSupport().markFormModified();
     }
 
     public void fireFormLoaded() {
@@ -465,18 +420,12 @@ public class FormModel
                 l.formChanged(e);
             }
         }
-
-        // Form should be marked as modified explicitly in case of a property
-        // change of serialized bean (the change didn't affect generated code).
-        if (!readOnly)
-            getFormEditorSupport().markFormModified();
     }
 
-    public void fireComponentAdded(RADComponent metacomp,
-                                   ComponentContainer metacont) {
+    public void fireComponentAdded(RADComponent metacomp) {
         t("componentAdded, component: " // NOI18N
           + (metacomp != null ? metacomp.getName() : "null")); // NOI18N
-        FormModelEvent e = new FormModelEvent(this, metacomp, metacont);
+        FormModelEvent e = new FormModelEvent(this, metacomp);
 
   	Object[] listeners = listenerList.getListenerList();
   	for (int i = listeners.length - 2; i >= 0; i -= 2) {
@@ -488,10 +437,11 @@ public class FormModel
   	}
     }
     
-    public void fireComponentRemoved(RADComponent metacomp) {
+    public void fireComponentRemoved(RADComponent metacomp,
+                                     ComponentContainer metacont) {
         t("componentRemoved, component: " // NOI18N
           + (metacomp != null ? metacomp.getName() : "null")); // NOI18N
-        FormModelEvent e = new FormModelEvent(this, metacomp);
+        FormModelEvent e = new FormModelEvent(this, metacomp, metacont);
 
   	Object[] listeners = listenerList.getListenerList();
   	for (int i = listeners.length - 2; i >= 0; i -= 2) {
@@ -505,7 +455,8 @@ public class FormModel
 
     public void fireComponentsReordered(ComponentContainer metacont) {
         t("componentsReordered, container: " // NOI18N
-          + (metacont != null ? ((RADComponent)metacont).getName() : "null")); // NOI18N
+          + (metacont instanceof RADComponent ?
+             ((RADComponent)metacont).getName() : "<top>")); // NOI18N
         FormModelEvent e = new FormModelEvent(this, metacont);
 
   	Object[] listeners = listenerList.getListenerList();
@@ -536,13 +487,6 @@ public class FormModel
                 l.formChanged(e);
   	    }
   	}
-
-        // If changed property is of a serialized component, it may not change
-        // generated code of the source file - so the form data object is not
-        // marked as modified and cannot be saved - though there are unsaved
-        // changes. So form should be marked as modified explicitly if needed.
-        if (!readOnly)
-            getFormEditorSupport().markFormModified();
     }
 
     public void fireSyntheticPropertyChanged(RADComponent metacomp,
@@ -563,26 +507,40 @@ public class FormModel
                 l.formChanged(e);
   	    }
   	}
-
-        // Form should be marked as modified explicitly in case the change
-        // did not affect generated code.
-        if (!readOnly)
-            getFormEditorSupport().markFormModified();
     }
 
+    // not implemented yet
     public void fireEventHandlerAdded(EventHandler handler) {
         t("eventHandlerAdded"); // NOI18N
     }
 
+    // not implemented yet
     public void fireEventHandlerRemoved(EventHandler handler, String oldName) {
         t("eventHandlerRemoved"); // NOI18N
     }
 
+    // not implemented yet
     public void fireEventHandlerRenamed(EventHandler handler) {
         t("eventHandlerRenamed"); // NOI18N
     }
 
-    // }}}
+    // -------------
+
+    /**
+     * Check if the names of all subcomponents are valid variables.  This check
+     * must be done for cut/paste between two different forms since names of
+     * pasted components(valid in form from which they were cutted) can be
+     * already used in target form.
+     */
+    private void checkComponentNames(RADComponent comp) {
+        comp.useStoredName();
+        if (comp instanceof ComponentContainer) {
+            RADComponent comps[] =((ComponentContainer) comp).getSubBeans();
+            for (int i=0, n=comps.length; i<n; i++) {
+                checkComponentNames(comps[i]);
+            }
+        }
+    }
 
     private void deleteVariables(RADComponent comp) {
         variablePool.deleteVariable(comp.getName());
@@ -606,22 +564,19 @@ public class FormModel
         return variablePool;
     }
 
-    FormEditorSupport getFormEditorSupport() {
-        return formDataObject.getFormEditor();
-    }
-
     CodeGenerator getCodeGenerator() {
-        if (codeGenerator == null) {
+//        return FormEditorSupport.getCodeGenerator(this);
+        if (codeGenerator == null)
             codeGenerator = new JavaCodeGenerator();
-//            codeGenerator.initialize(this);
-        }
         return codeGenerator;
     }
 
+    // [only for compatibility with old DesignLayout classes, should be removed]
     public int getMode() {
         return 1;//DesignLayout.DESIGN_MODE;
     }
     
+    // [only for compatibility with old DesignLayout classes, should be removed]
     public void setMode(int mode) {
     }
     
@@ -629,14 +584,17 @@ public class FormModel
         getCodeGenerator().initialize(this);
     }
 
+    // [only for compatibility with old DesignLayout classes, should be removed]
     public boolean isTestMode() {
         return false;
     }
 
+    // [only for compatibility with old DesignLayout classes, should be removed]
     public void setTestMode(boolean test) {
     }
 
-    public Component getVisualRepresentation(RADComponent radComp) {
+    // [only for compatibility with old DesignLayout classes, should be removed]
+    public java.awt.Component getVisualRepresentation(RADComponent radComp) {
         if (radComp instanceof RADVisualComponent) {
 //            Component comp =(Component)radToSelection.get(radComp);
 //            if (comp == null) {
@@ -648,40 +606,61 @@ public class FormModel
         }
     }
 
-    void setFormDesigner(FormDesigner designer) {
-        formDesigner = designer;
-    }
-    
-    public FormDesigner getFormDesigner() {
-        if (formDesigner == null) {
-            if (!formLoaded)
-                System.err.println("[Warning] Form designer requested before form loaded.");
+    // ---------------
+    // ModelContainer innerclass
 
-            formDesigner = new FormDesigner(this);
-            String name = formDataObject.getName();
-            if (isReadOnly())
-                name += " " + FormEditor.getFormBundle().getString("CTL_FormTitle_RO"); // NOI18N
-            formDesigner.setName(name);
-
-//            formDesigner.setName(java.text.MessageFormat.format(
-//                FormEditor.getFormBundle().getString(formDataObject.isReadOnly() ?
-//                             "FMT_FormWindowTitle_RO" : "FMT_FormWindowTitle"), // NOI18N
-//                new Object[] { formDataObject.getName() }));
-        }
-        return formDesigner;
-    }
-
-    public RADComponent findRADComponent(String name) {
-        for (Iterator allComps = getMetaComponents().iterator(); allComps.hasNext();) {
-            RADComponent comp =(RADComponent)allComps.next();
-            if (name.equals(comp.getName())) return comp;
+    final class ModelContainer implements ComponentContainer {
+        public RADComponent[] getSubBeans() {
+            int n = otherComponents.size();
+            if (topRADComponent != null)
+                n++;
+            RADComponent[] comps = new RADComponent[n];
+            otherComponents.toArray(comps);
+            if (topRADComponent != null)
+                comps[n-1] = topRADComponent;
+            return comps;
         }
 
-        return null;
+        public void initSubComponents(RADComponent[] initComponents) {
+            otherComponents.clear();
+            for (int i = 0; i < initComponents.length; i++)
+                otherComponents.add(initComponents[i]);
+        }
+
+        public void reorderSubComponents(int[] perm) {
+            for (int i = 0; i < perm.length; i++) {
+                int from = i;
+                int to = perm[i];
+                if (from == to)
+                    continue;
+                Object value = otherComponents.remove(from);
+                if (from < to)
+                    otherComponents.add(to - 1, value);
+                else
+                    otherComponents.add(to, value);
+            }
+        }
+
+        public void add(RADComponent comp) {
+            comp.setParentComponent(null);
+            otherComponents.add(comp);
+        }
+
+        public void remove(RADComponent comp) {
+            if (otherComponents.remove(comp))
+                comp.setParentComponent(null);
+        }
+
+        public int getIndexOf(RADComponent comp) {
+            int index = otherComponents.indexOf(comp);
+            if (index < 0 && comp == topRADComponent)
+                index = otherComponents.size();
+            return index;
+        }
     }
 
     // ---------------
-    
+
     /** For debugging purposes only. */
     static private int traceCount = 0;
     /** For debugging purposes only. */

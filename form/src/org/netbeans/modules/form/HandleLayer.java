@@ -29,7 +29,6 @@ import org.openide.nodes.NodeOp;
 import org.openide.awt.MouseUtils;
 import org.openide.util.actions.SystemAction;
 
-import org.netbeans.modules.form.forminfo.*;
 import org.netbeans.modules.form.palette.*;
 
 import org.netbeans.modules.form.layoutsupport.*;
@@ -192,7 +191,7 @@ class HandleLayer extends JPanel
         Component comp = SwingUtilities.getDeepestComponentAt(
             componentLayer, point.x, point.y);
 
-        RADComponent topMetaComp = formDesigner.getTopDesignContainer(),
+        RADComponent topMetaComp = formDesigner.getTopDesignComponent(),
                      firstMetaComp = null,
                      currMetaComp,
                      prevMetaComp = null;
@@ -246,7 +245,7 @@ class HandleLayer extends JPanel
         if (metacomp instanceof RADVisualContainer)
             return (RADVisualContainer) metacomp;
         if (metacomp instanceof RADVisualComponent)
-            return ((RADVisualComponent) metacomp).getParentContainer();
+            return (RADVisualContainer) metacomp.getParentComponent();
         return null;
     }
 
@@ -288,14 +287,16 @@ class HandleLayer extends JPanel
     }
 
     private void processDoubleClick(MouseEvent e) {
-        if (e.isShiftDown() || e.isControlDown()) return;
+        if (e.isShiftDown() || e.isControlDown())
+            return;
 
         RADComponent metacomp = getMetaComponentAt(e.getPoint(), COMP_SELECTED);
 
         if (e.isAltDown()) {
             if (metacomp instanceof RADVisualComponent) {
-                metacomp = ((RADVisualComponent)metacomp).getParentContainer();
-                if (metacomp == null) return;
+                metacomp = metacomp.getParentComponent();
+                if (metacomp == null)
+                    return;
             }
         }
 
@@ -311,11 +312,12 @@ class HandleLayer extends JPanel
 
     private void processMouseClickInLayoutSupport(RADComponent metacomp,
                                                   MouseEvent e) {
-        if (!(metacomp instanceof RADVisualComponent)) return;
+        if (!(metacomp instanceof RADVisualComponent))
+            return;
 
         RADVisualContainer metacont = metacomp instanceof RADVisualContainer ?
-                (RADVisualContainer)metacomp :
-                ((RADVisualComponent)metacomp).getParentContainer();
+                (RADVisualContainer) metacomp :
+                (RADVisualContainer) metacomp.getParentComponent();
 
         LayoutSupport laysup = metacont.getLayoutSupport();
         if (laysup instanceof LayoutSupportArranging) {
@@ -327,7 +329,7 @@ class HandleLayer extends JPanel
 
     private void showContextMenu(Point popupPos) {
         ComponentInspector ci = ComponentInspector.getInstance();
-        if (ci.getFocusedForm() != formDesigner.getModel())
+        if (ci.getFocusedForm() != formDesigner.getFormEditorSupport())
             formDesigner.componentActivated(); // might happen in one case...
 
         Node[] selectedNodes = ci.getSelectedNodes();
@@ -343,28 +345,35 @@ class HandleLayer extends JPanel
         List selectedComponents = formDesigner.getSelectedComponents();
         if (selectedComponents.size() == 0)
             return null;
-        
+
+        // all selected components must be visible in the designer
         List selComps = new ArrayList(selectedComponents.size());
         Iterator iter = selectedComponents.iterator();
         while (iter.hasNext()) {
             RADComponent metacomp = (RADComponent) iter.next();
             if (metacomp instanceof RADVisualComponent)
-                if (metacomp != formDesigner.getTopDesignContainer())
+                if (metacomp != formDesigner.getTopDesignComponent())
                     selComps.add(metacomp);
                 else return null;
         }
 
+        // remove selected components contained in another selected components
         Set children = new HashSet();
         iter = selComps.iterator();
         while (iter.hasNext()) {
-            RADVisualComponent metacomp = (RADVisualComponent) iter.next();
-            
+            RADComponent metacomp = (RADComponent) iter.next();
+
             Iterator iter2 = selComps.iterator();
             while (iter2.hasNext()) {
-                RADVisualComponent metacomp2 = (RADVisualComponent) iter2.next();
+                RADComponent metacomp2 = (RADComponent) iter2.next();
+                if (metacomp2 != metacomp
+                        && metacomp.isParentComponent(metacomp2))
+                    children.add(metacomp2);
+/*                RADVisualComponent metacomp2 = (RADVisualComponent) iter2.next();
                 if (metacomp2 != metacomp
                         && metacomp2 instanceof RADVisualContainer) {
-                    RADVisualContainer metacont = metacomp.getParentContainer();
+                    RADVisualContainer metacont = (RADVisualContainer)
+                                                  metacomp.getParentComponent();
                     while (metacont != null) {
                         if (metacont == metacomp2) {
                             children.add(metacomp);
@@ -372,7 +381,7 @@ class HandleLayer extends JPanel
                         }
                         metacont = metacont.getParentContainer();
                     }
-                }
+                } */
             }
         }
         selComps.removeAll(children);
@@ -402,14 +411,14 @@ class HandleLayer extends JPanel
 
     private void checkResizing(Point p) {
         // check wheteher all selected components are in the same container
-        RADVisualContainer parentCont = null;
+        RADComponent parent = null;
         Iterator selected = formDesigner.getSelectedComponents().iterator();
         while (selected.hasNext()) {
-            Object comp = selected.next();
+            RADComponent comp = (RADComponent) selected.next();
             if (comp instanceof RADVisualComponent) {
-                if (parentCont == null)
-                    parentCont = ((RADVisualComponent)comp).getParentContainer();
-                else if (((RADVisualComponent)comp).getParentContainer() != parentCont)
+                if (parent == null)
+                    parent = comp.getParentComponent();
+                else if (comp.getParentComponent() != parent)
                     return; // selected components are not in the same container
             }
         }
@@ -426,13 +435,14 @@ class HandleLayer extends JPanel
             if (metacomp instanceof RADVisualContainer)
                 metacont = (RADVisualContainer) metacomp;
             else
-                metacont = metacomp.getParentContainer();
+                metacont = (RADVisualContainer) metacomp.getParentComponent();
 
             RADVisualComponent[] metacomps = metacont.getSubComponents();
             for (int i=0; i < metacomps.length; i++) {
                 metacomp = metacomps[i];
                 resizing = getComponentResizable(p, metacomp);
-                if (resizing != 0) break;
+                if (resizing != 0)
+                    break;
             }
         }
         else resizing = getComponentResizable(p, metacomp);
@@ -454,8 +464,10 @@ class HandleLayer extends JPanel
         if (!formDesigner.isComponentSelected(metacomp))
             return 0;
 
-        RADVisualContainer metacont = metacomp.getParentContainer();
-        if (metacont == null || metacomp == formDesigner.getTopDesignContainer())
+        RADVisualContainer metacont = (RADVisualContainer)
+                                      metacomp.getParentComponent();
+        if (metacont == null
+                || metacomp == formDesigner.getTopDesignComponent())
             return 0;
 
         LayoutSupport laySup = metacont.getLayoutSupport();
@@ -539,7 +551,7 @@ class HandleLayer extends JPanel
 
         RADVisualContainer parentCont = metacomp instanceof RADVisualContainer ?
             (RADVisualContainer) metacomp :
-            ((RADVisualComponent)metacomp).getParentContainer();
+            (RADVisualContainer) metacomp.getParentComponent();
         if (parentCont == null)
             return null;
 
@@ -550,7 +562,7 @@ class HandleLayer extends JPanel
     }
 
     private void displayHint(RADComponent metacomp, Point p, PaletteItem item) {
-        if (metacomp == null) {
+        if (!(metacomp instanceof RADVisualComponent)) {
             TopManager.getDefault().setStatusText(""); // NOI18N
             return;
         }
@@ -560,7 +572,7 @@ class HandleLayer extends JPanel
         if (metacomp instanceof RADVisualContainer)
             metacont = (RADVisualContainer) metacomp;
         else
-            metacont = ((RADVisualComponent)metacomp).getParentContainer();
+            metacont = (RADVisualContainer) metacomp.getParentComponent();
 
         if (item.isLayout()) {
             LayoutSupport layoutSupp = metacont.getLayoutSupport();
@@ -683,9 +695,9 @@ class HandleLayer extends JPanel
                 if (!modifier)
                     lastLeftMousePoint = e.getPoint();
 
-                CPManager manager = CPManager.getDefault();
+                CPManager palette = CPManager.getDefault();
 
-                if (manager.getMode() == PaletteAction.MODE_SELECTION) {
+                if (palette.getMode() == PaletteAction.MODE_SELECTION) {
                     if (!modifier)
                         checkResizing(e.getPoint());
 
@@ -704,30 +716,27 @@ class HandleLayer extends JPanel
                             e.isControlDown() || e.isAltDown() ?
                             COMP_SELECTED : COMP_DEEPEST);
 
-                    if (manager.getMode() == PaletteAction.MODE_CONNECTION) {
+                    if (palette.getMode() == PaletteAction.MODE_CONNECTION) {
                         if (hitMetaComp != null)
                             formDesigner.connectBean(hitMetaComp);
                     }
-                    else if (manager.getMode() == PaletteAction.MODE_ADD) {
-                        PaletteItem item = manager.getSelectedItem();
-                        RADComponent targetComp;
-                        if (item.isMenu())
-                            targetComp = formDesigner.getModel().getTopRADComponent();
-                        else if (hitMetaComp == null)
-                            targetComp = formDesigner.getTopDesignContainer();
-                        else
-                            targetComp = hitMetaComp;
+                    else if (palette.getMode() == PaletteAction.MODE_ADD) {
+                        PaletteItem item = palette.getSelectedItem();
+                        Object constraints;
 
-                        Object constraints = !item.isVisual() ? null :
-                            getConstraintsAtPoint(targetComp, e.getPoint());
+                        if (!item.isMenu() && item.isVisual()) {
+                            constraints = getConstraintsAtPoint(hitMetaComp,
+                                                                e.getPoint());
+                        }
+                        else constraints = null;
 
                         formDesigner.getModel().getComponentCreator()
                             .createComponent(item.getInstanceCookie(),
-                                             targetComp,
+                                             hitMetaComp,
                                              constraints);
 
                         if ((e.getModifiers() & InputEvent.SHIFT_MASK) == 0)
-                            manager.setMode(PaletteAction.MODE_SELECTION);
+                            palette.setMode(PaletteAction.MODE_SELECTION);
                     }
                 }
                 e.consume();
@@ -757,12 +766,12 @@ class HandleLayer extends JPanel
         }
 
         public void mouseMoved(MouseEvent e) {
-            CPManager manager = CPManager.getDefault();
-            if (manager.getMode() == PaletteAction.MODE_ADD) {
+            CPManager palette = CPManager.getDefault();
+            if (palette.getMode() == PaletteAction.MODE_ADD) {
                 RADComponent hitMetaComp = getMetaComponentAt(e.getPoint(), COMP_DEEPEST);
-                displayHint(hitMetaComp, e.getPoint(), manager.getSelectedItem());
+                displayHint(hitMetaComp, e.getPoint(), palette.getSelectedItem());
             }
-            else if (manager.getMode() == PaletteAction.MODE_SELECTION) {
+            else if (palette.getMode() == PaletteAction.MODE_SELECTION) {
                 checkResizing(e.getPoint());
             }
         }

@@ -16,17 +16,11 @@ package org.netbeans.modules.form;
 
 import org.openide.nodes.Node;
 
-/** Cookie for Form operations.
+/** Cookie for obtaining FormModel.
  *
- * @author Ian Formanek
- * @version 0.10, May 26, 1998
+ * @author Tomas Pavek
  */
 public interface FormCookie extends Node.Cookie {
 
-    /** Focuses the source editor */
-    public void gotoEditor();
-
-    /** Focuses the form */
-    public void gotoForm();
-
+    public FormModel getFormModel();
 }

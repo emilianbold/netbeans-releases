@@ -133,14 +133,7 @@ public class FormDataObject extends JavaDataObject {
         node.addPropertyChangeListener(new java.beans.PropertyChangeListener () {
             public void propertyChange(java.beans.PropertyChangeEvent e) {
                 if (Node.PROP_NAME.equals(e.getPropertyName())) {
-                    RADComponentNode rootNode =
-                        (RADComponentNode)formEditor.getFormRootNode();
-                    if (rootNode != null)
-                        rootNode.updateName();
-                    
-                    FormDesigner designer = formEditor.getFormDesigner();
-                    if (designer != null)
-                        designer.updateName();
+                    formEditor.updateFormName(FormDataObject.this.getName());
                 }
             }
         });

@@ -14,7 +14,7 @@
 
 package org.netbeans.modules.form;
 
-import org.netbeans.modules.form.forminfo.FormInfo;
+//import org.netbeans.modules.form.forminfo.FormInfo;
 
 /**
  *
@@ -23,14 +23,14 @@ import org.netbeans.modules.form.forminfo.FormInfo;
 public class RADFormContainer extends RADContainer implements FormContainer {
 
     /** The form info of form represented by this RADFormContainer */
-    private FormInfo formInfo;
+//    private FormInfo formInfo;
 
     /** Creates new RADFormContainer for form specified by its FormInfo
      * @param formInfo the info describing the form type
      */
-    public RADFormContainer(FormInfo formInfo) {
-        this.formInfo = formInfo;
-    }
+//    public RADFormContainer(FormInfo formInfo) {
+//        this.formInfo = formInfo;
+//    }
 
     /** Getter for the Name property of the component - overriden to provide non-null value,
      * as the top-level component does not have a variable
@@ -54,9 +54,9 @@ public class RADFormContainer extends RADContainer implements FormContainer {
      * the default constructor 
      * @return the instance of the bean that will be used during design time 
      */
-    protected Object createBeanInstance() {
-        return formInfo.getFormInstance();
-    }
+//    protected Object createBeanInstance() {
+//        return formInfo.getFormInstance();
+//    }
 
     /** Called to obtain a Java code to be used to generate code to access the container for adding subcomponents.
      * It is expected that the returned code is either ""(in which case the form is the container) or is a name of variable
@@ -68,7 +68,7 @@ public class RADFormContainer extends RADContainer implements FormContainer {
 //    }
 
     /** @return the form info of form represented by this RADFormContainer */
-    public FormInfo getFormInfo() {
-        return formInfo;
-    }
+//    public FormInfo getFormInfo() {
+//        return formInfo;
+//    }
 }
