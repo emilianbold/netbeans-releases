@@ -198,6 +198,8 @@
 <!-- Start of J2EE Server help -->
   
 	<mapID target="about_server" url="server/about_server.html" />
+	<mapID target="server_context" url="server/server_context.html" />
+	<mapID target="server_start" url="server/server_start.html" />
 
 <!-- End of J2EE Server help -->
 	

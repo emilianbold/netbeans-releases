@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+
+<html>
+<head>
+<meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+
+<title>Setting a Context Path</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Setting a Context Path</h2>
+<p><small> 
+<a href="#seealso">See Also</a> 
+</small></p> 
+<p>When you execute a web application, the server uses a context 
+  path setting to derive the path to the web application. For example, if the context 
+  path is <tt>/directives</tt>, then you can access a file named <tt>index.html</tt> 
+  under the web application's document base (root directory) using 
+  the URL <tt>http://</tt><i>host</i><tt>:</tt><i>port</i><tt>/directives/index.html</tt>.</p>
+<p>You should set a context path for a web application if you plan to execute different 
+  web applications on the same server. Otherwise, files with the same name will overwrite 
+  files from other web applications. When you create a web application from the New Project wizard, 
+  the default context path is derived from the name of the
+  project.</td>
+<p><b>To set a web application's context path:</b></p>
+<ol>
+  <li>In the Projects window, right-click the project node and choose 
+      Properties from the contextual menu.</li>
+      <li>In the Project Properties dialog box, click Run
+      and type the Context Path. The path must begin with 
+      a forward slash (<tt>/</tt>), such as <tt>/directives</tt>.</li>
+</ol>
+<table cellpadding="3" cellspacing="0" border="0">
+   <tr valign="top">
+      <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
+      <td>
+      When you change the Context Path in the property sheet, 
+      the IDE updates the Tomcat Web Server's context descriptor
+      (<tt>META-INF/context.xml</tt>) or the Sun Java System Application Server's 
+      deployment descriptor (<tt>WEB-INF/sun-web.xml</tt>) to match.
+      </td>
+   </tr>
+</table>
+
+<p>When the server receives the HTTP request, the server selects the web application 
+  for processing the request by matching the longest possible prefix of the Request 
+  URI against all of the defined context paths. A host can have an unlimited number 
+  of unique context paths.</p>
+<table>
+<tr>
+<th colspan=2 align=left><a name="seealso">See Also</a></th>
+</tr>
+<tr>
+<td width="23"></td>
+<td><a href="nbdocs:/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_plugintro.html">About the Tomcat Server</a></td>
+</tr>
+</table>
+<hr>
+<small><a href="../credits.html">Legal Notices</a> 
+<table cellpadding="20" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table> 
+
+</small></body></html>

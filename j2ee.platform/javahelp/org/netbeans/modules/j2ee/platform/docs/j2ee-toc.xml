@@ -251,7 +251,9 @@
 <tocitem text="Servers and Databases">
 
     <tocitem text="Servers">
-      <tocitem text="About Servers" target="about_server"/>
+	<tocitem text="About Servers" target="about_server"/>
+        <tocitem text="Setting a Context Path" target="server_context" />
+	<tocitem text="Starting and Stopping a Server" target="server_start" />
     </tocitem>
 
 </tocitem>
