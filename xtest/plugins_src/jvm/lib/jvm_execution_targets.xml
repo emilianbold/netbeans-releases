@@ -12,9 +12,6 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project default="forbidden" name="jvm_plugin_targets">
-    
-
-
 
     <!-- ============== -->
     <!-- Code test part -->
@@ -24,8 +21,8 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="test_init">
 
-            <!-- Needed for running code-mode tests with Clover (see build-clover.xml): -->
-        <property name="clover.test.path" value=""/> 
+        <!-- Needed for running code-mode tests with Clover (see build-clover.xml): -->
+        <property name="coverage.test.path" value=""/>
                         
         <pathdef useid="_jvmplugin.test.basepath">
             <path>
@@ -34,10 +31,10 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement path="${xtest.home}/lib/xtest-junit-testrunner.jar"/>
                 <pathelement path="${xtest.plugin.home}/lib/xtest-jvm-plugin.jar"/>
                 <pathelement location="${xtest.workdir}/sys/tests"/>
-                <pathelement path="${clover.test.path}"/>
+                <pathelement path="${coverage.test.path}"/>
             </path>
         </pathdef>    
-    
+        
         <property name="test.classpath" value=""/>
         <pathdef useid="_jvmplugin.test.classpath">
             <path refid="_jvmplugin.test.basepath"/>
@@ -45,7 +42,6 @@ Microsystems, Inc. All Rights Reserved.
             <path path="${test.classpath}"/>
         </pathdef>
     </target> 
-
 
     <!-- ================= -->
     <!-- Main JUnit target -->

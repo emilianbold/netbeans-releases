@@ -171,16 +171,18 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </property>
         
+        <property name="coverage.test.path" value=""/>
         
         <!-- ide classpath - ant and junit -->
         <property name="xtest.ide.path" refid="xtest.ide.path">
-            <classpath id="xtest.ide.path">         
+            <classpath id="xtest.ide.path">
                 <fileset dir="${xtest.userdir}/xtest/lib/ext">
                     <include name="*.jar"/>
-                </fileset>                
+                </fileset>
+                <pathelement path="${coverage.test.path}"/>
             </classpath>
-        </property>        
-                
+        </property>
+        
         <!-- this property can be used to turn off the IDE security ... -->
         <!--
         <property name="xtest.ide.security" value="-J-Dnetbeans.security.nocheck=true"/>
