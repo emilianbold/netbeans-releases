@@ -12,13 +12,19 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="debuggerjpda" default="nbm" basedir=".">
-  <target name="compile">
-    <javac srcdir="src"
-           destdir="src"
-           classpath="../openide/netbeans/lib/openide.jar:../debuggercore/netbeans/modules/debuggerCore.jar"/>
+<project name="debuggerjpda" default="maybe-nbm" basedir=".">
+  <target name="check">
+    <available property="jpda" classname="com.sun.jdi.ObjectReference"/>
   </target>
-  <target name="jars" depends="compile">
+  <target name="compile" depends="check" if="jpda">
+    <javac srcdir="src" destdir="src">
+      <classpath>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+	<pathelement location="../debuggercore/netbeans/modules/debuggerCore.jar"/>
+      </classpath>
+    </javac>
+  </target>
+  <target name="jars" depends="compile,check" if="jpda">
     <mkdir dir="netbeans/modules"/>
     <jar jarfile="netbeans/modules/jpdaDebugger.jar"
          manifest="manifest.mf"
@@ -26,13 +32,17 @@ Microsystems, Inc. All Rights Reserved.
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
   </target>
-  <target name="javahelp">
-    <copydir src="javahelp"
-             dest="netbeans/docs"/>
+  <target name="javahelp" depends="check" if="jpda">
+    <copydir src="javahelp" dest="netbeans/docs"/>
   </target>
-  <target name="nbm" depends="jars,javahelp">
-    <zip zipfile="debuggerjpda.nbm"
-         includes="netbeans/"
-	 basedir="."/>
+  <!-- Build only if JPDA is available now. -->
+  <target name="nbm" depends="check,jars,javahelp" if="jpda">
+    <zip zipfile="debuggerjpda.nbm" includes="netbeans/" basedir="."/>
   </target>
+  <target name="no-such-luck" depends="check" unless="jpda">
+    <echo message="Sorry, JPDA module will not be built unless you are running JDK 1.3"/>
+    <echo message="or otherwise have jpda.jar in your classpath when invoking Ant."/>
+    <zip zipfile="debuggerjpda.nbm" includes="no-such-beast" basedir="."/>
+  </target>
+  <target name="maybe-nbm" depends="check,nbm,no-such-luck"/>
 </project>
