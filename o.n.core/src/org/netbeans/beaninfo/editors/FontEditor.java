@@ -42,7 +42,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
   static ResourceBundle bundle = NbBundle.getBundle (
     FontEditor.class);
 
-  static final String[] fonts = Toolkit.getDefaultToolkit ().getFontList ();
+  static final String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment ().getAvailableFontFamilyNames();
 
   static final Integer[] sizes = new Integer [] {
     new Integer (3),
@@ -359,6 +359,7 @@ static final long serialVersionUID =8377025140456676594L;
 
 /*
  * Log
+ *  8    Gandalf   1.7         9/10/99  Ian Formanek    Removed deprecated code
  *  7    Gandalf   1.6         8/17/99  Ian Formanek    Generated serial version
  *       UID
  *  6    Gandalf   1.5         8/17/99  Petr Nejedly    fixed #3416
