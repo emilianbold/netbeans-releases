@@ -34,7 +34,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-import org.netbeans.spi.project.support.ant.GlobFileBuiltQuery;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
@@ -75,7 +74,7 @@ final class NbModuleProject implements Project {
         genFilesHelper = new GeneratedFilesHelper(helper);
         FileBuiltQueryImplementation fileBuilt;
         if (supportsUnitTests()) {
-            fileBuilt = new GlobFileBuiltQuery(helper, new String[] {
+            fileBuilt = helper.createGlobFileBuiltQuery(new String[] {
                 // Can't currently include the ${props} directly in the string,
                 // since APH does not yet grok optional properties.
                 evaluate("src.dir") + "/*.java", // NOI18N
@@ -85,14 +84,15 @@ final class NbModuleProject implements Project {
                 evaluate("build.test.unit.classes.dir") + "/*.class", // NOI18N
             });
         } else {
-            fileBuilt = new GlobFileBuiltQuery(helper, new String[] {
+            fileBuilt = helper.createGlobFileBuiltQuery(new String[] {
                 evaluate("src.dir") + "/*.java", // NOI18N
             }, new String[] {
                 evaluate("build.classes.dir") + "/*.class", // NOI18N
             });
         }
         lookup = Lookups.fixed(new Object[] {
-            helper.createExtensibleMetadataProvider(),
+            helper.createAuxiliaryConfiguration(),
+            helper.createCacheDirectoryProvider(),
             new SavedHook(),
             new OpenedHook(),
             new Actions(this),

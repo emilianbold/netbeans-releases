@@ -25,7 +25,8 @@ import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.Util;
-import org.netbeans.spi.project.ExtensibleMetadataProvider;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -398,19 +399,21 @@ public class AntProjectHelperTest extends NbTestCase {
      * @throws Exception if anything unexpected happens
      */
     public void testExtensibleMetadataProviderImpl() throws Exception {
-        ExtensibleMetadataProvider emp = (ExtensibleMetadataProvider)p.getLookup().lookup(ExtensibleMetadataProvider.class);
-        assertNotNull("ExtensibleMetadataProvider present", emp);
+        AuxiliaryConfiguration aux = (AuxiliaryConfiguration)p.getLookup().lookup(AuxiliaryConfiguration.class);
+        assertNotNull("AuxiliaryConfiguration present", aux);
+        CacheDirectoryProvider cdp = (CacheDirectoryProvider)p.getLookup().lookup(CacheDirectoryProvider.class);
+        assertNotNull("CacheDirectoryProvider present", cdp);
         // Check cache dir.
-        FileObject cache = emp.getCacheDirectory();
+        FileObject cache = cdp.getCacheDirectory();
         assertNotNull("has a cache dir", cache);
         assertTrue("cache dir is a folder", cache.isFolder());
         assertEquals("cache dir is empty", Collections.EMPTY_LIST, Arrays.asList(cache.getChildren()));
         cache.createData("foo");
-        cache = emp.getCacheDirectory();
+        cache = cdp.getCacheDirectory();
         assertEquals("cache contents still there", 1, cache.getChildren().length);
         // Check read of shared data.
         h.addAntProjectListener(l);
-        Element data = emp.getConfigurationFragment("data", "urn:test:shared-aux", true);
+        Element data = aux.getConfigurationFragment("data", "urn:test:shared-aux", true);
         assertNotNull("found shared <data>", data);
         assertEquals("correct name", "data", data.getLocalName());
         assertEquals("correct namespace", "urn:test:shared-aux", data.getNamespaceURI());
@@ -420,7 +423,7 @@ public class AntProjectHelperTest extends NbTestCase {
         // Check write of shared data.
         stuff.setAttribute("attr", "val");
         assertFalse("project not modified by local change", pm.isModified(p));
-        emp.putConfigurationFragment(data, true);
+        aux.putConfigurationFragment(data, true);
         assertTrue("now project is modified", pm.isModified(p));
         AntProjectEvent[] evs = l.events();
         assertEquals("pCF fires one event", 1, evs.length);
@@ -438,7 +441,7 @@ public class AntProjectHelperTest extends NbTestCase {
         assertNotNull("still have <aux-shared-stuff/>", stuff);
         assertEquals("attr written correctly", "val", stuff.getAttribute("attr"));
         // Check read of private data.
-        data = emp.getConfigurationFragment("data", "urn:test:private-aux", false);
+        data = aux.getConfigurationFragment("data", "urn:test:private-aux", false);
         assertNotNull("found shared <data>", data);
         assertEquals("correct name", "data", data.getLocalName());
         assertEquals("correct namespace", "urn:test:private-aux", data.getNamespaceURI());
@@ -448,7 +451,7 @@ public class AntProjectHelperTest extends NbTestCase {
         // Check write of private data.
         stuff.setAttribute("attr", "val");
         assertFalse("project not modified by local change", pm.isModified(p));
-        emp.putConfigurationFragment(data, false);
+        aux.putConfigurationFragment(data, false);
         assertTrue("now project is modified", pm.isModified(p));
         evs = l.events();
         assertEquals("pCF fires one event", 1, evs.length);
@@ -465,27 +468,27 @@ public class AntProjectHelperTest extends NbTestCase {
         assertNotNull("still have <aux-private-stuff/>", stuff);
         assertEquals("attr written correctly", "val", stuff.getAttribute("attr"));
         // Check that missing fragments are not returned.
-        Element bogus = emp.getConfigurationFragment("doesn't exist", "bogus", true);
+        Element bogus = aux.getConfigurationFragment("doesn't exist", "bogus", true);
         assertNull("no such fragment - wrong name/ns", bogus);
-        bogus = emp.getConfigurationFragment("data", "bogus", true);
+        bogus = aux.getConfigurationFragment("data", "bogus", true);
         assertNull("no such fragment - wrong ns", bogus);
-        bogus = emp.getConfigurationFragment("doesn't exist", "urn:test:shared-aux", true);
+        bogus = aux.getConfigurationFragment("doesn't exist", "urn:test:shared-aux", true);
         assertNull("no such fragment - wrong name", bogus);
-        bogus = emp.getConfigurationFragment("data", "urn:test:shared-aux", false);
+        bogus = aux.getConfigurationFragment("data", "urn:test:shared-aux", false);
         assertNull("no such fragment - wrong file", bogus);
         // Try adding a new fragment.
         Document temp = XMLUtil.createDocument("whatever", null, null, null);
         data = temp.createElementNS("urn:test:whatever", "hello");
         data.appendChild(temp.createTextNode("stuff"));
         assertFalse("project currently unmodified", pm.isModified(p));
-        emp.putConfigurationFragment(data, true);
+        aux.putConfigurationFragment(data, true);
         assertTrue("adding frag modified project", pm.isModified(p));
         evs = l.events();
         assertEquals("pCF fires one event", 1, evs.length);
         assertEquals("correct path", AntProjectHelper.PROJECT_XML_PATH, evs[0].getPath());
         pm.saveProject(p);
         assertEquals("saving project fires no new changes", 0, l.events().length);
-        data = emp.getConfigurationFragment("hello", "urn:test:whatever", true);
+        data = aux.getConfigurationFragment("hello", "urn:test:whatever", true);
         assertNotNull("can retrieve new frag", data);
         doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PROJECT_XML_PATH);
         config = Util.findElement(doc.getDocumentElement(), "configuration", AntProjectHelper.PROJECT_NS);
@@ -495,16 +498,16 @@ public class AntProjectHelperTest extends NbTestCase {
         assertEquals("correct nested contents too", "stuff", Util.findText(data));
         // Try removing a fragment.
         assertFalse("project is unmodified", pm.isModified(p));
-        assertTrue("can remove new frag", emp.removeConfigurationFragment("hello", "urn:test:whatever", true));
+        assertTrue("can remove new frag", aux.removeConfigurationFragment("hello", "urn:test:whatever", true));
         assertTrue("project is now modified", pm.isModified(p));
-        assertNull("now frag is gone", emp.getConfigurationFragment("hello", "urn:test:whatever", true));
+        assertNull("now frag is gone", aux.getConfigurationFragment("hello", "urn:test:whatever", true));
         pm.saveProject(p);
         doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PROJECT_XML_PATH);
         config = Util.findElement(doc.getDocumentElement(), "configuration", AntProjectHelper.PROJECT_NS);
         assertNotNull("<configuration> still exists", config);
         data = Util.findElement(config, "hello", "urn:test:whatever");
         assertNull("now <hello> is gone", data);
-        assertFalse("cannot remove a frag that is not there", emp.removeConfigurationFragment("hello", "urn:test:whatever", true));
+        assertFalse("cannot remove a frag that is not there", aux.removeConfigurationFragment("hello", "urn:test:whatever", true));
         assertFalse("trying to remove a nonexistent frag does not modify project", pm.isModified(p));
         // XXX check that it cannot be used to load or store primary configuration data
         // or other general fixed metadata

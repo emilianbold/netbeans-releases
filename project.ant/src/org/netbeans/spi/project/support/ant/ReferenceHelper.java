@@ -29,7 +29,7 @@ import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.Util;
-import org.netbeans.spi.project.ExtensibleMetadataProvider;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -82,7 +82,7 @@ public final class ReferenceHelper {
     static final String REFS_NS = "http://www.netbeans.org/ns/ant-project-references/1"; // NOI18N
     
     private final AntProjectHelper h;
-    private final ExtensibleMetadataProvider emp;
+    private final AuxiliaryConfiguration aux;
 
     /**
      * Create a new reference helper.
@@ -91,11 +91,11 @@ public final class ReferenceHelper {
      * as well as set project or private properties referring to the locations
      * of foreign projects on disk.
      * @param helper an Ant project helper object representing this project's configuration
-     * @param emp an extensible metadata provider needed to store references
+     * @param aux an auxiliary configuration provider needed to store references
      */
-    public ReferenceHelper(AntProjectHelper helper, ExtensibleMetadataProvider emp) {
+    public ReferenceHelper(AntProjectHelper helper, AuxiliaryConfiguration aux) {
         h = helper;
-        this.emp = emp;
+        this.aux = aux;
     }
 
     /**
@@ -104,7 +104,7 @@ public final class ReferenceHelper {
      */
     private Element loadReferences(boolean create) {
         //assert ProjectManager.mutex().canRead();
-        Element references = emp.getConfigurationFragment(REFS_NAME, REFS_NS, true);
+        Element references = aux.getConfigurationFragment(REFS_NAME, REFS_NS, true);
         if (references == null && create) {
             references = XMLUtil.createDocument("ignore", null, null, null).createElementNS(REFS_NS, REFS_NAME); // NOI18N
         }
@@ -117,7 +117,7 @@ public final class ReferenceHelper {
     private void storeReferences(Element references) {
         //assert ProjectManager.mutex().canWrite();
         assert references != null && references.getLocalName().equals(REFS_NAME) && REFS_NS.equals(references.getNamespaceURI());
-        emp.putConfigurationFragment(references, true);
+        aux.putConfigurationFragment(references, true);
     }
     
     /**

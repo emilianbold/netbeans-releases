@@ -37,7 +37,7 @@ import org.netbeans.modules.java.j2seproject.ui.J2SEPhysicalViewProvider;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ExtensibleMetadataProvider;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.SourceContainers;
@@ -46,10 +46,8 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-import org.netbeans.spi.project.support.ant.GlobFileBuiltQuery;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.spi.project.support.ant.SimpleAntArtifact;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
@@ -78,10 +76,10 @@ final class J2SEProject implements Project, AntProjectListener {
     
     J2SEProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
-        ExtensibleMetadataProvider emp = helper.createExtensibleMetadataProvider();
-        refHelper = new ReferenceHelper(helper, emp);
+        AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
+        refHelper = new ReferenceHelper(helper, aux);
         genFilesHelper = new GeneratedFilesHelper(helper);
-        lookup = createLookup(emp);
+        lookup = createLookup(aux);
         pcs = new PropertyChangeSupport(this);
         helper.addAntProjectListener(this);
     }
@@ -106,9 +104,9 @@ final class J2SEProject implements Project, AntProjectListener {
         return lookup;
     }
 
-    private Lookup createLookup(ExtensibleMetadataProvider emp) {
+    private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
-        FileBuiltQueryImplementation fileBuilt = new GlobFileBuiltQuery(helper, new String[] {
+        FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(new String[] {
             "${src.dir}/*.java", // NOI18N
             "${test.src.dir}/*.java", // NOI18N
         }, new String[] {
@@ -116,7 +114,8 @@ final class J2SEProject implements Project, AntProjectListener {
             "${build.test.classes.dir}/*.class", // NOI18N
         });
         return Lookups.fixed(new Object[] {
-            emp,
+            aux,
+            helper.createCacheDirectoryProvider(),
             spp,
             new J2SEActionProvider( this, helper ),
             new J2SEPhysicalViewProvider(this, helper, spp),
@@ -259,7 +258,7 @@ final class J2SEProject implements Project, AntProjectListener {
 
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
-                new SimpleAntArtifact(helper, AntArtifact.TYPE_JAR, "dist.jar", "jar", "clean"), // NOI18N
+                helper.createSimpleAntArtifact(AntArtifact.TYPE_JAR, "dist.jar", "jar", "clean"), // NOI18N
             };
         }
 

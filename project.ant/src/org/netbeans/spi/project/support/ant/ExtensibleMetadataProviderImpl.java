@@ -14,8 +14,8 @@
 package org.netbeans.spi.project.support.ant;
 
 import java.io.IOException;
-import org.netbeans.spi.project.ExtensibleMetadataProvider;
-import org.openide.ErrorManager;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Element;
@@ -24,7 +24,7 @@ import org.w3c.dom.Element;
  * Manages extensible (freeform) metadata in an Ant-based project.
  * @author Jesse Glick
  */
-final class ExtensibleMetadataProviderImpl implements ExtensibleMetadataProvider {
+final class ExtensibleMetadataProviderImpl implements AuxiliaryConfiguration, CacheDirectoryProvider {
     
     /**
      * Relative path from project directory to the required private cache directory.
@@ -37,27 +37,18 @@ final class ExtensibleMetadataProviderImpl implements ExtensibleMetadataProvider
         this.helper = helper;
     }
     
-    public FileObject getCacheDirectory() {
-        try {
-            return FileUtil.createFolder(helper.getProjectDirectory(), CACHE_PATH);
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            return null;
-        }
+    public FileObject getCacheDirectory() throws IOException {
+        return FileUtil.createFolder(helper.getProjectDirectory(), CACHE_PATH);
     }
     
-    public boolean supportsConfigurationFragments() {
-        return true;
-    }
-    
-    public Element getConfigurationFragment(String elementName, String namespace, boolean shared) throws UnsupportedOperationException {
+    public Element getConfigurationFragment(String elementName, String namespace, boolean shared) {
         if (elementName == null || elementName.indexOf(':') != -1 || namespace == null) {
             throw new IllegalArgumentException("Illegal elementName and/or namespace"); // NOI18N
         }
         return helper.getConfigurationFragment(elementName, namespace, shared);
     }
     
-    public void putConfigurationFragment(Element fragment, boolean shared) throws UnsupportedOperationException, IllegalArgumentException {
+    public void putConfigurationFragment(Element fragment, boolean shared) throws IllegalArgumentException {
         if (fragment.getNamespaceURI() == null || fragment.getNamespaceURI().length() == 0) {
             throw new IllegalArgumentException("Illegal elementName and/or namespace"); // NOI18N
         }
@@ -68,7 +59,7 @@ final class ExtensibleMetadataProviderImpl implements ExtensibleMetadataProvider
         helper.putConfigurationFragment(fragment, shared);
     }
     
-    public boolean removeConfigurationFragment(String elementName, String namespace, boolean shared) throws UnsupportedOperationException, IllegalArgumentException {
+    public boolean removeConfigurationFragment(String elementName, String namespace, boolean shared) throws IllegalArgumentException {
         if (elementName == null || elementName.indexOf(':') != -1 || namespace == null) {
             throw new IllegalArgumentException("Illegal elementName and/or namespace"); // NOI18N
         }

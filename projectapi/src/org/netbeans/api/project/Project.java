@@ -20,6 +20,11 @@ import org.openide.util.Lookup;
 
 /**
  * Represents one IDE project in memory.
+ * <p>
+ * <strong>Never cast a project instance</strong> to any subtype. The project
+ * manager is free to wrap any project in an unspecified proxy for its own
+ * purposes. For extensibility, use {@link #getLookup}.
+ * </p>
  * <div class="nonnormative">
  * <p>Note that this API is primarily of interest to project type provider
  * modules, and to infrastructure and generic GUI. Most other modules providing
@@ -61,7 +66,8 @@ public interface Project extends Lookup.Provider {
      * <li><a href="@PROJECTS/PROJECTUIAPI@/org/netbeans/spi/project/ui/CustomizerProvider.html"><code>CustomizerProvider</code></a></li>
      * <li>{@link org.netbeans.spi.project.ActionProvider}</li>
      * <li>{@link org.netbeans.spi.project.SubprojectProvider}</li>
-     * <li>{@link org.netbeans.spi.project.ExtensibleMetadataProvider}</li>
+     * <li>{@link org.netbeans.spi.project.AuxiliaryConfiguration}</li>
+     * <li>{@link org.netbeans.spi.project.CacheDirectoryProvider}</li>
      * </ol>
      * <p>You might also have e.g.:</p>
      * <ol>
@@ -73,7 +79,7 @@ public interface Project extends Lookup.Provider {
      * <li><a href="@JAVA/API@/org/netbeans/spi/java/queries/AccessibilityQueryImplementation.html"><code>AccessibilityQueryImplementation</code></a></li>
      * <li><a href="@ANT/PROJECT@/org/netbeans/spi/project/support/ant/ProjectXmlSavedHook.html"><code>ProjectXmlSavedHook</code></a></li>
      * <li><a href="@ANT/PROJECT@/org/netbeans/spi/project/ant/AntArtifactProvider.html"><code>AntArtifactProvider</code></a></li>
-     * <li><a href="@JUNIT@/org/netbeans/spi/junit/UnitTestForSourceQueryImplementation.html"><code>UnitTestForSourceQueryImplementation</code></a></li>
+     * <li><a href="@JAVA/API@/org/netbeans/spi/java/queries/UnitTestForSourceQueryImplementation.html"><code>UnitTestForSourceQueryImplementation</code></a></li>
      * </ol>
      * <p>Typical implementation:</p>
      * <pre>
@@ -123,14 +129,13 @@ public interface Project extends Lookup.Provider {
     
     /**
      * Add a listener to property changes.
-     * Currently supports just {@link #PROP_DISPLAY_NAME}.
+     * Only {@link #PROP_NAME} and {@link #PROP_DISPLAY_NAME} may be fired.
      * @param listener a listener to add
      */
     void addPropertyChangeListener(PropertyChangeListener listener);
     
     /**
      * Remove a listener to property changes.
-     * Currently supports just {@link #PROP_DISPLAY_NAME}.
      * @param listener a listener to remove
      */
     void removePropertyChangeListener(PropertyChangeListener listener);

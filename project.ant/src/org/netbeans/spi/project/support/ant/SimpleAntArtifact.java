@@ -23,11 +23,11 @@ import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.openide.ErrorManager;
 
 /**
- * A basic implementation of {@link AntArtifact} which assumes everything of interest
- * is in a fixed location under a standard Ant-based project.
+ * A basic AntArtifact implementation.
+ * @see AntProjectHelper#createSimpleAntArtifact
  * @author Jesse Glick
  */
-public final class SimpleAntArtifact extends AntArtifact {
+final class SimpleAntArtifact extends AntArtifact {
     
     private final AntProjectHelper h;
     private final String type;
@@ -36,15 +36,7 @@ public final class SimpleAntArtifact extends AntArtifact {
     private final String cleanTargetName;
     
     /**
-     * Create an artifact object.
-     * @param helper an Ant project helper object
-     * @param type the type of artifact, e.g. {@link AntArtifact#TYPE_JAR}
-     * @param locationProperty an Ant property name giving the project-relative
-     *                         location of the artifact, e.g. <samp>dist.jar</samp>
-     * @param targetName the name of an Ant target which will build the artifact,
-     *                   e.g. <samp>jar</samp>
-     * @param cleanTargetName the name of an Ant target which will delete the artifact
-     *                        (and maybe other build products), e.g. <samp>clean</samp>
+     * @see AntProjectHelper#createSimpleAntArtifact
      */
     public SimpleAntArtifact(AntProjectHelper helper, String type, String locationProperty, String targetName, String cleanTargetName) {
         this.h = helper;

@@ -25,7 +25,8 @@ public interface AntArtifactProvider {
 
     /**
      * Get a list of supported build artifacts.
-     * Typically the entries would be {@link org.netbeans.spi.project.support.ant.SimpleAntArtifact}s.
+     * Typically the entries would be created using
+     * {@link org.netbeans.spi.project.support.ant.AntProjectHelper#createSimpleAntArtifact}.
      * @return a list of build artifacts produced by this project;
      *         the target names must be distinct, and if this provider is in a
      *         project's lookup, {@link AntArtifact#getProject} must return the

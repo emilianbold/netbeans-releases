@@ -40,26 +40,12 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
-// XXX make it into a factory method, not a public concrete class
-
 /**
- * An implementation of {@link FileBuiltQueryImplementation} intended to be
- * placed in {@link org.netbeans.api.project.Project#getLookup} which operates
- * by a simple glob-style file mapping.
- * It will return status objects for any files in the project matching a source
- * glob pattern - this must include exactly one asterisk (<code>*</code>)
- * representing a variable portion of a source file path (always slash-separated
- * and relative to the project directory) and may include some Ant property
- * references which will be resolved as per {@link AntProjectHelper#evaluateString}.
- * A file is considered out of date if there is no file represented by the
- * matching target pattern (which has the same format), or the target file is older
- * than the source file, or the source file is modified as per
- * {@link DataObject#isModified}.
- * An attempt is made to fire changes from the status object whenever the result
- * should change from one call to the next.
+ * Simple file built query based on glob patterns.
+ * @see AntProjectHelper#createGlobFileBuiltQuery
  * @author Jesse Glick
  */
-public final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
+final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
     
     private final AntProjectHelper helper;
     private final FileObject projectDir;
@@ -75,30 +61,7 @@ public final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
 
     /**
      * Create a new query implementation based on an Ant-based project.
-     * <p>
-     * The source pattern must be a relative path inside the project directory.
-     * The target pattern currently must also, though this restriction may
-     * be relaxed in the future.
-     * </p>
-     * <div class="nonnormative">
-     * <p>
-     * A typical set of source and target patterns would be:
-     * </p>
-     * <ol>
-     * <li><samp>${src.dir}/*.java</samp>
-     * <li><samp>${test.src.dir}/*.java</samp>
-     * </ol>
-     * <ol>
-     * <li><samp>${build.classes.dir}/*.class</samp>
-     * <li><samp>${test.build.classes.dir}/*.class</samp>
-     * </ol>
-     * </div>
-     * @param helper the project helper object
-     * @param from a list of glob patterns for source files
-     * @param to a matching list of glob patterns for built files
-     * @throws IllegalArgumentException if either from or to patterns
-     *                                  have zero or multiple asterisks,
-     *                                  or the arrays are not of equal lengths
+     * @see AntProjectHelper#createGlobFileBuiltQuery
      */
     public GlobFileBuiltQuery(AntProjectHelper helper, String[] from, String[] to) throws IllegalArgumentException {
         this.helper = helper;

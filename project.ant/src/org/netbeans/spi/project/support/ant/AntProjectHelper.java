@@ -36,11 +36,14 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ExtensibleMetadataProvider;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ProjectState;
+import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -680,12 +683,84 @@ public final class AntProjectHelper {
     }
     
     /**
-     * Create an object permitting this project to store extensible metadata.
+     * Create an object permitting this project to store auxiliary configuration.
      * Would be placed into the project's lookup.
-     * @return an extensible metadata provider object suitable for the project lookup
+     * @return an auxiliary configuration provider object suitable for the project lookup
      */
-    public ExtensibleMetadataProvider createExtensibleMetadataProvider() {
+    public AuxiliaryConfiguration createAuxiliaryConfiguration() {
         return new ExtensibleMetadataProviderImpl(this);
+    }
+    
+    /**
+     * Create an object permitting this project to expose a cache directory.
+     * Would be placed into the project's lookup.
+     * @return a cache directory provider object suitable for the project lookup
+     */
+    public CacheDirectoryProvider createCacheDirectoryProvider() {
+        return new ExtensibleMetadataProviderImpl(this);
+    }
+    
+    /**
+     * Create an implementation of {@link FileBuiltQuery} that works with files
+     * within the project based on simple glob pattern mappings.
+     * <p>
+     * It is intended to be
+     * placed in {@link org.netbeans.api.project.Project#getLookup}.
+     * <p>
+     * It will return status objects for any files in the project matching a source
+     * glob pattern - this must include exactly one asterisk (<code>*</code>)
+     * representing a variable portion of a source file path (always slash-separated
+     * and relative to the project directory) and may include some Ant property
+     * references which will be resolved as per {@link AntProjectHelper#evaluateString}.
+     * A file is considered out of date if there is no file represented by the
+     * matching target pattern (which has the same format), or the target file is older
+     * than the source file, or the source file is modified as per
+     * {@link DataObject#isModified}.
+     * An attempt is made to fire changes from the status object whenever the result
+     * should change from one call to the next.
+     * <p>
+     * The source pattern must be a relative path inside the project directory.
+     * The target pattern currently must also, though this restriction may
+     * be relaxed in the future.
+     * </p>
+     * <div class="nonnormative">
+     * <p>
+     * A typical set of source and target patterns would be:
+     * </p>
+     * <ol>
+     * <li><samp>${src.dir}/*.java</samp>
+     * <li><samp>${test.src.dir}/*.java</samp>
+     * </ol>
+     * <ol>
+     * <li><samp>${build.classes.dir}/*.class</samp>
+     * <li><samp>${test.build.classes.dir}/*.class</samp>
+     * </ol>
+     * </div>
+     * @param from a list of glob patterns for source files
+     * @param to a matching list of glob patterns for built files
+     * @return a query implementation
+     * @throws IllegalArgumentException if either from or to patterns
+     *                                  have zero or multiple asterisks,
+     *                                  or the arrays are not of equal lengths
+     */
+    public FileBuiltQueryImplementation createGlobFileBuiltQuery(String[] from, String[] to) throws IllegalArgumentException {
+        return new GlobFileBuiltQuery(this, from, to);
+    }
+    
+    /**
+     * Create a basic implementation of {@link AntArtifact} which assumes everything of interest
+     * is in a fixed location under a standard Ant-based project.
+     * @param type the type of artifact, e.g. {@link AntArtifact#TYPE_JAR}
+     * @param locationProperty an Ant property name giving the project-relative
+     *                         location of the artifact, e.g. <samp>dist.jar</samp>
+     * @param targetName the name of an Ant target which will build the artifact,
+     *                   e.g. <samp>jar</samp>
+     * @param cleanTargetName the name of an Ant target which will delete the artifact
+     *                        (and maybe other build products), e.g. <samp>clean</samp>
+     * @return an artifact
+     */
+    public AntArtifact createSimpleAntArtifact(String type, String locationProperty, String targetName, String cleanTargetName) {
+        return new SimpleAntArtifact(this, type, locationProperty, targetName, cleanTargetName);
     }
         
     /**

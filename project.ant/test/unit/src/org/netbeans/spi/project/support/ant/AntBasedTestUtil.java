@@ -38,7 +38,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.diff.DiffProvider;
-import org.netbeans.spi.project.ExtensibleMetadataProvider;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -115,14 +115,15 @@ public class AntBasedTestUtil {
                 throw new IOException("broken");
             }
             this.helper = helper;
-            ExtensibleMetadataProvider emp = helper.createExtensibleMetadataProvider();
-            refHelper = new ReferenceHelper(helper, emp);
+            AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
+            refHelper = new ReferenceHelper(helper, aux);
             genFilesHelper = new GeneratedFilesHelper(helper);
             l = Lookups.fixed(new Object[] {
                 helper,
                 refHelper,
                 genFilesHelper,
-                emp,
+                aux,
+                helper.createCacheDirectoryProvider(),
                 refHelper.createSubprojectProvider(),
                 new TestAntArtifactProvider(),
                 new ProjectXmlSavedHook() {
@@ -170,8 +171,8 @@ public class AntBasedTestUtil {
             
             public AntArtifact[] getBuildArtifacts() {
                 return new AntArtifact[] {
-                    new SimpleAntArtifact(helper, "jar", "build.jar", "dojar", "clean"),
-                    new SimpleAntArtifact(helper, "javadoc", "build.javadoc", "dojavadoc", "clean"),
+                    helper.createSimpleAntArtifact("jar", "build.jar", "dojar", "clean"),
+                    helper.createSimpleAntArtifact("javadoc", "build.javadoc", "dojavadoc", "clean"),
                 };
             }
             

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -71,7 +71,7 @@ public class SimpleAntArtifactTest extends NbTestCase {
      * Check that {@link SimpleAntArtifact} works as documented.
      */
     public void testSimpleAntArtifact() throws Exception {
-        AntArtifact art = new SimpleAntArtifact(sisterh, "jar", "build.jar", "dojar", "clean");
+        AntArtifact art = sisterh.createSimpleAntArtifact("jar", "build.jar", "dojar", "clean");
         assertEquals("correct type", "jar", art.getType());
         assertEquals("correct target name", "dojar", art.getTargetName());
         assertEquals("correct clean target name", "clean", art.getCleanTargetName());

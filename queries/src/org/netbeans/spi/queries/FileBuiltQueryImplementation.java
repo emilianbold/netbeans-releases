@@ -27,7 +27,7 @@ import org.openide.filesystems.FileObject;
  * the <code>org.netbeans.modules.projectapi</code> module.
  * </p>
  * @see FileBuiltQuery
- * @see <a href="@ANT/PROJECT@/org/netbeans/spi/project/support/ant/GlobFileBuiltQuery.html"><code>GlobFileBuiltQuery</code></a>
+ * @see <a href="@ANT/PROJECT@/org/netbeans/spi/project/support/ant/AntProjectHelper.html#createGlobFileBuiltQuery(java.lang.String[],%20java.lang.String[])"><code>AntProjectHelper.createGlobFileBuiltQuery(...)</code></a>
  * @author Jesse Glick
  */
 public interface FileBuiltQueryImplementation {
