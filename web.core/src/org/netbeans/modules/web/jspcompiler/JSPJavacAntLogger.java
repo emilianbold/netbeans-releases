@@ -128,9 +128,12 @@ public final class JSPJavacAntLogger extends AntLogger {
         }
         AntSession session = event.getSession();
         String line = event.getMessage();
+        OutputListener hyper = findHyperlink(session, line);
         // XXX should translate tabs to spaces here as a safety measure
-        event.getSession().println(line, event.getLogLevel() <= AntEvent.LOG_WARN, findHyperlink(session, line));
-        event.consume();
+        if (hyper != null) {
+            event.getSession().println(line, event.getLogLevel() <= AntEvent.LOG_WARN, hyper);
+            event.consume();
+        }
     }
 
     /**
@@ -218,7 +221,7 @@ public final class JSPJavacAntLogger extends AntLogger {
 
         File smapFile = getSMAPFileForFile(file);
         if (LOGGABLE) ERR.log("smapfile: [" + smapFile + "]");
-        if (smapFile != null) {
+        if ((smapFile != null) && (smapFile.exists())) {
             try {
                 SmapResolver resolver = new SmapResolver(new SmapFileReader(smapFile));
                 String jspName = resolver.getJspFileName(line1, col1);
@@ -261,14 +264,12 @@ public final class JSPJavacAntLogger extends AntLogger {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 return null;
             }
-        }
-        else {
+        } else {
             return null;
         }
         
     }
     
-
     private static final String JAVA_SUFFIX = ".java"; // NOI18N
     private static final String SMAP_SUFFIX = ".class.smap"; // NOI18N
     /** Returns a SMAP file corresponding to the given file, if exists.
