@@ -452,6 +452,9 @@ if( localeKitFiles.contains( file)) {
                             addToJar (new FileInputStream (file), new FileInputStream (file),
                                       out, path, file.lastModified (), addedDirs);
                         }
+
+			// If desired, write the root of the srcDir to a file. //
+			writeSrcDir() ;
                     } finally {
                         try {
                             out.close ();
@@ -663,5 +666,42 @@ if( localeKitFiles.contains( file)) {
   // Warn the user that the given dir doesn't exist. //
   protected void printMissingDirWarning( File dir) {
     log( "WARNING: Skipping this task: Directory " + dir.getPath() + " doesn't exist.") ;
+  }
+
+  protected boolean shouldWriteSrcDir() {
+    boolean ret = false ;
+    String s = project.getProperty( "locjar.writeSrcDir") ;
+    if( s != null && project.toBoolean( s)) {
+      ret = true ;
+    }
+    return( ret) ;
+  }
+
+  protected void writeSrcDir() {
+    String name ;
+    int idx ;
+    OutputStreamWriter osw ;
+    FileOutputStream fos ;
+    File file ;
+
+    if( shouldWriteSrcDir() && jarFile != null && baseDir != null) {
+      name = jarFile.getPath() ;
+      idx = name.indexOf( "/netbeans/") ;
+      if( idx != -1) {
+	try {
+	  file = new File( name.substring( 0, idx) + "/srcdir.properties") ;
+	  fos = new FileOutputStream( file) ;
+	  osw = new OutputStreamWriter( fos) ;
+	  osw.write( "srcdir=" + baseDir + "\n") ;
+	  osw.close() ;
+	  fos.close() ;
+	}
+	catch( Exception e) {
+	  System.out.println( "ERROR: " + e.getMessage()) ;
+	  e.printStackTrace() ;
+	  throw new BuildException() ;
+	}
+      }
+    }
   }
 }
