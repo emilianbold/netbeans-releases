@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>3</release-version>
-                        <specification-version>3.10</specification-version>
+                        <specification-version>3.11</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

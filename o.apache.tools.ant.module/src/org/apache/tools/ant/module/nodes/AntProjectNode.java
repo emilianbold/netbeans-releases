@@ -40,12 +40,11 @@ import org.openide.util.actions.*;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.*;
-import org.apache.tools.ant.module.xml.ElementSupport;
 import org.openide.util.Utilities;
 
 /** A node that represents an Ant project.
  */
-public class AntProjectNode extends DataNode implements ChangeListener {
+public final class AntProjectNode extends DataNode implements ChangeListener {
     
     public AntProjectNode (DataObject obj) {
         this(obj, (AntProjectCookie)obj.getCookie(AntProjectCookie.class));
@@ -54,17 +53,6 @@ public class AntProjectNode extends DataNode implements ChangeListener {
         super(obj, new AntProjectChildren(cookie));
         cookie.addChangeListener(WeakListeners.change(this, cookie));
         setValue("propertiesHelpID", "org.apache.tools.ant.module.nodes.AntProjectNode.propertysheet"); // NOI18N
-    }
-    
-    public Node.Cookie getCookie(Class c) {
-        if (c == ElementCookie.class || c == IntrospectionCookie.class) {
-            AntProjectCookie main = (AntProjectCookie)getDataObject().getCookie(AntProjectCookie.class);
-            Element projel = main.getProjectElement();
-            if (projel != null) {
-                return new ElementSupport.Introspection(projel, "org.apache.tools.ant.Project");
-            }
-        }
-        return super.getCookie(c);
     }
     
     public Image getIcon(int type) {
@@ -165,41 +153,6 @@ public class AntProjectNode extends DataNode implements ChangeListener {
         }
     }
 
-    private class ProjectBasedirProperty extends PropertySupport.ReadOnly {
-        public ProjectBasedirProperty (String dname, String sdesc) {
-            super ("basedir", File.class, dname, sdesc); // NOI18N
-            this.setValue ("directories", Boolean.TRUE); // NOI18N
-            this.setValue ("files", Boolean.FALSE); // NOI18N
-        }
-        protected Element getElement () {
-            return ((AntProjectCookie) getCookie (AntProjectCookie.class)).getProjectElement ();
-        }
-        public Object getValue () {
-            Element el = getElement ();
-            if (el == null) { // #9675
-                return null;
-            }
-            String bd = el.getAttribute("basedir"); // NOI18N
-            if (bd.equals("")) return null; // NOI18N
-            if (bd.equals(".")) bd = ""; // NOI18N
-            return new File(bd);
-        }
-        public PropertyEditor getPropertyEditor() {
-            // Before using File editor, set up the base directory...
-            AntProjectCookie cookie = (AntProjectCookie)getCookie(AntProjectCookie.class);
-            if (cookie != null) {
-                Element root = cookie.getProjectElement();
-                File buildscript = cookie.getFile();
-                if (root != null && buildscript != null) {
-                    AntModule.err.log("ProjectBasedirProperty: setting baseDir=" + buildscript.getParentFile());
-                    // Controls which directory relative paths are relative to:
-                    ProjectBasedirProperty.this.setValue("baseDir", buildscript.getParentFile()); // NOI18N
-                }
-            }
-            return super.getPropertyEditor();
-        }
-    }
-
     private void add2Sheet (Sheet.Set props) {
         ResourceBundle bundle = NbBundle.getBundle (AntProjectNode.class);
         AntProjectCookie proj = (AntProjectCookie) getCookie (AntProjectCookie.class);
@@ -215,10 +168,6 @@ public class AntProjectNode extends DataNode implements ChangeListener {
         prop.setDisplayName (bundle.getString ("PROP_default"));
         prop.setShortDescription (bundle.getString ("HINT_default"));
         props.put (prop);
-        prop = new ProjectBasedirProperty (bundle.getString ("PROP_basedir"), bundle.getString ("HINT_basedir"));
-        props.put (prop);
-        // id prop unnecessary, since project name functions as an ID
-        props.put (new ProjectBuildSequenceProperty(proj));
     }
 
     public void stateChanged (ChangeEvent ev) {
@@ -237,40 +186,4 @@ public class AntProjectNode extends DataNode implements ChangeListener {
         return new HelpCtx ("org.apache.tools.ant.module.identifying-project");
     }
 
-    /** Property displaying the build sequence of the whole project. */
-    public static class ProjectBuildSequenceProperty extends AntTargetNode.BuildSequenceProperty {
-        
-        /** ProjectCookie. */
-        protected AntProjectCookie proj;
-        
-        /** Creates new ProjectBuildSequenceProperty.
-         * @param elem the project Element.
-         */
-        public ProjectBuildSequenceProperty(AntProjectCookie proj) {
-            super (proj.getProjectElement ());
-            this.proj = proj;
-        }
-        
-        /** Override getTarget of superclass to find default target. */
-        public Element getTarget() {
-            el = proj.getProjectElement (); // to be sure that the Element is up to date.
-            if (el != null && el.getAttribute("default") != null) { // NOI18N
-                return getTargetElement(el.getAttribute("default"), el); // NOI18N
-            }
-            return null;
-        }
-        
-        /** Returns special String in case of missing default target. */
-        public Object getValue() {
-            if (proj.getProjectElement () == null) {
-                return NbBundle.getMessage (AntProjectNode.class, "LBL_property_invalid_no_element");
-            }
-            Element el = getTarget();
-            if (el == null) {
-                return NbBundle.getMessage (AntProjectNode.class, "MSG_defaulttarget_missing");
-            }
-            return super.getValue();
-        }
-    }
-    
 }

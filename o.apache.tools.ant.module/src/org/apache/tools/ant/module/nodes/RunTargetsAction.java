@@ -17,28 +17,30 @@ package org.apache.tools.ant.module.nodes;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.text.Collator;
 import java.util.*;
 import javax.swing.JMenuItem;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
 import org.openide.awt.Actions;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.*;
-
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
+import org.apache.tools.ant.module.api.support.TargetLister;
 import org.apache.tools.ant.module.run.TargetExecutor;
+import org.openide.ErrorManager;
+
+// XXX nicer to show a submenu for other targets
+// XXX rewrite to use a plain JMenu and listen to button activation events to populate popup menu
+// (or just impl ContextAwareAction and put the getPopupPresenter method into that)
 
 /** Submenu to run certain targets in a project.
  */
-public class RunTargetsAction extends CookieAction implements Presenter.Popup {
+public final class RunTargetsAction extends CookieAction implements Presenter.Popup {
 
     public String getName () {
         return NbBundle.getMessage (RunTargetsAction.class, "LBL_run_targets_action");
@@ -49,7 +51,6 @@ public class RunTargetsAction extends CookieAction implements Presenter.Popup {
     }
 
     public JMenuItem getPopupPresenter() {
-        // XXX should perhaps be rewritten to use a plain JMenu and override getPopup
         return new SpecialSubMenu (this, new ActSubMenuModel (this), true);
     }
 
@@ -89,7 +90,7 @@ public class RunTargetsAction extends CookieAction implements Presenter.Popup {
     */
     private static final class ActSubMenuModel implements Actions.SubMenuModel {
 
-        private List targets = null; // List<String>
+        private List/*<String>*/ targets = null;
         private AntProjectCookie project = null;
 
         private final NodeAction action;
@@ -131,61 +132,63 @@ public class RunTargetsAction extends CookieAction implements Presenter.Popup {
 
         void addNotify () {
             project = null;
-            targets = null;
+            targets = Collections.singletonList(null);
             Node[] nodes = action.getActivatedNodes ();
             if (nodes.length != 1) return;
             project = (AntProjectCookie) nodes[0].getCookie (AntProjectCookie.class);
             if (project == null) return;
-            targets = Collections.EMPTY_LIST;
             if (project.getParseException () != null) return;
-            Element pel = project.getProjectElement ();
-            String deftarget = pel.getAttribute ("default"); // NOI18N
-            List targetsWithHint = new ArrayList (25); // List<String>
-            List targetsWithoutHint = new ArrayList (25); // List<String>
-            NodeList nl = pel.getChildNodes ();
-            for (int i = 0; i < nl.getLength (); i++) {
-                if (nl.item (i) instanceof Element) {
-                    Element targ = (Element) nl.item (i);
-                    if (! targ.getNodeName ().equals ("target")) continue; // NOI18N
-                    String targname = targ.getAttribute ("name"); // NOI18N
-                    String descr = targ.getAttribute ("description"); // NOI18N
-                    if (descr.length () == 0) {
-                        targetsWithoutHint.add (targname);
-                    } else {
-                        targetsWithHint.add (targname);
-                    }
+            Set/*<TargetLister.Target>*/ allTargets;
+            try {
+                allTargets = TargetLister.getTargets(project);
+            } catch (IOException e) {
+                // XXX how to notify properly?
+                AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
+                return;
+            }
+            String defaultTarget = null;
+            SortedSet/*<String>*/ describedTargets = new TreeSet(Collator.getInstance());
+            SortedSet/*<String>*/ otherTargets = new TreeSet(Collator.getInstance());
+            Iterator it = allTargets.iterator();
+            while (it.hasNext()) {
+                TargetLister.Target t = (TargetLister.Target) it.next();
+                if (t.isOverridden()) {
+                    // Cannot be called.
+                    continue;
+                }
+                if (t.isInternal()) {
+                    // Don't present in GUI.
+                    continue;
+                }
+                String name = t.getName();
+                if (t.isDefault()) {
+                    defaultTarget = name;
+                } else if (t.isDescribed()) {
+                    describedTargets.add(name);
+                } else {
+                    otherTargets.add(name);
                 }
             }
-            if (targetsWithHint.isEmpty ()) {
-                // User does not target descriptions; so show them all.
-                // If default is present, show it at the top above sep.
-                if (targetsWithoutHint.remove (deftarget)) {
-                    targetsWithoutHint.add (0, deftarget);
-                    targetsWithoutHint.add (1, null);
-                }
-                targets = targetsWithoutHint;
-            } else {
-                // Show just the documented ones. If default is present,
-                // show it at the top above sep. If not, show it anyway
-                // (provided it was in the undocumented list).
-                if (targetsWithHint.remove (deftarget) ||
-                        targetsWithoutHint.contains (deftarget)) {
-                    targetsWithHint.add (0, deftarget);
-                    targetsWithHint.add (1, null);
-                }
-                targets = targetsWithHint;
+            targets = new ArrayList();
+            if (defaultTarget != null) {
+                targets.add(defaultTarget);
             }
-            // If the default was the only target, we ought to kill
-            // the extra sep. But leave it in to force the submenu
-            // to appear.
-            /*
-            if (targets.size () == 2 && targets.get (1) == null) {
-                targets.remove (1);
+            if (!describedTargets.isEmpty()) {
+                if (!targets.isEmpty()) {
+                    // XXX it seems the separators are not really displayed, at least on GTK...
+                    targets.add(null);
+                }
+                targets.addAll(describedTargets);
             }
-             */
-            // In fact we should ensure there are >1 items (workaround for
+            if (!otherTargets.isEmpty()) {
+                if (!targets.isEmpty()) {
+                    targets.add(null);
+                }
+                targets.addAll(otherTargets);
+            }
+            // Ensure there are >1 items (workaround for
             // undesired behavior of Actions.SubMenu):
-            if (targets.size () == 1) {
+            while (targets.size() < 2) {
                 // The extra separator will not actually be displayed:
                 targets.add (null);
             }

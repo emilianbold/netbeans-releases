@@ -29,6 +29,7 @@ import org.openide.nodes.Node;
  * the resulting class name.
  * @since 2.3
  * @see IntrospectedInfo
+ * @deprecated No longer useful in new UI.
  */
 public interface IntrospectionCookie extends Node.Cookie {
     

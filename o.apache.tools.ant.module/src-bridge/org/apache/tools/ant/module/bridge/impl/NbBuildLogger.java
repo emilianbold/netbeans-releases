@@ -119,7 +119,12 @@ final class NbBuildLogger implements BuildLogger {
     
     public void targetStarted(BuildEvent ev) {
         // XXX this could start indenting messages, perhaps
-        out.println(NbBundle.getMessage(NbBuildLogger.class, "MSG_target_started_printed", ev.getTarget().getName()));
+        String name = ev.getTarget().getName();
+        // Avoid printing internal targets normally:
+        int minlevel = (name.length() > 0 && name.charAt(0) == '-') ? Project.MSG_VERBOSE : Project.MSG_INFO;
+        if (level >= minlevel) {
+            out.println(NbBundle.getMessage(NbBuildLogger.class, "MSG_target_started_printed", name));
+        }
     }
     
     public void targetFinished(BuildEvent ev) {

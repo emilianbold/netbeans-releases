@@ -26,7 +26,7 @@ import org.openide.util.NbBundle;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 /** Wraps an Ant property in an IDE node property.
  */
-public class AntProperty extends Node.Property {
+class AntProperty extends Node.Property {
     
     private Element el;
     private String name;

@@ -14,91 +14,81 @@
  */
 
 package org.apache.tools.ant.module.nodes;
+import java.io.IOException;
+import java.text.Collator;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.swing.event.*;
-
-import org.w3c.dom.Element;
-
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
-
 import org.apache.tools.ant.module.AntModule;
-import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
-import org.apache.tools.ant.module.api.IntrospectedInfo;
+import org.apache.tools.ant.module.api.support.TargetLister;
+import org.openide.ErrorManager;
 
-public class AntProjectChildren extends ElementChildren implements ChangeListener {
+final class AntProjectChildren extends Children.Keys/*<TargetLister.Target>*/ implements ChangeListener, Comparator/*<TargetLister.Target>*/ {
     
-    private AntProjectCookie cookie;
+    private static Collator SORTER = Collator.getInstance();
+    
+    private final AntProjectCookie cookie;
+    private SortedSet/*<TargetLister.Target>*/ allTargets;
     
     public AntProjectChildren (AntProjectCookie cookie) {
         super ();
         this.cookie = cookie;
     }
     
-    protected Element getElement () {
-        return cookie.getProjectElement ();
-    }
-    
-    protected Node[] createNodes (Object key) {
-        Element el = (Element) key;
-        String type = el.getNodeName ();
-        if (type.equals ("target")) { // NOI18N
-            return new Node[] { new AntTargetNode (cookie, el) };
-        } else if (type.equals ("property") || type.equals ("taskdef") || type.equals ("typedef")) { // NOI18N
-            return new Node[] { new AntTaskNode (el) };
-        } else if (type.equals ("description")) { // NOI18N
-            return new Node[] { new DescriptionNode (el) };
-        } else {
-            // Data type, hopefully.
-            String clazz = (String) IntrospectedInfo.getDefaults ().getDefs ("type").get (type); // NOI18N
-            if (clazz == null) {
-                clazz = (String) AntSettings.getDefault ().getCustomDefs ().getDefs ("type").get (type); // NOI18N
-            }
-            if (clazz != null) {
-                AntModule.err.log ("AntProjectChildren.createNodes: type=" + type + " clazz=" + clazz);
-                return new org.openide.nodes.Node[] { new DataTypeNode (el, clazz) };
-            } else {
-                // Unknown tidbit of XML.
-                return new org.openide.nodes.Node[] { new ElementNode (el, NbBundle.getMessage (AntProjectChildren.class, "LBL_unknown_datatype", type)) };
-            }
-        }
-    }
-    
     protected void addNotify () {
         super.addNotify ();
+        refreshKeys();
         cookie.addChangeListener (this);
     }
 
     protected void removeNotify () {
         super.removeNotify ();
+        setKeys(Collections.EMPTY_SET);
+        allTargets = null;
         cookie.removeChangeListener (this);
     }
 
+    private void refreshKeys() {
+        try {
+            allTargets = new TreeSet(this);
+            allTargets.addAll(TargetLister.getTargets(cookie));
+            Iterator it = allTargets.iterator();
+            while (it.hasNext()) {
+                TargetLister.Target t = (TargetLister.Target) it.next();
+                if (t.isOverridden()) {
+                    // Don't include these.
+                    it.remove();
+                }
+            }
+            setKeys(allTargets);
+        } catch (IOException e) {
+            // XXX should mark the project node as being somehow in error
+            AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
+            setKeys(Collections.EMPTY_SET);
+        }
+    }
+    
+    protected Node[] createNodes (Object key) {
+        TargetLister.Target t = (TargetLister.Target) key;
+        return new Node[] {new AntTargetNode(cookie, t, allTargets)};
+    }
+    
     public void stateChanged (ChangeEvent ev) {
         refreshKeys ();
     }
     
-    /**
-     * Node representing a <code>&lt;description&gt;</code> inside
-     * the project.
-     */
-    private static final class DescriptionNode extends DataTypeNode {
-        public DescriptionNode(Element el) {
-            super(el, Children.LEAF);
-        }
-        public boolean canRename() {
-            return false;
-        }
-        protected void initDisplay() {
-            setNameSuper(el.getNodeName());
-            setShortDescription(NbBundle.getMessage(AntProjectChildren.class, "LBL_description_element"));
-            setIconBase("org/apache/tools/ant/module/resources/DataTypeIcon");
-        }
-        protected void addProperties(Sheet.Set props) {
-            // Just nested text.
-            props.put(new DataTypeNode.TextProperty());
-        }
+    public int compare(Object o1, Object o2) {
+        TargetLister.Target t1 = (TargetLister.Target) o1;
+        TargetLister.Target t2 = (TargetLister.Target) o2;
+        return SORTER.compare(t1.getName(), t2.getName());
     }
     
 }

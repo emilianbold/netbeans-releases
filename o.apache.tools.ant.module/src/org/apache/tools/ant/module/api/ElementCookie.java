@@ -20,6 +20,7 @@ import org.w3c.dom.Element;
 import org.openide.nodes.Node;
 
 /** Represents something with an associated Document Object Model element.
+ * @deprecated Not currently used in Ant module UI.
  */
 public interface ElementCookie extends Node.Cookie {
     

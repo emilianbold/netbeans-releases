@@ -13,12 +13,19 @@
 
 package org.netbeans.modules.ant.freeform;
 
+import java.io.IOException;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import org.apache.tools.ant.module.api.AntProjectCookie;
+import org.apache.tools.ant.module.api.support.TargetLister;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -152,22 +159,28 @@ public class Util {
         if (apc == null) {
             return null;
         }
-        Element projEl = apc.getProjectElement();
-        if (projEl == null) {
+        Set/*TargetLister.Target*/ allTargets;
+        try {
+            allTargets = TargetLister.getTargets(apc);
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             return null;
         }
-        ArrayList names = new ArrayList();
-        Iterator it = findSubElements(projEl).iterator();
+        SortedSet targetNames = new TreeSet(Collator.getInstance());
+        Iterator it = allTargets.iterator();
         while (it.hasNext()) {
-            Element el = (Element)it.next();
-            if (!el.getLocalName().equals("target")) { // NOI18N
+            TargetLister.Target target = (TargetLister.Target) it.next();
+            if (target.isOverridden()) {
+                // Cannot call it directly.
                 continue;
             }
-            names.add(el.getAttribute("name")); // NOI18N
+            if (target.isInternal()) {
+                // Should not be called from outside.
+                continue;
+            }
+            targetNames.add(target.getName());
         }
-        // XXX: need to handle <import> here
-        Collections.sort(names);
-        return names;
+        return new ArrayList(targetNames);
     }
     
 }
