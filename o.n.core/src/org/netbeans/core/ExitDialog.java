@@ -188,16 +188,31 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         else {
             Object[] array = list.getSelectedValues();
             SaveCookie sc = null;
+            int index = 0; // Index of last removed item.
+            
             for (int i = 0; i < array.length; i++) {
                 try {
                     sc = (SaveCookie)
                          (((DataObject)array[i]).getCookie(SaveCookie.class));
                     if (sc != null) sc.save();
+                    
+                    index = listModel.indexOf(array[i]);
                     listModel.removeElement(array[i]);
                 }
                 catch (java.io.IOException e) {
                     saveExc(e);
                 }
+            }
+            
+            // Reset selection to new item to the same index if available.
+            if(!listModel.isEmpty()) {
+                if(index < 0) {
+                    index = 0;
+                } else if(index > listModel.size() - 1) {
+                    index = listModel.size() - 1;
+                }
+                
+                list.setSelectedIndex(index);
             }
         }
         if (listModel.isEmpty()) {
