@@ -74,6 +74,17 @@ import org.openide.util.Utilities;
  */
 public final class ClassPath {
 
+    static  {
+        ClassPathAccessor.DEFAULT = new ClassPathAccessor() {
+            public ClassPath createClassPath(ClassPathImplementation spiClasspath) {
+                return new ClassPath(spiClasspath);
+            }
+            public ClassPathImplementation getClassPathImpl(ClassPath cp) {
+                return cp == null ? null : cp.impl;
+            }
+        };
+    }
+
     /**
      * Classpath setting for executing things. This type can be used to learn
      * runtime time classpath for execution of the file in question.
@@ -887,19 +898,6 @@ public final class ClassPath {
             
             return fileSystems = retVal;
         }
-    }
-
-        
-    static  {
-        ClassPathAccessor.DEFAULT = new ClassPathAccessor() {
-            public ClassPath createClassPath(ClassPathImplementation spiClasspath) {
-                return new ClassPath(spiClasspath);
-            }
-
-            public ClassPathImplementation getClassPathImpl(ClassPath cp) {
-                return cp == null ? null : cp.impl;
-            }
-        };
     }
 
 }
