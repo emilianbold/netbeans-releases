@@ -117,7 +117,7 @@ Microsystems, Inc. All Rights Reserved.
      <instances property="xtest.instance.postfixes"/>
      <echo message="Found following instances: ${xtest.instance.postfixes}"/>
 
-     <buildinfo srcfile="${ide.home}/build_info" buildNumberProperty="xtest.ide.build.name"
+     <buildinfo ideHome="${ide.home}" buildNumberProperty="xtest.ide.build.name"
                 buildProjectNameProperty="xtest.tested.project" buildTimestampProperty="ide.timestamp"/>
      <property name="ide.timestamp" value=""/>
 
@@ -155,7 +155,7 @@ Microsystems, Inc. All Rights Reserved.
    </target>
    
    <target name="pack-results2" if="xtest.ship.results.to">
-         <buildinfo srcfile="${ide.home}/build_info" buildNumberProperty="ide.build"
+         <buildinfo ideHome="${ide.home}" buildNumberProperty="ide.build"
                 buildProjectNameProperty="xtest.tested.project" />
          <echo message="Shipping results for build ${ide.build}"/>
          <property name="ide.build" value="unknown"/>

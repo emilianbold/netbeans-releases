@@ -51,11 +51,14 @@ check_new_build () {
   if [ "`echo ${BUILDFILE} | grep .zip$`" = "" ] ; then
       ls -l ${BUILDFILE} > ${LAST_BUILDINFO}.new
   else
-      unzip -j -p ${BUILDFILE} ${BUILDINFO_PATH} > ${LAST_BUILDINFO}.new
+      unzip -j -p ${BUILDFILE} ${BUILDINFO_PATH} > ${LAST_BUILDINFO}.new 2>/dev/null
+      if [ "$?" -ne 0 ]; then
+        # unzip failed (maybe build_info not found) => use ls
+        ls -l ${BUILDFILE} > ${LAST_BUILDINFO}.new
+      fi
   fi
   diff_value=`diff ${LAST_BUILDINFO}.new ${LAST_BUILDINFO}`
-  cp ${LAST_BUILDINFO}.new ${LAST_BUILDINFO}
-  rm -f ${LAST_BUILDINFO}.new
+  mv -f ${LAST_BUILDINFO}.new ${LAST_BUILDINFO}
 }
 
 run_buildtest() {
