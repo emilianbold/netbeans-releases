@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -33,7 +33,7 @@ import org.netbeans.jemmy.operators.Operator;
  * Timeouts used:<br>
  * SearchResultsOperator.SearchTime - maximum time for search to be performed.
  */
-public class SearchResultsOperator extends JDialogOperator {
+public class SearchResultsOperator extends TopComponentOperator {
 
     private static final long SEARCH_TIME = 600000;
 
@@ -58,7 +58,7 @@ public class SearchResultsOperator extends JDialogOperator {
      * Waits for window opened.
      */
     public SearchResultsOperator() {
-        super(TITLE);
+        super("Search Results");    // NOI18N
     }
 
     static {
