@@ -228,13 +228,13 @@ public class RADConnectionPropertyEditor
             } else throw new IllegalArgumentException();
         }
 
-        RADConnectionDesignValue(Class requiredType, String valueText) {
+        public RADConnectionDesignValue(Class requiredType, String valueText) {
             this.requiredTypeName = requiredType.getName();
             this.value = valueText;
             type = TYPE_VALUE;
         }
 
-        RADConnectionDesignValue(String userCode) {
+        public RADConnectionDesignValue(String userCode) {
             this.userCode = userCode;
             type = TYPE_CODE;
         }
@@ -339,11 +339,18 @@ public class RADConnectionPropertyEditor
                 case TYPE_BEAN:
                     return FormDesignValue.IGNORED_VALUE; // [PENDING: use the value during design time]
                 case TYPE_CODE:
+                    return userCode;
                 default:
                     return FormDesignValue.IGNORED_VALUE;
             }
         }
-    }
+
+        /** Returns type of this connection design value.
+        */
+        public int getType() {
+            return type;
+        }
+    } // end of inner class
 
     private static Object parseValue(String typeName, String value) {
         try {
