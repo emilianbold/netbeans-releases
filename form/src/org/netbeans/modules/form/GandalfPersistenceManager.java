@@ -70,6 +70,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
   public static final String ATTR_EVENT_HANDLER = "handler";
   public static final String ATTR_AUX_NAME = "name";
   public static final String ATTR_AUX_VALUE = "value";
+  public static final String ATTR_AUX_VALUE_TYPE = "type";
   public static final String ATTR_LAYOUT_CLASS = "class";
   public static final String ATTR_CONSTRAINT_LAYOUT = "layoutClass";
   public static final String ATTR_CONSTRAINT_VALUE = "value";
@@ -552,10 +553,28 @@ public class GandalfPersistenceManager extends PersistenceManager {
       for (int i = 0; i < propNodes.length; i++) {
         String propName = findAttribute (propNodes[i], ATTR_PROPERTY_NAME);
         String encodedValue = findAttribute (propNodes[i], ATTR_PROPERTY_VALUE);
+        String propType = findAttribute (propNodes[i], ATTR_PROPERTY_TYPE);
+
+        Class propClass = null;
+        try {
+          if (propType != null) propClass = findPropertyType (propType);
+        } catch (Exception e2) {
+          // OK, try to use decodeValue in this case
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e2.printStackTrace ();
+        }
         Object propValue=null;
         //System.out.println("loading name="+propName+", encodedValue="+encodedValue);
         try {
-          propValue = decodeValue (encodedValue);
+          if (propClass != null) {
+            try {
+              propValue = decodePrimitiveValue (encodedValue, propClass);
+            } catch (IllegalArgumentException e) {
+              // not a primitive type
+              propValue = decodeValue (encodedValue);
+            }
+          } else { // info about the property type was not saved
+            propValue = decodeValue (encodedValue);
+          }
         } catch (IOException e) {
           if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
           // [PENDING - handle error]
@@ -620,9 +639,30 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
           String auxName = findAttribute (children.item (i), ATTR_AUX_NAME);
           String auxValue = findAttribute (children.item (i), ATTR_AUX_VALUE);
+          String auxValueClass = findAttribute (children.item (i), ATTR_AUX_VALUE_TYPE);
           if ((auxName != null) && (auxValue != null)) { // [PENDING - error check]
             try {
-              Object auxValueDecoded = decodeValue (auxValue);
+              Object auxValueDecoded = null;
+              Class auxValueType = null;
+              if (auxValueClass != null) {
+                try {
+                  auxValueType = findPropertyType (auxValueClass);
+                } catch (Exception e2) {
+                  // OK, try to use decodeValue in this case
+                  if (Boolean.getBoolean ("netbeans.debug.exceptions")) e2.printStackTrace ();
+                }
+              }
+              if (auxValueType != null) {
+                try {
+                  auxValueDecoded = decodePrimitiveValue (auxValue, auxValueType);
+                } catch (IllegalArgumentException e3) {
+                  // not decoded as primitive value
+                  auxValueDecoded = decodeValue (auxValue);
+                }
+              } else {
+                // info about property class not stored
+                auxValueDecoded = decodeValue (auxValue);
+              }
               auxTable.put (auxName, auxValueDecoded);
             } catch (IOException e) {
               if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
@@ -1053,8 +1093,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
         // problem getting value => ignore this property
         continue;
       }
-      String encodeValue = encodeValue (value);
-      if (encodeValue == null) {
+      String valueType = prop.getValueType ().getName ();
+      String encodedValue = encodePrimitiveValue (value);
+      if (encodedValue == null) {
+        encodedValue = encodeValue (value);
+      }
+      if (encodedValue == null) {
         // [PENDING - notify problem?]
         continue;
       }
@@ -1066,11 +1110,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
         XML_SYNTHETIC_PROPERTY, 
         new String[] { 
           ATTR_PROPERTY_NAME, 
+          ATTR_PROPERTY_TYPE, 
           ATTR_PROPERTY_VALUE, 
           },
         new String[] { 
           prop.getName (), 
-          encodeValue,
+          valueType,
+          encodedValue,
         }
       );
     }
@@ -1102,7 +1148,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
       String valueName = (String) it.next ();
       Object value = auxValues.get (valueName);
       if (value == null) continue; // such values are not saved
-      String encodedValue = encodeValue (value);
+      String valueType = value.getClass ().getName ();
+      String encodedValue = encodePrimitiveValue (value);
+      if (encodedValue == null) {
+        encodedValue = encodeValue (value);
+      }
       if (encodedValue == null) {
         // [PENDING - solve problem?]
         continue;
@@ -1113,10 +1163,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
           XML_AUX_VALUE, 
           new String[] { 
             ATTR_AUX_NAME, 
+            ATTR_AUX_VALUE_TYPE,
             ATTR_AUX_VALUE },
           new String[] { 
             valueName, 
-            encodedValue 
+            valueType,
+            encodedValue
           }
       );
     }
@@ -1236,7 +1288,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
 
     if (valueNode != null) {
-      value = decodePrimitiveValue (valueNode.getNodeValue (), propertyType);
+      try {
+        value = decodePrimitiveValue (valueNode.getNodeValue (), propertyType);
+      } catch (IllegalArgumentException e) {
+        value = null; // should not happen
+      }
     } else {
       if ((ed != null) && (ed instanceof XMLPropertyEditor)) {
         org.w3c.dom.NodeList propChildren = propertyNode.getChildNodes ();
@@ -1302,9 +1358,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
   * <LI> Class
   * <LI> String
   * <LI> Integer, Short, Byte, Long, Float, Double, Boolean, Character </UL>
-  * @return decoded value or null if specified object is not of supported type
+  * @return decoded value
+  * @exception IllegalArgumentException thrown if specified object is not of supported type
   */
-  private Object decodePrimitiveValue (String encoded, Class type) {
+  private Object decodePrimitiveValue (String encoded, Class type) throws IllegalArgumentException{
     if ("null".equals (encoded)) return null;
     
     if (Integer.class.isAssignableFrom (type) || Integer.TYPE.equals (type)) {
@@ -1333,7 +1390,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         // will return null as the notification of failure
       }
     }
-    return null;
+    throw new IllegalArgumentException ();
   }
 
   /** Encodes specified value into a String. Supported types are: <UL>
@@ -1616,6 +1673,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  46   Gandalf   1.45        1/2/00   Ian Formanek    Improved serialization 
+ *       of primitive types in AUX values and Synthetic properties
  *  45   Gandalf   1.44        12/14/99 Pavel Buzek     #1991
  *  44   Gandalf   1.43        12/9/99  Pavel Buzek     reading propertied that 
  *       support XML but were serialized in older beta version
