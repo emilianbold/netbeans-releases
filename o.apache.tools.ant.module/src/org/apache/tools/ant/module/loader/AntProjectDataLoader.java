@@ -31,6 +31,7 @@ import org.openide.util.io.SafeException;
 import org.openide.xml.XMLUtil;
 
 import org.apache.tools.ant.module.AntModule;
+import org.apache.tools.ant.module.nodes.RunTargetsAction;
 
 /** Recognizes single files in the Repository as being of Ant Project type.
  */
@@ -71,6 +72,7 @@ public class AntProjectDataLoader extends UniFileLoader {
             SystemAction.get (OpenLocalExplorerAction.class),
             null,
             SystemAction.get (ExecuteAction.class),
+            SystemAction.get (RunTargetsAction.class),
             null,
             SystemAction.get (CutAction.class),
             SystemAction.get (CopyAction.class),
