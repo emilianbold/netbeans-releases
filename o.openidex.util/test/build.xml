@@ -29,9 +29,10 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.file.name" value="test.jar"/>
     <property name="xtest.file.location" value="lib"/>
     
-    <!-- Default testtypes and attributes -->
+    <!-- Default testtypes, attributes and executors -->
     <property name="xtest.testtype" value="unit"/>
-    <property name="xtest.attributes" value="stable"/>
+    <property name="xtest.attribs" value="stable"/>
+    <property name="xtest.executors" value="ide"/>
     
     <!-- Properties just for compiler -->
     <property name="build.compiler.deprecation" value="off"/>
@@ -155,12 +156,14 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="config" depends="init">
         <!-- This task reads config file cfg-${xtest.testtype}.xml and selects all -->
-        <!-- testbags, which conforms to ${xtest.attributes} = is subset or equals -->
-        <test-configurator testtype="${xtest.testtype}" testattributes="${xtest.attributes}"/>
+        <!-- testbags, which conforms to ${xtest.attribs} = is subset or equals -->
+        <test-configurator testtype="${xtest.testtype}" 
+                           testattributes="${xtest.attribs}"
+                           testexecutors="${xtest.executors}"/>
     </target>
     
     <target name="runtests" depends="config,cleanresults,buildtests">
-        <echo message="openidex tests, test type: ${xtest.testtype}, test attributes: ${xtest.attributes}"/>
+        <echo message="openidex tests, test type: ${xtest.testtype}, test attributes: ${xtest.attribs}"/>
         <test-executor paramClasspathProp="tbag.classpath"
                        paramPatternsetInProp="tbag.patternset.include"
                        paramPatternsetExProp="tbag.patternset.exclude"
@@ -402,7 +405,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="printconfig">
-        <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attributes}."/>
+        <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
     </target>
     
 </project>

@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="openidex unit test config">
     
-    <testbag testattribs="ide,stable" executor="ide" name="testbag_1" resultsprocessor="unit">
+    <testbag testattribs="stable" executor="ide" name="testbag_1" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openidex/nodes/looks/*.class"/>
@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="ide,failing" executor="ide" name="testbag_2" resultsprocessor="unit">
+    <testbag testattribs="failing" executor="ide" name="testbag_2" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openidex/nodes/looks/LookNodeTest.class/testGetActions"/>
@@ -36,11 +36,11 @@ Microsystems, Inc. All Rights Reserved.
     <!-- If you want to use this testbag you *must* provide xtest.includes property, -->
     <!-- (either on cmd line or in the script) to explicitly define which test       -->
     <!-- you want to run. This will run *only* tests from unit/src folder !!!        -->
-    <testbag testattribs="code,empty" executor="code" name="testbag_empty" resultsprocessor="unit">
+    <testbag testattribs="empty" executor="code" name="testbag_empty" resultsprocessor="unit">
         <testset dir="unit/src"/>
     </testbag>
 
-    <testbag testattribs="code,dev" executor="code" name="testbag_dev" resultsprocessor="unit">
+    <testbag testattribs="dev" executor="code" name="testbag_dev" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
                 <!-- Add your own code tests -->

@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="openide unit test config">
 
-    <testbag testattribs="code,stable" executor="code" name="testbag_1" resultsprocessor="unit">
+    <testbag testattribs="stable" executor="code" name="testbag_1" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openide/filesystems/*.class"/>
@@ -61,7 +61,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>      
     </testbag>
   
-    <testbag testattribs="ide,stable" executor="ide" name="testbag_2" resultsprocessor="unit">
+    <testbag testattribs="stable" executor="ide" name="testbag_2" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openide/explorer/propertysheet/*.class"/>
@@ -70,7 +70,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>        
     </testbag>
     
-    <testbag testattribs="code,failing" executor="code" name="testbag_3" resultsprocessor="unit">
+    <testbag testattribs="failing" executor="code" name="testbag_3" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>                
                 <include name="org/openide/filesystems/LocalFileSystemTest.class/testFireFileDataCreatedEvent"/>
@@ -101,7 +101,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>      
     </testbag>
 
-    <testbag testattribs="ide,failing" executor="ide" name="testbag_4" resultsprocessor="unit">
+    <testbag testattribs="failing" executor="ide" name="testbag_4" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
                 <!-- none -->
@@ -110,7 +110,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     <!-- Regression tests of fixed issues. -->
-    <testbag testattribs="ide,regr,stable" executor="ide" name="testbag_5" resultsprocessor="unit">
+    <testbag testattribs="regr,stable" executor="ide" name="testbag_5" resultsprocessor="unit">
         <testset dir="regr/src">
             <patternset>
                 <include name="org/openide/text/TextTest.class"/>
@@ -120,23 +120,22 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- Regression tests of open issues. Do not include to stable. -->
-    <testbag testattribs="code,regr-unstable" executor="code" name="testbag_6" resultsprocessor="unit">
+    <testbag testattribs="regr-unstable" executor="code" name="testbag_6" resultsprocessor="unit">
         <testset dir="regr/src">
             <patternset>
                 <include name="org/openide/text/ReloadDeadlockTest.class"/>
             </patternset>
         </testset>
     </testbag>
-
     
     <!-- If you want to use this testbag you *must* provide xtest.includes property, -->
     <!-- (either on cmd line or in the script) to explicitly define which test       -->
     <!-- you want to run. This will run *only* tests from unit/src folder !!!        -->
-    <testbag testattribs="code,empty" executor="code" name="testbag_empty" resultsprocessor="unit">
+    <testbag testattribs="empty" executor="code" name="testbag_empty" resultsprocessor="unit">
         <testset dir="unit/src"/>
     </testbag>
 
-    <testbag testattribs="code,dev" executor="code" name="testbag_dev" resultsprocessor="unit">
+    <testbag testattribs="dev" executor="code" name="testbag_dev" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
                 <!-- Add your own code tests -->
