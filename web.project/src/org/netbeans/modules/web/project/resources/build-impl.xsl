@@ -658,7 +658,7 @@ is divided into following sections:
                     <arg value="-d"/>
                     <arg file="${{basedir}}/${{build.generated.dir}}/src"/>
                     <arg value="-die1"/>
-                    <classpath path="${{java.home}}/../lib/tools.jar:${{jspcompilation.classpath}}"/>
+                    <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspcompilation.classpath}}"/>
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
                 <webproject2:javac
@@ -685,7 +685,7 @@ is divided into following sections:
                     <arg value="-die1"/>
                     <arg value="-jspc.files"/>
                     <arg path="${{jsp.includes}}"/>
-                    <classpath path="${{java.home}}/../lib/tools.jar:${{jspcompilation.classpath}}"/>
+                    <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspcompilation.classpath}}"/>
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
                 <webproject2:javac
