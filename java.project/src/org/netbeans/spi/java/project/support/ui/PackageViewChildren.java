@@ -32,6 +32,8 @@ import javax.swing.event.EventListenerList;
 import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -592,6 +594,11 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             if (oldName.equals(name)) {
                 return;
             }
+            if (!isValidPackageName (name)) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message (
+                        NbBundle.getMessage(PackageViewChildren.class,"MSG_InvalidPackageName"), NotifyDescriptor.INFORMATION_MESSAGE));
+                return;
+            }
             StringTokenizer dtk = new StringTokenizer(name,".");    //NOI18N
             try {
                 FileObject destination = this.root;
@@ -772,6 +779,27 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 else {
                     if (!isEmpty(kids[i])) {
                         return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        private static boolean isValidPackageName (String name) {
+            StringTokenizer tk = new StringTokenizer(name,"."); //NOI18N
+            while (tk.hasMoreTokens()) {
+                String namePart = tk.nextToken();
+                for (int i=0; i< namePart.length(); i++) {
+                    char c = namePart.charAt(i);
+                    if (i == 0) {
+                        if (!Character.isJavaIdentifierStart (c)) {
+                            return false;
+                        }
+                    }
+                    else {
+                        if (!Character.isJavaIdentifierPart(c)) {
+                            return false;
+                        }
                     }
                 }
             }
