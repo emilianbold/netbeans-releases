@@ -171,18 +171,47 @@ public class LocJHIndexer extends MatchingTask {
   }
 
   protected void setJHLib( JHIndexer jhindexer) {
-    String jhlib ;
-    int idx ;
+    String jhlib, dir, regexp ;
+    int idx, i ;
     FileSet fs ;
+    File file ;
+    LinkedList dirs, regexps ;
+    StringTokenizer st ;
+    Path path ;
 
-    // Break the regular expression up into directory and file //
-    // components.  Create a fileset for it.		       //
+    // For each regular expression. //
+    dirs = new LinkedList() ;
+    regexps = new LinkedList() ;
     jhlib = getJhall() ;
-    idx = jhlib.lastIndexOf( "/") ;
-    fs = new FileSet() ;
-    fs.setDir( new File( jhlib.substring( 0, idx))) ;
-    fs.setIncludes( jhlib.substring( idx+1)) ;
-    jhindexer.createClasspath().addFileset( fs) ;
+    st = new StringTokenizer( jhlib, " 	\n,") ;
+    while( st.hasMoreTokens()) {
+      regexp = st.nextToken() ;
+
+      // Break the regular expression up into directory and file //
+      // components.						 //
+      idx = regexp.lastIndexOf( "/") ;
+      dir = regexp.substring( 0, idx) ;
+      file = new File( dir) ;
+      if( file.exists()) {
+	dirs.add( dir) ;
+	regexps.add( regexp.substring( idx+1)) ;
+      }
+    }
+
+    if( dirs.size() > 0) {
+      path = jhindexer.createClasspath() ;
+      for( i = 0; i < dirs.size(); i++) {
+	dir = (String) dirs.get( i) ;
+	regexp = (String) regexps.get( i) ;
+	fs = new FileSet() ;
+	fs.setDir( new File( dir)) ;
+	fs.setIncludes( regexp) ;
+	path.addFileset( fs) ;
+      }
+    }
+    else {
+      throw new BuildException( "jhall not found.") ;
+    }
   }
 
   protected class LocHelpsetFilter implements FilenameFilter {
