@@ -4,6 +4,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.properties/1
 OpenIDE-Module-Specification-Version: 1.5
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Install: org/netbeans/modules/i18n/I18nModule.class
+OpenIDE-Module-Layer: org/netbeans/modules/i18n/Layer.xml
 
 Name: org/netbeans/modules/i18n/I18nOptions.class
 OpenIDE-Module-Class: Option
