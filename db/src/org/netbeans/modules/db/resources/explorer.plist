@@ -80,6 +80,11 @@
 		options = {};
 		defaultdriverlist = (
 			{
+				name = "Microsoft SQL Server (Weblogic driver)";
+				driver = "weblogic.jdbc.mssqlserver4.Driver";
+				prefix = "jdbc:weblogic:mssqlserver4:<DB>@<HOST>:<PORT>";
+			},
+			{
 				name = "Oracle thin";
 				driver = "oracle.jdbc.driver.OracleDriver";
 				prefix = "jdbc:oracle:thin:@<HOST>:<PORT>:<SID>";
@@ -206,6 +211,8 @@
 		creator = driverlist;
 		iconbase = "/org/netbeans/modules/db/resources/driver";
 		iconbaseprefered = "/org/netbeans/modules/db/resources/driverPrefered";
+		iconbasenotinstalled = "/org/netbeans/modules/db/resources/driverNotInstalled";
+		iconbasepreferednotinstalled = "/org/netbeans/modules/db/resources/driverPreferedNotInstalled";
 		children = ();
 		options = {
 			cut = YES;
