@@ -15,9 +15,13 @@ package org.netbeans.installer;
 
 import com.installshield.wizard.WizardBeanEvent;
 import com.installshield.product.service.product.ProductService;
+import com.installshield.product.wizardbeans.InstallAction;
 import com.installshield.wizard.service.ServiceException;
 import com.installshield.wizardx.panels.TextDisplayPanel;
 import com.installshield.util.Log;
+import com.installshield.wizard.RunnableWizardBeanState;
+import com.installshield.wizard.service.WizardLog;
+import com.installshield.wizard.service.file.FileService;
 
 import java.util.Properties;
 
@@ -53,13 +57,22 @@ public class NbSummaryPanel extends TextDisplayPanel
                 logEvent(this, Log.DBG, "queryEnter exitCode: " + getWizard().getExitCode());
                 if (getWizard().getExitCode() != -1) {
                     //Installation failed or was cancelled.
-                    Properties summary = service.getProductSummary(
-                    ProductService.DEFAULT_PRODUCT_SOURCE,
-                    ProductService.POST_INSTALL,
-                    ProductService.HTML);
-                    String summaryMessage = summary.getProperty(ProductService.SUMMARY_MSG);
-                    summaryMessage += resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.error)");
-                    setText(summaryMessage);
+                    InstallAction ia = (InstallAction) getWizardTree().getBean("install");
+                    RunnableWizardBeanState state = ia.getState();
+                    if (state.getState() == state.CANCELED) {
+                        //User cancelled installation (install action)
+                        removeAllFiles();
+                        String summaryMessage = resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.cancel)");
+                        setText(summaryMessage);
+                    } else {
+                        Properties summary = service.getProductSummary(
+                        ProductService.DEFAULT_PRODUCT_SOURCE,
+                        ProductService.POST_INSTALL,
+                        ProductService.HTML);
+                        String summaryMessage = summary.getProperty(ProductService.SUMMARY_MSG);
+                        summaryMessage += resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.error)");
+                        setText(summaryMessage);
+                    }
                 } else {
                     if (Util.isWindowsOS()) {
                         setText(resolveString
@@ -80,5 +93,26 @@ public class NbSummaryPanel extends TextDisplayPanel
             logEvent(this, Log.ERROR, e);
         }
         return okay;
+    }
+    
+    /** Remove created files/dirs when user cancels installation. */
+    private void removeAllFiles () {
+        WizardLog wizardLog = getWizard().getServices().getWizardLog();
+        wizardLog.setLogOutputEnabled(false);
+        
+        String installDir = resolveString("$P(absoluteInstallLocation)");
+        try {
+            FileService fileService = (FileService) getService(FileService.NAME);
+            String sep = fileService.getSeparator();
+            String file = installDir + sep + "_uninst" + sep + "install.log";
+            int ret = fileService.deleteFile(file);
+            file = installDir + sep + "_uninst";
+            ret = fileService.deleteDirectory(file);
+            ret = fileService.deleteDirectory(installDir);
+        } catch (ServiceException ex) {
+            //Nothing to do. Ignore.
+            System.out.println("serviceexception ex:" + ex);
+            ex.printStackTrace();
+        }
     }
 }
