@@ -13,10 +13,12 @@
 
 package threaddemo;
 
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.TimerTask;
 import javax.swing.*;
 
 /**
@@ -25,40 +27,72 @@ import javax.swing.*;
  */
 final class Monitor extends JPanel implements ActionListener {
     
-    private static final int DELAY = 100; // msec between pings
+    private static final int DELAY_CPU = 100; // msec between AWT pings
+    private static final long DELAY_HEAP = 1000; // msec between heap recalcs
     private static final long GRACE = 500; // msec permitted without access
     
     private long last;
-    private final Timer t;
-    private final JLabel blockageLabel;
-    private final JLabel heapLabel;
+    private final javax.swing.Timer t1;
+    private final java.util.Timer t2;
+    private final JTextField blockageField;
+    private final JTextField heapField;
     private static final NumberFormat format = new DecimalFormat("0.00");
     private int tick = 0;
     
     public Monitor() {
-        t = new Timer(DELAY, this);
-        t.setRepeats(true);
+        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+        t1 = new javax.swing.Timer(DELAY_CPU, this);
+        t1.setRepeats(true);
+        t2 = new java.util.Timer(true);
+        TimerTask task = new TimerTask() {
+            public void run() {
+                updateHeap();
+            }
+        };
         last = System.currentTimeMillis();
-        blockageLabel = new JLabel("No blockages longer than " + GRACE + "msec");
-        heapLabel = new JLabel("Heap: XXXXXXXXXXXXXXXXX");
-        add(blockageLabel);
-        add(heapLabel);
-        t.start();
+        add(new JLabel("Last blockage above " + GRACE + "msec:"));
+        blockageField = new JTextField(10);
+        Font font = new Font("Monospaced", Font.PLAIN, blockageField.getFont().getSize());
+        blockageField.setFont(font);
+        blockageField.setEditable(false);
+        add(Box.createHorizontalStrut(5));
+        add(blockageField);
+        add(Box.createHorizontalStrut(10));
+        add(new JLabel("Heap:"));
+        add(Box.createHorizontalStrut(5));
+        heapField = new JTextField(10);
+        heapField.setFont(font);
+        heapField.setEditable(false);
+        add(heapField);
+        JButton gc = new JButton("GC");
+        gc.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ev) {
+                System.gc();
+                System.runFinalization();
+                System.gc();
+            }
+        });
+        add(Box.createHorizontalStrut(10));
+        add(gc);
+        t1.start();
+        t2.schedule(task, 0L, DELAY_HEAP);
     }
     
     public void actionPerformed(ActionEvent e) {
-        if (tick++ % 10 == 0) {
-            heapLabel.setText("Heap: " + format.format(heapUsedMega()) + "Mb");
-        }
         long now = System.currentTimeMillis();
         long block = now - last;
         //System.err.println("timer: block=" + block);
         if (block > GRACE) {
             System.err.println("AWT blocked for " + block + "msec");
-            blockageLabel.setText("Last big blockage for " + block + "msec");
-            paintImmediately(0, 0, getWidth(), getHeight());
+            blockageField.setText(Long.toString(block) + "msec");
+            blockageField.paintImmediately(0, 0, blockageField.getWidth(), blockageField.getHeight());
         }
         last = now;
+    }
+    
+    private void updateHeap() {
+        heapField.setText(format.format(heapUsedMega()) + "Mb");
+        heapField.paintImmediately(0, 0, heapField.getWidth(), heapField.getHeight());
     }
     
     private static float heapUsedMega() {
