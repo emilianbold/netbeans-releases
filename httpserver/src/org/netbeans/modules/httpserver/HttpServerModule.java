@@ -63,7 +63,12 @@ public class HttpServerModule implements ModuleInstall, Externalizable {
   /** Module is being closed. */
   public boolean closing () {
     // stop the server, don't set the running status
-    org.openide.util.HttpServer.deregisterServer(HttpServerSettings.OPTIONS);
+    try {
+      org.openide.util.HttpServer.deregisterServer(HttpServerSettings.OPTIONS);
+    }
+    catch (SecurityException e) {
+      // pending - why do I get SecurityException ?
+    } 
     synchronized (HttpServerSettings.OPTIONS) {
       stopHTTPServer();
     }  
@@ -187,6 +192,7 @@ public class HttpServerModule implements ModuleInstall, Externalizable {
 
 /*
  * Log
+ *  22   Gandalf   1.21        9/8/99   Petr Jiricka    SecurityException fix
  *  21   Gandalf   1.20        9/8/99   Petr Jiricka    Fixed 
  *       NullPointerException at startup
  *  20   Gandalf   1.19        8/17/99  Petr Jiricka    Externalization - server
