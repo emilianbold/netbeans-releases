@@ -118,7 +118,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
     * @return file object with renamed file
     */
     public FileObject rename (String name) throws IOException {
-
+    
         if (!getFile().getName().startsWith(basicName))
             throw new InternalError("Never happens - error in Properties loader / rename");
 
@@ -149,6 +149,10 @@ public class PropertiesFileEntry extends PresentableFileEntry {
         }
 
         FileObject fo = super.rename(name);
+
+        // to notify the bundle structure that name of one file was changed
+        ((PropertiesDataObject)getDataObject()).getBundleStructure().oneFileChanged(getHandler());
+        
         return fo;
     }
 

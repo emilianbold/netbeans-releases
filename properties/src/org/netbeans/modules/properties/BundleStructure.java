@@ -253,7 +253,7 @@ public class BundleStructure extends PropertyChangeSupport {
         // find out whether global key table has changed and fire a change according to that
         SortedArrayList oldKeyList = keyList;
         buildKeySet();
-        if (keyList.equals(oldKeyList)) {
+        if (!keyList.equals(oldKeyList)) {
             support.fireBundleDataChanged();
         }
         else {

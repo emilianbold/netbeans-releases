@@ -202,7 +202,7 @@ public class PropertiesTableModel extends AbstractTableModel {
     }
 
     /** Returns the name for a column */
-    public String getColumnName(int column) {
+    public String getColumnName(final int column) {
         switch (column) {
         case 0:
             return NbBundle.getBundle(PropertiesTableModel.class).getString("LAB_KeyColumnLabel");
@@ -288,6 +288,7 @@ public class PropertiesTableModel extends AbstractTableModel {
 
     /** Fires a TableModelEvent - change of one column */
     public void fireTableColumnChanged(int column) {
+        fireTableChanged(new TableModelEvent(this, TableModelEvent.HEADER_ROW));
         fireTableChanged(new TableModelEvent(this, 0, getRowCount() - 1, column));
     }
 
