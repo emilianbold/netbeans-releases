@@ -105,7 +105,7 @@ public class IOManager {
             //processIO.setFocusTaken (true);
             processOut = processIO.getOut ();
             //processIO.select ();
-        ((TopComponent) debuggerIO).hide ();
+        ((TopComponent) debuggerIO).setVisible(false);
         
         debuggerToDebuggerIO.put (engine, debuggerIO);
         debuggerToProcesIO.put (engine, processIO);
