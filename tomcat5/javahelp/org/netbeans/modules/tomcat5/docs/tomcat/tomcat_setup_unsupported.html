@@ -9,13 +9,13 @@
 <meta name="lastupdated" content="4Feb04">
 <!-- p1 -->
 
-<title>Setting Up an Unsupported Version of the Tomcat Web Server</title>
+<title>Using an Unsupported Version of the Tomcat Web Server</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
-<h2>Setting Up an Unsupported Version of the Tomcat Web Server</h2>
+<h2>Using an Unsupported Version of the Tomcat Web Server</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
@@ -24,16 +24,16 @@ Web Server with the IDE. You can also configure the IDE to deploy web applicatio
 installations of supported versions of the Tomcat Web Server. These versions need to be
 <a href="tomcat_addinstall.html">registered</a> first. Unsupported versions of the Tomcat
 Web Server cannot be registered with the IDE. Instead, for these versions you can create 
-Ant tasks for starting and stopping the Tomcat Web Server
+Ant targets for starting and stopping the Tomcat Web Server
   and for the deployment of web applications, JSP pages, and servlets.</p>
-<p><b>To set up an unsupported version of the Tomcat Web Server:</b></p>
+<p><b>To use an unsupported version of the Tomcat Web Server:</b></p>
 <ol>
 	<li>In the Files window (Ctrl-2), expand the project node, expand the
         nbproject node, and double-click the project.properties node. Change the
 	<tt>build.web.dir</tt> property as follows:
 <pre>c:/Program Files/Apache Group/Tomcat 4.1/webapps/<i>MyWebAppProjectName</i></pre>
 	<p>Make sure that the path above points to the unsupported Tomcat Web server's <tt>webapps</tt> folder,
-and replace <i>MyWebAppProjectName</i> with the name of your web application project.</li>
+	and replace <i>MyWebAppProjectName</i> with the name of your web application project.</li>
 <li>Now double-click the <tt>build.xml</tt> file 
 and add the following targets right above the closing &lt;<tt>/project</tt>&gt; tag:
 	
@@ -72,9 +72,13 @@ for your environment and Tomcat Web Server installation. In the Run target,
 <li>Right-click the project node, choose Properties, and click Run.
 Use the Relative URL field to define the <tt>client.urlPart</tt>, which you
  specified in the Run target above. For example, type <tt>index.jsp</tt> (without
-  a slash, because the slash is defined in the Run target) in the field.</li>
+ a slash, because the slash is defined in the Run target) in the field.</li>
+ <li>In the projects window, right-click the project node and choose Build Project.
+  Check that the project is built to the folder that you specified in step 1 above.</li>
   <li>Now use the shortcut you defined to start the Tomcat Web Server. Then
-   use the shortcut you defined to deploy the web application, JSP page, or servlet.</li>
+  use the shortcut you defined to deploy the web application, JSP page, or servlet.
+  The JSP page or servlet specified by the <tt>client.urlPart</tt> property is
+  displayed in the browser that you defined in the <tt>Run</tt> target.</li>
 </ol>
 
 <table>
