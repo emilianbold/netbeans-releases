@@ -192,9 +192,10 @@ public class RADProperty extends FormProperty {
         }
         else { // hack: debugGraphicsOptions is problematic because its
                // default value (0) does not correspond to any of the
-               // enumerated constants (NONE_OPTION is -1)
+               // enumerated constants
             enumerationValues = new Object[] {
                 "NONE_OPTION", new Integer(-1), "DebugGraphics.NONE_OPTION", // NOI18N
+                "NO_CHANGES", new Integer(0), "0", // NOI18N
                 "LOG_OPTION", new Integer(1), "DebugGraphics.LOG_OPTION", // NOI18N
                 "FLASH_OPTION", new Integer(2), "DebugGraphics.FLASH_OPTION", // NOI18N
                 "BUFFERED_OPTION", new Integer(4), "DebugGraphics.BUFFERED_OPTION" }; // NOI18N
