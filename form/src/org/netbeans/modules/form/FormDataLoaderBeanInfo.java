@@ -28,7 +28,7 @@ public class FormDataLoaderBeanInfo extends SimpleBeanInfo {
     try {
       return new BeanInfo[] { Introspector.getBeanInfo (JavaDataLoader.class) };
     } catch (IntrospectionException ie) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
         ie.printStackTrace ();
       return null;
     }
@@ -58,6 +58,7 @@ public class FormDataLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  6    Gandalf   1.5         1/13/00  Ian Formanek    NOI18N
 *  5    Gandalf   1.4         1/13/00  Jesse Glick     Bean info fixes.
 *  4    Gandalf   1.3         1/5/00   Ian Formanek    NOI18N
 *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
