@@ -58,7 +58,7 @@ public class InsertI18nStringAction extends CookieAction {
         
         sec.open(); 
 
-        DataObject dobj = (DataObject)sec.getSource().getCookie(DataObject.class);
+        final DataObject dobj = (DataObject)sec.getSource().getCookie(DataObject.class);
         if (dobj == null) return; 
 
 
@@ -67,8 +67,8 @@ public class InsertI18nStringAction extends CookieAction {
         final StyledDocument doc = sec.getDocument();
 
         final ResourceBundleStringEditor rbStringEditor = new ResourceBundleStringEditor();
-        ResourceBundleString rbString = (ResourceBundleString)rbStringEditor.getValue();
-        rbString.setClassElement(I18nSupport.getSourceClassElement(sec.getSource())); // Set ClassElement.
+//        ResourceBundleString rbString = (ResourceBundleString)rbStringEditor.getValue(); // PENDING
+        rbString.setClassElement(I18nSupport.getSourceClassElement(sec.getSource())); // Set ClassElement. // TEMP
         
         final ResourceBundlePanel rbPanel = (ResourceBundlePanel)rbStringEditor.getCustomEditor();
         rbPanel.setValue(rbString);
@@ -83,8 +83,10 @@ public class InsertI18nStringAction extends CookieAction {
                 public void actionPerformed(ActionEvent ev) {
                     if (ev.getSource() == DialogDescriptor.OK_OPTION) {
                         try {
-                            ResourceBundleString newRbs = (ResourceBundleString)rbPanel.getPropertyValue();
-                            rbStringEditor.setValue(newRbs);
+                            ResourceBundleString newRbString = (ResourceBundleString)rbPanel.getPropertyValue();
+                            rbStringEditor.setValue(newRbString);
+                            // Set targetDataObject so the field  could be created properly.
+//                            rbStringEditor.setTargetDataObject(dobj); // TEMP // PENINDG
                             
                             doc.insertString(position, rbStringEditor.getJavaInitializationString(), null);
                             
@@ -119,7 +121,11 @@ public class InsertI18nStringAction extends CookieAction {
             return false;
         
         // if has an open editor pane must not be in a guarded block
-        final SourceCookie.Editor sec = (SourceCookie.Editor)(activatedNodes[0]).getCookie(SourceCookie.Editor.class);        
+// TEMP PENDING>>
+        // It causes StackOverflowError
+        // I18nSupport.isGuardedPosittion() checks teh way it causes change cookies (remove add SaveCookie), what
+        // in turn calls back enable method, it calls isGueardedPosition again etc. etc.
+        /*final SourceCookie.Editor sec = (SourceCookie.Editor)(activatedNodes[0]).getCookie(SourceCookie.Editor.class);        
         if (sec != null) {
             JEditorPane[] edits = sec.getOpenedPanes();
             if (edits != null && edits.length > 0) {
@@ -129,7 +135,9 @@ public class InsertI18nStringAction extends CookieAction {
                 if(I18nSupport.getI18nSupport(doc, obj).isGuardedPosition(position))
                     return false;
             }
-        }
+        }*/
+// TEMP PENDING<<        
+        
         return true;
     }
 
