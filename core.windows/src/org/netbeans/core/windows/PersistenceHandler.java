@@ -282,30 +282,21 @@ final class PersistenceHandler implements PersistenceObserver {
                     + tcRefConfig.tc_id + "\", \topened=" + tcRefConfig.opened); // NOI18N
             }
             if (tcRefConfig.previousMode != null) {
-                if (tcRefConfig.opened) {
-                    TopComponent tc = getTopComponentForID(tcRefConfig.tc_id);
-                    if(tc != null) {
-                        Iterator it = modes.keySet().iterator();
-                        ModeImpl previous = null;
-                        while (it.hasNext()) {
-                            ModeImpl md = (ModeImpl)it.next();
-                            
-                            if (tcRefConfig.previousMode.equals(md.getName())) {
-                                previous = md;
-                                break;
-                            }
-                        }
-                        if (previous != null) {
-                            WindowManagerImpl.getInstance().setPreviousModeForTopComponent(tc, mode, previous);
-                        } else {
-                            debugLog("\tTopComponent[" + j + "] id=\"" // NOI18N
-                                + tcRefConfig.tc_id + "\", \topened=" + tcRefConfig.opened + " previousmode=\"" + tcRefConfig.previousMode + "\""); // NOI18N
-                            
+                TopComponent tc = getTopComponentForID(tcRefConfig.tc_id);
+                if(tc != null) {
+                    Iterator it = modes.keySet().iterator();
+                    ModeImpl previous = null;
+                    while (it.hasNext()) {
+                        ModeImpl md = (ModeImpl)it.next();
+
+                        if (tcRefConfig.previousMode.equals(md.getName())) {
+                            previous = md;
+                            break;
                         }
                     }
-                } else {
-                    // do nothing..
-//                    mode.addUnloadedTopComponent(tcRefConfig.tc_id);
+                    if (previous != null) {
+                        WindowManagerImpl.getInstance().setPreviousModeForTopComponent(tc, mode, previous);
+                    }
                 }
             }
         }
@@ -581,17 +572,19 @@ final class PersistenceHandler implements PersistenceObserver {
             String tcID = (String)it.next();
             
             boolean opened = openedTcIDs.contains(tcID);
-            String modeName = null;
+            TopComponent tc = wm.findTopComponent(tcID);
             if(opened) {
-                TopComponent tc = wm.findTopComponent(tcID);
                 if(tc == null || !pm.isTopComponentPersistent(tc)) {
                     continue;
                 }
-                if (mode.getKind() == Constants.MODE_KIND_SLIDING) {
-                    ModeImpl prev = wm.getPreviousModeForTopComponent(tc, mode);
-                    if (prev != null) {
-                        modeName = prev.getName();
-                    }
+            }
+            
+            // #45981: save previous mode even for closed tcs
+            String modeName = null;
+            if (tc != null && mode.getKind() == Constants.MODE_KIND_SLIDING) {
+                ModeImpl prev = wm.getPreviousModeForTopComponent(tc, mode);
+                if (prev != null) {
+                    modeName = prev.getName();
                 }
             }
 
