@@ -121,6 +121,7 @@ public class J2SEProjectProperties {
     // Prefixes and suffixes of classpath
     public static final String LIBRARY_PREFIX = "${libs."; // NOI18N
     public static final String LIBRARY_SUFFIX = ".classpath}"; // NOI18N
+    // XXX looks like there is some kind of API missing in ReferenceHelper?
     public static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
 
     ClassPathSupport cs;
