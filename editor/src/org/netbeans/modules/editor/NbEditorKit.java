@@ -17,6 +17,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.JEditorPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Document;
@@ -34,6 +35,7 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.Presenter;
 import org.openide.actions.UndoAction;
 import org.openide.actions.RedoAction;
+import org.openide.windows.TopComponent;
 
 /**
 * Java editor kit with appropriate document
@@ -108,36 +110,84 @@ public abstract class NbEditorKit extends ExtKit {
 
         static final long serialVersionUID =-8623762627678464181L;
 
-        protected JMenuItem getItem(JTextComponent target, String actionName) {
-            JMenuItem item = super.getItem(target, actionName);
+        protected void addAction(JTextComponent target, JPopupMenu popupMenu,
+        String actionName) {
+            if (actionName != null) { // try if it's an action class name
+                // Check for the TopComponent actions
+                if (TopComponent.class.getName().equals(actionName)) {
+                    // Get the cloneable-editor instance
+                    TopComponent tc = NbEditorUtilities.getTopComponent(target);
+                    if (tc != null) {
+                        // Add all the actions
+                        SystemAction[] actions = tc.getSystemActions();
+                        TopManager tm = NbEditorUtilities.getTopManager();
+                        if (tm != null) { // IDE initialized
+                            for (int i = 0; i < actions.length; i++) {
+/*                                System.out.println("NbEditorKit.java:126 top-component actions["
+                                        + i + "]=" + ((actions[i] != null)
+                                            ? actions[i].getClass().getName() : "NULL"));
+*/
+                                if (actions[i] instanceof Presenter.Popup) {
+                                    JMenuItem item = ((Presenter.Popup)actions[i]).getPopupPresenter();
+                                    if (item != null && !(item instanceof JMenu)) {
+                                        KeyStroke[] keys
+                                            = tm.getGlobalKeymap().getKeyStrokesForAction(actions[i]);
+                                        if (keys != null && keys.length > 0) {
+                                            item.setAccelerator(keys[0]);
+                                        }
 
-            if (item == null && actionName != null) { // try if it's an action class name
-                Class saClass;
-                try {
-                    saClass = Class.forName(actionName);
-                } catch (Throwable t) {
-                    saClass = null;
-                }
+                                    }
 
-                if (saClass != null && SystemAction.class.isAssignableFrom(saClass)) {
-                    TopManager tm = NbEditorUtilities.getTopManager();
-                    if (tm != null) { // IDE initialized
-                        SystemAction sa = SystemAction.get(saClass);
-                        if (sa instanceof Presenter.Popup) {
-                            item = ((Presenter.Popup)sa).getPopupPresenter();
-                            if (item != null && !(item instanceof JMenu)) {
-                                KeyStroke[] keys = tm.getGlobalKeymap().getKeyStrokesForAction(sa);
-                                if (keys != null && keys.length > 0) {
-                                    item.setAccelerator(keys[0]);
+                                    if (item != null) {
+                                        popupMenu.add(item);
+                                    }
+
+                                } else if (actions[i] == null) {
+                                    popupMenu.addSeparator();
                                 }
                             }
                         }
                     }
+
+                    return;
+
+                } else { // not cloneable-editor actions
+                    Class saClass;
+                    try {
+                        saClass = Class.forName(actionName);
+                    } catch (Throwable t) {
+                        saClass = null;
+                    }
+
+                    if (saClass != null && SystemAction.class.isAssignableFrom(saClass)) {
+                        TopManager tm = NbEditorUtilities.getTopManager();
+                        if (tm != null) { // IDE initialized
+                            SystemAction sa = SystemAction.get(saClass);
+                            if (sa instanceof Presenter.Popup) {
+                                JMenuItem item = ((Presenter.Popup)sa).getPopupPresenter();
+                                if (item != null && !(item instanceof JMenu)) {
+                                    KeyStroke[] keys = tm.getGlobalKeymap().getKeyStrokesForAction(sa);
+                                    if (keys != null && keys.length > 0) {
+                                        item.setAccelerator(keys[0]);
+                                    }
+                                }
+
+                                if (item != null) {
+                                    popupMenu.add(item);
+                                }
+                            }
+                        }
+
+                        return;
+                    }
                 }
+
             }
 
-            return item;
+            super.addAction(target, popupMenu, actionName);
+
         }
+
 
     }
 

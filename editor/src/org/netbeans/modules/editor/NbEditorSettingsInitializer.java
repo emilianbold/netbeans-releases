@@ -39,6 +39,7 @@ import org.openide.actions.CutAction;
 import org.openide.actions.CopyAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.DeleteAction;
+import org.openide.windows.TopComponent;
 
 /**
 * Customized settings for NetBeans editor
@@ -87,7 +88,7 @@ public class NbEditorSettingsInitializer extends Settings.AbstractInitializer {
             settingsMap.put(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST,
                             new ArrayList(Arrays.asList(
                                               new String[] {
-                                                  SaveAction.class.getName(),
+                                                  TopComponent.class.getName(),
                                                   null,
                                                   CutAction.class.getName(),
                                                   CopyAction.class.getName(),
