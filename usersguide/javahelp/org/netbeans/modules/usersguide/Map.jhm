@@ -455,6 +455,7 @@
 
 
 <mapID target="javadoc.jump" url="javadoc/javadoc_jump.html" />
+<mapID target="javadoc.indices" url="javadoc/doc_indices.html"/>
 <mapID target="javadoc.search" url="javadoc/search.html" />
 <mapID target="javadoc.source_editor" url="javadoc/show_in_editor.html" />
 <mapID target="javadoc.accuracy" url="javadoc/accuracy.html" />
