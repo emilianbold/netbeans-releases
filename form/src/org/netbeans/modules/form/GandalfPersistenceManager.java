@@ -381,15 +381,20 @@ public class GandalfPersistenceManager extends PersistenceManager {
       for (int i = 0; i < propNodes.length; i++) {
         Object propValue = getEncodedPropertyValue (propNodes[i], comp);
         String propName = findAttribute (propNodes[i], ATTR_PROPERTY_NAME);
+        String propType = findAttribute (propNodes[i], ATTR_PROPERTY_TYPE);
 
         org.openide.nodes.Node.Property prop = comp.getPropertyByName (propName);
 
         if (prop instanceof RADComponent.RADProperty) {
           String propertyEditor = findAttribute (propNodes[i], ATTR_PROPERTY_EDITOR);
+          System.out.println("Property editor for property: "+propName+" , is: "+propertyEditor);
           if (propertyEditor != null) {
             try {
-              PropertyEditor ed = (PropertyEditor)TopManager.getDefault ().systemClassLoader ().loadClass (propertyEditor).newInstance ();
+              Class editorClass = TopManager.getDefault ().systemClassLoader ().loadClass (propertyEditor);
+              Class propertyClass = findPropertyType (propType);
+              PropertyEditor ed = FormEditor.createPropertyEditor (editorClass, propertyClass, comp);
               ((RADComponent.RADProperty)prop).setCurrentEditor (ed);
+          System.out.println("Property editor succesfully set: "+propName+" , is: "+ed);
             } catch (Exception e) {
               // ignore
             }
@@ -900,33 +905,18 @@ public class GandalfPersistenceManager extends PersistenceManager {
     org.w3c.dom.Node editorNode = attrs.getNamedItem (ATTR_PROPERTY_EDITOR);
     org.w3c.dom.Node valueNode = attrs.getNamedItem (ATTR_PROPERTY_VALUE);
 
-/*    System.out.println ("getEncodedPropertyValue::Property: "+nameNode.getNodeValue ());
-    System.out.println ("getEncodedPropertyValue::Property Type: "+typeNode.getNodeValue ());
-    System.out.println ("getEncodedPropertyValue::Editor Node: "+editorNode);
-    System.out.println ("getEncodedPropertyValue::Value Node: "+valueNode);
-    if (valueNode != null) {
-      System.out.println ("getEncodedPropertyValue::Value in Node: "+valueNode.getNodeValue ());
-    }
-*/
     if ((nameNode == null) || (typeNode == null)) {
       return null;
     }
 
     try {
+      Class propertyType = findPropertyType (typeNode.getNodeValue ());
+
       PropertyEditor ed = null;
       if (editorNode != null) {
         Class editorClass = TopManager.getDefault ().systemClassLoader ().loadClass (editorNode.getNodeValue ());
-        if (editorClass.equals (RADConnectionPropertyEditor.class)) {
-          Class valueType = TopManager.getDefault ().systemClassLoader ().loadClass (typeNode.getNodeValue ());
-          ed = new RADConnectionPropertyEditor (valueType);
-        } else {
-          ed = (PropertyEditor)editorClass.newInstance ();
-        }
-        if (ed instanceof FormAwareEditor) {
-          ((FormAwareEditor)ed).setRADComponent (radComponent);
-        }
+        ed = FormEditor.createPropertyEditor (editorClass, propertyType, radComponent);
       }
-      Class propertyType = findPropertyType (typeNode.getNodeValue ());
       Object value = null;
 
       if (valueNode != null) {
@@ -958,11 +948,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
           }
         }
       }
-/*      if (value == null) {
-        System.out.println ("getEncodedPropertyValue::returning null");
-      } else {
-        System.out.println ("getEncodedPropertyValue::returning: "+value.getClass ().getName ()+", value: "+value);
-      } */
+
       return value;
 
     } catch (Exception e) {
@@ -1272,6 +1258,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  21   Gandalf   1.20        8/1/99   Ian Formanek    Improved creation of 
+ *       property editors, removed debug messages
  *  20   Gandalf   1.19        7/25/99  Ian Formanek    Variables management 
  *       moved to RADComponent
  *  19   Gandalf   1.18        7/23/99  Ian Formanek    Works with 
