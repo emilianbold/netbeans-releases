@@ -599,12 +599,22 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance"/>
 	</file>
     
-        <file name="C-7.shadow">
+        <file name="C-1.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-logical-tab-action.instance"/>
-	</file>
-        
+        </file>
+
+<!-- sadly, AWT steals CS-1 to dump the AWT hierarchy
+
+        <file name="CS-1.shadow">
+	    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SelectInProjects.instance"/>
+        </file>
+-->
         <file name="C-2.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-physical-tab-action.instance"/>
+	</file>
+
+        <file name="CS-2.shadow">
+	    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SelectInFiles.instance"/>
 	</file>
         
         <file name="F9.shadow">

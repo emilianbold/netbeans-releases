@@ -40,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="ViewFavoritesTabAction.shadow/ViewRuntimeTabAction.shadow" boolvalue="true" />
             
             <folder name="SelectDocumentNode">
-                <attr name="SelectInFSTabAction.shadow/SelectInFavoritesTabAction.shadow" boolvalue="true" />
+                <attr name="org-netbeans-modules-project-ui-SelectInFiles.shadow/SelectInFavoritesTabAction.shadow" boolvalue="true" />
                 <file name="SelectInFavoritesTabAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-Select.instance"/>
                 </file>

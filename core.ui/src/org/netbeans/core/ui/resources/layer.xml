@@ -78,8 +78,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>        
         
         <folder name="Window">
-            <file name="org-netbeans-core-actions-ViewFilesystemsTabAction.instance"/>
-            <file name="org-netbeans-core-actions-SelectInFSTabAction.instance"/>
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
         </folder>
         
@@ -176,10 +174,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder> 
 
         <folder name="Window">
-            <file name="ViewFilesystemsTabAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-ViewFilesystemsTabAction.instance"/>
-            </file>
-            <attr name="ViewFilesystemsTabAction.shadow/org-netbeans-core-actions-GlobalPropertiesAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
             <attr name="org-netbeans-core-actions-GlobalPropertiesAction.instance/oldRootsStart.txt" boolvalue="true" />
             <file name="oldRootsStart.txt"/>
@@ -189,9 +183,6 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="SelectDocumentNode">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.actions.Bundle" />
-                <file name="SelectInFSTabAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-SelectInFSTabAction.instance"/>
-                </file>
             </folder>
             <attr name="SwitchToRecentDocumentAction.shadow/SelectDocumentNode" boolvalue="true" />
             <attr name="SelectDocumentNode/Separator4.instance" boolvalue="true" />
@@ -306,18 +297,6 @@ Microsystems, Inc. All Rights Reserved.
     
         <file name="C-H.instance">
 	    <attr name="instanceClass" stringvalue="org.openide.actions.ReplaceAction"/>
-	</file>
-
-        <file name="C-2.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-ViewFilesystemsTabAction.instance"/>
-	</file>
-
-        <file name="CS-2.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-SelectInFSTabAction.instance"/>
-	</file>
-
-        <file name="C-1.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.core.actions.GlobalPropertiesAction"/>
 	</file>
 
         <file name="C-P.instance">
