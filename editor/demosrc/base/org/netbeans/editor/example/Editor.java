@@ -11,9 +11,7 @@ import java.net.URL;
 import java.io.*;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 
 import javax.swing.*;
 import javax.swing.text.Document;
@@ -45,9 +43,6 @@ public class Editor extends javax.swing.JFrame {
 	distributionDirectory = file;
     }
     
-    private static final String SETTINGS =
-        "settings";
-    
     /** Document property holding String name of associated file */
     private static final String FILE = "file";
     /** Document property holding Boolean if document was created or opened */
@@ -55,28 +50,94 @@ public class Editor extends javax.swing.JFrame {
     /** Document property holding Boolean modified information */
     private static final String MODIFIED = "modified";
         
-    private ResourceBundle settings = ResourceBundle.getBundle( SETTINGS );
+    private ResourceBundle settings = ResourceBundle.getBundle( "settings" );
 
     private JFileChooser fileChooser;
     
     private int fileCounter = -1;
     Map com2text = new HashMap();
     
-    private static class Localizer implements LocaleSupport.Localizer {
-	ResourceBundle bundle;
+    private Impl impl = new Impl("org.netbeans.editor.Bundle");
+    
+    private class Impl extends FileView implements WindowListener,
+                                    ActionListener, LocaleSupport.Localizer {
+                                        
+        private ResourceBundle bundle;
 	
-	public Localizer( String bundleName ) {
+	public Impl( String bundleName ) {
 	    bundle = ResourceBundle.getBundle( bundleName );
 	}
-	
+
+        // FileView implementation
+	public String getName( File f ) { return null; }
+	public String getDescription( File f ) { return null; }
+	public String getTypeDescription( File f ) { return null; }
+	public Boolean isTraversable( File f ) { return null; }
+        public Icon getIcon( File f ) {
+            if( f.isDirectory() ) return null;
+            KitInfo ki = KitInfo.getKitInfoForFile( f );
+            return ki == null ? null : ki.getIcon();
+        }
+        
+        // Localizer
         public String getString( String key ) {
 	    return bundle.getString( key );
 	}
+        
+        // Mostly no-op WindowListener for close
+        public void windowActivated(WindowEvent evt) {}
+        public void windowClosed(WindowEvent evt) {}
+        public void windowDeactivated(WindowEvent evt) {}
+        public void windowDeiconified(WindowEvent evt) {}
+        public void windowIconified(WindowEvent evt) {}
+        public void windowOpened(WindowEvent evt) {}
+        public void windowClosing(java.awt.event.WindowEvent evt) {
+            doExit();
+        }
+
+        // ActionListener for menu items
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            Object src = evt.getSource();
+
+            if (src == openItem) {
+                fileChooser.setMultiSelectionEnabled( true );
+                int returnVal = fileChooser.showOpenDialog(Editor.this);
+                if(returnVal == JFileChooser.APPROVE_OPTION) {
+                    File[] files = fileChooser.getSelectedFiles();
+                    for( int i=0; i<files.length; i++ ) openFile( files[i] );
+                }
+                fileChooser.setMultiSelectionEnabled( false );
+            } else if (src == closeItem) {
+                Component editor = tabPane.getSelectedComponent();
+                if( checkClose( editor ) ) {
+                    tabPane.remove( editor );
+                    com2text.remove( editor );
+                }
+            } else if (src == saveItem) {
+                saveFile( tabPane.getSelectedComponent() );
+            } else if (src == saveAsItem) {
+                saveAs( tabPane.getSelectedComponent() );
+            } else if (src == saveAllItem) {
+                int index = tabPane.getSelectedIndex();
+                for( int i = 0; i < tabPane.getComponentCount(); i++ ) {
+                    saveFile( tabPane.getComponentAt( i ) );
+                }
+                tabPane.setSelectedIndex( index );
+            } else if (src == exitItem) {
+                doExit();
+            } else if (src instanceof JMenuItem) {
+                Object ki = ((JMenuItem)src).getClientProperty("kitInfo");
+                
+                if (ki instanceof KitInfo) {
+                    createNewFile( (KitInfo)ki );
+                }
+            }
+        }        
     }
     
     public Editor() {
         super( "NetBeans Editor" );
-	LocaleSupport.addLocalizer( new Localizer( "org.netbeans.editor.Bundle" ) );
+	LocaleSupport.addLocalizer(impl);
 	
         // Feed our kits with their default Settings
         Settings.addInitializer(new BaseSettingsInitializer(), Settings.CORE_LEVEL);
@@ -85,6 +146,13 @@ public class Editor extends javax.swing.JFrame {
         
         // Create visual hierarchy
         initComponents ();
+        openItem.addActionListener(impl);
+        closeItem.addActionListener(impl);
+        saveItem.addActionListener(impl);
+        saveAsItem.addActionListener(impl);
+        saveAllItem.addActionListener(impl);
+        exitItem.addActionListener(impl);
+        addWindowListener(impl);
         
         // Prepare the editor kits and such things
         readSettings();
@@ -105,6 +173,7 @@ public class Editor extends javax.swing.JFrame {
      * always regenerated by the Form Editor.
      */
     private void initComponents() {//GEN-BEGIN:initComponents
+        tabPane = new javax.swing.JTabbedPane();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         newMenu = new javax.swing.JMenu();
@@ -116,143 +185,47 @@ public class Editor extends javax.swing.JFrame {
         saveAllItem = new javax.swing.JMenuItem();
         sep2 = new javax.swing.JSeparator();
         exitItem = new javax.swing.JMenuItem();
-        tabPane = new javax.swing.JTabbedPane();
-        
-        fileMenu.setMnemonic(KeyEvent.VK_F);
-          fileMenu.setText("File");
-          
-          newMenu.setMnemonic(KeyEvent.VK_N);
-            newMenu.setText("New...");
-            fileMenu.add(newMenu);
-            
-          openItem.setMnemonic(KeyEvent.VK_O);
-            openItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
-            openItem.setText("Open File...");
-            openItem.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    openItemActionPerformed(evt);
-                }
-            }
-            );
-            fileMenu.add(openItem);
-            
-          closeItem.setMnemonic(KeyEvent.VK_C);
-            closeItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.CTRL_MASK));
-            closeItem.setText("Close");
-            closeItem.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    closeItemActionPerformed(evt);
-                }
-            }
-            );
-            fileMenu.add(closeItem);
-            
-          fileMenu.add(sep1);
-            
-          saveItem.setMnemonic(KeyEvent.VK_S);
-            saveItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
-            saveItem.setText("Save");
-            saveItem.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    saveItemActionPerformed(evt);
-                }
-            }
-            );
-            fileMenu.add(saveItem);
-            
-          saveAsItem.setMnemonic(KeyEvent.VK_A);
-            saveAsItem.setText("Save As...");
-            saveAsItem.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    saveAsItemActionPerformed(evt);
-                }
-            }
-            );
-            fileMenu.add(saveAsItem);
-            
-          saveAllItem.setMnemonic(KeyEvent.VK_L);
-            saveAllItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
-            saveAllItem.setText("Save All");
-            saveAllItem.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    saveAllItemActionPerformed(evt);
-                }
-            }
-            );
-            fileMenu.add(saveAllItem);
-            
-          fileMenu.add(sep2);
-            
-          exitItem.setMnemonic(KeyEvent.VK_E);
-            exitItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.CTRL_MASK));
-            exitItem.setText("Exit");
-            exitItem.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    exitItemActionPerformed(evt);
-                }
-            }
-            );
-            fileMenu.add(exitItem);
-            menuBar.add(fileMenu);
-          getContentPane().setLayout(new java.awt.GridLayout(1, 1));
+
+        getContentPane().setLayout(new java.awt.GridLayout(1, 1));
+
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosing(java.awt.event.WindowEvent evt) {
-                exitForm(evt);
-            }
-        }
-        );
-        
-        
         getContentPane().add(tabPane);
-        
+
+        fileMenu.setMnemonic(KeyEvent.VK_F);
+        fileMenu.setText("File");
+        newMenu.setMnemonic(KeyEvent.VK_N);
+        newMenu.setText("New...");
+        fileMenu.add(newMenu);
+        openItem.setMnemonic(KeyEvent.VK_O);
+        openItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        openItem.setText("Open File...");
+        fileMenu.add(openItem);
+        closeItem.setMnemonic(KeyEvent.VK_C);
+        closeItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.CTRL_MASK));
+        closeItem.setText("Close");
+        fileMenu.add(closeItem);
+        fileMenu.add(sep1);
+        saveItem.setMnemonic(KeyEvent.VK_S);
+        saveItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        saveItem.setText("Save");
+        fileMenu.add(saveItem);
+        saveAsItem.setMnemonic(KeyEvent.VK_A);
+        saveAsItem.setText("Save As...");
+        fileMenu.add(saveAsItem);
+        saveAllItem.setMnemonic(KeyEvent.VK_L);
+        saveAllItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
+        saveAllItem.setText("Save All");
+        fileMenu.add(saveAllItem);
+        fileMenu.add(sep2);
+        exitItem.setMnemonic(KeyEvent.VK_E);
+        exitItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.CTRL_MASK));
+        exitItem.setText("Exit");
+        fileMenu.add(exitItem);
+        menuBar.add(fileMenu);
         setJMenuBar(menuBar);
-        
+
     }//GEN-END:initComponents
-    
-  private void saveAsItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsItemActionPerformed
-      saveAs( tabPane.getSelectedComponent() );
-  }//GEN-LAST:event_saveAsItemActionPerformed
-  
-  private void saveAllItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAllItemActionPerformed
-      int index = tabPane.getSelectedIndex();
-      for( int i = 0; i < tabPane.getComponentCount(); i++ ) {
-          saveFile( tabPane.getComponentAt( i ) );
-      }
-      tabPane.setSelectedIndex( index );
-  }//GEN-LAST:event_saveAllItemActionPerformed
-  
-  private void saveItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveItemActionPerformed
-      saveFile( tabPane.getSelectedComponent() );
-  }//GEN-LAST:event_saveItemActionPerformed
-  
-  private void exitItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitItemActionPerformed
-      doExit();
-  }//GEN-LAST:event_exitItemActionPerformed
-  
-  private void closeItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeItemActionPerformed
-      Component editor = tabPane.getSelectedComponent();
-      if( checkClose( editor ) ) {
-          tabPane.remove( editor );
-          com2text.remove( editor );
-      }
-  }//GEN-LAST:event_closeItemActionPerformed
-  
-  private void openItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openItemActionPerformed
-      fileChooser.setMultiSelectionEnabled( true );
-      int returnVal = fileChooser.showOpenDialog(this);
-      if(returnVal == JFileChooser.APPROVE_OPTION) {
-          File[] files = fileChooser.getSelectedFiles();
-          for( int i=0; i<files.length; i++ ) openFile( files[i] );
-      }
-      fileChooser.setMultiSelectionEnabled( false );
-  }//GEN-LAST:event_openItemActionPerformed
-  
-    /** Exit the Application */
-    private void exitForm(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_exitForm
-        doExit();
-    }//GEN-LAST:event_exitForm
-    
+                
     private boolean saveFile( Component comp, File file, boolean checkOverwrite ) {
         if( comp == null ) return false;
         tabPane.setSelectedComponent( comp );
@@ -447,23 +420,23 @@ public class Editor extends javax.swing.JFrame {
         
         for( int i = 0; i < args.length; i++ ) {
             String fileName = args[i];
-            editor.openFile( new File( fileName ) );        
+            editor.openFile( new File( fileName ) );
         }
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenuBar menuBar;
-    private javax.swing.JMenu fileMenu;
-    private javax.swing.JMenu newMenu;
-    private javax.swing.JMenuItem openItem;
-    private javax.swing.JMenuItem closeItem;
-    private javax.swing.JSeparator sep1;
-    private javax.swing.JMenuItem saveItem;
-    private javax.swing.JMenuItem saveAsItem;
-    private javax.swing.JMenuItem saveAllItem;
     private javax.swing.JSeparator sep2;
+    private javax.swing.JSeparator sep1;
+    private javax.swing.JMenu newMenu;
+    private javax.swing.JMenuItem saveAllItem;
+    private javax.swing.JMenuItem closeItem;
+    private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem exitItem;
     private javax.swing.JTabbedPane tabPane;
+    private javax.swing.JMenuItem saveAsItem;
+    private javax.swing.JMenu fileMenu;
+    private javax.swing.JMenuItem openItem;
+    private javax.swing.JMenuItem saveItem;
     // End of variables declaration//GEN-END:variables
 
     
@@ -471,21 +444,7 @@ public class Editor extends javax.swing.JFrame {
         File currentPath = new File( System.getProperty( "user.dir" ) ).getAbsoluteFile();
         fileChooser = new JFileChooser( currentPath );
         
-        fileChooser.setFileView( new FileView() {
-	    // JDK1.2 compatibility fix
-	    public String getName( File f ) { return null; }
-	    public String getDescription( File f ) { return null; }
-	    public String getTypeDescription( File f ) { return null; }
-	    public Boolean isTraversable( File f ) { return null; }
-	    
-            public Icon getIcon( File f ) {
-                if( f.isDirectory() ) return null;
-                KitInfo ki = KitInfo.getKitInfoForFile( f );
-                return ki == null ? null : ki.getIcon();
-            }
-        });
-        
-        
+        fileChooser.setFileView(impl);
         
         String kits = settings.getString( "InstalledEditors" );
         String defaultKit = settings.getString( "DefaultEditor" );
@@ -534,7 +493,8 @@ public class Editor extends javax.swing.JFrame {
             // Make the MenuItem for it
             JMenuItem item = new JMenuItem( menuTitle, icon );
             item.setMnemonic( menuMnemonic );
-            item.addActionListener( new NewFileActionListener( ki ) );
+            item.putClientProperty( "kitInfo", ki );
+            item.addActionListener( impl );
 	    newMenu.add( item );
 
             // Register a FileFilter for given type of file
@@ -542,6 +502,7 @@ public class Editor extends javax.swing.JFrame {
         }
         
         // Finally, add fileFilter that would recognize files of all kits
+
         fileChooser.addChoosableFileFilter( new FileFilter() {
             public String getDescription() {
                 return "All recognized files";
@@ -637,20 +598,7 @@ public class Editor extends javax.swing.JFrame {
             }
             return false;
         }
-    }
-    
-    private class NewFileActionListener implements ActionListener {
-        KitInfo type;
-        
-        public NewFileActionListener( KitInfo type ) {
-            this.type = type;
-        }
-        
-        public void actionPerformed( ActionEvent evt ) {
-            createNewFile( type );
-        }
-    }
-    
+    }   
     
     /** Listener listening for document changes on opened documents. There is
      * initially one instance per opened document, but this listener is
