@@ -102,18 +102,26 @@ public class DataFolderEditor extends PropertyEditorSupport {
      * providing appropriate node to display.
      */
     public void setValue(Object newValue) {
+        Object oldValue = getValue();
         super.setValue(newValue);
         DataFolderPanel dfp = getDFPanel();
-        if ((dfp != null) && (newValue instanceof DataFolder)){
+        if ((newValue != oldValue)&&(dfp != null) && (newValue instanceof DataFolder)){
             dfp.setTargetFolder((DataFolder)newValue);
         }
 
     }
 
+    /** This method is called from DataFolderPanel, so it is similar to
+     * setValue but does not call DataFolderPanel.setTargetFolder()
+     */
+    void setDataFolder(DataFolder newDf) {
+        super.setValue(newDf);
+    }
+    
     /** Manages one instance of FileSystemPanel */
     public DataFolderPanel getDFPanel() {
         if (dfPanel == null) {
-            dfPanel = new DataFolderPanel();
+            dfPanel = new DataFolderPanel(this);
         }
         return dfPanel;
     }
