@@ -1112,7 +1112,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 if (elementStart == null)
                     return null;
                 if (elementStart.getTokenID() == JspTagTokenContext.SYMBOL
-                        || id == JspDirectiveTokenContext.SYMBOL) {
+                        || elementStart.getTokenID() == JspDirectiveTokenContext.SYMBOL) {
                     if (elementStart.getImage().equals("<")) {   // NOI18N
                         return getTagOrDirectiveChain(true, elementStart, offset);
                     }
@@ -1124,7 +1124,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                     }
                 }
                 if (elementStart.getTokenID() == JspTagTokenContext.COMMENT
-                        || id == JspDirectiveTokenContext.COMMENT) {
+                        || elementStart.getTokenID() == JspDirectiveTokenContext.COMMENT) {
                     return null;
                 }
                 elementStart = elementStart.getPrevious();
