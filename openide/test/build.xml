@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- default testtypes, attributes and executors -->
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable,all,code,ide"/>
-    <property name="xtest.executors" value="ide,code,codeDOTests,ideDOTests"/>
+    <property name="xtest.executors" value="ide,code,codeDOTests,ideDOTests,ideFSTests,ideFSTests-2starts"/>
     
     <!-- These in/excludes will be added to xtest.pattern    -->
     <!-- if you want to use these properties, you should use -->
