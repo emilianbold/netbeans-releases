@@ -73,7 +73,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
 
     public boolean isValid() {
         if( gui == null || gui.getTargetName() == null ||
-            ( bottomPanel != null && bottomPanel.isValid() ) ) {
+            ( bottomPanel != null && !bottomPanel.isValid() ) ) {
            setErrorMessage( null );
            return false;        
         }
