@@ -226,8 +226,8 @@
 <tocitem text="Developing Web Services">
          <tocitem text="About Web Services" >
 		<tocitem text="About Web Services" target="about_web_service" />
-		<tocitem text="About Procedural Based Web Services" target="about_web_service_rpc" />
-		<tocitem text="About Document Based Web Services" target="about_web_service_message" />
+		<tocitem text="About RPC-Style Web Services" target="about_web_service_rpc" />
+		<tocitem text="About Document-Style Web Services" target="about_web_service_message" />
 		<tocitem text="Working with Web Services" target="ws_process" />
 		<tocitem text="Web Service Tasks: Quick Reference" target="tbd" />
   	 </tocitem>
