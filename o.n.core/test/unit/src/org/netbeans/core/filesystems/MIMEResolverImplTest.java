@@ -8,6 +8,7 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.*;
 import org.openide.execution.NbfsURLConnection;
 import org.openide.filesystems.*;
+import org.openide.filesystems.FileSystem; // override java.io.FileSystem
 import org.openide.util.*;
 import org.openide.util.lookup.*;
 import org.openide.xml.*;
@@ -86,8 +87,8 @@ public class MIMEResolverImplTest extends TestCase {
         synchronized (tl2) {tl2.notify();}
 
  
-        t1.join();
-        t2.join();
+        t1.join(5000);
+        t2.join(5000);
         
         if (t1.fail != null) fail(t1.fail);
 
@@ -127,7 +128,7 @@ public class MIMEResolverImplTest extends TestCase {
 
             try {
                 synchronized (lock) {
-                    lock.wait();  // switch threads here
+                    lock.wait(5000);  // switch threads here
                 }
             } catch (Exception ex) {
                 //
