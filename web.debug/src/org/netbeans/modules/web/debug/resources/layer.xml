@@ -6,31 +6,23 @@
         <folder name="text">
             <folder name="x-jsp">
                 <folder name="Popup">
-                    <file name="org-netbeans-modules-debugger-support-actions-ToggleBreakpointAction.instance"/>
-                    <file name="org-netbeans-modules-debugger-support-actions-AddWatchAction.instance"/>
+                    <file name="org-netbeans-modules-web-debug-actions-ToggleJspBreakpointAction.instance"/>
+                    <file name="org-netbeans-modules-web-debug-actions-AddJspWatchAction.instance"/>
                     <file name="SeparatorJSP.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
-                    <attr boolvalue="true" name="SeparatorJSP.instance/org-netbeans-modules-debugger-support-actions-ToggleBreakpointAction.instance"/>
-                    <attr boolvalue="true" name="org-netbeans-modules-debugger-support-actions-ToggleBreakpointAction.instance/org-netbeans-modules-debugger-support-actions-AddWatchAction.instance"/>
-                    <attr boolvalue="true" name="org-netbeans-modules-debugger-support-actions-AddWatchAction.instance/Separator1.instance"/>
+                    <attr boolvalue="true" name="SeparatorJSP.instance/org-netbeans-modules-web-debug-actions-ToggleJspBreakpointAction.instance"/>
+                    <attr boolvalue="true" name="org-netbeans-modules-web-debug-actions-ToggleJspBreakpointAction.instance/org-netbeans-modules-web-debug-actions-AddJspWatchAction.instance"/>
+                    <attr boolvalue="true" name="org-netbeans-modules-web-debug-actions-AddJspWatchAction.instance/Separator1.instance"/>
                 </folder>
                 <folder name="ToolTips">
                     <file name="org-netbeans-modules-web-debug-JspToolTipAnnotation.instance"/>
                 </folder>
+                <folder name="GlyphGutterActions">
+                    <file name="org-netbeans-modules-web-debug-actions-ToggleJspBreakpointAction.instance"/>
+                </folder>
             </folder>
         </folder>
     </folder>
-
-   <!--  <folder name="Services">
-    <folder name="JSP_Servlet">
-      <file name="org-netbeans-modules-web-debug-DebugSettings.settings" url="debug.settings">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.debug.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/servletSettings.gif"/>
-        <attr name="SystemFileSystem.layer" stringvalue="project"/>
-      </file>
-    </folder>
-  </folder>
--->
-
+    
 </filesystem>
