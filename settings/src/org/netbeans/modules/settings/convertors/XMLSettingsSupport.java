@@ -722,9 +722,10 @@ final class XMLSettingsSupport {
                         return;
                     }
                 }
-            }
-            catch (IOException ioe) {
+            } catch (IOException ioe) {
                 // ignore - fallback to XML parser follows
+            } finally {
+                if (in != null) in.close();
             }
             stack = new Stack();
             try {
