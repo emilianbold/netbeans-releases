@@ -80,7 +80,7 @@ final class NbInputHandler implements InputHandler {
             combo = new javax.swing.JComboBox(((MultipleChoiceInputRequest)request).getChoices());
             comp = combo;
         } else {
-            input = new JTextField();
+            input = new JTextField(25);
             comp = input;
         }
         
