@@ -37,6 +37,7 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     MultiViewElementCallback observer;
     private ToolBarDesignEditor editor;
     private XmlMultiViewDataObject dObj;
+    private PropertyChangeListener listener;
     
     public ToolBarMultiViewElement(XmlMultiViewDataObject dObj, ToolBarDesignEditor editor) {
         this(dObj);
@@ -45,7 +46,7 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     
     public ToolBarMultiViewElement(final XmlMultiViewDataObject dObj) {
         this.dObj=dObj;
-        PropertyChangeListener listener = new PropertyChangeListener() {
+        listener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (DataObject.PROP_MODIFIED.equals(evt.getPropertyName()) && editor != null) {
                     Utils.runInAwtDispatchThread(new Runnable() {
