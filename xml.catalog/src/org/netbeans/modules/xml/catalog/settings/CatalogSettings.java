@@ -52,7 +52,7 @@ public final class CatalogSettings implements Externalizable {
     
     private Set mountedCatalogs = new HashSet();
 
-    private PropertyChangeSupport listeners = null;; 
+    private PropertyChangeSupport listeners = null; 
 
     private final CatalogListener catalogListener = new CL();
     
