@@ -260,8 +260,8 @@ SystemFileSystem
             <folder name="Editing">
                 <folder name="explorer">
                     <attr name="filesystems.wstcref/Javadoc.wstcref" boolvalue="true" />
-                    <attr name="Javadoc.wstcref/runtime.wstcref" boolvalue="true" />
                     <attr name="project.wstcref/Javadoc.wstcref" boolvalue="true" />
+                    <attr name="Javadoc.wstcref/runtime.wstcref" boolvalue="true" />
                     <file name="Javadoc.wstcref" url="windowmanager/Editing/explorer/Javadoc.wstcref" />
                 </folder>
             </folder>
