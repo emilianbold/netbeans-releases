@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+
+<project name="Xtest driver" basedir="." default="start">
+
+   <property name="xtest.testing.base" location=".."/>
+
+   <property name="xtest.home"          location="${xtest.testing.base}/xtest-dist"/>
+   <property name="ide.installto"       location="${xtest.testing.base}/ide" />
+   <property name="xtest.driver.config" location="${xtest.testing.base}/driver.properties"/>
+   <property name="xtest.results"       location="${xtest.testing.base}/results"/>
+   <property name="xtest.workdir"       location="${xtest.testing.base}/work"/>
+   <property name="xtest.driver.backup" location="${xtest.testing.base}/backup"/>
+   
+   <property name="xtest.config.suffix" value=""/>
+
+   <target name="start">
+       <ant dir="${xtest.testing.base}" antfile="${xtest.home}/lib/driver.xml" target="start"/>
+
+       <taskdef name="get-system-property" classname="org.netbeans.xtest.GetSystemProperty" classpath="${xtest.home}/lib/xtest.jar"/>
+       <get-system-property systemProperty="xtest.errors"/>
+       <antcall target="mail-errors"/>
+   </target>
+   
+   <target name="mail-errors" if="xtest.errors">
+       <ant antfile="mail.xml">
+           <property name="xtest.mail.subject" value="TR WARNING: Errors during testing"/>
+           <property name="xtest.mail.message" value="Host: ${xtest.machine}  Project: ${xtest.tested.project}  Problem: Tests finished with errors. This may be caused by problems in tests, but it can also be caused by problems in test infrastructure.  List of errors: ${xtest.errors}"/>
+       </ant>
+   </target>
+</project>

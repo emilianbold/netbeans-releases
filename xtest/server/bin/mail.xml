@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+
+<project name="mail" basedir="." default="send">
+ 
+   <property environment="env"/>
+
+   <property name="xtest.mail.from" value="${env.XTEST_MAIL_FROM}"/>
+   <property name="xtest.mail.to" value="${env.XTEST_MAIL_TO}"/>
+   <property name="xtest.mail.subject" value="MESSAGE from xtest server"/>
+   <property name="xtest.mail.message" value=""/>
+   <property name="xtest.mail.mailhost" value="${env.XTEST_MAILHOST}"/>
+   <property name="xtest.mail.subject.prefix" value="${env.XTEST_MAIL_SUBJECT_PREFIX}"/>
+
+   <target name="send">
+        <mail from="${xtest.mail.from}" tolist="${xtest.mail.to}" 
+              subject="${xtest.mail.subject.prefix} ${xtest.mail.subject}" message="${xtest.mail.message}"
+              mailhost="${xtest.mail.mailhost}"/>
+   </target>
+</project>
