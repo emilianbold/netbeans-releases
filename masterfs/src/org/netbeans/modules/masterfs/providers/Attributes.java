@@ -37,7 +37,7 @@ import java.util.Enumeration;
  */
 public class Attributes extends DefaultAttributes {
     private static final String USERDIR = "netbeans.user";//NOI18N
-    private static final String LOCATION = "var/cache/attributes";//NOI18N
+    private static final String LOCATION = "var/attributes";//NOI18N
 
     private static DefaultAttributes sharedUserAttributes;
 
