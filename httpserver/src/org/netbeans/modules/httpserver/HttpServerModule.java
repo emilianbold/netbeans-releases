@@ -98,7 +98,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
           }
         }
         if (serverThread == null) {
-          serverThread = new Thread("HTTPServer") {
+          serverThread = new Thread("HTTPServer") { // NOI18N
             public void run() {
               try {                   
                 server = buildServer();
@@ -180,9 +180,6 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
   private static HttpServer buildServer() {
     HttpServerSettings op = HttpServerSettings.OPTIONS;
 
-/*System.out.println("cl " + HttpServer.class.getClassLoader());
-System.out.println("is " + MyHttpServer.class.getResourceAsStream("server.properties"));*/
-
     HttpServer server = new NbHttpServer(op.getPort(), null, null);
 
     try {
@@ -197,11 +194,11 @@ System.out.println("is " + MyHttpServer.class.getResourceAsStream("server.proper
     
     Container container = context.getContainer();
 
-    container.addServlet("repositoryHandler", "com.netbeans.developer.modules.httpserver.RepositoryServlet");
-    container.addMapping("repositoryHandler", op.getRepositoryBaseURL());
+    container.addServlet("repositoryHandler", "com.netbeans.developer.modules.httpserver.RepositoryServlet"); // NOI18N
+    container.addMapping("repositoryHandler", op.getRepositoryBaseURL()); // NOI18N
     
-    container.addServlet("classpathHandler", "com.netbeans.developer.modules.httpserver.ClasspathServlet");
-    container.addMapping("classpathHandler", op.getClasspathBaseURL());
+    container.addServlet("classpathHandler", "com.netbeans.developer.modules.httpserver.ClasspathServlet"); // NOI18N
+    container.addMapping("classpathHandler", op.getClasspathBaseURL()); // NOI18N
     
     return server;
   }
@@ -215,10 +212,10 @@ System.out.println("is " + MyHttpServer.class.getResourceAsStream("server.proper
     public void start() throws HttpServerException {
       File wd = NbClassPath.toFile(
         TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot());
-      wd = new File(wd, "httpwork");
+      wd = new File(wd, "httpwork"); // NOI18N
         
       try {
-        java.lang.reflect.Field ff = HttpServer.class.getDeclaredField("isWorkDirPersistent");
+        java.lang.reflect.Field ff = HttpServer.class.getDeclaredField("isWorkDirPersistent"); // NOI18N
         ff.setAccessible(true);
         boolean bb = ff.getBoolean(this);
         
@@ -227,22 +224,22 @@ System.out.println("is " + MyHttpServer.class.getResourceAsStream("server.proper
         EndpointManager endpointmanager = EndpointManager.getManager();
 
         // endpointmanager.startServer(this);
-        java.lang.reflect.Method mm = EndpointManager.class.getDeclaredMethod("startServer", new Class[] {HttpServer.class});
+        java.lang.reflect.Method mm = EndpointManager.class.getDeclaredMethod("startServer", new Class[] {HttpServer.class}); // NOI18N
         mm.setAccessible(true);
         mm.invoke(endpointmanager, new Object[] { this });
       }
       catch (NoSuchMethodException e) {
-        if (Boolean.getBoolean("netbeans.debug.exceptions")) 
+        if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
           e.printStackTrace();
         throw new IllegalArgumentException();  
       }
       catch (NoSuchFieldException e) {
-        if (Boolean.getBoolean("netbeans.debug.exceptions")) 
+        if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
           e.printStackTrace();
         throw new IllegalArgumentException();  
       }
       catch (IllegalAccessException e) {
-        if (Boolean.getBoolean("netbeans.debug.exceptions")) 
+        if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
           e.printStackTrace();
         throw new IllegalArgumentException();  
       }
@@ -277,20 +274,20 @@ System.out.println("is " + MyHttpServer.class.getResourceAsStream("server.proper
       String requestURI = httpservletrequest.getRequestURI ();
       String contextPath = context.getPath();
       String lookupPath = requestURI.substring(contextPath.length(), requestURI.length());
-      int i = lookupPath.indexOf("?");
+      int i = lookupPath.indexOf("?"); // NOI18N
       if(i > -1) lookupPath = lookupPath.substring(0, i);
-      if(lookupPath.length() < 1) lookupPath = "/";
+      if(lookupPath.length() < 1) lookupPath = "/"; // NOI18N
       String s = lookupPath.toLowerCase();
 /*System.out.println("s :" + s);
-System.out.println("rep :" + op.getRepositoryBaseURL());*/
-      if(s.startsWith("/servlet/")) {
+System.out.println("rep :" + op.getRepositoryBaseURL());*/ // NOI18N
+      if(s.startsWith("/servlet/")) { // NOI18N
 //System.out.println("security check OK 1");
         return true;
       }  
-      if(s.startsWith("/web-inf")) {
+      if(s.startsWith("/web-inf")) { // NOI18N
         httpservletresponse.sendError(403);
         return false;
-      } if (s.startsWith(op.getRepositoryBaseURL() + "/") || s.startsWith(op.getClasspathBaseURL() + "/")) {
+      } if (s.startsWith(op.getRepositoryBaseURL() + "/") || s.startsWith(op.getClasspathBaseURL() + "/")) { // NOI18N
 //System.out.println("security check OK 2");
         return true;
       } else {
@@ -307,6 +304,7 @@ System.out.println("rep :" + op.getRepositoryBaseURL());*/
 
 /*
  * Log
+ *  37   Gandalf   1.36        1/12/00  Petr Jiricka    i18n
  *  36   Gandalf   1.35        1/11/00  Petr Jiricka    Cleanup
  *  35   Gandalf   1.34        1/9/00   Petr Jiricka    Cleanup
  *  34   Gandalf   1.33        12/1/99  Ales Novak      bugfix - working 

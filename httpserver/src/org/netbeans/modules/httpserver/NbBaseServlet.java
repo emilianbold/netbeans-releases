@@ -78,7 +78,7 @@ public abstract class NbBaseServlet extends HttpServlet {
   * Returns a short description of the servlet.
   */
   public String getServletInfo() {
-    return "Base servlet for servlets which access NetBeans Open APIs";
+    return NbBundle.getBundle(NbBaseServlet.class).getString("MSG_BaseServletDescr");
   }
 
   /** Checks whether access should be permitted according to HTTP Server module access settings 
@@ -117,17 +117,15 @@ public abstract class NbBaseServlet extends HttpServlet {
     }
     if (pathI.length() == 0) return false;
     if (pathI.charAt(0) == '/') pathI = pathI.substring(1);
-System.out.println("resource " + pathI);    
     InputStream is = TopManager.getDefault().systemClassLoader().getResourceAsStream(pathI);
-System.out.println("is " + is);    
     if (is == null) return false;
 
-    int ind = pathI.lastIndexOf(".");
+    int ind = pathI.lastIndexOf("."); // NOI18N
     String ext = pathI.substring(ind + 1);
     String encoding = FileUtil.getMIMEType(ext);
     // PENDING - URL com/ behaves incorrectly
     if (encoding == null)
-      encoding = "thisisabug/inclassloader";
+      encoding = "thisisabug/inclassloader"; // NOI18N
     response.setContentType(encoding);
     // don't know content length
     ServletOutputStream os = response.getOutputStream();
@@ -168,7 +166,7 @@ System.out.println("is " + is);
     response.setContentType(encoding);
     int len = (int)file.getSize();
     response.setContentLength(len);
-    response.setDateHeader("Last-Modified", file.lastModified().getTime());
+    response.setDateHeader("Last-Modified", file.lastModified().getTime()); // NOI18N
     InputStream in = file.getInputStream();
     ServletOutputStream os = response.getOutputStream();
     copyStream(in, os);
@@ -179,24 +177,24 @@ System.out.println("is " + is);
   throws IOException {
     String base = file.getPackageName('/');
 
-    response.setContentType("text/html");
+    response.setContentType("text/html"); // NOI18N
     String title = base;
     if (title.length() == 0)
       title = NbBundle.getBundle(NbBaseServlet.class).getString("LAB_REPOSITORY_ROOT");
 
     PrintWriter out=response.getWriter();
 
-    out.print("<HTML><HEAD><TITLE>");
+    out.print("<HTML><HEAD><TITLE>"); // NOI18N
     out.print(title);
-    out.print("</TITLE></HEAD><BODY>\n<H1>");
+    out.print("</TITLE></HEAD><BODY>\n<H1>"); // NOI18N
     out.print(title);
-    out.print("</H1>");
+    out.print("</H1>"); // NOI18N
 	
     FileObject parent = file.getParent();
     if (parent != null) {
-      out.print ("<A HREF=\"../\">" + 
+      out.print ("<A HREF=\"../\">" + // NOI18N
         NbBundle.getBundle(NbBaseServlet.class).getString("CTL_PARENT_DIR") + 
-        "</A><BR><BR>\n");
+        "</A><BR><BR>\n"); // NOI18N
     }                      
 	
     DateFormat dfmt=DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
@@ -230,26 +228,26 @@ System.out.println("is " + is);
       String form2;
       if (fo.isFolder ()) {
         //name  = fo.getName ();
-        form1 = "<B>";
-        form2 = "</B>";
+        form1 = "<B>"; // NOI18N
+        form2 = "</B>"; // NOI18N
       } 
       else {
         //name = fo.getName () + "." + fo.getExt ();
-        form1 = "";
-        form2 = "";
+        form1 = ""; // NOI18N
+        form2 = ""; // NOI18N
       }            
       if (fo.getExt().length() == 0) name = fo.getName ();
-      else                           name = fo.getName () + "." + fo.getExt ();
+      else                           name = fo.getName () + "." + fo.getExt (); // NOI18N
           
       if (all.get (name) == null) {
         all.put (name, name);
-        out.print ("<A HREF=\"" /*+ baseRelativeURL*/);
+        out.print ("<A HREF=\"" /*+ baseRelativeURL*/); // NOI18N
         out.print (name/*fo.getPackageNameExt ('/', '.')*/);
-        if (fo.isFolder ()) out.println("/");
-        out.print ("\">");
+        if (fo.isFolder ()) out.println("/"); // NOI18N
+        out.print ("\">"); // NOI18N
         out.print (form1 + name + form2);
-        out.print ("</A>");
-        out.println ("<BR>");
+        out.print ("</A>"); // NOI18N
+        out.println ("<BR>"); // NOI18N
       }
     }
     out.flush();
@@ -309,6 +307,7 @@ System.out.println("is " + is);
 
 /*
  * Log
+ *  6    Gandalf   1.5         1/12/00  Petr Jiricka    i18n
  *  5    Gandalf   1.4         1/3/00   Petr Jiricka    
  *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

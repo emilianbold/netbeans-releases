@@ -58,10 +58,16 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   public static final int SERVER_STARTUP_TIMEOUT = 3000;
 
   /** constant for local host */
-  public  static final String LOCALHOST = "local";
-
+  public  static final String LOCALHOST = "local"; // NOI18N
   /** constant for any host */
-  public static final String ANYHOST = "any";
+  public static final String ANYHOST = "any"; // NOI18N
+  
+  public static final String PROP_PORT               = "port"; // NOI18N
+  public static final String PROP_HOST               = "host"; // NOI18N
+  public static final String PROP_REPOSITORY_BASEURL = "repositoryBaseURL"; // NOI18N
+  public static final String PROP_CLASSPATH_BASEURL  = "classpathBaseURL"; // NOI18N
+  public static final String PROP_RUNNING            = "running"; // NOI18N
+  public static final String PROP_GRANTED_ADDRESSES  = "grantedAddresses"; // NOI18N
 
   /** bundle to obtain text information from */
   private static ResourceBundle bundle = NbBundle.getBundle(HttpServerSettings.class);
@@ -74,13 +80,13 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   private static String host = LOCALHOST;
 
   /** mapping of repository to URL */
-  private static String repositoryBaseURL = "/repository";
+  private static String repositoryBaseURL = "/repository"; // NOI18N
   
   /** mapping of classpath to URL */
-  private static String classpathBaseURL = "/classpath";
+  private static String classpathBaseURL = "/classpath"; // NOI18N
                                         
   /** addresses which have been granted access to the web server */
-  private static String grantedAddresses = "";
+  private static String grantedAddresses = ""; // NOI18N
                                         
   /** Reflects whether the server is actually running, not the running property */
   static boolean running = false;
@@ -178,10 +184,10 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   private String getCanonicalRelativeURL(String url) {
     String newURL;
     if (url.length() == 0)
-      newURL = "";
+      newURL = ""; // NOI18N
     else {
       if (url.charAt(0) != '/')
-        newURL = "/" + url;
+        newURL = "/" + url; // NOI18N
       else
         newURL = url;
       if (newURL.charAt(newURL.length() - 1) == '/')
@@ -226,7 +232,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
         HttpServerModule.stopHTTPServer();
       }  
     }  
-    firePropertyChange("running", new Boolean(!running), new Boolean(running));
+    firePropertyChange(PROP_RUNNING, new Boolean(!running), new Boolean(running));
   }
 
   /** getter for repository base */
@@ -248,7 +254,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
       this.repositoryBaseURL = newURL;
       restartIfNecessary(false);
     }
-    firePropertyChange("repositoryBaseURL", null, this.repositoryBaseURL);
+    firePropertyChange(PROP_REPOSITORY_BASEURL, null, this.repositoryBaseURL);
   }
                                       
   /** getter for classpath base */
@@ -270,7 +276,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
       this.classpathBaseURL = newURL;
       restartIfNecessary(false);
     }
-    firePropertyChange("classpathBaseURL", null, this.classpathBaseURL);
+    firePropertyChange(PROP_CLASSPATH_BASEURL, null, this.classpathBaseURL);
   }
                            
   /** Getter for grantedAddresses property */                                            
@@ -281,22 +287,22 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   /** Setter for grantedAccesses property */                                            
   public void setGrantedAddresses(String grantedAddresses) {
     this.grantedAddresses = grantedAddresses;
-    firePropertyChange("grantedAddresses", null, this.grantedAddresses);
+    firePropertyChange(PROP_GRANTED_ADDRESSES, null, this.grantedAddresses);
   }
                                               
   /** setter for port */
   public void setPort(int p) {
     Object old = null;
     synchronized (HttpServerSettings.OPTIONS) {
-      old = putProperty("port", new Integer(p), false);
+      old = putProperty(PROP_PORT, new Integer(p), false);
       restartIfNecessary(true);
     }                
-    firePropertyChange("port", old, new Integer(p));
+    firePropertyChange(PROP_PORT, old, new Integer(p));
   }
 
   /** getter for port */
   public int getPort() {
-    Object prop = getProperty("port");
+    Object prop = getProperty(PROP_PORT);
     return ((prop == null) ? DEFAULT_PORT : ((Integer)prop).intValue());
   }
 
@@ -304,7 +310,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   public void setHost(String h) {
     if (h.equals(ANYHOST) || h.equals(LOCALHOST))
       host = h;
-    firePropertyChange("host", null, this.host);
+    firePropertyChange(PROP_HOST, null, this.host);
   }
 
   /** getter for host */
@@ -335,7 +341,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
       return InetAddress.getLocalHost().getHostName();
     }
     catch (UnknownHostException e) {
-      return "localhost";
+      return "localhost"; // NOI18N
     }
   }              
                                        
@@ -344,14 +350,14 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   /** Maps a file object to a URL. Should ensure that the file object is accessible on the given URL. */
   public URL getRepositoryURL(FileObject fo) throws MalformedURLException, UnknownHostException {
     setRunning(true);                                                           
-    return new URL("http", getLocalHost(), getPort(), 
-      getRepositoryBaseURL() + "/" + fo.getPackageNameExt('/','.'));
+    return new URL("http", getLocalHost(), getPort(), // NOI18N
+      getRepositoryBaseURL() + "/" + fo.getPackageNameExt('/','.')); // NOI18N
   }
                              
   /** Maps the repository root to a URL. This URL should serve a page from which repository objects are accessible. */
   public URL getRepositoryRoot() throws MalformedURLException, UnknownHostException {
     setRunning(true);                                                           
-    return new URL("http", getLocalHost(), getPort(), getRepositoryBaseURL() + "/");
+    return new URL("http", getLocalHost(), getPort(), getRepositoryBaseURL() + "/"); // NOI18N
   }
                                                                                                                      
   /** Maps a resource path to a URL. Should ensure that the resource is accessible on the given URL.
@@ -361,8 +367,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   */
   public URL getResourceURL(String resourcePath) throws MalformedURLException, UnknownHostException {
     setRunning(true);                                                           
-    return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL() + 
-      (resourcePath.startsWith("/") ? resourcePath : ("/" + resourcePath)));
+    return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL() + // NOI18N
+      (resourcePath.startsWith("/") ? resourcePath : ("/" + resourcePath))); // NOI18N
   }
     
   /** Maps a resource root to a URL. Should ensure that all resources under the root are accessible under an URL
@@ -373,7 +379,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   */
   public URL getResourceRoot() throws MalformedURLException, UnknownHostException {
     setRunning(true);                                                           
-    return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL() + "/");
+    return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL() + "/"); // NOI18N
   }                                   
   
 /*  public void mapServlet(String urlPath, String className) {
@@ -484,11 +490,11 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   HashSet getGrantedAddressesSet() {
     HashSet addr = new HashSet();
     try {
-      addr.add(InetAddress.getByName("localhost").getHostAddress());
+      addr.add(InetAddress.getByName("localhost").getHostAddress()); // NOI18N
       addr.add(InetAddress.getLocalHost().getHostAddress());
     }
     catch (UnknownHostException e) {}
-    StringTokenizer st = new StringTokenizer(getGrantedAddresses(), ",;");
+    StringTokenizer st = new StringTokenizer(getGrantedAddresses(), ",;"); // NOI18N
     while (st.hasMoreTokens()) {
       String ipa = st.nextToken();
       ipa = ipa.trim();
@@ -508,6 +514,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  30   Gandalf   1.29        1/12/00  Petr Jiricka    i18n
  *  29   Gandalf   1.28        1/11/00  Petr Jiricka    Fixed 5133
  *  28   Gandalf   1.27        1/9/00   Petr Jiricka    Cleanup
  *  27   Gandalf   1.26        1/4/00   Petr Jiricka    Added to project options
