@@ -4,7 +4,6 @@
 ]>
 
 <api-answers
-  version="$Revision$" date="$date$"
   question-version="1.12"
   module="_no module_"
   author="nobody@netbeans.org"
