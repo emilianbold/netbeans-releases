@@ -158,6 +158,7 @@ public final class ColorEditor implements PropertyEditor {
   }
 
   public void setValue (Object object) {
+    if (!(object instanceof Color)) return;
     if (object != null) {
       if (object instanceof SuperColor) color = (SuperColor) object;
       else color = new SuperColor ((Color) object);
@@ -536,6 +537,7 @@ public final class ColorEditor implements PropertyEditor {
 
 /*
  * Log
+ *  11   Gandalf   1.10        6/27/99  Ian Formanek    Ignores non-Color values
  *  10   Gandalf   1.9         6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  9    Gandalf   1.8         4/16/99  Libor Martinek  
