@@ -16,6 +16,7 @@ package org.netbeans.core.windows.view;
 
 
 import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.netbeans.core.windows.view.ui.DesktopImpl;
 import org.netbeans.core.windows.view.ui.EditorAreaFrame;
@@ -685,6 +686,10 @@ final class ViewHierarchy {
     }
     
     public void performSlideIn(SlideOperation operation) {
+        // #48588 - when in SDI, slidein needs to front the editor frame.
+        if (operation.requestsActivation() && WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_SEPARATED) {
+            frontEditorFrame();
+        }
         desktop.performSlideIn(operation, getPureEditorAreaBounds());
     }
     
@@ -716,6 +721,15 @@ final class ViewHierarchy {
             editorAreaFrame.setDesktop(component);
         }
 
+    }
+    
+    /**
+     * front the editor frame if it exists.
+     */
+    private void frontEditorFrame() {
+        if (editorAreaFrame != null) {
+            editorAreaFrame.toFront();
+        }
     }
     
     
@@ -757,20 +771,11 @@ final class ViewHierarchy {
                 controller.userResizedEditorArea(frame.getBounds());
             }
         });
+        frame.setWindowActivationListener(controller);
         
         frame.addWindowListener(new WindowAdapter() {
-            private long frametimestamp = 0;
             public void windowClosing(WindowEvent evt) {
                 closeEditorModes();
-            }
-            
-            public void windowActivated(WindowEvent evt) {
-                if (frametimestamp != 0 && System.currentTimeMillis() > frametimestamp + 500) {
-                    controller.userActivatedEditorWindow();
-                }
-            }
-            public void windowOpened(WindowEvent event) {
-                frametimestamp = System.currentTimeMillis();
             }
         });
         

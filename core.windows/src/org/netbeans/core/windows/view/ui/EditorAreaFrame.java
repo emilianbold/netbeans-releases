@@ -15,6 +15,9 @@
 package org.netbeans.core.windows.view.ui;
 
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import org.netbeans.core.windows.view.Controller;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
@@ -30,6 +33,8 @@ public class EditorAreaFrame extends JFrame {
     
     
     private Component desktop;
+    private Controller controller;
+    private long frametimestamp = 0;
     
     /** Creates a new instance of EditorAreaFrame */
     public EditorAreaFrame() {
@@ -39,6 +44,25 @@ public class EditorAreaFrame extends JFrame {
         
     }
     
+    public void setWindowActivationListener(Controller control) {
+        controller = control;
+        addWindowListener(new WindowAdapter() {
+            public void windowActivated(WindowEvent evt) {
+                if (frametimestamp != 0 && System.currentTimeMillis() > frametimestamp + 500) {
+                    controller.userActivatedEditorWindow();
+                }
+            }
+            public void windowOpened(WindowEvent event) {
+                frametimestamp = System.currentTimeMillis();
+            }
+        });
+    }
+    
+    public void toFront() {
+        // ignore the window activation event, is not done by user.
+        frametimestamp = 0;
+        super.toFront();
+    }
     
     public void setDesktop(Component component) {
         if(desktop == component) {
