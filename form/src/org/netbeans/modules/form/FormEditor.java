@@ -502,4 +502,16 @@ final public class FormEditor extends Object
         clearLog();
     }
     private static java.awt.Dialog errDlg;
+
+    // ---------------
+
+    /** For correct project deserialization from NB 3.1 - ResolvableHelper
+     * for ComponentInspector used to be in FormEditor class.
+     */
+    final public static class ResolvableHelper implements java.io.Serializable {
+        static final long serialVersionUID =7424646018839457544L;
+        public Object readResolve() {
+            return ComponentInspector.getInstance();
+        }
+    }
 }
