@@ -11,25 +11,19 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.core.windows.services;
 
 import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
-
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.datatransfer.PasteType;
 
-
-
-
 /**
- *
  * @author Jaroslav Tulach, Jiri Rechtacek
  */
 public class ActionCopyPasteTest extends NbTestCase {
@@ -40,16 +34,11 @@ public class ActionCopyPasteTest extends NbTestCase {
     MenuFolderNode menu2;
     DataObject actionToPaste;
     
-    public ActionCopyPasteTest (java.lang.String testName) {
+    public ActionCopyPasteTest(String testName) {
         super (testName);
     }
     
-    public static Test suite () {
-        TestSuite suite = new TestSuite (ActionCopyPasteTest.class);
-        return suite;
-    }
-
-    protected void setUp() throws java.lang.Exception {
+    protected void setUp() throws Exception {
         toolbar1 = new ToolbarFolderNode( createFolder( "Toolbars", "tb1" ) );
         toolbar2 = new ToolbarFolderNode( createFolder( "Toolbars", "tb2" ) );
 
@@ -64,14 +53,11 @@ public class ActionCopyPasteTest extends NbTestCase {
         
     }
 
-    protected void tearDown() throws java.lang.Exception {
-    }
-    
     protected boolean runInEQ () {
         return true;
     }
     
-    public void testDoNotPasteDuplicitActions() throws Exception {
+    public void testDoNotPasteDuplicateActions() throws Exception {
         //check copy & paste for toolbar folders
         DataObject[] folderChildren = ((DataFolder)toolbar1.getDataObject()).getChildren();
         DataObject child1 = folderChildren[0];
@@ -133,8 +119,7 @@ public class ActionCopyPasteTest extends NbTestCase {
             super( "actiona1" );
         }
         
-        public void actionPerformed(java.awt.event.ActionEvent e) {
-        }
+        public void actionPerformed(ActionEvent e) {}
     }
     
     public static class ActionA2 extends AbstractAction {
@@ -142,8 +127,7 @@ public class ActionCopyPasteTest extends NbTestCase {
             super( "actiona2" );
         }
         
-        public void actionPerformed(java.awt.event.ActionEvent e) {
-        }
+        public void actionPerformed(ActionEvent e) {}
     }
 
     public static class ActionB1 extends AbstractAction {
@@ -151,8 +135,7 @@ public class ActionCopyPasteTest extends NbTestCase {
             super( "actionb1" );
         }
         
-        public void actionPerformed(java.awt.event.ActionEvent e) {
-        }
+        public void actionPerformed(ActionEvent e) {}
     }
     
     public static class ActionB2 extends AbstractAction {
@@ -160,7 +143,6 @@ public class ActionCopyPasteTest extends NbTestCase {
             super( "actionb2" );
         }
         
-        public void actionPerformed(java.awt.event.ActionEvent e) {
-        }
+        public void actionPerformed(ActionEvent e) {}
     }
 }
