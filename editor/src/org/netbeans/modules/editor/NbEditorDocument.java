@@ -16,7 +16,7 @@ package com.netbeans.developer.modules.text;
 import java.awt.Component;
 import javax.swing.text.AttributeSet;
 import javax.swing.JEditorPane;
-import com.netbeans.editor.StyledGuardedDocument;
+import com.netbeans.editor.GuardedDocument;
 import com.netbeans.editor.Syntax;
 import com.netbeans.editor.Utilities;
 import org.openide.text.NbDocument;
@@ -28,7 +28,7 @@ import org.openide.text.NbDocument;
 * @version 1.00
 */
 
-public class NbEditorDocument extends StyledGuardedDocument
+public class NbEditorDocument extends GuardedDocument
 implements NbDocument.PositionBiasable, NbDocument.WriteLockable,
 NbDocument.Printable, NbDocument.CustomEditor {
 
@@ -81,6 +81,7 @@ NbDocument.Printable, NbDocument.CustomEditor {
 
 /*
  * Log
+ *  14   Gandalf-post-FCS1.12.1.0    3/8/00   Miloslav Metelka 
  *  13   Gandalf   1.12        1/13/00  Miloslav Metelka Localization
  *  12   Gandalf   1.11        11/14/99 Miloslav Metelka 
  *  11   Gandalf   1.10        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

@@ -13,8 +13,6 @@
 
 package com.netbeans.developer.modules.text;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.io.Writer;
 import java.io.File;
 import java.io.InputStream;
@@ -26,6 +24,8 @@ import javax.swing.JEditorPane;
 import com.netbeans.editor.BaseDocument;
 import com.netbeans.editor.BaseKit;
 import com.netbeans.editor.Settings;
+import com.netbeans.editor.SettingsChangeListener;
+import com.netbeans.editor.SettingsChangeEvent;
 import com.netbeans.editor.LocaleSupport;
 import com.netbeans.editor.ext.JavaKit;
 import com.netbeans.editor.Formatter;
@@ -68,15 +68,15 @@ public class EditorModule extends ModuleInstall {
     new KitInfo(MIME_HTML, "com.netbeans.developer.modules.text.NbEditorHTMLKit"), // NOI18N
   };
 
-  private static PropertyChangeListener settingsListener;
+  private static SettingsChangeListener settingsListener;
 
   static {
-    settingsListener = new PropertyChangeListener() {
-      public void propertyChange(PropertyChangeEvent evt) {
+    settingsListener = new SettingsChangeListener() {
+      public void settingsChange(SettingsChangeEvent evt) {
         registerIndents();
       }
     };
-    Settings.addPropertyChangeListener(settingsListener);
+    Settings.addSettingsChangeListener(settingsListener);
   }
 
   static final long serialVersionUID =-929863607593944237L;
@@ -205,6 +205,7 @@ public class EditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  40   Gandalf-post-FCS1.38.1.0    3/8/00   Miloslav Metelka 
  *  39   Gandalf   1.38        1/16/00  Jesse Glick     Actions pool.
  *  38   Gandalf   1.37        1/13/00  Miloslav Metelka Localization
  *  37   Gandalf   1.36        1/4/00   Miloslav Metelka 
