@@ -44,7 +44,7 @@ public final class TLDLoader extends UniFileLoader {
     
     /** Constructor */
     public TLDLoader() {
-	super("org.netbeans.modules.web.taglibed.TLDDataObject"); // NOI18N
+	super("org.netbeans.modules.web.taglib.TLDDataObject"); // NOI18N
     }
     
      /** Does initialization. Initializes display name,
