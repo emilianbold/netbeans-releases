@@ -158,6 +158,7 @@ final class EjbJarProject implements Project, AntProjectListener {
             helper,
             spp,
             new EnterpriseReferenceContainerImpl(this),
+            new ProjectEjbJarProvider(),
             ejbModule, //implements J2eeModuleProvider
             new EjbJarActionProvider( this, helper, refHelper ),
             new EjbJarLogicalViewProvider(this, helper, evaluator(), spp, refHelper),
