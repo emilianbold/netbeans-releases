@@ -198,8 +198,10 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="../../../j2eeserver/netbeans/modules/j2eeserver.jar"/>
             <pathelement location="../../../schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
             <pathelement location="../../../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
+            <pathelement location="../../../openide/compiler/modules/autoload/openide-compiler.jar"/>
             <pathelement location="../../../j2eeserver/netbeans/modules/autoload/ext/javax77.jar"/>
             <pathelement location="../../../j2eeserver/netbeans/modules/autoload/ext/jsr88javax.jar"/>
+            <pathelement location="../../../ant/netbeans/modules/ant.jar"/>
             <pathelement location="gensrc"/> <!-- patched projects-core.jar and filesets.jar -->
             <!--<pathelement location="../../../debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>-->
 	</path>
@@ -238,9 +240,11 @@ Microsystems, Inc. All Rights Reserved.
 	    <pathelement location="${netbeans.home}/modules/autoload/java-api.jar"/>    
 	    <pathelement location="${netbeans.home}/modules/autoload/schema2beans.jar"/>    
 	    <pathelement location="${netbeans.home}/modules/autoload/openide-execution.jar"/>    
+            <pathelement location="${netbeans.home}/modules/autoload/openide-compiler.jar"/>
 	    <pathelement location="${netbeans.home}/modules/autoload/openide-debugger.jar"/>    
 	    <pathelement location="${netbeans.home}/modules/autoload/ext/javax77.jar"/>    
 	    <pathelement location="${netbeans.home}/modules/autoload/ext/jsr88javax.jar"/>    
+            <pathelement location="${netbeans.home}/modules/ant.jar"/>
 	    <pathelement location="${netbeans.home}/modules/autoload/debuggerCore.jar"/>    
 	    <pathelement location="${netbeans.home}/modules/tomcat5.jar"/>    
    	</path>
@@ -265,6 +269,7 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="../../../openidex/looks/netbeans/modules/autoload/looks.jar"/>
             
             <pathelement location="../../../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
+            <pathelement location="../../../openide/compiler/modules/autoload/openide-compiler.jar"/>
             <pathelement location="../../../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
             <pathelement location="../../../core/compiler/netbeans/modules/autoload/core-compiler.jar"/>
             
@@ -275,6 +280,7 @@ Microsystems, Inc. All Rights Reserved.
 
             <pathelement location="../../../core/deprecated/netbeans/modules/autoload/core-deprecated.jar"/>
             <pathelement location="../../../debuggercore/api/netbeans/modules/autoload/debugger-api.jar"/>
+            <pathelement location="../../../ant/netbeans/modules/ant.jar"/>
                       
             <pathelement location="../src"/>
             <fileset dir="../../../core/netbeans/lib">
@@ -282,6 +288,8 @@ Microsystems, Inc. All Rights Reserved.
                     <include name="ext/*.jar"/>
             </fileset>
             
+	    <pathelement location="../../../libs/xerces/netbeans/modules/autoload/ext/xerces-2.0.2-1.jar"/>    
+	    <pathelement location="../../../libs/xerces/netbeans/modules/autoload/ext/xml-commons-dom-ranges-1.0.b2.jar"/>    
             <pathelement location="../../../openide/io/netbeans/modules/autoload/openide-io.jar"/>
             <pathelement location="../../../core/execution/netbeans/modules/autoload/core-execution.jar"/>
             <pathelement location="../../../core/output/netbeans/modules/autoload/core-output.jar"/>
@@ -294,51 +302,6 @@ Microsystems, Inc. All Rights Reserved.
         <!-- this classpath will be used for executing tests against sources -->
     	<path id="codetest.classpath">
             <path refid="my.classpath"/>
-<!--
-            <pathelement location="../../../core/naming/netbeans/modules/autoload/naming.jar"/>
-            <pathelement location="../../../core/settings/netbeans/modules/autoload/core-settings.jar"/>
-            <pathelement location="../../../core/javahelp/netbeans/modules/autoload/javahelp-api.jar"/>
-            <pathelement location="../../../core/windows/netbeans/lib/core-windows.jar"/>
-            <pathelement location="../../../openidex/looks/netbeans/modules/autoload/looks.jar"/>
-            <pathelement location="../../../projects/ide/netbeans/modules/projects-ide.jar"/>
-            <pathelement location="../../../projects/compilation/netbeans/modules/autoload/compilation.jar"/>
-            
-            <pathelement location="../../../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
-            <pathelement location="../../../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
-            <pathelement location="../../../core/compiler/netbeans/modules/autoload/core-compiler.jar"/>
-            
-            <pathelement location="../../../debuggercore/oldapi/netbeans/modules/autoload/openide-debugger.jar"/>
-            <pathelement location="../../../openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/>
-            
-            <pathelement location="../../../classfile/netbeans/modules/autoload/classfile.jar"/>
-            <pathelement location="../../../debbuger/netbeans/modules/debbuger.jar"/>
-            <pathelement location="../../../java/api/netbeans/modules/autoload/java-api.jar"/>
-
-            <pathelement location="../../../core/deprecated/netbeans/modules/autoload/core-deprecated.jar"/>
-            <pathelement location="../../../jarpackager/netbeans/modules/jarpackager.jar"/>
-            <pathelement location="../../../java/netbeans/modules/java.jar"/>
-            <pathelement location="../../../debuggercore/api/netbeans/modules/autoload/debugger-api.jar"/>
-            <pathelement location="../../../j2eeserver/netbeans/modules/j2eeserver.jar"/>
-            <pathelement location="../../../schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
-            <pathelement location="../../../projects/filesets/netbeans/modules/autoload/filesets.jar"/>
-            <pathelement location="../../../projects/core/netbeans/modules/autoload/projects-core.jar"/>
-            <pathelement location="../../../openide/netbeans/lib/openide.jar"/>
-            <pathelement location="../../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-                      
-	        <pathelement location="../src"/>
-            <fileset dir="../../../core/netbeans/lib">
-                    <include name="core.jar"/>
-                    <include name="ext/*.jar"/>
-            </fileset>
-            
-            <pathelement location="../netbeans/modules/jsp-projects.jar"/>
-
-            <pathelement location="../../../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
-            <pathelement location="../../../openide/io/netbeans/modules/autoload/openide-io.jar"/>
-            <pathelement location="../../../core/execution/netbeans/modules/autoload/core-execution.jar"/>
-            <pathelement location="../../../core/output/netbeans/modules/autoload/core-output.jar"/>
-            <pathelement location="../../../core/term/netbeans/modules/autoload/terminalemulator.jar"/>
--->	    
     	</path>
     </target>
     
@@ -347,8 +310,10 @@ Microsystems, Inc. All Rights Reserved.
         <!-- this classpath will be used for executing tests against installed IDE -->
     	<path id="codetest.classpath">
             <!--<pathelement location="../../../debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>-->
+            <pathelement location="${netbeans.home}/lib/ext/boot.jar"/>
             <pathelement location="${netbeans.home}/lib/openide.jar"/>
             <pathelement location="${netbeans.home}/lib/openide-loaders.jar"/>
+            <pathelement location="${netbeans.home}/lib/core.jar"/>
 <!--            <pathelement location="${netbeans.home}/modules/projects.jar"/>
             <pathelement location="${netbeans.home}/modules/autoload/projects.jar"/>
 -->
@@ -356,12 +321,23 @@ Microsystems, Inc. All Rights Reserved.
 	    <pathelement location="${netbeans.home}/modules/j2eeserver.jar"/>    
 	    <pathelement location="${netbeans.home}/modules/autoload/java-api.jar"/>    
 	    <pathelement location="${netbeans.home}/modules/autoload/schema2beans.jar"/>    
+	    <pathelement location="${netbeans.home}/modules/autoload/core-deprecated.jar"/>    
+	    <pathelement location="${netbeans.home}/modules/autoload/core-execution.jar"/>    
+            <pathelement location="${netbeans.home}/modules/autoload/core-compiler.jar"/>
+	    <pathelement location="${netbeans.home}/modules/autoload/core-output.jar"/>    
+	    <pathelement location="${netbeans.home}/modules/autoload/terminalemulator.jar"/>    
+	    <pathelement location="${netbeans.home}/modules/autoload/openide-deprecated.jar"/>    
 	    <pathelement location="${netbeans.home}/modules/autoload/openide-execution.jar"/>    
-	    <pathelement location="${netbeans.home}/modules/autoload/openide-debugger.jar"/>    
+            <pathelement location="${netbeans.home}/modules/autoload/openide-compiler.jar"/>
+            <pathelement location="${netbeans.home}/modules/autoload/openide-debugger.jar"/>
+	    <pathelement location="${netbeans.home}/modules/autoload/openide-io.jar"/>    
 	    <pathelement location="${netbeans.home}/modules/autoload/ext/javax77.jar"/>    
 	    <pathelement location="${netbeans.home}/modules/autoload/ext/jsr88javax.jar"/>    
+            <pathelement location="${netbeans.home}/modules/ant.jar"/>
 	    <pathelement location="${netbeans.home}/modules/autoload/debuggerCore.jar"/>    
-	    <pathelement location="${netbeans.home}/modules/tomcat5.jar"/>    
+	    <pathelement location="${netbeans.home}/modules/autoload/ext/xerces-2.0.2-1.jar"/>    
+	    <pathelement location="${netbeans.home}/modules/autoload/ext/xml-commons-dom-ranges-1.0.b2.jar"/>    
+            <pathelement location="${netbeans.home}/modules/tomcat5.jar"/>
     	</path>
     </target>
     
