@@ -40,6 +40,7 @@ import org.openide.windows.TopComponent;
 import org.netbeans.api.diff.*;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
 
 //import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 //import org.netbeans.modules.diff.cmdline.CmdlineDiffProvider;
@@ -116,11 +117,25 @@ public class DiffAction extends NodeAction {
         }
         Component tp;
         try {
-            // XXX consider something nicer; FO.tS() is a resource path in NB 3.x
-            // and a file: URL after build system merge:
-            tp = diff.createDiff(fo1.getNameExt(), fo1.toString(),
+            String path1 = null;
+            String path2 = null;
+            File file1 = FileUtil.toFile(fo1);
+            if (file1 != null) {
+                path1 = file1.getAbsolutePath();
+            }
+            if (path1 == null) {
+                path1 = fo1.getPath();
+            }
+            File file2 = FileUtil.toFile(fo2);
+            if (file2 != null) {
+                path2 = file2.getAbsolutePath();
+            }
+            if (path2 == null) {
+                path2 = fo2.getPath();
+            }
+            tp = diff.createDiff(fo1.getNameExt(), path1,
                                  new InputStreamReader(fo1.getInputStream()),
-                                 fo2.getNameExt(), fo2.toString(),
+                                 fo2.getNameExt(), path2,
                                  new InputStreamReader(fo2.getInputStream()), fo1.getMIMEType());
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ioex);

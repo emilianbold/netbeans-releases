@@ -190,9 +190,15 @@ public class PatchAction extends NodeAction {
             if (fo.isData()) file = fo;
             else file = findChild(fo, fileDiffs[i].getFileName());//fo.getFileObject(fileDiffs[i].getFileName());
             if (file == null) {
-                // XXX consider using e.g. FileUtil.toFile here;
-                // FO.tS() is a resource path in NB 3.x and a URL in build system:
-                notFoundFileNames.add(fo.toString() + '/' + fileDiffs[i].getFileName());
+                String path = null;
+                File ff = FileUtil.toFile(fo);
+                if (ff != null) {
+                    path = ff.getAbsolutePath() + File.separator;
+                }
+                if (path == null) {
+                    path = fo.getPath() + '/';
+                }
+                notFoundFileNames.add(path + fileDiffs[i].getFileName());
             } else {
                 FileObject backup = createFileBackup(file);
                 if (applyDiffsTo(fileDiffs[i].getDifferences(), file)) {
