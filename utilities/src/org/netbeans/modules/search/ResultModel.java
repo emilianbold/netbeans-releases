@@ -258,9 +258,9 @@ public class ResultModel implements NodeAcceptor, TaskListener {
     /** Search Result root node. May contain some statistic properties. */
     private static class ResultRootNode extends AbstractNode implements PropertyChangeListener {
 
-        /** Maps keys to nodes. The keys are names of fileobject for which nodes are found or
+        /** Maps keys to nodes. The keys are fileobjects for which nodes are found or
          * if there was not such one the node itself. The nodes are <code>FoundNode</code>'s. */
-        private final Map keys = new Hashtable();
+        private final Map keys = Collections.synchronizedMap(new WeakHashMap());
 
         /** Comparator used for sorting children nodes. */
         private final Comparator comparator;
@@ -323,9 +323,10 @@ public class ResultModel implements NodeAcceptor, TaskListener {
                     continue;
                 
                 if(nodes[i] instanceof RepositoryScanner.FoundNode) {
-                    String keyName = ((RepositoryScanner.FoundNode)nodes[i]).getOriginalFileObjectName();
-                    if(keyName != null) {
-                        keys.put(keyName, nodes[i]);
+                    FileObject keyFileObject = ((RepositoryScanner.FoundNode)nodes[i]).getOriginalDataObject().getPrimaryFile();
+                    
+                    if(keyFileObject != null) {
+                        keys.put(keyFileObject, nodes[i]);
                         
                         continue;
                     }
@@ -340,35 +341,28 @@ public class ResultModel implements NodeAcceptor, TaskListener {
         }
         
         /** Gets node for strings key. */
-        public Node getNodeForKey(String key) {
-            if(!keys.containsKey(key))
+        public Node getNodeForKey(FileObject key) {
+            if(key == null || !keys.containsKey(key))
                 return null;
-            
-            FileObject fileObject = TopManager.getDefault().getRepository().findResource(key);
-            
-            if(fileObject == null) {
-                keys.remove(key);
-                setDisplayName(getRootDisplayNameHelp(getNumberOfFoundNodes()));
-
-                return null;
-            }
             
             try {
-                DataObject dataObject = DataObject.find(fileObject);
+                RepositoryScanner.FoundNode oldNode = (RepositoryScanner.FoundNode)keys.get(key);
+                oldNode.removePropertyChangeListener(this);
+
+                DataObject dataObject = DataObject.find(key);
                 
                 Node originalNode = dataObject.getNodeDelegate(); 
 
-                Node oldNode = (Node)keys.get(key);
-                oldNode.removePropertyChangeListener(this);
-                
                 // return new refreshed node with the original detail cookie.
                 Node newFoundNode = new RepositoryScanner.FoundNode(originalNode, (DetailCookie)oldNode.getCookie(DetailCookie.class));
                 newFoundNode.addPropertyChangeListener(this);
-                
+
                 keys.put(key, newFoundNode);
-                
+
                 return newFoundNode;
             } catch(DataObjectNotFoundException dnfe) {
+                dnfe.printStackTrace();
+                
                 keys.remove(key);
                 setDisplayName(getRootDisplayNameHelp(getNumberOfFoundNodes()));
                 
@@ -379,18 +373,19 @@ public class ResultModel implements NodeAcceptor, TaskListener {
         /** Implements <code>PropertyChangeListener</code>. */
         public void propertyChange(PropertyChangeEvent evt) {
             if(RepositoryScanner.PROP_NODE_VALID.equals(evt.getPropertyName())) {
-                String name = ((RepositoryScanner.FoundNode)evt.getOldValue()).getOriginalFileObjectName();
+                FileObject key = ((RepositoryScanner.FoundNode)evt.getOldValue()).getOriginalDataObject().getPrimaryFile();
                 
-                if(name != null)
-                    updateChild(name);
+                if(key != null)
+                    updateChild(key);
             } else if(RepositoryScanner.PROP_NODE_DESTROYED.equals(evt.getPropertyName())) {
                 keys.values().remove(evt.getOldValue());
                 setDisplayName(getRootDisplayNameHelp(getNumberOfFoundNodes()));
                 
-                String name = ((RepositoryScanner.FoundNode)evt.getOldValue()).getOriginalFileObjectName();
+                FileObject key = ((RepositoryScanner.FoundNode)evt.getOldValue()).getOriginalDataObject().getPrimaryFile();
                 
-                if(name != null)
-                    updateChild(name);
+                if(key != null)
+                    updateChild(key);
+                
             }
         }
         
@@ -421,7 +416,7 @@ public class ResultModel implements NodeAcceptor, TaskListener {
         }
         
         /** Updates one child. */
-        private void updateChild(String key) {
+        private void updateChild(FileObject key) {
             ((ResultRootChildren)getChildren()).update(key);
         }
         
@@ -471,13 +466,13 @@ public class ResultModel implements NodeAcceptor, TaskListener {
 
         /** Creates nodes. */
         protected Node[] createNodes(Object key) {
-            if(key instanceof String) {
+            if(key instanceof FileObject) {
                 ResultRootNode root = (ResultRootNode)getNode();
                 
                 if(root == null)
                     return new Node[0];
                 
-                Node node = root.getNodeForKey((String)key);
+                Node node = root.getNodeForKey((FileObject)key);
                 
                 return node == null ? new Node[0] : new Node[] {node};
             } else if(key instanceof Node)
@@ -487,7 +482,7 @@ public class ResultModel implements NodeAcceptor, TaskListener {
         }
         
         /** Updates key. */
-        public void update(String key) {
+        public void update(FileObject key) {
             refreshKey(key);
         }
         
