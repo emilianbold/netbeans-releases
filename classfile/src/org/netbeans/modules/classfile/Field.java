@@ -37,14 +37,14 @@ public abstract class Field {
     private String _type;
 
     int access;
-    protected boolean includeCode;
+    ClassFile classFile;
     private boolean deprecated = false;
     private boolean synthetic = false;
 
     /** Creates new Field */
-    Field(DataInputStream in, ConstantPool pool, boolean includeCode) throws IOException {
+    Field(DataInputStream in, ConstantPool pool, ClassFile classFile) throws IOException {
         access = in.readUnsignedShort();
-	this.includeCode = includeCode;
+	this.classFile = classFile;
         CPEntry entry = null;
         try { // debug
 	    utfName = (CPUTF8Info)pool.get(in.readUnsignedShort());
@@ -126,6 +126,14 @@ public abstract class Field {
     
     public final boolean isSynthetic() {
         return synthetic;
+    }
+
+    /**
+     * Returns the class file this field is defined in.
+     * @return the class file of this field.
+     */
+    public final ClassFile getClassFile() {
+        return classFile;
     }
     
     public String toString() {

@@ -141,8 +141,8 @@ public class ClassFile {
                 throw new IOException("invalid class format");
             constantPool = loadClassHeader(in);
             interfaces = getCPClassList(in, constantPool);
-            variables = Variable.loadFields(in, constantPool);
-            methods = Method.loadMethods(in, constantPool, includeCode);
+            variables = Variable.loadFields(in, constantPool, this);
+            methods = Method.loadMethods(in, constantPool, this, includeCode);
             loadAttributes(in, constantPool);
         } catch (IOException ioe) {
             ioe.printStackTrace();

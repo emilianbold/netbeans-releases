@@ -29,22 +29,24 @@ import java.io.IOException;
  */
 public class Method extends Field {
     
+    private boolean includeCode;
     private Code code;
     private CPClassInfo[] exceptions;
 
     static Method[] loadMethods(DataInputStream in, ConstantPool pool,
-				boolean includeCode) 
+				ClassFile cls, boolean includeCode) 
       throws IOException {
 	int count = in.readUnsignedShort();
 	Method[] methods = new Method[count];
 	for (int i = 0; i < count; i++)
-	    methods[i] = new Method(in, pool, includeCode);
+	    methods[i] = new Method(in, pool, cls, includeCode);
 	return methods;
     }
     
     /** Creates new Method */
-    Method(DataInputStream in, ConstantPool pool, boolean includeCode) throws IOException {
-        super(in, pool, includeCode);
+    Method(DataInputStream in, ConstantPool pool, ClassFile cls, boolean includeCode) throws IOException {
+        super(in, pool, cls);
+        this.includeCode = includeCode;
     }
 
     /**

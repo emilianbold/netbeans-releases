@@ -33,18 +33,19 @@ public class Variable extends Field {
     private boolean constant;    // don't initialize to false, as loadAttribute is called by super.<init>
     private Object value;
     
-    static Variable[] loadFields(DataInputStream in, ConstantPool pool) 
+    static Variable[] loadFields(DataInputStream in, ConstantPool pool,
+                                 ClassFile cls) 
       throws IOException {
           int count = in.readUnsignedShort();
           Variable[] variables = new Variable[count];
           for (int i = 0; i < count; i++)
-              variables[i] = new Variable(in, pool);
+              variables[i] = new Variable(in, pool, cls);
           return variables;
     }
     
     /** Creates new Variable */
-    Variable(DataInputStream in, ConstantPool pool) throws IOException {
-        super(in, pool, false);
+    Variable(DataInputStream in, ConstantPool pool, ClassFile cls) throws IOException {
+        super(in, pool, cls);
     }
 
     /**
