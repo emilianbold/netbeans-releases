@@ -11,7 +11,9 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd" [
+    <!ENTITY dtds SYSTEM "mf-dtds.xml">
+]>
 
 <filesystem>
     <folder name="Actions">
@@ -538,42 +540,6 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Hidden">
       <attr name="hidden" boolvalue="true" />
 
-        <!-- Register some entity catalog entries used in OpenIDE (it will be instantiated as EntityCatalogImpl.Entry)-->
-        <file name="org-netbeans-core-xml-EntityCatalogImpl-catalog.xml" >
-            <![CDATA[
-            <!DOCTYPE catalog PUBLIC "-//NetBeans//Entity Mapping Registration 1.0//EN" "http://www.netbeans.org/dtds/EntityCatalog-1_0.dtd">
-            <catalog>
-                <!-- public ID defined by XMLDataObject -->
-                <public publicId="-//NetBeans IDE//DTD xmlinfo//EN" uri="nbresboot:/org/openide/resources/xmlinfo.dtd"/>
-
-                <!-- For back compatability purposes. -->
-                <public publicId="-//Forte for Java//DTD xmlinfo//EN" uri="nbresboot:/org/openide/resources/xmlinfo.dtd"/>
-
-                <public publicId="-//NetBeans//Entity Mapping Registration 1.0//EN" uri="nbresboot:/org/openide/xml/EntityCatalog.dtd" />
-
-                <!-- Toolbars stuff -->
-                <public publicId="-//Forte for Java//DTD toolbar//EN" uri="nbresboot:/org/netbeans/core/windows/toolbars/toolbar.dtd" />
-                <public publicId="-//NetBeans IDE//DTD toolbar//EN" uri="nbresboot:/org/netbeans/core/windows/toolbars/toolbar.dtd" />
-
-                <!-- FileSystems stuff -->
-                <public publicId="-//NetBeans//DTD Filesystem 1.0//EN" uri="nbresboot:/org/openide/filesystems/filesystem.dtd"/>
-                <public publicId="-//NetBeans//DTD DefaultAttributes 1.0//EN" uri="nbresboot:/org/openide/filesystems/attributes.dtd"/>
-
-                <!-- Cf. org.netbeans.core.Help: -->
-                <public publicId="-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 1.0//EN"
-                        uri="nbresboot:/org/netbeans/core/resources/helpset_1_0.dtd"/>
-                <public publicId="-//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN"
-                        uri="nbresboot:/org/netbeans/core/resources/helpsetref-1_0.dtd"/>
-                <public publicId="-//NetBeans//DTD Help Context 1.0//EN"
-                        uri="nbresboot:/org/netbeans/core/resources/helpcontext-1_0.dtd"/>
-                <!-- Session settings -->
-                <public publicId="-//NetBeans//DTD Session settings 1.0//EN"
-                        uri="nbresboot:/org/netbeans/core/resources/sessionsettings-1_0.dtd" />
-            </catalog>    
-            ]]>
-            <!-- Optimization only: -->
-            <attr name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE" boolvalue="false"/>
-        </file>    
 
 
         <!-- in memory EntityCalalog intance (it serves for deprecated method implementations) -->
@@ -645,5 +611,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- For debugging only, comment out if desired: -->
   <file name="debug-sfs-structure[org-netbeans-core-projects-SystemFileSystem$StructureNode].instance"/>
+
+  &dtds;
 
 </filesystem>
