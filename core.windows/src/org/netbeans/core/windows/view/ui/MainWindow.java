@@ -19,7 +19,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Frame;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
@@ -27,9 +27,12 @@ import java.awt.event.PaintEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.lang.reflect.Method;
 import java.text.Format;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -39,13 +42,14 @@ import javax.swing.JRootPane;
 import javax.swing.JSeparator;
 import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.core.NotifyException;
+import org.netbeans.core.StatusLineElementProvider;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.ErrorManager;
@@ -57,6 +61,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -76,6 +83,8 @@ public final class MainWindow extends JFrame {
     
     /** Inner panel which contains desktop component */
     private JPanel desktopPanel;
+    
+    private static JPanel innerIconsPanel;
     
     /** Flag indicating main window is initialized. */ 
     private boolean inited;
@@ -145,14 +154,13 @@ public final class MainWindow extends JFrame {
                 status.setText(" "); // NOI18N
                 status.setPreferredSize(new Dimension(0, status.getPreferredSize().height));
 
-                JPanel panel = new JPanel(new BorderLayout());
-                panel.add(new JSeparator(), BorderLayout.NORTH);
-                panel.add(status, BorderLayout.CENTER);
-                Component exceptionStatus = NotifyException.getNotificationVisualizer();
-                if( null != exceptionStatus )
-                    panel.add( exceptionStatus, BorderLayout.EAST );
-                panel.setName("statusLine"); //NOI18N
-                getContentPane().add(panel, BorderLayout.SOUTH);
+                JPanel statusLinePanel = new JPanel(new BorderLayout());
+                statusLinePanel.add(new JSeparator(), BorderLayout.NORTH);
+                statusLinePanel.add(status, BorderLayout.CENTER);
+                
+                decoratePanel (statusLinePanel);
+                statusLinePanel.setName("statusLine"); //NOI18N
+                getContentPane().add (statusLinePanel, BorderLayout.SOUTH);
             } else { // custom status line provided
                 JComponent status = getCustomStatusLine();
                 if (status != null) {
@@ -188,6 +196,56 @@ public final class MainWindow extends JFrame {
             }
         });
         //#38810 end
+    }
+    
+    private static void decoratePanel (JPanel panel) {
+        assert SwingUtilities.isEventDispatchThread () : "Must run in AWT queue.";
+        if (innerIconsPanel != null) {
+            panel.remove (innerIconsPanel);
+        }
+        innerIconsPanel = getStatusLineElements (panel);
+        if (innerIconsPanel != null) {
+            panel.add (innerIconsPanel, BorderLayout.EAST);
+        }
+    }
+    
+    private static Lookup.Result result;
+    
+    // package-private because StatusLineElementProviderTest
+    static JPanel getStatusLineElements (JPanel panel) {
+        result = Lookup.getDefault ().lookup (new Lookup.Template (StatusLineElementProvider.class));
+        result.addLookupListener (new StatusLineElementsListener (panel));
+        Collection/*<StatusLineElementProvider>*/ c = result.allInstances ();
+        if (c == null || c.isEmpty ()) {
+            return null;
+        }
+        Iterator it = c.iterator ();
+        JPanel icons = new JPanel (new FlowLayout ());
+        boolean some = false;
+        while (it.hasNext ()) {
+            Object o = it.next ();
+            assert o instanceof StatusLineElementProvider;
+            Component comp = ((StatusLineElementProvider) o).getStatusLineElement ();
+            if (comp != null) {
+                some = true;
+                icons.add (comp);
+            }
+        }
+        return some ? icons : null;
+    }
+    
+    static private class StatusLineElementsListener implements LookupListener {
+        private JPanel decoratingPanel;
+        StatusLineElementsListener (JPanel decoratingPanel) {
+            this.decoratingPanel = decoratingPanel;
+        }
+        public void resultChanged (LookupEvent ev) {
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    decoratePanel (decoratingPanel);
+                }
+            });
+        }
     }
     
     /** Creates and returns border for desktop which is visually aligned
@@ -236,18 +294,17 @@ public final class MainWindow extends JFrame {
         if(Constants.SWITCH_STATUSLINE_IN_MENUBAR) {
             if (Constants.CUSTOM_STATUS_LINE_PATH == null) {
                 JLabel status = new StatusLine();
-                JPanel panel = new JPanel(new BorderLayout());
                 JSeparator sep = new JSeparator(JSeparator.VERTICAL);
                 Dimension d = sep.getPreferredSize();
                 d.width += 6; // need a bit more padding...
                 sep.setPreferredSize(d);
-                panel.add(sep, BorderLayout.WEST);
-                panel.add(status, BorderLayout.CENTER);
-                Component exceptionStatus = NotifyException.getNotificationVisualizer();
-                if( null != exceptionStatus )
-                    panel.add( exceptionStatus, BorderLayout.EAST );
-                panel.setName("statusLine"); //NOI18N
-                menu.add(panel);
+                JPanel statusLinePanel = new JPanel(new BorderLayout());
+                statusLinePanel.add(sep, BorderLayout.WEST);
+                statusLinePanel.add(status, BorderLayout.CENTER);
+                
+                decoratePanel (statusLinePanel);
+                statusLinePanel.setName("statusLine"); //NOI18N
+                menu.add(statusLinePanel);
             } else {
                 JComponent status = getCustomStatusLine();
                 if (status != null) {
