@@ -26,12 +26,13 @@ typedef struct {
     const char *class_name;
     const char *method_name;
     const char *method_sig;
+    int counter;
 } mentry_t;
 
-static mentry_t* allMethods[10000 * 100];
+static mentry_t* allMethods[1024];
 static int allMethodsLength = 0;
 
-const mentry_t* lookupMethodID(jmethodID mid) {
+mentry_t* lookupMethodID(jmethodID mid) {
     for (int i = 0; i < allMethodsLength; i++) {
         if (allMethods[i]->method_id == mid)
             return allMethods[i];
@@ -45,6 +46,7 @@ void storeNewMethodID(jmethodID mid, const char* classname, const char* mname, c
     e->class_name = strdup(classname);
     e->method_name = strdup(mname);
     e->method_sig = strdup(msig);
+    e->counter = 0;
     allMethods[allMethodsLength++] = e;
 }
 
@@ -90,7 +92,7 @@ void notifyEvent(JVMPI_Event *event) {
             jmethodID mid = event->u.method_entry2.method_id;
             jobjectID obj = event->u.method_entry2.obj_id;
 
-            const mentry_t* e = lookupMethodID(mid);
+            mentry_t* e = lookupMethodID(mid);
 //             if (e == NULL) {
 //                 jobjectID classid = jvmpi->GetMethodClass(mid);
 //                 jint res = jvmpi->RequestEvent(JVMPI_EVENT_CLASS_LOAD, classid);
@@ -100,7 +102,7 @@ void notifyEvent(JVMPI_Event *event) {
 //                 e = lookupMethodID(mid);
 //             }
             if (e != NULL) {
-                fprintf(stderr, "jtrace> entered %s.%s%s\n", e->class_name, e->method_name, e->method_sig);
+                fprintf(stderr, "jtrace> entered [%d] %s.%s%s\n", (e->counter++), e->class_name, e->method_name, e->method_sig);
             }
             break;
     }
