@@ -23,8 +23,6 @@ import javax.swing.*;
 
 import org.openide.*;
 import org.openide.awt.*;
-import org.openide.windows.ActivatedNodesListener;
-import org.openide.windows.NodesEvent;
 import org.openide.explorer.*;
 import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.explorer.propertysheet.PropertySheet;
@@ -96,40 +94,6 @@ final public class FormEditor extends Object {
   /** Default icon base for control panel. */
   private static final String EMPTY_INSPECTOR_ICON_BASE =
     "/com/netbeans/developer/modules/loaders/form/resources/emptyInspector";
-// -----------------------------------------------------------------------------
-// Static initializer
-
-  static {
-//    designModeAction.setFormManager (null); // initialize the action
-//    testModeAction.setFormManager (null); // initialize the action
-
-/*    TopFrame.getRegistry().addActivatedNodesListener (new ActivatedNodesListener () {
-        /** This method is called when in the focused TopFrame some nodes are selected.
-        * @param event describe the event source and the nodes that has changed.
-        * /
-        public void nodesActivated (NodesEvent evt) {
-          Node[] nodes = evt.getActivatedNodes ();
-//          Thread.dumpStack();
-//          System.out.println("NodesActivated:"+nodes.length);
-//          for (int i = 0; i < nodes.length; i++)
-//            System.out.println("NodesActivated[]:"+nodes[i].getDisplayName ());
-
-          if ((nodes.length == 1) && (Cookies.isInstanceOf (nodes[0].getCookie (), FormDataObject.class))) {
-            FormDataObject fdo = (FormDataObject) Cookies.getInstanceOf (nodes[0].getCookie (), FormDataObject.class);
-            if (Cookies.isInstanceOf (nodes[0].getCookie (), RADNode.class) && fdo.isOpened ())
-              formActivated (fdo.getDesignForm ().getFormManager ());
-          }
-        }
-
-        /** This method is called when focused TopFrame losts it's focus.
-        * @param event describe the event source and the nodes that has changed.
-        * /
-        public void nodesDeactivated (NodesEvent evt) {
-        }
-
-      }
-    ); */
-  }
 
 // -----------------------------------------------------------------------------
 // Static methods
@@ -618,6 +582,7 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  26   Gandalf   1.25        7/12/99  Ian Formanek    Fixed to compile
  *  25   Gandalf   1.24        7/9/99   Ian Formanek    Menu editor improvements
  *  24   Gandalf   1.23        7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
  *        getComponentClass->getBeanClass
