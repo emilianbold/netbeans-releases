@@ -191,7 +191,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   }
 
   /** Rarely used, only when fresh Expl created & no components selected. */
-  public HelpCtx getHelp () {
+  public HelpCtx getHelpCtx () {
     return new HelpCtx (NbMainExplorer.class);
   }
 
@@ -437,6 +437,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  19   Gandalf   1.18        7/19/99  Jesse Glick     Context help.
 *  18   Gandalf   1.17        7/16/99  Ian Formanek    Fixed bug #1800 - You can
 *       drag off the explorer toolbar. 
 *  17   Gandalf   1.16        7/15/99  Ian Formanek    Swapped Global and 

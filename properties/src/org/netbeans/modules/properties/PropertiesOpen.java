@@ -162,7 +162,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       initComponents();
     }
 
-    public HelpCtx getHelp () {
+    public HelpCtx getHelpCtx () {
       return new HelpCtx (PropertiesCloneableTopComponent.class);
     }
 
