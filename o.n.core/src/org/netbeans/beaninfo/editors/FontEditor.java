@@ -21,8 +21,10 @@ import java.util.ResourceBundle;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
+import org.openide.DialogDisplayer;
 
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -36,7 +38,20 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
     // static .....................................................................................
 
-    static final String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment ().getAvailableFontFamilyNames();
+    static String[] fonts;
+    static {
+        try {
+            fonts = GraphicsEnvironment.getLocalGraphicsEnvironment ().getAvailableFontFamilyNames();
+        } catch (RuntimeException e) {
+            fonts = new String[0];//NOI18N
+            if (org.openide.util.Utilities.getOperatingSystem() == org.openide.util.Utilities.OS_MAC) {
+                String msg = NbBundle.getMessage(FontEditor.class, "MSG_AppleBug"); //NOI18N
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
+            } else {
+                throw e;
+            }
+        }
+    }
 
     static final Integer[] sizes = new Integer [] {
                                        new Integer (3),
@@ -80,12 +95,16 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
     public void setValue (Object object) {
         if (!(object instanceof Font )) {
-            font = new Font( fonts[0], Font.PLAIN, 10 );
+            //Mac bug workaround
+            if (fonts.length > 0) {
+                font = new Font( fonts[0], Font.PLAIN, 10 );
+            }
         } else font = (Font) object;
-
-        fontName = font.getName () + " " + font.getSize () + " " + getStyleName (font.getStyle ()); // NOI18N
-
-        support.firePropertyChange ("", null, null); // NOI18N
+        if (font != null) {
+            //Mac bug workaround
+            fontName = font.getName () + " " + font.getSize () + " " + getStyleName (font.getStyle ()); // NOI18N
+            support.firePropertyChange ("", null, null); // NOI18N
+        }
     }
 
     public String getAsText () {
@@ -108,7 +127,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
     }
 
     public boolean isPaintable () {
-        return true;
+        return fonts.length > 0;
     }
 
     public void paintValue (Graphics g, Rectangle rectangle) {
@@ -129,7 +148,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
     }
 
     public boolean supportsCustomEditor () {
-        return true;
+        return fonts.length > 0; //Mac bug workaround
     }
 
     public Component getCustomEditor () {
@@ -250,9 +269,11 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             lFont.addListSelectionListener (new ListSelectionListener () {
                                                 public void valueChanged (ListSelectionEvent e) {
                                                     if (!lFont.isSelectionEmpty ()) {
-                                                        int i = lFont.getSelectedIndex ();
-                                                        tfFont.setText (fonts [i]);
-                                                        setValue ();
+                                                        if (fonts.length > 0) { //Mac bug workaround
+                                                            int i = lFont.getSelectedIndex ();
+                                                            tfFont.setText (fonts [i]);
+                                                            setValue ();
+                                                        }
                                                     }
                                                 }
                                             }
