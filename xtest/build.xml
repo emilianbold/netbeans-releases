@@ -113,7 +113,10 @@ Microsystems, Inc. All Rights Reserved.
             excludesfile="../nbbuild/standard-jar-excludes.txt"
             compress="false">
 	<include name="org/netbeans/xtest/**"/>
-        <exclude name="org/netbeans/xtest/ide/**"/>
+        <exclude name="org/netbeans/xtest/ide/Ide**"/>
+	<exclude name="org/netbeans/xtest/ide/Main**"/>
+	<exclude name="org/netbeans/xtest/ide/XTest**"/>
+	<include name="org/netbeans/xtest/ide/B*.class"/>
         <exclude name="org/netbeans/xtest/pe/server*/**"/>
         <exclude name="org/netbeans/xtest/testrunner/**"/>
     </jar>	    
