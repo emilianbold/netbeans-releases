@@ -226,7 +226,6 @@
       <tocitem text="Watches View" target="debug.window.watches"></tocitem>
       <tocitem text="Classes View" target="debug.window.classes"></tocitem>
       <tocitem text="Breakpoints View" target="debug.window.breakpoints"></tocitem>
-      <tocitem text="Customizing the Display of a View" target="debug.view.customize"></tocitem>
     </tocitem>
   <tocitem text="Debug Output" target="debug.output.window"></tocitem>
   <tocitem text="Source Editor Debugging Features" target="debug.source.editor"></tocitem>
@@ -300,18 +299,17 @@
   <tocitem text="Examining Classes Loaded by the Program" target="debug.environment.classes" />
 
 
-  <tocitem text="Configuring the Debugger" target="debug.debugger.jump">
+  <tocitem text="Customizing the Debugger" target="debug.debugger.customize">
+    <tocitem text="Customizing Debug Views" target="debug.view.customize"></tocitem>
     <tocitem text="Setting General Debugging Options" target="debug.options"/>
-    <tocitem text="Setting Options for the Java Debugger" target="debug.java.options"></tocitem>
-    <tocitem text="Enabling Assertion Checking" target="debug.debugger.assertion"/>
+    <tocitem text="Setting Options for Java Debugging" target="debug.java.options"></tocitem>
     <tocitem text="Setting the Boot Class Path" target="debug.debugger.bootclasspath"/>
-    <tocitem text="Debugger Types" target="debug.debugger.jump">
+    <tocitem text="Configuring Debugger Types" target="debug.debugger.jump">
     <tocitem text="Default Debugger" target="debug.debugger.default"/>
     <tocitem text="Applet Debugger" target="debug.debugger.applet"/>
     <tocitem text="J2EE Server Debugger" target="debug.debugger.j2ee"/>
     <tocitem text="Specifying the Default Debugger" target="debug.debugger.project_default"/>
     <tocitem text="Defining a New Debugger Type" target="debug.service.new"/>
-    <tocitem text="Setting a Debugger Type in a Template" target="debug.debugger.template" />
     <tocitem text="Removing a Debugger Type" target="debug.service.remove"/>
     </tocitem>
   </tocitem>

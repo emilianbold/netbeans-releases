@@ -442,6 +442,7 @@
 <mapID target="debug.threads.change" url="debug/threads/change.html" />
 <mapID target="debug.threads.source" url="debug/threads/source.html" />
 
+<mapID target="debug.debugger.customize" url="debug/debugger/configure_jump.html" />
 <mapID target="debug.debugger.jump" url="debug/debugger/debugger_jump.html" />
 <mapID target="debug.debugger.default" url="debug/debugger/default.html" />
 <mapID target="debug.debugger.applet" url="debug/debugger/applet.html" />
@@ -449,8 +450,6 @@
 <mapID target="debug.debugger.project_default" url="debug/debugger/project_default.html" />
 <mapID target="debug.service.new" url="debug/debugger/new.html" />
 <mapID target="debug.service.remove" url="debug/debugger/remove.html" />
-<mapID target="debug.debugger.template" url="debug/debugger/template.html" />
-<mapID target="debug.debugger.assertion" url="debug/debugger/assertion.html" />
 <mapID target="debug.debugger.bootclasspath" url="debug/debugger/bootclasspath.html" />
 <mapID target="debug.debugger.window" url="debug/environment/debug_window.html" />
 
