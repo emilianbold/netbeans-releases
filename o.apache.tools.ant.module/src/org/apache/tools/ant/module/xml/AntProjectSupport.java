@@ -120,12 +120,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, javax.sw
     
     /** try to find a matching FileObject, else null */
     private static FileObject findFileObject(File f) {
-        FileObject[] fos = FileUtil.fromFile(f);
-        if (fos.length > 0) {
-            return fos[0];
-        } else {
-            return null;
-        }
+        return FileUtil.toFileObject(f);
     }
   
     private AntProjectSupport (FileObject fo, File f) {

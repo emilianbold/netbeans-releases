@@ -102,7 +102,7 @@ final class JavaTargetChooserPanel implements WizardDescriptor.Panel, ChangeList
     public void storeSettings(Object settings) { 
         if( isValid() ) {
             String folderName = gui.getTargetFolder();
-            FileObject folder = FileUtil.fromFile( new File( folderName ) )[0];            
+            FileObject folder = FileUtil.toFileObject(new File(folderName));
             Templates.setTargetFolder( (WizardDescriptor)settings, folder );
             Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
         }

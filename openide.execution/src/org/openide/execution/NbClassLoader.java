@@ -126,16 +126,16 @@ public class NbClassLoader extends URLClassLoader {
                 URL[] urls = getURLs ();
                 for (int i = 0; i < urls.length; i++) {
                     //System.err.println (urls[i].toString ());
-                    FileObject[] roots = URLMapper.findFileObjects(urls[i]);
-                    if (roots.length == 0) {
+                    FileObject root = URLMapper.findFileObject(urls[i]);
+                    if (root == null) {
                         continue; // pretty normal, e.g. non-nbfs: URL
                     }
                     try {
-                        FileObject fo = roots[0].getFileObject(resource);
+                        FileObject fo = root.getFileObject(resource);
                         if (fo != null) {
                             // Got it. If there is an associated manifest, load it.
-                            FileObject manifo = roots[0].getFileObject("META-INF/MANIFEST.MF"); // NOI18N
-                            if (manifo == null) manifo = roots[0].getFileObject("meta-inf/manifest.mf"); // NOI18N
+                            FileObject manifo = root.getFileObject("META-INF/MANIFEST.MF"); // NOI18N
+                            if (manifo == null) manifo = root.getFileObject("meta-inf/manifest.mf"); // NOI18N
                             if (manifo != null) {
                                 //System.err.println (manifo.toString () + " " + manifo.getClass ().getName () + " " + manifo.isValid ());
                                 Manifest mani = new Manifest ();
