@@ -8,9 +8,13 @@ package org.netbeans.modules.tomcat5.util;
 
 import java.io.File;
 import java.io.FileFilter;
+
+import org.openide.ErrorManager;
+
 import org.netbeans.modules.tomcat5.config.Engine;
 import org.netbeans.modules.tomcat5.config.Host;
 import org.netbeans.modules.tomcat5.config.Service;
+import org.netbeans.modules.tomcat5.TomcatFactory;
 
 /**
  *
@@ -97,20 +101,24 @@ public class TomcatInstallUtil {
         }
         
         port = service.getAttributeValue("Connector",defCon,"port");            //NOI18N
+
+        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+            TomcatFactory.getEM ().log ("T5Util.getPort: " + port);             // NOI18N
+        }
         return port;
     }
     
-    public static Host[] getHosts(Service service) {
-        Host[] hosts = new Host[0];
-        Engine engine = service.getEngine();
-        if (engine!=null) {
-            hosts = engine.getHost();
+    public static String getHost(Service service) {
+        String host = null;
+        if (service != null) {
+            System.err.println("Engine:" + service.dumpBeanNode());
+            host = service.getAttributeValue("Engine",0,"defaultHost");
         }
-        return hosts;
-    }
-
-    public static String getHostName(Host host) {
-        return host.getAttributeValue("name");                                  //NOI18N
+       
+        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+            TomcatFactory.getEM ().log ("T5Util.getHost: " + host);             // NOI18N
+        }
+        return host;
     }
     
 }
