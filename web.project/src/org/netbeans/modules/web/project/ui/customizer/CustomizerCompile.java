@@ -49,6 +49,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         vps.register(vcs, WebProjectProperties.JAVAC_CLASSPATH);
         vps.register(jCheckBoxCompileJSP, WebProjectProperties.COMPILE_JSPS);
         vps.register(additionalJavacParamsJTextField, WebProjectProperties.JAVAC_COMPILER_ARG); 
+        vps.register(jCheckBoxBuildSubprojects, WebProjectProperties.NO_DEPENDENCIES);
     }
 
     /** This method is called from within the constructor to
@@ -76,6 +77,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         jButtonMoveDown = new javax.swing.JButton();
         jButtonEdit = new javax.swing.JButton();
         jCheckBoxCompileJSP = new javax.swing.JCheckBox();
+        jCheckBoxBuildSubprojects = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -84,7 +86,10 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         jCheckBoxDebugInfo.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_DebugInfo_JCheckBox"));
         jCheckBoxDebugInfo.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jCheckBoxDebugInfo, gridBagConstraints);
@@ -94,6 +99,8 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         jCheckBoxDeprecation.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_Deprecation_JCheckBox"));
         jCheckBoxDeprecation.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
@@ -246,13 +253,38 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         jCheckBoxCompileJSP.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeCompile_TestCompile_LabelMnemonic").charAt(0));
         jCheckBoxCompileJSP.setText(NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_CompileJSP_JCheckBox"));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(jCheckBoxCompileJSP, gridBagConstraints);
         jCheckBoxCompileJSP.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeCompile_TestCompile_A11YDesc"));
 
+        jCheckBoxBuildSubprojects.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeCompile_Build_Subprojects_LabelMnemonic").charAt(0));
+        jCheckBoxBuildSubprojects.setText(NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Build_Subprojects"));
+        jCheckBoxBuildSubprojects.setActionCommand("Build projects on classpath");
+        jCheckBoxBuildSubprojects.setMaximumSize(new java.awt.Dimension(244, 19));
+        jCheckBoxBuildSubprojects.setMinimumSize(new java.awt.Dimension(244, 19));
+        jCheckBoxBuildSubprojects.setPreferredSize(new java.awt.Dimension(244, 19));
+        jCheckBoxBuildSubprojects.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBoxBuildSubprojectsActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        add(jCheckBoxBuildSubprojects, gridBagConstraints);
+
     }//GEN-END:initComponents
+
+    private void jCheckBoxBuildSubprojectsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxBuildSubprojectsActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jCheckBoxBuildSubprojectsActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel additionalJavacParamsExampleJLabel;
@@ -265,6 +297,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
     private javax.swing.JButton jButtonMoveDown;
     private javax.swing.JButton jButtonMoveUp;
     private javax.swing.JButton jButtonRemove;
+    private javax.swing.JCheckBox jCheckBoxBuildSubprojects;
     private javax.swing.JCheckBox jCheckBoxCompileJSP;
     private javax.swing.JCheckBox jCheckBoxDebugInfo;
     private javax.swing.JCheckBox jCheckBoxDeprecation;

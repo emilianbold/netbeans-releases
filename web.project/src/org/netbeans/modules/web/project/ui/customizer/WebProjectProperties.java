@@ -454,7 +454,7 @@ public class WebProjectProperties {
      */
     private void resolveProjectDependencies() {
     
-        String allPaths[] = { JAVAC_CLASSPATH,  DEBUG_CLASSPATH };
+        String allPaths[] = { JAVAC_CLASSPATH,  DEBUG_CLASSPATH, WAR_CONTENT_ADDITIONAL};
         
         // Create a set of old and new artifacts.
         Set oldArtifacts = new HashSet();
