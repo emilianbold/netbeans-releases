@@ -175,7 +175,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
         String text = new String( data );
         if ( text.startsWith( toFind ) ) {
           DocIndexItem dii = new DocIndexItem( text, null, contextURL, hrefVal );
-          insertDocIndexItem( dii );
+          //insertDocIndexItem( dii );
           currentDii = dii;
           where = IN_DESCRIPTION;
         }
@@ -222,6 +222,9 @@ class SearchThreadJdk12 extends IndexSearchThread {
         else if ( token.equals( STR_VARIABLE ) )
           currentDii.setIconIndex( isStatic ? DocSearchIcons.ICON_VARIABLE_ST : DocSearchIcons.ICON_VARIABLE );     
    
+        // Add the item when all information is available
+        insertDocIndexItem( currentDii );
+
         if ( text.endsWith( "." ) )
           where = IN_DESCRIPTION_SUFFIX;
         else

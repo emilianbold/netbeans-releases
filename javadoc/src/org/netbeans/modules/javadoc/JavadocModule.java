@@ -51,21 +51,26 @@ public class JavadocModule implements ModuleInstall {
     // Create Standard Doclet option to get Standard javadoc directory
     StdDocletSettings sdsTemp = new StdDocletSettings();
 
-    File jdkDocsDir = new File ( System.getProperty ("java.home")  + java.io.File.separator + ".." 
-                                 + java.io.File.separator + "docs" + java.io.File.separator + "api" );
 
-    System.out.println (  System.getProperty ("java.home")  + java.io.File.separator + ".." 
+    // Try to find standard java doc
+
+    File jdkDocsDir = new File ( System.getProperty ("java.home")  + java.io.File.separator + ".." 
                                  + java.io.File.separator + "docs" + java.io.File.separator + "api" );
 
     if ( jdkDocsDir.isDirectory() ) {
       try {
         File jdkDocsDirCan = new File( jdkDocsDir.getCanonicalPath() );
         if ( jdkDocsDirCan.isDirectory() ) {
-          System.out.println ( "ADDING FS " );
           LocalFileSystem lfs = new LocalFileSystem( );
           lfs.setRootDirectory(jdkDocsDirCan);
           lfs.setHidden( true );
-          TopManager.getDefault().getRepository().addFileSystem ( lfs );
+      
+          String systemName = lfs.getSystemName();
+    
+          if ( TopManager.getDefault().getRepository().findFileSystem( systemName ) == null ) {
+            //System.out.println ( "ADD:" + lfs.getSystemName() );
+            TopManager.getDefault().getRepository().addFileSystem ( lfs );
+            }
         }
       }
       catch ( java.io.IOException ex ) {
@@ -73,6 +78,33 @@ public class JavadocModule implements ModuleInstall {
       catch ( java.beans.PropertyVetoException ex ) {
       }
     }
+
+
+    // Try to find netbeans api docs
+
+    File apiDocsDir = new File ( System.getProperty ("netbeans.home")  + java.io.File.separator + "docs" 
+                                 + java.io.File.separator + "open-api" );
+
+    if ( apiDocsDir.isDirectory() ) {
+      try {
+        LocalFileSystem lfs = new LocalFileSystem( );
+        lfs.setRootDirectory(apiDocsDir);
+        lfs.setHidden( true );
+        String systemName = lfs.getSystemName();
+    
+          if ( TopManager.getDefault().getRepository().findFileSystem( systemName ) == null ) {
+            //System.out.println ( "ADD:" + lfs.getSystemName() );
+            TopManager.getDefault().getRepository().addFileSystem ( lfs );    
+            }  
+
+      }
+      catch ( java.io.IOException ex ) {
+      }
+      catch ( java.beans.PropertyVetoException ex ) {
+      }
+    }
+
+
 
     File dir = sdsTemp.getDirectory();
     
@@ -173,6 +205,7 @@ public class JavadocModule implements ModuleInstall {
 
 /* 
  * Log
+ *  8    Gandalf   1.7         5/16/99  Petr Hrebejk    
  *  7    Gandalf   1.6         5/14/99  Petr Hrebejk    
  *  6    Gandalf   1.5         5/11/99  Petr Hrebejk    
  *  5    Gandalf   1.4         5/11/99  Petr Hrebejk    

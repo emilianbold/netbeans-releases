@@ -64,11 +64,15 @@ public class IndexSearch extends TopComponent {
 
     searchComboBox.setMaximumRowCount( 4 );
     // Make the combobox do the same action as searchButton
+    /*
     searchComboBox.getEditor().addActionListener (new java.awt.event.ActionListener () {
       public void actionPerformed (java.awt.event.ActionEvent evt) {
+        (new Throwable()).printStackTrace();
+        //System.out.print ( "Editor AP " );
         searchButtonActionPerformed (evt);
       }
     } );
+    */
   }
 
   /** This method is called from within the constructor to
@@ -160,6 +164,7 @@ public class IndexSearch extends TopComponent {
   }//GEN-LAST:event_searchComboBoxActionPerformed
 
   private void searchButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
+    //System.out.println ( "Button AP " );
     if ( searchEngine == null ) {
       searchEngine = new SearchEngine();
       searchEngine.go();
@@ -181,7 +186,6 @@ public class IndexSearch extends TopComponent {
 
   private void searchStoped() {
     searchEngine = null;
-
     javax.swing.SwingUtilities.invokeLater( new Runnable() {
       public void run() {
         searchButton.setText( STR_FIND );
@@ -229,7 +233,7 @@ public class IndexSearch extends TopComponent {
       }
 
       String toFind = new String( searchComboBox.getEditor().getItem().toString() );
-
+    
       // Try to find this string in Combo
       
       for ( int i = 0; i < searchComboBox.getItemCount(); i++ ) {
@@ -247,6 +251,7 @@ public class IndexSearch extends TopComponent {
         tasks.add( searchThread );
         searchThread.go();
       }
+      //System.out.println ( "All started" );
       searchButton.setText( STR_STOP );
     }
 
