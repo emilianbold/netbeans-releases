@@ -28,6 +28,7 @@ public class PropertiesCustomEditor extends javax.swing.JPanel implements Enhanc
 
   private PropertiesEditor editor;
 
+static final long serialVersionUID =2473843831910895646L;
   /** Initializes the Form */
   public PropertiesCustomEditor(PropertiesEditor ed) {
     editor = ed;
@@ -89,6 +90,8 @@ public class PropertiesCustomEditor extends javax.swing.JPanel implements Enhanc
 
 /*
  * Log
+ *  5    Gandalf   1.4         8/9/99   Ian Formanek    Generated Serial Version
+ *       UID
  *  4    Gandalf   1.3         7/8/99   Jesse Glick     Context help.
  *  3    Gandalf   1.2         6/30/99  Ian Formanek    Reflecting changes in 
  *       editors packages and enhanced property editor interfaces

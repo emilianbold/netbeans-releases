@@ -28,6 +28,7 @@ import com.netbeans.developer.impl.*;
 */
 public final class GlobalPropertiesAction extends CallableSystemAction {
 
+static final long serialVersionUID =-4072717465854016148L;
   /** Opens std IO top component */
   public void performAction() {
     TopComponent c = NbNodeOperation.Sheet.getDefault ();
@@ -55,6 +56,8 @@ public final class GlobalPropertiesAction extends CallableSystemAction {
 
 /*
 * Log
+*  5    src-jtulach1.4         8/9/99   Ian Formanek    Generated Serial Version 
+*       UID
 *  4    src-jtulach1.3         6/24/99  Jesse Glick     Gosh-honest HelpID's.
 *  3    src-jtulach1.2         6/8/99   Ian Formanek    ---- Package Change To 
 *       org.openide ----

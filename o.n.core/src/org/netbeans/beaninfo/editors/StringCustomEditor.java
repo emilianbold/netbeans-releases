@@ -28,6 +28,7 @@ public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCu
 
   private StringEditor editor;
 
+static final long serialVersionUID =7348579663907322425L;
   /** Initializes the Form */
   public StringCustomEditor(StringEditor ed) {
     editor = ed;
@@ -78,6 +79,8 @@ public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCu
 
 /*
  * Log
+ *  8    Gandalf   1.7         8/9/99   Ian Formanek    Generated Serial Version
+ *       UID
  *  7    Gandalf   1.6         7/15/99  Ian Formanek    Fixed preferred size of 
  *       the custom property editor
  *  6    Gandalf   1.5         7/8/99   Jesse Glick     Context help.

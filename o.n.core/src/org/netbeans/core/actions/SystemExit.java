@@ -105,6 +105,7 @@ public class SystemExit extends CallableSystemAction {
     JList list;
     DefaultListModel listModel;
 
+static final long serialVersionUID =6039058107124767512L;
     /** Constructs new dlg */
     public ExitDlgComponent () {
       setLayout (new java.awt.BorderLayout ());
@@ -255,6 +256,8 @@ public class SystemExit extends CallableSystemAction {
 
 /*
  * Log
+ *  14   Gandalf   1.13        8/9/99   Ian Formanek    Generated Serial Version
+ *       UID
  *  13   Gandalf   1.12        6/24/99  Jesse Glick     Gosh-honest HelpID's.
  *  12   Gandalf   1.11        6/22/99  Ian Formanek    employed DEFAULT_HELP
  *  11   Gandalf   1.10        6/8/99   Ian Formanek    ---- Package Change To 

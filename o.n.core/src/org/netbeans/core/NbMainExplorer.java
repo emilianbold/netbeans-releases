@@ -614,6 +614,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   /** Class holding the explorer.
   */
   public static final class ExplorerTab extends ExplorerPanel {
+static final long serialVersionUID =-8202452314155464024L;
     public ExplorerTab () {
       BeanTreeView treeView = new BeanTreeView ();
       setLayout (new BorderLayout ());
@@ -624,6 +625,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  28   Gandalf   1.27        8/9/99   Ian Formanek    Generated Serial Version 
+*       UID
 *  27   Gandalf   1.26        8/3/99   Jaroslav Tulach Getting better and 
 *       better.
 *  26   Gandalf   1.25        8/3/99   Jaroslav Tulach Serialization of 

@@ -326,6 +326,7 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
     /** Reference to model which holds the color selected in the color chooser */
     final ColorSelectionModel selectionModel;
 
+static final long serialVersionUID =-6230228701104365037L;
     public NbColorChooser (final ColorEditor editor,
                            final JColorChooser chooser) {
       this.editor = editor;
@@ -601,6 +602,8 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
 
 /*
  * Log
+ *  17   Gandalf   1.16        8/9/99   Ian Formanek    Generated Serial Version
+ *       UID
  *  16   Gandalf   1.15        7/30/99  Ian Formanek    Fixed bug 2480 - Color 
  *       attribute can have haxedecimal values but int is expected.
  *  15   Gandalf   1.14        7/13/99  Ian Formanek    Fixed readFromXML

@@ -61,6 +61,7 @@ class NbAuthenticator extends java.net.Authenticator {
     private static final int DEFAULT_WIDTH = 200;
     private static final int DEFAULT_HEIGHT = 0;
 
+static final long serialVersionUID =1555749205340031767L;
     /** Creates new form PasswordPanel */
       public PasswordPanel() {
       initComponents ();

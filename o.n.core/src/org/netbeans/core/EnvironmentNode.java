@@ -83,6 +83,7 @@ final class EnvironmentNode extends AbstractNode {
   }
 
   static final class EnvironmentHandle implements Node.Handle {
+static final long serialVersionUID =-850350968366553370L;
     public Node getNode () {
       return EnvironmentNode.getDefault();
     }
@@ -106,6 +107,8 @@ final class EnvironmentNode extends AbstractNode {
 
 /*
  * Log
+ *  20   Gandalf   1.19        8/9/99   Ian Formanek    Generated Serial Version
+ *       UID
  *  19   Gandalf   1.18        7/30/99  David Simonek   again serialization of 
  *       nodes repaired
  *  18   Gandalf   1.17        7/30/99  David Simonek   serialization fixes

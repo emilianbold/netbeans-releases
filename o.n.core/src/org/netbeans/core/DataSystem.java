@@ -216,6 +216,7 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
   private static class DSHandle implements Handle {
     DataFilter filter;
 
+static final long serialVersionUID =-2266375092419944364L;
     public DSHandle(DataFilter f) {
       filter = f;
     }
@@ -228,6 +229,8 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
 
 /*
  * Log
+ *  20   Gandalf   1.19        8/9/99   Ian Formanek    Generated Serial Version
+ *       UID
  *  19   Gandalf   1.18        8/3/99   Jaroslav Tulach Serialization of 
  *       NbMainExplorer improved again.
  *  18   Gandalf   1.17        7/8/99   Jesse Glick     Context help.
