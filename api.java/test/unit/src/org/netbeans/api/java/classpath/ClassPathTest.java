@@ -252,7 +252,7 @@ public class ClassPathTest extends NbTestCase {
         cp = null;
     }
     
-    private static final class TestClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
+    static final class TestClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
 
         private PropertyChangeSupport support = new PropertyChangeSupport (this);
         private List resources = new ArrayList ();

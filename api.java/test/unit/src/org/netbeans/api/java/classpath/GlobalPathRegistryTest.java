@@ -13,6 +13,8 @@
 
 package org.netbeans.api.java.classpath;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,18 +22,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.TestUtil;
-import org.openide.filesystems.FileStateInvalidException;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -133,16 +135,29 @@ public class GlobalPathRegistryTest extends NbTestCase {
     }
     
     
-    public void testGetSourceRoots () throws FileStateInvalidException {
+    public void testGetSourceRoots () throws Exception {
         SFBQImpl query = (SFBQImpl) Lookup.getDefault().lookup(SFBQImpl.class);
         assertNotNull ("SourceForBinaryQueryImplementation not found in lookup",query);                
         query.addPair(cp3.getRoots()[0].getURL(),new FileObject[0]);
-        r.register(ClassPath.SOURCE, new ClassPath[] {cp1, cp2});
+        ClassPathTest.TestClassPathImplementation cpChangingImpl = new ClassPathTest.TestClassPathImplementation();
+        ClassPath cpChanging = ClassPathFactory.createClassPath(cpChangingImpl);
+        assertEquals("cpChangingImpl is empty", 0, cpChanging.getRoots().length);
+        r.register(ClassPath.SOURCE, new ClassPath[] {cp1, cp2, cpChanging});
         r.register (ClassPath.COMPILE, new ClassPath[] {cp3});
         Set result = r.getSourceRoots();
         assertEquals ("Wrong number of source roots",result.size(),cp1.getRoots().length + cp2.getRoots().length);
         assertTrue ("Missing roots from cp1",result.containsAll (Arrays.asList(cp1.getRoots())));
         assertTrue ("Missing roots from cp2",result.containsAll (Arrays.asList(cp2.getRoots())));                
+        // simulate classpath change:
+        URL u = ((ClassPath.Entry)cp5.entries().get(0)).getURL();
+        cpChangingImpl.addResource(u);
+        assertEquals("cpChangingImpl is not empty", 1, cpChanging.getRoots().length);
+        result = r.getSourceRoots();
+        assertEquals ("Wrong number of source roots",result.size(),cp1.getRoots().length + cp2.getRoots().length + cpChanging.getRoots().length);
+        assertTrue ("Missing roots from cp1",result.containsAll (Arrays.asList(cp1.getRoots())));
+        assertTrue ("Missing roots from cp2",result.containsAll (Arrays.asList(cp2.getRoots())));                
+        cpChangingImpl.removeResource(u);
+        
         query.addPair(cp3.getRoots()[0].getURL(),cp4.getRoots());       
         result = r.getSourceRoots();
         assertEquals ("Wrong number of source roots",result.size(),cp1.getRoots().length + cp2.getRoots().length+cp4.getRoots().length);

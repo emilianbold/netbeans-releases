@@ -13,6 +13,8 @@
 
 package org.netbeans.api.java.classpath;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -97,6 +99,14 @@ public final class GlobalPathRegistry {
             }
         }
     };
+    private PropertyChangeListener classpathListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            synchronized (GlobalPathRegistry.this) {
+                //Reset cache
+                GlobalPathRegistry.this.resetSourceRootsCache ();
+            }
+        }
+    };
     
     private GlobalPathRegistry() {}
     
@@ -148,6 +158,9 @@ public final class GlobalPathRegistry {
                 if (added != null && !added.contains(paths[i]) && !l.contains(paths[i])) {
                     added.add(paths[i]);
                 }
+                if (!l.contains(paths[i])) {
+                    paths[i].addPropertyChangeListener(classpathListener);
+                }
                 l.add(paths[i]);
             }
             if (added != null && !added.isEmpty()) {
@@ -193,6 +206,9 @@ public final class GlobalPathRegistry {
                 }
                 if (removed != null && !removed.contains(paths[i]) && !l2.contains(paths[i])) {
                     removed.add(paths[i]);
+                }
+                if (!l2.contains(paths[i])) {
+                    paths[i].removePropertyChangeListener(classpathListener);
                 }
             }
             this.paths.put(id, l2);
