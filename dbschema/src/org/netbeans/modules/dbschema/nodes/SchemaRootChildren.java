@@ -64,6 +64,8 @@ public class SchemaRootChildren extends Children.Keys {
 
 
   private boolean parseStatus = false;
+  private Object parseLock = new Object();
+  
   private org.netbeans.modules.dbschema.jdbcimpl.DBschemaDataObject obj;
   
   /** Create a children list.
@@ -129,9 +131,13 @@ public class SchemaRootChildren extends Children.Keys {
           
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run () {
-                    nodesInited = true;
-                    setElement(obj.getSchema());
-                    parseStatus = true;
+                    synchronized (parseLock) {
+                        if (!parseStatus) {
+                            nodesInited = true;
+                            setElement(obj.getSchema());
+                            parseStatus = true;
+                        }
+                    }
                 }
             }, 0);
         }
