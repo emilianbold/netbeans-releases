@@ -103,7 +103,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
             ErrorManager.getDefault().notify(e);
         }
     }
-
+    
     public void run () {
 
         ParserDelegator pd = new ParserDelegator();
@@ -183,9 +183,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
                 return;
             }
 
-            Integer fileNumber = new Integer( currentIndexNumber );
-
-            String fileName = new String( "index-" + fileNumber.toString() ); // NOI18N
+            String fileName = "index-" + currentIndexNumber; // NOI18N
 
             if ( folder == null ) {
                 indexRoot = null;
@@ -370,7 +368,9 @@ class SearchThreadJdk12 extends IndexSearchThread {
                 // Add the item when all information is available
                 //insertDocIndexItem( currentDii );
 
-                if ( text.endsWith( "." ) ) { // NOI18N
+                if (currentDii.getPackage() != null) {
+                    where = IN_DESCRIPTION_SUFFIX;
+                } else if ( text.endsWith( "." ) ) { // NOI18N
                     where = IN_DESCRIPTION_SUFFIX;
                     currentDii.setPackage( text.substring( text.lastIndexOf( ' ' ) ).trim() );
                 }
@@ -378,8 +378,9 @@ class SearchThreadJdk12 extends IndexSearchThread {
                     where = IN_BALAST;
             }
             else if ( where == IN_DESCRIPTION_SUFFIX ) {
-                currentDii.setRemark( currentDii.getRemark() + new String( data ));
-                String declaringClass = new String( data ).trim();
+                String remark = String.valueOf(data);
+                currentDii.setRemark( currentDii.getRemark() + remark);
+                String declaringClass = remark.trim();
                 if( !(".".equals(declaringClass))){    //NOI18N
                     currentDii.setDeclaringClass(declaringClass);
                     insertDocIndexItem( currentDii );

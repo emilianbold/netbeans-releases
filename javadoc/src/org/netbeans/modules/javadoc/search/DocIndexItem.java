@@ -46,6 +46,10 @@ final class DocIndexItem extends Object {
         this.remark = remark;
         this.contextURL = contextURL;
         this.spec = spec;
+        if (spec != null && spec.length() > 3) { // spec format ../pckg/Classname.html
+            pckg = spec.substring(3, spec.indexOf('.', 3) + 1);
+            pckg = pckg.replace('/', '.');
+        }
     }
 
     public URL getURL () throws java.net.MalformedURLException {
