@@ -43,10 +43,14 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="x-java">
                 <folder name="Popup">
-                      <attr name="Separator1.instance/org-netbeans-modules-project-ui-PlaceHolderAction$CompileSingle.instance" boolvalue="true"/>
-                      <!-- attr name="Separator5.instance/org-netbeans-modules-project-ui-PlaceHolderAction$CompileSingle.instance" boolvalue="true"/ -->
-                      <file name="org-netbeans-modules-project-ui-PlaceHolderAction$CompileSingle.instance"/>
-                      <attr name="org-netbeans-modules-project-ui-PlaceHolderAction$CompileSingle.instance/Separator7.instance" boolvalue="true"/>
+                                
+                      <attr name="Separator1.instance/org-netbeans-modules-project-ui-CompileSingle.shadow" boolvalue="true"/>
+                      
+                      <file name="org-netbeans-modules-project-ui-CompileSingle.shadow">
+                          <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CompileSingle.instance"/>
+                      </file>
+                      
+                      <attr name="org-netbeans-modules-project-ui-CompileSingle.shadow/Separator7.instance" boolvalue="true"/>
                 </folder>
             </folder>
         </folder>

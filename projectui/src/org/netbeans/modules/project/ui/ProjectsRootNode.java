@@ -95,8 +95,9 @@ public class ProjectsRootNode extends AbstractNode {
             if ( ACTIONS == null ) {
                 // Create the actions
                 ACTIONS = new Action[] {
-                    SystemAction.get( NodeNewProjectAction.class ),
-                    SystemAction.get( NodeOpenProjectAction.class ),
+                    // XXX                    
+                    // SystemAction.get( NodeNewProjectAction.class ),
+                    // SystemAction.get( NodeOpenProjectAction.class ),                    
                 };
             }
             
@@ -215,6 +216,7 @@ public class ProjectsRootNode extends AbstractNode {
         
     }
     
+    /*
     private static class NodeOpenProjectAction extends OpenProjectAction {
         
         public String getName() {
@@ -232,6 +234,7 @@ public class ProjectsRootNode extends AbstractNode {
         
         
     }
+     */
     
     private static final class BadgingNode extends FilterNode implements PropertyChangeListener {
 

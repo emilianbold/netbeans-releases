@@ -19,89 +19,89 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Project">
             <!-- Project operations -->
             <file name="org-netbeans-modules-project-ui-NewProject.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.PlaceHolderAction$NewProject"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.NewProject"/>
             </file>
             
             <file name="org-netbeans-modules-project-ui-NewFile.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.PlaceHolderAction$NewFile"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.NewFile"/>
             </file>
             
             <file name="org-netbeans-modules-project-ui-OpenProject.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.OpenProjectAction"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.OpenProject"/>
             </file>
             
             <file name="org-netbeans-modules-project-ui-ImportProject.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.PlaceHolderAction$ImportProject"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.importProject"/>
             </file>
             
             <file name="org-netbeans-modules-project-ui-CloseProject.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.CloseProjectAction"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.CloseProject"/>
             </file>
             
             <file name="org-netbeans-modules-project-ui-CustomizeProject.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.CustomizeProjectAction"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.CustomizeProject"/>
             </file>
             
-            <file name="org-netbeans-modules-project-ui-SaveProject.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.SaveProjectAction"/>
-            </file>
+            <!-- file name="org-netbeans-modules-project-ui-SaveProject.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.SaveProject"/>
+            </file-->
             
             <file name="org-netbeans-modules-project-ui-SetMainProject.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.SetMainProjectAction"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.SetMainProject"/>
             </file>
             
             <file name="org-netbeans-modules-project-ui-RecentProjects.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.RecentProjectsAction"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.RecentProjects"/>
             </file>
             
             <!-- Building project -->
             <file name="org-netbeans-modules-project-ui-BuildMainProject.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.PlaceHolderAction$BuildMainProject"/>            
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.buildMainProject"/>            
             </file>
             
             <file name="org-netbeans-modules-project-ui-RebuildMainProject.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.PlaceHolderAction$RebuildMainProject"/>            
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.rebuildMainProject"/>            
             </file>
             
             <file name="org-netbeans-modules-project-ui-JavadocProject.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.PlaceHolderAction$JavadocProject"/>                       
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.javadocProject"/>                       
             </file>
             
             <file name="org-netbeans-modules-project-ui-CompileSingle.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.PlaceHolderAction$CompileSingle"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.compileSingle"/>
             </file>
             
             <file name="org-netbeans-modules-project-ui-StopBuilding.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.PlaceHolderAction$StopBuilding"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.stopBuilding"/>
             </file>
                         
             <!-- Running project -->
             <file name="org-netbeans-modules-project-ui-RunMainProject.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.PlaceHolderAction$RunMainProject"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.runMainProject"/>
             </file>
             
             <file name="org-netbeans-modules-project-ui-DebugMainProject.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.PlaceHolderAction$DebugMainProject"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.debugMainProject"/>
             </file>
             
             <file name="org-netbeans-modules-project-ui-TestProject.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.PlaceHolderAction$TestProject"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.testProject"/>
             </file>
             
             <file name="org-netbeans-modules-project-ui-RunSingle.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.PlaceHolderAction$RunSingle"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.runSingle"/>
             </file>
             
             <file name="org-netbeans-modules-project-ui-TestSingle.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.PlaceHolderAction$TestSingle"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.testSingle"/>
             </file>
             
             <file name="org-netbeans-modules-project-ui-DebugTestSingle.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.PlaceHolderAction$DebugTestSingle"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.debugTestSingle"/>
             </file>
             
             <file name="org-netbeans-modules-project-ui-DebugFix.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.PlaceHolderAction$DebugFix"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.debugFix"/>
             </file>
                         
             <!-- Project tabs opening -->

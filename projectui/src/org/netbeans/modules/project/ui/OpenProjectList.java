@@ -147,8 +147,18 @@ public final class OpenProjectList {
         openProjects.toArray( projects );
         return projects;
     }
+    
+    public synchronized boolean isOpen( Project p ) {
+        for( Iterator it = openProjects.iterator(); it.hasNext(); ) {
+            Project cp = (Project)it.next();
+            if ( p.getProjectDirectory().equals( cp.getProjectDirectory() ) ) { 
+                return true;
+            }
+        }
+        return false;
+    }
 
-    synchronized boolean isMainProject( Project p ) {
+    public synchronized boolean isMainProject( Project p ) {
 
         if ( mainProject != null && p != null &&
              mainProject.getProjectDirectory().equals( p.getProjectDirectory() ) ) {
@@ -203,7 +213,7 @@ public final class OpenProjectList {
     }
     
     // Used from OpenProjectAction
-    static Project fileToProject( File projectDir ) {
+    public static Project fileToProject( File projectDir ) {
         
         try {
             

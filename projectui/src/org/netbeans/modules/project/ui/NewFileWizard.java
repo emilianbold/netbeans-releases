@@ -37,12 +37,12 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 
-final class NewFileWizard  extends TemplateWizard {
+public final class NewFileWizard  extends TemplateWizard {
         
     private Project p;
     private String[] recommendedTypes;
 
-    NewFileWizard( Project p, String recommendedTypes[] ) {
+    public NewFileWizard( Project p, String recommendedTypes[] ) {
         this.p = p;
         this.recommendedTypes = recommendedTypes;        
         setTitle( "New File" );

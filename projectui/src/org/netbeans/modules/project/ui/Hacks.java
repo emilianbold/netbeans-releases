@@ -24,6 +24,8 @@ import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.project.ui.actions.NewFile;
+import org.netbeans.spi.project.ui.support.LogicalViews;
 import org.openide.actions.EditAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataLoader;
@@ -72,7 +74,7 @@ public class Hacks {
                 String className = defaultActions[i].getClass().getName();
                 
                 if ( "org.openide.actions.NewTemplateAction".equals( className ) ) {
-                    newActions.add( PlaceHolderAction.NewFile.get( PlaceHolderAction.NewFile.class ) );
+                    newActions.add( SystemAction.get( org.netbeans.modules.project.ui.actions.Actions.SystemNewFile.class ) );
                 }
                 else {
                     newActions.add( defaultActions[i]);
@@ -179,5 +181,6 @@ public class Hacks {
     /** @see org.apache.tools.ant.DirectoryScanner#DEFAULTEXCLUDES */
     private static final String DEFAULT_EXCLUDES_REGEXP =
         "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store))$|^\\.[#_]|~$"; // NOI18N
+    
     
 }

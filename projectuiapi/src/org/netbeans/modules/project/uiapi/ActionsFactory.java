@@ -14,13 +14,16 @@
 package org.netbeans.modules.project.uiapi;
 
 import javax.swing.Action;
+import javax.swing.Icon;
 
 /**
  * Factory to be implemented bu the ui implementation
  * @author Petr Hrebejk
  */
 public interface ActionsFactory {
-            
+    
+    // Actions releated directly to project UI
+    
     public Action setAsMainProjectAction(); 
     
     public Action customizeProjectAction();
@@ -30,5 +33,8 @@ public interface ActionsFactory {
     public Action closeProjectAction();
     
     public Action newFileAction();
-        
+            
+    // Actions reaated to project selection
+    
+    public Action projectCommandAction( String command, boolean multiselection, String namePattern, Icon icon );
 }
