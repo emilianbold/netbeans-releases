@@ -14,7 +14,6 @@ OpenIDE-Module-Module-Dependencies: org.openide.loaders > 1.0,
   org.netbeans.modules.projectuiapi/0,
   org.netbeans.modules.java.project/0
 OpenIDE-Module-Public-Packages: -
-Class-Path: docs/junit-module-help.jar
 
 Name: org/netbeans/modules/junit/TestsAction.class
 OpenIDE-Module-Class: Action

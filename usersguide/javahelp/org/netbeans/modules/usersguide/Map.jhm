@@ -539,14 +539,14 @@
 <mapID target="junit_creatingtests" url="junit/creatingtests.html" />
 <mapID target="junit_runningtests" url="junit/runningtests.html" />	
 <mapID target="junit_configuringsettings" url="junit/configuringsettings.html" />
-<!--  
+
 <mapID target="org.netbeans.modules.junit.HOMEID" url="junit_about.html"/>
 <mapID target="org.netbeans.modules.junit.JUnitCfgOfCreate" url="creatingtests.html"/>
 <mapID target="org.netbeans.modules.junit.CreateTestAction" url="actions_description.html#CreateTestsAction"/>
 <mapID target="org.netbeans.modules.junit.OpenTestAction" url="actions_description.html#OpenTestAction"/>
 <mapID target="org.netbeans.modules.junit.RunTestAction" url="runningtests.html"/>
 <mapID target="org.netbeans.modules.junit.TestsActions" url="actions_description.html"/>
-<mapID target="org.netbeans.modules.junit.JUnitSettings" url="configuringsettings.html"/>-->
+<mapID target="org.netbeans.modules.junit.JUnitSettings" url="configuringsettings.html"/>
 
 
 <!--VCS map ids-->
