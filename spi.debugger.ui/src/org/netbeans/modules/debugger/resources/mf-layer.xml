@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
      </folder>
 
      <folder name="Debug">
-     
+
         <attr name="org-openide-actions-FinishDebuggerAction.instance/org-netbeans-modules-debugger-support-actions-ConnectAction.instance" boolvalue="true" />
         <file name="org-netbeans-modules-debugger-support-actions-ConnectAction.instance" />
         <attr name="org-netbeans-modules-debugger-support-actions-ConnectAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
@@ -100,87 +100,172 @@ Microsystems, Inc. All Rights Reserved.
 
   </folder>
 
-  <folder name="AnnotationTypes"> 
-   <folder name="Debugger"> 
+    <folder name="Services">
 
-      <file name="Breakpoint">
-        <![CDATA[<?xml version="1.0"?>
-        <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
-          "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
-          <type visible="true"
-            glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
-            highlight="0xRGB"
-            wholeline="true">
-        ]]>
-      </file>
+        <file name="DebuggerSettings.settings">
+            <![CDATA[<?xml version="1.0"?>
+                <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+                <settings version="1.0">
+                    <module name="org.netbeans.modules.debugger.core/2" spec="2.1"/>
+                    <instanceof class="java.lang.Object"/>
+                    <instanceof class="org.openide.util.SharedClassObject"/>
+                    <instanceof class="org.openide.options.ContextSystemOption"/>
+                    <instanceof class="org.netbeans.modules.debugger.support.DebuggerSettings"/>
+                    <instanceof class="java.io.Serializable"/>
+                    <instanceof class="java.io.Externalizable"/>
+                    <instance class="org.netbeans.modules.debugger.support.DebuggerSettings"/>
+                </settings>
+            ]]>
+        </file>
 
-      <file name="DisabledBreakpoint">
-        <![CDATA[<?xml version="1.0"?>
-        <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
-          "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
-          <type visible="true"
-            glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
-            highlight="0xRGB"
-            wholeline="false">
-        ]]>
-      </file>
+        <file name="DebuggerProjectSettings.settings">
+            <![CDATA[<?xml version="1.0"?>
+                <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+                <settings version="1.0">
+                    <module name="org.netbeans.modules.debugger.core/2" spec="2.1"/>
+                    <instanceof class="java.lang.Object"/>
+                    <instanceof class="org.openide.util.SharedClassObject"/>
+                    <instanceof class="org.openide.options.ContextSystemOption"/>
+                    <instanceof class="org.netbeans.modules.debugger.support.DebuggerProjectSettings"/>
+                    <instanceof class="java.io.Serializable"/>
+                    <instanceof class="java.io.Externalizable"/>
+                    <instance class="org.netbeans.modules.debugger.support.DebuggerProjectSettings"/>
+                </settings>
+            ]]>
+        </file>
 
-      <file name="CondBreakpoint">
-        <![CDATA[<?xml version="1.0"?>
-        <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
-          "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
-          <type visible="true"
-            glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
-            highlight="0xRGB"
-            wholeline="true">
-        ]]>
-      </file>
+        <file name="JavaProjectSettings.settings">
+            <![CDATA[<?xml version="1.0"?>
+                <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+                <settings version="1.0">
+                    <module name="org.netbeans.modules.debugger.core/2" spec="2.1"/>
+                    <instanceof class="java.lang.Object"/>
+                    <instanceof class="org.openide.util.SharedClassObject"/>
+                    <instanceof class="org.openide.options.ContextSystemOption"/>
+                    <instanceof class="org.netbeans.modules.debugger.support.java.JavaProjectSettings"/>
+                    <instanceof class="java.io.Serializable"/>
+                    <instanceof class="java.io.Externalizable"/>
+                    <instance class="org.netbeans.modules.debugger.support.java.JavaProjectSettings"/>
+                </settings>
+            ]]>
+        </file>
+    </folder>
 
-      <file name="DisabledCondBreakpoint">
-        <![CDATA[<?xml version="1.0"?>
-        <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
-          "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
-          <type visible="true"
-            glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
-            highlight="0xRGB"
-            wholeline="false">
-        ]]>
-      </file>
+    <folder name="Services">
+        <folder name="DebuggerType">
+            <file name="DefaultDebuggerType.settings">
+                <![CDATA[<?xml version="1.0"?>
+                    <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+                    <settings version="1.0">
+                        <module name="org.netbeans.modules.debugger.core/2" spec="2.1"/>
+                        <instanceof class="java.lang.Object"/>
+                        <instanceof class="org.openide.ServiceType"/>
+                        <instanceof class="org.openide.debugger.DebuggerType"/>
+                        <instanceof class="org.netbeans.modules.debugger.support.ProcessDebuggerType"/>
+                        <instanceof class="org.netbeans.modules.debugger.delegator.DefaultDebuggerType"/>
+                        <instanceof class="java.io.Serializable"/>
+                        <instance class="org.netbeans.modules.debugger.delegator.DefaultDebuggerType"/>
+                    </settings>
+                ]]>
+            </file>
+        </folder>
+        <folder name="Executor">
+            <file name="DebuggerExecutor.settings">
+                <![CDATA[<?xml version="1.0"?>
+                    <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+                    <settings version="1.0">
+                        <module name="org.netbeans.modules.debugger.core/2" spec="2.1"/>
+                        <instanceof class="java.lang.Object"/>
+                        <instanceof class="org.openide.ServiceType"/>
+                        <instanceof class="org.openide.execution.Executor"/>
+                        <instanceof class="org.openide.execution.ProcessExecutor"/>
+                        <instanceof class="java.io.Serializable"/>
+                        <instance class="org.netbeans.modules.debugger.multisession.DebuggerExecutor"/>
+                    </settings>
+                ]]>
+            </file>
+        </folder>
+    </folder>
 
-      <file name="CurrentPC">
-        <![CDATA[<?xml version="1.0"?>
-        <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
-          "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
-          <type visible="true"
-            glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
-            highlight="0xRGB"
-            wholeline="true">
-        ]]>
-      </file>
+    <folder name="AnnotationTypes"> 
+        <folder name="Debugger"> 
+            <file name="Breakpoint">
+                <![CDATA[<?xml version="1.0"?>
+                    <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
+                        "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+                    <type visible="true"
+                        glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
+                        highlight="0xRGB"
+                        wholeline="true">
+                ]]>
+            </file>
 
-      <file name="CallSite">
-        <![CDATA[<?xml version="1.0"?>
-        <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
-          "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
-          <type visible="true"
-            glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
-            highlight="0xRGB"
-            wholeline="true">
-        ]]>
-      </file>
+            <file name="DisabledBreakpoint">
+                <![CDATA[<?xml version="1.0"?>
+                    <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
+                        "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+                    <type visible="true"
+                        glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
+                        highlight="0xRGB"
+                        wholeline="false">
+                ]]>
+            </file>
 
-      <file name="BreakpointableLine">
-        <![CDATA[<?xml version="1.0"?>
-        <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
-          "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
-          <type visible="true"
-            glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
-            highlight="0xRGB"
-            wholeline="false">
-        ]]>
-      </file>
+            <file name="CondBreakpoint">
+                <![CDATA[<?xml version="1.0"?>
+                    <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
+                        "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+                    <type visible="true"
+                        glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
+                        highlight="0xRGB"
+                        wholeline="true">
+                ]]>
+            </file>
 
-   </folder> 
-  </folder> 
+            <file name="DisabledCondBreakpoint">
+                <![CDATA[<?xml version="1.0"?>
+                    <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
+                        "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+                    <type visible="true"
+                        glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
+                        highlight="0xRGB"
+                        wholeline="false">
+                ]]>
+            </file>
+
+            <file name="CurrentPC">
+                <![CDATA[<?xml version="1.0"?>
+                    <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
+                        "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+                    <type visible="true"
+                        glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
+                        highlight="0xRGB"
+                        wholeline="true">
+                ]]>
+            </file>
+
+            <file name="CallSite">
+                <![CDATA[<?xml version="1.0"?>
+                    <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
+                        "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+                    <type visible="true"
+                        glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
+                        highlight="0xRGB"
+                        wholeline="true">
+                ]]>
+            </file>
+
+            <file name="BreakpointableLine">
+                <![CDATA[<?xml version="1.0"?>
+                    <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
+                        "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+                    <type visible="true"
+                        glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
+                        highlight="0xRGB"
+                        wholeline="false">
+                ]]>
+            </file>
+        </folder>
+    </folder>
 
 </filesystem>

@@ -9,15 +9,6 @@ OpenIDE-Module-Short-Description: The IDE's basic infrastructure for debugging.
 OpenIDE-Module-Long-Description: The Debugger Core module provides the basic infrastructure
   in the IDE for debugging. Modules for specific debugger implementations are based on this module.
 
-Name: org/netbeans/modules/debugger/support/DebuggerSettings.class
-OpenIDE-Module-Class: Option
-
-Name: org/netbeans/modules/debugger/support/DebuggerProjectSettings.class
-OpenIDE-Module-Class: Option
-
-Name: org/netbeans/modules/debugger/support/java/JavaProjectSettings.class
-OpenIDE-Module-Class: Option
-
 Name: org/netbeans/modules/debugger/multisession/EnterpriseDebugger.class
 OpenIDE-Module-Class: Debugger
 
@@ -25,9 +16,3 @@ Name: org/netbeans/modules/debugger/support/nodes/DebuggerNode.class
 OpenIDE-Module-Class: Node
 Type: Environment
 
-Name: org/netbeans/modules/debugger/multisession/DebuggerExecutor.class
-OpenIDE-Module-Class: Service
-
-Name: org/netbeans/modules/debugger/delegator/DefaultDebuggerType.class
-OpenIDE-Module-Class: Service
-Default: true
