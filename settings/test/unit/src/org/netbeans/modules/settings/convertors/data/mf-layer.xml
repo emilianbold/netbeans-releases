@@ -42,6 +42,26 @@ Microsystems, Inc. All Rights Reserved.
 </settings>
 ]]>
         </file>
+        <file name="org-netbeans-modules-settings-convertors-FooSettingUnrecognizedSettingsFile.settings">
+<![CDATA[<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="org.netbeans.modules.settings.unknownmodule"/>
+    <instanceof class="org.netbeans.modules.settings.convertors.FooSetting"/>
+    <serialdata class="org.netbeans.modules.settings.convertors.FooSetting">ACED00057372002</serialdata>
+</settings>
+]]>
+        </file>
+        
+        <file name="org-netbeans-modules-settings-convertors-FooSettingDisabledOrUnknownModule.settings">
+<![CDATA[<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="org.netbeans.modules.settings.unknownmodule"/>
+    <instanceof class="org.netbeans.modules.settings.convertors.FooSetting"/>
+    <instance class="org.netbeans.modules.settings.convertors.FooSetting"/>
+</settings>
+]]>
+        </file>
+        
         <!-- SerialDataConvertorTest.testCorruptedSettingsFile -->
         
         <!-- XMLPropertiesConvertorTest.testCorruptedSettingsFile -->

@@ -511,7 +511,7 @@ public final class SerialDataNode extends DataNode {
             Class clazz = ic.instanceClass();
             return (!SharedClassObject.class.isAssignableFrom(clazz));
         } catch (Exception ex) {
-            return false;
+            return true;
         }
     }
     

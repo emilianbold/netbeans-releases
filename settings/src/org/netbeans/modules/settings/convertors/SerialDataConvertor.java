@@ -206,6 +206,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
     
     private String moduleCodeBase = null;
     private boolean miUnInitialized = true;
+    private boolean moduleMissing;    
     
     private boolean isModuleEnabled(SerialDataConvertor.SettingsInstance si) {
         ModuleInfo mi = null;
@@ -214,6 +215,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             miUnInitialized = false;
             if (moduleCodeBase != null) {
                 mi = ModuleInfoManager.getDefault().getModule(moduleCodeBase);
+                moduleMissing = (mi == null);
                 if (mi != null) {
                     ModuleInfoManager.getDefault().
                         registerPropertyChangeListener(this, mi);
@@ -223,12 +225,14 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
                         moduleCodeBase + " in " +  // NOI18N
                         getDataObject().getPrimaryFile());
                 }
+            } else {
+                moduleMissing = false;
             }
         } else {
             mi = ModuleInfoManager.getDefault().getModule(moduleCodeBase);
         }
         
-        return mi == null || mi.isEnabled();
+        return !moduleMissing && (mi == null || mi.isEnabled());
     }
     
     private String getModuleCodeNameBase(SerialDataConvertor.SettingsInstance si) {

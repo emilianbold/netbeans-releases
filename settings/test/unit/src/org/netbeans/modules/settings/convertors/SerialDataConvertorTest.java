@@ -414,6 +414,25 @@ public class SerialDataConvertorTest extends NbTestCase {
         Thread.sleep(3000);
         assertNull(filename + ".settings was not deleted!", root.getFileObject(filename));
     }
+
+    public void testDisabledOrUnknownModule() throws Exception {    
+        final FileObject valid = lfs.findResource("/Settings/org-netbeans-modules-settings-convertors-FooSettingDisabledOrUnknownModule.settings");
+        assertNotNull(valid);
+        DataObject ido = DataObject.find(valid);
+        InstanceCookie ic = (InstanceCookie) ido.getCookie(InstanceCookie.class);
+        assertNull("There shouldn't be provided InstanceCookie for disabled module", ic);        
+    }
+
+    public void testDeleteOfUnrecognizedSettingsFile () throws Exception {
+        final FileObject corrupted = lfs.findResource("/Settings/org-netbeans-modules-settings-convertors-FooSettingUnrecognizedSettingsFile.settings");
+        assertNotNull(corrupted);
+        
+        DataObject ido = DataObject.find(corrupted);
+        org.openide.nodes.Node node = ido.getNodeDelegate();
+        node.destroy();        
+        FileObject corrupted2 = lfs.findResource("/Settings/org-netbeans-modules-settings-convertors-FooSettingUnrecognizedSettingsFile.settings");        
+        assertNull(corrupted2);
+    }
     
     public void testCorruptedSettingsFile() throws Exception {
         final FileObject corrupted = lfs.findResource("/Settings/org-netbeans-modules-settings-convertors-FooSettingSerialDataCorruptedTest.settings");
