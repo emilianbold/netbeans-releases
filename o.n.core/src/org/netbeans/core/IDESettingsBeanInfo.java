@@ -94,8 +94,8 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
             desc[10].setDisplayName (NbBundle.getMessage (Main.class, "PROP_SHOW_TOOLTIPS_IN_IDE"));
             desc[10].setShortDescription (NbBundle.getMessage (Main.class, "HINT_SHOW_TOOLTIPS_IN_IDE"));
             
-            desc[10].setDisplayName (NbBundle.getMessage (Main.class, "PROP_ignoredFiles"));
-            desc[10].setShortDescription (NbBundle.getMessage (Main.class,"HINT_ignoredFiles"));            
+            desc[11].setDisplayName (NbBundle.getMessage (Main.class, "PROP_ignoredFiles"));
+            desc[11].setShortDescription (NbBundle.getMessage (Main.class,"HINT_ignoredFiles"));            
             
 
             return desc;
