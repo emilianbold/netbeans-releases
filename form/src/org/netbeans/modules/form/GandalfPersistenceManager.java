@@ -813,7 +813,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         tabName = value;
                     else if ("tabToolTip".equals(name)) // NOI18N
                         toolTip = value;
-                    else if ("icon".equals(name)) // NOI18N
+                    else if ("tabIcon".equals(name)) // NOI18N
                         icon = value;
                 }
 
@@ -3770,17 +3770,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         bytes[count++] = Byte.parseByte(singleNum);
         ByteArrayInputStream bis = new ByteArrayInputStream(bytes, 0, count);
         try {
-            class PORObjectInputStream extends ObjectInputStream {
-                public PORObjectInputStream(InputStream is) throws IOException {
-                    super(is);
-                }
-                protected Class resolveClass(ObjectStreamClass v)
-                throws IOException, ClassNotFoundException {
-                    return PersistenceObjectRegistry.loadClass(v.getName());
-                }
-            }
-            ObjectInputStream ois = new PORObjectInputStream(bis);
-            return ois.readObject();
+            return new OIS(bis).readObject();
         }
         catch (Exception e) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -3812,6 +3802,35 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
         }
         return sb.toString();
+    }
+
+    // ObjectInputStream subclass for reading serialized property values
+    private static class OIS extends ObjectInputStream {
+        public OIS(InputStream is) throws IOException {
+            super(is);
+        }
+
+        protected Class resolveClass(ObjectStreamClass streamCls)
+            throws IOException, ClassNotFoundException
+        {
+            String name = streamCls.getName();
+            if (name.startsWith("[")) { // NOI18N
+                // workaround: load array element class first to avoid failure
+                for (int i=1, n=name.length(); i < n; i++) {
+                    char c = name.charAt(i);
+                    if (c == 'L' && name.endsWith(";")) { // NOI18N
+                        String clsName = name.substring(i+1, n-1);
+                        PersistenceObjectRegistry.loadClass(clsName);
+                        break;
+                    }
+                    else if (c != '[')
+                        return super.resolveClass(streamCls);
+                    else
+                        break;
+                }
+            }
+            return PersistenceObjectRegistry.loadClass(name);
+        }
     }
 
     // --------------------------------------------------------------------------------------
