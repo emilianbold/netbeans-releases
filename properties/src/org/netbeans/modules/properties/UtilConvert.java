@@ -219,7 +219,7 @@ public class UtilConvert {
         return (slashCount % 2 == 1);
     }
 
-    /*
+    /**
      * Converts encoded \\uxxxx to unicode chars
      * and changes special saved chars to their original forms
      */
@@ -269,7 +269,7 @@ public class UtilConvert {
         return outBuffer.toString();
     }
 
-    /*
+    /**
      * Converts unicodes to encoded \\uxxxx
      * and writes out any of the characters in specialSaveChars
      * with a preceding slash.
@@ -312,6 +312,147 @@ public class UtilConvert {
         return outBuffer.toString();
     }
 
+    /** Escape key value. Converts string to one with escaped ' ','=',':', and last '\\'
+    * in case they are not escaped already. Used for formating user input.
+    */
+    public static String escapePropertiesSpecialChars (String source) {
+        if(source == null) return null;
+        StringBuffer result = new StringBuffer();
+        for(int i=0; i<source.length(); i++) {
+            char x = source.charAt(i);
+            if(x == ' ' || x == '=' || x == ':') {
+                if( i==0 || (i>0 && source.charAt(i-1) != '\\'))
+                    result.append('\\');
+            }
+            // last char == '\\'
+            if(i==source.length()-1 && x == '\\') {
+                if( i>0 && source.charAt(i-1)!='\\')
+                    result.append('\\');
+            }
+            result.append(x);
+        }
+        return result.toString(); 
+    }
+
+    /** Escape key value. It escapes last '\\' character  only. Used for formating user input.
+    */
+    public static String escapeLineContinuationChar(String source) {
+        if(source == null) return null;
+        if(source.endsWith("\\")) {
+            if(source.length()>1 && source.charAt(source.length()-2)!='\\')
+                return new String(new StringBuffer(source).append('\\'));
+        }
+        return source;
+    }
+
+    /**
+     * Converts these java special chars ('\t', '\n', '\b', '\r', '\f') to encoded escapes.
+     * Note there are not converted unicode chars.
+     */
+    public static String escapeJavaSpecialChars(String source) {
+        if(source == null) return null;
+        StringBuffer result = new StringBuffer();
+        for (int i=0; i<source.length(); i++) {
+            char ch = source.charAt(i);
+            switch(ch) {    
+                case '\t':
+                    result.append("\\t");
+                    break;
+                case '\n':
+                    result.append("\\n");
+                    break;
+                case '\b':
+                    result.append("\\b");
+                    break;
+                case '\r':
+                    result.append("\\r");
+                    break;
+                case '\f':
+                    result.append("\\f");
+                    break;
+                default:
+                    result.append(ch);
+            }
+        }
+        return result.toString();
+    }
+
+    /**
+     * Converts encoded '\\uxxxx' to chars.
+     * Note there are not converted '\\"', '\\'', '\\ ', '\\\\' and java special chars escapes.
+     */
+    public static String unicodesToChars (String theString) {
+        if (theString == null) return null;
+        char aChar;
+        char next;
+        int len = theString.length();
+        StringBuffer outBuffer = new StringBuffer(len);
+
+        for(int x=0; x<len; x++) {
+            aChar = theString.charAt(x);
+            if(x+5 < len) { // if there is space for uXXXX chars enough
+                next = theString.charAt(x+1);
+                try {
+                    if (aChar == '\\' && next == 'u') {
+                        // Read the xxxx
+                        int value=0;
+                        for (int i=0; i<4; i++) {
+                            next = theString.charAt(x+1+i+1);
+                            switch (next) {
+                                case '0': case '1': case '2': case '3': case '4':
+                                case '5': case '6': case '7': case '8': case '9':
+                                    value = (value << 4) + next - '0';
+                                    break;
+                                case 'a': case 'b': case 'c':
+                                case 'd': case 'e': case 'f':
+                                    value = (value << 4) + 10 + next - 'a';
+                                    break;
+                                case 'A': case 'B': case 'C':
+                                case 'D': case 'E': case 'F':
+                                    value = (value << 4) + 10 + next - 'A';
+                                    break;
+                                default:
+                                    throw new IllegalArgumentException("Malformed \\uxxxx encoding.");
+                            }
+                        }
+                        outBuffer.append((char)value);
+                        x += 5;
+                    } else 
+                        outBuffer.append(aChar);
+                } catch (IllegalArgumentException iae) {
+                    outBuffer.append(aChar); // not unicode -> interpret as a normal char
+                }
+            } else 
+                outBuffer.append(aChar);
+        }
+        return outBuffer.toString();
+    }
+
+    /**
+    * Converts chars to encoded '\\uxxxx'.
+     * Note there are not converted '\\"', '\\'', '\\ ', '\\\\' and java special chars escapes.
+    */
+    public static String charsToUnicodes(String theString) {
+        if(theString == null) return null;
+        char aChar;
+        int len = theString.length();
+        StringBuffer outBuffer = new StringBuffer(len*2);
+
+        for(int x=0; x<len; ) {
+            aChar = theString.charAt(x++);
+            if ((aChar < 20) || (aChar > 127)) {
+                outBuffer.append('\\');
+                outBuffer.append('u');
+                outBuffer.append(toHex((aChar >> 12) & 0xF));
+                outBuffer.append(toHex((aChar >> 8) & 0xF));
+                outBuffer.append(toHex((aChar >> 4) & 0xF));
+                outBuffer.append(toHex((aChar >> 0) & 0xF));
+            } else {
+                outBuffer.append(aChar);
+            }
+        }
+        return outBuffer.toString();
+    }
 
     /**
      * Writes this property list (key and element pairs) in this
