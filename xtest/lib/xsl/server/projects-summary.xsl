@@ -13,11 +13,11 @@
 
 -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-   xmlns:java="java">
+   xmlns:java="http://xml.apache.org/xslt/java"
+   exclude-result-prefixes="java">
 
-<xsl:param name="truncated"/>
-<xsl:param name="pesConfig" select="string('default')"/>
-<xsl:param name="projectGroupDescription" select="string('current')"/>
+<xsl:param name="pesWebDataFile" select="string('c:\tmp\newpes\webdata.xml')"/>
+
 
 <xsl:include href="../library.xsl"/>
 
@@ -41,18 +41,19 @@
 </xsl:template>
 
 
-<xsl:template match="XTestWebReport">
+<xsl:template match="ManagedGroup">
 	<xsl:call-template name="MakeProjectsTestsSummaryTable"/>
 </xsl:template>
 
 <xsl:template name="MakeProjectsTestsSummaryTable">
 	
 	<H1>XTest Overall Results:</H1>	
-	<H3>group of <xsl:value-of select="$projectGroupDescription"/> results</H3>	
+	<xsl:if test="/ManagedGroup/@description">
+		<H3><xsl:value-of select="/ManagedGroup/@description"/></H3>
+	</xsl:if>
 	<P>	
 		<UL>
-			<LI>This page was generated at: <xsl:value-of select="java:util.Date.new()"/></LI>
-			
+			<LI>This page was generated at: <xsl:value-of select="java:java.util.Date.new()"/></LI>
 		</UL>
 	</P>
 	
@@ -61,10 +62,12 @@
 	<!-- for each testing group -->
 	<xsl:variable name="uniqueTestingGroup" select="//ManagedReport[generate-id(.)=generate-id(key('group',./@testingGroup)[1])]"/>
 	
+	<xsl:choose>
+	<xsl:when test="count(//ManagedReport) &gt; 0">
 	<xsl:for-each select="$uniqueTestingGroup">
 		<xsl:sort select="@testingGroup" order = "descending"/>
 		<xsl:variable name="currentTestingGroup" select="@testingGroup"/>		
-		<H2>Department: <xsl:value-of select="@testingGroup"/></H2>
+			<H2>Department: <xsl:value-of select="@testingGroup"/></H2>
 		
 		<TABLE width="90%" cellspacing="2" cellpadding="5" border="0" >	
 			<xsl:variable name="uniqueTestedType" select="//ManagedReport[generate-id(.)=generate-id(key('groupAndType',concat($currentTestingGroup,./@testedType))[1])]"/>
@@ -124,19 +127,16 @@
 								<TD class="pass">
 									<xsl:value-of select="sum($expression/@testsTotal)"/>
 								</TD>
-								<TD class="pass">
-                                                                    <xsl:if test="not(boolean($truncated))">   
-                                                                        <A HREF="{$currentProject}/{$currentTestingGroup}-{$currentType}.html">report</A>
-                                                                    </xsl:if>    
-                                                                    <xsl:if test="boolean($truncated)">   
-                                                                        <A><xsl:attribute name="href"><xsl:value-of select="translate(concat($currentProject,'/',$currentTestingGroup,'-',$currentType,'.html'),' ','_')"/></xsl:attribute>report</A>
-                                                                    </xsl:if>
-                                                                </TD>
-						        </xsl:if>								
-							</xsl:for-each>
-							<xsl:if test="count($builds)=0">								
-								<TD colspan="4" class="pass">-</TD>
-							</xsl:if>
+								<TD class="pass">									                                  
+                                   <xsl:variable name="URL" select="concat($currentProject,'/',/ManagedGroup/@name,'-',$currentTestingGroup,'-',$currentType,'.html')"/>
+                                   <xsl:variable name="normalizedURL" select="java:org.netbeans.xtest.util.FileUtils.normalizeName($URL)"/>
+                                   <A HREF="{$normalizedURL}">report</A>                                 
+                                </TD>
+						    </xsl:if>								
+					    </xsl:for-each>
+						<xsl:if test="count($builds)=0">								
+							<TD colspan="4" class="pass">-</TD>
+						</xsl:if>
 					</xsl:for-each>
 
 				</TR>
@@ -145,25 +145,44 @@
 
 			
 		</TABLE>
-		
+		<BR/>
 	</xsl:for-each>
-	<BR/>
+	</xsl:when>
+	<xsl:otherwise>
+		<BLOCKQUOTE><BLOCKQUOTE>
+			<H3>No results have been submitted yet</H3>
+		</BLOCKQUOTE></BLOCKQUOTE>
+	</xsl:otherwise>
+	</xsl:choose>
+
 	<HR width="90%"/>
 
-	<xsl:if test="$pesConfig!=string('default')">
-	
+	<xsl:if test="$pesWebDataFile">
+		<xsl:if test="count(document($pesWebDataFile,/*)/ManagedWeb/ManagedGroup) &gt; 1">
 		<BR/>
 		<H2>Results from other projects:</H2>    				
 		<UL>
-			<xsl:if test="$projectGroupDescription!=string('current')">
-				<LI><A HREF="index.html">Currently tested projects</A></LI>
-			</xsl:if>
-    		<xsl:for-each select="document($pesConfig,/*)/PESConfig/PESProjects/PESProjectGroup">    		    		
-    			<xsl:if test="$projectGroupDescription!=@description">
-	    			<LI><A HREF="group-{@name}.html"><xsl:value-of select="@description"/></A></LI>
+			<xsl:variable name="currentName" select="/ManagedGroup/@name"/>
+			<!--
+			<LI>current name = <xsl:value-of select="$currentName"/></LI>
+			-->
+    		<xsl:for-each select="document($pesWebDataFile,/*)/ManagedWeb/ManagedGroup"> 
+    			<xsl:if test="string(@name)!=string($currentName)">
+    				<xsl:choose>
+    				<xsl:when test="./@main != 'true'"> 
+    					<xsl:variable name="URL" select="concat('group-',./@name,'.html')"/>
+    					<xsl:variable name="normalizedURL" select="java:org.netbeans.xtest.util.FileUtils.normalizeName($URL)"/>  				
+		    			<LI><A HREF="{$normalizedURL}"><xsl:value-of select="./@description"/></A></LI>
+		    		</xsl:when>		    		
+	    			<xsl:otherwise>
+	    				<LI><A HREF="index.html"><xsl:value-of select="./@description"/></A></LI>
+	    			</xsl:otherwise>
+	    			</xsl:choose>
 	    		</xsl:if>
 			</xsl:for-each>
+	
 		</UL>
+		</xsl:if>
 	</xsl:if>
 	
 

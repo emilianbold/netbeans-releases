@@ -17,6 +17,7 @@
 <xsl:include href="library.xsl"/>
 
 <xsl:param name="truncated"/>
+<xsl:param name="includeExceptions"/>
 
 <xsl:template match="/">
 	<xsl:call-template name="html-page">
@@ -71,7 +72,7 @@
 				<xsl:apply-templates select="UnitTestCase" mode="table"/>		
 		</TABLE>				
 	</P>
-        <xsl:if test="not(boolean($truncated))">
+        <xsl:if test="(boolean($includeExceptions))">
 	   <P>
 		<BR/>
 		<xsl:if test="@testsTotal!=@testsPass">
@@ -92,10 +93,10 @@
 		<TD><xsl:value-of select="@name"/></TD>
 		<TD>
 			<xsl:if test="text()">
-		 	    <xsl:if test="not(boolean($truncated))">	
+		 	    <xsl:if test="boolean($includeExceptions)">
                                 <A><xsl:attribute name="href">#<xsl:value-of select="@class"/>.<xsl:value-of select="@name"/></xsl:attribute><xsl:value-of select="@result"/></A>
                             </xsl:if>
-                            <xsl:if test="boolean($truncated)">	
+                            <xsl:if test="not(boolean($includeExceptions))">	
                                 <xsl:value-of select="@result"/>
                             </xsl:if>
                         </xsl:if>

@@ -19,6 +19,7 @@
 <xsl:key name="module" match="TestBag" use="concat(@module,parent::*/@runID)"/>
 
 <xsl:param name="truncated"/>
+<xsl:param name="mappedHostname"/>
 
 <xsl:template match="/">
 	<xsl:call-template name="html-page">
@@ -29,7 +30,18 @@
 <xsl:template match="XTestResultsReport">
 	<H1>XTest Results Report</H1>
 	<BLOCKQUOTE>
-		<H2>run on <xsl:value-of select="SystemInfo/@host"/> at <xsl:value-of select="@timeStamp"/></H2>
+		<H2>
+			run on 
+				<xsl:choose>
+					<xsl:when test="not($mappedHostname)">
+						<xsl:value-of select="SystemInfo/@host"/>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:value-of select="$mappedHostname"/>
+					</xsl:otherwise>
+				</xsl:choose>	
+			at <xsl:value-of select="@timeStamp"/>
+		</H2>
 	</BLOCKQUOTE>
 	<H2>Summary</H2>
 	<UL>

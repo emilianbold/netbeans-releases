@@ -16,7 +16,7 @@
 
 <xsl:include href="library.xsl"/>
 
-<xsl:param name="truncated"/>
+<xsl:param name="includeIDELog"/>
 
 <xsl:template match="/">
 	<xsl:call-template name="html-page">
@@ -38,9 +38,9 @@
 	<LI>Module: <xsl:value-of select="@module"/></LI>
 	<LI>Test Type: <xsl:value-of select="@testType"/></LI>
 	
-        <xsl:if test="not(boolean($truncated))">
+        <xsl:if test="boolean($includeIDELog)">
   	  <xsl:if test="string(@ideUserDir)='true'">
-		<LI><A HREF="../sys/ide/">IDE User Directory</A></LI>
+		<LI><A HREF="../sys/ide/">IDE Logs</A></LI>
 	  </xsl:if>
         </xsl:if>  
 	<!-- end of hack -->

@@ -15,7 +15,8 @@
 <xsl:stylesheet version="1.0" 
 		xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 		xmlns:xalan="http://xml.apache.org/xalan"
-		exclude-result-prefixes="xalan">
+    	xmlns:java="http://xml.apache.org/xslt/java"
+		exclude-result-prefixes="xalan java">
 
 <xsl:key name="platform" match="ManagedReport" use="concat(@osName,@osVersion,@osArch)"/> 
 <xsl:key name="build" match="ManagedReport" use="@build"/>
@@ -24,7 +25,9 @@
 
 <xsl:include href="../library.xsl"/>
 
-<xsl:param name="truncated"/>
+<!-- is this xsl with old builds ? -->
+<xsl:param name="oldBuilds"/>
+
 
 <xsl:template match="/">
 	<xsl:call-template name="html-page">
@@ -35,7 +38,7 @@
 
 
 
-<xsl:template match="XTestWebReport">
+<xsl:template match="ManagedGroup">
 	<xsl:call-template name="MakeBuildsSummaryTable"/>
 </xsl:template>
 
@@ -48,27 +51,17 @@
 	</H2>	
 
 	<UL>
-		<LI><A HREF="../index.html">XTest Overall Results</A></LI>
-		<xsl:if test="not(@oldBuilds)">
+		<xsl:variable name="buildURL" select="concat(/ManagedGroup/@name,'-',ManagedReport/@testingGroup,'-',ManagedReport/@testedType,'.html')"/>
+		<xsl:variable name="normalizedBuildURL" select="java:org.netbeans.xtest.util.FileUtils.normalizeName($buildURL)"/>
+		<LI><A HREF="../index.html">XTest Overall Results</A></LI>		
+		<xsl:if test="(/ManagedGroup/@historyMatrices &gt; 0) and (not($oldBuilds))">
 			<LI><A HREF="#history">History Matrices</A></LI>
-			<LI>
-                           <xsl:if test="not(boolean($truncated))">
-                              <A HREF="old-{ManagedReport/@testingGroup}-{ManagedReport/@testedType}.html">Older Builds</A>
-                           </xsl:if>
-                           <xsl:if test="boolean($truncated)">
-                              <A><xsl:attribute name="href"><xsl:value-of select="translate(concat('old-',ManagedReport/@testingGroup,'-',ManagedReport/@testedType,'.html'),' ','_')"/></xsl:attribute>Older Builds</A>
-                           </xsl:if>
-                        </LI>
 		</xsl:if>
-		<xsl:if test="@oldBuilds">
-			<LI>
-                           <xsl:if test="not(boolean($truncated))">
-                             <A HREF="{ManagedReport/@testingGroup}-{ManagedReport/@testedType}.html">Current builds</A>
-                           </xsl:if>
-                           <xsl:if test="boolean($truncated)">
-                             <A><xsl:attribute name="href"><xsl:value-of select="translate(concat(ManagedReport/@testingGroup,'-',ManagedReport/@testedType,'.html'),' ','_')"/></xsl:attribute>Current builds</A>
-                           </xsl:if>
-                        </LI>
+		<xsl:if test="(/ManagedGroup/@currentBuilds &gt; -1) and (not($oldBuilds))">
+			<LI><A HREF="old-{$normalizedBuildURL}">Older Builds</A></LI>
+		</xsl:if>
+		<xsl:if test="$oldBuilds">
+			<LI><A HREF="{$normalizedBuildURL}">Current builds</A></LI>
 		</xsl:if>
 	</UL>
 	<BR/>
@@ -113,7 +106,9 @@
 		
 		<xsl:for-each select="$uniqueBuildList">
 			<xsl:sort select="@build" order = "descending"/>
-			<xsl:variable name="currentBuild" select="@build"/>
+			<xsl:variable name="currentBuild" select="@build"/>			
+			<xsl:if test="((not($oldBuilds))and(/ManagedGroup/@currentBuilds &gt;= position())) or ( ($oldBuilds='true') and(/ManagedGroup/@currentBuilds &lt; position())) or (/ManagedGroup/@currentBuilds='-1')">
+			
 			<xsl:variable name="uniquePlatormsInBuild" select="//ManagedReport[generate-id(.)=generate-id(key('platformAndBuild',concat(./@osName,./@osVersion,./@osArch,$currentBuild))[1])]"/>			
 			<xsl:variable name="platformCount" select="count($uniquePlatormsInBuild)"/>
 			
@@ -128,7 +123,7 @@
 				<xsl:sort select="@osName"/>
 				<xsl:sort select="@osVersion"/>
 				<xsl:sort select="@osArch"/>
-				
+								
 				<TR align="center">
 					<xsl:if test="position() = 1">
 						<TD bgcolor="#A6CAF0" rowspan="{$platformCount}"><B><xsl:value-of select="@build"/></B></TD>
@@ -158,14 +153,10 @@
 					</TD>
 					<TD class="pass">
 						<xsl:for-each select="key('platformAndBuild',concat(./@osName,./@osVersion,./@osArch,$currentBuild))">
-                                                    <xsl:if test="not(boolean($truncated))">
-							<A HREF="../{@webLink}index.html"><xsl:value-of select="@host"/>
+                        
+							<A HREF="../{@webLink}"><xsl:value-of select="@host"/>
 							</A>
-                                                    </xsl:if>
-                                                    <xsl:if test="boolean($truncated)">
-                                                        <A><xsl:attribute name="href"><xsl:value-of select="translate(concat('../',@webLink,'index.html'),' ','_')"/></xsl:attribute><xsl:value-of select="@host"/>
-							</A>
-                                                    </xsl:if>    
+                        
 							<BR/>
 						</xsl:for-each>
 					</TD>
@@ -178,6 +169,8 @@
 			</TD>
 			</TR>
 			-->
+			<!-- build -->
+			</xsl:if>
 		</xsl:for-each>
 		
 	</TABLE>
@@ -194,7 +187,7 @@
 	-->
 	<BR/>
 	<HR width="90%"/>
-	<xsl:if test="not(//XTestWebReport/@oldBuilds)">
+	<xsl:if test="not($oldBuilds) and (/ManagedGroup/@historyMatrices &gt; 0)">
 		<A name="history">
 		<H5>History Matrices for:</H5>
 		</A>
@@ -204,14 +197,13 @@
 				<xsl:sort select="@host"/>
 				<LI>				
 					<B>
-                                           <xsl:if test="not(boolean($truncated))">
-                                              <A HREF="matrix-{@testingGroup}-{@testedType}-{@host}.html"><xsl:value-of select="@host"/></A>
-                                           </xsl:if>
-                                           <xsl:if test="boolean($truncated)">
-                                              <A><xsl:attribute name="href"><xsl:value-of select="translate(concat('matrix-',@testingGroup,'-',@testedType,'-',@host,'.html'),' ','_')"/></xsl:attribute>
-                                              <xsl:value-of select="@host"/></A>
-                                           </xsl:if>
-                                       </B>
+                      <xsl:if test="/ManagedGroup/@historyMatrices &gt; 0">                                       		
+                      	 <xsl:variable name="MURL" select="concat('matrix-',/ManagedGroup/@name,'-',./@testingGroup,'-',./@testedType,'-',./@host,'.html')"/>
+                      	 <xsl:variable name="normalizedMURL" select="java:org.netbeans.xtest.util.FileUtils.normalizeName($MURL)"/>
+                         <A HREF="{$normalizedMURL}"><xsl:value-of select="@host"/></A>
+                       </xsl:if>
+                                           
+                    </B>
 				</LI>
 			</xsl:for-each>
 		</UL>

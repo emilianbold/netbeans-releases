@@ -12,9 +12,14 @@
  Microsystems, Inc. All Rights Reserved.
 
 -->
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:java="http://xml.apache.org/xslt/java"
+    exclude-result-prefixes="java">
 
 <xsl:include href="../library.xsl"/>
+
+<xsl:param name="webGroupName"/>
+<xsl:param name="mainGroup"/>
 
 <xsl:template match="/">
 	<xsl:call-template name="html-page">
@@ -86,10 +91,19 @@
 			</UL>
 		</UL>
 		<UL>			
-			<LI><A HREF="../index.html" TARGET="_top">Back to report home</A></LI>				
-			<LI><A HREF="../../../../../matrix-{/XTestResultsReport/@testingGroup}-{/XTestResultsReport/@testedType}-{/XTestResultsReport/@host}.html" TARGET="_top">Builds history matrix</A></LI>
-			<LI><A HREF="../../../../../{/XTestResultsReport/@testingGroup}-{/XTestResultsReport/@testedType}.html" TARGET="_top">Back to builds overview</A></LI>
-			<LI><A HREF="../../../../../../index.html" TARGET="_top">Back to overall results</A></LI>
+			<LI><A HREF="../index.html" TARGET="_top">Back to report home</A></LI>	
+			<xsl:variable name="mURL" select="concat('../../../../matrix-',$webGroupName,'-',/XTestResultsReport/@testingGroup,'-',/XTestResultsReport/@testedType,'-',/XTestResultsReport/@host,'.html')"/>
+			<xsl:variable name="nmURL" select="java:org.netbeans.xtest.util.FileUtils.normalizeName($mURL)"/>
+			<LI><A HREF="{$nmURL}" TARGET="_top">Builds history matrix</A></LI>
+
+			<xsl:variable name="bURL" select="concat('../../../../',$webGroupName,'-',/XTestResultsReport/@testingGroup,'-',/XTestResultsReport/@testedType,'.html')"/>
+			<xsl:variable name="nbURL" select="java:org.netbeans.xtest.util.FileUtils.normalizeName($bURL)"/>
+			<LI><A HREF="{$nbURL}" TARGET="_top">Back to builds overview</A></LI>
+			
+			
+		    <LI><A HREF="../../../../../index.html" TARGET="_top">Back to overall results</A></LI>
+
+			
 		</UL>
 	</H4>	
 </xsl:template>

@@ -16,6 +16,8 @@
 
 <xsl:include href="library.xsl"/>
 
+<xsl:param name="mappedHostname"/>
+
 <xsl:template match="/">
 	<xsl:call-template name="html-page">
 		<xsl:with-param name="html-title">Summary</xsl:with-param>
@@ -27,7 +29,16 @@
 	<H2>System Info</H2>
 	<P>
 	<TABLE>
-		<TR><TD>Host</TD><TD>:</TD><TD><xsl:value-of select="@host"/></TD></TR>
+		<TR><TD>Host</TD><TD>:</TD><TD>
+			<xsl:choose>
+				<xsl:when test="not($mappedHostname)">
+					<xsl:value-of select="@host"/>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="$mappedHostname"/>
+				</xsl:otherwise>
+			</xsl:choose>
+		</TD></TR>
 		<TR><TD>Operating System Name</TD><TD>:</TD><TD><xsl:value-of select="@osName"/></TD></TR>
 		<TR><TD>Operating System Version</TD><TD>:</TD><TD><xsl:value-of select="@osVersion"/></TD></TR>
 		<TR><TD>System Architecture</TD><TD>:</TD><TD><xsl:value-of select="@osArch"/></TD></TR>
