@@ -379,29 +379,29 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../core/deprecated" target="netbeans"/>
   </target>
-  <target name="all-openide/deprecated" depends="init">
+  <target name="all-openide/deprecated" depends="all-openide/compiler,all-debuggercore/oldapi">
     <echo message="Building openide/deprecated..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <!-- Make it depend only on platform -->
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.dependencies" value="nb.cluster.platform"/>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
     <ant dir="../openide/deprecated" target="netbeans"/>
   </target>
   <target name="all-openide/compiler" depends="all-openide/execution/deprecated">
     <echo message="Building openide/compiler..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <!-- Make it depend only on platform -->
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.dependencies" value="nb.cluster.platform"/>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
     <ant dir="../openide/compiler" target="netbeans"/>
   </target>
   <target name="all-openide/execution/deprecated" depends="init">
     <echo message="Building openide/execution/deprecated..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <!-- Make it depend only on platform -->
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.dependencies" value="nb.cluster.platform"/>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
     <ant dir="../openide/execution/deprecated" target="netbeans"/>
@@ -635,9 +635,9 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-debuggercore/oldapi" depends="all-java/srcmodel,all-openide/execution/deprecated">
     <echo message="Building module debuggercore/oldapi..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <!-- Depend only on platform -->
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.dependencies" value="nb.cluster.platform"/>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
     <ant dir="../debuggercore/oldapi" target="netbeans"/>
