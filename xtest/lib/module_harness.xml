@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -222,11 +222,18 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- deprecated executors - !!! -->
     <target name="deprecated_executors" if="xtest.exectype">
-        <!--
-        <echo message="**********"/>
-        <echo message="! This is DEPRECATED test mode. Please refer to a http://xtest.netbeans.org to get information how to update your tests"/>
-        <echo message="**********"/>
-        -->
+        
+        <echo message="**********************************************************"/>
+        <echo message="**********************************************************"/>
+        <echo message="********    This is DEPRECATED test mode    **************"/>
+        <echo message="**                                                      **"/>
+        <echo message="**             Please refer to a                        **"/>
+        <echo message="** http://xtest.netbeans.org/XTest_migration_guide.html **"/>
+        <echo message="**   to get information how to update your tests        **"/>
+        <echo message="**                                                      **"/>
+        <echo message="**********************************************************"/>
+        <echo message="**********************************************************"/>
+
         <echo message="Requested xtest.exectype=${xtest.exectype}"/>
        
         <!-- original code mode -->
@@ -400,5 +407,5 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Calling back buildfile ${callback.file}, target ${callback.target}" level="verbose"/>
         <ant antfile="${callback.file}" target="${callback.target}"/>
     </target>
-    
+
 </project>
