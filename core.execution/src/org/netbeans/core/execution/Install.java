@@ -86,9 +86,15 @@ public class Install extends ModuleInstall {
             PropertyEditorManager.setEditorSearchPath(
                 (String[])paths.toArray(new String[0]));
         }
+        
+        // XXX #37543
+        ExecutionViewAction.installExecutionListener();
     }
     
     public void uninstalled() {
+        // XXX #37543
+        ExecutionViewAction.uninstallExecutionListener();
+
         showPendingTasks();
 
         TopSecurityManager.unregister(SecMan.DEFAULT);
