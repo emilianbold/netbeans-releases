@@ -84,6 +84,8 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
                     revalidate();
                 } else {
                     super.addImpl (c, constraints, idx);
+                    //#48819 - a bit obscure usecase, but revalidate() is call in the if branches above as well..
+                    revalidate();
                 }
                 if (hadFocus) {
                     //Do not call c.requestFocus() directly, it can be 
