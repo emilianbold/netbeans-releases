@@ -22,6 +22,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import javax.swing.event.ChangeEvent;
 
 import javax.swing.event.ChangeListener;
@@ -31,6 +33,7 @@ import org.openide.util.WeakListeners;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -45,6 +48,7 @@ import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryImplementation {
     
     private static int MAX_DEPTH = 3;
+    private final Map/*<URL,URL>*/ normalizedURLCache = new HashMap();
 
     /** Default constructor for lookup. */
     public JavadocForBinaryQueryLibraryImpl() {
@@ -116,6 +120,7 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
             }
         }
 
+        boolean isNormalizedURL = isNormalizedURL(b);
         LibraryManager lm = LibraryManager.getDefault();
         Library[] libs = lm.getLibraries();
         for (int i=0; i<libs.length; i++) {
@@ -127,21 +132,57 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
             Iterator it = jars.iterator();
             while (it.hasNext()) {
                 URL entry = (URL)it.next();
-                FileObject file = URLMapper.findFileObject (entry);
-                if (file != null) {
-                    try {
-                        if (b.equals(file.getURL())) {
-                            return new R(libs[i]);
-                        }
-                    } catch (FileStateInvalidException e) {
-                        ErrorManager.getDefault().notify (e);
-                    }
+                URL normalizedEntry;
+                if (isNormalizedURL) {
+                    normalizedEntry = getNormalizedURL(entry);
                 }
+                else {
+                    normalizedEntry = entry;
+                }
+                if (normalizedEntry != null && normalizedEntry.equals(b)) {
+                    return new R(libs[i]);
+                }                
             }
         }
         return null;
     }
-    
+
+    private URL getNormalizedURL (URL url) {
+        //URL is already nornalized, return it
+        if (isNormalizedURL(url)) {
+            return url;
+        }
+        //Todo: Should listen on the LibrariesManager and cleanup cache
+        // in this case the search can use the cache onle and can be faster
+        // from O(n) to O(ln(n))
+        URL normalizedURL = (URL) this.normalizedURLCache.get (url);
+        if (normalizedURL == null) {
+            FileObject fo = URLMapper.findFileObject(url);
+            if (fo != null) {
+                try {
+                    normalizedURL = fo.getURL();
+                    this.normalizedURLCache.put (url, normalizedURL);
+                } catch (FileStateInvalidException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
+            }
+        }
+        return normalizedURL;
+    }
+
+    /**
+     * Returns true if the given URL is file based, it is already
+     * resolved either into file URL or jar URL with file path.
+     * @param URL url
+     * @return true if  the URL is normal
+     */
+    private static boolean isNormalizedURL (URL url) {
+        if ("jar".equals(url.getProtocol())) { //NOI18N
+            url = FileUtil.getArchiveFile(url);
+        }
+        return "file".equals(url.getProtocol());    //NOI18N
+    }
+
     /**
      * Search for the actual root of the Javadoc containing the index-all.html or 
      * index-files. In case when it is not able to find it, it returns the given Javadoc folder/file.
