@@ -1,7 +1,6 @@
 OpenIDE-Module: org.netbeans.modules.beans/1
 OpenIDE-Module-Name: Bean Patterns
 OpenIDE-Module-Display-Category: Java
-OpenIDE-Module-Install: org/netbeans/modules/beans/BeansModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/beans/resources/mf-layer.xml
 OpenIDE-Module-Specification-Version: 1.7
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
