@@ -31,6 +31,10 @@ import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
+// XXX should perhaps be legal to call add* methods at any time (should update things)
+// and perhaps also have remove* methods
+// and have code names for each source dir?
+
 /**
  * Helper class to work with source roots and typed folders of a project.
  * @author Jesse Glick

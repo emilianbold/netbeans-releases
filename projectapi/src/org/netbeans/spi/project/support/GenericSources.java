@@ -23,8 +23,10 @@ import org.netbeans.spi.project.SourceGroup;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
+// XXX need test
+
 /**
- * Factories for standard {@link SourceFolderContainer} implementations.
+ * Factories for standard {@link Sources} implementations.
  * @author Jesse Glick
  */
 public class GenericSources {
@@ -32,7 +34,7 @@ public class GenericSources {
     private GenericSources() {}
     
     /**
-     * Lists only one source folder group, of {@link SourceFolderContainer#TYPE_GENERIC},
+     * Lists only one source folder group, of {@link Sources#TYPE_GENERIC},
      * containing the project directory, as by {@link #group}.
      */
     public static Sources genericOnly(Project p) {
