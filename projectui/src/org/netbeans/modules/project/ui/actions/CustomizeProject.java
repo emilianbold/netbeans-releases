@@ -16,19 +16,24 @@ package org.netbeans.modules.project.ui.actions;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.actions.Presenter;
 
 /** Action for invoking project customizer
  */
-public class CustomizeProject extends ProjectAction {
+public class CustomizeProject extends ProjectAction implements Presenter.Popup {
     
     private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/customizeProject.gif" ) ); //NOI18N
     
     private static final String namePattern = NbBundle.getMessage( CustomizeProject.class, "LBL_CustomizeProjectAction_Name" ); // NOI18N
+    private static final String namePatternPopup = NbBundle.getMessage( CustomizeProject.class, "LBL_CustomizeProjectAction_Popup_Name" ); // NOI18N
+    
+    private JMenuItem popupPresenter;
     
     public CustomizeProject() {
         this( null );
@@ -37,6 +42,9 @@ public class CustomizeProject extends ProjectAction {
     public CustomizeProject( Lookup context ) {
         super( (String)null, namePattern, ICON, context );
         refresh( getLookup() );
+        popupPresenter = new JMenuItem( this );
+        popupPresenter.setText( namePatternPopup );
+        popupPresenter.setIcon( null );
     }
             
     protected void refresh( Lookup context ) {
@@ -70,6 +78,12 @@ public class CustomizeProject extends ProjectAction {
     
     public Action createContextAwareInstance( Lookup actionContext ) {
         return new CustomizeProject( actionContext );
+    }
+    
+    // Implementation of Presenter.Popup ---------------------------------------
+    
+    public JMenuItem getPopupPresenter() {
+        return popupPresenter;
     }
     
 }
