@@ -39,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/modules/ModuleManagerTest.class"/>
                 <include name="org/netbeans/core/modules/ModuleListTest.class"/>
                 <include name="org/netbeans/core/PlainTest.class"/>
+                <include name="org/netbeans/core/AutomountSupportTest.class"/>
             </patternset>
         </testset>
     </testbag>
