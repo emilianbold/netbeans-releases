@@ -119,8 +119,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/explorer/view/*.class"/>
                 <!-- the ListViews excluded because of issue #29423 -->
                 <exclude name="org/openide/explorer/view/ListViewTest.class"/>
-		<!-- following test was excluded because of issues #51040, #51041 --> 
-                <exclude name="org/openide/explorer/view/TreeView48993Test.class"/>
 
                 <include name="org/openide/util/UtilProgressCursorTest.class"/>
                 <!-- excluded, a problem in infrastructure, the component is not showed -->
