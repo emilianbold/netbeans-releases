@@ -421,6 +421,7 @@
 <mapID target="cvs.mountpoint" url="vcs-nb/cvs-nb/cvs_mountpoint.html" />
 <mapID target="cvs.settings" url="vcs-nb/cvs-nb/cvs_settings.html" />
 <mapID target="cvs.commands" url="vcs-nb/cvs-nb/cvs_commands.html" />
+<mapID target="cvs.password" url="vcs-nb/cvs-nb/cvs_password.html" />
 <mapID target="cvs.local" url="vcs-nb/cvs-nb/cvs_local.html" />
 <mapID target="cvs.wizard" url="vcs-nb/cvs-nb/cvs_wizard.html" />
 <mapID target="vcs.vcsgeneric" url="vcs-nb/vcsgeneric/vcs_vcsgeneric.html" />
