@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -48,8 +48,7 @@ class WarmUpSupport implements Runnable {
     // -------
 
     public void run() {
-        boolean willLog = err.isLoggable(ErrorManager.INFORMATIONAL);
-        
+        boolean willLog = err.isLoggable(ErrorManager.INFORMATIONAL) || StartLog.willLog();
         if (System.getProperty("java.version").indexOf("1.4") != -1 //NOI18N
             && "Windows".equals(UIManager.getLookAndFeel().getID())) {//NOI18N
             //Warm up windows file chooser UI - otherwise all file choosers
@@ -57,8 +56,8 @@ class WarmUpSupport implements Runnable {
             Issue38479Workaround.run();
         }
         
-        if (willLog) {
-            err.log("starting..."); // NOI18N
+        if (willLog){
+            err.log("Warmup starting..."); // NOI18N
             StartLog.logStart("Warmup"); // NOI18N
         }
 
@@ -78,8 +77,9 @@ class WarmUpSupport implements Runnable {
                     InstanceCookie ic = (InstanceCookie)
                         warmObjects[i].getCookie(InstanceCookie.class);
                     if (willLog) {
-                        StartLog.logProgress("running " + ic.instanceName()); // NOI18N
+                        StartLog.logProgress("Warmup running " + ic.instanceName()); // NOI18N
                     }
+                    
                     Object warmer = ic.instanceCreate();
                     if (warmer instanceof Runnable) {
                         ((Runnable)warmer).run();
@@ -89,10 +89,11 @@ class WarmUpSupport implements Runnable {
                 }
             }
         }
-        if (willLog) {
-            err.log("done"); // NOI18N
+        if (willLog){
+            err.log("Warmup done."); // NOI18N
             StartLog.logEnd("Warmup"); // NOI18N
         }
+        
         finished = true;
     }
 }
