@@ -262,12 +262,17 @@ public final class NbMainExplorer extends CloneableTopComponent
                     
                     // but not the project since it is a singleton
                     // i.e. mark it for closing
-                    if (NbProjectOperation.hasProjectDesktop() && 
-                        NbProjectOperation.getProjectDesktop().getClass() == r.getClass()) {
-                        prjToClose = (ProjectsTab) me.getValue();
-                        continue;
+                    if (NbProjectOperation.hasProjectDesktop()) {
+                        if (NbProjectOperation.getProjectDesktop().getClass() == r.getClass()) {
+                            prjToClose = (ProjectsTab) me.getValue();
+                            continue;
+                        }
+                        // bugfix #19129 if there is a project opened
+                        // then the project tab shouldn't be closed
+                        if (me.getValue() instanceof ProjectsTab) {
+                            continue;
+                        }
                     }
-                    
                     closeEverywhere((TopComponent)me.getValue());
                 }
             }
@@ -996,6 +1001,7 @@ public final class NbMainExplorer extends CloneableTopComponent
             
             return DEFAULT;
         }
+
         
         /** Exchanges deserialized root context to projects root context
         * to keep the uniquennes. */
