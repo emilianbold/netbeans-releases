@@ -39,12 +39,12 @@ public class PropertiesEditor extends PropertyEditorSupport {
 
             StringBuffer buff = new StringBuffer();
             
-            for(Enumeration enum = prop.keys(); enum.hasMoreElements(); ) {
+            for(Enumeration e = prop.keys(); e.hasMoreElements(); ) {
                 if(buff.length() > 0) {
                     buff.append("; "); // NOI18N
                 }
                 
-                Object key = enum.nextElement();
+                Object key = e.nextElement();
                 
                 buff.append(key + "=" + prop.get(key)); // NOI18N
             }
