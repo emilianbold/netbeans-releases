@@ -31,6 +31,14 @@ public class RADFormContainer extends RADContainer implements FormContainer {
     this.formInfo = formInfo;
   }
   
+  /** Setter for the Name property of the component - usually maps to variable declaration for holding the 
+  * instance of the component
+  * @param value new value of the Name property
+  */
+  public void setName (String value) {
+    // noop in forms
+  }
+
   /** Called to create the instance of the bean. Default implementation simply creates instance 
   * of the bean's class using the default constructor.  Top-level container (the form object itself) 
   * will redefine this to use FormInfo to create the instance, as e.g. Dialogs cannot be created using 
@@ -53,6 +61,8 @@ public class RADFormContainer extends RADContainer implements FormContainer {
 
 /*
  * Log
+ *  3    Gandalf   1.2         7/25/99  Ian Formanek    Variables management 
+ *       moved to RADComponent
  *  2    Gandalf   1.1         6/6/99   Ian Formanek    New FormInfo design 
  *       employed to provide correct top-level bean properties
  *  1    Gandalf   1.0         5/10/99  Ian Formanek    

@@ -219,7 +219,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
       System.out.println ("  class success: "+compClass.getName ());
         comp.setComponent (compClass);
         comp.setName (compName);
-        formManager2.getVariablesPool ().createVariable (compName, compClass);
       }
   
   
@@ -1273,6 +1272,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  20   Gandalf   1.19        7/25/99  Ian Formanek    Variables management 
+ *       moved to RADComponent
  *  19   Gandalf   1.18        7/23/99  Ian Formanek    Works with 
  *       RADConnectionPropertyEditor
  *  18   Gandalf   1.17        7/20/99  Ian Formanek    Persistence of menus

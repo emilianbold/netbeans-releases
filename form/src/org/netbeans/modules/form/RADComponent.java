@@ -168,9 +168,16 @@ public class RADComponent {
   * @param value new value of the Name property
   */
   public void setName (String value) {
-    String oldValue = componentName;
+    if ((componentName != null) && (componentName.equals (value))) return; // same name => no change
+    if (getFormManager ().getVariablesPool ().findVariableType (value) != null) return; // variable already exist => ignore
+    String oldName = componentName;
     componentName = value;
-    getFormManager ().fireComponentChanged (this, PROP_NAME, oldValue, componentName);
+    if (oldName != null) {
+      getFormManager ().getVariablesPool ().deleteVariable (oldName);
+    }
+    getFormManager ().getVariablesPool ().createVariable (componentName, beanClass);
+
+    getFormManager ().fireComponentChanged (this, PROP_NAME, oldName, componentName);
     if (getNodeReference () != null) {
       getNodeReference ().updateName ();
     }
@@ -1059,6 +1066,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  33   Gandalf   1.32        7/25/99  Ian Formanek    Variables management 
+ *       moved to RADComponent
  *  32   Gandalf   1.31        7/23/99  Ian Formanek    Fixed firing property 
  *       changes when restoring default value, improved performance when opening
  *       form / adding components

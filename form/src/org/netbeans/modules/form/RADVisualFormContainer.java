@@ -92,6 +92,14 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     return formInfo;
   }
 
+  /** Setter for the Name property of the component - usually maps to variable declaration for holding the 
+  * instance of the component
+  * @param value new value of the Name property
+  */
+  public void setName (String value) {
+    // noop in forms
+  }
+
   public String getFormMenu () {
     if (!menuInitialized) {
       String menuName = (String)getAuxValue (AUX_MENU_COMPONENT);
@@ -435,6 +443,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
 /*
  * Log
+ *  11   Gandalf   1.10        7/25/99  Ian Formanek    Variables management 
+ *       moved to RADComponent
  *  10   Gandalf   1.9         7/14/99  Ian Formanek    synthetic "menu" 
  *       property does not require supportsAdvancedFeatures () to return true in
  *       the current persistence manager
