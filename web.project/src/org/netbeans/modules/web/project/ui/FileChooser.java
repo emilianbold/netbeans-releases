@@ -14,10 +14,10 @@
 package org.netbeans.modules.web.project.ui;
 
 import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.web.project.ui.FoldersListSettings;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
+import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.IOException;
 import java.awt.*;
@@ -136,10 +136,13 @@ public class FileChooser extends JFileChooser {
         return chooser;
     }
 
-    public static FileChooser createFileChooser(String key, String initialPath) {
-        FileChooser chooser = new FileChooser(key, initialPath);
+    public static FileChooser createFileChooser(String key, String dialogTitle, FileFilter fileFilter) {
+        FileChooser chooser = new FileChooser(key);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setMultiSelectionEnabled(true);
+        chooser.setDialogTitle(dialogTitle);
+        chooser.setFileFilter(fileFilter);
+        chooser.setAcceptAllFileFilterUsed(false);
         return chooser;
     }
 
