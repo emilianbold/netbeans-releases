@@ -49,7 +49,6 @@ public class TargetExecutor implements Runnable {
     private int verbosity = AntSettings.getDefault ().getVerbosity ();
     private Properties properties = (Properties) AntSettings.getDefault ().getProperties ().clone ();
     private List targetNames;
-    private boolean switchWorkspace = false;
 
     /** targets may be null to indicate default target */
     public TargetExecutor (AntProjectCookie pcookie, String[] targets) {
@@ -78,10 +77,9 @@ public class TargetExecutor implements Runnable {
      * By default, false.
      * @since 2.7
      * @see "#17039"
+     * @deprecated Meaningless in new window system.
      */
-    public void setSwitchWorkspace(boolean sw) {
-        switchWorkspace = sw;
-    }
+    public void setSwitchWorkspace(boolean sw) {}
 
     public ExecutorTask execute () throws IOException {
         return execute((String)null);
@@ -133,20 +131,6 @@ public class TargetExecutor implements Runnable {
         final ExecutorTask task;
         synchronized (this) {
 
-            if (switchWorkspace) {
-                Mutex.EVENT.readAccess(new Mutex.Action() {
-                    public Object run() {
-                        Workspace w = WindowManager.getDefault().
-                            findWorkspace(ExecuteAction.getWorkspace());
-                        if (w != null) {
-                            w.activate();
-                        } // else it was e.g. "None", i.e. no real workspace
-                        return null;
-                    }
-                });
-            }
-
-            // #17752: do this *after* switching workspace...
             // OutputWindow
             io = IOProvider.getDefault ().getIO (name, false);
             // this will delete the output even if a script is still running.
