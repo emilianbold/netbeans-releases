@@ -3,7 +3,6 @@ Created-By: Jeffrey A. Keyser
 OpenIDE-Module: org.netbeans.modules.javadoc.httpfs/1
 OpenIDE-Module-Name: HTTP Javadoc Filesystem
 OpenIDE-Module-Display-Category: Java
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.icebrowser/1 > 1.5
 OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Short-Description: Supports mounting web-based Javadocs.
