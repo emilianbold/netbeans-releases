@@ -14,9 +14,17 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="i18n" default="nbm" basedir=".">
   <target name="compile">
-    <javac srcdir="src"
-           destdir="src"
-           classpath="../openide/netbeans/lib/openide.jar:../properties/netbeans/modules/properties.jar:../editor/netbeans/lib/ext/nb-editor.jar:../editor/netbeans/modules/editor.jar:../form/netbeans/modules/form.jar:../java/netbeans/modules/java.jar:../core/release/lib/ext/regexp.jar"/>
+    <javac srcdir="src" destdir="src">
+      <classpath>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <pathelement location="../properties/netbeans/modules/properties.jar"/>
+        <pathelement location="../editor/netbeans/lib/ext/nb-editor.jar"/>
+        <pathelement location="../editor/netbeans/modules/editor.jar"/>
+        <pathelement location="../form/netbeans/modules/form.jar"/>
+        <pathelement location="../java/netbeans/modules/java.jar"/>
+        <pathelement location="../core/release/lib/ext/regexp.jar"/>
+      </classpath>
+    </javac>
   </target>
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/modules"/>
@@ -29,12 +37,17 @@ Microsystems, Inc. All Rights Reserved.
 	 compress="false"/>
   </target>
   <target name="javahelp">
-    <copydir src="javahelp"
-             dest="netbeans/docs"/>
+    <copydir src="javahelp" dest="netbeans/docs"/>
   </target>
   <target name="nbm" depends="jars,javahelp">
-    <zip zipfile="i18n.nbm"
-         includes="netbeans/"
-	 basedir="."/>
+    <zip zipfile="i18n.nbm" includes="netbeans/" basedir="."/>
+  </target>
+  <target name="clean">
+    <delete dir="src">
+      <include name="**/*.class"/>
+    </delete>
+    <delete file="manifest-subst.mf"/>
+    <delete file="i18n.nbm"/>
+    <deltree dir="netbeans"/>
   </target>
 </project>

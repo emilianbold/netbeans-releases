@@ -53,4 +53,15 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="jars,release">
     <zip zipfile="editor.nbm" includes="netbeans/" basedir="."/>
   </target>
+  <target name="clean">
+    <delete dir="src">
+      <include name="**/*.class"/>
+    </delete>
+    <delete dir="libsrc">
+      <include name="**/*.class"/>
+    </delete>
+    <delete file="manifest-subst.mf"/>
+    <delete file="editor.nbm"/>
+    <deltree dir="netbeans"/>
+  </target>
 </project>

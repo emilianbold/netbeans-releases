@@ -47,4 +47,12 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="jars,release,javahelp">
     <zip zipfile="usersguide.nbm" includes="netbeans/" basedir="."/>
   </target>
+  <target name="clean">
+    <delete dir="src">
+      <include name="**/*.class"/>
+    </delete>
+    <delete file="manifest-subst.mf"/>
+    <delete file="usersguide.nbm"/>
+    <deltree dir="netbeans"/>
+  </target>
 </project>

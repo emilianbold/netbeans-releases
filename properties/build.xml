@@ -42,4 +42,13 @@ Microsystems, Inc. All Rights Reserved.
          includes="netbeans/"
 	 basedir="."/>
   </target>
+  <target name="clean">
+    <delete dir="src">
+      <include name="**/*.class"/>
+      <include name="**/*.jar"/>
+    </delete>
+    <delete file="manifest-subst.mf"/>
+    <delete file="properties.nbm"/>
+    <deltree dir="netbeans"/>
+  </target>
 </project>
