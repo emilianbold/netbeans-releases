@@ -97,7 +97,7 @@ public class ValidateAction extends CookieAction implements CollectXMLAction.XML
             }
 
             console.message(Util.THIS.getString("MSG_XML_valid_end"));
-            console.moveToFront();
+            console.moveToFront(true);
        }
     }
 }

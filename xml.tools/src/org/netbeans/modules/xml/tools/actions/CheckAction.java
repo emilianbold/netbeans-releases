@@ -97,7 +97,7 @@ public class CheckAction extends CookieAction implements CollectXMLAction.XMLAct
             }
 
             console.message(Util.THIS.getString("MSG_XML_check_end"));
-            console.moveToFront();
+            console.moveToFront(true);
        }
     }
 }

@@ -63,7 +63,7 @@ public class ValidateSchemaAction extends CookieAction implements CollectXMLActi
         } else {
             console.message(Util.THIS.getString("MSG_Schema_invalid_end"));
         }
-        console.moveToFront();
+        console.moveToFront(true);        
     }
 
     /** Human presentable name. */

@@ -463,7 +463,7 @@ public class TransformPerformer {
                             InputOutputReporter cookieObserver = getCookieObserver();
                             if ( cookieObserver != null ) {
                                 cookieObserver.message(Util.THIS.getString("MSG_transformation_2"));
-                                cookieObserver.moveToFront();
+                                cookieObserver.moveToFront(true);
                             }
                             active = false;
                         }

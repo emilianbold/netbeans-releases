@@ -58,7 +58,7 @@ public class CheckSchemaAction extends CookieAction {
         }
         
         console.message(Util.THIS.getString("MSG_XML_check_end"));
-        console.moveToFront();
+        console.moveToFront(true);
     }
 
     /** Human presentable name. */
