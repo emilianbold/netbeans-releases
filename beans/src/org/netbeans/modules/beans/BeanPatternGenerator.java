@@ -840,7 +840,7 @@ class BeanPatternGenerator extends Object {
      * @param type Primitive type.
      * @return Class which wraps the primitive type.
      */
-    private static String getWrapperClassName(Type type) {
+    public static String getWrapperClassName(Type type) {
         if ( type.isClass() )
             return type.getClassName().getName();
         else if ( type == Type.BOOLEAN )

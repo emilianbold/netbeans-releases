@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.beans;
 
+import java.io.*;
 import java.beans.Introspector;
 import java.beans.IntrospectionException;
 import java.lang.reflect.Modifier;
@@ -47,7 +48,12 @@ public class PropertyPattern extends Pattern {
     public static final int READ_ONLY = 2;
     /** Constant for WRITE ONLY mode of properties */
     public static final int WRITE_ONLY = 4;
-
+    
+    /** Constant for PropertyChange */
+    private static final String PROPERTY_CHANGE = "firePropertyChange";
+    /** Constant for VetoableChange */
+    private static final String VETOABLE_CHANGE = "fireVetoableChange";
+    
     /** Getter method of this property */
     protected MethodElement getterMethod = null;
     /** Setter method of this property */
@@ -333,8 +339,31 @@ public class PropertyPattern extends Pattern {
         if (setterMethod != null ) {
             MethodParameter[] params = setterMethod.getParameters();
             if ( params.length > 0 ) {
+                Type oldType = params[0].getType();
                 params[0].setType( type );
                 setterMethod.setParameters( params );
+                
+                String body = setterMethod.getBody();
+                //test if body contains change support
+                if( body != null && ( body.indexOf(PROPERTY_CHANGE) != -1 || body.indexOf(VETOABLE_CHANGE) != -1 ) ) {
+                    String mssg = MessageFormat.format( PatternNode.getString( "FMT_ChangeMethodBody" ),
+                                                        new Object[] { setterMethod.getName().getName() } );
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
+                    TopManager.getDefault().notify( nd );
+                    if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
+                        String newBody = regeneratePropertySupport( setterMethod.getBody(), null, params[0].getName(), type, oldType );
+                        if( newBody != null )
+                            setterMethod.setBody(newBody);
+
+                        newBody = regeneratePropertySupport( setterMethod.getBody(), PROPERTY_CHANGE, params[0].getName(), type, oldType );
+                        if( newBody != null )
+                            setterMethod.setBody(newBody);
+
+                        newBody = regeneratePropertySupport( setterMethod.getBody(), VETOABLE_CHANGE, params[0].getName(), type, oldType );
+                        if( newBody != null )
+                            setterMethod.setBody(newBody);
+                    }
+                }
             }
         }
 
@@ -357,6 +386,66 @@ public class PropertyPattern extends Pattern {
 
     }
 
+    /**
+     * @param methodBody old method body
+     * @param changeType  .. propertyChange, vetoableChange or null if need to change only support field 
+     * @param name of property
+     * @param type new type of property value
+     * @param oldType old type of property value
+     * @return null if no change is possible or new body if it is
+     */
+    private String regeneratePropertySupport( String methodBody, String changeType, String name, org.openide.src.Type type, org.openide.src.Type oldType ){
+        if( methodBody == null )
+            return null;
+        
+        int first = -1;
+        //will search for line containing property support or field
+        if( changeType != null ){
+            if( (first = methodBody.indexOf(changeType)) == -1 )
+                return null; 
+        }
+        else{
+            String oldVarLine = oldType.toString() + " old" + Pattern.capitalizeFirstLetter( name ) + " = this." + name;
+            if( (first = methodBody.indexOf( oldVarLine )) == -1 )
+                return null;
+        }
+
+        if( first == -1 )
+            return null;
+        
+        //find end of statement
+        int last = methodBody.indexOf(';', first);
+        if( first >= last )
+            return null;
+        
+        StringBuffer newBody = new StringBuffer(100);
+        if( changeType != null ){
+            newBody.append( changeType + " (\"").append( name ).append( "\", " ); // NOI18N
+
+            if ( type.isPrimitive() ) {            
+                newBody.append( "new ").append( BeanPatternGenerator.getWrapperClassName( type )).append( " (" ); // NOI18N
+                newBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
+                newBody.append( "), " ); // NOI18N
+                newBody.append( "new ").append( BeanPatternGenerator.getWrapperClassName( type )).append( " (" ); // NOI18N
+                newBody.append( name ).append( "))" ); // NOI18N
+            }
+            else {
+                newBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
+                newBody.append( ", " ).append( name ).append( ")" ); // NOI18N
+            }
+        }
+        else{
+            newBody.append( type.toString() );
+            newBody.append( " old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
+            newBody.append( " = this." ).append( name ); // NOI18N            
+        }
+
+        StringBuffer sb = new StringBuffer(methodBody);
+        sb.delete(first, last);
+        sb.insert(first, newBody);
+        return sb.toString();        
+    }
+    
     /** Gets the cookie of the first available method
      * @param cookieType Class of the Cookie
      * @return Cookie of Getter or Setter MethodElement
