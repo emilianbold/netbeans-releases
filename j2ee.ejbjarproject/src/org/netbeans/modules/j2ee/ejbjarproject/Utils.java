@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -147,6 +148,19 @@ public class Utils {
             }
         }
         return false;
+    }
+
+    public static ClassElement getClassElement(ClassPath cp, String className) {
+        assert className != null: "cannot find null className"; //NOI18N
+        FileObject[] roots = cp.getRoots();
+        ClassElement ce = null;
+        for (int i=0; i < roots.length && ce == null; i++) {
+            FileObject[] children = roots[i].getChildren();
+            if (children.length != 0) {
+                ce = ClassElement.forName(className, children[0]);
+            }
+        }
+        return ce;
     }
 
 }
