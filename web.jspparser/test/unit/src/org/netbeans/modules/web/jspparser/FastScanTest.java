@@ -47,21 +47,23 @@ public class FastScanTest extends NbTestCase {
         return suite;
     }
 
-    public void testPage1() throws IOException {
-        doFastScanTest("subdir/Page1.jsp");
+    public void testPage1() throws Exception {
+        doFastScanTest("jspparser-data/wmroot", "subdir/Page1.jsp", new JspParserAPI.JspOpenInfo(false, "ISO-8859-1"));
     }
     
-    public void doFastScanTest(String path) throws IOException {
+/*    public void testXMLFromExamples() throws Exception {
+        doFastScanTest("jspparser-data/wmroot", "subdir/Page1.jsp");
+    }*/
+    
+    public void doFastScanTest(String wmRootPath, String path, JspParserAPI.JspOpenInfo correctInfo) throws Exception {
         try{
-            File f = new File(Manager.getWorkDirPath(), "jspparser-data");
-            FileObject fo = TestUtil.mountRoot(f, this);
-            FileObject wmRoot = fo.getFileObject("wmroot");
+            FileObject wmRoot = TestUtil.getFileInWorkDir(wmRootPath, this);
             StringTokenizer st = new StringTokenizer(path, "/");
             FileObject tempFile = wmRoot;
             while (st.hasMoreTokens()) {
                 tempFile = tempFile.getFileObject(st.nextToken());
             }
-            parseIt(wmRoot, tempFile);
+            parseIt(wmRoot, tempFile, correctInfo);
         }catch(RuntimeException e){
             e.printStackTrace();
             e.printStackTrace(getRef());
@@ -69,12 +71,12 @@ public class FastScanTest extends NbTestCase {
         }
     }
     
-    private void parseIt(FileObject root, FileObject jspFile) {
+    private void parseIt(FileObject root, FileObject jspFile, JspParserAPI.JspOpenInfo correctInfo) {
         log("calling parseIt, root: " + root + "  file: " + jspFile);
         JspParserAPI api = JspParserFactory.getJspParser();
         JspParserAPI.JspOpenInfo info = api.getJspOpenInfo(jspFile, TestUtil.getWebModule(root, jspFile));
         log("file: " + jspFile + "   enc: " + info.getEncoding() + "   isXML: " + info.isXmlSyntax());
-        assertEquals(new JspParserAPI.JspOpenInfo(false, "ISO-8859-1"), info);
+        assertEquals(correctInfo, info);
     }
     
     /** method called before each testcase
