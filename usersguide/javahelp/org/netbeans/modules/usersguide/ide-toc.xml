@@ -88,7 +88,7 @@
   <tocitem text="Deleting a File in a Project" target="project.delete-file" />
   <tocitem text="Switching to a Different Project" target="project.switching" />
   <tocitem text="Deleting a Project" target="project.deleting" />  
-  <tocitem text="Changing Project Settings" target="project.settings"/>
+  <tocitem text="Configuring a Project" target="project.settings"/>
 </tocitem>
 
 
