@@ -225,7 +225,8 @@
          <tocitem text="About Web Services" >
 		<tocitem text="About Web Services" target="about_web_service" />
 		<tocitem text="About the Web Service Compiler" target="about_wscompile" />
-                <tocitem text="About the WSDL File" target="about_wsdl" />
+		<tocitem text="About the WSDL File" target="about_wsdl" />
+                <tocitem text="About the Service Endpoint Interface" target="about_sei" />
 		<tocitem text="About Document-Style Web Services" target="about_web_service_message" />
 		<tocitem text="About RPC-Style Web Services" target="about_web_service_rpc" />
 		<tocitem text="Working with Web Services" target="ws_process" />
@@ -233,7 +234,6 @@
   	 </tocitem>
 	 <tocitem text="Creating and Editing Web Services" >
 		<tocitem text="About Creating and Editing Web Services" target="tbd" />
-	        <tocitem text="Creating a Project for a Web Service" target="create_ws_project" />
 		<tocitem text="Implementing an Existing WSDL File" target="create_ws_fromwsdl" />
 		<tocitem text="Exposing Existing Code as a Web Service" target="create_ws_fromcode" />
 		<tocitem text="Creating a Web Service from Scratch" target="create_ws" />
