@@ -44,10 +44,13 @@ public class DatabaseOption extends SystemOption {
     private static Vector connections;
     private static int fetchlimit = 100;
     private static int fetchstep = 200;
+    private static boolean autoConn = true;
+
 
     public static final String PROP_DEBUG_MODE = "debugMode"; //NOI18N
     public static final String PROP_FETCH_LIMIT = "fetchLimit"; //NOI18N
     public static final String PROP_FETCH_STEP = "fetchStep"; //NOI18N
+    public static final String PROP_AUTO_CONNECTION = "autoConn"; //NOI18N
 
     static final long serialVersionUID =-13629330831657810L;
     public DatabaseOption()
@@ -146,6 +149,17 @@ public class DatabaseOption extends SystemOption {
         firePropertyChange(PROP_FETCH_STEP, new Integer(old), new Integer(limit));
     }
 
+    public boolean isAutoConn() {
+        return autoConn;
+    }
+    
+    public void setAutoConn(boolean newAutoConn) {
+        boolean old = autoConn;
+        if (old == newAutoConn) return;
+        autoConn = newAutoConn;
+        firePropertyChange(PROP_AUTO_CONNECTION, new Boolean(!autoConn), new Boolean(autoConn));
+    }
+    
     /** Name of the option */
     public String displayName() {
         return bundle.getString("OptionName"); //NOI18N

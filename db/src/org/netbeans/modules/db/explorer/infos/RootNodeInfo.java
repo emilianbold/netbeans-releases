@@ -72,8 +72,6 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
     {
         getChildren(); // force restore
         Vector cons = RootNode.getOption().getConnections();
-        String usr = cinfo.getUser();
-        String pwd = cinfo.getPassword();
         
         if (cons.contains(cinfo))
             throw new DatabaseException(bundle.getString("EXC_ConnectionAlreadyExists"));
@@ -103,7 +101,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
         Vector cons = RootNode.getOption().getConnections();
 
         if (cons.contains(conn)) {
-            ConnectionNode connNode = (ConnectionNode)getNode().getChildren().findChild( conn.getDatabase() ); //NOI18N
+            ConnectionNode connNode = (ConnectionNode)getNode().getChildren().findChild( conn.getName() ); //NOI18N
             if(connNode!=null)
                 if(((ConnectionNodeInfo)connNode.getInfo()).getConnection()==null) {
                     ((ConnectionNodeInfo)connNode.getInfo()).setDatabaseConnection(conn);
@@ -112,5 +110,41 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
                     
         } else
             addConnection(conn);
+    }
+
+    public void addOrSetConnection(DBConnection conn)
+    throws DatabaseException
+    {
+        getChildren(); // force restore
+        Vector cons = RootNode.getOption().getConnections();
+
+        if (cons.contains(conn)) {
+            ConnectionNode connNode = (ConnectionNode)getNode().getChildren().findChild( conn.getName() ); //NOI18N
+            if(connNode!=null)
+                if(((ConnectionNodeInfo)connNode.getInfo()).getConnection()==null) {
+                    ((ConnectionNodeInfo)connNode.getInfo()).setDatabaseConnection(conn);
+
+                    // connection DON'T be connected!!! as designed
+                    //((ConnectionNodeInfo)connNode.getInfo()).connect();
+
+                }
+                    
+        } else {
+
+            // connection does not exists
+            // that will be created
+            DatabaseNode node = getNode();
+            DatabaseNodeChildren children = (DatabaseNodeChildren)node.getChildren();
+            ConnectionNodeInfo ninfo = (ConnectionNodeInfo)createNodeInfo(this, DatabaseNode.CONNECTION);
+            
+            // set the connection properties of ConnectionNodeInfo
+            ninfo.setDatabaseConnection(conn);
+            // set schema(schema is not required then is not set in setDatabaseConnection() method)
+            ninfo.setSchema(conn.getSchema());
+
+            cons.add(conn);
+            DatabaseNode cnode = children.createSubnode(ninfo, true);
+
+        }
     }
 }

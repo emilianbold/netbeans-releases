@@ -68,8 +68,9 @@ public class DatabaseNodeChildren extends Children.Array
                     public void run() {
                         try {
                             // add connection (if needed) and make the connection to SAMPLE database connected
-                            createPointbaseConnection();
+                            PointbasePlus.addOrConnectAccordingToOption();
                             } catch(Exception ex) {
+                                ex.printStackTrace();
                             }
                         }
                     });

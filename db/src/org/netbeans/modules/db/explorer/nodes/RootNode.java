@@ -25,6 +25,7 @@ import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.explorer.PointbasePlus;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -52,6 +53,8 @@ public class RootNode extends DatabaseNode {
             sfactory = new SpecificationFactory();
             //initialization listener for debug mode
             initDebugListening();
+            //initialization listener for SAMPLE database option
+            initSampleDatabaseListening();
             DatabaseNodeInfo nfo = DatabaseNodeInfo.createNodeInfo(null, "root"); //NOI18N
             if (sfactory != null) nfo.setSpecificationFactory(sfactory);
             else throw new Exception(bundle.getString("EXC_NoSpecificationFactory"));
@@ -90,6 +93,23 @@ public class RootNode extends DatabaseNode {
             }
         });
         sfactory.setDebugMode(option.getDebugMode());
+    }
+
+    void initSampleDatabaseListening() {
+        if ( (getOption() == null) || (sfactory == null) ) {
+            initSampleDatabaseListening();
+        }
+        option.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent e) {
+                if (e.getPropertyName().equals(DatabaseOption.PROP_AUTO_CONNECTION))
+                    if(((Boolean)e.getNewValue()).booleanValue())
+                        try {
+                            PointbasePlus.addOrConnectAccordingToOption();
+                        } catch (Exception exp) {
+                            exp.printStackTrace();
+                        }
+            }
+        });
     }
 
 }
