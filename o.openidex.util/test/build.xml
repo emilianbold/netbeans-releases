@@ -18,8 +18,9 @@ Microsystems, Inc. All Rights Reserved.
     <property name="netbeans.test.home" value="${netbeans.home}"/>
     <property name="xtest.home" location="../../xtest"/>
     <property name="xtest.results" location="results"/>
+    <property name="xtest.build" location="."/>
     <property name="xtest.file.name" value="test.jar"/>
-    <property name="xtest.file.location" location="lib"/>
+    <property name="xtest.file.location" value="lib"/>
     
     <!-- default testtypes and attributes -->
     <property name="xtest.testtype" value="unit"/>
@@ -148,8 +149,10 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ============== -->
     <target name="code_test_bootstrap" depends="init,code_test_init,junit_test"/>
     
-    <target name="code_test_init">        
+    <target name="code_test_init" depends="prepare-classpath">
+    
         <property name="junit.fork" value="yes"/>
+    
         <pathdef useid="test.classpath">
             <path refid="test.basepath"/>
             <path>
@@ -157,15 +160,46 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement path="${tbag.classpath}"/>
             </path>
             <!-- additional path elements needed for tests - sources, libs -->
+            <!--
             <path>
                 <pathelement location="../src"/>
                 <fileset dir="../../openide/netbeans/lib">
                     <include name="openide*.jar"/>
                 </fileset>
             </path>
+            -->
+            <path refid="codetest.classpath"/>
+        </pathdef>
+        
+    </target>
+    
+    <target name="prepare-classpath" 
+            depends="check-jars,jartest-classpath,srctest-classpath"/>
+    
+    <target name="jartest-classpath" if="jars-available">
+        <echo message="Using jars classpath."/>
+        <pathdef useid="codetest.classpath">
+            <path>
+                <pathelement location="../netbeans/modules/autoload/openidex.jar"/>
+                <pathelement location="../../openide/netbeans/lib/openide.jar"/>
+            </path>
         </pathdef>
     </target>
-        
+    
+    <target name="srctest-classpath" unless="jars-available">
+        <echo message="Using srcs classpath."/>
+        <pathdef useid="codetest.classpath">
+            <path>
+                <pathelement location="../src"/>
+                <pathelement location="../../openide/netbeans/lib/openide.jar"/>
+            </path>
+        </pathdef>
+    </target>
+    
+    <target name="check-jars">
+        <available property="jars-available" file="../netbeans/modules/autoload/openidex.jar"/>
+    </target>
+    
     <!-- ============= -->
     <!-- IDE test part -->
     <!-- ============= -->
@@ -289,8 +323,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Creates lib/test.jar with all tests for this module,       -->
     <!-- maybe there should be more includes here, not just classes -->
     <target name="jars" depends="compile">
-        <mkdir dir="lib"/>
-        <jar basedir="." jarfile="lib/test.jar">
+        <mkdir dir="${xtest.build}/${xtest.file.location}"/>
+        <jar basedir="." jarfile="${xtest.build}/${xtest.file.location}/${xtest.file.name}">
             <include name="**/src/**/*.class"/>
             <include name="**/data/**"/>
         </jar>
@@ -302,7 +336,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/src/**/*.class"/>
             </fileset>
         </delete>
-        <delete dir="lib"/>
+        <delete dir="${xtest.file.location}"/>
     </target>
     
     <!-- Removes results from previous test execution of given testtype  -->
@@ -313,7 +347,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="realclean" depends="clean"
-            description="Deletes classes, lib/test.jar and *all* results.">
+            description="Deletes classes, ${xtest.file.location}/${xtest.file.name} and *all* results.">
         <delete dir="${xtest.results}"/>
     </target>
     
