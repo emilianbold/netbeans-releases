@@ -259,8 +259,8 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     public void checkParsable() {
         if (!isParsable()) {
             NotifyDescriptor desc = new org.openide.NotifyDescriptor.Message(
-                    NbBundle.getMessage(XmlMultiViewDataObject.class, "TXT_DocumentUnparsable"),
-                    NotifyDescriptor.WARNING_MESSAGE);
+                    NbBundle.getMessage(XmlMultiViewDataObject.class, "TXT_DocumentUnparsable",
+                            getPrimaryFile().getNameExt()), NotifyDescriptor.WARNING_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
             if (getOriginal() == null) {
                 goToXmlView();
