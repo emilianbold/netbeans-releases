@@ -425,9 +425,17 @@ public class VisualReplicator {
         }
 
         try {
-            Object value = property.getRealValue();
-            if (value == FormDesignValue.IGNORED_VALUE)
-                return; // ignore the value, as it is not a real value
+            Object value = property.getValue();
+            
+            if (value instanceof RADComponent.ComponentReference) {
+                value = ((RADComponent.ComponentReference)value).getComponent();
+            }
+            
+            if (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue
+                && (((RADConnectionPropertyEditor.RADConnectionDesignValue)value).type
+                == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_BEAN)) {
+                value = ((RADConnectionPropertyEditor.RADConnectionDesignValue)value).getRADComponent();
+            }
 
             if (value instanceof RADComponent) {
                 // the value is another component (relative property )
@@ -438,8 +446,14 @@ public class VisualReplicator {
 
                 value = propertyComp;
             }
-            else
+            else {
+                value = property.getRealValue();
+                
+                if (value == FormDesignValue.IGNORED_VALUE)
+                    return; // ignore the value, as it is not a real value
+
                 value = FormUtils.cloneObject(value, property.getPropertyContext().getFormModel());
+            }
 
             writeMethod.invoke(targetComp, new Object[] { value });
 
@@ -785,6 +799,13 @@ public class VisualReplicator {
                 if (value instanceof RADComponent.ComponentReference)
                     value =
                         ((RADComponent.ComponentReference)value).getComponent();
+
+                if (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {
+                    RADConnectionPropertyEditor.RADConnectionDesignValue connection =
+                        (RADConnectionPropertyEditor.RADConnectionDesignValue)value;
+                    assert connection.type == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_BEAN;
+                    value = connection.getRADComponent();
+                }
 
                 if (value instanceof RADComponent) {
                     // the value is another component (relative property )

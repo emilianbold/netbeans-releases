@@ -659,7 +659,10 @@ public class FormUtils
                 if (relativeProperties != null) {
                     Object value = prop.getValue();
                     if (value instanceof RADComponent
-                        || value instanceof RADComponent.ComponentReference)
+                        || value instanceof RADComponent.ComponentReference
+                        || (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue
+                            && (((RADConnectionPropertyEditor.RADConnectionDesignValue)value).type
+                                == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_BEAN)))
                     {
                         relativeProperties.add(prop);
                         continue;
