@@ -155,7 +155,7 @@ class LibrariesModel extends javax.swing.AbstractListModel implements PropertyCh
     public void storagesChanged () {
         int oldSize;
         synchronized (this) {
-            oldSize = this.actualLibraries.size();
+            oldSize = this.actualLibraries == null ? 0 : this.actualLibraries.size();
             getLibraries();
         }
         this.fireContentsChanged(this, 0, Math.max(oldSize,this.actualLibraries.size()));
