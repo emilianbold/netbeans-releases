@@ -51,7 +51,9 @@ public class clear_JFrame extends javax.swing.JFrame {
         jSlider1 = new javax.swing.JSlider();
         jProgressBar1 = new javax.swing.JProgressBar();
         jSplitPane1 = new javax.swing.JSplitPane();
+        jFormattedTextField1 = new javax.swing.JFormattedTextField();
         jPasswordField1 = new javax.swing.JPasswordField();
+        jSpinner1 = new javax.swing.JSpinner();
         jSeparator1 = new javax.swing.JSeparator();
         jTextPane1 = new javax.swing.JTextPane();
         jEditorPane1 = new javax.swing.JEditorPane();
@@ -71,7 +73,7 @@ public class clear_JFrame extends javax.swing.JFrame {
 
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
-                exitForm(evt);
+                clear_JFrame.this.exitForm(evt);
             }
         });
 
@@ -113,7 +115,12 @@ public class clear_JFrame extends javax.swing.JFrame {
 
         getContentPane().add(jSplitPane1);
 
+        jFormattedTextField1.setText("jFormattedTextField1");
+        getContentPane().add(jFormattedTextField1);
+
         getContentPane().add(jPasswordField1);
+
+        getContentPane().add(jSpinner1);
 
         getContentPane().add(jSeparator1);
 
@@ -173,41 +180,43 @@ public class clear_JFrame extends javax.swing.JFrame {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JColorChooser jColorChooser1;
-    private javax.swing.JPasswordField jPasswordField1;
-    private javax.swing.JFrame jFrame1;
-    private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JToolBar jToolBar1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JInternalFrame jInternalFrame1;
-    private javax.swing.JTree jTree1;
-    private javax.swing.JOptionPane jOptionPane1;
-    private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JToggleButton jToggleButton1;
-    private javax.swing.JSlider jSlider1;
-    private javax.swing.JDialog jDialog1;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JProgressBar jProgressBar1;
-    private javax.swing.JComboBox jComboBox1;
-    private javax.swing.JDesktopPane jDesktopPane1;
-    private javax.swing.JScrollBar jScrollBar1;
-    private javax.swing.JLayeredPane jLayeredPane1;
-    private javax.swing.JEditorPane jEditorPane1;
-    private javax.swing.JButton jButton1;
     private javax.swing.JFileChooser jFileChooser1;
-    private javax.swing.JList jList1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JPasswordField jPasswordField1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JScrollBar jScrollBar1;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPopupMenu jPopupMenu1;
-    private javax.swing.JRadioButton jRadioButton1;
-    private javax.swing.JSplitPane jSplitPane1;
-    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JFrame jFrame1;
+    private javax.swing.JTable jTable1;
+    private javax.swing.JComboBox jComboBox1;
     private javax.swing.JMenu jMenu1;
+    private javax.swing.JSlider jSlider1;
+    private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JCheckBox jCheckBox1;
+    private javax.swing.JDialog jDialog1;
+    private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JDesktopPane jDesktopPane1;
+    private javax.swing.JFormattedTextField jFormattedTextField1;
+    private javax.swing.JProgressBar jProgressBar1;
+    private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JEditorPane jEditorPane1;
     private javax.swing.JTextPane jTextPane1;
+    private javax.swing.JColorChooser jColorChooser1;
+    private javax.swing.JTextField jTextField1;
+    private javax.swing.JRadioButton jRadioButton1;
+    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JInternalFrame jInternalFrame1;
+    private javax.swing.JOptionPane jOptionPane1;
+    private javax.swing.JTree jTree1;
+    private javax.swing.JList jList1;
+    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLayeredPane jLayeredPane1;
+    private javax.swing.JSpinner jSpinner1;
+    private javax.swing.JToggleButton jToggleButton1;
+    private javax.swing.JToolBar jToolBar1;
     // End of variables declaration//GEN-END:variables
 
 }

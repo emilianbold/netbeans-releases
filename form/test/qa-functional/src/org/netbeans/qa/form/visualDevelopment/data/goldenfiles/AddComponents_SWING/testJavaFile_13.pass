@@ -71,7 +71,7 @@ public class clear_JFrame extends javax.swing.JFrame {
 
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
-                exitForm(evt);
+                clear_JFrame.this.exitForm(evt);
             }
         });
 
@@ -153,6 +153,7 @@ public class clear_JFrame extends javax.swing.JFrame {
 
         jMenu1.setText("Menu");
         jMenuBar1.add(jMenu1);
+
         setJMenuBar(jMenuBar1);
 
         pack();
