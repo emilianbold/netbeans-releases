@@ -188,6 +188,12 @@ Microsystems, Inc. All Rights Reserved.
     <ant dir="../core/execution" antfile="build.xml" target="clean"/>
     <ant dir="../core/term" antfile="build.xml" target="clean"/>
     <ant dir="../core/output" antfile="build.xml" target="clean"/>
+  </target>
+  
+  <target name="version" depends="jars">
+        <ant antfile="lib/module_harness.xml" target="version">
+            <property name="xtest.jar" value="lib/xtest.jar"/>
+        </ant>
   </target>  
   
   <!-- PES targets -->

@@ -34,5 +34,11 @@ Microsystems, Inc. All Rights Reserved.
     	</and>
      </condition>
   </target>
+  
+  <target name="version" depends="check-xtest">
+     <ant antfile="lib/module_harness.xml" target="version">
+         <property name="xtest.jar" value="lib/xtest.jar"/>
+     </ant>
+  </target>
 
 </project>
