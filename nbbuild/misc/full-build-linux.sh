@@ -160,7 +160,7 @@ then
         xpid=$!
     elif [ $spawndisplaytype = vnc ]
     then
-        Xvnc -localhost -desktop 'NetBeans test display' -geometry 1024x768 $display &
+        Xvnc -localhost -desktop 'NetBeans test display' -geometry 1024x768 -depth 16 $display &
         xpid=$!
     else
         echo "strange \$spawndisplaytype: $spawndisplaytype" >&2
