@@ -7,18 +7,23 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.project.libraries;
 
+import java.util.Iterator;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Lookup;
 import org.netbeans.spi.project.libraries.LibraryProvider;
 
-import java.util.Iterator;
-
-
+/**
+ * Ensures that all {@link LibraryProvider}s are actually loaded.
+ * Some of them may perform initialization actions, such as updating
+ * $userdir/build.properties with concrete values of some library paths.
+ * This needs to happen before any Ant build is run.
+ * @author Tomas Zezula
+ */
 public class LibrariesModule extends ModuleInstall {
 
     public void restored() {
@@ -28,4 +33,5 @@ public class LibrariesModule extends ModuleInstall {
             it.next();
         }
     }
+    
 }
