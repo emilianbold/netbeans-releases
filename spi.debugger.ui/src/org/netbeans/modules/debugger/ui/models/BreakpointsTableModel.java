@@ -56,6 +56,7 @@ public class BreakpointsTableModel implements TableModel, Constants {
                     ((Breakpoint) row).enable ();
                 else
                     ((Breakpoint) row).disable ();
+                return;
             }
         }
         throw new UnknownTypeException (row);
