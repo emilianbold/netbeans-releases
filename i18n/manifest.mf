@@ -9,3 +9,5 @@ OpenIDE-Module-Description: org.netbeans.modules.i18n.docs.HelpSet
 Name: org/netbeans/modules/i18n/LocalizeAction.class
 OpenIDE-Module-Class: Action
 
+Name: org/netbeans/modules/i18n/InsertLocalStringAction.class
+OpenIDE-Module-Class: Action
