@@ -195,10 +195,10 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
      */
     public final void uninstallUI(JComponent c) {
         assert c == container;
+        tabDisplayer.getSelectionModel().removeChangeListener(selectionListener);
         uninstall();
         uninstallListeners();
         uninstallDisplayers();
-        tabDisplayer.getSelectionModel().removeChangeListener(selectionListener);
 
         container = null;
         contentDisplayer = null;
