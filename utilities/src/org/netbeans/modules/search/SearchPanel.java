@@ -125,8 +125,7 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
             SearchTypePanel newPanel = new SearchTypePanel(searchType);
             Collection savedCriteria = (sortedCriteria == null)
                     ? null
-                    : (Collection)
-                      sortedCriteria.get(className);
+                    : (Collection) sortedCriteria.get(className);
             
             int index = orderedSearchTypePanels.indexOf(newPanel);
             if (savedCriteria != null) {
@@ -156,9 +155,11 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
             }
         });
         
-        setName(NbBundle.getBundle(SearchPanel.class).getString("TEXT_TITLE_CUSTOMIZE")); // NOI18N
+        setName(NbBundle.getBundle(SearchPanel.class)
+                .getString("TEXT_TITLE_CUSTOMIZE"));                    //NOI18N
 
-        okButton = new JButton(NbBundle.getBundle(SearchPanel.class).getString("TEXT_BUTTON_SEARCH")); // NOI18N         
+        okButton = new JButton(NbBundle.getBundle(SearchPanel.class)
+                               .getString("TEXT_BUTTON_SEARCH"));       //NOI18N
         okButton.setEnabled(isCustomized());
 
         Mnemonics.setLocalizedText(cancelButton = new JButton(),

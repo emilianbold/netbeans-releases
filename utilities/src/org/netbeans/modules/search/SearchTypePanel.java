@@ -486,7 +486,7 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
     private void restoreSearchType(SearchType searchType) {
         this.searchType.removePropertyChangeListener(this);
 
-        this.searchType = (SearchType)searchType.clone();
+        this.searchType = (SearchType) searchType.clone();
         getCustomizer().setObject(this.searchType);
         this.searchType.addPropertyChangeListener(this);
 
@@ -506,7 +506,7 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
     public boolean equals(Object obj) {
         try {
             return searchType.getClass().equals(
-                    ((SearchTypePanel)obj).getSearchType().getClass());
+                    ((SearchTypePanel) obj).getSearchType().getClass());
         } catch (ClassCastException ex) {
             return false;
         }
