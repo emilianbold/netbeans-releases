@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+-->
+
+<!DOCTYPE jnlp PUBLIC "-//Sun Microsystems, Inc//DTD JNLP Descriptor 1.0//EN" "jnlp_1_0.dtd">
+
+<jnlp codebase="file:///home/work/nbjnlp">
+    <information>
+        <title> NetBeans Start </title>
+        <vendor> NetBeans </vendor>
+    </information>
+    <security>
+        <all-permissions/>
+    </security>
+    <resources>
+        <j2se version="1.3+"></j2se>
+        <jar main="true" href="jnlpinstaller.jar"/>
+        <!-- unpack the files -->
+        <jar href="updater.jar"/>
+        <!-- All from lib ext -->
+        <jar href="boot.jar"/>
+        <jar href="crimson-1.1.3.jar"/>
+        <jar href="regexp-1.2.jar"/>
+        <jar href="xerces-2.0.2.jar"/>
+        <jar href="xml-apis-1.0b2.jar"/>
+        
+        <extension href="nb-install.jnlp" name="NetBeansInstall"/>
+    </resources>
+    <application-desc main-class="org.netbeans.jnlp.NetBeansLaunch"/>
+</jnlp>
