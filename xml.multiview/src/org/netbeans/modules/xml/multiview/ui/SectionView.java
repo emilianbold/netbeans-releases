@@ -31,6 +31,7 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
     private CustomPanelFactory factory;
     boolean sectionSelected;
     
+    
     public SectionView(CustomPanelFactory factory) {
         super();
         this.factory=factory;
@@ -180,6 +181,8 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
             this.activePanel.setActive(false);
         }
         this.activePanel = activePanel;
+        if (activePanel instanceof SectionPanel)
+        ((ToolBarDesignEditor)getParent().getParent()).setLastActive(((SectionPanel)activePanel).getKey());
     }
     
     public NodeSectionPanel getActivePanel() {
@@ -234,6 +237,17 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
     
     public void setCustomPanelFactory(CustomPanelFactory factory) {
         this.factory=factory;
+    }
+    
+    public void openPanel(Object key) {
+        if (key!=null) {
+            SectionPanel panel = findSectionPanel(key);
+            if (panel!=null) {
+                if (panel.getCustomPanel()==null) panel.open();
+                panel.scroll();
+                panel.setActive(true);
+            }
+        }
     }
     
 }

@@ -34,7 +34,7 @@ import org.openide.util.WeakListeners;
  */
 public abstract class PanelView extends javax.swing.JPanel {
     
-    private Node root, initialNode;
+    private Node root;
     /** not null if popup menu enabled */
     transient boolean sectionHeaderClicked;
     transient PopupAdapter popupListener;
@@ -79,14 +79,6 @@ public abstract class PanelView extends javax.swing.JPanel {
         root = r;
     }
 
-    public Node getInitialNode() {
-        return initialNode;
-    }
-    
-    public void setInitialNode(Node node) {
-        initialNode = node;
-    }
-    
     public void setSectionHeaderClicked(boolean value) {
         sectionHeaderClicked=value;
     }

@@ -36,8 +36,8 @@ import org.netbeans.modules.xml.multiview.Error;
 public class ToolBarDesignEditor extends AbstractDesignEditor implements org.openide.cookies.EditCookie {
     
     protected JComponent designPanel;
-    protected JPanel actionPanel;
     private ErrorPanel errorPanel;
+    private Object lastActive;
 
     /**
      * Creates a new instance of ToolBarDesignEditor
@@ -67,13 +67,10 @@ public class ToolBarDesignEditor extends AbstractDesignEditor implements org.ope
     
     public JComponent createDesignPanel(){
         designPanel = new JPanel(new BorderLayout());
-        actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        designPanel.add(actionPanel, BorderLayout.SOUTH);
         return designPanel;
     }
     
     public void setContentView(PanelView panel) {
-        //createDesignPanel();
         if (getContentView()!=null) {
             designPanel.remove(getContentView());
         }
@@ -108,11 +105,6 @@ public class ToolBarDesignEditor extends AbstractDesignEditor implements org.ope
     public void componentShowing() {
         super.componentShowing();
     }
-    
-    public JPanel getActionPanel() {
-        return actionPanel;
-    }
-
     /**
      * Used to create an instance of the JComponent used for the structure component. Usually a subclass of BeanTreeView.
      * @return the JComponent
@@ -120,24 +112,28 @@ public class ToolBarDesignEditor extends AbstractDesignEditor implements org.ope
     
     public JComponent createStructureComponent() {
         JToolBar toolbar = new ToolBarView(getExplorerManager(),getContentView().getRoot());
+        if (toolBarButtons!=null) {
+            for (int i=0;i<toolBarButtons.length;i++)
+                toolbar.add(toolBarButtons[i]);
         
-        EditAction edit = (EditAction)SystemAction.get(EditAction.class);
-        ((JComponent)edit.getToolbarPresenter()).setBorder(new javax.swing.border.EmptyBorder(0,0,0,0));
-        toolbar.add(edit.getToolbarPresenter());
-
-        DeleteAction del = (DeleteAction)SystemAction.get(DeleteAction.class);
-        ((JComponent)del.getToolbarPresenter()).setBorder(new javax.swing.border.EmptyBorder(0,0,0,0));
-        toolbar.add(del.getToolbarPresenter());
-
-        NewAction n= (NewAction)SystemAction.get(NewAction.class);
-        ((JComponent)n.getToolbarPresenter()).setBorder(new javax.swing.border.EmptyBorder(0,0,0,0));
-        toolbar.add(n.getToolbarPresenter());
-        
+        }
         return toolbar;
     }
     
     public void edit() {
         
+    }
+    
+    private javax.swing.JButton[] toolBarButtons;
+    public void setToolBarAction(Action[] actions) {
+        toolBarButtons = new javax.swing.JButton[actions.length];
+        for (int i=0;i<actions.length;i++) {
+            toolBarButtons[i].setAction(actions[i]);
+        }
+    }
+    
+    public javax.swing.JButton[] getToolBarButtons(){
+        return toolBarButtons;
     }
 
     
@@ -149,7 +145,7 @@ public class ToolBarDesignEditor extends AbstractDesignEditor implements org.ope
         return null;
     }
  
-    private static class ToolBarView extends JToolBar implements ExplorerManager.Provider, Lookup.Provider, org.openide.cookies.EditCookie {
+    private static class ToolBarView extends JToolBar implements ExplorerManager.Provider, Lookup.Provider {
         private ExplorerManager manager;
         private Lookup lookup;
         ToolBarView(final ExplorerManager manager, org.openide.nodes.Node root) {
@@ -192,16 +188,14 @@ public class ToolBarDesignEditor extends AbstractDesignEditor implements org.ope
             ExplorerUtils.activateActions(manager, false);
             //super.removeNotify();
         }
-        
-        public void edit() {
-            System.out.println("edit");
-        }
     }
     
-    public interface EditSourceCookie extends Node.Cookie {
-        public org.openide.filesystems.FileObject getSource();
-        public void open();
+    public Object getLastActive() {
+        return lastActive;
     }
     
+    public void setLastActive(Object lastActive) {
+        this.lastActive=lastActive;
+    }
     
 }

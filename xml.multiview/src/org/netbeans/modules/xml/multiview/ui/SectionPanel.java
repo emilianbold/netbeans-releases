@@ -242,12 +242,14 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     }//GEN-END:initComponents
 
     private void titleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_titleButtonActionPerformed
+        if (getCustomPanel()==null) open();
         setActive(true);
     }//GEN-LAST:event_titleButtonActionPerformed
 
     private void foldButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_foldButtonActionPerformed
         if (!foldButton.isSelected()) {
             openCustomPanel();
+            setActive(true);
         } else {
             closeCustomPanel();
         }
