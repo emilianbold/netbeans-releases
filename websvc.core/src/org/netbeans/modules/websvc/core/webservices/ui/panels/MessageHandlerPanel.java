@@ -26,8 +26,6 @@ import org.openide.nodes.Node;
 import org.openide.src.ClassElement;
 import org.openide.cookies.SourceCookie;
 import javax.swing.table.DefaultTableModel;
-import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
-import org.netbeans.modules.j2ee.dd.api.webservices.PortComponentHandler;
 import org.openide.filesystems.FileObject;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.loaders.DataObject;
@@ -40,13 +38,13 @@ import org.netbeans.modules.j2ee.common.Util;
 public class MessageHandlerPanel extends JPanel{
     
     private Project project;
-    private PortComponent portComponent;
+    private String[] handlerClasses;
     private FileObject srcRoot;
     
     /** Creates a new instance of MessageHandlerPanel */
-    public MessageHandlerPanel(Project project, PortComponent portComponent, FileObject srcRoot) {
+    public MessageHandlerPanel(Project project, String[] handlerClasses, FileObject srcRoot) {
         this.project = project;
-        this.portComponent = portComponent;
+        this.handlerClasses = handlerClasses;
         this.srcRoot = srcRoot;
         initComponents();
         populateHandlers();
@@ -110,9 +108,8 @@ public class MessageHandlerPanel extends JPanel{
     }
     
     private void populateHandlers(){
-        PortComponentHandler[] handlers = portComponent.getHandler();
-        for(int i = 0; i < handlers.length; i++){
-            tblModel.addRow(new String[]{handlers[i].getHandlerClass()});
+        for(int i = 0; i < handlerClasses.length; i++){
+            tblModel.addRow(new String[]{handlerClasses[i]});
         }
     }
     
