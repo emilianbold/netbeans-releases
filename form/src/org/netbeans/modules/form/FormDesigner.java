@@ -28,6 +28,8 @@ import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.util.lookup.*;
 import org.openide.awt.UndoRedo;
+import org.openide.explorer.ExplorerUtils;
+import org.openide.explorer.ExplorerManager;
 
 import org.netbeans.modules.form.palette.CPManager;
 import org.netbeans.modules.form.wizard.ConnectionWizard;
@@ -89,6 +91,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     MultiViewElementCallback multiViewObserver;
 
+    private ExplorerManager explorerManager;
+
     /** The icons for FormDesigner */
     private static String iconURL =
         "org/netbeans/modules/form/resources/formDesigner.gif"; // NOI18N
@@ -117,12 +121,17 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         add(loadingPanel, BorderLayout.CENTER);
         
         formEditorSupport = fes;
+        explorerManager = new ExplorerManager();
         
         // add FormDataObject to lookup so it can be obtained from multiview TopComponent
         ActionMap map = ComponentInspector.getInstance().setupActionMap(getActionMap());
-        associateLookup(
-            Lookups.fixed(new Object[] { map, formEditorSupport.getFormDataObject() })
-        );
+        FormDataObject formDataObject = formEditorSupport.getFormDataObject();
+        associateLookup(new ProxyLookup(new Lookup[] {
+            ExplorerUtils.createLookup(explorerManager, map),
+            Lookups.fixed(new Object[] { formDataObject }),
+            // should not affect selected nodes, but should provide cookies etc.
+            new NoNodeLookup(formDataObject.getNodeDelegate().getLookup())
+        }));
         
         formToolBar = new FormToolBar(this);
     }
@@ -143,6 +152,17 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         scrollPane.setBorder(null); // disable border, winsys will handle borders itself
         add(scrollPane, BorderLayout.CENTER);
 
+        explorerManager.setRootContext(formEditorSupport.getFormRootNode());
+        addPropertyChangeListener("activatedNodes", new PropertyChangeListener() { // NOI18N
+            public void propertyChange(PropertyChangeEvent evt) {
+                try {
+                    explorerManager.setSelectedNodes((Node[])evt.getNewValue());
+                } catch (PropertyVetoException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        
         setModel(formEditorSupport.getFormModel());
         updateWholeDesigner();
         
@@ -892,7 +912,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 processEvents(events);
         }
 
-        private synchronized void processEvents(FormModelEvent[] events) {
+        private void processEvents(FormModelEvent[] events) {
             boolean lafBlock;
             if (events == null) {
                 lafBlock = true;
@@ -1017,4 +1037,26 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             }
         }
     }
+    
+    /** Lookup that excludes nodes. */
+    private static class NoNodeLookup extends Lookup {
+        private final Lookup delegate;
+        
+        public NoNodeLookup(Lookup delegate) {
+            this.delegate = delegate;
+        }
+        
+        public Object lookup(Class clazz) {
+            return (clazz == Node.class) ? null : delegate.lookup(clazz);
+        }
+        
+        public Lookup.Result lookup(Lookup.Template template) {
+            if (template.getType() == Node.class) {
+                return Lookup.EMPTY.lookup(new Lookup.Template(Node.class));
+            } else {
+                return delegate.lookup(template);
+            }
+        }
+    }
+    
 }
