@@ -122,17 +122,6 @@ Microsystems, Inc. All Rights Reserved.
        </ant>
     </target>
 
-    <target name="regr-compiler" depends="set_classpath">
-       <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="buildtests">
-           <!-- This property contains directories to compile.
-    	        These directories will be compiled separately. 
-                   example: <property name="compile.srcdir" value="unit/src1;unit/src2"/>
-             -->
-           <property name="compile.srcdir" value="regr/src"/>
-       </ant>
-    </target>
-    
     <!-- ========= -->
     <!-- Executors -->
     <!-- ========= -->
