@@ -96,7 +96,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             c.gridheight = 1;
             c.fill = GridBagConstraints.HORIZONTAL;
             c.anchor = GridBagConstraints.NORTHWEST;
-            c.insets = new Insets (0,6,5,6);
+            c.insets = new Insets (5,6,6,6);
             ((GridBagLayout)this.getLayout()).setConstraints(this.addURLButton,c);
             this.add (this.addURLButton);
         }
@@ -144,9 +144,9 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 2, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 2, 6);
         add(message, gridBagConstraints);
 
         content.setPrototypeCellValue("0123456789012345678912345");
@@ -157,9 +157,9 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(jScrollPane1, gridBagConstraints);
 
         addButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("CTL_AddContent"));
@@ -174,7 +174,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(3, 6, 5, 6);
+        gridBagConstraints.insets = new java.awt.Insets(3, 6, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(addButton, gridBagConstraints);
 
@@ -190,7 +190,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
+        gridBagConstraints.insets = new java.awt.Insets(5, 6, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(removeButton, gridBagConstraints);
 
@@ -206,7 +206,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 6, 5, 6);
+        gridBagConstraints.insets = new java.awt.Insets(5, 6, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(upButton, gridBagConstraints);
 
@@ -222,7 +222,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
+        gridBagConstraints.insets = new java.awt.Insets(5, 6, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(downButton, gridBagConstraints);
 
