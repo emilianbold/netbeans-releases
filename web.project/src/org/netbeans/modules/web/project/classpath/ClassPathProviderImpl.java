@@ -123,8 +123,14 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         ClassPath cp = null;
         if (cache[6+type] == null || (cp = (ClassPath)cache[6+type].get())== null) {
             if (type == 0) {
+                //XXX : It should return a classpath for run.classpath property, but
+                // the run.classpath property was removed from the webproject in the past
+                // and I'm a little lazy to return it back in the code:)). In this moment
+                // the run classpath equals to the debug classpath. If the debug classpath
+                // will be different from the run classpath, then the run classpath should
+                // be returned back. 
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "run.classpath")); // NOI18N
+                new ProjectClassPathImplementation(helper, "debug.classpath")); // NOI18N
             }
             cache[6+type] = new SoftReference(cp);
         }
