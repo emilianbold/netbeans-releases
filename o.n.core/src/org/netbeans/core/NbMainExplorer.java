@@ -785,6 +785,11 @@ public final class NbMainExplorer extends CloneableTopComponent {
             return "runtime"; //NOI18N
         }
         
+        public HelpCtx getHelpCtx () {
+            return getHelpCtx (getExplorerManager ().getSelectedNodes (),
+                    new HelpCtx (EnvironmentNode.class));
+	}
+
         /** Deserialization of RepositoryTab */
         public Object readResolve() throws java.io.ObjectStreamException {
             if (DEFAULT == null) {
