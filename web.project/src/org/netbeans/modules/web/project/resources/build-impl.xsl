@@ -347,7 +347,10 @@ is divided into following sections:
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile-single,do-compile-single,post-compile-single</xsl:attribute>
             </target>
 
-            <target name="compile-jsps" depends="compile" if="do.compile.jsps"> 
+            <target name="compile-jsps">
+                <xsl:attribute name="depends">compile</xsl:attribute>
+                <xsl:attribute name="if">do.compile.jsps</xsl:attribute>
+                <xsl:attribute name="description">Test compile JSP pages to expose compilation errors.</xsl:attribute>
                 <taskdef classname="org.apache.jasper.JspC" name="jasper2" > 
                     <classpath path="${{jspc.classpath}}"/> 
                 </taskdef> 
@@ -365,7 +368,8 @@ is divided into following sections:
 
             </target> 
 
-            <target name="compile-single-jsp" depends="compile"> 
+            <target name="compile-single-jsp">
+                <xsl:attribute name="depends">compile</xsl:attribute> 
                 <fail unless="jsp.includes">Must select a file in the IDE or set jsp.includes</fail>
 
                 <taskdef classname="org.netbeans.modules.web.project.ant.JspCSingle" name="single-jspc" > 
