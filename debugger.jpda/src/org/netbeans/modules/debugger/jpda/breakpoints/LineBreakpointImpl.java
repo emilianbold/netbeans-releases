@@ -73,8 +73,6 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     }
     
     protected void setRequests () {
-        if (verbose)
-            System.out.println ("B   set requests: " + this);
         String className = engineContext.getRelativePath (
             breakpoint.getURL (),
             '.', false
@@ -179,8 +177,8 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             if (verbose)
                 System.out.println ("B   get location: referenceType=" + 
                     referenceType + " stratum=" + stratum + 
-                    " source name=" + sourceName + " lineNumber" + lineNumber + 
-                    ":= " + list.size ());
+                    " source name=" + sourceName + " lineNumber " + lineNumber + 
+                    " (#" + list.size () + ")");
             if (!list.isEmpty ()) return (Location) list.get (0);
 
             // add lines from innerclasses

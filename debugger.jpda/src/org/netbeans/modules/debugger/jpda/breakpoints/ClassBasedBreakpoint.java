@@ -118,8 +118,8 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
             }
             while (i.hasNext ()) {
                 ReferenceType referenceType = (ReferenceType) i.next ();
-                if (verbose)
-                    System.out.println("B     cls: " + referenceType);
+//                if (verbose)
+//                    System.out.println("B     cls: " + referenceType);
                 if (i != null) {
                     String name = referenceType.name ();
                     if ( ( className.endsWith ("*") &&
@@ -132,7 +132,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                          className.equals (name)
                     ) {
                         if (verbose)
-                            System.out.println("B       cls loaded! ");
+                            System.out.println("B       cls loaded! " + referenceType);
                         classLoaded (referenceType);
                     }
                 }
