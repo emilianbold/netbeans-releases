@@ -133,6 +133,7 @@ public final class AntBridge {
         if (cp != null) {
             try {
                 // XXX use ClassPath.getClassLoader when that method accepts a parent loader!
+                // Cf. #37437.
                 FileObject[] roots = cp.getRoots();
                 URL[] urls = new URL[roots.length];
                 for (int i = 0; i < roots.length; i++) {
