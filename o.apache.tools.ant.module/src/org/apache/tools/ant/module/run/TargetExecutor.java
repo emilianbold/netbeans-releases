@@ -101,10 +101,12 @@ public class TargetExecutor implements Runnable {
                                            projectName, fileName, cookie.getTargetElement ().getAttribute ("name")); // NOI18N
         final ExecutorTask task;
         synchronized (this) {
-            // [PENDING] note that this redirects stdout/stderr from
+            // Note that this redirects stdout/stderr from
             // Ant. This ought not be necessary, as the logger also
             // redirects to the Output Window, but <echo> in Ant 1.2
             // prints to stdout. (Subsequently fixed.)
+            // [PENDING] note that calls to System.exit() from tasks
+            // are apparently not trapped!
             task = TopManager.getDefault ().getExecutionEngine ().execute (name, this, null);
             //System.err.println("execute #2: " + this);
             io = task.getInputOutput ();
@@ -197,11 +199,6 @@ public class TargetExecutor implements Runnable {
             // alot of errors could be annoying as dialogs
             if (verbosity >= Project.MSG_VERBOSE) {
                 be.printStackTrace (err);
-                // [PENDING] currently BuildException is dumb and does not override printStackTrace
-                Throwable t = be.getException ();
-                if (t != null) {
-                    t.printStackTrace (err);
-                }
             } else {
                 err.println (be);
             }

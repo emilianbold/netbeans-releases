@@ -100,13 +100,13 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <mkdir dir="test/xtra-ant"/>
     <unzip src="release/modules/ext/ant.jar" dest="test/xtra-ant"/>
     <mkdir dir="test/xtra-optional"/>
-    <unzip src="release/modules/ext/optional.jar" dest="test/xtra-optional"/>
+    <unzip src="release/modules/ext/ant-optional.jar" dest="test/xtra-optional"/>
     <jar jarfile="test/ant.jar" manifest="manifest-subst.mf" compress="false">
       <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="javahelp" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <!-- Wait for Ant 1.3 to be standard:
       <zipfileset src="release/modules/ext/ant.jar" excludes="META-INF/MANIFEST.MF"/>
-      <zipfileset src="release/modules/ext/optional.jar" excludes="META-INF/MANIFEST.MF"/>
+      <zipfileset src="release/modules/ext/ant-optional.jar" excludes="META-INF/MANIFEST.MF"/>
       -->
       <fileset dir="test/xtra-ant" excludes="META-INF/MANIFEST.MF"/>
       <fileset dir="test/xtra-optional" excludes="META-INF/MANIFEST.MF"/>
