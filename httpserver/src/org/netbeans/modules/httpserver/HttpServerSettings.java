@@ -404,6 +404,7 @@ public class HttpServerSettings extends SystemOption
                         NbBundle.getMessage(HttpServerSettings.class, "ERR_PortNumberOutOfRange", new Integer(p)), NotifyDescriptor.ERROR_MESSAGE);
             
             DialogDisplayer.getDefault().notify(msg);
+            return;
         }
         
         Object old = getProperty(PROP_PORT);
