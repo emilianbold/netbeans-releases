@@ -720,6 +720,17 @@
 <mapID target="NetbeansDebuggerLocalsRootNode" url="debug/environment/threads_view.html" />
 <mapID target="debug.add.watch" url="debug/watches/watch_window.html" />
 
+<mapID target="NetbeansDebuggerAllInOneRootNode" url="debug/environment/allinone_view.html" />
+
+<mapID target="NetbeansDebuggerWatchesPropertiesSheet" url="debug/properties/watches_properties.html" />
+<mapID target="NetbeansDebuggerLocalsPropertiesSheet" url="debug/properties/locals_properties.html" />
+<mapID target="NetbeansDebuggerBreakpointsPropertiesSheet" url="debug/properties/breakpoint_properties.html" />
+<mapID target="NetbeansDebuggerSessionsPropertiesSheet" url="debug/properties/session_properties.html" />
+<mapID target="NetbeansDebuggerCallStackLineNode" url="debug/properties/callstack_properties.html" />
+<mapID target="NetbeansDebuggerThreadsPropertiesSheet" url="debug/properties/threads_properties.html" />
+<mapID target="NetbeansDebuggerNodePropertiesSheet" url="debug/properties/debug_node_properties.html" />
+<mapID target="NetbeansDebuggerClassesPropertiesSheet" url="debug/properties/classes_properties.html" />
+
 <mapID target="set.arguments.window" url="run/arguments.html" />
 
   <mapID target="org.openide.util.HelpCtx.DEFAULT_HELP" url="pending.html" />
