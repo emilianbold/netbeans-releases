@@ -45,7 +45,7 @@ fi
 
 jdkhomeswitch=
 if [ ! -z "$netbeans_jdkhome" ] ; then
-    jdkhomeswitch="--jdkhome \"$netbeans_j2sdkhome\""
+    jdkhomeswitch="--jdkhome \"$netbeans_jdkhome\""
 fi
 
 eval "$progdir"/../platform4/launcher/nbexec \
