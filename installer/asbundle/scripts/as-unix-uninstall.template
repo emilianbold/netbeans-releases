@@ -1,5 +1,5 @@
 #!/bin/sh
-# "Please do not use this file for uninstalling NetBeans, instead use 'uninstall.bin'."
+# "Please do not use this file for uninstalling NetBeans, instead use 'uninstall'."
 
 APPSERVERDIR=
 LOGFILE=
