@@ -57,7 +57,6 @@ deployment in IDE.
         </question>
 -->
 <answer id="arch-overall">
-<p>
 J2EE Server module serves as an integration point between two kinds of netbeans modules:
 <ul>
 <li><b>server plugins</b> (or simply plugins) that integrate various J2EE servers in IDE, and</li>
@@ -65,7 +64,6 @@ J2EE Server module serves as an integration point between two kinds of netbeans 
 of J2EE modules (web module, EJB module, J2EE Application, etc.) and need to deploy 
 and debug them on J2EE servers.</li>
 </ul>
-</p>
 <p>
 J2EE Server Module enables using <a href="http://java.sun.com/j2ee/tools/deployment/index.jsp">
 J2EE Deployment API</a> (aka JSR88) for plugin integration.
@@ -102,9 +100,13 @@ deployment, start/stop server or JSP compilation.
 
 <p><i>
 In order to do this the plugin needs needs add the server classes that 
-implement Deployment API to classpath and to provide a layer file that will 
+implement Deployment API to classpath and to provide a 
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/plugin-layer-file.html">
+layer file</a> that will 
 register the server in IDE (specifying URL, user name and password) and 
-register a factory class from Deployment API. No additional implementation 
+register a 
+<a href="http://java.sun.com/j2ee/1.4/docs/api/javax/enterprise/deploy/spi/factories/DeploymentFactory.html">
+factory class</a> from Deployment API. No additional implementation 
 should be needed.
 </i></p>
 
@@ -113,8 +115,14 @@ If a J2EE server does not support Deployment API still needs to be possible
 to implement a server plugin for it. 
 
 <p><i>
-In this case the plugin needs to implement the Deployment API interfaces 
-and delegate to whtever interface the specific J2EE server provides.
+In this case the plugin needs to implement the Deployment API interfaces (
+<a href="http://java.sun.com/j2ee/1.4/docs/api/javax/enterprise/deploy/spi/factories/DeploymentFactory.html">
+DeploymentFactory</a>, 
+<a href="http://java.sun.com/j2ee/1.4/docs/api/javax/enterprise/deploy/spi/DeploymentManager.html">
+DeploymentManager</a>) and delegate to whtever interface the specific J2EE server provides.
+An example of this is the Tomcat5 plugin implemented in <code>tomcatint/tomcat5</code>code>
+module, although it only supports deployment of web modules and it also supports
+some optional interfaces defined by J2EE Server Module in addition to the Deployment API.
 </i></p>
 
 <h4>Use Case 3 : Server Plugin that implements optional APIs</h4>
@@ -127,9 +135,65 @@ customized UI for server management.
 
 <p><i>
 In order to do this plugin needs to implement the additional interfaces
-and register their instances in module layer file and in netbeans-deployment.xml 
+and register their instances in module 
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/plugin-layer-file.html">
+layer file</a> and in 
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/netbeans-deployment-dtd.txt">
+netbeans-deployment.xml</a>
 file (an additional config file with specified DTD).
-</i></p>
+</i>
+</p>
+
+Registration of various optional finctionality is done via 
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/OptionalDeploymentManagerFactory.html">
+OptionalDeploymentManagerFactory</a>.
+
+<p>The classes and/or interfaces related to each optional functionality are:</p>
+
+<ul>
+<li><b>Server Status:</b>
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/StartServer.html">StartServer</a>
+</li>
+
+<li><b>Incremental deployment:</b>
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/IncrementalDeployment.html">IncrementalDeployment</a>, 
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/ModuleChangeDescriptor.html">ModuleChangeDescriptor</a>, 
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/AppChangeDescriptor.html">AppChangeDescriptor</a>, 
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/TargetModuleIDResolver.html">TargetModuleIDResolver</a>, 
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/MappingProviderFactory.html">MappingProviderFactory</a>, 
+<a href="org/netbeans/modules/j2ee/deployment/common/api/EjbChangeDescriptor.html">EjbChangeDescriptor</a>, 
+<a href="org/netbeans/modules/j2ee/deployment/common/api/OriginalCMPMapping.html">OriginalCMPMapping</a> 
+(note that the last two classes are also used in devmodules part of API).
+</li>
+
+<li><b>Server Registry UI:</b>
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/RegistryNodeFactory.html">RegistryNodeFactory</a>
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/DConfigBeanUIFactory.html">DConfigBeanUIFactory</a>
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/DConfigBeanProperties.html">DConfigBeanProperties</a>
+</li>
+
+<li><b>Installation of Server Instances:</b>
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/InstanceProperties.html">InstanceProperties</a>
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/InstanceCreationException.html">InstanceCreationException</a>
+</li>
+
+<li><b>Debugging:</b>
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/ServerDebugInfo.html">ServerDebugInfo</a>
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/OldJSPDebug.html">OldJSPDebug</a>
+</li>
+
+<li><b>JSP -&gt; Servlet mapping:</b>
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/FindJSPServlet.html">FindJSPServlet</a>
+</li>
+
+<li><b>Providing support for Management API:</b>
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/ManagementMapper.html">ManagementMapper</a>
+</li>
+
+<li><b>General Utilities:</b>
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/ServerProgress.html">ServerProgress</a>
+</li>
+</ul>
 
 <h4>Use Case 4 : Devmodule integration</h4>
 
@@ -143,14 +207,28 @@ files existing in their sources. In addition to that, J2EE Application devmodule
 needs to communicate with devmodules representing J2EE module that constitute 
 the application.
 
-<p><i>
+<p>
+<i>
 This is achieved by devmodules implementing the devmodules API. Typically this 
 will be done by subclassing a support class in devmodules SPI but direct 
 implementation of devmodules API should also be possible. The mechanism of
 discovery of devmodule implementation is highly dependent on how devmodules
 are represented in IDE (e.g. as projects or DataObjects) so this part of API 
 is the least stable.
-</i></p>
+</i>
+</p>
+<p>
+The API package provides abstractions of 
+<a href="org/netbeans/modules/j2ee/deployment/devmodules/api/J2eeModule.html">J2eeModule</a> and a
+<a href="org/netbeans/modules/j2ee/deployment/devmodules/api/J2EEModuleContainer.html">J2EEModuleContainer</a>
+(a module that contains other modules, such as J2EE application).
+Two utility classes provide direct access to 
+<a href="org/netbeans/modules/j2ee/deployment/devmodules/api/Deployment.html">Deployment</a>
+and to a 
+<a href="org/netbeans/modules/j2ee/deployment/devmodules/api/JSPServletFinder.html">JSPServletFinder</a>.
+The SPI package contains utility classes for implementation of J2eeModule and J2eeModuleContainer.
+</p>
+
 
 <h4>Use Case 5 : Customization of Server Registry UI</h4>
 

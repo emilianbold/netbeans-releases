@@ -1,0 +1,110 @@
+<!--
+
+                 Sun Public License Notice
+
+ The contents of this file are subject to the Sun Public License
+ Version 1.0 (the "License"). You may not use this file except in
+ compliance with the License. A copy of the License is available at
+ http://www.sun.com/
+
+ The Original Code is NetBeans. The Initial Developer of the Original
+ Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ Microsystems, Inc. All Rights Reserved.
+
+-->
+
+<!--
+The netbeans-deployment element is the root element for the
+netbeans-specific additions to the j2ee deployment framework.
+There is one netbeans-deployment element for each vendor plugin which
+further configures that plugin to work with netbeans.
+-->
+
+<!ELEMENT netbeans-deployment (
+    icon, disconnected-string, container-limitation?, 
+    config-bean*, 
+    web-context-root? )>
+
+<!--
+The icon element contains a path to the icon to be used to present the server 
+in the server registry.
+-->
+
+<!ELEMENT icon (#PCDATA)>
+
+<!--
+The disconnected-string element contains the String parameter to DeploymentFactory.getDisconnectedDeploymentManager()
+-->
+
+<!ELEMENT disconnected-string (#PCDATA)>
+
+<!--
+The container-limitation element modifies a plugin to say that not all j2ee deployments are valid.
+For example, a web-only server would include 
+<container-limitation> <war-deploy/> </container-limitation>
+to indicate that only war deployments are accepted.
+If a container-limitation element is not present, all j2ee deployments are assumed valid.
+If a container-limitation element is present, then only j2ee deployment types explicitly
+mentioned are allowed.  
+-->
+
+<!ELEMENT container-limitation (ear-deploy?, war-deploy?, ejbjar-deploy?)>
+
+<!--
+The ear-deploy element specifies that ear deployment is valid on this server
+-->
+
+<!ELEMENT ear-deploy EMPTY>
+
+<!--
+The war-deploy element specifies that war deployment is valid on this server
+-->
+
+<!ELEMENT war-deploy EMPTY>
+
+<!--
+The ejbjar-deploy element specifies that ejb jar deployment is valid on this server
+-->
+
+<!ELEMENT ejbjar-deploy EMPTY>
+
+<!--
+The config-bean element contains additional information about
+individual ConfigBeans and properties of ConfigBeans.
+-->
+
+<!ELEMENT config-bean (class-name, helpid, property-descrip*)>
+
+<!--
+The class-name element contains a fully qualified class name.
+-->
+
+<!ELEMENT class-name (#PCDATA)>
+
+<!--
+The helpid element contains a JavaHelp id.
+-->
+
+<!ELEMENT helpid (#PCDATA)>
+
+<!-- 
+The property-descrip element contains information about a property
+of a ConfigBean.
+-->
+
+<!ELEMENT property-descrip (property-name, helpid)>
+
+<!--
+The property-name element contains a property name.
+-->
+
+<!ELEMENT property-name (#PCDATA)>
+
+<!-- pointer to webcontext root -->
+<!ELEMENT web-context-root (xpath, prop-name) (#PCDATA)>
+
+<!-- web-context-root xpath -->
+<!ELEMENT xpath (#PCDATA)>
+
+<!-- web-context-root property name -->
+<!ELEMENT prop-name (#PCDATA)>
