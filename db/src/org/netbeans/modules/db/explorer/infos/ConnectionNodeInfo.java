@@ -25,6 +25,7 @@ import com.netbeans.enterprise.modules.db.explorer.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
+import com.netbeans.enterprise.modules.db.explorer.dlg.UnsupportedDatabaseDialog;
 import org.openide.TopManager;
 
 public class ConnectionNodeInfo extends DatabaseNodeInfo
@@ -35,6 +36,7 @@ implements ConnectionOperations
 	{
 		String drvurl = getDriver();
 		String dburl = getDatabase();
+		
 		Properties dbprops = getConnectionProperties();
 		try {
 
@@ -49,7 +51,15 @@ implements ConnectionOperations
 			setSpecification(spec);
 			setConnection(connection); // fires change
 		} catch (DatabaseProductNotFoundException e) {
-			throw new DatabaseException("database "+e.getDatabaseProductName()+" is not supported by system");	
+			
+			UnsupportedDatabaseDialog dlg = new UnsupportedDatabaseDialog();
+			dlg.show();
+			switch (dlg.getResult()) {
+				case UnsupportedDatabaseDialog.GENERIC: connect("GenericDatabaseSystem"); break;
+				case UnsupportedDatabaseDialog.READONLY: connectReadOnly(); break;
+				default: return;
+			}
+
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	
 		}
@@ -59,6 +69,13 @@ implements ConnectionOperations
 	throws DatabaseException
 	{
 		connect(null);
+	}
+
+	public void connectReadOnly()
+	throws DatabaseException
+	{
+		setReadOnly(true);
+		connect("GenericDatabaseSystem");
 	}
 
 	public void disconnect()
