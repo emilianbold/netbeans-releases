@@ -192,14 +192,18 @@ public abstract class FormProperty extends Node.Property {
             // set the real value to the target object
             if (realValue != FormDesignValue.IGNORED_VALUE) {
                 setTargetValue(realValue);
-                lastRealValue = realValue;
+//                lastRealValue = realValue;
             }
             else if (valueSet && defValue != BeanSupport.NO_VALUE) {
                 setTargetValue(defValue);
-                lastRealValue = defValue;
+//                lastRealValue = defValue;
             }
-            else if (isExternalChangeMonitoring())
-                lastRealValue = getTargetValue();
+//            else if (isExternalChangeMonitoring())
+//                lastRealValue = getTargetValue();
+
+            lastRealValue = getTargetValue();
+            if (value == realValue)
+                value = lastRealValue;
         }
 
         propertyValue = value; // cache the value for later...
@@ -283,17 +287,18 @@ public abstract class FormProperty extends Node.Property {
                 // set the default real value to the target
                 if (realValue != FormDesignValue.IGNORED_VALUE) {
                     setTargetValue(realValue);
-                    lastRealValue = realValue;
+//                    lastRealValue = realValue;
                 }
                 else if (defValue != BeanSupport.NO_VALUE) {
                     setTargetValue(defValue);
-                    lastRealValue = defValue;
+//                    lastRealValue = defValue;
                 }
-                else if (isExternalChangeMonitoring())
-                    lastRealValue = getTargetValue();
+//                else if (isExternalChangeMonitoring())
+//                    lastRealValue = getTargetValue();
+
+                lastRealValue = getTargetValue();
             }
-            catch (IllegalArgumentException e) { // should not happen
-            }
+            catch (IllegalArgumentException e) {} // should not happen
         }
 
         propertyValue = defValue;
