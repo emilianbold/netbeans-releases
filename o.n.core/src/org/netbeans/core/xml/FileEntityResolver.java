@@ -388,6 +388,11 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                 reader.parse(is);
             } catch (StopSaxException ex) {
             } catch (Exception ex) { // SAXException, FileNotFoundException, IOException
+                if (ex.getClass ().getName ().equals ("org.openide.util.lookup.AbstractLookup$ISE")) { // NOI18N
+                    // this is covered by the FileEntityResolverDeadlock54971Test
+                    throw (IllegalStateException)ex;
+                }
+                
                 try {
                     // #25082: do not notify an exception if the file comes
                     // from other filesystem than the system filesystem
