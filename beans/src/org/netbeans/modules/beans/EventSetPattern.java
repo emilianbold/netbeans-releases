@@ -434,7 +434,7 @@ public class EventSetPattern extends Pattern {
     
     newMethod.setName( Identifier.create( "add" + capitalizeFirstLetter( getName() ) ) );
     newMethod.setReturn( Type.VOID );
-    newMethod.setModifiers( Modifier.PUBLIC );
+    newMethod.setModifiers( Modifier.PUBLIC | Modifier.SYNCHRONIZED );
     newMethod.setParameters( newParameters );
     
     if ( declaringClass.isInterface() ) 
@@ -470,7 +470,7 @@ public class EventSetPattern extends Pattern {
     
     newMethod.setName( Identifier.create( "remove" + capitalizeFirstLetter( getName() ) ) );
     newMethod.setReturn( Type.VOID );
-    newMethod.setModifiers( Modifier.PUBLIC );
+    newMethod.setModifiers( Modifier.PUBLIC | Modifier.SYNCHRONIZED );
     newMethod.setParameters( newParameters );
     
     if ( declaringClass.isInterface() ) 
@@ -527,6 +527,8 @@ public class EventSetPattern extends Pattern {
 
 /* 
  * Log
+ *  6    Gandalf   1.5         7/26/99  Petr Hrebejk    BeanInfo fix & Code 
+ *       generation fix
  *  5    Gandalf   1.4         7/26/99  Petr Hrebejk    Better implementation of
  *       patterns resolving
  *  4    Gandalf   1.3         7/21/99  Petr Hrebejk    Debug messages removed

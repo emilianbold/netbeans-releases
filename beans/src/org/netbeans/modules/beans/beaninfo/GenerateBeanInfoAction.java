@@ -86,19 +86,19 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
       return;
 
     // Get pattern analyser & bean info and create BiAnalyser & BiNode
-
   
     PatternAnalyser pa = (PatternAnalyser)nodes[0].getCookie( PatternAnalyser.class );
     ClassElement superClass = BiSuperClass.createForClassElement( pa.getClassElement() );
     
     
-    org.openide.src.MethodElement m[] = superClass.getMethods();
+    //org.openide.src.MethodElement m[] = superClass.getMethods();
     
+    ClassElement theClass = pa.getClassElement();
     pa = new PatternAnalyser( superClass );
     pa.analyzeAll();
     
 
-    BiAnalyser bia = new BiAnalyser( pa );
+    BiAnalyser bia = new BiAnalyser( pa, theClass );
     Node biNode = new BiNode( bia );
 
     // Open the diaog for bean info generation
@@ -154,6 +154,8 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
 
 /*
  * Log
+ *  2    Gandalf   1.1         7/26/99  Petr Hrebejk    BeanInfo fix & Code 
+ *       generation fix
  *  1    Gandalf   1.0         7/26/99  Petr Hrebejk    
  * $
  */

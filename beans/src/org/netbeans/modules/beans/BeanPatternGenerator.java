@@ -45,7 +45,7 @@ class BeanPatternGenerator extends Object {
       /* Generates body in the form:
         PropType oldPropName = this.propName;
         this.propName = propName;
-        changes.firePropertyChange(propName, oldPropName, propName ); 
+        changes.firePropertyChange(propName, oldPropName, propName ); 
       */
 
       setterBody.append( TAB + type.toString() );
@@ -56,10 +56,10 @@ class BeanPatternGenerator extends Object {
         setterBody.append( TAB + vetoSupportName ).append( ".fireVetoableChange(\"").append( name ).append( "\" , " );
       
         if ( type.isPrimitive() ) {
-          setterBody.append( "new ").append( getWrapperClassName( type )).append( "(" );
+          setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" );
           setterBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) );
           setterBody.append( ") , " );
-          setterBody.append( "new ").append( getWrapperClassName( type )).append( "(" );
+          setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" );
           setterBody.append( name ).append( "));\n" );
         }
         else {
@@ -70,13 +70,13 @@ class BeanPatternGenerator extends Object {
       if ( bound ) {
         setterBody.append( TAB + "this." ).append( name );
         setterBody.append( " = " ).append( name ).append( ";\n");
-        setterBody.append( TAB + supportName ).append( ".firePropertyChange(\"").append( name ).append( "\" , " );
+        setterBody.append( TAB + supportName ).append( ".firePropertyChange (\"").append( name ).append( "\" , " );
       
         if ( type.isPrimitive() ) {
-          setterBody.append( "new ").append( getWrapperClassName( type )).append( "(" );
+          setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" );
           setterBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) );
           setterBody.append( ") , " );
-          setterBody.append( "new ").append( getWrapperClassName( type )).append( "(" );
+          setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" );
           setterBody.append( name ).append( "));\n" );
         }
         else {
@@ -115,11 +115,11 @@ class BeanPatternGenerator extends Object {
     }
 
     if ( withSupport && constrained ) {
-      setterBody.append( TAB + vetoSupportName ).append( ".fireVetoableChange(\"").append( name ).append( "\" , " );
+      setterBody.append( TAB + vetoSupportName ).append( ".fireVetoableChange (\"").append( name ).append( "\" , " );
       setterBody.append( "null, null );\n" );
     }
     if ( withSupport && bound ) {
-      setterBody.append( TAB + supportName ).append( ".firePropertyChange(\"").append( name ).append( "\" , " );
+      setterBody.append( TAB + supportName ).append( ".firePropertyChange (\"").append( name ).append( "\" , " );
       setterBody.append( "null, null );\n" );
     }
 
@@ -194,6 +194,7 @@ class BeanPatternGenerator extends Object {
       supportField.setName( Identifier.create( supportName ) );
       supportField.setType( Type.createClass( supportId ) );
       supportField.setModifiers( Modifier.PRIVATE );
+      supportField.setInitValue( " new java.beans.PropertyChangeSupport (this)" );
       supportField.getJavaDoc().setRawText( bundle.getString( "COMMENT_PropertyChangeSupport" ) );
       ce.addField( supportField );
     }
@@ -221,6 +222,7 @@ class BeanPatternGenerator extends Object {
       supportField.setName( Identifier.create( vetoSupportName ) );
       supportField.setType( Type.createClass( vetoSupportId ) );
       supportField.setModifiers( Modifier.PRIVATE );
+      supportField.setInitValue( " new java.beans.VetoableChangeSupport (this)" );
       supportField.getJavaDoc().setRawText( bundle.getString( "COMMENT_VetoableChangeSupport" ) );
       ce.addField( supportField );
     }
@@ -249,7 +251,7 @@ class BeanPatternGenerator extends Object {
 
       StringBuffer body = new StringBuffer( 80 );
       body.append( "\n" ).append( TAB + supportName );
-      body.append( ".addPropertyChangeListener( l );\n" );
+      body.append( ".addPropertyChangeListener (l);\n" );
       addMethod.setBody( body.toString() );
 
       /*
@@ -272,7 +274,7 @@ class BeanPatternGenerator extends Object {
 
       StringBuffer body = new StringBuffer( 80 );
       body.append( "\n" ).append( TAB + supportName );
-      body.append( ".removePropertyChangeListener( l );\n" );
+      body.append( ".removePropertyChangeListener (l);\n" );
       removeMethod.setBody( body.toString() );
       removeMethod.getJavaDoc().setRawText( bundle.getString( "COMMENT_RemovePropertyChangeListener" ) );
       classElement.addMethod( removeMethod );
@@ -299,7 +301,7 @@ class BeanPatternGenerator extends Object {
 
       StringBuffer body = new StringBuffer( 80 );
       body.append( "\n" ).append( TAB + supportName );
-      body.append( ".addVetoableChangeListener( l );\n" );
+      body.append( ".addVetoableChangeListener (l);\n" );
       addMethod.setBody( body.toString() );
       addMethod.getJavaDoc().setRawText( bundle.getString( "COMMENT_AddVetoableChangeListener" ) );
       classElement.addMethod( addMethod );
@@ -315,7 +317,7 @@ class BeanPatternGenerator extends Object {
 
       StringBuffer body = new StringBuffer( 80 );
       body.append( "\n" ).append( TAB + supportName );    
-      body.append( ".removeVetoableChangeListener( l );\n" );
+      body.append( ".removeVetoableChangeListener (l);\n" );
       removeMethod.setBody( body.toString() );
       removeMethod.getJavaDoc().setRawText( bundle.getString( "COMMENT_RemoveVetoableChangeListener" ) );
       classElement.addMethod( removeMethod );
@@ -346,7 +348,7 @@ class BeanPatternGenerator extends Object {
       FieldElement field = new FieldElement();
       field.setName( Identifier.create( fieldName ) );
       field.setType( Type.createClass( fieldTypeId ) );
-      field.setModifiers( Modifier.PRIVATE );    
+      field.setModifiers( Modifier.PRIVATE | Modifier.TRANSIENT );    
       String comment = MessageFormat.format( bundle.getString( "COMMENT_ListenerArrayList" ),
                                              new Object[] { type.getClassName().getName() } );                                          
       field.getJavaDoc().setRawText( comment );
@@ -414,8 +416,8 @@ class BeanPatternGenerator extends Object {
       FieldElement field = new FieldElement();
       field.setName( Identifier.create( fieldName ) );
       field.setType( type );
-      field.setModifiers( Modifier.PRIVATE );
-      field.setInitValue( "null" );
+      field.setModifiers( Modifier.PRIVATE  | Modifier.TRANSIENT );
+      field.setInitValue( " null" );
       String comment = MessageFormat.format( bundle.getString( "COMMENT_UnicastEventListener" ),
                                              new Object[] { type.getClassName().getName() } );                                          
       field.getJavaDoc().setRawText( comment );
@@ -435,11 +437,14 @@ class BeanPatternGenerator extends Object {
     body.append( "\n");
 
     if ( implementation == 1 ) {
-      body.append( TAB + fieldName ).append( ".add( listener );\n" );
+      body.append( TAB + "if (" ).append( fieldName ).append( " == null ) {\n" );
+      body.append( TABx2 ).append( fieldName ).append( " = new java.util.ArrayList ();\n" );
+      body.append( TAB ).append( "}\n" );
+      body.append( TAB + fieldName ).append( ".add (listener);\n" );
     }
     else if ( implementation == 2 ) {
-      body.append( TAB + listenerList ).append( ".add(" );
-      body.append( type.toString()).append( ".class, listener );\n" );
+      body.append( TAB + listenerList ).append( ".add (" );
+      body.append( type.toString()).append( ".class, listener);\n" );
     }
 
     return body.toString();
@@ -456,11 +461,13 @@ class BeanPatternGenerator extends Object {
     body.append( "\n");
 
     if ( implementation == 1 ) {
-      body.append( TAB + fieldName ).append( ".remove( listener );\n" );
+      body.append( TAB + "if (" ).append( fieldName ).append( " != null ) {\n" );
+      body.append( TABx2 + fieldName ).append( ".remove (listener);\n" );
+      body.append( TAB ).append( "}\n" );
     }
     else if ( implementation == 2 ) {
-      body.append( TAB + listenerList ).append( ".remove(" );
-      body.append( type.toString()).append( ".class, listener );\n" );
+      body.append( TAB + listenerList ).append( ".remove (" );
+      body.append( type.toString()).append( ".class, listener);\n" );
     }
 
     return body.toString();
@@ -478,8 +485,8 @@ class BeanPatternGenerator extends Object {
     body.append( "\n");
 
     if ( implementation == 1 ) {
-      body.append( TAB + "if ( ").append( fieldName ).append( " != null ) {\n" );
-      body.append( TABx2 + "throw new java.util.TooManyListenersException();\n" );
+      body.append( TAB + "if (").append( fieldName ).append( " != null) {\n" );
+      body.append( TABx2 + "throw new java.util.TooManyListenersException ();\n" );
       body.append( TAB + "}\n" );
       body.append( TAB + fieldName ).append( " = listener;\n" );
     }
@@ -553,16 +560,16 @@ class BeanPatternGenerator extends Object {
 
         if ( usesConstructorParameters( eventClass, passEvent ) ) {
           body.append( TAB + eventType.toString() ).append( " e = new ");
-          body.append( eventType.toString() ).append( "(" );
+          body.append( eventType.toString() ).append( " (" );
           body.append( fireParameterstoString( newMethodParams ) );
           body.append(");\n");
         }
-        body.append( TAB + "synchronized(this) {\n" + TABx2 + "list = (java.util.ArrayList)" );
-        body.append( fieldName ).append( ".clone();\n" + TAB +"}\n" ); 
-        body.append( TAB + "for (int i = 0; i < list.size(); i++) {\n" );
+        body.append( TAB + "synchronized (this) {\n" + TABx2 + "list = (java.util.ArrayList)" );
+        body.append( fieldName ).append( ".clone ();\n" + TAB +"}\n" ); 
+        body.append( TAB + "for (int i = 0; i < list.size (); i++) {\n" );
         body.append( TABx2 + "((" ).append( type.toString() );
-        body.append( ")list.get(i)).").append( method.getName() );
-        body.append("(");
+        body.append( ")list.get (i)).").append( method.getName() );
+        body.append(" (");
         if ( usesConstructorParameters( eventClass, passEvent ) ) {
           body.append( "e" ); 
         }
@@ -576,17 +583,17 @@ class BeanPatternGenerator extends Object {
         if ( usesConstructorParameters( eventClass, passEvent ) ) {
           body.append( TAB + eventType.toString() ).append( " e = null;\n ");
         }
-        body.append( TAB + "Object[] listeners = ").append(listenerList).append(".getListenerList();\n" );
+        body.append( TAB + "Object[] listeners = ").append(listenerList).append(".getListenerList ();\n" );
         body.append( TAB + "for (int i = listeners.length-2; i>=0; i-=2) {\n");
         body.append( TABx2 + "if (listeners[i]==" ).append( type.toString()).append( ".class) {\n" );
         if ( usesConstructorParameters( eventClass, passEvent ) ) {
           body.append( TABx3 + "if (e == null)\n" );
-          body.append( TABx2 + TABx2 + "e = new ").append( eventType.toString() ).append( "(" );
+          body.append( TABx2 + TABx2 + "e = new ").append( eventType.toString() ).append( " (" );
           body.append( fireParameterstoString( newMethodParams ) );
           body.append( ");\n" );
           }
         body.append( TABx3 + "((").append(type.toString()).append(")listeners[i+1]).").append(method.getName());
-        body.append("(");
+        body.append(" (");
         if ( usesConstructorParameters( eventClass, passEvent ) ) {
           body.append( "e" ); // the created event
         }
@@ -599,8 +606,8 @@ class BeanPatternGenerator extends Object {
       newMethod.setBody( body.toString() );
   
       StringBuffer comment = new StringBuffer ( bundle.getString( "COMMENT_FireMethodMC" ) );
-      if ( usesConstructorParameters( eventClass, passEvent ) ) {
-          comment.append( "\n@param e The event to be fired" ); 
+      if ( !usesConstructorParameters( eventClass, passEvent ) ) {
+          comment.append( "\n@param e The event to be fired\n" ); 
         }
         else {
           comment.append( fireParametersComment( newMethodParams, eventType.getClassName().getName() ) ); 
@@ -654,13 +661,13 @@ class BeanPatternGenerator extends Object {
 
         if ( usesConstructorParameters( eventClass, passEvent ) ) {
           body.append( TAB + eventType.toString() ).append( " e = new ");
-          body.append( eventType.toString() ).append( "(" );
+          body.append( eventType.toString() ).append( " (" );
           body.append( fireParameterstoString( newMethodParams ) );
           body.append(");\n");
         }
         
         body.append( TAB + fieldName ).append( "." ).append( method.getName() );
-        body.append("(");
+        body.append(" (");
         if ( usesConstructorParameters( eventClass, passEvent ) ) {
           body.append( "e" ); 
         }
@@ -673,8 +680,8 @@ class BeanPatternGenerator extends Object {
       newMethod.setBody( body.toString() );
 
       StringBuffer comment = new StringBuffer ( bundle.getString( "COMMENT_FireMethodUC" ) );
-      if ( usesConstructorParameters( eventClass, passEvent ) ) {
-          comment.append( "\n@param e The event to be fired" ); 
+      if ( !usesConstructorParameters( eventClass, passEvent ) ) {
+          comment.append( "\n@param e The event to be fired\n" ); 
       }
       else {
         comment.append( fireParametersComment( newMethodParams, eventType.getClassName().getName() ) ); // the event parameter
@@ -730,10 +737,11 @@ class BeanPatternGenerator extends Object {
     StringBuffer buffer = new StringBuffer( 60 );
 
     for( int i = 0; i < params.length; i++ ) {
-      buffer.append( "@param ").append( params[i].getName() );
+      buffer.append( "\n@param ").append( params[i].getName() );
       buffer.append( " Parameter #" ).append( i + 1 ).append( " of the <CODE>" );
-      buffer.append( evntType ).append( "<CODE> constructor.\n" ); 
+      buffer.append( evntType ).append( "<CODE> constructor." ); 
     }
+    buffer.append( "\n" );
 
     return buffer.toString();
   }
@@ -741,6 +749,8 @@ class BeanPatternGenerator extends Object {
 }
 /* 
  * Log
+ *  2    Gandalf   1.1         7/26/99  Petr Hrebejk    BeanInfo fix & Code 
+ *       generation fix
  *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
  * $ 
 java.awt.event.WindowListener */ 

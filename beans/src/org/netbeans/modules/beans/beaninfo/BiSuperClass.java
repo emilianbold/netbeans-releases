@@ -32,6 +32,12 @@ class BiSuperClass extends Object {
   static ClassElement createForClassElement( ClassElement classElement ) {
     ClassElement result = new ClassElement();
 
+    try {
+      result.setName( classElement.getName() );
+    }
+    catch ( org.openide.src.SourceException e ) {
+      TopManager.getDefault().notifyException( e );
+    }
 
     ClassElement ce = classElement;
     int methodsAdded = 0;           // Workaround for getMethd
@@ -83,6 +89,8 @@ class BiSuperClass extends Object {
 
 /* 
  * Log
+ *  2    Gandalf   1.1         7/26/99  Petr Hrebejk    BeanInfo fix & Code 
+ *       generation fix
  *  1    Gandalf   1.0         7/26/99  Petr Hrebejk    
  * $ 
  */ 

@@ -47,12 +47,12 @@ public class BeanInfoSource extends Object {
   
   private DataObject   biDataObject = null;
   private JavaEditor   javaEditor =  null;  
-  private PatternAnalyser pa = null;
+  //private PatternAnalyser pa = null;
   
   /** Creates new BeanInfoSource */
-  public BeanInfoSource (PatternAnalyser pa ) {
-    this.classElement = pa.getClassElement();
-    this.pa = pa;
+  public BeanInfoSource (ClassElement classElement ) {
+    this.classElement = classElement;
+    //this.pa = pa;
 
     findBeanInfo();
   }
@@ -92,11 +92,11 @@ public class BeanInfoSource extends Object {
      FileObject folder = dataObject.getFolder().getPrimaryFile();
      if ( folder == null )
        return;
-     
+
      FileObject biFile = folder.getFileObject( dataObject.getName() + BEANINFO_NAME_EXT, "java" );
      if ( biFile == null )
        return;
-     
+
      try {
       biDataObject = DataObject.find( biFile );
       javaEditor = (JavaEditor)biDataObject.getCookie( JavaEditor.class );
@@ -134,14 +134,6 @@ public class BeanInfoSource extends Object {
 
       DataObject dataObject = (DataObject)classElement.getCookie( DataObject.class );
 
-      System.out.println ( "DataObject" + dataObject );
-
-      dataObject = (DataObject)classElement.getCookie( com.netbeans.developer.modules.loaders.java.JavaDataObject.class );
-
-      System.out.println ( "JavaDataObject" + dataObject );
-
-
-
       if ( dataObject == null )
         return;
      
@@ -151,11 +143,11 @@ public class BeanInfoSource extends Object {
       javaEditor = (JavaEditor)biDataObject.getCookie( JavaEditor.class );      
     }
     catch ( org.openide.loaders.DataObjectNotFoundException e ) {
-      System.out.println ( e );
+      //System.out.println ( e );
       // Do nothing if no data object is found
     }
     catch ( java.io.IOException e ) {
-      System.out.println ( e );
+      //System.out.println ( e );
       // Do nothing if no data object is found
     }
   }
@@ -185,7 +177,7 @@ public class BeanInfoSource extends Object {
     JavaEditor.InteriorSection is = javaEditor.findInteriorSection( PROPERTIES_SECTION );
 
     if ( is != null ) {
-      return is.toString();
+      return is.getText();
       }
     else
       return null;
@@ -206,7 +198,7 @@ public class BeanInfoSource extends Object {
     JavaEditor.InteriorSection is = javaEditor.findInteriorSection( EVENTSETS_SECTION );
 
     if ( is != null ) {
-      return is.toString();
+      return is.getText();
       }
     else
       return null; 
@@ -217,7 +209,7 @@ public class BeanInfoSource extends Object {
     JavaEditor.SimpleSection ss = javaEditor.findSimpleSection( ICONS_SECTION );
 
     if ( ss != null ) {
-      return ss.toString();
+      return ss.getText();
       }
     else
       return null; 
@@ -235,7 +227,7 @@ public class BeanInfoSource extends Object {
     JavaEditor.SimpleSection ss = javaEditor.findSimpleSection( IDX_SECTION );
 
     if ( ss != null ) {
-      return ss.toString();
+      return ss.getText();
       }
     else
       return null; 

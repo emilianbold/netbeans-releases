@@ -21,7 +21,11 @@ import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import org.openide.src.MethodElement;
+import org.openide.src.ClassElement;
 import org.openide.nodes.Node;
+import org.openide.TopManager;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 import com.netbeans.developer.modules.beans.PatternAnalyser;
 import com.netbeans.developer.modules.beans.Pattern;
@@ -70,6 +74,9 @@ public class BiAnalyser extends Object implements Node.Cookie {
   /** Should event sets be obtained from introspection */
   private boolean nullEventSets = false;
 
+  /* Holds the class for which the bean info is generated */
+  ClassElement classElement;
+
   private String iconC16;
   private String iconM16;
   private String iconC32;
@@ -78,9 +85,11 @@ public class BiAnalyser extends Object implements Node.Cookie {
   private int defaultEventIndex = -1;
   /** Creates Bean Info analyser which contains all patterns from PatternAnalyser 
   */
-  BiAnalyser ( PatternAnalyser pa ) {
+  BiAnalyser ( PatternAnalyser pa, ClassElement classElement ) {
     Collection col;
     Iterator it;
+
+    this.classElement = classElement;
 
     // Fill properties list
 
@@ -115,12 +124,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
         eventSets.add( new BiFeature.EventSet( esp ) );
     }
     
-    // Fill method list : PENDING
-    // methods = new ArrayList();
-
-
     // Try to find and analyse existing bean info
-    bis = new BeanInfoSource( pa );
+    bis = new BeanInfoSource( classElement );
     analyzeBeanInfoSource( );  
 
   }
@@ -209,7 +214,19 @@ public class BiAnalyser extends Object implements Node.Cookie {
   void regenerateSource() {
 
     if ( bis.exists() ) {
-      // Test if Nb - ask for overwrite
+      /*
+      System.out.println ( "EXISTS BI " );
+      if ( !bis.isNbBeanInfo() ) {
+        System.out.println ( "AILIEN" );
+        String mssg = NbBundle.getBundle(BiAnalyser.class).getString( "MSG_BeanInfoExists" );
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
+        TopManager.getDefault().notify( nd );
+        if ( !nd.getValue().equals ( NotifyDescriptor.YES_OPTION ) ) {
+          return;
+        }
+        bis.createFromTemplate();
+      }
+      */
     }
     else {
       bis.createFromTemplate();
@@ -377,6 +394,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
     if ( !bis.isNbBeanInfo() ) 
       return;
 
+
     String section = bis.getIconsSection();
     Collection code = normalizeText( section );
     setIconsFromBeanInfo( code );
@@ -505,7 +523,6 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
     while( it.hasNext() ) {
       String statement = (String)it.next();    
-    
       if ( statement.indexOf( name ) != -1 ) 
          if ( getInitializer( statement ).equals( "null" )  )
            return true;
@@ -526,10 +543,11 @@ public class BiAnalyser extends Object implements Node.Cookie {
   
   void setIconsFromBeanInfo ( Collection code ) {
 
+
     Iterator it = code.iterator();
     while( it.hasNext() ) {
       String statement = ( String ) it.next();
-    
+
       if ( statement.indexOf( ICONNAME_C16 ) != -1 ) {
         iconC16 = removeQuotation( getInitializer( statement ) );
         continue;
@@ -584,6 +602,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
 }
 /* 
  * Log
+ *  2    Gandalf   1.1         7/26/99  Petr Hrebejk    BeanInfo fix & Code 
+ *       generation fix
  *  1    Gandalf   1.0         7/26/99  Petr Hrebejk    
  * $ 
  */ 
