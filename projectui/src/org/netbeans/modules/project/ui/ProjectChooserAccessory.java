@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,6 +29,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
+import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileSystemView;
@@ -37,7 +38,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.CollocationQuery;
-import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -179,7 +179,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             JFileChooser chooser = (JFileChooser)e.getSource();
             File rawdir = chooser.getSelectedFile();
             File dir = rawdir != null ? FileUtil.normalizeFile(rawdir) : null;
-            DefaultListModel spListModel = (DefaultListModel)jListSubprojects.getModel();
+            ListModel spListModel = jListSubprojects.getModel();
             
             Project project = null;            
             if ( isProjectDir( dir ) ) {
@@ -193,7 +193,11 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 
                 jTextFieldProjectName.setText(ProjectUtils.getInformation(project).getDisplayName());
                 
-                spListModel.clear();                
+                if (spListModel instanceof DefaultListModel) {
+                    ((DefaultListModel)spListModel).clear();                
+                } else {
+                    jListSubprojects.setListData (new String[0]);
+                }
                 
                 modelUpdater.project = project;
                 updateSubprojectsTask.schedule( 100 );                
@@ -202,7 +206,12 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 // Clear the accessory data if the dir is not project dir
                 jTextFieldProjectName.setText( "" ); // NOI18N
                 modelUpdater.project = null;
-                spListModel.clear();
+                
+                if (spListModel instanceof DefaultListModel) {
+                    ((DefaultListModel)spListModel).clear();                
+                } else {
+                    jListSubprojects.setListData (new String[0]);
+                }
                 
                 // Disable all components in accessory
                 setAccessoryEnablement( false );
@@ -505,6 +514,9 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 if ( currentProject == null ) {
                     return;
                 }
+
+                jListSubprojects.setListData (new String [] {NbBundle.getMessage (ProjectChooserAccessory.class, "MSG_PrjChooser_WaitMessage")});
+                
                 ArrayList subprojects = new ArrayList( 5 );
                 addSubprojects( currentProject, subprojects ); // Find the projects recursively
                 if ( !subprojects.isEmpty() ) {
