@@ -22,6 +22,7 @@ Microsystems, Inc. All Rights Reserved.
     <xsl:param name="arch.overviewlink"/>
     <xsl:param name="arch.footer"/>
     <xsl:param name="arch.answers.date"/>
+    <xsl:param name="arch.when"/>
 
     <xsl:template match="/">
         <html>
@@ -109,14 +110,17 @@ Microsystems, Inc. All Rights Reserved.
                 <b>Answer:</b> <!-- <xsl:value-of select="//answer[@id=$value]" /> -->
                 <xsl:apply-templates select="//answer[@id=$value]/node()" />
             </xsl:when>
-            <xsl:otherwise>
+            <xsl:when test="string-length($arch.when)=0 or contains($arch.when,@when)" >
                 <b>WARNING:</b>
                 <xsl:text> Question with id="</xsl:text>
                 <i> 
                 <xsl:value-of select="@id" />
                 </i>
                 <xsl:text>" has not been answered!</xsl:text>
-            </xsl:otherwise>
+             </xsl:when>
+             <xsl:otherwise>
+                 <i>Needs to be yet answered in <xsl:value-of select="@when" /> phase.</i>
+              </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
 

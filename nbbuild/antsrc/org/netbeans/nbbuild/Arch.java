@@ -249,6 +249,7 @@ public class Arch extends Task implements ErrorHandler {
             }
             
             t.setParameter("arch.target", archTarget);
+            t.setParameter("arch.when", getProject ().getProperty ("arch.when"));
 
             t.transform(s, r);
         } catch (javax.xml.transform.TransformerConfigurationException ex) {
