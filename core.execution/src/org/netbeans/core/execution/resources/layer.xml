@@ -1,0 +1,198 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<!-- XML Layer for core-execution -->
+
+<filesystem>
+    <folder name="Actions">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+
+        <folder name="Build">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <file name="org-openide-actions-ExecuteAction.instance"/>
+            <file name="org-netbeans-core-actions-SetArgumentsAction.instance"/>
+        </folder>
+    </folder>    
+    
+    <folder name="Menu">
+        <folder name="View">
+            <attr name="org-netbeans-core-actions-OutputWindowAction.instance/org-netbeans-core-actions-ExecutionViewAction.instance" boolvalue="true" />
+            <file name="org-netbeans-core-actions-ExecutionViewAction.instance"/>
+            <attr name="org-netbeans-core-actions-ExecutionViewAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true" />
+        </folder>
+        
+        <attr name="View/Build" boolvalue="true" />
+        <folder name="Build">
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+          <attr name="org-netbeans-core-actions-PreviousOutJumpAction.instance/Separator5[javax-swing-JSeparator].instance" boolvalue="true" />
+          <file name="Separator5[javax-swing-JSeparator].instance"/>
+          <attr name="Separator5[javax-swing-JSeparator].instance/org-netbeans-core-actions-SetArgumentsAction.instance" boolvalue="true" />
+          <file name="org-netbeans-core-actions-SetArgumentsAction.instance"/>
+          <attr name="org-netbeans-core-actions-SetArgumentsAction.instance/org-openide-actions-ExecuteAction.instance" boolvalue="true" />
+          <file name="org-openide-actions-ExecuteAction.instance"/>
+        </folder>
+        <attr name="Build/Tools" boolvalue="true" />
+    </folder>  
+    
+    <folder name="Toolbars">
+        <folder name="View">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <attr name="org-netbeans-core-actions-OutputWindowAction.instance/org-netbeans-core-actions-ExecutionViewAction.instance" boolvalue="true" />
+            <file name="org-netbeans-core-actions-ExecutionViewAction.instance"/>
+            <attr name="org-netbeans-core-actions-ExecutionViewAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true" />
+        </folder>
+    
+        <folder name="Build">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <attr name="org-netbeans-core-actions-NextOutJumpAction.instance/org-openide-actions-ExecuteAction.instance" boolvalue="true" />
+            <file name="org-openide-actions-ExecuteAction.instance"/>
+        </folder>    
+    </folder>
+
+    <folder name="Shortcuts">
+        <file name="F6[org-openide-actions-ExecuteAction].instance" />
+        <file name="C-6[org-netbeans-core-actions-ExecutionViewAction].instance" />
+    </folder>
+    
+    <folder name="Templates">
+        <!-- templates for services in Lookup, should have the same subdirectory as objects under the -->
+        <folder name="Services">
+                
+            <folder name="DebuggerType">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/debuggerTypes.gif" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+                <attr name="SystemFileSystem.layer" stringvalue="project"/>
+            </folder>
+
+            <folder name="Executor">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/executionTypes.gif" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            </folder>
+        </folder>
+    </folder>
+    
+    <!-- register services with Lookup -->
+    <folder name="Services">
+        <folder name="DebuggerType">
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/debuggerTypes.gif" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.layer" stringvalue="project"/>
+            <attr name="helpID" stringvalue="org.netbeans.core.services.DebuggerTypes"/>
+        </folder>
+
+        <folder name="Executor">
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/executionTypes.gif" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.layer" stringvalue="project"/>
+            <attr name="helpID" stringvalue="org.netbeans.core.services.ExecutorTypes"/>
+        </folder>
+        
+        <file name="org-netbeans-core-execution-ExecutionSettings.settings" url="ExecutionSettings.settings">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/executionSettings.gif" />
+        </file>
+    </folder>
+    
+    <folder name="UI">
+        <!-- settings categories UI presentation -->
+        <folder name="Services">
+        
+            <folder name="DebuggingAndExecuting">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+
+                <file name="DebuggerTypes.shadow">
+<![CDATA[Services/DebuggerType
+SystemFileSystem
+]]>
+                </file>
+
+                <file name="org-netbeans-core-execution-ExecutionSettings.shadow">
+<![CDATA[Services/org-netbeans-core-execution-ExecutionSettings.settings
+SystemFileSystem
+]]>
+                </file>
+
+                <file name="Executors.shadow">
+<![CDATA[Services/Executor
+SystemFileSystem
+]]>
+                </file>
+
+            </folder> <!-- DebuggingAndExecuting -->
+
+        </folder> <!-- Services -->
+
+    </folder> <!-- UI -->
+    
+    <folder name="Windows">
+
+        <folder name="WindowManager">
+            
+            <attr name="Editing/Running" boolvalue="true" />
+            
+            <folder name="Editing">
+                <folder name="explorer">
+                    <attr name="filesystems.wstcref/runtime.wstcref" boolvalue="true" />
+                    <attr name="runtime.wstcref/properties.wstcref" boolvalue="true" />
+                    <file name="runtime.wstcref" url="windowmanager/Editing/explorer/runtime.wstcref" />
+                </folder>
+                
+                <file name="execution.wsmode" url="windowmanager/Editing/execution.wsmode" />
+                <folder name="execution">
+                    <file name="execution.wstcref" url="windowmanager/Editing/execution/execution.wstcref" />
+                </folder>
+                
+            </folder>
+            
+            <file name="Running.wswksp" url="windowmanager/Running.wswksp" />
+            <folder name="Running">
+                <file name="explorer.wsmode" url="windowmanager/Running/explorer.wsmode" />
+                <folder name="explorer">
+                  <attr name="filesystems.wstcref/runtime.wstcref" boolvalue="true" />
+                  <file name="filesystems.wstcref" url="windowmanager/Running/explorer/filesystems.wstcref" />
+                  <file name="runtime.wstcref" url="windowmanager/Running/explorer/runtime.wstcref" />
+                </folder>
+                
+                <file name="editor.wsmode" url="windowmanager/Running/editor.wsmode" />
+                <folder name="editor">
+                </folder>
+                
+                <file name="properties.wsmode" url="windowmanager/Running/properties.wsmode" />
+                <folder name="properties">
+                    <file name="properties.wstcref" url="windowmanager/Running/properties/properties.wstcref" />
+                </folder>
+                
+                <file name="output.wsmode" url="windowmanager/Running/output.wsmode" />
+                <folder name="output">
+                    <file name="output.wstcref" url="windowmanager/Running/output/output.wstcref" />
+                </folder>
+                
+                <file name="execution.wsmode" url="windowmanager/Running/execution.wsmode" />
+                <folder name="execution">
+                    <file name="execution.wstcref" url="windowmanager/Running/execution/execution.wstcref" />
+                </folder>
+            </folder>
+        </folder>
+        
+        <folder name="Components">            
+            <file name="runtime.settings" url="components/runtime.settings" >
+            </file>
+            <file name="execution.settings" url="components/execution.settings" >
+            </file>
+        </folder>
+        
+    </folder>
+    
+</filesystem>

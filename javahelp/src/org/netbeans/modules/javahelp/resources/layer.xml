@@ -14,6 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Menu">
+	<attr name="Window/Help" boolvalue="true"/>
         <folder name="Help">
           <file name="master-help.xml" url="master-help.xml">
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javahelp.resources.Bundle"/>

@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd" [
@@ -16,23 +16,29 @@ Microsystems, Inc. All Rights Reserved.
 ]>
 
 <filesystem>
+    <!-- Moved to varios packages see comments
     <folder name="Actions">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-
+    -->
+        <!--
         <folder name="Build">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-openide-actions-BuildAllAction.instance"/>
-            <file name="org-openide-actions-BuildAction.instance"/>
-            <file name="org-openide-actions-CleanAllAction.instance"/>
-            <file name="org-openide-actions-CleanAction.instance"/>
-            <file name="org-openide-actions-CompileAllAction.instance"/>
-            <file name="org-openide-actions-CompileAction.instance"/>
-            <file name="org-openide-actions-ExecuteAction.instance"/>
-            <file name="org-netbeans-core-actions-NextOutJumpAction.instance"/>
-            <file name="org-netbeans-core-actions-PreviousOutJumpAction.instance"/>
-            <file name="org-netbeans-core-actions-SetArgumentsAction.instance"/>
-            <file name="org-netbeans-core-actions-StopCompileAction.instance"/>
+        -->
+            <!-- <file name="org-openide-actions-BuildAllAction.instance"/> Moved to core-compiler -->
+            <!-- <file name="org-openide-actions-BuildAction.instance"/> Moved to core-compiler -->
+            <!-- <file name="org-openide-actions-CleanAllAction.instance"/> Moved to core-compiler -->
+            <!-- <file name="org-openide-actions-CleanAction.instance"/> Moved to core-compiler -->
+            <!-- <file name="org-openide-actions-CompileAllAction.instance"/> Moved to core-compiler -->
+            <!-- <file name="org-openide-actions-CompileAction.instance"/> Moved to core-compiler -->
+            <!-- <file name="org-openide-actions-ExecuteAction.instance"/> Moved to core-execution -->
+            <!-- <file name="org-netbeans-core-actions-NextOutJumpAction.instance"/> Moved to core-compilation -->
+            <!-- <file name="org-netbeans-core-actions-PreviousOutJumpAction.instance"/> Moved to core compilation -->
+            <!-- <file name="org-netbeans-core-actions-SetArgumentsAction.instance"/> Moved to core-execution -->
+            <!-- <file name="org-netbeans-core-actions-StopCompileAction.instance"/> Moved to core-compiler -->
+        <!--    
         </folder>
+        -->
+        <!-- Moved to core-ui 
         <folder name="Edit">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-openide-actions-CopyAction.instance"/>
@@ -45,11 +51,15 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-ReplaceAction.instance"/>
             <file name="org-openide-actions-UndoAction.instance"/>
         </folder>
+        -->
+        <!-- Moved to core-ide 
         <folder name="Help">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-netbeans-core-actions-AboutAction.instance"/>
             <file name="org-netbeans-core-actions-TipOfTheDayAction.instance"/>
         </folder>
+        -->
+        <!-- Moved to core-ui
         <folder name="System">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-netbeans-core-actions-MountAction.instance"/>
@@ -83,6 +93,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-actions-SetupWizardAction.instance"/>
             <file name="org-netbeans-core-actions-MemoryMeterAction.instance"/>
         </folder>
+        -->
+        <!-- Moved to core-ui 
         <folder name="View">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-openide-actions-CloseViewAction.instance"/>
@@ -102,6 +114,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
             <file name="org-openide-actions-WorkspaceSwitchAction.instance"/>
         </folder>
+        -->
+        
+        <!-- Moved to core-windows
         <folder name="Window">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-openide-actions-CloneViewAction.instance"/>
@@ -111,17 +126,23 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-actions-OpenedWindowsAction.instance"/>
             <file name="org-openide-actions-UndockAction.instance"/>
         </folder>
+        -->
+    <!--    
     </folder>
-
+    -->
+    <!-- Moved to core-ide
     <folder name="Welcome">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
         <file name="org-netbeans-core-actions-NewTemplateCallableAction.instance">
-            <attr name="welcomeDescription" urlvalue="nbresbootloc:/org/netbeans/core/resources/welcome/info-NewTemplateAction.html"/>
+            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-NewTemplateAction.html" />
         </file>
     </folder>
-
+    -->
+    <!-- moved to various packages see comments
     <folder name="Menu">
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+    -->  
+      <!-- Moved to core-ui 
       <folder name="File">
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
           <file name="org-netbeans-core-actions-NewTemplateCallableAction.instance"/>
@@ -133,7 +154,7 @@ Microsystems, Inc. All Rights Reserved.
           <file name="org-netbeans-core-actions-UnmountFSAction.instance"/>
           <attr name="org-netbeans-core-actions-UnmountFSAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
           <file name="Separator2[javax-swing-JSeparator].instance"/>
-          <attr name="Separator2[javax-swing-JSeparator].instance/org-openide-actions-SaveAction.instance" boolvalue="true" />
+          <attr name="Separator2[javax-swing-JSeparator].instance/org-openide-actions-SaveAction.instance" boolvalue="true" />7
           <file name="org-openide-actions-SaveAction.instance"/>
           <attr name="org-openide-actions-SaveAction.instance/org-openide-actions-SaveAllAction.instance" boolvalue="true" />
           <file name="org-openide-actions-SaveAllAction.instance"/>
@@ -173,8 +194,12 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="org-openide-actions-ReplaceAction.instance/org-openide-actions-GotoAction.instance" boolvalue="true" />
           <file name="org-openide-actions-GotoAction.instance"/>
       </folder>
+      -->
+      <!--
       <attr name="Edit/View" boolvalue="true" />
       <folder name="View">
+      -->
+          <!-- Moved to core-ui
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
           <file name="org-openide-actions-OpenLocalExplorerAction.instance"/>
           <attr name="org-openide-actions-OpenLocalExplorerAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
@@ -187,18 +212,30 @@ Microsystems, Inc. All Rights Reserved.
           <file name="org-netbeans-core-actions-EditorViewAction.instance"/>
           <attr name="org-netbeans-core-actions-EditorViewAction.instance/org-netbeans-core-actions-OutputWindowAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-OutputWindowAction.instance"/>
+          -->
+          <!-- moved to core-execution 
           <attr name="org-netbeans-core-actions-OutputWindowAction.instance/org-netbeans-core-actions-ExecutionViewAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-ExecutionViewAction.instance"/>
           <attr name="org-netbeans-core-actions-ExecutionViewAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true" />
+          -->
+          <!-- moved to core-ui
           <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
+          -->
+          <!-- Moved to core-windows 
           <attr name="org-netbeans-core-actions-HTMLViewAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
           <file name="Separator2[javax-swing-JSeparator].instance"/>
           <attr name="Separator2[javax-swing-JSeparator].instance/org-openide-actions-WorkspaceSwitchAction.instance" boolvalue="true" />
           <file name="org-openide-actions-WorkspaceSwitchAction.instance"/>
+          -->
+      <!--
       </folder>
+      -->
+      <!-- Moved to core-compiler/execution
       <attr name="View/Build" boolvalue="true" />
       <folder name="Build">
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+          -->
+          <!-- moved to core-compiler
           <file name="org-openide-actions-CompileAction.instance"/>
           <attr name="org-openide-actions-CompileAction.instance/org-openide-actions-CompileAllAction.instance" boolvalue="true" />
           <file name="org-openide-actions-CompileAllAction.instance"/>
@@ -217,20 +254,27 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="org-openide-actions-CleanAllAction.instance/Separator3[javax-swing-JSeparator].instance" boolvalue="true" />
           <file name="Separator3[javax-swing-JSeparator].instance"/>
           <attr name="Separator3[javax-swing-JSeparator].instance/org-netbeans-core-actions-StopCompileAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-StopCompileAction.instance"/>
+          <file name="org-netbeans-core-actions-StopCompileAction.instance"/>          
           <attr name="org-netbeans-core-actions-StopCompileAction.instance/Separator4[javax-swing-JSeparator].instance" boolvalue="true" />
           <file name="Separator4[javax-swing-JSeparator].instance"/>
           <attr name="Separator4[javax-swing-JSeparator].instance/org-netbeans-core-actions-NextOutJumpAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-NextOutJumpAction.instance"/>
           <attr name="org-netbeans-core-actions-NextOutJumpAction.instance/org-netbeans-core-actions-PreviousOutJumpAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-PreviousOutJumpAction.instance"/>
+          -->
+          <!-- moved to core-execution 
           <attr name="org-netbeans-core-actions-PreviousOutJumpAction.instance/Separator5[javax-swing-JSeparator].instance" boolvalue="true" />
           <file name="Separator5[javax-swing-JSeparator].instance"/>
           <attr name="Separator5[javax-swing-JSeparator].instance/org-netbeans-core-actions-SetArgumentsAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-SetArgumentsAction.instance"/>
           <attr name="org-netbeans-core-actions-SetArgumentsAction.instance/org-openide-actions-ExecuteAction.instance" boolvalue="true" />
           <file name="org-openide-actions-ExecuteAction.instance"/>
+          -->
+       <!-- Moved to core-compiler/execution   
        </folder>
+       -->
+       
+       <!-- Moved tp core-ui
        <attr name="Build/Tools" boolvalue="true" />
        <folder name="Tools">
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
@@ -238,7 +282,9 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="org-openide-actions-ToolsAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
           <file name="Separator1[javax-swing-JSeparator].instance"/>
           <attr name="Separator1[javax-swing-JSeparator].instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
+          -->
           <!-- OK to have both separators here: cf. #7391 -->
+          <!--
           <file name="Separator2[javax-swing-JSeparator].instance"/>
           <attr name="Separator2[javax-swing-JSeparator].instance/org-netbeans-core-actions-SetupWizardAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-SetupWizardAction.instance"/>
@@ -247,6 +293,9 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="org-netbeans-core-actions-ConfigureShortcutsAction.instance/org-netbeans-core-actions-OptionsAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-OptionsAction.instance"/>
        </folder>
+       -->
+       
+       <!-- Moved to core-windows
        <attr name="Tools/Window" boolvalue="true" />
        <folder name="Window">
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
@@ -278,34 +327,49 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="Separator4[javax-swing-JSeparator].instance/org-netbeans-core-actions-OpenedWindowsAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-OpenedWindowsAction.instance"/>
        </folder>
+       -->
+       <!-- Moved to core-ide 
        <attr name="Window/Help" boolvalue="true" />
        <folder name="Help">
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
           <file name="Separator1[javax-swing-JSeparator].instance"/>
+          -->
           <!-- Miscellaneous help menu items (URLs) now installed by utilities module. -->
+          <!--
           <attr name="Separator1[javax-swing-JSeparator].instance/org-netbeans-core-actions-WelcomeAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-WelcomeAction.instance"/>
           <attr name="org-netbeans-core-actions-WelcomeAction.instance/org-netbeans-core-actions-AboutAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-AboutAction.instance"/>
        </folder>
+       -->
+    <!--   
     </folder>
-
+    -->
 
     <folder name="Toolbars">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
-        <file name="Standard.xml" url="Standard.xml"/>
+        <file name="Standard.xml" url="Standard.xml"/> <!-- pending how to work with toolbars settings -->
 
+        <!-- 
         <folder name="Build">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+        -->
+            <!-- moved to core compiler 
             <file name="org-openide-actions-BuildAllAction.instance"/>
             <attr name="org-openide-actions-BuildAllAction.instance/org-openide-actions-BuildAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-BuildAction.instance"/>
+            <file name="org-openide-actions-BuildAction.instance"/>            
             <attr name="org-openide-actions-BuildAction.instance/org-netbeans-core-actions-NextOutJumpAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-NextOutJumpAction.instance"/>
+            -->
+            <!-- moved to core-execution
             <attr name="org-netbeans-core-actions-NextOutJumpAction.instance/org-openide-actions-ExecuteAction.instance" boolvalue="true" />
             <file name="org-openide-actions-ExecuteAction.instance"/>
+            -->
+        <!--    
         </folder>
+        -->
+        <!-- Moved to core-ui
         <folder name="Data">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-openide-actions-FindAction.instance"/>
@@ -342,6 +406,8 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-core-actions-MemoryMeterAction.instance/org-openide-actions-GarbageCollectAction.instance" boolvalue="true" />
             <file name="org-openide-actions-GarbageCollectAction.instance"/>
         </folder>
+        -->
+        <!-- Moved to core-ide
         <folder name="View">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-netbeans-core-actions-OutputWindowAction.instance"/>
@@ -350,67 +416,77 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-core-actions-ExecutionViewAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
         </folder>
+        -->
     </folder>
 
+  <!-- Moved to various modules 
   <folder name="Shortcuts">
-    <file name="SA-C[org-netbeans-core-actions-StopCompileAction].instance" />
-    <file name="C-Z[org-openide-actions-UndoAction].instance" />
-    <file name="S-F11[org-openide-actions-BuildAllAction].instance" />
-    <file name="DELETE[org-openide-actions-DeleteAction].instance" />
-    <file name="C-Y[org-openide-actions-RedoAction].instance" />
-    <file name="S-F9[org-openide-actions-CompileAllAction].instance" />
-    <file name="C-X[org-openide-actions-CutAction].instance" />
-    <file name="F12[org-netbeans-core-actions-NextOutJumpAction].instance" />
-    <file name="S-F12[org-netbeans-core-actions-PreviousOutJumpAction].instance" />
-    <file name="S-F8[org-openide-actions-ToggleBreakpointAction].instance" />
-    <file name="F11[org-openide-actions-BuildAction].instance" />
-    <file name="F9[org-openide-actions-CompileAction].instance" />
-    <file name="C-G[org-openide-actions-GotoAction].instance" />
-    <file name="C-7[org-netbeans-core-actions-HTMLViewAction].instance" />
-    <file name="A-RIGHT[org-openide-actions-NextTabAction].instance" />
-    <file name="C-V[org-openide-actions-PasteAction].instance" />
-    <file name="F6[org-openide-actions-ExecuteAction].instance" />
-    <file name="C-F[org-openide-actions-FindAction].instance" />
-    <file name="C-6[org-netbeans-core-actions-ExecutionViewAction].instance" />
-    <file name="A-LEFT[org-openide-actions-PreviousTabAction].instance" />
-    <file name="C-4[org-netbeans-core-actions-OutputWindowAction].instance" />
-    <file name="C-F4[org-openide-actions-CloseViewAction].instance" />
-    <file name="C-S[org-openide-actions-SaveAction].instance" />
-    <file name="C-C[org-openide-actions-CopyAction].instance" />
-    <file name="C-3[org-netbeans-core-actions-EditorViewAction].instance" />
-    <file name="C-H[org-openide-actions-ReplaceAction].instance" />
-    <file name="C-2[org-netbeans-core-actions-ExplorerViewAction].instance" />
-    <file name="C-1[org-netbeans-core-actions-GlobalPropertiesAction].instance" />
-    <file name="C-P[org-openide-actions-PrintAction].instance" />
-    <file name="C-0[org-openide-actions-OpenLocalExplorerAction].instance" />
-    <file name="CS-F7[org-openide-actions-AddWatchAction].instance" />
-    <file name="C-N[org-netbeans-core-actions-NewTemplateCallableAction].instance" />
-    <file name="S-F10[org-openide-actions-PopupAction].instance" />
-    <file name="CS-DOWN[org-netbeans-core-actions-FocusNextWorkspaceAction].instance" />
-    <file name="CS-UP[org-netbeans-core-actions-FocusPreviousWorkspaceAction].instance" />
-    <file name="CS-F12[org-netbeans-core-actions-WorkspaceExplorerAction].instance" />
+  -->
+    <!-- <file name="SA-C[org-netbeans-core-actions-StopCompileAction].instance" /> moved to core-compiler -->
+    <!-- <file name="C-Z[org-openide-actions-UndoAction].instance" /> moved to core-ui -->
+    <!-- <file name="S-F11[org-openide-actions-BuildAllAction].instance" /> moved to core-compiler -->
+    <!-- <file name="DELETE[org-openide-actions-DeleteAction].instance" /> moved to core-ui -->
+    <!-- <file name="C-Y[org-openide-actions-RedoAction].instance" /> moved to core-ui -->
+    <!-- <file name="S-F9[org-openide-actions-CompileAllAction].instance" /> moved to core-compiler -->
+    <!-- <file name="C-X[org-openide-actions-CutAction].instance" /> moved to core-ui -->
+    <!-- <file name="F12[org-netbeans-core-actions-NextOutJumpAction].instance" /> moved to core-compiler -->
+    <!-- <file name="S-F12[org-netbeans-core-actions-PreviousOutJumpAction].instance" /> moved to core-compiler -->
+    <!-- <file name="S-F8[org-openide-actions-ToggleBreakpointAction].instance" /> PENDING Debugger ? moved to core-ide -->
+    <!-- <file name="F11[org-openide-actions-BuildAction].instance" /> moved to core-compiler -->
+    <!-- <file name="F9[org-openide-actions-CompileAction].instance" /> moved to core-compiler -->
+    <!-- <file name="C-G[org-openide-actions-GotoAction].instance" /> moved to core-ui -->
+    <!-- <file name="C-7[org-netbeans-core-actions-HTMLViewAction].instance" /> moved to core-ui -->
+    <!-- <file name="A-RIGHT[org-openide-actions-NextTabAction].instance" /> moved to core-ui -->
+    <!-- <file name="C-V[org-openide-actions-PasteAction].instance" /> moved to core-ui -->
+    <!-- <file name="F6[org-openide-actions-ExecuteAction].instance" /> moved to core-execution -->
+    <!-- <file name="C-F[org-openide-actions-FindAction].instance" /> moved to core-ui -->
+    <!-- <file name="C-6[org-netbeans-core-actions-ExecutionViewAction].instance" /> moved to core-execution -->
+    <!-- <file name="A-LEFT[org-openide-actions-PreviousTabAction].instance" /> moved to core-ui --> 
+    <!-- <file name="C-4[org-netbeans-core-actions-OutputWindowAction].instance" /> moved to core-ui -->
+    <!-- <file name="C-F4[org-openide-actions-CloseViewAction].instance" /> moved to core-ui -->
+    <!-- <file name="C-S[org-openide-actions-SaveAction].instance" /> moved to core-ui -->
+    <!-- <file name="C-C[org-openide-actions-CopyAction].instance" /> moved to core-ui -->
+    <!-- <file name="C-3[org-netbeans-core-actions-EditorViewAction].instance" /> moved to core-ui -->
+    <!-- <file name="C-H[org-openide-actions-ReplaceAction].instance" /> moved to core-ui -->
+    <!-- <file name="C-2[org-netbeans-core-actions-ExplorerViewAction].instance" /> moved to core-ui -->
+    <!-- <file name="C-1[org-netbeans-core-actions-GlobalPropertiesAction].instance" /> moved to core-ui -->
+    <!-- <file name="C-P[org-openide-actions-PrintAction].instance" /> moved to core-ui -->
+    <!-- <file name="C-0[org-openide-actions-OpenLocalExplorerAction].instance" /> moved to core-ui -->
+    <!-- <file name="CS-F7[org-openide-actions-AddWatchAction].instance" /> PENDING Debugger moved to core-ide -->
+    <!-- <file name="C-N[org-netbeans-core-actions-NewTemplateCallableAction].instance" /> moved to core-ui -->
+    <!-- <file name="S-F10[org-openide-actions-PopupAction].instance" /> moved to core-ui -->
+    <!-- <file name="CS-DOWN[org-netbeans-core-actions-FocusNextWorkspaceAction].instance" /> moved to core-ui -->
+    <!-- <file name="CS-UP[org-netbeans-core-actions-FocusPreviousWorkspaceAction].instance" /> moved to core-ui -->
+    <!-- <file name="CS-F12[org-netbeans-core-actions-WorkspaceExplorerAction].instance" /> moved to core-ui -->
+  <!--  
   </folder>
+  -->
 
 
   <folder name="Startup">
     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
   </folder>
 
+
   <folder name="Templates">
     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
     <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesRootDescription.html"/>
 
+        <!-- moved to core-ui
         <folder name="Folder">
             <attr name="template" boolvalue="true"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesFolder.html" />
             <attr name="templateWizardIterator" methodvalue="org.netbeans.core.ui.FolderIterator.create" />
         </folder>
-
+        -->
       <!-- templates for services in Lookup, should have the same subdirectory as objects under the -->
 
+      <!-- moved to various folders
       <folder name="Services">
         <attr name="simple" boolvalue="false" />
+      -->
+        <!-- moved to core-ui
         <folder name="Browsers">
           <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/webbrowsercateg.gif" />
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
@@ -425,12 +501,16 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif" />
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
         </folder>
-
+        -->
+            
+        <!-- moved to core-compiler 
         <folder name="CompilerType">
           <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/compilerTypes.gif" />
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
         </folder>
-
+        -->
+        
+        <!-- moved to core-execution 
         <folder name="DebuggerType">
           <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/debuggerTypes.gif" />
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
@@ -441,11 +521,17 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/executionTypes.gif" />
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
         </folder>
+        -->
+      <!--
       </folder>
-
+      -->
+      
       <!-- folder for all registered filesystem templates -->
+      <!-- moved to core-ui 
       <folder name="Mount">
+      -->
           <!-- a value to signal that this folder should not be visible in the simple new from template wizard -->
+          <!--
           <attr name="simple" boolvalue="false" />
           <attr name="org-netbeans-core-ExLocalFileSystem.settings/org-netbeans-core-ExJarFileSystem.settings" boolvalue="true" />
           <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesFileSystems.html"/>
@@ -465,9 +551,10 @@ Microsystems, Inc. All Rights Reserved.
               <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesJarFS.html"/>
           </file>
       </folder>
-
+      -->
   </folder>
 
+  <!-- moved to core-ui
   <folder name="Wizards">
     <folder name="Setup">
       <file name="org-netbeans-core-ui-IDESettingsPanel.instance">
@@ -476,12 +563,14 @@ Microsystems, Inc. All Rights Reserved.
       <file name="org-netbeans-core-ui-ModuleSelectionPanel.instance" />
     </folder>
   </folder>
+  -->
 
   <!-- register services with Lookup -->
   
   <folder name="Services">
 
     <!-- folder for HTML browsers and very simple browser -->
+    <!-- moved to core-ui
     <folder name="Browsers">
       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/webbrowsercateg.gif" />
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
@@ -503,14 +592,17 @@ Microsystems, Inc. All Rights Reserved.
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
       <attr name="helpID" stringvalue="org.netbeans.core.services.IndentEngines"/>
     </folder>
-
+    -->
+    <!-- moved to core-compiler 
     <folder name="CompilerType">
       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/compilerTypes.gif" />
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
       <attr name="SystemFileSystem.layer" stringvalue="project"/>
       <attr name="helpID" stringvalue="org.netbeans.core.services.CompilerTypes"/>
     </folder>
-
+    -->
+    
+    <!-- moved to core-execution 
     <folder name="DebuggerType">
       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/debuggerTypes.gif" />
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
@@ -524,7 +616,9 @@ Microsystems, Inc. All Rights Reserved.
       <attr name="SystemFileSystem.layer" stringvalue="project"/>
       <attr name="helpID" stringvalue="org.netbeans.core.services.ExecutorTypes"/>
     </folder>
-
+    -->
+    
+    
     <folder name="MIMEResolver">
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/mime.gif" />        
@@ -561,45 +655,62 @@ Microsystems, Inc. All Rights Reserved.
         </file>
         
     </folder>
-        
+    
+    <!-- moved to core-ide    
     <file name="org-netbeans-core-IDESettings.settings" url="IDESettings.settings">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/ideSettings.gif" />
     </file>
-
+    -->
+    
+    <!-- moved to core-ui  
     <file name="org-netbeans-core-output-OutputSettings.settings" url="OutputSettings.settings">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/outputSettings.gif" />
     </file>
-
+    -->
+    
+    <!-- moved to core-ui  
     <file name="org-openide-explorer-propertysheet-PropertySheetSettings.settings" url="PropertySheetSettings.settings">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/propertysheet/propertySheetSettings.gif" />
     </file>
-
+    -->
+    
+    <!-- moved to core-ide
     <file name="org-openide-src-nodes-SourceOptions.settings" url="SourceOptions.settings">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/src/sourceOptions.gif" />
     </file>
-
+    -->
+    
+    <!-- moved to core-execution
     <file name="org-netbeans-core-execution-ExecutionSettings.settings" url="ExecutionSettings.settings">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/executionSettings.gif" />
     </file>
+    -->
 
+    <!-- moved to core-ui  
     <file name="org-openide-text-PrintSettings.settings" url="PrintSettings.settings">
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/printSettings.gif" />
     </file>
+    -->
 
   </folder> <!-- Services -->
 
+  <!-- moved to various modules
   <folder name="UI">
-
+  -->
+  
     <!-- settings categories UI presentation -->
+    <!--
     <folder name="Services">
       <attr name="helpID" stringvalue="org.netbeans.core.ControlPanelNode" />
-
+      -->
+      <!-- moved to core-ui -->
+      <!--
       <folder name="IDEConfiguration">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
@@ -644,8 +755,8 @@ SystemFileSystem
             <attr name="instanceClass" stringvalue="org.netbeans.core.windows.nodes.WorkspacePoolContext" />
           </file>
 
-        </folder> <!-- LookAndFeel -->
-
+        </folder> --><!-- LookAndFeel -->
+        <!--    
         <folder name="System">
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
@@ -692,12 +803,14 @@ SystemFileSystem
 ]]>
           </file>
 
-        </folder> <!-- System -->
+        </folder> --> <!-- System -->
 
+        <!--
         <folder name="ServerAndExternalToolSettings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-
+          -->  
           <!-- link to HTML browsers -->
+          <!--
           <file name="Browsers.shadow">
 <![CDATA[Services/Browsers
 SystemFileSystem
@@ -709,10 +822,11 @@ SystemFileSystem
 SystemFileSystem
 ]]>
           </file>
-        </folder> <!-- ServerAndExternalToolSettings -->
-
-      </folder> <!-- IDEConfiguration -->
-
+        </folder> --> <!-- ServerAndExternalToolSettings -->
+      <!--  
+      </folder> --> <!-- IDEConfiguration -->
+      
+      <!-- moved to core-compiler 
       <folder name="Building">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
@@ -721,8 +835,9 @@ SystemFileSystem
 SystemFileSystem
 ]]>
         </file>
-      </folder> <!-- Building -->
+      </folder> --> <!-- Building -->
 
+      <!-- moved to core-ide
       <folder name="SourceCreationAndManagement">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
@@ -730,8 +845,9 @@ SystemFileSystem
           <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createTemplate" />
           <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
         </file>
-      </folder> <!-- SourceCreationAndManagement -->
+      </folder> --> <!-- SourceCreationAndManagement -->
 
+      <!-- moved to core-ui
       <folder name="Editing">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
@@ -740,8 +856,9 @@ SystemFileSystem
 SystemFileSystem
 ]]>
         </file>
-      </folder> <!-- Editing -->
+      </folder> --> <!-- Editing -->
 
+      <!-- moved to core-execution 
       <folder name="DebuggingAndExecuting">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
@@ -763,18 +880,22 @@ SystemFileSystem
 ]]>
         </file>
 
-      </folder> <!-- DebuggingAndExecuting -->
+      </folder> --> <!-- DebuggingAndExecuting -->
 
-    </folder> <!-- Services -->
-
-  </folder> <!-- UI -->
+    <!-- 
+    </folder> --> <!-- Services -->
+  <!--
+  </folder> --> <!-- UI -->
 
   
   <!-- workplace of the IDE -->
+  <!-- moved to core-ide PENDING
   <folder name="Workplace">
   </folder>
+  -->
 
   <!-- mounted filesystems in the IDE-->
+  <!-- PENDING -->
   <folder name="Mount">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/repository.gif" />
@@ -789,12 +910,24 @@ SystemFileSystem
         <attr name="OpenIDE-Folder-Order" stringvalue="SystemFileSystem" />
   </folder>
 
+  <folder name="Workplace">
+  </folder>
+    
+  
   <!-- default workspaces, frames and their layout defined by core-->
+  
+  <!-- distributed between core-ui and core-ide -->
+  
+  <!-- This should reside in the core-windows -->
   <folder name="Windows">
     <attr name="SystemFileSystem.layer" stringvalue="project"/>
     <file name="WindowManager.wswmgr" url="windowmanager/windowmanager.wswmgr" />
     <folder name="WindowManager">
-      <attr name="Editing/Running" boolvalue="true" />
+    </folder>
+  </folder>
+      <!-- <attr name="Editing/Running" boolvalue="true" /> moved to core-ide -->
+      
+      <!-- moved to core-ui 
       <file name="Editing.wswksp" url="windowmanager/Editing.wswksp" />
       <folder name="Editing">
         <file name="explorer.wsmode" url="windowmanager/Editing/explorer.wsmode" />
@@ -821,6 +954,8 @@ SystemFileSystem
           <file name="execution.wstcref" url="windowmanager/Editing/execution/execution.wstcref" />
         </folder>
       </folder>
+      -->
+      <!-- moved to core-execution
       <file name="Running.wswksp" url="windowmanager/Running.wswksp" />
       <folder name="Running">
         <file name="explorer.wsmode" url="windowmanager/Running/explorer.wsmode" />
@@ -845,7 +980,10 @@ SystemFileSystem
           <file name="execution.wstcref" url="windowmanager/Running/execution/execution.wstcref" />
         </folder>
       </folder>
+    
     </folder>
+    -->
+    <!-- moved to core-ui PENDING
     <folder name="Components">
       <file name="filesystems.settings" url="components/filesystems.settings" >
       </file>
@@ -858,9 +996,10 @@ SystemFileSystem
       <file name="properties.settings" url="components/properties.settings" >
       </file>
     </folder>
-
+    
   </folder>
-
+  -->
+  
   <!-- Lines marked as erroneous: -->
   <folder name="Editors">
     <folder name="AnnotationTypes">

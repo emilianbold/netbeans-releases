@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<!-- XML Layer for core-ide -->
+
+<filesystem>
+    
+    <folder name="Shortcuts">
+        <file name="S-F8[org-openide-actions-ToggleBreakpointAction].instance" /> <!-- PENDING Debugger -->
+        <file name="CS-F7[org-openide-actions-AddWatchAction].instance" />
+    </folder>
+    
+    <folder name="Startup">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+    </folder>
+        
+    <folder name="Services"> <!-- PENDING - move to Java module -->
+        <file name="org-openide-src-nodes-SourceOptions.settings" url="SourceOptions.settings">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/src/sourceOptions.gif" />
+        </file>
+    </folder>
+    
+    <folder name="UI">
+    <!-- settings categories UI presentation -->
+        <folder name="Services">
+            <attr name="helpID" stringvalue="org.netbeans.core.ControlPanelNode" />
+            
+            <folder name="IDEConfiguration"> <!-- PENDING rename to somethink like APP Settings or so -->
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+
+                <folder name="LookAndFeel"> 
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+
+                    <file name="org-openide-src-nodes-SourceOptions.shadow">
+<![CDATA[Services/org-openide-src-nodes-SourceOptions.settings
+SystemFileSystem
+]]>
+                    </file>
+                </folder>
+                
+            </folder>        
+            
+            <folder name="SourceCreationAndManagement">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+
+                <file name="Templates.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createTemplate" />
+                    <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
+                </file>
+            </folder> <!-- SourceCreationAndManagement -->
+        
+        </folder>
+    </folder>
+    
+    
+    
+</filesystem>

@@ -88,12 +88,13 @@ workspaceswitcher
     <!-- But this it is OK to change: -->
     <property name="tryme.args" value=" -J-Dnetbeans.debug.exceptions=true ${tryme.args.additional}"/>
     <!-- Only useful to override in conjunction with merge target during development: -->
-    <property name="fixedmodules" value="core,openide,core/javahelp"/>
+    <property name="fixedmodules" value="core,openide,core/javahelp,core/compiler,core/execution,core/ui,core/windows,core/ide"/>
     <!-- Override this with the Ant command, e.g. -Dmoduleconfig=superslim -->
     <property name="moduleconfig" value="stable"/>
     <!-- You can also explicitly set a particular list of modules if you prefer: -->
     <!-- -Dmodules=foo,bar,... (do not include core or openide) -->
     <configmods property="modules" selectedconfig="${moduleconfig}">
+      <config name="platform" modules=""/>
       <config name="superslim" modules="classfile,clazz,editor,html,image,java,openidex,projects,text,utilities"/>
       <config name="slim" modules="autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,image,java,openidex,projects,text,utilities"/>
       <!-- [PENDING] A poor name; 'standard' would be more in line with the CVS pseudomodule. -->
@@ -121,6 +122,26 @@ workspaceswitcher
   <target name="all-core/javahelp" depends="all-openide">
     <echo message="Building module core/javahelp..."/>
     <ant dir="../core/javahelp" target="netbeans"/>
+  </target>
+  <target name="all-core/compiler" depends="all-openide">
+    <echo message="Building module core/compiler..."/>
+    <ant dir="../core/compiler" target="netbeans"/>
+  </target>
+  <target name="all-core/execution" depends="all-openide">
+    <echo message="Building module core/execution..."/>
+    <ant dir="../core/execution" target="netbeans"/>
+  </target>
+  <target name="all-core/ui" depends="all-openide">
+    <echo message="Building module core/ui..."/>
+    <ant dir="../core/ui" target="netbeans"/>
+  </target>
+  <target name="all-core/windows" depends="all-openide">
+    <echo message="Building module core/windows..."/>
+    <ant dir="../core/windows" target="netbeans"/>
+  </target>
+  <target name="all-core/ide" depends="all-openide">
+    <echo message="Building module core/ide..."/>
+    <ant dir="../core/ide" target="netbeans"/>
   </target>
 
   <!-- And the modules: -->
