@@ -20,6 +20,7 @@
 <mapID target="gs.tour" url="getstart/idetour.html" />
 <mapID target="gs.key" url="getstart/keyconcepts.html" />
 <mapID target="gs.howto" url="getstart/howto.html" />
+<mapID target="gs.tutorials" url="getstart/tutorials.html" />
 
 <mapID target="proj_creating" url="project/proj_creating.html" />
 <mapID target="proj_main" url="project/proj_main.html" />
@@ -300,7 +301,7 @@
 <mapID target="i18n.pe.replacestring" url="internationalize/i18ncodeformat.html" />
 <mapID target="i18n.pe.testregexp" url="internationalize/i18nkeyformat.html" />
 <mapID target="i18n.pe.i18nregexp" url="internationalize/i18nstringformat.html" />
-<mapID target="internation.runlocale" url="run/locale.html" />
+<mapID target="internation.runlocale" url="pending.html" />
 
 <mapID target="ant_docs" url="ant/ant_docs.html" />
 <mapID target="ant_editing" url="ant/ant_editing.html" />
@@ -336,7 +337,7 @@
 <mapID target="update.offline" url="configure/modules/updateoffline.html" />
 <mapID target="update.globally" url="configure/modules/updateglobally.html" />
 <mapID target="configure.enable.module" url="configure/modules/enablemodule.html" />
-<mapID target="configure.module" url="configure/modules/modulenodes.html" />
+<mapID target="configure.module" url="pending.html" />
 
 <mapID target="shortcuts.kybd" url="shortcuts/kybdshortcuts.html" />
 <mapID target="shortcuts.menus" url="shortcuts/menucuts.html" />
@@ -472,7 +473,7 @@
 <mapID target="WebLocationsPanel" url="project/csh/proj_j2sefree_props6.html" />
 
 <!-- Add Libraries dialog box (from Project Properties -> Compiling Classes-->
-<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.LibrariesChooser" url="project/csh/pending.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.LibrariesChooser" url="pending.html" />
 
 <!-- Tags wizard -->
 <mapID target="org.netbeans.modules.web.dd.wizards.TagInfoPanel" url="web/taglib/edit_taghandler.html" />
@@ -846,7 +847,6 @@
    <mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupMenuAction" url="vcs-nb/vcs_groups.html" />
 
    <!--csh for java actions-->
-   <mapID target="org.netbeans.modules.java.imptool.ImpToolAction" url="java/imt/import.html" />
    <mapID target="org.netbeans.modules.java.ui.actions.SynchronizeAction" url="java/synchronizing/new-interface.html" />
    
    <mapID target="org.netbeans.editor.GO_TO_DECLARATION" url="pending.html" />
@@ -891,9 +891,9 @@
    <mapID target="org.netbeans.core.ServicesNode$MakeDefaultAction" url="pending.html" />
    <mapID target="org.netbeans.core.ui.LookupNode" url="pending.html" />
 <!--for Modules node in Options window-->
-   <mapID target="org.netbeans.core.ui.ModuleNode" url="modules/modulenodes.html" />
-   <mapID target="org.netbeans.core.ui.ModuleNode$Item" url="modules/modulenodes.html" />   
-   <mapID target="org.netbeans.core.ui.ModuleNode$CategoryNode" url="modules/modulenodes.html" />   
+   <mapID target="org.netbeans.core.ui.ModuleNode" url="pending.html" />
+   <mapID target="org.netbeans.core.ui.ModuleNode$Item" url="pending.html" />   
+   <mapID target="org.netbeans.core.ui.ModuleNode$CategoryNode" url="pending.html" />   
    <mapID target="org.netbeans.core.ui.NewTemplateWizard1" url="pending.html" />
    <mapID target="org.openide.text.CloneableEditor" url="pending.html" />
    <mapID target="org.openide.actions.ClassNamePanel" url="pending.html" />

@@ -15,9 +15,9 @@
 <tocitem text="IDE Basics" >
 
   <tocitem text="Getting Started" >
-    <tocitem text="IDE Overview" target="tbd" />
-    <tocitem text="Key Concepts" target="tbd" />
-    <tocitem text="Starting With the Basic IDE Tasks" target="tbd" />
+<!--    <tocitem text="IDE Overview" target="tbd" />
+    <tocitem text="Key Concepts" target="tbd" />-->
+    <tocitem text="IDE Tutorials and Guides" target="gs.tutorials" />
   </tocitem>
   
   <tocitem text="Working with Projects" >
