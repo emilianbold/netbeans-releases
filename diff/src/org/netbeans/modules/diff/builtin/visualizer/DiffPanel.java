@@ -385,7 +385,7 @@ public class DiffPanel extends org.openide.windows.TopComponent {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 initGlobalSizes();
-                showLine(1, 0);
+                //showLine(1, 0);
                 addChangeListeners();
 /*                javax.swing.SwingUtilities.invokeLater(new Runnable() {
                     public void run() {

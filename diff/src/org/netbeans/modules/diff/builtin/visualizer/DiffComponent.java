@@ -78,13 +78,7 @@ public class DiffComponent extends org.openide.windows.TopComponent {
                 if (diffs.size() == 0) return ;
                 currentDiffLine--;
                 if (currentDiffLine < 0) currentDiffLine = diffs.size() - 1;
-                Difference diff = (Difference) diffs.get(currentDiffLine);
-                int line = diff.getFirstStart();
-                if (diff.getType() == Difference.ADD) line++;
-                int lf1 = diff.getFirstEnd() - diff.getFirstStart() + 1;
-                int lf2 = diff.getSecondEnd() - diff.getSecondStart() + 1;
-                int length = Math.max(lf1, lf2);
-                diffPanel.setCurrentLine(line, length);
+                showCurrentLine();
             }
         });
         diffPanel.addNextLineButtonListener(new java.awt.event.ActionListener() {
@@ -92,13 +86,7 @@ public class DiffComponent extends org.openide.windows.TopComponent {
                 if (diffs.size() == 0) return ;
                 currentDiffLine++;
                 if (currentDiffLine >= diffs.size()) currentDiffLine = 0;
-                Difference diff = (Difference) diffs.get(currentDiffLine);
-                int line = diff.getFirstStart();
-                if (diff.getType() == Difference.ADD) line++;
-                int lf1 = diff.getFirstEnd() - diff.getFirstStart() + 1;
-                int lf2 = diff.getSecondEnd() - diff.getSecondStart() + 1;
-                int length = Math.max(lf1, lf2);
-                diffPanel.setCurrentLine(line, length);
+                showCurrentLine();
             }
         });
         
@@ -113,6 +101,16 @@ public class DiffComponent extends org.openide.windows.TopComponent {
         initContent(mimeType, sourceName1, sourceName2, title1, title2, r1, r2);
         //HelpCtx.setHelpIDString (getRootPane (), DiffComponent.class.getName ());
         putClientProperty("PersistenceType", "Never");
+    }
+    
+    private void showCurrentLine() {
+        Difference diff = (Difference) diffs.get(currentDiffLine);
+        int line = diff.getFirstStart() + diffShifts[currentDiffLine][0];
+        if (diff.getType() == Difference.ADD) line++;
+        int lf1 = diff.getFirstEnd() - diff.getFirstStart() + 1;
+        int lf2 = diff.getSecondEnd() - diff.getSecondStart() + 1;
+        int length = Math.max(lf1, lf2);
+        diffPanel.setCurrentLine(line, length);
     }
     
     private void initContent(String mimeType, String sourceName1, String sourceName2,
@@ -172,6 +170,10 @@ public class DiffComponent extends org.openide.windows.TopComponent {
         super.open(workspace);
         diffPanel.open();
         requestFocus();
+        if (currentDiffLine < 0) {
+            currentDiffLine = 0;
+            showCurrentLine();
+        }
     }
     
     /**
@@ -285,26 +287,24 @@ public class DiffComponent extends org.openide.windows.TopComponent {
             int n2 = action.getFirstEnd() + diffShifts[i][0];
             int n3 = action.getSecondStart() + diffShifts[i][1];
             int n4 = action.getSecondEnd() + diffShifts[i][1];
-            //D.deb("Action: "+action.getAction()+": ("+n1+","+n2+","+n3+","+n4+")"); // NOI18N
-            //D.deb("ins1 = "+ins1+", ins2 = "+ins2); // NOI18N
-            /*
-            if (updateActionLines) {
-                action.shiftFile1Lines(ins1);
-                action.shiftFile2Lines(ins2);
+            //System.out.println("Action = "+action);
+            //System.out.println("ins1 = "+diffShifts[i][0]+", ins2 = "+diffShifts[i][1]);
+            if (updateActionLines && i < n - 1) {
+                diffShifts[i + 1][0] = diffShifts[i][0];
+                diffShifts[i + 1][1] = diffShifts[i][1];
             }
-             */
             switch (action.getType()) {
                 case Difference.DELETE:
                     addEmptyLines2(n3, n2 - n1 + 1);
                     if (updateActionLines && i < n - 1) {
-                        diffShifts[i+1][1] = diffShifts[i][1] + n2 - n1 + 1;
+                        diffShifts[i+1][1] += n2 - n1 + 1;
                     }
                     //ins2 += n2 - n1 + 1;
                     break;
                 case Difference.ADD:
                     addEmptyLines1(n1, n4 - n3 + 1);
                     if (updateActionLines && i < n - 1) {
-                        diffShifts[i+1][0] = diffShifts[i][0] + n4 - n3 + 1;
+                        diffShifts[i+1][0] += n4 - n3 + 1;
                     }
                     //ins1 += n4 - n3 + 1;
                     break;
@@ -314,13 +314,13 @@ public class DiffComponent extends org.openide.windows.TopComponent {
                     if (r1 < r2) {
                         addEmptyLines1(n2, r2 - r1);
                         if (updateActionLines && i < n - 1) {
-                            diffShifts[i+1][0] = diffShifts[i][0] + r2 - r1;
+                            diffShifts[i+1][0] += r2 - r1;
                         }
                         //ins1 += r2 - r1;
                     } else if (r1 > r2) {
                         addEmptyLines2(n4, r1 - r2);
                         if (updateActionLines && i < n - 1) {
-                            diffShifts[i+1][1] = diffShifts[i][1] + r1 - r2;
+                            diffShifts[i+1][1] += r1 - r2;
                         }
                         //ins2 += r1 - r2;
                     }
@@ -334,10 +334,10 @@ public class DiffComponent extends org.openide.windows.TopComponent {
         //D.deb("Num Actions = "+n); // NOI18N
         for(int i = 0; i < n; i++) {
             Difference action = (Difference) diffs.get(i);
-            int n1 = action.getFirstStart();
-            int n2 = action.getFirstEnd();
-            int n3 = action.getSecondStart();
-            int n4 = action.getSecondEnd();
+            int n1 = action.getFirstStart() + diffShifts[i][0];
+            int n2 = action.getFirstEnd() + diffShifts[i][0];
+            int n3 = action.getSecondStart() + diffShifts[i][1];
+            int n4 = action.getSecondEnd() + diffShifts[i][1];
             //D.deb("Action: "+action.getAction()+": ("+n1+","+n2+","+n3+","+n4+")"); // NOI18N
             switch (action.getType()) {
             case Difference.DELETE:
