@@ -174,8 +174,18 @@ public abstract class AbstractLayoutSupport implements LayoutSupport
     public void removeComponent(RADVisualComponent component) {
         // remove the component from real container
         Container cont = container.getContainerDelegate(container.getBeanInstance());
-        if (cont != null)
-            cont.remove(component.getComponent());
+        if (cont != null) {
+            Component comp = component.getComponent();
+            cont.remove(comp);
+
+            // hack for AWT components
+            // we must attach the fake peer to the AWT component again
+            if (!comp.isDisplayable()
+                    && !(comp instanceof javax.swing.JComponent)
+                    && !(comp instanceof javax.swing.RootPaneContainer))
+                org.netbeans.modules.form.fakepeer.FakePeerSupport
+                    .attachFakePeer(comp);
+        }
     }
 
     public ConstraintsDesc getConstraints(RADVisualComponent component) {
