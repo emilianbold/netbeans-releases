@@ -232,6 +232,9 @@ public class Arch extends Task implements ErrorHandler {
             javax.xml.transform.Transformer t = javax.xml.transform.TransformerFactory.newInstance().newTransformer(ss);
             javax.xml.transform.Source s = new javax.xml.transform.dom.DOMSource (q);
             javax.xml.transform.Result r = new javax.xml.transform.stream.StreamResult (output);
+            if (stylesheet == null) {
+                stylesheet = this.getProject ().getProperty ("arch.stylesheet");
+            }
             if (stylesheet != null) {
                 t.setParameter("arch.stylesheet", stylesheet);
             }
