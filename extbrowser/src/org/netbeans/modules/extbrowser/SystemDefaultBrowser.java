@@ -90,6 +90,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
                 throw new NbBrowserException ();
             }
             b = args[0];
+            params += " {" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";
         } catch (NbBrowserException e) {
             b = "";             // NOI18N
         } catch (UnsatisfiedLinkError e) {

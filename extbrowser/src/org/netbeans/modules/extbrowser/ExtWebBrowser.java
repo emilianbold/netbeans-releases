@@ -36,8 +36,8 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     /** DDE server property name */
     public static final String PROP_DDESERVER = "dDEServer";   // NOI18N
     
-    /** Browser start timeout property name */
-    public static final String PROP_BROWSER_START_TIMEOUT = "browserStartTimeout";   // NOI18N
+//    /** Browser start timeout property name */
+//    public static final String PROP_BROWSER_START_TIMEOUT = "browserStartTimeout";   // NOI18N
 
     /** DDE activate timeout property name */
     public static final String PROP_DDE_ACTIVATE_TIMEOUT = "activateTimeout";   // NOI18N
@@ -54,11 +54,11 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     /** Name of DDE server corresponding to Netscape 6.x */
     public static final String NETSCAPE6 = "NETSCAPE6";   // NOI18N
     
-    /** Default timeout for starting the browser */
-    protected static final int DEFAULT_BROWSER_START_TIMEOUT = 5000;
+//    /** Default timeout for starting the browser */
+//    protected static final int DEFAULT_BROWSER_START_TIMEOUT = 5000;
     
     /** Default for DDE activate timeout property */
-    protected static final int DEFAULT_ACTIVATE_TIMEOUT = 15000;
+    protected static final int DEFAULT_ACTIVATE_TIMEOUT = 2000;
 
     /** Default for DDE openURL timeout property */
     protected static final int DEFAULT_OPENURL_TIMEOUT = 3000;
@@ -69,8 +69,8 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     /** storage for DDE activate timeout property */
     protected int activateTimeout = DEFAULT_ACTIVATE_TIMEOUT;
 
-    /** storage for starting browser timeout property */
-    protected int browserStartTimeout = DEFAULT_BROWSER_START_TIMEOUT;
+//    /** storage for starting browser timeout property */
+//    protected int browserStartTimeout = DEFAULT_BROWSER_START_TIMEOUT;
 
     /** storage for DDE openURL timeout property */
     protected int openurlTimeout = DEFAULT_OPENURL_TIMEOUT;
@@ -124,25 +124,25 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
         }
     }
    
-    /** Getter for property browserStartTimeout.
-     * @return Value of property browserStartTimeout.
-     *
-     */
-    public int getBrowserStartTimeout() {
-        return browserStartTimeout;
-    }
-    
-    /** Setter for property browserStartTimeout.
-     * @param browserStartTimeout New value of property browserStartTimeout.
-     *
-     */
-    public void setBrowserStartTimeout(int browserStartTimeout) {
-        if (browserStartTimeout != this.browserStartTimeout) {
-            int oldVal = this.browserStartTimeout;
-            this.browserStartTimeout = browserStartTimeout;
-            pcs.firePropertyChange(PROP_BROWSER_START_TIMEOUT, oldVal, browserStartTimeout);
-        }
-    }
+//    /** Getter for property browserStartTimeout.
+//     * @return Value of property browserStartTimeout.
+//     *
+//     */
+//    public int getBrowserStartTimeout() {
+//        return browserStartTimeout;
+//    }
+//    
+//    /** Setter for property browserStartTimeout.
+//     * @param browserStartTimeout New value of property browserStartTimeout.
+//     *
+//     */
+//    public void setBrowserStartTimeout(int browserStartTimeout) {
+//        if (browserStartTimeout != this.browserStartTimeout) {
+//            int oldVal = this.browserStartTimeout;
+//            this.browserStartTimeout = browserStartTimeout;
+//            pcs.firePropertyChange(PROP_BROWSER_START_TIMEOUT, oldVal, browserStartTimeout);
+//        }
+//    }
     
     /** Getter for property openurlTimeout.
      * @return Value of property openurlTimeout.
@@ -273,7 +273,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
                 b = args[0];
                 if (args[0].toUpperCase().indexOf("IEXPLORE.EXE") > -1) {       // NOI18N
                     setDDEServer(IEXPLORE);
-                    params = "-nohome";                                         // NOI18N
+                    params = "-nohome ";                                         // NOI18N
                 } else if (args[0].toUpperCase().indexOf("MOZILLA.EXE") > -1) { // NOI18N
                     setDDEServer(MOZILLA);
                 } else if (args[0].toUpperCase().indexOf("NETSCP6.EXE") > -1) { // NOI18N
@@ -283,6 +283,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
                 } else if (args[0].toUpperCase().indexOf("NETSCAPE.EXE") > -1) { // NOI18N
                     setDDEServer(NETSCAPE);
                 }
+                params += "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";
                 return new NbProcessDescriptor(b, params);
                 
             } catch (NbBrowserException e) {
@@ -290,30 +291,35 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
                     b = NbDdeBrowserImpl.getBrowserPath("IEXPLORE"); // NOI18N
                     if ((b != null) && (b.trim().length() > 0)) {
                         setDDEServer(IEXPLORE);
+                        params += "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";
                         return new NbProcessDescriptor(b, params);
                     }
 
                     b = NbDdeBrowserImpl.getBrowserPath("MOZILLA"); // NOI18N
                     if ((b != null) && (b.trim().length() > 0)) {
                         setDDEServer(MOZILLA);
+                        params += "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";
                         return new NbProcessDescriptor(b, params);
                     }
 
                     b = NbDdeBrowserImpl.getBrowserPath("Netscp"); // NOI18N
                     if ((b != null) && (b.trim().length() > 0)) {
                         setDDEServer(NETSCAPE6);
+                        params += "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";
                         return new NbProcessDescriptor(b, params);
                     }
                     
                     b = NbDdeBrowserImpl.getBrowserPath("Netscp6"); // NOI18N
                     if ((b != null) && (b.trim().length() > 0)) {
                         setDDEServer(NETSCAPE6);
+                        params += "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";
                         return new NbProcessDescriptor(b, params);
                     }
 
                     b = NbDdeBrowserImpl.getBrowserPath("Netscape"); // NOI18N
                     if ((b != null) && (b.trim().length() > 0)) {
                         setDDEServer(NETSCAPE);
+                        params += "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";
                         return new NbProcessDescriptor(b, params);
                     }
                     
@@ -325,6 +331,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
                 // someone is customizing this on non-Win platform
                 b = "iexplore";     // NOI18N
             }
+            params += "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";
             return new NbProcessDescriptor (b, params);
 
         // Unix but not MacOSX

@@ -43,6 +43,7 @@ public class URLUtil {
      * @return browsable URL or null
      */
     public static URL createExternalURL(URL url, boolean allowJar) {
+        System.err.println("create external url for: " + url);
         if (url == null)
             return null;
 
@@ -61,14 +62,18 @@ public class URLUtil {
         // map to an external URL using the anchor-less URL
         try {
             FileObject fos[] = URLMapper.findFileObjects(new URL(urlString));
+            System.err.println("fos: " + fos);
             if ((fos != null) && (fos.length > 0)) {
+                System.err.println("is not null");
                 URL newUrl = getURLOfAppropriateType(fos[0], allowJar);
+                System.err.println("newurl: " + newUrl);
                 if (newUrl != null) {
                     // re-add the anchor if exists
                     urlString = newUrl.toString();
                     if (ind >=0) {
                         urlString = urlString + "#" + anchor; // NOI18N
                     }
+                    System.err.println("new url: " + urlString);
                     return new URL(urlString);
                 }
             }
@@ -86,6 +91,7 @@ public class URLUtil {
      * otherwise a NETWORK URL is used.
      */
     private static URL getURLOfAppropriateType(FileObject fo, boolean allowJar) {
+        System.err.println("geturlofappropriatetype: " + fo + ", " + allowJar);
         // PENDING - there is still the problem that the HTTP server will be started 
         // (because the HttpServerURLMapper.getURL(...) method starts it), 
         // even when it is not needed
@@ -96,6 +102,7 @@ public class URLUtil {
         while (instances.hasNext()) {
             URLMapper mapper = (URLMapper) instances.next();
             retVal = mapper.getURL (fo, URLMapper.EXTERNAL);
+            System.err.println("retval: " + retVal);
             if ((retVal != null) && isAcceptableProtocol(retVal.getProtocol().toLowerCase(), allowJar)) {
                 // return if this is a 'file' or 'jar' URL
                 String p = retVal.getProtocol().toLowerCase();

@@ -22,8 +22,8 @@ import org.openide.util.NbBundle;
  */
 public class IExplorerBrowser extends ExtWebBrowser {
 
-    /** storage for starting browser timeout property */
-    protected int browserStartTimeout = 5000;
+//    /** storage for starting browser timeout property */
+//    protected int browserStartTimeout = 5000;
 
     /** Determines whether the browser should be visible or not
      *  @return true when OS is Windows.
@@ -74,8 +74,9 @@ public class IExplorerBrowser extends ExtWebBrowser {
      */
     protected NbProcessDescriptor defaultBrowserExecutable () {
         String b;
-        String params = "-nohome";    // NOI18N
+        String params = "-nohome ";    // NOI18N
 
+        params += "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";
         try {
             b = NbDdeBrowserImpl.getBrowserPath(getDDEServer ());
         } catch (NbBrowserException e) {

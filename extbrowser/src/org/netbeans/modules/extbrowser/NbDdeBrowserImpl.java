@@ -231,7 +231,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                                 );
                             }
                         }
-                    }, task.browser.extBrowserFactory.getBrowserStartTimeout() + ADDITIONAL_WAIT_TIMEOUT);
+                    }, /*task.browser.extBrowserFactory.getBrowserStartTimeout() + */ADDITIONAL_WAIT_TIMEOUT);
                     dispatchURL (task);
                     timer.cancel();
                 } catch (InterruptedException ex) {
@@ -274,34 +274,36 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                             ExtWebBrowser.getEM().log("Exception, gonna start browser: " + ex);  // NOI18N
                         }
                         triedStart = true;
-                        startBrowser(task);
-                        try {
-                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage (NbDdeBrowserImpl.class, "MSG_activatingBrowser"));
-                            task.browser.reqDdeMessage(task.browser.realDDEServer(),WWW_ACTIVATE,"-1,0x0",task.browser.getActivateTimeout()); // NOI18N
-                        } catch (NbBrowserException nbe) {
-                            // Browser activation failed - nevermind, life goes on, it's not fully supported in browsers anyway
-                            if (ExtWebBrowser.getEM().isLoggable (ErrorManager.INFORMATIONAL)) {
-                                ExtWebBrowser.getEM().log(ErrorManager.INFORMATIONAL, "Browser activation failed: " + nbe); // NOI18N
-                            }
-                        }
+                        startBrowser(task.browser.extBrowserFactory.getBrowserExecutable(), urlStr);
+//                        try {
+//                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage (NbDdeBrowserImpl.class, "MSG_activatingBrowser"));
+//                            task.browser.reqDdeMessage(task.browser.realDDEServer(),WWW_ACTIVATE,"-1,0x0",task.browser.getActivateTimeout()); // NOI18N
+//                        } catch (NbBrowserException nbe) {
+//                            // Browser activation failed - nevermind, life goes on, it's not fully supported in browsers anyway
+//                            if (ExtWebBrowser.getEM().isLoggable (ErrorManager.INFORMATIONAL)) {
+//                                ExtWebBrowser.getEM().log(ErrorManager.INFORMATIONAL, "Browser activation failed: " + nbe); // NOI18N
+//                            }
+//                        }
                     }  
                 }
 
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_openingURLInBrowser"));
-                String args1 = "\""+urlStr+"\",,-1,0x1,,,";  // NOI18N
+                if (!triedStart) {
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_openingURLInBrowser"));
+                    String args1 = "\""+urlStr+"\",,-1,0x1,,,";  // NOI18N
 
-                try {
-                    task.browser.reqDdeMessage(task.browser.realDDEServer(),WWW_OPEN_URL,args1,task.browser.getOpenUrlTimeout());
-                } catch (NbBrowserException ex) {
-                    if (!triedStart) {
-                        if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                            ExtWebBrowser.getEM().log("Restarting browser.");    // NOI18N
-                        }
-                        startBrowser (task);        
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_openingURLInBrowser"));
+                    try {
                         task.browser.reqDdeMessage(task.browser.realDDEServer(),WWW_OPEN_URL,args1,task.browser.getOpenUrlTimeout());
-                    } else {
-                        throw new NbBrowserException(ex.toString());
+                    } catch (NbBrowserException ex) {
+//                        if (!triedStart) {
+                            if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
+                                ExtWebBrowser.getEM().log("Restarting browser.");    // NOI18N
+                            }
+                            startBrowser(task.browser.extBrowserFactory.getBrowserExecutable(), urlStr);
+    //                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_openingURLInBrowser"));
+    //                        task.browser.reqDdeMessage(task.browser.realDDEServer(),WWW_OPEN_URL,args1,task.browser.getOpenUrlTimeout());
+//                        } else {
+//                            throw new NbBrowserException(ex.toString());
+//                        }
                     }
                 }
 
@@ -398,18 +400,9 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
          *
          * It is used when WWW_Activate or WWW_OpenURL fail
          */
-        private void startBrowser(DisplayTask task) throws NbBrowserException, java.io.IOException, InterruptedException {
-            NbProcessDescriptor cmd = task.browser.extBrowserFactory.getBrowserExecutable();
+        private void startBrowser(NbProcessDescriptor cmd, String url) throws NbBrowserException, java.io.IOException, InterruptedException {
             StatusDisplayer.getDefault ().setStatusText (NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_startingBrowser"));
-            cmd.exec();
-
-            // wait for browser start
-            int timeout = task.browser.extBrowserFactory.getBrowserStartTimeout();
-            if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                ExtWebBrowser.getEM().log("Starting Timeout: " + timeout); //NOI18N
-            }
-
-            Thread.currentThread().sleep(timeout);
+            cmd.exec(new ExtWebBrowser.UnixBrowserFormat(url));
         }
     }
 

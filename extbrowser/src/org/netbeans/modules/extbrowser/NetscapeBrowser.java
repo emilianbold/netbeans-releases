@@ -29,7 +29,7 @@ public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeList
     private static final long serialVersionUID = -2097024098026706995L;    
 
     /** storage for starting browser timeout property */
-    protected int browserStartTimeout = 6000;
+    //protected int browserStartTimeout = 6000;
 
     /** Creates new ExtWebBrowser */
     public NetscapeBrowser() {
@@ -41,6 +41,7 @@ public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeList
         if (Utilities.isWindows()) {
             ddeServer = ExtWebBrowser.NETSCAPE6;
             pcs.addPropertyChangeListener(this);
+            //browserStartTimeout = 6000;
         }
     }
 
@@ -125,6 +126,7 @@ public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeList
         
         //Windows
         if (Utilities.isWindows()) {
+            params += "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";
             try {
                 try {
                     b = NbDdeBrowserImpl.getBrowserPath("Netscp"); // NOI18N
