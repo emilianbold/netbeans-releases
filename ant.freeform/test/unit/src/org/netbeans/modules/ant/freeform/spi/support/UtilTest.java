@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,12 +18,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
-import org.netbeans.modules.ant.freeform.FreeformProjectType;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
-import org.w3c.dom.Element;
-
 
 /**
  * @author David Konecny
@@ -49,6 +46,16 @@ public class UtilTest extends NbTestCase {
         
         AuxiliaryConfiguration au = Util.getAuxiliaryConfiguration(helper);
         assertNotNull("project has AuxiliaryConfiguration", au);
+    }
+    
+    public void testRelativizeLocation() throws Exception {
+        assertEquals("foo/bar", Util.relativizeLocation(new File("/src/app"), new File("/src/app"), new File("/src/app/foo/bar")));
+        assertEquals("${project.dir}/foo/bar", Util.relativizeLocation(new File("/src/app"), new File("/proj/app"), new File("/src/app/foo/bar")));
+        assertEquals("/other/foo/bar", Util.relativizeLocation(new File("/src/app"), new File("/src/app"), new File("/other/foo/bar")));
+        assertEquals("/other/foo/bar", Util.relativizeLocation(new File("/src/app"), new File("/proj/app"), new File("/other/foo/bar")));
+        // Mentioned incidentally in #54428:
+        assertEquals(".", Util.relativizeLocation(new File("/src/app"), new File("/src/app"), new File("/src/app")));
+        assertEquals("${project.dir}", Util.relativizeLocation(new File("/src/app"), new File("/proj/app"), new File("/src/app")));
     }
 
 }

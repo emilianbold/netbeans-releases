@@ -153,6 +153,8 @@ public class Util {
         if (CollocationQuery.areCollocated(projectBase, location)) {
             if (projectBase.equals(freeformBase)) {
                 return PropertyUtils.relativizeFile(projectBase, location);
+            } else if (projectBase.equals(location) && ProjectConstants.PROJECT_LOCATION_PREFIX.endsWith("/")) { // NOI18N
+                return ProjectConstants.PROJECT_LOCATION_PREFIX.substring(0, ProjectConstants.PROJECT_LOCATION_PREFIX.length() - 1);
             } else {
                 return ProjectConstants.PROJECT_LOCATION_PREFIX + PropertyUtils.relativizeFile(projectBase, location);
             }
