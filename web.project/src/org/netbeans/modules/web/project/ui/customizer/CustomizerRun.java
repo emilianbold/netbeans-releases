@@ -7,72 +7,37 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.project.ui.customizer;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import javax.swing.DefaultListModel;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import javax.swing.ListCellRenderer;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
-import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+
 import org.openide.util.NbBundle;
 
-/**
- *
- * @author  phrebejk
- */
 public class CustomizerRun extends JPanel implements WebCustomizer.Panel {
     
     // Helper for storing properties
-    private WebProjectProperties j2seProperties;
+    private WebProjectProperties webProperties;
     
     /** Creates new form CustomizerCompile */
     public CustomizerRun() {
         initComponents();                
     }
     
-    
-    public void initValues( WebProjectProperties j2seProperties ) {
+    public void initValues(WebProjectProperties webProperties) {
+        this.webProperties = webProperties;
         
-        this.j2seProperties = j2seProperties;
+        VisualPropertySupport vps = new VisualPropertySupport(webProperties);
         
-        VisualPropertySupport vps = new VisualPropertySupport( j2seProperties );
+        vps.register(jTextFieldContextPath, WebProjectProperties.CONTEXT_PATH);
+        vps.register(jCheckBoxDisplayBrowser, WebProjectProperties.DISPLAY_BROWSER);
+        vps.register(jTextFieldLaunchURL, WebProjectProperties.LAUNCH_URL);
         
-        vps.register( jTextFieldMainClass, WebProjectProperties.MAIN_CLASS  );
-        vps.register( jTextFieldArgs, WebProjectProperties.APPLICATION_ARGS );
-//        VisualClasspathSupport vcs = new VisualClasspathSupport(
-//            jListClasspath,
-//            jButtonAddJar,
-//            jButtonAddLibrary,
-//            jButtonAddArtifact,
-//            jButtonEdit,
-//            jButtonRemove,
-//            jButtonMoveUp,
-//            jButtonMoveDown );
-//        vps.register( vcs, WebProjectProperties.RUN_CLASSPATH );
-   
-        // XXX Probably remove the button
-        jButtonMainClass.setVisible( false );
-        jButtonEdit.setVisible( false );
+        jTextFieldLaunchURL.setEnabled(jCheckBoxDisplayBrowser.isSelected());
     } 
-        
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -82,163 +47,81 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel {
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabelMainClass = new javax.swing.JLabel();
-        jTextFieldMainClass = new javax.swing.JTextField();
-        jButtonMainClass = new javax.swing.JButton();
-        jLabelArgs = new javax.swing.JLabel();
-        jTextFieldArgs = new javax.swing.JTextField();
-        jPanel1 = new javax.swing.JPanel();
-        jLabelRunClasspath = new javax.swing.JLabel();
-        jScrollClasspath = new javax.swing.JScrollPane();
-        jListClasspath = new javax.swing.JList();
-        jButtonAddJar = new javax.swing.JButton();
-        jButtonAddLibrary = new javax.swing.JButton();
-        jButtonAddArtifact = new javax.swing.JButton();
-        jButtonEdit = new javax.swing.JButton();
-        jButtonRemove = new javax.swing.JButton();
-        jButtonMoveUp = new javax.swing.JButton();
-        jButtonMoveDown = new javax.swing.JButton();
+        jLabelContextPath = new javax.swing.JLabel();
+        jTextFieldContextPath = new javax.swing.JTextField();
+        jCheckBoxDisplayBrowser = new javax.swing.JCheckBox();
+        jLabelLaunchURL = new javax.swing.JLabel();
+        jTextFieldLaunchURL = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EtchedBorder());
-        jLabelMainClass.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_MainClass_JLabel"));
+        jLabelContextPath.setLabelFor(jTextFieldContextPath);
+        jLabelContextPath.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_ContextPath_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 0);
-        add(jLabelMainClass, gridBagConstraints);
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 0);
+        add(jLabelContextPath, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
-        add(jTextFieldMainClass, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(12, 11, 11, 11);
+        add(jTextFieldContextPath, gridBagConstraints);
 
-        jButtonMainClass.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_MainClass_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(12, 6, 12, 12);
-        add(jButtonMainClass, gridBagConstraints);
-
-        jLabelArgs.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Args_JLabel"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
-        add(jLabelArgs, gridBagConstraints);
+        jCheckBoxDisplayBrowser.setSelected(true);
+        jCheckBoxDisplayBrowser.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_DisplayBrowser_JCheckBox"));
+        jCheckBoxDisplayBrowser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBoxDisplayBrowserActionPerformed(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 12);
-        add(jTextFieldArgs, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
+        add(jCheckBoxDisplayBrowser, gridBagConstraints);
 
-        jPanel1.setLayout(new java.awt.GridBagLayout());
-
-        jLabelRunClasspath.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_RunClasspath_JLabel"));
+        jLabelLaunchURL.setLabelFor(jTextFieldLaunchURL);
+        jLabelLaunchURL.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_LaunchURL_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 2, 0);
-        jPanel1.add(jLabelRunClasspath, gridBagConstraints);
-
-        jScrollClasspath.setViewportView(jListClasspath);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 12);
-        jPanel1.add(jScrollClasspath, gridBagConstraints);
+        add(jLabelLaunchURL, gridBagConstraints);
 
-        jButtonAddJar.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeCompile_Classpath_AddJar_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 12);
-        jPanel1.add(jButtonAddJar, gridBagConstraints);
-
-        jButtonAddLibrary.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeCompile_Classpath_AddLibrary_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 12);
-        jPanel1.add(jButtonAddLibrary, gridBagConstraints);
-
-        jButtonAddArtifact.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeCompile_Classpath_AddArtifact_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 12);
-        jPanel1.add(jButtonAddArtifact, gridBagConstraints);
-
-        jButtonEdit.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeCompile_Classpath_Edit_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 12);
-        jPanel1.add(jButtonEdit, gridBagConstraints);
-
-        jButtonRemove.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeCompile_Classpath_Remove_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 12);
-        jPanel1.add(jButtonRemove, gridBagConstraints);
-
-        jButtonMoveUp.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeCompile_Classpath_MoveUp_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 12);
-        jPanel1.add(jButtonMoveUp, gridBagConstraints);
-
-        jButtonMoveDown.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeCompile_Classpath_MoveDown_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 12);
-        jPanel1.add(jButtonMoveDown, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jPanel1, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 11);
+        add(jTextFieldLaunchURL, gridBagConstraints);
 
     }//GEN-END:initComponents
-    
+
+    private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxDisplayBrowserActionPerformed
+        jTextFieldLaunchURL.setEnabled(jCheckBoxDisplayBrowser.isSelected());
+    }//GEN-LAST:event_jCheckBoxDisplayBrowserActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButtonAddArtifact;
-    private javax.swing.JButton jButtonAddJar;
-    private javax.swing.JButton jButtonAddLibrary;
-    private javax.swing.JButton jButtonEdit;
-    private javax.swing.JButton jButtonMainClass;
-    private javax.swing.JButton jButtonMoveDown;
-    private javax.swing.JButton jButtonMoveUp;
-    private javax.swing.JButton jButtonRemove;
-    private javax.swing.JLabel jLabelArgs;
-    private javax.swing.JLabel jLabelMainClass;
-    private javax.swing.JLabel jLabelRunClasspath;
-    private javax.swing.JList jListClasspath;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollClasspath;
-    private javax.swing.JTextField jTextFieldArgs;
-    private javax.swing.JTextField jTextFieldMainClass;
+    private javax.swing.JCheckBox jCheckBoxDisplayBrowser;
+    private javax.swing.JLabel jLabelContextPath;
+    private javax.swing.JLabel jLabelLaunchURL;
+    private javax.swing.JTextField jTextFieldContextPath;
+    private javax.swing.JTextField jTextFieldLaunchURL;
     // End of variables declaration//GEN-END:variables
-    
-    
     
 }

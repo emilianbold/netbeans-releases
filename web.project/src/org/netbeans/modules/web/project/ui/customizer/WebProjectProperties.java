@@ -38,13 +38,13 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.w3c.dom.DOMException;
+
+import org.netbeans.modules.web.project.WebProjectType;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -69,13 +69,15 @@ public class WebProjectProperties {
     public static final String RUN_CLASSPATH = "run.classpath";
     public static final String DEBUG_CLASSPATH = "debug.classpath";    
     public static final String JAR_COMPRESS = "jar.compress";
-    public static final String MAIN_CLASS = "main.class";
+    public static final String CONTEXT_PATH = "context.path";
+    public static final String LAUNCH_URL = "launch.url";
+    public static final String DISPLAY_BROWSER = "display.browser";
     public static final String JAVAC_SOURCE = "javac.source";
     public static final String JAVAC_DEBUG = "javac.debug";
     public static final String JAVAC_DEPRECATION = "javac.deprecation";
     public static final String JAVAC_TARGET = "javac.target";
     public static final String SRC_DIR = "src.dir";
-    public static final String WEB_DOCBASE_DIR = "web.docbase.dir"; //TODO create property descriptor
+    public static final String WEB_DOCBASE_DIR = "web.docbase.dir";
     public static final String BUILD_DIR = "build.dir";
     public static final String BUILD_WEB_DIR = "build.web.dir";
     public static final String BUILD_GENERATED_DIR = "build.generated.dir";
@@ -83,7 +85,6 @@ public class WebProjectProperties {
     public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes";
     public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir";
     public static final String NO_DEPENDENCIES="no.dependencies";
-    
     
     public static final String JAVADOC_PRIVATE="javadoc.private";
     public static final String JAVADOC_NO_TREE="javadoc.notree";
@@ -101,7 +102,6 @@ public class WebProjectProperties {
     public static final String COMPILE_JSPS = "compile.jsps";
     
     // Properties stored in the PRIVATE.PROPERTIES
-    public static final String APPLICATION_ARGS = "application.args";
     public static final String JSPC_CLASSPATH = "jspc.classpath";
     
     
@@ -109,9 +109,6 @@ public class WebProjectProperties {
     private static final String PROJECT = AntProjectHelper.PROJECT_PROPERTIES_PATH;
     private static final String PRIVATE = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
     
-    private static final int IDX_PROJECT = 0;
-    private static final int IDX_PRIVATE = 1;
-
     private static final PropertyParser STRING_PARSER = new StringParser();
     private static final BooleanParser BOOLEAN_PARSER = new BooleanParser();
     private static final InverseBooleanParser INVERSE_BOOLEAN_PARSER = new InverseBooleanParser();
@@ -131,7 +128,9 @@ public class WebProjectProperties {
         new PropertyDescriptor( RUN_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( DEBUG_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( JAR_COMPRESS, PROJECT, BOOLEAN_PARSER ),
-        new PropertyDescriptor( MAIN_CLASS, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( CONTEXT_PATH, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( LAUNCH_URL, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( DISPLAY_BROWSER, PROJECT, BOOLEAN_PARSER ),
         new PropertyDescriptor( JAVAC_SOURCE, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVAC_DEBUG, PROJECT, BOOLEAN_PARSER ),       
         new PropertyDescriptor( JAVAC_DEPRECATION, PROJECT, BOOLEAN_PARSER ),
@@ -141,7 +140,7 @@ public class WebProjectProperties {
         new PropertyDescriptor( BUILD_CLASSES_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_CLASSES_EXCLUDES, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_JAVADOC_DIR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( APPLICATION_ARGS, PRIVATE, STRING_PARSER ),          
+        new PropertyDescriptor( WEB_DOCBASE_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( NO_DEPENDENCIES, PROJECT, INVERSE_BOOLEAN_PARSER ),
         new PropertyDescriptor( JAVA_PLATFORM, PROJECT, PLATFORM_PARSER ),
         
