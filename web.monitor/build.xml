@@ -55,9 +55,6 @@ Microsystems, Inc. All Rights Reserved.
         <include name="**/*.class"/>
         <include name="**/*.jar"/>
       </fileset>
-      <fileset dir=".">
-        <include name="*subst.mf"/>
-      </fileset>
     </delete>
     <delete dir="netbeans"/>
     <delete dir="Info"/>
@@ -99,7 +96,8 @@ Microsystems, Inc. All Rights Reserved.
 
 
   <target name="compile"
-	  depends="compile-view, compile-core,compile-tomcat,compile-iplanet"/>
+	  depends="compile-view, compile-core, compile-server, compile-tomcat"/>
+
 
   <!-- If this is compiled with the rest of the core, it fails to find 
        openide.jar in the classpath for some reason --> 
@@ -111,46 +109,65 @@ Microsystems, Inc. All Rights Reserved.
        <classpath>
          <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
          <pathelement location="${nbroot}/httpserver/netbeans/modules/httpserver.jar"/>
-         <pathelement location="${f4jroot}/dd2beans/netbeans/modules/dd2beans.jar"/>
-         <pathelement location="extra/servlet.jar"/>	
          <pathelement location="${nbroot}/web/netbeans/modules/jsp.jar"/>
-	 <pathelement location="${f4jroot}/core/release/lib/ext/parser.jar"/>
+         <pathelement location="${binroot}/httpserver/servletapi/release/modules/ext/servlet-2.2.jar"/> 
+
+         <pathelement location="${f4jroot}/dd2beans/netbeans/modules/dd2beans.jar"/>
+ 	 <pathelement location="${f4jroot}/core/release/lib/ext/parser.jar"/>
+
       </classpath>
      </javac>
   </target>
 
-  <target name="compile-core">
+  <target name="compile-core" depends="compile-view">
     <javac srcdir="src" destdir="src"
        deprecation="${build.compiler.deprecation}" 
        debug="${build.compiler.debug}"
-       includes="**/MonitorModule.java,**/monitor/data/**,**/monitor/server/**,**/monitor/client/**"
+       includes="**/MonitorModule.java,**/monitor/data/*,**/monitor/client/**"
        excludes="**/SCCS/**, **/CVS/**, **/TransactionView.java">
 
        <classpath>
          <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
          <pathelement location="${nbroot}/httpserver/netbeans/modules/httpserver.jar"/>
          <pathelement location="${f4jroot}/dd2beans/netbeans/modules/dd2beans.jar"/>
+ 	 <pathelement location="${f4jroot}/core/release/lib/ext/parser.jar"/>
+         <pathelement location="${binroot}/httpserver/servletapi/release/modules/ext/servlet-2.2.jar"/> 
          <pathelement location="${nbroot}/web/netbeans/modules/jsp.jar"/>
+       </classpath>
+     </javac>
+  </target>
+
+  <target name="compile-server" depends="compile-core">
+    <javac srcdir="src" destdir="src"
+       deprecation="${build.compiler.deprecation}" 
+       debug="${build.compiler.debug}"
+       includes="**/monitor/server/**"
+       excludes="**/SCCS/**, **/CVS/**">
+
+       <classpath>
+         <pathelement location="${f4jroot}/dd2beans/netbeans/modules/dd2beans.jar"/>
          <pathelement location="extra/servlet.jar"/>
        </classpath>
      </javac>
   </target>
 
-  <target name="compile-tomcat" depends="compile-core">
+  <target name="compile-tomcat" depends="compile-server">
+
     <javac srcdir="src" destdir="src"
          deprecation="${build.compiler.deprecation}" 
 	 debug="${build.compiler.debug}"
 	 includes="**/monitor/tomcat/**,**/org/apache/**"
 	 excludes="**/SCCS/**,**/CVS/**">
+
        <classpath>
-          <pathelement location="${f4jroot}/dd2beans/netbeans/modules/dd2beans.jar"/>
-          <pathelement location="${binroot}/httpserver/servletapi/release/modules/ext/servlet-2.2.jar"/> 
           <pathelement location="${binroot}/httpserver/release/modules/ext/webserver.jar"/>
+          <pathelement location="extra/servlet.jar"/> 
+         <pathelement location="${f4jroot}/dd2beans/netbeans/modules/dd2beans.jar"/>
        </classpath>
      </javac>
   </target>
 
-  <target name="compile-iplanet" depends="compile-core"> 
+  <target name="compile-iplanet" depends="compile-server"> 
     <javac srcdir="src" destdir="src"
          deprecation="${build.compiler.deprecation}" 
 	 debug="${build.compiler.debug}"
@@ -163,26 +180,49 @@ Microsystems, Inc. All Rights Reserved.
      </javac>
   </target>
 
+  <target name="jars" depends="compile,tomcat-monitor">
+    <mkdir dir="netbeans/modules"/>
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf"
+          filtering="on"/>
 
+    <!-- Create jspie.jar, which includes some stuff from ${nbroot}/web. -->
 
-  <target name="iplanet-monitor" depends="compile-core,compile-iplanet">
-   <locjar jarfile="netbeans/modules/ext/iplanet-monitor.jar" compress="false">
+    <locjar jarfile="netbeans/modules/monitor.jar"
+         manifest="manifest-subst.mf"
+         compress="false">
       <locale name="ja"/>
+      <branding name="f4j"/>
+      <branding name="f4j_ce"/>
+      <branding name="f4j_ie"/>
       <fileset dir="src">
         <patternset excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt">
-          <include name="org/netbeans/modules/web/monitor/data/"/>
-          <include name="org/netbeans/modules/web/monitor/server/"/>
-          <include name="org/netbeans/modules/web/monitor/iplanet/"/>
+          <exclude name="org/netbeans/modules/web/monitor/iplanet/"/>
+          <exclude name="org/netbeans/modules/web/monitor/tomcat/"/>
+          <exclude name="org/netbeans/modules/web/monitor/server/"/>
+        </patternset>
+      </fileset>
+    </locjar>
+ 
+    <locjar jarfile="netbeans/modules/ext/httpmonitor.jar"
+         compress="false">
+      <locale name="ja"/>
+      <branding name="f4j"/>
+      <branding name="f4j_ce"/>
+      <branding name="f4j_ie"/>
+      <fileset dir="src">
+        <patternset excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt">
+          <exclude name="org/netbeans/modules/web/monitor/iplanet/"/>
+          <exclude name="org/netbeans/modules/web/monitor/tomcat/"/>
+          <exclude name="org/netbeans/modules/web/monitor/client/"/>
         </patternset>
       </fileset>
     </locjar>
   </target>
 
-
-
+  <!-- This target will be deprecated --> 
   <target name="tomcat-monitor" depends="compile">
     <locjar jarfile="netbeans/modules/ext/tomcat-monitor.jar"
-            manifest="${nbroot}/tomcatint/tomcat32/manifest-subst.mf"
             compress="false">
       <locale name="ja"/>
       <fileset dir="src">
@@ -198,30 +238,6 @@ Microsystems, Inc. All Rights Reserved.
 
 
 
-  <target name="jars" depends="compile,tomcat-monitor, iplanet-monitor">
-    <mkdir dir="netbeans/modules"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf"
-          filtering="on"/>
-
-    <!-- Create jspie.jar, which includes some stuff from ${nbroot}/web. -->
-
-      <locjar jarfile="netbeans/modules/monitor.jar"
-         manifest="manifest-subst.mf"
-         compress="false">
-      <locale name="ja"/>
-      <branding name="f4j"/>
-      <branding name="f4j_ce"/>
-      <branding name="f4j_ie"/>
-      <fileset dir="src">
-        <patternset excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt">
-          <exclude name="org/netbeans/modules/web/monitor/iplanet/"/>
-          <exclude name="org/netbeans/modules/web/monitor/tomcat/"/>
-          <exclude name="org/netbeans/modules/web/monitor/server/"/>
-        </patternset>
-      </fileset>
-    </locjar>
-  </target>
 </project>
 
 
