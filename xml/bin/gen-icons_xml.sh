@@ -24,7 +24,7 @@
 
 
 # 'true' or anything else
-GENERATE=false
+GENERATE=true
 
 BASE=`pwd`
 WWW=$BASE/www
@@ -34,6 +34,7 @@ for dir in catalog core css tax text-edit tools tree-edit; do
 
     ICONS=$WWW/$dir/images/icons
     mkdir -p $ICONS
+    rm -f $ICONS/*.gif
 
     touch $ICONS/description.properties
 
