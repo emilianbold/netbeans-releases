@@ -370,6 +370,7 @@ public class BridgeImpl implements BridgeInterface {
         }
         try {
             String s = p.getName();
+            AntModule.err.log("Gutting extra references in project \"" + s + "\"");
             Field[] fs = Project.class.getDeclaredFields();
             for (int i = 0; i < fs.length; i++) {
                 if (Modifier.isStatic(fs[i].getModifiers())) {
@@ -394,7 +395,12 @@ public class BridgeImpl implements BridgeInterface {
                 fs[i].setAccessible(true);
                 fs[i].set(p, null);
             }
-            AntModule.err.log("Gutting extra references in project \"" + s + "\"");
+            // #43113: IntrospectionHelper can hold strong refs to dynamically loaded classes
+            Field helpersF = IntrospectionHelper.class.getDeclaredField("helpers");
+            helpersF.setAccessible(true);
+            Object helpersO = helpersF.get(null);
+            Map helpersM = (Map) helpersO;
+            helpersM.clear();
         } catch (Exception e) {
             // Oh well.
             AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
