@@ -613,6 +613,8 @@ public class NbEditorKit extends ExtKit {
     
     public static class GenerateFoldPopupAction extends BaseAction {
 
+        private boolean addSeparatorBeforeNextAction;
+
         public GenerateFoldPopupAction() {
             super(generateFoldPopupAction);
         }
@@ -654,6 +656,11 @@ public class NbEditorKit extends ExtKit {
         
         protected void addAction(JTextComponent target, JMenu menu,
         String actionName) {
+            if (addSeparatorBeforeNextAction) {
+                addSeparatorBeforeNextAction = false;
+                menu.addSeparator();
+            }
+
             BaseKit kit = (target == null) ? BaseKit.getKit(BaseKit.class) : Utilities.getKit(target);
             if (kit == null) return;
             boolean foldingEnabled = (target == null) ? false :
@@ -686,6 +693,10 @@ public class NbEditorKit extends ExtKit {
             }
         }        
         
+        protected void setAddSeparatorBeforeNextAction(boolean addSeparator) {
+            this.addSeparatorBeforeNextAction = addSeparator;
+        }
+        
         protected void addAdditionalItems(JTextComponent target, JMenu menu){
         }
         
@@ -696,6 +707,8 @@ public class NbEditorKit extends ExtKit {
             addAction(target, menu, BaseKit.expandFoldAction);
             addAction(target, menu, BaseKit.collapseAllFoldsAction);
             addAction(target, menu, BaseKit.expandAllFoldsAction);
+            // By default add separator before next actions (can be overriden if unwanted)
+            setAddSeparatorBeforeNextAction(true);
             addAdditionalItems(target, menu);
             return menu;
         }

@@ -255,7 +255,7 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
                 
                 <folder name="FoldMaintainer">
-                    <file name="org-netbeans-modules-editor-java-NbJavaFoldMaintainer$NbJavaFoldMaintainerFactory.instance"/>
+                    <file name="org-netbeans-modules-editor-java-NbJavaFoldMaintainer$Factory.instance"/>
                 </folder>
                 
                 <file name="Settings.settings" url="JavaOptions.settings"/>
