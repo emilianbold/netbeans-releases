@@ -144,11 +144,11 @@ final class J2SEProject implements Project, AntProjectListener {
             "${build.test.classes.dir}/*.class", // NOI18N
         });
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
-        sourcesHelper.addPrincipalSourceRoot("${src.dir}", /*XXX I18N*/ "Source Packages", /*XXX*/null, null);
-        sourcesHelper.addPrincipalSourceRoot("${test.src.dir}", /*XXX I18N*/ "Test Packages", /*XXX*/null, null);
+        sourcesHelper.addPrincipalSourceRoot("${src.dir}", NbBundle.getMessage (J2SEProject.class, "NAME_src.dir"), /*XXX*/null, null);
+        sourcesHelper.addPrincipalSourceRoot("${test.src.dir}", NbBundle.getMessage (J2SEProject.class, "NAME_test.src.dir"), /*XXX*/null, null);
         // XXX add build dir too?
-        sourcesHelper.addTypedSourceRoot("${src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, /*XXX I18N*/ "Source Packages", /*XXX*/null, null);
-        sourcesHelper.addTypedSourceRoot("${test.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, /*XXX I18N*/ "Test Packages", /*XXX*/null, null);
+        sourcesHelper.addTypedSourceRoot("${src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage (J2SEProject.class, "NAME_src.dir"), /*XXX*/null, null);
+        sourcesHelper.addTypedSourceRoot("${test.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage (J2SEProject.class, "NAME_test.src.dir"), /*XXX*/null, null);
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
