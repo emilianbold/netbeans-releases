@@ -250,7 +250,10 @@ public class ProgressUI extends JPanel {
     }
     
     public void finished () {
-        if (!autoClose) {
+        finished(true);
+    }
+    public void finished (boolean checkAutoclose) {
+        if (checkAutoclose && !autoClose) {
             return;
         }
         if (this.modal) {

@@ -47,33 +47,15 @@ public class InstanceNode extends AbstractNode implements ServerInstance.Refresh
     }
     
     public javax.swing.Action[] getActions(boolean context) {
-        SystemAction startOrStop = getStartOrStopAction();
-        if (startOrStop != null) {
-            return new SystemAction[] {
-                startOrStop,
-                SystemAction.get(RemoveInstanceAction.class)/*,
-                SystemAction.get(RefreshAction.class)*/
-            };  
-        }
         return new SystemAction[] {
-            SystemAction.get(RemoveInstanceAction.class),
-            SystemAction.get(RefreshAction.class)
+            SystemAction.get(ServerStatusAction.class),
+            SystemAction.get(RemoveInstanceAction.class)/*,
+            SystemAction.get(RefreshAction.class)*/
         };
     }
     
     ServerInstance getServerInstance() {
         return (ServerInstance) getCookieSet().getCookie(ServerInstance.class);
-    }
-    
-    private SystemAction getStartOrStopAction() {
-        StartServer ss = getServerInstance().getStartServer();
-        if (ss == null ||  ! ss.supportsStartDeploymentManager())
-            return null;
-        System.out.println("getStartOrStopAction: called: isRunning = "+ss.isRunning());
-        if (ss.isRunning())
-            return SystemAction.get(StopServerAction.class);
-        else
-            return SystemAction.get(StartServerAction.class);
     }
     
     public HelpCtx getHelpCtx() {

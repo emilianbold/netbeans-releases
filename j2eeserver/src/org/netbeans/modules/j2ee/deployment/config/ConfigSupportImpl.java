@@ -58,13 +58,13 @@ public class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
             DConfigBeanRoot configBeanRoot = dc.getDConfigBeanRoot(ddBeanRoot);
             DDBean[] ddBeans = ddBeanRoot.getChildBean(webContextRootXpath);
             if (ddBeans == null || ddBeans.length != 1) {
-                ErrorManager.getDefault ().log ("DDBeans not found");
+                ErrorManager.getDefault ().log (ErrorManager.EXCEPTION, "DDBeans not found");
                 return null; //better than throw exception
             }
             return configBeanRoot.getDConfigBean(ddBeans[0]);
             
         } catch (Exception e) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.getMessage());
+            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, e.getMessage());
         }
         return null;
     }

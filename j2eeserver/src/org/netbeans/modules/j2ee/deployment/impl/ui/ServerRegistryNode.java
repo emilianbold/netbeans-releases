@@ -114,7 +114,11 @@ public class ServerRegistryNode extends AbstractNode {
     Node getServerNode(Server s) {
         Node node = (Node) serverNodes.get(s);
         if(node == null) {
-            node = s.getNodeProvider().createServerNode(s);
+            try {
+                node = s.getNodeProvider().createServerNode(s);
+            } catch (Exception e) {
+                ErrorManager.getDefault().log(ErrorManager.EXCEPTION, e.getLocalizedMessage());
+            }
             serverNodes.put(s,node);
         }
         return node;

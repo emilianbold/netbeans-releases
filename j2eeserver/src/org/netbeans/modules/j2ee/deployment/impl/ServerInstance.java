@@ -20,6 +20,7 @@ import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.shared.*;
 import javax.enterprise.deploy.spi.status.*;
 
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressUI;
 import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressMonitor;
@@ -54,7 +55,19 @@ public class ServerInstance implements Node.Cookie {
         this.server = server; this.url = url; this.manager = manager;
     }
     
+    private InstanceProperties props = null;
+    private String getName() {
+        if (props == null)
+            props = InstanceProperties.getInstanceProperties(getUrl());
+        if (props != null)
+            return props.getProperty(InstanceProperties.NAME_ATTR);
+        else
+            return null;
+    }
+    
     public String getDisplayName() {
+        if (getName() != null)
+            return getName();
         return server.getDisplayName() + "(" + url + ")";
     }
     
@@ -86,7 +99,6 @@ public class ServerInstance implements Node.Cookie {
     }
     
     public void refresh() {
-        //PENDING: do i need a new manager instance after (r)estart
         if (manager != null) {
             manager.release();
             manager = null;
@@ -322,6 +334,9 @@ public class ServerInstance implements Node.Cookie {
     /**
      * Stop admin server.
      */
+    public void stop(DeployProgressUI ui) {
+        _stop(ui);
+    }
     public void stop() {
         String title = NbBundle.getMessage(ServerInstance.class, "LBL_StopServerProgressMonitor", getUrl());
         DeployProgressUI ui = new DeployProgressMonitor(title, false, true);  // modeless with stop/cancel buttons
