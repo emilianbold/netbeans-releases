@@ -21,6 +21,7 @@ import org.netbeans.jemmy.Action;
 import org.netbeans.jemmy.ActionProducer;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Outputable;
 import org.netbeans.jemmy.TestOut;
@@ -385,20 +386,59 @@ public class JTextComponentOperator extends JComponentOperator
     /**
      * Finds start text position.
      * @param text Text to be searched.
-     * @param index Index of text instance (forst instance has index 0)
+     * @param tChooser Additional search criteria.
+     * @param index Index of text instance (first instance has index 0)
+     * @return Caret position correspondent to text start.
+     * @see JTextComponentOperator.TextChooser
+     */
+    public int getPositionByText(String text, TextChooser tChooser, int index) {
+	output.printLine("Find " + tChooser.getDescription() + "\"" + text + 
+			 "\" text in text component\n    : " +
+			 getSource().toString());
+	output.printGolden("Find " + tChooser.getDescription() + "\"" + text + 
+			   "\" text in text component");
+	String allText = getDisplayedText();
+	Document doc = getDocument();
+	int position = 0;
+	int ind = 0;
+	while((position = allText.indexOf(text, position)) >= 0) {
+	    if(tChooser.checkPosition(doc, position)) {
+		if(ind == index) {
+		    return(position);
+		} else {
+		    ind++;
+		}
+	    }
+	    position = position + text.length();
+	}
+	return(-1);
+    }
+
+    /**
+     * Finds start text position.
+     * @param text Text to be searched.
+     * @param tChooser Additional search criteria.
+     * @return Caret position correspondent to text start.
+     */
+    public int getPositionByText(String text, TextChooser tChooser) {
+	return(getPositionByText(text, tChooser, 0));
+    }
+
+    /**
+     * Finds start text position.
+     * @param text Text to be searched.
+     * @param index Index of text instance (first instance has index 0)
      * @return Caret position correspondent to text start.
      */
     public int getPositionByText(String text, int index) {
-	String allText = getText();
-	int position = allText.indexOf(text);
-	for(int i = 0; i < index; i++) {
-	    if(position == -1) {
-		break;
-	    }
-	    position = allText.indexOf(text, position + 
-				       text.length());
-	}
-	return(position);
+	return(getPositionByText(text, new TextChooser() {
+		public boolean checkPosition(Document doc, int offset) {
+		    return(true);
+		}
+		public String getDescription() {
+		    return("any");
+		}
+	    }, index));
     }
 
     /**
@@ -520,7 +560,7 @@ public class JTextComponentOperator extends JComponentOperator
      * If component has not focus, does
      * mouse click on component center before.
      * @param text Text to be searched.
-     * @param index Index of text instance (forst instance has index 0)
+     * @param index Index of text instance (first instance has index 0)
      * @param before If true put caret before text, otherwise after.
      * @see #changeCaretPosition(int)
      * @see #getPositionByText(String, int)
@@ -605,7 +645,7 @@ public class JTextComponentOperator extends JComponentOperator
     /**
      * Selects a part of text using Shift+<arrow> keys.
      * @param text Text to be selected
-     * @param index Index of text instance (forst instance has index 0)
+     * @param index Index of text instance (first instance has index 0)
      * @see #selectText(int, int)
      * @see #selectText(String)
      * @see #getPositionByText(String, int)
@@ -620,9 +660,8 @@ public class JTextComponentOperator extends JComponentOperator
 	    makeComponentVisible();
 	    clickMouse(1);
 	}
-	selectText(getPositionByText(text, index),
-		   getPositionByText(text, index) +
-		   text.length());
+	int start = getPositionByText(text, index);
+	selectText(start, start + text.length());
     }
 
     /**
@@ -658,23 +697,23 @@ public class JTextComponentOperator extends JComponentOperator
 	    clickMouse(1);
 	}
 	if(getClearingMode() == BACK_SPACE_CLEARING_MODE) {
-	    changeCaretPosition(getText().length());
+	    changeCaretPosition(getDocument().getLength());
 	    while(getCaretPosition() > 0) {
 		typeKey(KeyEvent.VK_BACK_SPACE, (char)KeyEvent.VK_BACK_SPACE, 0);
 	    }
 	} else if(getClearingMode() == DELETE_CLEARING_MODE) {
 	    changeCaretPosition(0);
-	    while(getText().length() > 0) {
+	    while(getDocument().getLength() > 0) {
 		pushKey(KeyEvent.VK_DELETE, 0);
 	    }
 	} else if(getClearingMode() == SELECT_AND_DELETE_CLEARING_MODE) {
-	    selectText(0, getText().length());
+	    selectText(0, getDocument().getLength());
 	    pushKey(KeyEvent.VK_DELETE, 0);
 	} else {
 	    while(getCaretPosition() > 0) {
 		typeKey(KeyEvent.VK_BACK_SPACE, (char)KeyEvent.VK_BACK_SPACE, 0);
 	    }
-	    while(getText().length() > 0) {
+	    while(getDocument().getLength() > 0) {
 		pushKey(KeyEvent.VK_DELETE, 0);
 	    }
 	}
@@ -704,6 +743,21 @@ public class JTextComponentOperator extends JComponentOperator
 					    (int)rect.getY(),
 					    (int)rect.getWidth(),
 					    (int)rect.getHeight());
+    }
+
+    /**
+     * Returns text which is really displayed.
+     * Results returned by <code>getText()</code> and <code>getDisplayedText()</code>
+     * are different if text component is used to display <code>javax.swing.text.StyledDocument</code>
+     */
+    public String getDisplayedText() {
+	try {
+	    Document doc = getDocument();
+	    return(doc.getText(0, doc.getLength()));
+	} catch(BadLocationException e) {
+	    throw(new JemmyException("Exception during text operation with\n    : " +
+				     getSource().toString(), e));
+	}
     }
 
     /**
@@ -1182,6 +1236,15 @@ public class JTextComponentOperator extends JComponentOperator
 	} else {
 	    return(one);
 	}
+    }
+
+    /**
+     * Interface defining additional text cearch criteria.
+     * @see #getPositionByText(java.lang.String, JTextComponentOperator.TextChooser)
+     */
+    public interface TextChooser {
+	public boolean checkPosition(Document document, int offset);
+	public String getDescription();
     }
 
     protected static class JTextComponentByTextFinder implements ComponentChooser {

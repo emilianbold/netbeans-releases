@@ -62,10 +62,8 @@ import javax.swing.text.EditorKit;
  * @author Alexandre Iline (alexandre.iline@sun.com)
  */
 
-public class JEditorPaneOperator extends JTextComponentOperator
-    implements Outputable {
+public class JEditorPaneOperator extends JTextComponentOperator {
 
-    private TestOut output;
     private boolean pageNavigation = false;
 
     /**
@@ -238,28 +236,6 @@ public class JEditorPaneOperator extends JTextComponentOperator
      */
     public static JEditorPane waitJEditorPane(Container cont, String text, boolean ce, boolean ccs) {
 	return(waitJEditorPane(cont, text, ce, ccs, 0));
-    }
-
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
-    public void setOutput(TestOut out) {
-	output = out;
-	super.setOutput(output.createErrorOutput());
-    }
-
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
-    public TestOut getOutput() {
-	return(output);
     }
 
     /**
