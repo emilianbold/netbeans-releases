@@ -47,7 +47,7 @@ public class DocumentationSettings extends SystemOption {
     private static final String PROP_AUTOCOMENT_ERR_MASK = "autocommentErrorMask";   //NOI18N
     private static final String PROP_EXECUTOR            = "executor";       //NOI18N
     private static final String PROP_SEARCH              = "searchEngine";   //NOI18N
-    private static final String PROP_FS_SETTING          = "filesystemSettings";   //NOI18N
+    private static final String PROP_FS_SETTING          = "fileSystemSettings";   //NOI18N
     private static final String PROP_ASK_BEFORE_GEN      = "askBeforeGenerating";   //NOI18N
     private static final String PROP_ASK_AFTER_GEN       = "askAfterGenerating";   //NOI18N
        
@@ -258,29 +258,26 @@ public class DocumentationSettings extends SystemOption {
 
     
     public java.util.HashMap getFileSystemSettings(){
-        //Thread.currentThread().dumpStack();
         java.util.HashMap map  = (java.util.HashMap)getProperty( PROP_FS_SETTING );
-        /*
-        if( map != null ){
-            System.err.println("Getting map size " + map.size());
-        }
-        else{
-        */
-        if( map == null ){
-            //System.err.println("Getting map size null");
-            //map = new java.util.HashMap();
-            //map.put("test", "test");
-            setFileSystemSettings( new java.util.HashMap() );
-        }
-        return map;
+                
+        if (map == null) {
+            if (isWriteExternal()) {
+                return null;
+            }
+            return new java.util.HashMap();
+	}
+        return map;        
     }
 
-    public void setFileSystemSettings(java.util.HashMap map){
-        //Thread.currentThread().dumpStack();
-        //System.err.println("Setting map size " + map.size());
-        //java.util.HashMap oldMap = map;
-        putProperty( PROP_FS_SETTING, map, true );        
-        //firePropertyChange(PROP_FS_SETTING, oldMap, map);
+    public void setFileSystemSettings(java.util.HashMap map){        
+        if (map == null &&
+            isReadExternal()) {
+            putProperty( PROP_FS_SETTING, null, true);
+        } else {
+            java.util.HashMap old = (java.util.HashMap)putProperty( PROP_FS_SETTING , map, true );
+            if( old != null && old.equals(map) )
+                firePropertyChange(PROP_FS_SETTING, null, null);
+	}                
     }
     
     public boolean getAskBeforeGenerating(){

@@ -63,7 +63,7 @@ public class Jdk12SearchType extends JavadocSearchType {
      * @param caseSensitive New value of property caseSensitive.
     */
     public void setCaseSensitive(boolean caseSensitive) {
-        boolean oldVal = caseSensitive;
+        boolean oldVal = this.caseSensitive;
         this.caseSensitive = caseSensitive;
         this.firePropertyChange("caseSensitive", new Boolean(oldVal), new Boolean(caseSensitive));   //NOI18N
     }

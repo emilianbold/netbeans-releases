@@ -64,9 +64,9 @@ public class Jdk12SearchType_japan extends JavadocSearchType {
      * @param caseSensitive New value of property caseSensitive.
     */
     public void setCaseSensitive(boolean caseSensitive) {
-        boolean oldVal = caseSensitive;
+        boolean oldVal = this.caseSensitive;
         this.caseSensitive = caseSensitive;
-        this.firePropertyChange("caseSensitive", new Boolean(oldVal), new Boolean(caseSensitive));   //NOI18N
+        firePropertyChange("caseSensitive", new Boolean(oldVal), new Boolean(caseSensitive));   //NOI18N
     }
 
     /** Getter for property encoding.
@@ -80,7 +80,9 @@ public class Jdk12SearchType_japan extends JavadocSearchType {
      * @param encoding New value of property encoding.
     */
     public void setJapanEncoding(java.lang.String japanEncoding) {
+        String old = this.japanEncoding;
         this.japanEncoding = japanEncoding;
+        firePropertyChange("japanEncoding", old, japanEncoding);   //NOI18N
     }    
     
     /** default returns null, must be overriden
