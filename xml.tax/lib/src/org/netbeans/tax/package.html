@@ -1,0 +1,49 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<HTML>
+
+<h1>TODO</h1>
+<li>On request validation instead of Vetos and other setter constrains (see JAXB)
+<li>Use setPROP (checks WF and R/O and call impl) and setPROPImpl (just set and fire) pattern
+<li>mark checkXXX final ()
+
+<H1>Tree package</H1>
+
+
+
+<p>It represent parser tree as tree of beans. The beans should form the tree using BeanContext.
+<p>The tree is produced by <tt>TreeBuilder</tt> that is basically a SAX handler.
+
+<h2>Document and Declaration Nodes</h2>
+Basically two kinds of nodes exist:
+<ul>
+<li>declaratin nodes <tt>*.Decl[.]java</tt>
+<li>document nodes
+</ul>
+from any suitable document node can be obtained its declaration node by <tt>getDecl()</tt>.
+
+<h3>Document Nodes</h3>
+Element nodes can be classified as:
+<ul>
+<li>nodes that allows subelements <tt>boolean allowElements()</tt>
+<li>nodes that allows text <tt>boolean allowText()</tt>
+</ul>
+
+<h2>Indentation</h2>
+The tree nodes implement method <tt>toXMLString(bool, Map)</tt> that is used
+while generating plain text from the tree. The second argument holds
+formatting arguments or null for no formating is applied at all.
+  
+
+</HTML>

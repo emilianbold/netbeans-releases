@@ -103,7 +103,7 @@ Microsystems, Inc. All Rights Reserved.
         <genlist targetname="nbm" outputfiledir="${nbext_root}/netbeans"/>
     </target>
     
-    <target name="reload" depends="compile" description="Test module inside running IDE (API Support with Aant required).">
+    <target name="reload" depends="compile" description="Test module inside running IDE (API Support with Ant required).">
         <mkdir dir="test"/>
         <filter token="BUILD_NUMBER_SUBST" value="testing"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>

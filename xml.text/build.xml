@@ -59,7 +59,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${nbroot}/editor/netbeans/modules/ext/nb-editor.jar"/>
                 <pathelement location="${nbroot}/editor/netbeans/modules/editor.jar"/>
         	<pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>  <!-- DOM -->
-                <pathelement location="${tax_root}/libsrc/"/>
+                <pathelement location="${tax_root}/lib/src/"/>
                 <pathelement location="${core_root}/src/"/>
             </classpath>
         </javac>
@@ -108,7 +108,7 @@ Microsystems, Inc. All Rights Reserved.
         <genlist targetname="nbm" outputfiledir="${nbext_root}/netbeans"/>
     </target>
 
-    <target name="reload" depends="compile" description="Test module inside running IDE (API Support with Aant required).">
+    <target name="reload" depends="compile" description="Test module inside running IDE (API Support with Ant required).">
         <mkdir dir="test"/>
         <filter token="BUILD_NUMBER_SUBST" value="testing"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>

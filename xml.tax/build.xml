@@ -12,8 +12,9 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="xml/tax" default="jars" basedir=".">
+<project name="xml/tax" default="netbeans" basedir=".">
 
+    <property name="lib_root" location="lib"/>
     <property name="xml_root" location=".."/>
 
     <property name="nbroot" location="${xml_root}/.."/>
@@ -43,12 +44,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="compile">
-        <echo message="Compiling TAX library classes..."/>
-        <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-            <classpath>        
-                <pathelement location="${parserimpl}"/>
-            </classpath>
-        </javac>
+        <for-each locations="lib"/>
 
         <echo message="Compiling TAX module classes..."/>
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
@@ -56,19 +52,13 @@ Microsystems, Inc. All Rights Reserved.
                 <fileset dir="${nbroot}/openide/netbeans/lib">
                     <include name="openide*.jar"/>
                 </fileset>
-                <pathelement location="libsrc"/>
+                <pathelement location="${lib_root}/src"/>
             </classpath>
         </javac>
-
-        <for-each locations="compat"/>
     </target>
 
     <target name="jars" depends="init,compile">
-        <mkdir dir="netbeans/modules/ext"/>
-        <jar jarfile="netbeans/modules/ext/tax.jar"
-             compress="false">
-            <fileset dir="libsrc" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
-        </jar>
+        <for-each locations="lib"/>
 
         <mkdir dir="netbeans/modules/autoload"/>   
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
@@ -77,12 +67,13 @@ Microsystems, Inc. All Rights Reserved.
                 manifest="manifest-subst.mf"
                 compress="false">
             <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
-            <fileset dir="compat/src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
             <locale name="ja"/>
         </locjar>
     </target>
 
     <target name="release">
+        <for-each locations="lib"/>
+
         <copy todir="netbeans">
             <fileset dir="${binroot}/xml/tax/release"/>
         </copy>
@@ -92,19 +83,21 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="netbeans" depends="jars,release,javahelp">
+        <for-each locations="lib"/>
+
         <copy todir="../netbeans">
             <fileset dir="netbeans"/>
         </copy>
         <genlist targetname="nbm" outputfiledir="${nbext_root}/netbeans"/>
     </target>
 
-    <target name="reload" depends="compile" description="Test module inside running IDE (API Support with Aant required).">
+    <target name="reload" depends="compile" description="Test module inside running IDE (API Support with Ant required).">
         <mkdir dir="test"/>
         <filter token="BUILD_NUMBER_SUBST" value="testing"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
         <jar jarfile="test/xml-tax-test.jar" manifest="manifest-subst.mf" compress="false">
             <fileset dir="src" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
-            <fileset dir="libsrc" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
+            <fileset dir="${lib_root}/src" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
         </jar>
         <nbinstaller module="test/xml-tax-test.jar" action="reinstall"/>
     </target>
@@ -123,10 +116,9 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="clean">
+        <for-each locations="lib"/>
+
         <delete>
-            <fileset dir="libsrc">
-                <include name="**/*.class"/>
-            </fileset>
             <fileset dir="src">
                 <include name="**/*.class"/>
             </fileset>
@@ -136,41 +128,9 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="netbeans"/>
         <delete dir="Info"/>
         <delete dir="javadoc"/>
-
-        <for-each locations="compat"/>
     </target>
 
     <target name="all" depends="clean,nbm"/>
-
-    <target name="javadoc">
-        <delete dir="javadoc"/>
-        <mkdir dir="javadoc"/>
-        <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.3/docs/api"/>
-        <property name="xml-docs-location" value="http://xml.apache.org/apiDocs"/>
-        <tstamp/>
-        <javadoc destdir="javadoc"
-                 packagenames="org.netbeans.tax.*"
-                 windowtitle="TAX - Tree API for XML"
-                 doctitle="Tree API for XML"
-                 use="true"
-                 splitindex="true"
-                 author="false"
-                 version="false"
-                 maxmemory="64m">
-            <sourcepath>
-                <pathelement location="libsrc"/>
-            </sourcepath>
-            <classpath>
-                <pathelement location="${parserimpl}"/>
-            </classpath>
-            <link href="${jdk-docs-location}"
-                  offline="true"
-                  packagelistLoc="${nbroot}/openide/api/doc"/>
-            <link href="${xml-docs-location}"
-                  offline="true"
-                  packagelistLoc="${nbroot}/openide/api/doc/org/openide/xml"/>
-        </javadoc>
-    </target>
 
 
     <!-- This target compile all XML sub-modules. -->
@@ -178,12 +138,6 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Compile all XML sub-modules ..."/>
         <ant dir=".." target="clean"/>
         <ant dir=".." target="compile"/>
-    </target>
-
-
-    <!-- Run tests. -->
-    <target name="test">
-        <ant dir="testbase" target="run"/>
     </target>
 
 </project>

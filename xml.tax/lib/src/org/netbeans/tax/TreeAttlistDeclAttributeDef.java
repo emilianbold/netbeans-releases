@@ -1,0 +1,489 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.tax;
+
+import java.util.List;
+import java.util.LinkedList;
+import java.util.StringTokenizer;
+
+/**
+ * @author  Libor Kramolis
+ * @version 0.1
+ */
+public class TreeAttlistDeclAttributeDef extends TreeNodeDecl.Content implements TreeNamedObjectMap.NamedObject {
+    /** */
+    private static final boolean DEBUG = false;
+
+    /** */
+    public static final String PROP_NAME            = "name"; // NOI18N
+    /** */
+    public static final String PROP_TYPE            = "type"; // NOI18N
+    /** */
+    public static final String PROP_ENUMERATED_TYPE = "enumeratedType"; // NOI18N
+    /** */
+    public static final String PROP_DEFAULT_TYPE    = "defaultType"; // NOI18N
+    /** */
+    public static final String PROP_DEFAULT_VALUE   = "defaultValue"; // NOI18N
+    
+    /** */
+    public static final short TYPE_CDATA      = 0;
+    /** */
+    public static final short TYPE_ID         = 1;
+    /** */
+    public static final short TYPE_IDREF      = 2;
+    /** */
+    public static final short TYPE_IDREFS     = 3;
+    /** */
+    public static final short TYPE_ENTITY     = 4;
+    /** */
+    public static final short TYPE_ENTITIES   = 5;
+    /** */
+    public static final short TYPE_NMTOKEN    = 6;
+    /** */
+    public static final short TYPE_NMTOKENS   = 7;
+    /** */
+    public static final short TYPE_ENUMERATED = 8;
+    /** */
+    public static final short TYPE_NOTATION   = 9;
+
+    /** */
+    public static final short DEFAULT_TYPE_NULL     = 0;
+    /** */
+    public static final short DEFAULT_TYPE_REQUIRED = 1;
+    /** */
+    public static final short DEFAULT_TYPE_IMPLIED  = 2;
+    /** */
+    public static final short DEFAULT_TYPE_FIXED    = 3;	    
+
+    /** */
+    public static final String[] NAMED_TYPE_LIST = new String [] {
+	"CDATA",     // TYPE_CDATA // NOI18N
+	"ID",        // TYPE_ID // NOI18N
+	"IDREF",     // TYPE_IDREF // NOI18N
+	"IDREFS",    // TYPE_IDREFS // NOI18N
+	"ENTITY",    // TYPE_ENTITY // NOI18N
+	"ENTITIES",  // TYPE_ENTITIES // NOI18N
+	"NMTOKEN",   // TYPE_NMTOKEN // NOI18N
+	"NMTOKENS",  // TYPE_NMTOKENS // NOI18N
+	null,        // TYPE_ENUMERATED
+	"NOTATION"   // TYPE_NOTATION // NOI18N
+    };
+
+    /** */
+    public static final String[] NAMED_DEFAULT_TYPE_LIST = new String [] {
+	null,        // DEFAULT_TYPE_NULL
+	"#REQUIRED", // DEFAULT_TYPE_REQUIRED // NOI18N
+	"#IMPLIED",  // DEFAULT_TYPE_IMPLIED // NOI18N
+	"#FIXED"     // DEFAULT_TYPE_FIXED // NOI18N
+    };
+	
+
+    /** */
+    private String name;
+
+    /** */
+    private short type;
+
+    /** */
+    private String[] enumeratedType;
+
+    /** */
+    private short defaultType;
+
+    /** */
+    private String defaultValue;
+
+	
+    //
+    // init
+    //
+
+    /** Creates new TreeAttlistDeclAttributeDef. */
+    public TreeAttlistDeclAttributeDef (String name, short type, String[] enumeratedType, short defaultType, String defaultValue) throws InvalidArgumentException {
+	super();
+
+	checkName (name);
+	checkType (type, enumeratedType);
+	checkDefaultType (defaultType, defaultValue);
+	this.name           = name;
+	this.type           = type;
+	this.enumeratedType = enumeratedType;
+	this.defaultType    = defaultType;
+	this.defaultValue   = defaultValue;
+    }
+
+    /** Creates new TreeAttlistDeclAttributeDef -- copy constructor. */
+    protected TreeAttlistDeclAttributeDef (TreeAttlistDeclAttributeDef attributeDef) {
+	super (attributeDef);
+
+	this.name           = attributeDef.name;
+	this.type           = attributeDef.type;
+	this.enumeratedType = arraycopy (attributeDef.enumeratedType);
+	this.defaultType    = attributeDef.defaultType;
+	this.defaultValue   = attributeDef.defaultValue;
+    }
+
+
+    //
+    // itself
+    //
+
+    /**
+     */
+    private String[] arraycopy (String[] array) {
+        if ( array == null )
+            return null;
+
+        int length = array.length;
+        String[] arrayCopy = new String [length];
+        System.arraycopy (array, 0, arrayCopy, 0, length);
+
+        return arrayCopy;
+    }
+
+    
+    //
+    // from TreeObject
+    //
+	
+    /**
+     */
+    public Object clone () {
+	return new TreeAttlistDeclAttributeDef (this);
+    }
+
+    /**
+     */
+    public boolean equals (Object object, boolean deep) {
+        if (!!! super.equals (object, deep))
+            return false;
+
+	TreeAttlistDeclAttributeDef peer = (TreeAttlistDeclAttributeDef) object;
+	if (!!! Util.equals (this.name, peer.name))
+            return false;
+	if (this.type != peer.type)
+            return false;
+	if (!!! Util.equals (this.enumeratedType, peer.enumeratedType))
+            return false;
+	if (this.defaultType != peer.defaultType)
+            return false;
+	if (!!! Util.equals (this.defaultValue, peer.defaultValue))
+            return false;
+
+        return true;
+    }
+
+    /*
+     * Merge name, type, enumeration, default type and default value properties.
+     */
+    public void merge (TreeObject treeObject) throws CannotMergeException {
+	super.merge (treeObject);
+
+	TreeAttlistDeclAttributeDef peer = (TreeAttlistDeclAttributeDef) treeObject;
+	setNameImpl (peer.getName());
+	setDefaultTypeImpl (peer.getDefaultType(), peer.getDefaultValue());
+	setTypeImpl (peer.getType(), peer.getEnumeratedType());
+    }
+
+
+    //
+    // context
+    //
+
+    /**
+     */
+    public final void removeFromContext () throws ReadOnlyException {
+        if ( isInContext() ) {
+            getOwnerAttlistDecl().removeAttributeDef (this.getName());
+        }
+    }
+
+    
+    //
+    // itself
+    //
+
+    /**
+     */
+    public final TreeAttlistDecl getOwnerAttlistDecl () {
+        return (TreeAttlistDecl)getNodeDecl();
+    }
+
+
+    //
+    // name
+    //
+        
+    /**
+     */
+    public final String getElementName () {
+	if ( getNodeDecl() == null )
+	    return null;
+	return getOwnerAttlistDecl().getElementName();
+    }
+
+    /**
+     */
+    public final String getName () {
+	return name;
+    }
+
+    /**
+     */
+    private final void setNameImpl (String newName) {
+	String oldName = this.name;
+
+	this.name = newName;
+
+//          firePropertyChange (PROP_NAME, oldName, newName);
+//  	getNodeDecl().firePropertyChange (TreeAttlistDecl.PROP_ATTRIBUTE_DEF_MAP_CONTENT, this, this); //!!!
+    }
+
+    /**
+     * @throws ReadOnlyException
+     * @throws InvalidArgumentException
+     */
+    public final void setName (String newName) throws ReadOnlyException, InvalidArgumentException {
+	//
+	// check new value
+	//
+	if ( Util.equals (this.name, newName) )
+	    return;
+	checkReadOnly();
+	checkName (newName);
+
+	//
+	// set new value
+	//
+	setNameImpl (newName);
+    }
+
+    /**
+     */
+    protected final void checkName (String name) throws InvalidArgumentException {
+	TreeUtilities.checkAttlistDeclAttributeName (name);
+    }
+
+        
+    //
+    // type
+    //
+        
+    /**
+     */
+    public final short getType () {
+	return type;
+    }
+
+    /**
+     */
+    public final String getTypeName () {
+	try {
+	    return NAMED_TYPE_LIST [type];
+	} catch (ArrayIndexOutOfBoundsException exc) {
+	    return null;
+	}
+    }
+
+    /**
+     */
+    public final String[] getEnumeratedType () {
+	return enumeratedType;
+    }
+
+    /**
+     */
+    public final String getEnumeratedTypeString () {
+	if ( enumeratedType == null ) {
+	    return null;
+	}
+	StringBuffer sb = new StringBuffer ();
+	sb.append ("( ").append (enumeratedType[0]); // NOI18N
+	for ( int i = 1; i < enumeratedType.length; i++ ) {
+	    sb.append (" | ").append (enumeratedType [i]); // NOI18N
+	}
+	sb.append (" )"); // NOI18N
+	return sb.toString();
+    }
+
+    public static final String[] createEnumeratedType (String enumeratedType) {
+	if ( enumeratedType == null ) {
+	    return null;
+	}
+	int begin = enumeratedType.indexOf ("("); // NOI18N
+	int end = enumeratedType.indexOf (")"); // NOI18N
+	if ( (begin == -1) || (end != -1) )
+	    return null;
+	String noParenthesis = enumeratedType.substring (begin, end);
+	StringTokenizer st = new StringTokenizer (noParenthesis, "|"); // NOI18N
+	List tokens = new LinkedList();
+	while (st.hasMoreTokens()) {
+	    tokens.add (st.nextToken().trim());
+	}
+	if ( tokens.isEmpty() )
+	    return null;
+	return (String[])tokens.toArray (new String[0]);
+    }
+
+    /**
+     */
+    private final void setTypeImpl (short newType, String[] newEnumeratedType) {
+	//  	    short    oldType           = this.type;
+	//  	    String[] oldEnumeratedType = this.enumeratedType;
+
+	this.type           = newType;
+	this.enumeratedType = newEnumeratedType;
+
+	//  	    firePropertyChange (PROP_???, old???, new???);
+//  	getNodeDecl().firePropertyChange (TreeAttlistDecl.PROP_ATTRIBUTE_DEF_MAP_CONTENT, this, this); //!!!
+    }
+
+    /**
+     * @throws ReadOnlyException
+     * @throws InvalidArgumentException
+     */
+    public final void setType (short newType, String[] newEnumeratedType) throws ReadOnlyException, InvalidArgumentException {
+	//
+	// check new value
+	//
+//          if ( Util.equals (this.???, new???) )
+//              return;
+	checkReadOnly();
+	checkType (newType, newEnumeratedType);
+
+	//
+	// set new value
+	//
+	setTypeImpl (newType, newEnumeratedType);
+    }
+
+
+    /**
+     */
+    protected final void checkType (short type, String[] enumeratedType) throws InvalidArgumentException {
+	TreeUtilities.checkAttlistDeclAttributeType (type);
+	TreeUtilities.checkAttlistDeclAttributeEnumeratedType (enumeratedType);
+    }
+
+    /**
+     */
+    public static final short findType (String type) {
+	if ( DEBUG ) {
+	    Util.debug ("TreeAttlistDeclAttributeDef::findType: type = " + type); // NOI18N
+	}
+	for ( short i = 0; i < NAMED_TYPE_LIST.length; i++ ) {
+	    if ( DEBUG ) {
+		Util.debug ("    test_type = " + NAMED_TYPE_LIST[i]); // NOI18N
+	    }
+	    if ( Util.equals (NAMED_TYPE_LIST[i], type) )
+		return i;
+	}
+	if ( DEBUG ) {
+	    Util.debug ("    type[" + type + "] not found"); // NOI18N
+	}
+	return -1;
+    }
+
+    //
+    // default decl
+    //
+        
+    /**
+     */
+    public final short getDefaultType () {
+	return defaultType;
+    }
+
+    /**
+     */
+    public final String getDefaultTypeName () {
+	try {
+	    return NAMED_DEFAULT_TYPE_LIST [defaultType];
+	} catch (ArrayIndexOutOfBoundsException exc) {
+	    return null;
+	}
+    }
+
+    /**
+     */
+    public final String getDefaultValue () {
+	return defaultValue;
+    }
+
+    /**
+     */
+    private final void setDefaultTypeImpl (short newDefaultType, String newDefaultValue) {
+	//  	    short  oldDefaultType  = this.defaultType;
+	//  	    String oldDefaultValue = this.defaultValue;
+
+	this.defaultType  = newDefaultType;
+	this.defaultValue = newDefaultValue;
+
+	//  	    firePropertyChange (PROP_???, old???, new???);
+//  	getNodeDecl().firePropertyChange (TreeAttlistDecl.PROP_ATTRIBUTE_DEF_MAP_CONTENT, this, this); //!!!
+    }
+
+    /**
+     * @throws ReadOnlyException
+     * @throws InvalidArgumentException
+     */
+    public final void setDefaultType (short newDefaultType, String newDefaultValue) throws ReadOnlyException, InvalidArgumentException {
+	//
+	// check new value
+	//
+//          if ( Util.equals (this.???, new???) )
+//              return;
+	checkReadOnly();
+	checkDefaultType (newDefaultType, newDefaultValue);
+
+	//
+	// set new value
+	//
+	setDefaultTypeImpl (newDefaultType, newDefaultValue);
+    }
+
+    /**
+     */
+    protected final void checkDefaultType (short defaultType, String defaultValue) throws InvalidArgumentException {
+	TreeUtilities.checkAttlistDeclAttributeDefaultType (defaultType);
+	TreeUtilities.checkAttlistDeclAttributeDefaultValue (defaultValue);
+    }
+        
+    /**
+     */
+    public static final short findDefaultType (String defaultType) {
+	for ( short i = 0; i < NAMED_DEFAULT_TYPE_LIST.length; i++ ) {
+	    if ( Util.equals (NAMED_DEFAULT_TYPE_LIST[i], defaultType) )
+		return i;
+	}
+	return -1;
+    }
+
+
+    //
+    // TreeNamedObjectMap.NamedObject
+    //
+	
+    /**
+     */
+    public Object mapKey () {
+	return getName();
+    }
+
+    /**
+     */
+    public String mapKeyPropertyName () {
+	return PROP_NAME;
+    }
+
+}

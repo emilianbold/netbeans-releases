@@ -59,7 +59,7 @@ Microsystems, Inc. All Rights Reserved.
                 </fileset>
                 <pathelement location="${nbroot}/openidex/netbeans/modules/autoload/openidex.jar"/>
                 <pathelement location="${parserimpl}"/>
-                <pathelement location="${tax_root}/libsrc/"/>
+                <pathelement location="${tax_root}/lib/src/"/>
             </classpath>
         </javac>
 
@@ -113,7 +113,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     
-    <target name="reload" depends="compile" description="Test module inside running IDE (API Support with Aant required).">
+    <target name="reload" depends="compile" description="Test module inside running IDE (API Support with Ant required).">
         <mkdir dir="test"/>
         <filter token="BUILD_NUMBER_SUBST" value="testing"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
