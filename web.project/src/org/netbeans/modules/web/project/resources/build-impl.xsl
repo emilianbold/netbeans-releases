@@ -725,7 +725,7 @@ is divided into following sections:
             </target>
 
             <target name="-do-dist-without-manifest" unless="has.custom.manifest">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist,library-inclusion-in-archive,library-inclusion-in-manifest</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
                 <jar jarfile="${{dist.war}}" compress="${{jar.compress}}">
@@ -734,7 +734,7 @@ is divided into following sections:
             </target>
             
             <target name="-do-dist-with-manifest" if="has.custom.manifest">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist,library-inclusion-in-archive,library-inclusion-in-manifest</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
                 <jar manifest="${{build.meta.inf.dir}}/MANIFEST.MF" jarfile="${{dist.war}}" compress="${{jar.compress}}">
@@ -743,11 +743,11 @@ is divided into following sections:
             </target>
             
             <target name="do-dist">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist,-do-dist-with-manifest,-do-dist-without-manifest,library-inclusion-in-archive</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist,-do-dist-with-manifest,-do-dist-without-manifest</xsl:attribute>
             </target>
             
-
             <target name="library-inclusion-in-manifest" depends="compile">
+                <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
                 <xsl:for-each select="//webproject2:library/webproject2:file">
                     <xsl:variable name="included.prop.name">
                         <xsl:value-of select="."/>
@@ -781,6 +781,7 @@ is divided into following sections:
             </target>
             
             <target name="library-inclusion-in-archive" depends="compile">
+                <xsl:attribute name="unless">dist.ear.dir</xsl:attribute>
                   <xsl:for-each select="/p:project/p:configuration/webproject2:data/webproject2:web-module-libraries/webproject2:library[webproject2:path-in-war]">
                     <xsl:variable name="copyto" select=" webproject2:path-in-war"/>
                     <xsl:variable name="libfile" select="webproject2:file"/>
