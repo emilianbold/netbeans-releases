@@ -21,6 +21,7 @@ import org.netbeans.lib.ddl.impl.RenameColumn;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseTypePropertySupport;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.infos.ViewColumnNodeInfo;
 
 public class ColumnNode extends LeafNode {
     protected PropertySupport createPropertySupport(String name, Class type, String displayName, String shortDescription, DatabaseNodeInfo rep, boolean writable, boolean expert) {
@@ -36,11 +37,11 @@ public class ColumnNode extends LeafNode {
     public void setName(String newname) {
         try {
             DatabaseNodeInfo info = getInfo();
-            String table = (String)info.get(DatabaseNode.TABLE);
-            Specification spec = (Specification)info.getSpecification();
+            String table = (String) info.get(DatabaseNode.TABLE);
+            Specification spec = (Specification) info.getSpecification();
             RenameColumn cmd = spec.createCommandRenameColumn(table);
             cmd.renameColumn(info.getName(), newname);
-            cmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
+            cmd.setObjectOwner((String) info.get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
             super.setName(newname);
         } catch (CommandNotSupportedException ex) {
@@ -54,6 +55,9 @@ public class ColumnNode extends LeafNode {
     }
 
     public boolean canDestroy() {
+        if (getCookie(ViewColumnNodeInfo.class) != null)
+            return false;
+        
         //WORKAROUND: IBM DB2 doesn't support delete column command
         String drv = getInfo().getDriver().toLowerCase();
         return !drv.startsWith("com.ibm.db2.jdbc");
