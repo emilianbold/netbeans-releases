@@ -16,6 +16,7 @@ package org.netbeans.modules.html;
 import org.openide.*;
 import org.openide.actions.ViewAction;
 import org.openide.filesystems.*;
+import org.openide.text.EditorSupport;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -38,6 +39,11 @@ public class HtmlDataObject extends MultiDataObject {
     */
     public HtmlDataObject(FileObject pf, UniFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
+                // use editor support
+        EditorSupport es = new EditorSupport(getPrimaryEntry());
+        es.setMIMEType ("text/html"); // NOI18N
+        getCookieSet().add(es);
+	
     }
 
     protected org.openide.nodes.Node createNodeDelegate () {

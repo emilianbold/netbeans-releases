@@ -49,6 +49,9 @@ public class HtmlLoader extends UniFileLoader {
     static final long serialVersionUID =-5809935261731217882L;
     public HtmlLoader() {
         super (HtmlDataObject.class);
+    }
+
+    protected void initialize () {
         setDisplayName(NbBundle.getBundle(HtmlLoader.class).
                        getString("PROP_HtmlLoader_Name"));
         getExtensions ().addExtension ("html"); // NOI18N
@@ -72,14 +75,18 @@ public class HtmlLoader extends UniFileLoader {
                         SystemAction.get (ToolsAction.class),
                         SystemAction.get (PropertiesAction.class),
                     });
+
+/*ExtensionList ext = new ExtensionList();
+        ext.addExtension("txt"); // NOI18N
+        setExtensions(ext);
+*/
     }
 
+    
     protected MultiDataObject createMultiObject (final FileObject primaryFile)
     throws DataObjectExistsException, IOException {
 
         final HtmlDataObject obj = new HtmlDataObject (primaryFile, this);
-        EditorSupport es = new EditorSupport (obj.getPrimaryEntry ());
-        obj.getCookieSet ().add (es);
         obj.getCookieSet ().add (new ViewCookie () {
                                      public void view () {
                                          try {
