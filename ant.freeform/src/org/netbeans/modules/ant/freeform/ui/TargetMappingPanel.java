@@ -170,7 +170,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
             if (projectType.equals(WEB_TYPE)) {
                 //if deploy target exists, prefer it instead of run target
                 selectItem(runCombo, "deploy", false); // NOI18N
-                selectItem(redeployCombo, "run-deploy", false); // NOI18N
+                selectItem(redeployCombo, "redeploy", false); // NOI18N
             }
         }
     }
