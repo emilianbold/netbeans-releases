@@ -334,6 +334,10 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     
 
     private static final class PackageNode extends FilterNode {
+        
+        /** whether to turn on #42589 */
+        private static final boolean TRUNCATE_PACKAGE_NAMES =
+            Boolean.getBoolean("org.netbeans.spi.java.project.support.ui.packageView.TRUNCATE_PACKAGE_NAMES"); // NOI18N
 
         private static final DataFilter NO_FOLDERS_FILTER = new DataFilter() {
             public boolean acceptDataObject(DataObject obj) {
@@ -356,12 +360,23 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                                                  Lookups.singleton(new SimpleSearchInfo(dataFolder, false))}));
             this.root = root;
             this.dataFolder = dataFolder;
-            disableDelegation(DELEGATE_GET_DISPLAY_NAME | DELEGATE_SET_DISPLAY_NAME);            
-            setDisplayName( computeDisplayName() );
         }
                        
         public String getName() {
-            return computeDisplayName();
+            return FileUtil.getRelativePath(root, dataFolder.getPrimaryFile()).replace('/', '.'); // NOI18N
+        }
+        
+        public boolean canRename() {
+            // XXX for now - pending UI spec
+            return false;
+        }
+        
+        public void setName(String name) {
+            assert false : "Cannot rename";
+        }
+        
+        public String getDisplayName() {
+            return computePackageName(TRUNCATE_PACKAGE_NAMES);
         }
         
         public String getShortDescription() {
@@ -369,12 +384,12 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             Boolean b = AccessibilityQuery.isPubliclyAccessible(df.getPrimaryFile());
             if (b != null) {
                 if (b.booleanValue()) {
-                    return NbBundle.getMessage(PackageViewChildren.class, "LBL_public_package");
+                    return NbBundle.getMessage(PackageViewChildren.class, "LBL_public_package", computePackageName(false));
                 } else {
-                    return NbBundle.getMessage(PackageViewChildren.class, "LBL_private_package");
+                    return NbBundle.getMessage(PackageViewChildren.class, "LBL_private_package", computePackageName(false));
                 }
             } else {
-                return NbBundle.getMessage(PackageViewChildren.class, "LBL_package");
+                return NbBundle.getMessage(PackageViewChildren.class, "LBL_package", computePackageName(false));
             }
         }
 
@@ -397,10 +412,6 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             }
         }
         
-        public boolean canRename() {
-            return false;
-        }
-        
         public Image getOpenedIcon(int type) {
             return getIcon(type);
         }
@@ -408,11 +419,12 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         public void update() {
             fireIconChange();
             fireOpenedIconChange();
-            //fileRenamed();
         }
         
         public void updateDisplayName() {
-            setDisplayName( computeDisplayName() );
+            fireNameChange(null, null);
+            fireDisplayNameChange(null, null);
+            fireShortDescriptionChange(null, null);
         }
         
         public void updateChildren() {
@@ -423,13 +435,24 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 update();
             }
         }
-                
-        private String computeDisplayName() {
+        
+        /**
+         * Get package name.
+         * Handles default package specially.
+         * @param truncate if true, show a truncated version to save display space
+         */
+        private String computePackageName(boolean truncate) {
             String path = FileUtil.getRelativePath( root, dataFolder.getPrimaryFile());
             if (path.length() == 0) {
                 return NbBundle.getMessage(PackageViewChildren.class, "LBL_DefaultPackage"); // NOI18N
             } else {
-                return path.replace('/', '.'); // NOI18N
+                String pkg = path.replace('/', '.'); // NOI18N
+                if (truncate) {
+                    // #42589: keep only first letter of first package component, up to three of others
+                    return pkg.replaceFirst("^([^.])[^.]+\\.", "$1.").replaceAll("([^.]{3})[^.]+\\.", "$1."); // NOI18N
+                } else {
+                    return pkg;
+                }
             }
         }
         

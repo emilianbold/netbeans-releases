@@ -27,6 +27,10 @@ import org.openide.nodes.Node;
 
 public class PackageViewTest extends NbTestCase {
     
+    static {
+        System.setProperty("org.netbeans.spi.java.project.support.ui.packageView.TRUNCATE_PACKAGE_NAMES", "true");
+    }
+    
     public PackageViewTest( String name ) {
         super( name );
     }
@@ -154,6 +158,12 @@ public class PackageViewTest extends NbTestCase {
         assertNodes( ch, 
                      new String[] { "a.b.c", "t.r.g", "t.r.h", "t.r.i" },
                      new int[] { 0, 0, 1, 0 } );
+        
+        // Test truncated package names
+        FileUtil.createFolder(root, "src/org/foo/something/whatever");
+        assertNodes( ch, 
+                     new String[] { "a.b.c", "o.foo.som.whatever", "t.r.g", "t.r.h", "t.r.i" },
+                     new int[] { 0, 0, 0, 1, 0 } );
                      
     }
     
@@ -167,7 +177,7 @@ public class PackageViewTest extends NbTestCase {
         assertEquals( "Wrong number of nodes.", nodeNames.length, nodes.length );
         
         for( int i = 0; i < nodeNames.length; i++ ) {
-            assertEquals( "Wrong node name on index " + i +".", nodeNames[i], nodes[i].getDisplayName() );
+            assertEquals( "Wrong node name on index " + i + ": " + nodes[i].getDisplayName(), nodeNames[i], nodes[i].getDisplayName() );
             if ( childCount != null ) {
                 if ( childCount[i] == 0 ) {
                     assertEquals( "Node should be leaf", true, nodes[i].isLeaf() );
