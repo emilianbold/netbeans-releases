@@ -32,7 +32,7 @@ public class SimpleIndentEngine extends FormatterIndentEngine {
     }
 
     protected ExtFormatter createFormatter() {
-        return new ExtFormatter(BaseKit.class);
+        return new ExtFormatter.Simple(BaseKit.class);
     }
 
     public HelpCtx getHelpCtx() {
