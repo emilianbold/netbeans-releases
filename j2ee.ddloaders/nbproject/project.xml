@@ -64,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
                         <!-- XXX how to specify impl dep? -->
                     </run-dependency>
                 </dependency>
- 
+
                 <dependency>
                     <code-name-base>org.netbeans.modules.xml.tools</code-name-base>
                     <build-prerequisite/>
@@ -74,7 +74,7 @@ Microsystems, Inc. All Rights Reserved.
                         <!-- XXX how to specify impl dep? -->
                     </run-dependency>
                 </dependency>
-                
+
                 <dependency>
                     <code-name-base>org.netbeans.api.xml</code-name-base>
                     <build-prerequisite/>
@@ -148,12 +148,12 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.openide.src</code-name-base>
+	        <dependency>
+		    <code-name-base>org.openide.src</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency/>
-                </dependency>
+		</dependency>
                 <dependency>
                     <code-name-base>org.netbeans.jmi.javamodel</code-name-base>
                     <build-prerequisite/>
@@ -164,14 +164,6 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.javacore</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.refactoring</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
