@@ -23,48 +23,41 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 import org.openide.nodes.Node;
 import org.netbeans.modules.xml.multiview.cookies.LinkCookie;
+import org.netbeans.modules.xml.multiview.cookies.ErrorComponentContainer;
 
 /**
  *
  * @author  mkuchtiak
  */
-public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel {
+public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel, ErrorComponentContainer {
     
-    private HashMap errorComponentMap = new HashMap();
-    //private JScrollPane scrollPane;
     private Node activeNode=null;
     private SectionView sectionView;
     private String title;
     private Node node;
     private boolean active;
-    //private JPanel parentSection;
-    private JPanel contentPanel;
+    private CustomPanel customPanel;
     private Object key;
+    private CustomPanelFactory panelFactory;
     
     /** Creates new form SectionContainer */
 
-    public SectionPanel(SectionView sectionView, Node explorerNode, JPanel panel) {
-        this(sectionView, explorerNode, explorerNode.getDisplayName(), panel);
+    public SectionPanel(SectionView sectionView, Node explorerNode, Object key, CustomPanelFactory panelFactory) {
+        this(sectionView, explorerNode, explorerNode.getDisplayName(), key, panelFactory);
     }
     
-    public SectionPanel(SectionView sectionView, Node node, String title, JPanel panel) {
+    public SectionPanel(SectionView sectionView, Node node, String title, Object key, CustomPanelFactory panelFactory) {
         this.sectionView = sectionView;
         this.title=title;
         this.node=node;
-        contentPanel=panel;
-        initComponents();   
-        
-        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        add(contentPanel, gridBagConstraints);
-        
+        this.key=key;
+        this.panelFactory = panelFactory;
+
+        initComponents();
+        filler.setBackground(SectionVisualTheme.getFillerColor());
+        filler.setVisible(false);
         setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         titleButton.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-        filler.setBackground(SectionVisualTheme.getFillerColor());
         titleButton.setText(title);
         java.awt.Image image = node.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
         if (image!=null) {
@@ -80,8 +73,19 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
                 popup.show(foldButton,e.getX(), e.getY());
             }
         });
-        
-        panel.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
+    }
+    
+    private void openCustomPanel() {     
+        if (this.customPanel!=null) remove(customPanel);
+        customPanel = panelFactory.createCustomPanel(key);
+        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        filler.setVisible(true);
+        customPanel.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
             protected void showPopup(java.awt.event.MouseEvent e) {
                 if (!SectionPanel.this.isActive()) {
                     SectionPanel.this.setActive(true);
@@ -90,8 +94,17 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
                 popup.show(foldButton,e.getX(), e.getY());
             }
         });
+        add(customPanel, gridBagConstraints);
     }
-
+    
+    private void closeCustomPanel() {     
+        if (this.customPanel!=null) {
+            remove(customPanel);
+            customPanel=null;
+        }
+        filler.setVisible(false);
+    }
+    
     public String getTitle() {
         return title;
     }
@@ -108,7 +121,8 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     /** Method from NodeSectionPanel interface */
     public void open(){
         foldButton.setSelected(false);
-        contentPanel.setVisible(true);
+        //contentPanel.setVisible(true);
+        openCustomPanel();
         filler.setVisible(true);
     }
     
@@ -152,6 +166,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         setLayout(new java.awt.GridBagLayout());
 
         foldButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/arrowbottom.gif")));
+        foldButton.setSelected(true);
         foldButton.setBorder(null);
         foldButton.setBorderPainted(false);
         foldButton.setContentAreaFilled(false);
@@ -214,8 +229,10 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
 
     private void foldButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_foldButtonActionPerformed
         // TODO add your handling code here:
-        contentPanel.setVisible(!foldButton.isSelected());
-        filler.setVisible(!foldButton.isSelected());
+        if (!foldButton.isSelected()) openCustomPanel();
+        else closeCustomPanel();
+        //contentPanel.setVisible(!foldButton.isSelected());
+        //filler.setVisible(!foldButton.isSelected());
     }//GEN-LAST:event_foldButtonActionPerformed
     
     
@@ -226,14 +243,14 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     private javax.swing.JButton titleButton;
     // End of variables declaration//GEN-END:variables
     
-    public static abstract class InnerPanel extends javax.swing.JPanel implements LinkCookie {
-        
+    public static abstract class CustomPanel extends javax.swing.JPanel implements LinkCookie, ErrorComponentContainer {
+
         public void add (java.awt.Component comp, Object constraints) {
             super.add(comp, constraints);           
             if (comp instanceof javax.swing.text.JTextComponent) {
                 ((javax.swing.text.JTextComponent)comp).addFocusListener(new java.awt.event.FocusAdapter() {
                     public void focusGained(java.awt.event.FocusEvent evt) {
-                        java.awt.Component parent = InnerPanel.this.getParent();
+                        java.awt.Component parent = CustomPanel.this.getParent();
                         if (parent instanceof  SectionPanel) {
                             ((SectionPanel)parent).setActive(true);
                         }
@@ -242,9 +259,9 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
             }
         }
         
-        public abstract javax.swing.JComponent[] getErrorComponents();
+        public abstract javax.swing.JComponent getErrorComponent(String errorId);
     }
-    
+
     public void setKey (Object key) {
         this.key=key;
     }
@@ -252,12 +269,13 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     public Object getKey() {
         return key;
     }
-    
-    public void addErrorComponent(String name, JComponent errorComponent) {
-        errorComponentMap.put(name, errorComponent);
+
+    public JComponent getErrorComponent(String errorId) {
+        if (customPanel!=null) return customPanel.getErrorComponent(errorId);
+        return null;
     }
     
-    public JComponent getErrorComponent(String name) {
-        return (JComponent) errorComponentMap.get(name);
+    CustomPanel getCustomPanel() {
+        return customPanel;
     }
 }

@@ -15,6 +15,7 @@ package org.netbeans.modules.xml.multiview.ui;
 
 import javax.swing.UIManager;
 import org.netbeans.modules.xml.multiview.Error;
+import org.netbeans.modules.xml.multiview.cookies.ErrorComponentContainer;
 
 /** ErrorPanel.java
  *
@@ -25,6 +26,9 @@ public class ErrorPanel extends javax.swing.JPanel {
     
     private javax.swing.JButton errorButton;
     private javax.swing.JComponent focusableComponent;
+    private ErrorComponentContainer errorContainer;
+    private String errorId;
+    
     
     /** Creates new form ErrorPanel */
     public ErrorPanel() {
@@ -35,12 +39,17 @@ public class ErrorPanel extends javax.swing.JPanel {
                 javax.swing.JComponent comp = ErrorPanel.this.getFocusableComponent();
                 if (comp!=null) {
                     comp.requestFocus();
-                    java.awt.Container cont = comp.getParent();
-                    if (cont !=null ) cont = cont.getParent();
-                    if (cont!=null && cont instanceof SectionPanel) {
-                        ((SectionPanel)cont).open();
-                        ((SectionPanel)cont).scroll();
+                    return;
+                }
+                ErrorComponentContainer errorCont = ErrorPanel.this.getErrorComponentContainer();
+                if (errorCont!=null) {
+                    if (errorCont instanceof SectionPanel) {
+                        SectionPanel sectPanel = (SectionPanel)errorCont;
+                        if (sectPanel.getCustomPanel()==null) sectPanel.open();
+                        sectPanel.scroll();                   
                     }
+                    javax.swing.JComponent errorComp = errorCont.getErrorComponent(ErrorPanel.this.getErrorId());
+                    if (errorComp!=null) errorComp.requestFocus();
                 }
             }
         });
@@ -50,6 +59,14 @@ public class ErrorPanel extends javax.swing.JPanel {
     
     public javax.swing.JComponent getFocusableComponent() {
         return focusableComponent;
+    }
+    
+    public ErrorComponentContainer getErrorComponentContainer() {
+        return errorContainer;
+    }
+    
+    public String getErrorId() {
+        return errorId;
     }
     
     /** This method is called from within the constructor to
@@ -89,6 +106,8 @@ public class ErrorPanel extends javax.swing.JPanel {
             }
         }
         focusableComponent = error.getFocusableComponent();
+        errorContainer = error.getErrorComponentContainer();
+        errorId = error.getErrorId();
         errorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/error-glyph.gif")));
     }
     

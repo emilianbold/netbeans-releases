@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.xml.multiview;
 
+import org.netbeans.modules.xml.multiview.cookies.ErrorComponentContainer;
+
  /** Error.java
  *
  * Created on November 20, 2004, 12:27 PM
@@ -26,13 +28,21 @@ public class Error {
     public static final int DUPLICATE_VALUE_MESSAGE=3;
 
     private int errorType;
-    private String errorMessage;
+    private String errorMessage, errorId;
     javax.swing.JComponent focusableComponent;
+    ErrorComponentContainer errorContainer;
 
     public Error(int errorType, String errorMessage, javax.swing.JComponent focusableComponent) {
         this.errorType=errorType;
         this.errorMessage=errorMessage;
         this.focusableComponent=focusableComponent;
+    }
+    
+    public Error(int errorType, String errorMessage, ErrorComponentContainer errorContainer, String errorId) {
+        this.errorType=errorType;
+        this.errorMessage=errorMessage;
+        this.errorContainer=errorContainer;
+        this.errorId=errorId;
     }
 
     public int getErrorType() {
@@ -45,6 +55,14 @@ public class Error {
 
     public javax.swing.JComponent getFocusableComponent() {
         return focusableComponent;
+    }
+    
+    public ErrorComponentContainer getErrorComponentContainer() {
+        return errorContainer;
+    }
+    
+    public String getErrorId() {
+        return errorId;
     }
     
 }
