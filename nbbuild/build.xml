@@ -146,7 +146,7 @@ ToDo:
     <echo message="Building module core/javahelp..."/>
     <ant dir="../core/javahelp" target="netbeans"/>
   </target>
-  <target name="all-core/compiler" depends="all-openide">
+  <target name="all-core/compiler" depends="all-openide,all-core">
     <echo message="Building module core/compiler..."/>
     <ant dir="../core/compiler" target="netbeans"/>
   </target>
@@ -154,7 +154,7 @@ ToDo:
     <echo message="Building module core/execution..."/>
     <ant dir="../core/execution" target="netbeans"/>
   </target>
-  <target name="all-core/ui" depends="all-openide">
+  <target name="all-core/ui" depends="all-openide,all-core">
     <echo message="Building module core/ui..."/>
     <ant dir="../core/ui" target="netbeans"/>
   </target>
@@ -166,7 +166,7 @@ ToDo:
     <echo message="Building module core/windows..."/>
     <ant dir="../core/windows" target="netbeans"/>
   </target>
-  <target name="all-core/ide" depends="all-openide">
+  <target name="all-core/ide" depends="all-openide,all-core">
     <echo message="Building module core/ide..."/>
     <ant dir="../core/ide" target="netbeans"/>
   </target>
@@ -491,12 +491,12 @@ ToDo:
 
 
   <!-- Libs modules -->
-  <target name="all-libs/xalan">
+  <target name="all-libs/xalan" depends="init">
       <echo message="Building module libs/xalan..."/>
       <ant dir="../libs/xalan" target="netbeans"/>
   </target>
 
-  <target name="all-libs/jaxp">
+  <target name="all-libs/jaxp" depends="init">
       <echo message="Building module libs/jaxp..."/>
       <ant dir="../libs/jaxp" target="netbeans"/>
   </target>
