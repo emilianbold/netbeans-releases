@@ -7,7 +7,7 @@ OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Install: org/apache/tools/ant/module/AntModule.class
 OpenIDE-Module-Layer: org/apache/tools/ant/module/resources/AntModuleLayer.xml
 OpenIDE-Module-Description: org.apache.tools.ant.module.docs.HelpSet
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.1.6
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.1.7
 OpenIDE-Module-Package-Dependencies: [org.apache.tools.ant.Project], [org.apache.xerces.parsers.DOMParser]
 Class-Path: ext/ant.jar ext/ant-optional.jar
 

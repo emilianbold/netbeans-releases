@@ -26,6 +26,7 @@ import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.xml.XMLUtil;
 
 import org.apache.tools.ant.module.AntModule;
 
@@ -83,10 +84,10 @@ public class AntProjectDataLoader extends UniFileLoader {
 
     private static class QuickieHandler extends DefaultHandler {
         public void startElement (String namespace, String name, String qname, Attributes attrs) throws SAXException {
-            throw new ResolvedThrow (name.equals ("project") && // NOI18N
-                                     attrs.getValue ("", "name") != null && // NOI18N
-                                     //attrs.getValue ("", "basedir") != null && // NOI18N
-                                     attrs.getValue ("", "default") != null); // NOI18N
+            throw new ResolvedThrow (qname.equals ("project") && // NOI18N
+                                     attrs.getValue ("name") != null && // NOI18N
+                                     //attrs.getValue ("basedir") != null && // NOI18N
+                                     attrs.getValue ("default") != null); // NOI18N
         }
         public InputSource resolveEntity (String publicID, String systemID) {
             //System.err.println ("resolveEntity: " + publicID + " " + systemID);
@@ -119,7 +120,7 @@ public class AntProjectDataLoader extends UniFileLoader {
                 }
                 // OK, first attempt to parse this file.
                 try {
-                    XMLReader r = XMLDataObject.Util.createXMLReader (false, false);
+                    XMLReader r = XMLUtil.createXMLReader (false, false);
                     QuickieHandler h = new QuickieHandler ();
                     r.setContentHandler (h);
                     r.setDTDHandler (h);
