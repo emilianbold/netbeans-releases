@@ -63,6 +63,7 @@ public final class MultiViewPeer  {
     private ActionRequestObserverFactory factory;
     private PropertyChangeListener activatedListener;
     private MultiViewActionMap delegatingMap;
+    private boolean activated = false;
     
     public MultiViewPeer(TopComponent pr, ActionRequestObserverFactory fact) {
         selListener = new SelectionListener();
@@ -169,10 +170,16 @@ public final class MultiViewPeer  {
     }
     
     void peerComponentDeactivated() {
+        activated = false;
         model.getActiveElement().componentDeactivated();
     }
     
+    boolean isActivated() {
+        return activated;
+    }
+    
     void peerComponentActivated() {
+        activated = true;
         model.getActiveElement().componentActivated();
     }
     

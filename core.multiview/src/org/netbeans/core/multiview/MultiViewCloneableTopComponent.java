@@ -287,14 +287,20 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
         }
         
         public void requestActive() {
-            //TODO what to do if the TC itself is not focused? request it?
-            // how will the internal callbacks work then?
-            if (peer.model.getActiveDescription() != description) {
-                peer.model.getActiveElement().componentDeactivated();
-                peer.tabs.changeActiveManually(description);
-                peer.model.getActiveElement().componentActivated();
+            boolean activated = peer.isActivated();
+            if (!activated) {
+                MultiViewCloneableTopComponent.this.requestActive();
             }
-            
+            if (peer.model.getActiveDescription() != description) {
+                if (activated) {
+                    peer.model.getActiveElement().componentDeactivated();
+                } 
+                peer.tabs.changeActiveManually(description);
+                if (activated) {
+                    peer.model.getActiveElement().componentActivated();
+                }
+            }
+
         }
         
         public void requestVisible() {
