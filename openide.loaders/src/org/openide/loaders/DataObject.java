@@ -170,10 +170,17 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     */
     public void setValid (boolean valid) throws PropertyVetoException {
         if (!valid && isValid ()) {
-            fireVetoableChange (PROP_VALID, Boolean.TRUE, Boolean.FALSE);
-            dispose ();
-            setModified(false);
+            markInvalid0 ();
         }
+    }
+        
+    /** Tries to mark the object invalid. Called from setValid or from 
+     * MultiDataObject.notifyDeleted
+     */
+    final void markInvalid0 () throws PropertyVetoException {    
+        fireVetoableChange (PROP_VALID, Boolean.TRUE, Boolean.FALSE);
+        dispose ();
+        setModified(false);
     }
 
     /** Test whether the data object is still valid and usable.

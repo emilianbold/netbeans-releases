@@ -1037,7 +1037,7 @@ public class MultiDataObject extends DataObject {
         removeFile (fe.getFile ());
         if (fe.getFile ().equals (getPrimaryFile ())) {
             try {
-                MultiDataObject.this.setValid (false);
+                MultiDataObject.this.markInvalid0 ();
             } catch (PropertyVetoException ex) {
                 // silently ignore?
                 ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
