@@ -584,7 +584,7 @@ implements Serializable, DataObject.Container {
         } catch (IOException iex) {
             /** Annotates exception and throws again*/
             FileObject fo = getPrimaryFile();
-            String message = NbBundle.getMessage(DataFolder.class, "EXC_CannotDelete", FileUtil.getFileDisplayName(fo));
+            String message = NbBundle.getMessage(DataFolder.class, "EXC_CannotDelete2", FileUtil.getFileDisplayName(fo));
             ErrorManager.getDefault().annotate(iex, message);
             throw iex;
         }
