@@ -744,6 +744,7 @@ private static final class DefaultLoader extends MultiFileLoader {
                 SystemAction.get (org.openide.actions.RenameAction.class),
                 null,
                 SystemAction.get (org.openide.actions.ToolsAction.class),
+                SystemAction.get (org.openide.actions.SaveAsTemplateAction.class),
                 SystemAction.get (org.openide.actions.PropertiesAction.class)
             };
     }
