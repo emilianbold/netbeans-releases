@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
-import java.util.Properties;
 import javax.swing.JComponent;
 
 import org.netbeans.api.debugger.Breakpoint;

@@ -32,6 +32,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -45,6 +46,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
+import org.netbeans.api.debugger.Properties;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
@@ -308,9 +310,18 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @return instance of SmartSteppingFilter
      */
     public SmartSteppingFilter getSmartSteppingFilter () {
-        if (smartSteppingFilter == null)
+        if (smartSteppingFilter == null) {
             smartSteppingFilter = (SmartSteppingFilter) lookupProvider.
                 lookupFirst (null, SmartSteppingFilter.class);
+            smartSteppingFilter.addExclusionPatterns (
+                (Set) Properties.getDefault ().getProperties ("debugger").
+                    getProperties ("sources").getProperties ("class_filters").
+                    getCollection (
+                        "enabled", 
+                        Collections.EMPTY_SET
+                    )
+            );
+        }
         return smartSteppingFilter;
     }
 

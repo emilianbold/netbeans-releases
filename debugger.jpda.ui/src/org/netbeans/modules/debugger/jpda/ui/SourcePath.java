@@ -16,10 +16,14 @@ import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.StackFrame;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.WeakHashMap;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.api.debugger.DebuggerManager;
@@ -41,30 +45,31 @@ import org.netbeans.spi.viewmodel.NoInformationException;
  */
 public class SourcePath {
 
-    private ContextProvider         lookupProvider;
-    private SourcePathProvider      contextProvider;
+    private ContextProvider         contextProvider;
+    private SourcePathProvider      sourcePathProvider;
     private JPDADebugger            debugger;
     
 
-    public SourcePath (ContextProvider lookupProvider) {
-        this.lookupProvider = lookupProvider;
-        debugger = (JPDADebugger) lookupProvider.lookupFirst 
+    public SourcePath (ContextProvider contextProvider) {
+        this.contextProvider = contextProvider;
+        debugger = (JPDADebugger) contextProvider.lookupFirst 
             (null, JPDADebugger.class);
     }
 
     private SourcePathProvider getContext () {
-        if (contextProvider == null) {
-            List l = lookupProvider.lookup (null, SourcePathProvider.class);
-            contextProvider = (SourcePathProvider) l.get (0);
+        if (sourcePathProvider == null) {
+            List l = contextProvider.lookup (null, SourcePathProvider.class);
+            sourcePathProvider = (SourcePathProvider) l.get (0);
             int i, k = l.size ();
             for (i = 1; i < k; i++) {
-                contextProvider = new CompoundContextProvider (
+                sourcePathProvider = new CompoundContextProvider (
                     (SourcePathProvider) l.get (i), 
-                    contextProvider
+                    sourcePathProvider
                 );
             }
+            initSourcePaths ();
         }
-        return contextProvider;
+        return sourcePathProvider;
     }
 
     
@@ -435,6 +440,33 @@ public class SourcePath {
             cp1.removePropertyChangeListener (l);
             cp2.removePropertyChangeListener (l);
         }
+    }
+    
+    private void initSourcePaths () {
+        Properties properties = Properties.getDefault ().
+            getProperties ("debugger").getProperties ("sources");
+        Set originalSourceRoots = new HashSet (Arrays.asList (
+            sourcePathProvider.getOriginalSourceRoots ()
+        ));
+        Set sourceRoots = new HashSet (Arrays.asList (
+            sourcePathProvider.getSourceRoots ()
+        ));
+
+        Iterator enabledSourceRoots = properties.getProperties ("source_roots").
+            getCollection ("enabled", Collections.EMPTY_SET).iterator ();
+        while (enabledSourceRoots.hasNext ()) {
+            String root = (String) enabledSourceRoots.next ();
+            if (originalSourceRoots.contains (root)) 
+                sourceRoots.add (root);
+        }
+        Iterator disabledSourceRoots = properties.getProperties ("source_roots").
+            getCollection ("disabled", Collections.EMPTY_SET).iterator ();
+        while (disabledSourceRoots.hasNext ()) {
+            String root = (String) disabledSourceRoots.next ();
+            sourceRoots.remove (root);
+        }
+        String[] ss = new String [sourceRoots.size ()];
+        sourcePathProvider.setSourceRoots ((String[]) sourceRoots.toArray (ss));
     }
 
     private static class CompoundAnnotation {

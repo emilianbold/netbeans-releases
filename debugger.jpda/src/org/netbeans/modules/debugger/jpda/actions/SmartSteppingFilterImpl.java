@@ -15,9 +15,11 @@ package org.netbeans.modules.debugger.jpda.actions;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 
 
@@ -34,7 +36,18 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
     private PropertyChangeSupport pcs;
     {pcs = new PropertyChangeSupport (this);}
 
-
+    {
+        addExclusionPatterns (
+            (Set) Properties.getDefault ().getProperties ("debugger").
+                getProperties ("sources").getProperties ("class_filters").
+                getCollection (
+                    "enabled", 
+                    Collections.EMPTY_SET
+                )
+        );
+    }
+    
+    
     /**
      * Adds a set of new class exclusion filters. Filter is 
      * {@link java.lang.String} containing full class name. Filter can 

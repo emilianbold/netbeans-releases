@@ -45,56 +45,30 @@ import org.openide.util.NbBundle;
 public class SourcesModel implements TreeModel, TableModel,
 NodeActionsProvider {
     
-    private Listener listener;
-    private SourcePath context;
-    private JPDADebugger debugger;
-    private Vector listeners = new Vector ();
-    private Set filters = new HashSet ();
-    private Set enabledFilters = new HashSet ();
-    private String FILTER_PREFIX = "Do not stop in: ";
-    private String DISP_FILTER_PREFIX = NbBundle.getBundle(SourcesModel.class).getString("CTL_SourcesModel_Name_DoNotStopIn");
+    private static final String     FILTER_PREFIX = "Do not stop in: ";
+    private static final String     DISP_FILTER_PREFIX = NbBundle.getBundle
+        (SourcesModel.class).getString ("CTL_SourcesModel_Name_DoNotStopIn");
+    
+    
+    private Listener                listener;
+    private SourcePath              sourcePath;
+    private JPDADebugger            debugger;
+    private Vector                  listeners = new Vector ();
+    // set of filters
+    private Set                     filters = new HashSet ();
+    private Set                     enabledFilters = new HashSet ();
+    private Set                     enabledSourceRoots = new HashSet ();
+    private Set                     disabledSourceRoots = new HashSet ();
+    private Properties              filterProperties = Properties.
+        getDefault ().getProperties ("debugger").getProperties ("sources");
     
     
     public SourcesModel (ContextProvider lookupProvider) {
-         context = (SourcePath) lookupProvider.
+        sourcePath = (SourcePath) lookupProvider.
             lookupFirst (null, SourcePath.class);
-         debugger = (JPDADebugger) lookupProvider.
+        debugger = (JPDADebugger) lookupProvider.
             lookupFirst (null, JPDADebugger.class);
-        loadSourcePreferences();
-    }
-
-    private void loadSourcePreferences() {
-        Properties properties = Properties.getDefault().getProperties ("debugger").getProperties("sourcefilter");
-        Collection stopIn = properties.getCollection("stop", Collections.EMPTY_SET);
-        Collection skipThrough = properties.getCollection("skip", Collections.EMPTY_SET);
-
-        String [] sr = context.getSourceRoots ();
-        Set allRoots = new HashSet(Arrays.asList(context.getOriginalSourceRoots()));
-        Set s = new HashSet(Arrays.asList(sr));
-
-        for (Iterator i = stopIn.iterator(); i.hasNext();) {
-            String root = (String) i.next();
-            if (root.startsWith(FILTER_PREFIX)) {
-                root = root.substring(FILTER_PREFIX.length());
-                filters.add(root);
-                debugger.getSmartSteppingFilter().removeExclusionPatterns(Collections.singleton(root));
-            } else {
-                if (allRoots.contains(root)) s.add(root);
-            }
-        }
-        for (Iterator i = skipThrough.iterator(); i.hasNext();) {
-            String root = (String) i.next();
-            if (root.startsWith(FILTER_PREFIX)) {
-                root = root.substring(FILTER_PREFIX.length());
-                filters.add(root);
-                enabledFilters.add(root);
-                debugger.getSmartSteppingFilter().addExclusionPatterns(Collections.singleton(root));
-            } else {
-                s.remove(root);
-            }
-        }
-        String[] ss = new String [s.size ()];
-        context.setSourceRoots ((String[]) s.toArray (ss));
+        loadFilters (); 
     }
     
     
@@ -115,16 +89,21 @@ NodeActionsProvider {
     public Object[] getChildren (Object parent, int from, int to)
     throws UnknownTypeException {
         if (parent == ROOT) {
-            String[] sr = context.getOriginalSourceRoots ();
+            // 1) get source roots
+            String[] sourceRoots = sourcePath.getOriginalSourceRoots ();
+            
+            // 2) get filters
             String[] ep = new String [filters.size ()];
             ep = (String[]) filters.toArray (ep);
             int i, k = ep.length;
             for (i = 0; i < k; i++) {
                 ep [i] = DISP_FILTER_PREFIX + ep [i];
             }
-            Object[] os = new Object [sr.length + ep.length];
-            System.arraycopy (sr, 0, os, 0, sr.length);
-            System.arraycopy (ep, 0, os, sr.length, ep.length);
+            
+            // 3) join them
+            Object[] os = new Object [sourceRoots.length + ep.length];
+            System.arraycopy (sourceRoots, 0, os, 0, sourceRoots.length);
+            System.arraycopy (ep, 0, os, sourceRoots.length, ep.length);
             Object[] fos = new Object [to - from];
             System.arraycopy (os, from, fos, 0, to - from);
             if (listener == null)
@@ -147,7 +126,7 @@ NodeActionsProvider {
         if (node == ROOT) {
             if (listener == null)
                 listener = new Listener (this);
-            return context.getOriginalSourceRoots ().length + 
+            return sourcePath.getOriginalSourceRoots ().length + 
                 filters.size ();
         } else
         throw new UnknownTypeException (node);
@@ -181,8 +160,155 @@ NodeActionsProvider {
             ((TreeModelListener) v.get (i)).treeNodeChanged (b);
     }
     
+     
+    // TableModel ..............................................................
     
-    // ColumnModels ............................................................
+    public Object getValueAt (Object node, String columnID) throws 
+    ComputingException, UnknownTypeException {
+        if (columnID.equals ("use")) {
+            if (node instanceof String)
+                return Boolean.valueOf (
+                    isEnabled ((String) node)
+                );
+        } 
+        throw new UnknownTypeException (node);
+    }
+    
+    public boolean isReadOnly (Object node, String columnID) throws 
+    UnknownTypeException {
+        if ( columnID.equals ("use") &&
+             (node instanceof String))
+            return false;
+        throw new UnknownTypeException (node);
+    }
+    
+    public void setValueAt (Object node, String columnID, Object value) 
+    throws UnknownTypeException {
+        if (columnID.equals ("use")) {
+            if (node instanceof String) {
+                setEnabled ((String) node, ((Boolean) value).booleanValue ());
+                return;
+            }
+        } 
+        throw new UnknownTypeException (node);
+    }
+    
+    
+    // NodeActionsProvider .....................................................
+    
+    public Action[] getActions (Object node) throws UnknownTypeException {
+        if (node instanceof String) {
+            if (((String) node).startsWith (DISP_FILTER_PREFIX))
+                return new Action[] {
+                    NEW_FILTER_ACTION,
+                    DELETE_ACTION
+                };
+            else
+                return new Action[] {
+                    NEW_FILTER_ACTION
+                };
+        } else
+        throw new UnknownTypeException (node);
+    }    
+    
+    public void performDefaultAction (Object node) 
+    throws UnknownTypeException {
+        if (node instanceof String) {
+            return;
+        } else
+        throw new UnknownTypeException (node);
+    }
+    
+    // other methods ...........................................................
+    
+    private boolean isEnabled (String root) {
+        if (root.startsWith (DISP_FILTER_PREFIX)) {
+            return enabledFilters.contains (root.substring (
+                DISP_FILTER_PREFIX.length ()
+            ));
+        }
+        String[] sourceRoots = sourcePath.getSourceRoots ();
+        int i, k = sourceRoots.length;
+        for (i = 0; i < k; i++)
+            if (sourceRoots [i].equals (root)) return true;
+        return false;
+    }
+
+    private void setEnabled (String root, boolean enabled) {
+        if (root.startsWith (DISP_FILTER_PREFIX)) {
+            String filter = root.substring (DISP_FILTER_PREFIX.length ());
+            if (enabled) {
+                enabledFilters.add (filter);
+                debugger.getSmartSteppingFilter ().addExclusionPatterns (
+                        Collections.singleton (filter)
+                );
+            } else {
+                enabledFilters.remove (filter);
+                debugger.getSmartSteppingFilter ().removeExclusionPatterns (
+                        Collections.singleton (filter)
+                );
+            }
+            saveFilters ();
+            return;
+        } else {
+            Set sourceRoots = new HashSet (Arrays.asList (
+                sourcePath.getSourceRoots ()
+            ));
+            if (enabled) {
+                enabledSourceRoots.add (root);
+                disabledSourceRoots.remove (root);
+                sourceRoots.add (root);
+            } else {
+                disabledSourceRoots.add (root);
+                enabledSourceRoots.remove (root);
+                sourceRoots.remove (root);
+            }
+            String[] ss = new String [sourceRoots.size ()];
+            sourcePath.setSourceRoots ((String[]) sourceRoots.toArray (ss));
+            saveFilters ();
+        }
+    }
+
+    private void loadFilters () {
+        filters = new HashSet (
+            filterProperties.getProperties ("class_filters").getCollection (
+                "all", 
+                Collections.EMPTY_SET
+            )
+        );
+        enabledFilters = new HashSet (
+            filterProperties.getProperties ("class_filters").getCollection (
+                "enabled", 
+                Collections.EMPTY_SET
+            )
+        );
+        enabledSourceRoots = new HashSet (
+            filterProperties.getProperties ("source_roots").getCollection (
+                "enabled", 
+                Collections.EMPTY_SET
+            )
+        );
+        disabledSourceRoots = new HashSet (
+            filterProperties.getProperties ("source_roots").getCollection (
+                "disabled", 
+                Collections.EMPTY_SET
+            )
+        );
+    }
+
+    private void saveFilters () {
+        filterProperties.getProperties ("class_filters").
+            setCollection ("all", filters);
+        filterProperties.getProperties ("class_filters").
+            setCollection ("enabled", enabledFilters);
+        filterProperties.getProperties ("source_roots").setCollection 
+            ("enabled", enabledSourceRoots);
+        filterProperties.getProperties ("source_roots").setCollection 
+            ("disabled", disabledSourceRoots);
+    }
+
+    
+    // innerclasses ............................................................
     
     /**
      * Defines model for one table view column. Can be used together with 
@@ -285,164 +411,17 @@ NodeActionsProvider {
         }
     }
     
-     
-    // TableModel ..............................................................
-    
-    public Object getValueAt (Object node, String columnID) throws 
-    ComputingException, UnknownTypeException {
-        if (columnID.equals ("use")) {
-            if (node instanceof String)
-                return Boolean.valueOf (
-                    isEnabled ((String) node)
-                );
-        } 
-        throw new UnknownTypeException (node);
-    }
-    
-    public boolean isReadOnly (Object node, String columnID) throws 
-    UnknownTypeException {
-        if ( columnID.equals ("use") &&
-             (node instanceof String))
-            return false;
-        throw new UnknownTypeException (node);
-    }
-    
-    public void setValueAt (Object node, String columnID, Object value) 
-    throws UnknownTypeException {
-        if (columnID.equals ("use")) {
-            if (node instanceof String) {
-                setEnabled ((String) node, ((Boolean) value).booleanValue ());
-                return;
-            }
-        } 
-        throw new UnknownTypeException (node);
-    }
-    
-    
-    // NodeActionsProvider .....................................................
-    
-    public Action[] getActions (Object node) throws UnknownTypeException {
-        if (node instanceof String) {
-            if (((String) node).startsWith (DISP_FILTER_PREFIX))
-                return new Action[] {
-                    NEW_FILTER_ACTION,
-                    DELETE_ACTION
-                };
-            else
-                return new Action[] {
-                    NEW_FILTER_ACTION
-                };
-        } else
-        throw new UnknownTypeException (node);
-    }    
-    
-    public void performDefaultAction (Object node) 
-    throws UnknownTypeException {
-        if (node instanceof String) {
-            return;
-        } else
-        throw new UnknownTypeException (node);
-    }
-    
-    // other methods ...........................................................
-    
-    private boolean isEnabled (String root) {
-        if (root.startsWith (DISP_FILTER_PREFIX)) {
-            return enabledFilters.contains (root.substring (
-                DISP_FILTER_PREFIX.length ()
-            ));
-        }
-        String[] sr = context.getSourceRoots ();
-        int i, k = sr.length;
-        for (i = 0; i < k; i++)
-            if (sr [i].equals (root)) return true;
-        return false;
-    }
-
-    private void setEnabled (String root, boolean enabled) {
-        if (root.startsWith (DISP_FILTER_PREFIX)) {
-            String filter = root.substring (DISP_FILTER_PREFIX.length ());
-            if (enabled) {
-                enabledFilters.add  (filter);
-                debugger.getSmartSteppingFilter ().addExclusionPatterns (
-                        Collections.singleton (filter)
-                );
-            } else {
-                enabledFilters.remove (filter);
-                debugger.getSmartSteppingFilter ().removeExclusionPatterns (
-                        Collections.singleton (filter)
-                );
-            }
-            saveFilters();
-            return;
-        }
-
-        Properties properties = Properties.getDefault().getProperties ("debugger").getProperties("sourcefilter");
-        Set stopIn = new HashSet(properties.getCollection("stop", Collections.EMPTY_SET));
-        Set skipThrough = new HashSet(properties.getCollection("skip", Collections.EMPTY_SET));
-        if (enabled) {
-            stopIn.add(root);
-            skipThrough.remove(root);
-        } else {
-            skipThrough.add(root);
-            stopIn.remove(root);
-        }
-        properties.setCollection("stop", stopIn);
-        properties.setCollection("skip", skipThrough);
-
-        String[] sr = context.getSourceRoots ();
-        Set s = new HashSet (Arrays.asList (sr));
-        if (enabled)
-            s.add (root);
-        else
-            s.remove (root);
-        String[] ss = new String [s.size ()];
-        context.setSourceRoots ((String[]) s.toArray (ss));
-    }
-
-    private void saveFilters() {
-        Properties properties = Properties.getDefault().getProperties ("debugger").getProperties("sourcefilter");
-        Set stopIn = new HashSet(properties.getCollection("stop", Collections.EMPTY_SET));
-        Set skipThrough = new HashSet(properties.getCollection("skip", Collections.EMPTY_SET));
-        for (Iterator i = stopIn.iterator(); i.hasNext(); ) {
-            String sif = (String) i.next();
-            if (sif.startsWith(FILTER_PREFIX)) {
-                if (!filters.contains(sif.substring(FILTER_PREFIX.length()))) {
-                    i.remove();
-                }
-            }
-        }
-        for (Iterator i = skipThrough.iterator(); i.hasNext(); ) {
-            String sif = (String) i.next();
-            if (sif.startsWith(FILTER_PREFIX)) {
-                if (!filters.contains(sif.substring(FILTER_PREFIX.length()))) {
-                    i.remove();
-                }
-            }
-        }
-        for (Iterator i = filters.iterator(); i.hasNext();) {
-            String filter = (String) i.next();
-            if (enabledFilters.contains(filter)) {
-                skipThrough.add(FILTER_PREFIX + filter);
-                stopIn.remove(FILTER_PREFIX + filter);
-            } else {
-                stopIn.add(FILTER_PREFIX + filter);
-                skipThrough.remove(FILTER_PREFIX + filter);
-            }
-        }
-        properties.setCollection("stop", stopIn);
-        properties.setCollection("skip", skipThrough);
-    }
-    
-    // innerclasses ............................................................
-    
     private final Action NEW_FILTER_ACTION = new AbstractAction
-        (NbBundle.getBundle(SourcesModel.class).getString("CTL_SourcesModel_Action_AddFilter")) {
+        (NbBundle.getBundle (SourcesModel.class).getString 
+            ("CTL_SourcesModel_Action_AddFilter")) {
             public void actionPerformed (ActionEvent e) {
-                NotifyDescriptor.InputLine descriptor = new NotifyDescriptor.InputLine (
-                    NbBundle.getBundle(SourcesModel.class).getString("CTL_SourcesModel_NewFilter_Filter_Label"),
-                    NbBundle.getBundle(SourcesModel.class).getString("CTL_SourcesModel_NewFilter_Title")
-                );
+                NotifyDescriptor.InputLine descriptor = new 
+                    NotifyDescriptor.InputLine (
+                        NbBundle.getBundle (SourcesModel.class).getString 
+                            ("CTL_SourcesModel_NewFilter_Filter_Label"),
+                        NbBundle.getBundle (SourcesModel.class).getString 
+                            ("CTL_SourcesModel_NewFilter_Title")
+                    );
                 if (DialogDisplayer.getDefault ().notify (descriptor) == 
                     NotifyDescriptor.OK_OPTION
                 ) {
@@ -458,18 +437,27 @@ NodeActionsProvider {
             }
     };
     private final Action DELETE_ACTION = Models.createAction (
-        NbBundle.getBundle(SourcesModel.class).getString("CTL_SourcesModel_Action_Delete"),
+        NbBundle.getBundle (SourcesModel.class).getString
+            ("CTL_SourcesModel_Action_Delete"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
             }
             public void perform (Object[] nodes) {
                 int i, k = nodes.length;
-                for (i = 0; i < k; i++)
-                    filters.remove (((String) nodes [i]).substring (
-                        DISP_FILTER_PREFIX.length ()
-                    ));
-                saveFilters();
+                for (i = 0; i < k; i++) {
+                    filters.remove (
+                        ((String) nodes [i]).substring (
+                            DISP_FILTER_PREFIX.length ()
+                        )
+                    );
+                    enabledFilters.remove (
+                        ((String) nodes [i]).substring (
+                            DISP_FILTER_PREFIX.length ()
+                        )
+                    );
+                }
+                saveFilters ();
                 fireTreeChanged ();
             }
         },
@@ -484,7 +472,7 @@ NodeActionsProvider {
             SourcesModel tm
         ) {
             model = new WeakReference (tm);
-            tm.context.addPropertyChangeListener (this);
+            tm.sourcePath.addPropertyChangeListener (this);
             tm.debugger.getSmartSteppingFilter ().
                 addPropertyChangeListener (this);
         }
@@ -492,7 +480,7 @@ NodeActionsProvider {
         private SourcesModel getModel () {
             SourcesModel tm = (SourcesModel) model.get ();
             if (tm == null) {
-                tm.context.removePropertyChangeListener (this);
+                tm.sourcePath.removePropertyChangeListener (this);
                 tm.debugger.getSmartSteppingFilter ().
                     removePropertyChangeListener (this);
             }
