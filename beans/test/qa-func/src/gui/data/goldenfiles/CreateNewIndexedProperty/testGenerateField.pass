@@ -1,7 +1,7 @@
 public class TestFile {
     
-    /** Holds value of property indexProperty. */
-    private MyType[] indexProperty;
+    /** Holds value of property _indexProperty. */
+    private MyType[] _indexProperty;
     
     /** Creates a new instance of TestFile */
     public TestFile() {

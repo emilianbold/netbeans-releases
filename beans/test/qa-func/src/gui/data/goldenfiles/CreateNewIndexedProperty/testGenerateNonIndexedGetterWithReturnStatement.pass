@@ -1,7 +1,7 @@
 public class TestFile {
     
-    /** Holds value of property indexProperty. */
-    private MyType[] indexProperty;
+    /** Holds value of property _indexProperty. */
+    private MyType[] _indexProperty;
     
     /** Creates a new instance of TestFile */
     public TestFile() {
@@ -18,7 +18,7 @@ public class TestFile {
      * @return Value of property indexProperty.
      */
     public MyType[] getIndexProperty() {
-        return this.indexProperty;
+        return _indexProperty;
     }
     
     /** Indexed setter for property indexProperty.

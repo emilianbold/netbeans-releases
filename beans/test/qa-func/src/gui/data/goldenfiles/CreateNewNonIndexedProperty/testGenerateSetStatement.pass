@@ -1,7 +1,7 @@
 public class TestFile {
     
-    /** Holds value of property nonIndexProperty. */
-    private MyType nonIndexProperty;
+    /** Holds value of property _nonIndexProperty. */
+    private MyType _nonIndexProperty;
     
     /** Creates a new instance of TestFile */
     public TestFile() {
@@ -17,7 +17,7 @@ public class TestFile {
      * @param nonIndexProperty New value of property nonIndexProperty.
      */
     public void setNonIndexProperty(MyType nonIndexProperty) {
-        this.nonIndexProperty = nonIndexProperty;
+        _nonIndexProperty = nonIndexProperty;
     }
     
 }

@@ -1,7 +1,7 @@
 public class TestFile {
     
-    /** Holds value of property indexProperty. */
-    private MyType[] indexProperty;
+    /** Holds value of property _indexProperty. */
+    private MyType[] _indexProperty;
     
     /** Utility field used by bound properties. */
     private java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
@@ -55,13 +55,13 @@ public class TestFile {
      * @throws PropertyVetoException
      */
     public void setIndexProperty(int index, MyType indexProperty) throws java.beans.PropertyVetoException {
-        MyType oldIndexProperty = this.indexProperty[index];
-        this.indexProperty[index] = indexProperty;
+        MyType oldIndexProperty = _indexProperty[index];
+        _indexProperty[index] = indexProperty;
         try {
             vetoableChangeSupport.fireVetoableChange("indexProperty", null, null );
         }
         catch(java.beans.PropertyVetoException vetoException ) {
-            this.indexProperty[index] = oldIndexProperty;
+            _indexProperty[index] = oldIndexProperty;
             throw vetoException;
         }
         propertyChangeSupport.firePropertyChange("indexProperty", null, null );
