@@ -190,7 +190,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         for (int i = 0; i < servInstIDs.length; i++) {
             J2eePlatform j2eePlat = Deployment.getDefault().getJ2eePlatform(servInstIDs[i]);
             String servInstDisplayName = Deployment.getDefault().getServerInstanceDisplayName(servInstIDs[i]);
-            if (servInstDisplayName != null
+            if (servInstDisplayName != null && !servInstDisplayName.equals("")
                 && j2eePlat != null && j2eePlat.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
                 serverInstanceIDs.add(servInstIDs[i]);
                 serverInstanceComboBox.addItem(servInstDisplayName);

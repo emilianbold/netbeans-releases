@@ -75,11 +75,8 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Instanti
         
         Project earProject = (Project) wiz.getProperty(WizardProperties.EAR_APPLICATION);
         EjbJarProject createdEjbJarProject = (EjbJarProject) ProjectManager.getDefault().findProject(dir);
-//        System.out.println("### earProject=" + earProject);
-//        System.out.println("### createdEjbJarProject=" + createdEjbJarProject);
         if (earProject != null && createdEjbJarProject != null) {
             Ear ear = Ear.getEar(earProject.getProjectDirectory());
-//            System.out.println("### ear=" + ear);
             if (ear != null) {
                 ear.addEjbJarModule(createdEjbJarProject.getAPIEjbJar());
             }
