@@ -14,6 +14,7 @@ package org.netbeans.modules.xml.catalog;
 
 import java.util.*;
 import java.io.*;
+import java.net.URL;
 
 import org.xml.sax.*;
 import org.netbeans.modules.xml.catalog.spi.*;
@@ -90,6 +91,12 @@ public class CatalogEntityResolver extends UserCatalog implements EntityResolver
         // return result (null is allowed)
 
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("CatalogEntityResolver:PublicID: " + publicId + ", " + systemId + " => " + (result == null ? "null" : result.getSystemId())); // NOI18N
+
+        // #56103 bootstrap XML catalog DTD
+        if (result == null && "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN".equals(publicId)) {  // NOi18N
+            URL url = org.apache.xml.resolver.Catalog.class.getResource("etc/catalog.dtd"); // NOI18N
+            result = new InputSource(url.toExternalForm());
+        }
 
         //#53710 URL space canonization (%20 form works in most cases)
         if (result != null) {

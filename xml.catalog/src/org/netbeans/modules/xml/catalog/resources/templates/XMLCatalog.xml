@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE catalog PUBLIC "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN"
-         "nbres:/org/netbeans/modules/xml/catalog/impl/oasis/catalog.dtd">
-<!-- if HTTP connection is established (proxy) the original systemId can be used: -->
-<!--
-<!DOCTYPE catalog PUBLIC "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN"
-         "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
--->
 <!--
     Document   : __NAME__
     Created on : __DATE__, __TIME__
@@ -15,6 +8,8 @@
 -->
 
 <!-- see http://www.oasis-open.org/committees/entity/spec.html -->
+<!DOCTYPE catalog PUBLIC "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN"
+         "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
 
 <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">                
 
