@@ -68,6 +68,7 @@ public class CustomizeScriptPanel extends javax.swing.JPanel implements WizardDe
         
         setLayout (new java.awt.BorderLayout ());
         
+        scrollPane.setPreferredSize (new java.awt.Dimension (100, 100));
         scrollPane.setViewportView (scriptPane);
         
         add (scrollPane, java.awt.BorderLayout.CENTER);
