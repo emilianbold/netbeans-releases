@@ -22,6 +22,7 @@ package org.netbeans.jellytools.modules.form.properties.editors;
 import javax.swing.JDialog;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.*;
 
 /** Dialog opened after click on "..." button in Component Inspector
@@ -114,6 +115,8 @@ public class FormCustomEditorOperator extends NbDialogOperator {
     /** tries to find cboMode and select item
      * @param mode String FormCustomEditor mode name */
     public void setMode(String mode) {
+        // need to wait a little
+        new EventTool().waitNoEvent(300);
         cboMode().selectItem(mode);
     }
 
