@@ -41,7 +41,7 @@ import org.openide.TopManager;
  */
 public class AnnotationTypesNode extends AbstractNode {
 
-    private static final String HELP_ID = "editing.annotationtypes"; // !!! NOI18N
+    private static final String HELP_ID = "editing.configuring.annotations"; // !!! NOI18N
     private static final String ICON_BASE = "/org/netbeans/modules/editor/resources/annotationtypes"; // NOI18N
     
     private ResourceBundle bundle;
@@ -186,6 +186,9 @@ public class AnnotationTypesNode extends AbstractNode {
             }
             public boolean canDestroy() {
                 return false;
+            }
+            public HelpCtx getHelpCtx() {
+                return new HelpCtx(HELP_ID);
             }
         }
     }
