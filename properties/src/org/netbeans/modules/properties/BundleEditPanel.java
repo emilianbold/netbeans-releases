@@ -472,8 +472,8 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                                             }
                                             
                                             // Update selection & edit.
-                                            table.getColumnModel().getSelectionModel().setSelectionInterval(row, column);
-                                            table.getSelectionModel().setSelectionInterval(row, column);
+                                            table.getColumnModel().getSelectionModel().setSelectionInterval(column, column);
+                                            table.getSelectionModel().setSelectionInterval(row, row);
                                             
                                             table.editCellAt(row, column);
                                         }
